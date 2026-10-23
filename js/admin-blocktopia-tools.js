@@ -29,6 +29,15 @@
 
   var activeAdminTelegramId = '';
   var accessCheckSequence = 0;
+  var arcadeGrantSubmitting = false;
+  var btGrantSubmitting = false;
+
+  function setGrantFormBusy(form, busy) {
+    if (!form) return;
+    var submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = busy;
+    form.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
 
   function setState(el, text, tone) {
     if (!el) return;
@@ -216,62 +225,69 @@
   function wireArcadeSubmit() {
     arcadeGrantForm.addEventListener('submit', async function (event) {
       event.preventDefault();
-
-      var targetTelegramId = String(arcadeTargetTelegramIdEl.value || '').trim();
-      var xp = readInt(arcadeXpEl);
-      var reason = String(arcadeReasonEl.value || '').trim();
-
-      if (!/^\d{5,20}$/.test(targetTelegramId)) {
-        setState(arcadeResultState, 'Invalid target Telegram ID.', 'bad');
-        return;
-      }
-      if (xp === null || xp === 0) {
-        setState(arcadeResultState, 'Enter a positive Arcade XP amount.', 'bad');
-        return;
-      }
-      if (Number.isNaN(xp)) {
-        setState(arcadeResultState, 'Arcade XP must be a whole number.', 'bad');
-        return;
-      }
-      if (!activeAdminTelegramId) {
-        setState(arcadeResultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
-        return;
-      }
-      var verifiedAdminAtSubmit = activeAdminTelegramId;
-      var checkSequenceAtSubmit = accessCheckSequence;
-      var telegramAuth = await getSignedTelegramAuthWithRestore({ force: true });
-      if (checkSequenceAtSubmit !== accessCheckSequence ||
-          !verifiedAdminAtSubmit || !telegramAuth ||
-          String(telegramAuth.id || '') !== verifiedAdminAtSubmit) {
-        ++accessCheckSequence;
-        hidePanel();
-        setState(accessState, 'Admin account changed. Refresh authentication before granting XP.', 'bad');
-        return;
-      }
-
-      var body = {
-        telegram_auth: telegramAuth,
-        telegram_id: targetTelegramId,
-        xp: xp,
-      };
-      if (reason) body.reason = reason;
-
-      setState(arcadeResultState, 'Submitting Arcade XP grant…', 'warn');
+      if (arcadeGrantSubmitting) return;
+      arcadeGrantSubmitting = true;
+      setGrantFormBusy(arcadeGrantForm, true);
       try {
-        var outcome = await postJson('/admin/arcade/grant-xp', body);
-        var payload = outcome.payload || {};
-        var reasonText = payload.error || payload.message || '';
-        if (outcome.ok) {
-          var after = payload.arcade_progression && payload.arcade_progression.arcade_xp_total_after != null
-            ? ' arcade_xp_total now: ' + payload.arcade_progression.arcade_xp_total_after
-            : '';
-          setState(arcadeResultState, 'Arcade XP grant succeeded.' + after, 'good');
-        } else {
-          setState(arcadeResultState, 'Arcade XP grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
+        var targetTelegramId = String(arcadeTargetTelegramIdEl.value || '').trim();
+        var xp = readInt(arcadeXpEl);
+        var reason = String(arcadeReasonEl.value || '').trim();
+
+        if (!/^\d{5,20}$/.test(targetTelegramId)) {
+          setState(arcadeResultState, 'Invalid target Telegram ID.', 'bad');
+          return;
         }
-        arcadeResultJson.textContent = stringifyPayload(payload);
-      } catch {
-        setState(arcadeResultState, 'Arcade XP grant failed: network/server unreachable.', 'bad');
+        if (xp === null || xp === 0) {
+          setState(arcadeResultState, 'Enter a positive Arcade XP amount.', 'bad');
+          return;
+        }
+        if (Number.isNaN(xp)) {
+          setState(arcadeResultState, 'Arcade XP must be a whole number.', 'bad');
+          return;
+        }
+        if (!activeAdminTelegramId) {
+          setState(arcadeResultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
+          return;
+        }
+        var verifiedAdminAtSubmit = activeAdminTelegramId;
+        var checkSequenceAtSubmit = accessCheckSequence;
+        var telegramAuth = await getSignedTelegramAuthWithRestore({ force: true });
+        if (checkSequenceAtSubmit !== accessCheckSequence ||
+            !verifiedAdminAtSubmit || !telegramAuth ||
+            String(telegramAuth.id || '') !== verifiedAdminAtSubmit) {
+          ++accessCheckSequence;
+          hidePanel();
+          setState(accessState, 'Admin account changed. Refresh authentication before granting XP.', 'bad');
+          return;
+        }
+
+        var body = {
+          telegram_auth: telegramAuth,
+          telegram_id: targetTelegramId,
+          xp: xp,
+        };
+        if (reason) body.reason = reason;
+
+        setState(arcadeResultState, 'Submitting Arcade XP grant…', 'warn');
+        try {
+          var outcome = await postJson('/admin/arcade/grant-xp', body);
+          var payload = outcome.payload || {};
+          var reasonText = payload.error || payload.message || '';
+          if (outcome.ok) {
+            var after = payload.arcade_progression && payload.arcade_progression.arcade_xp_total_after != null
+              ? ' arcade_xp_total now: ' + payload.arcade_progression.arcade_xp_total_after
+              : '';
+            setState(arcadeResultState, 'Arcade XP grant succeeded.' + after, 'good');
+          } else {
+            setState(arcadeResultState, 'Arcade XP grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
+          }
+          arcadeResultJson.textContent = stringifyPayload(payload);
+        } catch {
+          setState(arcadeResultState, 'Arcade XP result unknown: network error. Check current progression before retrying.', 'bad');
+        }
+      } finally {
+        arcadeGrantSubmitting = false;
+        setGrantFormBusy(arcadeGrantForm, false);
       }
     });
   }
@@ -279,59 +295,66 @@
   function wireBtSubmit() {
     btGrantForm.addEventListener('submit', async function (event) {
       event.preventDefault();
-
-      var targetTelegramId = String(btTargetTelegramIdEl.value || '').trim();
-      var xp = readInt(btXpEl);
-      var reason = String(btReasonEl.value || '').trim();
-
-      if (!/^\d{5,20}$/.test(targetTelegramId)) {
-        setState(btResultState, 'Invalid target Telegram ID.', 'bad');
-        return;
-      }
-      if (xp === null || xp === 0) {
-        setState(btResultState, 'Enter a positive XP amount.', 'bad');
-        return;
-      }
-      if (Number.isNaN(xp)) {
-        setState(btResultState, 'XP must be a whole number.', 'bad');
-        return;
-      }
-      if (!activeAdminTelegramId) {
-        setState(btResultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
-        return;
-      }
-      var verifiedAdminAtSubmit = activeAdminTelegramId;
-      var checkSequenceAtSubmit = accessCheckSequence;
-      var telegramAuth = await getSignedTelegramAuthWithRestore({ force: true });
-      if (checkSequenceAtSubmit !== accessCheckSequence ||
-          !verifiedAdminAtSubmit || !telegramAuth ||
-          String(telegramAuth.id || '') !== verifiedAdminAtSubmit) {
-        ++accessCheckSequence;
-        hidePanel();
-        setState(accessState, 'Admin account changed. Refresh authentication before granting XP.', 'bad');
-        return;
-      }
-
-      var body = {
-        telegram_auth: telegramAuth,
-        telegram_id: targetTelegramId,
-      };
-      if (xp !== null && xp > 0) body.xp = xp;
-      if (reason) body.reason = reason;
-
-      setState(btResultState, 'Submitting Block Topia grant request…', 'warn');
+      if (btGrantSubmitting) return;
+      btGrantSubmitting = true;
+      setGrantFormBusy(btGrantForm, true);
       try {
-        var outcome = await postJson('/admin/blocktopia/grant-xp', body);
-        var payload = outcome.payload || {};
-        var reasonText = payload.error || payload.message || '';
-        if (outcome.ok) {
-          setState(btResultState, 'Grant succeeded. ' + (reasonText ? reasonText : 'XP updated.'), 'good');
-        } else {
-          setState(btResultState, 'Grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
+        var targetTelegramId = String(btTargetTelegramIdEl.value || '').trim();
+        var xp = readInt(btXpEl);
+        var reason = String(btReasonEl.value || '').trim();
+
+        if (!/^\d{5,20}$/.test(targetTelegramId)) {
+          setState(btResultState, 'Invalid target Telegram ID.', 'bad');
+          return;
         }
-        btResultJson.textContent = stringifyPayload(payload);
-      } catch {
-        setState(btResultState, 'Grant failed: network/server unreachable.', 'bad');
+        if (xp === null || xp === 0) {
+          setState(btResultState, 'Enter a positive XP amount.', 'bad');
+          return;
+        }
+        if (Number.isNaN(xp)) {
+          setState(btResultState, 'XP must be a whole number.', 'bad');
+          return;
+        }
+        if (!activeAdminTelegramId) {
+          setState(btResultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
+          return;
+        }
+        var verifiedAdminAtSubmit = activeAdminTelegramId;
+        var checkSequenceAtSubmit = accessCheckSequence;
+        var telegramAuth = await getSignedTelegramAuthWithRestore({ force: true });
+        if (checkSequenceAtSubmit !== accessCheckSequence ||
+            !verifiedAdminAtSubmit || !telegramAuth ||
+            String(telegramAuth.id || '') !== verifiedAdminAtSubmit) {
+          ++accessCheckSequence;
+          hidePanel();
+          setState(accessState, 'Admin account changed. Refresh authentication before granting XP.', 'bad');
+          return;
+        }
+
+        var body = {
+          telegram_auth: telegramAuth,
+          telegram_id: targetTelegramId,
+        };
+        if (xp !== null && xp > 0) body.xp = xp;
+        if (reason) body.reason = reason;
+
+        setState(btResultState, 'Submitting Block Topia grant request…', 'warn');
+        try {
+          var outcome = await postJson('/admin/blocktopia/grant-xp', body);
+          var payload = outcome.payload || {};
+          var reasonText = payload.error || payload.message || '';
+          if (outcome.ok) {
+            setState(btResultState, 'Grant succeeded. ' + (reasonText ? reasonText : 'XP updated.'), 'good');
+          } else {
+            setState(btResultState, 'Grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
+          }
+          btResultJson.textContent = stringifyPayload(payload);
+        } catch {
+          setState(btResultState, 'Grant result unknown: network error. Check current progression before retrying.', 'bad');
+        }
+      } finally {
+        btGrantSubmitting = false;
+        setGrantFormBusy(btGrantForm, false);
       }
     });
   }
