@@ -2938,7 +2938,7 @@ assert.deepEqual(await page.evaluate(() => ({
   defeated: window.NBGLevel1State.enemies.filter(enemy => enemy.defeated).length
 })), {
   running: false, gameOver: false, health: 3, elapsed: 0,
-  active: 0, spawned: 0, enemies: 57, defeated: 0
+  active: 0, spawned: 0, enemies: 58, defeated: 0
 }, 'reset must restore all enemies, health and speedrun clock');
 await page.keyboard.down('KeyD');
 await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
