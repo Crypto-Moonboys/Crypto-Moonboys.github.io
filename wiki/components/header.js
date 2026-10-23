@@ -8,8 +8,6 @@
     shellPath: '/wiki/layouts/wiki-shell.html',
     headerId: 'site-header',
     navId: 'global-nav',
-    searchFormId: 'header-search',
-    searchInputId: 'search-input',
     searchResultsId: 'search-results',
     requiredLabels: ['WIKI', 'GAMES', 'BATTLE CHAMBER', 'SWARMSY', 'SYSTEM HUB']
   });
