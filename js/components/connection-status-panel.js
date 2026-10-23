@@ -1114,10 +1114,14 @@
     return !!(gate && typeof gate.isWebsiteSession === 'function' && gate.isWebsiteSession());
   }
 
+  function telegramBadgeIconHTML(label, detail) {
+    return '<img class="csp-telegram-icon" src="/art/telegram6uty.png" alt="" width="48" height="46">' +
+      '<span class="csp-badge-copy"><strong>' + esc(label) + '</strong><small>' + esc(detail) + '</small></span>';
+  }
+
   function pendingIdentityBadgeHTML(label, detail) {
     return '<span class="csp-badge csp-badge--pending" aria-label="' + esc(label) + '" data-csp-badge-state="pending">' +
-      '<span class="csp-pulse csp-pulse--warn"></span>' +
-      '<span class="csp-badge-stack"><strong>' + esc(label) + '</strong><small>' + esc(detail) + '</small></span>' +
+      telegramBadgeIconHTML(label, detail) +
     '</span>';
   }
 
@@ -1137,7 +1141,7 @@
       if (!linked && isWebsiteSessionMode()) return pendingIdentityBadgeHTML('Checking Telegram', 'Verifying your session…');
     }
     if (!linked) {
-      return '<a href="/my-moonboy.html" class="csp-badge csp-badge--unlinked" data-telegram-login aria-label="Log in with Telegram" data-csp-badge-state="unlinked"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Log in with Telegram</strong><small>Restore your saved account</small></span></a>';
+      return '<a href="/my-moonboy.html" class="csp-badge csp-badge--unlinked" data-telegram-login aria-label="Log in with Telegram" data-csp-badge-state="unlinked">' + telegramBadgeIconHTML('Log in with Telegram', 'Restore your saved account') + '</a>';
     }
     // Check for fresh signed auth — LIVE SYNC requires confirmed auth, not just localStorage linked state.
     var gate = getIdentity();
@@ -1160,15 +1164,13 @@
     if (!freshAuth) {
       // Linked in localStorage but auth is expired or missing — show RELINK state.
       var relinkName = getDisplayName() || 'Player';
-      return '<a href="/my-moonboy.html" class="csp-badge csp-badge--relink" aria-label="Re-link required"><span class="csp-pulse csp-pulse--warn"></span><span class="csp-badge-stack"><strong>RELINK</strong><small>' + esc(relinkName) + ' · Auth expired</small></span></a>';
+      return '<a href="/my-moonboy.html" class="csp-badge csp-badge--relink" aria-label="Re-link required">' + telegramBadgeIconHTML('RELINK', relinkName + ' · Auth expired') + '</a>';
     }
     // This global badge confirms account identity only. Verified XP, game
     // eligibility and API health belong on their own authoritative pages.
     return '<a href="/my-moonboy.html" class="csp-badge csp-badge--linked" ' +
       'aria-label="Telegram Connected — open My Moonboy" data-csp-badge-state="connected">' +
-      '<span class="csp-pulse"></span>' +
-      '<span class="csp-badge-stack"><strong>Telegram Connected</strong><small>' +
-      esc(getDisplayName() || 'Player') + '</small></span></a>';
+      telegramBadgeIconHTML('Telegram Connected', getDisplayName() || 'Player') + '</a>';
   }
 
   // ── CSS injection ──────────────────────────────────────────────────────
@@ -1241,15 +1243,13 @@
       '.csp-warning-card{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
       /* Global header badge */
       '#moonboys-global-status-badge{display:flex;align-items:center;margin-left:auto}',
-      '.csp-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}',
-      '.csp-badge strong{display:block;font-size:.62rem;letter-spacing:.08em;color:#fff}.csp-badge small{display:block;font-size:.66rem;font-weight:600;color:#c8f0ff;overflow:hidden;text-overflow:ellipsis}',
-      '.csp-badge-stack{min-width:0;line-height:1.15}',
-      '.csp-badge-chip{font-size:.56rem;border:1px solid rgba(86,220,255,.28);border-radius:99px;padding:2px 5px;color:#56dcff;background:rgba(86,220,255,.08)}',
-      '.csp-badge-chip--good{color:#3fb950;border-color:rgba(63,185,80,.35)}.csp-badge-chip--warn{color:#f7c948;border-color:rgba(247,201,72,.35)}',
-      '.csp-badge--linked{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.35);color:#c8f0ff;box-shadow:0 0 12px rgba(86,220,255,.12)}',
-      '.csp-badge--unlinked{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.35);color:#ffd0cd;text-decoration:none}',
-      '.csp-badge--pending{background:rgba(86,220,255,.08);border:1px solid rgba(86,220,255,.35);color:#c8f0ff;text-decoration:none}',
-      '.csp-badge--relink{background:rgba(247,201,72,.08);border:1px solid rgba(247,201,72,.45);color:#f7e29a;text-decoration:none}',
+      '.csp-badge{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:60px;height:58px;padding:6px;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none;text-decoration:none;overflow:visible}',
+      '.csp-telegram-icon{display:block;width:48px;height:auto;max-width:none;object-fit:contain;transform-origin:center}',
+      '.csp-badge-copy{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
+      '.csp-badge:focus-visible{outline:2px solid #56dcff;outline-offset:3px;border-radius:8px}',
+      '.csp-badge--unlinked .csp-telegram-icon,.csp-badge--relink .csp-telegram-icon{animation:cspTelegramLoginPulse 1.8s ease-in-out infinite}',
+      '@keyframes cspTelegramLoginPulse{0%,100%{transform:scale(.88)}50%{transform:scale(1)}}',
+      '@media(prefers-reduced-motion:reduce){.csp-badge .csp-telegram-icon{animation:none}}',
       /* Loading placeholder */
       '.csp-loading{color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:10px 0}',
       /* Faction ops Play Arcade CTA */

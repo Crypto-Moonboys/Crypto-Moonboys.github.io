@@ -132,7 +132,7 @@ check(!xpBurst.includes('innerHTML'), 'XP burst animation avoids unsafe dynamic 
 
 console.log('\n[3] Top notice');
 check(csp.includes('Telegram Connected') && csp.includes('Log in with Telegram') && csp.includes('Checking Telegram'), 'compact global Telegram identity badge supports linked, pending and unlinked states');
-check(csp.includes('csp-badge-stack') && csp.includes('csp-badge--linked'), 'top notice is a compact identity indicator, not an XP dashboard');
+check(csp.includes('csp-telegram-icon') && csp.includes('/art/telegram6uty.png') && csp.includes('csp-badge-copy') && csp.includes('csp-badge--linked'), 'top notice is a compact identity indicator, not an XP dashboard');
 check(csp.indexOf('LIVE SYNC') < csp.indexOf('async function buildPanelHTML') || csp.includes('async function buildBadgeHTML'), 'top notice is rendered by badge path, not the full panel');
 check(!csp.includes('data-csp-badge-xp') && !csp.includes('data-csp-badge-bt'), 'global identity badge no longer repeats Arcade XP or Block Topia gate chips');
 const stateSubscribeBlock = csp.slice(csp.indexOf('MOONBOYS_STATE.subscribe'), csp.indexOf('// ── Bootstrap'));

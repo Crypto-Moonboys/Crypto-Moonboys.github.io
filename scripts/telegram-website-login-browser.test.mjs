@@ -87,7 +87,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       });
       await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
       const failedFirstProbe = page.waitForResponse(response => response.url().endsWith('/telegram/website/session') && response.status() === 503);
-      await page.locator('#mm-gate [data-telegram-login]').click();
+      await page.locator('#moonboys-global-status-badge [data-telegram-login]').click();
       await page.waitForURL(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(async error => {
         throw new Error(new URL(page.url()).pathname + ': ' + (await page.locator('body').innerText()).slice(0, 160) + '\n' + error.message);
       });
