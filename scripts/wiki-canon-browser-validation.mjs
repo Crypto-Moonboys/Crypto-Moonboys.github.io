@@ -95,12 +95,13 @@ try {
   for (const [query, slug] of queries) {
     await page.goto(`${origin}/search.html?q=${encodeURIComponent(query)}`, { waitUntil: 'networkidle' });
     await page.locator(`#search-results-page a[href="/wiki/${slug}.html"]`).waitFor();
-    await page.locator('#search-input').fill(query);
-    await page.locator(`#search-results a[href="/wiki/${slug}.html"]`).waitFor();
+    await page.locator('#search-page-input').fill('');
+    await page.locator('#search-page-input').fill(query);
+    await page.locator(`#search-results-page a[href="/wiki/${slug}.html"]`).waitFor();
   }
   const result = { browser: browser.version(), pages: report, noJavaScriptPages: created.length + updated.length, searchQueries: queries.length, externalRequestsBlocked: true };
   await fs.writeFile(path.join(output, 'report.json'), JSON.stringify(result, null, 2));
-  console.log(`Browser validation passed: ${report.length} desktop/mobile views, ${created.length + updated.length} no-JavaScript pages, ${queries.length} full-search and autocomplete queries. Screenshots: ${output}`);
+  console.log(`Browser validation passed: ${report.length} desktop/mobile views, ${created.length + updated.length} no-JavaScript pages, ${queries.length} URL-loaded and interactive search-page queries. Screenshots: ${output}`);
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));
