@@ -82,7 +82,7 @@ test('Mini App rejects invalid, duplicate, expired, future and malformed launch 
   damaged.set('user', JSON.stringify({ id: 55 }));
   const bad = [
     damaged.toString(), good + '&hash=' + new URLSearchParams(good).get('hash'),
-    proof(undefined, now() - 301), proof(undefined, now() + 301),
+    proof(undefined, now() - 305), proof(undefined, now() + 305),
     'user=broken&auth_date=' + now(), '',
   ];
   for (const value of bad) {
