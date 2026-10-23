@@ -18,20 +18,50 @@ permissions:
   pull-requests: read
 
 jobs:
+  fast-edit:
+    runs-on: ubuntu-latest
+    outputs:
+      fast_edit: ${{ steps.detect.outputs.fast_edit }}
+    steps:
+      - name: Checkout full history for trusted file diff
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Validate classifier safety rules
+        run: node --test scripts/fast-edit-scope.test.mjs
+      - name: Classify PR change scope
+        id: detect
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || ''}'}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/fast-edit-scope.mjs
+
   ci-wiki:
+    needs: [fast-edit]
     runs-on: ubuntu-latest
     steps:
+      - name: Fast Edit accepted — skip unrelated heavy suites
+        if: needs.fast-edit.outputs.fast_edit == 'true'
+        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -42,6 +72,7 @@ jobs:
           node scripts/verify-graph-dispatch-pr.mjs
 
       - name: Check wiki/static changes
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: wiki_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
@@ -49,7 +80,7 @@ jobs:
         run: node scripts/ci-change-scope.mjs wiki
 
       - name: Install dependencies
-        if: steps.wiki_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.wiki_changes.outputs.should_run == 'true'
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -58,6 +89,7 @@ jobs:
           fi
 
       - name: Resolve canon prose approval
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: canon_approval
         if: steps.wiki_changes.outputs.should_run == 'true'
         env:
@@ -65,7 +97,7 @@ jobs:
         run: node scripts/resolve-canon-prose-approval.mjs
 
       - name: Run wiki tests
-        if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name != 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.wiki_changes.outputs.should_run == 'true' && github.event_name != 'workflow_dispatch'
         env:
           BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -73,7 +105,7 @@ jobs:
         run: npm run ci:wiki
 
       - name: Run wiki tests explicitly dispatched
-        if: steps.wiki_changes.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.wiki_changes.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch'
         env:
           BASE_SHA: ${{ steps.graph_dispatch.outputs.base_sha }}
           HEAD_SHA: ${{ github.sha }}
@@ -81,17 +113,24 @@ jobs:
         run: npm run ci:wiki
 
   ci-worker-api:
+    needs: [fast-edit]
     runs-on: ubuntu-latest
     steps:
+      - name: Fast Edit accepted — skip unrelated heavy suites
+        if: needs.fast-edit.outputs.fast_edit == 'true'
+        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
 
       - name: Setup Node.js
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -102,6 +141,7 @@ jobs:
           node scripts/verify-graph-dispatch-pr.mjs
 
       - name: Install dependencies
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -110,22 +150,30 @@ jobs:
           fi
 
       - name: Run worker/API tests
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         run: npm run ci:worker-api
 
   ci-arcade:
+    needs: [fast-edit]
     runs-on: ubuntu-latest
     steps:
+      - name: Fast Edit accepted — skip unrelated heavy suites
+        if: needs.fast-edit.outputs.fast_edit == 'true'
+        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -136,6 +184,7 @@ jobs:
           node scripts/verify-graph-dispatch-pr.mjs
 
       - name: Check arcade/frontend changes
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: arcade_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
@@ -143,7 +192,7 @@ jobs:
         run: node scripts/ci-change-scope.mjs arcade
 
       - name: Install dependencies
-        if: steps.arcade_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.arcade_changes.outputs.should_run == 'true'
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -152,27 +201,34 @@ jobs:
           fi
 
       - name: Hydrate Invaders player-ship PNG asset
-        if: steps.arcade_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.arcade_changes.outputs.should_run == 'true'
         run: npm run invaders:ship:hydrate
 
       - name: Run arcade tests
-        if: steps.arcade_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.arcade_changes.outputs.should_run == 'true'
         run: npm run ci:arcade
 
   ci-wax:
+    needs: [fast-edit]
     runs-on: ubuntu-latest
     steps:
+      - name: Fast Edit accepted — skip unrelated heavy suites
+        if: needs.fast-edit.outputs.fast_edit == 'true'
+        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -183,6 +239,7 @@ jobs:
           node scripts/verify-graph-dispatch-pr.mjs
 
       - name: Check WAX/static changes
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: wax_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
@@ -190,7 +247,7 @@ jobs:
         run: node scripts/ci-change-scope.mjs wax
 
       - name: Install dependencies
-        if: steps.wax_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.wax_changes.outputs.should_run == 'true'
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -199,24 +256,31 @@ jobs:
           fi
 
       - name: Run WAX tests
-        if: steps.wax_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.wax_changes.outputs.should_run == 'true'
         run: npm run ci:wax
 
   ci-visual:
+    needs: [fast-edit]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      - name: Fast Edit accepted — skip unrelated heavy suites
+        if: needs.fast-edit.outputs.fast_edit == 'true'
+        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -227,6 +291,7 @@ jobs:
           node scripts/verify-graph-dispatch-pr.mjs
 
       - name: Check visual/runtime frontend changes
+        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: visual_changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || steps.graph_dispatch.outputs.base_sha }}
@@ -234,7 +299,7 @@ jobs:
         run: node scripts/ci-change-scope.mjs visual
 
       - name: Install dependencies
-        if: steps.visual_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.visual_changes.outputs.should_run == 'true'
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -243,17 +308,17 @@ jobs:
           fi
 
       - name: Install Playwright Chromium
-        if: steps.visual_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.visual_changes.outputs.should_run == 'true'
         timeout-minutes: 10
         run: npx playwright install --with-deps chromium
 
       - name: Run visual/static tests
-        if: steps.visual_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.visual_changes.outputs.should_run == 'true'
         timeout-minutes: 20
         run: npm run ci:visual
 
       - name: Upload visual failure artifacts
-        if: failure() && steps.visual_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && failure() && steps.visual_changes.outputs.should_run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ci-visual-failure-${{ github.run_id }}
