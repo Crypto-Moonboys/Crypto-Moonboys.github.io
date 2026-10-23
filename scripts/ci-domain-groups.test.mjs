@@ -126,6 +126,17 @@ assert.ok(
   fastEditJob.includes('run: git diff --check "$BASE_SHA" "$HEAD_SHA"'),
   'Fast Edit whitespace check must compare correct PR or push base/head commits',
 );
+
+assert.ok(
+  (fastEditJob.match(/\\[\\[ "\\$GITHUB_EVENT_NAME" =~ \^\\(pull_request\\|push\\)\\$ \\]\\]/g) || []).length >= 2 ||
+  fastEditJob.split('[[ "$GITHUB_EVENT_NAME" =~ ^(pull_request|push)$ ]]').length - 1 >= 2,
+  'both protected-base extraction steps must reject workflow_dispatch',
+);
+assert.ok(
+  fastEditJob.split('[[ "$BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]').length - 1 >= 2,
+  'both protected-base extraction steps must verify a real commit SHA',
+);
+
 for (const job of expectedJobs) {
   const section = workflow.split('\n  ' + job + ':')[1]?.split(/\n  ci-[a-z-]+:|$/u)[0] || '';
   assert.ok(section.includes('if: ${{ always() }}') &&
