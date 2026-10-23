@@ -186,10 +186,18 @@ assert.ok(
   'visual CI must classify changed files before installing Playwright Chromium',
 );
 
-assert.ok(
-  workflow.includes("if: steps.visual_changes.outputs.should_run == 'true'"),
-  'visual CI install and test steps must be gated by relevant visual/runtime changes',
-);
+// A visual suite must require BOTH a non-Fast-Edit change and a relevant
+// visual/runtime scope. Check the actual install/test steps rather than a
+// now-obsolete exact standalone if expression.
+for (const stepName of ['Install dependencies', 'Install Playwright Chromium', 'Run visual/static tests']) {
+  const block = stepName === 'Install dependencies'
+    ? workflow.slice(workflow.indexOf('\n  ci-visual:')).match(/\n      - name: Install dependencies\n([\s\S]*?)(?=\n      - name:|$)/u)?.[1]
+    : getStepBlock(workflow, stepName);
+  assert.ok(block &&
+    block.includes("needs.fast-edit.outputs.fast_edit != 'true'") &&
+    block.includes("steps.visual_changes.outputs.should_run == 'true'"),
+  'visual CI ' + stepName + ' must require both Fast Edit exclusion and relevant visual/runtime changes');
+}
 
 assert.ok(
   !deployWorkflow.includes('npx playwright install --with-deps chromium'),
