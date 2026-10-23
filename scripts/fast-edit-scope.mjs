@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Conservative PR-only fast-edit classifier. Unknown changes run full CI.
+// Conservative PR/main-push fast-edit classifier. Unknown changes run full CI.
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import path from 'node:path';
@@ -55,7 +55,10 @@ function git(args) {
   return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
 }
 function detect() {
-  if (process.env.GITHUB_EVENT_NAME !== 'pull_request') return { fast: false, reason: 'Push/dispatch must run normal CI' };
+  const event = process.env.GITHUB_EVENT_NAME;
+  if (event !== 'pull_request' && !(event === 'push' && process.env.GITHUB_REF === 'refs/heads/main')) {
+    return { fast: false, reason: 'Full CI for dispatch or untrusted event/ref' };
+  }
   const base = process.env.BASE_SHA || '', head = process.env.HEAD_SHA || '';
   if (!/^[0-9a-f]{40}$/i.test(base) || !/^[0-9a-f]{40}$/i.test(head)) return { fast: false, reason: 'Unknown base/head' };
   const entries = git(['diff', '--name-status', '-z', '--no-renames', base, head]).split('\0').filter(Boolean);
