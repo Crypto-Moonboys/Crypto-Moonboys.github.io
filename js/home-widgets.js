@@ -50,7 +50,7 @@
 
   function moveBuildCtaAboveBuilder() {
     var builder = document.querySelector('.homepage-avatar-builder');
-    var mission = document.querySelector('.hero-intro');
+    var mission = document.getElementById('how-it-works');
     var cta = mission && mission.querySelector(':scope > .simple-wrap:first-child');
     if (!builder || !mission || !cta || cta.dataset.homepageCtaMoved === 'true') return;
 
