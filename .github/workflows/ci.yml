@@ -144,7 +144,7 @@ jobs:
         run: npm run ci:wiki
 
       - name: Validate candidate Fast Edit classifier outside gate runner
-        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'pull_request'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'pull_request' && steps.wiki_changes.outputs.should_run == 'true'
         run: node --test scripts/fast-edit-scope.test.mjs
 
   ci-worker-api:
