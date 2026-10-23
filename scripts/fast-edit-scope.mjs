@@ -5,8 +5,10 @@ import { appendFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const IMAGE = /^(?:art|assets|img)\/.+\.(?:png|jpe?g|webp|gif|avif)$/i;
-const CSS = /^css\/[a-z0-9_./-]+\.css$/i;
+const IMAGE = /^(?:art|assets|img)\/[^/]+\.(?:png|jpe?g|webp|gif|avif)$/i;
+const CSS = /^css\/[a-z0-9_-]+\.css$/i;
+const RISKY_CSS = /^css\/(?:avatar-builder-test|battle-layer|faction-chamber|faction-operations|game-fullscreen|moonpet-mini-app|my-moonboy|wiki-runtime-migration)\.css$/i;
+const RISKY_PAGE = /^(?:moonpet-game|admin-tools|avatar-builder-test|crypto-moonboy-pets-leaderboard|about|hubs|sam|graffiti-kings-creative-guide)\.html$/i;
 const PAGE = /^[a-z0-9][a-z0-9-]*\.html$/i;
 const IMAGE_SRC = /^\/(?:art|assets|img)\/[a-z0-9%_./-]+\.(?:png|jpe?g|webp|gif|avif)(?:\?[a-z0-9%=&_-]+)?$/i;
 const IMAGE_ATTRS = new Set(['src', 'alt', 'class', 'width', 'height', 'loading', 'decoding', 'fetchpriority']);
@@ -43,8 +45,8 @@ export function classifyFile(file) {
   const { path: filename, status, before, after, newBytes, changedLines } = file;
   if (/[\0\r\n\\]/.test(filename) || filename.split('/').includes('..') || filename.startsWith('/') || !['A', 'M'].includes(status)) return false;
   if (IMAGE.test(filename)) return newBytes > 0 && newBytes <= MAX_IMAGE_BYTES;
-  if (CSS.test(filename)) return typeof after === 'string' && newBytes <= MAX_TEXT_BYTES;
-  if (!PAGE.test(filename) || status !== 'M' || changedLines > 160 || newBytes > MAX_TEXT_BYTES || typeof before !== 'string' || typeof after !== 'string') return false;
+  if (CSS.test(filename)) return !RISKY_CSS.test(filename) && typeof after === 'string' && newBytes <= MAX_TEXT_BYTES;
+  if (!PAGE.test(filename) || RISKY_PAGE.test(filename) || status !== 'M' || changedLines > 160 || newBytes > MAX_TEXT_BYTES || typeof before !== 'string' || typeof after !== 'string') return false;
   const original = staticStructure(before), revised = staticStructure(after);
   return original.structure === revised.structure && JSON.stringify(original.protectedBytes) === JSON.stringify(revised.protectedBytes);
 }
