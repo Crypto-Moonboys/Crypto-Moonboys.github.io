@@ -73,7 +73,7 @@ function staticStructure(source) {
       stack.pop();
       output += tag;
     } else {
-      if (name === 'img' && inertImage(tag)) output += '__SAFE_LOCAL_IMAGE__';
+      if (name === 'img' && inertImage(tag)) output += '';
       else output += tag;
       const selfClosing = /\/>$/.test(tag);
       if (!VOID_ELEMENTS.has(name) && !selfClosing) {
