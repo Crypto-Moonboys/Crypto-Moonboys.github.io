@@ -525,7 +525,6 @@ window.__HUD_CONSOLIDATED__ = true;
     const shell = ensureLayout();
     ensureSwarmsyLandingTighten();
     ensureInlineLiveStats(shell.content);
-    bindSearchForm();
     hydrateHeaderLiveStats();
     bindHudIdentityRefresh();
     scheduleHudIdentityRefresh();
