@@ -36,7 +36,7 @@ const RAW_ELEMENTS = new Set(['script','style','template','textarea','svg','ifra
 function staticStructure(source) {
   // Special script parser states can make literal close-tag matching unsafe.
   // Reject such pages rather than risk normalizing executable content.
-  if (/<script\\b[\\s\\S]*?<!--[\\s\\S]*?<script\\b/i.test(source)) return null;
+  if (/<script\b[\s\S]*?<!--[\s\S]*?<script\b/i.test(source)) return null;
   let output = '', offset = 0;
   const stack = [];
   while (offset < source.length) {
