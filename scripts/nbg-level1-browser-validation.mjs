@@ -198,10 +198,12 @@ for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
   const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
-  const isFinalSpray = animation.spriteSheet === 'player/NBG Runner Final-spray.png';
-  assert.equal(pngHeader.readUInt32BE(0), isFinalSpray ? 1280 : 384,
+  const expectedRows = Math.ceil(animation.frames / animation.columns);
+  assert.equal(pngHeader.readUInt32BE(0),
+    animation.columns * animation.sourceFrameWidth,
     `animation PNG width must match the committed sheet grid: ${animation.spriteSheet}`);
-  assert.equal(pngHeader.readUInt32BE(4), isFinalSpray ? 1280 : 256,
+  assert.equal(pngHeader.readUInt32BE(4),
+    expectedRows * animation.sourceFrameHeight,
     `animation PNG height must match the committed sheet grid: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
