@@ -52,6 +52,12 @@ test('protected wiki and game HTML, API, workflow and build files force full che
   assert.equal(classifyFile(f('my-moonboy.html', '<h1>a</h1>', '<h1>b</h1>')), false);
   assert.equal(classifyFile(f('how-to-play-crypto-moonboy-pets.html', '<h1>a</h1>', '<h1>b</h1>')), false);
   assert.equal(classifyFile(f('about.html', '<h1>a</h1>', '<h1>b</h1>')), false);
+  assert.equal(classifyFile(f('how-to-play.html', '<h1>Score and XP are different</h1>', '<h1>Score and XP are identical</h1>')), false);
+  assert.equal(classifyFile(f('community.html', '<title>Original</title>', '<title><img src="/art/banner.jpg" alt="</title><script>alert(1)</script><title>"></title>')), false);
+  const scriptA = '<script>\n<!--<script>\n// </script><p>\nglobalThis.result = 1;\n// </p><script>\n// -->\n</script>';
+  const scriptB = scriptA.replace('result = 1', 'result = 2');
+  assert.equal(classifyFile(f('community.html', scriptA, scriptB)), false);
+
   assert.equal(classifyFile(f('css/wiki.css', 'a{}', 'a{}', { status: 'D' })), false);
   assert.equal(classifyFile(f('art/a.png', null, null, {newBytes:9*1024*1024})), false);
   assert.equal(classifyFile(f('community.html', '<p>a</p>', '<p>b</p>', {changedLines:200})), false);
