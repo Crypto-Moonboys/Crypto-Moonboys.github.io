@@ -767,14 +767,14 @@
         if (!gameOver) resetToCheckpoint();
       }
 
-      if (player.invuln > 0) {
-        backflipActive = false;
-        setPlayerAnimation('hurt');
-      } else if (sprayTimer > 0) {
-        // An explicit attack may interrupt the visual flip; it must never
-        // restart later in the same jump.
+      if (sprayTimer > 0) {
+        // Preserve the existing attack-animation priority. An explicit attack
+        // interrupts the visual flip and must not restart later in the jump.
         backflipActive = false;
         setPlayerAnimation('spray');
+      } else if (player.invuln > 0) {
+        backflipActive = false;
+        setPlayerAnimation('hurt');
       } else if (backflipActive && !player.grounded) {
         setPlayerAnimation('backflip');
       } else if (!player.grounded) {
