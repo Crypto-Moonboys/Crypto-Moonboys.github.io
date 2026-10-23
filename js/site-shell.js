@@ -19,7 +19,6 @@ window.__HUD_CONSOLIDATED__ = true;
   let siteStatsPromise = null;
 
   const links = [
-    { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
     { label: 'WIKI', href: '/search.html', icon: '◫', title: 'Wiki' },
     { label: 'GAMES', href: '/games/', icon: '◆', title: 'Games' },
     { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy — public start and personal account' },
