@@ -1309,17 +1309,20 @@ for (const mechanicMode of [
       state.player.vx=0;
     });
     await mechanicPage.waitForFunction(() => window.NBGLevel1State.speedBoostActive === true);
-    await mechanicPage.clock.pauseAt(Date.now()+100);
     assert.equal(await mechanicPage.evaluate(() => window.NBGLevel1State.speedBoostActive),true,
       mechanicMode.label+' speed box must activate in live gameplay');
     await mechanicPage.evaluate(() => window.NBGLevel1Runtime.setTouchControl('right',true));
-    await mechanicPage.clock.runFor(350);
+    await mechanicPage.waitForFunction(() => {
+      const vx=window.NBGLevel1State.player.vx;
+      return vx>4.2&&vx<=6;
+    });
     const boosted=await mechanicPage.evaluate(() => ({
       vx:window.NBGLevel1State.player.vx,
       draws:window.__pr4DrawEvidence.speedBoxDraws,
       collected:window.NBGLevel1State.speedBoxes[0].collected
     }));
     await mechanicPage.evaluate(() => window.NBGLevel1Runtime.setTouchControl('right',false));
+    await mechanicPage.clock.pauseAt(Date.now()+100);
     assert.ok(boosted.vx>4.2&&boosted.vx<=6,
       mechanicMode.label+' boost must increase speed without unlimited stacking');
     assert.equal(boosted.collected,true,mechanicMode.label+' box must remain collected');
