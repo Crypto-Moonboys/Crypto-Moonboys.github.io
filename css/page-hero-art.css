@@ -3,6 +3,7 @@
   display: block;
   width: 100%;
   max-width: none;
+  aspect-ratio: 16 / 9;
   height: auto;
   margin: 0 0 1.25rem;
   padding: 0;
