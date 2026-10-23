@@ -35,7 +35,16 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node scripts/fast-edit-scope.mjs
+        shell: bash
+        run: |
+          # Trust the protected base revision, never a contributor-modified PR file.
+          if git cat-file -e "$BASE_SHA:scripts/fast-edit-scope.mjs" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/fast-edit-scope.mjs" > "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"
+            node "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"
+          else
+            echo "fast_edit=false" >> "$GITHUB_OUTPUT"
+            echo "No trusted classifier in base: performing complete deployment audit."
+          fi
 
       - name: Fast Edit acknowledged
         if: steps.fast_edit.outputs.fast_edit == 'true'
@@ -90,7 +99,16 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node scripts/fast-edit-scope.mjs
+        shell: bash
+        run: |
+          # Trust the protected base revision, never a contributor-modified PR file.
+          if git cat-file -e "$BASE_SHA:scripts/fast-edit-scope.mjs" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/fast-edit-scope.mjs" > "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"
+            node "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"
+          else
+            echo "fast_edit=false" >> "$GITHUB_OUTPUT"
+            echo "No trusted classifier in base: performing complete deployment audit."
+          fi
 
       - name: Fast Edit acknowledged
         if: steps.fast_edit.outputs.fast_edit == 'true'
