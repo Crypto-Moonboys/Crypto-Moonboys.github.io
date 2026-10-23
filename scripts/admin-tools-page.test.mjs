@@ -43,7 +43,7 @@ test('grants remain hidden until verified API admin access and use signed Telegr
   assert.doesNotMatch(html, /5,000 XP|5000 XP/);
 });
 
-function createAdminHarness({ restoredId = '222222222', cachedId = '111111111', serverId = restoredId } = {}) {
+function createAdminHarness({ restoredId = '222222222', cachedId = '111111111', serverId = restoredId, deferGrant = false, failGrant = false } = {}) {
   const ids = [
     'access-state', 'refresh-auth-state', 'admin-panel', 'arcade-grant-form',
     'admin-telegram-username', 'admin-telegram-id', 'arcade-target-telegram-id',
@@ -66,7 +66,20 @@ function createAdminHarness({ restoredId = '222222222', cachedId = '111111111', 
       addEventListener(event, handler) { this.handlers[event] = handler; },
     }];
   }));
+  for (const formId of ['arcade-grant-form', 'bt-grant-form']) {
+    const form = nodes.get(formId);
+    form.submitButton = { disabled: false };
+    form.attributes = {};
+    form.querySelector = (selector) => selector === 'button[type="submit"]' ? form.submitButton : null;
+    form.setAttribute = (name, value) => { form.attributes[name] = value; };
+    form.getAttribute = (name) => form.attributes[name] ?? null;
+  }
   const grantRequests = [];
+  let releaseGrant;
+  let rejectGrant;
+  const pendingGrant = deferGrant
+    ? new Promise((resolve, reject) => { releaseGrant = resolve; rejectGrant = reject; })
+    : null;
   let currentId = restoredId;
   const document = {
     readyState: 'complete',
@@ -92,6 +105,8 @@ function createAdminHarness({ restoredId = '222222222', cachedId = '111111111', 
       return { ok: true, status: 200, json: async () => ({ admin_allowlisted: true, telegram_id: serverId }) };
     }
     grantRequests.push({ url: _url, body });
+    if (pendingGrant) await pendingGrant;
+    if (failGrant) throw new Error('network');
     return { ok: true, status: 200, json: async () => ({ ok: true }) };
   }
   runInNewContext(script, { window, document, fetch });
@@ -99,6 +114,8 @@ function createAdminHarness({ restoredId = '222222222', cachedId = '111111111', 
     nodes,
     grantRequests,
     setRestoredId(id) { currentId = id; },
+    releaseGrant() { if (releaseGrant) releaseGrant(); },
+    rejectGrant() { if (rejectGrant) rejectGrant(new Error('network')); },
     async flush() {
       await new Promise((resolve) => setImmediate(resolve));
     },
@@ -139,3 +156,49 @@ test('mismatched verified server response never unlocks grants', async () => {
   assert.equal(app.nodes.get('arcade-target-telegram-id').value, '');
   assert.equal(app.nodes.get('bt-target-telegram-id').value, '');
 });
+
+for (const grant of [
+  { formId: 'arcade-grant-form', xpId: 'arcade-grant-xp', reasonId: 'arcade-grant-reason', route: '/admin/arcade/grant-xp' },
+  { formId: 'bt-grant-form', xpId: 'bt-grant-xp', reasonId: 'bt-grant-reason', route: '/admin/blocktopia/grant-xp' },
+]) {
+  test(grant.formId + ' ignores repeated submissions during authentication and network grant', async () => {
+    const app = createAdminHarness({ deferGrant: true });
+    await app.flush();
+    app.nodes.get(grant.xpId).value = '25';
+    app.nodes.get(grant.reasonId).value = 'admin regression check';
+    const form = app.nodes.get(grant.formId);
+    const submit = () => form.handlers.submit({ preventDefault() {} });
+
+    const initial = submit();
+    assert.equal(form.submitButton.disabled, true, 'submit button must disable immediately');
+    assert.equal(form.getAttribute('aria-busy'), 'true');
+    const repeatedDuringAuth = submit();
+    await app.flush();
+    const repeatedDuringNetwork = submit();
+    assert.equal(app.grantRequests.length, 1, 'only one grant call is allowed while pending');
+    assert.ok(app.grantRequests[0].url.endsWith(grant.route));
+    assert.equal(app.grantRequests[0].body.xp, 25);
+    app.releaseGrant();
+    await Promise.all([initial, repeatedDuringAuth, repeatedDuringNetwork]);
+    assert.equal(form.submitButton.disabled, false, 'submit button must re-enable on completion');
+    assert.equal(form.getAttribute('aria-busy'), 'false');
+    assert.equal(app.grantRequests.length, 1, 'duplicate grant was never sent');
+  });
+
+  test(grant.formId + ' unlocks on network failure and warns against blind retries', async () => {
+    const app = createAdminHarness({ deferGrant: true, failGrant: true });
+    await app.flush();
+    app.nodes.get(grant.xpId).value = '25';
+    app.nodes.get(grant.reasonId).value = 'admin regression check';
+    const form = app.nodes.get(grant.formId);
+    const call = form.handlers.submit({ preventDefault() {} });
+    await app.flush();
+    assert.equal(form.submitButton.disabled, true);
+    app.releaseGrant();
+    await call;
+    assert.equal(form.submitButton.disabled, false);
+    assert.equal(form.getAttribute('aria-busy'), 'false');
+    const status = app.nodes.get(grant.formId === 'arcade-grant-form' ? 'arcade-result-state' : 'bt-result-state');
+    assert.match(status.textContent, /result unknown.*check current progression before retrying/i);
+  });
+}
