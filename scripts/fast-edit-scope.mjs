@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const IMAGE = /^(?:art|assets|img)\/[^/]+\.(?:png|jpe?g|webp|gif|avif)$/i;
 const CSS = /^css\/[a-z0-9_-]+\.css$/i;
 const RISKY_CSS = /^css\/(?:avatar-builder-test|battle-layer|faction-chamber|faction-operations|game-fullscreen|moonpet-mini-app|my-moonboy|wiki-runtime-migration)\.css$/i;
-const RISKY_PAGE = /^(?:moonpet-game|my-moonboy|how-to-play-crypto-moonboy-pets|admin-tools|avatar-builder-test|crypto-moonboy-pets-leaderboard|about|hubs|sam|graffiti-kings-creative-guide)\.html$/i;
+const RISKY_PAGE = /^(?:moonpet-game|my-moonboy|how-to-play|how-to-play-crypto-moonboy-pets|admin-tools|avatar-builder-test|crypto-moonboy-pets-leaderboard|about|hubs|sam|graffiti-kings-creative-guide)\.html$/i;
 const PAGE = /^[a-z0-9][a-z0-9-]*\.html$/i;
 const IMAGE_SRC = /^\/(?:art|assets|img)\/[a-z0-9%_./-]+\.(?:png|jpe?g|webp|gif|avif)(?:\?[a-z0-9%=&_-]+)?$/i;
 const IMAGE_ATTRS = new Set(['src', 'alt', 'class', 'width', 'height', 'loading', 'decoding', 'fetchpriority']);
@@ -30,10 +30,13 @@ function inertImage(tag) {
 
 // Tokenize actual HTML syntax, not tag-shaped strings inside attributes.
 // Any ambiguous/malformed markup falls back to full CI.
-const COPY_ELEMENTS = new Set(['h1','h2','h3','h4','h5','h6','p','span','strong','em','small','li','figcaption','title','label']);
+const COPY_ELEMENTS = new Set(['h1','h2','h3','h4','h5','h6','p','span','strong','em','small','li','figcaption','label']);
 const VOID_ELEMENTS = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
-const RAW_ELEMENTS = new Set(['script','style','template','textarea','svg','iframe','object','noscript']);
+const RAW_ELEMENTS = new Set(['script','style','template','textarea','svg','iframe','object','noscript','title']);
 function staticStructure(source) {
+  // Special script parser states can make literal close-tag matching unsafe.
+  // Reject such pages rather than risk normalizing executable content.
+  if (/<script\\b[\\s\\S]*?<!--[\\s\\S]*?<script\\b/i.test(source)) return null;
   let output = '', offset = 0;
   const stack = [];
   while (offset < source.length) {
