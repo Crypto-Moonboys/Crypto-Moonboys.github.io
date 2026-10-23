@@ -207,6 +207,63 @@ const signedProof = { id: '123456789', auth_date: Math.floor(Date.now() / 1000),
     'a genuinely unlinked player must remain blocked');
 }
 {
+  // Regression: real identity-gate exposes both helpers. A guest must not
+  // trigger the legacy /telegram/user/status restore after fresh auth returns null.
+  let freshCount = 0;
+  let legacyRestoreCount = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return false; },
+    isWebsiteSession() { return false; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { freshCount++; return null; },
+    async restoreLinkedTelegramAuth() {
+      legacyRestoreCount++;
+      return new Promise(() => {}); // would hang the entry gate if called
+    },
+  };
+  const result = await gateHelpers.checkBlockTopiaGateIdentity(identity);
+  assert.equal(result.status, 'not_linked');
+  assert.equal(freshCount, 1, 'shared identity getter checks once for a recoverable website session');
+  assert.equal(legacyRestoreCount, 0, 'unlinked guest must not trigger the hanging legacy fallback');
+}
+{
+  // A failed renewal on an existing website session must not make an
+  // unrelated legacy request before showing the verification recovery gate.
+  let legacyRestoreCount = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return false; },
+    isWebsiteSession() { return true; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { return null; },
+    async restoreLinkedTelegramAuth() {
+      legacyRestoreCount++;
+      return new Promise(() => {});
+    },
+  };
+  assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'auth_unavailable');
+  assert.equal(legacyRestoreCount, 0);
+}
+{
+  // Older identity helpers can still restore an already linked account, but
+  // must never request legacy restore for a guest without current session.
+  let legacyRestoreCount = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return true; },
+    getSignedTelegramAuth() { return null; },
+    async restoreLinkedTelegramAuth() {
+      legacyRestoreCount++;
+      return { ok: true, telegram_auth: signedProof };
+    },
+  };
+  const result = await gateHelpers.checkBlockTopiaGateIdentity(identity);
+  assert.equal(result.status, 'verified');
+  assert.deepEqual(result.telegramAuth, signedProof);
+  assert.equal(legacyRestoreCount, 1);
+}
+{
   const identity = {
     ready: Promise.resolve(),
     isTelegramLinked() { return true; },
