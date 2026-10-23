@@ -45,8 +45,6 @@ jobs:
           else
             echo "No protected base classifier: this bootstrap PR must run full CI."
           fi
-          # Candidate changes are also tested, but cannot grant fast-path eligibility.
-          node --test scripts/fast-edit-scope.test.mjs
       - name: Classify change scope using protected base
         id: detect
         env:
@@ -144,6 +142,10 @@ jobs:
           HEAD_SHA: ${{ github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
+
+      - name: Validate candidate Fast Edit classifier outside gate runner
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'pull_request'
+        run: node --test scripts/fast-edit-scope.test.mjs
 
   ci-worker-api:
     needs: [fast-edit]
