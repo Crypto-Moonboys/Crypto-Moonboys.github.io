@@ -41,7 +41,7 @@ function staticStructure(source) {
 
 export function classifyFile(file) {
   const { path: filename, status, before, after, newBytes, changedLines } = file;
-  if (!/^[\w./% -]+$/.test(filename) || filename.includes('..') || filename.startsWith('/') || !['A', 'M'].includes(status)) return false;
+  if (/[\0\r\n\\]/.test(filename) || filename.split('/').includes('..') || filename.startsWith('/') || !['A', 'M'].includes(status)) return false;
   if (IMAGE.test(filename)) return newBytes > 0 && newBytes <= MAX_IMAGE_BYTES;
   if (CSS.test(filename)) return typeof after === 'string' && newBytes <= MAX_TEXT_BYTES;
   if (!PAGE.test(filename) || status !== 'M' || changedLines > 160 || newBytes > MAX_TEXT_BYTES || typeof before !== 'string' || typeof after !== 'string') return false;
