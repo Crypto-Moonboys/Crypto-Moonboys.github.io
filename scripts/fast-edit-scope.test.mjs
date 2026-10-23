@@ -34,6 +34,9 @@ test('any executable/structural/unsafe change forces normal CI', () => {
   assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background:url(//remote.invalid/a.jpg)}')), false);
   assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background:url(data:image/svg+xml;base64,aaaa)}')), false);
   assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background:url("https://remote.invalid/a.jpg")}')), false);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background-image:image-set("//remote.invalid/a.jpg" 1x)}')), false);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background-image:-webkit-image-set("https://remote.invalid/a.jpg" 2x)}')), false);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background-image:image-set("/art/local.jpg" 1x)}')), false, 'unparsed image-set CSS fails closed');
 });
 
 test('protected wiki and game HTML, API, workflow and build files force full checks', () => {
