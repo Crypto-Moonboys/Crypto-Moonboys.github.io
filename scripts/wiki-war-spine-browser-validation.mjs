@@ -122,10 +122,10 @@ try {
   for (const [query, slug] of searchSubjects) {
     await searchPage.goto(`${origin}/search.html?q=${encodeURIComponent(query)}`, { waitUntil: 'networkidle' });
     await searchPage.locator(`#search-results-page a[href="/wiki/${slug}.html"]`).waitFor();
-    const input = searchPage.locator('#search-input');
+    const input = searchPage.locator('#search-page-input');
     await input.fill('');
     await input.fill(query);
-    await searchPage.locator(`#search-results a[href="/wiki/${slug}.html"]`).waitFor();
+    await searchPage.locator(`#search-results-page a[href="/wiki/${slug}.html"]`).waitFor();
     const result = await searchPage.evaluate(q => {
       const tokens = tokenizeSearchQuery(q).filter(token => token.length >= 3 && !SEARCH_TEXT_STOP_WORDS.has(token));
       return { count: tokens.length, rows: selectSearchMatches(q, { allowPartialFallback: true, limit: 5 }).scored.map(row => ({ url: row.item.url, matched: row.meaningfulMatchedTokenCount })) };
@@ -133,7 +133,7 @@ try {
     assert.equal(result.rows.find(row => row.url === `/wiki/${slug}.html`)?.matched, result.count, `${query}: all meaningful words match in the browser`);
   }
   await searchPage.close();
-  await fs.writeFile(path.join(output, 'search-report.json'), `${JSON.stringify({ browser: browser.version(), queries: searchSubjects.length, fullSearch: true, autocomplete: true }, null, 2)}\n`);
+  await fs.writeFile(path.join(output, 'search-report.json'), `${JSON.stringify({ browser: browser.version(), queries: searchSubjects.length, fullSearch: true, searchPageInput: true, autocomplete: false }, null, 2)}\n`);
   if (!searchOnly) await fs.writeFile(path.join(output, 'report.json'), `${JSON.stringify({ browser: browser.version(), pages: report, noJavaScriptPages: slugs.length }, null, 2)}\n`);
   console.log(JSON.stringify({ browser: browser.version(), viewports: report.length, contentsTargets: report.reduce((n, row) => n + row.targets, 0), noJavaScriptPages: searchOnly ? 0 : slugs.length, searchQueries: searchSubjects.length, output }));
 } finally {
