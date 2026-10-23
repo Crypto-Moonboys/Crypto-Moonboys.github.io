@@ -18,6 +18,20 @@ const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x &&
   a.y < b.y + b.h && a.y + a.h > b.y;
 export const NBG_REPLAY_VERSION = 1;
 
+export function isNbgSweptStomp(
+  player, descentVelocity, previousFeet, currentFeet, target
+) {
+  const feet = {
+    x:player.x+2,
+    y:Math.min(previousFeet,currentFeet)-5,
+    w:player.w-4,
+    h:Math.abs(currentFeet-previousFeet)+8,
+  };
+  const activeDescent=player.vy===0 ? descentVelocity : player.vy;
+  return activeDescent>1.5 && previousFeet<=target.y+5 &&
+    currentFeet>=target.y && overlap(feet,target);
+}
+
 function levelData(courseVersion = 1) {
   const platforms = [
     { x: 360, y: 178, w: 150, h: 16 },
@@ -139,6 +153,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   let parachuteRats=[];
   let nextParachuteAt=6000;
   let previousPlayerY=p.y;
+  let previousPlayerVy=p.vy;
   const playerCombatRect = () => ({x:p.x-8,y:p.y-30,w:p.w+16,h:p.h+30});
   const enemyCombatRect = target => {
     const bob=target.bob||0;
@@ -169,9 +184,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const body=enemyCombatRect(target);
     const previousFeet=previousPlayerY+p.h;
     const currentFeet=p.y+p.h;
-    const feet={x:p.x+2,y:currentFeet-5,w:p.w-4,h:8};
-    return p.vy>1.5 && previousFeet<=body.y+5 && currentFeet>=body.y &&
-      currentFeet<=body.y+body.h*0.58 && overlap(feet,body);
+    return isNbgSweptStomp(
+      p,previousPlayerVy,previousFeet,currentFeet,body
+    );
   };
   const defeat = (enemy,stomp) => {
     enemy.defeated=true;
@@ -241,6 +256,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const previousY=p.y;
     previousPlayerY=previousY;
     p.vy+=0.52*step;
+    previousPlayerVy=p.vy;
     p.y+=p.vy*step;
     p.grounded=false;
     for(const tile of solids) {
@@ -252,7 +268,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(p.y>350) {
       invulnerableDamage(p.x);
       if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
-      p.x=checkpointX;p.y=FLOOR-p.h;previousPlayerY=p.y;p.vx=0;p.vy=0;
+      p.x=checkpointX;p.y=FLOOR-p.h;previousPlayerY=p.y;previousPlayerVy=0;
+      p.vx=0;p.vy=0;
       jumps=0;p.invuln=1050;sprayTimer=0;
     }
     for(const coin of level.coins) {

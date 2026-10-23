@@ -320,6 +320,7 @@
       invuln: 0
     };
     var previousPlayerY = player.y;
+    var previousPlayerVy = player.vy;
 
     function resolveAnimationName(name) {
       var stateMap = {
@@ -503,6 +504,7 @@
       player.x = checkpointX;
       player.y = FLOOR_Y - player.h;
       previousPlayerY = player.y;
+      previousPlayerVy = 0;
       player.vx = 0;
       player.vy = 0;
       jumpsUsed = 0;
@@ -752,6 +754,7 @@
       var previousY = player.y;
       previousPlayerY = previousY;
       player.vy += GRAVITY * step;
+      previousPlayerVy = player.vy;
       player.y += player.vy * step;
       resolveVerticalCollision(previousY);
 
@@ -869,11 +872,15 @@
       var targetRect = getEnemyCombatRect(target);
       var previousFeet = previousPlayerY + player.h;
       var currentFeet = player.y + player.h;
-      var footRect = { x: player.x + 2, y: currentFeet - 5, w: player.w - 4, h: 8 };
-      return player.vy > 1.5 &&
+      var footRect = {
+        x: player.x + 2,
+        y: Math.min(previousFeet, currentFeet) - 5,
+        w: player.w - 4,
+        h: Math.abs(currentFeet - previousFeet) + 8
+      };
+      return (player.vy > 1.5 || (player.vy === 0 && previousPlayerVy > 1.5)) &&
         previousFeet <= targetRect.y + 5 &&
         currentFeet >= targetRect.y &&
-        currentFeet <= targetRect.y + targetRect.h * 0.58 &&
         rectsOverlap(footRect, targetRect);
     }
 
@@ -1739,6 +1746,7 @@
       player.h = 34;
       player.y = FLOOR_Y - player.h;
       previousPlayerY = player.y;
+      previousPlayerVy = 0;
       player.vx = 0;
       player.vy = 0;
       player.facing = 1;

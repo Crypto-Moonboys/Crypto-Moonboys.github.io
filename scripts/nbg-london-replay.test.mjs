@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
-import { verifyNbgLondonReplay, NBG_REPLAY_VERSION } from '../workers/leaderboard/nbg-london-replay.js';
+import {
+  verifyNbgLondonReplay,
+  NBG_REPLAY_VERSION,
+  isNbgSweptStomp,
+} from '../workers/leaderboard/nbg-london-replay.js';
 
 function frameStream(frames) {
   const bytes = [];
@@ -12,6 +16,14 @@ function frameStream(frames) {
 }
 const id = '00000000-0000-4000-8000-000000000001';
 const base = { runId:id, startedAtMs:1000000, now:1100000 };
+
+const sweptStompTarget = { x:500, y:172, w:28, h:42 };
+assert.equal(isNbgSweptStomp(
+  { x:500, w:32, vy:0 }, 70, 168, 214, sweptStompTarget
+), true, 'v3 replay combat must accept a stomp that crosses the full enemy in one tick');
+assert.equal(isNbgSweptStomp(
+  { x:540, w:32, vy:0 }, 70, 168, 214, sweptStompTarget
+), false, 'a swept descent outside the enemy width must not become a stomp');
 
 // Fabricated physics time cannot exceed recorded real time, including at
 // the 1ms/2.5ms edge that previously allowed accelerated scores.

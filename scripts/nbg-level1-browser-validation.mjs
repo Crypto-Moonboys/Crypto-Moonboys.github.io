@@ -2161,6 +2161,27 @@ await page.waitForFunction(() => window.__pr1Target.defeated === true, null, { t
 assert.ok(await page.evaluate(() => window.NBGLevel1State.player.vy < 0),
   'valid stomp must defeat the enemy and apply the existing bounce');
 
+// A dropped frame may carry the feet past the enemy's entire upper body. The
+// swept foot segment must still preserve the top-down stomp instead of turning
+// it into contact damage.
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const target = window.__pr1Target;
+  target.defeated = false;
+  target.x = 500;
+  target.y = 214 - target.h;
+  target.vx = 0.001;
+  state.player.x = 500;
+  state.player.y = state.enemyCombatRect(target).y - state.player.h - 4;
+  state.player.vx = 0;
+  state.player.vy = 70;
+  state.player.grounded = false;
+  state.player.invuln = 5000;
+});
+await page.waitForFunction(() => window.__pr1Target.defeated === true, null, { timeout: 1200 });
+assert.ok(await page.evaluate(() => window.NBGLevel1State.player.vy < 0),
+  'a one-tick descent through the enemy must still defeat it and bounce');
+
 // Harmful contact and an active rat strike both use sprite-aligned hitboxes.
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 await page.keyboard.down('KeyD');
