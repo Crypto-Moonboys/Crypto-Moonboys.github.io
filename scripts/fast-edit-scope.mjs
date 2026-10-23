@@ -30,7 +30,7 @@ function staticStructure(source) {
   const protectedRe = /<(script|style|template|textarea|svg|iframe|object|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?-->/gi;
   const protectedBytes = [...source.matchAll(protectedRe)].map(m => m[0]);
   let structure = source.replace(protectedRe, '<!--KEEP-->');
-  structure = structure.replace(/<img\b[^<>]*\/?>/gi, tag => inertImage(tag) ? '<!--STATIC-IMAGE-->' : tag);
+  structure = structure.replace(/<img\b[^<>]*\/?>/gi, tag => inertImage(tag) ? '' : tag);
   // Match literal text only within simple leaf elements; scripts and attributes stay byte-for-byte.
   structure = structure.replace(
     /(<(h[1-6]|p|span|strong|em|small|li|figcaption|title|label)\b[^<>]*>)([^<>]*)(<\/\2\s*>)/gi,
