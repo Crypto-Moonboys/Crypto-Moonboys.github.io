@@ -243,11 +243,12 @@
       if (checkSequenceAtSubmit !== accessCheckSequence ||
           !verifiedAdminAtSubmit || !telegramAuth ||
           String(telegramAuth.id || '') !== verifiedAdminAtSubmit) {
+        ++accessCheckSequence;
         hidePanel();
         setState(accessState, 'Admin account changed. Refresh authentication before granting XP.', 'bad');
         return;
       }
- 
+
       var body = {
         telegram_auth: telegramAuth,
         telegram_id: targetTelegramId,
@@ -305,11 +306,12 @@
       if (checkSequenceAtSubmit !== accessCheckSequence ||
           !verifiedAdminAtSubmit || !telegramAuth ||
           String(telegramAuth.id || '') !== verifiedAdminAtSubmit) {
+        ++accessCheckSequence;
         hidePanel();
         setState(accessState, 'Admin account changed. Refresh authentication before granting XP.', 'bad');
         return;
       }
- 
+
       var body = {
         telegram_auth: telegramAuth,
         telegram_id: targetTelegramId,
