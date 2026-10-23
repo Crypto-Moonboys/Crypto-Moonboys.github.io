@@ -2,7 +2,7 @@
 
 ## Evidence
 
-Production VPS on 2026-10-23 returned HTTP 200 at localhost:2567/health and the patched proxy-addr 2.0.8 after restart. PM2 remained online. Logs contained `MODULE_TYPELESS_PACKAGE_JSON` for `shared/block-topia/constants.js`, plus CORS denials for `https://game.cryptomoonboys.com` and `https://space.cryptomoonboys.com`. Log timestamps did not establish whether the CORS entries occurred before or after the deployment.
+Production VPS on 2026-10-23 returned HTTP 200 at localhost:2567/health and the patched proxy-addr 2.0.8 after restart. PM2 remained online. Logs contained `MODULE_TYPELESS_PACKAGE_JSON` for `shared/block-topia/constants.js`, plus CORS denials for `https://game.cryptomoonboys.com` and a retired `space.` subdomain of the Crypto Moonboys domain. Log timestamps did not establish whether the CORS entries occurred before or after the deployment.
 
 ## Node module warning
 

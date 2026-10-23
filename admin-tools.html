@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moonboys · Admin Tools</title>
   <meta name="robots" content="noindex,nofollow" />
+  <link rel="stylesheet" href="/css/wiki.css">
   <style>
     :root {
       --bg: #0a0f19;
@@ -19,15 +20,15 @@
     }
     * { box-sizing: border-box; }
     .admin-page {
-      min-height: 100vh;
+      min-height: 66vh;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: var(--text);
       background: radial-gradient(circle at 20% -10%, #1d3357 0%, var(--bg) 50%), var(--bg);
       display: grid;
-      place-items: center;
-      padding: 24px;
+      place-items: start center;
+      padding: clamp(16px, 3vw, 32px);
     }
-    .shell {
+    .admin-page .shell {
       width: min(860px, 100%);
       border: 1px solid var(--line);
       background: var(--glass);
@@ -36,9 +37,9 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
       padding: 20px;
     }
-    .title { margin: 0; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; }
-    .sub { margin: 8px 0 0; color: var(--muted); font-size: .92rem; }
-    .state {
+    .admin-page .title { margin: 0; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; }
+    .admin-page .sub { margin: 8px 0 0; color: var(--muted); font-size: .92rem; }
+    .admin-page .state {
       margin: 16px 0;
       padding: 10px 12px;
       border: 1px solid var(--line);
@@ -47,13 +48,13 @@
       font-size: .9rem;
       background: rgba(0,0,0,.15);
     }
-    .state--good { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); color: var(--good); }
-    .state--warn { border-color: color-mix(in srgb, var(--warn) 42%, var(--line)); color: var(--warn); }
-    .state--bad { border-color: color-mix(in srgb, var(--bad) 42%, var(--line)); color: var(--bad); }
-    form { display: grid; gap: 12px; }
-    .grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    label { display: grid; gap: 6px; font-size: .84rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-    input, textarea, button {
+    .admin-page .state--good { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); color: var(--good); }
+    .admin-page .state--warn { border-color: color-mix(in srgb, var(--warn) 42%, var(--line)); color: var(--warn); }
+    .admin-page .state--bad { border-color: color-mix(in srgb, var(--bad) 42%, var(--line)); color: var(--bad); }
+    .admin-page form { display: grid; gap: 12px; }
+    .admin-page .grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .admin-page label { display: grid; gap: 6px; font-size: .84rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .admin-page input, .admin-page textarea, .admin-page button {
       border: 1px solid var(--line);
       border-radius: 10px;
       background: rgba(9,15,26,.82);
@@ -61,12 +62,12 @@
       padding: 10px 12px;
       font: inherit;
     }
-    textarea { min-height: 84px; resize: vertical; }
-    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
-    button { cursor: pointer; }
-    .ghost { color: var(--accent); border-color: rgba(126,197,255,.32); }
-    .primary { border-color: rgba(93,242,165,.5); color: var(--good); font-weight: 600; }
-    pre {
+    .admin-page textarea { min-height: 84px; resize: vertical; }
+    .admin-page .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .admin-page button { cursor: pointer; }
+    .admin-page .ghost { color: var(--accent); border-color: rgba(126,197,255,.32); }
+    .admin-page .primary { border-color: rgba(93,242,165,.5); color: var(--good); font-weight: 600; }
+    .admin-page pre {
       margin: 0;
       font-size: .83rem;
       background: rgba(0,0,0,.3);
@@ -76,12 +77,83 @@
       overflow: auto;
       max-height: 220px;
     }
-    .hidden { display: none; }
+    #admin-panel.hidden { display: none; }
+    .admin-page .shell > section { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 18px; }
+    .admin-page h2 { margin: 0 0 8px; font-size: 1.02rem; }
+    .admin-page a { color: var(--accent); }
+    .admin-page button:focus-visible, .admin-page input:focus-visible, .admin-page textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .admin-page .grid { margin: 10px 0; }
+    .admin-page .actions { margin: 8px 0; }
+    .admin-page .sub { line-height: 1.5; }
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-admin page-standard-shell">
-<main id="content" role="main"><div class="admin-page"></div></main>
+<main id="content" role="main">
+  <div class="admin-page">
+    <div class="shell">
+      <header>
+        <p class="sub">SYSTEM HUB / RESTRICTED ADMINISTRATION</p>
+        <h1 class="title">Moonboys Admin Tools</h1>
+        <p class="sub">Administrative XP grants require a linked, signed and allowlisted Telegram account. This page does not grant access by itself.</p>
+        <p class="sub"><a href="/my-moonboy.html">My Moonboy</a> · <a href="/games/block-topia/">Block Topia</a></p>
+      </header>
+
+      <section aria-labelledby="admin-access-title">
+        <h2 id="admin-access-title">Telegram administrator verification</h2>
+        <p class="sub">Link Telegram via /gklink, then check access. The grant forms remain hidden until the API approves your identity.</p>
+        <div id="access-state" class="state state--warn" role="status" aria-live="polite">Checking Telegram administrator access…</div>
+        <div class="actions"><button type="button" class="ghost" id="refresh-auth-state">Refresh authentication</button></div>
+      </section>
+
+      <div id="admin-panel" class="hidden">
+        <section aria-labelledby="admin-identity-title">
+          <h2 id="admin-identity-title">Verified administrator</h2>
+          <div class="grid">
+            <label>Telegram username<input id="admin-telegram-username" type="text" readonly></label>
+            <label>Telegram ID<input id="admin-telegram-id" type="text" readonly></label>
+          </div>
+        </section>
+
+        <section aria-labelledby="arcade-grant-title">
+          <h2 id="arcade-grant-title">Arcade XP grant</h2>
+          <p class="sub">Arcade XP counts towards the Block Topia multiplayer entry requirement (the current threshold is provided by the game's progression system). Grants change real progression records and are audited; use a designated test account where possible.</p>
+          <form id="arcade-grant-form">
+            <div class="grid">
+              <label>Recipient Telegram ID<input id="arcade-target-telegram-id" type="text" inputmode="numeric" pattern="[0-9]{5,20}" required></label>
+              <label>Arcade XP to add<input id="arcade-grant-xp" type="number" min="1" step="1" required></label>
+            </div>
+            <label>Reason for grant<textarea id="arcade-grant-reason" placeholder="Testing or documented administrative adjustment" required></textarea></label>
+            <div class="actions">
+              <button type="button" class="ghost" data-fill="arcade-me">Use my Telegram ID</button>
+              <button type="submit" class="primary">Grant Arcade XP</button>
+            </div>
+          </form>
+          <div id="arcade-result-state" class="state" role="status" aria-live="polite">No Arcade XP grant submitted.</div>
+          <pre id="arcade-result-json" aria-label="Arcade grant API response">{}</pre>
+        </section>
+
+        <section aria-labelledby="bt-grant-title">
+          <h2 id="bt-grant-title">Block Topia XP grant</h2>
+          <p class="sub">Block Topia XP is in-game progression only. It does not satisfy the separate Arcade XP multiplayer entry requirement.</p>
+          <form id="bt-grant-form">
+            <div class="grid">
+              <label>Recipient Telegram ID<input id="bt-target-telegram-id" type="text" inputmode="numeric" pattern="[0-9]{5,20}" required></label>
+              <label>Block Topia XP to add<input id="bt-grant-xp" type="number" min="1" step="1" required></label>
+            </div>
+            <label>Reason for grant<textarea id="bt-grant-reason" placeholder="Testing or documented administrative adjustment" required></textarea></label>
+            <div class="actions">
+              <button type="button" class="ghost" data-fill="bt-me">Use my Telegram ID</button>
+              <button type="submit" class="primary">Grant Block Topia XP</button>
+            </div>
+          </form>
+          <div id="bt-result-state" class="state" role="status" aria-live="polite">No Block Topia XP grant submitted.</div>
+          <pre id="bt-result-json" aria-label="Block Topia grant API response">{}</pre>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
 <!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
