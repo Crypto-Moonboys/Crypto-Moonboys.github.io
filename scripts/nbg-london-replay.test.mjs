@@ -215,9 +215,10 @@ for (const approach of [60,80,100,120,140,160,180]) {
   const count=inspected.debug.consumedFrames;
   const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:5};
   const verified=await verifyNbgLondonReplay({
-    runId:id, replay, startedAtMs:1000000, now:1000000+count*33
+    runId:id, replay, startedAtMs:1000000, now:1000000+count*33,
+    debug:true
   });
-  if(verified.valid){updatedCourse={replay,count,result:verified,debug:inspected.debug};break;}
+  if(verified.valid){updatedCourse={replay,count,result:verified,debug:verified.debug};break;}
 }
 assert.ok(updatedCourse, 'updated course must remain physically finishable and server-verifiable: '+
   JSON.stringify(revision5Diagnostics));
