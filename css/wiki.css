@@ -4536,7 +4536,9 @@ body.page-wiki .comments-top-contributors--opt-in .top-contributor-row--empty {
 body.page-wiki[data-entity-hash="a4b462cb5857"] #content::before {
   content: "";
   display: block;
-  width: 100%;
+  width: calc(100% + 2 * clamp(28px, 3.5vw, 64px));
+  margin-left: calc(-1 * clamp(28px, 3.5vw, 64px));
+  margin-top: calc(-1 * clamp(30px, 3vw, 56px));
   aspect-ratio: 1672 / 941;
   background: transparent url("/art/Neon%20Crypto%20Moonboys_%20London%20After%20Dark.jpg") center / contain no-repeat;
   margin: 0 0 1.25rem;
