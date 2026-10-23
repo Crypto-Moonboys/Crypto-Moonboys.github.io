@@ -4531,3 +4531,16 @@ body.page-wiki .comments-top-contributors--opt-in[open] > .top-contributor-tabs 
 body.page-wiki .comments-top-contributors--opt-in .top-contributor-row--empty {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* Main Crypto Moonboys wiki article artwork; preserve canonical article bytes. */
+body.page-wiki[data-entity-hash="a4b462cb5857"] #content::before {
+  content: "";
+  display: block;
+  width: 100%;
+  aspect-ratio: 1672 / 941;
+  background: transparent url("/art/Neon%20Crypto%20Moonboys_%20London%20After%20Dark.jpg") center / contain no-repeat;
+  margin: 0 0 1.25rem;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}

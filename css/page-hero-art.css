@@ -1,0 +1,29 @@
+/* Full-width, unframed, responsive page banners. */
+#content > .page-hero-art {
+  display:block;
+  width:100%;
+  max-width:none;
+  height:auto;
+  margin:0 0 1.25rem;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  object-fit:contain;
+}
+/* Main Crypto Moonboys article: CSS-only hero avoids changing canonical wiki HTML or its byte-locked audit. */
+body.page-wiki[data-entity-hash="a4b462cb5857"] #content::before {
+  content:"";
+  display:block;
+  width:100%;
+  aspect-ratio:1672 / 941;
+  background-image:url("/art/Neon%20Crypto%20Moonboys_%20London%20After%20Dark.jpg");
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  margin:0 0 1.25rem;
+}
