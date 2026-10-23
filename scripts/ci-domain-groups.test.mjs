@@ -97,10 +97,40 @@ assert.ok(normalGraphWiki.includes("github.event_name != 'workflow_dispatch'") &
 const ciJobsStart = workflow.indexOf('\n  ci-wiki:');
 assert.ok(ciJobsStart > 0, 'CI must retain its mandatory wiki domain job');
 const fastEditJob = workflow.slice(0, ciJobsStart);
-assert.match(fastEditJob, /run: node scripts\/fast-edit-scope\.mjs/u,
-  'Fast Edit classifier must execute in its dedicated prerequisite job');
-assert.match(fastEditJob, /run: node --test scripts\/fast-edit-scope\.test\.mjs/u,
-  'Fast Edit safety tests must execute before domain jobs');
+assert.ok(
+  fastEditJob.includes('git show "$BASE_SHA:scripts/fast-edit-scope.mjs"') &&
+  fastEditJob.includes('node "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"') &&
+  fastEditJob.includes('git show "$BASE_SHA:scripts/fast-edit-scope.test.mjs"') &&
+  fastEditJob.includes('node --test "$RUNNER_TEMP/trusted-fast-edit/fast-edit-scope.test.mjs"'),
+  'classifier and authoritative safety tests must run only from the protected base SHA',
+);
+assert.ok(
+  fastEditJob.includes('echo "fast_edit=false" >> "$GITHUB_OUTPUT"') &&
+  fastEditJob.includes('node --test scripts/fast-edit-scope.test.mjs'),
+  'bootstrap PR must fall back to full CI and validate candidate tests separately',
+);
+assert.ok(
+  fastEditJob.includes('github.event.pull_request.base.sha || github.event.before') &&
+  fastEditJob.includes('run: git diff --check "$BASE_SHA" "$HEAD_SHA"'),
+  'Fast Edit whitespace check must compare correct PR or push base/head commits',
+);
+for (const job of expectedJobs) {
+  const section = workflow.split('\n  ' + job + ':')[1]?.split(/\n  ci-[a-z-]+:|$/u)[0] || '';
+  assert.ok(section.includes('if: ${{ always() }}') &&
+    section.includes("if: needs.fast-edit.result != 'success'") &&
+    section.includes('exit 1'),
+    job + ' must fail its required context if classifier prerequisites fail');
+}
+for (const filename of [
+  '.github/workflows/worker-deployment-provenance.yml',
+  '.github/workflows/production-deployment-truth.yml',
+]) {
+  const audit = await fs.readFile(path.join(ROOT, filename), 'utf8');
+  assert.ok(audit.includes('git show "$BASE_SHA:scripts/fast-edit-scope.mjs"') &&
+    audit.includes('node "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"') &&
+    !audit.includes('run: node scripts/fast-edit-scope.mjs'),
+    filename + ' must never execute a PR-provided Fast Edit classifier');
+}
 const domainOnlyRunLines = workflow.slice(ciJobsStart)
   .split(/\r?\n/u)
   .map(line => line.trim())
