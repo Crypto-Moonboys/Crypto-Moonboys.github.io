@@ -30,6 +30,12 @@ test('protected wiki and game HTML, API, workflow and build files force full che
     assert.equal(classifyFile(f(file, '<h1>a</h1>', '<h1>b</h1>')), false, file);
   }
   assert.equal(classifyFile(f('art/a.svg', null, null)), false);
+  assert.equal(classifyFile(f('art/invaders/player.png', null, null)), false);
+  assert.equal(classifyFile(f('art/btqm/game.png', null, null)), false);
+  assert.equal(classifyFile(f('css/game-fullscreen.css', 'a{}', 'a{display:none}')), false);
+  assert.equal(classifyFile(f('css/moonpet-mini-app.css', 'a{}', 'a{display:none}')), false);
+  assert.equal(classifyFile(f('moonpet-game.html', '<h1>a</h1>', '<h1>b</h1>')), false);
+  assert.equal(classifyFile(f('about.html', '<h1>a</h1>', '<h1>b</h1>')), false);
   assert.equal(classifyFile(f('css/wiki.css', 'a{}', 'a{}', { status: 'D' })), false);
   assert.equal(classifyFile(f('art/a.png', null, null, {newBytes:9*1024*1024})), false);
   assert.equal(classifyFile(f('community.html', '<p>a</p>', '<p>b</p>', {changedLines:200})), false);
