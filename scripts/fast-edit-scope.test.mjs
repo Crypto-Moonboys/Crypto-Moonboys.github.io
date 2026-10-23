@@ -12,6 +12,7 @@ test('artwork, small CSS and harmless leaf copy changes are fast', () => {
   assert.equal(classifyFile(f('art/Swarmsy’s Neon London Creator Arcade.jpg', null, null)), true);
   assert.equal(classifyFile(f('art/New Banner.jpg', null, null, {status:'A'})), true);
   assert.equal(classifyFile(f('css/wiki.css', 'a{color:red}', 'a{color:blue}')), true);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{background:url("/art/hero.jpg")}', 'a{background:url("/art/new-hero.jpg")}')), true);
   assert.equal(classifyFile(f('community.html', '<main><h1>Old</h1></main>', '<main><h1>New</h1></main>')), true);
   assert.equal(classifyFile(f('gpt-users.html', '<main><h1>Title</h1></main>', '<main><img src="/art/New%20Banner.jpg" alt="Banner" width="1672" height="941"><h1>Title</h1></main>')), true);
 });
@@ -23,6 +24,16 @@ test('any executable/structural/unsafe change forces normal CI', () => {
   assert.equal(classifyFile(f('community.html', '<h1>Title</h1>', '<img src="/art/a.jpg" onerror="bad()"><h1>Title</h1>')), false);
   assert.equal(classifyFile(f('community.html', '<h1>Title</h1>', '<img src="https://evil.example/a.jpg"><h1>Title</h1>')), false);
   assert.equal(classifyFile(f('community.html', '<h1>Title</h1>', '<script src="/js/new.js"></script><h1>Title</h1>')), false);
+  const oldHandler = '<button onclick="console.log(\'<p>Old</p>\')">Go</button>';
+  const newHandler = '<button onclick="console.log(\'<p>\');alert(1);console.log(\'</p>\')">Go</button>';
+  assert.equal(classifyFile(f('community.html', oldHandler, newHandler)), false, 'attribute-contained fake tags must never mask code changes');
+  const oldImgAttr = '<button data-note="original">Hello</button>';
+  const newImgAttr = '<button data-note="<img src=\'/art/pic.jpg\' alt=\'ok\'>" onmouseover="evil()">Hello</button>';
+  assert.equal(classifyFile(f('community.html', oldImgAttr, newImgAttr)), false, 'image-shaped attributes cannot mask new handlers');
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', '@import url(https://remote.invalid/p.css);a{color:blue}')), false);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background:url(//remote.invalid/a.jpg)}')), false);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background:url(data:image/svg+xml;base64,aaaa)}')), false);
+  assert.equal(classifyFile(f('css/wiki.css', 'a{color:blue}', 'a{background:url("https://remote.invalid/a.jpg")}')), false);
 });
 
 test('protected wiki and game HTML, API, workflow and build files force full checks', () => {
@@ -35,6 +46,8 @@ test('protected wiki and game HTML, API, workflow and build files force full che
   assert.equal(classifyFile(f('css/game-fullscreen.css', 'a{}', 'a{display:none}')), false);
   assert.equal(classifyFile(f('css/moonpet-mini-app.css', 'a{}', 'a{display:none}')), false);
   assert.equal(classifyFile(f('moonpet-game.html', '<h1>a</h1>', '<h1>b</h1>')), false);
+  assert.equal(classifyFile(f('my-moonboy.html', '<h1>a</h1>', '<h1>b</h1>')), false);
+  assert.equal(classifyFile(f('how-to-play-crypto-moonboy-pets.html', '<h1>a</h1>', '<h1>b</h1>')), false);
   assert.equal(classifyFile(f('about.html', '<h1>a</h1>', '<h1>b</h1>')), false);
   assert.equal(classifyFile(f('css/wiki.css', 'a{}', 'a{}', { status: 'D' })), false);
   assert.equal(classifyFile(f('art/a.png', null, null, {newBytes:9*1024*1024})), false);
