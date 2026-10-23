@@ -4544,7 +4544,8 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] #content > .cm-page::before {
   left: 50%;
   transform: translateX(-50%);
   background: url("/art/Neon%20Crypto%20Moonboys_%20London%20After%20Dark.jpg") center / contain no-repeat transparent;
-  margin: 0 0 1.25rem;
+  /* Cancel the wiki #content top padding and the article wrapper padding. */
+  margin: calc(-1 * (clamp(30px, 3vw, 56px) + 1.25rem)) 0 1.25rem;
   padding: 0;
   border: 0;
   border-radius: 0;
