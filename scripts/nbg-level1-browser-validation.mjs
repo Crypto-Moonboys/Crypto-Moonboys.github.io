@@ -1254,6 +1254,7 @@ assert.ok(
 // Real canvas/gameplay evidence on desktop and touch/mobile. Intercept the
 // actual drawImage calls so every approved flame/balloon frame is proven,
 // not merely loaded.
+await page.keyboard.up('ArrowRight');
 for (const mechanicMode of [
   {label:'desktop',options:{viewport:{width:960,height:540}},touch:false},
   {label:'mobile',options:{viewport:{width:390,height:700},isMobile:true,hasTouch:true},touch:true}
@@ -1487,7 +1488,8 @@ for (const mechanicMode of [
   }
 }
 
-const beforeMoveX = state.x;
+await page.keyboard.down('ArrowRight');
+const beforeMoveX = await page.evaluate(() => window.NBGLevel1State.player.x);
 await page.waitForTimeout(550);
 await page.keyboard.up('ArrowRight');
 state = await page.evaluate(() => ({
