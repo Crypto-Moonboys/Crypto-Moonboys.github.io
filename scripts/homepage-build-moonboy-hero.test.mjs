@@ -70,7 +70,7 @@ const lastHeroEnd = heroPositions.length
   ? html.indexOf('</section>', heroPositions[heroPositions.length - 1].start)
   : -1;
 const builderStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhomepage-avatar-builder\b)[^>]*>/);
-const introStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhero-intro\b)[^>]*>/);
+const introStart = html.search(/<section\b(?=[^>]*\bid="how-it-works")[^>]*>/);
 const introEnd = html.indexOf('</section>', introStart);
 const introMarkup = introStart !== -1 && introEnd !== -1
   ? html.slice(introStart, introEnd + '</section>'.length)
