@@ -238,8 +238,17 @@
         // this page has no cached signed proof. Use the shared renewal path.
         if (!telegramAuth && identity && typeof identity.getFreshTelegramAuth === "function") {
           telegramAuth = await identity.getFreshTelegramAuth({ force: true }).catch(() => null);
-        }
-        if (!telegramAuth && identity && typeof identity.restoreLinkedTelegramAuth === "function") {
+        } else if (
+          !telegramAuth &&
+          identity &&
+          typeof identity.getFreshTelegramAuth !== "function" &&
+          typeof identity.isTelegramLinked === "function" &&
+          identity.isTelegramLinked() &&
+          typeof identity.restoreLinkedTelegramAuth === "function"
+        ) {
+          // Compatibility only: current identity-gate already performs legacy
+          // restore inside getFreshTelegramAuth. Never issue an extra request for
+          // an unlinked guest or retry a failed website-session renewal this way.
           const restored = await identity.restoreLinkedTelegramAuth({ force: true }).catch(() => null);
           telegramAuth = restored?.ok ? restored.telegram_auth : null;
         }
