@@ -1240,6 +1240,7 @@ assert.deepEqual(await page.evaluate(() => {
 }, 'PR4 assets must load independently with their audited native dimensions');
 
 assert.ok(
+  runtimeSource.includes('var speedBoxes = [875, 5685, 10935, 16185].map(function (x) {') &&
   runtimeSource.includes('var GRAFFBOT_FIRE_COLUMNS = 4') &&
   runtimeSource.includes('var GRAFFBOT_FIRE_FRAMES = 16') &&
   runtimeSource.includes('var BALLOON_WALK_FRAMES = 14') &&
@@ -1299,7 +1300,7 @@ for (const mechanicMode of [
     await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
       const box=state.speedBoxes[0];
-      state.player.x=box.x-80;
+      box.x=state.player.x+120;
       state.player.y=214-state.player.h;
       state.player.vx=0;
     });
