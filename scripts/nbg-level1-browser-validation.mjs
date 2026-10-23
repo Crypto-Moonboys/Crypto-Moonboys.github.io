@@ -1290,21 +1290,16 @@ for (const mechanicMode of [
         }
         return original.call(this,image,...args);
       };
+      const initialState=window.NBGLevel1State;
+      initialState.speedBoxes[0].x=initialState.player.x+120;
     });
     if(mechanicMode.touch) await holdRunnerRight(mechanicPage);
     else await mechanicPage.keyboard.press('KeyD');
     await mechanicPage.waitForFunction(() => window.NBGLevel1State.running === true);
+    await mechanicPage.waitForFunction(() => window.__pr4DrawEvidence.speedBoxDraws>0);
     await mechanicPage.clock.pauseAt(Date.now()+100);
 
     // Collect the in-world box and prove fixed speed, expiry and reset.
-    await mechanicPage.evaluate(() => {
-      const state=window.NBGLevel1State;
-      const box=state.speedBoxes[0];
-      box.x=state.player.x+120;
-      state.player.y=214-state.player.h;
-      state.player.vx=0;
-    });
-    await mechanicPage.clock.runFor(100);
     assert.ok(await mechanicPage.evaluate(() => window.__pr4DrawEvidence.speedBoxDraws)>0,
       mechanicMode.label+' must render the supplied SPEEDBOX image in-world');
     await mechanicPage.evaluate(() => {
