@@ -19,7 +19,6 @@ window.__HUD_CONSOLIDATED__ = true;
   let siteStatsPromise = null;
 
   const links = [
-    { label: 'HOME', href: '/index.html', icon: '⌂', title: 'Home' },
     { label: 'WIKI', href: '/search.html', icon: '◫', title: 'Wiki' },
     { label: 'GAMES', href: '/games/', icon: '◆', title: 'Games' },
     { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy — public start and personal account' },
@@ -162,11 +161,6 @@ window.__HUD_CONSOLIDATED__ = true;
             <a class="logo-live-feed-link" href="/search.html">ARTICLES: <span class="logo-live-value" data-stat="total-articles">-</span></a>
           </span>
         </div>
-        <form id="header-search" role="search" action="/search.html">
-          <input id="search-input" name="q" type="search" placeholder="Search the wiki…" autocomplete="off" aria-label="Search the wiki">
-          <button id="search-btn" type="submit" aria-label="Search">⌕</button>
-          <div id="search-results" role="listbox" aria-label="Search suggestions"></div>
-        </form>
         <div id="moonboys-global-status-badge" aria-live="polite"></div>
         <nav id="global-nav" class="header-nav" aria-label="Global navigation">${navHtml}</nav>
       `;
@@ -303,7 +297,6 @@ window.__HUD_CONSOLIDATED__ = true;
       header.dataset.sharedHeaderPath = SHARED_WIKI_HEADER.html;
       const globalNav = document.getElementById('global-nav');
       if (globalNav) globalNav.innerHTML = navHtml;
-      bindSearchForm();
       hydrateHeaderLiveStats(header);
     });
   }
@@ -331,14 +324,6 @@ window.__HUD_CONSOLIDATED__ = true;
       globalNav.className = 'header-nav';
       globalNav.setAttribute('aria-label', 'Global navigation');
       globalNav.innerHTML = navHtml;
-      if (!document.getElementById('search-input')) {
-        const form = document.createElement('form');
-        form.id = 'header-search';
-        form.setAttribute('role', 'search');
-        form.action = '/search.html';
-        form.innerHTML = '<input id="search-input" name="q" type="search" placeholder="Search the wiki…" autocomplete="off" aria-label="Search the wiki"><button id="search-btn" type="submit" aria-label="Search">⌕</button><div id="search-results" role="listbox" aria-label="Search suggestions"></div>';
-        header.insertBefore(form, globalNav);
-      }
     }
 
     syncSharedHeaderMarkup(header, navHtml);
@@ -431,25 +416,6 @@ window.__HUD_CONSOLIDATED__ = true;
   function ensureSwarmsyLandingTighten() {
     if (normalizePathname(window.location.pathname) !== '/swarmsy.html') return;
     document.body.classList.add('swarmsy-landing-tight');
-  }
-
-  function bindSearchForm() {
-    const form = document.getElementById('header-search');
-    const input = document.getElementById('search-input');
-    const dropdown = document.getElementById('search-results');
-    if (!form || form.dataset.shellSearchBound) return;
-    form.dataset.shellSearchBound = 'true';
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const q = input ? String(input.value || '').trim() : '';
-      window.location.href = q ? `/search.html?q=${encodeURIComponent(q)}` : '/search.html';
-    });
-    if (input && dropdown) {
-      input.addEventListener('input', () => dropdown.classList.toggle('open', Boolean(input.value.trim())));
-      document.addEventListener('click', (event) => {
-        if (!form.contains(event.target)) dropdown.classList.remove('open');
-      });
-    }
   }
 
   function getTelegramPhotoUrl(gate) {
@@ -559,7 +525,6 @@ window.__HUD_CONSOLIDATED__ = true;
     const shell = ensureLayout();
     ensureSwarmsyLandingTighten();
     ensureInlineLiveStats(shell.content);
-    bindSearchForm();
     hydrateHeaderLiveStats();
     bindHudIdentityRefresh();
     scheduleHudIdentityRefresh();

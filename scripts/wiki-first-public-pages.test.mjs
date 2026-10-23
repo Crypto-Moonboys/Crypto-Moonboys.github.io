@@ -52,7 +52,6 @@ const requiredShellNeedles = [
   'resolveCanonicalWikiRoute',
   'swarmsy-shell-mode-',
   "document.documentElement.dataset.wikiShell = 'global'",
-  'Search the wiki…',
   'THE CRYPTO MOONBOYS GK WIKI'
 ];
 
@@ -61,7 +60,11 @@ for (const needle of requiredShellNeedles) {
   else fail(`site-shell.js missing "${needle}"`);
 }
 
-const requiredNavLabels = ['HOME', 'WIKI', 'GAMES', 'BATTLE CHAMBER', 'SWARMSY', 'SYSTEM HUB'];
+const requiredNavLabels = ['WIKI', 'GAMES', 'BATTLE CHAMBER', 'SWARMSY', 'SYSTEM HUB'];
+if (shell.includes("label: 'HOME'") || shell.includes('id="header-search"') || shell.includes('id="search-input"')) fail('removed HOME and header search must not return');
+else pass('removed HOME and header search remain absent');
+if (!shell.includes('site-logo-home') || !shell.includes('href="/index.html"')) fail('brand logo must still link to home');
+else pass('brand logo remains a home link');
 for (const label of requiredNavLabels) {
   if (shell.includes(`label: '${label}'`) || shell.includes(`label: "${label}"`)) pass(`global nav label present: ${label}`);
   else fail(`global nav label missing: ${label}`);

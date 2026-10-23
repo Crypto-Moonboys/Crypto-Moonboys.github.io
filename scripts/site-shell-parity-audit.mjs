@@ -148,7 +148,6 @@ if (!shellJs) {
   console.log('\n[2] site-shell.js canonical content');
   const contentChecks = [
     ['THE CRYPTO MOONBOYS GK WIKI', 'canonical logo text'],
-    ['Search the wiki\u2026', 'canonical search placeholder'],
     ['Battle Chamber', 'Battle Chamber link'],
     ['Navigation', 'canonical Navigation heading'],
     ['No password account \\u00B7 Telegram link for competitive systems \\u00B7 Bot-maintained', 'updated no-password competitive-link footer note'],
@@ -168,7 +167,6 @@ if (!shellJs) {
 
   console.log('\n[2aa] site-shell.js global navigation guarantee');
   const requiredNavLinks = [
-    ["label: 'HOME'", "href: '/index.html'"],
     ["label: 'WIKI'", "href: '/search.html'"],
     ["label: 'GAMES'", "href: '/games/'"],
     ["label: 'BATTLE CHAMBER'", "href: '/community.html'"],
@@ -181,6 +179,16 @@ if (!shellJs) {
     } else {
       fail(`site-shell.js nav contract missing ${labelNeedle} / ${hrefNeedle}`);
     }
+  }
+  if (shellJs.includes("label: 'HOME'") || shellJs.includes('id="header-search"') || shellJs.includes('id="search-input"')) {
+    fail('site-shell.js must not restore the removed HOME nav button or header search form');
+  } else {
+    pass('site-shell.js omits HOME nav and shared search form');
+  }
+  if (shellJs.includes('site-logo-home') && shellJs.includes('href="/index.html"')) {
+    pass('site-shell.js preserves branded home link');
+  } else {
+    fail('site-shell.js lost branded home link');
   }
   const navGuaranteeChecks = [
     ['function isGlobalNavComplete', 'nav completeness validator'],

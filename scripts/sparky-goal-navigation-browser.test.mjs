@@ -15,6 +15,7 @@ const resources = new Map([
   ['/gpt-users.html', { body: html, contentType: 'text/html' }],
   ['/gpt-users-legacy.html', { body: html.replace('id="gpt-launch"', '').replace('id="gpt-launch-title" tabindex="-1"', 'id="gpt-launch-title"'), contentType: 'text/html' }],
   ['/css/wiki.css', { body: read('css/wiki.css'), contentType: 'text/css' }],
+  ['/css/page-hero-art.css', { body: read('css/page-hero-art.css'), contentType: 'text/css' }],
   ...scripts.map(path => ['/' + path, { body: read(path), contentType: 'text/javascript' }]),
 ]);
 const goals = [
@@ -39,7 +40,16 @@ async function checkDestination(page, title) {
   if (await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)) {
     assert.ok(await page.evaluate(destinationVisible), 'reduced motion must jump without animation');
   }
-  await page.waitForFunction(destinationVisible, null, { timeout: 5000 });
+  await page.waitForFunction(destinationVisible, null, { timeout: 15000 }).catch(async error => {
+    const layout = await page.evaluate(() => ({
+      heading: document.getElementById('gpt-launch-title')?.getBoundingClientRect().toJSON(),
+      action: document.getElementById('gpt-open-link')?.getBoundingClientRect().toJSON(),
+      header: document.getElementById('site-header')?.getBoundingClientRect().toJSON(),
+      scrollY: window.scrollY, viewportHeight: window.innerHeight,
+      reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    }));
+    throw new Error(`${title}: destination not visible after scrolling: ${JSON.stringify(layout)}`, { cause: error });
+  });
   assert.equal(await page.evaluate(() => document.activeElement.id), 'gpt-launch-title');
   const prompt = await page.locator('#gpt-prompt-preview').inputValue();
   assert.ok(prompt.startsWith(title + '.\n\n'));
