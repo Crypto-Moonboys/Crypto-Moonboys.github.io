@@ -1322,13 +1322,14 @@ for (const mechanicMode of [
       collected:window.NBGLevel1State.speedBoxes[0].collected
     }));
     await mechanicPage.evaluate(() => window.NBGLevel1Runtime.setTouchControl('right',false));
-    await mechanicPage.clock.pauseAt(Date.now()+100);
     assert.ok(boosted.vx>4.2&&boosted.vx<=6,
       mechanicMode.label+' boost must increase speed without unlimited stacking');
     assert.equal(boosted.collected,true,mechanicMode.label+' box must remain collected');
-    await mechanicPage.clock.runFor(6100);
+    await mechanicPage.waitForFunction(() => window.NBGLevel1State.speedBoostActive === false,
+      null,{timeout:8000});
     assert.equal(await mechanicPage.evaluate(() => window.NBGLevel1State.speedBoostActive),false,
       mechanicMode.label+' boost must expire back to normal speed');
+    await mechanicPage.clock.pauseAt(Date.now()+100);
 
     await mechanicPage.evaluate(() => window.NBGLevel1Runtime.reset());
     assert.deepEqual(await mechanicPage.evaluate(() => ({
