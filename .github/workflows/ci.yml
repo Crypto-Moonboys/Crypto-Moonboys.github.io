@@ -37,7 +37,7 @@ jobs:
         id: detect
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || ''}'}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/fast-edit-scope.mjs
 
@@ -47,7 +47,8 @@ jobs:
     steps:
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
-        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
+        run: |
+          echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
         if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
@@ -61,9 +62,8 @@ jobs:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
-        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
-        if: github.event_name == 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'workflow_dispatch'
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -118,7 +118,8 @@ jobs:
     steps:
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
-        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
+        run: |
+          echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
         if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
@@ -130,9 +131,8 @@ jobs:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
-        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
-        if: github.event_name == 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'workflow_dispatch'
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -159,7 +159,8 @@ jobs:
     steps:
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
-        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
+        run: |
+          echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
         if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
@@ -173,9 +174,8 @@ jobs:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
-        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
-        if: github.event_name == 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'workflow_dispatch'
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -214,7 +214,8 @@ jobs:
     steps:
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
-        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
+        run: |
+          echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
         if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
@@ -228,9 +229,8 @@ jobs:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
-        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
-        if: github.event_name == 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'workflow_dispatch'
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -266,7 +266,8 @@ jobs:
     steps:
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
-        run: echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
+        run: |
+          echo "Fast Edit: existing required job satisfied; heavyweight suite not relevant."
       - name: Checkout
         if: needs.fast-edit.outputs.fast_edit != 'true'
         uses: actions/checkout@v5
@@ -280,9 +281,8 @@ jobs:
           node-version: 22
 
       - name: Validate generated graph PR dispatch
-        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: graph_dispatch
-        if: github.event_name == 'workflow_dispatch'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && github.event_name == 'workflow_dispatch'
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ github.token }}
