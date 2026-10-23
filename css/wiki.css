@@ -4546,7 +4546,10 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] #content > .cm-page::before {
   display: block;
   width: 100vw;
   max-width: none;
-  aspect-ratio: 1672 / 941;
+  /* Show the full 1672 × 941 artwork within the visible screen.
+     On wide displays, letterbox rather than crop the bottom of the image. */
+  height: min(calc(100vw * 941 / 1672), calc(100dvh - max(var(--shell-header-h), 110px)));
+  min-height: 0;
   position: relative;
   left: 50%;
   transform: translateX(-50%);
