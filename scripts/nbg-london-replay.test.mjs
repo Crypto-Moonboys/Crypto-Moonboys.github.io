@@ -180,21 +180,26 @@ assert.ok(firstParachuteX>=350 && firstParachuteX<=430,
 // then verify the recorded input bytes independently. No browser XP claims.
 let updatedCourse = null;
 const revision5Diagnostics = [];
-for (const approach of [80,95,110,125,140,160,175]) {
+for (const approach of [60,80,100,120,140,160,180]) {
   const frames = Array.from({length:5600}, () => [33,33,0]);
   const masks=[];
   let lastJump=-1000;
   const input = state => {
+    // Version 5 can move at 6 px/step while boosted. Scale the obstacle lead
+    // by current velocity so this remains a physical control replay instead
+    // of driving the faster runner with the legacy fixed-distance timing.
+    const lead=approach+Math.abs(state.vx)*20+
+      (state.speedBoostActive ? 35 : 0);
     const obstacle = state.obstacles.filter(o =>
-      o.x + o.w > state.x && o.x < state.x + 210)
+      o.x + o.w > state.x && o.x < state.x + Math.max(240,lead+45))
       .sort((a,b)=>a.x-b.x)[0];
     const distance=obstacle ? obstacle.x-state.x : Infinity;
     const canJump=state.elapsed-lastJump>180;
     let mask=10; // right + spray: legal gameplay controls
-    if(canJump && state.grounded && distance<approach && distance>-35) {
+    if(canJump && state.grounded && distance<lead && distance>-35) {
       mask|=4;lastJump=state.elapsed;
-    } else if(canJump && !state.grounded && state.jumps===1 &&
-        state.vy>1 && distance<65 && distance>-35) {
+    } else if(canJump && !state.grounded && state.jumps>=1 &&
+        state.jumps<3 && state.vy>1 && distance<lead-25 && distance>-35) {
       mask|=4;lastJump=state.elapsed;
     }
     masks.push(mask);
