@@ -2492,8 +2492,8 @@ assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp
 // 230ms attack window at 30/40/60 Hz rather than wrapping away from the
 // final spray artwork. This simulates the real frame-time accumulation and
 // validates the non-looping runtime branch as a source-level guard.
-assert.ok(runtimeSource.includes("advancePlayerAnimation(dt, player.anim !== 'spray')"),
-  'spray must use non-looping frame progression while other poses keep looping');
+assert.ok(runtimeSource.includes("player.anim !== 'spray' && player.anim !== 'backflip'"),
+  'spray and backflip must use controlled non-looping progression while ordinary poses loop');
 for (const frameDt of [1000 / 60, 25, 33]) {
   let frame = 0, remainder = 0, hasRenderedLast = false;
   for (let elapsed = frameDt; elapsed < 230; elapsed += frameDt) {
