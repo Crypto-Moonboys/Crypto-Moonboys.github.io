@@ -32,26 +32,53 @@ jobs:
         with:
           node-version: 22
       - name: Validate classifier safety rules
-        run: node --test scripts/fast-edit-scope.test.mjs
-      - name: Classify PR change scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+        run: |
+          # A PR cannot supply its own authoritative classifier or safety tests.
+          if git cat-file -e "$BASE_SHA:scripts/fast-edit-scope.mjs" 2>/dev/null &&
+             git cat-file -e "$BASE_SHA:scripts/fast-edit-scope.test.mjs" 2>/dev/null; then
+            mkdir -p "$RUNNER_TEMP/trusted-fast-edit"
+            git show "$BASE_SHA:scripts/fast-edit-scope.mjs" > "$RUNNER_TEMP/trusted-fast-edit/fast-edit-scope.mjs"
+            git show "$BASE_SHA:scripts/fast-edit-scope.test.mjs" > "$RUNNER_TEMP/trusted-fast-edit/fast-edit-scope.test.mjs"
+            node --test "$RUNNER_TEMP/trusted-fast-edit/fast-edit-scope.test.mjs"
+          else
+            echo "No protected base classifier: this bootstrap PR must run full CI."
+          fi
+          # Candidate changes are also tested, but cannot grant fast-path eligibility.
+          node --test scripts/fast-edit-scope.test.mjs
+      - name: Classify change scope using protected base
         id: detect
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_REF: ${{ github.ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node scripts/fast-edit-scope.mjs
+        run: |
+          if git cat-file -e "$BASE_SHA:scripts/fast-edit-scope.mjs" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/fast-edit-scope.mjs" > "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"
+            node "$RUNNER_TEMP/trusted-fast-edit-scope.mjs"
+          else
+            echo "fast_edit=false" >> "$GITHUB_OUTPUT"
+            echo "Protected base has no classifier: full CI required."
+          fi
       - name: Fast Edit whitespace check
         if: steps.detect.outputs.fast_edit == 'true'
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: git diff --check "$BASE_SHA" "$HEAD_SHA"
 
   ci-wiki:
     needs: [fast-edit]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Reject failed Fast Edit prerequisite
+        if: needs.fast-edit.result != 'success'
+        run: |
+          echo 'Fast Edit prerequisite failed or was skipped; refusing to mark required CI successful.'
+          exit 1
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
         run: |
@@ -120,8 +147,14 @@ jobs:
 
   ci-worker-api:
     needs: [fast-edit]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Reject failed Fast Edit prerequisite
+        if: needs.fast-edit.result != 'success'
+        run: |
+          echo 'Fast Edit prerequisite failed or was skipped; refusing to mark required CI successful.'
+          exit 1
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
         run: |
@@ -161,8 +194,14 @@ jobs:
 
   ci-arcade:
     needs: [fast-edit]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Reject failed Fast Edit prerequisite
+        if: needs.fast-edit.result != 'success'
+        run: |
+          echo 'Fast Edit prerequisite failed or was skipped; refusing to mark required CI successful.'
+          exit 1
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
         run: |
@@ -216,8 +255,14 @@ jobs:
 
   ci-wax:
     needs: [fast-edit]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Reject failed Fast Edit prerequisite
+        if: needs.fast-edit.result != 'success'
+        run: |
+          echo 'Fast Edit prerequisite failed or was skipped; refusing to mark required CI successful.'
+          exit 1
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
         run: |
@@ -267,9 +312,15 @@ jobs:
 
   ci-visual:
     needs: [fast-edit]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      - name: Reject failed Fast Edit prerequisite
+        if: needs.fast-edit.result != 'success'
+        run: |
+          echo 'Fast Edit prerequisite failed or was skipped; refusing to mark required CI successful.'
+          exit 1
       - name: Fast Edit accepted — skip unrelated heavy suites
         if: needs.fast-edit.outputs.fast_edit == 'true'
         run: |
