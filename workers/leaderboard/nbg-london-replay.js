@@ -128,11 +128,12 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // Legacy cached v1 clients never sent a course_version: keep their exact
   // original level, random/parachute physics and two-jump rules. Revision 2
   // remains verifiable under its original combat geometry; revision 3 opts
-  // into sprite-aligned platform/combat geometry without changing replay bytes.
+  // into sprite-aligned platform/combat geometry. Revision 4 replaces the
+  // recurring timer with one start-area parachute rat per fresh run.
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && replay.course_version !== 2 && replay.course_version !== 3)
+  if (hasCourseVersion && ![2,3,4].includes(replay.course_version))
     return { valid:false };
   const courseVersion = hasCourseVersion ? replay.course_version : 1;
   const level = levelData(courseVersion);
@@ -151,7 +152,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     return runRandomState / 4294967296;
   };
   let parachuteRats=[];
-  let nextParachuteAt=6000;
+  let nextParachuteAt=6000, parachuteSpawnCount=0;
   let previousPlayerY=p.y;
   let previousPlayerVy=p.vy;
   const playerCombatRect = () => ({x:p.x-8,y:p.y-30,w:p.w+16,h:p.h+30});
@@ -211,6 +212,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const mask=typeof testInputOverride === 'function' ?
       testInputOverride({ x:p.x,y:p.y,vx:p.vx,vy:p.vy,grounded:p.grounded,
         jumps,health:p.health,elapsed, frame:consumedFrames,
+        parachuteSpawnCount, activeParachuteRats:parachuteRats.length,
+        parachuteRatX:parachuteRats[0]?.x ?? null,
+        landedParachuteRats:level.enemies.filter(e=>e.spawnedByParachute&&!e.defeated).length,
         obstacles:level.hazards.concat(level.crates) }) : dec(4);
     if (!Number.isInteger(mask) || mask<0 || mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
         dt>frameElapsed) return { valid:false };
@@ -346,17 +350,21 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     // full drift, collision, landing and attack sequence; otherwise a valid
     // browser run can diverge from the Worker after a few seconds.
     let landedCount=level.enemies.filter(e=>e.spawnedByParachute&&!e.defeated).length;
-    if(elapsed>=nextParachuteAt && parachuteRats.length<3 && landedCount<5 &&
-       p.x>350 && p.x<WORLD-250){
+    const shouldSpawnParachute=courseVersion>=4 ? parachuteSpawnCount===0 :
+      elapsed>=nextParachuteAt && parachuteRats.length<3 && landedCount<5 &&
+      p.x>350 && p.x<WORLD-250;
+    if(shouldSpawnParachute){
       const variant=['parachuteRatA','parachuteRatB','parachuteRatC']
         [Math.floor(nextRunRandom()*3)];
       const drift=(nextRunRandom()*2-1)*90;
       parachuteRats.push({
-        x:clamp(p.x+(courseVersion>=2 ? 240+drift*0.25 : drift),28,WORLD-60),
+        x:courseVersion>=4 ? clamp(390+drift*0.25,350,430) :
+          clamp(p.x+(courseVersion>=2 ? 240+drift*0.25 : drift),28,WORLD-60),
         y:courseVersion>=2 ? 55 : -110,w:28,h:42,variant,
         swayPhase:nextRunRandom()*Math.PI*2,vx:0,age:0,
       });
-      nextParachuteAt=elapsed+5500+nextRunRandom()*4500;
+      parachuteSpawnCount++;
+      if(courseVersion<4) nextParachuteAt=elapsed+5500+nextRunRandom()*4500;
     }
     for(let i=parachuteRats.length-1;i>=0;i--){
       const rat=parachuteRats[i];
@@ -381,7 +389,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         rat.y=FLOOR-rat.h;
       }
       if(rat.y+rat.h>=FLOOR){
-        if(landedCount<5){
+        if(landedCount<(courseVersion>=4?1:5)){
           level.enemies.push({
             type:rat.variant==='parachuteRatC'?'turquoiseRat':'brownRat',
             x:rat.x,y:FLOOR-42,w:28,h:42,

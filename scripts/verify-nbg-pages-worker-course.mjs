@@ -1,4 +1,4 @@
-// Pages must not publish course revision 2 before the live leaderboard Worker
+// Pages must not publish a newer course revision before the live leaderboard Worker
 // understands its independently simulated gameplay. Read-only production gate.
 // Does not deploy a Worker, mutate D1, or flip any prize/source flags.
 import { readFileSync } from 'node:fs';

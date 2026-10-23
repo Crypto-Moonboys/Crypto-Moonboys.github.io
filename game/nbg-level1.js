@@ -17,7 +17,7 @@
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 3; // Replay v1 format, aligned platform/combat geometry.
+  var COURSE_LAYOUT_VERSION = 4; // Replay v1 format, single start-area parachute rat.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
@@ -40,10 +40,7 @@
   var RAT_ATTACK_RANGE = 70;
   var RAT_ATTACK_DURATION_MS = 850;
   var RAT_ATTACK_COOLDOWN_MS = 1700;
-  var PARACHUTE_SPAWN_MIN_MS = 5500;
-  var PARACHUTE_SPAWN_JITTER_MS = 4500;
-  var PARACHUTE_MAX_ACTIVE = 3;
-  var PARACHUTE_MAX_LANDED = 5;
+  var PARACHUTE_START_X = 390;
   var PARACHUTE_LANDED_LIFETIME_MS = 22000;
   var SPRAY_ENEMY_RANGE = 86;
   var ENEMY_STOMP_BOUNCE = -9;
@@ -292,7 +289,6 @@
     var sprayTimer = 0;
     var parachuteRats = [];
     var flyingPigFrames = null;
-    var nextParachuteAt = 6000;
     var parachuteSpawnCount = 0;
     var gameOver = false;
     var runSequence = 0;
@@ -921,22 +917,18 @@
     function updateParachuteRats(time, dt) {
       var step = dt / TARGET_FRAME_MS;
       var landedCount = enemies.filter(function (enemy) { return enemy.spawnedByParachute && !enemy.defeated; }).length;
-      if (runElapsedMs >= nextParachuteAt && parachuteRats.length < PARACHUTE_MAX_ACTIVE &&
-          landedCount < PARACHUTE_MAX_LANDED &&
-          player.x > 350 && player.x < WORLD_WIDTH - 250) {
+      if (parachuteSpawnCount === 0) {
         var variants = ['parachuteRatA', 'parachuteRatB', 'parachuteRatC'];
         var variant = variants[Math.floor(nextRunRandom() * variants.length)];
         var drift = (nextRunRandom() * 2 - 1) * 90;
-        // Spawn ahead and descend quickly enough for a moving player to
-        // actually encounter parachutes across the full 22,000px course.
+        // One visible encounter belongs to the run, not to a timer, section or
+        // checkpoint. Its bounded start-area position keeps it near the player.
         parachuteRats.push({
-          x: clamp(player.x + 240 + drift * 0.25, 28, WORLD_WIDTH - 60),
+          x: clamp(PARACHUTE_START_X + drift * 0.25, 350, 430),
           y: 55, w: 28, h: 42, variant: variant,
           swayPhase: nextRunRandom() * Math.PI * 2, vx: 0, age: 0
         });
         parachuteSpawnCount += 1;
-        nextParachuteAt = runElapsedMs + PARACHUTE_SPAWN_MIN_MS +
-          nextRunRandom() * PARACHUTE_SPAWN_JITTER_MS;
       }
       for (var i = parachuteRats.length - 1; i >= 0; i -= 1) {
         var rat = parachuteRats[i];
@@ -959,7 +951,7 @@
           rat.y = FLOOR_Y - rat.h;
         }
         if (rat.y + rat.h >= FLOOR_Y) {
-          if (landedCount < PARACHUTE_MAX_LANDED) {
+          if (landedCount < 1) {
             enemies.push({
               type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat',
               x: rat.x, y: FLOOR_Y - 42, w: 28, h: 42,
@@ -1652,7 +1644,6 @@
         get enemies() { return enemies; },
         get parachuteRats() { return parachuteRats; },
         get parachuteSpawnCount() { return parachuteSpawnCount; },
-        get nextParachuteAt() { return nextParachuteAt; },
         get platforms() { return platforms; },
         get crates() { return crates; },
         get rewardBoxes() { return rewardBoxes; },
@@ -1722,7 +1713,6 @@
       finishBonusAwarded = false;
       sprayTimer = 0;
       parachuteRats = [];
-      nextParachuteAt = 6000;
       parachuteSpawnCount = 0;
       runElapsedMs = 0;
       nextJumpBoostAtMs = 0;

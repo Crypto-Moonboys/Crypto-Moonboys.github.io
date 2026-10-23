@@ -1573,7 +1573,7 @@ for (const mode of ['keyboard', 'touch']) {
       mode + ' successive boosts must be visually spaced instead of compressed');
     assert.equal(flight.replay?.version, 1,
       mode + ' should expose an encoded version-one input replay');
-    assert.equal(flight.replay?.course_version, 3,
+    assert.equal(flight.replay?.course_version, 4,
       mode + ' must retain the independently simulated Level 1 course');
     const bytes = Buffer.from(flight.replay.frames, 'base64');
     assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
@@ -1766,7 +1766,8 @@ assert.equal(await page.evaluate(() =>
 assert.equal(await page.evaluate(() => window.NBGLevel1State.rewardNotificationUntil), 0,
   'reset must clear reward notification timing');
 
-// Parachuting rats: exact uploads, glide physics, landing conversion, and reset.
+// Parachuting rats: one start-area encounter per fresh run, with no timer,
+// distance or checkpoint replenishment. Existing glide, combat and landing remain.
 const parachuteAssets = await page.evaluate(() =>
   Object.fromEntries(['parachuteRatA','parachuteRatB','parachuteRatC'].map(key => [
     key, window.NBGLevel1State.assetStatus[key]?.src
@@ -1780,58 +1781,78 @@ assert.deepEqual(Object.fromEntries(Object.entries(parachuteAssets).map(([key, v
 assert.ok(
   runtimeSource.includes('function updateParachuteRats(time, dt)') &&
   runtimeSource.includes('function drawParachuteRats(time)') &&
+  runtimeSource.includes('if (parachuteSpawnCount === 0)') &&
   runtimeSource.includes('PARACHUTE_GLIDE_SPEED + Math.sin(') &&
   runtimeSource.includes('enemies.push({') &&
   runtimeSource.includes("damagePlayer('parachute-rat', rat.x)"),
-  'parachute rats must glide, attack on contact and convert to walkers when grounded'
+  'one parachute rat must glide, attack on contact and convert to a walker when grounded'
 );
 await page.keyboard.down('KeyD');
 await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 3000 });
 await page.keyboard.up('KeyD');
-await page.evaluate(() => {
-  const state = window.NBGLevel1State;
-  state.player.x = 400;
-  state.player.y = 214 - state.player.h;
-  state.player.vx = 0;
-  state.player.vy = 0;
-  state.player.invuln = 5000;
-});
-await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount >= 1, null, { timeout: 12000 });
+await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount === 1, null, { timeout: 1500 });
 let chuteState = await page.evaluate(() => ({
   count: window.NBGLevel1State.parachuteRats.length,
-  first: window.NBGLevel1State.parachuteRats[0] ? { ...window.NBGLevel1State.parachuteRats[0] } : null,
-  countWalkers: window.NBGLevel1State.enemies.length
+  spawns: window.NBGLevel1State.parachuteSpawnCount,
+  first: window.NBGLevel1State.parachuteRats[0] ? { ...window.NBGLevel1State.parachuteRats[0] } : null
 }));
-assert.equal(chuteState.count, 1, 'a random aerial rat must spawn');
+assert.equal(chuteState.count, 1, 'exactly one aerial rat must spawn in a fresh run');
+assert.ok(chuteState.first.x >= 350 && chuteState.first.x <= 430,
+  'the only aerial rat must appear visibly in the starting section');
 const beforeGlideY = chuteState.first.y;
-await page.waitForTimeout(200);
+await page.waitForTimeout(120);
 chuteState = await page.evaluate(() => ({
   y: window.NBGLevel1State.parachuteRats[0]?.y,
   x: window.NBGLevel1State.parachuteRats[0]?.x
 }));
 assert.ok(chuteState.y > beforeGlideY && chuteState.y - beforeGlideY < 75,
-  'parachute rat must descend visibly, without teleporting downward');
-await page.evaluate(() => {
+  'the single parachute rat must descend visibly without teleporting');
+
+// The naturally spawned rat must retain harmful contact and landing behavior.
+const beforeParachuteHit = await page.evaluate(() => {
   const state = window.NBGLevel1State;
-  state.parachuteRats[0].y = 214 - state.parachuteRats[0].h - 1;
-  state.parachuteRats[0].x = state.player.x + 75;
+  const rat = state.parachuteRats[0];
+  state.enemies.forEach(enemy => { enemy.defeated = true; });
+  state.player.x = rat.x;
+  state.player.y = rat.y;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.invuln = 0;
+  return state.player.health;
 });
-await page.waitForFunction(() => window.NBGLevel1State.parachuteRats.length === 0, null, { timeout: 1500 });
+await page.waitForFunction((health) => window.NBGLevel1State.player.health === health - 1,
+  beforeParachuteHit, { timeout: 1500 });
+await page.waitForFunction(() => window.NBGLevel1State.parachuteRats.length === 0,
+  null, { timeout: 1500 });
 assert.ok(await page.evaluate(() => window.NBGLevel1State.enemies.some(enemy =>
   enemy.spawnedByParachute && !enemy.defeated)),
-  'missed parachute rat must become a live walking rat on landing, regardless of unrelated enemy cleanup');
-await page.evaluate(() => window.NBGLevel1Runtime.reset());
-assert.deepEqual(await page.evaluate(() => ({
-  active: window.NBGLevel1State.parachuteRats.length,
-  spawns: window.NBGLevel1State.parachuteSpawnCount,
-  enemies: window.NBGLevel1State.enemies.length
-})), { active: 0, spawns: 0, enemies: 57 }, 'reset must clear parachutes and restore original enemy roster');
+  'a contacting parachute rat must damage the player and continue as a live walker after landing');
 
-// Parachute encounters must happen in the second half too, not merely when
-// the runner waits near the original London opening.
-await page.keyboard.down('KeyD');
-await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 3000 });
-await page.keyboard.up('KeyD');
+// Activating and respawning at a checkpoint must not create another aerial rat.
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.x = 1242;
+  state.player.y = 166;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.invuln = 5000;
+});
+await page.waitForFunction(() => window.NBGLevel1State.checkpoint.active, null, { timeout: 1500 });
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.invuln = 0;
+  state.player.y = 380;
+});
+await page.waitForFunction(() => window.NBGLevel1State.player.x === 1240, null, { timeout: 1500 });
+assert.deepEqual(await page.evaluate(() => ({
+  spawns: window.NBGLevel1State.parachuteSpawnCount,
+  active: window.NBGLevel1State.parachuteRats.length
+})), { spawns: 1, active: 0 },
+  'checkpoint respawn must preserve the consumed one-rat spawn state');
+
+// Travelling far into the course and waiting beyond the old recurring window
+// must not produce a second rat. Playwright's clock keeps this deterministic.
+await page.clock.pauseAt(await page.evaluate(() => Date.now() + 100));
 await page.evaluate(() => {
   const state = window.NBGLevel1State;
   state.player.x = 14500;
@@ -1840,14 +1861,55 @@ await page.evaluate(() => {
   state.player.vy = 0;
   state.player.invuln = 20000;
 });
-await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount >= 1,
-  null, { timeout: 12000 });
-const laterParachute = await page.evaluate(() => ({
-  x: window.NBGLevel1State.parachuteRats[0]?.x,
-  count: window.NBGLevel1State.parachuteSpawnCount
-}));
-assert.ok(laterParachute.count >= 1 && laterParachute.x > 14000,
-  'parachute encounters must spawn near the player after x=14,500');
+await page.clock.runFor(12000);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.parachuteSpawnCount), 1,
+  'elapsed time and course distance must never spawn another parachute rat');
+await page.clock.resume();
+
+// A fresh run restores one rat; defeating it must consume the run's only spawn.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+assert.deepEqual(await page.evaluate(() => ({
+  active: window.NBGLevel1State.parachuteRats.length,
+  spawns: window.NBGLevel1State.parachuteSpawnCount,
+  enemies: window.NBGLevel1State.enemies.length
+})), { active: 0, spawns: 0, enemies: 57 },
+  'fresh reset must restore the one-rat spawn state and original enemy roster');
+await page.keyboard.press('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount === 1, null, { timeout: 1500 });
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const rat = state.parachuteRats[0];
+  state.player.x = 400;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.grounded = true;
+  state.player.facing = 1;
+  state.player.invuln = 5000;
+  rat.x = state.player.x + 58;
+  rat.y = 150;
+  window.__singleRunRat = rat;
+});
+await page.keyboard.down('KeyS');
+await page.waitForFunction(() => window.__singleRunRat?.defeated === true, null, { timeout: 1500 });
+await page.keyboard.up('KeyS');
+await page.waitForTimeout(300);
+assert.deepEqual(await page.evaluate(() => ({
+  spawns: window.NBGLevel1State.parachuteSpawnCount,
+  active: window.NBGLevel1State.parachuteRats.length,
+  xp: window.NBGLevel1State.xp
+})), { spawns: 1, active: 0, xp: 75 },
+  'the original flying rat must be defeatable for existing mid-air XP without respawning');
+await page.clock.pauseAt(await page.evaluate(() => Date.now() + 100));
+await page.clock.runFor(12000);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.parachuteSpawnCount), 1,
+  'a defeated flying rat must never respawn in the same run');
+await page.clock.resume();
+await page.evaluate(() => { delete window.__singleRunRat; return window.NBGLevel1Runtime.reset(); });
+await page.keyboard.press('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount === 1, null, { timeout: 1500 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.parachuteRats.length), 1,
+  'a completely fresh run must restore exactly one new flying rat');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
 // The three new monochrome rat sheets belong only to the turquoise parachute.
@@ -2250,8 +2312,8 @@ await page.evaluate(() => { delete window.__pr1Target; });
 
 // Long-running survival regression: enemies must be defeatable, limited, and resettable.
 assert.ok(
-  runtimeSource.includes('var PARACHUTE_MAX_LANDED = 5') &&
-  runtimeSource.includes('landedCount < PARACHUTE_MAX_LANDED') &&
+  runtimeSource.includes('if (parachuteSpawnCount === 0)') &&
+  runtimeSource.includes('landedCount < 1') &&
   runtimeSource.includes('PARACHUTE_LANDED_LIFETIME_MS') &&
   runtimeSource.includes("new CustomEvent('nbg-enemy-defeated'") &&
   runtimeSource.includes("new CustomEvent('nbg-game-over'"),
@@ -2607,7 +2669,11 @@ for (const mode of ['keyboard', 'touch']) {
       JSON.stringify({ ...queued, immediateQueued }));
     await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart());
     await queuedPage.waitForFunction(() => window.NBGLevel1State.running &&
-      window.NBGLevel1State.jumpsUsed === 3, null, { timeout: 1800 });
+      window.NBGLevel1State.jumpsUsed === 3 &&
+      window.NBGLevel1State.parachuteSpawnCount === 1, null, { timeout: 1800 });
+    assert.equal(await queuedPage.evaluate(() =>
+      window.NBGLevel1State.parachuteRats.length), 1,
+      mode + ' fresh run must create exactly one flying rat');
   } finally {
     await queuedPage.close();
   }
