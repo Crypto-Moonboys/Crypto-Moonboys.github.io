@@ -1408,7 +1408,15 @@ for (const mechanicMode of [
       state.player.invuln=999999;
     });
     await mechanicPage.clock.runFor(3800);
-    await mechanicPage.clock.runFor(1500);
+    await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
+      window.__pr4DrawEvidence.walkFrames=[];
+      balloon.vx=0;
+      state.player.x=balloon.x-120;
+      state.player.vx=0;
+    });
+    await mechanicPage.clock.runFor(1600);
     const balloonCycles=await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
       const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
