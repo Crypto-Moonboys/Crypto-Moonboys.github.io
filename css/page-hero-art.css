@@ -27,3 +27,12 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] #content::before {
   box-shadow:none;
   margin:0 0 1.25rem;
 }
+
+/* Only My Moonboy retains the shared #content padding: let the banner bleed
+   to the content edges while preserving padding for the page below it. */
+body.page-my-moonboy #content > .page-hero-art {
+  width: calc(100% + 2 * var(--shell-gutter));
+  max-width: none;
+  margin-left: calc(-1 * var(--shell-gutter));
+  margin-top: calc(-1 * clamp(18px, 2.3vw, 36px));
+}
