@@ -39,6 +39,7 @@ const SCOPES = {
     'sam-wiki-publisher.py',
     'scripts/wiki-publish-staged-fs.cjs',
     'scripts/ci-domain-runner.mjs',
+    'scripts/fast-edit-scope*.mjs',
     '.github/workflows/ci.yml',
     '.github/workflows/wiki-ci.yml',
     'package.json',
