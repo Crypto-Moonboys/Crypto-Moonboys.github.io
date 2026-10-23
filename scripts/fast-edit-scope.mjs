@@ -96,7 +96,7 @@ function safeCss(previous, source) {
   if (typeof previous !== 'string' || typeof source !== 'string') return false;
   // The fast path never introduces remote imports, URLs, escaped directives,
   // legacy CSS script hooks, or dynamic external fonts.
-  if (/@import\b|@font-face\b|expression\s*\(|behavior\s*:|\\|https?:\/\/|url\s*\(\s*['"]?(?:https?:|\/\/|data:)/i.test(source)) return false;
+  if (/@import\b|@font-face\b|(?:-webkit-)?image-set\s*\(|expression\s*\(|behavior\s*:|\\|https?:\/\/|url\s*\(\s*['"]?(?:https?:|\/\/|data:)/i.test(source)) return false;
   const urls = [...source.matchAll(/url\s*\(\s*(['"]?)([^)'"]+)\1\s*\)/gi)];
   const without = source.replace(/url\s*\(\s*(['"]?)([^)'"]+)\1\s*\)/gi,'');
   if (/url\s*\(/i.test(without)) return false;
@@ -120,6 +120,9 @@ function git(args) {
 }
 function detect() {
   const event = process.env.GITHUB_EVENT_NAME;
+  if (event === 'pull_request' && process.env.PR_BASE_REF !== 'main') {
+    return { fast: false, reason: 'Only PRs targeting protected main are eligible' };
+  }
   if (event !== 'pull_request' && !(event === 'push' && process.env.GITHUB_REF === 'refs/heads/main')) {
     return { fast: false, reason: 'Full CI for dispatch or untrusted event/ref' };
   }
