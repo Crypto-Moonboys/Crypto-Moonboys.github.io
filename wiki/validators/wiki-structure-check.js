@@ -101,8 +101,9 @@ function validateSharedAssets() {
 
   assert(/id="site-header"/.test(headerHtml), 'wiki/components/header.html must define #site-header');
   assert(/id="global-nav"/.test(headerHtml), 'wiki/components/header.html must define #global-nav');
-  assert(/id="header-search"/.test(headerHtml), 'wiki/components/header.html must define #header-search');
-  assert(/id="search-input"/.test(headerHtml), 'wiki/components/header.html must define #search-input');
+  assert(!/id="header-search"/.test(headerHtml), 'wiki shared header must not restore removed header search');
+  assert(!/id="search-input"/.test(headerHtml), 'wiki shared header must not restore removed search input');
+  assert(/class="site-logo-home"[^>]*href="\/index.html"/.test(headerHtml), 'wiki shared header must preserve logo home link');
   assert(/__WIKI_SWARMSY_HEADER__/.test(headerJs), 'wiki/components/header.js must publish shared header metadata');
   assert(shellHtml.includes(REQUIRED_HEADER_MARKER), 'wiki/layouts/wiki-shell.html must reference the shared header component');
   assert(shellHtml.includes(REQUIRED_SHELL_MARKER), 'wiki/layouts/wiki-shell.html must self-identify as the canonical shell');
