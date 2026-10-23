@@ -13,11 +13,14 @@
   var FRICTION = 0.78;
   var RUN_ACCEL = 0.74;
   var MAX_SPEED = 4.2;
+  var SPEED_BOOST_MAX_SPEED = 6;
+  var SPEED_BOOST_DURATION_MS = 6000;
+  var SPEED_BOX_RENDER_SIZE = 28;
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 4; // Replay v1 format, single start-area parachute rat.
+  var COURSE_LAYOUT_VERSION = 5; // Replay v1 format, speed box, Graffbot fire and balloon enemy.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
@@ -32,6 +35,24 @@
   var BOT_SHEET_FRAMES = 25;
   var BOT_RENDER_WIDTH = 70;
   var BOT_RENDER_HEIGHT = 52;
+  var GRAFFBOT_FIRE_COLUMNS = 4;
+  var GRAFFBOT_FIRE_ROWS = 4;
+  var GRAFFBOT_FIRE_FRAMES = 16;
+  var GRAFFBOT_FIRE_FRAME_MS = 55;
+  var GRAFFBOT_FIRE_DURATION_MS = GRAFFBOT_FIRE_FRAMES * GRAFFBOT_FIRE_FRAME_MS;
+  var GRAFFBOT_FIRE_COOLDOWN_MS = 2400;
+  var GRAFFBOT_FIRE_TRIGGER_RANGE = 150;
+  var GRAFFBOT_FIRE_RENDER_SIZE = 96;
+  var GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
+  var BALLOON_SHEET_COLUMNS = 4;
+  var BALLOON_WALK_FRAMES = 14;
+  var BALLOON_RELEASE_FRAMES = 16;
+  var BALLOON_FRAME_MS = 90;
+  var BALLOON_CYCLE_MS = BALLOON_RELEASE_FRAMES * BALLOON_FRAME_MS;
+  var BALLOON_REPEAT_DELAY_MS = 420;
+  var BALLOON_TRIGGER_RANGE = 330;
+  var BALLOON_RENDER_SIZE = 96;
+  var BALLOON_FOOT_PADDING = 16;
   var RAT_SHEET_COLUMNS = 5;
   var RAT_SHEET_ROWS = 5;
   var RAT_SHEET_FRAMES = 25;
@@ -144,6 +165,34 @@
     return frames;
   }
 
+  // The newly supplied production sheets use one flat gray matte rather than
+  // alpha. Remove only pixels matching their own top-left matte colour; keep
+  // grayscale character details, flame sparks and red balloon pixels intact.
+  function prepareMatteSpriteSheet(image, tolerance) {
+    if (!image) return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    var context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    var rgba = pixels.data;
+    var matteRed = rgba[0];
+    var matteGreen = rgba[1];
+    var matteBlue = rgba[2];
+    var limit = typeof tolerance === 'number' ? tolerance : 18;
+    for (var index = 0; index < rgba.length; index += 4) {
+      if (Math.abs(rgba[index] - matteRed) <= limit &&
+          Math.abs(rgba[index + 1] - matteGreen) <= limit &&
+          Math.abs(rgba[index + 2] - matteBlue) <= limit) {
+        rgba[index + 3] = 0;
+      }
+    }
+    context.putImageData(pixels, 0, 0);
+    canvas.__nbgSource = image.src;
+    return canvas;
+  }
+
   function loadJson(src) {
     return fetch(src).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
@@ -183,6 +232,7 @@
       if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
       if (manifest.objects.mysteryBox) assets.mysteryBox = resolveAssetPath(manifest.objects.mysteryBox);
       if (manifest.objects.starBox) assets.starBox = resolveAssetPath(manifest.objects.starBox);
+      if (manifest.objects.speedBox) assets.speedBox = resolveAssetPath(manifest.objects.speedBox);
       if (manifest.objects.floorCrate) assets.floorCrate = resolveAssetPath(manifest.objects.floorCrate);
       if (manifest.objects.floatingBrick) assets.floatingBrick = resolveAssetPath(manifest.objects.floatingBrick);
       if (manifest.objects.floatingRock) assets.floatingRock = resolveAssetPath(manifest.objects.floatingRock);
@@ -206,6 +256,9 @@
       if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
       if (manifest.enemies.graffitiBotKick) assets.botKick = resolveAssetPath(manifest.enemies.graffitiBotKick);
       if (manifest.enemies.graffitiBotHurt) assets.botHurt = resolveAssetPath(manifest.enemies.graffitiBotHurt);
+      if (manifest.enemies.graffitiBotFire) assets.botFire = resolveAssetPath(manifest.enemies.graffitiBotFire);
+      if (manifest.enemies.balloonWalk) assets.balloonWalk = resolveAssetPath(manifest.enemies.balloonWalk);
+      if (manifest.enemies.balloonRelease) assets.balloonRelease = resolveAssetPath(manifest.enemies.balloonRelease);
     }
 
     return assets;
@@ -289,6 +342,9 @@
       // Storage may be blocked; no local competitive record is retained.
     }
     var sprayTimer = 0;
+    var speedBoostUntil = 0;
+    var balloonRewardNotificationText = '';
+    var balloonRewardNotificationUntil = 0;
     var parachuteRats = [];
     var flyingPigFrames = null;
     var parachuteSpawnCount = 0;
@@ -385,6 +441,11 @@
     ];
     var rewardNotificationText = '';
     var rewardNotificationUntil = 0;
+    // Four finite, reachable collectibles spread across the fixed course.
+    // Collecting another refreshes the timer; speed itself never stacks.
+    var speedBoxes = [875, 5685, 10935, 16185].map(function (x) {
+      return { x: x, y: FLOOR_Y - 28, w: 28, h: 28, collected: false };
+    });
 
     var secretNotificationUntil = 0;
     var secretNotificationText = '';
@@ -423,7 +484,10 @@
     var enemies = [
       { type: 'rat', x: 600, y: FLOOR_Y - 42, w: 28, h: 42, vx: 1.1, min: 540, max: 690 },
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
-      { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }
+      { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 },
+      { type: 'balloon', x: 1780, y: FLOOR_Y - 48, w: 30, h: 48, vx: 0.62,
+        min: 1715, max: 1825, balloonState: 'walk', balloonCycles: 0,
+        balloonStartedAt: 0, nextBalloonAt: 0, balloonRewardAwarded: false }
     ];
     var hazards = [];
     var courseCheckpoints = [];
@@ -512,6 +576,7 @@
       backflipActive = false;
       setPlayerAnimation('hurt');
       sprayTimer = 0;
+      speedBoostUntil = 0;
     }
 
     var startInputCodes = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'];
@@ -630,7 +695,8 @@
       if (!left && !right) {
         player.vx *= Math.pow(FRICTION, step);
       }
-      player.vx = clamp(player.vx, -MAX_SPEED, MAX_SPEED);
+      var activeMaxSpeed = runElapsedMs < speedBoostUntil ? SPEED_BOOST_MAX_SPEED : MAX_SPEED;
+      player.vx = clamp(player.vx, -activeMaxSpeed, activeMaxSpeed);
 
       if (jumpPressed && player.grounded) {
         player.vy = JUMP_VELOCITY;
@@ -709,6 +775,9 @@
       if (enemy.type === 'bot') {
         return { x: enemy.x - 14, y: enemy.y + bob - 12, w: 58, h: 50 };
       }
+      if (enemy.type === 'balloon') {
+        return { x: enemy.x - 6, y: enemy.y + bob - 4, w: 42, h: 52 };
+      }
       return { x: enemy.x - 8, y: enemy.y + bob - 12, w: 44, h: 54 };
     }
 
@@ -729,6 +798,23 @@
         y: body.y + 12,
         w: 28,
         h: Math.max(20, body.h - 22)
+      };
+    }
+
+    function getGraffbotFireFrame(enemy, time) {
+      if (!enemy || enemy.type !== 'bot' || !(enemy.fireUntil > time)) return -1;
+      return Math.min(GRAFFBOT_FIRE_FRAMES - 1,
+        Math.max(0, Math.floor((time - enemy.fireStartedAt) / GRAFFBOT_FIRE_FRAME_MS)));
+    }
+
+    function getGraffbotFireRect(enemy, time) {
+      if (getGraffbotFireFrame(enemy, time) < 0) return null;
+      var facing = enemy.fireFacing || (enemy.vx < 0 ? -1 : 1);
+      return {
+        x: facing > 0 ? enemy.x + enemy.w - 3 : enemy.x - GRAFFBOT_FIRE_DAMAGE_RANGE + 3,
+        y: enemy.y + 3,
+        w: GRAFFBOT_FIRE_DAMAGE_RANGE,
+        h: 34
       };
     }
 
@@ -816,6 +902,18 @@
       }
     }
 
+    function updateSpeedBoxes(time) {
+      for (var i = 0; i < speedBoxes.length; i += 1) {
+        var box = speedBoxes[i];
+        if (box.collected || !rectsOverlap(player, box)) continue;
+        box.collected = true;
+        speedBoostUntil = time + SPEED_BOOST_DURATION_MS;
+        window.dispatchEvent(new CustomEvent('nbg-speed-boost', {
+          detail: { activeUntil: speedBoostUntil, maxSpeed: SPEED_BOOST_MAX_SPEED, box: box }
+        }));
+      }
+    }
+
     function updateRewardBoxes(time) {
       for (var i = 0; i < rewardBoxes.length; i += 1) {
         var box = rewardBoxes[i];
@@ -871,7 +969,17 @@
       if (enemy.defeated) return;
       enemy.defeated = true;
       enemy.defeatedAt = time;
+      enemy.fireUntil = 0;
+      enemy.balloonState = 'defeated';
       var earnedXp = enemy.spawnedByParachute ? 100 : 75;
+      if (enemy.type === 'balloon') {
+        if (enemy.balloonRewardAwarded) return;
+        enemy.balloonRewardAwarded = true;
+        earnedXp = 10 + Math.floor(nextRunRandom() * 9991);
+        enemy.balloonRewardXp = earnedXp;
+        balloonRewardNotificationText = '+' + earnedXp.toLocaleString('en-US') + ' XP';
+        balloonRewardNotificationUntil = time + 2500;
+      }
       xp += earnedXp;
       window.dispatchEvent(new CustomEvent('nbg-enemy-defeated', {
         detail: { type: enemy.type || enemy.variant, reason: reason, earnedXp: earnedXp, xp: xp }
@@ -916,6 +1024,7 @@
         player.health = 0;
         gameOver = true;
         running = false;
+        speedBoostUntil = 0;
         clearInput();
         window.dispatchEvent(new CustomEvent('nbg-game-over', {
           detail: { timeMs: Math.round(runElapsedMs), xp: xp, enemy: type }
@@ -1019,8 +1128,42 @@
           if (enemy.spawnedByParachute) enemies.splice(i, 1);
           continue;
         }
-        enemy.x += enemy.vx * step;
-        if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
+
+        var balloonActive = enemy.type === 'balloon' && enemy.balloonState === 'release';
+        if (enemy.type === 'balloon') {
+          if (balloonActive && time - enemy.balloonStartedAt >= BALLOON_CYCLE_MS) {
+            enemy.balloonCycles += 1;
+            enemy.balloonState = 'walk';
+            enemy.nextBalloonAt = enemy.balloonCycles < 2 ?
+              time + BALLOON_REPEAT_DELAY_MS : Number.POSITIVE_INFINITY;
+            balloonActive = false;
+          }
+          if (!balloonActive && enemy.balloonCycles < 2 &&
+              Math.abs(player.x - enemy.x) < BALLOON_TRIGGER_RANGE &&
+              time >= (enemy.nextBalloonAt || 0)) {
+            enemy.balloonState = 'release';
+            enemy.balloonStartedAt = time;
+            enemy.balloonFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
+            balloonActive = true;
+          }
+        }
+
+        var botFireActive = enemy.type === 'bot' && (enemy.fireUntil || 0) > time;
+        if (enemy.type === 'bot' && !botFireActive &&
+            Math.abs(player.x - enemy.x) < GRAFFBOT_FIRE_TRIGGER_RANGE &&
+            Math.abs(player.y - enemy.y) < 70 &&
+            time >= (enemy.nextFireAt || 0)) {
+          enemy.fireFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
+          enemy.fireStartedAt = time;
+          enemy.fireUntil = time + GRAFFBOT_FIRE_DURATION_MS;
+          enemy.nextFireAt = time + GRAFFBOT_FIRE_COOLDOWN_MS;
+          botFireActive = true;
+        }
+
+        if (!balloonActive && !botFireActive) {
+          enemy.x += enemy.vx * step;
+          if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
+        }
         if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
         if (enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat') {
           var ratClose = Math.abs(player.x - enemy.x) < RAT_ATTACK_RANGE && Math.abs(player.y - enemy.y) < 65;
@@ -1044,9 +1187,11 @@
         var isRat = enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat';
         var activeRatAttack = isRat && (enemy.attackUntil || 0) > time &&
           rectsOverlap(getPlayerCombatRect(), getRatAttackRect(enemy));
+        var fireRect = enemy.type === 'bot' ? getGraffbotFireRect(enemy, time) : null;
+        var activeGraffbotFire = fireRect && rectsOverlap(getPlayerCombatRect(), fireRect);
         if (player.invuln <= 0 &&
-            (rectsOverlap(getPlayerCombatRect(), enemyRect) || activeRatAttack)) {
-          damagePlayer(enemy.type, enemy.x);
+            (rectsOverlap(getPlayerCombatRect(), enemyRect) || activeRatAttack || activeGraffbotFire)) {
+          damagePlayer(activeGraffbotFire ? 'graffbot-fire' : enemy.type, enemy.x);
         }
       }
     }
@@ -1347,14 +1492,17 @@
         var enemy = enemies[i];
         if (enemy.defeated) continue;
         var botHurt = enemy.type === 'bot' && (enemy.hurtUntil || 0) > time;
-        var botKicking = enemy.type === 'bot' && !botHurt && Math.abs(player.x - enemy.x) < 68 && Math.abs(player.y - enemy.y) < 48;
+        var botFireActive = enemy.type === 'bot' && (enemy.fireUntil || 0) > time;
+        var botKicking = enemy.type === 'bot' && !botHurt && (botFireActive || (Math.abs(player.x - enemy.x) < 68 && Math.abs(player.y - enemy.y) < 48));
         var botImageKey = botHurt ? 'botHurt' : botKicking ? 'botKick' : 'bot';
         var isWalkingRat = enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat';
         var ratAttacking = isWalkingRat && (enemy.attackUntil || 0) > time;
         var ratImageKey = ratAttacking ? enemy.attackType :
           (enemy.type === 'turquoiseRat' ? 'turquoiseRatWalk' :
           enemy.type === 'brownRat' ? 'brownRatWalk' : 'rat');
-        var image = images[enemy.type === 'bot' ? botImageKey : isWalkingRat ? ratImageKey : enemy.type];
+        var balloonActive = enemy.type === 'balloon' && enemy.balloonState === 'release';
+        var image = images[enemy.type === 'bot' ? botImageKey : isWalkingRat ? ratImageKey :
+          enemy.type === 'balloon' ? (balloonActive ? 'balloonRelease' : 'balloonWalk') : enemy.type];
         var x = Math.round(enemy.x - cameraX);
         var cullMargin = enemy.type === 'pigeon' ?
           Math.round((FLYING_PIG_RENDER_WIDTH - enemy.w) / 2) : 0;
@@ -1417,18 +1565,44 @@
               ctx.drawImage(pigImage, 0, 0, pigImage.width, pigImage.height,
                 pigDrawX, pigDrawY, FLYING_PIG_RENDER_WIDTH, FLYING_PIG_RENDER_HEIGHT);
             }
+          } else if (enemy.type === 'balloon') {
+            var balloonFrameCount = balloonActive ? BALLOON_RELEASE_FRAMES : BALLOON_WALK_FRAMES;
+            var balloonFrame = balloonActive ?
+              Math.min(balloonFrameCount - 1,
+                Math.floor((time - enemy.balloonStartedAt) / BALLOON_FRAME_MS)) :
+              Math.floor((time + enemy.x * 3) / 100) % balloonFrameCount;
+            balloonFrame = Math.max(0, balloonFrame);
+            var balloonSourceW = (image.naturalWidth || image.width) / BALLOON_SHEET_COLUMNS;
+            var balloonSourceH = (image.naturalHeight || image.height) / 4;
+            var balloonDrawX = x - Math.round((BALLOON_RENDER_SIZE - enemy.w) / 2);
+            var balloonDrawY = y + enemy.h - BALLOON_RENDER_SIZE + BALLOON_FOOT_PADDING;
+            var balloonFacing = balloonActive ? (enemy.balloonFacing || 1) : (enemy.vx < 0 ? -1 : 1);
+            if (balloonFacing < 0) {
+              ctx.translate(balloonDrawX + BALLOON_RENDER_SIZE, balloonDrawY);
+              ctx.scale(-1, 1);
+              ctx.drawImage(image, balloonFrame % BALLOON_SHEET_COLUMNS * balloonSourceW,
+                Math.floor(balloonFrame / BALLOON_SHEET_COLUMNS) * balloonSourceH,
+                balloonSourceW, balloonSourceH, 0, 0, BALLOON_RENDER_SIZE, BALLOON_RENDER_SIZE);
+            } else {
+              ctx.drawImage(image, balloonFrame % BALLOON_SHEET_COLUMNS * balloonSourceW,
+                Math.floor(balloonFrame / BALLOON_SHEET_COLUMNS) * balloonSourceH,
+                balloonSourceW, balloonSourceH, balloonDrawX, balloonDrawY,
+                BALLOON_RENDER_SIZE, BALLOON_RENDER_SIZE);
+            }
           } else if (enemy.type === 'bot') {
             var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
             var cellH = image.naturalHeight / BOT_SHEET_ROWS;
             var frameMs = botHurt ? 75 : botKicking ? 70 : 85;
             var frame = botHurt ? Math.min(BOT_SHEET_FRAMES - 1, Math.floor((time - (enemy.hurtUntil - 360)) / frameMs)) :
+              botFireActive ? Math.min(BOT_SHEET_FRAMES - 1, Math.floor((time - enemy.fireStartedAt) / frameMs)) :
               Math.floor((time + enemy.x * 3) / frameMs) % BOT_SHEET_FRAMES;
             frame = Math.max(0, frame);
             var sourceX = frame % BOT_SHEET_COLUMNS * cellW;
             var sourceY = Math.floor(frame / BOT_SHEET_COLUMNS) * cellH;
             var drawX = x - Math.round((BOT_RENDER_WIDTH - enemy.w) / 2);
             var drawY = y + enemy.h - BOT_RENDER_HEIGHT;
-            if (enemy.vx < 0) {
+            var botFacing = botFireActive ? (enemy.fireFacing || 1) : (enemy.vx < 0 ? -1 : 1);
+            if (botFacing < 0) {
               ctx.translate(drawX + BOT_RENDER_WIDTH, drawY);
               ctx.scale(-1, 1);
               ctx.drawImage(image, sourceX, sourceY, cellW, cellH, 0, 0, BOT_RENDER_WIDTH, BOT_RENDER_HEIGHT);
@@ -1450,7 +1624,49 @@
       }
     }
 
+    function drawGraffbotFires(time) {
+      var image = images.botFire;
+      if (!image) return;
+      var cellW = (image.naturalWidth || image.width) / GRAFFBOT_FIRE_COLUMNS;
+      var cellH = (image.naturalHeight || image.height) / GRAFFBOT_FIRE_ROWS;
+      for (var i = 0; i < enemies.length; i += 1) {
+        var enemy = enemies[i];
+        var frame = getGraffbotFireFrame(enemy, time);
+        if (enemy.defeated || frame < 0) continue;
+        var facing = enemy.fireFacing || (enemy.vx < 0 ? -1 : 1);
+        var anchorX = Math.round(enemy.x - cameraX + (facing > 0 ? enemy.w - 4 : 4));
+        var drawX = facing > 0 ? anchorX : anchorX - GRAFFBOT_FIRE_RENDER_SIZE;
+        var drawY = Math.round(enemy.y + FOREGROUND_VISUAL_OFFSET_Y + enemy.h / 2 -
+          GRAFFBOT_FIRE_RENDER_SIZE / 2);
+        var sourceX = frame % GRAFFBOT_FIRE_COLUMNS * cellW;
+        var sourceY = Math.floor(frame / GRAFFBOT_FIRE_COLUMNS) * cellH;
+        ctx.save();
+        if (facing > 0) {
+          ctx.translate(drawX + GRAFFBOT_FIRE_RENDER_SIZE, drawY);
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, sourceX, sourceY, cellW, cellH,
+            0, 0, GRAFFBOT_FIRE_RENDER_SIZE, GRAFFBOT_FIRE_RENDER_SIZE);
+        } else {
+          ctx.drawImage(image, sourceX, sourceY, cellW, cellH,
+            drawX, drawY, GRAFFBOT_FIRE_RENDER_SIZE, GRAFFBOT_FIRE_RENDER_SIZE);
+        }
+        ctx.restore();
+      }
+    }
+
     function drawObjects() {
+      for (var speedIndex = 0; speedIndex < speedBoxes.length; speedIndex += 1) {
+        var speedBox = speedBoxes[speedIndex];
+        if (speedBox.collected) continue;
+        var speedX = Math.round(speedBox.x - cameraX);
+        if (speedX + speedBox.w < 0 || speedX > WIDTH) continue;
+        var speedY = speedBox.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (images.speedBox) {
+          ctx.drawImage(images.speedBox, speedX, speedY,
+            SPEED_BOX_RENDER_SIZE, SPEED_BOX_RENDER_SIZE);
+        }
+      }
+
       for (var boxIndex = 0; boxIndex < rewardBoxes.length; boxIndex += 1) {
         var box = rewardBoxes[boxIndex];
         var boxX = Math.round(box.x - cameraX);
@@ -1567,6 +1783,15 @@
       ctx.fillStyle = '#ffe45a';
       ctx.fillText('PAR 3:00' + (comboCount > 1 && time < comboExpiresAt ? '  COMBO x' + comboCount : ''), WIDTH - 159, 34);
       ctx.restore();
+      if (time < speedBoostUntil) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(55, 31, 0, 0.9)';
+        ctx.fillRect(WIDTH - 165, 44, 160, 20);
+        ctx.font = 'bold 11px Courier New';
+        ctx.fillStyle = '#ffe45a';
+        ctx.fillText('BOOST ' + ((speedBoostUntil - time) / 1000).toFixed(1) + 's', WIDTH - 159, 58);
+        ctx.restore();
+      }
     }
 
     function drawSecretNotification(time) {
@@ -1593,6 +1818,18 @@
       ctx.restore();
     }
 
+    function drawBalloonRewardNotification(time) {
+      if (time >= balloonRewardNotificationUntil) return;
+      ctx.save();
+      ctx.font = 'bold 18px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#111111';
+      ctx.fillText(balloonRewardNotificationText, WIDTH / 2 + 2, 91);
+      ctx.fillStyle = '#ff4d65';
+      ctx.fillText(balloonRewardNotificationText, WIDTH / 2, 89);
+      ctx.restore();
+    }
+
     function render(time) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = '#0078fb';
@@ -1606,12 +1843,14 @@
       // Attack start/end timestamps use runElapsedMs in updateEnemies();
       // RAF performance.now() is a different clock and hid attack poses.
       drawEnemies(runElapsedMs);
+      drawGraffbotFires(runElapsedMs);
       drawParachuteRats(time);
       drawPlayer();
       ctx.restore();
       drawSpeedrunHud(runElapsedMs);
       drawSecretNotification(runElapsedMs);
       drawRewardNotification(runElapsedMs);
+      drawBalloonRewardNotification(runElapsedMs);
       drawOverlay();
     }
 
@@ -1633,6 +1872,7 @@
           return;
         }
         updateCoins(runElapsedMs);
+        updateSpeedBoxes(runElapsedMs);
         updateSecretCoins(runElapsedMs);
         updateRewardBoxes(runElapsedMs);
         updateEnemies(runElapsedMs, dt);
@@ -1668,6 +1908,11 @@
         get platforms() { return platforms; },
         get crates() { return crates; },
         get rewardBoxes() { return rewardBoxes; },
+        get speedBoxes() { return speedBoxes; },
+        get speedBoostUntil() { return speedBoostUntil; },
+        get speedBoostActive() { return runElapsedMs < speedBoostUntil; },
+        get balloonRewardNotificationText() { return balloonRewardNotificationText; },
+        get balloonRewardNotificationUntil() { return balloonRewardNotificationUntil; },
         get rewardNotificationText() { return rewardNotificationText; },
         get rewardNotificationUntil() { return rewardNotificationUntil; },
         get hazards() { return hazards; },
@@ -1695,10 +1940,12 @@
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
         get playerAnimations() { return playerAnimations; },
+        get objectImages() { return images; },
         get playerCombatRect() { return getPlayerCombatRect(); },
         enemyCombatRect: function (enemy) { return getEnemyCombatRect(enemy); },
         get sprayAttackRect() { return getSprayAttackRect(); },
-        ratAttackRect: function (enemy) { return getRatAttackRect(enemy); }
+        ratAttackRect: function (enemy) { return getRatAttackRect(enemy); },
+        graffbotFireRect: function (enemy) { return getGraffbotFireRect(enemy, runElapsedMs); }
       };
     }
 
@@ -1733,6 +1980,9 @@
       checkpointX = 72;
       finishBonusAwarded = false;
       sprayTimer = 0;
+      speedBoostUntil = 0;
+      balloonRewardNotificationText = '';
+      balloonRewardNotificationUntil = 0;
       parachuteRats = [];
       parachuteSpawnCount = 0;
       runElapsedMs = 0;
@@ -1776,6 +2026,7 @@
       });
       secretCoins.forEach(function (coin) { coin.taken = false; });
       rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
+      speedBoxes.forEach(function (box) { box.collected = false; });
       // Remove extra walkers created by landed parachutes before restoring patrols.
       enemies.length = 0;
       initialEnemies.forEach(function (enemy) { enemies.push(Object.assign({}, enemy)); });
@@ -1815,7 +2066,8 @@
 
         return Promise.all(Object.keys(runtimeAssets.assets).map(function (key) {
           return loadImage(runtimeAssets.assets[key]).then(function (result) {
-            images[key] = result.image;
+            images[key] = ['botFire', 'balloonWalk', 'balloonRelease'].indexOf(key) >= 0 && result.image ?
+              prepareMatteSpriteSheet(result.image, 18) : result.image;
             assetStatus[key] = {
               src: result.src,
               loaded: !!result.image

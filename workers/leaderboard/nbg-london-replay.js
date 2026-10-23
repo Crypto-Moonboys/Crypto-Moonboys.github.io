@@ -13,6 +13,15 @@ const MAX_FRAMES = 120000;
 const MIN_MS = 65000;
 const MAX_MS = 1800000;
 const MAX_SPEED = 4.2;
+const SPEED_BOOST_MAX_SPEED = 6;
+const SPEED_BOOST_DURATION_MS = 6000;
+const GRAFFBOT_FIRE_DURATION_MS = 16 * 55;
+const GRAFFBOT_FIRE_COOLDOWN_MS = 2400;
+const GRAFFBOT_FIRE_TRIGGER_RANGE = 150;
+const GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
+const BALLOON_CYCLE_MS = 16 * 90;
+const BALLOON_REPEAT_DELAY_MS = 420;
+const BALLOON_TRIGGER_RANGE = 330;
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x &&
   a.y < b.y + b.h && a.y + a.h > b.y;
@@ -47,6 +56,8 @@ function levelData(courseVersion = 1) {
     { x: 535, y: 85, w: 25, h: 25, kind: 'mystery' },
     { x: 1600, y: 55, w: 25, h: 25, kind: 'star' },
   ];
+  const speedBoxes = courseVersion>=5 ?
+    [875,5685,10935,16185].map(x => ({x,y:FLOOR-28,w:28,h:28})) : [];
   const secrets = [
     [405, -92], [485, -105], [755, -102], [825, -116],
     [1180, -99], [1580, -112],
@@ -61,6 +72,11 @@ function levelData(courseVersion = 1) {
     { x:1010, y:128, w:28, h:22, vx:1.35, min:940, max:1128, type:'pigeon' },
     { x:1455, y:FLOOR-38, w:30, h:38, vx:0.85, min:1390, max:1550, type:'bot' },
   ];
+  if (courseVersion>=5) {
+    enemies.push({x:1780,y:FLOOR-48,w:30,h:48,vx:0.62,min:1715,max:1825,
+      type:'balloon',balloonState:'walk',balloonCycles:0,balloonStartedAt:0,
+      nextBalloonAt:0,balloonRewardAwarded:false});
+  }
   const hazards = [];
   const checkpoints = [{ x:1240, y:FLOOR-48, w:30, h:48 }];
   for (let i = 0; i < 18; i++) {
@@ -105,7 +121,7 @@ function levelData(courseVersion = 1) {
     if ([3,7,11,15].includes(i))
       checkpoints.push({ x:x+965,y:FLOOR-48,w:30,h:48 });
   }
-  return { platforms, crates, boxes, secrets, coins, enemies, hazards, checkpoints };
+  return { platforms, crates, boxes, speedBoxes, secrets, coins, enemies, hazards, checkpoints };
 }
 
 function decodeFrames(replay) {
@@ -129,21 +145,24 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // original level, random/parachute physics and two-jump rules. Revision 2
   // remains verifiable under its original combat geometry; revision 3 opts
   // into sprite-aligned platform/combat geometry. Revision 4 replaces the
-  // recurring timer with one start-area parachute rat per fresh run.
+  // recurring timer with one start-area parachute rat per fresh run. Revision
+  // 5 adds speed boxes, Graffbot fire and deterministic balloon-enemy XP.
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && ![2,3,4].includes(replay.course_version))
+  if (hasCourseVersion && ![2,3,4,5].includes(replay.course_version))
     return { valid:false };
   const courseVersion = hasCourseVersion ? replay.course_version : 1;
   const level = levelData(courseVersion);
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
   const p = { x:64, y:FLOOR-34, w:24, h:34, vx:0, vy:0, facing:1,
     grounded:true, health:3, invuln:0 };
-  let jumps=0, sprayTimer=0, combo=0, comboExpires=0, checkpointX=72;
+  let jumps=0, sprayTimer=0, speedBoostUntil=0, combo=0, comboExpires=0, checkpointX=72;
   let elapsed=0, xp=0, coinCount=0, secretCount=0, complete=false;
   let consumedFrames=0;
   let maximumX=64;
+  let graffbotFireCount=0;
+  let balloonRewardTotal=0;
   // The browser resets the same LCG seed at every run start; no client
   // reward or random-spawn claim is trusted by the Worker.
   let runRandomState = 0x9e3779b9;
@@ -161,6 +180,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(target.variant) return {x:target.x-12,y:target.y+bob-10,w:52,h:56};
     if(target.type==='pigeon') return {x:target.x-12,y:target.y+bob-10,w:52,h:42};
     if(target.type==='bot') return {x:target.x-14,y:target.y+bob-12,w:58,h:50};
+    if(target.type==='balloon') return {x:target.x-6,y:target.y+bob-4,w:42,h:52};
     return {x:target.x-8,y:target.y+bob-12,w:44,h:54};
   };
   const sprayAttackRect = () => ({
@@ -171,6 +191,12 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const facing=enemy.attackFacing||(enemy.vx<0?-1:1);
     return {x:facing>0?body.x+body.w-4:body.x-24,y:body.y+12,
       w:28,h:Math.max(20,body.h-22)};
+  };
+  const graffbotFireRect = enemy => {
+    if(courseVersion<5 || enemy.type!=='bot' || !(enemy.fireUntil>elapsed)) return null;
+    const facing=enemy.fireFacing||(enemy.vx<0?-1:1);
+    return {x:facing>0?enemy.x+enemy.w-3:enemy.x-GRAFFBOT_FIRE_DAMAGE_RANGE+3,
+      y:enemy.y+3,w:GRAFFBOT_FIRE_DAMAGE_RANGE,h:34};
   };
   const sprayed = target => {
     if(sprayTimer<=0) return false;
@@ -191,7 +217,17 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   };
   const defeat = (enemy,stomp) => {
     enemy.defeated=true;
-    xp+=enemy.spawnedByParachute ? 100 : 75;
+    enemy.fireUntil=0;
+    enemy.balloonState='defeated';
+    let earned=enemy.spawnedByParachute ? 100 : 75;
+    if(courseVersion>=5 && enemy.type==='balloon'){
+      if(enemy.balloonRewardAwarded) return;
+      enemy.balloonRewardAwarded=true;
+      earned=10+Math.floor(nextRunRandom()*9991);
+      enemy.balloonRewardXp=earned;
+      balloonRewardTotal+=earned;
+    }
+    xp+=earned;
     if(stomp) p.vy=-9;
   };
   const invulnerableDamage = (sourceX) => {
@@ -215,7 +251,13 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         parachuteSpawnCount, activeParachuteRats:parachuteRats.length,
         parachuteRatX:parachuteRats[0]?.x ?? null,
         landedParachuteRats:level.enemies.filter(e=>e.spawnedByParachute&&!e.defeated).length,
-        obstacles:level.hazards.concat(level.crates) }) : dec(4);
+        obstacles:level.hazards.concat(level.crates),
+        speedBoostActive:elapsed<speedBoostUntil,
+        speedBoxesCollected:level.speedBoxes.filter(box=>box.collected).length,
+        graffbotFireCount,
+        balloonCycles:level.enemies.find(enemy=>enemy.type==='balloon')?.balloonCycles ?? null,
+        balloonRewardXp:level.enemies.find(enemy=>enemy.type==='balloon')?.balloonRewardXp ?? null,
+        balloonRewardTotal }) : dec(4);
     if (!Number.isInteger(mask) || mask<0 || mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
         dt>frameElapsed) return { valid:false };
     elapsed += frameElapsed;
@@ -226,7 +268,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if (left) {p.vx-=0.74*step;p.facing=-1;}
     if (right) {p.vx+=0.74*step;p.facing=1;}
     if (!left && !right) p.vx*=Math.pow(0.78,step);
-    p.vx=clamp(p.vx,-MAX_SPEED,MAX_SPEED);
+    const activeMaxSpeed=courseVersion>=5&&elapsed<speedBoostUntil?SPEED_BOOST_MAX_SPEED:MAX_SPEED;
+    p.vx=clamp(p.vx,-activeMaxSpeed,activeMaxSpeed);
     if (jump) {
       if (p.grounded) {p.vy=-11.4;p.grounded=false;jumps=1;}
       else if(jumps===1) {
@@ -274,7 +317,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
       p.x=checkpointX;p.y=FLOOR-p.h;previousPlayerY=p.y;previousPlayerVy=0;
       p.vx=0;p.vy=0;
-      jumps=0;p.invuln=1050;sprayTimer=0;
+      jumps=0;p.invuln=1050;sprayTimer=0;speedBoostUntil=0;
     }
     for(const coin of level.coins) {
       if(coin.taken || Math.abs(coin.x-p.x)>40) continue;
@@ -285,6 +328,11 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         comboExpires=elapsed+2400;
         xp+=coin.xp*combo;
       }
+    }
+    for(const box of level.speedBoxes) {
+      if(box.collected || !overlap(p,box)) continue;
+      box.collected=true;
+      speedBoostUntil=elapsed+SPEED_BOOST_DURATION_MS;
     }
     for(const coin of level.secrets) {
       if(coin.taken || Math.abs(coin.x-p.x)>40) continue;
@@ -322,8 +370,42 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         if(enemy.spawnedByParachute) level.enemies.splice(i,1);
         continue;
       }
-      enemy.x+=enemy.vx*step;
-      if(enemy.x<enemy.min || enemy.x>enemy.max) enemy.vx*=-1;
+
+      let balloonActive=courseVersion>=5&&enemy.type==='balloon'&&enemy.balloonState==='release';
+      if(courseVersion>=5&&enemy.type==='balloon'){
+        if(balloonActive&&elapsed-enemy.balloonStartedAt>=BALLOON_CYCLE_MS){
+          enemy.balloonCycles++;
+          enemy.balloonState='walk';
+          enemy.nextBalloonAt=enemy.balloonCycles<2?
+            elapsed+BALLOON_REPEAT_DELAY_MS:Number.POSITIVE_INFINITY;
+          balloonActive=false;
+        }
+        if(!balloonActive&&enemy.balloonCycles<2&&
+            Math.abs(p.x-enemy.x)<BALLOON_TRIGGER_RANGE&&
+            elapsed>=(enemy.nextBalloonAt||0)){
+          enemy.balloonState='release';
+          enemy.balloonStartedAt=elapsed;
+          enemy.balloonFacing=p.x+p.w/2<enemy.x+enemy.w/2?-1:1;
+          balloonActive=true;
+        }
+      }
+
+      let botFireActive=courseVersion>=5&&enemy.type==='bot'&&(enemy.fireUntil||0)>elapsed;
+      if(courseVersion>=5&&enemy.type==='bot'&&!botFireActive&&
+          Math.abs(p.x-enemy.x)<GRAFFBOT_FIRE_TRIGGER_RANGE&&
+          Math.abs(p.y-enemy.y)<70&&elapsed>=(enemy.nextFireAt||0)){
+        enemy.fireFacing=p.x+p.w/2<enemy.x+enemy.w/2?-1:1;
+        enemy.fireStartedAt=elapsed;
+        enemy.fireUntil=elapsed+GRAFFBOT_FIRE_DURATION_MS;
+        enemy.nextFireAt=elapsed+GRAFFBOT_FIRE_COOLDOWN_MS;
+        botFireActive=true;
+        graffbotFireCount++;
+      }
+
+      if(!balloonActive&&!botFireActive){
+        enemy.x+=enemy.vx*step;
+        if(enemy.x<enemy.min || enemy.x>enemy.max) enemy.vx*=-1;
+      }
       if(enemy.type==='pigeon') enemy.bob=Math.sin(elapsed/180)*9;
       if(['rat','turquoiseRat','brownRat'].includes(enemy.type)){
         const close=Math.abs(p.x-enemy.x)<70 && Math.abs(p.y-enemy.y)<65;
@@ -341,12 +423,15 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       const isRat=['rat','turquoiseRat','brownRat'].includes(enemy.type);
       const activeRatAttack=courseVersion>=3 && isRat &&
         (enemy.attackUntil||0)>elapsed && overlap(playerCombatRect(),ratAttackRect(enemy));
+      const fireRect=graffbotFireRect(enemy);
+      const activeGraffbotFire=fireRect&&overlap(playerCombatRect(),fireRect);
       if(p.invuln<=0 && (overlap(courseVersion>=3?playerCombatRect():p,body) ||
-          activeRatAttack)){
+          activeRatAttack||activeGraffbotFire)){
         invulnerableDamage(enemy.x);
       }
     }
-    // Parachute enemies are gameplay entities, not decoration. Replay their
+
+  // Parachute enemies are gameplay entities, not decoration. Replay their
     // full drift, collision, landing and attack sequence; otherwise a valid
     // browser run can diverge from the Worker after a few seconds.
     let landedCount=level.enemies.filter(e=>e.spawnedByParachute&&!e.defeated).length;
@@ -427,5 +512,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     return {valid:false, ...(debug ? {debug:{reason:'finish',x:p.x,maximumX,elapsed,consumedFrames,complete,health:p.health,jumps,courseVersion}}:{})};
 
   return { valid:true, complete:true, time_ms:Math.round(elapsed),
-    xp, coins:coinCount, secret_coins:secretCount };
+    xp, coins:coinCount, secret_coins:secretCount,
+    ...(debug ? {debug:{courseVersion,consumedFrames,complete,health:p.health,
+      jumps,maximumX,speedBoxesCollected:level.speedBoxes.filter(box=>box.collected).length,
+      graffbotFireCount,balloonRewardTotal,
+      balloonCycles:level.enemies.find(enemy=>enemy.type==='balloon')?.balloonCycles ?? null}}:{}) };
 }

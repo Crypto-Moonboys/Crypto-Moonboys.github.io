@@ -1141,7 +1141,7 @@ assert.deepEqual(
 );
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 312, 'speedrun must spawn 312 XP coins across four sizes');
-assert.equal(state.enemyCount, 57, 'each of 18 course sections must include rat, bot and pigeon');
+assert.equal(state.enemyCount, 58, 'course must retain all section enemies plus one finite balloon enemy');
 
 assert.equal(
   new URL(state.assetStatus.pigeon?.src || '', url).pathname,
@@ -1209,6 +1209,280 @@ for (const key of Object.keys(expectedAnimations)) {
     height: Math.ceil(expectedAnimation.frames / expectedAnimation.columns) *
       expectedAnimation.sourceFrameHeight
   }, `browser runtime must load expected-size player ${key} image or canvas`);
+}
+
+assert.deepEqual(await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const size = key => {
+    const image = state.objectImages[key];
+    return [image.naturalWidth ?? image.width, image.naturalHeight ?? image.height];
+  };
+  return {
+    speedBox: size('speedBox'),
+    botFire: size('botFire'),
+    balloonWalk: size('balloonWalk'),
+    balloonRelease: size('balloonRelease'),
+    paths: Object.fromEntries(['speedBox','botFire','balloonWalk','balloonRelease'].map(key => [
+      key, new URL(state.assetStatus[key].src, location.href).pathname
+    ]))
+  };
+}), {
+  speedBox: [81,81],
+  botFire: [512,512],
+  balloonWalk: [512,512],
+  balloonRelease: [512,512],
+  paths: {
+    speedBox: '/game/assets/objects/SPEEDBOX.png',
+    botFire: '/game/assets/objects/Pixel%20Flame%20Jet%20Burst-spritesheet.png',
+    balloonWalk: '/game/assets/objects/bber-walk-v2.png',
+    balloonRelease: '/game/assets/objects/bber-sdgd-v1.png'
+  }
+}, 'PR4 assets must load independently with their audited native dimensions');
+
+assert.ok(
+  runtimeSource.includes('var GRAFFBOT_FIRE_COLUMNS = 4') &&
+  runtimeSource.includes('var GRAFFBOT_FIRE_FRAMES = 16') &&
+  runtimeSource.includes('var BALLOON_WALK_FRAMES = 14') &&
+  runtimeSource.includes('var BALLOON_RELEASE_FRAMES = 16') &&
+  runtimeSource.includes('var SPEED_BOOST_MAX_SPEED = 6') &&
+  runtimeSource.includes('var SPEED_BOOST_DURATION_MS = 6000') &&
+  runtimeSource.includes("balloonRewardNotificationText = '+' + earnedXp.toLocaleString('en-US') + ' XP'"),
+  'audited independent frame counts, conservative boost and visible balloon XP must remain explicit'
+);
+
+// Real canvas/gameplay evidence on desktop and touch/mobile. Intercept the
+// actual drawImage calls so every approved flame/balloon frame is proven,
+// not merely loaded.
+for (const mechanicMode of [
+  {label:'desktop',options:{viewport:{width:960,height:540}},touch:false},
+  {label:'mobile',options:{viewport:{width:390,height:700},isMobile:true,hasTouch:true},touch:true}
+]) {
+  const mechanicPage = await browser.newPage(mechanicMode.options);
+  try {
+    await mechanicPage.goto(url,{waitUntil:'networkidle'});
+    await mechanicPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true);
+    await mechanicPage.evaluate(() => {
+      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
+      window.addEventListener('nbg-enemy-defeated',event => {
+        if(event.detail?.type==='balloon') window.__pr4DrawEvidence.defeats.push({...event.detail});
+      });
+      const canvas=document.getElementById('game');
+      const context=canvas.getContext('2d');
+      const original=context.drawImage;
+      context.drawImage=function(image,...args){
+        const state=window.NBGLevel1State;
+        if(image===state.objectImages.speedBox) window.__pr4DrawEvidence.speedBoxDraws++;
+        if(args.length===8 && image===state.objectImages.botFire){
+          const sourceW=(image.naturalWidth||image.width)/4;
+          const sourceH=(image.naturalHeight||image.height)/4;
+          window.__pr4DrawEvidence.flameFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
+          window.__pr4DrawEvidence.flameFacings.push(context.getTransform().a<0?-1:1);
+        }
+        if(args.length===8 && image===state.objectImages.balloonRelease){
+          const sourceW=(image.naturalWidth||image.width)/4;
+          const sourceH=(image.naturalHeight||image.height)/4;
+          window.__pr4DrawEvidence.balloonFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
+        }
+        if(args.length===8 && image===state.objectImages.balloonWalk){
+          const sourceW=(image.naturalWidth||image.width)/4;
+          const sourceH=(image.naturalHeight||image.height)/4;
+          window.__pr4DrawEvidence.walkFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
+        }
+        return original.call(this,image,...args);
+      };
+    });
+    if(mechanicMode.touch) await holdRunnerRight(mechanicPage);
+    else await mechanicPage.keyboard.press('KeyD');
+    await mechanicPage.waitForFunction(() => window.NBGLevel1State.running === true);
+    await mechanicPage.clock.pauseAt(Date.now()+100);
+
+    // Collect the in-world box and prove fixed speed, expiry and reset.
+    await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const box=state.speedBoxes[0];
+      state.player.x=box.x-80;
+      state.player.y=214-state.player.h;
+      state.player.vx=0;
+    });
+    await mechanicPage.clock.runFor(100);
+    assert.ok(await mechanicPage.evaluate(() => window.__pr4DrawEvidence.speedBoxDraws)>0,
+      mechanicMode.label+' must render the supplied SPEEDBOX image in-world');
+    await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const box=state.speedBoxes[0];
+      state.player.x=box.x;
+      state.player.y=box.y;
+      state.player.vx=0;
+    });
+    await mechanicPage.clock.runFor(120);
+    assert.equal(await mechanicPage.evaluate(() => window.NBGLevel1State.speedBoostActive),true,
+      mechanicMode.label+' speed box must activate in live gameplay');
+    if(mechanicMode.touch) {
+      await mechanicPage.locator('[data-control="right"]').first().dispatchEvent('pointerdown',{
+        pointerId:7,pointerType:'touch',isPrimary:true,bubbles:true
+      });
+    } else await mechanicPage.keyboard.down('ArrowRight');
+    await mechanicPage.clock.runFor(700);
+    const boosted=await mechanicPage.evaluate(() => ({
+      vx:window.NBGLevel1State.player.vx,
+      draws:window.__pr4DrawEvidence.speedBoxDraws,
+      collected:window.NBGLevel1State.speedBoxes[0].collected
+    }));
+    if(mechanicMode.touch) {
+      await mechanicPage.locator('[data-control="right"]').first().dispatchEvent('pointerup',{
+        pointerId:7,pointerType:'touch',isPrimary:true,bubbles:true
+      });
+    } else await mechanicPage.keyboard.up('ArrowRight');
+    assert.ok(boosted.vx>4.2&&boosted.vx<=6,
+      mechanicMode.label+' boost must increase speed without unlimited stacking');
+    assert.equal(boosted.collected,true,mechanicMode.label+' box must remain collected');
+    await mechanicPage.clock.runFor(6100);
+    assert.equal(await mechanicPage.evaluate(() => window.NBGLevel1State.speedBoostActive),false,
+      mechanicMode.label+' boost must expire back to normal speed');
+
+    await mechanicPage.evaluate(() => window.NBGLevel1Runtime.reset());
+    assert.deepEqual(await mechanicPage.evaluate(() => ({
+      active:window.NBGLevel1State.speedBoostActive,
+      boxes:window.NBGLevel1State.speedBoxes.map(box=>box.collected)
+    })),{active:false,boxes:[false,false,false,false]},
+    mechanicMode.label+' fresh reset must restore boxes and clear boost');
+
+    if(mechanicMode.touch) await holdRunnerRight(mechanicPage);
+    else await mechanicPage.keyboard.press('KeyD');
+    await mechanicPage.waitForFunction(() => window.NBGLevel1State.running === true);
+    await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const bot=state.enemies.find(enemy=>enemy.type==='bot');
+      state.player.x=bot.x-70;
+      state.player.y=214-state.player.h;
+      state.player.vx=0;
+      state.player.invuln=0;
+      bot.nextFireAt=0;
+      bot.fireUntil=0;
+    });
+    await mechanicPage.clock.runFor(920);
+    const leftFire=await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const bot=state.enemies.find(enemy=>enemy.type==='bot');
+      return {health:state.player.health,rect:state.graffbotFireRect(bot),
+        frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
+        facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort()};
+    });
+    assert.ok(leftFire.health<3,mechanicMode.label+' Graffbot fire must damage only after visible contact');
+    assert.deepEqual(leftFire.frames,Array.from({length:16},(_,index)=>index),
+      mechanicMode.label+' flame must render all 16 frames in order');
+    assert.ok(leftFire.facings.includes(1),
+      mechanicMode.label+' mirrored right-facing flame canvas draw must be observed');
+
+    await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const bot=state.enemies.find(enemy=>enemy.type==='bot');
+      state.player.x=bot.x+62;
+      state.player.y=214-state.player.h;
+      state.player.vx=0;
+      state.player.invuln=0;
+    });
+    await mechanicPage.clock.runFor(2500);
+    assert.ok((await mechanicPage.evaluate(() =>
+      [...new Set(window.__pr4DrawEvidence.flameFacings)])).includes(-1),
+      mechanicMode.label+' opposite Graffbot direction must mirror the same sheet');
+    assert.equal(await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const bot=state.enemies.find(enemy=>enemy.type==='bot');
+      return state.graffbotFireRect(bot);
+    }),null,mechanicMode.label+' flame hitbox must disappear with the animation');
+
+    await mechanicPage.evaluate(() => window.NBGLevel1Runtime.reset());
+    if(mechanicMode.touch) await holdRunnerRight(mechanicPage);
+    else await mechanicPage.keyboard.press('KeyD');
+    await mechanicPage.waitForFunction(() => window.NBGLevel1State.running === true);
+    await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
+      state.player.x=balloon.x-250;
+      state.player.y=214-state.player.h;
+      state.player.vx=0;
+      state.player.invuln=999999;
+    });
+    await mechanicPage.clock.runFor(3800);
+    await mechanicPage.clock.runFor(1500);
+    const balloonCycles=await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
+      return {
+        cycles:balloon.balloonCycles,
+        mode:balloon.balloonState,
+        releaseFrames:[...new Set(window.__pr4DrawEvidence.balloonFrames)].sort((a,b)=>a-b),
+        walkFrames:[...new Set(window.__pr4DrawEvidence.walkFrames)].sort((a,b)=>a-b)
+      };
+    });
+    assert.equal(balloonCycles.cycles,2,mechanicMode.label+' balloon enemy must complete exactly two cycles');
+    assert.equal(balloonCycles.mode,'walk',mechanicMode.label+' balloon enemy must return to walking');
+    assert.deepEqual(balloonCycles.releaseFrames,Array.from({length:16},(_,index)=>index),
+      mechanicMode.label+' balloon release/burst must render all 16 approved frames');
+    assert.deepEqual(balloonCycles.walkFrames,Array.from({length:14},(_,index)=>index),
+      mechanicMode.label+' walk animation must render 14 valid frames and skip two blank cells');
+    await mechanicPage.clock.runFor(4000);
+    assert.equal(await mechanicPage.evaluate(() =>
+      window.NBGLevel1State.enemies.find(enemy=>enemy.type==='balloon').balloonCycles),2,
+      mechanicMode.label+' must never release a third balloon');
+
+    const beforeBalloonXp=await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
+      state.player.x=balloon.x-34;
+      state.player.y=214-state.player.h;
+      state.player.facing=1;
+      state.player.invuln=999999;
+      return state.xp;
+    });
+    if(mechanicMode.touch) {
+      await mechanicPage.locator('[data-control="spray"]').first().dispatchEvent('pointerdown',{
+        pointerId:8,pointerType:'touch',isPrimary:true,bubbles:true
+      });
+      await mechanicPage.clock.runFor(180);
+      await mechanicPage.locator('[data-control="spray"]').first().dispatchEvent('pointerup',{
+        pointerId:8,pointerType:'touch',isPrimary:true,bubbles:true
+      });
+    } else {
+      await mechanicPage.keyboard.down('KeyS');
+      await mechanicPage.clock.runFor(180);
+      await mechanicPage.keyboard.up('KeyS');
+    }
+    const balloonDefeat=await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
+      return {defeated:balloon.defeated,reward:balloon.balloonRewardXp,xp:state.xp,
+        events:window.__pr4DrawEvidence.defeats,
+        notice:state.balloonRewardNotificationText};
+    });
+    assert.equal(balloonDefeat.defeated,true,mechanicMode.label+' balloon enemy must remain killable');
+    assert.ok(Number.isInteger(balloonDefeat.reward)&&balloonDefeat.reward>=10&&balloonDefeat.reward<=10000,
+      mechanicMode.label+' balloon reward must be one integer from 10 through 10,000');
+    assert.equal(balloonDefeat.xp-beforeBalloonXp,balloonDefeat.reward,
+      mechanicMode.label+' balloon XP must enter only the current run total');
+    assert.equal(balloonDefeat.events.length,1,mechanicMode.label+' defeat must award exactly once');
+    assert.equal(balloonDefeat.notice,'+'+balloonDefeat.reward.toLocaleString('en-US')+' XP',
+      mechanicMode.label+' actual random XP must appear on screen');
+    await mechanicPage.clock.runFor(500);
+    assert.deepEqual(await mechanicPage.evaluate(() => ({
+      xp:window.NBGLevel1State.xp,
+      events:window.__pr4DrawEvidence.defeats.length
+    })),{xp:balloonDefeat.xp,events:1},
+    mechanicMode.label+' duplicate ticks must never reroll or re-award balloon XP');
+
+    await mechanicPage.evaluate(() => window.NBGLevel1Runtime.reset());
+    assert.deepEqual(await mechanicPage.evaluate(() => {
+      const state=window.NBGLevel1State;
+      const balloon=state.enemies.find(enemy=>enemy.type==='balloon');
+      return {cycles:balloon.balloonCycles,reward:balloon.balloonRewardXp||null,
+        awarded:balloon.balloonRewardAwarded,defeated:Boolean(balloon.defeated)};
+    }),{cycles:0,reward:null,awarded:false,defeated:false},
+    mechanicMode.label+' fresh run must restore balloon cycles and reward state');
+  } finally {
+    await mechanicPage.clock.resume().catch(()=>{});
+    await mechanicPage.close();
+  }
 }
 
 const beforeMoveX = state.x;
@@ -1709,7 +1983,7 @@ for (const mode of ['keyboard', 'touch']) {
       mode + ' successive boosts must be visually spaced instead of compressed');
     assert.equal(flight.replay?.version, 1,
       mode + ' should expose an encoded version-one input replay');
-    assert.equal(flight.replay?.course_version, 4,
+    assert.equal(flight.replay?.course_version, 5,
       mode + ' must retain the independently simulated Level 1 course');
     const bytes = Buffer.from(flight.replay.frames, 'base64');
     assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
@@ -2008,7 +2282,7 @@ assert.deepEqual(await page.evaluate(() => ({
   active: window.NBGLevel1State.parachuteRats.length,
   spawns: window.NBGLevel1State.parachuteSpawnCount,
   enemies: window.NBGLevel1State.enemies.length
-})), { active: 0, spawns: 0, enemies: 57 },
+})), { active: 0, spawns: 0, enemies: 58 },
   'fresh reset must restore the one-rat spawn state and original enemy roster');
 await page.keyboard.press('KeyD');
 await page.waitForFunction(() => window.NBGLevel1State.parachuteSpawnCount === 1, null, { timeout: 1500 });
