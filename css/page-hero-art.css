@@ -1,0 +1,14 @@
+/* Standalone, responsive artwork placed before page content. No card treatment. */
+#content > .page-hero-art {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  object-fit: contain;
+}
