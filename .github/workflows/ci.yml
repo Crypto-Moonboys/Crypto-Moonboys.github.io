@@ -89,9 +89,8 @@ jobs:
           fi
 
       - name: Resolve canon prose approval
-        if: needs.fast-edit.outputs.fast_edit != 'true'
         id: canon_approval
-        if: steps.wiki_changes.outputs.should_run == 'true'
+        if: needs.fast-edit.outputs.fast_edit != 'true' && steps.wiki_changes.outputs.should_run == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/resolve-canon-prose-approval.mjs
