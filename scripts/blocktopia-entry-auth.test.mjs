@@ -34,15 +34,18 @@ const main = await read('games/block-topia/main.js');
 assertContains(indexHtml, 'identity.isTelegramLinked()', 'Block Topia gate must check Telegram link state');
 assertContains(indexHtml, 'resolveBlockTopiaTelegramAuth(identity)', 'Block Topia gate must resolve signed Telegram auth before launch');
 assertContains(indexHtml, 'identity.getSignedTelegramAuth()', 'Block Topia gate must prefer cached signed Telegram auth');
+assertContains(indexHtml, 'identity.getFreshTelegramAuth({ force: true })', 'Block Topia gate must use the shared website-session refresh path');
 assertContains(indexHtml, 'identity.restoreLinkedTelegramAuth({ force: true })', 'Block Topia gate must restore expired/missing signed Telegram auth');
+assertContains(indexHtml, 'Promise.resolve(identity.ready)', 'Block Topia gate must await website-session bootstrap before checking login');
 assertContains(indexHtml, 'telegramAuth.hash', 'Block Topia gate must require signed auth hash');
 assertContains(indexHtml, 'telegramAuth.auth_date', 'Block Topia gate must require signed auth date');
 assertContains(indexHtml, 'fetchProgressionForGate(telegramAuth)', 'Block Topia gate must verify XP using signed Telegram auth');
 assertContains(indexHtml, 'BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP', 'Block Topia gate must keep required Arcade XP threshold');
 assertOrdered(
   indexHtml,
-  ['identity.isTelegramLinked()', 'resolveBlockTopiaTelegramAuth(identity)', 'fetchProgressionForGate(telegramAuth)', 'await mountAndConnect(telegramAuth, arcadeXpTotal)', 'connectMultiplayer({', 'telegramAuth,'],
-  'Block Topia linked auth + XP gate must run before Colyseus join',
+  ['const verified = await checkBlockTopiaGateIdentity(identity)', 'const telegramAuth = verified.telegramAuth',
+    'fetchProgressionForGate(telegramAuth)', 'await mountAndConnect(telegramAuth, arcadeXpTotal)', 'connectMultiplayer({', 'telegramAuth,'],
+  'Block Topia verified signed auth + XP gate must run before Colyseus join',
 );
 
 // Client join payload: connectMultiplayer must receive auth and pass the exact key expected by the room.
@@ -118,3 +121,154 @@ currentFetch = async () => ({ ok: true, json: async () => ({ ok: true, progressi
 assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: false, reason: 'xp_required' }, 'Telegram-linked users below required Arcade XP should stay gated');
 
 console.log('Block Topia entry auth protection checks passed.');
+
+
+// Regression: the header's Telegram Connected state can arrive after this game
+// loads; do not convert an in-flight website session into a false login prompt.
+const helperStart = indexHtml.indexOf('async function resolveBlockTopiaTelegramAuth(identity)');
+const helperEnd = indexHtml.indexOf('function buildAuthUnavailableGate()', helperStart);
+assert.ok(helperStart >= 0 && helperEnd > helperStart, 'gate identity helpers must be available for verification');
+const gateHelpers = new Function(`
+  ${indexHtml.slice(helperStart, helperEnd)}
+  return { resolveBlockTopiaTelegramAuth, checkBlockTopiaGateIdentity };
+`)();
+
+const signedProof = { id: '123456789', auth_date: Math.floor(Date.now() / 1000), hash: 'signed-credential' };
+{
+  let finishBootstrap;
+  let linked = false;
+  let cachedProof = null;
+  let refreshCount = 0;
+  const identity = {
+    ready: new Promise(resolve => { finishBootstrap = resolve; }),
+    isTelegramLinked() { return linked; },
+    getSignedTelegramAuth() { return cachedProof; },
+    async getFreshTelegramAuth() { refreshCount++; return cachedProof; },
+  };
+  const gated = gateHelpers.checkBlockTopiaGateIdentity(identity);
+  await Promise.resolve();
+  assert.equal(refreshCount, 0, 'do not attempt a credential check until shared website session bootstrap completes');
+  linked = true;
+  cachedProof = signedProof;
+  finishBootstrap();
+  const result = await gated;
+  assert.equal(result.status, 'verified', 'late website-session restoration must not show Telegram login gate');
+  assert.deepEqual(result.telegramAuth, signedProof);
+  assert.equal(refreshCount, 0, 'valid restored signed proof should be used without needless forced renewal');
+}
+{
+  let linked = false;
+  let refreshed = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return linked; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() {
+      refreshed++;
+      linked = true;
+      return signedProof;
+    },
+  };
+  const result = await gateHelpers.checkBlockTopiaGateIdentity(identity);
+  assert.equal(result.status, 'verified', 'valid website cookie renewal can restore link state after initial check');
+  assert.equal(refreshed, 1);
+  assert.deepEqual(result.telegramAuth, signedProof);
+}
+{
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return true; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { return null; },
+    async restoreLinkedTelegramAuth() { return null; },
+  };
+  assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'auth_unavailable',
+    'a linked browser lacking signed proof must show verification recovery, not the login prompt');
+}
+{
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return false; },
+    isWebsiteSession() { return true; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { return null; },
+  };
+  assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'auth_unavailable',
+    'an expired website session hint must prompt re-verification rather than incorrectly claim never linked');
+}
+{
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return false; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { return null; },
+  };
+  assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'not_linked',
+    'a genuinely unlinked player must remain blocked');
+}
+{
+  // Regression: real identity-gate exposes both helpers. A guest must not
+  // trigger the legacy /telegram/user/status restore after fresh auth returns null.
+  let freshCount = 0;
+  let legacyRestoreCount = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return false; },
+    isWebsiteSession() { return false; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { freshCount++; return null; },
+    async restoreLinkedTelegramAuth() {
+      legacyRestoreCount++;
+      return new Promise(() => {}); // would hang the entry gate if called
+    },
+  };
+  const result = await gateHelpers.checkBlockTopiaGateIdentity(identity);
+  assert.equal(result.status, 'not_linked');
+  assert.equal(freshCount, 1, 'shared identity getter checks once for a recoverable website session');
+  assert.equal(legacyRestoreCount, 0, 'unlinked guest must not trigger the hanging legacy fallback');
+}
+{
+  // A failed renewal on an existing website session must not make an
+  // unrelated legacy request before showing the verification recovery gate.
+  let legacyRestoreCount = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return false; },
+    isWebsiteSession() { return true; },
+    getSignedTelegramAuth() { return null; },
+    async getFreshTelegramAuth() { return null; },
+    async restoreLinkedTelegramAuth() {
+      legacyRestoreCount++;
+      return new Promise(() => {});
+    },
+  };
+  assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'auth_unavailable');
+  assert.equal(legacyRestoreCount, 0);
+}
+{
+  // Older identity helpers can still restore an already linked account, but
+  // must never request legacy restore for a guest without current session.
+  let legacyRestoreCount = 0;
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return true; },
+    getSignedTelegramAuth() { return null; },
+    async restoreLinkedTelegramAuth() {
+      legacyRestoreCount++;
+      return { ok: true, telegram_auth: signedProof };
+    },
+  };
+  const result = await gateHelpers.checkBlockTopiaGateIdentity(identity);
+  assert.equal(result.status, 'verified');
+  assert.deepEqual(result.telegramAuth, signedProof);
+  assert.equal(legacyRestoreCount, 1);
+}
+{
+  const identity = {
+    ready: Promise.resolve(),
+    isTelegramLinked() { return true; },
+    getSignedTelegramAuth() { return { id: '123456789', auth_date: signedProof.auth_date } ; },
+  };
+  assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'auth_unavailable',
+    'an unsigned proof must not grant access');
+}

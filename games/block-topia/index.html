@@ -234,24 +234,60 @@
           identity && typeof identity.getSignedTelegramAuth === "function"
             ? identity.getSignedTelegramAuth()
             : null;
-        if (!telegramAuth && identity && typeof identity.restoreLinkedTelegramAuth === "function") {
+        // A website login may exist in the HTTP-only session cookie even when
+        // this page has no cached signed proof. Use the shared renewal path.
+        if (!telegramAuth && identity && typeof identity.getFreshTelegramAuth === "function") {
+          telegramAuth = await identity.getFreshTelegramAuth({ force: true }).catch(() => null);
+        } else if (
+          !telegramAuth &&
+          identity &&
+          typeof identity.getFreshTelegramAuth !== "function" &&
+          typeof identity.isTelegramLinked === "function" &&
+          identity.isTelegramLinked() &&
+          typeof identity.restoreLinkedTelegramAuth === "function"
+        ) {
+          // Compatibility only: current identity-gate already performs legacy
+          // restore inside getFreshTelegramAuth. Never issue an extra request for
+          // an unlinked guest or retry a failed website-session renewal this way.
           const restored = await identity.restoreLinkedTelegramAuth({ force: true }).catch(() => null);
           telegramAuth = restored?.ok ? restored.telegram_auth : null;
         }
-        if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) return null;
+        if (!telegramAuth || !telegramAuth.id || !telegramAuth.hash || !telegramAuth.auth_date) return null;
         return telegramAuth;
+      }
+
+      async function checkBlockTopiaGateIdentity(identity) {
+        if (!identity) return { status: "not_linked", telegramAuth: null };
+        // Website-login identity is restored asynchronously by identity-gate.js.
+        // Do not mistake a still-pending session for a logged-out player.
+        if (identity.ready) await Promise.resolve(identity.ready).catch(() => null);
+
+        // Rechecking after fresh auth matters: restoring a website session can
+        // change isTelegramLinked() from false to true during the await.
+        const telegramAuth = await resolveBlockTopiaTelegramAuth(identity);
+        const linked = typeof identity.isTelegramLinked === "function" && identity.isTelegramLinked();
+        if (!linked) {
+          const websiteSession = typeof identity.isWebsiteSession === "function" && identity.isWebsiteSession();
+          return { status: websiteSession ? "auth_unavailable" : "not_linked", telegramAuth: null };
+        }
+        if (!telegramAuth) return { status: "auth_unavailable", telegramAuth: null };
+        return { status: "verified", telegramAuth };
+      }
+
+      function buildAuthUnavailableGate() {
+        return `
+          <div class="bt-gate__gate-heading">SESSION VERIFICATION REQUIRED</div>
+          <p class="bt-gate__checking">Your Telegram session could not be verified. Check your account or retry the connection.</p>
+          <div class="bt-gate__actions">
+            <button class="bt-gate__btn bt-gate__btn--primary" onclick="location.reload()">RETRY CHECK</button>
+            <a class="bt-gate__btn bt-gate__btn--secondary" href="/my-moonboy.html">CHECK MY MOONBOY</a>
+          </div>`;
       }
 
       async function runGateAndLaunch() {
         const identity = window.MOONBOYS_IDENTITY || null;
-
-        // ── Step 1: Telegram link check ──────────────────────────────
-        const linked = !!(
-          identity &&
-          typeof identity.isTelegramLinked === "function" &&
-          identity.isTelegramLinked()
-        );
-        if (!linked) {
+        const verified = await checkBlockTopiaGateIdentity(identity);
+        if (verified.status === "not_linked") {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: false,
             arcade_xp_total: null,
@@ -263,23 +299,21 @@
           showGateScreen(buildUnlinkedGate());
           return;
         }
-
-        // ── Step 2: Resolve signed auth token ────────────────────────
-        const telegramAuth = await resolveBlockTopiaTelegramAuth(identity);
-        if (!telegramAuth) {
+        if (verified.status !== "verified") {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: true,
             arcade_xp_total: null,
             required_xp: null,
             can_enter_multiplayer: false,
-            reason: "no_telegram_auth",
-            status: "blocked",
+            reason: "auth_unavailable",
+            status: "error",
           }));
-          showGateScreen(buildUnlinkedGate());
+          showGateScreen(buildAuthUnavailableGate());
           return;
         }
+        const telegramAuth = verified.telegramAuth;
 
-        // ── Step 3: XP gate check ────────────────────────────────────
+        // ── Server-authoritative Arcade XP gate ────────────────────────
         let progression = null;
         try {
           progression = await fetchProgressionForGate(telegramAuth);
