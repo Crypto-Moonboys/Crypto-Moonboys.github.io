@@ -7,6 +7,9 @@ on:
       - 'games/block-topia/**'
       - 'shared/block-topia/**'
       - 'scripts/blocktopia-client-browser.test.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/security-dependency-check.mjs'
       - '.github/workflows/block-topia-server.yml'
   push:
     branches: [main]
@@ -15,6 +18,9 @@ on:
       - 'games/block-topia/**'
       - 'shared/block-topia/**'
       - 'scripts/blocktopia-client-browser.test.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/security-dependency-check.mjs'
       - '.github/workflows/block-topia-server.yml'
 
 permissions:
