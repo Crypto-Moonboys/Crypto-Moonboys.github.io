@@ -43,7 +43,7 @@
       "renderOffsetY": 12,
       "frames": 16,
       "columns": 4,
-      "frameMs": 55
+      "frameMs": 42
     },
     "fall": {
       "spriteSheet": "player/animations/fall.png",
