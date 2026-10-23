@@ -2491,7 +2491,7 @@ assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp
 // The spray sequence is visual-only, but must complete within the existing
 // 230ms attack window at 30/40/60 Hz rather than wrapping away from the
 // final spray artwork. This simulates the real frame-time accumulation and
-// validates the non-looping runtime branch as a source-level guard.
+// validates both controlled one-shot runtime branches with a source-level guard.
 assert.ok(runtimeSource.includes("player.anim !== 'spray' && player.anim !== 'backflip'"),
   'spray and backflip must use controlled non-looping progression while ordinary poses loop');
 for (const frameDt of [1000 / 60, 25, 33]) {
