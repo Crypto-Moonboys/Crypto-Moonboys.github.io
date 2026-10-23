@@ -17,10 +17,10 @@
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 2; // Replay v1 format, updated course content.
+  var COURSE_LAYOUT_VERSION = 3; // Replay v1 format, aligned platform/combat geometry.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
-  // Display is twice the former 28x22 pigeon sprite; physics stays 28x22.
+  // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
   var FLYING_PIG_COLUMNS = 5;
   var FLYING_PIG_ROWS = 4;
   var FLYING_PIG_FRAMES = 20;
@@ -319,6 +319,8 @@
       health: 3,
       invuln: 0
     };
+    var previousPlayerY = player.y;
+    var previousPlayerVy = player.vy;
 
     function resolveAnimationName(name) {
       var stateMap = {
@@ -501,6 +503,8 @@
     function resetToCheckpoint() {
       player.x = checkpointX;
       player.y = FLOOR_Y - player.h;
+      previousPlayerY = player.y;
+      previousPlayerVy = 0;
       player.vx = 0;
       player.vy = 0;
       jumpsUsed = 0;
@@ -681,6 +685,49 @@
       return Math.max(0, Math.round((frameMeta.renderWidth - player.w) / 2));
     }
 
+    function getPlayerCombatRect() {
+      return {
+        x: player.x - 8,
+        y: player.y - 30,
+        w: player.w + 16,
+        h: player.h + 30
+      };
+    }
+
+    function getEnemyCombatRect(enemy) {
+      var bob = enemy.bob || 0;
+      if (enemy.variant) {
+        return { x: enemy.x - 12, y: enemy.y + bob - 10, w: 52, h: 56 };
+      }
+      if (enemy.type === 'pigeon') {
+        return { x: enemy.x - 12, y: enemy.y + bob - 10, w: 52, h: 42 };
+      }
+      if (enemy.type === 'bot') {
+        return { x: enemy.x - 14, y: enemy.y + bob - 12, w: 58, h: 50 };
+      }
+      return { x: enemy.x - 8, y: enemy.y + bob - 12, w: 44, h: 54 };
+    }
+
+    function getSprayAttackRect() {
+      return {
+        x: player.facing > 0 ? player.x + player.w - 4 : player.x - SPRAY_ENEMY_RANGE + 4,
+        y: player.y - 22,
+        w: SPRAY_ENEMY_RANGE,
+        h: player.h + 44
+      };
+    }
+
+    function getRatAttackRect(enemy) {
+      var body = getEnemyCombatRect(enemy);
+      var facing = enemy.attackFacing || (enemy.vx < 0 ? -1 : 1);
+      return {
+        x: facing > 0 ? body.x + body.w - 4 : body.x - 24,
+        y: body.y + 12,
+        w: 28,
+        h: Math.max(20, body.h - 22)
+      };
+    }
+
     function updatePlayer(dt) {
       var step = dt / TARGET_FRAME_MS;
       handleInput(step);
@@ -705,7 +752,9 @@
       }
 
       var previousY = player.y;
+      previousPlayerY = previousY;
       player.vy += GRAVITY * step;
+      previousPlayerVy = player.vy;
       player.y += player.vy * step;
       resolveVerticalCollision(previousY);
 
@@ -816,17 +865,23 @@
 
     function playerSprayHits(target) {
       if (sprayTimer <= 0 || gameOver) return false;
-      var playerCenter = player.x + player.w / 2;
-      var targetCenter = target.x + target.w / 2;
-      var distance = (targetCenter - playerCenter) * player.facing;
-      var verticalDistance = Math.abs((target.y + target.h / 2) - (player.y + player.h / 2));
-      return distance >= -6 && distance <= SPRAY_ENEMY_RANGE && verticalDistance < 58;
+      return rectsOverlap(getSprayAttackRect(), getEnemyCombatRect(target));
     }
 
     function playerStomps(target) {
-      return player.vy > 1.5 &&
-        player.y + player.h <= target.y + target.h * 0.58 &&
-        rectsOverlap(player, target);
+      var targetRect = getEnemyCombatRect(target);
+      var previousFeet = previousPlayerY + player.h;
+      var currentFeet = player.y + player.h;
+      var footRect = {
+        x: player.x + 2,
+        y: Math.min(previousFeet, currentFeet) - 5,
+        w: player.w - 4,
+        h: Math.abs(currentFeet - previousFeet) + 8
+      };
+      return (player.vy > 1.5 || (player.vy === 0 && previousPlayerVy > 1.5)) &&
+        previousFeet <= targetRect.y + 5 &&
+        currentFeet >= targetRect.y &&
+        rectsOverlap(footRect, targetRect);
     }
 
     function damagePlayer(type, hazardX) {
@@ -899,7 +954,7 @@
           parachuteRats.splice(i, 1);
           continue;
         }
-        if (player.invuln <= 0 && rectsOverlap(player, rat)) {
+        if (player.invuln <= 0 && rectsOverlap(getPlayerCombatRect(), getEnemyCombatRect(rat))) {
           damagePlayer('parachute-rat', rat.x);
           rat.y = FLOOR_Y - rat.h;
         }
@@ -965,6 +1020,7 @@
             enemy.attackStartedAt = time;
             enemy.attackUntil = time + RAT_ATTACK_DURATION_MS;
             enemy.nextAttackAt = time + RAT_ATTACK_COOLDOWN_MS;
+            enemy.attackFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
           }
         }
         if (enemy.type === 'bot' && sprayTimer > 0 && Math.abs(player.x - enemy.x) < 65 && Math.abs(player.y - enemy.y) < 60 &&
@@ -972,14 +1028,12 @@
           enemy.hurtUntil = time + 360;
         }
 
-        var enemyRect = {
-          x: enemy.x,
-          y: enemy.y + (enemy.bob || 0),
-          w: enemy.w,
-          h: enemy.h
-        };
-
-        if (player.invuln <= 0 && rectsOverlap(player, enemyRect)) {
+        var enemyRect = getEnemyCombatRect(enemy);
+        var isRat = enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat';
+        var activeRatAttack = isRat && (enemy.attackUntil || 0) > time &&
+          rectsOverlap(getPlayerCombatRect(), getRatAttackRect(enemy));
+        if (player.invuln <= 0 &&
+            (rectsOverlap(getPlayerCombatRect(), enemyRect) || activeRatAttack)) {
           damagePlayer(enemy.type, enemy.x);
         }
       }
@@ -1322,7 +1376,9 @@
             var brownFootPadding = enemy.type === 'brownRat' ?
               (ratAttacking ? 34 : 18) : 0;
             var ratDrawY = ratFootY - ratDrawHeight + brownFootPadding;
-            if (enemy.vx < 0) {
+            var ratFacing = ratAttacking && Math.abs(enemy.vx) > 0.01 ?
+              (enemy.attackFacing || (enemy.vx < 0 ? -1 : 1)) : (enemy.vx < 0 ? -1 : 1);
+            if (ratFacing < 0) {
               ctx.translate(ratDrawX + ratDrawWidth, ratDrawY);
               ctx.scale(-1, 1);
               ctx.drawImage(image, ratSourceX, ratSourceY, ratFrameWidth, ratFrameHeight,
@@ -1626,7 +1682,11 @@
         get worldWidth() { return WORLD_WIDTH; },
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
-        get playerAnimations() { return playerAnimations; }
+        get playerAnimations() { return playerAnimations; },
+        get playerCombatRect() { return getPlayerCombatRect(); },
+        enemyCombatRect: function (enemy) { return getEnemyCombatRect(enemy); },
+        get sprayAttackRect() { return getSprayAttackRect(); },
+        ratAttackRect: function (enemy) { return getRatAttackRect(enemy); }
       };
     }
 
@@ -1685,6 +1745,8 @@
       player.w = 24;
       player.h = 34;
       player.y = FLOOR_Y - player.h;
+      previousPlayerY = player.y;
+      previousPlayerVy = 0;
       player.vx = 0;
       player.vy = 0;
       player.facing = 1;

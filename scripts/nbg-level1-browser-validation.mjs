@@ -135,13 +135,13 @@ async function holdRunnerRight(page, durationMs = 0) {
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 11, frames: 6, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 46, frames: 25, columns: 5, frameMs: 8 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 145 }
 };
 const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
   `player.${key}`,
@@ -1573,7 +1573,7 @@ for (const mode of ['keyboard', 'touch']) {
       mode + ' successive boosts must be visually spaced instead of compressed');
     assert.equal(flight.replay?.version, 1,
       mode + ' should expose an encoded version-one input replay');
-    assert.equal(flight.replay?.course_version, 2,
+    assert.equal(flight.replay?.course_version, 3,
       mode + ' must retain the independently simulated Level 1 course');
     const bytes = Buffer.from(flight.replay.frames, 'base64');
     assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
@@ -1984,6 +1984,270 @@ await page.evaluate(() => {
   window.NBGLevel1Runtime.reset();
 });
 
+// Platform feet and combat geometry regression: exercise the rendered canvas and
+// the real animation loop, not only source-level helper assertions.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+const platformDraw = await page.evaluate(async () => {
+  const state = window.NBGLevel1State;
+  const platform = state.platforms[0];
+  const player = state.player;
+  player.x = platform.x + 50;
+  player.y = platform.y - player.h;
+  player.vx = 0;
+  player.vy = 0;
+  player.grounded = true;
+  player.anim = 'idle';
+  player.frame = 0;
+  player.frameTime = 0;
+  const context = document.getElementById('game').getContext('2d');
+  const original = context.drawImage;
+  const draws = [];
+  context.drawImage = function (image, ...args) {
+    const source = String((image && (image.__nbgSpraySource || image.src)) || '');
+    if (source.includes('/player/animations/idle.png') ||
+        source.includes('/objects/BRICK1.png')) {
+      draws.push({ source, y: args[5], width: args[6], height: args[7] });
+    }
+    return original.call(this, image, ...args);
+  };
+  await new Promise(resolve => setTimeout(resolve, 90));
+  context.drawImage = original;
+  const idle = draws.find(draw => draw.source.includes('/player/animations/idle.png'));
+  const brick = draws.find(draw => draw.source.includes('/objects/BRICK1.png'));
+  return {
+    grounded: player.grounded,
+    physicsFeet: player.y + player.h,
+    platformTop: platform.y,
+    playerDrawY: idle && idle.y,
+    platformDrawY: brick && brick.y,
+    playerDrawHeight: idle && idle.height
+  };
+});
+assert.equal(platformDraw.grounded, true, 'player must remain grounded on a floating platform');
+assert.equal(platformDraw.physicsFeet, platformDraw.platformTop,
+  'player physics feet must resolve exactly to the platform top');
+assert.ok(Number.isFinite(platformDraw.playerDrawY) && Number.isFinite(platformDraw.platformDrawY),
+  'browser render must capture both player and platform draw coordinates');
+const renderedIdleFoot = platformDraw.playerDrawY + (119 / 128) * platformDraw.playerDrawHeight;
+assert.ok(Math.abs(renderedIdleFoot - platformDraw.platformDrawY) <= 1,
+  'opaque player feet must render on the visible platform surface');
+await page.keyboard.press('Space');
+await page.waitForFunction(() => {
+  const state = window.NBGLevel1State;
+  return !state.player.grounded && state.player.y + state.player.h <
+    state.platforms[0].y - 2;
+}, null, { timeout: 1500 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.grounded), false,
+  'player must jump cleanly away from a platform without sticking');
+
+// Spray every supported on-course class and each parachuting-rat artwork.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.invuln = 10000;
+  window.__pr1Defeats = [];
+  window.__pr1DefeatListener = event => window.__pr1Defeats.push(event.detail);
+  window.addEventListener('nbg-enemy-defeated', window.__pr1DefeatListener);
+});
+for (const type of ['rat', 'pigeon', 'bot']) {
+  await page.evaluate((enemyType) => {
+    const state = window.NBGLevel1State;
+    const target = state.enemies.find(enemy => enemy.type === enemyType && !enemy.defeated);
+    state.player.x = 400;
+    state.player.y = 214 - state.player.h;
+    state.player.vx = 0;
+    state.player.vy = 0;
+    state.player.grounded = true;
+    state.player.facing = 1;
+    target.x = state.player.x + 58;
+    target.y = 214 - target.h;
+    target.vx = 0.001;
+    target.min = target.x - 1;
+    target.max = target.x + 1;
+    window.__pr1Target = target;
+  }, type);
+  await page.keyboard.down('KeyS');
+  await page.waitForFunction(() => window.__pr1Target?.defeated === true, null, { timeout: 1200 });
+  await page.keyboard.up('KeyS');
+  await page.waitForTimeout(260);
+}
+for (const variant of ['parachuteRatA', 'parachuteRatB', 'parachuteRatC']) {
+  await page.evaluate((ratVariant) => {
+    const state = window.NBGLevel1State;
+    state.player.x = 400;
+    state.player.y = 214 - state.player.h;
+    state.player.vx = 0;
+    state.player.vy = 0;
+    state.player.grounded = true;
+    state.player.facing = 1;
+    const target = { x: state.player.x + 58, y: 150, w: 28, h: 42,
+      variant: ratVariant, swayPhase: 0, vx: 0, age: 0 };
+    state.parachuteRats.push(target);
+    window.__pr1Target = target;
+  }, variant);
+  await page.keyboard.down('KeyS');
+  await page.waitForFunction((ratVariant) => window.__pr1Defeats.some(
+    event => event.type === ratVariant && event.reason === 'spray'
+  ), variant, { timeout: 2000 });
+  await page.keyboard.up('KeyS');
+  await page.waitForTimeout(260);
+}
+const sprayedTypes = await page.evaluate(() => window.__pr1Defeats.map(event => event.type));
+for (const type of ['rat', 'pigeon', 'bot', 'parachuteRatA', 'parachuteRatB', 'parachuteRatC']) {
+  assert.ok(sprayedTypes.includes(type), 'spray must defeat supported enemy type: ' + type);
+}
+await page.evaluate(() => {
+  window.removeEventListener('nbg-enemy-defeated', window.__pr1DefeatListener);
+  delete window.__pr1DefeatListener;
+  delete window.__pr1Defeats;
+  delete window.__pr1Target;
+});
+
+// Range boundaries must be strict, while a descending foot crossing must stomp.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+const outOfRangeHealth = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.enemies.forEach(enemy => { enemy.defeated = true; });
+  const target = state.enemies.find(enemy => enemy.type === 'rat');
+  target.defeated = false;
+  target.x = 700;
+  target.y = 214 - target.h;
+  target.vx = 0.001;
+  target.min = 699;
+  target.max = 701;
+  state.player.x = 400;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.grounded = true;
+  state.player.facing = 1;
+  state.player.invuln = 0;
+  window.__pr1Target = target;
+  return state.player.health;
+});
+await page.keyboard.down('KeyS');
+await page.waitForTimeout(80);
+await page.keyboard.up('KeyS');
+await page.waitForTimeout(180);
+assert.equal(await page.evaluate(() => window.__pr1Target.defeated), false,
+  'spray outside the visible attack rectangle must not damage an enemy');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.health), outOfRangeHealth,
+  'enemy outside its collision rectangle must not damage the player');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const target = window.__pr1Target;
+  target.x = 500;
+  target.y = 214 - target.h;
+  target.vx = 0.001;
+  target.min = 499;
+  target.max = 501;
+  state.player.x = 500;
+  state.player.y = state.enemyCombatRect(target).y - state.player.h - 4;
+  state.player.vx = 0;
+  state.player.vy = 5;
+  state.player.grounded = false;
+  state.player.invuln = 5000;
+});
+await page.waitForFunction(() => window.__pr1Target.defeated === true, null, { timeout: 1200 });
+assert.ok(await page.evaluate(() => window.NBGLevel1State.player.vy < 0),
+  'valid stomp must defeat the enemy and apply the existing bounce');
+
+// A dropped frame may carry the feet past the enemy's entire upper body. The
+// swept foot segment must still preserve the top-down stomp instead of turning
+// it into contact damage.
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const target = window.__pr1Target;
+  target.defeated = false;
+  target.x = 500;
+  target.y = 214 - target.h;
+  target.vx = 0.001;
+  state.player.x = 500;
+  state.player.y = state.enemyCombatRect(target).y - state.player.h - 4;
+  state.player.vx = 0;
+  state.player.vy = 70;
+  state.player.grounded = false;
+  state.player.invuln = 5000;
+});
+await page.waitForFunction(() => window.__pr1Target.defeated === true, null, { timeout: 1200 });
+assert.ok(await page.evaluate(() => window.NBGLevel1State.player.vy < 0),
+  'a one-tick descent through the enemy must still defeat it and bounce');
+
+// Harmful contact and an active rat strike both use sprite-aligned hitboxes.
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+await page.keyboard.down('KeyD');
+await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
+await page.keyboard.up('KeyD');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.enemies.forEach(enemy => { enemy.defeated = true; });
+  const bot = state.enemies.find(enemy => enemy.type === 'bot');
+  bot.defeated = false;
+  bot.x = 650;
+  bot.y = 214 - bot.h;
+  bot.vx = 0.001;
+  bot.min = 649;
+  bot.max = 651;
+  state.player.x = 400;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.player.invuln = 0;
+  window.__pr1Target = bot;
+});
+await page.waitForTimeout(120);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.health), 3,
+  'enemy outside its visible body must not cause phantom damage');
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const bot = window.__pr1Target;
+  bot.x = state.player.x + 18;
+});
+await page.waitForFunction(() => window.NBGLevel1State.player.health === 2, null, { timeout: 1200 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.anim), 'hurt',
+  'direct harmful contact must apply health, knockback and hurt state');
+await page.waitForFunction(() => window.NBGLevel1State.player.invuln > 0, null, { timeout: 500 });
+
+await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  state.player.health = 3;
+  state.player.invuln = 0;
+  state.player.x = 548;
+  state.player.y = 214 - state.player.h;
+  state.player.vx = 0;
+  state.player.vy = 0;
+  state.enemies.forEach(enemy => { enemy.defeated = true; });
+  const rat = state.enemies.find(enemy => enemy.type === 'rat');
+  rat.defeated = false;
+  rat.x = 600;
+  rat.y = 214 - rat.h;
+  rat.vx = 0.001;
+  rat.min = 599;
+  rat.max = 601;
+  rat.attackFacing = -1;
+  rat.attackStartedAt = state.runElapsedMs;
+  rat.attackUntil = state.runElapsedMs + 600;
+  rat.nextAttackAt = state.runElapsedMs + 1700;
+  const playerRect = state.playerCombatRect;
+  const bodyRect = state.enemyCombatRect(rat);
+  if (!(playerRect.x + playerRect.w <= bodyRect.x)) {
+    throw new Error('rat strike fixture must not overlap the rat body');
+  }
+});
+await page.waitForFunction(() => window.NBGLevel1State.player.health === 2, null, { timeout: 1200 });
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.invuln > 0), true,
+  'active rat attack hitbox must apply the normal invulnerability cooldown');
+await page.evaluate(() => { delete window.__pr1Target; });
+
 // Long-running survival regression: enemies must be defeatable, limited, and resettable.
 assert.ok(
   runtimeSource.includes('var PARACHUTE_MAX_LANDED = 5') &&
@@ -2112,7 +2376,7 @@ const standingSpray = await page.evaluate(() => {
 });
 assert.ok(expectedAnimations.spray.renderWidth < 176 &&
   expectedAnimations.spray.renderHeight < 176 &&
-  expectedAnimations.spray.renderOffsetY === 46,
+  expectedAnimations.spray.renderOffsetY === 45,
   'final spray pose should stay 164px wide and be raised approximately 7 percent');
 assert.equal(standingSpray.grounded, true,
   'spray must kill from standing without requiring a jump or stomp');

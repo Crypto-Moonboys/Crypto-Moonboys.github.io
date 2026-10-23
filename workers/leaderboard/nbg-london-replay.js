@@ -18,6 +18,20 @@ const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x &&
   a.y < b.y + b.h && a.y + a.h > b.y;
 export const NBG_REPLAY_VERSION = 1;
 
+export function isNbgSweptStomp(
+  player, descentVelocity, previousFeet, currentFeet, target
+) {
+  const feet = {
+    x:player.x+2,
+    y:Math.min(previousFeet,currentFeet)-5,
+    w:player.w-4,
+    h:Math.abs(currentFeet-previousFeet)+8,
+  };
+  const activeDescent=player.vy===0 ? descentVelocity : player.vy;
+  return activeDescent>1.5 && previousFeet<=target.y+5 &&
+    currentFeet>=target.y && overlap(feet,target);
+}
+
 function levelData(courseVersion = 1) {
   const platforms = [
     { x: 360, y: 178, w: 150, h: 16 },
@@ -67,7 +81,7 @@ function levelData(courseVersion = 1) {
     const tiers = [{xp:250,size:32},{xp:250,size:32},{xp:500,size:40},{xp:1000,size:50}];
     const tier = tiers[i%4];
     coins.push({ x:x+404, y:ledges[1].y-75, size:tier.size, xp:tier.xp });
-    if (courseVersion===2) {
+    if (courseVersion>=2) {
       secrets.push({ x:x+405,y:-94-i%3*9,r:8,xp:500 });
       secrets.push({ x:x+865,y:-102-i%2*10,r:8,xp:500 });
     }
@@ -84,9 +98,9 @@ function levelData(courseVersion = 1) {
     if (i>=8 && i%3===0) hazards.push({ x:x+1000, y:FLOOR-24, w:34, h:24 });
     enemies.push({ x:x+435,y:FLOOR-42,w:28,h:42,vx:1.1+i*0.025,
       min:x+395,max:x+535,type:'rat' });
-    if (courseVersion===2 || i%2===1) enemies.push({ x:x+870,y:FLOOR-38,w:30,h:38,vx:0.85+i*0.035,
+    if (courseVersion>=2 || i%2===1) enemies.push({ x:x+870,y:FLOOR-38,w:30,h:38,vx:0.85+i*0.035,
       min:x+800,max:x+960,type:'bot' });
-    if (courseVersion===2 || i%3===2) enemies.push({ x:x+615,y:110,w:28,h:22,vx:1.35,
+    if (courseVersion>=2 || i%3===2) enemies.push({ x:x+615,y:110,w:28,h:22,vx:1.35,
       min:x+575,max:x+720,type:'pigeon' });
     if ([3,7,11,15].includes(i))
       checkpoints.push({ x:x+965,y:FLOOR-48,w:30,h:48 });
@@ -112,14 +126,15 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   if (!bytes) return { valid: false };
 
   // Legacy cached v1 clients never sent a course_version: keep their exact
-  // original level, random/parachute physics and two-jump rules. The new
-  // browser keeps the v1 replay frame format but opts into course revision 2.
+  // original level, random/parachute physics and two-jump rules. Revision 2
+  // remains verifiable under its original combat geometry; revision 3 opts
+  // into sprite-aligned platform/combat geometry without changing replay bytes.
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && replay.course_version !== 2)
+  if (hasCourseVersion && replay.course_version !== 2 && replay.course_version !== 3)
     return { valid:false };
-  const courseVersion = hasCourseVersion ? 2 : 1;
+  const courseVersion = hasCourseVersion ? replay.course_version : 1;
   const level = levelData(courseVersion);
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
   const p = { x:64, y:FLOOR-34, w:24, h:34, vx:0, vy:0, facing:1,
@@ -137,14 +152,42 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   };
   let parachuteRats=[];
   let nextParachuteAt=6000;
+  let previousPlayerY=p.y;
+  let previousPlayerVy=p.vy;
+  const playerCombatRect = () => ({x:p.x-8,y:p.y-30,w:p.w+16,h:p.h+30});
+  const enemyCombatRect = target => {
+    const bob=target.bob||0;
+    if(target.variant) return {x:target.x-12,y:target.y+bob-10,w:52,h:56};
+    if(target.type==='pigeon') return {x:target.x-12,y:target.y+bob-10,w:52,h:42};
+    if(target.type==='bot') return {x:target.x-14,y:target.y+bob-12,w:58,h:50};
+    return {x:target.x-8,y:target.y+bob-12,w:44,h:54};
+  };
+  const sprayAttackRect = () => ({
+    x:p.facing>0?p.x+p.w-4:p.x-86+4,y:p.y-22,w:86,h:p.h+44,
+  });
+  const ratAttackRect = enemy => {
+    const body=enemyCombatRect(enemy);
+    const facing=enemy.attackFacing||(enemy.vx<0?-1:1);
+    return {x:facing>0?body.x+body.w-4:body.x-24,y:body.y+12,
+      w:28,h:Math.max(20,body.h-22)};
+  };
   const sprayed = target => {
     if(sprayTimer<=0) return false;
+    if(courseVersion>=3) return overlap(sprayAttackRect(),enemyCombatRect(target));
     const center=(target.x+target.w/2-p.x-p.w/2)*p.facing;
     const vertical=Math.abs(target.y+target.h/2-p.y-p.h/2);
     return center>=-6 && center<=86 && vertical<58;
   };
-  const stomped = target => p.vy>1.5 &&
-    p.y+p.h<=target.y+target.h*0.58 && overlap(p,target);
+  const stomped = target => {
+    if(courseVersion<3) return p.vy>1.5 &&
+      p.y+p.h<=target.y+target.h*0.58 && overlap(p,target);
+    const body=enemyCombatRect(target);
+    const previousFeet=previousPlayerY+p.h;
+    const currentFeet=p.y+p.h;
+    return isNbgSweptStomp(
+      p,previousPlayerVy,previousFeet,currentFeet,body
+    );
+  };
   const defeat = (enemy,stomp) => {
     enemy.defeated=true;
     xp+=enemy.spawnedByParachute ? 100 : 75;
@@ -189,7 +232,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
           p.facing=left ? -1:1;
         }
         jumps=2;
-      } else if(courseVersion===2 && jumps===2) {
+      } else if(courseVersion>=2 && jumps===2) {
         p.vy=-12.8;
         if (left!==right) {
           p.vx=left ? -5.4:5.4;
@@ -211,7 +254,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       else if (p.vx<0 && beforeX>=box.x+box.w-1) {p.x=box.x+box.w;p.vx=0;}
     }
     const previousY=p.y;
+    previousPlayerY=previousY;
     p.vy+=0.52*step;
+    previousPlayerVy=p.vy;
     p.y+=p.vy*step;
     p.grounded=false;
     for(const tile of solids) {
@@ -223,7 +268,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(p.y>350) {
       invulnerableDamage(p.x);
       if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
-      p.x=checkpointX;p.y=FLOOR-p.h;p.vx=0;p.vy=0;
+      p.x=checkpointX;p.y=FLOOR-p.h;previousPlayerY=p.y;previousPlayerVy=0;
+      p.vx=0;p.vy=0;
       jumps=0;p.invuln=1050;sprayTimer=0;
     }
     for(const coin of level.coins) {
@@ -282,10 +328,17 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
           if(enemy.type==='rat'||enemy.type==='turquoiseRat') nextRunRandom();
           enemy.attackUntil=elapsed+850;
           enemy.nextAttackAt=elapsed+1700;
+          if(courseVersion>=3)
+            enemy.attackFacing=p.x+p.w/2<enemy.x+enemy.w/2?-1:1;
         }
       }
-      if(p.invuln<=0 && overlap(p,{x:enemy.x,y:enemy.y+(enemy.bob||0),
-          w:enemy.w,h:enemy.h})){
+      const body=courseVersion>=3?enemyCombatRect(enemy):
+        {x:enemy.x,y:enemy.y+(enemy.bob||0),w:enemy.w,h:enemy.h};
+      const isRat=['rat','turquoiseRat','brownRat'].includes(enemy.type);
+      const activeRatAttack=courseVersion>=3 && isRat &&
+        (enemy.attackUntil||0)>elapsed && overlap(playerCombatRect(),ratAttackRect(enemy));
+      if(p.invuln<=0 && (overlap(courseVersion>=3?playerCombatRect():p,body) ||
+          activeRatAttack)){
         invulnerableDamage(enemy.x);
       }
     }
@@ -299,8 +352,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         [Math.floor(nextRunRandom()*3)];
       const drift=(nextRunRandom()*2-1)*90;
       parachuteRats.push({
-        x:clamp(p.x+(courseVersion===2 ? 240+drift*0.25 : drift),28,WORLD-60),
-        y:courseVersion===2 ? 55 : -110,w:28,h:42,variant,
+        x:clamp(p.x+(courseVersion>=2 ? 240+drift*0.25 : drift),28,WORLD-60),
+        y:courseVersion>=2 ? 55 : -110,w:28,h:42,variant,
         swayPhase:nextRunRandom()*Math.PI*2,vx:0,age:0,
       });
       nextParachuteAt=elapsed+5500+nextRunRandom()*4500;
@@ -313,7 +366,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       rat.vx+=(horizontal-rat.vx)*Math.min(1,0.065*step);
       rat.x+=(rat.vx+Math.sin(rat.age/380+rat.swayPhase)*0.24)*step;
       rat.x=clamp(rat.x,0,WORLD-rat.w);
-      rat.y+=((courseVersion===2 ? 2.8 : 0.68)+Math.sin(rat.age/470+rat.swayPhase)*0.11)*step;
+      rat.y+=((courseVersion>=2 ? 2.8 : 0.68)+Math.sin(rat.age/470+rat.swayPhase)*0.11)*step;
       const sprayHit=sprayed(rat);
       const stompHit=stomped(rat);
       if(sprayHit||stompHit){
@@ -323,7 +376,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         parachuteRats.splice(i,1);
         continue;
       }
-      if(p.invuln<=0&&overlap(p,rat)){
+      if(p.invuln<=0&&overlap(courseVersion>=3?playerCombatRect():p, courseVersion>=3?enemyCombatRect(rat):rat)){
         invulnerableDamage(rat.x);
         rat.y=FLOOR-rat.h;
       }

@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
-import { verifyNbgLondonReplay, NBG_REPLAY_VERSION } from '../workers/leaderboard/nbg-london-replay.js';
+import {
+  verifyNbgLondonReplay,
+  NBG_REPLAY_VERSION,
+  isNbgSweptStomp,
+} from '../workers/leaderboard/nbg-london-replay.js';
 
 function frameStream(frames) {
   const bytes = [];
@@ -12,6 +16,14 @@ function frameStream(frames) {
 }
 const id = '00000000-0000-4000-8000-000000000001';
 const base = { runId:id, startedAtMs:1000000, now:1100000 };
+
+const sweptStompTarget = { x:500, y:172, w:28, h:42 };
+assert.equal(isNbgSweptStomp(
+  { x:500, w:32, vy:0 }, 70, 168, 214, sweptStompTarget
+), true, 'v3 replay combat must accept a stomp that crosses the full enemy in one tick');
+assert.equal(isNbgSweptStomp(
+  { x:540, w:32, vy:0 }, 70, 168, 214, sweptStompTarget
+), false, 'a swept descent outside the enemy width must not become a stomp');
 
 // Fabricated physics time cannot exceed recorded real time, including at
 // the 1ms/2.5ms edge that previously allowed accelerated scores.
@@ -110,8 +122,13 @@ const oldDouble = await verifyNbgLondonReplay({
 });
 assert.equal(oldDouble.debug?.jumps, 2,
   'cached v1 clients must retain their original two-jump mechanics');
+const alignedTriple = await verifyNbgLondonReplay({
+  ...base, replay: { ...tripleReplay, course_version: 3 }, debug: true
+});
+assert.equal(alignedTriple.debug?.courseVersion, 3,
+  'revision 3 must select aligned combat geometry without changing replay bytes');
 assert.equal((await verifyNbgLondonReplay({
-  ...base, replay: { ...tripleReplay, course_version: 3 }
+  ...base, replay: { ...tripleReplay, course_version: 4 }
 })).valid, false, 'unapproved course revisions must fail rather than silently downgrade');
 // Cached v1 replays omit the property completely. An explicitly present
 // null/undefined/invalid version is not equivalent and must be rejected.
@@ -129,11 +146,11 @@ for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {
 assert.equal(oldDouble.debug?.courseVersion, 1,
   'omitting course_version retains the original legacy course');
 
-// Exercise an entire physically completed revision-2 course (with more
+// Exercise an entire physically completed revision-3 course (with more
 // enemies, all eighteen sections of secrets and faster parachute encounters),
 // then verify the recorded input bytes independently. No browser XP claims.
 let updatedCourse = null;
-const revision2Diagnostics = [];
+const revision3Diagnostics = [];
 for (const approach of [80,95,110,125,140,160,175]) {
   const frames = Array.from({length:5600}, () => [33,33,0]);
   const masks=[];
@@ -155,24 +172,24 @@ for (const approach of [80,95,110,125,140,160,175]) {
     return mask;
   };
   const inspected = await verifyNbgLondonReplay({
-    runId:id, replay:{ ...frameStream(frames), course_version:2 },
+    runId:id, replay:{ ...frameStream(frames), course_version:3 },
     startedAtMs:1000000, now:1000000+5600*33, debug:true,
     testInputOverride:input
   });
-  revision2Diagnostics.push({approach, ...(inspected.debug||{}), valid:inspected.valid});
+  revision3Diagnostics.push({approach, ...(inspected.debug||{}), valid:inspected.valid});
   if(!inspected.debug?.complete) continue;
   const count=inspected.debug.consumedFrames;
-  const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:2};
+  const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:3};
   const verified=await verifyNbgLondonReplay({
     runId:id, replay, startedAtMs:1000000, now:1000000+count*33
   });
   if(verified.valid){updatedCourse={replay,count,result:verified};break;}
 }
 assert.ok(updatedCourse, 'updated course must remain physically finishable and server-verifiable: '+
-  JSON.stringify(revision2Diagnostics));
+  JSON.stringify(revision3Diagnostics));
 assert.ok(updatedCourse.result.xp>0 &&
   updatedCourse.result.secret_coins<=42,
-  'revision-2 source XP and secret coins must be independently bounded');
+  'revision-3 source XP and secret coins must be independently bounded');
 // Confirm actual five-byte recorded masks containing grounded spray inputs
 // are independently evaluated by the authoritative Worker. The browser-only
 // injected brown-rat fixture above is NOT a valid ranked replay source;
@@ -180,7 +197,7 @@ assert.ok(updatedCourse.result.xp>0 &&
 const canonicalSprayFrames = Buffer.from(updatedCourse.replay.frames, 'base64');
 assert.ok(Array.from({length:canonicalSprayFrames.length / 5}, (_, i) => i * 5)
   .some(offset => (canonicalSprayFrames[offset + 4] & 8) !== 0),
-  'successful revision-2 replay must contain genuine recorded spray inputs');
+  'successful revision-3 replay must contain genuine recorded spray inputs');
 const noSprayFrames = Buffer.from(canonicalSprayFrames);
 for (let offset = 4; offset < noSprayFrames.length; offset += 5)
   noSprayFrames[offset] &= ~8;
