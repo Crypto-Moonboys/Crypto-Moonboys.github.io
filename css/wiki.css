@@ -4534,6 +4534,13 @@ body.page-wiki .comments-top-contributors--opt-in .top-contributor-row--empty {
 
 /* Crypto Moonboys main wiki article banner: attach to its actual article wrapper,
    before the breadcrumb and article, without modifying protected wiki HTML. */
+/* Let the banner start below the nav without pulling artwork underneath it. */
+body.page-wiki[data-entity-hash="a4b462cb5857"] #content {
+  padding-top: 0;
+}
+body.page-wiki[data-entity-hash="a4b462cb5857"] #content > .cm-page {
+  padding-top: 0;
+}
 body.page-wiki[data-entity-hash="a4b462cb5857"] #content > .cm-page::before {
   content: "";
   display: block;
@@ -4544,8 +4551,7 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] #content > .cm-page::before {
   left: 50%;
   transform: translateX(-50%);
   background: url("/art/Neon%20Crypto%20Moonboys_%20London%20After%20Dark.jpg") center / contain no-repeat transparent;
-  /* Cancel the wiki #content top padding and the article wrapper padding. */
-  margin: calc(-1 * (clamp(30px, 3vw, 56px) + 1.25rem)) 0 1.25rem;
+  margin: 0 0 1.25rem;
   padding: 0;
   border: 0;
   border-radius: 0;
