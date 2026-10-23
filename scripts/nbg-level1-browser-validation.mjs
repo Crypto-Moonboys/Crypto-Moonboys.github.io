@@ -1203,9 +1203,12 @@ for (const key of Object.keys(expectedAnimations)) {
     return {width: image.naturalWidth ?? image.width,
       height: image.naturalHeight ?? image.height};
   }, key);
-  assert.deepEqual(loadedSheetSize,
-    {width: key === 'spray' ? 1280 : 384, height: key === 'spray' ? 1280 : 256},
-    `browser runtime must load expected-size player ${key} image or canvas`);
+  const expectedAnimation = expectedAnimations[key];
+  assert.deepEqual(loadedSheetSize, {
+    width: expectedAnimation.columns * expectedAnimation.sourceFrameWidth,
+    height: Math.ceil(expectedAnimation.frames / expectedAnimation.columns) *
+      expectedAnimation.sourceFrameHeight
+  }, `browser runtime must load expected-size player ${key} image or canvas`);
 }
 
 const beforeMoveX = state.x;
