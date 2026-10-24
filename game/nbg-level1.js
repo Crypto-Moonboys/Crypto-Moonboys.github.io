@@ -1641,7 +1641,9 @@
         var sourceX = frame % GRAFFBOT_FIRE_COLUMNS * cellW;
         var sourceY = Math.floor(frame / GRAFFBOT_FIRE_COLUMNS) * cellH;
         ctx.save();
-        if (facing > 0) {
+        // The production sheet faces right natively. Mirror only leftward fire
+        // so the visible jet and its directional damage rectangle agree.
+        if (facing < 0) {
           ctx.translate(drawX + GRAFFBOT_FIRE_RENDER_SIZE, drawY);
           ctx.scale(-1, 1);
           ctx.drawImage(image, sourceX, sourceY, cellW, cellH,

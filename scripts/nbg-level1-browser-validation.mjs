@@ -1364,8 +1364,8 @@ for (const mechanicMode of [
     assert.ok(leftFire.health<3,mechanicMode.label+' Graffbot fire must damage only after visible contact');
     assert.deepEqual(leftFire.frames,Array.from({length:16},(_,index)=>index),
       mechanicMode.label+' flame must render all 16 frames in order');
-    assert.ok(leftFire.facings.includes(1),
-      mechanicMode.label+' source left-facing flame canvas draw must be observed');
+    assert.ok(leftFire.facings.includes(-1),
+      mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
 
@@ -1392,8 +1392,8 @@ for (const mechanicMode of [
     });
     assert.ok(repeatedFire.fireStartedAt>leftFire.fireStartedAt,
       mechanicMode.label+' Graffbot must naturally fire again after the cooldown without a timer reset');
-    assert.ok(repeatedFire.facings.includes(-1),
-      mechanicMode.label+' opposite Graffbot direction must mirror the same sheet');
+    assert.ok(repeatedFire.facings.includes(1),
+      mechanicMode.label+' rightward flame must use the native sheet orientation');
     await mechanicPage.clock.runFor(900);
     assert.equal(await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
