@@ -48,15 +48,23 @@
   var GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
   var SPEEDRUN_HUD_WIDTH = 104;
   var SPEEDRUN_HUD_HEIGHT = 11;
-  var BALLOON_SHEET_COLUMNS = 4;
   var BALLOON_WALK_FRAMES = 14;
   var BALLOON_RELEASE_FRAMES = 16;
   var BALLOON_FRAME_MS = 90;
   var BALLOON_CYCLE_MS = BALLOON_RELEASE_FRAMES * BALLOON_FRAME_MS;
   var BALLOON_REPEAT_DELAY_MS = 420;
   var BALLOON_TRIGGER_RANGE = 330;
-  var BALLOON_RENDER_SIZE = 96;
-  var BALLOON_FOOT_PADDING = 16;
+  // Both originals are transparent 512x512 exports, read left-to-right, top-to-bottom.
+  // Measure the person, not the balloon/padding: walk is 93px tall, release 54px.
+  // Independent uniform scales keep her at 52px (the unchanged combat height).
+  var BALLOON_ANIMATIONS = {
+    balloonWalk: { width: 512, height: 512, columns: 4, rows: 4,
+      frameWidth: 128, frameHeight: 128, frames: BALLOON_WALK_FRAMES,
+      frameMs: 100, scale: 52 / 93, anchorX: 62 },
+    balloonRelease: { width: 512, height: 512, columns: 4, rows: 4,
+      frameWidth: 128, frameHeight: 128, frames: BALLOON_RELEASE_FRAMES,
+      frameMs: BALLOON_FRAME_MS, scale: 52 / 54, anchorX: 38 }
+  };
   var RAT_SHEET_COLUMNS = 5;
   var RAT_SHEET_ROWS = 5;
   var RAT_SHEET_FRAMES = 25;
@@ -169,9 +177,8 @@
     return frames;
   }
 
-  // The newly supplied production sheets use one flat gray matte rather than
-  // alpha. Remove only pixels matching their own top-left matte colour; keep
-  // grayscale character details, flame sparks and red balloon pixels intact.
+  // Only the flame uses this legacy colour key. Balloon sheets already have
+  // alpha; their transparent corner RGB must never be used as a colour key.
   function prepareMatteSpriteSheet(image, tolerance) {
     if (!image) return null;
     var canvas = document.createElement('canvas');
@@ -195,6 +202,37 @@
     context.putImageData(pixels, 0, 0);
     canvas.__nbgSource = image.src;
     return canvas;
+  }
+
+  // Read occupied bounds once without editing a single source RGBA pixel.
+  // Crop each cell independently; anchor its feet, rather than transparent padding.
+  function measureBalloonFrames(image, animation) {
+    if (image.naturalWidth !== animation.width || image.naturalHeight !== animation.height)
+      throw new Error('Unexpected Balloon Girl sheet dimensions: ' + image.src);
+    var canvas = document.createElement('canvas');
+    canvas.width = animation.width;
+    canvas.height = animation.height;
+    var context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+    var rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    var frames = [];
+    for (var index = 0; index < animation.frames; index++) {
+      var cellX = index % animation.columns * animation.frameWidth;
+      var cellY = Math.floor(index / animation.columns) * animation.frameHeight;
+      var left = animation.frameWidth, top = animation.frameHeight, right = -1, bottom = -1;
+      for (var y = 0; y < animation.frameHeight; y++) {
+        for (var x = 0; x < animation.frameWidth; x++) {
+          if (!rgba[((cellY + y) * canvas.width + cellX + x) * 4 + 3]) continue;
+          left = Math.min(left, x); top = Math.min(top, y);
+          right = Math.max(right, x); bottom = Math.max(bottom, y);
+        }
+      }
+      if (right < left) throw new Error('Empty Balloon Girl frame: ' + index);
+      frames.push({ x: cellX + left, y: cellY + top,
+        width: right - left + 1, height: bottom - top + 1,
+        anchorX: animation.anchorX - left, footY: bottom - top + 1 });
+    }
+    return frames;
   }
 
   function loadJson(src) {
@@ -306,6 +344,7 @@
     var backflipActive = false;
     var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
+    var balloonFrames = {};
     var playerAnimations = {};
     var assetStatus = {};
     var requiredAssets = [];
@@ -1508,7 +1547,7 @@
         var image = images[enemy.type === 'bot' ? botImageKey : isWalkingRat ? ratImageKey :
           enemy.type === 'balloon' ? (balloonActive ? 'balloonRelease' : 'balloonWalk') : enemy.type];
         var x = Math.round(enemy.x - cameraX);
-        var cullMargin = enemy.type === 'pigeon' ?
+        var cullMargin = enemy.type === 'balloon' ? 100 : enemy.type === 'pigeon' ?
           Math.round((FLYING_PIG_RENDER_WIDTH - enemy.w) / 2) : 0;
         if (x < -enemy.w - cullMargin || x > WIDTH + cullMargin) continue;
         var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
@@ -1570,29 +1609,23 @@
                 pigDrawX, pigDrawY, FLYING_PIG_RENDER_WIDTH, FLYING_PIG_RENDER_HEIGHT);
             }
           } else if (enemy.type === 'balloon') {
-            var balloonFrameCount = balloonActive ? BALLOON_RELEASE_FRAMES : BALLOON_WALK_FRAMES;
+            var balloonKey = balloonActive ? 'balloonRelease' : 'balloonWalk';
+            var balloonAnimation = BALLOON_ANIMATIONS[balloonKey];
+            var balloonFrameCount = balloonAnimation.frames;
             var balloonFrame = balloonActive ?
               Math.min(balloonFrameCount - 1,
-                Math.floor((time - enemy.balloonStartedAt) / BALLOON_FRAME_MS)) :
-              Math.floor((time + enemy.x * 3) / 100) % balloonFrameCount;
+                Math.floor((time - enemy.balloonStartedAt) / balloonAnimation.frameMs)) :
+              Math.floor((time + enemy.x * 3) / balloonAnimation.frameMs) % balloonFrameCount;
             balloonFrame = Math.max(0, balloonFrame);
-            var balloonSourceW = (image.naturalWidth || image.width) / BALLOON_SHEET_COLUMNS;
-            var balloonSourceH = (image.naturalHeight || image.height) / 4;
-            var balloonDrawX = x - Math.round((BALLOON_RENDER_SIZE - enemy.w) / 2);
-            var balloonDrawY = y + enemy.h - BALLOON_RENDER_SIZE + BALLOON_FOOT_PADDING;
+            var balloonBounds = balloonFrames[balloonKey][balloonFrame];
+            var balloonScale = balloonAnimation.scale;
             var balloonFacing = balloonActive ? (enemy.balloonFacing || 1) : (enemy.vx < 0 ? -1 : 1);
-            if (balloonFacing < 0) {
-              ctx.translate(balloonDrawX + BALLOON_RENDER_SIZE, balloonDrawY);
-              ctx.scale(-1, 1);
-              ctx.drawImage(image, balloonFrame % BALLOON_SHEET_COLUMNS * balloonSourceW,
-                Math.floor(balloonFrame / BALLOON_SHEET_COLUMNS) * balloonSourceH,
-                balloonSourceW, balloonSourceH, 0, 0, BALLOON_RENDER_SIZE, BALLOON_RENDER_SIZE);
-            } else {
-              ctx.drawImage(image, balloonFrame % BALLOON_SHEET_COLUMNS * balloonSourceW,
-                Math.floor(balloonFrame / BALLOON_SHEET_COLUMNS) * balloonSourceH,
-                balloonSourceW, balloonSourceH, balloonDrawX, balloonDrawY,
-                BALLOON_RENDER_SIZE, BALLOON_RENDER_SIZE);
-            }
+            ctx.translate(x + enemy.w / 2, y + enemy.h);
+            ctx.scale(balloonFacing, 1);
+            ctx.drawImage(image, balloonBounds.x, balloonBounds.y,
+              balloonBounds.width, balloonBounds.height,
+              -balloonBounds.anchorX * balloonScale, -balloonBounds.footY * balloonScale,
+              balloonBounds.width * balloonScale, balloonBounds.height * balloonScale);
           } else if (enemy.type === 'bot') {
             var cellW = image.naturalWidth / BOT_SHEET_COLUMNS;
             var cellH = image.naturalHeight / BOT_SHEET_ROWS;
@@ -2066,8 +2099,10 @@
 
         return Promise.all(Object.keys(runtimeAssets.assets).map(function (key) {
           return loadImage(runtimeAssets.assets[key]).then(function (result) {
-            images[key] = ['botFire', 'balloonWalk', 'balloonRelease'].indexOf(key) >= 0 && result.image ?
+            images[key] = key === 'botFire' && result.image ?
               prepareMatteSpriteSheet(result.image, 18) : result.image;
+            if (BALLOON_ANIMATIONS[key] && result.image)
+              balloonFrames[key] = measureBalloonFrames(result.image, BALLOON_ANIMATIONS[key]);
             assetStatus[key] = {
               src: result.src,
               loaded: !!result.image
