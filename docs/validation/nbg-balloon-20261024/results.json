@@ -1,0 +1,82 @@
+[
+  {
+    "mode": "desktop",
+    "alpha": {
+      "balloonWalk": {
+        "changed": 0,
+        "white": 1310,
+        "dark": 22142,
+        "translucent": 6131,
+        "cornerAlpha": 0
+      },
+      "balloonRelease": {
+        "changed": 0,
+        "white": 393,
+        "dark": 3937,
+        "translucent": 6552,
+        "cornerAlpha": 0
+      }
+    },
+    "state": {
+      "cycles": 2,
+      "state": "walk",
+      "collision": {
+        "x": 1693.0528000000031,
+        "y": 162,
+        "w": 42,
+        "h": 52
+      }
+    },
+    "defeat": {
+      "defeated": true,
+      "reward": 8346,
+      "delta": 8346,
+      "events": 1
+    },
+    "frames": 515,
+    "personHeightRange": [
+      50.32258064516129,
+      52.962962962962955
+    ]
+  },
+  {
+    "mode": "mobile",
+    "alpha": {
+      "balloonWalk": {
+        "changed": 0,
+        "white": 1310,
+        "dark": 22142,
+        "translucent": 6131,
+        "cornerAlpha": 0
+      },
+      "balloonRelease": {
+        "changed": 0,
+        "white": 393,
+        "dark": 3937,
+        "translucent": 6552,
+        "cornerAlpha": 0
+      }
+    },
+    "state": {
+      "cycles": 2,
+      "state": "walk",
+      "collision": {
+        "x": 1693.0528000000031,
+        "y": 162,
+        "w": 42,
+        "h": 52
+      }
+    },
+    "defeat": {
+      "defeated": true,
+      "reward": 8346,
+      "delta": 8346,
+      "events": 1
+    },
+    "frames": 515,
+    "personHeightRange": [
+      50.32258064516129,
+      52.962962962962955
+    ]
+  }
+]
