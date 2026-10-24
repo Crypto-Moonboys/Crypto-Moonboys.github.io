@@ -1281,7 +1281,7 @@ for (const mechanicMode of [
       contextPrototype.drawImage=function(image,...args){
         const state=window.NBGLevel1State;
         if(image===state.objectImages.speedBox) window.__pr4DrawEvidence.speedBoxDraws++;
-        if(args.length===8 && image===state.objectImages.bot){
+        if(args.length===8 && (image===state.objectImages.bot || image===state.objectImages.botKick || image===state.objectImages.botHurt)){
           const botTransform=this.getTransform();
           window.__pr4DrawEvidence.botTopYs.push(Math.round(botTransform.f+args[5]*botTransform.d));
         }
