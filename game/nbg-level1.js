@@ -43,7 +43,11 @@
   var GRAFFBOT_FIRE_COOLDOWN_MS = 2400;
   var GRAFFBOT_FIRE_TRIGGER_RANGE = 150;
   var GRAFFBOT_FIRE_RENDER_SIZE = 96;
+  // Align the sheet's centre-line nozzle with the rendered Graffbot mouth.
+  var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -10;
   var GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
+  var SPEEDRUN_HUD_WIDTH = 104;
+  var SPEEDRUN_HUD_HEIGHT = 11;
   var BALLOON_SHEET_COLUMNS = 4;
   var BALLOON_WALK_FRAMES = 14;
   var BALLOON_RELEASE_FRAMES = 16;
@@ -1637,7 +1641,7 @@
         var anchorX = Math.round(enemy.x - cameraX + (facing > 0 ? enemy.w - 4 : 4));
         var drawX = facing > 0 ? anchorX : anchorX - GRAFFBOT_FIRE_RENDER_SIZE;
         var drawY = Math.round(enemy.y + FOREGROUND_VISUAL_OFFSET_Y + enemy.h / 2 -
-          GRAFFBOT_FIRE_RENDER_SIZE / 2);
+          GRAFFBOT_FIRE_RENDER_SIZE / 2 + GRAFFBOT_FIRE_MOUTH_OFFSET_Y);
         var sourceX = frame % GRAFFBOT_FIRE_COLUMNS * cellW;
         var sourceY = Math.floor(frame / GRAFFBOT_FIRE_COLUMNS) * cellH;
         ctx.save();
@@ -1775,25 +1779,19 @@
     }
 
     function drawSpeedrunHud(time) {
-      ctx.save();
-      ctx.fillStyle = 'rgba(9, 19, 38, 0.83)';
-      ctx.fillRect(WIDTH - 165, 5, 160, 37);
-      ctx.font = 'bold 12px Courier New';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText('SPEED ' + formatRunTime(runElapsedMs), WIDTH - 159, 19);
-      ctx.font = 'bold 10px Courier New';
-      ctx.fillStyle = '#ffe45a';
-      ctx.fillText('PAR 3:00' + (comboCount > 1 && time < comboExpiresAt ? '  COMBO x' + comboCount : ''), WIDTH - 159, 34);
-      ctx.restore();
+      var speedrunText = 'RUN ' + formatRunTime(runElapsedMs) + '/3:00';
       if (time < speedBoostUntil) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(55, 31, 0, 0.9)';
-        ctx.fillRect(WIDTH - 165, 44, 160, 20);
-        ctx.font = 'bold 11px Courier New';
-        ctx.fillStyle = '#ffe45a';
-        ctx.fillText('BOOST ' + ((speedBoostUntil - time) / 1000).toFixed(1) + 's', WIDTH - 159, 58);
-        ctx.restore();
+        speedrunText += ' B' + ((speedBoostUntil - time) / 1000).toFixed(1) + 's';
       }
+      if (comboCount > 1 && time < comboExpiresAt) speedrunText += ' Cx' + comboCount;
+      var panelX = WIDTH - SPEEDRUN_HUD_WIDTH - 4;
+      ctx.save();
+      ctx.fillStyle = 'rgba(9, 19, 38, 0.86)';
+      ctx.fillRect(panelX, 3, SPEEDRUN_HUD_WIDTH, SPEEDRUN_HUD_HEIGHT);
+      ctx.font = 'bold 6px Courier New';
+      ctx.fillStyle = time < speedBoostUntil ? '#ffe45a' : '#ffffff';
+      ctx.fillText(speedrunText, panelX + 3, 10);
+      ctx.restore();
     }
 
     function drawSecretNotification(time) {
