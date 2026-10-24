@@ -1,5 +1,14 @@
 # Contributing
 
+## Shared-universe mission — GK direction, 24 October 2026
+
+Both routes build creator-owned worlds within the Crypto Moonboys universe: develop a GK Moonboy or Flygirl sub-world, or bring your own IP and develop its unique lore and connections to the shared universe. SWARMSY is the creator and storyteller helping develop characters, stories and links between worlds, with creators directing and approving their work.
+
+Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
+
+Never describe the existing-IP route as leaving the Moonboys universe to work on unrelated projects. No Moonboy adoption is required for that route. Preserve current ChatGPT delivery and optional SWARMSY PC installation truth.
+
+
 ## Mission alignment
 
 Public-facing changes must preserve the current Crypto Moonboys hierarchy:

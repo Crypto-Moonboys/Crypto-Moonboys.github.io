@@ -1,8 +1,18 @@
 # Crypto Moonboys Latest Canon And Brand Vision
 
+## Current mission — 24 October 2026
+
+**One universe. Your IP or ours. Build connected worlds together.**
+
+Both routes build creator-owned worlds within the Crypto Moonboys universe: develop a GK Moonboy or Flygirl sub-world, or bring your own IP and develop its unique lore and connections to the shared universe. SWARMSY is the creator and storyteller helping develop characters, stories and links between worlds, with creators directing and approving their work.
+
+The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public ChatGPT Creator Studio; the SWARMSY PC beta remains an optional separate installation.
+
+Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
+
 Status: working public canon and brand vision brief
 
-Updated: 2026-10-10 (public AI delivery clarified; lore and creator rights unchanged)
+Updated: 2026-10-24 (both IP routes build connected worlds within the same universe; delivery and rights preserved)
 
 Sources: current repository README, Master Source of Truth, current SWARMSY positioning, protected First Witness corpus and historical W81 source provenance
 
@@ -22,7 +32,7 @@ Crypto Moonboys is the Graffiti Kings public creator umbrella and shared cultura
 
 The shortest operating line remains:
 
-**One umbrella. Two paths. Build identity. Build momentum. Turn the spark into culture.**
+**One universe. Your IP or ours. Build connected worlds together.**
 
 Crypto Moonboys is not just a game, NFT collection, wiki, token project, chatbot, metaverse or lore archive. Those are layers inside the wider system.
 
@@ -42,7 +52,7 @@ Crypto Moonboys should not copy those models blindly. The point is to make a Gra
 
 The simplest user-facing promise is:
 
-**Build a Moonboy identity, or bring the identity you already have. Use the system to make it recognisable, active and hard to forget.**
+**Build a GK Moonboy or Flygirl sub-world, or bring your own IP and unique lore into the same universe. SWARMSY helps connect the worlds through stories.**
 
 ## Who It Is For
 
@@ -51,7 +61,7 @@ Crypto Moonboys has two valid entry paths.
 | Path | Who it is for | User outcome |
 |---|---|---|
 | Path 1: Build a Moonboy identity | People who want a new character, avatar, alter ego, mascot, faction identity or creator-world anchor | A Moonboy becomes a recognisable identity that can become content, products, stories, games, merch, community and a creator world |
-| Path 2: Keep your existing identity | Artists, graffiti writers, musicians, brands, product creators, businesses, organisations, public personalities and unfinished projects | The user keeps their own name, project or brand and starts through the public ChatGPT Creator Studio to define, plan, publish, prove and grow it, with the separately installed SWARMSY PC beta as an optional route |
+| Path 2: Bring your own IP into the universe | Artists, graffiti writers, musicians, brands, product creators, businesses, organisations, public personalities and unfinished projects | The user keeps their own IP, develops its world and unique lore within the Crypto Moonboys universe, and uses SWARMSY-assisted storytelling to connect it to other worlds; public creation starts through ChatGPT and the PC beta is optional |
 
 Path 1 is not mandatory. A user does not need a Moonboy, NFT, faction or arcade score to use the wider creator system.
 
@@ -74,7 +84,7 @@ A user should be able to understand the current action route without reading the
 9. Become a HODL Warrior when the user holds a qualifying 1/1 under the published terms.
 10. Collaborate with other builders and help expand the public universe.
 
-### Path 2: Existing Identity Route
+### Path 2: Own-IP Worldbuilding Route
 
 1. Keep the real identity, business, product, art practice or alter ego.
 2. Start through the public ChatGPT Creator Studio to clarify identity, audience, promise, story, tone and visual signal, or optionally use a separately installed SWARMSY PC beta.
@@ -82,7 +92,7 @@ A user should be able to understand the current action route without reading the
 4. Preserve approved decisions through creator-memory locks and proof review; move portable JSON between tools manually when needed.
 5. Publish with clearer direction and less drift.
 6. Build proof, reputation, community and momentum.
-7. Connect back into the Crypto Moonboys public umbrella where useful, without being forced into NFTs or lore.
+7. Develop unique lore and creator-approved story connections within the Crypto Moonboys universe, without requiring a Moonboy or NFT.
 
 ## How The System Works
 
