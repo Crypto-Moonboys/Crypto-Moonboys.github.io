@@ -337,7 +337,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawEnemies\(runElapsedMs\);\s*drawGraffbotFires\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
 );
@@ -1272,7 +1272,7 @@ for (const mechanicMode of [
     await mechanicPage.goto(url,{waitUntil:'networkidle'});
     await mechanicPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true);
     await mechanicPage.evaluate(() => {
-      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],flameTopYs:[],botTopYs:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
+      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],flameTopYs:[],flameInsetChecks:[],botTopYs:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
       window.addEventListener('nbg-enemy-defeated',event => {
         if(event.detail?.type==='balloon') window.__pr4DrawEvidence.defeats.push({...event.detail});
       });
@@ -1290,6 +1290,10 @@ for (const mechanicMode of [
           const sourceH=(image.naturalHeight||image.height)/4;
           window.__pr4DrawEvidence.flameFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
           const flameTransform=this.getTransform();
+          const baseX=flameTransform.a<0?flameTransform.e:flameTransform.e+args[4];
+          window.__pr4DrawEvidence.flameInsetChecks.push(state.enemies.some(enemy =>
+            enemy.type==='bot' && Math.abs(baseX-Math.round(enemy.x-state.cameraX+
+              (flameTransform.a<0?12:enemy.w-12)))<0.01));
           window.__pr4DrawEvidence.flameFacings.push(flameTransform.a<0?-1:1);
           window.__pr4DrawEvidence.flameTopYs.push(Math.round(flameTransform.f+args[5]*flameTransform.d));
         }
@@ -1434,6 +1438,10 @@ for (const mechanicMode of [
       mechanicMode.label+' Graffbot must naturally fire again after the cooldown without a timer reset');
     assert.ok(repeatedFire.facings.includes(1),
       mechanicMode.label+' rightward flame must use the native sheet orientation');
+    assert.ok(await mechanicPage.evaluate(() =>
+      window.__pr4DrawEvidence.flameInsetChecks.length>0 &&
+      window.__pr4DrawEvidence.flameInsetChecks.every(Boolean)),
+      mechanicMode.label+' both flame facings must sit 8 game pixels further into the bot');
     await mechanicPage.clock.runFor(900);
     assert.equal(await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
