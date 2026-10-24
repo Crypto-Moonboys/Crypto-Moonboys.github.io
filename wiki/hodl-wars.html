@@ -44,9 +44,22 @@
     @media(max-width:680px){.article-contents ol{columns:1}}
   </style>
   <meta name="wiki-category" content="core">
-<style>.wiki-content h2[id]{scroll-margin-top:7rem}@media(max-width:1120px){.wiki-content h2[id]{scroll-margin-top:18rem}}</style></head>
-<body class="page-wiki page-standard-shell" data-entity-hash="688a709f0004">
+<style>.wiki-content h2[id]{scroll-margin-top:7rem}@media(max-width:1120px){.wiki-content h2[id]{scroll-margin-top:18rem}}</style><style>
+body.page-hodl-wars-art #content {
+  --art-gutter: clamp(28px, 3.5vw, 64px);
+  padding-top: 0;
+  padding-right: var(--art-gutter);
+  padding-left: var(--art-gutter);
+}
+.hodl-wars-artwork { margin: 0 calc(-1 * var(--art-gutter)) 28px; padding: 0; border: 0; }
+.hodl-wars-artwork img { display: block; width: 100%; max-width: none; height: auto; margin: 0; padding: 0; border: 0; }
+</style>
+</head>
+<body class="page-wiki page-standard-shell page-hodl-wars-art" data-entity-hash="688a709f0004">
 <main id="content" role="main">
+<figure class="hodl-wars-artwork">
+  <img src="/art/HODL%20Wars_%20Warriors%20vs%20Bots.jpg" alt="HODL Wars — Warriors vs Bots artwork" width="1983" height="793" loading="eager" decoding="async" fetchpriority="high">
+</figure>
   <div class="hodl-wars-page">
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/index.html">Home</a>
