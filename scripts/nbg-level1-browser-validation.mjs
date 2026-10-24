@@ -1397,7 +1397,7 @@ for (const mechanicMode of [
     assert.ok(leftFire.facings.includes(-1),
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
     assert.ok(leftFire.topYs.length>0&&leftFire.topYs.every(topY=>
-      topY+GRAFFBOT_FIRE_RENDER_SIZE/2<=leftFire.botY+55),
+      topY+48<=leftFire.botY+55),
       mechanicMode.label+' flame sheet centre-line must be raised to the rendered Graffbot mouth');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
