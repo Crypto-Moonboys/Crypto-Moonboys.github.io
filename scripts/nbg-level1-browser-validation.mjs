@@ -1272,7 +1272,7 @@ for (const mechanicMode of [
     await mechanicPage.goto(url,{waitUntil:'networkidle'});
     await mechanicPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true);
     await mechanicPage.evaluate(() => {
-      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],flameTopYs:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
+      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],flameTopYs:[],botTopYs:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
       window.addEventListener('nbg-enemy-defeated',event => {
         if(event.detail?.type==='balloon') window.__pr4DrawEvidence.defeats.push({...event.detail});
       });
@@ -1281,6 +1281,10 @@ for (const mechanicMode of [
       contextPrototype.drawImage=function(image,...args){
         const state=window.NBGLevel1State;
         if(image===state.objectImages.speedBox) window.__pr4DrawEvidence.speedBoxDraws++;
+        if(args.length===8 && image===state.objectImages.bot){
+          const botTransform=this.getTransform();
+          window.__pr4DrawEvidence.botTopYs.push(Math.round(botTransform.f+args[5]*botTransform.d));
+        }
         if(args.length===8 && image===state.objectImages.botFire){
           const sourceW=(image.naturalWidth||image.width)/4;
           const sourceH=(image.naturalHeight||image.height)/4;
@@ -1390,16 +1394,18 @@ for (const mechanicMode of [
         fireStartedAt:bot.fireStartedAt,fireUntil:bot.fireUntil,nextFireAt:bot.nextFireAt,
         frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
         facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort(),
-        topYs:[...window.__pr4DrawEvidence.flameTopYs]};
+        topYs:[...window.__pr4DrawEvidence.flameTopYs],
+        botTopYs:[...window.__pr4DrawEvidence.botTopYs]};
     });
     assert.ok(leftFire.health<3,mechanicMode.label+' Graffbot fire must damage only after visible contact');
     assert.deepEqual(leftFire.frames,Array.from({length:16},(_,index)=>index),
       mechanicMode.label+' flame must render all 16 frames in order');
     assert.ok(leftFire.facings.includes(-1),
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
-    assert.ok(leftFire.topYs.length>0&&leftFire.topYs.every(topY=>
-      topY+48<=leftFire.botY+Math.round(leftFire.cameraY)+55),
-      mechanicMode.label+' flame sheet centre-line must be raised to the rendered Graffbot mouth');
+    assert.ok(leftFire.topYs.length>0&&leftFire.botTopYs.length>0&&
+      leftFire.topYs.every(topY=>leftFire.botTopYs.some(botTopY=>
+        Math.abs((topY+48)-(botTopY+23))<=1)),
+      mechanicMode.label+' flame sheet centre-line must align with the rendered Graffbot mouth');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
 
