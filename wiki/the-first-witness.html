@@ -36,9 +36,34 @@
     }
   }
   </script>
+  <style>
+    body.page-first-witness #content {
+      --witness-gutter: clamp(28px, 3.5vw, 64px);
+      padding-top: 0;
+      padding-right: var(--witness-gutter);
+      padding-left: var(--witness-gutter);
+    }
+    .first-witness-artwork {
+      margin: 0 calc(-1 * var(--witness-gutter)) 28px;
+      padding: 0;
+      border: 0;
+    }
+    .first-witness-artwork img {
+      display: block;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+  </style>
 </head>
-<body class="page-wiki page-standard-shell">
+<body class="page-wiki page-standard-shell page-first-witness">
 <main id="content" role="main">
+  <figure class="first-witness-artwork">
+    <img src="/art/The%20First%20Witness_%20Neon%20Moonboy%20Chronicle.jpg" alt="The First Witness — Neon Moonboy Chronicle artwork" width="1983" height="793" loading="eager" decoding="async" fetchpriority="high">
+  </figure>
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="/index.html">Home</a>
     <span class="sep" aria-hidden="true">›</span>
