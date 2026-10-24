@@ -1385,7 +1385,8 @@ for (const mechanicMode of [
     const leftFire=await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
       const bot=state.enemies.find(enemy=>enemy.type==='bot');
-      return {health:state.player.health,rect:state.graffbotFireRect(bot),botY:bot.y,
+      return {health:state.player.health,rect:state.graffbotFireRect(bot),
+        botY:bot.y,cameraY:state.cameraY,
         fireStartedAt:bot.fireStartedAt,fireUntil:bot.fireUntil,nextFireAt:bot.nextFireAt,
         frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
         facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort(),
@@ -1397,7 +1398,7 @@ for (const mechanicMode of [
     assert.ok(leftFire.facings.includes(-1),
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
     assert.ok(leftFire.topYs.length>0&&leftFire.topYs.every(topY=>
-      topY+48<=leftFire.botY+55),
+      topY+48<=leftFire.botY+Math.round(leftFire.cameraY)+55),
       mechanicMode.label+' flame sheet centre-line must be raised to the rendered Graffbot mouth');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
