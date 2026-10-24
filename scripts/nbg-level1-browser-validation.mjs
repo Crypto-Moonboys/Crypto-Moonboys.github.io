@@ -1357,6 +1357,7 @@ for (const mechanicMode of [
       const state=window.NBGLevel1State;
       const bot=state.enemies.find(enemy=>enemy.type==='bot');
       return {health:state.player.health,rect:state.graffbotFireRect(bot),
+        fireStartedAt:bot.fireStartedAt,fireUntil:bot.fireUntil,nextFireAt:bot.nextFireAt,
         frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
         facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort()};
     });
@@ -1365,6 +1366,8 @@ for (const mechanicMode of [
       mechanicMode.label+' flame must render all 16 frames in order');
     assert.ok(leftFire.facings.includes(1),
       mechanicMode.label+' source left-facing flame canvas draw must be observed');
+    assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
+      mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
 
     await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
@@ -1374,13 +1377,24 @@ for (const mechanicMode of [
       state.player.vx=0;
       state.player.invuln=999999;
       bot.vx=0;
-      bot.nextFireAt=0;
-      bot.fireUntil=0;
     });
-    await mechanicPage.clock.runFor(920);
-    assert.ok((await mechanicPage.evaluate(() =>
-      [...new Set(window.__pr4DrawEvidence.flameFacings)])).includes(-1),
+    await mechanicPage.clock.runFor(2200);
+    assert.equal(await mechanicPage.evaluate(() => {
+      const bot=window.NBGLevel1State.enemies.find(enemy=>enemy.type==='bot');
+      return bot.fireStartedAt;
+    }),leftFire.fireStartedAt,
+    mechanicMode.label+' Graffbot must not fire again before the full post-flame cooldown');
+    await mechanicPage.clock.runFor(260);
+    const repeatedFire=await mechanicPage.evaluate(() => {
+      const bot=window.NBGLevel1State.enemies.find(enemy=>enemy.type==='bot');
+      return {fireStartedAt:bot.fireStartedAt,
+        facings:[...new Set(window.__pr4DrawEvidence.flameFacings)]};
+    });
+    assert.ok(repeatedFire.fireStartedAt>leftFire.fireStartedAt,
+      mechanicMode.label+' Graffbot must naturally fire again after the cooldown without a timer reset');
+    assert.ok(repeatedFire.facings.includes(-1),
       mechanicMode.label+' opposite Graffbot direction must mirror the same sheet');
+    await mechanicPage.clock.runFor(900);
     assert.equal(await mechanicPage.evaluate(() => {
       const state=window.NBGLevel1State;
       const bot=state.enemies.find(enemy=>enemy.type==='bot');

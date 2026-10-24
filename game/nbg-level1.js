@@ -1156,7 +1156,7 @@
           enemy.fireFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
           enemy.fireStartedAt = time;
           enemy.fireUntil = time + GRAFFBOT_FIRE_DURATION_MS;
-          enemy.nextFireAt = time + GRAFFBOT_FIRE_COOLDOWN_MS;
+          enemy.nextFireAt = enemy.fireUntil + GRAFFBOT_FIRE_COOLDOWN_MS;
           botFireActive = true;
         }
 

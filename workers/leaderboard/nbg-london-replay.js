@@ -397,7 +397,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         enemy.fireFacing=p.x+p.w/2<enemy.x+enemy.w/2?-1:1;
         enemy.fireStartedAt=elapsed;
         enemy.fireUntil=elapsed+GRAFFBOT_FIRE_DURATION_MS;
-        enemy.nextFireAt=elapsed+GRAFFBOT_FIRE_COOLDOWN_MS;
+        enemy.nextFireAt=enemy.fireUntil+GRAFFBOT_FIRE_COOLDOWN_MS;
         botFireActive=true;
         graffbotFireCount++;
       }
