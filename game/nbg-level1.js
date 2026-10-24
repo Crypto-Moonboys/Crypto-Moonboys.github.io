@@ -45,6 +45,7 @@
   var GRAFFBOT_FIRE_RENDER_SIZE = 96;
   // Align the sheet's centre-line nozzle with the rendered Graffbot mouth.
   var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -10;
+  var GRAFFBOT_FIRE_INSET_X = 8; // Tuck the visual sheet underneath the bot.
   var GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
   var SPEEDRUN_HUD_WIDTH = 104;
   var SPEEDRUN_HUD_HEIGHT = 11;
@@ -1671,7 +1672,8 @@
         var frame = getGraffbotFireFrame(enemy, time);
         if (enemy.defeated || frame < 0) continue;
         var facing = enemy.fireFacing || (enemy.vx < 0 ? -1 : 1);
-        var anchorX = Math.round(enemy.x - cameraX + (facing > 0 ? enemy.w - 4 : 4));
+        var anchorX = Math.round(enemy.x - cameraX +
+          (facing > 0 ? enemy.w - 4 - GRAFFBOT_FIRE_INSET_X : 4 + GRAFFBOT_FIRE_INSET_X));
         var drawX = facing > 0 ? anchorX : anchorX - GRAFFBOT_FIRE_RENDER_SIZE;
         var drawY = Math.round(enemy.y + FOREGROUND_VISUAL_OFFSET_Y + enemy.h / 2 -
           GRAFFBOT_FIRE_RENDER_SIZE / 2 + GRAFFBOT_FIRE_MOUTH_OFFSET_Y);
@@ -1875,8 +1877,8 @@
       drawObjects();
       // Attack start/end timestamps use runElapsedMs in updateEnemies();
       // RAF performance.now() is a different clock and hid attack poses.
-      drawEnemies(runElapsedMs);
       drawGraffbotFires(runElapsedMs);
+      drawEnemies(runElapsedMs);
       drawParachuteRats(time);
       drawPlayer();
       ctx.restore();
