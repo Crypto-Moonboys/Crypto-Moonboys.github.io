@@ -4,12 +4,20 @@
   "runtime": "/game/demo-launch.html",
   "player": {
     "animationManifest": "player/nbg-runner-animation-manifest.json",
-    "hitbox": { "width": 24, "height": 34 }
+    "hitbox": {
+      "width": 24,
+      "height": 34
+    }
   },
   "world": {
     "tileSize": 16,
     "width": 22000,
-    "layerNames": ["sky", "london-skyline", "graffiti-wall", "street"],
+    "layerNames": [
+      "sky",
+      "london-skyline",
+      "graffiti-wall",
+      "street"
+    ],
     "layers": [
       "world/clouds.jpg",
       [
@@ -29,7 +37,8 @@
     "floatingBrick": "objects/BRICK1.png",
     "floatingRock": "objects/ROCK1.png",
     "checkpoint": "objects/checkpoint.svg",
-    "finishFlag": "objects/finish-flag.svg"
+    "finishFlag": "objects/finish-flag.svg",
+    "speedBox": "objects/SPEEDBOX.png"
   },
   "enemies": {
     "londonRat": "enemies/BRATTY1-walk.png",
@@ -46,16 +55,20 @@
     "pigeon": "enemies/PIGFLY-iji.png",
     "graffitiBot": "enemies/bb8-walk.png",
     "graffitiBotKick": "enemies/bb8-kick.png",
-    "graffitiBotHurt": "enemies/bb8-hurt.png"
+    "graffitiBotHurt": "enemies/bb8-hurt.png",
+    "graffitiBotFire": "objects/Pixel Flame Jet Burst-spritesheet.png",
+    "balloonWalk": "objects/bber-walk-v2.png",
+    "balloonRelease": "objects/bber-sdgd-v1.png"
   },
   "acceptance": {
     "startButton": true,
     "playerMovement": true,
     "jumping": true,
     "xpCoins": 12,
-    "enemies": 3,
+    "enemies": 4,
     "checkpoint": true,
     "finish": true,
-    "leaderboardReadyReward": true
+    "leaderboardReadyReward": true,
+    "speedBoxes": 4
   }
 }
