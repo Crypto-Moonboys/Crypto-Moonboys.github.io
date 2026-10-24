@@ -4493,6 +4493,86 @@
         "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666",
         "quote": "2880 is definitive. Earlier conflicting dates remain attributed archive records, not additional identical catastrophes.\nFewer than twelve secure regions remain by 2930. The loss of over 75% of major cities by 2900 remains a separate historical measure.\nApprove the proposed 2036\u20132045 chronology. Preserve original contradictory dates on surviving fictional records as damaged or disputed evidence. Do not rewrite those artefacts to pretend the contradiction never existed.\nApprove all six proposed enduring cultures and their distinct membership institutions: NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists. Retain the existing 34 cultures. Develop the six fully without duplicating existing faction identities or changing the nine live Battle Chamber options.\nApprove the intended outcome: the physical universe survives, compulsory convergence is defeated, no single sovereign owns humanity's future, and irreversible consequences remain. Record the intended ending in the master canon and decision ledger, but do not reveal the full ending in the public Year 3008 storyline. Preserve suspense and future narrative development."
       }
+    },
+    {
+      "id": "GK-20261024-SHARED-UNIVERSE-MISSION",
+      "status": "implemented",
+      "sources": [
+        "GK direct instruction, 24 October 2026: use GK IP to build Moonboy sub-worlds, or bring own IP into the Moonboy universe with unique lore; SWARMSY ties worlds together.",
+        "README.md: Current mission — 24 October 2026"
+      ],
+      "old": "The existing-identity route could read as using SWARMSY for unrelated standalone projects.",
+      "new": "Both routes build connected worlds within one universe using GK IP or creator-owned IP; SWARMSY assists storytelling connections under creator approval.",
+      "reason": "Persist GK’s explicit revised product mission; no fictional chronology, faction roster, ownership terms or runtime changes.",
+      "affected_paths": [
+        "wiki/crypto-moonboys.html",
+        "wiki/gkniftyheads.html",
+        "wiki/graffiti-kings.html",
+        "wiki/graffpunks-ecosystem.html",
+        "wiki/hodl-warriors.html"
+      ],
+      "paragraph_changes": [
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:cb0541ebbf9a5ef032e00424d69d27c66330b4fe7de599ba6e639a6dc9bcc922",
+          "new_sha256": "sha256:be69b80cd99ad543c41de9abadb4b082d032ebd65a91e9785bd5ce2f05b2d296",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:8251d10967040bf6421b4f11ea289474a4296d28b9bc8559f173dfdd029a64cf",
+          "new_sha256": "sha256:edd0353ea3b2f15c5d2505a1e990a3254beb8fb78487561120321f89a8683453",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:d6ecf9986c1f6db4b6ff7cf99b642cec45d9050b0cdd8300b84b372d1dea9ead",
+          "new_sha256": "sha256:f01fadae3e41d32cf581e1e23d3cdf539e00ed8e69cea9d1d7cd02018592c177",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:a83d6ab13640730673c16e5eaf583c585b2d5fd70ae252bb30970072b117d332",
+          "new_sha256": "sha256:328aac3a7c831a472ed3e27203727111ccd6e48c667e2dd88a0dda0737a5d97d",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:c1fcc3b148c5262d4f48f71f8e7f4030a8bf6e98a17f6797ce57f5f6b75e90af",
+          "new_sha256": "sha256:762205ac114ca3d30b46cecac37468d7fd5314fced9a207422a0930d164151ed",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:1467af5e8dfc5baebc97bf88ed9ce0bafd6c5d5cc2f05bf033405186d07ab37e",
+          "new_sha256": "sha256:63304bd6a775291ef73f0f748099a81ef285230e9dec5e10a1c6193214ad9255",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/gkniftyheads.html",
+          "old_sha256": "sha256:57bf4b44cedaf2f03c7dd8fbeaec5b615889f80670ed88c9e1c765a9090e3ba3",
+          "new_sha256": "sha256:dff2a627419b9916d3996e0e0cdad8de21f4b186aa4ee921e13425462e521266",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/graffiti-kings.html",
+          "old_sha256": "sha256:3fb8bd8c9d3f5adf09a0d23c53ee53fe276a4ceecc6d27b3c24c5270c6750f0b",
+          "new_sha256": "sha256:d861b73b84d286b1656380cb2a82756868cba6f860729c207cc1c2daa0db88ad",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/graffpunks-ecosystem.html",
+          "old_sha256": "sha256:118654af322da7af53b9b0df9928a0e3015e194f9e17d914e2b3f7fb3003f635",
+          "new_sha256": "sha256:438c44d300e40ad447d8d4b943449a44a12d31107a4213daf80714aaaf6f6c7a",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        },
+        {
+          "path": "wiki/hodl-warriors.html",
+          "old_sha256": "sha256:4a8cbc04ed3f8f4027b1b0007deaeb5380825b32da62693b208aeffd77a1c692",
+          "new_sha256": "sha256:74da59f418f1b3b2375271934074e349e60624dc67baec27386a2b05830bd11c",
+          "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
+        }
+      ]
     }
   ],
   "updated": "2026-10-09"

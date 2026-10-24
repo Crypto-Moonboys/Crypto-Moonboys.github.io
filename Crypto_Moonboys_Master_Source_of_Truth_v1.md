@@ -1,7 +1,17 @@
 # Crypto Moonboys — Master Source of Truth
 
-Version: 2.0  
-Updated: 10 October 2026
+## Current mission — 24 October 2026
+
+**One universe. Your IP or ours. Build connected worlds together.**
+
+Both routes build creator-owned worlds within the Crypto Moonboys universe: develop a GK Moonboy or Flygirl sub-world, or bring your own IP and develop its unique lore and connections to the shared universe. SWARMSY is the creator and storyteller helping develop characters, stories and links between worlds, with creators directing and approving their work.
+
+The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public ChatGPT Creator Studio; the SWARMSY PC beta remains an optional separate installation.
+
+Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
+
+Version: 2.1
+Updated: 24 October 2026
 
 Legacy filename retained for compatibility with existing agents and links.
 
@@ -20,11 +30,11 @@ The correct top-level definition is:
 The umbrella has two valid onboarding paths:
 
 1. **Build a Moonboy identity.** Grind XP, earn eligible free NFT drops, keep/flip/burn, evolve and forge one or more unique 1/1 Moonboys. Build character worlds around them and join the HODL Warriors creator army.
-2. **Keep an existing identity.** Artists, businesses, product creators, brands and existing alter egos can use SWARMSY without adopting a Moonboy.
+2. **Bring your own IP.** Artists, businesses, product creators, brands and existing alter egos keep their identity and build its world and unique lore within the Crypto Moonboys universe, with SWARMSY helping connect it to other worlds.
 
 The shortest operating line is:
 
-**One umbrella. Two paths. Build identity. Build momentum.**
+**One universe. Your IP or ours. Build connected worlds together.**
 
 The cultural problem is:
 
@@ -218,7 +228,7 @@ It is ownership plus an army of other builders.
 
 ---
 
-# 5. Path 2 — Keep Your Existing Identity and Use SWARMSY
+# 5. Path 2 — Bring Your Own IP into the Crypto Moonboys Universe
 
 ## Who this path is for
 
@@ -252,7 +262,7 @@ A user on Path 2 does not need to:
 - play the arcade
 - replace their existing name or brand
 
-They keep the identity they already own.
+They keep the identity and IP they already own, develop a distinctive world and lore around it, and connect that world to the wider Crypto Moonboys universe with creator-approved SWARMSY storytelling.
 
 ## SWARMSY's job
 
@@ -274,7 +284,7 @@ SWARMSY is the operational creator system used by both paths.
 
 Path 1 uses it to build Moonboy creator worlds.
 
-Path 2 uses it to strengthen existing identities.
+Path 2 uses it to develop worlds and unique lore around existing IP within the same universe and create approved links to other worlds.
 
 ---
 
@@ -314,7 +324,7 @@ Never invert this hierarchy.
 - **SWARMSY helps both paths create, plan, brand, grow and maintain momentum.**
 - **Games and NFTs are tools inside the umbrella, not the mission.**
 - **GK provides the floor. The community builds on top.**
-- **One umbrella. Two paths. Build identity. Build momentum.**
+- **One universe. Your IP or ours. Build connected worlds together.**
 
 ## Do not say
 
@@ -355,11 +365,11 @@ The core bridge sequence is:
 
 ### Path 2
 
-**Already an artist, business, product creator or brand? Keep your identity -> Use SWARMSY -> Create -> Plan -> Brand -> Grow**
+**Bring your own IP -> Build your world and unique lore -> Use SWARMSY to develop story connections -> Collaborate inside the Crypto Moonboys universe**
 
 Final line:
 
-**One umbrella. Two paths. Build identity. Build momentum.**
+**One universe. Your IP or ours. Build connected worlds together.**
 
 The static fallback, reduced-motion version, metadata and accessible labels must communicate the same hierarchy.
 
@@ -377,7 +387,7 @@ Its job is to explain:
 - how the Moonboy progression works
 - what a 1/1 means
 - HODL Warriors as the creator army
-- SWARMSY-only entry for existing identities
+- Own-IP worldbuilding within the shared universe, with SWARMSY helping develop story connections
 - how games, XP, NFTs, wiki, Battle Chamber and Block Topia fit underneath the umbrella
 
 The page must not read like everyone must earn NFTs to participate.
@@ -484,10 +494,10 @@ Crypto Moonboys is the Graffiti Kings creator umbrella for the Web3 and blockcha
 
 It carries the culture forward through new Moonboy identities, GKniftyHEADS, factions, SWARMSY, community, progression systems and connected creator worlds.
 
-A person can join by forging one or more unique 1/1 Moonboys and becoming a HODL Warrior, or by keeping an existing identity and using SWARMSY to stand out, build community and maintain momentum.
+A person can join by forging one or more unique 1/1 Moonboys and becoming a HODL Warrior, or by bringing their own IP and using SWARMSY to build its world, unique lore and connections within the same Crypto Moonboys universe.
 
 Games, XP, NFT drops, burn routes, the wiki, Battle Chamber, Block Topia and lore support the umbrella.
 
 They are not the reason it exists.
 
-**One umbrella. Two paths. Build identity. Build momentum.**
+**One universe. Your IP or ours. Build connected worlds together.**
