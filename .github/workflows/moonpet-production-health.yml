@@ -90,7 +90,7 @@ jobs:
 
       - name: Upload sanitised health report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: moonpet-production-health-${{ github.run_id }}
           path: moonpet-production-health-report.json

@@ -171,7 +171,7 @@ jobs:
           exit "${{ steps.d1-query.outputs.status }}"
       - name: Upload sanitised failure diagnostics
         if: always() && steps.d1-query.outputs.status != '0'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: d1-query-failure-diagnostics
           path: d1-query-failure.txt
@@ -221,7 +221,7 @@ jobs:
           fi
       - name: Upload sanitised identity audit failure diagnostics
         if: always() && steps.d1-query.outputs.status == '0' && steps.d1-identity-audit-verify.outputs.status != '0'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: d1-identity-authority-audit-failure-diagnostics
           path: d1-identity-authority-audit-failure.txt
@@ -229,7 +229,7 @@ jobs:
           retention-days: 30
       - name: Upload sanitised evidence
         if: steps.d1-query.outputs.status == '0'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: d1-production-migration-evidence
           path: |

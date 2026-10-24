@@ -85,7 +85,7 @@ jobs:
           fi
       - name: Propose only verified graph artifact changes
         id: graph_pr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/verified-graph-refresh
           delete-branch: true
