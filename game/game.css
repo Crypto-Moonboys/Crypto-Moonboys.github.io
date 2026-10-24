@@ -134,25 +134,31 @@ canvas {
 
 .hud-strip {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  top: 3px;
+  left: 4px;
+  right: 23%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 3px;
   pointer-events: none;
 }
 
 .hud-strip span {
+  flex: 0 1 auto;
   min-width: 0;
-  border: 2px solid #000;
-  background: rgba(20, 24, 33, 0.82);
+  border: 1px solid #000;
+  background: rgba(20, 24, 33, 0.86);
   color: var(--ink);
-  padding: 6px 8px;
+  padding: 3px 4px;
   overflow: hidden;
-  font: 800 12px/1.1 "Courier New", monospace;
+  font: 800 clamp(8px, 1.2vw, 10px)/1.05 "Courier New", monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hud-strip #hud-state {
+  flex: 1 1 auto;
 }
 
 .touch-controls {
@@ -238,12 +244,15 @@ canvas {
   }
 
   .hud-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    top: 3px;
+    left: 3px;
+    right: 23%;
+    gap: 2px;
   }
 
   .hud-strip span {
-    font-size: 10px;
-    padding: 5px 6px;
+    padding: 2px 3px;
+    font-size: 8px;
   }
 
   .touch-controls {

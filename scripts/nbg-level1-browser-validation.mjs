@@ -1243,6 +1243,14 @@ assert.ok(
   runtimeSource.includes('var speedBoxes = [875, 5685, 10935, 16185].map(function (x) {') &&
   runtimeSource.includes('var GRAFFBOT_FIRE_COLUMNS = 4') &&
   runtimeSource.includes('var GRAFFBOT_FIRE_FRAMES = 16') &&
+  runtimeSource.includes('var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -10') &&
+  runtimeSource.includes('GRAFFBOT_FIRE_RENDER_SIZE / 2 + GRAFFBOT_FIRE_MOUTH_OFFSET_Y') &&
+  runtimeSource.includes('var SPEEDRUN_HUD_WIDTH = 104') &&
+  runtimeSource.includes("var speedrunText = 'RUN ' + formatRunTime(runElapsedMs) + '/3:00'") &&
+  !runtimeSource.includes('ctx.fillRect(WIDTH - 165, 44, 160, 20)') &&
+  gameCssSource.includes('right: 23%') &&
+  gameCssSource.includes('flex-wrap: nowrap') &&
+  gameCssSource.includes('font: 800 clamp(8px, 1.2vw, 10px)/1.05') &&
   runtimeSource.includes('var BALLOON_WALK_FRAMES = 14') &&
   runtimeSource.includes('var BALLOON_RELEASE_FRAMES = 16') &&
   runtimeSource.includes('var SPEED_BOOST_MAX_SPEED = 6') &&
@@ -1264,7 +1272,7 @@ for (const mechanicMode of [
     await mechanicPage.goto(url,{waitUntil:'networkidle'});
     await mechanicPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true);
     await mechanicPage.evaluate(() => {
-      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
+      window.__pr4DrawEvidence={flameFrames:[],flameFacings:[],flameTopYs:[],botTopYs:[],balloonFrames:[],walkFrames:[],speedBoxDraws:0,defeats:[]};
       window.addEventListener('nbg-enemy-defeated',event => {
         if(event.detail?.type==='balloon') window.__pr4DrawEvidence.defeats.push({...event.detail});
       });
@@ -1273,11 +1281,17 @@ for (const mechanicMode of [
       contextPrototype.drawImage=function(image,...args){
         const state=window.NBGLevel1State;
         if(image===state.objectImages.speedBox) window.__pr4DrawEvidence.speedBoxDraws++;
+        if(args.length===8 && (image===state.objectImages.bot || image===state.objectImages.botKick || image===state.objectImages.botHurt)){
+          const botTransform=this.getTransform();
+          window.__pr4DrawEvidence.botTopYs.push(Math.round(botTransform.f+args[5]*botTransform.d));
+        }
         if(args.length===8 && image===state.objectImages.botFire){
           const sourceW=(image.naturalWidth||image.width)/4;
           const sourceH=(image.naturalHeight||image.height)/4;
           window.__pr4DrawEvidence.flameFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
-          window.__pr4DrawEvidence.flameFacings.push(this.getTransform().a<0?-1:1);
+          const flameTransform=this.getTransform();
+          window.__pr4DrawEvidence.flameFacings.push(flameTransform.a<0?-1:1);
+          window.__pr4DrawEvidence.flameTopYs.push(Math.round(flameTransform.f+args[5]*flameTransform.d));
         }
         if(args.length===8 && image===state.objectImages.balloonRelease){
           const sourceW=(image.naturalWidth||image.width)/4;
@@ -1298,6 +1312,25 @@ for (const mechanicMode of [
     else await mechanicPage.keyboard.press('KeyD');
     await mechanicPage.waitForFunction(() => window.NBGLevel1State.running === true);
     await mechanicPage.waitForFunction(() => window.__pr4DrawEvidence.speedBoxDraws>0);
+    const compactHud=await mechanicPage.evaluate(() => {
+      const stage=document.getElementById('game-stage').getBoundingClientRect();
+      const strip=document.querySelector('.hud-strip').getBoundingClientRect();
+      const boxes=[...document.querySelectorAll('.hud-strip span')].map(element => {
+        const rect=element.getBoundingClientRect();
+        return {top:rect.top,right:rect.right,bottom:rect.bottom,left:rect.left,height:rect.height};
+      });
+      return {
+        sameLine:Math.max(...boxes.map(box=>box.top))-Math.min(...boxes.map(box=>box.top))<=1,
+        nonOverlapping:boxes.every((box,index)=>index===boxes.length-1||box.right<=boxes[index+1].left+0.5),
+        maxHeight:Math.max(...boxes.map(box=>box.height)),
+        reservedRight:strip.right<=stage.left+stage.width*0.78
+      };
+    });
+    assert.deepEqual(compactHud,{sameLine:true,nonOverlapping:true,
+      maxHeight:compactHud.maxHeight,reservedRight:true},
+    mechanicMode.label+' XP, coins, health, state and player HUD boxes must share one compact non-overlapping row');
+    assert.ok(compactHud.maxHeight<=20,
+      mechanicMode.label+' top HUD boxes must stay compact');
 
     // Collect the in-world box and prove fixed speed, expiry and reset.
     assert.ok(await mechanicPage.evaluate(() => window.__pr4DrawEvidence.speedBoxDraws)>0,
@@ -1357,15 +1390,22 @@ for (const mechanicMode of [
       const state=window.NBGLevel1State;
       const bot=state.enemies.find(enemy=>enemy.type==='bot');
       return {health:state.player.health,rect:state.graffbotFireRect(bot),
+        botY:bot.y,cameraY:state.cameraY,
         fireStartedAt:bot.fireStartedAt,fireUntil:bot.fireUntil,nextFireAt:bot.nextFireAt,
         frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
-        facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort()};
+        facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort(),
+        topYs:[...window.__pr4DrawEvidence.flameTopYs],
+        botTopYs:[...window.__pr4DrawEvidence.botTopYs]};
     });
     assert.ok(leftFire.health<3,mechanicMode.label+' Graffbot fire must damage only after visible contact');
     assert.deepEqual(leftFire.frames,Array.from({length:16},(_,index)=>index),
       mechanicMode.label+' flame must render all 16 frames in order');
     assert.ok(leftFire.facings.includes(-1),
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
+    assert.ok(leftFire.topYs.length>0&&leftFire.botTopYs.length>0&&
+      leftFire.topYs.every(topY=>leftFire.botTopYs.some(botTopY=>
+        Math.abs((topY+48)-(botTopY+23))<=1)),
+      mechanicMode.label+' flame sheet centre-line must align with the rendered Graffbot mouth');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
 
