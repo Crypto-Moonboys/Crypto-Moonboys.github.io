@@ -43,8 +43,8 @@
   var GRAFFBOT_FIRE_COOLDOWN_MS = 2400;
   var GRAFFBOT_FIRE_TRIGGER_RANGE = 150;
   var GRAFFBOT_FIRE_RENDER_SIZE = 96;
-  // Align the sheet's centre-line nozzle with the rendered Graffbot mouth.
-  var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -10;
+  // Visual placement: raised a further 7px at GK's request.
+  var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -17;
   var GRAFFBOT_FIRE_INSET_X = 8; // Tuck the visual sheet underneath the bot.
   var GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
   var SPEEDRUN_HUD_WIDTH = 104;

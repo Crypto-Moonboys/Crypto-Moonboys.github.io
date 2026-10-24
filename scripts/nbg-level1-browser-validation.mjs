@@ -1243,7 +1243,7 @@ assert.ok(
   runtimeSource.includes('var speedBoxes = [875, 5685, 10935, 16185].map(function (x) {') &&
   runtimeSource.includes('var GRAFFBOT_FIRE_COLUMNS = 4') &&
   runtimeSource.includes('var GRAFFBOT_FIRE_FRAMES = 16') &&
-  runtimeSource.includes('var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -10') &&
+  runtimeSource.includes('var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -17') &&
   runtimeSource.includes('GRAFFBOT_FIRE_RENDER_SIZE / 2 + GRAFFBOT_FIRE_MOUTH_OFFSET_Y') &&
   runtimeSource.includes('var SPEEDRUN_HUD_WIDTH = 104') &&
   runtimeSource.includes("var speedrunText = 'RUN ' + formatRunTime(runElapsedMs) + '/3:00'") &&
@@ -1408,8 +1408,8 @@ for (const mechanicMode of [
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
     assert.ok(leftFire.topYs.length>0&&leftFire.botTopYs.length>0&&
       leftFire.topYs.every(topY=>leftFire.botTopYs.some(botTopY=>
-        Math.abs((topY+48)-(botTopY+23))<=1)),
-      mechanicMode.label+' flame sheet centre-line must align with the rendered Graffbot mouth');
+        Math.abs((topY+48)-(botTopY+16))<=1)),
+      mechanicMode.label+' flame sheet must retain the requested 7px higher placement');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
 
