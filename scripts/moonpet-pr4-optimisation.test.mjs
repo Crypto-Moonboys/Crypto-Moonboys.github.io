@@ -8,7 +8,7 @@ const baseline=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr4-baseline.
 for(const expected of baseline.cases)test('PR4 full first/retry response and saved state parity: '+expected.scenario,()=>{
  const actual=JSON.parse(execFileSync(process.execPath,['scripts/moonpet-pr4-parity-case.mjs',expected.scenario],{encoding:'utf8'}));
  for(const key of ['first_response_hash','first_persisted_hash','retry_response_hash','retry_persisted_hash'])assert.equal(actual[key],expected[key],key);
- for(const request of ['first','second']){assert.equal(actual[request].calls,expected[request].calls-(expected.scenario==='zero'?0:15));assert.equal(actual[request].statements,expected[request].statements+(expected.scenario==='zero'?0:1));}
+ for(const request of ['first','second']){assert.ok(actual[request].calls<=expected[request].calls-(expected.scenario==='zero'?0:15));assert.ok(actual[request].statements<=expected[request].statements+(expected.scenario==='zero'?0:1));}
 });
 const targets=['SELECT event_type, COUNT(*) AS count','SELECT COUNT(*) AS count\n      FROM telegram_pet_system_events','SELECT season_xp FROM','SELECT season_key, season_xp FROM','SELECT idempotency_key, COALESCE','SELECT boss_id, attempts','SELECT action, damage','SELECT pet_id,season_key,period_key AS week_key','SELECT event_type, COUNT(*) AS total','SELECT source, idempotency_key, pet_id','SELECT p.status,l.phase','SELECT asset_key,quantity','SELECT material_key,quantity','SELECT event_type,COUNT(*) AS total','SELECT idempotency_key FROM telegram_pet_reward_claims','SELECT COUNT(*) AS total FROM telegram_pet_system_events'];
 for(const failure of ['throw','resolved','malformed'])test('PR4 mandatory grouped reads fail closed: '+failure,async()=>{

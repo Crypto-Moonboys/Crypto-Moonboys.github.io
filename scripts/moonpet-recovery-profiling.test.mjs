@@ -27,7 +27,10 @@ for (const pets of [1,3]) test(`recovery profiling ${pets} pets preserves reward
   try {
     seedRecoveryEvidence(f, 20);
     const first = await f.measureHttp();
-    for (const stage of ['boss_victory_recovery','journey_source_recovery','daily_journey_award_recovery','weekly_journey_award_recovery','pet_state_projection']) {
+    // Care evidence has no boss-victory source. Its queue must now be skipped,
+    // while actual Journey/runtime work remains observable and awaited.
+    assert.equal(first.events.some(e=>e.stage==='boss_victory_recovery'),false);
+    for (const stage of ['journey_source_recovery','daily_journey_award_recovery','weekly_journey_award_recovery','pet_state_projection']) {
       const event = first.events.find(e => e.stage === stage);
       assert.ok(event, stage);
       assert.ok(event.sql_statements >= event.d1_calls && event.d1_calls > 0);

@@ -31,6 +31,7 @@ import { awardCommunityXp, hasDailyCommunityClaim } from './community-xp-awards.
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
 import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit, claimPetRecoveryBatch } from './pets/recovery-limits.js';
+import { readPetRecoveryPresence } from './pets/recovery-presence.js';
 import { scopedGuidanceNotice, validateGuidanceNoticeAcknowledgements } from './pets/guidance-notices.js';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
@@ -3408,8 +3409,8 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
   return projected;
 }
 
-async function getPetInventory(db, telegramId) {
-  await reconcileLegacyPetInventory(db, telegramId);
+async function getPetInventory(db, telegramId, inventoryReady = null) {
+  await (inventoryReady || reconcileLegacyPetInventory(db, telegramId));
   const rows = await db.prepare(`
     SELECT asset_key, quantity
     FROM telegram_pet_inventory
@@ -4068,6 +4069,34 @@ function verifyPetsBotSecret(request, env) {
   const expected = String(env.TELEGRAM_PETS_BOT_SECRET || '').trim();
   const supplied = request.headers.get('X-Pets-Bot-Secret') || request.headers.get('x-pets-bot-secret') || '';
   return !!expected && !!supplied && supplied === expected;
+}
+
+async function readIntactPetProfile(db, telegramId) {
+  // An intact, already wallet-reconciled tuple needs no beta profile replay.
+  // Read selection, source, mirror and wallet in one snapshot. Any mismatch
+  // takes the original guarded repair path; never cache this across requests.
+  const intact = await db.prepare(`SELECT i.*, p.moon_gold AS account_gold,
+      p.moon_crystals AS account_crystals, p.style_tokens AS account_style
+    FROM telegram_pet_active_slots a
+    JOIN telegram_pet_instances i ON i.pet_id=a.pet_id AND i.telegram_id=a.telegram_id AND i.season_key=a.season_key
+    JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+      AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    JOIN telegram_pet_profiles p ON p.telegram_id=i.telegram_id
+    WHERE a.telegram_id=? AND i.status='active' AND s.status='active'
+      AND ${PET_INSTANCE_STATE_COLUMNS.map(column => `i.${column} IS p.${column}`).join(' AND ')}
+      AND EXISTS(SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=p.telegram_id
+        AND c.source='wallet_reconciliation' AND c.idempotency_key=? AND c.status='awarded') LIMIT 1`)
+    .bind(String(telegramId), PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY).first().then(requirePetFirstReadResult);
+  if (!intact) return null;
+  const { account_gold, account_crystals, account_style, ...instance } = intact;
+  return { ...instance,
+    ...pickPetAccountWallet({ moon_gold: account_gold, moon_crystals: account_crystals, style_tokens: account_style }) };
+}
+
+async function getPetProfileForState(db, telegramId, includeOwnedEquipment = false, now = new Date()) {
+  const intact = await readIntactPetProfile(db, telegramId);
+  return intact ? withPetEquipmentProgression(db, applyPetDecay(intact, now), includeOwnedEquipment)
+    : getPetProfile(db, telegramId, includeOwnedEquipment, now);
 }
 
 async function getPetProfile(db, telegramId, includeOwnedEquipment = false, now = new Date()) {
@@ -4869,16 +4898,24 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
   }
 }
 
-async function preparePetMiniAppState(db, telegramId, now = new Date()) {
+async function preparePetMiniAppState(db, telegramId, now = new Date(), { stateRead = false } = {}) {
   const owner = String(telegramId || '').trim();
   if (!owner) return false;
+  if (stateRead) {
+    // Paid egg repair writes lifecycle/memory, not the selected pet's state or
+    // account wallet. Drain both branches before accepting this fast path.
+    const [intact] = await settlePetProjectionBranches([
+      readIntactPetProfile(db, owner), repairPaidPetOnboarding(db, owner, { requireProfile: true }),
+    ]);
+    if (intact) return true;
+  }
   const adopted = await db.prepare('SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
     .bind(owner).first().then(requirePetFirstReadResult);
   if (!adopted) return false;
   await repairPaidPetOnboarding(db, owner);
   const active = await findActivePetSlot(db, owner);
   if (active) {
-    await getPetProfile(db, owner);
+    await (stateRead ? getPetProfileForState(db, owner, false, now) : getPetProfile(db, owner));
     return true;
   }
   const starter = await ensurePetStarterSeasonSlot(db, owner, now);
@@ -10646,40 +10683,47 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
   const timings = options.timings || NO_PET_STATE_TIMINGS;
-  await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now));
+  await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now, { stateRead: true }));
   await timings.measure('state_recovery', () => recoverPetMiniAppState(db, telegramId, now, timings));
   return measurePetDatabaseStage(timings, 'pet_state_projection', db, measuredDb => projectPetMiniAppState(measuredDb, telegramId, botToken, options, now, timings))
     .catch(error => { throw normalizePetProjectionError(error); });
 }
 
 async function recoverPetMiniAppState(db, telegramId, now, timings) {
-  await recoverPetStandardRunEndings(db, telegramId, '', PET_STATE_RECOVERY_LIMITS.standard_endings).catch((error) => {
+  const presence = await readPetRecoveryPresence(db, telegramId);
+  // Earlier queues can produce sources for later queues in this same response.
+  // Conservatively run dependents whenever their producer was visited, even if
+  // that visit found nothing eligible or logged a partial settlement failure.
+  const endings = presence.runs || presence.daily;
+  const runtimeSources = endings || presence.live || presence.combat || presence.events;
+  const journeySources = runtimeSources || presence.bosses || presence.objectives;
+  if (presence.runs) await recoverPetStandardRunEndings(db, telegramId, '', PET_STATE_RECOVERY_LIMITS.standard_endings).catch((error) => {
     logApiFailure('pet_standard_run_recovery_failed', { message: error?.message || String(error) });
   });
   await timings.measure('daily_settlement', async () => {
-    const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records });
+    const recoveredEndings = presence.daily ? await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records }) : [];
     for (const ending of recoveredEndings) if (ending.accepted) {
       await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
     }
   });
-  await recoverPetEquipmentRows(db, telegramId).catch(error => {
+  if (presence.equipment) await recoverPetEquipmentRows(db, telegramId).catch(error => {
     logApiFailure('equipment_ownership_recovery_pending', { telegramId, message: error?.message || String(error) });
   });
-  await recoverPetLiveSystemEndings(db, telegramId, (args) => awardPetReward(db, args), PET_STATE_RECOVERY_LIMITS.live_endings).catch(error => {
+  if (presence.live) await recoverPetLiveSystemEndings(db, telegramId, (args) => awardPetReward(db, args), PET_STATE_RECOVERY_LIMITS.live_endings).catch(error => {
     logApiFailure('pet_live_ending_recovery_failed', { message: error?.message || String(error) });
   });
-  const combatRecovery = await recoverPetCombatProgress(db, telegramId).catch(error => {
+  const combatRecovery = presence.combat && await recoverPetCombatProgress(db, telegramId).catch(error => {
     logApiFailure('pet_combat_recovery_failed', { message: error?.message || String(error) });
     return true; // Reserve the same budget after an interrupted combat repair.
   });
-  await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: combatRecovery ? PET_STATE_RECOVERY_LIMITS.runtime_after_combat : PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
+  if (runtimeSources) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: combatRecovery ? PET_STATE_RECOVERY_LIMITS.runtime_after_combat : PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
     logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });
   });
   await timings.measure('weekly_settlement', async () => {
-    await measurePetDatabaseStage(timings, 'boss_victory_recovery', db, measuredDb => recoverPetWeeklyBossVictories(measuredDb, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses)).catch((error) => {
+    if (presence.bosses) await measurePetDatabaseStage(timings, 'boss_victory_recovery', db, measuredDb => recoverPetWeeklyBossVictories(measuredDb, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses)).catch((error) => {
       logApiFailure('pet_weekly_boss_recovery_failed', { message: error?.message || String(error) });
     });
-    await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards, timings }).catch((error) => {
+    if (journeySources) await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards, timings }).catch((error) => {
       logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
     });
   });
@@ -10687,7 +10731,7 @@ async function recoverPetMiniAppState(db, telegramId, now, timings) {
 
 async function projectPetMiniAppState(db, telegramId, botToken, options, now, timings) {
   const economy = await capturePetEconomy(db, telegramId);
-  const petRaw = await getPetProfile(db, telegramId, true, now);
+  const petRaw = await getPetProfileForState(db, telegramId, true, now);
   if (!petRaw) {
     const entryRequirement = await getPetEntryRequirement(db, telegramId);
     return {
@@ -10708,6 +10752,8 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings);
 
   const pet = serializePet(petRaw);
+  const inventoryReady = reconcileLegacyPetInventory(db, telegramId);
+  inventoryReady.catch(() => {});
   const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true, concurrentReads: true });
   const identityPromise = getMoonpetIdentityWithLifecycle(identityScope.db, telegramId, { required: true })
     .catch(error => { throw normalizePetProjectionError(error); });
@@ -10733,8 +10779,8 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
       runtime, gear.results || [], materials.results || [], now, { projectionReads: identityScope.db }));
   const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales, journeySummary, liveSystems, styleLoadout, petHouse, petFurniture, petGarden, contracts] = await settlePetProjectionBranches([
     lifecyclePromise,
-    buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now }),
-    getPetInventory(db, telegramId),
+    buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now, inventoryReady }),
+    getPetInventory(db, telegramId, inventoryReady),
     runtimePromise,
     gearPromise,
     materialsPromise,
@@ -17326,12 +17372,12 @@ function canAffordPetWallet(pet, cost = {}) {
     Math.max(0, Number(pet?.[key]) || 0) >= Math.max(0, Number(cost?.[key]) || 0));
 }
 
-async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(), projectionReads = db) {
+async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(), projectionReads = db, inventoryReady = null) {
   const pet = serializePet(petRaw || await getPetProfile(db, telegramId, false, now), null, { now });
   if (!pet) return null;
   const dayKey = getPetDayKey(now);
   const level = getPetLevel(pet.pet_xp);
-  await reconcileLegacyPetInventory(db, telegramId);
+  await (inventoryReady || reconcileLegacyPetInventory(db, telegramId));
   const [eventRows, claimRows, sourcePet, itemRows, materialRows, weeklyEventRows, weeklyClaims, seasonalAttemptRows] = await Promise.all([
     projectionReads.prepare(`SELECT event_type, COUNT(*) AS total FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted' GROUP BY event_type`)
@@ -17703,7 +17749,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   Object.assign(pet, serializePet(sourcePet, identity, { now }));
   const [evolution, economy] = await settlePetProjectionBranches([
     getPetEvolutionGuidance(db, telegramId, pet, identity),
-    getPetEconomyState(db, telegramId, pet, now, projectionReads),
+    getPetEconomyState(db, telegramId, pet, now, projectionReads, options.inventoryReady),
   ]);
   const combatEligibility = Object.hasOwn(options, 'combatEligibility')
     ? await options.combatEligibility

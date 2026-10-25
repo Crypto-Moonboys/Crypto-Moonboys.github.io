@@ -1,5 +1,5 @@
 // Separate process per revision: deterministic randomness, fixed application/SQL time.
-import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
+import { performanceFixture, seedRecoveryEvidence } from './moonpet-state-performance-fixture.mjs';
 import { seedPr3Recovery } from './moonpet-pr3-fixture.mjs';
 import { createHash } from 'node:crypto';
 let sequence=0;Math.random=()=>0.25;
@@ -13,6 +13,10 @@ try {
  if(['heavy','archived'].includes(scenario))await seedPr3Recovery(f,{archived:scenario==='archived'});
  if(scenario==='day_rollover')f.advance(86400000);
  if(scenario==='week_rollover')f.advance(7*86400000);
+ if(scenario==='month_rollover')f.advance(Date.parse('2026-11-01T00:00:00Z')-Date.now());
+ if(scenario==='quarter_rollover')f.advance(Date.parse('2027-01-01T00:00:00Z')-Date.now());
+ if(scenario==='lifetime_rollover')f.advance(365*86400000);
+ if(scenario==='activity')seedRecoveryEvidence(f,5);
  // Seed timestamps are pinned before warm-up. Retain all timestamps and derived
  // values; only signed presentation tokens are normalized.
  function clean(value,key=''){
