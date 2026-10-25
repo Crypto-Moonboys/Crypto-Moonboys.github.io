@@ -12,8 +12,15 @@ const wiki = read('wiki/crypto-moonboys.html');
 
 const ctas = home.match(/<nav class="simple-actions"[^>]*>([\s\S]*?)<\/nav>/)?.[1] || '';
 assert.deepEqual([...ctas.matchAll(/href="([^"]+)"/g)].map(m => m[1]), [
-  '/my-moonboy.html', '/swarmsy.html', '/gkniftyheads-incubator.html',
-], 'Homepage offers exactly the three approved entry CTAs in order');
+  '/my-moonboy.html', '/gpt-users.html',
+], 'Homepage offers exactly the two approved identity entry CTAs in order');
+assert.deepEqual([...ctas.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].map(m => m[1]), [
+  'BUILD A MOONBOY IDENTITY', 'BRING YOUR OWN IP',
+], 'Both identity routes keep their approved labels');
+const communityCtas = home.match(/<nav class="simple-actions" aria-label="Build your character world with the community">([\s\S]*?)<\/nav>/)?.[1] || '';
+assert.deepEqual([...communityCtas.matchAll(/href="([^"]+)"/g)].map(m => m[1]), [
+  '/gpt-users.html', '/gkniftyheads-incubator.html',
+], 'World building and community remain available in the dedicated section');
 assert.match(home, /id="build-moonboy"/);
 assert.match(home, /href="\/gpt-users\.html"/, 'Independent web AI route remains available');
 assert.doesNotMatch(home, /<h2>Choose how <span>you start/, 'Homepage no longer duplicates route instructions');
@@ -27,12 +34,14 @@ const accountControls = read('js/components/telegram-sync-cta.js');
 assert.match(accountControls, /rememberedWebsite[\s\S]*data-telegram-session-controls/, 'Compact logout remains available for remembered website sessions after rollback');
 assert.match(accountControls, /pending \|\| \(!linked && !rememberedWebsite\)/, 'Guest/pending logout remains hidden');
 for (const route of [
-  '/#build-moonboy', '/games/', '/battle-chamber/factions/index.html',
+  '/games/', '/battle-chamber/factions/index.html',
   '/gkniftyheads-incubator.html', '/community.html#live-battle-chamber',
-  '/gpt-users.html', '/swarmsy.html', '/how-to-play.html', '/wiki/crypto-moonboys.html',
+  '/swarmsy.html', '/how-to-play.html', '/wiki/hodl-warriors.html', '/wiki/crypto-moonboys.html',
 ]) {
   assert.ok(account.includes(`href="${route}"`), `My Moonboy must link ${route}`);
 }
+assert.match(account, /href="\/swarmsy\.html">Build a Moonboy or use your own IP<\/a>/,
+  'My Moonboy retains its approved combined identity route');
 for (const guard of ['data-telegram-login', 'id="mm-results"', 'id="mm-checklist"', 'id="mm-economy-guide"']) {
   assert.ok(account.includes(guard), `My Moonboy authentication/mission control must retain ${guard}`);
 }
