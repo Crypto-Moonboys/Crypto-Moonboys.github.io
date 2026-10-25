@@ -74,10 +74,10 @@ for (const system of ['arena', 'kaiju']) for (const kind of ['match', 'queue', '
     const saved = f.sql.prepare(`SELECT * FROM ${queued ? `telegram_pet_${system}_queue` : table}`).get();
     let intercepted = 0;
     f.db.beforeFirst = ({ query }) => {
-      const target = kind === 'match' ? query.includes(`SELECT * FROM ${table}`) && query.includes('ORDER BY created_at DESC')
+      const target = kind === 'match' ? query.includes(`SELECT * FROM ${table}`) && query.includes('created_at DESC LIMIT 1')
         : kind === 'result' ? query.includes(`SELECT * FROM ${table} WHERE status='completed'`)
-        : kind === 'position' ? query.includes(`SELECT COUNT(*) AS count FROM telegram_pet_${system}_queue`)
-        : query.includes(system === 'arena' ? 'SELECT rank_bucket, accept_any_rank, created_at' : 'SELECT queued_at FROM telegram_pet_kaiju_queue');
+        : kind === 'position' ? query.includes(`SELECT COUNT(*) FROM telegram_pet_${system}_queue p`) && query.includes(`FROM telegram_pet_${system}_queue q`)
+        : query.includes(system === 'arena' ? 'SELECT q.rank_bucket,q.accept_any_rank,q.created_at' : 'SELECT q.queued_at,');
       if (!target) return;
       intercepted++;
       if (failure === 'thrown') throw Error('combat_fixture_read_failed');

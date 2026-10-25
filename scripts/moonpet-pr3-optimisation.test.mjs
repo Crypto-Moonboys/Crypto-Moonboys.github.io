@@ -5,7 +5,7 @@ import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
 import { seedPr3Recovery, qualifyingWeekly } from './moonpet-pr3-fixture.mjs';
 import { recoverPetJourneyAwards } from '../workers/moonboys-api/pets/journey-recovery.js';
 const baseline=readFileSync(new URL('./fixtures/moonpet-weekly-recovery-before-pr3.sql',import.meta.url),'utf8');
-async function currentQuery(){const queries=[];await recoverPetJourneyAwards({prepare(sql){return {bind(...args){this.args=args;return this;},async all(){queries.push({sql,args:this.args});return {results:[]};}};}},'980301');return queries.find(q=>q.sql.includes('SELECT eligible.*')&&q.sql.includes('JOIN telegram_pet_weekly_journey_objectives o')).sql;}
+async function currentQuery(){const queries=[];await recoverPetJourneyAwards({prepare(sql){return {bind(...args){this.args=args;return this;},async all(){queries.push({sql,args:this.args});return {results:[]};}};},async batch(statements){return Promise.all(statements.map(statement=>statement.all()));}},'980301');return queries.find(q=>q.sql.includes('SELECT eligible.*')&&q.sql.includes('JOIN telegram_pet_weekly_journey_objectives o')).sql;}
 for(const pets of [1,3]) test('full projection retains PR3 and PR4 call reductions for '+pets+' pets',async()=>{
  const f=await performanceFixture({pets});try{const {report,state}=await f.measure();assert.equal(state.adopted,true);assert.ok(report.calls<=(pets===1?112:120));assert.ok(report.statements<=180);}finally{f.close();}
 });

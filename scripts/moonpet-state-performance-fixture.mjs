@@ -96,7 +96,7 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
         stages: events.map(({ stage, duration_ms, sql_statements, d1_calls }) => ({ stage, duration_ms, ...(sql_statements === undefined ? {} : { sql_statements, d1_calls }) })) } };
     } finally { if (captureTimings) console.info = originalInfo; }
   }
-  return { ...f, hooks, worker, measure, measureHttp, async drain() {
+  return { ...f, hooks, worker, measure, measureHttp, setDelayMs(value) { delayMs = Math.max(0, Number(value) || 0); }, async drain() {
     do { await Promise.allSettled([...pending]); await new Promise(resolve => setImmediate(resolve)); } while (pending.size);
   }, advance: clock.advance, close() { clock.restore(); f.sql.close(); } };
 }
