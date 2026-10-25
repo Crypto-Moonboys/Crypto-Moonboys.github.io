@@ -2,6 +2,7 @@ import { awardPetGrowthMark } from './season-completion.js';
 import { requirePetReadResult, requirePetMutationResult, requirePetFirstReadResult } from './read-result.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 import { projectCommittedPetResult } from './committed-result.js';
+import { settlePetProjectionBranches } from './projection-branches.js';
 
 const CARE_TYPES = Object.freeze({
   warm: { progress: 2, affinity: 'bold' },
@@ -329,9 +330,13 @@ function publicLifecycle(row, rare, now = new Date(), evolutionStage = 0) {
 async function projectMoonpetLifecycle(db, id, row, appliedOnly = false) {
   if (!row) return null;
   const dayKey = new Date().toISOString().slice(0, 10);
-  const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
-    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?${appliedOnly ? ' AND applied_at IS NOT NULL' : ''}`).bind(row.pet_id, dayKey).first();
-  const evolutionStage = await readEvolutionStage(db, row);
+  // Independent evidence; neither read needs to wait for the other. Both must
+  // finish before any existing adulthood repair or response can proceed.
+  const [daily, evolutionStage] = await settlePetProjectionBranches([
+    db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
+      WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?${appliedOnly ? ' AND applied_at IS NOT NULL' : ''}`).bind(row.pet_id, dayKey).first(),
+    readEvolutionStage(db, row),
+  ]);
   // Repair a committed evolution whose follow-up was interrupted or blocked by
   // a pet switch. The mutation verifies this pet's own persisted evolution;
   // legacy account-level display fallback cannot authorize adulthood.

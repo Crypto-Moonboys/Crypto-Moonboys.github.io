@@ -1,3 +1,4 @@
+import { requirePetReadResult } from './read-result.js';
 import { NO_PET_STATE_TIMINGS, measurePetDatabaseStage } from './state-timings.js';
 import { boundedRecoveryLimit } from './recovery-limits.js';
 import { PET_DAILY_CHALLENGES, DAILY_JOURNEY_REQUIRED_OBJECTIVES, DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL, finalizeDailyJourneyGrowthMark, recordDailyCareChallenge } from './daily-moon-run.js';
@@ -49,11 +50,11 @@ async function claimJourneyRecoveryBatch(db, owner, queue, candidates) {
   return Number(result?.meta?.changes || 0) > 0;
 }
 
-async function recoverJourneySourceEvidence(db, owner, limit) {
+function prepareJourneySourceEvidence(db, owner, limit) {
   // Validate source ownership and its persisted ownership period before the limit.
   // Older malformed/unowned events must not repeatedly consume the budget.
   const recoveryKey = "e.day_key||':'||e.id";
-  const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,s.created_at AS ownership_created_at,s.journey_clock,
+  return db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,s.created_at AS ownership_created_at,s.journey_clock,
       ${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor,
       (${missingWeekly}) AS missing_weekly, (${missingDaily}) AS missing_daily
     FROM telegram_pet_events e ${sourceJoins}
@@ -61,7 +62,10 @@ async function recoverJourneySourceEvidence(db, owner, limit) {
     WHERE e.telegram_id=? AND ${validSource}
       AND ((${missingWeekly}) OR (${missingDaily}))
     ORDER BY CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,
-      ${recoveryKey} LIMIT ?`).bind(owner, boundedRecoveryLimit(limit, 50)).all();
+      ${recoveryKey} LIMIT ?`).bind(owner, boundedRecoveryLimit(limit, 50));
+}
+
+async function recoverJourneySourceEvidence(db, owner, rows) {
   if (!await claimJourneyRecoveryBatch(db, owner, 'sources', rows.results || [])) return;
   for (const event of rows.results || []) {
     if (event.missing_weekly) {
@@ -92,52 +96,72 @@ const JOURNEYS = [
     required: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, definitions: PET_WEEKLY_JOURNEY_OBJECTIVES, finalize: finalizeWeeklyJourneyCrest },
 ];
 
+function prepareJourneyAwardCandidates(db, owner, journey, options) {
+  const { kind, period, objective, reward } = journey;
+  const definitions = Object.entries(journey.definitions);
+  const targetSql = definitions.map(([id, definition]) => `WHEN '${id}' THEN ${Number(definition.target)}`).join(' ');
+  const maxIds = definitions.filter(([, definition]) => (definition.progress_mode || definition.validation_rules?.progress_mode) === 'max').map(([id]) => `'${id}'`);
+  const checkInProgress = kind === 'weekly' ? "WHEN o.objective_id='weekly_check_in' THEN COUNT(DISTINCT e.day_key) " : '';
+  const progressSql = maxIds.length ? `CASE ${checkInProgress}WHEN o.${objective} IN (${maxIds.join(',')}) THEN MAX(o.progress_value) ELSE SUM(o.progress_value) END` : 'SUM(o.progress_value)';
+  // Apply the same source authority before LIMIT and when deriving the date.
+  // Missing sources must not consume every slot in the recovery budget.
+  const sourceJoin = kind === 'weekly' ? `JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
+    AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted' AND e.day_key<>''
+    AND ${weeklyBossLegacySourceProofSql()}` : '';
+  // A partial evidence batch must not freeze a later earning date while an
+  // earlier action for this same week is still waiting. Other scopes proceed.
+  // Readiness is constant for the whole owned pet/week, independent of the
+  // objective or source row. Apply it after full-threshold grouping so the
+  // correlated history scan runs once per candidate period, before LIMIT.
+  const evidenceReady = kind === 'weekly' ? `AND NOT EXISTS (
+    SELECT 1 FROM telegram_pet_events e ${sourceJoins}
+    WHERE e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id AND e.season_key=o.season_key
+      AND ${validSource} AND ${sourceWeek}=o.qualification_week AND ${missingWeekly})` : '';
+  const recoveryKey = `eligible.season_key||':'||${kind === 'weekly' ? "printf('%02d',eligible.qualification_week)" : 'eligible.utc_day'}||':'||eligible.pet_id`;
+  return db.prepare(`SELECT eligible.*,${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor FROM (
+    SELECT pet_id, season_key, ${period} FROM (
+    SELECT o.telegram_id, o.pet_id, o.season_key, o.${period}, o.${objective}
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
+    JOIN telegram_pet_${kind}_journey_objectives o ON o.pet_id=s.pet_id AND o.telegram_id=s.telegram_id AND o.season_key=s.season_key
+    ${sourceJoin}
+    WHERE s.telegram_id=? AND o.status='accepted'
+      ${kind === 'daily' ? `AND ${DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL}` : ''} AND NOT EXISTS (
+      SELECT 1 FROM telegram_pet_${kind}_journey_receipts r
+      WHERE r.telegram_id=o.telegram_id AND r.pet_id=o.pet_id AND r.season_key=o.season_key AND r.${period}=o.${period}
+        AND r.${reward} IS NOT NULL AND (r.status='accepted' OR r.reason='${kind}_journey_${kind === 'daily' ? 'growth_mark' : 'crest'}_duplicate'))
+    GROUP BY o.pet_id, o.season_key, o.${period}, o.${objective}
+    HAVING ${progressSql} >= CASE o.${objective} ${targetSql} END
+    ) o GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=? ${evidenceReady}
+  ) eligible LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=? AND recovery_state.setting_key=?
+  ORDER BY CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,
+    ${recoveryKey} LIMIT ?`).bind(owner, journey.required, owner, `moonpet:journey-recovery:${kind}`, boundedRecoveryLimit(options.award_limit, 5));
+}
+
 export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
   const owner = String(telegramId || '').trim();
   if (!owner) return;
   const timings = options.timings || NO_PET_STATE_TIMINGS;
-  await measurePetDatabaseStage(timings, 'journey_source_recovery', db, measuredDb => recoverJourneySourceEvidence(measuredDb, owner, options.source_limit));
-  for (const journey of JOURNEYS) {
+  let snapshots;
+  await measurePetDatabaseStage(timings, 'journey_source_recovery', db, async measuredDb => {
+    // Read all three queues in one D1 transaction. On the common settled path
+    // these are final empty results, not three sequential network round trips.
+    snapshots = await measuredDb.batch([
+      prepareJourneySourceEvidence(measuredDb, owner, options.source_limit),
+      ...JOURNEYS.map(journey => prepareJourneyAwardCandidates(measuredDb, owner, journey, options)),
+    ]);
+    if (!Array.isArray(snapshots) || snapshots.length !== 3) throw new Error('pet_state_read_unavailable');
+    snapshots.forEach(requirePetReadResult);
+    await recoverJourneySourceEvidence(measuredDb, owner, snapshots[0]);
+  });
+  for (const [index, journey] of JOURNEYS.entries()) {
     await measurePetDatabaseStage(timings, `${journey.kind}_journey_award_recovery`, db, async db => {
-      const { kind, period, objective, reward } = journey;
-      const definitions = Object.entries(journey.definitions);
-      const targetSql = definitions.map(([id, definition]) => `WHEN '${id}' THEN ${Number(definition.target)}`).join(' ');
-      const maxIds = definitions.filter(([, definition]) => (definition.progress_mode || definition.validation_rules?.progress_mode) === 'max').map(([id]) => `'${id}'`);
-      const checkInProgress = kind === 'weekly' ? "WHEN o.objective_id='weekly_check_in' THEN COUNT(DISTINCT e.day_key) " : '';
-      const progressSql = maxIds.length ? `CASE ${checkInProgress}WHEN o.${objective} IN (${maxIds.join(',')}) THEN MAX(o.progress_value) ELSE SUM(o.progress_value) END` : 'SUM(o.progress_value)';
-      // Apply the same source authority before LIMIT and when deriving the date.
-      // Missing sources must not consume every slot in the recovery budget.
-      const sourceJoin = kind === 'weekly' ? `JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
-        AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted' AND e.day_key<>''
-        AND ${weeklyBossLegacySourceProofSql()}` : '';
-      // A partial evidence batch must not freeze a later earning date while an
-      // earlier action for this same week is still waiting. Other scopes proceed.
-      // Readiness is constant for the whole owned pet/week, independent of the
-      // objective or source row. Apply it after full-threshold grouping so the
-      // correlated history scan runs once per candidate period, before LIMIT.
-      const evidenceReady = kind === 'weekly' ? `AND NOT EXISTS (
-        SELECT 1 FROM telegram_pet_events e ${sourceJoins}
-        WHERE e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id AND e.season_key=o.season_key
-          AND ${validSource} AND ${sourceWeek}=o.qualification_week AND ${missingWeekly})` : '';
-      const recoveryKey = `eligible.season_key||':'||${kind === 'weekly' ? "printf('%02d',eligible.qualification_week)" : 'eligible.utc_day'}||':'||eligible.pet_id`;
-      const pending = await db.prepare(`SELECT eligible.*,${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor FROM (
-        SELECT pet_id, season_key, ${period} FROM (
-        SELECT o.telegram_id, o.pet_id, o.season_key, o.${period}, o.${objective}
-        FROM telegram_pet_season_slots s
-        JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
-        JOIN telegram_pet_${kind}_journey_objectives o ON o.pet_id=s.pet_id AND o.telegram_id=s.telegram_id AND o.season_key=s.season_key
-        ${sourceJoin}
-        WHERE s.telegram_id=? AND o.status='accepted'
-          ${kind === 'daily' ? `AND ${DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL}` : ''} AND NOT EXISTS (
-          SELECT 1 FROM telegram_pet_${kind}_journey_receipts r
-          WHERE r.telegram_id=o.telegram_id AND r.pet_id=o.pet_id AND r.season_key=o.season_key AND r.${period}=o.${period}
-            AND r.${reward} IS NOT NULL AND (r.status='accepted' OR r.reason='${kind}_journey_${kind === 'daily' ? 'growth_mark' : 'crest'}_duplicate'))
-        GROUP BY o.pet_id, o.season_key, o.${period}, o.${objective}
-        HAVING ${progressSql} >= CASE o.${objective} ${targetSql} END
-        ) o GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=? ${evidenceReady}
-      ) eligible LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=? AND recovery_state.setting_key=?
-      ORDER BY CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,
-        ${recoveryKey} LIMIT ?`).bind(owner, journey.required, owner, `moonpet:journey-recovery:${kind}`, boundedRecoveryLimit(options.award_limit, 5)).all();
+      const { kind } = journey;
+      // Source repair may create objectives; daily finalization may produce
+      // downstream evidence. Discard speculative candidates after either visit.
+      const canReuse = !snapshots[0].results.length && (index === 0 || !snapshots[1].results.length);
+      const pending = canReuse ? snapshots[index + 1]
+        : await prepareJourneyAwardCandidates(db, owner, journey, options).all().then(requirePetReadResult);
       if (!await claimJourneyRecoveryBatch(db, owner, kind, pending.results || [])) return;
       for (const scope of pending.results || []) {
         try {
