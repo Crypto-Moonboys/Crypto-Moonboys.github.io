@@ -21,7 +21,14 @@ export async function readPetRecoveryPresence(db, owner) {
       (equipped_food IS NOT NULL OR equipped_toy IS NOT NULL OR equipped_outfit IS NOT NULL
         OR equipped_armor IS NOT NULL OR equipped_weapon IS NOT NULL OR equipped_charm IS NOT NULL))
       OR EXISTS(SELECT 1 FROM telegram_pet_events WHERE telegram_id=?1 AND event_type='buy' AND status='accepted')) AS equipment`)
-    .bind(String(owner)).first().then(requirePetFirstReadResult);
+    .bind(String(owner)).first().then(requirePetFirstReadResult).catch(error => {
+      // Journey projections already expose a locked/unavailable module when its
+      // optional migration is missing. Preserve that containment, but disable
+      // this optimization entirely: a missing table never proves an empty queue.
+      if (!/no such table: telegram_pet_(?:daily|weekly)_journey_objectives\b/i
+        .test(String(error?.cause?.message || error?.message || error))) throw error;
+      return { runs:1,daily:1,live:1,combat:1,events:1,bosses:1,objectives:1,equipment:1 };
+    });
   if (!row || ['runs','daily','live','combat','events','bosses','objectives','equipment']
     .some(key => row[key] !== 0 && row[key] !== 1)) throw new Error('pet_state_read_unavailable');
   return row;
