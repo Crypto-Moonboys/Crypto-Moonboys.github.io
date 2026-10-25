@@ -118,8 +118,10 @@ assert.doesNotMatch(rosterSummarySource, /ensurePetStarterSeasonSlot|getOrCreate
 assert.doesNotMatch(rosterSummarySource, /\.\.\.current/, 'roster construction must not spread pet-instance state over season-slot authority');
 assert.match(rosterSummarySource, /mergePetInstanceDisplayFields\(row, applyPetDecay\(\{ \.\.\.row \}, now\)\)/, 'roster construction must merge only an in-memory decay preview through the explicit pet display allowlist');
 const miniAppStateSource = worker.slice(worker.indexOf('async function buildPetMiniAppState'), worker.indexOf('async function processPetMiniAppAction'));
+const bootstrapOffset = miniAppStateSource.indexOf("await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now, { stateRead: true }))");
+const rosterOffset = miniAppStateSource.indexOf("op('roster', buildPetSeasonSlotSummary, db, telegramId, now)");
 assert.ok(
-  miniAppStateSource.indexOf('await preparePetMiniAppState(db, telegramId, now)') < miniAppStateSource.indexOf('buildPetSeasonSlotSummary(db, telegramId, now)'),
+  bootstrapOffset >= 0 && rosterOffset > bootstrapOffset,
   'normal Mini App state flow must bootstrap the current season before building the read-only roster projection',
 );
 const prepareMiniAppStateSource = worker.slice(worker.indexOf('async function preparePetMiniAppState'), worker.indexOf('const PET_SEASON_EXTRA_SLOT_COSTS'));

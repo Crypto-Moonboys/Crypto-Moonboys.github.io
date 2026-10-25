@@ -27,6 +27,19 @@ for (const scenario of scenarios) {
       pair[revision] = JSON.parse(stdout.trim().split('\n').find(line=>line.startsWith('{"scenario":')));
     }
     for (const key of keys) assert.equal(pair.changed[key],pair.baseline[key],scenario+' '+key);
+    if (process.env.MOONPET_PERF_PROJECTION_DIAGNOSTICS === '1') for (const request of ['first','second']) {
+      for (const key of ['calls','statements']) assert.equal(pair.changed[request][key],pair.baseline[request][key],scenario+' '+request+' '+key);
+      const trace = pair.changed[request].projection_trace;
+      if (trace) {
+        const stage = pair.changed[request].stages.find(s=>s.stage==='pet_state_projection');
+        assert.equal(trace.calls.length,stage.d1_calls);
+        assert.equal(trace.calls.reduce((n,c)=>n+c.sql_statements,0),stage.sql_statements);
+        assert.equal(trace.dropped_calls,0);assert.equal(trace.dropped_spans,0);
+        pair.changed[request].projection_trace_summary = { sampled:true, outcome:trace.outcome,
+          d1_calls:trace.calls.length,sql_statements:stage.sql_statements,duration_ms:trace.duration_ms };
+        delete pair.changed[request].projection_trace;
+      }
+    }
     if(runs.length)for(const key of keys)assert.equal(pair.baseline[key],runs[0].baseline[key],scenario+' repeated '+key);
     runs.push(pair);
   }
@@ -42,7 +55,8 @@ const revision = async cwd => (await exec('git',['-c','safe.directory='+cwd.repl
 const sourceHashes = async root => Object.fromEntries(await Promise.all(
   ['workers/moonboys-api/worker.js','workers/moonboys-api/pets/onboarding.js','workers/moonboys-api/pets/recovery-presence.js',
     'workers/moonboys-api/pets/inventory-cutover.js','workers/moonboys-api/pets/journey-recovery.js',
-    'workers/moonboys-api/pets/combat-projection.js','workers/moonboys-api/pets/species-lifecycle.js']
+    'workers/moonboys-api/pets/combat-projection.js','workers/moonboys-api/pets/species-lifecycle.js',
+    'workers/moonboys-api/pets/state-timings.js','workers/moonboys-api/pets/projection-diagnostics.js']
     .map(async file=>[file,await readFile(path.join(root,file)).then(content=>createHash('sha256').update(content).digest('hex')).catch(error=>{if(error.code==='ENOENT')return null;throw error;})])));
 const evidence = {baseline,changed:process.cwd(),baseline_commit:await revision(baseline),changed_commit:process.env.MOONPET_PERF_CHANGED_REVISION || null,changed_base_commit:await revision(process.cwd()),node_version:process.version,delay_ms:Number(delay),serialized_writes:true,repeats:3,
   baseline_source_sha256:await sourceHashes(baseline),changed_source_sha256:await sourceHashes(process.cwd()),
