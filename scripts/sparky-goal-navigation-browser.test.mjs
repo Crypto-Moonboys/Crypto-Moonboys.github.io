@@ -35,6 +35,18 @@ function destinationVisible() {
   return heading.top >= header.bottom && action.top >= header.bottom && action.bottom <= innerHeight;
 }
 
+async function waitForScrollSettled(page) {
+  const state = await page.evaluateHandle(() => ({ position: scrollY, stableSince: performance.now() }));
+  try {
+    await page.waitForFunction(state => {
+      if (scrollY !== state.position) { state.position = scrollY; state.stableSince = performance.now(); }
+      return performance.now() - state.stableSince >= 150;
+    }, state, { timeout: 15000 });
+  } finally {
+    await state.dispose();
+  }
+}
+
 async function checkDestination(page, title) {
   assert.equal(await page.locator('#gpt-choice').textContent(), 'Selected: ' + title);
   if (await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)) {
@@ -50,6 +62,10 @@ async function checkDestination(page, title) {
     }));
     throw new Error(`${title}: destination not visible after scrolling: ${JSON.stringify(layout)}`, { cause: error });
   });
+  // Visibility can become true midway through smooth scrolling. Let that
+  // navigation finish before Playwright scrolls to the next offscreen control.
+  await waitForScrollSettled(page);
+  assert.ok(await page.evaluate(destinationVisible), `${title}: destination remains visible after scrolling settles`);
   assert.equal(await page.evaluate(() => document.activeElement.id), 'gpt-launch-title');
   const prompt = await page.locator('#gpt-prompt-preview').inputValue();
   assert.ok(prompt.startsWith(title + '.\n\n'));
@@ -67,6 +83,7 @@ async function checkCategory(page, group) {
     const header = document.getElementById('site-header').getBoundingClientRect();
     return section.open && heading.top >= header.bottom && heading.bottom < innerHeight && firstActivity.top < innerHeight;
   }, id);
+  await waitForScrollSettled(page);
   assert.ok(await group.locator('summary').evaluate(heading => document.activeElement === heading), 'section heading keeps keyboard focus');
 }
 

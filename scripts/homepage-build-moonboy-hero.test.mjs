@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const homepagePath = path.join(ROOT, 'index.html');
 const homeWidgetsPath = path.join(ROOT, 'js', 'home-widgets.js');
+const homepageContract = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/homepage-approved-contract.json'), 'utf8'));
 const heroImages = [
   {
     sectionLabel: 'Crypto Moonboys Bad Days 1',
@@ -103,11 +104,11 @@ check(
   'Static homepage source keeps the builder after the Bad Days hero run and before the source mission section'
 );
 check(
-  introMarkup.includes('🤘 JOIN US AND TAKEOVER THE WORLD 👀<br><span>BUILD A HODL WARRIOR 💥💥💥🚀</span>'),
-  'Homepage source contains the approved HODL Warrior build CTA heading'
+  introMarkup.includes(homepageContract.builder_heading_html),
+  'Homepage source contains the approved current builder CTA heading'
 );
 check(
-  introMarkup.includes('Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄'),
+  introMarkup.includes(homepageContract.builder_pulse_html),
   'Homepage source contains the approved build CTA supporting line'
 );
 check(
@@ -117,8 +118,10 @@ check(
   'Homepage runtime moves the CTA into its own section immediately before the builder'
 );
 check(
-  introMarkup.includes('Build a Moonboy. Play games, join a faction'),
-  'Homepage supports the approved concise Moonboy and community route'
+  html.includes('href="/my-moonboy.html">BUILD A MOONBOY IDENTITY</a>') &&
+    html.includes('href="/gpt-users.html">BRING YOUR OWN IP</a>') &&
+    html.includes('Start with the public ChatGPT Creator Studio'),
+  'Homepage supports both approved identity and existing-IP creator routes'
 );
 check(
   html.includes('aria-label="Build a HODL Warrior"'),
@@ -128,7 +131,9 @@ check(
   homeWidgets.includes("section.setAttribute('aria-label', 'Build a HODL Warrior')"),
   'Runtime home-widgets.js CTA section uses the approved HODL Warrior aria label'
 );
-const forbiddenInHtml = forbiddenBuilderCopy.filter((phrase) => html.includes(phrase));
+// Artwork alt text describes the approved image; it is not a creator CTA.
+const visibleCopy = html.replace(/<[^>]*>/g, ' ');
+const forbiddenInHtml = forbiddenBuilderCopy.filter((phrase) => visibleCopy.includes(phrase));
 check(
   forbiddenInHtml.length === 0,
   `Homepage source has no forbidden Moonboy/Crypto Moonboy builder CTA wording${forbiddenInHtml.length ? ` — found: ${forbiddenInHtml.map((p) => JSON.stringify(p)).join(', ')}` : ''}`

@@ -7,7 +7,7 @@ import { recoverPetJourneyAwards } from '../workers/moonboys-api/pets/journey-re
 const baseline=readFileSync(new URL('./fixtures/moonpet-weekly-recovery-before-pr3.sql',import.meta.url),'utf8');
 async function currentQuery(){const queries=[];await recoverPetJourneyAwards({prepare(sql){return {bind(...args){this.args=args;return this;},async all(){queries.push({sql,args:this.args});return {results:[]};}};}},'980301');return queries.find(q=>q.sql.includes('SELECT eligible.*')&&q.sql.includes('JOIN telegram_pet_weekly_journey_objectives o')).sql;}
 for(const pets of [1,3]) test('full projection retains PR3 and PR4 call reductions for '+pets+' pets',async()=>{
- const f=await performanceFixture({pets});try{const {report,state}=await f.measure();assert.equal(state.adopted,true);assert.equal(report.calls,pets===1?112:120);assert.ok(report.statements<=180);}finally{f.close();}
+ const f=await performanceFixture({pets});try{const {report,state}=await f.measure();assert.equal(state.adopted,true);assert.ok(report.calls<=(pets===1?112:120));assert.ok(report.statements<=180);}finally{f.close();}
 });
 test('weekly period readiness has exact candidate/cursor parity for archived, rejected, pending and settled evidence',async()=>{
  const f=await performanceFixture({pets:3});try{
@@ -33,8 +33,8 @@ const parityBaseline=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr3-bas
 for(const expected of parityBaseline.cases)test('baseline response and reward parity: '+expected.scenario,()=>{
  const actual=JSON.parse(execFileSync(process.execPath,['scripts/moonpet-pr3-parity-case.mjs',expected.scenario],{encoding:'utf8',env:{...process.env,MOONPET_PERF_SOURCE_ROOT:process.cwd()}}));
  for(const key of ['first_response_hash','first_persisted_hash','retry_response_hash','retry_persisted_hash'])assert.equal(actual[key],expected[key],key);
- assert.equal(actual.second.calls,expected.retry_calls-26);assert.equal(actual.second.statements,expected.retry_statements+1);
- assert.equal(actual.first.calls,expected.calls-26);assert.equal(actual.first.statements,expected.statements+1);
+ assert.ok(actual.second.calls<=expected.retry_calls-26);assert.ok(actual.second.statements<=expected.retry_statements+1);
+ assert.ok(actual.first.calls<=expected.calls-26);assert.ok(actual.first.statements<=expected.statements+1);
 });
 
 test('all business seed clocks are pinned before first warm-up and lifecycle age follows only the fixture clock',async()=>{

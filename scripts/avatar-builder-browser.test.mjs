@@ -8,6 +8,7 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const homepageContract = JSON.parse(await readFile(path.join(ROOT, 'scripts/fixtures/homepage-approved-contract.json'), 'utf8'));
 const PAGE_SIZE = 24;
 const DOWNLOAD_DISCLAIMER = 'A download is not ownership of a Moonboy. For fun only.';
 const OLD_DOWNLOAD_HELPER = 'Downloads the avatar exactly as shown.';
@@ -186,7 +187,7 @@ async function assertHomepageLayout(page, label, mode) {
   const [cta, builder, mission, categories, preview, selected] = await Promise.all([
     page.locator('.homepage-build-cta').boundingBox(),
     page.locator('.homepage-avatar-builder').boundingBox(),
-    page.locator('.hero-intro:not(.homepage-build-cta)').boundingBox(),
+    page.locator('#how-it-works').boundingBox(),
     page.locator('.category-panel').boundingBox(),
     page.locator('.preview-panel').boundingBox(),
     page.locator('.selection-panel').boundingBox(),
@@ -280,12 +281,13 @@ async function assertHiddenVerticalScroller(page, selector, label) {
 try {
   const homepageDesktop = await openAt({ width: 1440, height: 900 }, homepageUrl);
   const ctaHeading = (await homepageDesktop.locator('.homepage-build-cta h1').textContent()).replace(/\s+/g, ' ').trim();
-  assert.equal(ctaHeading, '🤘 JOIN US AND TAKEOVER THE WORLD 👀BUILD A HODL WARRIOR 💥💥💥🚀', 'Homepage build CTA heading must use the approved HODL Warrior wording');
-  assert.equal(await homepageDesktop.locator('.hero-intro:not(.homepage-build-cta) h1').count(), 0, 'Moved CTA heading must not remain inside the mission section');
+  assert.equal(ctaHeading, homepageContract.builder_heading_text, 'Homepage builder CTA retains the approved current wording');
+  assert.equal(await homepageDesktop.locator('#how-it-works > .simple-wrap:first-child > h1').count(), 0, 'Moved CTA heading must not remain inside the mission section');
+  assert.equal(await homepageDesktop.locator('#home-top-message > .simple-wrap:first-child > h1').count(), 1, 'The distinct top introduction remains in place');
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
     const cta = document.querySelector('.homepage-build-cta');
     const builder = document.querySelector('.homepage-avatar-builder');
-    const mission = document.querySelector('.hero-intro:not(.homepage-build-cta)');
+    const mission = document.getElementById('how-it-works');
     return Boolean(
       cta && builder && mission &&
       (cta.compareDocumentPosition(builder) & Node.DOCUMENT_POSITION_FOLLOWING) &&

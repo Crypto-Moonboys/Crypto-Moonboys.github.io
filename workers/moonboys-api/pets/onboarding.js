@@ -108,7 +108,7 @@ export async function completePetOnboarding(db, telegramId, petId, options = {})
 // evolution. Repair only the intact owned tuple; never charge, copy another
 // pet's state, or make an archived pet playable again. Complete pets need only
 // this small read, and concurrent repair shares the canonical onboarding claim.
-export async function repairPaidPetOnboarding(db, telegramId) {
+export async function repairPaidPetOnboarding(db, telegramId, { requireProfile = false } = {}) {
   const owner = String(telegramId || '').trim();
   if (!owner) throw new Error('missing_telegram_id');
   const rows = await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s
@@ -121,6 +121,7 @@ export async function repairPaidPetOnboarding(db, telegramId) {
           AND m.season_key=s.season_key AND m.first_adoption_at IS NOT NULL)
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet e WHERE e.pet_id=s.pet_id
           AND e.telegram_id=s.telegram_id AND e.evolution_id='moon_egg'))
+    ${requireProfile ? 'AND EXISTS (SELECT 1 FROM telegram_pet_profiles p WHERE p.telegram_id=s.telegram_id)' : ''}
     ORDER BY s.created_at,s.pet_id`).bind(owner).all().then(requirePetReadResult);
   let repaired = 0;
   for (const row of rows.results) {
