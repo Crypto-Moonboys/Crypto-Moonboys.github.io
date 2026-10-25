@@ -10,13 +10,29 @@ const mode=process.argv[4]||'full';
 const f=await performanceFixture({root:process.argv[3]||process.env.MOONPET_PERF_SOURCE_ROOT||process.cwd(),delayMs:Number(process.env.MOONPET_PERF_DELAY_MS||0),serializedWrites:process.env.MOONPET_PERF_SERIAL_WRITES==='1',pets:['three','archived'].includes(scenario)?3:1,warm:!['new','zero'].includes(scenario)});
 try {
  if(scenario==='zero')for(const table of ['telegram_pet_active_slots','telegram_pet_lifecycle_by_pet','telegram_pet_season_slots','telegram_pet_instances','telegram_pet_profiles'])f.sql.exec('DELETE FROM '+table);
- if(['heavy','archived'].includes(scenario))await seedPr3Recovery(f,{archived:scenario==='archived'});
+ if(['heavy','archived','completed'].includes(scenario))await seedPr3Recovery(f,{archived:scenario==='archived'});
+ if(['settled','history'].includes(scenario))seedRecoveryEvidence(f,scenario==='history'?1000:5);
+ if(scenario==='equipped'){
+   for(const table of ['telegram_pet_profiles','telegram_pet_instances'])f.sql.exec("UPDATE "+table+" SET equipped_food='moon_kibble',equipped_toy='laser_ball',equipped_outfit='street_hoodie',equipped_armor='cardboard_armor',equipped_weapon='foam_claws',equipped_charm='lucky_charm'");
+   seedRecoveryEvidence(f,5);
+ }
+ if(['settled','history','completed','equipped'].includes(scenario)){
+   f.setDelayMs(0);
+   for(let i=0;i<(scenario==='history'?52:3);i++)await f.state();
+   f.setDelayMs(Number(process.env.MOONPET_PERF_DELAY_MS||0));
+ }
  if(scenario==='day_rollover')f.advance(86400000);
  if(scenario==='week_rollover')f.advance(7*86400000);
  if(scenario==='month_rollover')f.advance(Date.parse('2026-11-01T00:00:00Z')-Date.now());
  if(scenario==='quarter_rollover')f.advance(Date.parse('2027-01-01T00:00:00Z')-Date.now());
  if(scenario==='lifetime_rollover')f.advance(365*86400000);
  if(scenario==='activity')seedRecoveryEvidence(f,5);
+ const boundaries={midnight_boundary:'2026-10-22T00:00:00Z',monday_boundary:'2026-10-26T00:00:00Z',
+   journey_boundary:'2026-10-28T00:00:00Z',month_boundary:'2026-11-01T00:00:00Z',quarter_boundary:'2027-01-01T00:00:00Z'};
+ if(boundaries[scenario]){
+   if(scenario==='journey_boundary')f.sql.prepare("UPDATE telegram_pet_season_slots SET journey_clock='created_at' WHERE telegram_id=?").run(f.owner);
+   f.advance(Date.parse(boundaries[scenario])-Date.now()-1);
+ }
  // Seed timestamps are pinned before warm-up. Retain all timestamps and derived
  // values; only signed presentation tokens are normalized.
  function clean(value,key=''){
@@ -45,6 +61,7 @@ try {
    await f.drain();f.db.beforeAll=null;
  }else first=await f.measureHttp(mode);
  const initial=snapshot(first.state); // Capture committed state BEFORE the retry.
+ if(boundaries[scenario])f.advance(1);
  const second=await f.measureHttp(mode);
  const retry=snapshot(second.state);
  console.log(JSON.stringify({scenario,first:first.report,second:second.report,

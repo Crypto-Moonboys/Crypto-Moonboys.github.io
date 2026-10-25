@@ -6,7 +6,7 @@ import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
 const root=process.env.MOONPET_PERF_SOURCE_ROOT || process.cwd();
 const { recoverPetJourneyAwards }=await import(pathToFileURL(path.join(root,'workers/moonboys-api/pets/journey-recovery.js')));
 const queries=[];
-await recoverPetJourneyAwards({prepare(sql){return {bind(...args){this.args=args;return this;},async all(){queries.push({sql,args:this.args});return {results:[]};}};}},'980301');
+await recoverPetJourneyAwards({prepare(sql){return {bind(...args){this.args=args;return this;},async all(){queries.push({sql,args:this.args});return {results:[]};}};},async batch(statements){return Promise.all(statements.map(statement=>statement.all()));}},'980301');
 const query=queries.find(q=>q.sql.includes('SELECT eligible.*') && q.sql.includes('JOIN telegram_pet_weekly_journey_objectives o'));
 assert.ok(query);
 query.args[query.args.length-1]=1000;

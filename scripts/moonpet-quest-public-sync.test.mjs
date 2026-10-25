@@ -21,7 +21,15 @@ function fixture(owner) {
     bind(...args) { return new Statement(this.query, args); }
     async first() { return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
-    async run() { if (db.beforeRun) await db.beforeRun(this); return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } }; }
+    async run() {
+      if (db.beforeRun) await db.beforeRun(this);
+      // D1 read batches return their rows, not only mutation metadata.
+      if (sql.prepare(this.query).columns().length) {
+        const results = sql.prepare(this.query).all(...this.args);
+        return { results, meta: { changes: /\bRETURNING\b/i.test(this.query) ? results.length : 0 } };
+      }
+      return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
+    }
   }
   const db = { prepare: query => new Statement(query), async batch(statements) {
     sql.exec('BEGIN');

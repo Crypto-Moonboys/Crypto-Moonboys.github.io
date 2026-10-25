@@ -1,4 +1,5 @@
 import { requirePetFirstReadResult } from './read-result.js';
+import { PET_EQUIPMENT_UTILITY } from './equipment-progression.js';
 
 // Request-local negative evidence, never a durable "already migrated" flag.
 // These deliberately over-approximate each queue: a positive result still runs
@@ -17,10 +18,17 @@ export async function readPetRecoveryPresence(db, owner) {
         ON o.pet_id=s.pet_id AND o.season_key=s.season_key AND o.telegram_id=s.telegram_id WHERE s.telegram_id=?1)
       OR EXISTS(SELECT 1 FROM telegram_pet_season_slots s JOIN telegram_pet_weekly_journey_objectives o
         ON o.pet_id=s.pet_id AND o.season_key=s.season_key AND o.telegram_id=s.telegram_id WHERE s.telegram_id=?1)) AS objectives,
-    (EXISTS(SELECT 1 FROM telegram_pet_instances WHERE telegram_id=?1 AND
-      (equipped_food IS NOT NULL OR equipped_toy IS NOT NULL OR equipped_outfit IS NOT NULL
-        OR equipped_armor IS NOT NULL OR equipped_weapon IS NOT NULL OR equipped_charm IS NOT NULL))
-      OR EXISTS(SELECT 1 FROM telegram_pet_events WHERE telegram_id=?1 AND event_type='buy' AND status='accepted')) AS equipment`)
+    EXISTS(WITH definitions(item_key) AS (VALUES ${Object.keys(PET_EQUIPMENT_UTILITY).map(key => `('${key}')`).join(',')}),
+      owned_pets AS (SELECT i.* FROM telegram_pet_instances i JOIN telegram_pet_season_slots s
+        ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+        WHERE i.telegram_id=?1), ownership AS (
+      SELECT d.item_key FROM definitions d JOIN owned_pets p
+        ON d.item_key IN (p.equipped_food,p.equipped_toy,p.equipped_outfit,p.equipped_armor,p.equipped_weapon,p.equipped_charm)
+      UNION SELECT json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.item_key')
+        FROM telegram_pet_events e WHERE e.telegram_id=?1 AND e.event_type='buy' AND e.status='accepted'
+          AND (e.pet_id IS NULL OR EXISTS(SELECT 1 FROM owned_pets p WHERE p.pet_id=e.pet_id AND p.season_key=e.season_key)))
+      SELECT 1 FROM definitions d JOIN ownership o ON o.item_key=d.item_key
+      WHERE NOT EXISTS(SELECT 1 FROM telegram_pet_equipment_progression g WHERE g.telegram_id=?1 AND g.item_key=d.item_key)) AS equipment`)
     .bind(String(owner)).first().then(requirePetFirstReadResult).catch(error => {
       // Journey projections already expose a locked/unavailable module when its
       // optional migration is missing. Preserve that containment, but disable

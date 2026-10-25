@@ -37,7 +37,10 @@ test('presence probes use owner/pet indexes rather than scanning application tab
   try {
     f.db.beforeFirst=async s=>{if(presenceQuery(s)){
       const plan=f.sql.prepare('EXPLAIN QUERY PLAN '+s.query).all(...s.args).map(row=>row.detail);
-      assert.equal(plan.some(detail=>/^SCAN (?!CONSTANT ROW)/.test(detail)),false,plan.join('\n'));
+      // d is the fixed equipment catalog; p/o are materialized owner-scoped
+      // CTE results. Application tables must still use their owner/pet indexes.
+      const boundedCteScan = /^SCAN (?:CONSTANT ROW|\d+ CONSTANT ROWS|d|p|o)\b/;
+      assert.deepEqual(plan.filter(detail=>/^SCAN /.test(detail)&&!boundedCteScan.test(detail)),[],plan.join('\n'));
       inspected=true;
     }};
     await readPetRecoveryPresence(f.db,f.owner);assert.equal(inspected,true);
@@ -53,7 +56,8 @@ test('empty signed full refresh skips source-less recovery and duplicate invento
     const {state,report}=await f.measureHttp();
     assert.equal(state.hydration.full,true);
     assert.ok(report.calls<=92); assert.ok(report.statements<=145);
-    assert.equal(queries.filter(q=>q.includes('INSERT OR IGNORE INTO telegram_pet_inventory_legacy_sync_042')).length,1);
+    assert.equal(queries.filter(q=>q.includes('INSERT OR IGNORE INTO telegram_pet_inventory_legacy_sync_042')).length,0,
+      'an account without legacy item sources needs no inventory bridge transaction');
   } finally {f.close();}
 });
 

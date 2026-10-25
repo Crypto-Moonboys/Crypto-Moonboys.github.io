@@ -33,6 +33,10 @@ class Statement {
       const results = sqlite.prepare(this.sql).all(...this.args);
       return { results, meta: { changes: results.length } };
     }
+    // D1 batch returns SELECT rows too; recovery now batches read candidates.
+    if (sqlite.prepare(this.sql).columns().length) {
+      return { results: sqlite.prepare(this.sql).all(...this.args), meta: { changes: 0 } };
+    }
     return { meta: { changes: sqlite.prepare(this.sql).run(...this.args).changes } };
   }
 }

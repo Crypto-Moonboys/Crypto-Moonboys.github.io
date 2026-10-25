@@ -1,4 +1,4 @@
-import { requirePetMutationResult } from './read-result.js';
+import { requirePetMutationResult, requirePetFirstReadResult } from './read-result.js';
 
 export function prepareLegacyPetInventoryReconciliation(db, telegramIdRaw) {
   const telegramId = String(telegramIdRaw || '').trim();
@@ -35,7 +35,24 @@ export function prepareLegacyPetInventoryReconciliation(db, telegramIdRaw) {
   ];
 }
 
-export async function reconcileLegacyPetInventory(db, telegramId) {
+export async function reconcileLegacyPetInventory(db, telegramId, { skipEmpty = false } = {}) {
+  if (skipEmpty) {
+    // Current writers use the authoritative inventory ledger. Only historical
+    // item deltas or an existing checkpoint can consume this beta bridge.
+    // Probe after the full response's economy snapshot; a concurrent legacy
+    // event is still detected by its final source/economy assertions.
+    const row = await db.prepare(`SELECT (EXISTS (
+      SELECT 1 FROM telegram_pet_events WHERE telegram_id=?1 AND status='accepted' AND json_valid(metadata)
+        AND COALESCE(json_extract(metadata,'$.inventory_authority'),0)<>1
+        AND (COALESCE(json_extract(metadata,'$.item_key'),json_extract(metadata,'$.inventory_key'))
+          IN ('moon_snack','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map')
+          OR json_extract(metadata,'$.consumed_item_key')
+          IN ('moon_snack','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map'))
+      ) OR EXISTS (SELECT 1 FROM telegram_pet_inventory_legacy_sync_042 WHERE telegram_id=?1)) AS needed`)
+      .bind(String(telegramId)).first().then(requirePetFirstReadResult);
+    if (!row || (row.needed !== 0 && row.needed !== 1)) throw new Error('pet_state_read_unavailable');
+    if (!row.needed) return [];
+  }
   // D1 batch() is transactional: the authority delta and its checkpoint either
   // both commit or both roll back. The legacy view excludes authority-owned
   // audit events, so calling this bridge repeatedly cannot duplicate new writes.

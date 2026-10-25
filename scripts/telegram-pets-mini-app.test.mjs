@@ -74,7 +74,7 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key, \{ coalesceReads: true, concurrentReads: true \}\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope\.db, economy, now, inventoryReady \}\)/,
+  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key, \{ coalesceReads: true, concurrentReads: true \}\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope\.db, economy, now, inventoryReady, parallelPresentation: true \}\)/,
   'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
 assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope, guidance\)/,
@@ -86,12 +86,12 @@ assert.equal(
 );
 assert.match(
   miniAppStateSource,
-  /seasonSlotsPromise\.then\(slots => buildPetMiniAppJourneySummary[\s\S]*liveSystemsPromise,[\s\S]*getStyleLoadout[\s\S]*getContractBoard[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\(\[/,
-  'independent presentation must start before reservation-dependent room repair',
+  /const seasonSlotsPromise = buildPetSeasonSlotSummary[\s\S]*const runContextPromise = guidancePromise\.then\(async guidance => \{[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\([\s\S]*seasonSlotsPromise\.then\(slots => buildPetMiniAppJourneySummary[\s\S]*liveSystemsPromise,[\s\S]*getStyleLoadout[\s\S]*getContractBoard[\s\S]*runContextPromise,[\s\S]*guidanceNoticesPromise,/,
+  'independent presentation and reservation-dependent work must share the complete awaited projection',
 );
 assert.match(
   miniAppStateSource,
-  /const dailyRunSummaryPromise = getDailyMoonRunSummary\([\s\S]*const \[dailyRunSummary, guidanceNotices\] = await Promise\.all\(\[dailyRunSummaryPromise, guidanceNoticesPromise\]\);/,
+  /const runContextPromise = guidancePromise\.then\(async guidance => \{[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\([\s\S]*const dailyRunSummary = await getDailyMoonRunSummary\([\s\S]*return \{ runPet, dailyReservation, dailyRunSummary \};[\s\S]*const guidanceNoticesPromise = guidancePromise\.then[\s\S]*const \{ runPet, dailyReservation, dailyRunSummary \} = runContext;/,
   'Daily summary must start after reservation repair while overlapping only unrelated guidance-notice persistence',
 );
 assert.match(
