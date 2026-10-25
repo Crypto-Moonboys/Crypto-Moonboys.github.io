@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const homepageContract = JSON.parse(await readFile(path.join(root, 'scripts/fixtures/homepage-approved-contract.json'), 'utf8'));
 const output = process.env.HERO_SCREENSHOT_DIR || path.join(tmpdir(), 'homepage-hero-verification');
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = createServer(async (req, res) => {
@@ -32,6 +33,13 @@ try {
     await page.locator('.homepage-build-cta h1').waitFor();
     await page.evaluate(() => document.fonts.ready);
     await page.locator('.home-neon-cityscape img').evaluate(image => image.decode());
+    // Load lazy artwork through its normal viewport trigger before checking
+    // natural dimensions; decode alone does not start an offscreen lazy load.
+    for (const image of await page.locator('#home-top-message > img').all()) {
+      await image.scrollIntoViewIfNeeded();
+      await image.evaluate(image => image.decode());
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
     for (const reducedMotion of ['no-preference', 'reduce']) {
       await page.emulateMedia({ reducedMotion });
       const result = await page.evaluate(() => {
@@ -43,23 +51,45 @@ try {
         const styles = section => [section, section.firstElementChild, section.querySelector('h1'), section.querySelector('h1 span'), section.querySelector('p')].map(e => Object.fromEntries(props.map(p => [p, getComputedStyle(e).getPropertyValue(p)])));
         const image = document.querySelector('.home-neon-cityscape img');
         const rect = image.getBoundingClientRect();
+        const video = document.querySelector('main > .home-video');
+        const videoRect = video.getBoundingClientRect();
+        const artwork = [...duplicate.querySelectorAll(':scope > img')];
         return {
           duplicate: styles(duplicate), original: styles(original),
-          markupMatches: duplicate.firstElementChild.innerHTML === original.firstElementChild.innerHTML,
+          messages: {
+            topHeading: duplicate.firstElementChild.querySelector('h1').textContent,
+            topPulse: duplicate.firstElementChild.querySelector('p').textContent,
+            builderHeading: original.querySelector('h1').textContent,
+            builderPulse: original.querySelector('p').textContent,
+          },
           first: document.querySelector('main').firstElementChild.classList.contains('home-neon-cityscape'),
-          followsImage: duplicate.previousElementSibling.classList.contains('home-neon-cityscape'),
+          followsVideo: duplicate.previousElementSibling === video && video.previousElementSibling.classList.contains('home-neon-cityscape'),
+          videoFullWidth: videoRect.width === innerWidth && Math.abs(videoRect.height - videoRect.width * 9 / 16) < 1,
+          videoSource: video.querySelector('iframe').getAttribute('src'),
           precedesBadDays: duplicate.nextElementSibling.getAttribute('aria-label') === 'Crypto Moonboys Bad Days 1',
           originalBeforeBuilder: original.nextElementSibling.id === 'build-moonboy',
           originalMoved: original.firstElementChild.dataset.homepageCtaMoved === 'true',
           duplicateNotMoved: !duplicate.firstElementChild.dataset.homepageCtaMoved,
-          inlineStyles: duplicate.querySelectorAll('[style]').length + Number(duplicate.hasAttribute('style')),
+          inlineStyles: duplicate.firstElementChild.querySelectorAll('[style]').length + Number(duplicate.hasAttribute('style')),
           noOverflow: document.documentElement.scrollWidth === innerWidth && [duplicate, original].every(s => [...s.querySelectorAll('h1,p')].every(e => e.scrollWidth <= e.clientWidth)),
           imageFullWidth: rect.width === innerWidth,
-          imageNaturalHeight: Math.abs(rect.height - rect.width * image.naturalHeight / image.naturalWidth) < 1
+          imageNaturalHeight: Math.abs(rect.height - rect.width * image.naturalHeight / image.naturalWidth) < 1,
+          artworkSources: artwork.map(image => image.getAttribute('src')),
+          artworkNaturalHeight: artwork.length === 2 && artwork.every(image => {
+            const r = image.getBoundingClientRect();
+            return image.naturalWidth > 0 && r.width === innerWidth && Math.abs(r.height - r.width * image.naturalHeight / image.naturalWidth) < 1;
+          }),
         };
       });
       assert.deepEqual(result.duplicate, result.original, width + 'px computed style parity');
-      for (const key of ['markupMatches', 'first', 'followsImage', 'precedesBadDays', 'originalBeforeBuilder', 'originalMoved', 'duplicateNotMoved', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      const text = html => html.replace(/<[^>]*>/g, '');
+      assert.deepEqual(result.messages, {
+        topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
+        builderHeading: homepageContract.builder_heading_text, builderPulse: text(homepageContract.builder_pulse_html),
+      }, width + 'px distinct approved messages');
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'precedesBadDays', 'originalBeforeBuilder', 'originalMoved', 'duplicateNotMoved', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
+      assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
       assert.equal(result.duplicate[0].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No section panel');
       assert.equal(result.duplicate[2].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No heading panel');
