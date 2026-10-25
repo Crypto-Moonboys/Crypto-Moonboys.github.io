@@ -24,7 +24,9 @@ test("site entry points open ChatGPT instead of claiming a hosted SWARMSY assist
   const swarmsy = read("swarmsy.html");
   const readme = read("README.md");
   assert.match(home, /href="\/gpt-users\.html"/);
-  assert.match(home, /START WITH CHATGPT/);
+  assert.match(home, /<a\b[^>]*href="\/gpt-users\.html"[^>]*>BRING YOUR OWN IP<\/a>/);
+  assert.match(home, /Start with the public ChatGPT Creator Studio/);
+  assert.match(home, /optional, separately installed PC app/);
   assert.doesNotMatch(home, /SWARMSY Ai WILL BLOW YOU UP|SWARMSY helps you name it, shape it, create it and keep YOU moving 24\/7/);
   assert.match(shell, /sparkyAgent\.href = '\/gpt-users\.html'/);
   assert.match(shell, /Start creating with ChatGPT via the SPARKY Creator Studio/);
