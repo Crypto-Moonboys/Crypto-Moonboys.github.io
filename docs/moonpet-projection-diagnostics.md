@@ -14,6 +14,8 @@ Operation spans run from invocation to completion. Named dependency lists descri
 
 `guidance_join` measures the inner guidance barrier before its source verification. Ownership checks receive only an operation-labelled view of their original guarded database; their sticky scope, queries, results and failure checks remain intact. UUID-based sampling consumes no gameplay randomness.
 
+Review correction: the secondary `projectionReads` passed to live systems is also explicitly labelled before its authority await. Its six coalesced reads now contribute to `live_systems`, while the seventh statement remains the original ownership guard. The signed-request regression failed with the previous attribution and passes with this labelled view; native batch size, total submissions, SQL and ownership scope are preserved.
+
 `await_ms` measures binding invocation through promise resolution, including binding/network/backend/queue/retry and deserialization time. It cannot identify network transit alone. `sql_reported_ms` is recorded only when every statement in that call returns numeric D1 `meta.timings.sql_duration_ms` or `meta.duration`. It is **null/missing**, never zero, for unavailable metadata (notably `.first()` / `.raw()`). Batch SQL duration is a sum of returned statement durations, not another wall-clock interval. Local SQLite's fixture does not fabricate SQL timings.
 
 `outside_any_d1_await_ms` is span wall time outside *all* observed D1 waits; it is **not Worker CPU**. It can include dependency, ownership-queue and scheduling waits. Workers clocks and concurrent tasks do not provide reliable per-operation CPU accounting here. Use Cloudflare's existing per-invocation CPU/wall metrics for CPU. Do not subtract SQL sums from overlapping wall intervals and call the remainder network time.
@@ -28,16 +30,16 @@ Sampled complete HTTP response medians, three repetitions per cell:
 
 | Simulated binding latency | Account | Baseline first → traced first (ms) | Baseline retry → traced retry (ms) | Total request D1 / SQL, unchanged |
 | --- | --- | --- | --- | --- |
-| 25 ms | Established | 664 → 663 | 643 → 643 | 80 / 139 |
-| 25 ms | Three pets | 740 → 731 | 708 → 706 | 88 / 147 |
-| 25 ms | Equipped | 735 → 746 | 709 → 707 | 82 / 143 |
-| 100 ms | Established | 2,255 → 2,261 | 2,221 → 2,227 | 80 / 139 |
-| 100 ms | Three pets | 2,462 → 2,453 | 2,430 → 2,429 | 88 / 147 |
-| 100 ms | Equipped | 2,473 → 2,463 | 2,440 → 2,443 | 82 / 143 |
+| 25 ms | Established | 666 → 676 | 641 → 641 | 80 / 139 |
+| 25 ms | Three pets | 728 → 735 | 707 → 708 | 88 / 147 |
+| 25 ms | Equipped | 749 → 744 | 704 → 714 | 82 / 143 |
+| 100 ms | Established | 2,252 → 2,255 | 2,232 → 2,212 | 80 / 139 |
+| 100 ms | Three pets | 2,468 → 2,469 | 2,438 → 2,453 | 88 / 147 |
+| 100 ms | Equipped | 2,477 → 2,466 | 2,441 → 2,449 | 82 / 143 |
 
-At 100 ms with sampling **off**, first/retry medians were 2,250/2,222 → 2,247/2,218 (established), 2,475/2,437 → 2,482/2,455 (three pets), and 2,475/2,444 → 2,463/2,451 (equipped). Zero-delay first-load medians included 47 → 54 ms established, 48 → 57 ms three-pet, and 744 → 760 ms for 1,000 settled history records; that last fixture's retry was 761 → 721 ms. Instrumentation has measurable small absolute overhead in CPU-bound fixtures; no material response regression was observed under the tested round-trip profiles. Production overhead still needs measurement.
+At 100 ms with sampling **off**, first/retry medians were 2,245/2,218 → 2,250/2,215 (established), 2,465/2,451 → 2,474/2,443 (three pets), 2,470/2,436 → 2,469/2,453 (equipped). Zero-delay first-load medians included 48 → 55 ms (warm), 53 → 56 ms (three), 747 → 793 ms (history). Instrumentation has measurable small absolute overhead in CPU-bound fixtures; no material response regression was observed under the tested round-trip profiles. Production overhead still needs measurement.
 
-One recorded 100 ms three-pet projection illustrates interpretation: 2,115.09 ms total, an observed completion path through profile, identity, evolution, guidance ownership, notices and final checks, with 2.42 ms unattributed. Identity's 1,112.20 ms span contained 444.06 ms of participating binding-await union; the rest is not proved to be CPU or network. Notices finished last at the presentation join: its 1,667.14 ms span included the guidance dependency wait, while its own participating awaits took 220.72 ms. Those figures demonstrate why summing span durations or treating every long span as SQL execution would be wrong. They do **not** establish the ORD/IAD production bottleneck.
+One recorded 100 ms three-pet projection illustrates interpretation: 2,110.66 ms total, an observed completion path through profile, identity, evolution, guidance ownership, notices and final checks, with 2.95 ms unattributed. Identity's 1,114.22 ms span contained 445.47 ms of participating binding-await union; the rest is not proved to be CPU or network. Notices finished last at the presentation join: its 1,667.23 ms span included the guidance dependency wait, while its own participating awaits took 217.63 ms. Live systems now include the six guarded reads in their 9 attributed statements and 334.29 ms of participating binding awaits. Those figures demonstrate why summing span durations or treating every long span as SQL execution would be wrong. They do **not** establish the ORD/IAD production bottleneck.
 
 Committed reproducible proof: `scripts/fixtures/moonpet-projection-diagnostics-parity.json` and `scripts/fixtures/moonpet-projection-diagnostics-latency.json`. JSON is compact to keep generated evidence out of the source review's line count; values, response/state hashes, repetitions, intervals and source fingerprints are retained.
 

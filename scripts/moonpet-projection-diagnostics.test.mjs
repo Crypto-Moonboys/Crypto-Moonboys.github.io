@@ -115,6 +115,13 @@ test('signed complete request has matching trace counts, correlation and no priv
     for(const id of ['combat','identity','roster','journey','economy','final_ownership','final_economy','presentation_join'])assert.ok(trace.spans.some(s=>s.operation===id),id);
     for(const id of ['final_ownership','guidance_ownership'])assert.ok(trace.calls.some(c=>c.operations[id]>0), 'native ownership read attributed to '+id);
     assert.ok(trace.spans.some(s=>s.operation==='guidance_join'));
+    const liveBatch=trace.calls.find(c=>c.operations.live_systems===6 && c.operations.projection===1);
+    assert.ok(liveBatch, 'six guarded live-systems reads retain their module label after the authority await');
+    assert.equal(liveBatch.batch_size,7, 'six reads share the original ownership guard');
+    assert.equal(liveBatch.operation,'shared_reads');
+    const liveComparison=compareTraces([trace])[0].operations.find(r=>r.operation==='live_systems');
+    assert.ok(liveComparison.sql_statements.p50>=6);
+    assert.ok(liveComparison.participating_binding_await_union_ms.p50+0.02>=liveBatch.await_ms);
     assert.doesNotMatch(JSON.stringify(trace),new RegExp(f.owner+'|fixture-token|first_name|telegram_id|pet_id|SELECT |UPDATE '));
     assert.ok((await f.measureHttp('profile')).report.projection_trace, 'profile mode also returns complete full state');
     assert.equal((await f.measureHttp('core')).report.projection_trace,undefined, 'partial core is not sampled');

@@ -10811,7 +10811,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   const liveSystemsPromise = Promise.all([identityPromise, runtimePromise, gearPromise, materialsPromise])
     .then(([identity, runtime, gear, materials]) => op('live_systems', buildPetLiveSystemsState, db, telegramId,
       serializePet(petRaw, identity, { include_art_identity: true, include_callsign: true, now }),
-      runtime, gear.results || [], materials.results || [], now, { projectionReads: identityScope.db }));
+      runtime, gear.results || [], materials.results || [], now, { projectionReads: reads('live_systems', identityScope.db) }));
   const guidancePromise = op('guidance', buildPetGuidanceState, db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now, inventoryReady, parallelPresentation: true, projectionTrace: trace });
   const runContextPromise = projectionSpan(trace, 'daily_run', () => guidancePromise.then(async guidance => {
     const runDb = reads('daily_run');
