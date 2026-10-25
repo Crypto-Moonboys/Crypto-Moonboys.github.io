@@ -11,6 +11,17 @@ const tables = ['telegram_pet_instances','telegram_pet_profiles','telegram_pet_r
   'telegram_pet_weekly_journey_receipts','telegram_pet_material_balances'];
 const snapshot = f => Object.fromEntries(tables.map(table => [table,f.sql.prepare('SELECT * FROM '+table+' ORDER BY 1').all()]));
 
+test('missing optional Journey migration disables skipping and preserves the locked module contract',async()=>{
+  const f=await performanceFixture();
+  try {
+    f.sql.exec('DROP TABLE telegram_pet_weekly_journey_objectives');
+    assert.deepEqual(await readPetRecoveryPresence(f.db,f.owner),{runs:1,daily:1,live:1,combat:1,events:1,bosses:1,objectives:1,equipment:1});
+    const {state}=await f.measureHttp();
+    assert.equal(state.weekly_journey.state,'LOCKED');
+    assert.equal(state.weekly_journey.reason,'weekly_journey_authority_syncing');
+  } finally {f.close();}
+});
+
 test('parallel bootstrap does not repair paid onboarding for an account without a profile',async()=>{
   const f=await performanceFixture({pets:3});
   try {

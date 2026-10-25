@@ -1366,7 +1366,7 @@ try {
       return [{ screen: 'explore', focus: 'moon-run' }];
     });
     assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), expectedDailyRoutes.flat().length);
-    const renderedDailyGoals = await page.locator('[data-panel="daily-objectives"] .line').evaluateAll(lines => lines.filter(line => /^\[(?:OK| )\]/.test(line.textContent)).map(line => {
+    const renderedDailyGoals = await page.locator('[data-panel="daily-objectives"] .line').evaluateAll(lines => lines.filter(line => /^(?:\[(?:OK| )\]|\u2705 Completed)/.test(line.textContent)).map(line => {
       const routes = [];
       for (let sibling = line.nextElementSibling; sibling && !sibling.classList.contains('line'); sibling = sibling.nextElementSibling) {
         routes.push(...Array.from(sibling.querySelectorAll('[data-jump]'), button => ({ screen: button.dataset.jump, focus: button.dataset.focus })));

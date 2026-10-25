@@ -92,6 +92,41 @@ reduced warm budget, one inventory bridge, indexed probes, malformed-read
 failure, divergent-profile and missing-wallet-receipt fallback, pending care,
 archived reward settlement, duplicate refresh and database-failure retry.
 
-Repeated 100 ms results, complete CI outcomes and Codex review will be appended
-after execution. Local visual verification uses installed Chrome because the
+Final 100 ms results are recorded below. Complete CI outcomes are recorded in the PR. Local visual verification uses installed Chrome because the
 Playwright browser download is absent; GitHub CI uses its normal browser setup.
+
+## Final repeated measurements
+
+All durations below are milliseconds, median of three independent revision pairs.
+First and retry requests both finish the complete authenticated JSON response.
+Writes occupy one serialized queue slot for their full 100 ms modeled round trip.
+
+| Scenario | First complete response, baseline → changed | Retry complete response, baseline → changed | Initial D1/SQL, baseline → changed | Initial recovery, baseline → changed |
+| --- | ---: | ---: | --- | ---: |
+| warm | 5207 → 2884 | 5184 → 2865 | 113/169 → 92/145 | 1432.46 → 109.39 |
+| three | 5422 → 3111 | 5387 → 3088 | 121/177 → 100/153 | 1430.01 → 109.34 |
+| heavy | 14785 → 13091 | 5182 → 3433 | 200/299 → 184/280 | 11025.41 → 10302.85 |
+| activity | 10999 → 9131 | 5223 → 3336 | 165/266 → 148/246 | 7210.83 → 6329.01 |
+| new | 5642 → 4201 | 5183 → 2868 | 117/174 → 104/158 | 1433.10 → 109.95 |
+
+Warm first-response improvement is 44.6%. Three-pet, first-time and saved-backlog paths remain
+above the three-second target. Recovery-heavy retries still probe retained history;
+no durable migration flag or history deletion is used to make them look faster.
+
+Raw ranges, all repeats, source SHA-256 digests, stage timings and response/database
+hashes: [100 ms model](../scripts/fixtures/moonpet-beta-streamline-performance.json).
+All 14 zero-delay scenarios × 3 revision pairs also passed:
+[complete semantic parity](../scripts/fixtures/moonpet-beta-streamline-parity.json).
+The source digests in both reports identify the runtime files even though local
+Git metadata refers to the supplied clone. The remote PR is based on current main.
+
+The optional-migration regression found by the full sweep is corrected: a missing
+Daily/Weekly Journey objective table disables the presence optimization entirely
+and retains the existing locked-module response. It is never treated as an empty
+queue. Other query errors and malformed results remain fail-closed. A new real
+SQLite regression verifies this alongside the existing Mini App parity test.
+
+Fault-injection tests now exercise the joined account-wallet read and seed an
+actual Daily recovery source before failing its selector. The browser goal
+inventory recognizes the existing ✅ Completed label and still checks every
+authoritative goal and unfinished route. No frontend/gameplay code is changed.

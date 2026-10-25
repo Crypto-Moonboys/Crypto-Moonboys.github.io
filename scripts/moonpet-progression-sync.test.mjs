@@ -1671,7 +1671,7 @@ print('Compiled', len(payload['statements']), 'actual Mini App statements with c
 
 for (const [label, method, match] of [
   ['adoption authority', 'beforeFirst', q=>q.includes('SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1')],
-  ['account wallet profile', 'beforeFirst', q=>q.trim()==='SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?'],
+  ['account wallet profile', 'beforeFirst', q=>q.trim()==='SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?' || q.includes('p.moon_gold AS account_gold')],
   ['saved lifecycle', 'beforeFirst', q=>q.includes('SELECT l.*, s.season_key')],
   ['evolution reveal', 'beforeFirst', q=>q.includes('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=?')],
   ['incubation daily count', 'beforeFirst', q=>q.includes('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet')],

@@ -283,6 +283,13 @@ async function savedFixture(owner) {
 }
 for (const [name,query] of Object.entries(targets)) test(`resolved failed ${name} read cannot publish a normal Mini App snapshot`,async()=>{
   const f=await savedFixture('read-'+name);
+  if(name==='daily_run_recovery'){
+    // Empty queues no longer perform their expensive selector. Keep a real
+    // source row so this regression still injects a failure into Daily recovery.
+    const pet=f.sql.prepare('SELECT pet_id,season_key FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner);
+    f.sql.prepare("INSERT INTO telegram_pet_runs(id,run_id,telegram_id,pet_id,season_key,status) VALUES('read-fault-run','read-fault-run',?,?,?,'abandoned')").run(f.owner,pet.pet_id,pet.season_key);
+    f.sql.prepare("INSERT INTO telegram_pet_daily_runs(telegram_id,pet_id,utc_day,seed,run_id,status) VALUES(?,?,'2026-09-28','fixture','read-fault-run','abandoned')").run(f.owner,pet.pet_id);
+  }
   const baseline=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
   const before=durableSnapshot(f);
   let hit=false;
