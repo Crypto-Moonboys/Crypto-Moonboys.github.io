@@ -18,6 +18,29 @@ Operation spans run from invocation to completion. Named dependency lists descri
 
 `outside_any_d1_await_ms` is span wall time outside *all* observed D1 waits; it is **not Worker CPU**. It can include dependency, ownership-queue and scheduling waits. Workers clocks and concurrent tasks do not provide reliable per-operation CPU accounting here. Use Cloudflare's existing per-invocation CPU/wall metrics for CPU. Do not subtract SQL sums from overlapping wall intervals and call the remainder network time.
 
+## Recorded validation
+
+Baseline `627ad040c8789faf0872ede2d687db048442dd30`; final runtime source hashes are recorded in both proof files. All 169 local Worker/API commands, 10 new diagnostic tests, and the sandbox/public-sync/player-loop browser suites passed. The new signed test also samples complete `profile` responses, excludes partial `core`, and proves an intervening pet switch still returns 503 before a fresh request selects the new pet.
+
+The 23-scenario zero-delay run contains 69 alternating before/after pairs. Complete signed HTTP responses and **every application table** match both before and after retry; all D1/SQL counts match. All original 14 parity scenarios remain included. Another 27 pairs exercise 25/100 ms binding latency with sampling on, and 100 ms with sampling off. No additional SQL, missing samples or truncated traces occurred. These are sandbox timings with simulated round trips, not Cloudflare production measurements. The host was not a dedicated performance runner; small negative/positive differences should be treated as noise, not speedups.
+
+Sampled complete HTTP response medians, three repetitions per cell:
+
+| Simulated binding latency | Account | Baseline first → traced first (ms) | Baseline retry → traced retry (ms) | Total request D1 / SQL, unchanged |
+| --- | --- | --- | --- | --- |
+| 25 ms | Established | 664 → 663 | 643 → 643 | 80 / 139 |
+| 25 ms | Three pets | 740 → 731 | 708 → 706 | 88 / 147 |
+| 25 ms | Equipped | 735 → 746 | 709 → 707 | 82 / 143 |
+| 100 ms | Established | 2,255 → 2,261 | 2,221 → 2,227 | 80 / 139 |
+| 100 ms | Three pets | 2,462 → 2,453 | 2,430 → 2,429 | 88 / 147 |
+| 100 ms | Equipped | 2,473 → 2,463 | 2,440 → 2,443 | 82 / 143 |
+
+At 100 ms with sampling **off**, first/retry medians were 2,250/2,222 → 2,247/2,218 (established), 2,475/2,437 → 2,482/2,455 (three pets), and 2,475/2,444 → 2,463/2,451 (equipped). Zero-delay first-load medians included 47 → 54 ms established, 48 → 57 ms three-pet, and 744 → 760 ms for 1,000 settled history records; that last fixture's retry was 761 → 721 ms. Instrumentation has measurable small absolute overhead in CPU-bound fixtures; no material response regression was observed under the tested round-trip profiles. Production overhead still needs measurement.
+
+One recorded 100 ms three-pet projection illustrates interpretation: 2,115.09 ms total, an observed completion path through profile, identity, evolution, guidance ownership, notices and final checks, with 2.42 ms unattributed. Identity's 1,112.20 ms span contained 444.06 ms of participating binding-await union; the rest is not proved to be CPU or network. Notices finished last at the presentation join: its 1,667.14 ms span included the guidance dependency wait, while its own participating awaits took 220.72 ms. Those figures demonstrate why summing span durations or treating every long span as SQL execution would be wrong. They do **not** establish the ORD/IAD production bottleneck.
+
+Committed reproducible proof: `scripts/fixtures/moonpet-projection-diagnostics-parity.json` and `scripts/fixtures/moonpet-projection-diagnostics-latency.json`. JSON is compact to keep generated evidence out of the source review's line count; values, response/state hashes, repetitions, intervals and source fingerprints are retained.
+
 ## Enable only after GK approves deployment
 
 No configuration, secrets or production data were changed by this PR. No migration is required. First deploy the approved merged code using the existing provenance workflow:

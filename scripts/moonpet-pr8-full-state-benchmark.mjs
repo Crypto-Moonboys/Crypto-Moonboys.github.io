@@ -61,5 +61,5 @@ const sourceHashes = async root => Object.fromEntries(await Promise.all(
 const evidence = {baseline,changed:process.cwd(),baseline_commit:await revision(baseline),changed_commit:process.env.MOONPET_PERF_CHANGED_REVISION || null,changed_base_commit:await revision(process.cwd()),node_version:process.version,delay_ms:Number(delay),serialized_writes:true,repeats:3,
   baseline_source_sha256:await sourceHashes(baseline),changed_source_sha256:await sourceHashes(process.cwd()),
   clock:'2026-10-21T12:00:00.000Z',description:'Local real SQLite, signed Worker fetch through complete response.json(); not production latency.',results};
-if(process.argv[3]) await writeFile(process.argv[3],JSON.stringify(evidence,null,2)+'\n');
+if(process.argv[3]) await writeFile(process.argv[3],JSON.stringify(evidence,null,process.env.MOONPET_PERF_PROJECTION_DIAGNOSTICS === '1' ? 0 : 2)+'\n');
 else console.log(JSON.stringify(evidence,null,2));
