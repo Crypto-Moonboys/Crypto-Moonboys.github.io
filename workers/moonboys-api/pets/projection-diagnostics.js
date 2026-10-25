@@ -7,9 +7,10 @@ const OPERATIONS = new Set(['projection', 'initial_economy', 'profile', 'entry',
   'daily_modifiers', 'final_ownership', 'final_economy', 'guidance_activity', 'guidance_run',
   'missions', 'season_rewards', 'achievements', 'boss_progress', 'boss_attempt',
   'special_actions', 'pending_boss_rewards', 'daily_chest', 'window_totals',
-  'boss_history', 'evolution', 'economy', 'boss_participation', 'guidance_ownership', 'shared_reads', 'presentation_join']);
+  'boss_history', 'evolution', 'economy', 'boss_participation', 'guidance_ownership', 'shared_reads', 'presentation_join', 'guidance_join']);
 const MAX_CALLS = 192, MAX_SPANS = 80;
 const DEPENDENCIES = {
+  initial_economy: [], profile: [],
   entry: ['profile', 'initial_economy'], inventory_bridge: ['profile', 'initial_economy'],
   identity: ['profile', 'initial_economy'], runtime: ['profile', 'initial_economy'],
   combat: ['profile', 'initial_economy'], roster: ['profile', 'initial_economy'],
@@ -22,6 +23,7 @@ const DEPENDENCIES = {
     'boss_participation', 'guidance_ownership'],
   final_economy: ['final_ownership'],
   kaiju_category: ['presentation_join'], final_ownership: ['presentation_join', 'kaiju_category'],
+  guidance_ownership: ['guidance_join', 'combat_eligibility', 'boss_participation'],
 };
 const round = n => Math.round(Math.max(0, n) * 100) / 100;
 const finite = n => typeof n === 'number' && Number.isFinite(n) && n >= 0;
@@ -113,7 +115,7 @@ export function createProjectionDiagnostics({ requestId, colo, clock = () => per
         return typeof value === 'function' ? (...args) => tagged(() => value.apply(target, args)) : value;
       } }); views.set(view, db); return view;
     },
-    run(operation, run, dependencies = DEPENDENCIES[operation] || []) {
+    run(operation, run, dependencies = DEPENDENCIES[operation] || ['profile', 'initial_economy']) {
       allowed(operation); dependencies.forEach(allowed);
       const span = { operation, dependencies, start_ms: elapsed() };
       const kept = spans.length < MAX_SPANS;

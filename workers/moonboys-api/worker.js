@@ -10413,7 +10413,7 @@ function normalizePetProjectionError(error) {
   return error;
 }
 
-async function assertPetProjectionSource(db, telegramId, pet, slots = null, scope = null, achievementProjection = null) {
+async function assertPetProjectionSource(db, telegramId, pet, slots = null, scope = null, achievementProjection = null, diagnostics = null) {
   if (scope?.changed) throw new Error('pet_state_source_changed');
   if (achievementProjection) {
     const provenance = achievementProjection.achievement_scope;
@@ -10423,7 +10423,8 @@ async function assertPetProjectionSource(db, telegramId, pet, slots = null, scop
       throw new Error('pet_state_source_changed');
     }
   }
-  const selected = await findActivePetSlot(scope?.db || db, telegramId)
+  const sourceReads = diagnostics ? diagnostics.trace.database(scope?.db || db, diagnostics.operation) : scope?.db || db;
+  const selected = await findActivePetSlot(sourceReads, telegramId)
     .catch(error => { throw normalizePetProjectionError(error); });
   const projected = slots?.slots?.find(slot => slot.active);
   if (!selected || selected.pet_id !== pet.pet_id || selected.season_key !== pet.season_key
@@ -10989,7 +10990,8 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   const specialActionCooldowns = getPetSpecialActionCooldownEntriesFromState(guidance?.special_actions);
   assertPetProjectionPeriods(now, { guidance, slots: seasonSlots, journey: journeySummary, finales: seasonFinales, leaderboard });
   await timings.measure('ownership_verification', async () => {
-    await op('final_ownership', assertPetProjectionSource, db, telegramId, petRaw, seasonSlots, identityScope, guidance);
+    await op('final_ownership', assertPetProjectionSource, db, telegramId, petRaw, seasonSlots, identityScope, guidance,
+      trace ? { trace, operation: 'final_ownership' } : null);
     await op('final_economy', assertPetEconomy, db, telegramId, economy);
   });
   return {
@@ -17757,7 +17759,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   const runtimePromise = Object.hasOwn(options, 'runtime')
     ? Promise.resolve(options.runtime)
     : getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet));
-  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals, weeklyRecoveryHistory, earlyEvolution, earlyEconomy] = await settlePetProjectionBranches([
+  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals, weeklyRecoveryHistory, earlyEvolution, earlyEconomy] = await projectionSpan(trace, 'guidance_join', () => settlePetProjectionBranches([
     identityPromise,
     op('guidance_activity', getActivePetActivitySession, db, telegramId, now).then((active) => active || op('guidance_activity', getRecoverablePetActivitySession, db, telegramId)),
     op('guidance_run', getActivePetRun, db, telegramId),
@@ -17787,7 +17789,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
       { ...pet, ...serializePet(sourcePet, identity, { now }) }, identity)) : null,
     options.parallelPresentation ? identityPromise.then(identity => op('economy', getPetEconomyState, db, telegramId,
       { ...pet, ...serializePet(sourcePet, identity, { now }) }, now, reads('economy'), options.inventoryReady)) : null,
-  ]);
+  ]), ['identity', 'guidance_activity', 'guidance_run', 'missions', 'season_rewards', 'achievements', 'boss_progress', 'boss_attempt', 'runtime', 'special_actions', 'pending_boss_rewards', 'daily_chest', 'window_totals', 'boss_history', 'evolution', 'economy']);
   Object.assign(pet, serializePet(sourcePet, identity, { now }));
   const [evolution, economy] = options.parallelPresentation ? [earlyEvolution, earlyEconomy] : await settlePetProjectionBranches([
     op('evolution', getPetEvolutionGuidance, db, telegramId, pet, identity),
@@ -17809,7 +17811,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   nextBossWeek.setUTCHours(0, 0, 0, 0);
   assertPetProjectionPeriods(now, { guidance: { day_key: dayKey, week_key: weekKey, season: seasonState.season }, missions });
   await op('guidance_ownership', assertPetProjectionSource, db, telegramId, sourcePet, null, projectionScope,
-    { achievements, achievement_scope: achievementProvenance });
+    { achievements, achievement_scope: achievementProvenance }, trace ? { trace, operation: 'guidance_ownership' } : null);
   if (!options.economy) await assertPetEconomy(db, telegramId, economicSnapshot);
   return {
     pet,

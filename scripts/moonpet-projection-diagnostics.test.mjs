@@ -113,6 +113,16 @@ test('signed complete request has matching trace counts, correlation and no priv
     assert.equal(trace.calls.reduce((n,c)=>n+c.sql_statements,0),projection.sql_statements);
     assert.equal(trace.dropped_calls,0);assert.equal(trace.dropped_spans,0);
     for(const id of ['combat','identity','roster','journey','economy','final_ownership','final_economy','presentation_join'])assert.ok(trace.spans.some(s=>s.operation===id),id);
+    for(const id of ['final_ownership','guidance_ownership'])assert.ok(trace.calls.some(c=>c.operations[id]>0), 'native ownership read attributed to '+id);
+    assert.ok(trace.spans.some(s=>s.operation==='guidance_join'));
     assert.doesNotMatch(JSON.stringify(trace),new RegExp(f.owner+'|fixture-token|first_name|telegram_id|pet_id|SELECT |UPDATE '));
+    assert.ok((await f.measureHttp('profile')).report.projection_trace, 'profile mode also returns complete full state');
+    assert.equal((await f.measureHttp('core')).report.projection_trace,undefined, 'partial core is not sampled');
+    let switched=false;
+    f.db.beforeBatch=entries=>{if(!switched&&entries.some(s=>s.query.includes('SELECT q.rank_bucket'))){switched=true;f.active('fixture-space-2','pet-s2026-004');}};
+    const stale=await f.measureHttp('full',{status:503});assert.equal(switched,true);
+    assert.equal(stale.report.projection_trace.outcome,'failed', 'sampled ownership race fails closed');
+    f.db.beforeBatch=null;
+    assert.equal((await f.measureHttp()).state.pet.pet_id,'fixture-space-2');
   } finally {f.close();Math.random=oldRandom;if(uuidDescriptor)Object.defineProperty(crypto,'randomUUID',uuidDescriptor);else delete crypto.randomUUID;if(oldFlag===undefined)delete process.env.MOONPET_PERF_PROJECTION_DIAGNOSTICS;else process.env.MOONPET_PERF_PROJECTION_DIAGNOSTICS=oldFlag;}
 });

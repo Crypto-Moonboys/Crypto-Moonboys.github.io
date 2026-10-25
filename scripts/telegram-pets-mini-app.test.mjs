@@ -77,7 +77,7 @@ assert.match(
   /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key, \{ coalesceReads: true, concurrentReads: true \}\);[\s\S]*const identityPromise = op\('identity', getMoonpetIdentityWithLifecycle, identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*op\('guidance', buildPetGuidanceState, db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope\.db, economy, now, inventoryReady, parallelPresentation: true, projectionTrace: trace \}\)/,
   'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
-assert.match(miniAppStateSource, /await op\('final_ownership', assertPetProjectionSource, db, telegramId, petRaw, seasonSlots, identityScope, guidance\)/,
+assert.match(miniAppStateSource, /await op\('final_ownership', assertPetProjectionSource, db, telegramId, petRaw, seasonSlots, identityScope, guidance,[\s\S]*trace \? \{ trace, operation: 'final_ownership' \} : null\)/,
   'Mini App state must validate the selected pointer and projected roster before publishing');
 assert.equal(
   (miniAppStateSource.match(/op\('combat_eligibility', getPetMiniAppCombatEligibility, db, telegramId, lifecycle, petRaw\)/g) || []).length,

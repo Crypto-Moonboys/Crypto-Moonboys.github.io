@@ -24,7 +24,7 @@ export function createPetStateTimings({ mode, env, colo, clock = () => performan
     startProjection() {
       // Reuse uniformly random server UUID bits; sampling must not consume the
       // gameplay Math.random stream or introduce another authentication token.
-      if (selectedMode !== 'full' || !projectionSamplingEnabled(env, Date.now(),
+      if (!['full', 'profile'].includes(selectedMode) || !projectionSamplingEnabled(env, Date.now(),
         () => parseInt(requestId.slice(-8), 16) / 4294967296)) return null;
       return createProjectionDiagnostics({ requestId, colo, clock, emit });
     },
