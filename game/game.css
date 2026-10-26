@@ -158,7 +158,8 @@ canvas {
 }
 
 .hud-strip #hud-state {
-  flex: 1 1 auto;
+  /* Keep the central status strip at half the available HUD width. */
+  flex: 0 1 50%;
 }
 
 .touch-controls {
