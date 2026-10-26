@@ -20,7 +20,7 @@
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 5; // Replay v1 format, speed box, Graffbot fire and balloon enemy.
+  var COURSE_LAYOUT_VERSION = 6; // New landed-parachute-rat collision geometry; preserve v5 replay rules.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
@@ -1227,14 +1227,28 @@
           enemy.hurtUntil = time + 360;
         }
 
-        var enemyRect = getEnemyCombatRect(enemy);
+        // Landed parachute rats must touch the actual runner silhouette before
+        // dealing contact damage. The generic rectangles add 8px on each side.
+        var landedRat = !!enemy.spawnedByParachute;
+        var playerContactRect = landedRat ? {
+          x: player.x, y: player.y - 30, w: player.w, h: player.h + 30
+        } : getPlayerCombatRect();
+        var enemyRect = landedRat ? {
+          x: enemy.x, y: enemy.y + (enemy.bob || 0) - 12, w: enemy.w, h: 54
+        } : getEnemyCombatRect(enemy);
         var isRat = enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat';
+        var ratAttack = isRat ? getRatAttackRect(enemy) : null;
+        if (landedRat && ratAttack) {
+          // The attack starts 8px nearer the rat, removing the invisible reach.
+          if ((enemy.attackFacing || (enemy.vx < 0 ? -1 : 1)) < 0) ratAttack.x += 8;
+          ratAttack.w -= 8;
+        }
         var activeRatAttack = isRat && (enemy.attackUntil || 0) > time &&
-          rectsOverlap(getPlayerCombatRect(), getRatAttackRect(enemy));
+          rectsOverlap(playerContactRect, ratAttack);
         var fireRect = enemy.type === 'bot' ? getGraffbotFireRect(enemy, time) : null;
         var activeGraffbotFire = fireRect && rectsOverlap(getPlayerCombatRect(), fireRect);
         if (player.invuln <= 0 &&
-            (rectsOverlap(getPlayerCombatRect(), enemyRect) || activeRatAttack || activeGraffbotFire)) {
+            (rectsOverlap(playerContactRect, enemyRect) || activeRatAttack || activeGraffbotFire)) {
           damagePlayer(activeGraffbotFire ? 'graffbot-fire' : enemy.type, enemy.x);
         }
       }
@@ -1570,7 +1584,8 @@
               (ratAttacking ? 2.45 : 1.55) :
               (ratAttacking && enemy.type === 'rat' ? 1.9 : 1);
             var ratDrawWidth = Math.round(RAT_RENDER_WIDTH * ratScale);
-            var ratDrawHeight = Math.round(RAT_RENDER_HEIGHT * ratScale);
+            var ratDrawHeight = Math.round(RAT_RENDER_HEIGHT * ratScale) +
+              (enemy.spawnedByParachute && ratAttacking ? 7 : 0);
             var ratDrawX = x - Math.round((ratDrawWidth - enemy.w) / 2);
             // Brown sprite frames contain transparent pixels *below* their
             // feet: ~18 output pixels for walk, ~34 for the padded punch sheet.

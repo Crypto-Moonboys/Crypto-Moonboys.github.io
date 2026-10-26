@@ -150,7 +150,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && ![2,3,4,5].includes(replay.course_version))
+  if (hasCourseVersion && ![2,3,4,5,6].includes(replay.course_version))
     return { valid:false };
   const courseVersion = hasCourseVersion ? replay.course_version : 1;
   const level = levelData(courseVersion);
@@ -418,14 +418,25 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
             enemy.attackFacing=p.x+p.w/2<enemy.x+enemy.w/2?-1:1;
         }
       }
-      const body=courseVersion>=3?enemyCombatRect(enemy):
+      // Keep landed parachute-rat reach aligned with the browser collision.
+      const landedRat=courseVersion>=6 && !!enemy.spawnedByParachute;
+      const contactPlayer=landedRat?
+        {x:p.x,y:p.y-30,w:p.w,h:p.h+30}:playerCombatRect();
+      const body=landedRat?
+        {x:enemy.x,y:enemy.y+(enemy.bob||0)-12,w:enemy.w,h:54}:
+        courseVersion>=3?enemyCombatRect(enemy):
         {x:enemy.x,y:enemy.y+(enemy.bob||0),w:enemy.w,h:enemy.h};
       const isRat=['rat','turquoiseRat','brownRat'].includes(enemy.type);
+      const attack=isRat?ratAttackRect(enemy):null;
+      if(landedRat&&attack){
+        if((enemy.attackFacing||(enemy.vx<0?-1:1))<0) attack.x+=8;
+        attack.w-=8;
+      }
       const activeRatAttack=courseVersion>=3 && isRat &&
-        (enemy.attackUntil||0)>elapsed && overlap(playerCombatRect(),ratAttackRect(enemy));
+        (enemy.attackUntil||0)>elapsed && overlap(contactPlayer,attack);
       const fireRect=graffbotFireRect(enemy);
       const activeGraffbotFire=fireRect&&overlap(playerCombatRect(),fireRect);
-      if(p.invuln<=0 && (overlap(courseVersion>=3?playerCombatRect():p,body) ||
+      if(p.invuln<=0 && (overlap(courseVersion>=3?contactPlayer:p,body) ||
           activeRatAttack||activeGraffbotFire)){
         invulnerableDamage(enemy.x);
       }
