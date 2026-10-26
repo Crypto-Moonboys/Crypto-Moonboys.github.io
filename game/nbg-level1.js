@@ -48,7 +48,7 @@
   var GRAFFBOT_FIRE_INSET_X = 8; // Tuck the visual sheet underneath the bot.
   var GRAFFBOT_FIRE_DAMAGE_RANGE = 82;
   var SPEEDRUN_HUD_WIDTH = 104;
-  var SPEEDRUN_HUD_HEIGHT = 11;
+  var SPEEDRUN_HUD_HEIGHT = 21;
   var BALLOON_WALK_FRAMES = 14;
   var BALLOON_RELEASE_FRAMES = 16;
   var BALLOON_FRAME_MS = 90;
@@ -1814,18 +1814,31 @@
     }
 
     function drawSpeedrunHud(time) {
-      var speedrunText = 'RUN ' + formatRunTime(runElapsedMs) + '/3:00';
-      if (time < speedBoostUntil) {
-        speedrunText += ' B' + ((speedBoostUntil - time) / 1000).toFixed(1) + 's';
-      }
-      if (comboCount > 1 && time < comboExpiresAt) speedrunText += ' Cx' + comboCount;
+      // Readable at the game's native 480px resolution and when scaled fullscreen.
       var panelX = WIDTH - SPEEDRUN_HUD_WIDTH - 4;
+      var timerText = formatRunTime(runElapsedMs) + '/3:00';
+      var extra = [];
+      if (time < speedBoostUntil) extra.push('BOOST ' + ((speedBoostUntil - time) / 1000).toFixed(1) + 's');
+      if (comboCount > 1 && time < comboExpiresAt) extra.push('COMBO x' + comboCount);
       ctx.save();
-      ctx.fillStyle = 'rgba(9, 19, 38, 0.86)';
+      ctx.fillStyle = '#091326';
       ctx.fillRect(panelX, 3, SPEEDRUN_HUD_WIDTH, SPEEDRUN_HUD_HEIGHT);
-      ctx.font = 'bold 6px Courier New';
-      ctx.fillStyle = time < speedBoostUntil ? '#ffe45a' : '#ffffff';
-      ctx.fillText(speedrunText, panelX + 3, 10);
+      ctx.strokeStyle = '#29aeff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(panelX + 0.5, 3.5, SPEEDRUN_HUD_WIDTH - 1, SPEEDRUN_HUD_HEIGHT - 1);
+      ctx.fillStyle = '#145a8a';
+      ctx.fillRect(panelX + 3, 6, 23, 10);
+      ctx.font = 'bold 8px Courier New';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('TIME', panelX + 4, 11);
+      ctx.font = 'bold 9px Courier New';
+      ctx.fillText(timerText, panelX + 29, 11);
+      if (extra.length) {
+        ctx.font = 'bold 6px Courier New';
+        ctx.fillStyle = '#ffe45a';
+        ctx.fillText(extra.join('  '), panelX + 4, 20, SPEEDRUN_HUD_WIDTH - 8);
+      }
       ctx.restore();
     }
 
