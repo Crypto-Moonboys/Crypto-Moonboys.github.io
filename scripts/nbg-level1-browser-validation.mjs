@@ -1246,7 +1246,10 @@ assert.ok(
   runtimeSource.includes('var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -17') &&
   runtimeSource.includes('GRAFFBOT_FIRE_RENDER_SIZE / 2 + GRAFFBOT_FIRE_MOUTH_OFFSET_Y') &&
   runtimeSource.includes('var SPEEDRUN_HUD_WIDTH = 104') &&
-  runtimeSource.includes("var speedrunText = 'RUN ' + formatRunTime(runElapsedMs) + '/3:00'") &&
+  runtimeSource.includes("var timerText = formatRunTime(runElapsedMs) + '/3:00'") &&
+  runtimeSource.includes("ctx.fillText('TIME', panelX + 4, 11)") &&
+  runtimeSource.includes("var SPEEDRUN_HUD_HEIGHT = 21") &&
+  gameCssSource.includes('flex: 0 1 50%') &&
   !runtimeSource.includes('ctx.fillRect(WIDTH - 165, 44, 160, 20)') &&
   gameCssSource.includes('right: 23%') &&
   gameCssSource.includes('flex-wrap: nowrap') &&
