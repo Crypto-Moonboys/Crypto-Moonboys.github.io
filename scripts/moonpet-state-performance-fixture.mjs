@@ -75,7 +75,7 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
     if (reset) { Object.keys(metrics).forEach(key => { metrics[key] = 0; }); f.db.statementCount = 0; }
     const events = [], originalInfo = console.info;
     if (captureTimings) console.info = value => {
-      if (typeof value === 'string' && value.includes('moonpet_state_timing')) events.push(JSON.parse(value));
+      if (typeof value === 'string' && (value.includes('moonpet_state_timing') || value.includes('moonpet_projection_trace'))) events.push(JSON.parse(value));
     };
     const token = '123456:performance-fixture-secret';
     const fields = new URLSearchParams({ auth_date: String(Math.floor(Date.now() / 1000)),
@@ -87,13 +87,18 @@ export async function performanceFixture({ root = process.cwd(), pets = 1, delay
       const response = await worker.fetch(new Request('https://fixture.test/telegram-pets/app/state', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode, init_data: fields.toString() }),
-      }), { DB: f.db, TELEGRAM_BOT_TOKEN: token });
+      }), { DB: f.db, TELEGRAM_BOT_TOKEN: token,
+        ...(process.env.MOONPET_PERF_PROJECTION_DIAGNOSTICS === '1' ? {
+          MOONPET_PROJECTION_SAMPLE_RATE: '0.1',
+          MOONPET_PROJECTION_SAMPLE_UNTIL: new Date(Date.now() + 1800000).toISOString(),
+        } : {}) });
       if (response.status !== status) throw Error('performance_fixture_http_' + response.status);
       const body = await response.json();
       const state = status === 200 ? body.state : body;
       return { state, events, report: { mode, duration_ms: Math.round(performance.now() - started),
         statements: f.db.statementCount, ...metrics,
-        stages: events.map(({ stage, duration_ms, sql_statements, d1_calls }) => ({ stage, duration_ms, ...(sql_statements === undefined ? {} : { sql_statements, d1_calls }) })) } };
+        stages: events.filter(e => e.event === 'moonpet_state_timing').map(({ stage, duration_ms, sql_statements, d1_calls }) => ({ stage, duration_ms, ...(sql_statements === undefined ? {} : { sql_statements, d1_calls }) })),
+        projection_trace: events.find(e => e.event === 'moonpet_projection_trace') } };
     } finally { if (captureTimings) console.info = originalInfo; }
   }
   return { ...f, hooks, worker, measure, measureHttp, setDelayMs(value) { delayMs = Math.max(0, Number(value) || 0); }, async drain() {

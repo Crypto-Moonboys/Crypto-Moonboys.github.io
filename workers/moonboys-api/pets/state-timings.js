@@ -1,3 +1,4 @@
+import { createProjectionDiagnostics, projectionSamplingEnabled } from './projection-diagnostics.js';
 // Request-local, allowlisted diagnostics. Never accept account data or errors as
 // event fields; even mode and stage names must come from these fixed lists.
 const STAGES = new Set(['request_parse', 'rate_limit', 'authentication', 'user_bootstrap',
@@ -7,7 +8,7 @@ const STAGES = new Set(['request_parse', 'rate_limit', 'authentication', 'user_b
 const MODES = new Set(['core', 'live', 'missions', 'profile']);
 export const NO_PET_STATE_TIMINGS = Object.freeze({ measure: async (_stage, run) => run() });
 
-export function createPetStateTimings({ mode, clock = () => performance.now(),
+export function createPetStateTimings({ mode, env, colo, clock = () => performance.now(),
   emit = event => console.info(JSON.stringify(event)) } = {}) {
   const started = clock();
   const requestId = crypto.randomUUID();
@@ -20,6 +21,13 @@ export function createPetStateTimings({ mode, clock = () => performance.now(),
     } catch (_) {}
   }
   return {
+    startProjection() {
+      // Reuse uniformly random server UUID bits; sampling must not consume the
+      // gameplay Math.random stream or introduce another authentication token.
+      if (!['full', 'profile'].includes(selectedMode) || !projectionSamplingEnabled(env, Date.now(),
+        () => parseInt(requestId.slice(-8), 16) / 4294967296)) return null;
+      return createProjectionDiagnostics({ requestId, colo, clock, emit });
+    },
     setMode(value) { selectedMode = MODES.has(value) ? value : 'full'; },
     async measure(stage, run, counts) {
       if (!STAGES.has(stage) || stage === 'total') throw new Error('invalid_state_timing_stage');

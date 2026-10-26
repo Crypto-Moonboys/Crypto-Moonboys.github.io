@@ -64,7 +64,7 @@ const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', impo
 const miniAppStateSource = worker.slice(worker.indexOf('async function buildPetMiniAppState'), worker.indexOf('async function processPetMiniAppAction'));
 assert.match(
   miniAppStateSource,
-  /getOrCreatePetRuntimeState\(db, telegramId, getPetDayKey\(now\), activePetRewardAuthority\(petRaw\)\)/,
+  /op\('runtime', getOrCreatePetRuntimeState, db, telegramId, getPetDayKey\(now\), activePetRewardAuthority\(petRaw\)\)/,
   'Mini App progress must load specialist tracks and aptitudes for the selected active pet',
 );
 assert.match(
@@ -74,29 +74,29 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key, \{ coalesceReads: true, concurrentReads: true \}\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope\.db, economy, now, inventoryReady, parallelPresentation: true \}\)/,
+  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key, \{ coalesceReads: true, concurrentReads: true \}\);[\s\S]*const identityPromise = op\('identity', getMoonpetIdentityWithLifecycle, identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*op\('guidance', buildPetGuidanceState, db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope\.db, economy, now, inventoryReady, parallelPresentation: true, projectionTrace: trace \}\)/,
   'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
-assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope, guidance\)/,
+assert.match(miniAppStateSource, /await op\('final_ownership', assertPetProjectionSource, db, telegramId, petRaw, seasonSlots, identityScope, guidance,[\s\S]*trace \? \{ trace, operation: 'final_ownership' \} : null\)/,
   'Mini App state must validate the selected pointer and projected roster before publishing');
 assert.equal(
-  (miniAppStateSource.match(/getPetMiniAppCombatEligibility\(db, telegramId, lifecycle, petRaw\)/g) || []).length,
+  (miniAppStateSource.match(/op\('combat_eligibility', getPetMiniAppCombatEligibility, db, telegramId, lifecycle, petRaw\)/g) || []).length,
   1,
   'Mini App state must not issue duplicate combat-eligibility reads',
 );
 assert.match(
   miniAppStateSource,
-  /const seasonSlotsPromise = buildPetSeasonSlotSummary[\s\S]*const runContextPromise = guidancePromise\.then\(async guidance => \{[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\([\s\S]*seasonSlotsPromise\.then\(slots => buildPetMiniAppJourneySummary[\s\S]*liveSystemsPromise,[\s\S]*getStyleLoadout[\s\S]*getContractBoard[\s\S]*runContextPromise,[\s\S]*guidanceNoticesPromise,/,
+  /const seasonSlotsPromise = op\('roster', buildPetSeasonSlotSummary[\s\S]*const runContextPromise = projectionSpan\(trace, 'daily_run', \(\) => guidancePromise\.then\(async guidance => \{[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\([\s\S]*seasonSlotsPromise\.then\(slots => op\('journey', buildPetMiniAppJourneySummary[\s\S]*liveSystemsPromise,[\s\S]*getStyleLoadout[\s\S]*getContractBoard[\s\S]*runContextPromise,[\s\S]*guidanceNoticesPromise,/,
   'independent presentation and reservation-dependent work must share the complete awaited projection',
 );
 assert.match(
   miniAppStateSource,
-  /const runContextPromise = guidancePromise\.then\(async guidance => \{[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\([\s\S]*const dailyRunSummary = await getDailyMoonRunSummary\([\s\S]*return \{ runPet, dailyReservation, dailyRunSummary \};[\s\S]*const guidanceNoticesPromise = guidancePromise\.then[\s\S]*const \{ runPet, dailyReservation, dailyRunSummary \} = runContext;/,
+  /const runContextPromise = projectionSpan\(trace, 'daily_run', \(\) => guidancePromise\.then\(async guidance => \{[\s\S]*const \[runPet, dailyReservation\] = await Promise\.all\([\s\S]*const dailyRunSummary = await getDailyMoonRunSummary\([\s\S]*return \{ runPet, dailyReservation, dailyRunSummary \};[\s\S]*const guidanceNoticesPromise = projectionSpan\(trace, 'notices', \(\) => guidancePromise\.then[\s\S]*const \{ runPet, dailyReservation, dailyRunSummary \} = runContext;/,
   'Daily summary must start after reservation repair while overlapping only unrelated guidance-notice persistence',
 );
 assert.match(
   miniAppStateSource,
-  /const dailyModifiersPromise = dailyReservation \? readDailyModifiers\(db, activeRun\) : Promise\.resolve\(\[\]\);[\s\S]*const dailyModifiers = await dailyModifiersPromise;/,
+  /const dailyModifiersPromise = dailyReservation \? op\('daily_modifiers', readDailyModifiers, db, activeRun\) : Promise\.resolve\(\[\]\);[\s\S]*const dailyModifiers = await dailyModifiersPromise;/,
   'Daily Run modifier loading must overlap room hydration instead of adding another serial read',
 );
 const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
@@ -1472,7 +1472,7 @@ assert.match(worker, /WHERE match_id=\? AND chat_id LIKE 'mini:kaiju:%' AND mode
 const kaijuCancelSource = worker.slice(worker.indexOf('async function cancelPetKaijuMiniAppMatch'), worker.indexOf('async function awardPetKaijuPlayerResult'));
 assert.doesNotMatch(kaijuCancelSource, /getPetMiniAppCombatEligibility|combat_unlocked|kaiju_match_cancel_unavailable/,
   'Kaiju stale match cleanup authority must depend on owned solo match state, not combat eligibility');
-assert.match(miniAppStateSource, /seasonSlotsPromise\.then\(slots => buildPetMiniAppJourneySummary[\s\S]*const hydratedKaiju = await ensurePetKaijuMatchCategory/, 'journey projection must start as soon as the roster is ready');
+assert.match(miniAppStateSource, /seasonSlotsPromise\.then\(slots => op\('journey', buildPetMiniAppJourneySummary[\s\S]*const hydratedKaiju = await op\('kaiju_category', ensurePetKaijuMatchCategory/, 'journey projection must start as soon as the roster is ready');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);

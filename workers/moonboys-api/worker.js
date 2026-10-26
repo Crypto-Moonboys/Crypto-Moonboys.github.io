@@ -1,5 +1,6 @@
 import { readPetCombatProjection } from './pets/combat-projection.js';
 import { settlePetProjectionBranches } from './pets/projection-branches.js';
+import { projectionOperation, projectionSpan } from './pets/projection-diagnostics.js';
 import { createPetStateTimings, NO_PET_STATE_TIMINGS, measurePetDatabaseStage } from './pets/state-timings.js';
 import { capturePetEconomy, assertPetEconomy, assertPetEconomySource } from './pets/economic-projection.js';
 import { submitMoonpetRadioRequest } from './pets/radio-requests.js';
@@ -10412,7 +10413,7 @@ function normalizePetProjectionError(error) {
   return error;
 }
 
-async function assertPetProjectionSource(db, telegramId, pet, slots = null, scope = null, achievementProjection = null) {
+async function assertPetProjectionSource(db, telegramId, pet, slots = null, scope = null, achievementProjection = null, diagnostics = null) {
   if (scope?.changed) throw new Error('pet_state_source_changed');
   if (achievementProjection) {
     const provenance = achievementProjection.achievement_scope;
@@ -10422,7 +10423,8 @@ async function assertPetProjectionSource(db, telegramId, pet, slots = null, scop
       throw new Error('pet_state_source_changed');
     }
   }
-  const selected = await findActivePetSlot(scope?.db || db, telegramId)
+  const sourceReads = diagnostics ? diagnostics.trace.database(scope?.db || db, diagnostics.operation) : scope?.db || db;
+  const selected = await findActivePetSlot(sourceReads, telegramId)
     .catch(error => { throw normalizePetProjectionError(error); });
   const projected = slots?.slots?.find(slot => slot.active);
   if (!selected || selected.pet_id !== pet.pet_id || selected.season_key !== pet.season_key
@@ -10695,7 +10697,15 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   const timings = options.timings || NO_PET_STATE_TIMINGS;
   await timings.measure('d1_bootstrap', () => preparePetMiniAppState(db, telegramId, now, { stateRead: true }));
   await timings.measure('state_recovery', () => recoverPetMiniAppState(db, telegramId, now, timings));
-  return measurePetDatabaseStage(timings, 'pet_state_projection', db, measuredDb => projectPetMiniAppState(measuredDb, telegramId, botToken, options, now, timings))
+  return measurePetDatabaseStage(timings, 'pet_state_projection', db, async measuredDb => {
+    const trace = timings.startProjection?.();
+    let outcome = 'failed';
+    try {
+      const state = await projectPetMiniAppState(trace ? trace.rootDatabase(measuredDb) : measuredDb,
+        telegramId, botToken, { ...options, projectionTrace: trace }, now, timings);
+      outcome = 'completed'; return state;
+    } finally { trace?.finish(outcome); }
+  })
     .catch(error => { throw normalizePetProjectionError(error); });
 }
 
@@ -10740,12 +10750,15 @@ async function recoverPetMiniAppState(db, telegramId, now, timings) {
 }
 
 async function projectPetMiniAppState(db, telegramId, botToken, options, now, timings) {
+  const trace = options.projectionTrace;
+  const reads = (id, database = db) => trace ? trace.database(database, id) : database;
+  const op = (id, fn, database, ...args) => projectionOperation(trace, id, fn, database, ...args);
   const [economy, petRaw] = await settlePetProjectionBranches([
-    capturePetEconomy(db, telegramId),
-    getPetProfileForState(db, telegramId, true, now),
+    op('initial_economy', capturePetEconomy, db, telegramId),
+    op('profile', getPetProfileForState, db, telegramId, true, now),
   ]);
   if (!petRaw) {
-    const entryRequirement = await getPetEntryRequirement(db, telegramId);
+    const entryRequirement = await op('entry', getPetEntryRequirement, db, telegramId);
     return {
       adopted: false,
       entry_requirement: entryRequirement,
@@ -10764,14 +10777,14 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now, economy, timings);
 
   const pet = serializePet(petRaw);
-  const inventoryReady = reconcileLegacyPetInventory(db, telegramId, { skipEmpty: true });
+  const inventoryReady = op('inventory_bridge', reconcileLegacyPetInventory, db, telegramId, { skipEmpty: true });
   inventoryReady.catch(() => {});
   const identityScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key, { coalesceReads: true, concurrentReads: true });
-  const identityPromise = getMoonpetIdentityWithLifecycle(identityScope.db, telegramId, { required: true })
+  const identityPromise = op('identity', getMoonpetIdentityWithLifecycle, identityScope.db, telegramId, { required: true })
     .catch(error => { throw normalizePetProjectionError(error); });
   const lifecyclePromise = identityPromise.then((identity) => identity?.lifecycle || null);
-  const runtimePromise = getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw));
-  const combatEligibilityPromise = lifecyclePromise.then((lifecycle) => getPetMiniAppCombatEligibility(db, telegramId, lifecycle, petRaw));
+  const runtimePromise = op('runtime', getOrCreatePetRuntimeState, db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw));
+  const combatEligibilityPromise = lifecyclePromise.then((lifecycle) => op('combat_eligibility', getPetMiniAppCombatEligibility, db, telegramId, lifecycle, petRaw));
   // Guidance may fail on the shared identity authority before it reaches its
   // combat await. Observe the derived rejection immediately so fail-closed
   // propagation never creates an unhandled sibling promise.
@@ -10783,88 +10796,89 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   // Keep its own identical atomic ownership guard without putting unrelated
   // identity reads behind this transaction's mutation barrier.
   const combatScope = createDisplayedPetScope(db, telegramId, petRaw.pet_id, petRaw.season_key);
-  const combatPromise = readPetCombatProjection(combatScope.db, telegramId, {
+  const combatPromise = op('combat', readPetCombatProjection, combatScope.db, telegramId, {
     arenaLobby: PET_MINI_APP_ARENA_LOBBY, kaijuLobby: PET_MINI_APP_KAIJU_LOBBY,
     arenaTtl: PET_ARENA_QUEUE_TTL_MINUTES, kaijuTtl: PET_KAIJU_MATCH_TTL_MINUTES,
   }).then(async snapshot => ({ ...snapshot, arena: await withPetArenaRoundLocks(db, snapshot.arena),
     kaiju: serializePetKaijuMatch(snapshot.kaiju) }));
   combatPromise.catch(() => {});
-  const seasonSlotsPromise = buildPetSeasonSlotSummary(db, telegramId, now);
-  const gearPromise = identityScope.db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
+  const seasonSlotsPromise = op('roster', buildPetSeasonSlotSummary, db, telegramId, now);
+  const gearPromise = projectionSpan(trace, 'gear', () => reads('gear', identityScope.db).prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
       FROM telegram_pet_equipment_progression WHERE telegram_id = ?
-      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().then(requirePetReadResult);
-  const materialsPromise = identityScope.db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
-      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().then(requirePetReadResult);
+      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().then(requirePetReadResult));
+  const materialsPromise = projectionSpan(trace, 'materials', () => reads('materials', identityScope.db).prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
+      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().then(requirePetReadResult));
   const liveSystemsPromise = Promise.all([identityPromise, runtimePromise, gearPromise, materialsPromise])
-    .then(([identity, runtime, gear, materials]) => buildPetLiveSystemsState(db, telegramId,
+    .then(([identity, runtime, gear, materials]) => op('live_systems', buildPetLiveSystemsState, db, telegramId,
       serializePet(petRaw, identity, { include_art_identity: true, include_callsign: true, now }),
-      runtime, gear.results || [], materials.results || [], now, { projectionReads: identityScope.db }));
-  const guidancePromise = buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now, inventoryReady, parallelPresentation: true });
-  const runContextPromise = guidancePromise.then(async guidance => {
+      runtime, gear.results || [], materials.results || [], now, { projectionReads: reads('live_systems', identityScope.db) }));
+  const guidancePromise = op('guidance', buildPetGuidanceState, db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, projectionReads: identityScope.db, economy, now, inventoryReady, parallelPresentation: true, projectionTrace: trace });
+  const runContextPromise = projectionSpan(trace, 'daily_run', () => guidancePromise.then(async guidance => {
+    const runDb = reads('daily_run');
     const activeRun = guidance?.active_run || null;
     const [runPet, dailyReservation] = await Promise.all([
-      !activeRun || activeRun.pet_id === petRaw.pet_id ? petRaw : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
-      activeRun ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id }) : null,
+      !activeRun || activeRun.pet_id === petRaw.pet_id ? petRaw : getPetInstanceWithAtomicDecay(runDb, activeRun.pet_id),
+      activeRun ? getDailyMoonRunReservation(runDb, { telegram_id: telegramId, run_id: activeRun.run_id }) : null,
     ]);
     // Reservation repair must finish before Daily summary can repair its own
     // state. Other presentation branches do not depend on either operation.
     const lifecycle = await lifecyclePromise;
-    const dailyRunSummary = await getDailyMoonRunSummary(db, {
+    const dailyRunSummary = await getDailyMoonRunSummary(runDb, {
       telegram_id: telegramId, now, active_run: activeRun,
       hatched: Boolean(lifecycle && lifecycle.phase !== 'egg'),
     });
     return { runPet, dailyReservation, dailyRunSummary };
-  });
-  const guidanceNoticesPromise = guidancePromise.then(guidance => guidance
-    ? persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance), petRaw).catch(() => []) : []);
-  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales, journeySummary, liveSystems, styleLoadout, petHouse, petFurniture, petGarden, contracts, runContext, guidanceNotices] = await settlePetProjectionBranches([
+  }), ['guidance', 'identity']);
+  const guidanceNoticesPromise = projectionSpan(trace, 'notices', () => guidancePromise.then(guidance => guidance
+    ? persistPetGuidanceNotices(reads('notices'), telegramId, buildPetGuidanceCandidates(guidance), petRaw).catch(() => []) : []), ['guidance']);
+  const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions, pendingStreetEvents, seasonFinales, journeySummary, liveSystems, styleLoadout, petHouse, petFurniture, petGarden, contracts, runContext, guidanceNotices] = await projectionSpan(trace, 'presentation_join', () => settlePetProjectionBranches([
     lifecyclePromise,
     guidancePromise,
-    getPetInventory(db, telegramId, inventoryReady),
+    op('inventory', getPetInventory, db, telegramId, inventoryReady),
     runtimePromise,
     gearPromise,
     materialsPromise,
-    db.prepare(`SELECT relic_id, unlocked_at AS acquired_at FROM telegram_pet_relics
+    projectionSpan(trace, 'relics', () => reads('relics').prepare(`SELECT relic_id, unlocked_at AS acquired_at FROM telegram_pet_relics
       WHERE telegram_id = ? ORDER BY unlocked_at DESC, relic_id`).bind(telegramId).all().then(requirePetReadResult).catch((error) => {
         logApiFailure('pet_relic_vault_unavailable', { message: error?.message || String(error) });
         return { results: [], available: false };
-      }),
+      })),
     combatPromise.then(s => s.arena),
     combatPromise.then(s => s.arenaQueue),
     combatPromise.then(s => s.recentArena),
     combatPromise.then(s => s.kaiju),
     combatPromise.then(s => s.kaijuQueue),
     combatPromise.then(s => s.recentKaiju),
-    readPetLeaderboard(db, { period: 'seasonal', limit: 10, now }).catch((error) => {
+    op('leaderboard', readPetLeaderboard, db, { period: 'seasonal', limit: 10, now }).catch((error) => {
       logApiFailure('pet_mini_app_initial_leaderboard_failed', {
         telegramId: String(telegramId),
         message: error?.message || String(error),
       });
       throw error;
     }),
-    getPetNotificationPreference(db, telegramId),
+    op('notifications', getPetNotificationPreference, db, telegramId),
     seasonSlotsPromise,
-    identityScope.db.prepare(`SELECT event_type, created_at FROM (
+    projectionSpan(trace, 'recent_actions', () => reads('recent_actions', identityScope.db).prepare(`SELECT event_type, created_at FROM (
       SELECT event_type, created_at,
         ROW_NUMBER() OVER (PARTITION BY event_type ORDER BY julianday(created_at) DESC, created_at DESC) AS event_rank
       FROM telegram_pet_events
       WHERE telegram_id=? AND status='accepted'
         AND (event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') OR ${PET_MEAL_USE_EVENT_SQL})
-    ) WHERE event_rank=1`).bind(telegramId).all().then(requirePetReadResult),
-    readPendingStreetEvents(db, telegramId),
-    getSeasonFinales(db, telegramId, petRaw.pet_id, now),
-    seasonSlotsPromise.then(slots => buildPetMiniAppJourneySummary(db, telegramId, slots, now)),
+    ) WHERE event_rank=1`).bind(telegramId).all().then(requirePetReadResult)),
+    op('street_events', readPendingStreetEvents, db, telegramId),
+    op('finales', getSeasonFinales, db, telegramId, petRaw.pet_id, now),
+    seasonSlotsPromise.then(slots => op('journey', buildPetMiniAppJourneySummary, db, telegramId, slots, now)),
     liveSystemsPromise,
-    getStyleLoadout(db, telegramId, petRaw.pet_id),
-    readPetHouseLayout(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readFurnitureWithRooms(identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    readPetGardenState(identityScope.singleReads, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
-    getContractBoard(db, telegramId, petRaw, now),
+    op('style', getStyleLoadout, db, telegramId, petRaw.pet_id),
+    op('house', readPetHouseLayout, identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    op('furniture', readFurnitureWithRooms, identityScope.singleReads, telegramId, petRaw).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    op('garden', readPetGardenState, identityScope.singleReads, telegramId, petRaw, now).catch(() => ({ available: false, pet_id: petRaw.pet_id })),
+    op('contracts', getContractBoard, db, telegramId, petRaw, now),
     runContextPromise,
     guidanceNoticesPromise,
-  ]);
+  ]), ['identity', 'guidance', 'inventory', 'runtime', 'gear', 'materials', 'relics', 'recent_actions', 'combat', 'leaderboard', 'notifications', 'roster', 'street_events', 'finales', 'journey', 'live_systems', 'style', 'house', 'furniture', 'garden', 'contracts', 'daily_run', 'notices']);
   const leaderboardRows = leaderboard.rows;
-  const hydratedKaiju = await ensurePetKaijuMatchCategory(db, kaiju);
+  const hydratedKaiju = await op('kaiju_category', ensurePetKaijuMatchCategory, db, kaiju);
   const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key && entry.status === 'won')
     || seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
   if (guidance && finaleAchievement) guidance.achievements.push({ pet_id: petRaw.pet_id, season_key: petRaw.season_key, achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
@@ -10930,7 +10944,7 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
     action: 'contract', destination: 'missions',
   };
   const dailyEndingPending = Boolean(dailyReservation && Number(dailyReservation.current_room) >= Number(dailyReservation.max_room));
-  const dailyModifiersPromise = dailyReservation ? readDailyModifiers(db, activeRun) : Promise.resolve([]);
+  const dailyModifiersPromise = dailyReservation ? op('daily_modifiers', readDailyModifiers, db, activeRun) : Promise.resolve([]);
   let dailyRoom = null;
   if (dailyReservation) {
     const roomNumber = dailyEndingPending ? Number(dailyReservation.max_room) : Math.max(1, Number(dailyReservation.current_room || 0) + 1);
@@ -10976,8 +10990,9 @@ async function projectPetMiniAppState(db, telegramId, botToken, options, now, ti
   const specialActionCooldowns = getPetSpecialActionCooldownEntriesFromState(guidance?.special_actions);
   assertPetProjectionPeriods(now, { guidance, slots: seasonSlots, journey: journeySummary, finales: seasonFinales, leaderboard });
   await timings.measure('ownership_verification', async () => {
-    await assertPetProjectionSource(db, telegramId, petRaw, seasonSlots, identityScope, guidance);
-    await assertPetEconomy(db, telegramId, economy);
+    await op('final_ownership', assertPetProjectionSource, db, telegramId, petRaw, seasonSlots, identityScope, guidance,
+      trace ? { trace, operation: 'final_ownership' } : null);
+    await op('final_economy', assertPetEconomy, db, telegramId, economy);
   });
   return {
     adopted: true,
@@ -12202,7 +12217,7 @@ export default {
     // Auth is accepted only in the POST body. Telegram Mini App initData is
     // verified against the bot token on every request and never echoed back.
     if (path === '/telegram-pets/app/state' && request.method === 'POST') {
-      const timings = createPetStateTimings();
+      const timings = createPetStateTimings({ env, colo: request.cf?.colo });
       let outcome = 'failed';
       try {
         let body;
@@ -17720,6 +17735,8 @@ async function getPendingPetWeeklyBossRewards(db, telegramId) {
 }
 
 async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}) {
+  const trace = options.projectionTrace;
+  const op = (id, fn, database, ...args) => projectionOperation(trace, id, fn, database, ...args);
   const now = options.now || new Date();
   const economicSnapshot = options.economy ?? await capturePetEconomy(db, telegramId);
   let sourcePet = petRaw || await getPetProfile(db, telegramId, true, now);
@@ -17731,6 +17748,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   // Full-state presentation SELECTs share its guarded read queue. Writes and
   // final source/economy assertions keep the original database and barriers.
   const projectionReads = options.projectionReads || db;
+  const reads = id => trace ? trace.database(projectionReads, id) : projectionReads;
   const achievementProvenance = { pet_id: sourcePet.pet_id, season_key: sourcePet.season_key };
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
@@ -17741,41 +17759,41 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   const runtimePromise = Object.hasOwn(options, 'runtime')
     ? Promise.resolve(options.runtime)
     : getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet));
-  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals, weeklyRecoveryHistory, earlyEvolution, earlyEconomy] = await settlePetProjectionBranches([
+  const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals, weeklyRecoveryHistory, earlyEvolution, earlyEconomy] = await projectionSpan(trace, 'guidance_join', () => settlePetProjectionBranches([
     identityPromise,
-    getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)),
-    getActivePetRun(db, telegramId),
-    buildPetMissions(db, telegramId, sourcePet, now, projectionReads),
-    getPetSeasonRewardState(db, telegramId, { identity: identityPromise, now, projectionReads }),
-    syncPetAchievementsForPet(projectionScope.db, telegramId, sourcePet.pet_id, sourcePet.season_key, false, true)
+    op('guidance_activity', getActivePetActivitySession, db, telegramId, now).then((active) => active || op('guidance_activity', getRecoverablePetActivitySession, db, telegramId)),
+    op('guidance_run', getActivePetRun, db, telegramId),
+    op('missions', buildPetMissions, db, telegramId, sourcePet, now, reads('missions')),
+    op('season_rewards', getPetSeasonRewardState, db, telegramId, { identity: identityPromise, now, projectionReads: reads('season_rewards') }),
+    op('achievements', syncPetAchievementsForPet, projectionScope.db, telegramId, sourcePet.pet_id, sourcePet.season_key, false, true)
       .catch(error => { throw normalizePetProjectionError(error); }),
-    projectionReads.prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
-      .bind(telegramId, weekKey).first().then(requirePetFirstReadResult),
-    projectionReads.prepare(`SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
-      .bind(telegramId, weekKey, dayKey).first().then(requirePetFirstReadResult),
+    projectionSpan(trace, 'boss_progress', () => reads('boss_progress').prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
+      .bind(telegramId, weekKey).first().then(requirePetFirstReadResult)),
+    projectionSpan(trace, 'boss_attempt', () => reads('boss_attempt').prepare(`SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
+      .bind(telegramId, weekKey, dayKey).first().then(requirePetFirstReadResult)),
     runtimePromise,
-    getPetSpecialActionGuidanceState(db, telegramId, now),
-    getPendingPetWeeklyBossRewards(db, telegramId),
-    readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
-    getPetWindowTotals(db, telegramId, dayKey, weekKey),
-    projectionReads.prepare(`SELECT pet_id,season_key,period_key AS week_key,action_key AS source_event_key,
+    op('special_actions', getPetSpecialActionGuidanceState, db, telegramId, now),
+    op('pending_boss_rewards', getPendingPetWeeklyBossRewards, db, telegramId),
+    op('daily_chest', readAcceptedDailyChestPetEventForDay, db, telegramId, dayKey),
+    op('window_totals', getPetWindowTotals, db, telegramId, dayKey, weekKey),
+    projectionSpan(trace, 'boss_history', () => reads('boss_history').prepare(`SELECT pet_id,season_key,period_key AS week_key,action_key AS source_event_key,
         json_extract(payload_json,'$.equipment_evidence') AS equipment_evidence
       FROM telegram_pet_system_events WHERE telegram_id=? AND pet_id=? AND season_key=?
         AND system_key='weekly_boss_finish' AND status='completed' AND json_valid(payload_json)
         AND json_extract(payload_json,'$.audit_reason')='legacy_equipment_unavailable'
       ORDER BY created_at DESC,id DESC LIMIT 10`)
-      .bind(telegramId, sourcePet.pet_id, sourcePet.season_key).all().then(requirePetReadResult),
+      .bind(telegramId, sourcePet.pet_id, sourcePet.season_key).all().then(requirePetReadResult)),
     // These projections need identity, not completed missions/achievement sync.
     // Retain the same inventory barrier and guarded reads on their own paths.
-    options.parallelPresentation ? identityPromise.then(identity => getPetEvolutionGuidance(db, telegramId,
+    options.parallelPresentation ? identityPromise.then(identity => op('evolution', getPetEvolutionGuidance, db, telegramId,
       { ...pet, ...serializePet(sourcePet, identity, { now }) }, identity)) : null,
-    options.parallelPresentation ? identityPromise.then(identity => getPetEconomyState(db, telegramId,
-      { ...pet, ...serializePet(sourcePet, identity, { now }) }, now, projectionReads, options.inventoryReady)) : null,
-  ]);
+    options.parallelPresentation ? identityPromise.then(identity => op('economy', getPetEconomyState, db, telegramId,
+      { ...pet, ...serializePet(sourcePet, identity, { now }) }, now, reads('economy'), options.inventoryReady)) : null,
+  ]), ['identity', 'guidance_activity', 'guidance_run', 'missions', 'season_rewards', 'achievements', 'boss_progress', 'boss_attempt', 'runtime', 'special_actions', 'pending_boss_rewards', 'daily_chest', 'window_totals', 'boss_history', 'evolution', 'economy']);
   Object.assign(pet, serializePet(sourcePet, identity, { now }));
   const [evolution, economy] = options.parallelPresentation ? [earlyEvolution, earlyEconomy] : await settlePetProjectionBranches([
-    getPetEvolutionGuidance(db, telegramId, pet, identity),
-    getPetEconomyState(db, telegramId, pet, now, projectionReads, options.inventoryReady),
+    op('evolution', getPetEvolutionGuidance, db, telegramId, pet, identity),
+    op('economy', getPetEconomyState, db, telegramId, pet, now, reads('economy'), options.inventoryReady),
   ]);
   const combatEligibility = Object.hasOwn(options, 'combatEligibility')
     ? await options.combatEligibility
@@ -17784,7 +17802,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const boss = getPetWeeklyBoss(weekKey);
   const weeklyBossDefeated = Boolean(weeklyProgress?.defeated_at);
-  const participation = weeklyBossDefeated ? await readPetWeeklyBossParticipation(db, telegramId, sourcePet, now) : null;
+  const participation = weeklyBossDefeated ? await op('boss_participation', readPetWeeklyBossParticipation, db, telegramId, sourcePet, now) : null;
   const bossEligible = level >= 5 && Boolean(identity?.lifecycle && identity.lifecycle.phase !== 'egg') && Number(pet.energy || 0) >= 12;
   const participationAvailable = weeklyBossDefeated && bossEligible && !participation.attempt;
   const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated ? normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now) : null;
@@ -17792,8 +17810,8 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
   nextBossWeek.setUTCDate(nextBossWeek.getUTCDate() + 8 - (nextBossWeek.getUTCDay() || 7));
   nextBossWeek.setUTCHours(0, 0, 0, 0);
   assertPetProjectionPeriods(now, { guidance: { day_key: dayKey, week_key: weekKey, season: seasonState.season }, missions });
-  await assertPetProjectionSource(db, telegramId, sourcePet, null, projectionScope,
-    { achievements, achievement_scope: achievementProvenance });
+  await op('guidance_ownership', assertPetProjectionSource, db, telegramId, sourcePet, null, projectionScope,
+    { achievements, achievement_scope: achievementProvenance }, trace ? { trace, operation: 'guidance_ownership' } : null);
   if (!options.economy) await assertPetEconomy(db, telegramId, economicSnapshot);
   return {
     pet,
