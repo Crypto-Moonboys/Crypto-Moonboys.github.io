@@ -2052,7 +2052,7 @@ for (const mode of ['keyboard', 'touch']) {
       mode + ' successive boosts must be visually spaced instead of compressed');
     assert.equal(flight.replay?.version, 1,
       mode + ' should expose an encoded version-one input replay');
-    assert.equal(flight.replay?.course_version, 5,
+    assert.equal(flight.replay?.course_version, 6,
       mode + ' must retain the independently simulated Level 1 course');
     const bytes = Buffer.from(flight.replay.frames, 'base64');
     assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
