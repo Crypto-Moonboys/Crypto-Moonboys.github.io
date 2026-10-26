@@ -20,7 +20,7 @@
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 5; // Replay v1 format, speed box, Graffbot fire and balloon enemy.
+  var COURSE_LAYOUT_VERSION = 6; // New landed-parachute-rat collision geometry; preserve v5 replay rules.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
@@ -1240,7 +1240,7 @@
         var ratAttack = isRat ? getRatAttackRect(enemy) : null;
         if (landedRat && ratAttack) {
           // The attack starts 8px nearer the rat, removing the invisible reach.
-          if ((enemy.attackFacing || (enemy.vx < 0 ? -1 : 1)) > 0) ratAttack.x += 8;
+          if ((enemy.attackFacing || (enemy.vx < 0 ? -1 : 1)) < 0) ratAttack.x += 8;
           ratAttack.w -= 8;
         }
         var activeRatAttack = isRat && (enemy.attackUntil || 0) > time &&
