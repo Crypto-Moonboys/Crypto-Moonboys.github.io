@@ -113,12 +113,14 @@ export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
   const deletingSelected = pointer?.pet_id === petId;
   let fallback = null;
   if (!freeReset && deletingSelected) {
-    fallback = await db.prepare(`SELECT s.pet_id,s.season_key FROM telegram_pet_season_slots s
+    fallback = await db.prepare(`WITH ${petRankedSpaceCteSql()}
+      SELECT s.pet_id,s.season_key FROM telegram_pet_season_slots s
+      JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
       JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
         AND i.season_key=s.season_key AND i.slot_number=s.slot_number
       WHERE s.telegram_id=? AND s.pet_id<>? AND s.status='active' AND i.status='active'
-      ORDER BY CASE WHEN s.acquisition_type='free' THEN 0 ELSE 1 END,${petSpaceOrderSql('s')} LIMIT 1`)
-      .bind(owner,petId).first().then(requirePetFirstReadResult);
+      ORDER BY ranked.display_slot_number LIMIT 1`)
+      .bind(owner,owner,petId).first().then(requirePetFirstReadResult);
     if (!fallback) return { accepted:false, reason:'pet_ownership_recovery_required' };
   }
   const token = crypto.randomUUID(), replacementId = freeReset ? `pet:${owner}:life:${token}` : null;
