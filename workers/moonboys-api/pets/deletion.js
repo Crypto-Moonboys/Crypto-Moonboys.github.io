@@ -2,7 +2,7 @@ import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResu
 import { buildPetOnboardingStatements } from './onboarding.js';
 import { PET_RECOVERABLE_ACTIVITY_PREDICATE } from './activity-recovery.js';
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
-import { petSpaceValueSql, petSpaceOrderSql, petRankedSpaceCteSql } from './space-order.js';
+import { petSpaceValueSql, petRankedSpaceCteSql } from './space-order.js';
 import { PET_ROGUELITE_BOSSES } from './roguelite-foundation.js';
 
 const bossKeysSql = Object.keys(PET_ROGUELITE_BOSSES).map(key => `'${key.replaceAll("'", "''")}'`).join(',');
@@ -89,8 +89,9 @@ export async function readDeletedPetHistory(db, owner) {
   return rows.results;
 }
 
-// Retain the old pet_id and every FK-linked receipt. A unique lifetime period
-// lets the replacement reuse a purchased space without rewriting its history.
+// Archive pet-specific state and retain FK-linked receipts for reward integrity.
+// Only the free starter is replaced immediately; paid spaces remain locked
+// until a new wallet debit purchases a fresh lifetime.
 export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
   const owner = String(telegramId), petId = String(body?.pet_id || '').trim();
   if (!petId || body?.confirmed !== true || body?.confirm_pet_id !== petId) return { accepted:false, reason:'pet_delete_confirmation_required' };
