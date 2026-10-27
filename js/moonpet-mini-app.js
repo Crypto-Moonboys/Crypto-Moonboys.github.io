@@ -2679,7 +2679,7 @@
     summary = summary || {};
     var provided = Array.isArray(summary.slots) ? summary.slots : [];
     var byNumber = {};
-    provided.forEach(function (slot) { byNumber[Number(slot.slot_number)] = slot; });
+    provided.forEach(function (slot) { if (slot && Number.isSafeInteger(Number(slot.slot_number))) byNumber[Number(slot.slot_number)] = slot; });
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
     var rows = Array.from({ length: Math.max(3, provided.length) }, function (_, index) { return index + 1; }).map(function (slotNumber) {
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
@@ -2689,11 +2689,14 @@
       var cost = Number(slot.unlock_cost_arcade_xp || 0);
       var unlockEnabled = !owned && Boolean(slot.purchase_enabled);
       var affordable = unlockEnabled && Boolean(slot.affordable);
+      var missingPredecessor = !owned && slotNumber === 3 && !(byNumber[2] && byNumber[2].unlocked);
       var status = active ? 'ACTIVE' : owned ? selectable ? 'OWNED' : 'OWNED // RECOVERY REQUIRED' : 'LOCKED';
       var details = owned && !selectable ? '<div class="line muted">OWNED SPACE PRESERVED // Saved pet is unavailable. Recovery is required before play.</div>' : owned ? renderPetInstanceCard(slot)
         : '<div class="slot-unlock-copy"><strong>ARCADE XP UNLOCK</strong><span>Spendable Arcade XP unlocks this paid slot. Deleting it requires paying again.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
         : owned ? selectable ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber }) : '<div class="line locked">PET UNAVAILABLE // ' + escapeHtml(words(slot.selection_disabled_reason || 'pet recovery required')) + '</div>'
+          : missingPredecessor && !summary.recovery_over_capacity && !summary.purchase_disabled_reason
+            ? '<div class="line muted">UNLOCK SLOT 2 FIRST // SLOT 3 CANNOT BE PURCHASED YET</div>'
           : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
             disabled: !affordable,
             resourceRequired: !affordable,
@@ -2919,6 +2922,10 @@
   function renderDailyCompletion() {
     var bonus = state.guidance && state.guidance.daily_completion;
     if (!bonus || bonus.available === false) return panel('DAILY 7/7 BONUS', '<div class="line muted">Daily bonuses are temporarily unavailable. Your existing checklist remains playable.</div>', 'daily-completion');
+    // An incomplete signed projection must not crash Missions or fabricate a
+    // claim button. Existing progress remains visible while refresh retries.
+    if (!bonus.rewards || typeof bonus.rewards !== 'object' || !state.pet || !state.pet.pet_id || (bonus.pending != null && !Array.isArray(bonus.pending)))
+      return panel('DAILY 7/7 BONUS', '<div class="line muted">BONUS STATUS UNAVAILABLE // TAP REFRESH. No claim was submitted.</div>', 'daily-completion');
     var body = '<div class="line">Complete all seven daily missions: up to ' + number(bonus.rewards.pet_xp) + ' Pet XP, ' + number(bonus.rewards.moon_gold) + ' Gold and ' + number(bonus.rewards.style_tokens) + ' Style.</div>' +
       '<div class="line muted">One bonus per account / UTC day. Earned progress stays complete after spending gold. Unclaimed bonuses stay saved. Pet XP uses your normal daily cap.</div>';
     body += '<div class="line ' + (bonus.claimed ? 'complete' : '') + '">' + (bonus.claimed ? '✅ Completed // TODAY’S BONUS CLAIMED' : bonus.ready ? '✅ Completed // TODAY // 7/7 COMPLETE' : 'TODAY // FINISH THE CHECKLIST BELOW') + '</div>';
@@ -2974,16 +2981,16 @@
 
   function renderMissions() {
     var guidance = state.guidance || {};
-    var missions = state.guidance && state.guidance.missions || [];
-    var completedMissions = missions.filter(function (mission) { return mission.completed; }).length;
+    var missions = state.guidance && Array.isArray(state.guidance.missions) ? state.guidance.missions.filter(function (mission) { return mission && typeof mission === 'object'; }) : [];
+    var completedMissions = missions.filter(function (mission) { return mission.completed === true; }).length;
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var summary = window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionStatus ? window.MoonpetPlayOptions.missionStatus(state) : null;
     var rows = missions.map(function (mission) {
-      var steps = (mission.steps || []).map(function (step) { return (step.completed ? '✅ Completed // ' : '[ ] ') + step.title; }).join(' // ');
+      var steps = (Array.isArray(mission.steps) ? mission.steps : []).filter(function (step) { return step && typeof step === 'object'; }).map(function (step) { return (step.completed === true ? '✅ Completed // ' : '[ ] ') + escapeHtml(step.title || ''); }).join(' // ');
       var current = summary && summary.next && summary.next.key === mission.key;
-      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '✅ Completed // ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key)) + '</div>';
+      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + (mission.completed === true ? 'complete' : '') + '">' + (mission.completed === true ? '✅ Completed // ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed === true ? '' : objectiveRouteButton(mission.key)) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
-    var achievements = state.guidance && state.guidance.achievements || [];
+    var achievements = state.guidance && Array.isArray(state.guidance.achievements) ? state.guidance.achievements.filter(function (entry) { return entry && typeof entry === 'object'; }) : [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
     var achievementRows = achievements.map(function (entry) {
       return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '✅ Completed // [UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
