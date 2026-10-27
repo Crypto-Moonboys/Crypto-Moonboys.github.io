@@ -1,4 +1,4 @@
-import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetMutationResult } from './read-result.js';
 import { buildPetOnboardingStatements } from './onboarding.js';
 import { PET_RECOVERABLE_ACTIVITY_PREDICATE } from './activity-recovery.js';
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
@@ -77,17 +77,6 @@ export const PET_DELETION_BLOCKERS_SQL = `
       AND ((c.source='pet_run_legacy' AND c.idempotency_key=SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120))
         OR (c.source='roguelite_completion' AND c.idempotency_key=r.run_id||CASE WHEN r.status='extracted' THEN ':extract' ELSE '' END))))`;
 const blockerArgs = (owner, petId) => [owner,owner,owner,owner,owner,owner,owner,owner,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId,owner,petId];
-
-export async function readDeletedPetHistory(db, owner) {
-  const rows = await db.prepare(`SELECT d.pet_id,d.applied_at AS deleted_at,i.pet_xp,
-      json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.replacement_pet_id') AS replacement_pet_id,
-      (SELECT COUNT(*) FROM telegram_pet_reward_claims r WHERE r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id AND r.status='awarded') AS awarded_receipts
-    FROM telegram_pet_instances i JOIN telegram_pet_identity_events d ON i.pet_id=d.pet_id AND i.telegram_id=d.telegram_id AND i.season_key=d.season_key
-    WHERE d.telegram_id=? AND d.event_kind='memory' AND d.applied_at IS NOT NULL
-      AND d.event_key='pet:delete:'||d.pet_id AND json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.type')='pet_deleted'
-    ORDER BY d.applied_at DESC,d.event_id DESC LIMIT 20`).bind(String(owner)).all().then(requirePetReadResult);
-  return rows.results;
-}
 
 // Archive pet-specific state and retain FK-linked receipts for reward integrity.
 // Only the free starter is replaced immediately; paid spaces remain locked

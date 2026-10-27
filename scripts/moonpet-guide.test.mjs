@@ -46,6 +46,19 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   assert.equal((markup.match(/<details class="guide-step" open/g) || []).length, 2);
 });
 
+test('private beta deletion guide reflects free reset and paid repurchase', () => {
+  const pets = plain(section('pets'));
+  const about = plain(guide.about.find(s => s.id === 'ownership').body);
+  assert.match(pets, /Free slot 1 immediately starts a new Level 1 egg/);
+  assert.match(pets, /paid slot 2 or 3 locks that slot.*another 500 or 1,000 Arcade XP/);
+  assert.match(about, /deleting a paid pet locks its slot.*full Arcade XP repurchase/);
+  assert.doesNotMatch(pets, /creates a fresh egg in the same owned space without another Arcade XP charge/);
+  for (const file of ['how-to-play-crypto-moonboy-pets.html', 'wiki/crypto-moonboy-pets.html']) {
+    assert.match(read(file), /Deleting paid slot 2 or 3 locks that slot/);
+    assert.doesNotMatch(read(file), /Deletion archives that companion permanently and creates a fresh egg/);
+  }
+});
+
 test('Home guide documents E4 rooms without inventing new Kitchen or Gym authorities', () => {
   const home = plain(section('house'));
   assert.match(home, /MAIN ROOM.*KITCHEN.*GARDEN.*GYM/);
