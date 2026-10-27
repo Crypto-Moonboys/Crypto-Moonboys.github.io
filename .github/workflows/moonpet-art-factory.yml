@@ -1,21 +1,7 @@
 name: Moonpet Art Factory
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/moonpet-art-factory.yml"
-      - "scripts/discover-autosprite-character.js"
-      - "scripts/generate-botty-front-animations.js"
-      - "scripts/download-botty-front-animations.js"
-      - "scripts/download-moonpet-front-action-pack.js"
-      - "scripts/audit-moonpet-front-action-pack.js"
-      - "scripts/moonpet-front-action-download.test.mjs"
-      - "scripts/promote-moonpet-bot-front-pack.js"
-      - "scripts/audit-eggyone-stage0-art.js"
-      - "scripts/inspect-autosprite-stage0-pack.js"
-      - "scripts/download-eggyone-stage0-animations.js"
-      - "data/moonpet-art-factory-request.json"
   workflow_dispatch:
     inputs:
       phase:
@@ -46,6 +32,7 @@ on:
         required: true
         default: true
         type: boolean
+
 
 permissions:
   contents: write
