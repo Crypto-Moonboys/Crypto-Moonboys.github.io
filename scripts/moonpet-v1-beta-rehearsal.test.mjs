@@ -115,6 +115,8 @@ test('external FK into MoonPet and DELETE triggers fail closed', () => sandbox((
 test('rehearsal blocks in-place, overwrite and any CLI execution without explicit local flags', () => sandbox(({src,dst}) => {
   const before=readFileSync(src);
   assert.throws(()=>rehearseMoonpetV1BetaReset(src,src),/in_place_reset_forbidden/);
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,src+'-wal'),/source_or_journal_target_overlap_forbidden/);
+  assert.equal(existsSync(src+'-wal'),false);
   writeFileSync(dst,'existing copy');
   assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),/existing_output_forbidden/);
   assert.equal(readFileSync(dst,'utf8'),'existing copy');
