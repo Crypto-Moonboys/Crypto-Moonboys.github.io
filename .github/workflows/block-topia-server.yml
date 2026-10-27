@@ -1,27 +1,8 @@
 name: Block Topia Server
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  pull_request:
-    paths:
-      - 'server/block-topia/**'
-      - 'games/block-topia/**'
-      - 'shared/block-topia/**'
-      - 'scripts/blocktopia-client-browser.test.mjs'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'scripts/security-dependency-check.mjs'
-      - '.github/workflows/block-topia-server.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'server/block-topia/**'
-      - 'games/block-topia/**'
-      - 'shared/block-topia/**'
-      - 'scripts/blocktopia-client-browser.test.mjs'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'scripts/security-dependency-check.mjs'
-      - '.github/workflows/block-topia-server.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
