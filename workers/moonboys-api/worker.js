@@ -23,10 +23,10 @@ import { requirePetCombatRow, requirePetCombatRows, PET_ARENA_READ_SHAPE, PET_KA
 import { getPetEntryRequirement, petEntryNext, PET_ENTRY_ARCADE_XP } from './pets/entry-requirement.js';
 import { buildPetLifetimeProgression } from './pets/lifetime-progression.js';
 import { buildPetOnboardingStatements, completePetOnboarding, repairPaidPetOnboarding } from './pets/onboarding.js';
-import { deleteOwnedPet, readDeletedPetHistory } from './pets/deletion.js';
+import { deleteOwnedPet } from './pets/deletion.js';
 import { SELECTED_RUN_PET_SQL, requireRunMutationResults, recoverDeletedPetRunStarts, isDeletedRunPet } from './pets/run-ownership.js';
 import { clampPetCareValue, applyPetCareDecay, readPetInstanceWithAtomicCareDecay } from './pets/care-decay.js';
-import { petSpaceOrderSql } from './pets/space-order.js';
+import { petSpaceOrderSql, petRankedSpaceCteSql } from './pets/space-order.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
 import { selectCommunitySeason, communitySeasonSql, communityReceiptTimestampSql } from './community-season-authority.js';
 import { awardCommunityXp, hasDailyCommunityClaim } from './community-xp-awards.js';
@@ -5032,8 +5032,9 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   try {
     const [slotRows, activeSlot, arcade, wallet] = await Promise.all([
       db.prepare(`
+        WITH ${petRankedSpaceCteSql()}
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number AS source_slot_number,
-          ROW_NUMBER() OVER (ORDER BY ${petSpaceOrderSql('s')}) AS slot_number, s.acquisition_type,
+          ranked.display_slot_number AS slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at, s.journey_clock,
           i.pet_id AS instance_pet_id, i.status AS instance_status,
           i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
@@ -5041,13 +5042,14 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
           l.species_id AS lifecycle_species_id, l.rare_morph_id,
           COALESCE((SELECT MAX(e.stage) FROM telegram_pet_evolutions_by_pet e WHERE e.pet_id=s.pet_id), 0) AS evolution_stage
         FROM telegram_pet_season_slots s
+        JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
         LEFT JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
         LEFT JOIN telegram_pet_lifecycle_by_pet l
           ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
         WHERE s.telegram_id = ? AND s.status='active'
         ORDER BY ${petSpaceOrderSql('s')}
-      `).bind(normalizedTelegramId).all().then(requirePetReadResult),
+      `).bind(normalizedTelegramId,normalizedTelegramId).all().then(requirePetReadResult),
       db.prepare(`
         SELECT pet_id, season_key FROM telegram_pet_active_slots
         WHERE telegram_id = ? LIMIT 1
@@ -5074,19 +5076,17 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const arcadeXpLifetime = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     const arcadeXpAvailable = Math.max(0, Number(wallet?.arcade_xp_spendable || 0));
     const arcadeXpSpent = Math.max(0, Number(wallet?.arcade_xp_spent || 0));
-    const nextSlotNumber = Math.min(PET_SEASON_MAX_SLOTS + 1, rawRows.length + 1);
+    const nextSlotNumber = [2,3].find(number => !rawRowsBySlot.has(number)) || PET_SEASON_MAX_SLOTS + 1;
     const nextSlotCost = Number(PET_SEASON_EXTRA_SLOT_COSTS[nextSlotNumber] || 0);
     const previousSlotOwned = nextSlotNumber <= 1 ? true : rawRowsBySlot.has(nextSlotNumber - 1);
-    const deletedPetHistory = await readDeletedPetHistory(db, normalizedTelegramId);
     return {
       adopted: true,
-      deleted_pet_history: deletedPetHistory,
       season,
       competition_season: season,
       current_season_week: journeyPeriod ? getPetJourneyWeek(journeyPeriod, now) : getPetSeasonWeek(season, now),
       journey_period: journeyPeriod,
       max_slots: PET_SEASON_MAX_SLOTS,
-      recovery_over_capacity: rawRows.length > PET_SEASON_MAX_SLOTS,
+      recovery_over_capacity: rawRows.length > PET_SEASON_MAX_SLOTS || rawRows.some(row => Number(row.slot_number) > PET_SEASON_MAX_SLOTS),
       active_pet_id: activePetId,
       arcade_xp_available: arcadeXpAvailable,
       arcade_xp_lifetime: arcadeXpLifetime,
@@ -5096,7 +5096,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       can_buy_next_slot: !ownershipRecoveryRequired && nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
       purchase_enabled: !ownershipRecoveryRequired,
       purchase_disabled_reason: ownershipRecoveryRequired ? 'pet_ownership_recovery_required' : null,
-      slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, rawRows.length) }, (_, index) => {
+      slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, ...rawRows.map(row => Number(row.slot_number))) }, (_, index) => {
         const slotNumber = index + 1;
         const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
         return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired, now);
@@ -5131,8 +5131,9 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
   const season = getPetSeasonInfo(now);
   const [slotRows, activeSlot, arcade, wallet] = await Promise.all([
     db.prepare(`
+      WITH ${petRankedSpaceCteSql()}
       SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number AS source_slot_number,
-        ROW_NUMBER() OVER (ORDER BY ${petSpaceOrderSql('s')}) AS slot_number, s.acquisition_type,
+        ranked.display_slot_number AS slot_number, s.acquisition_type,
         s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at, s.journey_clock,
         i.pet_id AS instance_pet_id, i.status AS instance_status,
         i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
@@ -5140,13 +5141,14 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
         l.species_id AS lifecycle_species_id, l.rare_morph_id,
         COALESCE((SELECT MAX(e.stage) FROM telegram_pet_evolutions_by_pet e WHERE e.pet_id=s.pet_id), 0) AS evolution_stage
       FROM telegram_pet_season_slots s
+      JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
       LEFT JOIN telegram_pet_instances i
         ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
       LEFT JOIN telegram_pet_lifecycle_by_pet l
         ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
       WHERE s.telegram_id=? AND s.status='active'
       ORDER BY ${petSpaceOrderSql('s')}
-    `).bind(owner).all().then(requirePetReadResult),
+    `).bind(owner,owner).all().then(requirePetReadResult),
     db.prepare(`SELECT pet_id, season_key FROM telegram_pet_active_slots WHERE telegram_id=? LIMIT 1`)
       .bind(owner).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=? LIMIT 1`)
@@ -5163,7 +5165,7 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
   const arcadeXpLifetime = Math.max(0, Number(arcade?.arcade_xp_total || 0));
   const arcadeXpAvailable = Math.max(0, Number(wallet?.arcade_xp_spendable || 0));
   const arcadeXpSpent = Math.max(0, Number(wallet?.arcade_xp_spent || 0));
-  const nextSlotNumber = Math.min(PET_SEASON_MAX_SLOTS + 1, rawRows.length + 1);
+  const nextSlotNumber = [2,3].find(number => !rowsBySlot.has(number)) || PET_SEASON_MAX_SLOTS + 1;
   const nextSlotCost = Number(PET_SEASON_EXTRA_SLOT_COSTS[nextSlotNumber] || 0);
   const previousSlotOwned = nextSlotNumber <= 1 ? true : rowsBySlot.has(nextSlotNumber - 1);
   return {
@@ -5174,7 +5176,7 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
     current_season_week: journeyPeriod ? getPetJourneyWeek(journeyPeriod, now) : getPetSeasonWeek(season, now),
     journey_period: journeyPeriod,
     max_slots: PET_SEASON_MAX_SLOTS,
-    recovery_over_capacity: rawRows.length > PET_SEASON_MAX_SLOTS,
+    recovery_over_capacity: rawRows.length > PET_SEASON_MAX_SLOTS || rawRows.some(row => Number(row.slot_number) > PET_SEASON_MAX_SLOTS),
     active_pet_id: activePetId,
     arcade_xp_available: arcadeXpAvailable,
     arcade_xp_lifetime: arcadeXpLifetime,
@@ -5184,7 +5186,7 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
     can_buy_next_slot: !ownershipRecoveryRequired && nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
     purchase_enabled: !ownershipRecoveryRequired,
     purchase_disabled_reason: ownershipRecoveryRequired ? 'pet_ownership_recovery_required' : null,
-    slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, rawRows.length) }, (_, index) => {
+    slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, ...rawRows.map(row => Number(row.slot_number))) }, (_, index) => {
       const slotNumber = index + 1;
       const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
       return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired, now);
@@ -5274,8 +5276,11 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   const requestedOrdinal = /^\d+$/.test(String(requestedPetId ?? '')) ? Number(requestedPetId) : null;
   if (requestedOrdinal != null && (!Number.isSafeInteger(requestedOrdinal) || requestedOrdinal < 1)) return { accepted: false, reason: 'invalid_pet_slot' };
   const requested = requestedOrdinal == null ? String(requestedPetId || '')
-    : (await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s WHERE s.telegram_id=? AND s.status='active'
-        ORDER BY ${petSpaceOrderSql('s')} LIMIT 1 OFFSET ?`).bind(owner, Math.max(0, requestedOrdinal - 1)).first().then(requirePetFirstReadResult))?.pet_id || '';
+    : (await db.prepare(`WITH ${petRankedSpaceCteSql()}
+        SELECT s.pet_id FROM telegram_pet_season_slots s
+        JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
+        WHERE ranked.display_slot_number=? AND s.telegram_id=? AND s.status='active'
+        LIMIT 1`).bind(owner, requestedOrdinal, owner).first().then(requirePetFirstReadResult))?.pet_id || '';
   const pendingWork = await getPetActiveSlotPendingWork(db, owner, options.now || new Date());
   if (pendingWork) return { accepted: false, ...pendingWork, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   const slot = await db.prepare(`SELECT s.pet_id, s.season_key FROM telegram_pet_season_slots s
@@ -8128,10 +8133,10 @@ async function runPetNeedsNotifications(env, options = {}) {
               AND (delivery.setting_value IS NULL OR delivery.setting_value <= datetime('now', ?)))
         RETURNING telegram_id`)
         .bind(telegramId, checkingKey, scanToken, deliveryKey, telegramId, `-${PET_NOTIFICATION_COOLDOWN_MINUTES} minutes`),
-        scope.db.prepare(`SELECT slot_number FROM (
-          SELECT s.pet_id,s.season_key,ROW_NUMBER() OVER (ORDER BY ${petSpaceOrderSql('s')}) AS slot_number
-          FROM telegram_pet_season_slots s WHERE s.telegram_id=? AND s.status='active'
-        ) WHERE pet_id=? AND season_key=?`)
+        scope.db.prepare(`WITH ${petRankedSpaceCteSql()}
+          SELECT ranked.display_slot_number AS slot_number FROM pet_ranked_spaces ranked
+          JOIN telegram_pet_season_slots s ON s.pet_id=ranked.pet_id
+          WHERE s.pet_id=? AND s.season_key=? AND s.status='active'`)
           .bind(telegramId, pet.pet_id, pet.season_key),
       ]);
       const deliveryLease = requirePetReadResult(deliverySource[0]);
