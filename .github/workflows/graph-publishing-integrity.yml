@@ -1,5 +1,6 @@
 name: Graph Publishing Integrity
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
   workflow_dispatch:
     inputs:
@@ -7,52 +8,6 @@ on:
         description: 'Generated graph PR number; GitHub verifies the real base and exact head'
         required: true
         type: string
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
-    paths:
-      - "wiki/**"
-      - "brand-canon/**"
-      - "categories/**"
-      - "data/**"
-      - "js/**"
-      - "assets/**"
-      - "og-templates/**"
-      - "about.html"
-      - "graffiti-kings-creative-guide.html"
-      - "hubs.html"
-      - "sam.html"
-      - "sitemap.xml"
-      - "index_stats.json"
-      - "sam-memory.json"
-      - "website-publish-payloads/**"
-      - "sam-wiki-publisher.py"
-      - "scripts/**"
-      - ".github/workflows/graph-publishing-integrity.yml"
-      - "package.json"
-      - "package-lock.json"
-  push:
-    branches: [main]
-    paths:
-      - "wiki/**"
-      - "brand-canon/**"
-      - "categories/**"
-      - "data/**"
-      - "js/**"
-      - "assets/**"
-      - "og-templates/**"
-      - "about.html"
-      - "graffiti-kings-creative-guide.html"
-      - "hubs.html"
-      - "sam.html"
-      - "sitemap.xml"
-      - "index_stats.json"
-      - "sam-memory.json"
-      - "website-publish-payloads/**"
-      - "sam-wiki-publisher.py"
-      - "scripts/**"
-      - ".github/workflows/graph-publishing-integrity.yml"
-      - "package.json"
-      - "package-lock.json"
 
 permissions:
   contents: read
