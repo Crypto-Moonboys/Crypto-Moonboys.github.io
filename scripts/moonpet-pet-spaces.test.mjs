@@ -79,6 +79,36 @@ for (const full of [false, true]) for (const screen of ['home', 'profile']) {
   });
 }
 
+test('locked paid slot 3 explains that slot 2 must be purchased first', () => {
+  const ctx = context(true);
+  const slots = ctx.state.season_slots.slots;
+  slots[0].active = true; slots[2].active = false;
+  for (const number of [2, 3]) {
+    Object.assign(slots[number - 1], {
+      unlocked: false, active: false, selectable: false, pet: null,
+      pet_id: null, purchase_enabled: number === 2,
+      affordable: true, unlock_cost_arcade_xp: number === 2 ? 500 : 1000,
+    });
+  }
+  const html = ctx.renderPetSpaces(ctx.state.season_slots);
+  assert.match(html, /UNLOCK SLOT 2 FIRST \/\/ SLOT 3 CANNOT BE PURCHASED YET/);
+  assert.match(html, /UNLOCK SLOT 2/);
+  assert.doesNotMatch(html, /data-action="buy_pet_slot"[^>]*slot_number[^>]*3/,
+    'the third purchase must not be offered before ownership of slot 2');
+});
+
+test('a locked slot 2 never renumbers an owned third pet, even with a sparse roster', () => {
+  const ctx = context(true);
+  const slots = ctx.state.season_slots.slots;
+  slots[1] = null;
+  const html = ctx.renderPetSpaces(ctx.state.season_slots);
+  assert.match(html, /data-season-slot="2"/);
+  assert.match(html, /data-season-slot="3"/);
+  assert.match(html, /data-season-slot="3"[^>]*>[\s\S]*◆ ACTIVE/);
+  assert.doesNotMatch(html, /UNLOCK SLOT 2 FIRST/,
+    'the intact third pet must never appear as an unowned purchase');
+});
+
 test('a preserved space with a missing instance stays visible without a switch or delete button', () => {
   const ctx = context(); const missing = ctx.state.season_slots.slots[0];
   Object.assign(missing, { selectable: false, instance_present: false, pet: null, selection_disabled_reason: 'pet_instance_missing' });
