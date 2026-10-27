@@ -49,6 +49,9 @@ test('Missions render only boolean confirmed completion and escape server-owned 
  assert.match(html,/Work &lt;safe&gt;/);
  assert.doesNotMatch(html,/<img|<script|Care <today>/);
  assert.doesNotMatch(html,/mission-row[^>]*><div class="line complete">/);
+ c.state.guidance.missions=[{key:'verified',title:'Verified',completed:1,steps:[{title:'Saved step',completed:1}]}];
+ assert.equal((c.renderMissions().match(/✅ Completed/g)||[]).length,2,
+  'explicit SQLite numeric 1 remains eligible as saved completion evidence');
 });
 
 test('Missions remains usable with malformed optional lists instead of crashing or awarding ticks',()=>{
