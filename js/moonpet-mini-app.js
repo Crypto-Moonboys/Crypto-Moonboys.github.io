@@ -2982,13 +2982,13 @@
   function renderMissions() {
     var guidance = state.guidance || {};
     var missions = state.guidance && Array.isArray(state.guidance.missions) ? state.guidance.missions.filter(function (mission) { return mission && typeof mission === 'object'; }) : [];
-    var completedMissions = missions.filter(function (mission) { return mission.completed === true; }).length;
+    var completedMissions = missions.filter(function (mission) { return (mission.completed === true || mission.completed === 1); }).length;
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var summary = window.MoonpetPlayOptions && window.MoonpetPlayOptions.missionStatus ? window.MoonpetPlayOptions.missionStatus(state) : null;
     var rows = missions.map(function (mission) {
-      var steps = (Array.isArray(mission.steps) ? mission.steps : []).filter(function (step) { return step && typeof step === 'object'; }).map(function (step) { return (step.completed === true ? '✅ Completed // ' : '[ ] ') + escapeHtml(step.title || ''); }).join(' // ');
+      var steps = (Array.isArray(mission.steps) ? mission.steps : []).filter(function (step) { return step && typeof step === 'object'; }).map(function (step) { return ((step.completed === true || step.completed === 1) ? '✅ Completed // ' : '[ ] ') + escapeHtml(step.title || ''); }).join(' // ');
       var current = summary && summary.next && summary.next.key === mission.key;
-      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + (mission.completed === true ? 'complete' : '') + '">' + (mission.completed === true ? '✅ Completed // ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed === true ? '' : objectiveRouteButton(mission.key)) + '</div>';
+      return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + ((mission.completed === true || mission.completed === 1) ? 'complete' : '') + '">' + ((mission.completed === true || mission.completed === 1) ? '✅ Completed // ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + ((mission.completed === true || mission.completed === 1) ? '' : objectiveRouteButton(mission.key)) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && Array.isArray(state.guidance.achievements) ? state.guidance.achievements.filter(function (entry) { return entry && typeof entry === 'object'; }) : [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
