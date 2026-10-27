@@ -1,5 +1,7 @@
 # CI workflow policy — GK-approved lightweight operation
 
+**Project phase:** the main build is complete; work now is bug fixing and pre-live testing, not continuing speculative development. Anti-drift is enforced by written instructions and scoped PR review, not heavyweight automatic Action queues.
+
 **Decision (27 October 2026):** eliminate routine automatic GitHub Actions checks so a small image/page/text change does not queue long, unrelated suites. Agents remain responsible for checking their own work and disclosing risks. This change controls triggers, **not** whether a feature is tested when material.
 
 ## What runs automatically
@@ -21,7 +23,7 @@
 ## Operational cautions
 
 - GitHub branch protection/rulesets can still require named checks even if workflows are manual-only. If merges are blocked by **Expected — Waiting for status**, GK must adjust required status checks in repository settings; automation cannot truthfully substitute a pass.
-- `workflow_dispatch` is available under **Actions → select workflow → Run workflow**. Some workflows require inputs. Rerun a specific test on demand, rather than running all workflows.
+- `workflow_dispatch` is available under **Actions → select workflow → Run workflow**. The broad CI and graph workflows accept an optional generated-graph PR number; leave it empty for an ordinary branch run. Some workflows require other inputs. Rerun a specific test on demand, rather than running all workflows.
 - A GitHub Pages deployment gate failure is **not** a CI test failure; it indicates a real deployment prerequisite. In particular, NBG London course v6 requires the live leaderboard Worker to advertise support for v6 and required auth/D1/KV availability.
 - The separate Moonpet production health probe recently failed on `/deployment-info` HTTP 503. Disabling the schedule does **not** repair the endpoint or prove gameplay health. Track incident #1648 separately.
 - The repo's version-tagged production Worker deployment helper is `scripts/deploy-worker-with-provenance.mjs`. Do not replace its provenance mechanism with an untagged deploy just for speed.
