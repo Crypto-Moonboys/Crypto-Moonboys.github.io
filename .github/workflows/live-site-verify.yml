@@ -1,5 +1,6 @@
 name: Live Site Verify
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
   workflow_dispatch:
     inputs:
@@ -7,9 +8,6 @@ on:
         description: "Seconds to wait for Pages/Cloudflare propagation before verification"
         required: false
         default: "90"
-  workflow_run:
-    workflows: ["Deploy GitHub Pages"]
-    types: [completed]
 
 permissions:
   contents: read
