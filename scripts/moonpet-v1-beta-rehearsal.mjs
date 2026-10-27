@@ -97,6 +97,8 @@ export function rehearseMoonpetV1BetaReset(source, output) {
   if (major < 22 || major === 22 && minor < 13) throw Error('node_22_13_or_newer_required');
   const input = resolve(source), target = resolve(output);
   if (input === target) throw Error('in_place_reset_forbidden');
+  if (sidecars(input).includes(target) || sidecars(target).includes(input))
+    throw Error('source_or_journal_target_overlap_forbidden');
   const sourceInfo = lstatSync(input, { throwIfNoEntry: false });
   if (!sourceInfo || sourceInfo.isSymbolicLink() || !sourceInfo.isFile())
     throw Error('source_must_be_regular_offline_sqlite_backup');
