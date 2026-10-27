@@ -77,6 +77,12 @@ test('a partial daily bonus read shows Refresh instead of an unverified claim bu
  const wrongPending=c.renderDailyCompletion();
  assert.match(wrongPending,/BONUS STATUS UNAVAILABLE \/\/ TAP REFRESH/);
  assert.doesNotMatch(wrongPending,/CLAIM BONUS/);
+ c.state.guidance.daily_completion={claimed:'false',ready:'false',pending:[],rewards:{pet_xp:5,moon_gold:2,style_tokens:1}};
+ assert.doesNotMatch(c.renderDailyCompletion(),/✅ Completed|TODAY’S BONUS CLAIMED/,
+  'truthy string flags must never create paid or ready state');
+ c.state.guidance.daily_completion={claimed:false,ready:true,pending:[null],rewards:{pet_xp:5,moon_gold:2,style_tokens:1}};
+ assert.match(c.renderDailyCompletion(),/BONUS STATUS UNAVAILABLE/,
+  'a damaged pending claim row must fail closed instead of crashing');
 });
 
 test('generic menu categories never establish success without saved outcome evidence',()=>{
