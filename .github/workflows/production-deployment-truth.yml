@@ -1,10 +1,9 @@
 name: Production Deployment Truth
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
+
 
 permissions:
   contents: read
