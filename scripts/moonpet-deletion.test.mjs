@@ -394,6 +394,25 @@ assert.equal(secondPaidPurchase.season_slots.slots[1].pet.pet_xp,0);
 assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-2000);
 assert.equal(sql.prepare('PRAGMA foreign_key_check').all().length,0);
 
+// A different tab may select the targeted paid pet after the preflight read.
+// The canonical deletion claim must compare the actual selection in the same
+// DB transaction; otherwise it would archive the newly selected pet.
+const selectionRaceOwner='paid-delete-selection-race';
+await player(selectionRaceOwner);
+assert.equal((await hooks.buyPetSeasonSlot(db,selectionRaceOwner,2)).accepted,true);
+const selectionRacePet=(await hooks.buildPetSeasonSlotSummary(db,selectionRaceOwner)).slots[1].pet_id;
+beforeBatch=async()=>{
+  const moved=await hooks.switchActivePetSeasonSlot(db,selectionRaceOwner,selectionRacePet);
+  assert.equal(moved.accepted,true,'competing tab may select target before deletion claim');
+};
+const rejectedRace=await hooks.deletePetSlot(db,selectionRaceOwner,confirm(selectionRacePet));
+assert.equal(rejectedRace.accepted,false,'a changed pointer must abort deletion');
+assert.equal(rejectedRace.reason,'pet_delete_blocked');
+assert.equal(sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(selectionRacePet).status,'active');
+assert.equal(sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(selectionRaceOwner).pet_id,selectionRacePet);
+assert.equal((await hooks.buildPetSeasonSlotSummary(db,selectionRaceOwner)).slots[1].unlocked,true);
+assert.equal((await hooks.deletePetSlot(db,selectionRaceOwner,confirm(selectionRacePet))).accepted,true,'retry with current pointer may delete safely');
+
 async function expectBlocked(owner,id,message) {
   assert.equal((await hooks.deletePetSlot(db,owner,confirm(id))).reason,'pet_delete_blocked',message);
   assert.equal(rowFor(id).status,'active');
