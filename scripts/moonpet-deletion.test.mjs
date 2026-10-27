@@ -381,6 +381,17 @@ assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'2')).accepted
 assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'3')).accepted,true);
 assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'1')).accepted,true);
 assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-1500);
+// Repeated deletion never grants a new paid egg for free, and the next
+// purchase has a new identity and deducts the same full price once.
+const secondPaidDeletion=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[1]));
+assert.equal(secondPaidDeletion.accepted,true);
+assert.equal(secondPaidDeletion.replacement_pet_id,null);
+assert.equal((await hooks.buildPetSeasonSlotSummary(db,spaceOwner)).slots[1].unlocked,false);
+const secondPaidPurchase=await hooks.buyPetSeasonSlot(db,spaceOwner,2);
+assert.equal(secondPaidPurchase.accepted,true);
+assert.notEqual(secondPaidPurchase.season_slots.slots[1].pet_id,spaceIds[1]);
+assert.equal(secondPaidPurchase.season_slots.slots[1].pet.pet_xp,0);
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-2000);
 assert.equal(sql.prepare('PRAGMA foreign_key_check').all().length,0);
 
 async function expectBlocked(owner,id,message) {
