@@ -6,8 +6,8 @@
  */
 import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
-import { copyFileSync, constants, lstatSync, mkdtempSync, rmSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { copyFileSync, constants, lstatSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { resolve, join, basename, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
@@ -19,6 +19,12 @@ const sidecars = path => [path + '-wal', path + '-shm', path + '-journal'];
 // Unlike existsSync, lstat also identifies dangling symlinks that SQLite
 // might follow, replace or remove when opening a database.
 const occupied = path => lstatSync(path, { throwIfNoEntry: false }) !== undefined;
+// Resolve directory aliases before comparing SQLite main/journal paths. Keep
+// the final filename un-followed so final-component symlinks are still refused.
+const canonicalFilePath = value => {
+  const full = resolve(value);
+  return join(realpathSync(dirname(full)), basename(full));
+};
 
 function tableNames(db) {
   return db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
@@ -95,7 +101,7 @@ export function rehearseMoonpetV1BetaReset(source, output) {
   // StatementSync.iterate() requires at least Node 22.13.0.
   const [major, minor] = process.versions.node.split('.').map(Number);
   if (major < 22 || major === 22 && minor < 13) throw Error('node_22_13_or_newer_required');
-  const input = resolve(source), target = resolve(output);
+  const input = canonicalFilePath(source), target = canonicalFilePath(output);
   if (input === target) throw Error('in_place_reset_forbidden');
   if (sidecars(input).includes(target) || sidecars(target).includes(input))
     throw Error('source_or_journal_target_overlap_forbidden');
