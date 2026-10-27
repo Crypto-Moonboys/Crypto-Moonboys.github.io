@@ -1,5 +1,6 @@
 name: CI
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
   workflow_dispatch:
     inputs:
@@ -7,11 +8,6 @@ on:
         description: 'Generated graph PR number; GitHub verifies the real base and exact head'
         required: true
         type: string
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
-  push:
-    branches: [main]
 
 permissions:
   contents: read
