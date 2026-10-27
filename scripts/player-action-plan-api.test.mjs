@@ -783,7 +783,8 @@ test('PR3 permanent pet-space roster SQL preserves cross-season and replacement 
     sql.exec([
       'CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL,',
       'season_key TEXT NOT NULL, slot_number INTEGER NOT NULL, status TEXT NOT NULL,',
-      'created_at TEXT NOT NULL, journey_clock TEXT, source_event_key TEXT);',
+      'created_at TEXT NOT NULL, journey_clock TEXT, source_event_key TEXT,',
+      'acquisition_type TEXT NOT NULL);',
       'CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL,',
       'season_key TEXT NOT NULL, slot_number INTEGER NOT NULL, stage TEXT, level INTEGER, pet_xp INTEGER,',
       'hunger INTEGER, happiness INTEGER, cleanliness INTEGER, energy INTEGER,',
@@ -795,21 +796,21 @@ test('PR3 permanent pet-space roster SQL preserves cross-season and replacement 
     ].join(' '));
     const owner = '123456';
     const slotInsert = sql.prepare('INSERT INTO telegram_pet_season_slots ' +
-      '(pet_id,telegram_id,season_key,slot_number,status,created_at,journey_clock,source_event_key) ' +
-      "VALUES (?,?,?,?,'active',?,'legacy_quarter',?)");
+      '(pet_id,telegram_id,season_key,slot_number,status,created_at,journey_clock,source_event_key,acquisition_type) ' +
+      "VALUES (?,?,?,?,'active',?,'legacy_quarter',?,?)");
     const instanceInsert = sql.prepare('INSERT INTO telegram_pet_instances ' +
       '(pet_id,telegram_id,season_key,slot_number,stage,level,pet_xp,status,created_at) ' +
       "VALUES (?,?,?,?,'hatched',4,100,'active',?)");
-    const addPet = (pet, season, seasonSlot, created, sourceKey = null, petOwner = owner) => {
-      slotInsert.run(pet, petOwner, season, seasonSlot, created, sourceKey);
+    const addPet = (pet, season, seasonSlot, created, sourceKey = null, petOwner = owner, acquisitionType = 'arcade_xp') => {
+      slotInsert.run(pet, petOwner, season, seasonSlot, created, sourceKey, acquisitionType);
       instanceInsert.run(pet, petOwner, season, seasonSlot, created);
       sql.prepare('INSERT INTO telegram_pet_lifecycle_by_pet VALUES (?, ?, ?)').run(pet, petOwner, 'young');
     };
-    addPet('space-1', 'pet-s2026-003', 1, '2026-07-01T00:00:00Z');
+    addPet('space-1', 'pet-s2026-003', 1, '2026-07-01T00:00:00Z', null, owner, 'free');
     addPet('space-2', 'pet-s2026-003', 2, '2026-08-15T00:00:00Z');
     addPet('space-3', 'pet-s2026-004', 1, '2026-10-01T00:00:00Z');
     // An unrelated owner must not influence the signed owner's ordinal.
-    addPet('other-owner-pet', 'pet-s2026-001', 1, '2026-01-01T00:00:00Z', null, 'another-owner');
+    addPet('other-owner-pet', 'pet-s2026-001', 1, '2026-01-01T00:00:00Z', null, 'another-owner', 'free');
     sql.prepare('INSERT INTO telegram_pet_active_slots VALUES (?,?,?)')
       .run(owner, 'space-3', 'pet-s2026-004');
     const read = () => sql.prepare(rosterSql).all(owner, owner).map(row => ({
@@ -878,7 +879,7 @@ test('PR3 permanent pet-space roster SQL preserves cross-season and replacement 
     // Rank active ownership before filtering missing instances so no intact
     // pet is silently compacted into an incorrect permanent position.
     slotInsert.run('missing-earlier', owner, 'pet-s2026-002', 1,
-      '2026-04-01T00:00:00Z', null);
+      '2026-04-01T00:00:00Z', null, 'arcade_xp');
     assert.deepEqual(read().map(row => row.permanent_slot), [2, 3, 4],
       'missing active instance must not compact permanent spaces');
     assert.equal(read().length, 3, 'a missing instance must not be fabricated');
