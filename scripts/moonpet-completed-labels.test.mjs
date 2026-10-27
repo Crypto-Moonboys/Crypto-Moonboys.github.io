@@ -31,6 +31,51 @@ test('signed saved mission evidence produces completion labels without changing 
  }finally{f.close();}
 });
 
+test('Missions render only boolean confirmed completion and escape server-owned step titles',()=>{
+ const safe=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+ const c=context({escapeHtml:safe,state:{
+  adopted:true,pet:{pet_id:'p'},lifecycle:{phase:'young'},
+  guidance:{missions:[{key:'daily-care',title:'Care <today>',completed:'false',steps:[
+   {title:'<img src=x onerror=alert(1)>',completed:'false'},
+   {title:'Work <safe>',completed:true},
+  ]}],achievements:[]}
+ }});
+ vm.runInContext(fn('renderMissions()','renderKaijuHowTo('),c);
+ const html=c.renderMissions();
+ assert.equal((html.match(/✅ Completed/g)||[]).length,1,
+  'untrusted truthy strings must not fabricate completed mission/step status');
+ assert.match(html,/Care &lt;today&gt;/);
+ assert.match(html,/&lt;img src=x onerror=alert\(1\)&gt;/);
+ assert.match(html,/Work &lt;safe&gt;/);
+ assert.doesNotMatch(html,/<img|<script|Care <today>/);
+ assert.doesNotMatch(html,/mission-row[^>]*><div class="line complete">/);
+});
+
+test('Missions remains usable with malformed optional lists instead of crashing or awarding ticks',()=>{
+ const c=context({state:{adopted:true,pet:{pet_id:'p'},lifecycle:{phase:'young'},
+  guidance:{missions:{unexpected:true},achievements:'unavailable'}}});
+ vm.runInContext(fn('renderMissions()','renderKaijuHowTo('),c);
+ assert.match(c.renderMissions(),/NO MISSION DATA/);
+ c.state.guidance.missions=[null,{key:'one',title:'One',completed:false,steps:{broken:true}}];
+ assert.match(c.renderMissions(),/\[  \] One/);
+ assert.doesNotMatch(c.renderMissions(),/✅ Completed/);
+});
+
+test('a partial daily bonus read shows Refresh instead of an unverified claim button',()=>{
+ const c=context({button:()=>'<button>CLAIM BONUS</button>',state:{
+  pet:{pet_id:'p'},lifecycle:{phase:'young'},
+  guidance:{daily_completion:{ready:true,pending:[{utc_day:'2026-10-27'}]}}
+ }});
+ vm.runInContext(fn('renderDailyCompletion()','renderMissionStatus('),c);
+ const missingRewards=c.renderDailyCompletion();
+ assert.match(missingRewards,/BONUS STATUS UNAVAILABLE \/\/ TAP REFRESH/);
+ assert.doesNotMatch(missingRewards,/CLAIM BONUS|✅ Completed/);
+ c.state.guidance.daily_completion={ready:true,rewards:{pet_xp:5,moon_gold:2,style_tokens:1},pending:{malformed:true}};
+ const wrongPending=c.renderDailyCompletion();
+ assert.match(wrongPending,/BONUS STATUS UNAVAILABLE \/\/ TAP REFRESH/);
+ assert.doesNotMatch(wrongPending,/CLAIM BONUS/);
+});
+
 test('generic menu categories never establish success without saved outcome evidence',()=>{
  const kinds=['complete','claim','recovery','waiting','progress','ready','resume','review'];
  for(const kind of kinds){
