@@ -2,7 +2,7 @@
 
 ## GK workflow policy — routine checks are manual (27 October 2026)
 
-**Do not turn on automatic broad CI or scheduled health-probe jobs.** Read [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before editing workflows, adding an image, changing a page, or asking for release approval.
+**Project phase: build complete; debugging and final verification before live launch.** No new features, speculative rewrites, or automated anti-drift gates unless GK explicitly authorises them. **Do not turn on automatic broad CI or scheduled health-probe jobs.** Read [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before editing workflows, adding an image, changing a page, or asking for release approval.
 
 - Prefer the smallest scoped patch and direct local reasoning/tests; do not trigger every Actions workflow for ordinary art, text, CSS or page changes.
 - Validation workflows in `.github/workflows/` are **workflow_dispatch/manual only**. Run focused checks manually when risk warrants it and report exactly what ran or did not run.
