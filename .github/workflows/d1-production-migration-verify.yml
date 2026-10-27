@@ -1,80 +1,9 @@
 name: D1 Production Migration Verify
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  pull_request:
-    paths:
-      - deployments/d1-evidence-request.json
-      - deployments/production.json
-      - scripts/verify-d1-production-migrations.mjs
-      - scripts/verify-d1-production-migrations.test.mjs
-      - scripts/verify-d1-identity-authority-audit.mjs
-      - scripts/report-d1-query-failure.mjs
-      - workers/moonboys-api/migrations/038_telegram_pet_equipment_progression.sql
-      - workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql
-      - workers/moonboys-api/migrations/041_telegram_pet_repeat_reward_slots.sql
-      - workers/moonboys-api/migrations/042_telegram_pet_roguelite_foundation.sql
-      - workers/moonboys-api/migrations/043_telegram_pet_identity_expansion.sql
-      - workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql
-      - workers/moonboys-api/migrations/045_telegram_pet_inventory_cutover_reconciliation.sql
-      - workers/moonboys-api/migrations/046_fix_pet_runtime_unique_constraints.sql
-      - workers/moonboys-api/migrations/047_fix_telegram_leaderboard_reward_constraint.sql
-      - workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql
-      - workers/moonboys-api/migrations/049_telegram_pet_dialogue_history.sql
-      - workers/moonboys-api/migrations/050_telegram_pet_guided_progression.sql
-      - workers/moonboys-api/migrations/051_telegram_pet_content_reconciliation.sql
-      - workers/moonboys-api/migrations/052_telegram_pet_live_systems.sql
-      - workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql
-      - workers/moonboys-api/migrations/054_telegram_pet_client_performance.sql
-      - workers/moonboys-api/migrations/055_telegram_pet_season_slots.sql
-      - workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql
-      - workers/moonboys-api/migrations/057_telegram_pet_lifecycle_pet_id.sql
-      - workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql
-      - workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql
-      - workers/moonboys-api/migrations/060_telegram_pet_sanctuary_indexes.sql
-      - workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql
-      - workers/moonboys-api/migrations/062_moonpet_evolution_stage_5.sql
-      - workers/moonboys-api/migrations/063_arcade_xp_spendable_wallet.sql
-      - workers/moonboys-api/migrations/064_moonpet_beta_runtime_cutover.sql
-      - workers/moonboys-api/migrations/065_moonpet_reward_pet_id_authority.sql
-      - workers/moonboys-api/migrations/066_moonpet_run_pet_id_authority.sql
-      - workers/moonboys-api/migrations/067_moonpet_daily_journey_authority.sql
-      - workers/moonboys-api/migrations/068_moonpet_weekly_journey_authority.sql
-      - workers/moonboys-api/migrations/069_moonpet_breeding_authority.sql
-      - workers/moonboys-api/migrations/070_moonpet_pet_identity_achievement_authority.sql
-      - workers/moonboys-api/migrations/071_moonpet_arena_pet_authority.sql
-      - workers/moonboys-api/migrations/072_moonpet_identity_authority_verification.sql
-      - workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql
-      - workers/moonboys-api/migrations/074_moonpet_live_system_ownership_classification.sql
-      - workers/moonboys-api/migrations/075_dead_run_gps_survival.sql
-      - workers/moonboys-api/migrations/076_moonpet_continuing_contracts.sql
-      - workers/moonboys-api/migrations/077_moonpet_completion_rewards.sql
-      - workers/moonboys-api/migrations/078_moonpet_beta_season_xp_rebaseline.sql
-      - workers/moonboys-api/migrations/079_moonpet_training_and_style.sql
-      - workers/moonboys-api/migrations/080_moonpet_beta_xp_quarantine.sql
-      - workers/moonboys-api/migrations/081_moonpet_recovery_cursors.sql
-      - workers/moonboys-api/migrations/082_moonpet_post_reward_overwrite_rebaseline.sql
-      - workers/moonboys-api/migrations/083_moonpet_daily_run_completion_credit.sql
-      - workers/moonboys-api/migrations/084_moonpet_state_hot_path_indexes.sql
-      - workers/moonboys-api/migrations/085_permanent_pet_weekly_evidence.sql
-      - workers/moonboys-api/migrations/086_restore_permanent_pet_ownership.sql
-      - workers/moonboys-api/migrations/087_pet_journey_creation_clock.sql
-      - workers/moonboys-api/migrations/088_moonpet_finale_competition_quarters.sql
-      - workers/moonboys-api/migrations/089_community_xp_award_receipts.sql
-      - workers/moonboys-api/migrations/090_telegram_website_sessions.sql
-      - workers/moonboys-api/migrations/091_moonpet_style_catalog_expansion.sql
-      - workers/moonboys-api/migrations/092_moonpet_house_layouts.sql
-      - workers/moonboys-api/migrations/093_moonpet_radio_group_delivery_index.sql
-      - workers/moonboys-api/migrations/094_moonpet_home_furniture.sql
-      - workers/moonboys-api/migrations/095_moonpet_home_garden.sql
-      - workers/moonboys-api/migrations/096_moonpet_home_rooms.sql
-      - workers/moonboys-api/migrations/097_moonpet_room_furniture.sql
-      - workers/moonboys-api/migrations/098_nbg_london_records.sql
-      - workers/moonboys-api/migrations/099_nbg_london_competition_prizes.sql
-      - workers/moonboys-api/migrations/100_championship_clout_foundation.sql
-      - workers/moonboys-api/migrations/101_telegram_mini_app_login_replay.sql
-      - workers/moonboys-api/migrations/102_telegram_chat_menu_cleanup.sql
-      - .github/workflows/d1-production-migration-verify.yml
   workflow_dispatch:
+
 
 permissions:
   contents: read

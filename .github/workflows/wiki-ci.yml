@@ -1,12 +1,8 @@
 name: Wiki Structure Enforcement
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  pull_request:
-    paths:
-      - "wiki/**"
-      - ".github/workflows/wiki-ci.yml"
-      - "js/site-shell.js"
-      - "package.json"
+  workflow_dispatch:
 
 permissions:
   contents: read

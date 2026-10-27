@@ -1,16 +1,9 @@
 name: Worker Live Evidence Capture
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  pull_request:
-    paths:
-      - deployments/worker-evidence-request.json
-      - deployments/evidence/worker-provenance-*.json
-      - deployments/production.json
-      - scripts/live-worker-provenance-verify.mjs
-      - scripts/compare-worker-provenance-evidence.mjs
-      - scripts/worker-live-evidence-compare.test.mjs
-      - .github/workflows/worker-live-evidence-capture.yml
   workflow_dispatch:
+
 
 permissions:
   contents: read

@@ -1,5 +1,18 @@
 # Agent entry point
 
+## GK workflow policy — routine checks are manual (27 October 2026)
+
+**Project phase: build complete; debugging and final verification before live launch.** No new features, speculative rewrites, or automated anti-drift gates unless GK explicitly authorises them. **Do not turn on automatic broad CI or scheduled health-probe jobs.** Read [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before editing workflows, adding an image, changing a page, or asking for release approval.
+
+- Prefer the smallest scoped patch and direct local reasoning/tests; do not trigger every Actions workflow for ordinary art, text, CSS or page changes.
+- Validation workflows in `.github/workflows/` are **workflow_dispatch/manual only**. Run focused checks manually when risk warrants it and report exactly what ran or did not run.
+- **Do not claim a green check, production deployment or verified ranked run without evidence.**
+- **GitHub Pages publishing is separate**: its existing Worker/course-compatibility gate stays in place to protect leaderboard submissions. Never bypass it to speed up an image update.
+- Keep functional scheduled data-feed / graph refresh jobs independent of PR CI; do not remove them without a separate operational decision.
+- If GitHub rules require old status checks, tell GK which settings to change; do not fabricate passing statuses.
+- Retain branch/PR review and GK sign-off. No merge, production deployment, D1 migration, payout or irreversible action without explicit GK approval.
+
+
 Read `AGENT_EDITING_RULES.md` for branch, product and release rules. For any lore,
 wiki, scripture, canon generator or source-research work, also read
 `brand-canon/CANON_POLICY.md`, `brand-canon/canon-locks.json`, and
