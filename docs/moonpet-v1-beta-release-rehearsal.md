@@ -28,8 +28,11 @@ SQLite backup and a **new destination file**. The original backup is NEVER
 opened through SQLite: an isolated temporary copy is opened read-only for
 preflight and its transient WAL/SHM files are removed with that scratch copy.
 Existing source WAL/SHM/journal files and destination main/WAL/SHM/journal
-files (including dangling symlinks) block rehearsal. In-place/overwrite
-attempts are rejected before SQLite touches the destination.
+files (including dangling symlinks) block rehearsal. Both input and output
+parent directories are canonicalized before comparing database and journal
+paths, preventing a symlinked directory from disguising an original backup's
+WAL/SHM/journal as the new output. Final-component symlinks remain prohibited.
+In-place/overwrite attempts are rejected before SQLite touches the destination.
 
 Commands:
 
