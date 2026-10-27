@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -124,3 +124,58 @@ test('rehearsal blocks in-place, overwrite and any CLI execution without explici
   assert.equal(existsSync(dst+'2'),false);
   assert.deepEqual(readFileSync(src),before);
 }));
+
+
+test('existing destination WAL, SHM and journal artifacts are refused without modification', () => sandbox(({src,dst,dir}) => {
+  const sourceBefore=readFileSync(src);
+  const paths=['-wal','-shm','-journal'].map(ext=>dst+ext);
+  for(const path of paths)writeFileSync(path,'saved content: '+path);
+  const snapshots=paths.map(path=>readFileSync(path));
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),/existing_output_sidecars_forbidden/);
+  assert.equal(existsSync(dst),false);
+  for(let i=0;i<paths.length;i++)assert.deepEqual(readFileSync(paths[i]),snapshots[i]);
+  assert.deepEqual(readFileSync(src),sourceBefore);
+  const dangling=join(dir,'dangling-copy.sqlite');
+  symlinkSync(join(dir,'no-such-target'),dangling+'-journal');
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dangling),/existing_output_sidecars_forbidden/);
+  assert.equal(existsSync(dangling),false);
+}));
+
+test('a closed WAL-mode backup is never opened and can be rehearsed twice', () => sandbox(({src,dst,dir}) => {
+  const db=new DatabaseSync(src);
+  db.exec('PRAGMA journal_mode=WAL');
+  db.close();
+  const before=readFileSync(src);
+  for(const suffix of ['-wal','-shm','-journal'])
+    assert.equal(existsSync(src+suffix),false,'fixture must have no active journals');
+  const first=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(first.moonpet_rows_removed,5);
+  for(const suffix of ['-wal','-shm','-journal'])
+    assert.equal(existsSync(src+suffix),false,'source journal metadata cannot be created');
+  assert.deepEqual(readFileSync(src),before);
+  const second=join(dir,'second-copy.sqlite');
+  const repeat=rehearseMoonpetV1BetaReset(src,second);
+  assert.equal(repeat.moonpet_rows_removed,5);
+  assert.deepEqual(readFileSync(src),before);
+  for(const suffix of ['-wal','-shm','-journal'])assert.equal(existsSync(src+suffix),false);
+}));
+
+test('mixed-case SQLite REFERENCES are canonicalized for ordering and external blockers', () => sandbox(({src,dst}) => {
+  let db=new DatabaseSync(src);
+  db.exec("CREATE TABLE telegram_pet_daily_completion(id TEXT PRIMARY KEY,owner TEXT REFERENCES TELEGRAM_PET_PROFILES(telegram_id));");
+  db.exec("INSERT INTO telegram_pet_daily_completion VALUES ('daily','owner');");
+  const plan=planMoonpetV1BetaRehearsal(db);
+  assert.ok(plan.delete_order.indexOf('telegram_pet_daily_completion') <
+    plan.delete_order.indexOf('telegram_pet_profiles'),
+    'uppercase REFERENCES must not invert parent/child deletion order');
+  db.close();
+  const report=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(report.moonpet_rows_removed,6);
+  assert.equal(report.foreign_keys_enforced,true);
+  db=new DatabaseSync(src);
+  db.exec('CREATE TABLE outside_reference(owner TEXT REFERENCES TELEGRAM_PET_PROFILES(telegram_id));');
+  db.close();
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst+'2'),/external_fk_moonpet_dependency/);
+  assert.equal(existsSync(dst+'2'),false);
+});
+
