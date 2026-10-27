@@ -16,8 +16,23 @@ export function inspectMoonpetBetaReset(db) {
     .all().map(row => row.name);
   const columns = new Map(names.map(name => [name,
     db.prepare('PRAGMA table_info(' + quote(name) + ')').all().map(col => col.name)]));
-  const fks = new Map(names.map(name => [name,
-    db.prepare('PRAGMA foreign_key_list(' + quote(name) + ')').all()]));
+  // SQLite emits one row per column, not per foreign-key constraint.
+  // Group by constraint id within its source table so composite references
+  // remain intact and reset reviewers can inspect deletion order correctly.
+  const foreignKeys = new Map(names.map(name => {
+    const groups = new Map();
+    for (const fk of db.prepare('PRAGMA foreign_key_list(' + quote(name) + ')').all()) {
+      const id = Number(fk.id);
+      if (!groups.has(id)) groups.set(id, {
+        constraint_id: id, source_table: name, target_table: fk.table,
+        on_update: fk.on_update, on_delete: fk.on_delete, match: fk.match, columns: [],
+      });
+      groups.get(id).columns.push({ seq: Number(fk.seq), from: fk.from, to: fk.to });
+    }
+    return [name, [...groups.values()].map(ref => ({
+      ...ref, columns: ref.columns.sort((a, b) => a.seq - b.seq),
+    }))];
+  }));
   const pets = names.filter(isPet), petNames = new Set(pets);
   const triggers = db.prepare("SELECT tbl_name,name FROM sqlite_master WHERE type='trigger' ORDER BY name").all();
   const moonpetTables = pets.map(name => ({
@@ -25,11 +40,18 @@ export function inspectMoonpetBetaReset(db) {
     rows: Number(db.prepare('SELECT COUNT(*) AS n FROM ' + quote(name)).get().n),
     has_owner_column: columns.get(name).includes('telegram_id'),
     has_pet_id_column: columns.get(name).includes('pet_id'),
-    shared_parent_references: fks.get(name).filter(fk => !petNames.has(fk.table))
-      .map(fk => ({table: fk.table, on_delete: fk.on_delete})),
+    // Preserve every edge (including MoonPet-to-MoonPet edges). These arrays
+    // retain grouped composite column mappings; category summaries below are
+    // kept for consumers of the initial inventory format.
+    outbound_foreign_keys: foreignKeys.get(name),
+    inbound_foreign_keys: names.flatMap(source =>
+      foreignKeys.get(source).filter(ref => ref.target_table === name)),
+    shared_parent_references: foreignKeys.get(name)
+      .filter(ref => !petNames.has(ref.target_table))
+      .map(ref => ({table: ref.target_table, on_delete: ref.on_delete})),
     inbound_non_moonpet_references: names.filter(source => !petNames.has(source))
-      .flatMap(source => fks.get(source).filter(fk => fk.table === name)
-        .map(fk => ({table: source, on_delete: fk.on_delete}))),
+      .flatMap(source => foreignKeys.get(source).filter(ref => ref.target_table === name)
+        .map(ref => ({table: source, on_delete: ref.on_delete}))),
     triggers: triggers.filter(t => t.tbl_name === name).map(t => t.name),
   }));
   return {
