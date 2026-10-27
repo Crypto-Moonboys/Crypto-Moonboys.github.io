@@ -23,9 +23,13 @@ core pet tables, foreign keys into MoonPet from other systems, pet_id
 references in other tables, DELETE triggers, current FK violations and FK
 cycles all block rehearsal.
 
-The script requires an **existing, closed LOCAL SQLite backup** and a
-**new destination file**. The source is opened READ ONLY and never mutated.
-WAL sidecars and in-place or overwrite attempts are rejected.
+The script requires **Node 22.13.0 or later**, an existing, closed LOCAL
+SQLite backup and a **new destination file**. The original backup is NEVER
+opened through SQLite: an isolated temporary copy is opened read-only for
+preflight and its transient WAL/SHM files are removed with that scratch copy.
+Existing source WAL/SHM/journal files and destination main/WAL/SHM/journal
+files (including dangling symlinks) block rehearsal. In-place/overwrite
+attempts are rejected before SQLite touches the destination.
 
 Commands:
 
@@ -36,8 +40,11 @@ Commands:
 The new SQLite copy has foreign keys enabled. The child-to-parent deletion
 order runs in a transaction. The script verifies zero pet rows, zero FK
 violations and SHA-256 equality of every NON-MoonPet table before and after.
-Any failure rolls back and removes the disposable output; the backup stays
-unchanged. The report is always ready_for_live_reset=false.
+Any failure rolls back if the transaction is still active, preserves the
+original SQLite error, and removes the disposable output and its generated
+sidecars; the backup and any pre-existing destination artifacts stay unchanged.
+The report is always ready_for_live_reset=false. Mixed-case FK references
+are resolved to their canonical table names, including external dependencies.
 
 ## Live operation: not authorized or performed
 
