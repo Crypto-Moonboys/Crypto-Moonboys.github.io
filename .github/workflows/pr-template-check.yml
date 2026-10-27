@@ -1,5 +1,6 @@
 name: PR template check
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
   workflow_dispatch:
     inputs:
@@ -7,8 +8,6 @@ on:
         description: 'Generated PR number to validate on its checked-out branch'
         required: true
         type: string
-  pull_request:
-    types: [opened, edited, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   pull-requests: read
