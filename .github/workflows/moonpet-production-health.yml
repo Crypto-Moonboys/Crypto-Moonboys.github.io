@@ -1,8 +1,7 @@
 name: Moonpet Production Health
 
+# Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
-  schedule:
-    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       notification_test:
@@ -10,6 +9,7 @@ on:
         required: false
         type: boolean
         default: false
+
 
 permissions:
   contents: read
