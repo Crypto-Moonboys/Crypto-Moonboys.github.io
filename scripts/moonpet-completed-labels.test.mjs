@@ -86,6 +86,29 @@ test('generic menu categories never establish success without saved outcome evid
  }
 });
 
+test('all six menus suppress unverified completion and actions after uncertain refresh',()=>{
+ const screens=['home','missions','explore','work','economy','profile'];
+ const saved=Object.fromEntries(screens.map(screen=>[screen,{loaded:true,entries:[
+  {key:'unknown-'+screen,title:screen.toUpperCase()+' SAVED',kind:'complete',status:'REVIEW REQUIRED',count:1},
+ ]}]));
+ const c=context({state:{adopted:true,pet:{pet_id:'selected-pet'}},
+  activeScreen:'home',panelOpenState:{},routeButton:()=>'<button>REVIEW ONLY</button>',
+  window:{MoonpetPlayOptions:{menuStatuses:()=>saved,menuBadge:()=>({count:0})}}});
+ vm.runInContext(marker('menuStatus'),c);
+ for(const screen of screens){
+  c.activeScreen=screen;
+  const markup=c.renderMenuStatus();
+  assert.match(markup,/REVIEW REQUIRED/);
+  assert.doesNotMatch(markup,/✅ Completed|CLAIM READY/,
+   screen+' may not infer success from an unverified complete category');
+  c.petActionRefreshRequired=true;
+  assert.match(c.renderMenuStatus(),/REFRESH REQUIRED/);
+  assert.doesNotMatch(c.renderMenuStatus(),/REVIEW ONLY|✅ Completed/,
+   screen+' must block stale saved-action shortcuts');
+  c.petActionRefreshRequired=false;
+ }
+});
+
 test('7/7 completion wording preserves pending claims and does not mark partial or unavailable bonuses',()=>{
  const c=context({button:()=>'<button>claim</button>',state:{pet:{pet_id:'p'},lifecycle:{phase:'young'}}});
  vm.runInContext(fn('renderDailyCompletion()','renderMissionStatus('),c);
