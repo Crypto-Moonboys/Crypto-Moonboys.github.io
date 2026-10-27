@@ -90,8 +90,8 @@ assert.equal(replacement.pet_xp,0,'old training is never copied to the replaceme
 assert.equal((await hooks.getMoonpetLifecycle(db,'owner')).phase,'egg');
 assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').get(replacement.pet_id).n,1);
 assert.equal(deletion.season_slots.slots.find(slot=>slot.active).pet.lifetime_progression.current_week,1);
-assert.equal(deletion.season_slots.deleted_pet_history[0].pet_id,oldId);
-assert.equal(deletion.season_slots.deleted_pet_history[0].awarded_receipts,1);
+assert.equal(deletion.season_slots.deleted_pet_history,undefined,'deleted-pet audit history is no longer shown in the game');
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key='pet:delete:'||pet_id AND applied_at IS NOT NULL").get(oldId).n,1,'internal idempotency receipt remains');
 for (const [table,rows] of saved) assert.deepEqual(sql.prepare('SELECT * FROM '+table).all(),rows,table+' stays byte-for-byte unchanged');
 assert.deepEqual(sql.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'").get(),balances);
 assert.equal((await readPetLeaderboard(db,{period:'all_time',owner:'owner'})).rows.find(row=>row.telegram_id==='owner').pet_xp,allTimeBefore);
@@ -100,16 +100,28 @@ assert.equal((await hooks.switchActivePetSeasonSlot(db,'owner',oldId)).accepted,
 await hooks.preparePetMiniAppState(db,'owner',new Date('2030-01-01'));
 assert.equal(sql.prepare('SELECT status FROM telegram_pet_season_slots WHERE pet_id=?').get(oldId).status,'archived','repair cannot resurrect deleted pets');
 
-// Paid replacement does not debit the wallet or change active-pet state.
+// Paid deletion locks the space. It does not fabricate a replacement or
+// refund old XP. Unlocking it again debits its full price and creates a new pet.
 assert.equal((await hooks.buyPetSeasonSlot(db,'owner',2)).accepted,true);
 const paid=sql.prepare("SELECT pet_id FROM telegram_pet_season_slots WHERE telegram_id='owner' AND acquisition_type='arcade_xp' AND status='active'").get().pet_id;
 const walletBefore=sql.prepare("SELECT * FROM arcade_xp_wallets WHERE telegram_id='owner'").get();
 const selectionBefore=sql.prepare("SELECT * FROM telegram_pet_active_slots WHERE telegram_id='owner'").get();
 const paidDeletion=await hooks.deletePetSlot(db,'owner',confirm(paid));
 assert.equal(paidDeletion.accepted,true);
+assert.equal(paidDeletion.replacement_pet_id,null);
+assert.equal(paidDeletion.slot_unlocked,false);
+assert.equal(paidDeletion.season_slots.slots[1].unlocked,false);
+assert.equal(paidDeletion.season_slots.slots[1].unlock_cost_arcade_xp,500);
 assert.deepEqual(sql.prepare("SELECT * FROM arcade_xp_wallets WHERE telegram_id='owner'").get(),walletBefore);
 assert.deepEqual(sql.prepare("SELECT * FROM telegram_pet_active_slots WHERE telegram_id='owner'").get(),selectionBefore);
-assert.equal(sql.prepare('SELECT acquisition_type FROM telegram_pet_season_slots WHERE pet_id=?').get(paidDeletion.replacement_pet_id).acquisition_type,'arcade_xp');
+assert.equal((await hooks.switchActivePetSeasonSlot(db,'owner','2')).accepted,false);
+const paidRepurchase=await hooks.buyPetSeasonSlot(db,'owner',2);
+assert.equal(paidRepurchase.accepted,true);
+const reboughtPaidPetId=paidRepurchase.season_slots.slots[1].pet_id;
+assert.notEqual(reboughtPaidPetId,paid);
+assert.equal(paidRepurchase.season_slots.slots[1].pet.pet_xp,0);
+assert.equal(sql.prepare('SELECT acquisition_type FROM telegram_pet_season_slots WHERE pet_id=?').get(reboughtPaidPetId).acquisition_type,'arcade_xp');
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id='owner'").get().arcade_xp_spendable,walletBefore.arcade_xp_spendable-500);
 assert.equal((await hooks.buyPetSeasonSlot(db,'owner',3)).accepted,true);
 assert.equal((await hooks.buyPetSeasonSlot(db,'owner',3)).accepted,false);
 assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id='owner' AND status='active'").get().n,3);
@@ -298,7 +310,7 @@ assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_garden_harvests
 
 // Replacement lifetime periods still qualify saved weekly boss recovery.
 const boss=PET_WEEKLY_BOSSES[0], now=new Date().toISOString(), day=now.slice(0,10), week='2026-W40';
-const bossPet=sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(paidDeletion.replacement_pet_id);
+const bossPet=sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(reboughtPaidPetId);
 sql.prepare(`INSERT INTO telegram_pet_events(id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
   VALUES ('replacement-victory',?,'owner','weekly_boss','replacement-victory',?,?,?,'accepted','weekly_boss_attempt',?)`).run(bossPet.pet_id,bossPet.season_key,day,week,JSON.stringify({source:'pet_weekly_boss',boss_id:boss.boss_id}));
 sql.prepare(`INSERT INTO telegram_pet_weekly_boss_progress(telegram_id,week_key,boss_id,damage,defeated_at) VALUES ('owner',?,?,999999,?)`).run(week,boss.boss_id,now);
@@ -316,31 +328,90 @@ sql.prepare(`INSERT INTO telegram_pet_reward_claims(claim_id,pet_id,telegram_id,
   VALUES ('settled-terminal',?,'terminal','pet_run_legacy','pet_run_complete:terminal:saved-terminal',?,'awarded')`).run(terminalId,day);
 assert.equal((await hooks.deletePetSlot(db,'terminal',confirm(terminalId))).accepted,true);
 
-// Preserve all three visible/numeric space positions through repeated deletion.
+// Deleting paid slot 2 leaves slot 3 in position 3, even when selected.
 const spaceOwner='space-order', spaceIds=[await player(spaceOwner)];
 for (const ordinal of [2,3]) {
   assert.equal((await hooks.buyPetSeasonSlot(db,spaceOwner,ordinal)).accepted,true);
-  spaceIds.push((await hooks.buildPetSeasonSlotSummary(db,spaceOwner)).slots.find(s=>s.slot_number===ordinal).pet_id);
+  spaceIds.push((await hooks.buildPetSeasonSlotSummary(db,spaceOwner)).slots[ordinal-1].pet_id);
 }
 for (const [index,id] of spaceIds.entries()) {
   sql.prepare('UPDATE telegram_pet_season_slots SET created_at=? WHERE pet_id=?').run(`2025-01-0${index+1} 00:00:00`,id);
 }
-const spaceWallet=sql.prepare('SELECT * FROM arcade_xp_wallets WHERE telegram_id=?').get(spaceOwner);
-for (const index of [0,1,2,0,2,1]) {
-  const result=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[index]));
-  assert.equal(result.accepted,true);
-  spaceIds[index]=result.replacement_pet_id;
-  assert.deepEqual(result.season_slots.slots.map(s=>s.pet_id),spaceIds,'full roster retains the original space order');
-  assert.deepEqual((await hooks.buildPetSeasonSlotCoreSummary(db,spaceOwner)).slots.map(s=>s.pet_id),spaceIds,'core roster uses the same immutable order');
-  assert.equal(result.season_slots.slots[index].pet.lifetime_progression.current_week,1,'new pet age does not inherit space age');
-  for (const ordinal of [1,2,3]) {
-    const switched=await hooks.switchActivePetSeasonSlot(db,spaceOwner,String(ordinal));
-    assert.equal(switched.accepted,true);
-    assert.equal(switched.pet.pet_id,spaceIds[ordinal-1],'numeric switching resolves the preserved space');
-  }
-}
-assert.equal((await hooks.buyPetSeasonSlot(db,spaceOwner,3)).reason,'pet_slot_already_owned');
-assert.deepEqual(sql.prepare('SELECT * FROM arcade_xp_wallets WHERE telegram_id=?').get(spaceOwner),spaceWallet);
+const originalSpend=sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable;
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,spaceIds[1])).accepted,true);
+const deleteTwo=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[1]));
+assert.equal(deleteTwo.accepted,true);
+assert.equal(deleteTwo.replacement_pet_id,null);
+assert.equal(deleteTwo.slot_unlocked,false);
+assert.deepEqual(deleteTwo.season_slots.slots.map(s=>s.pet_id),[spaceIds[0],null,spaceIds[2]]);
+assert.equal(deleteTwo.season_slots.slots[1].affordable,true);
+assert.equal((await hooks.getPetProfile(db,spaceOwner)).pet_id,spaceIds[0],'active paid deletion selects a remaining pet');
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'2')).accepted,false,'deleted ordinal is not another pet');
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'3')).accepted,true,'third pet retains ordinal 3');
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend);
+const rebuyTwo=await hooks.buyPetSeasonSlot(db,spaceOwner,2);
+assert.equal(rebuyTwo.accepted,true);
+spaceIds[1]=rebuyTwo.season_slots.slots[1].pet_id;
+assert.notEqual(spaceIds[1],deleteTwo.deleted_pet_id);
+assert.deepEqual(rebuyTwo.season_slots.slots.map(s=>s.pet_id),spaceIds);
+assert.equal(rebuyTwo.season_slots.slots[1].pet.level,1);
+assert.equal(rebuyTwo.season_slots.slots[1].pet.pet_xp,0);
+assert.equal((await hooks.buyPetSeasonSlot(db,spaceOwner,2)).reason,'pet_slot_already_owned');
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-500);
+
+const deleteThree=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[2]));
+assert.equal(deleteThree.accepted,true);
+assert.equal(deleteThree.replacement_pet_id,null);
+assert.deepEqual(deleteThree.season_slots.slots.map(s=>s.pet_id),[spaceIds[0],spaceIds[1],null]);
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'3')).accepted,false);
+const rebuyThree=await hooks.buyPetSeasonSlot(db,spaceOwner,3);
+assert.equal(rebuyThree.accepted,true);
+spaceIds[2]=rebuyThree.season_slots.slots[2].pet_id;
+assert.deepEqual(rebuyThree.season_slots.slots.map(s=>s.pet_id),spaceIds);
+assert.equal(rebuyThree.season_slots.slots[2].pet.pet_xp,0);
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-1500);
+
+const deleteFree=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[0]));
+assert.equal(deleteFree.accepted,true);
+assert.equal(deleteFree.slot_unlocked,true);
+spaceIds[0]=deleteFree.replacement_pet_id;
+assert.deepEqual(deleteFree.season_slots.slots.map(s=>s.pet_id),spaceIds);
+assert.equal(deleteFree.season_slots.slots[0].pet.pet_xp,0);
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'2')).accepted,true);
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'3')).accepted,true);
+assert.equal((await hooks.switchActivePetSeasonSlot(db,spaceOwner,'1')).accepted,true);
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-1500);
+// Repeated deletion never grants a new paid egg for free, and the next
+// purchase has a new identity and deducts the same full price once.
+const secondPaidDeletion=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[1]));
+assert.equal(secondPaidDeletion.accepted,true);
+assert.equal(secondPaidDeletion.replacement_pet_id,null);
+assert.equal((await hooks.buildPetSeasonSlotSummary(db,spaceOwner)).slots[1].unlocked,false);
+const secondPaidPurchase=await hooks.buyPetSeasonSlot(db,spaceOwner,2);
+assert.equal(secondPaidPurchase.accepted,true);
+assert.notEqual(secondPaidPurchase.season_slots.slots[1].pet_id,spaceIds[1]);
+assert.equal(secondPaidPurchase.season_slots.slots[1].pet.pet_xp,0);
+assert.equal(sql.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?").get(spaceOwner).arcade_xp_spendable,originalSpend-2000);
+assert.equal(sql.prepare('PRAGMA foreign_key_check').all().length,0);
+
+// A different tab may select the targeted paid pet after the preflight read.
+// The canonical deletion claim must compare the actual selection in the same
+// DB transaction; otherwise it would archive the newly selected pet.
+const selectionRaceOwner='paid-delete-selection-race';
+await player(selectionRaceOwner);
+assert.equal((await hooks.buyPetSeasonSlot(db,selectionRaceOwner,2)).accepted,true);
+const selectionRacePet=(await hooks.buildPetSeasonSlotSummary(db,selectionRaceOwner)).slots[1].pet_id;
+beforeBatch=async()=>{
+  const moved=await hooks.switchActivePetSeasonSlot(db,selectionRaceOwner,selectionRacePet);
+  assert.equal(moved.accepted,true,'competing tab may select target before deletion claim');
+};
+const rejectedRace=await hooks.deletePetSlot(db,selectionRaceOwner,confirm(selectionRacePet));
+assert.equal(rejectedRace.accepted,false,'a changed pointer must abort deletion');
+assert.equal(rejectedRace.reason,'pet_delete_blocked');
+assert.equal(sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(selectionRacePet).status,'active');
+assert.equal(sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(selectionRaceOwner).pet_id,selectionRacePet);
+assert.equal((await hooks.buildPetSeasonSlotSummary(db,selectionRaceOwner)).slots[1].unlocked,true);
+assert.equal((await hooks.deletePetSlot(db,selectionRaceOwner,confirm(selectionRacePet))).accepted,true,'retry with current pointer may delete safely');
 
 async function expectBlocked(owner,id,message) {
   assert.equal((await hooks.deletePetSlot(db,owner,confirm(id))).reason,'pet_delete_blocked',message);

@@ -161,7 +161,8 @@ const overflow=await hooks.buildPetSeasonSlotSummary(db,'recovered',now);
 assert.equal(overflow.slots.length,4); assert.equal(overflow.recovery_over_capacity,true); assert.equal(overflow.can_buy_next_slot,false);
 assert.equal((await hooks.switchActivePetSeasonSlot(db,'recovered','extra-history',{now})).accepted,true);
 const walletBefore=sql.prepare("SELECT * FROM arcade_xp_wallets WHERE telegram_id='recovered'").get();
-assert.equal((await hooks.buyPetSeasonSlot(db,'recovered',3,{now})).reason,'pet_slot_already_owned');
+assert.equal((await hooks.buyPetSeasonSlot(db,'recovered',3,{now})).reason,'pet_ownership_recovery_required',
+  'over-capacity recovered ownership must block purchases before the already-owned check');
 assert.deepEqual(sql.prepare("SELECT * FROM arcade_xp_wallets WHERE telegram_id='recovered'").get(),walletBefore);
 
 // Two requests may observe one space before another creation quarter allocates it.

@@ -13,7 +13,7 @@ import { weeklyBossLegacySourceProofSql } from '../pets/weekly-boss-evidence.js'
 import { applyPetCareDecay } from '../pets/care-decay.js';
 import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
-import { petSpaceOrderSql } from '../pets/space-order.js';
+import { petRankedSpaceCteSql } from '../pets/space-order.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { projectSavedMoonpetClaims } from './moonpet-saved-claims.js';
 
@@ -296,17 +296,20 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   // Permanent Moonpet spaces are ordered across all retained seasons. A
   // season-local slot_number can be 1 in multiple quarters, and a replacement
   // retains the deleted pet's space position via its saved deletion receipt.
-  // Rank the ownership rows BEFORE joining live instances: a missing instance
-  // must not silently renumber intact pets. Keep i.slot_number unchanged for
-  // season-specific joins and gameplay/source authority.
+  // Include deleted paid-space tombstones in the canonical rank BEFORE joining
+  // live instances: a locked slot 2 must not relabel intact slot 3 as slot 2.
+  // Missing active instances must not renumber intact pets either. Stored
+  // i.slot_number remains season-local for joins and gameplay authority.
   const petRows = sourceStatuses['moonpet.adoption-incubation'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.created_at AS ownership_created_at,s.journey_clock,s.permanent_slot_number,
+    `WITH ${petRankedSpaceCteSql()}
+     SELECT i.pet_id,i.season_key,i.slot_number,i.stage,i.level,i.pet_xp,i.hunger,i.happiness,i.cleanliness,i.energy,i.health,i.status,i.created_at,i.updated_at,i.last_decay_at,s.created_at AS ownership_created_at,s.journey_clock,s.permanent_slot_number,
             l.phase AS lifecycle_phase,
             CASE WHEN a.pet_id=i.pet_id THEN 1 ELSE 0 END AS is_active
        FROM telegram_pet_instances i
        JOIN (SELECT s.pet_id,s.telegram_id,s.season_key,s.slot_number,s.created_at,s.journey_clock,
-               ROW_NUMBER() OVER (ORDER BY ${petSpaceOrderSql('s')}) AS permanent_slot_number
+               ranked.display_slot_number AS permanent_slot_number
              FROM telegram_pet_season_slots s
+             JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
              WHERE s.telegram_id=? AND s.status='active') s
          ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
         AND s.season_key=i.season_key AND s.slot_number=i.slot_number
@@ -314,7 +317,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
         AND a.pet_id=s.pet_id AND a.season_key=s.season_key
        LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
       WHERE i.status='active'
-      ORDER BY s.permanent_slot_number ASC`, [ownerId], [], failures,
+      ORDER BY s.permanent_slot_number ASC`, [ownerId, ownerId], [], failures,
     ['moonpet.adoption-incubation', 'moonpet.daily-journey',
       'moonpet.weekly-journey', 'moonpet.care', 'moonpet.jobs',
       'moonpet.garden-kitchen-gym', 'moonpet.evolution']);

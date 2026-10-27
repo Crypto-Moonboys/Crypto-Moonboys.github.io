@@ -751,8 +751,14 @@ test('PR3 cross-season permanent roster labels never reuse season-local slots', 
   const queryCall = db.calls.find(call => /s\.permanent_slot_number/u.test(call.sql)
     && /FROM telegram_pet_instances i/u.test(call.sql));
   assert.ok(queryCall, 'existing owned-roster read must generate the ordinals without extra D1 calls');
+  assert.match(queryCall.sql, /WITH pet_ranked_spaces AS/u,
+    'the action plan must use the canonical space rank, including paid deletion tombstones');
   assert.match(queryCall.sql, /ROW_NUMBER\(\) OVER \(ORDER BY/u,
     'permanent pet-space positions must be numbered in SQL');
+  assert.match(queryCall.sql, /ranked\.display_slot_number AS permanent_slot_number/u,
+    'display labels must come from shared MoonPet authority');
+  assert.deepEqual(queryCall.params, ['123456', '123456'],
+    'both rank and owned-row filter must be scoped to the signed owner');
   assert.match(queryCall.sql, /FROM telegram_pet_identity_events d/u,
     'replacement ordering must use canonical deletion receipt authority');
   assert.match(queryCall.sql, /ORDER BY s\.permanent_slot_number ASC/u,
@@ -777,7 +783,8 @@ test('PR3 permanent pet-space roster SQL preserves cross-season and replacement 
     sql.exec([
       'CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL,',
       'season_key TEXT NOT NULL, slot_number INTEGER NOT NULL, status TEXT NOT NULL,',
-      'created_at TEXT NOT NULL, journey_clock TEXT, source_event_key TEXT);',
+      'created_at TEXT NOT NULL, journey_clock TEXT, source_event_key TEXT,',
+      'acquisition_type TEXT NOT NULL);',
       'CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL,',
       'season_key TEXT NOT NULL, slot_number INTEGER NOT NULL, stage TEXT, level INTEGER, pet_xp INTEGER,',
       'hunger INTEGER, happiness INTEGER, cleanliness INTEGER, energy INTEGER,',
@@ -785,28 +792,28 @@ test('PR3 permanent pet-space roster SQL preserves cross-season and replacement 
       'CREATE TABLE telegram_pet_active_slots (telegram_id TEXT NOT NULL, pet_id TEXT NOT NULL, season_key TEXT NOT NULL);',
       'CREATE TABLE telegram_pet_lifecycle_by_pet (pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL, phase TEXT);',
       'CREATE TABLE telegram_pet_identity_events (pet_id TEXT NOT NULL, telegram_id TEXT NOT NULL,',
-      'event_key TEXT NOT NULL, event_kind TEXT NOT NULL, applied_at TEXT, payload TEXT);',
+      'season_key TEXT NOT NULL, event_key TEXT NOT NULL, event_kind TEXT NOT NULL, applied_at TEXT, payload TEXT);',
     ].join(' '));
     const owner = '123456';
     const slotInsert = sql.prepare('INSERT INTO telegram_pet_season_slots ' +
-      '(pet_id,telegram_id,season_key,slot_number,status,created_at,journey_clock,source_event_key) ' +
-      "VALUES (?,?,?,?,'active',?,'legacy_quarter',?)");
+      '(pet_id,telegram_id,season_key,slot_number,status,created_at,journey_clock,source_event_key,acquisition_type) ' +
+      "VALUES (?,?,?,?,'active',?,'legacy_quarter',?,?)");
     const instanceInsert = sql.prepare('INSERT INTO telegram_pet_instances ' +
       '(pet_id,telegram_id,season_key,slot_number,stage,level,pet_xp,status,created_at) ' +
       "VALUES (?,?,?,?,'hatched',4,100,'active',?)");
-    const addPet = (pet, season, seasonSlot, created, sourceKey = null, petOwner = owner) => {
-      slotInsert.run(pet, petOwner, season, seasonSlot, created, sourceKey);
+    const addPet = (pet, season, seasonSlot, created, sourceKey = null, petOwner = owner, acquisitionType = 'arcade_xp') => {
+      slotInsert.run(pet, petOwner, season, seasonSlot, created, sourceKey, acquisitionType);
       instanceInsert.run(pet, petOwner, season, seasonSlot, created);
       sql.prepare('INSERT INTO telegram_pet_lifecycle_by_pet VALUES (?, ?, ?)').run(pet, petOwner, 'young');
     };
-    addPet('space-1', 'pet-s2026-003', 1, '2026-07-01T00:00:00Z');
+    addPet('space-1', 'pet-s2026-003', 1, '2026-07-01T00:00:00Z', null, owner, 'free');
     addPet('space-2', 'pet-s2026-003', 2, '2026-08-15T00:00:00Z');
     addPet('space-3', 'pet-s2026-004', 1, '2026-10-01T00:00:00Z');
     // An unrelated owner must not influence the signed owner's ordinal.
-    addPet('other-owner-pet', 'pet-s2026-001', 1, '2026-01-01T00:00:00Z', null, 'another-owner');
+    addPet('other-owner-pet', 'pet-s2026-001', 1, '2026-01-01T00:00:00Z', null, 'another-owner', 'free');
     sql.prepare('INSERT INTO telegram_pet_active_slots VALUES (?,?,?)')
       .run(owner, 'space-3', 'pet-s2026-004');
-    const read = () => sql.prepare(rosterSql).all(owner).map(row => ({
+    const read = () => sql.prepare(rosterSql).all(owner, owner).map(row => ({
       pet_id: row.pet_id, season_key: row.season_key,
       season_slot: row.slot_number, permanent_slot: row.permanent_slot_number,
       selected: row.is_active,
@@ -817,28 +824,62 @@ test('PR3 permanent pet-space roster SQL preserves cross-season and replacement 
     assert.equal(read().find(row => row.selected === 1)?.pet_id, 'space-3',
       'permanent numbering must preserve selected pet');
 
-    // The original deletion receipt carries the replacement's earlier
-    // permanent space position even though the new pet was born later.
+    // PR #1652: a paid deletion archives slot 2 without replacing it.
+    // Its applied receipt reserves ordinal 2 while intact slot 3 stays at 3.
     sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='space-2'").run();
     sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='space-2'").run();
-    addPet('replacement-space-2', 'pet-s2026-004', 2, '2026-10-14T00:00:00Z',
+    const insertDeletionReceipt = sql.prepare('INSERT INTO telegram_pet_identity_events ' +
+      "(pet_id,telegram_id,season_key,event_key,event_kind,applied_at,payload) VALUES (?, ?, ?, ?, 'memory', ?, ?)");
+    insertDeletionReceipt.run('space-2', owner, 'pet-s2026-003', 'pet:delete:space-2',
+      '2026-10-14T00:00:00Z', JSON.stringify({
+        type: 'pet_deleted', replacement_pet_id: null,
+        space_created_at: '2026-08-15T00:00:00Z', space_pet_id: 'space-2',
+      }));
+    assert.deepEqual(read().map(row => [row.pet_id, row.season_slot, row.permanent_slot]), [
+      ['space-1', 1, 1], ['space-3', 1, 3],
+    ], 'locked paid slot 2 must not relabel the surviving third pet');
+    assert.equal(read().find(row => row.selected === 1)?.pet_id, 'space-3',
+      'a paid deletion must preserve the intact selected pet');
+
+    // Paying again creates a fresh lifetime while inheriting the tombstone's
+    // position. No duplicate counted slot is allowed after repurchase.
+    addPet('replacement-space-2', 'pet-life-repurchase-1', 2, '2026-10-14T00:00:00Z',
       'pet:delete:space-2');
-    sql.prepare('INSERT INTO telegram_pet_identity_events ' +
-      "(pet_id,telegram_id,event_key,event_kind,applied_at,payload) VALUES (?, ?, ?, 'memory', ?, ?)")
-      .run('space-2', owner, 'pet:delete:space-2', '2026-10-14T00:00:00Z',
-        JSON.stringify({
-          replacement_pet_id: 'replacement-space-2',
-          space_created_at: '2026-08-15T00:00:00Z',
-          space_pet_id: 'space-2',
-        }));
     assert.deepEqual(read().map(row => [row.pet_id, row.season_slot, row.permanent_slot]), [
       ['space-1', 1, 1], ['replacement-space-2', 2, 2], ['space-3', 1, 3],
-    ], 'replacement inherits saved space order, not its new creation date');
+    ], 'paid repurchase restores original position and suppresses the old tombstone');
+
+    // Legacy receipts with an immediate replacement must still be supported.
+    sql.prepare("UPDATE telegram_pet_identity_events SET payload=? WHERE pet_id='space-2'")
+      .run(JSON.stringify({
+        replacement_pet_id: 'replacement-space-2',
+        space_created_at: '2026-08-15T00:00:00Z', space_pet_id: 'space-2',
+      }));
+    assert.deepEqual(read().map(row => row.permanent_slot), [1, 2, 3],
+      'historical immediate-replacement receipts retain their numbering');
+
+    // Deleting the repurchased paid pet must create exactly one new tombstone
+    // at the *original* slot location, not at its later lifetime created_at.
+    sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='replacement-space-2'").run();
+    sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='replacement-space-2'").run();
+    insertDeletionReceipt.run('replacement-space-2', owner, 'pet-life-repurchase-1',
+      'pet:delete:replacement-space-2', '2026-10-15T00:00:00Z', JSON.stringify({
+        type: 'pet_deleted', replacement_pet_id: null,
+        space_created_at: '2026-08-15T00:00:00Z', space_pet_id: 'space-2',
+      }));
+    assert.deepEqual(read().map(row => [row.pet_id, row.permanent_slot]), [
+      ['space-1', 1], ['space-3', 3],
+    ], 'repeat paid deletion must preserve the gap at exactly slot 2');
+    addPet('repurchased-again-space-2', 'pet-life-repurchase-2', 2,
+      '2026-10-16T00:00:00Z', 'pet:delete:replacement-space-2');
+    assert.deepEqual(read().map(row => [row.pet_id, row.permanent_slot]), [
+      ['space-1', 1], ['repurchased-again-space-2', 2], ['space-3', 3],
+    ], 'second repurchase retains slot 2 and does not count either historical tombstone');
 
     // Rank active ownership before filtering missing instances so no intact
     // pet is silently compacted into an incorrect permanent position.
     slotInsert.run('missing-earlier', owner, 'pet-s2026-002', 1,
-      '2026-04-01T00:00:00Z', null);
+      '2026-04-01T00:00:00Z', null, 'arcade_xp');
     assert.deepEqual(read().map(row => row.permanent_slot), [2, 3, 4],
       'missing active instance must not compact permanent spaces');
     assert.equal(read().length, 3, 'a missing instance must not be fabricated');

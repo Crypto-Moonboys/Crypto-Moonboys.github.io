@@ -996,7 +996,7 @@
             "claim"
       ],
       "buy_pet_slot": [
-            "Spend the displayed Arcade XP to unlock this permanent space and create its egg.",
+            "Spend the displayed Arcade XP to activate this paid slot and create a new egg. Deleting it later locks the slot again.",
             "spend"
       ],
       "switch_pet_slot": [
@@ -1004,7 +1004,7 @@
             "manage"
       ],
       "delete_pet_slot": [
-            "Permanently delete this pet after confirmation. Its training is lost; the owned space and account reward history stay.",
+            "Delete this pet and its progression. Slot 1 resets free; paid slots 2 and 3 lock and require another purchase.",
             "risk"
       ],
       "contract_start": [
@@ -2691,7 +2691,7 @@
       var affordable = unlockEnabled && Boolean(slot.affordable);
       var status = active ? 'ACTIVE' : owned ? selectable ? 'OWNED' : 'OWNED // RECOVERY REQUIRED' : 'LOCKED';
       var details = owned && !selectable ? '<div class="line muted">OWNED SPACE PRESERVED // Saved pet is unavailable. Recovery is required before play.</div>' : owned ? renderPetInstanceCard(slot)
-        : '<div class="slot-unlock-copy"><strong>ARCADE XP UNLOCK</strong><span>Spendable Arcade XP unlocks an additional permanent pet space.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
+        : '<div class="slot-unlock-copy"><strong>ARCADE XP UNLOCK</strong><span>Spendable Arcade XP unlocks this paid slot. Deleting it requires paying again.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
         : owned ? selectable ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber }) : '<div class="line locked">PET UNAVAILABLE // ' + escapeHtml(words(slot.selection_disabled_reason || 'pet recovery required')) + '</div>'
           : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
@@ -2699,18 +2699,15 @@
             resourceRequired: !affordable,
             detail: affordable ? 'SPEND ' + number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
           }) : '<div class="line muted">UNLOCK UNAVAILABLE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
-      if (selectable) control += button('DELETE PET', 'delete_pet_slot', { pet_id: slot.pet_id, pet_label: 'PET ' + slotNumber + ' // ' + (slot.pet && slot.pet.display_name || 'MOONPET') }, { danger: true, detail: 'CONFIRM BEFORE DELETION // NEW EGG IN THIS OWNED SPACE // REWARD HISTORY KEPT' });
+      if (selectable) control += button('DELETE PET', 'delete_pet_slot', { pet_id: slot.pet_id, pet_label: 'PET ' + slotNumber + ' // ' + (slot.pet && slot.pet.display_name || 'MOONPET') }, { danger: true, detail: slotNumber === 1 ? 'CONFIRM RESET // FREE LEVEL 1 PET' : 'CONFIRM DELETE // PAID SLOT LOCKS // REPURCHASE REQUIRED' });
       return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
         '<header><strong>PET ' + slotNumber + ' // SLOT ' + slotNumber + '</strong><span>' + status + '</span></header>' + details + '<div class="slot-control">' + control + '</div></article>';
     }).join('');
     return panel('PET SPACES',
-      '<div class="line">Switch between your saved pets. Each keeps its own XP and progression.</div>' +
+      '<div class="line">Slot 1 always resets free. Deleting slot 2 or 3 locks that slot until you pay to unlock it again.</div>' +
       (summary.recovery_over_capacity ? '<div class="line locked">RECOVERED PETS EXCEED THREE SPACES // All saves are retained. New purchases are blocked; ownership needs review.</div>' : '') +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
-      '<div class="line muted">NEW PLAYER ENTRY // 1,000 LIFETIME ARCADE XP, KEPT // PET 1 IS FREE // PET 2 COSTS 500 SPENDABLE XP // PET 3 COSTS 1,000 SPENDABLE XP</div><div class="season-slot-grid">' + rows + '</div>' +
-      (Array.isArray(summary.deleted_pet_history) && summary.deleted_pet_history.length ? '<div class="line muted"><strong>DELETED PET HISTORY // LATEST 20</strong><br>Account rewards stay yours. Saved pets below cannot return to play.</div>' + summary.deleted_pet_history.map(function (entry) {
-        return '<div class="line muted">DELETED PET // ' + number(entry.pet_xp) + ' SAVED PET XP // ' + number(entry.awarded_receipts) + ' AWARDED REWARD RECEIPTS // ' + escapeHtml(entry.deleted_at) + '</div>';
-      }).join('') : ''), 'pet-spaces');
+      '<div class="line muted">NEW PLAYER ENTRY // 1,000 LIFETIME ARCADE XP, KEPT // PET 1 RESETS FREE // PET 2 COSTS 500 SPENDABLE XP EACH UNLOCK // PET 3 COSTS 1,000 SPENDABLE XP EACH UNLOCK</div><div class="season-slot-grid">' + rows + '</div>', 'pet-spaces');
   }
 
   function renderSeasonSlots() {
@@ -3929,6 +3926,7 @@
       if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
       return blockedParts.join(' - ');
     }
+    if (result.reason === 'pet_deleted') return result.slot_unlocked ? 'FREE PET RESET // FRESH LEVEL 1 PET' : 'PET DELETED // PAID SLOT LOCKED // BUY AGAIN TO UNLOCK';
     if (result.reason === 'pet_house_saved') return String(result.result_copy || 'HOME SAVED // Return to Home to see this pet’s saved customization. No currency or XP changed.');
     if (result.reason === 'pet_furniture_purchased' || result.reason === 'pet_furniture_owned' || result.reason === 'pet_furniture_placed' || result.reason === 'pet_furniture_removed' || result.reason === 'pet_room_furniture_saved') return String(result.result_copy || 'Furniture save confirmed.');
     if (result.reason === 'pet_garden_planted' || result.reason === 'pet_garden_already_planted' || result.reason === 'pet_garden_harvested') return String(result.result_copy || 'Garden save confirmed.');
@@ -4039,7 +4037,7 @@
       arcade_xp_entry_required: 'EARN 1,000 LIFETIME ARCADE XP ON THE WEBSITE TO UNLOCK YOUR FIRST PET. YOUR XP IS KEPT.',
       pet_slot_purchased: 'PET SLOT UNLOCKED',
       pet_slot_switched: 'ACTIVE MOONPET SWITCHED',
-      pet_deleted: 'PET DELETED // FRESH EGG SAVED // REWARDS AND HISTORY KEPT',
+      pet_deleted: 'PET DELETED // SLOT RESET',
       pet_delete_confirmation_required: 'CONFIRM THE EXACT PET BEFORE DELETION',
       pet_delete_not_available: 'THAT PET IS NO LONGER AVAILABLE FOR DELETION // REFRESH',
       pet_delete_blocked: 'FINISH ACTIVE GAMES, LEAVE QUEUES AND CLAIM PENDING REWARDS BEFORE DELETING',
@@ -4344,8 +4342,12 @@
       }
       var deletionLabel = 'PET SPACE ' + Number(deletionSlot.slot_number) + ' // ' +
         String(deletionSlot.pet && (deletionSlot.pet.callsign || deletionSlot.pet.display_name) || 'MOONPET');
+      var paidSlot = Number(deletionSlot.slot_number) > 1;
+      var deleteTerms = paidSlot
+        ? 'PERMANENT: this pet, its XP, training and progress will be deleted. PAID SLOT ' + Number(deletionSlot.slot_number) + ' WILL LOCK and will cost ' + (Number(deletionSlot.slot_number) === 2 ? '500' : '1,000') + ' spendable Arcade XP to unlock again.'
+        : 'PERMANENT: this pet, its XP, training and progress will be deleted. FREE SLOT 1 immediately receives a fresh Level 1 pet.';
       if (!window.confirm('STEP 1 OF 2 // DELETE ' + deletionLabel +
-        '?\n\nPERMANENT: this pet, its age and training cannot be restored. A fresh egg uses the same space without a new Arcade XP charge.\n\nYour purchased spaces, account currencies, items and reward history remain. Select Cancel to keep your pet.')) return;
+        '?\n\n' + deleteTerms + '\n\nPreviously awarded account balances and receipts remain. Select Cancel to keep your pet.')) return;
       // The second action must be deliberate; cancelling never submits a Worker request.
       if (typeof window.prompt !== 'function' ||
           window.prompt('STEP 2 OF 2 // ' + deletionLabel + '\n\nType DELETE exactly to archive this pet. Anything else cancels.', '') !== 'DELETE') {

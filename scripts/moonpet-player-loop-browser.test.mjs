@@ -2633,8 +2633,8 @@ try {
     const firstCancel = new Promise(resolve => page.once('dialog', async dialog => {
       assert.equal(dialog.type(), 'confirm');
       assert.match(dialog.message(), /STEP 1 OF 2/);
-      assert.match(dialog.message(), /cannot be restored/);
-      assert.match(dialog.message(), /reward history remain/);
+      assert.match(dialog.message(), /FREE SLOT 1 immediately receives a fresh Level 1 pet/);
+      assert.match(dialog.message(), /Previously awarded account balances and receipts remain/);
       await dialog.dismiss(); resolve();
     }));
     await deleteButton.click(); await firstCancel;
@@ -2690,7 +2690,8 @@ try {
     assert.equal(deletionData.result.deleted_pet_id, deletionPet.pet_id);
     deletionSpaces[0]=deletionData.result.replacement_pet_id;
     assert.deepEqual(deletionData.result.season_slots.slots.map(slot=>slot.pet_id),deletionSpaces,'replacement stays in PET 1 while PET 2/3 stay in place');
-    await page.waitForFunction(() => document.querySelector('[data-panel="pet-spaces"]').textContent.includes('DELETED PET HISTORY'));
+    await page.waitForFunction(() => document.querySelector('[data-panel="pet-spaces"]').textContent.includes('PET 1 RESETS FREE'));
+    assert.doesNotMatch(await page.locator('[data-panel="pet-spaces"]').textContent(), /DELETED PET HISTORY/);
     assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), deletionWallet);
     assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'archived');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');

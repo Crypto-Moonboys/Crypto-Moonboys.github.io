@@ -2,7 +2,7 @@ import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResu
 import { buildPetOnboardingStatements } from './onboarding.js';
 import { PET_RECOVERABLE_ACTIVITY_PREDICATE } from './activity-recovery.js';
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
-import { petSpaceValueSql } from './space-order.js';
+import { petSpaceValueSql, petRankedSpaceCteSql } from './space-order.js';
 import { PET_ROGUELITE_BOSSES } from './roguelite-foundation.js';
 
 const bossKeysSql = Object.keys(PET_ROGUELITE_BOSSES).map(key => `'${key.replaceAll("'", "''")}'`).join(',');
@@ -89,18 +89,43 @@ export async function readDeletedPetHistory(db, owner) {
   return rows.results;
 }
 
-// Retain the old pet_id and every FK-linked receipt. A unique lifetime period
-// lets the replacement reuse a purchased space without rewriting its history.
+// Archive pet-specific state and retain FK-linked receipts for reward integrity.
+// Only the free starter is replaced immediately; paid spaces remain locked
+// until a new wallet debit purchases a fresh lifetime.
 export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
   const owner = String(telegramId), petId = String(body?.pet_id || '').trim();
   if (!petId || body?.confirmed !== true || body?.confirm_pet_id !== petId) return { accepted:false, reason:'pet_delete_confirmation_required' };
-  const old = await db.prepare(`SELECT s.*,${petSpaceValueSql('s','created_at')} AS space_created_at,
-      ${petSpaceValueSql('s','pet_id')} AS space_pet_id FROM telegram_pet_season_slots s
-    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
+  // Include unfilled paid-space tombstones so the visible slot number never
+  // shifts when slot 2 is deleted while slot 3 remains owned.
+  const old = await db.prepare(`WITH ${petRankedSpaceCteSql()}
+    SELECT s.*,${petSpaceValueSql('s','created_at')} AS space_created_at,
+      ${petSpaceValueSql('s','pet_id')} AS space_pet_id,
+      ranked.display_slot_number
+    FROM telegram_pet_season_slots s
+    JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
+    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+      AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active'`)
-    .bind(petId,owner).first().then(requirePetFirstReadResult);
+    .bind(owner,petId,owner).first().then(requirePetFirstReadResult);
   if (!old) return { accepted:false, reason:'pet_delete_not_available' };
-  const token = crypto.randomUUID(), replacementId = `pet:${owner}:life:${token}`, period = `pet-life-${token}`;
+  const freeReset = Number(old.display_slot_number) === 1;
+  const pointer = await db.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?')
+    .bind(owner).first().then(requirePetFirstReadResult);
+  const deletingSelected = pointer?.pet_id === petId;
+  let fallback = null;
+  if (!freeReset && deletingSelected) {
+    fallback = await db.prepare(`WITH ${petRankedSpaceCteSql()}
+      SELECT s.pet_id,s.season_key FROM telegram_pet_season_slots s
+      JOIN pet_ranked_spaces ranked ON ranked.pet_id=s.pet_id
+      JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+        AND i.season_key=s.season_key AND i.slot_number=s.slot_number
+      WHERE s.telegram_id=? AND s.pet_id<>? AND s.status='active' AND i.status='active'
+      ORDER BY ranked.display_slot_number LIMIT 1`)
+      .bind(owner,owner,petId).first().then(requirePetFirstReadResult);
+    if (!fallback) return { accepted:false, reason:'pet_ownership_recovery_required' };
+  }
+  const token = crypto.randomUUID(), replacementId = freeReset ? `pet:${owner}:life:${token}` : null;
+  const period = freeReset ? `pet-life-${token}` : null;
   const claimId = crypto.randomUUID(), claimKey = `pet:delete:${petId}`;
   const claim = `EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id=? AND pet_id=? AND telegram_id=? AND season_key=? AND applied_at IS NULL)`;
   const args = [claimId,petId,owner,old.season_key], columns = stateColumns.join(',');
@@ -111,35 +136,76 @@ export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
         SELECT 1 FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
         WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active'
-          AND NOT (${PET_DELETION_BLOCKERS_SQL} OR ${SOURCE_REWARD_BLOCKERS_SQL}))`)
-      .bind(claimId,petId,owner,old.season_key,claimKey,JSON.stringify({type:'pet_deleted',replacement_pet_id:replacementId,replacement_period:period,
-        space_created_at:old.space_created_at,space_pet_id:old.space_pet_id}),petId,owner,...blockerArgs(owner,petId)),
+          AND EXISTS (SELECT 1 FROM telegram_pet_active_slots current_pointer
+            WHERE current_pointer.telegram_id=? AND current_pointer.pet_id=?)
+          AND NOT (${PET_DELETION_BLOCKERS_SQL} OR ${SOURCE_REWARD_BLOCKERS_SQL})
+          AND (?=0 OR EXISTS (
+            SELECT 1 FROM telegram_pet_season_slots next
+              JOIN telegram_pet_instances active ON active.pet_id=next.pet_id AND active.telegram_id=next.telegram_id
+                AND active.season_key=next.season_key AND active.slot_number=next.slot_number
+            WHERE next.telegram_id=? AND next.pet_id=? AND next.status='active' AND active.status='active'
+          )))`)
+      .bind(claimId,petId,owner,old.season_key,claimKey,JSON.stringify({
+        type:'pet_deleted', replacement_pet_id:replacementId,replacement_period:period,
+        space_created_at:old.space_created_at,space_pet_id:old.space_pet_id,
+        space_slot_number:old.display_slot_number,
+      }),petId,owner,owner,pointer?.pet_id || '',...blockerArgs(owner,petId),
+        !freeReset && deletingSelected ? 1 : 0,owner,fallback?.pet_id || ''),
     db.prepare(`UPDATE telegram_pet_instances SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
     db.prepare(`UPDATE telegram_pet_season_slots SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
-    // A growing/ready crop is pet state, not reward history. Remove it when the
-    // pet is voluntarily replaced; pending/settling harvests are blocked above.
+    // Pet-specific garden plots are reset; pending harvests are blocked.
     db.prepare(`DELETE FROM telegram_pet_garden_plots
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND ${claim}`)
       .bind(petId,owner,old.season_key,...args),
-    db.prepare(`INSERT INTO telegram_pet_season_slots
-      (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,journey_clock)
-      SELECT ?,telegram_id,?,slot_number,acquisition_type,?,0,'created_at' FROM telegram_pet_season_slots WHERE pet_id=? AND telegram_id=? AND ${claim}`)
-      .bind(replacementId,period,claimKey,petId,owner,...args),
-    db.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,source_profile_updated_at)
-      SELECT pet_id,telegram_id,season_key,slot_number,CURRENT_TIMESTAMP FROM telegram_pet_season_slots WHERE pet_id=? AND ${claim}`).bind(replacementId,...args),
-    ...buildPetOnboardingStatements(db,{pet_id:replacementId,telegram_id:owner,season_key:period}, {replacementOf:petId}),
-    // Reset only pet state. Account currencies, XP, items and scoring stay put.
-    // Deleting an inactive pet leaves the current selection alone.
-    db.prepare(`UPDATE telegram_pet_profiles SET (${columns})=(SELECT ${columns} FROM telegram_pet_instances WHERE pet_id=?),updated_at=CURRENT_TIMESTAMP
-      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=?) AND ${claim}`)
-      .bind(replacementId,owner,owner,petId,...args),
-    db.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?,season_key=?,updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND pet_id=? AND ${claim}`)
-      .bind(replacementId,period,owner,petId,...args),
-    db.prepare(`UPDATE telegram_pet_identity_events SET applied_at=CURRENT_TIMESTAMP WHERE event_id=? AND pet_id=? AND telegram_id=? AND season_key=? AND applied_at IS NULL`).bind(...args),
   ];
+  if (freeReset) {
+    statements.push(
+      db.prepare(`INSERT INTO telegram_pet_season_slots
+        (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,journey_clock)
+        SELECT ?,telegram_id,?,slot_number,'free',?,0,'created_at' FROM telegram_pet_season_slots
+        WHERE pet_id=? AND telegram_id=? AND ${claim}`)
+        .bind(replacementId,period,claimKey,petId,owner,...args),
+      db.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,source_profile_updated_at)
+        SELECT pet_id,telegram_id,season_key,slot_number,CURRENT_TIMESTAMP FROM telegram_pet_season_slots
+        WHERE pet_id=? AND ${claim}`).bind(replacementId,...args),
+      ...buildPetOnboardingStatements(db,{pet_id:replacementId,telegram_id:owner,season_key:period}, {replacementOf:petId}),
+    );
+    // If the free pet was selected, replace it with its fresh egg in place.
+    statements.push(
+      db.prepare(`UPDATE telegram_pet_profiles SET (${columns})=(SELECT ${columns} FROM telegram_pet_instances WHERE pet_id=?),
+        updated_at=CURRENT_TIMESTAMP
+        WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=?) AND ${claim}`)
+        .bind(replacementId,owner,owner,petId,...args),
+      db.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?,season_key=?,updated_at=CURRENT_TIMESTAMP
+        WHERE telegram_id=? AND pet_id=? AND ${claim}`).bind(replacementId,period,owner,petId,...args),
+    );
+  } else if (deletingSelected) {
+    // Deleting a PAID space revokes it; switch to an already owned, intact pet
+    // atomically rather than leaving the compatibility profile pointing at an
+    // archived instance. No new pet is created and no XP is refunded.
+    statements.push(
+      db.prepare(`UPDATE telegram_pet_active_slots SET pet_id=?,season_key=?,updated_at=CURRENT_TIMESTAMP
+        WHERE telegram_id=? AND pet_id=? AND ${claim}`)
+        .bind(fallback.pet_id,fallback.season_key,owner,petId,...args),
+      db.prepare(`UPDATE telegram_pet_profiles SET (${columns})=(
+          SELECT ${columns} FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?),
+          updated_at=(SELECT updated_at FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?)
+        WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=?) AND ${claim}`)
+        .bind(fallback.pet_id,owner,fallback.pet_id,owner,owner,owner,fallback.pet_id,...args),
+      db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at=updated_at
+        WHERE pet_id=? AND telegram_id=? AND ${claim}`)
+        .bind(fallback.pet_id,owner,...args),
+    );
+  }
+  statements.push(db.prepare(`UPDATE telegram_pet_identity_events SET applied_at=CURRENT_TIMESTAMP
+    WHERE event_id=? AND pet_id=? AND telegram_id=? AND season_key=? AND applied_at IS NULL`).bind(...args));
   const results = await db.batch(statements);
   if (!Array.isArray(results) || results.length!==statements.length) throw new Error('pet_state_write_unavailable');
   results.forEach(requirePetMutationResult);
   if (Number(results[0]?.meta?.changes || 0)!==1) return { accepted:false, reason:'pet_delete_blocked' };
-  return { accepted:true, reason:'pet_deleted', deleted_pet_id:petId, replacement_pet_id:replacementId, reward_history_preserved:true };
+  return {
+    accepted:true,reason:'pet_deleted',deleted_pet_id:petId,
+    replacement_pet_id:replacementId,slot_number:old.display_slot_number,
+    slot_unlocked:freeReset,reward_history_preserved:true,
+  };
 }
