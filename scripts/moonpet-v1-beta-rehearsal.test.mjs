@@ -181,3 +181,39 @@ test('mixed-case SQLite REFERENCES are canonicalized for ordering and external b
   assert.equal(existsSync(dst+'2'),false);
 });
 
+
+
+test('directory symlink cannot disguise original backup journal as an output', { skip: process.platform === 'win32' }, () => sandbox(({src,dir}) => {
+  const before = readFileSync(src);
+  const alias = join(dir, 'directory-alias');
+  symlinkSync(dir, alias, 'dir');
+  const maliciousTarget = join(alias, 'backup.sqlite-wal');
+  assert.throws(() => rehearseMoonpetV1BetaReset(src, maliciousTarget),
+    /source_or_journal_target_overlap_forbidden/,
+    'canonical parent directory must expose target as source WAL file');
+  assert.equal(existsSync(src + '-wal'), false);
+  assert.deepEqual(readFileSync(src), before);
+  assert.throws(() => rehearseMoonpetV1BetaReset(join(alias, 'backup.sqlite'), src + '-shm'),
+    /source_or_journal_target_overlap_forbidden/,
+    'source directory alias must not bypass the inverse overlap check');
+  assert.equal(existsSync(src + '-shm'), false);
+  assert.deepEqual(readFileSync(src), before);
+}));
+
+test('directory symlink preserves valid new-copy rehearsal while source stays clean', { skip: process.platform === 'win32' }, () => sandbox(({src,dir}) => {
+  const alias = join(dir, 'output-alias');
+  symlinkSync(dir, alias, 'dir');
+  const original = readFileSync(src);
+  const dst = join(alias, 'alias-output.sqlite');
+  const report = rehearseMoonpetV1BetaReset(src, dst);
+  assert.equal(report.moonpet_rows_removed, 5);
+  assert.equal(report.output_path, join(dir, 'alias-output.sqlite'),
+    'output is reported using the canonical parent');
+  assert.deepEqual(readFileSync(src), original);
+  for (const extension of ['-wal', '-shm', '-journal'])
+    assert.equal(existsSync(src + extension), false, 'backup sidecar must remain absent');
+  const db = new DatabaseSync(report.output_path, { readOnly: true });
+  try {
+    assert.equal(inspectMoonpetBetaReset(db).moonpet_row_count, 0);
+  } finally { db.close(); }
+}));
