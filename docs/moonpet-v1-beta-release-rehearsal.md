@@ -1,0 +1,67 @@
+# MoonPet OS V1 BETA — PR 3: Offline reset rehearsal
+
+**Private beta. Not public.** Existing MoonPet-only beta pet saves and scores may
+be discarded following the separately approved live reset. This PR does NOT
+apply a live D1 reset or provide a Worker reset endpoint.
+
+## Scope
+
+- Candidate pet data: pets, ownership slots, care, MoonPet-specific currencies,
+  furniture, inventory, missions, runs, rewards, archived beta pet history.
+- Strictly excluded: Telegram login/identity, lifetime and spendable Arcade XP,
+  website progression, other games, faction and Championship records.
+- Do not refund paid-slot purchases from the shared Arcade wallet.
+- Keep the approved 1,000 lifetime Arcade XP entry gate, 3 slots (1 free;
+  2 at 500 spendable XP; 3 at 1,000), and the six-stage 365-day journey.
+
+## Local-only reset rehearsal
+
+A reviewed, explicit allowlist is stored in
+scripts/moonpet-v1-beta-reset-tables.mjs and matches the 81 MoonPet-prefixed
+tables in the checked-in Worker schema.sql. Unknown prefixed tables, missing
+core pet tables, foreign keys into MoonPet from other systems, pet_id
+references in other tables, DELETE triggers, current FK violations and FK
+cycles all block rehearsal.
+
+The script requires an **existing, closed LOCAL SQLite backup** and a
+**new destination file**. The source is opened READ ONLY and never mutated.
+WAL sidecars and in-place or overwrite attempts are rejected.
+
+Commands:
+
+    node scripts/moonpet-v1-beta-inventory.mjs --db /local/CLOSED-backup.sqlite
+    node scripts/moonpet-v1-beta-rehearsal.mjs --source /local/CLOSED-backup.sqlite --output /local/NEW-rehearsal.sqlite --rehearse
+    node --test scripts/moonpet-v1-beta-rehearsal.test.mjs
+
+The new SQLite copy has foreign keys enabled. The child-to-parent deletion
+order runs in a transaction. The script verifies zero pet rows, zero FK
+violations and SHA-256 equality of every NON-MoonPet table before and after.
+Any failure rolls back and removes the disposable output; the backup stays
+unchanged. The report is always ready_for_live_reset=false.
+
+## Live operation: not authorized or performed
+
+There is **no deployable production reset, no D1 migration, and no automatic
+beta wipe**. Before any later production reset, GK must approve the exact
+data allowlist against a current REAL D1 export, a backup and restoration drill,
+a maintenance window, and a fresh-authenticated-player smoke result. Any
+shared table must remain untouched. Do not use SQLite foreign_keys=OFF
+to force a migration or erase outside records.
+
+## Version 1 beta acceptance
+
+- Verify actual deployed Worker and Pages SHAs and D1 migration inventory.
+  Issue #1648 reported /deployment-info HTTP 503 and remains a release blocker
+  until separately resolved or accurately diagnosed.
+- Validate fresh adoption, egg/hatch and all year-long stages with accelerated
+  clocks; slots 1/2/3 and full paid repurchase; all six game menus; signed
+  Telegram Android, iOS and desktop gameplay.
+- Validate saves, daily/weekly resets, true completion ticks, currency spends,
+  duplicate/replay protection, pet switching, stale auth and offline retries.
+- Run targeted manual Worker/API, MoonPet browser and guide CI and latest-head
+  Codex review. No automatic broad validation is enabled in this repository.
+- Measure first verified interactive Home and complete full-state latency
+  with real signed player examples; failed data hydration must be honest.
+- Rollout remains **private beta only**. No public release promises.
+
+No merge, production deployment, reset or data mutation without GK approval.
