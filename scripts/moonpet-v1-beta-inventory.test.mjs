@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
 
-function fixture(file = ':memory:') {
+function fixture(file = ':memory:', { compositeForeignKeys = false } = {}) {
   const db = new DatabaseSync(file);
   db.exec([
     'PRAGMA foreign_keys=ON;',
@@ -28,6 +28,16 @@ function fixture(file = ':memory:') {
     "INSERT INTO telegram_pet_season_slots VALUES ('p','a','active');",
     "INSERT INTO moonpet_beta_records VALUES ('p','a');",
     "INSERT INTO external_pet_awards VALUES ('p','a');",
+  ].join('\n'));
+  if (compositeForeignKeys) db.exec([
+    'CREATE TABLE telegram_pet_reward_claims(claim_id TEXT,telegram_id TEXT,PRIMARY KEY(claim_id,telegram_id));',
+    'CREATE TABLE telegram_pet_reward_assets(asset_id TEXT PRIMARY KEY,claim_id TEXT,telegram_id TEXT,',
+    ' FOREIGN KEY(claim_id,telegram_id) REFERENCES telegram_pet_reward_claims(claim_id,telegram_id) ON DELETE CASCADE);',
+    'CREATE TABLE external_claim_reviews(review_id TEXT PRIMARY KEY,claim_id TEXT,telegram_id TEXT,',
+    ' FOREIGN KEY(claim_id,telegram_id) REFERENCES telegram_pet_reward_claims(claim_id,telegram_id) ON DELETE RESTRICT);',
+    "INSERT INTO telegram_pet_reward_claims VALUES ('claim','a');",
+    "INSERT INTO telegram_pet_reward_assets VALUES ('asset','claim','a');",
+    "INSERT INTO external_claim_reviews VALUES ('review','claim','a');",
   ].join('\n'));
   return db;
 }
@@ -55,6 +65,36 @@ test('read-only inventory identifies MoonPet, shared tables and external referen
     ]);
     assert.deepEqual(['telegram_users','arcade_xp_wallets','telegram_pet_profiles']
       .map(name => db.prepare('SELECT * FROM ' + name).all()),snapshot);
+  } finally { db.close(); }
+});
+
+test('retains internal and external foreign-key edges grouped by composite constraint', () => {
+  const db = fixture(':memory:', { compositeForeignKeys: true });
+  try {
+    const report = inspectMoonpetBetaReset(db);
+    assert.equal(report.ready_for_reset, false);
+    const claims = report.moonpet_tables.find(row => row.table === 'telegram_pet_reward_claims');
+    const assets = report.moonpet_tables.find(row => row.table === 'telegram_pet_reward_assets');
+    const columns = [
+      { seq: 0, from: 'claim_id', to: 'claim_id' },
+      { seq: 1, from: 'telegram_id', to: 'telegram_id' },
+    ];
+    const outbound = assets.outbound_foreign_keys.find(ref => ref.target_table === claims.table);
+    assert.ok(outbound, 'internal asset-to-claim cascade must not disappear');
+    assert.equal(outbound.source_table, assets.table);
+    assert.equal(outbound.on_delete, 'CASCADE');
+    assert.equal(outbound.columns.length, 2, 'two columns are one FK constraint');
+    assert.deepEqual(outbound.columns, columns);
+    const incoming = claims.inbound_foreign_keys.find(ref => ref.source_table === assets.table);
+    assert.deepEqual(incoming, outbound, 'parent report must preserve full inbound constraint');
+    const external = claims.inbound_foreign_keys.find(ref => ref.source_table === 'external_claim_reviews');
+    assert.ok(external, 'non-MoonPet inbound composite FK must be retained');
+    assert.deepEqual(external.columns, columns);
+    assert.equal(external.on_delete, 'RESTRICT');
+    assert.deepEqual(claims.inbound_non_moonpet_references,
+      [{ table: 'external_claim_reviews', on_delete: 'RESTRICT' }]);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM telegram_pet_reward_assets').get().count, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM external_claim_reviews').get().count, 1);
   } finally { db.close(); }
 });
 
