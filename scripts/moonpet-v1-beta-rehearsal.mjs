@@ -92,6 +92,9 @@ export function planMoonpetV1BetaRehearsal(db) {
 }
 
 export function rehearseMoonpetV1BetaReset(source, output) {
+  // StatementSync.iterate() requires at least Node 22.13.0.
+  const [major, minor] = process.versions.node.split('.').map(Number);
+  if (major < 22 || major === 22 && minor < 13) throw Error('node_22_13_or_newer_required');
   const input = resolve(source), target = resolve(output);
   if (input === target) throw Error('in_place_reset_forbidden');
   const sourceInfo = lstatSync(input, { throwIfNoEntry: false });
