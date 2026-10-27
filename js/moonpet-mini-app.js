@@ -2924,11 +2924,14 @@
     if (!bonus || bonus.available === false) return panel('DAILY 7/7 BONUS', '<div class="line muted">Daily bonuses are temporarily unavailable. Your existing checklist remains playable.</div>', 'daily-completion');
     // An incomplete signed projection must not crash Missions or fabricate a
     // claim button. Existing progress remains visible while refresh retries.
-    if (!bonus.rewards || typeof bonus.rewards !== 'object' || !state.pet || !state.pet.pet_id || (bonus.pending != null && !Array.isArray(bonus.pending)))
+    if (!bonus.rewards || typeof bonus.rewards !== 'object' || !state.pet || !state.pet.pet_id ||
+        (bonus.pending != null && (!Array.isArray(bonus.pending) || bonus.pending.some(function (claim) { return !claim || typeof claim !== 'object'; }))))
       return panel('DAILY 7/7 BONUS', '<div class="line muted">BONUS STATUS UNAVAILABLE // TAP REFRESH. No claim was submitted.</div>', 'daily-completion');
+    var claimed = bonus.claimed === true || bonus.claimed === 1;
+    var ready = bonus.ready === true || bonus.ready === 1;
     var body = '<div class="line">Complete all seven daily missions: up to ' + number(bonus.rewards.pet_xp) + ' Pet XP, ' + number(bonus.rewards.moon_gold) + ' Gold and ' + number(bonus.rewards.style_tokens) + ' Style.</div>' +
       '<div class="line muted">One bonus per account / UTC day. Earned progress stays complete after spending gold. Unclaimed bonuses stay saved. Pet XP uses your normal daily cap.</div>';
-    body += '<div class="line ' + (bonus.claimed ? 'complete' : '') + '">' + (bonus.claimed ? '✅ Completed // TODAY’S BONUS CLAIMED' : bonus.ready ? '✅ Completed // TODAY // 7/7 COMPLETE' : 'TODAY // FINISH THE CHECKLIST BELOW') + '</div>';
+    body += '<div class="line ' + (claimed ? 'complete' : '') + '">' + (claimed ? '✅ Completed // TODAY’S BONUS CLAIMED' : ready ? '✅ Completed // TODAY // 7/7 COMPLETE' : 'TODAY // FINISH THE CHECKLIST BELOW') + '</div>';
     body += '<div class="button-grid one">' + (bonus.pending || []).map(function (claim) {
       var needsHatch = !claim.pet_id && (!state.lifecycle || state.lifecycle.phase === 'egg');
       return button('CLAIM 7/7 BONUS // ' + claim.utc_day, 'daily_completion_claim', { utc_day: claim.utc_day, pet_id: claim.pet_id || state.pet.pet_id }, {
@@ -2936,7 +2939,7 @@
         detail: claim.pet_id ? 'Saved for the original claim pet. No new mission or energy cost.' : 'Pet XP goes to your selected hatched pet. The target is saved when you claim.',
       });
     }).join('') + '</div>';
-    return panel('DAILY 7/7 BONUS', body, 'daily-completion', bonus.claimed ? 'Today’s bonus claimed. Earlier saved days remain available below.' : bonus.ready ? '7/7 complete. Open to review and claim your saved bonus.' : 'Complete today’s seven missions to unlock the daily bonus.');
+    return panel('DAILY 7/7 BONUS', body, 'daily-completion', claimed ? 'Today’s bonus claimed. Earlier saved days remain available below.' : ready ? '7/7 complete. Open to review and claim your saved bonus.' : 'Complete today’s seven missions to unlock the daily bonus.');
   }
 
   function renderMissionStatus(summary) {
