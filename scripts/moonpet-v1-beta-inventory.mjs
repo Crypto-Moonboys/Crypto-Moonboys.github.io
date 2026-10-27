@@ -6,7 +6,7 @@ import { existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const isPet = name => /^telegram_pet(?:_|s$)/u.test(name) || /^moonpet_/u.test(name);
+const isPet = name => /^telegram_pet(?:_|s$)/iu.test(name) || /^moonpet_/iu.test(name);
 const quote = value => '"' + value.replaceAll('"', '""') + '"';
 const sharedPrefixes = ['arcade_', 'blocktopia_', 'championship_', 'telegram_website_', 'telegram_faction_', 'telegram_xp_', 'wiki_'];
 const sharedNames = new Set(['telegram_users', 'telegram_factions', 'telegram_seasons']);
@@ -19,12 +19,16 @@ export function inspectMoonpetBetaReset(db) {
   // SQLite emits one row per column, not per foreign-key constraint.
   // Group by constraint id within its source table so composite references
   // remain intact and reset reviewers can inspect deletion order correctly.
+  // SQLite resolves table identifiers case-insensitively but PRAGMA retains
+  // the spelling used by REFERENCES. Map each FK back to the real table name.
+  const canonicalTableNames = new Map(names.map(name => [name.toLowerCase(), name]));
   const foreignKeys = new Map(names.map(name => {
     const groups = new Map();
     for (const fk of db.prepare('PRAGMA foreign_key_list(' + quote(name) + ')').all()) {
       const id = Number(fk.id);
       if (!groups.has(id)) groups.set(id, {
-        constraint_id: id, source_table: name, target_table: fk.table,
+        constraint_id: id, source_table: name,
+        target_table: canonicalTableNames.get(String(fk.table).toLowerCase()) || fk.table,
         on_update: fk.on_update, on_delete: fk.on_delete, match: fk.match, columns: [],
       });
       groups.get(id).columns.push({ seq: Number(fk.seq), from: fk.from, to: fk.to });
