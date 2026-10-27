@@ -135,6 +135,8 @@ export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
         SELECT 1 FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
         WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active'
+          AND EXISTS (SELECT 1 FROM telegram_pet_active_slots current_pointer
+            WHERE current_pointer.telegram_id=? AND current_pointer.pet_id=?)
           AND NOT (${PET_DELETION_BLOCKERS_SQL} OR ${SOURCE_REWARD_BLOCKERS_SQL})
           AND (?=0 OR EXISTS (
             SELECT 1 FROM telegram_pet_season_slots next
@@ -146,7 +148,7 @@ export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
         type:'pet_deleted', replacement_pet_id:replacementId,replacement_period:period,
         space_created_at:old.space_created_at,space_pet_id:old.space_pet_id,
         space_slot_number:old.display_slot_number,
-      }),petId,owner,...blockerArgs(owner,petId),
+      }),petId,owner,owner,pointer?.pet_id || '',...blockerArgs(owner,petId),
         !freeReset && deletingSelected ? 1 : 0,owner,fallback?.pet_id || ''),
     db.prepare(`UPDATE telegram_pet_instances SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
     db.prepare(`UPDATE telegram_pet_season_slots SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
