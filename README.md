@@ -1,5 +1,7 @@
 # Crypto Moonboys
 
+> **Agent and GitHub Actions policy (27 October 2026):** Read [AGENTS.md](AGENTS.md) and [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before work. Routine validation workflows are manual-only; small image/page edits should not queue broad checks. GitHub Pages deployment and its Worker compatibility safety gate remain separate.
+
 ## Current mission — 24 October 2026
 
 **One universe. Your IP or ours. Build connected worlds together.**
