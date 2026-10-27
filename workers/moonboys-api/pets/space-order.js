@@ -8,7 +8,12 @@ export function petSpaceValueSql(alias, field) {
     WHERE d.pet_id=SUBSTR(${alias}.source_event_key,12)
       AND d.event_key=${alias}.source_event_key AND d.event_key='pet:delete:'||d.pet_id
       AND d.telegram_id=${alias}.telegram_id AND d.event_kind='memory' AND d.applied_at IS NOT NULL
-      AND json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.replacement_pet_id')=${alias}.pet_id
+      AND (
+        json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.replacement_pet_id')=${alias}.pet_id
+        OR (${alias}.acquisition_type='arcade_xp'
+          AND json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.replacement_pet_id') IS NULL
+          AND json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.type')='pet_deleted')
+      )
     LIMIT 1),${alias}.${field})`;
 }
 
