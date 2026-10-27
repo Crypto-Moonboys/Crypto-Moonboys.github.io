@@ -6,14 +6,19 @@
  */
 import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
-import { copyFileSync, constants, existsSync, lstatSync, rmSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, constants, lstatSync, mkdtempSync, rmSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
 import { MOONPET_V1_BETA_RESET_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
 
 const quote = name => '"' + String(name).replaceAll('"', '""') + '"';
 const allowed = new Set(MOONPET_V1_BETA_RESET_TABLES);
+const sidecars = path => [path + '-wal', path + '-shm', path + '-journal'];
+// Unlike existsSync, lstat also identifies dangling symlinks that SQLite
+// might follow, replace or remove when opening a database.
+const occupied = path => lstatSync(path, { throwIfNoEntry: false }) !== undefined;
 
 function tableNames(db) {
   return db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
@@ -36,6 +41,8 @@ function childrenBeforeParents(names, inventory) {
   const inboundCounts = new Map(names.map(name => [name, 0]));
   for (const row of inventory.moonpet_tables) {
     for (const fk of row.outbound_foreign_keys) {
+      // The inventory canonicalizes PRAGMA FK target spelling to actual table
+      // names. The remaining comparison is therefore exact and unambiguous.
       if (!outgoing.has(fk.target_table) || outgoing.get(row.table).has(fk.target_table)) continue;
       outgoing.get(row.table).add(fk.target_table);
       inboundCounts.set(fk.target_table, inboundCounts.get(fk.target_table) + 1);
@@ -87,19 +94,35 @@ export function planMoonpetV1BetaRehearsal(db) {
 export function rehearseMoonpetV1BetaReset(source, output) {
   const input = resolve(source), target = resolve(output);
   if (input === target) throw Error('in_place_reset_forbidden');
-  if (!existsSync(input) || lstatSync(input).isSymbolicLink() || !lstatSync(input).isFile())
+  const sourceInfo = lstatSync(input, { throwIfNoEntry: false });
+  if (!sourceInfo || sourceInfo.isSymbolicLink() || !sourceInfo.isFile())
     throw Error('source_must_be_regular_offline_sqlite_backup');
-  if (existsSync(target)) throw Error('existing_output_forbidden');
-  if (existsSync(input + '-wal') || existsSync(input + '-shm'))
+  if (occupied(target)) throw Error('existing_output_forbidden');
+  const existingSidecars = sidecars(target).filter(occupied);
+  if (existingSidecars.length)
+    throw Error('existing_output_sidecars_forbidden: ' + existingSidecars.map(path => path.slice(target.length)).join(','));
+  if (sidecars(input).some(occupied))
     throw Error('source_has_sqlite_wal_sidecars_use_a_closed_backup');
-  const original = new DatabaseSync(input, { readOnly: true });
+
+  // Even readOnly SQLite can create WAL/SHM metadata when opening a WAL-mode
+  // file. Never open the original backup: preflight only an isolated copy.
+  const scratch = mkdtempSync(join(tmpdir(), 'moonpet-v1-preflight-'));
   let plan, before;
   try {
-    original.exec('PRAGMA query_only=ON');
-    plan = planMoonpetV1BetaRehearsal(original);
-    before = sharedTableDigests(original, new Set(plan.delete_order));
-  } finally { original.close(); }
+    const preflight = join(scratch, 'backup.sqlite');
+    copyFileSync(input, preflight, constants.COPYFILE_EXCL);
+    const original = new DatabaseSync(preflight, { readOnly: true });
+    try {
+      original.exec('PRAGMA query_only=ON');
+      plan = planMoonpetV1BetaRehearsal(original);
+      before = sharedTableDigests(original, new Set(plan.delete_order));
+    } finally { original.close(); }
+  } finally { rmSync(scratch, { recursive: true, force: true }); }
 
+  // A concurrent process might have claimed the destination during preflight.
+  // COPYFILE_EXCL refuses it rather than replacing the file.
+  if (occupied(target) || sidecars(target).some(occupied))
+    throw Error('existing_output_or_sidecars_forbidden');
   copyFileSync(input, target, constants.COPYFILE_EXCL);
   let clone;
   try {
@@ -119,7 +142,12 @@ export function rehearseMoonpetV1BetaReset(source, output) {
       if (JSON.stringify(before) !== JSON.stringify(after))
         throw Error('non_moonpet_table_changed');
       clone.exec('COMMIT');
-    } catch (error) { clone.exec('ROLLBACK'); throw error; }
+    } catch (error) {
+      // SQLite RAISE(ROLLBACK) may already have ended the transaction. Do not
+      // replace its original error with 'no transaction is active'.
+      try { clone.exec('ROLLBACK'); } catch { /* Already rolled back. */ }
+      throw error;
+    }
     return {
       mode: 'LOCAL_OFFLINE_REHEARSAL_COMPLETED',
       ready_for_live_reset: false,
@@ -133,6 +161,7 @@ export function rehearseMoonpetV1BetaReset(source, output) {
   } catch (error) {
     if (clone) { clone.close(); clone = null; }
     rmSync(target, { force: true });
+    for (const sidecar of sidecars(target)) rmSync(sidecar, { force: true });
     throw error;
   } finally { if (clone) clone.close(); }
 }
