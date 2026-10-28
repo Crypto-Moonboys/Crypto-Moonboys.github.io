@@ -848,7 +848,7 @@ assert.match(runtimeSource, /if \(!running\) cameraY = 0;/,
 
 // Capture the actual browser-produced replay, not a hand-built approximation.
 // The browser starts spray in handleInput(), subtracts dt afterward, and then
-// permits Down to crouch at the exact animation-expiry frame. Worker course v7
+// permits Down to crouch at the exact animation-expiry frame. Worker course v8
 // must reconstruct the same feet, collision height and world-boundary clamp.
 await page.keyboard.down('KeyX');
 await page.waitForFunction(() => window.NBGLevel1State?.running &&
@@ -867,8 +867,8 @@ const sprayReleaseReplay = await page.evaluate(() => {
   };
 });
 await page.keyboard.up('ArrowDown');
-assert.equal(sprayReleaseReplay.replay?.course_version, 7,
-  'browser must encode spray-to-crouch under course version 7');
+assert.equal(sprayReleaseReplay.replay?.course_version, 8,
+  'browser must encode spray-to-crouch under course version 8');
 const capturedMasks = [...Buffer.from(sprayReleaseReplay.replay.frames, 'base64')]
   .filter((_, index) => index % 5 === 4);
 const firstSpray = capturedMasks.findIndex(mask => (mask & 8) !== 0);
