@@ -137,9 +137,42 @@ const mechanicsTriple = await verifyNbgLondonReplay({
 });
 assert.equal(mechanicsTriple.debug?.courseVersion, 5,
   'revision 5 must select speed-box, Graffbot-fire and balloon-enemy rules');
-assert.equal((await verifyNbgLondonReplay({
-  ...base, replay: { ...tripleReplay, course_version: 6 }
-})).valid, false, 'unapproved course revisions must fail rather than silently downgrade');
+const legacySix = await verifyNbgLondonReplay({
+  ...base, replay: { ...tripleReplay, course_version: 6 }, debug: true
+});
+assert.equal(legacySix.debug?.courseVersion, 6,
+  'existing version 6 collision geometry must remain accepted');
+const crouchSeven = await verifyNbgLondonReplay({
+  ...base, replay: { ...tripleReplay, course_version: 7 }, debug: true
+});
+assert.equal(crouchSeven.debug?.courseVersion, 7,
+  'revision 7 must accept crouch-capable client replays');
+const crouchInput = frameStream(Array.from({length:20}, () => [33,33,16]));
+const crouched = await verifyNbgLondonReplay({
+  ...base, replay: { ...crouchInput, course_version: 7 }, debug:true
+});
+assert.equal(crouched.debug?.reason, 'finish', 'v7 input bit 16 must be decoded as crouch');
+assert.equal(crouched.debug?.height, 22, 'the Worker must shorten the crouched collision box');
+assert.equal(crouched.debug?.crouching, true, 'crouch must persist while Down is held');
+assert.equal(crouched.debug?.x, 64, 'Down alone must not steer or cause friction drift');
+const sneaking = await verifyNbgLondonReplay({
+  ...base, replay: { ...frameStream(Array.from({length:20}, () => [33,33,18])), course_version:7 }, debug:true
+});
+assert.equal(sneaking.debug?.crouching, true, 'Down+Right must remain crouched');
+assert.ok(sneaking.debug?.x > 64, 'Down+Right must move the player');
+const releasedCrouch = await verifyNbgLondonReplay({
+  ...base, replay: { ...frameStream([
+    ...Array.from({length:20}, () => [33,33,16]),
+    ...Array.from({length:5}, () => [33,33,0])
+  ]), course_version:7 }, debug:true
+});
+assert.equal(releasedCrouch.debug?.height, 34,
+  'releasing Down with enough headroom restores the standing box');
+const rejectedLegacyMask = await verifyNbgLondonReplay({
+  ...base, replay: { ...crouchInput, course_version:6 }, debug:true
+});
+assert.equal(rejectedLegacyMask.debug, undefined,
+  'versions older than v7 must reject unknown crouch input bits');
 // Cached v1 replays omit the property completely. An explicitly present
 // null/undefined/invalid version is not equivalent and must be rejected.
 for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {
