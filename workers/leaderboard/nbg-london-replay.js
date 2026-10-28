@@ -294,6 +294,10 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const activeMaxSpeed=p.crouching?CROUCH_MAX_SPEED:
       courseVersion>=5&&elapsed<speedBoostUntil?SPEED_BOOST_MAX_SPEED:MAX_SPEED;
     p.vx=clamp(p.vx,-activeMaxSpeed,activeMaxSpeed);
+    // The browser's third jump changes the sprite to backflip in handleInput,
+    // BEFORE updatePlayer clamps x. Even while an earlier spray is active,
+    // the pre-clamp visual overhang is therefore 24px, not 70px.
+    let thirdJumpChangesSprite = false;
     if (jump) {
       if (p.grounded && !p.crouching) {p.vy=-11.4;p.grounded=false;jumps=1;}
       else if(jumps===1) {
@@ -310,6 +314,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
           p.facing=left ? -1:1;
         }
         jumps=3;
+        thirdJumpChangesSprite=courseVersion>=7;
       }
     }
     if(courseVersion>=7) {
@@ -327,9 +332,11 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     }
 
     const beforeX=p.x;
-    // The live browser clamps by half the visible sprite overhang. v7
-    // reproduces that boundary constraint; retain archived v1-v6 physics.
-    const margin=courseVersion>=7 ? (priorSprayFrame ? 70 : 24) : 0;
+    // The live browser clamps by the sprite selected at this point in the
+    // update. Normally it is the prior frame's sprite, but a third jump
+    // immediately switches to the narrower backflip, overriding spray art.
+    // v1-v6 preserve their archived no-visual-margin replay physics.
+    const margin=courseVersion>=7 ? (priorSprayFrame && !thirdJumpChangesSprite ? 70 : 24) : 0;
     p.x=clamp(p.x+p.vx*step,12+margin,WORLD-p.w-12-margin);
     maximumX=Math.max(maximumX,p.x);
     for (const box of level.crates) {
