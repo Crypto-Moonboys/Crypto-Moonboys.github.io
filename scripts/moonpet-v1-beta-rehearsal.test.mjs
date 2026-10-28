@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
-import { MOONPET_V1_BETA_RESET_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
+import { MOONPET_V1_BETA_RESET_TABLES, MOONPET_V1_BETA_SCHEMA_TABLES, MOONPET_V1_BETA_LEGACY_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
 import { planMoonpetV1BetaRehearsal, rehearseMoonpetV1BetaReset } from './moonpet-v1-beta-rehearsal.mjs';
 
 const script = fileURLToPath(new URL('./moonpet-v1-beta-rehearsal.mjs', import.meta.url));
@@ -52,8 +52,27 @@ function sandbox(run) {
 test('static allowlist matches reviewed MoonPet schema (not shared games)', () => {
   const names = [...sourceSql.matchAll(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["]?([a-zA-Z_0-9]+)["]?\s*\(/gi)]
     .map(m => m[1]).filter(isPet).sort();
-  assert.equal(names.length,81,'schema drift requires manual allowlist review');
-  assert.deepEqual([...MOONPET_V1_BETA_RESET_TABLES],names);
+  assert.equal(names.length,81,'checked-in schema drift requires manual review');
+  assert.deepEqual([...MOONPET_V1_BETA_SCHEMA_TABLES],names);
+  const historical = [
+    'moonpet_beta_xp_rebaseline',
+    'moonpet_identity_authority_cutovers',
+    'telegram_pet_growth_marks',
+    'telegram_pet_practice',
+    'telegram_pet_runtime_cutovers',
+    'telegram_pet_sanctuary',
+    'telegram_pet_season_completions',
+    'telegram_pet_season_reward_claims',
+    'telegram_pet_weekly_boss_events',
+    'telegram_pet_weekly_boss_progress',
+    'telegram_pet_weekly_boss_victories_by_pet',
+    'telegram_pet_weekly_crests',
+  ];
+  assert.deepEqual([...MOONPET_V1_BETA_LEGACY_TABLES],historical);
+  assert.equal(MOONPET_V1_BETA_RESET_TABLES.length,93);
+  assert.deepEqual([...MOONPET_V1_BETA_RESET_TABLES],
+    [...names,...historical].sort(),'reviewed live D1 legacy list and source schema must match');
+  assert.equal(new Set(MOONPET_V1_BETA_RESET_TABLES).size,93);
   for(const shared of ['telegram_users','arcade_progression_state','arcade_xp_wallets','blocktopia_progression'])
     assert.equal(names.includes(shared),false);
 });
@@ -85,6 +104,46 @@ test('fresh rehearsal copy clears pets with FK enforcement but never changes acc
     assert.deepEqual(rows(copy,'arcade_xp_wallets'),[{telegram_id:'owner',arcade_xp_spendable:440}]);
     assert.deepEqual(rows(copy,'blocktopia_progression'),[{telegram_id:'owner',gems:14}]);
   } finally {copy.close();}
+}));
+
+test('twelve reviewed legacy MoonPet tables clear in an offline copy without changing global Arcade XP', () => sandbox(({src,dst}) => {
+  const db=new DatabaseSync(src);
+  db.exec('PRAGMA foreign_keys=ON');
+  for(const name of MOONPET_V1_BETA_LEGACY_TABLES) {
+    // Representative FK graph on all 12 separately reviewed legacy names.
+    // Production rehearsal still inspects the actual exported constraints.
+    db.exec('CREATE TABLE "'+name+'" (k TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT,'
+      +'FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id),'
+      +'FOREIGN KEY(telegram_id) REFERENCES telegram_pet_profiles(telegram_id))');
+    db.prepare('INSERT INTO "'+name+'" (k,pet_id,telegram_id) VALUES (?,?,?)')
+      .run(name,'pet-one','owner');
+  }
+  db.close();
+  const original=readFileSync(src);
+  const srcDb=new DatabaseSync(src,{readOnly:true});
+  let plan;
+  try{
+    plan=planMoonpetV1BetaRehearsal(srcDb);
+    assert.equal(plan.source_table_count,MOONPET_V1_BETA_LEGACY_TABLES.length+5);
+    assert.equal(plan.source_row_count,MOONPET_V1_BETA_LEGACY_TABLES.length+5);
+    for(const name of MOONPET_V1_BETA_LEGACY_TABLES)
+      assert.ok(plan.delete_order.indexOf(name)<plan.delete_order.indexOf('telegram_pet_instances'),
+        name+' must delete before its source pet');
+  }finally{srcDb.close();}
+  const result=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(result.moonpet_tables_cleared,17);
+  assert.equal(result.moonpet_rows_removed,17);
+  assert.equal(result.ready_for_live_reset,false);
+  assert.deepEqual(readFileSync(src),original);
+  const copy=new DatabaseSync(dst,{readOnly:true});
+  try{
+    assert.equal(inspectMoonpetBetaReset(copy).moonpet_row_count,0);
+    assert.deepEqual(rows(copy,'arcade_xp_wallets'),[{telegram_id:'owner',arcade_xp_spendable:440}]);
+    assert.deepEqual(rows(copy,'arcade_progression_state'),[{telegram_id:'owner',arcade_xp_total:1700}]);
+    assert.deepEqual(rows(copy,'telegram_users'),[{telegram_id:'owner',xp:99}]);
+    assert.deepEqual(rows(copy,'blocktopia_progression'),[{telegram_id:'owner',gems:14}]);
+    assert.deepEqual(copy.prepare('PRAGMA foreign_key_check').all(),[]);
+  }finally{copy.close();}
 }));
 
 test('unknown MoonPet schema and non-pet pet references fail closed before copying', () => sandbox(({src,dst}) => {
