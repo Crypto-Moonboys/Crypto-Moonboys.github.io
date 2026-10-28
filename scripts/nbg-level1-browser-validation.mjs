@@ -774,6 +774,34 @@ assert.ok(lookingBelow.y < beforeLook.y - 45,
 assert.ok(Math.abs(lookingBelow.x - beforeLook.x) < 3,
   'looking below must not steer or drop the player beyond residual running inertia');
 assert.equal(lookingBelow.xp, beforeLook.xp, 'camera look must not award XP');
+// A crouched frame uses the new 5x5 sheet and the smaller, feet-anchored
+// collision box. Down without a direction cannot trigger left/right poses.
+const crouchOnly = await page.evaluate(() => {
+  const s = window.NBGLevel1State;
+  return { anim:s.player.anim, crouching:s.player.crouching,
+    y:s.player.y, h:s.player.h, combat:s.playerCombatRect,
+    sheet:s.playerAnimations.crouch };
+});
+assert.equal(crouchOnly.anim, 'crouch', 'Down alone selects the stationary crouch sheet');
+assert.equal(crouchOnly.crouching, true, 'Down must enter crouch stance');
+assert.equal(crouchOnly.h, 22, 'crouch physical box must be 22px high');
+assert.equal(Math.round(crouchOnly.y + crouchOnly.h), 214,
+  'crouch must preserve grounded foot position');
+assert.equal(crouchOnly.combat.h, 40, 'crouched combat contact must fit the reduced silhouette');
+assert.equal(crouchOnly.sheet.image.getContext('2d').getImageData(0,0,1,1).data[3], 0,
+  'green sheet matte must be transparent after loading');
+await page.keyboard.down('ArrowLeft');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLeft');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchLeft.nativeFacing), -1,
+  'provided crouchr artwork must not be mirrored back to the right');
+await page.keyboard.up('ArrowLeft');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouch');
+await page.keyboard.down('ArrowRight');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchRight.nativeFacing), 1,
+  'provided sneaking_left artwork faces right as supplied');
+await page.keyboard.up('ArrowRight');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouch');
 // Inspect actual rendered pixels, not just cameraY: previously the negative
 // pan exposed the blue clear color below the finite-height street artwork.
 const belowPixel = await page.evaluate(() => {
@@ -783,10 +811,18 @@ const belowPixel = await page.evaluate(() => {
 assert.notDeepEqual(belowPixel.slice(0, 3), [0, 118, 252],
   'looking below must paint the bottom of the viewport instead of blue void');
 await page.keyboard.up('ArrowDown');
+await page.waitForFunction(() => !window.NBGLevel1State.player.crouching, null, { timeout: 3000 });
+const uncrouched = await page.evaluate(() => ({
+  h:window.NBGLevel1State.player.h,
+  combatH:window.NBGLevel1State.playerCombatRect.h
+}));
+assert.deepEqual(uncrouched, { h:34, combatH:64 },
+  'releasing Down must restore standing physics and contact rect');
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
 // Touch look uses the same render-only control; release restores the camera.
 await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', true));
-await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50, null, { timeout: 3000 });
+await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50 && window.NBGLevel1State.player.crouching,
+  null, { timeout: 3000 });
 await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', false));
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
