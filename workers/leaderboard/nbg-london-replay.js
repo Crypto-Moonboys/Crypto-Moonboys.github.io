@@ -163,6 +163,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   const p = { x:64, y:FLOOR-34, w:24, h:STAND_HEIGHT, vx:0, vy:0, facing:1,
     grounded:true, crouching:false, health:3, invuln:0 };
   let jumps=0, sprayTimer=0, speedBoostUntil=0, combo=0, comboExpires=0, checkpointX=72;
+  let priorSprayFrame=false;
   let elapsed=0, xp=0, coinCount=0, secretCount=0, complete=false;
   let consumedFrames=0;
   let maximumX=64;
@@ -316,7 +317,11 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(spray && sprayTimer<=0) sprayTimer=230;
 
     const beforeX=p.x;
-    p.x=clamp(p.x+p.vx*step,12,WORLD-p.w-12);
+    // The live browser clamps by half the visible sprite overhang. v7
+    // reproduces that boundary constraint; retain archived v1-v6 physics.
+    const margin=courseVersion>=7 ? (priorSprayFrame ? 70 : 24) : 0;
+    p.x=clamp(p.x+p.vx*step,12+margin,WORLD-p.w-12-margin);
+    priorSprayFrame=courseVersion>=7 && sprayTimer>0;
     maximumX=Math.max(maximumX,p.x);
     for (const box of level.crates) {
       if (Math.abs(box.x-p.x)>60 || !overlap(p,box)) continue;
