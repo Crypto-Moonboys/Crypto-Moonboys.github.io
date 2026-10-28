@@ -96,3 +96,17 @@ node --check scripts/moonpet-v1-beta-shared-clout-proof.mjs
 
 This is **not approval to clear Clout or MoonPet D1**, and not a substitute
 for proving restoration and running signed Telegram gameplay checks.
+
+
+### Daily Clout game-key validation
+
+A valid `championship_clout_daily.game_keys_json` value must be an array
+of **at most 200 distinct canonical game-key strings** matching
+`^[a-z0-9][a-z0-9_-]{0,63}$`, consistent with Championship Clout's
+`validSnapshot` policy. Malformed JSON, non-array roots, nested arrays,
+objects, numeric/null/boolean members, duplicate keys or invalid casing
+**all block offline rehearsal**. A direct `MoonPet` string is also counted
+as MoonPet evidence even if its casing or surrounding whitespace is invalid.
+
+The read-only scan streams only the saved game-keys column and reports
+aggregate blocker counts; it does not rewrite shared reward records.
