@@ -1165,6 +1165,10 @@ let state = await page.evaluate(() => ({
       frames: animation.frames,
       columns: animation.columns,
       frameMs: animation.frameMs,
+      // Serialize crouch metadata before leaving page.evaluate. Later
+      // comparisons cannot recover fields omitted from this snapshot.
+      frameStart: animation.frameStart,
+      nativeFacing: animation.nativeFacing,
       naturalWidth: animation.image?.naturalWidth,
       naturalHeight: animation.image?.naturalHeight
     }
