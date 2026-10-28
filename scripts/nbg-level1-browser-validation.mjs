@@ -790,6 +790,101 @@ assert.equal(cameraZoomProof.health, cameraZoomProof.initialHealth);
 assert.equal(cameraZoomProof.badZoomRejected, true,
   'unsupported zoom levels must not change camera or gameplay');
 
+// Measure actual canvas transforms: sprites scale, while the TIME HUD does not.
+const zoomTransforms = await page.evaluate(() => {
+  const ctx = document.getElementById('game').getContext('2d');
+  const drawImage = ctx.drawImage;
+  const fillText = ctx.fillText;
+  const evidence = [];
+  let current;
+  ctx.drawImage = function (...args) {
+    const transform = this.getTransform();
+    if (current && Math.abs(transform.a) > 0) current.worldScales.push(Math.abs(transform.a));
+    return drawImage.apply(this,args);
+  };
+  ctx.fillText = function (...args) {
+    if (current && args[0] === 'TIME') {
+      const t = this.getTransform();
+      current.hud = [t.a,t.b,t.c,t.d,t.e,t.f];
+    }
+    return fillText.apply(this,args);
+  };
+  try {
+    for (const zoom of [1,1.25,1.5]) {
+      current = {zoom,worldScales:[],hud:null};
+      window.NBGLevel1Runtime.setCameraZoom(zoom);
+      evidence.push(current);
+    }
+  } finally {
+    current = null;
+    ctx.drawImage = drawImage;
+    ctx.fillText = fillText;
+    window.NBGLevel1Runtime.setCameraZoom(1.25);
+  }
+  return evidence;
+});
+for (const proof of zoomTransforms) {
+  assert.ok(proof.worldScales.length > 0 && proof.worldScales.every(scale => scale === proof.zoom),
+    'world artwork must use the selected zoom');
+  assert.deepEqual(proof.hud,[1,0,0,1,0,0],'TIME HUD must retain an identity transform');
+}
+
+// Native keyboard activation must only change the view, including after Reset.
+for (const afterReset of [false, true]) {
+  if (afterReset) {
+    await page.keyboard.down('ArrowRight');
+    await page.waitForFunction(() => window.NBGLevel1State.running);
+    await page.keyboard.up('ArrowRight');
+    await page.locator('#overlay-btn-reset').click();
+    await page.waitForFunction(() => !window.NBGLevel1State.running);
+  }
+  for (const key of ['Enter', 'Space']) {
+    await page.evaluate(() => window.NBGLevel1Runtime.setCameraZoom(1.25));
+    await page.locator('#nbg-zoom-control').focus();
+    await page.keyboard.press(key);
+    assert.deepEqual(await page.evaluate(() => ({
+      zoom:window.NBGLevel1State.cameraZoom,
+      running:window.NBGLevel1State.running,
+      elapsed:window.NBGLevel1State.runElapsedMs,
+      x:window.NBGLevel1State.player.x,
+      pending:window.NBGLevel1State.pendingJumpPresses
+    })), {zoom:1.5,running:false,elapsed:0,x:64,pending:0},
+    key + ' on Zoom must preserve the ready run before and after Reset');
+  }
+}
+await page.evaluate(() => {
+  window.NBGLevel1Runtime.setCameraZoom(1.25);
+  document.activeElement?.blur();
+});
+
+// Restored preferences and mobile touch controls use the same zoom state.
+for (const width of [360, 390, 960]) {
+  const zoomPage = await browser.newPage({
+    viewport:{width,height:width === 960 ? 540 : 700},
+    isMobile:width !== 960,hasTouch:width !== 960
+  });
+  try {
+    await zoomPage.addInitScript(() => localStorage.setItem('nbg-london:camera-zoom:v1','1.5'));
+    await zoomPage.goto(url,{waitUntil:'domcontentloaded'});
+    await zoomPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded);
+    assert.deepEqual(await zoomPage.evaluate(() => ({
+      zoom:window.NBGLevel1State.cameraZoom,
+      label:document.getElementById('nbg-zoom-control').textContent
+    })), {zoom:1.5,label:'Zoom 1.5×'},width + 'px toolbar must show the saved preset');
+    const zoomControl = zoomPage.locator('#nbg-zoom-control');
+    await zoomControl.scrollIntoViewIfNeeded();
+    if (width === 960) await zoomControl.click();
+    else await zoomControl.tap();
+    assert.deepEqual(await zoomPage.evaluate(() => ({
+      zoom:window.NBGLevel1State.cameraZoom,
+      running:window.NBGLevel1State.running,
+      width:window.NBGLevel1State.visibleWorldWidth
+    })),{zoom:1,running:false,width:480},width + 'px Zoom must be clickable without starting play');
+  } finally {
+    await zoomPage.close();
+  }
+}
+
 // Reproduce the Chrome-denied fullscreen path from GK's real NBG beta run.
 // Native fullscreen refusal must not imply the windowed game is blocked.
 await page.evaluate(() => {
@@ -1175,7 +1270,9 @@ try {
         const transform = this.getTransform();
         window.__pigDrawCalls.push({
           id:window.__pigCanvasIds.get(img),
-          x:transform.a < 0 ? transform.e - args[6] : args[4],
+          x:Math.min(transform.e + transform.a * args[4],
+            transform.e + transform.a * (args[4] + args[6])),
+          zoom:state.cameraZoom, screenWidth:Math.abs(transform.a) * args[6],
           width:args[6], height:args[7], flipped:transform.a < 0,
           srcWidth:args[2], srcHeight:args[3],
           cornerAlpha:img.getContext('2d').getImageData(0,0,1,1).data[3]
@@ -1192,8 +1289,9 @@ try {
     'pig frames must use isolated transparent padded canvases drawn at exactly 56x44');
   assert.ok(new Set(initial.map(call=>call.id)).size >= 2,
     'flying pig must actually animate through more than one isolated frame');
+  const pigViewportWidth = await pigPage.evaluate(() => window.NBGLevel1State.visibleWorldWidth);
   for (const scenario of [
-    {x:481,vx:0.001,flipped:false,expectedX:467},
+    {x:pigViewportWidth+1,vx:0.001,flipped:false,expectedX:pigViewportWidth-13},
     {x:-29,vx:-0.001,flipped:true,expectedX:-43}
   ]) {
     await pigPage.evaluate(({x,vx}) => {
@@ -1205,9 +1303,10 @@ try {
     const drawn = await pigPage.evaluate(() => window.__pigDrawCalls[0]);
     assert.equal(drawn.flipped, scenario.flipped,
       'left-facing flying pig must be horizontally mirrored');
-    assert.ok(Math.abs(drawn.x-scenario.expectedX)<=2,
+    assert.ok(Math.abs(drawn.x-scenario.expectedX*drawn.zoom)<=2*drawn.zoom,
       'pig visual must stay centered and render smoothly beyond screen edges');
     assert.equal(drawn.width,56,'enlarged pig draw must preserve double pigeon width');
+    assert.equal(drawn.screenWidth,56*drawn.zoom,'pig visual width must follow the camera zoom');
   }
 } finally {
   await pigPage.close();
@@ -1468,7 +1567,8 @@ for (const mechanicMode of [
           const sourceH=(image.naturalHeight||image.height)/4;
           window.__pr4DrawEvidence.flameFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
           const flameTransform=this.getTransform();
-          const baseX=flameTransform.a<0?flameTransform.e:flameTransform.e+args[4];
+          const baseX=(flameTransform.a<0?flameTransform.e:
+            flameTransform.e+args[4]*flameTransform.a)/state.cameraZoom;
           window.__pr4DrawEvidence.flameInsetChecks.push(state.enemies.some(enemy =>
             enemy.type==='bot' && Math.abs(baseX-Math.round(enemy.x-state.cameraX+
               (flameTransform.a<0?12:enemy.w-12)))<0.01));
@@ -1576,7 +1676,7 @@ for (const mechanicMode of [
         fireStartedAt:bot.fireStartedAt,fireUntil:bot.fireUntil,nextFireAt:bot.nextFireAt,
         frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
         facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort(),
-        topYs:[...window.__pr4DrawEvidence.flameTopYs],
+        zoom:state.cameraZoom,topYs:[...window.__pr4DrawEvidence.flameTopYs],
         botTopYs:[...window.__pr4DrawEvidence.botTopYs]};
     });
     assert.ok(leftFire.health<3,mechanicMode.label+' Graffbot fire must damage only after visible contact');
@@ -1586,7 +1686,7 @@ for (const mechanicMode of [
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
     assert.ok(leftFire.topYs.length>0&&leftFire.botTopYs.length>0&&
       leftFire.topYs.every(topY=>leftFire.botTopYs.some(botTopY=>
-        Math.abs((topY+48)-(botTopY+16))<=1)),
+        Math.abs((topY+48*leftFire.zoom)-(botTopY+16*leftFire.zoom))<=1)),
       mechanicMode.label+' flame sheet must retain the requested 7px higher placement');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
