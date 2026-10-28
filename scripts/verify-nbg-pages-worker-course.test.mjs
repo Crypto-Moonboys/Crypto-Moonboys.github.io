@@ -18,11 +18,11 @@ test('new browser revision requires explicit live Worker support', () => {
   assert.equal(acceptsNbgCourse(health,7),true);
   assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:6},7),false,
     'v6 Worker must stop Pages before v7 crouch collision changes publish');
-  assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:null},6),false);
-  assert.equal(acceptsNbgCourse({...health,ok:false},6),false);
-  assert.equal(acceptsNbgCourse({...health,telegram_auth_configured:false},6),false);
-  assert.equal(acceptsNbgCourse({...health,database_configured:false},6),false);
-  assert.equal(acceptsNbgCourse({...health,leaderboard_store_configured:false},6),false);
+  assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:null},7),false);
+  assert.equal(acceptsNbgCourse({...health,ok:false},7),false);
+  assert.equal(acceptsNbgCourse({...health,telegram_auth_configured:false},7),false);
+  assert.equal(acceptsNbgCourse({...health,database_configured:false},7),false);
+  assert.equal(acceptsNbgCourse({...health,leaderboard_store_configured:false},7),false);
 });
 test('Pages workflow fail-closed gate runs before publishing', () => {
   const yaml=readFileSync('.github/workflows/pages.yml','utf8');
