@@ -794,7 +794,7 @@ await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLe
 assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchLeft.nativeFacing), -1,
   'provided crouchr artwork must not be mirrored back to the right');
 await page.keyboard.up('ArrowLeft');
-await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLeft');
 await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
 assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchRight.nativeFacing), 1,
