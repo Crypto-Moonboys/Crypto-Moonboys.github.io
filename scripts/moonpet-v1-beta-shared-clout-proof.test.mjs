@@ -87,3 +87,45 @@ test('changed shared Clout schema fails closed',()=>{
     assert.ok(r.blockers.includes('championship_clout_effects_schema_unavailable'));
   } finally {db.close();}
 });
+
+
+test('non-string members, nested JSON and malformed game-key shapes fail closed',()=>{
+  const invalidArrays=[
+    [['moonpet']], [{game_key:'moonpet'}], [null], [1], [true],
+    ['dead-run','dead-run'], ['Dead-Run'], ['a'.repeat(65)],
+    Array.from({length:201},(_,i)=>'game-'+i),
+  ];
+  const db=dbWithSharedClout();
+  try {
+    const insert=db.prepare('INSERT INTO championship_clout_daily(game_keys_json) VALUES (?)');
+    for(const games of invalidArrays){
+      insert.run(JSON.stringify(games));
+      const result=auditMoonpetSharedCloutProof(db);
+      assert.ok(result.blockers.includes('championship_clout_daily_json_unverifiable'),
+        JSON.stringify(games));
+      assert.equal(result.invalid_daily_json_rows,db.prepare(
+        'SELECT COUNT(*) AS n FROM championship_clout_daily').get().n,
+        'each noncanonical array must count as an unverifiable row');
+      assert.equal(result.daily_rows,0,'a nested MoonPet object/array must not be mistaken for verified proof');
+    }
+    db.exec('DELETE FROM championship_clout_daily');
+    insert.run('["dead-run","nbg-london"]');
+    const good=auditMoonpetSharedCloutProof(db);
+    assert.equal(good.invalid_daily_json_rows,0);
+    assert.equal(good.daily_rows,0);
+    assert.deepEqual(good.blockers,[]);
+  }finally{db.close();}
+});
+
+test('noncanonical MoonPet spelling is counted as evidence and invalid JSON shape',()=>{
+  const db=dbWithSharedClout();
+  try {
+    db.prepare('INSERT INTO championship_clout_daily(game_keys_json) VALUES (?)')
+      .run('["dead-run"," MoonPet "]');
+    const result=auditMoonpetSharedCloutProof(db);
+    assert.equal(result.daily_rows,1);
+    assert.equal(result.invalid_daily_json_rows,1);
+    assert.ok(result.blockers.includes('moonpet_clout_daily_projection_requires_review'));
+    assert.ok(result.blockers.includes('championship_clout_daily_json_unverifiable'));
+  }finally{db.close();}
+});
