@@ -27,6 +27,93 @@
       ],
       "art-production/wall-one.png",
       "world/street-tiles.svg"
+    ],
+    "wallGraffiti": [
+      {
+        "path": "objects/1aa2bunny.png",
+        "width": 197,
+        "height": 269
+      },
+      {
+        "path": "objects/ddbuster.png",
+        "width": 332,
+        "height": 213
+      },
+      {
+        "path": "objects/dgdskull.png",
+        "width": 190,
+        "height": 263
+      },
+      {
+        "path": "objects/dgrun.png",
+        "width": 608,
+        "height": 420
+      },
+      {
+        "path": "objects/erger.png",
+        "width": 459,
+        "height": 160
+      },
+      {
+        "path": "objects/fgdfgallcity.png",
+        "width": 531,
+        "height": 481
+      },
+      {
+        "path": "objects/fghgh.png",
+        "width": 102,
+        "height": 137
+      },
+      {
+        "path": "objects/killakelawall.png",
+        "width": 327,
+        "height": 150
+      },
+      {
+        "path": "objects/retre.png",
+        "width": 789,
+        "height": 600
+      },
+      {
+        "path": "objects/retreth.png",
+        "width": 341,
+        "height": 150
+      },
+      {
+        "path": "objects/rtyrt.png",
+        "width": 269,
+        "height": 150
+      },
+      {
+        "path": "objects/rytr.png",
+        "width": 500,
+        "height": 400
+      },
+      {
+        "path": "objects/small.fgfgcrown.png",
+        "width": 132,
+        "height": 174
+      },
+      {
+        "path": "objects/small.retert.png",
+        "width": 115,
+        "height": 85
+      },
+      {
+        "path": "objects/small.ttttrr5.png",
+        "width": 102,
+        "height": 100
+      },
+      {
+        "path": "objects/tagordie.png",
+        "width": 589,
+        "height": 306
+      },
+      {
+        "path": "objects/yutyh.png",
+        "width": 274,
+        "height": 150
+      }
     ]
   },
   "objects": {
