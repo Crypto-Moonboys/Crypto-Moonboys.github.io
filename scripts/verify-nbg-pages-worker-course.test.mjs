@@ -8,21 +8,21 @@ const source = readFileSync('game/nbg-level1.js','utf8');
 const health = {
   ok:true, service:'moonboys-leaderboard',
   nbg_london_ranked_scoring_available:true,
-  nbg_london_course_version_supported:7,
+  nbg_london_course_version_supported:8,
   database_configured:true, leaderboard_store_configured:true,
   telegram_auth_configured:true
 };
 test('new browser revision requires explicit live Worker support', () => {
-  assert.equal(requiredNbgCourseVersion(source),7);
+  assert.equal(requiredNbgCourseVersion(source),8);
   assert.equal(requiredNbgCourseVersion('var WIDTH = 480;'),1);
-  assert.equal(acceptsNbgCourse(health,7),true);
-  assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:6},7),false,
-    'v6 Worker must stop Pages before v7 crouch collision changes publish');
-  assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:null},7),false);
-  assert.equal(acceptsNbgCourse({...health,ok:false},7),false);
-  assert.equal(acceptsNbgCourse({...health,telegram_auth_configured:false},7),false);
-  assert.equal(acceptsNbgCourse({...health,database_configured:false},7),false);
-  assert.equal(acceptsNbgCourse({...health,leaderboard_store_configured:false},7),false);
+  assert.equal(acceptsNbgCourse(health,8),true);
+  assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:7},8),false,
+    'v7 Worker must stop Pages before v8 runner pacing publishes');
+  assert.equal(acceptsNbgCourse({...health,nbg_london_course_version_supported:null},8),false);
+  assert.equal(acceptsNbgCourse({...health,ok:false},8),false);
+  assert.equal(acceptsNbgCourse({...health,telegram_auth_configured:false},8),false);
+  assert.equal(acceptsNbgCourse({...health,database_configured:false},8),false);
+  assert.equal(acceptsNbgCourse({...health,leaderboard_store_configured:false},8),false);
 });
 test('Pages workflow fail-closed gate runs before publishing', () => {
   const yaml=readFileSync('.github/workflows/pages.yml','utf8');
