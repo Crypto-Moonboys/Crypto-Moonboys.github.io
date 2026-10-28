@@ -504,7 +504,8 @@
     });
     window.addEventListener('nbg-camera-zoom-changed', updateZoomButton);
     updateZoomButton();
-    toolbar.appendChild(zoomButton);
+    // Keep zoom near the front; narrow mobile toolbar layouts scroll horizontally.
+    toolbar.insertBefore(zoomButton, document.getElementById('overlay-btn-info'));
     toolbar.appendChild(open);
 
     var drawer = document.createElement('section');
