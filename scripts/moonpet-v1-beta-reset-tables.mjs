@@ -1,5 +1,17 @@
-/** Explicit MoonPet-only beta table allowlist, reviewed against schema.sql. */
-export const MOONPET_V1_BETA_RESET_TABLES = Object.freeze([
+/**
+ * MoonPet V1 BETA offline rehearsal ONLY — explicit table authority.
+ *
+ * 81 tables are declared in workers/moonboys-api/schema.sql.
+ * 12 additional legacy MoonPet-owned tables were verified by READ-ONLY
+ * sqlite_master and FK introspection on production D1 (2026-10-28).
+ * Legacy tables are not present in the checked-in consolidated schema file;
+ * do not silently remove them or rewrite applied migration history.
+ *
+ * This allowlist is NOT permission to reset D1: the rehearsal always writes
+ * only to a new local SQLite copy and returns ready_for_live_reset=false.
+ * Every other MoonPet-prefixed table fails closed pending separate review.
+ */
+export const MOONPET_V1_BETA_SCHEMA_TABLES = Object.freeze([
   "moonpet_beta_xp_quarantine",
   "moonpet_beta_xp_rebaseline_v2",
   "telegram_pet_achievements",
@@ -82,3 +94,23 @@ export const MOONPET_V1_BETA_RESET_TABLES = Object.freeze([
   "telegram_pet_weekly_journey_objectives",
   "telegram_pet_weekly_journey_receipts"
 ]);
+
+export const MOONPET_V1_BETA_LEGACY_TABLES = Object.freeze([
+  "moonpet_beta_xp_rebaseline",
+  "moonpet_identity_authority_cutovers",
+  "telegram_pet_growth_marks",
+  "telegram_pet_practice",
+  "telegram_pet_runtime_cutovers",
+  "telegram_pet_sanctuary",
+  "telegram_pet_season_completions",
+  "telegram_pet_season_reward_claims",
+  "telegram_pet_weekly_boss_events",
+  "telegram_pet_weekly_boss_progress",
+  "telegram_pet_weekly_boss_victories_by_pet",
+  "telegram_pet_weekly_crests"
+]);
+
+export const MOONPET_V1_BETA_RESET_TABLES = Object.freeze([
+  ...MOONPET_V1_BETA_SCHEMA_TABLES,
+  ...MOONPET_V1_BETA_LEGACY_TABLES,
+].sort());
