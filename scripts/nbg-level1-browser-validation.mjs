@@ -750,8 +750,8 @@ assert.equal(windowedFullscreenState.ready, true,
 assert.equal(windowedFullscreenState.canvasVisible, true,
   'denied fullscreen must not hide the game canvas');
 
-// Hold Down to look below, then release to restore the ordinary framing.
-// This view-only input must not change physics, score, or start a waiting run.
+// Down remains an optional look-below camera control while entering a
+// physically smaller crouch stance. It does not start a waiting run by itself.
 await page.keyboard.press('ArrowDown');
 assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
   'look-below alone must not start gameplay');
