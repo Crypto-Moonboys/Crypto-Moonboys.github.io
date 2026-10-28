@@ -196,10 +196,15 @@ test('existing destination WAL, SHM and journal artifacts are refused without mo
   assert.equal(existsSync(dst),false);
   for(let i=0;i<paths.length;i++)assert.deepEqual(readFileSync(paths[i]),snapshots[i]);
   assert.deepEqual(readFileSync(src),sourceBefore);
+}));
+
+test('dangling journal symlink is rejected without modifying the source', { skip: process.platform === 'win32' }, () => sandbox(({src,dir}) => {
+  const before=readFileSync(src);
   const dangling=join(dir,'dangling-copy.sqlite');
   symlinkSync(join(dir,'no-such-target'),dangling+'-journal');
   assert.throws(()=>rehearseMoonpetV1BetaReset(src,dangling),/existing_output_sidecars_forbidden/);
   assert.equal(existsSync(dangling),false);
+  assert.deepEqual(readFileSync(src),before);
 }));
 
 test('a closed WAL-mode backup is never opened and can be rehearsed twice', () => sandbox(({src,dst,dir}) => {
@@ -238,7 +243,7 @@ test('mixed-case SQLite REFERENCES are canonicalized for ordering and external b
   db.close();
   assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst+'2'),/external_fk_moonpet_dependency/);
   assert.equal(existsSync(dst+'2'),false);
-});
+}));
 
 
 
