@@ -804,6 +804,27 @@ try {
     () => window.NBGLevel1State?.wallGraffitiLoadedCount === 17,
     null, {timeout:15000}
   );
+  const actualGraffitiDraws = await graffitiPage.evaluate(() => {
+    const canvas = document.getElementById('game');
+    const context = canvas.getContext('2d');
+    const originalDraw = context.drawImage;
+    const artUrls = new Set(window.NBGLevel1State.wallGraffitiArt.map(
+      art => new URL(art.src, window.location.href).href
+    ));
+    const drawn = new Set();
+    context.drawImage = function (image, ...args) {
+      if (image?.src && artUrls.has(image.src)) drawn.add(image.src);
+      return originalDraw.apply(this, [image, ...args]);
+    };
+    try {
+      window.NBGLevel1Runtime.setCameraZoom(1.25);
+    } finally {
+      context.drawImage = originalDraw;
+    }
+    return drawn.size;
+  });
+  assert.ok(actualGraffitiDraws > 0,
+    'game canvas must actually draw decoded graffiti PNGs behind the player');
   await graffitiPage.evaluate(() => window.NBGLevel1Runtime.reset());
   assert.equal(await graffitiPage.evaluate(() => window.NBGLevel1State.wallGraffitiPlacements.length),
     102,'a new run must retain the same original wall-art layout');
