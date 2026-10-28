@@ -13,6 +13,9 @@
   var FRICTION = 0.78;
   var RUN_ACCEL = 0.74;
   var MAX_SPEED = 4.2;
+  var STAND_HEIGHT = 34;
+  var CROUCH_HEIGHT = 22;
+  var CROUCH_MAX_SPEED = 2;
   var SPEED_BOOST_MAX_SPEED = 6;
   var SPEED_BOOST_DURATION_MS = 6000;
   var SPEED_BOX_RENDER_SIZE = 28;
@@ -20,7 +23,7 @@
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 6; // New landed-parachute-rat collision geometry; preserve v5 replay rules.
+  var COURSE_LAYOUT_VERSION = 7; // Crouch controls and collision geometry; Worker must accept v7 before Pages deploy.
   var DOUBLE_JUMP_SIDE_SPEED = 5.4;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
@@ -142,6 +145,28 @@
     }
     context.putImageData(pixels, 0, 0);
     canvas.__nbgSpraySource = image.src;
+    return canvas;
+  }
+
+  // The three supplied 5x5 crouch exports have a solid green matte. Remove
+  // that matte only at load time; preserve the original artwork on disk.
+  function prepareCrouchSheet(image) {
+    if (image.naturalWidth !== 1280 || image.naturalHeight !== 1280)
+      throw new Error('Unexpected crouch sheet dimensions: ' + image.src);
+    var canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    var context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    var rgba = pixels.data;
+    var matte = [rgba[0], rgba[1], rgba[2]];
+    for (var i = 0; i < rgba.length; i += 4) {
+      if (Math.abs(rgba[i] - matte[0]) <= 18 &&
+          Math.abs(rgba[i + 1] - matte[1]) <= 18 &&
+          Math.abs(rgba[i + 2] - matte[2]) <= 18) rgba[i + 3] = 0;
+    }
+    context.putImageData(pixels, 0, 0);
     return canvas;
   }
 
@@ -406,7 +431,8 @@
       x: 64,
       y: FLOOR_Y - 38,
       w: 24,
-      h: 34,
+      h: STAND_HEIGHT,
+      crouching: false,
       vx: 0,
       vy: 0,
       facing: 1,
@@ -419,6 +445,21 @@
     };
     var previousPlayerY = player.y;
     var previousPlayerVy = player.vy;
+
+    // Always change the collision box around the same foot position as the
+    // rendered sprite. Never stand up into a crate or solid platform.
+    function setCrouching(wanted) {
+      if (wanted === player.crouching) return;
+      var feet = player.y + player.h;
+      if (!wanted) {
+        var upright = { x: player.x, y: feet - STAND_HEIGHT, w: player.w, h: STAND_HEIGHT };
+        if (platforms.concat(crates).some(function (solid) { return rectsOverlap(upright, solid); }))
+          return;
+      }
+      player.h = wanted ? CROUCH_HEIGHT : STAND_HEIGHT;
+      player.y = feet - player.h;
+      player.crouching = wanted;
+    }
 
     function resolveAnimationName(name) {
       var stateMap = {
@@ -610,6 +651,8 @@
 
     function resetToCheckpoint() {
       player.x = checkpointX;
+      player.crouching = false;
+      player.h = STAND_HEIGHT;
       player.y = FLOOR_Y - player.h;
       previousPlayerY = player.y;
       previousPlayerVy = 0;
@@ -701,6 +744,7 @@
       if (keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right')) mask |= 2;
       if (jumpTapReady() || (replay && replay.control === 'jump')) mask |= 4;
       if (keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray')) mask |= 8;
+      if (keys.ArrowDown || touch.look) mask |= 16;
       var tenth = Math.round(dt * 10);
       var elapsed = Math.round(frameElapsedMs * 10);
       runReplayFrames.push(tenth & 255, (tenth >> 8) & 255,
@@ -727,6 +771,8 @@
         nextJumpBoostAtMs = runElapsedMs + JUMP_TAP_SPACING_MS;
       }
       var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
+      setCrouching(!!((keys.ArrowDown || touch.look) && player.grounded &&
+        !jumpPressed && !spray && sprayTimer <= 0 && player.invuln <= 0));
 
       if (left) {
         player.vx -= RUN_ACCEL * step;
@@ -737,12 +783,13 @@
         player.facing = 1;
       }
       if (!left && !right) {
-        player.vx *= Math.pow(FRICTION, step);
+        player.vx = player.crouching ? 0 : player.vx * Math.pow(FRICTION, step);
       }
-      var activeMaxSpeed = runElapsedMs < speedBoostUntil ? SPEED_BOOST_MAX_SPEED : MAX_SPEED;
+      var activeMaxSpeed = player.crouching ? CROUCH_MAX_SPEED :
+        runElapsedMs < speedBoostUntil ? SPEED_BOOST_MAX_SPEED : MAX_SPEED;
       player.vx = clamp(player.vx, -activeMaxSpeed, activeMaxSpeed);
 
-      if (jumpPressed && player.grounded) {
+      if (jumpPressed && player.grounded && !player.crouching) {
         player.vy = JUMP_VELOCITY;
         player.grounded = false;
         jumpsUsed = 1;
@@ -802,9 +849,9 @@
     function getPlayerCombatRect() {
       return {
         x: player.x - 8,
-        y: player.y - 30,
+        y: player.y - (player.crouching ? 18 : 30),
         w: player.w + 16,
-        h: player.h + 30
+        h: player.h + (player.crouching ? 18 : 30)
       };
     }
 
@@ -909,6 +956,11 @@
         setPlayerAnimation('backflip');
       } else if (!player.grounded) {
         setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
+      } else if (player.crouching) {
+        var crouchLeft = !!(keys.ArrowLeft || keys.KeyA || touch.left);
+        var crouchRight = !!(keys.ArrowRight || keys.KeyD || touch.right);
+        setPlayerAnimation(crouchLeft !== crouchRight ?
+          (crouchLeft ? 'crouchLeft' : 'crouchRight') : 'crouch');
       } else if (Math.abs(player.vx) > 0.42) {
         setPlayerAnimation('run');
       } else {
@@ -1231,7 +1283,8 @@
         // dealing contact damage. The generic rectangles add 8px on each side.
         var landedRat = !!enemy.spawnedByParachute;
         var playerContactRect = landedRat ? {
-          x: player.x, y: player.y - 30, w: player.w, h: player.h + 30
+          x: player.x, y: player.y - (player.crouching ? 18 : 30),
+          w: player.w, h: player.h + (player.crouching ? 18 : 30)
         } : getPlayerCombatRect();
         var enemyRect = landedRat ? {
           x: enemy.x, y: enemy.y + (enemy.bob || 0) - 12, w: enemy.w, h: 54
@@ -1756,7 +1809,7 @@
     function drawPlayer() {
       var animation = getAnimation(player.anim);
       var frameMeta = getAnimationFrameMetadata(animation);
-      var frame = player.frame % frameMeta.count;
+      var frame = player.frame % frameMeta.count + (animation && animation.frameStart || 0);
       var col = frame % frameMeta.columns;
       var row = Math.floor(frame / frameMeta.columns);
       var x = Math.round(player.x - cameraX);
@@ -1778,7 +1831,8 @@
       }
 
       ctx.save();
-      if (player.facing < 0) {
+      // crouchLeft is painted facing left already; avoid double mirroring.
+      if ((player.facing < 0) !== ((animation.nativeFacing || 1) < 0)) {
         ctx.translate(drawX + drawWidth, drawY);
         ctx.scale(-1, 1);
         ctx.drawImage(animation.image, sourceX, sourceY, frameMeta.sourceWidth, frameMeta.sourceHeight, 0, 0, drawWidth, drawHeight);
@@ -2067,7 +2121,8 @@
 
       player.x = 64;
       player.w = 24;
-      player.h = 34;
+      player.h = STAND_HEIGHT;
+      player.crouching = false;
       player.y = FLOOR_Y - player.h;
       previousPlayerY = player.y;
       previousPlayerVy = 0;
@@ -2148,12 +2203,16 @@
               renderWidth: animation.renderWidth,
               renderHeight: animation.renderHeight,
               renderOffsetY: animation.renderOffsetY,
+              frameStart: animation.frameStart || 0,
+              nativeFacing: animation.nativeFacing || 1,
               frames: animation.frames,
               columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
               image: key === 'spray' && result.image ?
-                prepareFinalSpraySheet(result.image) : result.image
+                prepareFinalSpraySheet(result.image) :
+                key.indexOf('crouch') === 0 && result.image ?
+                  prepareCrouchSheet(result.image) : result.image
             };
             assetStatus['player.' + key] = {
               src: result.src,
