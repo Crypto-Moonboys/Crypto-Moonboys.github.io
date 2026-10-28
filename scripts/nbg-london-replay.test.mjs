@@ -289,85 +289,89 @@ assert.equal(maxParachuteSpawns,1,
 assert.ok(firstParachuteX>=350 && firstParachuteX<=430,
   'authoritative v4 rat must share the browser start-area position');
 
-// Exercise an entire physically completed revision-5 course with the finite
+// Exercise physically completed archived v5 and current v8 courses with finite
 // speed boxes, Graffbot fire, balloon reward and single start-area rat,
 // then verify the recorded input bytes independently. No browser XP claims.
-let updatedCourse = null;
-const revision5Diagnostics = [];
-for (const approach of [60,80,100,120,140,160,180]) {
-  const frames = Array.from({length:5600}, () => [33,33,0]);
-  const masks=[];
-  let lastJump=-1000;
-  const input = state => {
-    // Version 5 can move at 6 px/step while boosted. Scale the obstacle lead
-    // by current velocity so this remains a physical control replay instead
-    // of driving the faster runner with the legacy fixed-distance timing.
-    const lead=approach+Math.abs(state.vx)*20+
-      (state.speedBoostActive ? 35 : 0);
-    const obstacle = state.obstacles.filter(o =>
-      o.x + o.w > state.x && o.x < state.x + Math.max(240,lead+45))
-      .sort((a,b)=>a.x-b.x)[0];
-    const distance=obstacle ? obstacle.x-state.x : Infinity;
-    const canJump=state.elapsed-lastJump>180;
-    let mask=10; // right + spray: legal gameplay controls
-    if(canJump && state.grounded && distance<lead && distance>-35) {
-      mask|=4;lastJump=state.elapsed;
-    } else if(canJump && !state.grounded && state.jumps>=1 &&
-        state.jumps<3 && state.vy>1 && distance<lead-25 && distance>-35) {
-      mask|=4;lastJump=state.elapsed;
-    }
-    masks.push(mask);
-    return mask;
+for (const courseVersion of [5, 8]) {
+  let updatedCourse = null;
+  const courseDiagnostics = [];
+  for (const approach of [60,80,100,120,140,160,180]) {
+    const frames = Array.from({length:5600}, () => [33,33,0]);
+    const masks=[];
+    let lastJump=-1000;
+    const input = state => {
+      // Scale obstacle lead by velocity (v5 boosts to 6, v8 to 3.8),
+      // preserving physical controls instead of fixed-distance timing.
+      const lead=approach+Math.abs(state.vx)*20+
+        (state.speedBoostActive ? 35 : 0);
+      const obstacle = state.obstacles.filter(o =>
+        o.x + o.w > state.x && o.x < state.x + Math.max(240,lead+45))
+        .sort((a,b)=>a.x-b.x)[0];
+      const distance=obstacle ? obstacle.x-state.x : Infinity;
+      const canJump=state.elapsed-lastJump>180;
+      let mask=10; // right + spray: legal gameplay controls
+      if(canJump && state.grounded && distance<lead && distance>-35) {
+        mask|=4;lastJump=state.elapsed;
+      } else if(canJump && !state.grounded && state.jumps>=1 &&
+          state.jumps<3 && state.vy>1 && distance<lead-25 && distance>-35) {
+        mask|=4;lastJump=state.elapsed;
+      }
+      masks.push(mask);
+      return mask;
+    };
+    const inspected = await verifyNbgLondonReplay({
+      runId:id, replay:{ ...frameStream(frames), course_version:courseVersion },
+      startedAtMs:1000000, now:1000000+5600*33, debug:true,
+      testInputOverride:input
+    });
+    courseDiagnostics.push({approach, ...(inspected.debug||{}), valid:inspected.valid});
+    if(!inspected.debug?.complete) continue;
+    const count=inspected.debug.consumedFrames;
+    const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:courseVersion};
+    const verified=await verifyNbgLondonReplay({
+      runId:id, replay, startedAtMs:1000000, now:1000000+count*33,
+      debug:true
+    });
+    if(verified.valid){updatedCourse={replay,count,result:verified,debug:verified.debug};break;}
+  }
+  assert.ok(updatedCourse, 'updated course must remain physically finishable and server-verifiable: '+
+    JSON.stringify({courseVersion, attempts: courseDiagnostics}));
+  console.log('[PASS] full-course replay', {courseVersion, frames:updatedCourse.count, time_ms:updatedCourse.result.time_ms, xp:updatedCourse.result.xp});
+  assert.ok(updatedCourse.result.xp>0 &&
+    updatedCourse.result.secret_coins<=42,
+    'course source XP and secret coins must be independently bounded');
+  assert.ok(updatedCourse.debug.speedBoxesCollected>0,
+    'authoritative replay must collect and reproduce in-world speed boxes');
+  assert.ok(updatedCourse.debug.balloonRewardTotal >= (courseVersion === 5 ? 10 : 0) &&
+    updatedCourse.debug.balloonRewardTotal<=10000,
+    'balloon XP must be independently bounded (v8 inputs may defeat it before release)');
+  // Confirm actual five-byte recorded masks containing grounded spray inputs
+  // are independently evaluated by the authoritative Worker. The browser-only
+  // injected brown-rat fixture above is NOT a valid ranked replay source;
+  // only Worker-created canonical enemies may contribute verified XP.
+  const canonicalSprayFrames = Buffer.from(updatedCourse.replay.frames, 'base64');
+  assert.ok(Array.from({length:canonicalSprayFrames.length / 5}, (_, i) => i * 5)
+    .some(offset => (canonicalSprayFrames[offset + 4] & 8) !== 0),
+    'successful course replay must contain genuine recorded spray inputs');
+  const noSprayFrames = Buffer.from(canonicalSprayFrames);
+  for (let offset = 4; offset < noSprayFrames.length; offset += 5)
+    noSprayFrames[offset] &= ~8;
+  const noSprayReplay = {
+    ...updatedCourse.replay, frames: noSprayFrames.toString('base64')
   };
-  const inspected = await verifyNbgLondonReplay({
-    runId:id, replay:{ ...frameStream(frames), course_version:5 },
-    startedAtMs:1000000, now:1000000+5600*33, debug:true,
-    testInputOverride:input
+  const withoutSpray = await verifyNbgLondonReplay({
+    runId:id, replay:noSprayReplay,
+    startedAtMs:1000000, now:1000000+updatedCourse.count*33
   });
-  revision5Diagnostics.push({approach, ...(inspected.debug||{}), valid:inspected.valid});
-  if(!inspected.debug?.complete) continue;
-  const count=inspected.debug.consumedFrames;
-  const replay={...frameStream(masks.slice(0,count).map(mask=>[33,33,mask])),course_version:5};
-  const verified=await verifyNbgLondonReplay({
-    runId:id, replay, startedAtMs:1000000, now:1000000+count*33,
-    debug:true
+  assert.ok(!withoutSpray.valid || withoutSpray.xp < updatedCourse.result.xp,
+    'removing all spray from the same canonical complete input must invalidate the run or reduce authoritative Worker XP');
+  const spoofedUpdated=await verifyNbgLondonReplay({
+    runId:id, replay:{...updatedCourse.replay,xp:1000000,coins:999},
+    startedAtMs:1000000, now:1000000+updatedCourse.count*33
   });
-  if(verified.valid){updatedCourse={replay,count,result:verified,debug:verified.debug};break;}
+  assert.equal(spoofedUpdated.xp,updatedCourse.result.xp,
+    'untrusted 1-million browser XP must not affect selected-course authoritative scoring');
+
 }
-assert.ok(updatedCourse, 'updated course must remain physically finishable and server-verifiable: '+
-  JSON.stringify(revision5Diagnostics));
-assert.ok(updatedCourse.result.xp>0 &&
-  updatedCourse.result.secret_coins<=42,
-  'revision-5 source XP and secret coins must be independently bounded');
-assert.ok(updatedCourse.debug.speedBoxesCollected>0,
-  'authoritative v5 replay must collect and reproduce in-world speed boxes');
-assert.ok(updatedCourse.debug.balloonRewardTotal>=10&&updatedCourse.debug.balloonRewardTotal<=10000,
-  'authoritative v5 replay must independently roll one bounded balloon XP reward');
-// Confirm actual five-byte recorded masks containing grounded spray inputs
-// are independently evaluated by the authoritative Worker. The browser-only
-// injected brown-rat fixture above is NOT a valid ranked replay source;
-// only Worker-created canonical enemies may contribute verified XP.
-const canonicalSprayFrames = Buffer.from(updatedCourse.replay.frames, 'base64');
-assert.ok(Array.from({length:canonicalSprayFrames.length / 5}, (_, i) => i * 5)
-  .some(offset => (canonicalSprayFrames[offset + 4] & 8) !== 0),
-  'successful revision-5 replay must contain genuine recorded spray inputs');
-const noSprayFrames = Buffer.from(canonicalSprayFrames);
-for (let offset = 4; offset < noSprayFrames.length; offset += 5)
-  noSprayFrames[offset] &= ~8;
-const noSprayReplay = {
-  ...updatedCourse.replay, frames: noSprayFrames.toString('base64')
-};
-const withoutSpray = await verifyNbgLondonReplay({
-  runId:id, replay:noSprayReplay,
-  startedAtMs:1000000, now:1000000+updatedCourse.count*33
-});
-assert.ok(!withoutSpray.valid || withoutSpray.xp < updatedCourse.result.xp,
-  'removing all spray from the same canonical complete input must invalidate the run or reduce authoritative Worker XP');
-const spoofedUpdated=await verifyNbgLondonReplay({
-  runId:id, replay:{...updatedCourse.replay,xp:1000000,coins:999},
-  startedAtMs:1000000, now:1000000+updatedCourse.count*33
-});
-assert.equal(spoofedUpdated.xp,updatedCourse.result.xp,
-  'untrusted 1-million browser XP must not affect revision-5 authoritative scoring');
 
 console.log('[PASS] NBG London server-derived replay score protection');

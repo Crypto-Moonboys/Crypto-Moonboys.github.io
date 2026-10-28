@@ -134,14 +134,6 @@ async function holdRunnerRight(page, durationMs = 0) {
   });
 }
 
-assert.ok(
-  ['var COURSE_LAYOUT_VERSION = 8', 'var RUN_ACCEL = 0.42',
-    'var MAX_SPEED = 2.4', 'var CROUCH_MAX_SPEED = 1.25',
-    'var SPEED_BOOST_MAX_SPEED = 3.8', 'var DOUBLE_JUMP_SIDE_SPEED = 3.2']
-    .every(value => runtimeSource.includes(value)),
-  'v8 must slow horizontal running, crouching, speed boxes and jump steering together'
-);
-
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 120 },
@@ -252,6 +244,13 @@ assert.equal(flyingPigHeader.readUInt32BE(4), 560,
   'flying pig sprite sheet must retain its native 560px height');
 
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
+assert.ok(
+  ['var COURSE_LAYOUT_VERSION = 8', 'var RUN_ACCEL = 0.42',
+    'var MAX_SPEED = 2.4', 'var CROUCH_MAX_SPEED = 1.25',
+    'var SPEED_BOOST_MAX_SPEED = 3.8', 'var DOUBLE_JUMP_SIDE_SPEED = 3.2']
+    .every(value => runtimeSource.includes(value)),
+  'v8 must slow horizontal running, crouching, speed boxes and jump steering together'
+);
 assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
   runtimeSource.includes('var tileW = WIDTH') &&
   runtimeSource.includes('var offset = -cameraX * 0.08') &&
@@ -1794,7 +1793,7 @@ assert.ok(
   runtimeSource.includes("getControlForCode(e.code) === 'jump'") &&
   runtimeSource.includes('var queuedJump = jumpTapReady()') &&
   runtimeSource.includes('var jumpPressed = queuedJump ||') &&
-  runtimeSource.includes('if (jumpPressed && player.grounded)') &&
+  runtimeSource.includes('if (jumpPressed && player.grounded && !player.crouching)') &&
   runtimeSource.includes('else if (jumpPressed && !player.grounded && jumpsUsed === 1)') &&
   runtimeSource.includes('player.vy = DOUBLE_JUMP_VELOCITY') &&
   runtimeSource.includes('player.vx = left ? -DOUBLE_JUMP_SIDE_SPEED : DOUBLE_JUMP_SIDE_SPEED') &&
