@@ -108,6 +108,8 @@
   var CAMERA_LOOK_DOWN_MAX_Y = 84; // Camera shift is visual; crouch physics is recorded separately.
   // Visual-only zoom. Never scale game physics, replay inputs, or the HUD.
   var CAMERA_ZOOM_DEFAULT = 1.25;
+  // Slightly below the visual foot line: 1.5x crouch feet remain on-screen.
+  var CAMERA_ZOOM_ANCHOR_Y = HEIGHT - 6;
   var CAMERA_ZOOM_STORAGE_KEY = 'nbg-london:camera-zoom:v1';
   var CAMERA_ZOOM_LEVELS = [1, 1.25, 1.5];
   function rectsOverlap(a, b) {
@@ -2012,11 +2014,11 @@
       ctx.fillStyle = '#0078fb';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
       ctx.save();
-      // Zoom toward the road-level foot line, keeping feet and ground visible.
-      // Horizontal follow is handled in world coordinates by updateCamera().
-      ctx.translate(0, PLAYER_VISUAL_FOOT_Y);
+      // Zoom around the lower road line, keeping crouched feet on-screen
+      // even at 1.5x. Horizontal follow is in world coordinates.
+      ctx.translate(0, CAMERA_ZOOM_ANCHOR_Y);
       ctx.scale(cameraZoom, cameraZoom);
-      ctx.translate(0, Math.round(cameraY) - PLAYER_VISUAL_FOOT_Y);
+      ctx.translate(0, Math.round(cameraY) - CAMERA_ZOOM_ANCHOR_Y);
       drawWorld();
       drawCoins(time);
       drawSecretCoins(time);
