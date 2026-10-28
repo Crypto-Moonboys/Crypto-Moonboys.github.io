@@ -833,6 +833,55 @@ assert.match(runtimeSource, /if \(gameOver\)\s*\{\s*cameraY = 0;/,
 assert.match(runtimeSource, /if \(!running\) cameraY = 0;/,
   'completed run must reset a held-down camera');
 
+// Capture the actual browser-produced replay, not a hand-built approximation.
+// The browser starts spray in handleInput(), subtracts dt afterward, and then
+// permits Down to crouch at the exact animation-expiry frame. Worker course v7
+// must reconstruct the same feet, collision height and world-boundary clamp.
+await page.keyboard.down('KeyX');
+await page.waitForFunction(() => window.NBGLevel1State?.running &&
+  window.NBGLevel1State?.player.anim === 'spray' &&
+  window.NBGLevel1State?.recordedReplay?.frames?.length > 0, null, {timeout: 3500});
+await page.keyboard.up('KeyX');
+await page.keyboard.down('ArrowDown');
+await page.waitForFunction(() => window.NBGLevel1State?.player.crouching === true,
+  null, {timeout: 3500});
+const sprayReleaseReplay = await page.evaluate(() => {
+  const s = window.NBGLevel1State;
+  return {
+    replay: s.recordedReplay,
+    x: s.player.x, y: s.player.y, h: s.player.h,
+    crouching: s.player.crouching, health: s.player.health
+  };
+});
+await page.keyboard.up('ArrowDown');
+assert.equal(sprayReleaseReplay.replay?.course_version, 7,
+  'browser must encode spray-to-crouch under course version 7');
+const capturedMasks = [...Buffer.from(sprayReleaseReplay.replay.frames, 'base64')]
+  .filter((_, index) => index % 5 === 4);
+const firstSpray = capturedMasks.findIndex(mask => (mask & 8) !== 0);
+assert.ok(firstSpray >= 0 && capturedMasks.slice(firstSpray + 1).some(mask => (mask & 16) !== 0),
+  'real browser replay must capture a spray frame followed by held Down frames');
+const verifiedSprayRelease = await verifyNbgLondonReplay({
+  runId:'nbg-crouch-spray-parity-test',
+  replay:sprayReleaseReplay.replay,
+  startedAtMs:1_000_000,
+  now:1_000_000 + Math.round(capturedMasks.length * 20),
+  debug:true
+});
+assert.equal(verifiedSprayRelease.debug?.reason, 'finish',
+  'the short browser replay must reach the final comparison rather than fail input validation');
+assert.equal(verifiedSprayRelease.debug?.height, sprayReleaseReplay.h,
+  'Worker must use the browser-recorded crouch collision height at spray expiry');
+assert.equal(verifiedSprayRelease.debug?.crouching, sprayReleaseReplay.crouching,
+  'Worker crouch state must match the real browser at spray expiry');
+assert.ok(Math.abs(verifiedSprayRelease.debug.x - sprayReleaseReplay.x) < 0.01,
+  'Worker must match browser x after the spray-sprite boundary clamp');
+assert.ok(Math.abs(verifiedSprayRelease.debug.y - sprayReleaseReplay.y) < 0.01,
+  'Worker must match browser y and grounded feet after spray-to-crouch');
+assert.equal(verifiedSprayRelease.debug?.health, sprayReleaseReplay.health,
+  'spray-to-crouch replay must preserve the same player health as the browser');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
+
 const preInitMovePage = await openWithDelayedNbgInit(browser, url);
 await preInitMovePage.keyboard.down('ArrowRight');
 await preInitMovePage.keyboard.up('ArrowRight');
@@ -1224,7 +1273,9 @@ assert.deepEqual(
       renderOffsetY: animation.renderOffsetY,
       frames: animation.frames,
       columns: animation.columns,
-      frameMs: animation.frameMs
+      frameMs: animation.frameMs,
+      ...(animation.frameStart ? { frameStart: animation.frameStart } : {}),
+      ...(key.startsWith('crouch') ? { nativeFacing: animation.nativeFacing } : {})
     }
   ])),
   expectedAnimations,
@@ -1245,8 +1296,8 @@ for (const key of Object.keys(expectedAnimations)) {
   const expectedAnimation = expectedAnimations[key];
   assert.deepEqual(loadedSheetSize, {
     width: expectedAnimation.columns * expectedAnimation.sourceFrameWidth,
-    height: Math.ceil(expectedAnimation.frames / expectedAnimation.columns) *
-      expectedAnimation.sourceFrameHeight
+    height: Math.ceil(((expectedAnimation.frameStart || 0) + expectedAnimation.frames) /
+      expectedAnimation.columns) * expectedAnimation.sourceFrameHeight
   }, `browser runtime must load expected-size player ${key} image or canvas`);
 }
 
