@@ -755,7 +755,7 @@ try {
       counts,
       first: Math.min(...placements.map(p => p.x)),
       last: Math.max(...placements.map(p => p.x)),
-      wallOnly: placements.every(p => p.y >= 154 && p.y + p.h <= 242),
+      wallOnly: placements.every(p => p.y >= 201 && p.y + p.h <= 239),
       variedSizes: sizes.size,
       initialZoom: state.cameraZoom,
       originalCourseVersion: state.recordedReplay?.course_version || 8,
@@ -767,7 +767,8 @@ try {
     'every graffiti design must appear six times, not just near the spawn');
   assert.ok(artwork.first < 200 && artwork.last > 12400,
     'graffiti must cover the parallax span from the starting wall to the finish');
-  assert.equal(artwork.wallOnly,true,'all image rectangles must remain inside the wall band');
+  assert.equal(artwork.wallOnly,true,
+    'graffiti must remain INSIDE visible masonry: no artwork on skyline, grass or street');
   assert.ok(artwork.variedSizes > 45,
     'graffiti should use numerous naturally scaled sizes, not a repeated uniform tile');
   assert.equal(artwork.initialZoom,1.25,'graffiti must work with the approved zoom default');
@@ -808,23 +809,44 @@ try {
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
     const originalDraw = context.drawImage;
+    const originalRect = context.rect;
     const artUrls = new Set(window.NBGLevel1State.wallGraffitiArt.map(
       art => new URL(art.src, window.location.href).href
     ));
     const drawn = new Set();
+    const placements = [];
+    let brickClipCalls = 0;
     context.drawImage = function (image, ...args) {
-      if (image?.src && artUrls.has(image.src)) drawn.add(image.src);
+      if (image?.src && artUrls.has(image.src)) {
+        drawn.add(image.src);
+        placements.push({ y:args[1], h:args[3] });
+      }
       return originalDraw.apply(this, [image, ...args]);
     };
+    context.rect = function (x, y, w, h) {
+      if (y === 201 && h === 38 && w === 480) brickClipCalls++;
+      return originalRect.apply(this, [x,y,w,h]);
+    };
     try {
-      window.NBGLevel1Runtime.setCameraZoom(1.25);
+      for (const level of [1,1.25,1.5]) {
+        window.NBGLevel1Runtime.setCameraZoom(level);
+      }
     } finally {
       context.drawImage = originalDraw;
+      context.rect = originalRect;
+      window.NBGLevel1Runtime.setCameraZoom(1.25);
     }
-    return drawn.size;
+    return {
+      count:drawn.size, rects:placements.length, brickClipCalls,
+      insideBricks:placements.every(p => p.y >= 201 && p.y + p.h <= 239)
+    };
   });
-  assert.ok(actualGraffitiDraws > 0,
+  assert.ok(actualGraffitiDraws.count > 0 && actualGraffitiDraws.rects > 0,
     'game canvas must actually draw decoded graffiti PNGs behind the player');
+  assert.ok(actualGraffitiDraws.brickClipCalls >= 3,
+    'the masonry-only clip must run at 1x, 1.25x and 1.5x zoom');
+  assert.equal(actualGraffitiDraws.insideBricks,true,
+    'real canvas draw destinations must never bleed onto the grass/sky/road');
   await graffitiPage.evaluate(() => window.NBGLevel1Runtime.reset());
   assert.equal(await graffitiPage.evaluate(() => window.NBGLevel1State.wallGraffitiPlacements.length),
     102,'a new run must retain the same original wall-art layout');
