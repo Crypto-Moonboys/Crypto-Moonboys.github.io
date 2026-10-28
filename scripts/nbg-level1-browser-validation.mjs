@@ -137,6 +137,9 @@ async function holdRunnerRight(page, durationMs = 0) {
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
+  crouch: { spriteSheet: 'player/animations/NBG Runner Final-crouch.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 15, frameStart: 10, columns: 5, frameMs: 130, nativeFacing: 1 },
+  crouchLeft: { spriteSheet: 'player/animations/NBG Runner Final-crouchr.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: -1 },
+  crouchRight: { spriteSheet: 'player/animations/NBG Runner Final-sneaking_left.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: 1 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
   backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
@@ -198,7 +201,7 @@ for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
   const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
-  const expectedRows = Math.ceil(animation.frames / animation.columns);
+  const expectedRows = Math.ceil(((animation.frameStart || 0) + animation.frames) / animation.columns);
   assert.equal(pngHeader.readUInt32BE(0),
     animation.columns * animation.sourceFrameWidth,
     `animation PNG width must match the committed sheet grid: ${animation.spriteSheet}`);
