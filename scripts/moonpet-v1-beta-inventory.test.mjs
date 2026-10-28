@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -113,4 +113,54 @@ test('CLI reads an offline backup without modifying bytes and rejects reset flag
     assert.match(denied.stderr,/Read-only usage/);
     assert.deepEqual(readFileSync(file),before);
   } finally { rmSync(dir,{recursive:true,force:true}); }
+});
+
+
+test('CLI inspects a closed WAL-mode backup without creating source journals, twice', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'moonpet-v1-inventory-wal-'));
+  const file = join(dir,'backup.sqlite');
+  const sidecars = ['-wal','-shm','-journal'];
+  const script = fileURLToPath(new URL('./moonpet-v1-beta-inventory.mjs',import.meta.url));
+  const run = path => spawnSync(process.execPath,[script,'--db',path],{encoding:'utf8'});
+  try {
+    const db = fixture(file);
+    db.exec('PRAGMA journal_mode=WAL');
+    db.close();
+    const original = readFileSync(file);
+    for(const suffix of sidecars) assert.equal(existsSync(file+suffix),false);
+    for(let attempt=0;attempt<2;attempt++){
+      const result=run(file);
+      assert.equal(result.status,0,result.stderr);
+      const report=JSON.parse(result.stdout);
+      assert.equal(report.moonpet_row_count,4);
+      assert.equal(report.writes_performed,0);
+      assert.equal(report.ready_for_reset,false);
+      assert.deepEqual(readFileSync(file),original);
+      for(const suffix of sidecars)
+        assert.equal(existsSync(file+suffix),false,'inventory must never create source SQLite journals');
+    }
+  } finally {rmSync(dir,{recursive:true,force:true});}
+});
+
+test('CLI rejects active source journals and database-file symlinks without touching them', {skip:process.platform==='win32'}, () => {
+  const dir=mkdtempSync(join(tmpdir(),'moonpet-v1-inventory-guard-'));
+  const file=join(dir,'backup.sqlite'),alias=join(dir,'backup-link.sqlite');
+  const script=fileURLToPath(new URL('./moonpet-v1-beta-inventory.mjs',import.meta.url));
+  try {
+    fixture(file).close();
+    const original=readFileSync(file);
+    const journal=file+'-wal';
+    writeFileSync(journal,'UNTOUCHED');
+    let result=spawnSync(process.execPath,[script,'--db',file],{encoding:'utf8'});
+    assert.notEqual(result.status,0);
+    assert.match(result.stderr,/active SQLite journal/);
+    assert.deepEqual(readFileSync(journal),Buffer.from('UNTOUCHED'));
+    rmSync(journal);
+    symlinkSync(file,alias);
+    result=spawnSync(process.execPath,[script,'--db',alias],{encoding:'utf8'});
+    assert.notEqual(result.status,0);
+    assert.match(result.stderr,/regular local SQLite backup/);
+    assert.deepEqual(readFileSync(file),original);
+    for(const suffix of ['-wal','-shm','-journal'])assert.equal(existsSync(file+suffix),false);
+  } finally {rmSync(dir,{recursive:true,force:true});}
 });
