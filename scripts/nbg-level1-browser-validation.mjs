@@ -346,9 +346,22 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);[\s\S]*?ctx\.translate\(0, PLAYER_VISUAL_FOOT_Y\);\s*ctx\.scale\(cameraZoom, cameraZoom\);\s*ctx\.translate\(0, Math\.round\(cameraY\) - PLAYER_VISUAL_FOOT_Y\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
-  'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
+  'standalone Level 1 render must zoom world around grounded feet and leave HUD, notifications and overlay unscaled'
+);
+assert.equal(
+  runtimeSource.includes('var CAMERA_ZOOM_DEFAULT = 1.25') &&
+    runtimeSource.includes('var CAMERA_ZOOM_LEVELS = [1, 1.25, 1.5]') &&
+    runtimeSource.includes('var visibleWorldWidth = WIDTH / cameraZoom') &&
+    runtimeSource.includes('player.x - WIDTH * 0.42 / cameraZoom') &&
+    runtimeSource.includes('get cameraZoom() { return cameraZoom; }') &&
+    runtimeSource.includes('get visibleWorldWidth() { return WIDTH / cameraZoom; }') &&
+    runtimeSource.includes('setCameraZoom: setCameraZoom') &&
+    arcadeRouteSource.includes('nbg-zoom-control') &&
+    fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-london-leaderboards.js'), 'utf8').includes("zoomButton.id = 'nbg-zoom-control'"),
+  true,
+  'NBG camera zoom must preserve world physics while exposing an accessible fullscreen control'
 );
 assert.equal(
   /updateCamera\(\);\s*updateCameraY\(\);/.test(runtimeSource),
@@ -720,6 +733,61 @@ assert.deepEqual(
 );
 assert.equal(typeof startVisibility.cameraY, 'number', 'cameraY must exist in the browser test state');
 assert.equal(startVisibility.cameraY, 0, 'cameraY must start clean after finishInit');
+
+// Default 1.25x zoom makes player/enemies visibly larger without changing
+// position, elapsed time, collision size or signed replay evidence. Presets
+// cycle in the existing fullscreen toolbar; the canvas HUD remains unscaled.
+const zoomAtStart = await page.evaluate(() => ({
+  zoom: window.NBGLevel1State.cameraZoom,
+  worldWidth: window.NBGLevel1State.visibleWorldWidth,
+  button: document.getElementById('nbg-zoom-control')?.textContent,
+  playerX: window.NBGLevel1State.player.x,
+  running: window.NBGLevel1State.running
+}));
+assert.deepEqual(zoomAtStart, {
+  zoom: 1.25, worldWidth: 384, button: 'Zoom 1.25×',
+  playerX: 64, running: false
+}, 'NBG must default to the closer 1.25x visual camera while waiting to start');
+const cameraZoomProof = await page.evaluate(() => {
+  const state = window.NBGLevel1State;
+  const runtime = window.NBGLevel1Runtime;
+  const button = document.getElementById('nbg-zoom-control');
+  const initialX = state.player.x;
+  const initialTime = state.runElapsedMs;
+  const initialHealth = state.player.health;
+  button.click(); // 1.5x
+  const close = { zoom:state.cameraZoom, label:button.textContent,
+    width:state.visibleWorldWidth };
+  button.click(); // 1x
+  const wide = { zoom:state.cameraZoom, label:button.textContent,
+    width:state.visibleWorldWidth };
+  button.click(); // Restore 1.25x
+  state.player.x = 500; // Read-only presentation fixture; not a recorded run.
+  runtime.setCameraZoom(1.5);
+  const followed = { zoom:state.cameraZoom, cameraX:state.cameraX,
+    screenX:(state.player.x-state.cameraX)*state.cameraZoom };
+  state.player.x = initialX;
+  runtime.setCameraZoom(1.25);
+  return { close, wide, followed, restored:state.cameraZoom,
+    persisted:localStorage.getItem('nbg-london:camera-zoom:v1'),
+    playerX:state.player.x, elapsed:state.runElapsedMs,
+    health:state.player.health, initialTime, initialHealth,
+    badZoomRejected:runtime.setCameraZoom(2) === false };
+});
+assert.deepEqual(cameraZoomProof.close, {zoom:1.5,label:'Zoom 1.5×',width:320},
+  'close-up option must increase visible sprites by 50%');
+assert.deepEqual(cameraZoomProof.wide, {zoom:1,label:'Zoom 1×',width:480},
+  'wide mode must restore the exact original logical viewport');
+assert.ok(Math.abs(cameraZoomProof.followed.cameraX - 365.6) < 0.01 &&
+  Math.abs(cameraZoomProof.followed.screenX - 201.6) < 0.01,
+  'zoomed follow must keep the runner near 42% screen width, not crop off the left edge');
+assert.equal(cameraZoomProof.restored, 1.25);
+assert.equal(cameraZoomProof.persisted, '1.25');
+assert.equal(cameraZoomProof.playerX, 64);
+assert.equal(cameraZoomProof.elapsed, cameraZoomProof.initialTime);
+assert.equal(cameraZoomProof.health, cameraZoomProof.initialHealth);
+assert.equal(cameraZoomProof.badZoomRejected, true,
+  'unsupported zoom levels must not change camera or gameplay');
 
 // Reproduce the Chrome-denied fullscreen path from GK's real NBG beta run.
 // Native fullscreen refusal must not imply the windowed game is blocked.
