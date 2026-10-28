@@ -19,8 +19,17 @@ pre-rehearsal gate**, not a database reset, migration, restore or deployment.
    Prove restore/rollback separately before any real reset decision.
 
 The audit uses a private temporary SQLite copy and never opens the original
-through SQLite. It hashes the original before and after, refuses active
-SQLite journal sidecars and produces **no player IDs or transaction data**.
+through SQLite. It hashes the original before and after, and checks the source
+WAL/SHM/journal sidecars and file identity **at entry, after asynchronous
+hashing, before cloning, during inspection and immediately before reporting**.
+A source that becomes active during a hash fails closed instead of returning
+`READY_FOR_OFFLINE_REHEARSAL`. It produces **no player IDs or transaction data**.
+
+**Operational requirement:** the backup must be a closed, immutable export,
+kept isolated from all SQLite writers. These consistency checks detect known
+races but are not a filesystem lock: another process could modify the file
+after the final check. Do not audit a live database path or treat a transient
+`READY` result as a verified backup if another process can still write it.
 
 ## What it verifies
 
