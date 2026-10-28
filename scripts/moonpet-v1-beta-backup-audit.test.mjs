@@ -45,10 +45,10 @@ function fixture(file){
   db.exec("INSERT INTO telegram_pet_growth_marks VALUES ('old-mark')");
   return db;
 }
-function sandbox(run){
+async function sandbox(run){
  const dir=mkdtempSync(join(tmpdir(),'moonpet-v1-audit-'));
  const src=join(dir,'closed-backup.sqlite');
- try{fixture(src).close();return run({src,dir});}
+ try{fixture(src).close();return await run({src,dir});}
  finally{rmSync(dir,{recursive:true,force:true});}
 }
 test('complete schema and both cutover markers qualify only for OFFLINE rehearsal',()=>sandbox(({src})=>{
