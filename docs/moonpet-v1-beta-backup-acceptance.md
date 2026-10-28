@@ -66,3 +66,33 @@ git diff --check
 
 No direct changes to the Worker, D1, Telegram authentication, Arcade XP,
 MoonPet gameplay, or public release controls.
+
+## 28 October 2026 — cross-game Clout projection audit
+
+Championship Clout is a **shared game** and is never wiped by MoonPet beta
+reset tooling. Its saved proof can survive beyond its original MoonPet receipt
+in three separate tables, none of which needs a declared FK to the pet:
+
+- `championship_clout_sources` — verified MoonPet source-event receipt
+- `championship_clout_effects` — an award already credited from that source,
+  including pet-specific `source_pet_id` or `game_key='moonpet'`
+- `championship_clout_daily` — saved daily aggregate with `moonpet` in
+  `game_keys_json`, even if the original source/effect row is missing
+
+The offline planner and backup acceptance audit **block** when any of these
+indicate MoonPet-linked shared reward proof. Invalid daily game-keys JSON is
+unverifiable and blocks too; the current-backup audit also refuses missing
+Clout effects/daily tables. Scan results expose only counts and blocker codes,
+not player identifiers. The optional `championship_clout_archives` row count
+is informational; archive contents and other non-FK account reward sources
+still require manual provenance review on a genuine export.
+
+Run the focused test suite before any merge:
+
+```sh
+node --test scripts/moonpet-v1-beta-shared-clout-proof.test.mjs scripts/moonpet-v1-beta-backup-audit.test.mjs scripts/moonpet-v1-beta-rehearsal.test.mjs
+node --check scripts/moonpet-v1-beta-shared-clout-proof.mjs
+```
+
+This is **not approval to clear Clout or MoonPet D1**, and not a substitute
+for proving restoration and running signed Telegram gameplay checks.
