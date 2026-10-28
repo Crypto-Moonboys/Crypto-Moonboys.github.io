@@ -13,6 +13,9 @@ const MAX_FRAMES = 120000;
 const MIN_MS = 65000;
 const MAX_MS = 1800000;
 const MAX_SPEED = 4.2;
+const STAND_HEIGHT = 34;
+const CROUCH_HEIGHT = 22;
+const CROUCH_MAX_SPEED = 2;
 const SPEED_BOOST_MAX_SPEED = 6;
 const SPEED_BOOST_DURATION_MS = 6000;
 const GRAFFBOT_FIRE_DURATION_MS = 16 * 55;
@@ -147,16 +150,18 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // into sprite-aligned platform/combat geometry. Revision 4 replaces the
   // recurring timer with one start-area parachute rat per fresh run. Revision
   // 5 adds speed boxes, Graffbot fire and deterministic balloon-enemy XP.
+  // 6 corrects landed-rat contact geometry; 7 adds crouch inputs and box
+  // geometry. Keep every older course's input and collision rules unchanged.
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && ![2,3,4,5,6].includes(replay.course_version))
+  if (hasCourseVersion && ![2,3,4,5,6,7].includes(replay.course_version))
     return { valid:false };
   const courseVersion = hasCourseVersion ? replay.course_version : 1;
   const level = levelData(courseVersion);
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
-  const p = { x:64, y:FLOOR-34, w:24, h:34, vx:0, vy:0, facing:1,
-    grounded:true, health:3, invuln:0 };
+  const p = { x:64, y:FLOOR-34, w:24, h:STAND_HEIGHT, vx:0, vy:0, facing:1,
+    grounded:true, crouching:false, health:3, invuln:0 };
   let jumps=0, sprayTimer=0, speedBoostUntil=0, combo=0, comboExpires=0, checkpointX=72;
   let elapsed=0, xp=0, coinCount=0, secretCount=0, complete=false;
   let consumedFrames=0;
@@ -174,7 +179,21 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   let nextParachuteAt=6000, parachuteSpawnCount=0;
   let previousPlayerY=p.y;
   let previousPlayerVy=p.vy;
-  const playerCombatRect = () => ({x:p.x-8,y:p.y-30,w:p.w+16,h:p.h+30});
+  const playerCombatRect = () => ({
+    x:p.x-8,y:p.y-(p.crouching?18:30),w:p.w+16,h:p.h+(p.crouching?18:30)
+  });
+  const setCrouching = wanted => {
+    if (wanted === p.crouching) return;
+    const feet = p.y + p.h;
+    if (!wanted) {
+      const upright = {x:p.x,y:feet-STAND_HEIGHT,w:p.w,h:STAND_HEIGHT};
+      if (level.platforms.concat(level.crates).some(solid => overlap(upright,solid)))
+        return;
+    }
+    p.h = wanted ? CROUCH_HEIGHT : STAND_HEIGHT;
+    p.y = feet - p.h;
+    p.crouching = wanted;
+  };
   const enemyCombatRect = target => {
     const bob=target.bob||0;
     if(target.variant) return {x:target.x-12,y:target.y+bob-10,w:52,h:56};
@@ -258,20 +277,24 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         balloonCycles:level.enemies.find(enemy=>enemy.type==='balloon')?.balloonCycles ?? null,
         balloonRewardXp:level.enemies.find(enemy=>enemy.type==='balloon')?.balloonRewardXp ?? null,
         balloonRewardTotal }) : dec(4);
-    if (!Number.isInteger(mask) || mask<0 || mask>15 || dt<0 || dt>33.1 || frameElapsed>2000 ||
+    if (!Number.isInteger(mask) || mask<0 || mask>(courseVersion>=7?31:15) || dt<0 || dt>33.1 || frameElapsed>2000 ||
         dt>frameElapsed) return { valid:false };
     elapsed += frameElapsed;
     if (elapsed>MAX_MS+20000) return { valid:false };
     consumedFrames++;
     const step=dt/STEP;
     const left=!!(mask&1), right=!!(mask&2), jump=!!(mask&4), spray=!!(mask&8);
+    if(courseVersion>=7)
+      setCrouching(!!((mask&16) && p.grounded && !jump && !spray &&
+        sprayTimer<=0 && p.invuln<=0));
     if (left) {p.vx-=0.74*step;p.facing=-1;}
     if (right) {p.vx+=0.74*step;p.facing=1;}
-    if (!left && !right) p.vx*=Math.pow(0.78,step);
-    const activeMaxSpeed=courseVersion>=5&&elapsed<speedBoostUntil?SPEED_BOOST_MAX_SPEED:MAX_SPEED;
+    if (!left && !right) p.vx=p.crouching?0:p.vx*Math.pow(0.78,step);
+    const activeMaxSpeed=p.crouching?CROUCH_MAX_SPEED:
+      courseVersion>=5&&elapsed<speedBoostUntil?SPEED_BOOST_MAX_SPEED:MAX_SPEED;
     p.vx=clamp(p.vx,-activeMaxSpeed,activeMaxSpeed);
     if (jump) {
-      if (p.grounded) {p.vy=-11.4;p.grounded=false;jumps=1;}
+      if (p.grounded && !p.crouching) {p.vy=-11.4;p.grounded=false;jumps=1;}
       else if(jumps===1) {
         p.vy=-12.8;
         if (left!==right) {
@@ -315,7 +338,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(p.y>350) {
       invulnerableDamage(p.x);
       if(p.health<=0) return {valid:false, ...(debug ? {debug:{reason:'health',x:p.x,elapsed,consumedFrames}}:{})};
-      p.x=checkpointX;p.y=FLOOR-p.h;previousPlayerY=p.y;previousPlayerVy=0;
+      p.x=checkpointX;p.crouching=false;p.h=STAND_HEIGHT;
+       p.y=FLOOR-p.h;previousPlayerY=p.y;previousPlayerVy=0;
       p.vx=0;p.vy=0;
       jumps=0;p.invuln=1050;sprayTimer=0;speedBoostUntil=0;
     }
@@ -421,7 +445,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       // Keep landed parachute-rat reach aligned with the browser collision.
       const landedRat=courseVersion>=6 && !!enemy.spawnedByParachute;
       const contactPlayer=landedRat?
-        {x:p.x,y:p.y-30,w:p.w,h:p.h+30}:playerCombatRect();
+        {x:p.x,y:p.y-(p.crouching?18:30),w:p.w,
+          h:p.h+(p.crouching?18:30)}:playerCombatRect();
       const body=landedRat?
         {x:enemy.x,y:enemy.y+(enemy.bob||0)-12,w:enemy.w,h:54}:
         courseVersion>=3?enemyCombatRect(enemy):
