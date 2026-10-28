@@ -24,7 +24,9 @@ PR #1652). Keep authoritative deletion receipts and transactional protections.
 Update the shared game guide and generated website About/How-to text to the
 new paid-slot repurchase contract.
 
-Run the read-only offline inspection command against a **local SQLite backup**:
+Run the read-only offline inspection command against a **local SQLite backup**
+(the CLI inspects only a disposable copy, so closed WAL-mode backups are not
+opened directly):
 
     node scripts/moonpet-v1-beta-inventory.mjs --db /path/to/local-backup.sqlite
 
@@ -54,3 +56,13 @@ gameplay records, or shared economy/leaderboards without a distinct approval.
 Do not alter old migrations or remove legacy authority without a verified
 replacement. No deployment, database deletion or merge is authorised by PR 1.
 Existing MoonPet production-health issue #1648 remains a release blocker.
+
+## 28 October 2026 — schema/WAL correction follow-up
+
+The original reset manifest contained 81 current schema.sql MoonPet tables.
+Production D1 metadata additionally listed 12 historical MoonPet tables;
+the explicit offline rehearsal candidate list now contains 93 names. The
+separate inventory command copies a closed backup to a temporary directory
+before opening SQLite, preserving the original even in WAL journal mode.
+A current D1 export and complete FK/trigger verification remain prerequisites
+for approving a live beta reset. Neither command connects to production D1.

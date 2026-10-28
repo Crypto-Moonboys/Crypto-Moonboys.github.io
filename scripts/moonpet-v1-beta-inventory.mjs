@@ -2,8 +2,9 @@
 // MoonPet V1 private beta: read-only inventory of a LOCAL SQLite D1 backup.
 // This module has no delete, drop, reset or mutation mode.
 import { DatabaseSync } from 'node:sqlite';
-import { existsSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, constants, lstatSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { resolve, join, dirname, basename } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const isPet = name => /^telegram_pet(?:_|s$)/iu.test(name) || /^moonpet_/iu.test(name);
@@ -86,14 +87,29 @@ function cli() {
   const args = process.argv.slice(2);
   if (args.length !== 2 || args[0] !== '--db' || !args[1])
     throw Error('Read-only usage: node scripts/moonpet-v1-beta-inventory.mjs --db LOCAL_SQLITE_BACKUP');
-  const file = resolve(args[1]);
-  if (!existsSync(file) || !statSync(file).isFile())
-    throw Error('An existing local SQLite backup file is required');
-  const db = new DatabaseSync(file, { readOnly: true });
+  // Normalize directory aliases but not the final file, so a symlinked
+  // database file is rejected rather than followed.
+  const requested = resolve(args[1]);
+  const file = join(realpathSync(dirname(requested)), basename(requested));
+  const source = lstatSync(file, { throwIfNoEntry: false });
+  if (!source || source.isSymbolicLink() || !source.isFile())
+    throw Error('An existing regular local SQLite backup file is required');
+  const occupied = path => lstatSync(path, { throwIfNoEntry: false }) !== undefined;
+  if (['-wal', '-shm', '-journal'].some(suffix => occupied(file + suffix)))
+    throw Error('Backup has active SQLite journal files; export a closed backup first');
+
+  // SQLite readOnly may still create -wal and -shm next to a WAL-mode file.
+  // Open only a disposable private copy, never the original backup.
+  const scratch = mkdtempSync(join(tmpdir(), 'moonpet-v1-inventory-'));
   try {
-    db.exec('PRAGMA query_only=ON');
-    process.stdout.write(JSON.stringify(inspectMoonpetBetaReset(db), null, 2) + '\n');
-  } finally { db.close(); }
+    const local = join(scratch, 'backup.sqlite');
+    copyFileSync(file, local, constants.COPYFILE_EXCL);
+    const db = new DatabaseSync(local, { readOnly: true });
+    try {
+      db.exec('PRAGMA query_only=ON');
+      process.stdout.write(JSON.stringify(inspectMoonpetBetaReset(db), null, 2) + '\n');
+    } finally { db.close(); }
+  } finally { rmSync(scratch, { recursive: true, force: true }); }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
