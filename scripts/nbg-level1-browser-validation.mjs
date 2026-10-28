@@ -735,6 +735,82 @@ assert.deepEqual(
 assert.equal(typeof startVisibility.cameraY, 'number', 'cameraY must exist in the browser test state');
 assert.equal(startVisibility.cameraY, 0, 'cameraY must start clean after finishInit');
 
+// Real Chromium graffiti acceptance: every newly uploaded PNG is available,
+// each appears six times in a fixed wall-only distribution across the course,
+// and loading offscreen decoration does not change physics or earned results.
+const graffitiPage = await browser.newPage({ viewport: { width: 960, height: 540 } });
+try {
+  await graffitiPage.goto(url, { waitUntil: 'domcontentloaded' });
+  await graffitiPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded, null,
+    { timeout: 20000 });
+  const artwork = await graffitiPage.evaluate(() => {
+    const state = window.NBGLevel1State;
+    const placements = state.wallGraffitiPlacements;
+    const counts = Array(state.wallGraffitiArt.length).fill(0);
+    for (const item of placements) counts[item.artIndex] += 1;
+    const sizes = new Set(placements.map(p => p.w + 'x' + p.h));
+    return {
+      artCount: state.wallGraffitiArt.length,
+      placedCount: placements.length,
+      counts,
+      first: Math.min(...placements.map(p => p.x)),
+      last: Math.max(...placements.map(p => p.x)),
+      wallOnly: placements.every(p => p.y >= 154 && p.y + p.h <= 242),
+      variedSizes: sizes.size,
+      initialZoom: state.cameraZoom,
+      originalCourseVersion: state.recordedReplay?.course_version || 8,
+    };
+  });
+  assert.equal(artwork.artCount,17,'all 17 new PNGs must be in the visual-only wall pool');
+  assert.equal(artwork.placedCount,102,'all art must repeat across the entire 22k course');
+  assert.ok(artwork.counts.every(n => n === 6),
+    'every graffiti design must appear six times, not just near the spawn');
+  assert.ok(artwork.first < 200 && artwork.last > 12400,
+    'graffiti must cover the parallax span from the starting wall to the finish');
+  assert.equal(artwork.wallOnly,true,'all image rectangles must remain inside the wall band');
+  assert.ok(artwork.variedSizes > 45,
+    'graffiti should use numerous naturally scaled sizes, not a repeated uniform tile');
+  assert.equal(artwork.initialZoom,1.25,'graffiti must work with the approved zoom default');
+
+  // PNGs load lazily. Visiting the full course in steps must eventually load
+  // every original image while never modifying player score, health or time.
+  const traversal = await graffitiPage.evaluate(() => {
+    const runtime = window.NBGLevel1Runtime;
+    const state = window.NBGLevel1State;
+    const startX = state.player.x;
+    const original = JSON.stringify(state.wallGraffitiPlacements);
+    const before = {xp:state.xp,health:state.player.health,time:state.runElapsedMs};
+    for (let x = 64; x < state.worldWidth - 150; x += 500) {
+      state.player.x = x;
+      runtime.setCameraZoom(1.25);
+    }
+    state.player.x = startX;
+    runtime.setCameraZoom(1.25);
+    return {
+      before,
+      after: {xp:state.xp,health:state.player.health,time:state.runElapsedMs},
+      sameLayout:original === JSON.stringify(state.wallGraffitiPlacements),
+      running:state.running,
+      requiredAssets:state.requiredAssets,
+    };
+  });
+  assert.deepEqual(traversal.after,traversal.before,
+    'scenery loading must not mutate score, health or replay clock');
+  assert.equal(traversal.sameLayout,true,'camera movement must never reshuffle paintings');
+  assert.equal(traversal.running,false,'visiting wall art must not start the game');
+  assert.ok(traversal.requiredAssets.every(key => !key.startsWith('graffiti')),
+    'optional decoration must not block gameplay asset readiness');
+  await graffitiPage.waitForFunction(
+    () => window.NBGLevel1State?.wallGraffitiLoadedCount === 17,
+    null, {timeout:15000}
+  );
+  await graffitiPage.evaluate(() => window.NBGLevel1Runtime.reset());
+  assert.equal(await graffitiPage.evaluate(() => window.NBGLevel1State.wallGraffitiPlacements.length),
+    102,'a new run must retain the same original wall-art layout');
+} finally {
+  await graffitiPage.close();
+}
+
 // Default 1.25x zoom makes player/enemies visibly larger without changing
 // position, elapsed time, collision size or signed replay evidence. Presets
 // cycle in the existing fullscreen toolbar; the canvas HUD remains unscaled.
