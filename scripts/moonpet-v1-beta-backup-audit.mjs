@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
 import { planMoonpetV1BetaRehearsal } from './moonpet-v1-beta-rehearsal.mjs';
+import { auditMoonpetSharedCloutProof } from './moonpet-v1-beta-shared-clout-proof.mjs';
 import {
   MOONPET_V1_BETA_RESET_TABLES,
   MOONPET_V1_BETA_PROTECTED_TABLES,
@@ -83,23 +84,12 @@ export function auditMoonpetV1BetaBackup(db) {
   const protectedCount=MOONPET_V1_BETA_PROTECTED_TABLES
     .filter(name=>actualSet.has(name.toLowerCase()))
     .reduce((sum,name)=>sum+countRows(db,hasTable(all,name)),0);
-  const cloutTable=hasTable(all,'championship_clout_sources');
-  let cloutCount=null;
-  if(cloutTable){
-    const cols=db.prepare('PRAGMA table_info('+quote(cloutTable)+')').all()
-      .map(row=>String(row.name).toLowerCase());
-    if(!cols.includes('source_system')||!cols.includes('source_event_id'))
-      add(blockers,'championship_clout_schema_unavailable');
-    else {
-      cloutCount=db.prepare('SELECT COUNT(*) AS n FROM '+quote(cloutTable)+
-        " WHERE lower(trim(source_system))='moonpet'").get().n;
-      if(cloutCount>0) add(blockers,'moonpet_clout_source_provenance_requires_review');
-    }
-  } else {
-    // No table is normal only for a backup predating migration 100. Requiring
-    // that migration below ensures a current-release backup fails closed.
+  const clout = auditMoonpetSharedCloutProof(db);
+  for (const reason of clout.blockers) add(blockers,reason);
+  if (!hasTable(all,'championship_clout_sources'))
     add(blockers,'championship_clout_source_table_missing');
-  }
+  if (clout.missing_projection_tables.length)
+    add(blockers,'championship_clout_projection_tables_missing');
 
   const migrationTable=hasTable(all,'d1_migrations');
   let missingMigrations=[...REQUIRED_MIGRATIONS];
@@ -144,7 +134,12 @@ export function auditMoonpetV1BetaBackup(db) {
     missing_reviewed_tables:missing,
     unexpected_moonpet_tables:unexpected,
     missing_required_migrations:missingMigrations,
-    moonpet_clout_sources:cloutCount,
+    moonpet_clout_sources:clout.source_rows,
+    moonpet_clout_effects:clout.effect_rows,
+    moonpet_clout_daily_projections:clout.daily_rows,
+    moonpet_clout_daily_unverifiable_json:clout.invalid_daily_json_rows,
+    championship_archived_periods:clout.archived_periods,
+    missing_clout_projection_tables:clout.missing_projection_tables,
     source_row_count:inventory.moonpet_row_count,
     planned_cleared_rows:plan?.cleared_row_count??null,
     planned_preserved_rows:plan?.protected_row_count??null,
