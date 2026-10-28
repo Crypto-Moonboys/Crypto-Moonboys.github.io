@@ -66,3 +66,22 @@ separate inventory command copies a closed backup to a temporary directory
 before opening SQLite, preserving the original even in WAL journal mode.
 A current D1 export and complete FK/trigger verification remain prerequisites
 for approving a live beta reset. Neither command connects to production D1.
+
+## 28 October 2026 — protected migration and shared Clout proof
+
+Following the 93-name manifest reconciliation, offline reset planning now
+**preserves five migration/correction/quarantine ledgers**: migration 070's
+identity cutover sentinel, the runtime cutover ledger, both old XP rebaseline
+ledgers and the beta XP quarantine log. Therefore 88 of the reviewed tables
+remain eligible for offline data clearing; 5 remain unchanged.
+
+The preflight also fails closed if Championship Clout's shared source ledger
+already contains MoonPet-backed proof, because Growth Marks and weekly Crests
+are cross-game award sources without declared FKs.
+
+Preserving these authority records does not protect disposable MoonPet beta
+scores or pet progression. It keeps migration rerun safeguards and unrelated
+game rewards intact. No production reset endpoint, live D1 mutation,
+migration or Worker deployment has been added. A real current D1 export,
+cross-game dependency verification, restoration drill and separate release
+approval are still required.
