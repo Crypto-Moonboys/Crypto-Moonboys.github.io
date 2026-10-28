@@ -210,6 +210,26 @@ const oldVersionSpray = await verifyNbgLondonReplay({
 });
 assert.equal(oldVersionSpray.debug?.x,64,
   'archived v6 must retain its original world-boundary and spray behaviour');
+// Reproduces the reviewed v7 third-jump clash: spray on frame seven makes
+// the previous frame's render margin 70px, but a third Jump on frame nine
+// changes to the 24px-margin backflip before that frame's horizontal clamp.
+// Failing to use the pre-clamp backflip art leaves the Worker stuck at x=82.
+const thirdJumpAfterSpray = Array.from({length:9}, (_, index) =>
+  [33,33,1 | ([0,4,8].includes(index) ? 4 : 0) | (index===6 ? 8 : 0)]);
+const thirdJumpFrame8 = await verifyNbgLondonReplay({
+  ...base, replay:{...frameStream(thirdJumpAfterSpray.slice(0,8)),course_version:7},debug:true
+});
+assert.equal(thirdJumpFrame8.debug?.x,82,
+  'spray art must still keep the v7 player at x=82 just before third Jump');
+const thirdJumpFrame9 = await verifyNbgLondonReplay({
+  ...base, replay:{...frameStream(thirdJumpAfterSpray),course_version:7},debug:true
+});
+assert.equal(thirdJumpFrame9.debug?.jumps,3,
+  'frame nine must be the legitimate third airborne Jump');
+assert.ok(Math.abs(thirdJumpFrame9.debug?.x - 71.308) < 0.001,
+  'third Jump must replace the spray margin with the narrower backflip margin before clamping');
+assert.equal(thirdJumpFrame9.debug?.height,34,
+  'the backflip must not apply crouched collision geometry');
 // Cached v1 replays omit the property completely. An explicitly present
 // null/undefined/invalid version is not equivalent and must be rejected.
 for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {
