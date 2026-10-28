@@ -1749,12 +1749,12 @@
       return;
     }
     if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
-      // Native keyboard activation of the London Scores drawer/toolbar must
+      // Native keyboard activation of the London Scores and Zoom controls must
       // never trigger an Arcade run start behind the active interface.
       var recordsDrawer = document.getElementById('nbg-record-drawer');
       if ((recordsDrawer && !recordsDrawer.hidden) ||
           (e.target && e.target.closest &&
-           e.target.closest('#nbg-record-drawer, #nbg-open-records'))) return;
+           e.target.closest('#nbg-record-drawer, #nbg-open-records, #nbg-zoom-control'))) return;
       // Only fire if the currently focused element is NOT a game control input
       // (e.g. text input fields) to avoid double-firing.
       var focused = document.activeElement;

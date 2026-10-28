@@ -481,6 +481,31 @@
     open.setAttribute('aria-label', 'View London scores and saved results');
     open.setAttribute('aria-controls', 'nbg-record-drawer');
     open.setAttribute('aria-expanded', 'false');
+    // A separate, visual-only camera control. It never changes the run,
+    // scoring, movement or replay. Keep it in the fullscreen toolbar so it
+    // does not cover the player, touch controls or the in-canvas timer.
+    var zoomButton = document.createElement('button');
+    zoomButton.id = 'nbg-zoom-control';
+    zoomButton.type = 'button';
+    zoomButton.className = 'interactive';
+    function updateZoomButton() {
+      var current = Number(window.NBGLevel1State && window.NBGLevel1State.cameraZoom) || 1.25;
+      var next = current === 1 ? 1.25 : current === 1.25 ? 1.5 : 1;
+      zoomButton.textContent = 'Zoom ' + current + '×';
+      zoomButton.setAttribute('aria-label', 'Gameplay zoom ' + current + ' times. Activate for ' + next + ' times.');
+      zoomButton.title = 'Camera zoom: ' + current + '× (next: ' + next + '×)';
+    }
+    zoomButton.addEventListener('click', function () {
+      var runtime = window.NBGLevel1Runtime;
+      var current = Number(window.NBGLevel1State && window.NBGLevel1State.cameraZoom) || 1.25;
+      var next = current === 1 ? 1.25 : current === 1.25 ? 1.5 : 1;
+      if (runtime && typeof runtime.setCameraZoom === 'function') runtime.setCameraZoom(next);
+      updateZoomButton();
+    });
+    window.addEventListener('nbg-camera-zoom-changed', updateZoomButton);
+    updateZoomButton();
+    // Keep zoom near the front; narrow mobile toolbar layouts scroll horizontally.
+    toolbar.insertBefore(zoomButton, document.getElementById('overlay-btn-info'));
     toolbar.appendChild(open);
 
     var drawer = document.createElement('section');

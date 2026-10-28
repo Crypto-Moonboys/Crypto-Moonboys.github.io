@@ -67,6 +67,13 @@
     .nbg-record-board .nbg-record-scroller { overflow-x: auto; }
     /* Standalone NBG fullscreen mode keeps the active scores panel inside the
        opaque overlay. The drawer scrolls without shrinking the 16:9 game. */
+    #game-overlay #overlay-ctrl-bar #nbg-zoom-control {
+      width: auto;
+      min-width: 78px;
+      padding: 0 8px;
+      font-size: .72rem;
+      flex-shrink: 0;
+    }
     #game-overlay #overlay-ctrl-bar #nbg-open-records {
       width: auto;
       min-width: 70px;

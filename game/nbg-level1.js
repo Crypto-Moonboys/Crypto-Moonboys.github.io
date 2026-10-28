@@ -106,6 +106,12 @@
   var CAMERA_JUMP_MAX_Y = 42;
   var CAMERA_JUMP_EASE = 0.28;
   var CAMERA_LOOK_DOWN_MAX_Y = 84; // Camera shift is visual; crouch physics is recorded separately.
+  // Visual-only zoom. Never scale game physics, replay inputs, or the HUD.
+  var CAMERA_ZOOM_DEFAULT = 1.25;
+  // Slightly below the visual foot line: 1.5x crouch feet remain on-screen.
+  var CAMERA_ZOOM_ANCHOR_Y = HEIGHT - 6;
+  var CAMERA_ZOOM_STORAGE_KEY = 'nbg-london:camera-zoom:v1';
+  var CAMERA_ZOOM_LEVELS = [1, 1.25, 1.5];
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -415,6 +421,13 @@
     var lastTime = 0;
     var cameraX = 0;
     var cameraY = 0;
+    var cameraZoom = CAMERA_ZOOM_DEFAULT;
+    try {
+      var storedZoom = Number(window.localStorage.getItem(CAMERA_ZOOM_STORAGE_KEY));
+      if (CAMERA_ZOOM_LEVELS.indexOf(storedZoom) >= 0) cameraZoom = storedZoom;
+    } catch (error) {
+      // Storage may be unavailable in Telegram WebViews. Default remains 1.25x.
+    }
     var checkpointX = 72;
     var finishBonusAwarded = false;
     var runElapsedMs = 0;
@@ -718,7 +731,7 @@
       var drawer = document.getElementById('nbg-record-drawer');
       var scoresOpen = drawer && !drawer.hidden;
       var scoresControl = e.target && e.target.closest &&
-        e.target.closest('#nbg-record-drawer, #nbg-open-records');
+        e.target.closest('#nbg-record-drawer, #nbg-open-records, #nbg-zoom-control');
       // Once Scores closes, focus returns to its toolbar button. Preserve
       // native Enter/Space activation there, but allow gameplay movement,
       // jump (ArrowUp/W) and spray even while that button retains focus.
@@ -1380,7 +1393,28 @@
     }
 
     function updateCamera() {
-      cameraX = clamp(player.x - WIDTH * 0.42, 0, WORLD_WIDTH - WIDTH);
+      // Keep the runner at 42% of the screen while showing fewer world units.
+      // At 1x this equals the original camera; the 22,000px world is untouched.
+      var visibleWorldWidth = WIDTH / cameraZoom;
+      cameraX = clamp(player.x - WIDTH * 0.42 / cameraZoom,
+        0, WORLD_WIDTH - visibleWorldWidth);
+    }
+
+    function setCameraZoom(value) {
+      var next = Number(value);
+      if (CAMERA_ZOOM_LEVELS.indexOf(next) < 0) return false;
+      cameraZoom = next;
+      try {
+        window.localStorage.setItem(CAMERA_ZOOM_STORAGE_KEY, String(next));
+      } catch (error) {
+        // The zoom still works during this visit if storage is blocked.
+      }
+      updateCamera();
+      if (assetsLoaded) render(typeof performance !== 'undefined' && performance.now ? performance.now() : 0);
+      window.dispatchEvent(new CustomEvent('nbg-camera-zoom-changed', {
+        detail: { zoom: cameraZoom }
+      }));
+      return true;
     }
 
     function updateCameraY() {
@@ -1980,7 +2014,11 @@
       ctx.fillStyle = '#0078fb';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
       ctx.save();
-      ctx.translate(0, Math.round(cameraY));
+      // Zoom around the lower road line, keeping crouched feet on-screen
+      // even at 1.5x. Horizontal follow is in world coordinates.
+      ctx.translate(0, CAMERA_ZOOM_ANCHOR_Y);
+      ctx.scale(cameraZoom, cameraZoom);
+      ctx.translate(0, Math.round(cameraY) - CAMERA_ZOOM_ANCHOR_Y);
       drawWorld();
       drawCoins(time);
       drawSecretCoins(time);
@@ -2079,6 +2117,8 @@
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
         get cameraY() { return cameraY; },
+        get cameraZoom() { return cameraZoom; },
+        get visibleWorldWidth() { return WIDTH / cameraZoom; },
         get checkpoint() { return checkpoint; },
         get finish() { return finish; },
         get worldWidth() { return WORLD_WIDTH; },
@@ -2354,6 +2394,7 @@
         return Promise.resolve(resetRun());
       },
       getState: function () { return window.NBGLevel1State; },
+      setCameraZoom: setCameraZoom,
       suspendInput: clearInput,
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
