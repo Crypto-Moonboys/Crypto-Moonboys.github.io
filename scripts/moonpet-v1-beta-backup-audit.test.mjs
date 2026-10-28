@@ -185,3 +185,32 @@ test('missing Clout effects and daily projection tables block current-backup acc
     assert.ok(status.blockers.includes('championship_clout_projection_tables_missing'));
   } finally{db.close();}
 }));
+
+
+test('backup acceptance refuses nested or non-string Clout daily keys even with no MoonPet receipt',()=>sandbox(({src})=>{
+  const samples=[
+    [['moonpet']], [{game_key:'moonpet'}], [null], [1],
+    ['dead-run','dead-run'],
+  ];
+  const db=new DatabaseSync(src);
+  try {
+    const insert=db.prepare('INSERT INTO championship_clout_daily(game_keys_json) VALUES (?)');
+    for(const games of samples){
+      db.exec('DELETE FROM championship_clout_daily');
+      insert.run(JSON.stringify(games));
+      const status=auditMoonpetV1BetaBackup(db);
+      assert.equal(status.status,'BLOCKED',JSON.stringify(games));
+      assert.equal(status.moonpet_clout_sources,0);
+      assert.equal(status.moonpet_clout_effects,0);
+      assert.equal(status.moonpet_clout_daily_unverifiable_json,1);
+      assert.ok(status.blockers.includes('championship_clout_daily_json_unverifiable'));
+      assert.equal(status.ready_for_live_reset,false);
+    }
+    db.exec('DELETE FROM championship_clout_daily');
+    insert.run('["dead-run"]');
+    const status=auditMoonpetV1BetaBackup(db);
+    assert.equal(status.status,'READY_FOR_OFFLINE_REHEARSAL');
+    assert.equal(status.moonpet_clout_daily_unverifiable_json,0);
+    assert.equal(status.ready_for_live_reset,false);
+  }finally{db.close();}
+}));
