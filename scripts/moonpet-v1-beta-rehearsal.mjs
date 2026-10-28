@@ -102,12 +102,16 @@ export function planMoonpetV1BetaRehearsal(db) {
   // source_system='moonpet' rows refer to growth-mark/crest receipts that
   // this rehearsal would erase; there is no FK to catch the broken proof.
   // Require a separate cross-game award authority decision, never delete Clout.
-  if (tableNames(db).includes('championship_clout_sources')) {
-    const cols = db.prepare('PRAGMA table_info("championship_clout_sources")').all()
+  // Normalize the shared table's spelling just like PRAGMA FK targets:
+  // a mixed-case table name must not escape this cross-game proof gate.
+  const cloutTable = tableNames(db).find(name => name.toLowerCase() === 'championship_clout_sources');
+  if (cloutTable) {
+    const cols = db.prepare('PRAGMA table_info(' + quote(cloutTable) + ')').all()
       .map(column => String(column.name).toLowerCase());
     if (!cols.includes('source_system') || !cols.includes('source_event_id'))
       throw Error('championship_clout_source_schema_unavailable');
-    const provenance = db.prepare("SELECT COUNT(*) AS n FROM championship_clout_sources WHERE source_system='moonpet'").get();
+    const provenance = db.prepare("SELECT COUNT(*) AS n FROM " + quote(cloutTable) +
+      " WHERE lower(trim(source_system))='moonpet'").get();
     if (!Number.isSafeInteger(provenance?.n) || provenance.n < 0)
       throw Error('championship_clout_source_read_unavailable');
     if (provenance.n > 0)
