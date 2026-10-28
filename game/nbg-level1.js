@@ -96,8 +96,15 @@
   var SKYLINE_PARALLAX = 0.22;
   // The graffiti sits ON the existing parallax wall, never in gameplay space.
   var WALL_GRAFFITI_PARALLAX = 0.58;
-  var WALL_GRAFFITI_Y = 154;
-  var WALL_GRAFFITI_HEIGHT = 88;
+  // The 480x126 wall-one.png has transparent sky and a grassy coping
+  // ABOVE its visible masonry. It is drawn at y=154 with height=88, but
+  // only approximately y=200..242 contains the brick face. Keep every
+  // decal INSIDE the bricks, never on the grass, skyline or street.
+  var WALL_GRAFFITI_BRICK_TOP = 201;
+  var WALL_GRAFFITI_BRICK_BOTTOM = 239;
+  var WALL_GRAFFITI_MIN_HEIGHT = 19;
+  var WALL_GRAFFITI_MAX_HEIGHT = 35;
+  var WALL_GRAFFITI_MAX_WIDTH = 112;
   var WALL_GRAFFITI_REPEATS_PER_IMAGE = 6;
   var SKYLINE_Y = 40;
   var SKYLINE_WIDTH = 480;
@@ -1444,13 +1451,23 @@
           var index = order[k];
           var art = wallGraffitiArt[index];
           var ratio = art.width / art.height;
-          var h = 43 + artRandom() * 36; // Varied size, within the wall strip.
-          var w = Math.round(Math.min(174, h * ratio));
-          h = Math.round(w / ratio);
+          // Restrict the ACTUAL image rectangles to masonry. The previous
+          // 43..79px art height fit the full y=154..242 layer but obscured
+          // skyline and grassy coping because the upper texture is transparent.
+          var desiredHeight = WALL_GRAFFITI_MIN_HEIGHT +
+            artRandom() * (WALL_GRAFFITI_MAX_HEIGHT - WALL_GRAFFITI_MIN_HEIGHT);
+          var w = Math.max(1, Math.round(Math.min(
+            WALL_GRAFFITI_MAX_WIDTH, desiredHeight * ratio)));
+          var h = Math.max(1, Math.round(w / ratio));
+          var brickHeight = WALL_GRAFFITI_BRICK_BOTTOM - WALL_GRAFFITI_BRICK_TOP;
+          if (h > brickHeight) {
+            h = brickHeight;
+            w = Math.max(1, Math.round(h * ratio));
+          }
           var slot = pass * order.length + k;
           var x = Math.round((slot + 0.1 + artRandom() * 0.65) * spacing);
-          var y = WALL_GRAFFITI_Y + Math.round(
-            artRandom() * Math.max(0, WALL_GRAFFITI_HEIGHT - h));
+          var y = WALL_GRAFFITI_BRICK_TOP + Math.round(
+            artRandom() * Math.max(0, brickHeight - h));
           wallGraffitiPlacements.push({
             artIndex: index, x: x, y: y, w: w, h: h
           });
@@ -1492,9 +1509,12 @@
       var wallX = cameraX * WALL_GRAFFITI_PARALLAX;
       var visible = WIDTH / cameraZoom;
       ctx.save();
-      // Decals are wall paint, never floating in the sky or on the road.
+      // Clip to the stone BRICK FACE, not the larger 154..242 texture
+      // rectangle; its transparent and grassy upper rows are not wall.
+      // This remains correct in 1x, 1.25x and 1.5x camera zoom modes.
       ctx.beginPath();
-      ctx.rect(0, WALL_GRAFFITI_Y, WIDTH, WALL_GRAFFITI_HEIGHT);
+      ctx.rect(0, WALL_GRAFFITI_BRICK_TOP, WIDTH,
+        WALL_GRAFFITI_BRICK_BOTTOM - WALL_GRAFFITI_BRICK_TOP);
       ctx.clip();
       for (var i = 0; i < wallGraffitiPlacements.length; i += 1) {
         var decal = wallGraffitiPlacements[i];
