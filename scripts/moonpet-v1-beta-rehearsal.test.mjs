@@ -230,6 +230,24 @@ test('Championship Clout must not retain orphaned MoonPet proof when gameplay re
   assert.equal(existsSync(second),false);
 }));
 
+test('mixed-case shared Clout table and MoonPet source labels fail closed', () => sandbox(({src,dst}) => {
+  const db=new DatabaseSync(src);
+  db.exec('CREATE TABLE Championship_Clout_Sources(source_system TEXT, source_event_id TEXT)');
+  db.exec("INSERT INTO Championship_Clout_Sources VALUES ('MoonPet','old-weekly-crest')");
+  db.close();
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),/moonpet_clout_source_provenance_requires_review/);
+  assert.equal(existsSync(dst),false);
+  const db2=new DatabaseSync(src);
+  db2.exec("UPDATE Championship_Clout_Sources SET source_system='DEAD_RUN'");
+  db2.close();
+  const success=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(success.moonpet_rows_removed,5);
+  const copy=new DatabaseSync(dst,{readOnly:true});
+  try{ assert.deepEqual(rows(copy,'Championship_Clout_Sources'),
+    [{source_system:'DEAD_RUN',source_event_id:'old-weekly-crest'}]); }
+  finally{copy.close();}
+});
+
 test('unknown MoonPet schema and non-pet pet references fail closed before copying', () => sandbox(({src,dst}) => {
   let db = new DatabaseSync(src);
   db.exec('CREATE TABLE telegram_pet_unreviewed(value TEXT)');
