@@ -11,10 +11,11 @@ import { resolve, join, basename, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
-import { MOONPET_V1_BETA_RESET_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
+import { MOONPET_V1_BETA_RESET_TABLES, MOONPET_V1_BETA_PROTECTED_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
 
 const quote = name => '"' + String(name).replaceAll('"', '""') + '"';
 const allowed = new Set(MOONPET_V1_BETA_RESET_TABLES);
+const protectedTables = new Set(MOONPET_V1_BETA_PROTECTED_TABLES);
 const sidecars = path => [path + '-wal', path + '-shm', path + '-journal'];
 // Unlike existsSync, lstat also identifies dangling symlinks that SQLite
 // might follow, replace or remove when opening a database.
@@ -74,25 +75,65 @@ export function planMoonpetV1BetaRehearsal(db) {
   if (unknown.length) throw Error('unreviewed_moonpet_tables: ' + unknown.join(','));
   for (const name of ['telegram_pet_profiles','telegram_pet_instances','telegram_pet_season_slots'])
     if (!names.includes(name)) throw Error('moonpet_core_table_missing: ' + name);
-  const outside = inventory.moonpet_tables.flatMap(row => row.inbound_non_moonpet_references
-    .map(ref => ref.table + '->' + row.table));
+
+  // Candidate list membership is NOT deletion permission. Migration 070 uses
+  // its cutover marker to stop an unsafe destructive rerun; XP correction and
+  // runtime cutover ledgers are also audit authority, not pet gameplay.
+  const preserveNames = names.filter(name => protectedTables.has(name));
+  const clearNames = names.filter(name => !protectedTables.has(name));
+  const clear = new Set(clearNames);
+  const unsafeProtectedFks = inventory.moonpet_tables
+    .filter(row => protectedTables.has(row.table))
+    .flatMap(row => row.outbound_foreign_keys
+      .filter(ref => clear.has(ref.target_table))
+      .map(ref => row.table + '->' + ref.target_table));
+  if (unsafeProtectedFks.length)
+    throw Error('protected_moonpet_fk_depends_on_cleared_pet: ' + unsafeProtectedFks.join(','));
+
+  const outside = inventory.moonpet_tables.filter(row => clear.has(row.table))
+    .flatMap(row => row.inbound_non_moonpet_references
+      .map(ref => ref.table + '->' + row.table));
   if (outside.length) throw Error('external_fk_moonpet_dependency: ' + outside.join(','));
   if (inventory.possible_external_pet_sources.length)
     throw Error('external_pet_id_dependency: ' +
       inventory.possible_external_pet_sources.map(row => row.table).join(','));
+
+  // Championship Clout is a SHARED immutable reward/provenance system. Its
+  // source_system='moonpet' rows refer to growth-mark/crest receipts that
+  // this rehearsal would erase; there is no FK to catch the broken proof.
+  // Require a separate cross-game award authority decision, never delete Clout.
+  if (tableNames(db).includes('championship_clout_sources')) {
+    const cols = db.prepare('PRAGMA table_info("championship_clout_sources")').all()
+      .map(column => String(column.name).toLowerCase());
+    if (!cols.includes('source_system') || !cols.includes('source_event_id'))
+      throw Error('championship_clout_source_schema_unavailable');
+    const provenance = db.prepare("SELECT COUNT(*) AS n FROM championship_clout_sources WHERE source_system='moonpet'").get();
+    if (!Number.isSafeInteger(provenance?.n) || provenance.n < 0)
+      throw Error('championship_clout_source_read_unavailable');
+    if (provenance.n > 0)
+      throw Error('moonpet_clout_source_provenance_requires_review: ' + provenance.n);
+  }
+
   const deleteTriggers = db.prepare("SELECT name,tbl_name,sql FROM sqlite_master WHERE type='trigger'").all()
-    .filter(row => names.includes(row.tbl_name) &&
+    .filter(row => clear.has(row.tbl_name) &&
       /\b(?:BEFORE|AFTER|INSTEAD\s+OF)\s+DELETE\b/iu.test(row.sql || ''));
   if (deleteTriggers.length)
     throw Error('moonpet_delete_trigger_requires_review: ' + deleteTriggers.map(row => row.name).join(','));
   if (db.prepare('PRAGMA foreign_key_check').all().length)
     throw Error('source_foreign_key_check_failed');
+
+  const preservedRows = inventory.moonpet_tables.filter(row => protectedTables.has(row.table))
+    .reduce((total, row) => total + row.rows, 0);
   return Object.freeze({
     mode: 'OFFLINE_REHEARSAL_PLAN',
     ready_for_live_reset: false,
     source_table_count: names.length,
     source_row_count: inventory.moonpet_row_count,
-    delete_order: childrenBeforeParents(names, inventory),
+    protected_tables: preserveNames,
+    protected_row_count: preservedRows,
+    cleared_table_count: clearNames.length,
+    cleared_row_count: inventory.moonpet_row_count - preservedRows,
+    delete_order: childrenBeforeParents(clearNames, inventory),
     shared_table_count: tableNames(db).length - names.length,
   });
 }
@@ -164,9 +205,12 @@ export function rehearseMoonpetV1BetaReset(source, output) {
       ready_for_live_reset: false,
       source_unchanged: true,
       output_path: target,
-      moonpet_tables_cleared: plan.source_table_count,
-      moonpet_rows_removed: plan.source_row_count,
-      non_moonpet_tables_verified_unchanged: before.length,
+      moonpet_tables_cleared: plan.cleared_table_count,
+      moonpet_rows_removed: plan.cleared_row_count,
+      protected_moonpet_tables_preserved: plan.protected_tables,
+      protected_moonpet_rows_preserved: plan.protected_row_count,
+      non_moonpet_tables_verified_unchanged: plan.shared_table_count,
+      shared_and_protected_table_digests_verified: before.length,
       foreign_keys_enforced: true,
     };
   } catch (error) {
