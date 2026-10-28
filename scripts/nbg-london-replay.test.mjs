@@ -173,6 +173,43 @@ const rejectedLegacyMask = await verifyNbgLondonReplay({
 });
 assert.equal(rejectedLegacyMask.debug, undefined,
   'versions older than v7 must reject unknown crouch input bits');
+// Browser-observed timeline: the game emits a zero-dt start frame, starts
+// spray on a 33ms frame, then presses Down for seven 33ms frames. The browser
+// crouches on the seventh Down frame (264ms elapsed), with x=82 after the
+// *previous* spray sprite's 70px overhang clamp. Earlier Worker logic lagged
+// this transition by one tick, shifting hitboxes/XP for ranked replay.
+const observedSprayRelease = [
+  [0,0,0], [33,33,8],
+  ...Array.from({length:7}, () => [33,33,16])
+];
+const observedParity = await verifyNbgLondonReplay({
+  ...base, replay:{ ...frameStream(observedSprayRelease), course_version:7 }, debug:true
+});
+assert.deepEqual(
+  [observedParity.debug?.x, observedParity.debug?.y,
+    observedParity.debug?.height, observedParity.debug?.crouching],
+  [82,192,22,true],
+  'v7 Worker must match the browser at the exact spray-to-Down transition'
+);
+const beforeCrouch = await verifyNbgLondonReplay({
+  ...base,
+  replay:{ ...frameStream(observedSprayRelease.slice(0,-1)), course_version:7 },
+  debug:true
+});
+assert.deepEqual(
+  [beforeCrouch.debug?.x, beforeCrouch.debug?.y,
+    beforeCrouch.debug?.height, beforeCrouch.debug?.crouching],
+  [82,180,34,false],
+  'v7 Worker must not crouch a frame before the browser allows it'
+);
+const oldVersionSpray = await verifyNbgLondonReplay({
+  ...base,
+  replay:{ ...frameStream(observedSprayRelease.map(([dt,ms,mask]) =>
+    [dt,ms,mask & ~16])), course_version:6 },
+  debug:true
+});
+assert.equal(oldVersionSpray.debug?.x,64,
+  'archived v6 must retain its original world-boundary and spray behaviour');
 // Cached v1 replays omit the property completely. An explicitly present
 // null/undefined/invalid version is not equivalent and must be rejected.
 for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {
