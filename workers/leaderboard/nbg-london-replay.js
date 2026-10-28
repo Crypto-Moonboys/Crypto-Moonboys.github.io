@@ -312,16 +312,25 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
         jumps=3;
       }
     }
-    if(sprayTimer>0) sprayTimer-=dt;
-    if(p.invuln>0) p.invuln-=dt;
-    if(spray && sprayTimer<=0) sprayTimer=230;
+    if(courseVersion>=7) {
+      // Browser handleInput() starts spray before updatePlayer() subtracts dt.
+      // The crouch decision above reads the *previous* tick's remaining
+      // timer, and this frame's attack animation sees the decremented value.
+      if(spray && sprayTimer<=0) sprayTimer=230;
+      if(sprayTimer>0) sprayTimer-=dt;
+      if(p.invuln>0) p.invuln-=dt;
+    } else {
+      // Historical courses must retain their original replay physics.
+      if(sprayTimer>0) sprayTimer-=dt;
+      if(p.invuln>0) p.invuln-=dt;
+      if(spray && sprayTimer<=0) sprayTimer=230;
+    }
 
     const beforeX=p.x;
     // The live browser clamps by half the visible sprite overhang. v7
     // reproduces that boundary constraint; retain archived v1-v6 physics.
     const margin=courseVersion>=7 ? (priorSprayFrame ? 70 : 24) : 0;
     p.x=clamp(p.x+p.vx*step,12+margin,WORLD-p.w-12-margin);
-    priorSprayFrame=courseVersion>=7 && sprayTimer>0;
     maximumX=Math.max(maximumX,p.x);
     for (const box of level.crates) {
       if (Math.abs(box.x-p.x)>60 || !overlap(p,box)) continue;
@@ -348,6 +357,9 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       p.vx=0;p.vy=0;
       jumps=0;p.invuln=1050;sprayTimer=0;speedBoostUntil=0;
     }
+    // The next tick's horizontal world clamp uses the sprite selected at
+    // the END of this browser update, after landing/respawn and spray expiry.
+    if(courseVersion>=7) priorSprayFrame=sprayTimer>0;
     for(const coin of level.coins) {
       if(coin.taken || Math.abs(coin.x-p.x)>40) continue;
       const hit=Math.round(coin.size*0.8);
