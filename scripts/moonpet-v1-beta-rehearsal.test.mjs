@@ -230,6 +230,69 @@ test('Championship Clout must not retain orphaned MoonPet proof when gameplay re
   assert.equal(existsSync(second),false);
 }));
 
+test('rehearsal rejects orphan MoonPet Clout effects and daily projections without source rows', () => sandbox(({src,dst}) => {
+  const db=new DatabaseSync(src);
+  db.exec('CREATE TABLE championship_clout_sources(source_system TEXT,source_event_id TEXT)');
+  db.exec('CREATE TABLE championship_clout_effects(source_system TEXT,source_event_id TEXT,game_key TEXT,source_pet_id TEXT)');
+  db.exec('CREATE TABLE championship_clout_daily(game_keys_json TEXT)');
+  db.exec("INSERT INTO championship_clout_effects VALUES ('moonpet','crest-1',NULL,'pet-one')");
+  db.close();
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),
+    /moonpet_clout_effects_provenance_requires_review/);
+  assert.equal(existsSync(dst),false);
+  const update=new DatabaseSync(src);
+  update.exec("DELETE FROM championship_clout_effects");
+  update.exec("INSERT INTO championship_clout_daily VALUES ('[\"moonpet\"]')");
+  update.close();
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),
+    /moonpet_clout_daily_projection_requires_review/);
+  assert.equal(existsSync(dst),false);
+  const restore=new DatabaseSync(src);
+  restore.exec("UPDATE championship_clout_daily SET game_keys_json='[\"dead-run\"]'");
+  restore.close();
+  const ok=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(ok.moonpet_rows_removed,5);
+  const copy=new DatabaseSync(dst,{readOnly:true});
+  try {
+    assert.deepEqual(rows(copy,'championship_clout_daily'),[{game_keys_json:'["dead-run"]'}]);
+  } finally {copy.close();}
+}));
+
+test('offline rehearsal refuses nested and non-string Clout game keys before creating output', () => sandbox(({src,dst}) => {
+  const setup=new DatabaseSync(src);
+  setup.exec('CREATE TABLE championship_clout_sources(source_system TEXT,source_event_id TEXT)');
+  setup.exec('CREATE TABLE championship_clout_effects(source_system TEXT,source_event_id TEXT,game_key TEXT,source_pet_id TEXT)');
+  setup.exec('CREATE TABLE championship_clout_daily(game_keys_json TEXT)');
+  setup.close();
+  const samples=[
+    [['moonpet']], [{game_key:'moonpet'}], [null], [1],
+    ['dead-run','dead-run'],
+  ];
+  for (const games of samples){
+    const db=new DatabaseSync(src);
+    db.exec('DELETE FROM championship_clout_daily');
+    db.prepare('INSERT INTO championship_clout_daily(game_keys_json) VALUES (?)')
+      .run(JSON.stringify(games));
+    db.close();
+    const before=readFileSync(src);
+    assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),
+      /championship_clout_daily_json_unverifiable/,JSON.stringify(games));
+    assert.equal(existsSync(dst),false,'rejected backup must not create an output');
+    assert.deepEqual(readFileSync(src),before,'rehearsal must not change source');
+  }
+  const clean=new DatabaseSync(src);
+  clean.exec('DELETE FROM championship_clout_daily');
+  clean.prepare('INSERT INTO championship_clout_daily(game_keys_json) VALUES (?)')
+    .run('["dead-run"]');
+  clean.close();
+  const success=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(success.moonpet_rows_removed,5);
+  const copy=new DatabaseSync(dst,{readOnly:true});
+  try {
+    assert.deepEqual(rows(copy,'championship_clout_daily'),[{game_keys_json:'["dead-run"]'}]);
+  }finally{copy.close();}
+}));
+
 test('mixed-case shared Clout table and MoonPet source labels fail closed', () => sandbox(({src,dst}) => {
   const db=new DatabaseSync(src);
   db.exec('CREATE TABLE Championship_Clout_Sources(source_system TEXT, source_event_id TEXT)');

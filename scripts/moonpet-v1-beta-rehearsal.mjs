@@ -12,6 +12,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
 import { MOONPET_V1_BETA_RESET_TABLES, MOONPET_V1_BETA_PROTECTED_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
+import { auditMoonpetSharedCloutProof } from './moonpet-v1-beta-shared-clout-proof.mjs';
 
 const quote = name => '"' + String(name).replaceAll('"', '""') + '"';
 const allowed = new Set(MOONPET_V1_BETA_RESET_TABLES);
@@ -98,25 +99,12 @@ export function planMoonpetV1BetaRehearsal(db) {
     throw Error('external_pet_id_dependency: ' +
       inventory.possible_external_pet_sources.map(row => row.table).join(','));
 
-  // Championship Clout is a SHARED immutable reward/provenance system. Its
-  // source_system='moonpet' rows refer to growth-mark/crest receipts that
-  // this rehearsal would erase; there is no FK to catch the broken proof.
-  // Require a separate cross-game award authority decision, never delete Clout.
-  // Normalize the shared table's spelling just like PRAGMA FK targets:
-  // a mixed-case table name must not escape this cross-game proof gate.
-  const cloutTable = tableNames(db).find(name => name.toLowerCase() === 'championship_clout_sources');
-  if (cloutTable) {
-    const cols = db.prepare('PRAGMA table_info(' + quote(cloutTable) + ')').all()
-      .map(column => String(column.name).toLowerCase());
-    if (!cols.includes('source_system') || !cols.includes('source_event_id'))
-      throw Error('championship_clout_source_schema_unavailable');
-    const provenance = db.prepare("SELECT COUNT(*) AS n FROM " + quote(cloutTable) +
-      " WHERE lower(trim(source_system))='moonpet'").get();
-    if (!Number.isSafeInteger(provenance?.n) || provenance.n < 0)
-      throw Error('championship_clout_source_read_unavailable');
-    if (provenance.n > 0)
-      throw Error('moonpet_clout_source_provenance_requires_review: ' + provenance.n);
-  }
+  // Clout sources, effects and daily projections are shared cross-game proof.
+  // They have no pet FK; deleting Marks/Crests could orphan paid Clout.
+  // This inspector emits only aggregate counts and never modifies Clout.
+  const clout = auditMoonpetSharedCloutProof(db);
+  if (clout.blockers.length)
+    throw Error(clout.blockers.join('; '));
 
   const deleteTriggers = db.prepare("SELECT name,tbl_name,sql FROM sqlite_master WHERE type='trigger'").all()
     .filter(row => clear.has(row.tbl_name) &&

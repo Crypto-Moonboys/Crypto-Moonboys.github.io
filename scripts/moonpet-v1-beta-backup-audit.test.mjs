@@ -29,6 +29,8 @@ function fixture(file){
     'CREATE TABLE arcade_progression_state(telegram_id TEXT PRIMARY KEY,arcade_xp_total INTEGER)',
     'CREATE TABLE d1_migrations(id INTEGER PRIMARY KEY,name TEXT)',
     'CREATE TABLE championship_clout_sources(source_system TEXT,source_event_id TEXT)',
+    'CREATE TABLE championship_clout_effects(source_system TEXT,source_event_id TEXT,game_key TEXT,source_pet_id TEXT)',
+    'CREATE TABLE championship_clout_daily(game_keys_json TEXT)',
   ].join(';'));
   for(const name of MOONPET_V1_BETA_RESET_TABLES){
     if(name==='moonpet_identity_authority_cutovers'||name==='telegram_pet_runtime_cutovers')
@@ -153,4 +155,62 @@ test('CLI rejects source journal and invalid command; neither makes an output',a
   assert.notEqual(bad.status,0);
   assert.match(bad.stderr,/Read-only usage/);
   assert.deepEqual(readFileSync(src),before);
+}));
+
+test('orphan shared Clout effect or daily projection blocks an apparently clean D1 backup',()=>sandbox(({src})=>{
+  const db=new DatabaseSync(src);
+  try {
+    db.exec("INSERT INTO championship_clout_effects VALUES ('MoonPet','old-crest',NULL,'old-pet')");
+    let status=auditMoonpetV1BetaBackup(db);
+    assert.equal(status.status,'BLOCKED');
+    assert.equal(status.moonpet_clout_sources,0);
+    assert.equal(status.moonpet_clout_effects,1);
+    assert.ok(status.blockers.includes('moonpet_clout_effects_provenance_requires_review'));
+    db.exec('DELETE FROM championship_clout_effects');
+    db.exec("INSERT INTO championship_clout_daily VALUES ('[\"moonpet\"]')");
+    status=auditMoonpetV1BetaBackup(db);
+    assert.equal(status.status,'BLOCKED');
+    assert.equal(status.moonpet_clout_daily_projections,1);
+    assert.ok(status.blockers.includes('moonpet_clout_daily_projection_requires_review'));
+  } finally {db.close();}
+}));
+test('missing Clout effects and daily projection tables block current-backup acceptance',()=>sandbox(({src})=>{
+  const db=new DatabaseSync(src);
+  try {
+    db.exec('DROP TABLE championship_clout_effects; DROP TABLE championship_clout_daily');
+    const status=auditMoonpetV1BetaBackup(db);
+    assert.equal(status.status,'BLOCKED');
+    assert.deepEqual(status.missing_clout_projection_tables,
+      ['championship_clout_effects','championship_clout_daily']);
+    assert.ok(status.blockers.includes('championship_clout_projection_tables_missing'));
+  } finally{db.close();}
+}));
+
+
+test('backup acceptance refuses nested or non-string Clout daily keys even with no MoonPet receipt',()=>sandbox(({src})=>{
+  const samples=[
+    [['moonpet']], [{game_key:'moonpet'}], [null], [1],
+    ['dead-run','dead-run'],
+  ];
+  const db=new DatabaseSync(src);
+  try {
+    const insert=db.prepare('INSERT INTO championship_clout_daily(game_keys_json) VALUES (?)');
+    for(const games of samples){
+      db.exec('DELETE FROM championship_clout_daily');
+      insert.run(JSON.stringify(games));
+      const status=auditMoonpetV1BetaBackup(db);
+      assert.equal(status.status,'BLOCKED',JSON.stringify(games));
+      assert.equal(status.moonpet_clout_sources,0);
+      assert.equal(status.moonpet_clout_effects,0);
+      assert.equal(status.moonpet_clout_daily_unverifiable_json,1);
+      assert.ok(status.blockers.includes('championship_clout_daily_json_unverifiable'));
+      assert.equal(status.ready_for_live_reset,false);
+    }
+    db.exec('DELETE FROM championship_clout_daily');
+    insert.run('["dead-run"]');
+    const status=auditMoonpetV1BetaBackup(db);
+    assert.equal(status.status,'READY_FOR_OFFLINE_REHEARSAL');
+    assert.equal(status.moonpet_clout_daily_unverifiable_json,0);
+    assert.equal(status.ready_for_live_reset,false);
+  }finally{db.close();}
 }));
