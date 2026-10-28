@@ -136,7 +136,7 @@ async function holdRunnerRight(page, durationMs = 0) {
 
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 120 },
   crouchLeft: { spriteSheet: 'player/animations/NBG Runner Final-crouchr.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: -1 },
   crouchRight: { spriteSheet: 'player/animations/NBG Runner Final-sneaking_left.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: 1 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
@@ -244,6 +244,13 @@ assert.equal(flyingPigHeader.readUInt32BE(4), 560,
   'flying pig sprite sheet must retain its native 560px height');
 
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
+assert.ok(
+  ['var COURSE_LAYOUT_VERSION = 8', 'var RUN_ACCEL = 0.42',
+    'var MAX_SPEED = 2.4', 'var CROUCH_MAX_SPEED = 1.25',
+    'var SPEED_BOOST_MAX_SPEED = 3.8', 'var DOUBLE_JUMP_SIDE_SPEED = 3.2']
+    .every(value => runtimeSource.includes(value)),
+  'v8 must slow horizontal running, crouching, speed boxes and jump steering together'
+);
 assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
   runtimeSource.includes('var tileW = WIDTH') &&
   runtimeSource.includes('var offset = -cameraX * 0.08') &&
@@ -840,7 +847,7 @@ assert.match(runtimeSource, /if \(!running\) cameraY = 0;/,
 
 // Capture the actual browser-produced replay, not a hand-built approximation.
 // The browser starts spray in handleInput(), subtracts dt afterward, and then
-// permits Down to crouch at the exact animation-expiry frame. Worker course v7
+// permits Down to crouch at the exact animation-expiry frame. Worker course v8
 // must reconstruct the same feet, collision height and world-boundary clamp.
 await page.keyboard.down('KeyX');
 await page.waitForFunction(() => window.NBGLevel1State?.running &&
@@ -859,8 +866,8 @@ const sprayReleaseReplay = await page.evaluate(() => {
   };
 });
 await page.keyboard.up('ArrowDown');
-assert.equal(sprayReleaseReplay.replay?.course_version, 7,
-  'browser must encode spray-to-crouch under course version 7');
+assert.equal(sprayReleaseReplay.replay?.course_version, 8,
+  'browser must encode spray-to-crouch under course version 8');
 const capturedMasks = [...Buffer.from(sprayReleaseReplay.replay.frames, 'base64')]
   .filter((_, index) => index % 5 === 4);
 const firstSpray = capturedMasks.findIndex(mask => (mask & 8) !== 0);
@@ -1355,7 +1362,7 @@ assert.ok(
   gameCssSource.includes('font: 800 clamp(8px, 1.2vw, 10px)/1.05') &&
   runtimeSource.includes('var BALLOON_WALK_FRAMES = 14') &&
   runtimeSource.includes('var BALLOON_RELEASE_FRAMES = 16') &&
-  runtimeSource.includes('var SPEED_BOOST_MAX_SPEED = 6') &&
+  runtimeSource.includes('var SPEED_BOOST_MAX_SPEED = 3.8') &&
   runtimeSource.includes('var SPEED_BOOST_DURATION_MS = 6000') &&
   runtimeSource.includes("balloonRewardNotificationText = '+' + earnedXp.toLocaleString('en-US') + ' XP'"),
   'audited independent frame counts, conservative boost and visible balloon XP must remain explicit'
@@ -1454,7 +1461,7 @@ for (const mechanicMode of [
     await mechanicPage.evaluate(() => window.NBGLevel1Runtime.setTouchControl('right',true));
     await mechanicPage.waitForFunction(() => {
       const vx=window.NBGLevel1State.player.vx;
-      return vx>4.2&&vx<=6;
+      return vx>2.4&&vx<=3.8;
     });
     const boosted=await mechanicPage.evaluate(() => ({
       vx:window.NBGLevel1State.player.vx,
@@ -1462,7 +1469,7 @@ for (const mechanicMode of [
       collected:window.NBGLevel1State.speedBoxes[0].collected
     }));
     await mechanicPage.evaluate(() => window.NBGLevel1Runtime.setTouchControl('right',false));
-    assert.ok(boosted.vx>4.2&&boosted.vx<=6,
+    assert.ok(boosted.vx>2.4&&boosted.vx<=3.8,
       mechanicMode.label+' boost must increase speed without unlimited stacking');
     assert.equal(boosted.collected,true,mechanicMode.label+' box must remain collected');
     await mechanicPage.waitForFunction(() => window.NBGLevel1State.speedBoostActive === false,
@@ -1781,12 +1788,12 @@ await page.clock.resume();
 // Double jump is edge-triggered and resets on landing, respawn and restart.
 assert.ok(
   runtimeSource.includes('var DOUBLE_JUMP_VELOCITY = -12.8') &&
-  runtimeSource.includes('var DOUBLE_JUMP_SIDE_SPEED = 5.4') &&
+  runtimeSource.includes('var DOUBLE_JUMP_SIDE_SPEED = 3.2') &&
   runtimeSource.includes('var pendingJumpPresses = 0') &&
   runtimeSource.includes("getControlForCode(e.code) === 'jump'") &&
   runtimeSource.includes('var queuedJump = jumpTapReady()') &&
   runtimeSource.includes('var jumpPressed = queuedJump ||') &&
-  runtimeSource.includes('if (jumpPressed && player.grounded)') &&
+  runtimeSource.includes('if (jumpPressed && player.grounded && !player.crouching)') &&
   runtimeSource.includes('else if (jumpPressed && !player.grounded && jumpsUsed === 1)') &&
   runtimeSource.includes('player.vy = DOUBLE_JUMP_VELOCITY') &&
   runtimeSource.includes('player.vx = left ? -DOUBLE_JUMP_SIDE_SPEED : DOUBLE_JUMP_SIDE_SPEED') &&
@@ -2151,8 +2158,8 @@ for (const mode of ['keyboard', 'touch']) {
       mode + ' successive boosts must be visually spaced instead of compressed');
     assert.equal(flight.replay?.version, 1,
       mode + ' should expose an encoded version-one input replay');
-    assert.equal(flight.replay?.course_version, 6,
-      mode + ' must retain the independently simulated Level 1 course');
+    assert.equal(flight.replay?.course_version, 8,
+      mode + ' must encode the slower reference-paced course');
     const bytes = Buffer.from(flight.replay.frames, 'base64');
     assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
     const jumpTimes = [];

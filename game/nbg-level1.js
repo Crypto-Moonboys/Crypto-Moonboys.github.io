@@ -11,20 +11,21 @@
   var WAITING_HUD_TEXT = 'MOVE TO START';
   var GRAVITY = 0.52;
   var FRICTION = 0.78;
-  var RUN_ACCEL = 0.74;
-  var MAX_SPEED = 4.2;
+  // Deliberate, reference-video-paced running. Worker course v8 mirrors these values.
+  var RUN_ACCEL = 0.42;
+  var MAX_SPEED = 2.4;
   var STAND_HEIGHT = 34;
   var CROUCH_HEIGHT = 22;
-  var CROUCH_MAX_SPEED = 2;
-  var SPEED_BOOST_MAX_SPEED = 6;
+  var CROUCH_MAX_SPEED = 1.25;
+  var SPEED_BOOST_MAX_SPEED = 3.8;
   var SPEED_BOOST_DURATION_MS = 6000;
   var SPEED_BOX_RENDER_SIZE = 28;
   var JUMP_VELOCITY = -11.4;
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 7; // Crouch controls and collision geometry; Worker must accept v7 before Pages deploy.
-  var DOUBLE_JUMP_SIDE_SPEED = 5.4;
+  var COURSE_LAYOUT_VERSION = 8; // Slower reference-video-paced movement. Worker must accept v8 before Pages deploy.
+  var DOUBLE_JUMP_SIDE_SPEED = 3.2;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
   var FLYING_PIG_COLUMNS = 5;

@@ -21,7 +21,7 @@
       "renderOffsetY": 12,
       "frames": 6,
       "columns": 3,
-      "frameMs": 88
+      "frameMs": 120
     },
     "crouchLeft": {
       "spriteSheet": "player/animations/NBG Runner Final-crouchr.png",

@@ -151,13 +151,20 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // recurring timer with one start-area parachute rat per fresh run. Revision
   // 5 adds speed boxes, Graffbot fire and deterministic balloon-enemy XP.
   // 6 corrects landed-rat contact geometry; 7 adds crouch inputs and box
-  // geometry. Keep every older course's input and collision rules unchanged.
+  // geometry; 8 slows running and airborne steering to match the reference
+  // footage. Preserve physics and replay validity for all older versions.
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && ![2,3,4,5,6,7].includes(replay.course_version))
+  if (hasCourseVersion && ![2,3,4,5,6,7,8].includes(replay.course_version))
     return { valid:false };
   const courseVersion = hasCourseVersion ? replay.course_version : 1;
+  // v8 changes movement only; v1-v7 keep their exact historical simulation.
+  const runAcceleration = courseVersion >= 8 ? 0.42 : 0.74;
+  const runMaxSpeed = courseVersion >= 8 ? 2.4 : MAX_SPEED;
+  const crouchMaxSpeed = courseVersion >= 8 ? 1.25 : CROUCH_MAX_SPEED;
+  const boostMaxSpeed = courseVersion >= 8 ? 3.8 : SPEED_BOOST_MAX_SPEED;
+  const midairSideSpeed = courseVersion >= 8 ? 3.2 : 5.4;
   const level = levelData(courseVersion);
   const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
   const p = { x:64, y:FLOOR-34, w:24, h:STAND_HEIGHT, vx:0, vy:0, facing:1,
@@ -288,11 +295,11 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     if(courseVersion>=7)
       setCrouching(!!((mask&16) && p.grounded && !jump && !spray &&
         sprayTimer<=0 && p.invuln<=0));
-    if (left) {p.vx-=0.74*step;p.facing=-1;}
-    if (right) {p.vx+=0.74*step;p.facing=1;}
+    if (left) {p.vx-=runAcceleration*step;p.facing=-1;}
+    if (right) {p.vx+=runAcceleration*step;p.facing=1;}
     if (!left && !right) p.vx=p.crouching?0:p.vx*Math.pow(0.78,step);
-    const activeMaxSpeed=p.crouching?CROUCH_MAX_SPEED:
-      courseVersion>=5&&elapsed<speedBoostUntil?SPEED_BOOST_MAX_SPEED:MAX_SPEED;
+    const activeMaxSpeed=p.crouching?crouchMaxSpeed:
+      courseVersion>=5&&elapsed<speedBoostUntil?boostMaxSpeed:runMaxSpeed;
     p.vx=clamp(p.vx,-activeMaxSpeed,activeMaxSpeed);
     // The browser's third jump changes the sprite to backflip in handleInput,
     // BEFORE updatePlayer clamps x. Even while an earlier spray is active,
@@ -303,14 +310,14 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
       else if(jumps===1) {
         p.vy=-12.8;
         if (left!==right) {
-          p.vx=left ? -5.4:5.4;
+          p.vx=left ? -midairSideSpeed:midairSideSpeed;
           p.facing=left ? -1:1;
         }
         jumps=2;
       } else if(courseVersion>=2 && jumps===2) {
         p.vy=-12.8;
         if (left!==right) {
-          p.vx=left ? -5.4:5.4;
+          p.vx=left ? -midairSideSpeed:midairSideSpeed;
           p.facing=left ? -1:1;
         }
         jumps=3;

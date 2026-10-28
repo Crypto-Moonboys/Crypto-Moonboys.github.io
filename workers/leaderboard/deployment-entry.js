@@ -34,7 +34,7 @@ const leaderboardWorker = {
         database_configured: Boolean(env.DB),
         leaderboard_store_configured: Boolean(env.LEADERBOARD),
         nbg_london_ranked_scoring_available: typeof NBG_LONDON_REPLAY_VERIFIER === 'function',
-        nbg_london_course_version_supported: 7, // Worker-first gate for crouch physics, input replay and collision.
+        nbg_london_course_version_supported: 8, // Worker-first gate for v8 slower runner physics; v1-v7 remain supported.
         nbg_london_prize_payouts_available: NBG_LONDON_PRIZES_RELEASED,
       }), {
         headers: {
