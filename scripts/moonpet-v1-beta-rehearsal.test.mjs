@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { inspectMoonpetBetaReset } from './moonpet-v1-beta-inventory.mjs';
-import { MOONPET_V1_BETA_RESET_TABLES, MOONPET_V1_BETA_SCHEMA_TABLES, MOONPET_V1_BETA_LEGACY_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
+import { MOONPET_V1_BETA_RESET_TABLES, MOONPET_V1_BETA_SCHEMA_TABLES, MOONPET_V1_BETA_LEGACY_TABLES, MOONPET_V1_BETA_PROTECTED_TABLES, MOONPET_V1_BETA_CLEAR_TABLES } from './moonpet-v1-beta-reset-tables.mjs';
 import { planMoonpetV1BetaRehearsal, rehearseMoonpetV1BetaReset } from './moonpet-v1-beta-rehearsal.mjs';
 
 const script = fileURLToPath(new URL('./moonpet-v1-beta-rehearsal.mjs', import.meta.url));
@@ -73,6 +73,17 @@ test('static allowlist matches reviewed MoonPet schema (not shared games)', () =
   assert.deepEqual([...MOONPET_V1_BETA_RESET_TABLES],
     [...names,...historical].sort(),'reviewed live D1 legacy list and source schema must match');
   assert.equal(new Set(MOONPET_V1_BETA_RESET_TABLES).size,93);
+  assert.deepEqual([...MOONPET_V1_BETA_PROTECTED_TABLES],[
+    'moonpet_beta_xp_quarantine',
+    'moonpet_beta_xp_rebaseline',
+    'moonpet_beta_xp_rebaseline_v2',
+    'moonpet_identity_authority_cutovers',
+    'telegram_pet_runtime_cutovers',
+  ]);
+  assert.equal(MOONPET_V1_BETA_CLEAR_TABLES.length,88);
+  assert.ok(MOONPET_V1_BETA_CLEAR_TABLES.every(name => !MOONPET_V1_BETA_PROTECTED_TABLES.includes(name)));
+  assert.deepEqual([...MOONPET_V1_BETA_CLEAR_TABLES].sort(),MOONPET_V1_BETA_RESET_TABLES
+    .filter(name => !MOONPET_V1_BETA_PROTECTED_TABLES.includes(name)));
   for(const shared of ['telegram_users','arcade_progression_state','arcade_xp_wallets','blocktopia_progression'])
     assert.equal(names.includes(shared),false);
 });
@@ -106,15 +117,15 @@ test('fresh rehearsal copy clears pets with FK enforcement but never changes acc
   } finally {copy.close();}
 }));
 
-test('twelve reviewed legacy MoonPet tables clear in an offline copy without changing global Arcade XP', () => sandbox(({src,dst}) => {
+test('twelve legacy MoonPet names preserve cutovers while clearing beta gameplay in an offline copy', () => sandbox(({src,dst}) => {
   const db=new DatabaseSync(src);
   db.exec('PRAGMA foreign_keys=ON');
   for(const name of MOONPET_V1_BETA_LEGACY_TABLES) {
-    // Representative FK graph on all 12 separately reviewed legacy names.
-    // Production rehearsal still inspects the actual exported constraints.
-    db.exec('CREATE TABLE "'+name+'" (k TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT,'
-      +'FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id),'
-      +'FOREIGN KEY(telegram_id) REFERENCES telegram_pet_profiles(telegram_id))');
+    const protectedRecord=MOONPET_V1_BETA_PROTECTED_TABLES.includes(name);
+    const refs=protectedRecord ? '' :
+      ',FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id)'
+      + ',FOREIGN KEY(telegram_id) REFERENCES telegram_pet_profiles(telegram_id)';
+    db.exec('CREATE TABLE "'+name+'" (k TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT'+refs+')');
     db.prepare('INSERT INTO "'+name+'" (k,pet_id,telegram_id) VALUES (?,?,?)')
       .run(name,'pet-one','owner');
   }
@@ -124,26 +135,99 @@ test('twelve reviewed legacy MoonPet tables clear in an offline copy without cha
   let plan;
   try{
     plan=planMoonpetV1BetaRehearsal(srcDb);
-    assert.equal(plan.source_table_count,MOONPET_V1_BETA_LEGACY_TABLES.length+5);
-    assert.equal(plan.source_row_count,MOONPET_V1_BETA_LEGACY_TABLES.length+5);
-    for(const name of MOONPET_V1_BETA_LEGACY_TABLES)
-      assert.ok(plan.delete_order.indexOf(name)<plan.delete_order.indexOf('telegram_pet_instances'),
+    assert.equal(plan.source_table_count,17);
+    assert.equal(plan.source_row_count,17);
+    assert.equal(plan.protected_row_count,3);
+    assert.equal(plan.cleared_row_count,14);
+    assert.equal(plan.cleared_table_count,14);
+    for(const name of MOONPET_V1_BETA_LEGACY_TABLES){
+      if(MOONPET_V1_BETA_PROTECTED_TABLES.includes(name))
+        assert.ok(!plan.delete_order.includes(name), name+' is a durable migration/correction ledger');
+      else assert.ok(plan.delete_order.indexOf(name)<plan.delete_order.indexOf('telegram_pet_instances'),
         name+' must delete before its source pet');
+    }
   }finally{srcDb.close();}
   const result=rehearseMoonpetV1BetaReset(src,dst);
-  assert.equal(result.moonpet_tables_cleared,17);
-  assert.equal(result.moonpet_rows_removed,17);
+  assert.equal(result.moonpet_tables_cleared,14);
+  assert.equal(result.moonpet_rows_removed,14);
+  assert.equal(result.protected_moonpet_rows_preserved,3);
   assert.equal(result.ready_for_live_reset,false);
   assert.deepEqual(readFileSync(src),original);
   const copy=new DatabaseSync(dst,{readOnly:true});
   try{
-    assert.equal(inspectMoonpetBetaReset(copy).moonpet_row_count,0);
+    assert.equal(inspectMoonpetBetaReset(copy).moonpet_row_count,3);
+    for(const name of MOONPET_V1_BETA_LEGACY_TABLES){
+      const row=copy.prepare('SELECT COUNT(*) AS n FROM "'+name+'"').get();
+      assert.equal(row.n,MOONPET_V1_BETA_PROTECTED_TABLES.includes(name)?1:0,name);
+    }
     assert.deepEqual(rows(copy,'arcade_xp_wallets'),[{telegram_id:'owner',arcade_xp_spendable:440}]);
     assert.deepEqual(rows(copy,'arcade_progression_state'),[{telegram_id:'owner',arcade_xp_total:1700}]);
     assert.deepEqual(rows(copy,'telegram_users'),[{telegram_id:'owner',xp:99}]);
     assert.deepEqual(rows(copy,'blocktopia_progression'),[{telegram_id:'owner',gems:14}]);
     assert.deepEqual(copy.prepare('PRAGMA foreign_key_check').all(),[]);
   }finally{copy.close();}
+}));
+
+test('all five migration sentinels and correction ledgers survive a reset of pet gameplay', () => sandbox(({src,dst}) => {
+  const db=new DatabaseSync(src);
+  for(const name of MOONPET_V1_BETA_PROTECTED_TABLES){
+    db.exec('CREATE TABLE "'+name+'" (marker TEXT PRIMARY KEY,applied_at TEXT)');
+    db.prepare('INSERT INTO "'+name+'" VALUES (?,?)').run('cutover:'+name,'2026-10-01');
+  }
+  db.close();
+  const before=readFileSync(src);
+  const planDb=new DatabaseSync(src,{readOnly:true});
+  let plan;
+  try{plan=planMoonpetV1BetaRehearsal(planDb);}
+  finally{planDb.close();}
+  assert.equal(plan.protected_row_count,5);
+  assert.equal(plan.cleared_row_count,5);
+  assert.deepEqual([...plan.protected_tables].sort(),[...MOONPET_V1_BETA_PROTECTED_TABLES].sort());
+  const outcome=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(outcome.moonpet_tables_cleared,5);
+  assert.equal(outcome.moonpet_rows_removed,5);
+  assert.equal(outcome.protected_moonpet_rows_preserved,5);
+  assert.equal(outcome.shared_and_protected_table_digests_verified,9);
+  assert.deepEqual(readFileSync(src),before);
+  const copy=new DatabaseSync(dst,{readOnly:true});
+  try{
+    assert.equal(inspectMoonpetBetaReset(copy).moonpet_row_count,5);
+    for(const name of MOONPET_V1_BETA_PROTECTED_TABLES)
+      assert.deepEqual(rows(copy,'"'+name+'"'),[{marker:'cutover:'+name,applied_at:'2026-10-01'}],name);
+    assert.deepEqual(rows(copy,'arcade_xp_wallets'),[{telegram_id:'owner',arcade_xp_spendable:440}]);
+  }finally{copy.close();}
+}));
+
+test('protected migration marker may not reference a cleared pet through a foreign key', () => sandbox(({src,dst}) => {
+  const db=new DatabaseSync(src);
+  db.exec('CREATE TABLE moonpet_identity_authority_cutovers (cutover_key TEXT PRIMARY KEY,telegram_id TEXT REFERENCES telegram_pet_profiles(telegram_id))');
+  db.exec("INSERT INTO moonpet_identity_authority_cutovers VALUES ('identity-guard','owner')");
+  db.close();
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,dst),/protected_moonpet_fk_depends_on_cleared_pet/);
+  assert.equal(existsSync(dst),false);
+}));
+
+test('Championship Clout must not retain orphaned MoonPet proof when gameplay receipts are cleared', () => sandbox(({src,dst}) => {
+  const db=new DatabaseSync(src);
+  db.exec('CREATE TABLE championship_clout_sources (source_system TEXT NOT NULL, source_event_id TEXT NOT NULL)');
+  db.exec("INSERT INTO championship_clout_sources VALUES ('dead_run','independent-run')");
+  db.close();
+  const successful=rehearseMoonpetV1BetaReset(src,dst);
+  assert.equal(successful.moonpet_rows_removed,5);
+  const copy=new DatabaseSync(dst,{readOnly:true});
+  try{assert.deepEqual(rows(copy,'championship_clout_sources'),[{source_system:'dead_run',source_event_id:'independent-run'}]);}
+  finally{copy.close();}
+  const changed=new DatabaseSync(src);
+  changed.exec("INSERT INTO championship_clout_sources VALUES ('moonpet','historical-growth-mark')");
+  changed.close();
+  const second=dst+'-blocked';
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,second),/moonpet_clout_source_provenance_requires_review/);
+  assert.equal(existsSync(second),false);
+  const schemaDb=new DatabaseSync(src);
+  schemaDb.exec('DROP TABLE championship_clout_sources; CREATE TABLE championship_clout_sources(unrecognized TEXT)');
+  schemaDb.close();
+  assert.throws(()=>rehearseMoonpetV1BetaReset(src,second),/championship_clout_source_schema_unavailable/);
+  assert.equal(existsSync(second),false);
 }));
 
 test('unknown MoonPet schema and non-pet pet references fail closed before copying', () => sandbox(({src,dst}) => {
