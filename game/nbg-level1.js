@@ -94,18 +94,6 @@
   var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
-  // The graffiti sits ON the existing parallax wall, never in gameplay space.
-  var WALL_GRAFFITI_PARALLAX = 0.58;
-  // The 480x126 wall-one.png has transparent sky and a grassy coping
-  // ABOVE its visible masonry. It is drawn at y=154 with height=88, but
-  // only approximately y=200..242 contains the brick face. Keep every
-  // decal INSIDE the bricks, never on the grass, skyline or street.
-  var WALL_GRAFFITI_BRICK_TOP = 201;
-  var WALL_GRAFFITI_BRICK_BOTTOM = 239;
-  var WALL_GRAFFITI_MIN_HEIGHT = 19;
-  var WALL_GRAFFITI_MAX_HEIGHT = 35;
-  var WALL_GRAFFITI_MAX_WIDTH = 112;
-  var WALL_GRAFFITI_REPEATS_PER_IMAGE = 6;
   var SKYLINE_Y = 40;
   var SKYLINE_WIDTH = 480;
   var SKYLINE_HEIGHT = 160;
@@ -419,12 +407,6 @@
     var playerAnimations = {};
     var assetStatus = {};
     var requiredAssets = [];
-    // Optional, lazily loaded wall art never delays the playable core assets.
-    var wallGraffitiArt = [];
-    var wallGraffitiPlacements = [];
-    var wallGraffitiImages = {};
-    var wallGraffitiLoadState = {};
-    var wallGraffitiPrefetchCameraX = -Infinity;
     var assetsLoaded = false;
     var gameVisible = false;
     var waitingForFirstInput = false;
@@ -1410,142 +1392,18 @@
       }
     }
 
-    // Independent seeded layout: wall decoration never consumes the run's
-    // authoritative reward/enemy RNG and never changes between game resets.
-    function configureWallGraffiti(entries) {
-      wallGraffitiArt = [];
-      var known = new Set();
-      (Array.isArray(entries) ? entries : []).forEach(function (entry) {
-        var path = String(entry && entry.path || '');
-        var width = Number(entry && entry.width);
-        var height = Number(entry && entry.height);
-        if (!/^objects\/[A-Za-z0-9._-]+\.png$/.test(path) ||
-            !Number.isFinite(width) || !Number.isFinite(height) ||
-            width <= 0 || height <= 0 || known.has(path)) return;
-        known.add(path);
-        wallGraffitiArt.push({
-          src: resolveAssetPath(path), width: width, height: height
-        });
-      });
-      wallGraffitiImages = {};
-      wallGraffitiLoadState = {};
-      wallGraffitiPrefetchCameraX = -Infinity;
-      wallGraffitiPlacements = [];
-      if (!wallGraffitiArt.length) return;
-
-      var seed = 0x4e424747; // Fixed NBG graffiti layout, separate from replay RNG.
-      function artRandom() {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        return seed / 4294967296;
-      }
-      var total = wallGraffitiArt.length * WALL_GRAFFITI_REPEATS_PER_IMAGE;
-      // Wall parallax spans the entire 22,000px course at its own 0.58 rate.
-      var spacing = WORLD_WIDTH * WALL_GRAFFITI_PARALLAX / total;
-      for (var pass = 0; pass < WALL_GRAFFITI_REPEATS_PER_IMAGE; pass += 1) {
-        var order = wallGraffitiArt.map(function (_, index) { return index; });
-        for (var j = order.length - 1; j > 0; j -= 1) {
-          var swap = Math.floor(artRandom() * (j + 1));
-          var held = order[j]; order[j] = order[swap]; order[swap] = held;
-        }
-        for (var k = 0; k < order.length; k += 1) {
-          var index = order[k];
-          var art = wallGraffitiArt[index];
-          var ratio = art.width / art.height;
-          // Restrict the ACTUAL image rectangles to masonry. The previous
-          // 43..79px art height fit the full y=154..242 layer but obscured
-          // skyline and grassy coping because the upper texture is transparent.
-          var desiredHeight = WALL_GRAFFITI_MIN_HEIGHT +
-            artRandom() * (WALL_GRAFFITI_MAX_HEIGHT - WALL_GRAFFITI_MIN_HEIGHT);
-          var w = Math.max(1, Math.round(Math.min(
-            WALL_GRAFFITI_MAX_WIDTH, desiredHeight * ratio)));
-          var h = Math.max(1, Math.round(w / ratio));
-          var brickHeight = WALL_GRAFFITI_BRICK_BOTTOM - WALL_GRAFFITI_BRICK_TOP;
-          if (h > brickHeight) {
-            h = brickHeight;
-            w = Math.max(1, Math.round(h * ratio));
-          }
-          var slot = pass * order.length + k;
-          var x = Math.round((slot + 0.1 + artRandom() * 0.65) * spacing);
-          var y = WALL_GRAFFITI_BRICK_TOP + Math.round(
-            artRandom() * Math.max(0, brickHeight - h));
-          wallGraffitiPlacements.push({
-            artIndex: index, x: x, y: y, w: w, h: h
-          });
-        }
-      }
-    }
-
-    // Prefetch just the visible/approaching decals, with one image per unique
-    // asset. A lost decorative PNG must never prevent starting or finishing.
-    function prefetchWallGraffiti() {
-      if (!wallGraffitiPlacements.length) return;
-      var wallX = cameraX * WALL_GRAFFITI_PARALLAX;
-      var visible = WIDTH / cameraZoom;
-      var ahead = wallX + visible + 500;
-      for (var i = 0; i < wallGraffitiPlacements.length; i += 1) {
-        var decal = wallGraffitiPlacements[i];
-        if (decal.x + decal.w < wallX - 180 || decal.x > ahead) continue;
-        var index = decal.artIndex;
-        if (wallGraffitiLoadState[index]) continue;
-        wallGraffitiLoadState[index] = 'loading';
-        var image = new Image();
-        image.onload = (function (artIndex, loadedImage) {
-          return function () {
-            wallGraffitiImages[artIndex] = loadedImage;
-            wallGraffitiLoadState[artIndex] = 'loaded';
-            if (assetsLoaded && gameVisible && !running)
-              render(typeof performance !== 'undefined' && performance.now ? performance.now() : 0);
-          };
-        })(index, image);
-        image.onerror = (function (artIndex) {
-          return function () { wallGraffitiLoadState[artIndex] = 'failed'; };
-        })(index);
-        image.src = wallGraffitiArt[index].src;
-      }
-    }
-
-    function drawWallGraffiti() {
-      if (!wallGraffitiPlacements.length) return;
-      var wallX = cameraX * WALL_GRAFFITI_PARALLAX;
-      var visible = WIDTH / cameraZoom;
-      ctx.save();
-      // Clip to the stone BRICK FACE, not the larger 154..242 texture
-      // rectangle; its transparent and grassy upper rows are not wall.
-      // This remains correct in 1x, 1.25x and 1.5x camera zoom modes.
-      ctx.beginPath();
-      ctx.rect(0, WALL_GRAFFITI_BRICK_TOP, WIDTH,
-        WALL_GRAFFITI_BRICK_BOTTOM - WALL_GRAFFITI_BRICK_TOP);
-      ctx.clip();
-      for (var i = 0; i < wallGraffitiPlacements.length; i += 1) {
-        var decal = wallGraffitiPlacements[i];
-        if (decal.x + decal.w < wallX || decal.x > wallX + visible) continue;
-        var picture = wallGraffitiImages[decal.artIndex];
-        if (picture) {
-          ctx.drawImage(picture, Math.round(decal.x - wallX),
-            decal.y, decal.w, decal.h);
-        }
-      }
-      ctx.restore();
-    }
-
     function updateCamera() {
       // Keep the runner at 42% of the screen while showing fewer world units.
       // At 1x this equals the original camera; the 22,000px world is untouched.
       var visibleWorldWidth = WIDTH / cameraZoom;
       cameraX = clamp(player.x - WIDTH * 0.42 / cameraZoom,
         0, WORLD_WIDTH - visibleWorldWidth);
-      if (wallGraffitiPlacements.length &&
-          Math.abs(cameraX - wallGraffitiPrefetchCameraX) >= 110) {
-        wallGraffitiPrefetchCameraX = cameraX;
-        prefetchWallGraffiti();
-      }
     }
 
     function setCameraZoom(value) {
       var next = Number(value);
       if (CAMERA_ZOOM_LEVELS.indexOf(next) < 0) return false;
       cameraZoom = next;
-      wallGraffitiPrefetchCameraX = -Infinity;
       try {
         window.localStorage.setItem(CAMERA_ZOOM_STORAGE_KEY, String(next));
       } catch (error) {
@@ -1717,7 +1575,6 @@
       drawSkyWallpaper();
       drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
-      drawWallGraffiti();
       drawStreetLayer();
       // Looking below shifts the road upward; extend the painted roadbed
       // beneath its existing 28px street strip instead of exposing blue clear.
@@ -2261,9 +2118,6 @@
         get cameraX() { return cameraX; },
         get cameraY() { return cameraY; },
         get cameraZoom() { return cameraZoom; },
-        get wallGraffitiArt() { return wallGraffitiArt; },
-        get wallGraffitiPlacements() { return wallGraffitiPlacements; },
-        get wallGraffitiLoadedCount() { return Object.keys(wallGraffitiImages).length; },
         get visibleWorldWidth() { return WIDTH / cameraZoom; },
         get checkpoint() { return checkpoint; },
         get finish() { return finish; },
@@ -2379,7 +2233,6 @@
       exposeTestState();
       if (initPromise) return initPromise;
       initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
-        configureWallGraffiti(assetManifest.world && assetManifest.world.wallGraffiti);
         var assets = buildRuntimeAssetMap(assetManifest);
         var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
