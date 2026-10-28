@@ -142,6 +142,30 @@ const legacySix = await verifyNbgLondonReplay({
 });
 assert.equal(legacySix.debug?.courseVersion, 6,
   'existing version 6 collision geometry must remain accepted');
+// The reference-video pace applies ONLY to v8. The same signed input
+// remains faster on v7 and all prior cached clients remain replayable.
+const groundRun = frameStream(Array.from({length:25}, () => [33,33,2]));
+const oldPace = await verifyNbgLondonReplay({
+  ...base, replay: {...groundRun, course_version:7}, debug:true
+});
+const newPace = await verifyNbgLondonReplay({
+  ...base, replay: {...groundRun, course_version:8}, debug:true
+});
+assert.equal(newPace.debug?.courseVersion,8,
+  'v8 must be a separately negotiated course version');
+assert.equal(oldPace.debug?.reason,'finish');
+assert.equal(newPace.debug?.reason,'finish');
+assert.ok(Math.abs(oldPace.debug.x - 263.971288)<0.001,
+  'archived v7 horizontal movement must not change');
+assert.ok(Math.abs(newPace.debug.x - 178.235704)<0.001,
+  'v8 horizontal acceleration and running cap must match the browser');
+assert.ok(newPace.debug.x < oldPace.debug.x,
+  'the new runner must cover less distance over identical real time');
+const backwardsV8 = await verifyNbgLondonReplay({
+  ...base, replay: {...groundRun, course_version:8, claimed_x:1000000}, debug:true
+});
+assert.equal(backwardsV8.debug?.x,newPace.debug.x,
+  'untrusted client coordinates cannot change authoritative v8 movement');
 const crouchSeven = await verifyNbgLondonReplay({
   ...base, replay: { ...tripleReplay, course_version: 7 }, debug: true
 });
