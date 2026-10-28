@@ -246,7 +246,7 @@ test('mixed-case shared Clout table and MoonPet source labels fail closed', () =
   try{ assert.deepEqual(rows(copy,'Championship_Clout_Sources'),
     [{source_system:'DEAD_RUN',source_event_id:'old-weekly-crest'}]); }
   finally{copy.close();}
-});
+}));
 
 test('unknown MoonPet schema and non-pet pet references fail closed before copying', () => sandbox(({src,dst}) => {
   let db = new DatabaseSync(src);
