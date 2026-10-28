@@ -104,7 +104,7 @@
   var CAMERA_JUMP_FOLLOW = 0.95;
   var CAMERA_JUMP_MAX_Y = 42;
   var CAMERA_JUMP_EASE = 0.28;
-  var CAMERA_LOOK_DOWN_MAX_Y = 84; // View only: no physics or replay changes.
+  var CAMERA_LOOK_DOWN_MAX_Y = 84; // Camera shift is visual; crouch physics is recorded separately.
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
