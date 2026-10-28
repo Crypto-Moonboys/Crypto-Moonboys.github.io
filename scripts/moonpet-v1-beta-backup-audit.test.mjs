@@ -108,6 +108,41 @@ test('CLI audits only temporary copy; source bytes unchanged and no SQLite sidec
   assert.equal(JSON.parse(cli.stdout).status,'READY_FOR_OFFLINE_REHEARSAL');
   assert.deepEqual(readFileSync(src),before);
 }));
+test('live WAL writer opening during async hash blocks an otherwise clean backup audit',async()=>sandbox(async({src})=>{
+  const setup=new DatabaseSync(src);
+  setup.exec('PRAGMA journal_mode=WAL');
+  setup.close();
+  for(const suffix of ['-wal','-shm','-journal'])
+    assert.equal(existsSync(src+suffix),false,'backup starts closed');
+  const pending=auditMoonpetBackupPath(src);
+  // The concurrent writer starts before the first async SHA-256 completes.
+  // Its commit lives in WAL while the original main-file bytes may remain
+  // identical. An old audit falsely returned READY in exactly this state.
+  const writer=new DatabaseSync(src);
+  try {
+    writer.exec("INSERT INTO telegram_pet_growth_marks VALUES ('concurrent-new-mark')");
+    assert.equal(existsSync(src+'-wal'),true,'writer keeps live WAL present during inspection');
+    await assert.rejects(pending,/source_has_sqlite_sidecar/,
+      'an active WAL must stop the READY_FOR_OFFLINE_REHEARSAL result');
+  } finally {
+    writer.close();
+  }
+  const verify=new DatabaseSync(src,{readOnly:true});
+  try {
+    assert.equal(verify.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks').get().n,2,
+      'the external writer committed normally; audit did not modify the source');
+  } finally {verify.close();}
+}));
+
+test('post-hash source sidecar sentinel fails closed and is never removed by audit',async()=>sandbox(async({src})=>{
+  const pending=auditMoonpetBackupPath(src);
+  writeFileSync(src+'-journal','external writer journal');
+  try {
+    await assert.rejects(pending,/source_has_sqlite_sidecar/);
+    assert.equal(readFileSync(src+'-journal','utf8'),'external writer journal');
+  } finally {rmSync(src+'-journal');}
+}));
+
 test('CLI rejects source journal and invalid command; neither makes an output',async()=>sandbox(async({src})=>{
   const before=readFileSync(src);
   writeFileSync(src+'-shm','do not touch');
