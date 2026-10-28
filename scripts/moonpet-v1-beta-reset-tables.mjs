@@ -114,3 +114,24 @@ export const MOONPET_V1_BETA_RESET_TABLES = Object.freeze([
   ...MOONPET_V1_BETA_SCHEMA_TABLES,
   ...MOONPET_V1_BETA_LEGACY_TABLES,
 ].sort());
+
+/**
+ * Migration guards and forensic correction/quarantine ledgers are NOT playable
+ * MoonPet beta scores. Clearing them can invalidate 070's destructive-rerun
+ * sentinel or obscure the applied runtime/XP cutover history. Preserve them
+ * byte-for-byte until a separate migration-authority decision.
+ *
+ * Deliberately listed by name: this is not a prefix exception or permission
+ * to clear future unknown prefixed tables.
+ */
+export const MOONPET_V1_BETA_PROTECTED_TABLES = Object.freeze([
+  "moonpet_beta_xp_quarantine",
+  "moonpet_beta_xp_rebaseline",
+  "moonpet_beta_xp_rebaseline_v2",
+  "moonpet_identity_authority_cutovers",
+  "telegram_pet_runtime_cutovers",
+]);
+
+export const MOONPET_V1_BETA_CLEAR_TABLES = Object.freeze(
+  MOONPET_V1_BETA_RESET_TABLES.filter(name => !MOONPET_V1_BETA_PROTECTED_TABLES.includes(name)),
+);
