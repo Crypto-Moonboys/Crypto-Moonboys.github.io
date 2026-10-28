@@ -84,18 +84,29 @@ export function auditMoonpetSharedCloutProof(db) {
     if (!requireColumns(db, found.daily, ['game_keys_json']))
       blocker('championship_clout_daily_schema_unavailable');
     else {
-      const table=quote(found.daily);
-      result.invalid_daily_json_rows = count(db,
-        'SELECT COUNT(*) AS n FROM ' + table +
-        " WHERE CASE WHEN json_valid(game_keys_json) THEN json_type(game_keys_json)<>'array' ELSE 1 END");
-      if(result.invalid_daily_json_rows > 0)
-        blocker('championship_clout_daily_json_unverifiable');
-      result.daily_rows = count(db,
-        'SELECT COUNT(*) AS n FROM ' + table + ' AS d WHERE EXISTS (' +
-        "SELECT 1 FROM json_each(CASE WHEN json_valid(d.game_keys_json) THEN d.game_keys_json ELSE '[]' END) AS j" +
-        " WHERE lower(trim(CAST(j.value AS TEXT)))='moonpet')");
-      if (result.daily_rows > 0)
-        blocker('moonpet_clout_daily_projection_requires_review');
+      // Mirror Championship Clout's validSnapshot game-key rules rather than
+      // accepting every JSON array. JSON1 casts nested objects/arrays to text,
+      // which can hide unverifiable saved MoonPet contributions.
+      // Stream only the key column: bounded memory and no player identifiers.
+      const GAME_KEY = /^[a-z0-9][a-z0-9_-]{0,63}$/u;
+      let invalid=0, moonpet=0;
+      for (const row of db.prepare('SELECT game_keys_json FROM ' + quote(found.daily)).iterate()) {
+        let games;
+        try { games=JSON.parse(row.game_keys_json); }
+        catch {invalid++;continue;}
+        if (!Array.isArray(games)) {invalid++;continue;}
+        // Count direct MoonPet labels even if they have inconsistent casing or
+        // spacing, while still marking such noncanonical arrays unverifiable.
+        if (games.some(g => typeof g === 'string' && g.trim().toLowerCase() === 'moonpet'))
+          moonpet++;
+        if (games.length>200 || new Set(games).size!==games.length ||
+            games.some(g=>typeof g!=='string'||!GAME_KEY.test(g)))
+          invalid++;
+      }
+      result.invalid_daily_json_rows=invalid;
+      result.daily_rows=moonpet;
+      if (invalid>0) blocker('championship_clout_daily_json_unverifiable');
+      if (moonpet>0) blocker('moonpet_clout_daily_projection_requires_review');
     }
   }
   if (found.archives) {
