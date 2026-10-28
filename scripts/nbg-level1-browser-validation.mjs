@@ -137,7 +137,6 @@ async function holdRunnerRight(page, durationMs = 0) {
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
-  crouch: { spriteSheet: 'player/animations/NBG Runner Final-crouch.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 15, frameStart: 10, columns: 5, frameMs: 130, nativeFacing: 1 },
   crouchLeft: { spriteSheet: 'player/animations/NBG Runner Final-crouchr.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: -1 },
   crouchRight: { spriteSheet: 'player/animations/NBG Runner Final-sneaking_left.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: 1 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
@@ -780,9 +779,9 @@ const crouchOnly = await page.evaluate(() => {
   const s = window.NBGLevel1State;
   return { anim:s.player.anim, crouching:s.player.crouching,
     y:s.player.y, h:s.player.h, combat:s.playerCombatRect,
-    matteAlpha:s.playerAnimations.crouch.image.getContext('2d').getImageData(0,0,1,1).data[3] };
+    matteAlpha:s.playerAnimations.crouchRight.image.getContext('2d').getImageData(0,0,1,1).data[3] };
 });
-assert.equal(crouchOnly.anim, 'crouch', 'Down alone selects the stationary crouch sheet');
+assert.equal(crouchOnly.anim, 'crouchRight', 'Down alone uses the current right-facing crouch sheet');
 assert.equal(crouchOnly.crouching, true, 'Down must enter crouch stance');
 assert.equal(crouchOnly.h, 22, 'crouch physical box must be 22px high');
 assert.equal(Math.round(crouchOnly.y + crouchOnly.h), 214,
@@ -795,13 +794,19 @@ await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLe
 assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchLeft.nativeFacing), -1,
   'provided crouchr artwork must not be mirrored back to the right');
 await page.keyboard.up('ArrowLeft');
-await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouch');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
 await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
 assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchRight.nativeFacing), 1,
   'provided sneaking_left artwork faces right as supplied');
 await page.keyboard.up('ArrowRight');
-await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouch');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
+await page.keyboard.down('ArrowLeft');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLeft');
+await page.keyboard.up('ArrowLeft');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLeft');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.player.facing), -1,
+  'Down only must retain the last left-facing direction');
 // Inspect actual rendered pixels, not just cameraY: previously the negative
 // pan exposed the blue clear color below the finite-height street artwork.
 const belowPixel = await page.evaluate(() => {
