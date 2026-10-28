@@ -780,7 +780,7 @@ const crouchOnly = await page.evaluate(() => {
   const s = window.NBGLevel1State;
   return { anim:s.player.anim, crouching:s.player.crouching,
     y:s.player.y, h:s.player.h, combat:s.playerCombatRect,
-    sheet:s.playerAnimations.crouch };
+    matteAlpha:s.playerAnimations.crouch.image.getContext('2d').getImageData(0,0,1,1).data[3] };
 });
 assert.equal(crouchOnly.anim, 'crouch', 'Down alone selects the stationary crouch sheet');
 assert.equal(crouchOnly.crouching, true, 'Down must enter crouch stance');
@@ -788,7 +788,7 @@ assert.equal(crouchOnly.h, 22, 'crouch physical box must be 22px high');
 assert.equal(Math.round(crouchOnly.y + crouchOnly.h), 214,
   'crouch must preserve grounded foot position');
 assert.equal(crouchOnly.combat.h, 40, 'crouched combat contact must fit the reduced silhouette');
-assert.equal(crouchOnly.sheet.image.getContext('2d').getImageData(0,0,1,1).data[3], 0,
+assert.equal(crouchOnly.matteAlpha, 0,
   'green sheet matte must be transparent after loading');
 await page.keyboard.down('ArrowLeft');
 await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLeft');
