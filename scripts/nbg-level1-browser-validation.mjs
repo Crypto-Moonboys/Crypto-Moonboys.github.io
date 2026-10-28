@@ -137,6 +137,9 @@ async function holdRunnerRight(page, durationMs = 0) {
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
+  crouch: { spriteSheet: 'player/animations/NBG Runner Final-crouch.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 15, frameStart: 10, columns: 5, frameMs: 130, nativeFacing: 1 },
+  crouchLeft: { spriteSheet: 'player/animations/NBG Runner Final-crouchr.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: -1 },
+  crouchRight: { spriteSheet: 'player/animations/NBG Runner Final-sneaking_left.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: 1 },
   jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
   backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
   fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
@@ -198,7 +201,7 @@ for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
   const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
-  const expectedRows = Math.ceil(animation.frames / animation.columns);
+  const expectedRows = Math.ceil(((animation.frameStart || 0) + animation.frames) / animation.columns);
   assert.equal(pngHeader.readUInt32BE(0),
     animation.columns * animation.sourceFrameWidth,
     `animation PNG width must match the committed sheet grid: ${animation.spriteSheet}`);
@@ -747,8 +750,8 @@ assert.equal(windowedFullscreenState.ready, true,
 assert.equal(windowedFullscreenState.canvasVisible, true,
   'denied fullscreen must not hide the game canvas');
 
-// Hold Down to look below, then release to restore the ordinary framing.
-// This view-only input must not change physics, score, or start a waiting run.
+// Down remains an optional look-below camera control while entering a
+// physically smaller crouch stance. It does not start a waiting run by itself.
 await page.keyboard.press('ArrowDown');
 assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
   'look-below alone must not start gameplay');
@@ -771,6 +774,34 @@ assert.ok(lookingBelow.y < beforeLook.y - 45,
 assert.ok(Math.abs(lookingBelow.x - beforeLook.x) < 3,
   'looking below must not steer or drop the player beyond residual running inertia');
 assert.equal(lookingBelow.xp, beforeLook.xp, 'camera look must not award XP');
+// A crouched frame uses the new 5x5 sheet and the smaller, feet-anchored
+// collision box. Down without a direction cannot trigger left/right poses.
+const crouchOnly = await page.evaluate(() => {
+  const s = window.NBGLevel1State;
+  return { anim:s.player.anim, crouching:s.player.crouching,
+    y:s.player.y, h:s.player.h, combat:s.playerCombatRect,
+    matteAlpha:s.playerAnimations.crouch.image.getContext('2d').getImageData(0,0,1,1).data[3] };
+});
+assert.equal(crouchOnly.anim, 'crouch', 'Down alone selects the stationary crouch sheet');
+assert.equal(crouchOnly.crouching, true, 'Down must enter crouch stance');
+assert.equal(crouchOnly.h, 22, 'crouch physical box must be 22px high');
+assert.equal(Math.round(crouchOnly.y + crouchOnly.h), 214,
+  'crouch must preserve grounded foot position');
+assert.equal(crouchOnly.combat.h, 40, 'crouched combat contact must fit the reduced silhouette');
+assert.equal(crouchOnly.matteAlpha, 0,
+  'green sheet matte must be transparent after loading');
+await page.keyboard.down('ArrowLeft');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchLeft');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchLeft.nativeFacing), -1,
+  'provided crouchr artwork must not be mirrored back to the right');
+await page.keyboard.up('ArrowLeft');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouch');
+await page.keyboard.down('ArrowRight');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouchRight');
+assert.equal(await page.evaluate(() => window.NBGLevel1State.playerAnimations.crouchRight.nativeFacing), 1,
+  'provided sneaking_left artwork faces right as supplied');
+await page.keyboard.up('ArrowRight');
+await page.waitForFunction(() => window.NBGLevel1State.player.anim === 'crouch');
 // Inspect actual rendered pixels, not just cameraY: previously the negative
 // pan exposed the blue clear color below the finite-height street artwork.
 const belowPixel = await page.evaluate(() => {
@@ -780,10 +811,18 @@ const belowPixel = await page.evaluate(() => {
 assert.notDeepEqual(belowPixel.slice(0, 3), [0, 118, 252],
   'looking below must paint the bottom of the viewport instead of blue void');
 await page.keyboard.up('ArrowDown');
+await page.waitForFunction(() => !window.NBGLevel1State.player.crouching, null, { timeout: 3000 });
+const uncrouched = await page.evaluate(() => ({
+  h:window.NBGLevel1State.player.h,
+  combatH:window.NBGLevel1State.playerCombatRect.h
+}));
+assert.deepEqual(uncrouched, { h:34, combatH:64 },
+  'releasing Down must restore standing physics and contact rect');
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
 // Touch look uses the same render-only control; release restores the camera.
 await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', true));
-await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50, null, { timeout: 3000 });
+await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50 && window.NBGLevel1State.player.crouching,
+  null, { timeout: 3000 });
 await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', false));
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
@@ -793,6 +832,55 @@ assert.match(runtimeSource, /if \(gameOver\)\s*\{\s*cameraY = 0;/,
   'fatal-hit terminal render must reset a held-down camera');
 assert.match(runtimeSource, /if \(!running\) cameraY = 0;/,
   'completed run must reset a held-down camera');
+
+// Capture the actual browser-produced replay, not a hand-built approximation.
+// The browser starts spray in handleInput(), subtracts dt afterward, and then
+// permits Down to crouch at the exact animation-expiry frame. Worker course v7
+// must reconstruct the same feet, collision height and world-boundary clamp.
+await page.keyboard.down('KeyX');
+await page.waitForFunction(() => window.NBGLevel1State?.running &&
+  window.NBGLevel1State?.player.anim === 'spray' &&
+  window.NBGLevel1State?.recordedReplay?.frames?.length > 0, null, {timeout: 3500});
+await page.keyboard.up('KeyX');
+await page.keyboard.down('ArrowDown');
+await page.waitForFunction(() => window.NBGLevel1State?.player.crouching === true,
+  null, {timeout: 3500});
+const sprayReleaseReplay = await page.evaluate(() => {
+  const s = window.NBGLevel1State;
+  return {
+    replay: s.recordedReplay,
+    x: s.player.x, y: s.player.y, h: s.player.h,
+    crouching: s.player.crouching, health: s.player.health
+  };
+});
+await page.keyboard.up('ArrowDown');
+assert.equal(sprayReleaseReplay.replay?.course_version, 7,
+  'browser must encode spray-to-crouch under course version 7');
+const capturedMasks = [...Buffer.from(sprayReleaseReplay.replay.frames, 'base64')]
+  .filter((_, index) => index % 5 === 4);
+const firstSpray = capturedMasks.findIndex(mask => (mask & 8) !== 0);
+assert.ok(firstSpray >= 0 && capturedMasks.slice(firstSpray + 1).some(mask => (mask & 16) !== 0),
+  'real browser replay must capture a spray frame followed by held Down frames');
+const verifiedSprayRelease = await verifyNbgLondonReplay({
+  runId:'nbg-crouch-spray-parity-test',
+  replay:sprayReleaseReplay.replay,
+  startedAtMs:1_000_000,
+  now:1_000_000 + Math.round(capturedMasks.length * 20),
+  debug:true
+});
+assert.equal(verifiedSprayRelease.debug?.reason, 'finish',
+  'the short browser replay must reach the final comparison rather than fail input validation');
+assert.equal(verifiedSprayRelease.debug?.height, sprayReleaseReplay.h,
+  'Worker must use the browser-recorded crouch collision height at spray expiry');
+assert.equal(verifiedSprayRelease.debug?.crouching, sprayReleaseReplay.crouching,
+  'Worker crouch state must match the real browser at spray expiry');
+assert.ok(Math.abs(verifiedSprayRelease.debug.x - sprayReleaseReplay.x) < 0.01,
+  'Worker must match browser x after the spray-sprite boundary clamp');
+assert.ok(Math.abs(verifiedSprayRelease.debug.y - sprayReleaseReplay.y) < 0.01,
+  'Worker must match browser y and grounded feet after spray-to-crouch');
+assert.equal(verifiedSprayRelease.debug?.health, sprayReleaseReplay.health,
+  'spray-to-crouch replay must preserve the same player health as the browser');
+await page.evaluate(() => window.NBGLevel1Runtime.reset());
 
 const preInitMovePage = await openWithDelayedNbgInit(browser, url);
 await preInitMovePage.keyboard.down('ArrowRight');
@@ -1077,6 +1165,10 @@ let state = await page.evaluate(() => ({
       frames: animation.frames,
       columns: animation.columns,
       frameMs: animation.frameMs,
+      // Serialize crouch metadata before leaving page.evaluate. Later
+      // comparisons cannot recover fields omitted from this snapshot.
+      frameStart: animation.frameStart,
+      nativeFacing: animation.nativeFacing,
       naturalWidth: animation.image?.naturalWidth,
       naturalHeight: animation.image?.naturalHeight
     }
@@ -1185,7 +1277,9 @@ assert.deepEqual(
       renderOffsetY: animation.renderOffsetY,
       frames: animation.frames,
       columns: animation.columns,
-      frameMs: animation.frameMs
+      frameMs: animation.frameMs,
+      ...(animation.frameStart ? { frameStart: animation.frameStart } : {}),
+      ...(key.startsWith('crouch') ? { nativeFacing: animation.nativeFacing } : {})
     }
   ])),
   expectedAnimations,
@@ -1206,8 +1300,8 @@ for (const key of Object.keys(expectedAnimations)) {
   const expectedAnimation = expectedAnimations[key];
   assert.deepEqual(loadedSheetSize, {
     width: expectedAnimation.columns * expectedAnimation.sourceFrameWidth,
-    height: Math.ceil(expectedAnimation.frames / expectedAnimation.columns) *
-      expectedAnimation.sourceFrameHeight
+    height: Math.ceil(((expectedAnimation.frameStart || 0) + expectedAnimation.frames) /
+      expectedAnimation.columns) * expectedAnimation.sourceFrameHeight
   }, `browser runtime must load expected-size player ${key} image or canvas`);
 }
 

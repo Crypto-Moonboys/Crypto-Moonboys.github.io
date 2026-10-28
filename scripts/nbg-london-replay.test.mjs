@@ -137,9 +137,99 @@ const mechanicsTriple = await verifyNbgLondonReplay({
 });
 assert.equal(mechanicsTriple.debug?.courseVersion, 5,
   'revision 5 must select speed-box, Graffbot-fire and balloon-enemy rules');
-assert.equal((await verifyNbgLondonReplay({
-  ...base, replay: { ...tripleReplay, course_version: 6 }
-})).valid, false, 'unapproved course revisions must fail rather than silently downgrade');
+const legacySix = await verifyNbgLondonReplay({
+  ...base, replay: { ...tripleReplay, course_version: 6 }, debug: true
+});
+assert.equal(legacySix.debug?.courseVersion, 6,
+  'existing version 6 collision geometry must remain accepted');
+const crouchSeven = await verifyNbgLondonReplay({
+  ...base, replay: { ...tripleReplay, course_version: 7 }, debug: true
+});
+assert.equal(crouchSeven.debug?.courseVersion, 7,
+  'revision 7 must accept crouch-capable client replays');
+const crouchInput = frameStream(Array.from({length:20}, () => [33,33,16]));
+const crouched = await verifyNbgLondonReplay({
+  ...base, replay: { ...crouchInput, course_version: 7 }, debug:true
+});
+assert.equal(crouched.debug?.reason, 'finish', 'v7 input bit 16 must be decoded as crouch');
+assert.equal(crouched.debug?.height, 22, 'the Worker must shorten the crouched collision box');
+assert.equal(crouched.debug?.crouching, true, 'crouch must persist while Down is held');
+assert.equal(crouched.debug?.x, 64, 'Down alone must not steer or cause friction drift');
+const sneaking = await verifyNbgLondonReplay({
+  ...base, replay: { ...frameStream(Array.from({length:20}, () => [33,33,18])), course_version:7 }, debug:true
+});
+assert.equal(sneaking.debug?.crouching, true, 'Down+Right must remain crouched');
+assert.ok(sneaking.debug?.x > 64, 'Down+Right must move the player');
+const releasedCrouch = await verifyNbgLondonReplay({
+  ...base, replay: { ...frameStream([
+    ...Array.from({length:20}, () => [33,33,16]),
+    ...Array.from({length:5}, () => [33,33,0])
+  ]), course_version:7 }, debug:true
+});
+assert.equal(releasedCrouch.debug?.height, 34,
+  'releasing Down with enough headroom restores the standing box');
+const rejectedLegacyMask = await verifyNbgLondonReplay({
+  ...base, replay: { ...crouchInput, course_version:6 }, debug:true
+});
+assert.equal(rejectedLegacyMask.debug, undefined,
+  'versions older than v7 must reject unknown crouch input bits');
+// Browser-observed timeline: the game emits a zero-dt start frame, starts
+// spray on a 33ms frame, then presses Down for seven 33ms frames. The browser
+// crouches on the seventh Down frame (264ms elapsed), with x=82 after the
+// *previous* spray sprite's 70px overhang clamp. Earlier Worker logic lagged
+// this transition by one tick, shifting hitboxes/XP for ranked replay.
+const observedSprayRelease = [
+  [0,0,0], [33,33,8],
+  ...Array.from({length:7}, () => [33,33,16])
+];
+const observedParity = await verifyNbgLondonReplay({
+  ...base, replay:{ ...frameStream(observedSprayRelease), course_version:7 }, debug:true
+});
+assert.deepEqual(
+  [observedParity.debug?.x, observedParity.debug?.y,
+    observedParity.debug?.height, observedParity.debug?.crouching],
+  [82,192,22,true],
+  'v7 Worker must match the browser at the exact spray-to-Down transition'
+);
+const beforeCrouch = await verifyNbgLondonReplay({
+  ...base,
+  replay:{ ...frameStream(observedSprayRelease.slice(0,-1)), course_version:7 },
+  debug:true
+});
+assert.deepEqual(
+  [beforeCrouch.debug?.x, beforeCrouch.debug?.y,
+    beforeCrouch.debug?.height, beforeCrouch.debug?.crouching],
+  [82,180,34,false],
+  'v7 Worker must not crouch a frame before the browser allows it'
+);
+const oldVersionSpray = await verifyNbgLondonReplay({
+  ...base,
+  replay:{ ...frameStream(observedSprayRelease.map(([dt,ms,mask]) =>
+    [dt,ms,mask & ~16])), course_version:6 },
+  debug:true
+});
+assert.equal(oldVersionSpray.debug?.x,64,
+  'archived v6 must retain its original world-boundary and spray behaviour');
+// Reproduces the reviewed v7 third-jump clash: spray on frame seven makes
+// the previous frame's render margin 70px, but a third Jump on frame nine
+// changes to the 24px-margin backflip before that frame's horizontal clamp.
+// Failing to use the pre-clamp backflip art leaves the Worker stuck at x=82.
+const thirdJumpAfterSpray = Array.from({length:9}, (_, index) =>
+  [33,33,1 | ([0,4,8].includes(index) ? 4 : 0) | (index===6 ? 8 : 0)]);
+const thirdJumpFrame8 = await verifyNbgLondonReplay({
+  ...base, replay:{...frameStream(thirdJumpAfterSpray.slice(0,8)),course_version:7},debug:true
+});
+assert.equal(thirdJumpFrame8.debug?.x,82,
+  'spray art must still keep the v7 player at x=82 just before third Jump');
+const thirdJumpFrame9 = await verifyNbgLondonReplay({
+  ...base, replay:{...frameStream(thirdJumpAfterSpray),course_version:7},debug:true
+});
+assert.equal(thirdJumpFrame9.debug?.jumps,3,
+  'frame nine must be the legitimate third airborne Jump');
+assert.ok(Math.abs(thirdJumpFrame9.debug?.x - 71.308) < 0.001,
+  'third Jump must replace the spray margin with the narrower backflip margin before clamping');
+assert.equal(thirdJumpFrame9.debug?.height,34,
+  'the backflip must not apply crouched collision geometry');
 // Cached v1 replays omit the property completely. An explicitly present
 // null/undefined/invalid version is not equivalent and must be rejected.
 for (const courseVersion of [null, undefined, 0, 1, '2', false, {}, []]) {

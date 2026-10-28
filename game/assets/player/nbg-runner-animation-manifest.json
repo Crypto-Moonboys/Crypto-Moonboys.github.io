@@ -23,6 +23,45 @@
       "columns": 3,
       "frameMs": 88
     },
+    "crouch": {
+      "spriteSheet": "player/animations/NBG Runner Final-crouch.png",
+      "sourceFrameWidth": 256,
+      "sourceFrameHeight": 256,
+      "renderWidth": 72,
+      "renderHeight": 86,
+      "renderOffsetY": 16,
+      "columns": 5,
+      "frames": 15,
+      "frameStart": 10,
+      "frameMs": 130,
+      "nativeFacing": 1
+    },
+    "crouchLeft": {
+      "spriteSheet": "player/animations/NBG Runner Final-crouchr.png",
+      "sourceFrameWidth": 256,
+      "sourceFrameHeight": 256,
+      "renderWidth": 72,
+      "renderHeight": 86,
+      "renderOffsetY": 16,
+      "columns": 5,
+      "frames": 20,
+      "frameStart": 5,
+      "frameMs": 82,
+      "nativeFacing": -1
+    },
+    "crouchRight": {
+      "spriteSheet": "player/animations/NBG Runner Final-sneaking_left.png",
+      "sourceFrameWidth": 256,
+      "sourceFrameHeight": 256,
+      "renderWidth": 72,
+      "renderHeight": 86,
+      "renderOffsetY": 16,
+      "columns": 5,
+      "frames": 20,
+      "frameStart": 5,
+      "frameMs": 82,
+      "nativeFacing": 1
+    },
     "jump": {
       "spriteSheet": "player/animations/jump.png",
       "sourceFrameWidth": 128,
