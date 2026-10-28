@@ -148,8 +148,9 @@
     return canvas;
   }
 
-  // The three supplied 5x5 crouch exports have a solid green matte. Remove
-  // that matte only at load time; preserve the original artwork on disk.
+  // Remove only the exact exterior green matte in each independent sprite
+  // cell. A per-cell flood fill preserves enclosed green artwork and avoids
+  // the former +/-18 RGB tolerance that erased genuine character pixels.
   function prepareCrouchSheet(image) {
     if (image.naturalWidth !== 1280 || image.naturalHeight !== 1280)
       throw new Error('Unexpected crouch sheet dimensions: ' + image.src);
@@ -160,11 +161,36 @@
     context.drawImage(image, 0, 0);
     var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
     var rgba = pixels.data;
+    var width = canvas.width;
+    var cell = 256;
     var matte = [rgba[0], rgba[1], rgba[2]];
-    for (var i = 0; i < rgba.length; i += 4) {
-      if (Math.abs(rgba[i] - matte[0]) <= 18 &&
-          Math.abs(rgba[i + 1] - matte[1]) <= 18 &&
-          Math.abs(rgba[i + 2] - matte[2]) <= 18) rgba[i + 3] = 0;
+    for (var row = 0; row < 5; row += 1) {
+      for (var col = 0; col < 5; col += 1) {
+        var left = col * cell, top = row * cell;
+        var seen = new Uint8Array(cell * cell);
+        var stack = [];
+        for (var n = 0; n < cell; n += 1) {
+          stack.push(n, (cell - 1) * cell + n,
+            n * cell, n * cell + cell - 1);
+        }
+        while (stack.length) {
+          var local = stack.pop();
+          if (seen[local]) continue;
+          seen[local] = 1;
+          var x = left + local % cell;
+          var y = top + Math.floor(local / cell);
+          var index = (y * width + x) * 4;
+          if (rgba[index] !== matte[0] ||
+              rgba[index + 1] !== matte[1] ||
+              rgba[index + 2] !== matte[2]) continue;
+          rgba[index + 3] = 0;
+          var lx = local % cell, ly = Math.floor(local / cell);
+          if (lx > 0) stack.push(local - 1);
+          if (lx < cell - 1) stack.push(local + 1);
+          if (ly > 0) stack.push(local - cell);
+          if (ly < cell - 1) stack.push(local + cell);
+        }
+      }
     }
     context.putImageData(pixels, 0, 0);
     return canvas;
@@ -960,7 +986,8 @@
         var crouchLeft = !!(keys.ArrowLeft || keys.KeyA || touch.left);
         var crouchRight = !!(keys.ArrowRight || keys.KeyD || touch.right);
         setPlayerAnimation(crouchLeft !== crouchRight ?
-          (crouchLeft ? 'crouchLeft' : 'crouchRight') : 'crouch');
+          (crouchLeft ? 'crouchLeft' : 'crouchRight') :
+          (player.facing < 0 ? 'crouchLeft' : 'crouchRight'));
       } else if (Math.abs(player.vx) > 0.42) {
         setPlayerAnimation('run');
       } else {
