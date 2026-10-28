@@ -346,12 +346,13 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);[\s\S]*?ctx\.translate\(0, PLAYER_VISUAL_FOOT_Y\);\s*ctx\.scale\(cameraZoom, cameraZoom\);\s*ctx\.translate\(0, Math\.round\(cameraY\) - PLAYER_VISUAL_FOOT_Y\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);[\s\S]*?ctx\.translate\(0, CAMERA_ZOOM_ANCHOR_Y\);\s*ctx\.scale\(cameraZoom, cameraZoom\);\s*ctx\.translate\(0, Math\.round\(cameraY\) - CAMERA_ZOOM_ANCHOR_Y\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must zoom world around grounded feet and leave HUD, notifications and overlay unscaled'
 );
 assert.equal(
   runtimeSource.includes('var CAMERA_ZOOM_DEFAULT = 1.25') &&
+    runtimeSource.includes('var CAMERA_ZOOM_ANCHOR_Y = HEIGHT - 6') &&
     runtimeSource.includes('var CAMERA_ZOOM_LEVELS = [1, 1.25, 1.5]') &&
     runtimeSource.includes('var visibleWorldWidth = WIDTH / cameraZoom') &&
     runtimeSource.includes('player.x - WIDTH * 0.42 / cameraZoom') &&
