@@ -23,10 +23,28 @@ MoonPet tables identified via read-only production D1 sqlite_master/FK
 inspection (28 October 2026): 93 total. The legacy entries include saved
 Growth Marks, weekly Crests, boss receipts and beta cutover audit rows.
 This is a reviewed CANDIDATE allowlist, not authorisation for live deletion.
-Unknown prefixed tables, missing
-core pet tables, foreign keys into MoonPet from other systems, pet_id
-references in other tables, DELETE triggers, current FK violations and FK
-cycles all block rehearsal.
+The offline rehearsal explicitly **preserves five migration/audit ledgers**
+even when they exist in the 93-name candidate list:
+
+- `moonpet_identity_authority_cutovers` — migration 070's destructive-rerun sentinel;
+- `telegram_pet_runtime_cutovers` — completed runtime cutover authority;
+- `moonpet_beta_xp_rebaseline` and `moonpet_beta_xp_rebaseline_v2` — historical
+  correction records;
+- `moonpet_beta_xp_quarantine` — forensic record of invalid old beta receipts.
+
+Thus 93 are **reviewed MoonPet table names**, but **88 are eligible for clearing**
+in this offline rehearsal. Preserved ledgers are included in the before/after
+byte-level digest comparison and cannot have a foreign key to cleared pet data.
+The saved cutover markers must not be wiped merely because scores can reset.
+
+Unknown prefixed tables, missing core pet tables, foreign keys into the
+tables being cleared from other systems, unknown external `pet_id`
+references, DELETE triggers on cleared tables, current FK violations and
+FK cycles all block rehearsal. The known shared
+`championship_clout_sources` table has no pet FK; any
+`source_system='moonpet'` row (a verified source receipt for Championship
+Clout) **blocks** the rehearsal until that cross-game reward-provenance
+dependency is resolved separately. Clout is never cleared by this tool.
 
 The script requires **Node 22.13.0 or later**, an existing, closed LOCAL
 SQLite backup and a **new destination file**. The original backup is NEVER
@@ -53,8 +71,13 @@ Commands:
     node --test scripts/moonpet-v1-beta-inventory.test.mjs scripts/moonpet-v1-beta-rehearsal.test.mjs
 
 The new SQLite copy has foreign keys enabled. The child-to-parent deletion
-order runs in a transaction. The script verifies zero pet rows, zero FK
-violations and SHA-256 equality of every NON-MoonPet table before and after.
+order runs in a transaction for the **88 clearable candidate tables** (or
+the subset present in an older backup). The script verifies zero rows in
+clearable tables, zero FK violations and SHA-256 equality for all shared
+tables **and all protected MoonPet audit ledgers**. A report shows
+`protected_moonpet_tables_preserved`, protected row totals and separate
+clear/preserve counts. The remaining audit rows do **not** represent restored
+MoonPet gameplay, and `ready_for_live_reset` remains false.
 Any failure rolls back if the transaction is still active, preserves the
 original SQLite error, and removes the disposable output and its generated
 sidecars; the backup and any pre-existing destination artifacts stay unchanged.
@@ -69,6 +92,25 @@ data allowlist against a current REAL D1 export, a backup and restoration drill,
 a maintenance window, and a fresh-authenticated-player smoke result. Any
 shared table must remain untouched. Do not use SQLite foreign_keys=OFF
 to force a migration or erase outside records.
+
+
+## Explicit remaining live reset blockers
+
+- There has been **no rehearsal on an exported current production D1 backup**.
+  The existing synthetic suites and read-only schema metadata are not equivalent.
+- Verify that 070/064 cutover ledgers, XP correction/quarantine history and
+  any other migration or identity sentinel remain intact and do not trigger
+  destructive replay after reset.
+- Cross-game Championship Clout may be backed by MoonPet Growth Marks or
+  weekly Crests. If any saved shared `source_system='moonpet'` Clout sources
+  exist, the rehearsal now aborts; do not delete those Clout rows or bypass
+  the guard to get an empty result.
+- Shared Community XP, Arcade XP, account activity and other game rewards
+  can lack explicit foreign keys into MoonPet. Reconcile these external
+  authorities before a live reset. Identical shared table digests alone
+  cannot prove semantic consistency.
+- Continue to require a current D1 backup, rollback/restore proof, signed
+  fresh-player smoke and **separate GK approval** before any live wipe.
 
 ## Version 1 beta acceptance
 
