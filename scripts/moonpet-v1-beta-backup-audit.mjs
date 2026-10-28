@@ -5,7 +5,7 @@
  */
 import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
-import { copyFileSync, constants, createReadStream, lstatSync, mkdtempSync, realpathSync, rmSync, statSync } from 'node:fs';
+import { copyFileSync, constants, createReadStream, lstatSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { resolve, dirname, basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -32,6 +32,24 @@ const canonical = path => {
 };
 const existsEvenIfDangling = path => lstatSync(path,{throwIfNoEntry:false}) !== undefined;
 const quote = name => '"' + String(name).replaceAll('"','""') + '"';
+
+// A source may become active while an asynchronous file hash yields. Check
+// WAL, SHM and rollback journals before AND after each awaited read. Also
+// reject a replaced or checkpointed source even if its size is unchanged.
+// This is a fail-closed validation of a CLOSED EXPORT, not a live DB lock.
+function assertClosedBackupSource(source, baseline) {
+  const info=lstatSync(source,{throwIfNoEntry:false});
+  if(!info||!info.isFile()||info.isSymbolicLink())
+    throw Error('existing_regular_closed_backup_required');
+  for(const suffix of ['-wal','-shm','-journal'])
+    if(existsEvenIfDangling(source+suffix)) throw Error('source_has_sqlite_sidecar:'+suffix);
+  if(baseline && (
+      info.dev!==baseline.dev || info.ino!==baseline.ino ||
+      info.size!==baseline.size || info.mtimeMs!==baseline.mtimeMs ||
+      info.ctimeMs!==baseline.ctimeMs))
+    throw Error('backup_source_changed_during_audit');
+  return info;
+}
 
 function tableNames(db) {
   return db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
@@ -147,27 +165,31 @@ async function fileHash(path) {
 }
 export async function auditMoonpetBackupPath(inputPath) {
   const source=canonical(inputPath);
-  const info=lstatSync(source,{throwIfNoEntry:false});
-  if(!info||!info.isFile()||info.isSymbolicLink())
-    throw Error('existing_regular_closed_backup_required');
-  for(const suffix of ['-wal','-shm','-journal'])
-    if(existsEvenIfDangling(source+suffix)) throw Error('source_has_sqlite_sidecar:'+suffix);
+  const initial=assertClosedBackupSource(source);
   const before=await fileHash(source);
-  const originalSize=statSync(source).size;
+  // A concurrent SQLite writer can create a WAL *without changing the main
+  // file hash*; re-check the source before cloning the apparently closed DB.
+  assertClosedBackupSource(source,initial);
+  const originalSize=initial.size;
   const scratch=mkdtempSync(join(tmpdir(),'moonpet-v1-backup-audit-'));
   try {
+    assertClosedBackupSource(source,initial);
     const copy=join(scratch,'offline.sqlite');
     copyFileSync(source,copy,constants.COPYFILE_EXCL);
     if(await fileHash(copy)!==before)throw Error('backup_copy_hash_mismatch');
+    assertClosedBackupSource(source,initial);
     const db=new DatabaseSync(copy,{readOnly:true});
     let report;
     try {
       db.exec('PRAGMA query_only=ON');
       report=auditMoonpetV1BetaBackup(db);
     }finally {db.close();}
+    assertClosedBackupSource(source,initial);
     const after=await fileHash(source);
-    if(before!==after||statSync(source).size!==originalSize)
-      throw Error('backup_changed_during_audit');
+    // Re-check after the FINAL await before certifying offline rehearsal
+    // eligibility; hashing the main file alone cannot detect active WAL.
+    assertClosedBackupSource(source,initial);
+    if(before!==after) throw Error('backup_changed_during_audit');
     return {...report,backup_sha256:before,backup_size_bytes:originalSize,original_source_untouched:true};
   } finally {rmSync(scratch,{recursive:true,force:true});}
 }
