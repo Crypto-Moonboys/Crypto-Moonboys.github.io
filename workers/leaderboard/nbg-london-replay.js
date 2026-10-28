@@ -545,7 +545,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
      elapsed<MIN_MS || elapsed>MAX_MS || maximumX < WORLD-175 ||
      Math.abs(elapsed-(now-startedAtMs))>20000 ||
      !Number.isSafeInteger(xp) || xp<0 || xp>1000000)
-    return {valid:false, ...(debug ? {debug:{reason:'finish',x:p.x,maximumX,elapsed,consumedFrames,complete,health:p.health,jumps,courseVersion}}:{})};
+    return {valid:false, ...(debug ? {debug:{reason:'finish',x:p.x,y:p.y,height:p.h,crouching:p.crouching,maximumX,elapsed,consumedFrames,complete,health:p.health,jumps,courseVersion}}:{})};
 
   return { valid:true, complete:true, time_ms:Math.round(elapsed),
     xp, coins:coinCount, secret_coins:secretCount,
