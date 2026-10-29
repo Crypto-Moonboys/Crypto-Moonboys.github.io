@@ -12,6 +12,7 @@ import { readPetHouseLayout, setPetHouseLayout } from './pets/house-layout.js';
 import { readPetFurnitureState, buyPetFurniture, placePetFurniture, removePetFurniture } from './pets/home-furniture.js';
 import { readPetGardenState, plantPetGarden, harvestPetGarden } from './pets/home-garden.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
+import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
@@ -9871,6 +9872,52 @@ async function authenticatePetMiniApp(body, env) {
   return { ok: true, telegramId: verified.telegramId, user: verified.user, authDate: Number(verified.authPayload?.auth_date || 0) };
 }
 
+const PET_GROUP_MEMBERSHIP_CACHE_TTL_MS = 60 * 1000;
+const PET_GROUP_MEMBERSHIP_CACHE_MAX = 5000;
+const petGroupMembershipCache = new Map();
+
+function petMembershipProductionContext(request, env) {
+  if (env?.CF_VERSION_METADATA) return true;
+  try {
+    const host = new URL(request.url).hostname.toLowerCase();
+    return host === 'api.cryptomoonboys.com' || host.endsWith('.workers.dev');
+  } catch {
+    return true;
+  }
+}
+
+async function requirePetGroupMembership(request, env, telegramId) {
+  const id = String(telegramId || '').trim();
+  if (!id) return { ok: false, status: 401, error: 'mini app auth required' };
+
+  if (!env?.TELEGRAM_GROUP_CHAT_ID || !env?.TELEGRAM_BOT_TOKEN) {
+    if (petMembershipProductionContext(request, env)) {
+      return { ok: false, status: 503, error: 'telegram_group_membership_not_configured' };
+    }
+    return { ok: true, member: true, source: 'local_fixture' };
+  }
+
+  const now = Date.now();
+  const cached = petGroupMembershipCache.get(id);
+  if (cached && now - cached.checked_at < PET_GROUP_MEMBERSHIP_CACHE_TTL_MS) return cached.result;
+
+  const membership = await checkTelegramGroupMember(env, id);
+  const result = !membership?.ok
+    ? { ok: false, status: membership?.status || 503, error: membership?.error || 'telegram_group_membership_unavailable' }
+    : membership.member === true
+      ? { ok: true, member: true, status: membership.chat_member_status || 'member' }
+      : { ok: false, status: 403, error: 'telegram_group_membership_required' };
+
+  petGroupMembershipCache.set(id, { checked_at: now, result });
+  if (petGroupMembershipCache.size > PET_GROUP_MEMBERSHIP_CACHE_MAX) {
+    const oldest = [...petGroupMembershipCache.entries()]
+      .sort((left, right) => left[1].checked_at - right[1].checked_at)
+      .slice(0, Math.ceil(PET_GROUP_MEMBERSHIP_CACHE_MAX * 0.1));
+    for (const [key] of oldest) petGroupMembershipCache.delete(key);
+  }
+  return result;
+}
+
 function publicPetArenaSnapshot(raw) {
   const snapshot = typeof raw === 'string' ? safeParsePetArenaSnapshot(raw) : { ...(raw || {}) };
   const appOpponent = String(snapshot.telegram_id || '') === 'app';
@@ -12249,6 +12296,8 @@ export default {
         { const limited = await timings.measure('rate_limit', () => enforcePublicRateLimit(request, env, '/telegram-pets/app/state', body, corsHeaders, { ipLimit: 90 })); if (limited) { outcome = 'rejected'; return limited; } }
         const verified = await timings.measure('authentication', () => authenticatePetMiniApp(body, env));
         if (verified.error || !verified.ok) { outcome = 'rejected'; return err(verified.error || 'mini app auth required', verified.status || 401); }
+        const membership = await timings.measure('group_membership', () => requirePetGroupMembership(request, env, verified.telegramId));
+        if (!membership.ok) { outcome = 'rejected'; return err(membership.error, membership.status || 403); }
         { const limited = await timings.measure('rate_limit', () => enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId })); if (limited) { outcome = 'rejected'; return limited; } }
         await timings.measure('user_bootstrap', () => upsertTelegramUser(env.DB, verified.user)).catch(() => {});
         try {
@@ -12302,6 +12351,8 @@ export default {
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', body, corsHeaders, { ipLimit: 120 }); if (limited) return limited; }
       const verified = await authenticatePetMiniApp(body, env);
       if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      const membership = await requirePetGroupMembership(request, env, verified.telegramId);
+      if (!membership.ok) return err(membership.error, membership.status || 403);
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
       let result;
