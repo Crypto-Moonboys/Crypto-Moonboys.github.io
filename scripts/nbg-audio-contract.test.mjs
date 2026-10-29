@@ -131,7 +131,7 @@ function fakeAudioEnvironment(manifest, options = {}) {
     return {
       ok: true,
       status: 200,
-      arrayBuffer: options.delayAssets ?
+      arrayBuffer: (options.delayAssets || options.stallAssetId === data.id) ?
         () => new Promise((resolve) => pendingAssetFetches.push({ resolve, data })) :
         async () => data
     };
@@ -607,4 +607,30 @@ test('enemy loop retries a transient per-file failure without redownloading the 
       .map(({ cache }) => cache),
     ['force-cache', 'reload', 'reload']
   );
+});
+
+test('Graffbot movement begins while unrelated audio downloads remain stalled', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  const env = fakeAudioEnvironment(manifest, { stallAssetId: 'coin_xl' });
+  const context = vm.createContext({ window: env.window, document: env.document,
+    fetch: env.fetch, CustomEvent: FakeCustomEvent, URL, Map, Set, Object,
+    Number, Promise, Date, Array, Math, console });
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises(10);
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, 59,
+    'unrelated coin file remains stalled');
+  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  await flushPromises();
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
+    detail: { listener: { x: 100, y: 100 }, enemies: [
+      { key: 'graffbot', identity: 'bot', x: 120, y: 100,
+        moving: true, state: 'moving', alive: true, visible: true }
+    ] }
+  }));
+  await flushPromises(12);
+  assert.equal(env.window.NBGAudio.getState().enemyLoopSources, 1);
+  assert.equal(env.sources.some(node => node.loop && node.buffer?.id === 'graffbot_walk'), true);
+  env.releaseAssets();
+  await flushPromises();
 });
