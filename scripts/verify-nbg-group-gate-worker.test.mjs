@@ -10,7 +10,7 @@ import {
 
 test('only explicit configured bot-admin readiness proves the gate is ready', () => {
   assert.equal(acceptsNbgGroupGateProbe(200, {
-    ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+    ok:true, configured:true, bot_admin:true, native_init_data:true, all_games_gate_version:1, group:'@gkniftyheads'
   }), true);
   for (const [status, body] of [
     [404, { error:'not_found' }],
@@ -18,7 +18,8 @@ test('only explicit configured bot-admin readiness proves the gate is ready', ()
     [503, { ok:false, error:'telegram_group_membership_not_configured' }],
     [503, { ok:false, error:'telegram_group_membership_bot_not_admin' }],
     [200, { ok:true, member:true }],
-    [200, { ok:true, configured:true, bot_admin:false, group:'@gkniftyheads' }],
+    [200, { ok:true, configured:true, bot_admin:false, native_init_data:true, all_games_gate_version:1, group:'@gkniftyheads' }],
+    [200, { ok:true, configured:true, bot_admin:true, group:'@gkniftyheads' }],
   ]) assert.equal(acceptsNbgGroupGateProbe(status, body), false);
 });
 
