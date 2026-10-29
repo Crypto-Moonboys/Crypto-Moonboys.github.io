@@ -1401,6 +1401,48 @@
       }
     }
 
+
+    function dispatchEnemyAudioFrame() {
+      if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+      var viewLeft = cameraX;
+      var viewRight = cameraX + WIDTH / cameraZoom;
+      var viewTop = cameraY - 80;
+      var viewBottom = cameraY + HEIGHT / cameraZoom + 80;
+      var snapshots = enemies.concat(parachuteRats).map(function (enemy) {
+        var airborne = !!enemy.variant;
+        var identity = airborne ? enemy.variant : enemy.type;
+        var state = 'moving';
+        var moving = airborne || Math.abs(Number(enemy.vx) || 0) > 0.01;
+        if (identity === 'bot' && (enemy.fireUntil || 0) > runElapsedMs) {
+          state = 'combat';
+          moving = false;
+        } else if (identity === 'balloon' && enemy.balloonState === 'release') {
+          state = 'release';
+          moving = false;
+        } else if (!moving) {
+          state = 'idle';
+        }
+        return {
+          key: enemy,
+          identity: identity,
+          x: enemy.x + enemy.w / 2,
+          y: enemy.y + (enemy.bob || 0) + enemy.h / 2,
+          moving: moving,
+          state: state,
+          alive: !enemy.defeated,
+          visible: enemy.x + enemy.w >= viewLeft && enemy.x <= viewRight &&
+            enemy.y + (enemy.bob || 0) + enemy.h >= viewTop &&
+            enemy.y + (enemy.bob || 0) <= viewBottom
+        };
+      });
+      window.dispatchEvent(new CustomEvent('nbg-enemy-audio-frame', {
+        detail: {
+          listener: { x: player.x + player.w / 2, y: player.y + player.h / 2 },
+          enemies: snapshots
+        }
+      }));
+    }
+
     function updateLevel() {
       var allCheckpoints = [checkpoint].concat(courseCheckpoints);
       for (var i = 0; i < allCheckpoints.length; i += 1) {
@@ -2126,6 +2168,7 @@
         updateLevel();
         updateCamera();
         updateCameraY();
+        if (running) dispatchEnemyAudioFrame();
         if (!running) cameraY = 0; // Completion must not freeze a held-down look.
       } else if (completionAnimationActive) {
         completionAnimationActive = !advancePlayerAnimation(dt, false);

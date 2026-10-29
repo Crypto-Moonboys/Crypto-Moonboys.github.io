@@ -3,7 +3,9 @@
   "title": "NBG All City Runners — Dark Industrial",
   "sampleRate": 32000,
   "format": "Vorbis OGG",
-  "music": { "main": "music/main_theme_dark_industrial_loop.ogg" },
+  "music": {
+    "main": "music/main_theme_dark_industrial_loop.ogg"
+  },
   "effects": {
     "ui_start": "sfx/ui_start.ogg",
     "ui_confirm": "sfx/ui_confirm.ogg",
@@ -47,5 +49,24 @@
     "mystery_box": "sfx/mystery_box.ogg",
     "star_box": "sfx/star_box.ogg",
     "checkpoint": "sfx/checkpoint.ogg"
+  },
+  "enemyIdentities": {
+    "graffbot_walk": "enemy/graffbot_walk.ogg",
+    "graffbot_idle": "enemy/graffbot_idle.ogg",
+    "graffbot_spot": "enemy/graffbot_spot.ogg",
+    "london_rat_walk": "enemy/london_rat_walk.ogg",
+    "london_rat_alert": "enemy/london_rat_alert.ogg",
+    "brown_rat_walk": "enemy/brown_rat_walk.ogg",
+    "brown_rat_alert": "enemy/brown_rat_alert.ogg",
+    "turquoise_rat_walk": "enemy/turquoise_rat_walk.ogg",
+    "turquoise_rat_alert": "enemy/turquoise_rat_alert.ogg",
+    "parachute_rat_a_descent": "enemy/parachute_rat_a_descent.ogg",
+    "parachute_rat_b_descent": "enemy/parachute_rat_b_descent.ogg",
+    "parachute_rat_c_descent": "enemy/parachute_rat_c_descent.ogg",
+    "balloon_girl_walk": "enemy/balloon_girl_walk.ogg",
+    "balloon_girl_presence": "enemy/balloon_girl_presence.ogg",
+    "balloon_girl_spot": "enemy/balloon_girl_spot.ogg",
+    "pigeon_flight": "enemy/pigeon_flight.ogg",
+    "pigeon_call": "enemy/pigeon_call.ogg"
   }
 }

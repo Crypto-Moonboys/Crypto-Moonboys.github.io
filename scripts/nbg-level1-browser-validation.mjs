@@ -116,6 +116,87 @@ async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewpo
   return delayedPage;
 }
 
+
+async function verifyEnemyAudioProfile(browser, targetUrl, profile) {
+  const audioPage = await browser.newPage(profile.options);
+  const errors = [];
+  const failedRequests = [];
+  audioPage.on('pageerror', (error) => errors.push(error.message));
+  audioPage.on('requestfailed', (request) => {
+    if (request.resourceType() !== 'font') failedRequests.push(request.url());
+  });
+  try {
+    await audioPage.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+    await audioPage.waitForFunction(() => window.NBGAudio?.getState().encodedAssets === 60, null, {
+      timeout: 10000
+    });
+    await audioPage.locator('#game').click({ position: { x: 120, y: 120 } });
+    await audioPage.waitForFunction(() => window.NBGAudio?.getState().contextState === 'running', null, {
+      timeout: 5000
+    });
+
+    await audioPage.evaluate(() => {
+      const enemies = [
+        { key: 'near-bot', identity: 'bot', distance: 20, moving: true, state: 'moving', alive: true, visible: true },
+        { key: 'near-rat', identity: 'rat', distance: 90, moving: true, state: 'moving', alive: true, visible: true },
+        { key: 'near-pigeon', identity: 'pigeon', distance: 150, moving: true, state: 'moving', alive: true, visible: true },
+        { key: 'far-rat', identity: 'brownRat', distance: 260, moving: true, state: 'moving', alive: true, visible: true }
+      ];
+      for (let frame = 0; frame < 60; frame += 1) {
+        window.NBGAudio.updateEnemyLoops({ listener: { x: 0, y: 0 }, enemies });
+      }
+    });
+    await audioPage.waitForFunction(() => window.NBGAudio?.getState().activeEnemyLoops === 3, null, {
+      timeout: 5000
+    });
+    const bounded = await audioPage.evaluate(() => window.NBGAudio.getState());
+    assert.deepEqual(bounded.enemyLoopIds,
+      ['graffbot_walk', 'london_rat_walk', 'pigeon_flight'],
+      profile.label + ': nearest identity loops');
+    assert.ok(bounded.enemyLoopSources <= 3, profile.label + ': no runaway persistent sources');
+
+    await audioPage.evaluate(() => window.NBGAudio.updateEnemyLoops({
+      listener: { x: 0, y: 0 },
+      enemies: [{
+        key: 'balloon-release', identity: 'balloon', distance: 30,
+        moving: false, state: 'release', alive: true, visible: true
+      }]
+    }));
+    await audioPage.waitForFunction(() =>
+      window.NBGAudio?.getState().enemyLoopIds[0] === 'balloon_girl_presence', null, {
+      timeout: 5000
+    });
+    await audioPage.evaluate(() => window.NBGAudio.updateEnemyLoops({
+      listener: { x: 0, y: 0 },
+      enemies: [{
+        key: 'offscreen-rat', identity: 'rat', distance: 20,
+        moving: true, state: 'moving', alive: true, visible: false
+      }]
+    }));
+    assert.equal(
+      await audioPage.evaluate(() => window.NBGAudio.getState().activeEnemyLoops),
+      0,
+      profile.label + ': offscreen cleanup'
+    );
+
+    await audioPage.evaluate(() => window.NBGAudio.setMuted(true));
+    await audioPage.reload({ waitUntil: 'domcontentloaded' });
+    await audioPage.waitForFunction(() => window.NBGAudio?.getState().manifestLoaded, null, {
+      timeout: 10000
+    });
+    assert.equal(
+      await audioPage.evaluate(() => window.NBGAudio.isMuted()),
+      true,
+      profile.label + ': mute persistence'
+    );
+    await audioPage.evaluate(() => window.NBGAudio.setMuted(false));
+    assert.deepEqual(errors, [], profile.label + ': runtime errors');
+    assert.deepEqual(failedRequests, [], profile.label + ': request failures');
+  } finally {
+    await audioPage.close();
+  }
+}
+
 async function holdRunnerRight(page, durationMs = 0) {
   const rightControl = page.locator('[data-control="right"]').first();
   await rightControl.waitFor({ state: 'attached', timeout: 5000 });
@@ -3654,6 +3735,29 @@ const pixelEnergy = await page.evaluate(() => {
   return Array.from(data);
 }).then((data) => averagePixelEnergy(data));
 assert.ok(pixelEnergy > 20, 'canvas must render nonblank pixels');
+
+
+const enemyAudioProfiles = [
+  { label: 'desktop Chromium', options: { viewport: { width: 960, height: 540 } } },
+  {
+    label: 'Android Telegram',
+    options: {
+      viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true,
+      userAgent: 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36 Telegram-Android/11.0'
+    }
+  },
+  {
+    label: 'iOS Telegram/Safari shell',
+    options: {
+      viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1 Telegram/11.0'
+    }
+  }
+];
+for (const profile of enemyAudioProfiles) {
+  await verifyEnemyAudioProfile(browser, url, profile);
+}
+
 
 assert.deepEqual(errors, [], 'browser console must not report runtime errors');
 assert.deepEqual(failedRequests, [], 'browser must not report non-font request failures');
