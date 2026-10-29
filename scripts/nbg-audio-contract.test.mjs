@@ -116,7 +116,7 @@ function fakeAudioEnvironment(manifest, options = {}) {
 
   async function fetch(input) {
     const url = String(input);
-    if (url.endsWith('/manifest.json')) {
+    if (url.includes('/manifest.json')) {
       return { ok: true, status: 200, json: async () => manifest };
     }
     return {
@@ -505,4 +505,31 @@ test('runtime hooks are presentation-only and record sounds follow NBG server au
   assert.match(records, /authoritativeRejection/);
   assert.match(records, /accepted: true, authoritative: true/);
   assert.ok(html.indexOf('/game/nbg-audio.js') < html.indexOf('/game/nbg-level1.js'));
+});
+
+
+test('enemy identity preload uses fresh manifest and plays Graffbot movement', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  assert.match(source, /manifest\\.json\\?v=/);
+  assert.match(source, /cache: 'no-store'/);
+  const env = fakeAudioEnvironment(manifest);
+  const context = vm.createContext({ window: env.window, document: env.document,
+    fetch: env.fetch, CustomEvent: FakeCustomEvent, URL, Map, Set, Object,
+    Number, Promise, Date, Array, Math, console });
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises(12);
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, 60);
+  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  await flushPromises();
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
+    detail: { listener: { x: 100, y: 100 }, enemies: [
+      { key: 'near-bot', identity: 'bot', x: 115, y: 100, moving: true,
+        state: 'moving', alive: true, visible: true }
+    ] }
+  }));
+  await flushPromises(12);
+  assert.deepEqual([...env.window.NBGAudio.getState().enemyLoopIds], ['graffbot_walk']);
+  assert.equal(env.window.NBGAudio.getState().enemyLoopSources, 1);
+  assert.equal(env.sources.some(node => node.loop === true), true);
 });
