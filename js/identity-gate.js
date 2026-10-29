@@ -1123,8 +1123,8 @@
 
     var login = div.querySelector('#arcade-member-login');
     var group = div.querySelector('#arcade-member-group');
-    if (login) login.style.display = reason === 'group_required' ? 'none' : '';
-    if (group) group.style.display = reason === 'login_required' ? 'none' : '';
+    if (login && login.style) login.style.display = reason === 'group_required' ? 'none' : '';
+    if (group && group.style) group.style.display = reason === 'login_required' ? 'none' : '';
     if (login) login.addEventListener('click', function () { loginWithTelegram(); });
     var recheck = div.querySelector('#arcade-member-recheck');
     if (recheck) recheck.addEventListener('click', function () { window.location.reload(); });
