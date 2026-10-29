@@ -54,9 +54,15 @@ function request(body = { telegram_auth: auth() }, init = {}) {
 
 function telegram(status, { isMember } = {}) {
   const calls = [];
-  const fetchImpl = async (url, options) => {
-    const body = JSON.parse(options.body);
+  const fetchImpl = async (url, options = {}) => {
+    const body = options.body ? JSON.parse(options.body) : null;
     calls.push({ url, body });
+    if (/\/getMe$/.test(url)) {
+      return new Response(JSON.stringify({
+        ok: true,
+        result: { id: 123456, is_bot: true, first_name: 'WikiComs', username: 'WIKICOMSBOT' },
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
     return new Response(JSON.stringify({
       ok: true,
       result: {
@@ -164,9 +170,12 @@ test('CORS and readiness handling fail closed', async () => {
   }), env(), admin.fetchImpl);
   assert.equal(get.status, 200);
   assert.deepEqual(await get.json(), {
-    ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+    ok:true, configured:true, bot_admin:true,
+    bot_status:'administrator', bot_username:'WIKICOMSBOT',
+    group:'@gkniftyheads'
   });
-  assert.deepEqual(admin.calls[0].body, {
+  const adminMembershipCall = admin.calls.find(call => /\/getChatMember$/.test(call.url));
+  assert.deepEqual(adminMembershipCall.body, {
     chat_id:GROUP, user_id:123456,
   });
 
@@ -175,7 +184,12 @@ test('CORS and readiness handling fail closed', async () => {
     method: 'GET', headers: { Origin: SITE },
   }), env(), ordinary.fetchImpl);
   assert.equal(notAdmin.status, 503);
-  assert.equal((await notAdmin.json()).error, 'telegram_group_membership_bot_not_admin');
+  assert.deepEqual(await notAdmin.json(), {
+    ok:false,
+    error:'telegram_group_membership_bot_not_admin',
+    bot_status:'member',
+    bot_username:'WIKICOMSBOT'
+  });
 });
 
 test('direct checker rejects unsafe Telegram numeric ids', async () => {
