@@ -22,7 +22,8 @@
     chargeFill: $('chargeFill'), shove: $('shoveBtn'), banner: $('banner'), start: $('startPanel'), gameOver: $('gameOverPanel'),
     gameOverTitle: $('gameOverTitle'), finalStats: $('finalStats'), xpResult: $('xpResult'), slowCount: $('slowCount'), gpsStatus: $('gpsStatus'),
     account: $('profileBox'), horde: $('hordeStrip'), risk: $('riskBadge'), safety: $('safetyAck'), resume: $('resumeBtn'),
-    leaderboard: $('leaderboardPanel'), leaderboardRows: $('leaderboardList')
+    leaderboard: $('leaderboardPanel'), leaderboardRows: $('leaderboardList'),
+    accessGate: $('deadRunAccessGate'), accessMessage: $('deadRunAccessMessage'), accessCheck: $('deadRunAccessCheck')
   };
 
   let map;
@@ -104,12 +105,16 @@
 
   function denyArcadeAccess(message) {
     arcadeAccessGranted = false;
-    syncAccessControls(message || 'Telegram login and GKniftyHEADS group membership are required to play.');
+    const copy = message || 'Telegram login and GKniftyHEADS group membership are required to play.';
+    syncAccessControls(copy);
+    if (ui.accessMessage) ui.accessMessage.textContent = copy;
+    ui.accessGate?.classList.remove('hidden');
   }
 
   function allowArcadeAccess() {
     arcadeAccessGranted = true;
     syncAccessControls();
+    ui.accessGate?.classList.add('hidden');
   }
 
   function actionId(prefix) {
@@ -1237,6 +1242,7 @@
     window.addEventListener('unhandledrejection', (event) => reportSafeRuntimeError(event.reason, 'promise rejection'));
 
     $('startBtn').addEventListener('click', safeHandler(startRealRun, 'start real run'));
+    ui.accessCheck?.addEventListener('click', safeHandler(loadProfile, 'access recheck'));
     $('resumeBtn').addEventListener('click', safeHandler(resumeRealRun, 'resume real run'));
     $('demoBtn').addEventListener('click', safeHandler(startDemo, 'demo start'));
     $('againBtn').addEventListener('click', safeHandler(() => {
