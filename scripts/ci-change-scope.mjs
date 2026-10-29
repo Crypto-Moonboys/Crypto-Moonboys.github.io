@@ -65,6 +65,8 @@ const SCOPES = {
     'workers/leaderboard/nbg-london-*.js',
     'workers/leaderboard/deployment-entry.js',
     'workers/moonboys-api/championship/**',
+    'workers/moonboys-api/telegram-group-membership.js',
+    'workers/moonboys-api/worker-phase5-final.js',
     'workers/moonboys-api/migrations/*nbg_london*.sql',
     'workers/moonboys-api/migrations/*championship_clout*.sql',
     'workers/moonboys-api/schema.sql',
