@@ -48,6 +48,7 @@
   let session = null;
   let profile = null;
   let activeSessionFromProfile = null;
+  let arcadeAccessGranted = false;
   let serverState = null;
   let routePlan = null;
   let combatPlan = null;
@@ -92,6 +93,23 @@
     ui.banner.classList.remove('hidden');
     clearTimeout(setBanner.timer);
     setBanner.timer = setTimeout(() => ui.banner.classList.add('hidden'), ms);
+  }
+
+  function syncAccessControls(message = '') {
+    $('startBtn').disabled = !arcadeAccessGranted || !ui.safety.checked;
+    $('demoBtn').disabled = !arcadeAccessGranted;
+    $('resumeBtn').disabled = !arcadeAccessGranted;
+    if (message) ui.account.textContent = message;
+  }
+
+  function denyArcadeAccess(message) {
+    arcadeAccessGranted = false;
+    syncAccessControls(message || 'Telegram login and GKniftyHEADS group membership are required to play.');
+  }
+
+  function allowArcadeAccess() {
+    arcadeAccessGranted = true;
+    syncAccessControls();
   }
 
   function actionId(prefix) {
@@ -1014,6 +1032,10 @@
   }
 
   async function startRealRun() {
+    if (!arcadeAccessGranted) {
+      ui.gpsStatus.textContent = 'Telegram members only — open through Telegram and join GKniftyHEADS to start a run.';
+      return;
+    }
     if (!initData()) { ui.gpsStatus.textContent = 'Open this game from its Telegram bot/menu button to start a ranked run.'; return; }
     if (!ui.safety.checked) { ui.gpsStatus.textContent = 'Confirm the pedestrian safety check before starting.'; return; }
     $('startBtn').disabled = true;
@@ -1044,6 +1066,10 @@
   }
 
   async function resumeRealRun() {
+    if (!arcadeAccessGranted) {
+      ui.gpsStatus.textContent = 'Telegram members only — group membership is required to resume.';
+      return;
+    }
     if (!activeSessionFromProfile?.session_id) return;
     if (!ui.safety.checked) { ui.gpsStatus.textContent = 'Confirm the pedestrian safety check before resuming.'; return; }
     try {
@@ -1059,6 +1085,10 @@
   }
 
   async function startDemo() {
+    if (!arcadeAccessGranted) {
+      ui.gpsStatus.textContent = 'Telegram members only — Demo Mode is locked until Telegram group membership is verified.';
+      return;
+    }
     clearWorld();
     stopGpsWatch();
     demoMode = true;
@@ -1148,11 +1178,13 @@
       renderHorde(hordeData.horde);
     } catch (_) { ui.horde.textContent = 'Global horde loads after server deployment.'; }
     if (!initData()) {
-      ui.account.textContent = 'Open through Telegram for persistent stats, ranked runs and XP.';
+      denyArcadeAccess('TELEGRAM MEMBERS ONLY · Open this game through Telegram, then join GKniftyHEADS.');
+      ui.gpsStatus.textContent = 'Open DEAD RUN from the Telegram games menu to verify membership.';
       return;
     }
     try {
       const data = await apiPost('/api/dead-run/profile');
+      allowArcadeAccess();
       profile = data.player;
       activeSessionFromProfile = data.active_session;
       renderProfile(data.daily);
@@ -1160,7 +1192,12 @@
       ui.resume.classList.toggle('hidden', !activeSessionFromProfile?.session_id);
       if (activeSessionFromProfile?.session_id) ui.gpsStatus.textContent = 'An active run is waiting. Confirm safety and resume it, or continue later.';
     } catch (error) {
-      ui.account.textContent = `Account unavailable: ${error.message}`;
+      if (error.code === 'telegram_group_membership_required') {
+        denyArcadeAccess('TELEGRAM MEMBERS ONLY · Join the GKniftyHEADS Telegram group to play DEAD RUN.');
+        ui.gpsStatus.innerHTML = '<a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">Join GKniftyHEADS</a>, then reopen or reload the game.';
+      } else {
+        denyArcadeAccess(`Account unavailable: ${error.message}`);
+      }
     }
   }
 
@@ -1213,7 +1250,7 @@
     $('gameLeaderboardBtn').addEventListener('click', safeHandler(() => showLeaderboard(), 'game leaderboard'));
     $('closeLeaderboardBtn').addEventListener('click', safeHandler(() => ui.leaderboard.classList.add('hidden'), 'close leaderboard'));
     document.querySelectorAll('.tab').forEach((button) => button.addEventListener('click', safeHandler(() => showLeaderboard(button.dataset.metric), 'leaderboard tab')));
-    const syncStartControls = () => { $('startBtn').disabled = !ui.safety.checked; };
+    const syncStartControls = () => syncAccessControls();
     ui.safety.addEventListener('change', syncStartControls);
 
     document.addEventListener('visibilitychange', safeHandler(async () => {
@@ -1225,6 +1262,7 @@
 
     bootFallbackMap();
     updateHud();
+    denyArcadeAccess('TELEGRAM MEMBERS ONLY · Checking Telegram login and GKniftyHEADS membership…');
     syncStartControls();
     loadProfile();
     if (DEAD_RUN_LIVE_MAP_ENABLED) {
