@@ -37,7 +37,6 @@
   var accessState = { owner: null, allowed: false, checkedAt: 0, reason: 'unchecked' };
   var accessPromise = null;
   var ACCESS_CACHE_MS = 60000;
-  var GROUP_URL = 'https://t.me/gkniftyheads';
 
   function formatTime(ms) {
     if (!Number.isFinite(Number(ms))) return '—';
@@ -777,6 +776,9 @@
       runPromise = null;
       runIdentity = null;
       practiceOnlyReason = null;
+      // A fresh run must obtain a fresh-enough live membership result rather
+      // than inheriting an indefinitely cached group status.
+      accessState.checkedAt = 0;
       displayIdentity();
       if (productionAccessGateEnabled() && !accessState.allowed) {
         showAccessGate(accessState.reason === 'group_required' ?
