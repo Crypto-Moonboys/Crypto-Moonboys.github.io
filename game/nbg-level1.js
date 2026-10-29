@@ -3,8 +3,12 @@
 
   var ASSET_ROOT = '/game/assets/';
   var ASSET_MANIFEST = ASSET_ROOT + 'asset-manifest.json';
+  // All physics, positions, cameras and gameplay remain in 480x270 units.
+  // Only the output bitmap is doubled: replacement HD images can now render
+  // at greater real detail without changing hitboxes, timings or replay v8.
   var WIDTH = 480;
   var HEIGHT = 270;
+  var RENDER_SCALE = 2;
   var WORLD_WIDTH = 22000;
   var FLOOR_Y = 214;
   var TARGET_FRAME_MS = 1000 / 60;
@@ -392,8 +396,15 @@
   }
 
   function createRuntime(canvas, hud) {
+    // Backing resolution is not world resolution: 960x540 output covers the
+    // exact same 480x270 logical scene at exactly the same on-screen size.
+    // Avoid CSS/nearest-neighbour enlargement of the former 480px bitmap.
+    if (canvas.width !== WIDTH * RENDER_SCALE) canvas.width = WIDTH * RENDER_SCALE;
+    if (canvas.height !== HEIGHT * RENDER_SCALE) canvas.height = HEIGHT * RENDER_SCALE;
     var ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     var keys = {};
     var pendingJumpPresses = 0;
@@ -2010,6 +2021,11 @@
     }
 
     function render(time) {
+      // Always reset to the logical-to-HD transform before drawing; temporary
+      // sprite flips, camera zoom, and test hooks cannot accumulate transforms.
+      ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = '#0078fb';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -2118,6 +2134,9 @@
         get cameraX() { return cameraX; },
         get cameraY() { return cameraY; },
         get cameraZoom() { return cameraZoom; },
+        get renderScale() { return RENDER_SCALE; },
+        get renderWidth() { return canvas.width; },
+        get renderHeight() { return canvas.height; },
         get visibleWorldWidth() { return WIDTH / cameraZoom; },
         get checkpoint() { return checkpoint; },
         get finish() { return finish; },
