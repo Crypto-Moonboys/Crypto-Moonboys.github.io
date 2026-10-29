@@ -224,9 +224,12 @@
     var gate = window.MOONBOYS_IDENTITY;
     var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
     // Cached local display names are not authoritative Telegram usernames.
-    if (account) account.textContent = linked ? 'Telegram linked — verifying username…' : 'Guest — scores are not saved';
+    if (account) account.textContent = linked ? 'Telegram linked — verifying username…' :
+      productionAccessGateEnabled() ? 'Telegram login required — game locked' :
+      'Guest — scores are not saved';
     var hudName = document.getElementById('nbg-hud-player');
-    if (hudName) hudName.textContent = linked ? 'TELEGRAM' : 'GUEST';
+    if (hudName) hudName.textContent = linked ? 'TELEGRAM' :
+      productionAccessGateEnabled() ? 'LOCKED' : 'GUEST';
     return linked;
   }
 
@@ -437,7 +440,9 @@
     var startingId = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
     runIdentity = null;
     if (!displayIdentity() || !startingId) {
-      setStatus('Guest run: score is session-only, not permanently ranked.');
+      setStatus(productionAccessGateEnabled() ?
+        'Game locked: Telegram login and GKniftyHEADS group membership are required.' :
+        'Guest run: score is session-only, not permanently ranked.');
       return;
     }
     runIdentity = startingId;
