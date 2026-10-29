@@ -1,0 +1,173 @@
+import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
+import { test } from 'node:test';
+import {
+  checkTelegramGroupMember,
+  handleTelegramGroupMembership,
+} from '../workers/moonboys-api/telegram-group-membership.js';
+
+const TOKEN = '123456:group-membership-fixture-token';
+const GROUP = '-1001234567890';
+const OWNER = '123456789';
+const SITE = 'https://cryptomoonboys.com';
+const API = 'https://api.cryptomoonboys.com/telegram/group-membership';
+
+function auth(id = OWNER) {
+  const fields = {
+    id: String(id),
+    first_name: 'Fixture',
+    username: 'fixture_member',
+    auth_date: String(Math.floor(Date.now() / 1000)),
+  };
+  const check = Object.keys(fields).sort()
+    .map(key => key + '=' + fields[key]).join('\n');
+  const secret = createHash('sha256').update(TOKEN).digest();
+  return {
+    ...fields,
+    hash: createHmac('sha256', secret).update(check).digest('hex'),
+  };
+}
+
+function env(overrides = {}) {
+  return {
+    TELEGRAM_BOT_TOKEN: TOKEN,
+    TELEGRAM_GROUP_CHAT_ID: GROUP,
+    // Legacy HMAC auth never enters website credential D1 reads, but the live
+    // endpoint intentionally requires the configured production DB binding.
+    DB: {},
+    ...overrides,
+  };
+}
+
+function request(body = { telegram_auth: auth() }, init = {}) {
+  return new Request(API, {
+    method: 'POST',
+    headers: {
+      Origin: SITE,
+      'Content-Type': 'application/json',
+      ...(init.headers || {}),
+    },
+    body: JSON.stringify(body),
+    ...init,
+  });
+}
+
+function telegram(status, { isMember } = {}) {
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    const body = JSON.parse(options.body);
+    calls.push({ url, body });
+    return new Response(JSON.stringify({
+      ok: true,
+      result: {
+        status,
+        user: { id: Number(OWNER), is_bot: false, first_name: 'Fixture' },
+        ...(status === 'restricted' ? { is_member: isMember === true } : {}),
+      },
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  return { calls, fetchImpl };
+}
+
+for (const status of ['creator', 'administrator', 'member']) {
+  test('accepts Telegram ChatMember status ' + status, async () => {
+    const mock = telegram(status);
+    const response = await handleTelegramGroupMembership(request(), env(), mock.fetchImpl);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+      ok: true, member: true, status, group: '@gkniftyheads',
+    });
+    assert.equal(mock.calls.length, 1);
+    assert.match(mock.calls[0].url, /\/getChatMember$/);
+    assert.deepEqual(mock.calls[0].body, {
+      chat_id: GROUP, user_id: Number(OWNER),
+    });
+  });
+}
+
+test('restricted user counts only when Telegram says is_member=true', async () => {
+  for (const [isMember, expected] of [[true, true], [false, false]]) {
+    const mock = telegram('restricted', { isMember });
+    const response = await handleTelegramGroupMembership(request(), env(), mock.fetchImpl);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).member, expected);
+  }
+});
+
+for (const status of ['left', 'kicked']) {
+  test('blocks ChatMember status ' + status, async () => {
+    const mock = telegram(status);
+    const response = await handleTelegramGroupMembership(request(), env(), mock.fetchImpl);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+      ok: true, member: false, status, group: '@gkniftyheads',
+    });
+  });
+}
+
+test('fails closed when Telegram membership lookup is unavailable', async () => {
+  const fetchImpl = async () => new Response(
+    JSON.stringify({ ok: false, description: 'not enough rights' }),
+    { status: 400, headers: { 'Content-Type': 'application/json' } }
+  );
+  const response = await handleTelegramGroupMembership(request(), env(), fetchImpl);
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error, 'telegram_group_membership_unavailable');
+});
+
+test('rejects unverified Telegram identity before calling Telegram Bot API', async () => {
+  let called = false;
+  const response = await handleTelegramGroupMembership(
+    request({ telegram_auth: { id: OWNER, auth_date: '1', hash: '0'.repeat(64) } }),
+    env(),
+    async () => { called = true; throw Error('must not call'); }
+  );
+  assert.equal(response.status, 401);
+  assert.equal(called, false);
+});
+
+test('requires production group and bot configuration', async () => {
+  for (const overrides of [
+    { TELEGRAM_BOT_TOKEN: '' },
+    { TELEGRAM_GROUP_CHAT_ID: '' },
+    { DB: null },
+  ]) {
+    const response = await handleTelegramGroupMembership(request(), env(overrides), async () => {
+      throw Error('must not call Telegram');
+    });
+    assert.equal(response.status, 503);
+  }
+});
+
+test('CORS and method handling fail closed', async () => {
+  const disallowed = await handleTelegramGroupMembership(
+    new Request(API, {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth() }),
+    }),
+    env(),
+    async () => { throw Error('must not call'); }
+  );
+  assert.equal(disallowed.status, 403);
+  assert.equal(disallowed.headers.get('Access-Control-Allow-Origin'), null);
+
+  const options = await handleTelegramGroupMembership(new Request(API, {
+    method: 'OPTIONS', headers: { Origin: SITE },
+  }), env());
+  assert.equal(options.status, 204);
+  assert.equal(options.headers.get('Access-Control-Allow-Origin'), SITE);
+
+  const get = await handleTelegramGroupMembership(new Request(API, {
+    method: 'GET', headers: { Origin: SITE },
+  }), env());
+  assert.equal(get.status, 405);
+});
+
+test('direct checker rejects unsafe Telegram numeric ids', async () => {
+  const result = await checkTelegramGroupMember(env(), '99999999999999999999', async () => {
+    throw Error('must not call');
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 401);
+});
