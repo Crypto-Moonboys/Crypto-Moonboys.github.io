@@ -96,6 +96,19 @@ for (const suffix of ['/profile', '/session/start', '/session/resume', '/session
   assert.ok(routeSource.includes('`${DEAD_RUN_ROUTE_PREFIX}' + suffix + '`'), `missing Dead Run route ${suffix}`);
 }
 assert.match(routeSource, /verifyTelegramMiniAppInitData/, 'Dead Run writes must authenticate Telegram Mini App initData');
+assert.match(routeSource, /checkTelegramGroupMember/, 'Dead Run entry must verify current Telegram group membership');
+for (const entryHandler of ['handleProfile', 'handleStart', 'handleResume']) {
+  const start = routeSource.indexOf('async function ' + entryHandler + '(');
+  const end = routeSource.indexOf('\nasync function ', start + 1);
+  const body = routeSource.slice(start, end > start ? end : undefined);
+  assert.match(body, /verifyDeadRunEntryMembership/,
+    entryHandler + ' must fail closed before Dead Run entry when group membership is missing');
+}
+assert.match(appSource, /arcadeAccessGranted/, 'Dead Run client must track verified Telegram membership access');
+assert.match(appSource, /async function startDemo\(\)[\s\S]{0,180}if \(!arcadeAccessGranted\)/,
+  'Dead Run Demo Mode must not bypass the Telegram members-only gate');
+assert.match(htmlSource, /id="deadRunAccessGate"/, 'Dead Run must render the Telegram members-only access overlay');
+assert.match(htmlSource, /id="demoBtn"[^>]*disabled/, 'Dead Run Demo Mode must start disabled before membership verification');
 assert.match(routeSource, /arcade_progression_state/, 'ranked settlement must credit shared Arcade XP');
 assert.match(routeSource, /arcade_xp_wallets/, 'ranked settlement must credit spendable Arcade XP authority');
 assert.match(routeSource, /start_lat = NULL[\s\S]*last_lng = NULL/, 'finished/abandoned sessions must clear precise stored GPS coordinates');
@@ -285,7 +298,7 @@ for (const id of [
   'banner', 'startPanel', 'gameOverPanel', 'gameOverTitle', 'finalStats', 'xpResult', 'slowCount',
   'gpsStatus', 'profileBox', 'hordeStrip', 'riskBadge', 'safetyAck', 'resumeBtn', 'leaderboardPanel',
   'leaderboardList', 'startBtn', 'demoBtn', 'againBtn', 'leaderboardBtn', 'closeLeaderboardBtn',
-  'centerBtn', 'slowBtn', 'gameLeaderboardBtn',
+  'centerBtn', 'slowBtn', 'gameLeaderboardBtn', 'deadRunAccessGate', 'deadRunAccessMessage', 'deadRunAccessCheck',
 ]) {
   assert.ok(htmlSource.includes(`id="${id}"`), `index.html must contain id="${id}"`);
   assert.ok(appSource.includes(`'${id}'`) || appSource.includes(`"${id}"`), `app.js must reference id "${id}"`);
