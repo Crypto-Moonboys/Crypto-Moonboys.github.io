@@ -173,6 +173,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({contentType:'text/javascript',body:"window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};"});
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/js/moonpet-play-options.js') && ++helperRequests <= 2) return route.abort('failed');
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.pathname.includes('/telegram-pets/app/')) {
@@ -268,6 +269,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
@@ -320,6 +322,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
@@ -365,6 +368,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/state')) {
         const body = route.request().postDataJSON(); modes.push(body.mode || 'full');
         const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
@@ -442,6 +446,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
@@ -552,6 +557,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/state')) {
         const body = route.request().postDataJSON();
         modes.push(body.mode || 'full');
@@ -646,6 +652,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON();
@@ -691,6 +698,7 @@ try {
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname === '/data/moonpet-bot-art-registry.json') {
         artRequests++;
         if (artOffline) return route.fulfill({ status: 503, json: { error: 'temporary_art_outage' } });
@@ -793,6 +801,7 @@ try {
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: `window.Telegram={WebApp:{initData:'local-fixture',viewportHeight:${viewport.height},viewportStableHeight:${viewport.height},ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};` });
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON() || {};
         if (url.pathname.endsWith('/performance')) return route.fulfill({ json: { ok: true } });
