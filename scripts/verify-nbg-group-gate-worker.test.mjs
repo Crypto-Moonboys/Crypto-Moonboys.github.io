@@ -7,19 +7,23 @@ import {
 } from './verify-nbg-group-gate-worker.mjs';
 
 test('only explicit membership route method rejection proves the live route exists', () => {
-  assert.equal(acceptsNbgGroupGateProbe(405, { ok:false, error:'method_not_allowed' }), true);
+  assert.equal(acceptsNbgGroupGateProbe(200, {
+    ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+  }), true);
   for (const [status, body] of [
     [404, { error:'not_found' }],
     [405, { error:'method_not_allowed' }],
     [503, { ok:false, error:'telegram_group_membership_not_configured' }],
+    [503, { ok:false, error:'telegram_group_membership_bot_not_admin' }],
     [200, { ok:true, member:true }],
+    [200, { ok:true, configured:true, bot_admin:false, group:'@gkniftyheads' }],
   ]) assert.equal(acceptsNbgGroupGateProbe(status, body), false);
 });
 
 test('live verifier accepts supported route and rejects old/missing route', async () => {
   const ok = async () => new Response(JSON.stringify({
-    ok:false, error:'method_not_allowed'
-  }), {status:405, headers:{'content-type':'application/json'}});
+    ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+  }), {status:200, headers:{'content-type':'application/json'}});
   assert.equal(await verifyNbgGroupGate(ok), true);
 
   const missing = async () => new Response(JSON.stringify({
