@@ -346,7 +346,7 @@ assert.equal(
   'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
 );
 assert.equal(
-  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);[\s\S]*?ctx\.translate\(0, CAMERA_ZOOM_ANCHOR_Y\);\s*ctx\.scale\(cameraZoom, cameraZoom\);\s*ctx\.translate\(0, Math\.round\(cameraY\) - CAMERA_ZOOM_ANCHOR_Y\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
+  /function render\(time\)\s*\{\s*ctx\.setTransform\(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0\);\s*ctx\.imageSmoothingEnabled = true;\s*ctx\.imageSmoothingQuality = 'high';\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.fillStyle = '#0078fb';\s*ctx\.fillRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);[\s\S]*?ctx\.translate\(0, CAMERA_ZOOM_ANCHOR_Y\);\s*ctx\.scale\(cameraZoom, cameraZoom\);\s*ctx\.translate\(0, Math\.round\(cameraY\) - CAMERA_ZOOM_ANCHOR_Y\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawSecretCoins\(time\);\s*drawObjects\(\);[\s\S]*?drawGraffbotFires\(runElapsedMs\);\s*drawEnemies\(runElapsedMs\);\s*drawParachuteRats\(time\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawSpeedrunHud\(runElapsedMs\);\s*drawSecretNotification\(runElapsedMs\);\s*drawRewardNotification\(runElapsedMs\);\s*drawBalloonRewardNotification\(runElapsedMs\);\s*drawOverlay\(\);/.test(runtimeSource),
   true,
   'standalone Level 1 render must zoom world around grounded feet and leave HUD, notifications and overlay unscaled'
 );
@@ -824,9 +824,10 @@ const zoomTransforms = await page.evaluate(() => {
   return evidence;
 });
 for (const proof of zoomTransforms) {
-  assert.ok(proof.worldScales.length > 0 && proof.worldScales.every(scale => scale === proof.zoom),
+  assert.ok(proof.worldScales.length > 0 && proof.worldScales.every(scale => scale === proof.zoom * 2),
     'world artwork must use the selected zoom');
-  assert.deepEqual(proof.hud,[1,0,0,1,0,0],'TIME HUD must retain an identity transform');
+  assert.deepEqual(proof.hud,[2,0,0,2,0,0],
+    'TIME HUD must have only the backing-resolution transform, not camera zoom');
 }
 
 // Native keyboard activation must only change the view, including after Reset.
@@ -1272,7 +1273,8 @@ try {
           id:window.__pigCanvasIds.get(img),
           x:Math.min(transform.e + transform.a * args[4],
             transform.e + transform.a * (args[4] + args[6])),
-          zoom:state.cameraZoom, screenWidth:Math.abs(transform.a) * args[6],
+          zoom:state.cameraZoom, renderScale:state.renderScale,
+          screenWidth:Math.abs(transform.a) * args[6],
           width:args[6], height:args[7], flipped:transform.a < 0,
           srcWidth:args[2], srcHeight:args[3],
           cornerAlpha:img.getContext('2d').getImageData(0,0,1,1).data[3]
@@ -1303,10 +1305,12 @@ try {
     const drawn = await pigPage.evaluate(() => window.__pigDrawCalls[0]);
     assert.equal(drawn.flipped, scenario.flipped,
       'left-facing flying pig must be horizontally mirrored');
-    assert.ok(Math.abs(drawn.x-scenario.expectedX*drawn.zoom)<=2*drawn.zoom,
+    assert.ok(Math.abs(drawn.x-scenario.expectedX*drawn.zoom*drawn.renderScale)<=
+      2*drawn.zoom*drawn.renderScale,
       'pig visual must stay centered and render smoothly beyond screen edges');
     assert.equal(drawn.width,56,'enlarged pig draw must preserve double pigeon width');
-    assert.equal(drawn.screenWidth,56*drawn.zoom,'pig visual width must follow the camera zoom');
+    assert.equal(drawn.screenWidth,56*drawn.zoom*drawn.renderScale,
+      'flying pig uses twice the backing pixels with unchanged on-screen size');
   }
 } finally {
   await pigPage.close();
@@ -1568,7 +1572,8 @@ for (const mechanicMode of [
           window.__pr4DrawEvidence.flameFrames.push(Math.round(args[0]/sourceW)+Math.round(args[1]/sourceH)*4);
           const flameTransform=this.getTransform();
           const baseX=(flameTransform.a<0?flameTransform.e:
-            flameTransform.e+args[4]*flameTransform.a)/state.cameraZoom;
+            flameTransform.e+args[4]*flameTransform.a)/
+            (state.cameraZoom*state.renderScale);
           window.__pr4DrawEvidence.flameInsetChecks.push(state.enemies.some(enemy =>
             enemy.type==='bot' && Math.abs(baseX-Math.round(enemy.x-state.cameraX+
               (flameTransform.a<0?12:enemy.w-12)))<0.01));
@@ -1676,7 +1681,8 @@ for (const mechanicMode of [
         fireStartedAt:bot.fireStartedAt,fireUntil:bot.fireUntil,nextFireAt:bot.nextFireAt,
         frames:[...new Set(window.__pr4DrawEvidence.flameFrames)].sort((a,b)=>a-b),
         facings:[...new Set(window.__pr4DrawEvidence.flameFacings)].sort(),
-        zoom:state.cameraZoom,topYs:[...window.__pr4DrawEvidence.flameTopYs],
+        zoom:state.cameraZoom,renderScale:state.renderScale,
+        topYs:[...window.__pr4DrawEvidence.flameTopYs],
         botTopYs:[...window.__pr4DrawEvidence.botTopYs]};
     });
     assert.ok(leftFire.health<3,mechanicMode.label+' Graffbot fire must damage only after visible contact');
@@ -1686,7 +1692,8 @@ for (const mechanicMode of [
       mechanicMode.label+' leftward flame must mirror the native right-facing sheet');
     assert.ok(leftFire.topYs.length>0&&leftFire.botTopYs.length>0&&
       leftFire.topYs.every(topY=>leftFire.botTopYs.some(botTopY=>
-        Math.abs((topY+48*leftFire.zoom)-(botTopY+16*leftFire.zoom))<=1)),
+        Math.abs((topY+48*leftFire.zoom*leftFire.renderScale)-
+          (botTopY+16*leftFire.zoom*leftFire.renderScale))<=2)),
       mechanicMode.label+' flame sheet must retain the requested 7px higher placement');
     assert.equal(leftFire.nextFireAt-leftFire.fireUntil,2400,
       mechanicMode.label+' Graffbot cooldown must begin after the flame sequence ends');
