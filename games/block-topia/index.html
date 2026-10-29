@@ -286,6 +286,15 @@
 
       async function runGateAndLaunch() {
         const identity = window.MOONBOYS_IDENTITY || null;
+        if (!identity || typeof identity.enforceCompetitiveArcadePageGate !== "function") {
+          showGateScreen(buildErrorGate("Telegram membership verification is unavailable. Block Topia stays locked."));
+          return;
+        }
+        const communityGate = await identity.enforceCompetitiveArcadePageGate({ gameId: "blocktopia" });
+        if (!communityGate || communityGate.ok !== true) return;
+        const communityOwner = String(communityGate.telegram_auth?.id || communityGate.telegram_id || '');
+        const sameEntryOwner = () => communityOwner && identity.isTelegramLinked() &&
+          String(identity.getTelegramId() || '') === communityOwner;
         const verified = await checkBlockTopiaGateIdentity(identity);
         if (verified.status === "not_linked") {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
@@ -312,6 +321,10 @@
           return;
         }
         const telegramAuth = verified.telegramAuth;
+        if (String(telegramAuth.id) !== communityOwner || !sameEntryOwner()) {
+          showGateScreen(buildAuthUnavailableGate());
+          return;
+        }
 
         // ── Server-authoritative Arcade XP gate ────────────────────────
         let progression = null;
@@ -329,6 +342,10 @@
           showGateScreen(
             buildErrorGate("Unable to verify multiplayer access right now. Please try again.")
           );
+          return;
+        }
+        if (!sameEntryOwner()) {
+          showGateScreen(buildAuthUnavailableGate());
           return;
         }
         const arcadeXpTotal = Math.max(0, Math.floor(Number(progression?.arcade_xp_total) || 0));
@@ -361,6 +378,10 @@
         const enterBtn = document.getElementById("bt-enter-btn");
         if (enterBtn) {
           enterBtn.addEventListener("click", async () => {
+            if (!sameEntryOwner()) {
+              showGateScreen(buildAuthUnavailableGate());
+              return;
+            }
             enterBtn.disabled = true;
             enterBtn.textContent = "ENTERING…";
             try {

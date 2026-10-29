@@ -1,4 +1,5 @@
 import { verifyTelegramMiniAppInitData } from '../pets/mini-app-auth.js';
+import { checkTelegramGroupMember } from '../telegram-group-membership.js';
 import {
   DEAD_RUN_CHARGE_METERS,
   DEAD_RUN_DAILY_RANKED_LIMIT,
@@ -135,6 +136,24 @@ async function verifyIdentity(request, env, body) {
   const verified = await verifyTelegramMiniAppInitData(initData, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: TELEGRAM_INIT_DATA_MAX_AGE_SECONDS });
   if (!verified.ok) return { ok: false, status: 401, reason: verified.reason || 'dead_run_auth_rejected' };
   return { ok: true, ...verified };
+}
+
+async function verifyDeadRunEntryMembership(env, identity) {
+  if (!identity?.telegramId) {
+    return { ok: false, status: 401, reason: 'dead_run_auth_rejected' };
+  }
+  const membership = await checkTelegramGroupMember(env, identity.telegramId);
+  if (!membership?.ok) {
+    return {
+      ok: false,
+      status: membership?.status || 503,
+      reason: membership?.error || 'telegram_group_membership_unavailable',
+    };
+  }
+  if (membership.member !== true) {
+    return { ok: false, status: 403, reason: 'telegram_group_membership_required' };
+  }
+  return { ok: true, status: membership.chat_member_status || 'member' };
 }
 
 async function ensureTables(db) {
@@ -332,6 +351,8 @@ async function sessionPayload(db, session, nowMs = Date.now()) {
 async function handleProfile(request, env, body) {
   const identity = await verifyIdentity(request, env, body);
   if (!identity.ok) return errorJson(request, identity.reason, identity.status);
+  const membership = await verifyDeadRunEntryMembership(env, identity);
+  if (!membership.ok) return errorJson(request, membership.reason, membership.status);
   if (!await ensureTables(env.DB)) return errorJson(request, 'dead_run_schema_not_applied', 503);
   await upsertTelegramUser(env.DB, identity);
   const nowMs = Date.now();
@@ -388,6 +409,8 @@ async function abandonExpiredActiveSessions(db, telegramId, nowMs) {
 async function handleStart(request, env, body) {
   const identity = await verifyIdentity(request, env, body);
   if (!identity.ok) return errorJson(request, identity.reason, identity.status);
+  const membership = await verifyDeadRunEntryMembership(env, identity);
+  if (!membership.ok) return errorJson(request, membership.reason, membership.status);
   if (!boolEnv(env, 'DEAD_RUN_ENABLED', true)) return errorJson(request, 'dead_run_disabled', 503);
   if (!await ensureTables(env.DB)) return errorJson(request, 'dead_run_schema_not_applied', 503);
   const position = positionFromBody(body);
@@ -1126,6 +1149,8 @@ async function handleFinish(request, env, body) {
 async function handleResume(request, env, body) {
   const identity = await verifyIdentity(request, env, body);
   if (!identity.ok) return errorJson(request, identity.reason, identity.status);
+  const membership = await verifyDeadRunEntryMembership(env, identity);
+  if (!membership.ok) return errorJson(request, membership.reason, membership.status);
   if (!await ensureTables(env.DB)) return errorJson(request, 'dead_run_schema_not_applied', 503);
   const session = await loadOwnedActiveSession(env.DB, identity.telegramId, body?.session_id);
   if (!session) return errorJson(request, 'dead_run_session_not_active', 404);

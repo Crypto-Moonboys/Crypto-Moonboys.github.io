@@ -53,6 +53,7 @@ try {
       const url = new URL(route.request().url());
       if (before && process.env.HOUSE_BASE_CLIENT && url.pathname === '/js/moonpet-mini-app.js') return route.fulfill({contentType:'application/javascript',body:await fs.readFile(process.env.HOUSE_BASE_CLIENT,'utf8')});
       if (url.hostname === 'telegram.org') return route.fulfill({contentType:'application/javascript',body:`window.Telegram={WebApp:{initData:'fixture',viewportHeight:${telegramHeight || 0},viewportStableHeight:${telegramHeight || 0},ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};`});
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status:200, json:{ ok:true, member:true, status:'member', group:'@gkniftyheads' } });
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({json:{ok:true}});
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON(); requests.push({path:url.pathname,body});

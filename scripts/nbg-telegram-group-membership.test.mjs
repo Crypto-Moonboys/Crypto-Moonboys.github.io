@@ -28,6 +28,21 @@ function auth(id = OWNER) {
   };
 }
 
+function miniAppInitData(id = OWNER) {
+  const user = JSON.stringify({ id: Number(id), first_name: 'Mini App Fixture', username: 'fixture_member' });
+  const authDate = String(Math.floor(Date.now() / 1000));
+  const params = new URLSearchParams({
+    auth_date: authDate,
+    query_id: 'fixture-query',
+    user,
+  });
+  const check = [...params.entries()].sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => key + '=' + value).join('\n');
+  const secret = createHmac('sha256', 'WebAppData').update(TOKEN).digest();
+  params.set('hash', createHmac('sha256', secret).update(check).digest('hex'));
+  return params.toString();
+}
+
 function env(overrides = {}) {
   return {
     TELEGRAM_BOT_TOKEN: TOKEN,
@@ -90,6 +105,21 @@ for (const status of ['creator', 'administrator', 'member']) {
     });
   });
 }
+
+test('accepts signed Telegram Mini App initData for native game membership checks', async () => {
+  const mock = telegram('member');
+  const response = await handleTelegramGroupMembership(
+    request({ init_data: miniAppInitData() }),
+    env(),
+    mock.fetchImpl,
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    ok: true, member: true, status: 'member', group: '@gkniftyheads',
+  });
+  const lookup = mock.calls.find(call => /\/getChatMember$/.test(call.url));
+  assert.deepEqual(lookup.body, { chat_id: GROUP, user_id: Number(OWNER) });
+});
 
 test('restricted user counts only when Telegram says is_member=true', async () => {
   for (const [isMember, expected] of [[true, true], [false, false]]) {
@@ -172,6 +202,7 @@ test('CORS and readiness handling fail closed', async () => {
   assert.deepEqual(await get.json(), {
     ok:true, configured:true, bot_admin:true,
     bot_status:'administrator', bot_username:'WIKICOMSBOT',
+    native_init_data:true, all_games_gate_version:1,
     group:'@gkniftyheads'
   });
   const adminMembershipCall = admin.calls.find(call => /\/getChatMember$/.test(call.url));

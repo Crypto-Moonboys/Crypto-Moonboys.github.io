@@ -41,9 +41,13 @@ assertContains(indexHtml, 'telegramAuth.hash', 'Block Topia gate must require si
 assertContains(indexHtml, 'telegramAuth.auth_date', 'Block Topia gate must require signed auth date');
 assertContains(indexHtml, 'fetchProgressionForGate(telegramAuth)', 'Block Topia gate must verify XP using signed Telegram auth');
 assertContains(indexHtml, 'BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP', 'Block Topia gate must keep required Arcade XP threshold');
+assertContains(indexHtml, 'enforceCompetitiveArcadePageGate({ gameId: "blocktopia" })',
+  'Block Topia must verify Telegram group membership before its existing XP gate');
+
 assertOrdered(
   indexHtml,
-  ['const verified = await checkBlockTopiaGateIdentity(identity)', 'const telegramAuth = verified.telegramAuth',
+  ['identity.enforceCompetitiveArcadePageGate({ gameId: "blocktopia" })',
+    'const verified = await checkBlockTopiaGateIdentity(identity)', 'const telegramAuth = verified.telegramAuth',
     'fetchProgressionForGate(telegramAuth)', 'await mountAndConnect(telegramAuth, arcadeXpTotal)', 'connectMultiplayer({', 'telegramAuth,'],
   'Block Topia verified signed auth + XP gate must run before Colyseus join',
 );
@@ -271,4 +275,50 @@ const signedProof = { id: '123456789', auth_date: Math.floor(Date.now() / 1000),
   };
   assert.equal((await gateHelpers.checkBlockTopiaGateIdentity(identity)).status, 'auth_unavailable',
     'an unsigned proof must not grant access');
+}
+
+
+// Execute the page gate through membership, XP and click boundaries. A later
+// identity refresh cannot reuse another account's successful membership check.
+function entryPageHarness({ verifiedId = '123', progression } = {}) {
+  let owner='123', enterHandler=null, mounts=0, progressionCalls=0;
+  const screens=[];
+  const identity={
+    getTelegramId:()=>owner,isTelegramLinked:()=>Boolean(owner),
+    enforceCompetitiveArcadePageGate:async()=>({ok:true,telegram_auth:{id:'123'}}),
+  };
+  const run = new Function('window','document','checkBlockTopiaGateIdentity','fetchProgressionForGate','mountAndConnect','showGateScreen',`
+    const BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP=5000;
+    const buildErrorGate=()=> 'error', buildUnlinkedGate=()=> 'unlinked';
+    const buildAuthUnavailableGate=()=> 'auth-unavailable', buildXpGate=()=> 'xp-required', buildUnlockedGate=()=> 'unlocked';
+    ${extractFunction(indexHtml,'runGateAndLaunch')}
+    return runGateAndLaunch;
+  `)(
+    {MOONBOYS_IDENTITY:identity},
+    {getElementById:()=>({addEventListener:(_event,fn)=>{enterHandler=fn;}})},
+    async()=>({status:'verified',telegramAuth:{id:verifiedId}}),
+    async()=>{progressionCalls++;return progression ? progression() : {arcade_xp_total:5000};},
+    async()=>{mounts++;}, value=>screens.push(value),
+  );
+  return {run,change:id=>{owner=id;},click:()=>enterHandler?.(),screens,
+    counts:()=>({mounts,progressionCalls})};
+}
+{
+  const h=entryPageHarness({verifiedId:'456'});await h.run();
+  assert.equal(h.counts().progressionCalls,0,'new proof B must not reuse membership A');
+  assert.equal(h.screens.at(-1),'auth-unavailable');
+}
+{
+  let release;const h=entryPageHarness({progression:()=>new Promise(resolve=>{release=resolve;})});
+  const pending=h.run();while(!release)await new Promise(resolve=>setImmediate(resolve));
+  h.change('456');release({arcade_xp_total:5000});await pending;
+  assert.equal(h.screens.at(-1),'auth-unavailable','account change during XP check must block entry');
+}
+{
+  const h=entryPageHarness();await h.run();h.change('456');await h.click();
+  assert.equal(h.counts().mounts,0,'account change before Enter must block multiplayer mount');
+}
+{
+  const h=entryPageHarness();await h.run();await h.click();
+  assert.equal(h.counts().mounts,1,'unchanged verified member with enough XP can enter');
 }

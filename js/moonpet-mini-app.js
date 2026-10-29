@@ -691,6 +691,16 @@
             throw refreshError;
           }
           if (controller.signal.aborted) throw timeoutError;
+          if (telegramAuth && freshTelegramAuth &&
+              String(telegramAuth.id) !== String(freshTelegramAuth.id)) {
+            // The membership gate and loaded save belong to the previous actor.
+            // Require a fresh page gate before accepting another tab's account.
+            authenticationFailure = true;
+            var identityChangedError = new Error('TELEGRAM ACCOUNT CHANGED. RELOAD MOONPET OS TO VERIFY ACCESS.');
+            identityChangedError.status = 401;
+            identityChangedError.code = 'telegram_identity_changed';
+            throw identityChangedError;
+          }
           telegramAuth = freshTelegramAuth;
         }
         // State is safe to retry after a transient D1 read failure. Mutations
@@ -5498,6 +5508,82 @@
     requestAnimationFrame(frame);
   }
 
+  async function verifyMoonpetGroupMembership() {
+    if (!apiBase) return { ok: false, reason: 'membership_api_unavailable' };
+    var body = initData
+      ? { init_data: initData }
+      : telegramAuth
+        ? { telegram_auth: telegramAuth }
+        : null;
+    if (!body) return { ok: false, reason: 'telegram_auth_required' };
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer;
+    var deadline = new Promise(function (_, reject) {
+      timer = window.setTimeout(function () {
+        var error = new Error('membership_check_timeout');
+        error.name = 'AbortError';
+        reject(error);
+        if (controller) controller.abort();
+      }, 10000);
+    });
+    try {
+      var request = (async function () {
+        var response = await fetch(apiBase + '/telegram/group-membership', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          cache: 'no-store',
+          signal: controller ? controller.signal : undefined
+        });
+        var data = await response.json().catch(function () { return {}; });
+        if (!response.ok || data.ok !== true) {
+          return { ok: false, reason: data.error || 'membership_check_failed', status: response.status };
+        }
+        if (data.member !== true) {
+          return { ok: false, reason: 'group_membership_required', status: response.status };
+        }
+        return { ok: true, status: data.status || 'member', group: data.group || '@gkniftyheads' };
+      }());
+      // Bound both transport and body parsing, even when a WebView ignores abort.
+      return await Promise.race([request, deadline]);
+    } catch (error) {
+      return { ok: false, reason: error && error.name === 'AbortError' ? 'membership_check_timeout' : 'membership_check_failed' };
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  async function showMoonpetMembershipGate(result) {
+    typingToken += 1;
+    bootLayer.classList.add('is-hidden');
+    var authRequired = Number(result && result.status) === 401;
+    if (authRequired) {
+      tell('TELEGRAM SESSION EXPIRED OR INVALID. OPEN A FRESH SESSION FROM @WIKICOMSBOT.', 'danger');
+      screen.innerHTML = panel('TELEGRAM SIGNATURE REQUIRED',
+        '<div class="line">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session.</div>' +
+        '<a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a>' +
+        (!initData ? '<a class="terminal-link-button" href="/gkniftyheads-incubator.html" data-telegram-login>LOG IN WITH TELEGRAM</a>' : ''), 'telegram-auth');
+      screen.appendChild(nav);
+      return;
+    }
+    var groupRequired = result && result.reason === 'group_membership_required';
+    tell(groupRequired
+      ? 'TELEGRAM MEMBERS ONLY. JOIN GKNIFTYHEADS TO PLAY MOONPET OS.'
+      : 'TELEGRAM MEMBERSHIP COULD NOT BE VERIFIED. GAME LOCKED.', 'danger');
+    screen.innerHTML = panel('TELEGRAM MEMBERS ONLY',
+      '<div class="line">' + (groupRequired
+        ? 'YOUR TELEGRAM ACCOUNT IS VERIFIED, BUT GKNIFTYHEADS GROUP MEMBERSHIP IS REQUIRED TO PLAY.'
+        : 'MOONPET OS STAYS LOCKED UNTIL TELEGRAM LOGIN AND GKNIFTYHEADS MEMBERSHIP ARE VERIFIED.') + '</div>' +
+      '<div class="button-grid one">' +
+        '<a class="terminal-link-button" href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">JOIN GKNIFTYHEADS</a>' +
+        '<a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
+        '<button type="button" class="terminal-button" data-membership-retry>CHECK ACCESS</button>' +
+      '</div>', 'telegram-membership');
+    screen.appendChild(nav);
+    var retry = screen.querySelector('[data-membership-retry]');
+    if (retry) retry.addEventListener('click', function () { window.location.reload(); });
+  }
+
   async function start() {
     // Website session restoration and Telegram discovery are independent.
     // A restored signed website proof ends the discovery wait on its next tick.
@@ -5532,6 +5618,14 @@
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
       return;
     }
+
+    var membership = await verifyMoonpetGroupMembership();
+    if (!membership.ok) {
+      await startupBoot;
+      await showMoonpetMembershipGate(membership);
+      return;
+    }
+
     try {
       var requestGeneration = beginStateRequest();
       var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' });

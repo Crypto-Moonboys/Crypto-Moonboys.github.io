@@ -243,6 +243,7 @@ const GROUPS = {
     ['node', 'scripts/blocktopia-reconnect-protection.test.mjs'],
     ['node', 'scripts/blocktopia-movement-hardening.test.mjs'],
     ['node', 'scripts/identity-gate-auth-guard.test.mjs'],
+    ['node', 'scripts/arcade-telegram-membership-all-games.test.mjs'],
     ['node', 'scripts/competitive-arcade-bootstrap-gate.test.mjs'],
     ['node', 'scripts/leaderboard-client-regression.test.mjs'],
     ['node', 'scripts/arcade-no-local-pending-runs.test.mjs'],

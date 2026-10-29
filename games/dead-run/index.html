@@ -23,9 +23,21 @@
   <title>DEAD RUN — Real GPS Zombie Survival</title>
   <meta name="description" content="A Telegram Mini App survival game where zombies chase your real GPS position." />
   <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260902-dead-run-v5" />
+  <link rel="stylesheet" href="styles.css?v=20261029-members-only-v1" />
 </head>
 <body class="page-standalone-tool">
+  <div id="deadRunAccessGate" class="dead-run-access-gate" role="status" aria-live="polite">
+    <div class="dead-run-access-panel">
+      <h2>TELEGRAM MEMBERS ONLY</h2>
+      <p id="deadRunAccessMessage">Checking Telegram login and GKniftyHEADS group membership…</p>
+      <div class="dead-run-access-actions">
+        <a href="/games/telegram/">OPEN IN TELEGRAM</a>
+        <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">JOIN TELEGRAM GROUP</a>
+        <button id="deadRunAccessCheck" type="button">CHECK ACCESS</button>
+      </div>
+    </div>
+  </div>
+
   <div id="app">
     <div id="map" class="map-fallback-active" aria-label="Dead Run game map">
       <div id="fallbackMapLayer" class="fallback-map-layer" aria-hidden="true"></div>
@@ -65,7 +77,7 @@
       <label class="ack"><input id="safetyAck" type="checkbox" /> I will only play in a safe pedestrian area.</label>
       <button id="resumeBtn" class="secondary-btn hidden">RESUME ACTIVE RUN</button>
       <button id="startBtn" class="primary-btn" disabled>START REAL GPS RUN</button>
-      <button id="demoBtn" class="secondary-btn">DEMO MODE</button>
+      <button id="demoBtn" class="secondary-btn" disabled>DEMO MODE</button>
       <div class="mini-grid">
         <div><strong>60s</strong><span>head start</span></div>
         <div><strong>3</strong><span>bullets</span></div>
@@ -101,7 +113,7 @@
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-  <script src="/js/api-config.js?v=20260902-dead-run-v5"></script>
-  <script src="app.js?v=20260902-dead-run-v5"></script>
+  <script src="/js/api-config.js?v=20261029-members-only-v1"></script>
+  <script src="app.js?v=20261029-members-only-v1"></script>
 </body>
 </html>

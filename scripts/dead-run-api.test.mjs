@@ -96,6 +96,19 @@ for (const suffix of ['/profile', '/session/start', '/session/resume', '/session
   assert.ok(routeSource.includes('`${DEAD_RUN_ROUTE_PREFIX}' + suffix + '`'), `missing Dead Run route ${suffix}`);
 }
 assert.match(routeSource, /verifyTelegramMiniAppInitData/, 'Dead Run writes must authenticate Telegram Mini App initData');
+assert.match(routeSource, /checkTelegramGroupMember/, 'Dead Run entry must verify current Telegram group membership');
+for (const entryHandler of ['handleProfile', 'handleStart', 'handleResume']) {
+  const start = routeSource.indexOf('async function ' + entryHandler + '(');
+  const end = routeSource.indexOf('\nasync function ', start + 1);
+  const body = routeSource.slice(start, end > start ? end : undefined);
+  assert.match(body, /verifyDeadRunEntryMembership/,
+    entryHandler + ' must fail closed before Dead Run entry when group membership is missing');
+}
+assert.match(appSource, /arcadeAccessGranted/, 'Dead Run client must track verified Telegram membership access');
+assert.match(appSource, /async function startDemo\(\)[\s\S]{0,180}if \(!arcadeAccessGranted\)/,
+  'Dead Run Demo Mode must not bypass the Telegram members-only gate');
+assert.match(htmlSource, /id="deadRunAccessGate"/, 'Dead Run must render the Telegram members-only access overlay');
+assert.match(htmlSource, /id="demoBtn"[^>]*disabled/, 'Dead Run Demo Mode must start disabled before membership verification');
 assert.match(routeSource, /arcade_progression_state/, 'ranked settlement must credit shared Arcade XP');
 assert.match(routeSource, /arcade_xp_wallets/, 'ranked settlement must credit spendable Arcade XP authority');
 assert.match(routeSource, /start_lat = NULL[\s\S]*last_lng = NULL/, 'finished/abandoned sessions must clear precise stored GPS coordinates');
@@ -285,7 +298,7 @@ for (const id of [
   'banner', 'startPanel', 'gameOverPanel', 'gameOverTitle', 'finalStats', 'xpResult', 'slowCount',
   'gpsStatus', 'profileBox', 'hordeStrip', 'riskBadge', 'safetyAck', 'resumeBtn', 'leaderboardPanel',
   'leaderboardList', 'startBtn', 'demoBtn', 'againBtn', 'leaderboardBtn', 'closeLeaderboardBtn',
-  'centerBtn', 'slowBtn', 'gameLeaderboardBtn',
+  'centerBtn', 'slowBtn', 'gameLeaderboardBtn', 'deadRunAccessGate', 'deadRunAccessMessage', 'deadRunAccessCheck',
 ]) {
   assert.ok(htmlSource.includes(`id="${id}"`), `index.html must contain id="${id}"`);
   assert.ok(appSource.includes(`'${id}'`) || appSource.includes(`"${id}"`), `app.js must reference id "${id}"`);
@@ -506,3 +519,55 @@ for (const flag of ['player_stats_applied', 'arcade_xp_applied', 'horde_applied'
 }
 
 console.log('Dead Run P1/P2 regression checks: PASS');
+
+
+function extractAccessFunction(name) {
+  const match=appSource.match(new RegExp('(?:async )?function '+name+'\\s*\\('));
+  assert.ok(match,'missing runtime function '+name);
+  const brace=appSource.indexOf('{',match.index);let depth=0;
+  for(let i=brace;i<appSource.length;i++) {
+    if(appSource[i]==='{')depth++;
+    if(appSource[i]==='}'&&!--depth)return appSource.slice(match.index,i+1);
+  }
+  throw Error('unterminated '+name);
+}
+function accessProfileHarness({stallHorde=false}={}) {
+  const requests=[];
+  const make=()=>({textContent:'',disabled:false,checked:true,classList:{add(){},remove(){},toggle(){}}});
+  const nodes=new Map(['startBtn','demoBtn','resumeBtn'].map(key=>[key,make()]));
+  const ui={account:make(),gpsStatus:make(),horde:make(),safety:make(),resume:make(),accessGate:make(),accessMessage:make(),start:make()};
+  const h = new Function('$','ui','apiPost','apiGet',`
+    let arcadeAccessGranted=false,profileLoadVersion=0,profile=null,activeSessionFromProfile=null;
+    let player={},playerMarker=null,gameActive=false,telemetryQueue=[],gpsSeq=1;
+    const initData=()=> 'signed',renderHorde=()=>{},renderProfile=()=>{};
+    const getInitialGpsFix=async()=>({lat:1,lng:1}), moveMapTo=()=>{},clearWorld=()=>{};
+    const applySessionPayload=()=>{},requestWakeLock=async()=>{},startGpsWatch=()=>{},setBanner=()=>{};
+    ${['syncAccessControls','denyArcadeAccess','allowArcadeAccess','isAccessFailure','loadProfile','startRealRun'].map(extractAccessFunction).join('\n')}
+    return {load:loadProfile,start:startRealRun,allow:allowArcadeAccess,allowed:()=>arcadeAccessGranted};
+  `)(id=>nodes.get(id),ui,()=>new Promise((resolve,reject)=>requests.push({resolve,reject})),
+    ()=>stallHorde?new Promise(()=>{}):Promise.resolve({horde:{}}));
+  return {...h,requests,nodes};
+}
+const profileReply={player:{},daily:{},horde:{},active_session:null};
+{
+  const h=accessProfileHarness({stallHorde:true}),pending=h.load();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(h.requests.length,1,'stalled public horde must not block authenticated profile');
+  h.requests[0].resolve(profileReply);await pending;
+  assert.equal(h.allowed(),true);
+}
+{
+  const h=accessProfileHarness(),old=h.load(),fresh=h.load();
+  await new Promise(resolve=>setImmediate(resolve));
+  h.requests[1].reject(Object.assign(Error('not a member'),{status:403,code:'telegram_group_membership_required'}));await fresh;
+  h.requests[0].resolve(profileReply);await old;
+  assert.equal(h.allowed(),false,'stale success cannot override latest membership denial');
+}
+{
+  const h=accessProfileHarness();h.allow();const pending=h.start();
+  while(!h.requests.length)await new Promise(resolve=>setImmediate(resolve));
+  h.requests[0].reject(Object.assign(Error('not a member'),{status:403,code:'telegram_group_membership_required'}));await pending;
+  assert.equal(h.allowed(),false,'server entry denial revokes local Demo permission');
+  assert.equal(h.nodes.get('demoBtn').disabled,true);
+  assert.equal(h.nodes.get('startBtn').disabled,true,'finally must not reenable a denied start');
+}
