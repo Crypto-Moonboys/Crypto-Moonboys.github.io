@@ -5,7 +5,9 @@ const LIVE_URL = process.env.NBG_GROUP_GATE_URL ||
 const SITE_ORIGIN = 'https://cryptomoonboys.com';
 
 export function acceptsNbgGroupGateProbe(status, body) {
-  return status === 405 && body?.ok === false && body?.error === 'method_not_allowed';
+  return status === 200 && body?.ok === true &&
+    body?.configured === true && body?.bot_admin === true &&
+    body?.group === '@gkniftyheads';
 }
 
 export async function verifyNbgGroupGate(fetchImpl = fetch) {
@@ -19,7 +21,8 @@ export async function verifyNbgGroupGate(fetchImpl = fetch) {
   if (!acceptsNbgGroupGateProbe(response.status, body)) {
     throw new Error(
       'GitHub Pages rollout BLOCKED: live moonboys-api must support ' +
-      '/telegram/group-membership before publishing the NBG members-only client. ' +
+      '/telegram/group-membership with WIKICOMSBOT confirmed as a group admin ' +
+      'before publishing the NBG members-only client. ' +
       'Deploy merged main with: node scripts/deploy-worker-with-provenance.mjs moonboys-api'
     );
   }
