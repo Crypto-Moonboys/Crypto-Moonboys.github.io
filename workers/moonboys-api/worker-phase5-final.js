@@ -6,6 +6,7 @@ import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.
 import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
+import { handleTelegramGroupMembership } from './telegram-group-membership.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -353,6 +354,8 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/$/, '');
     const isTelegramWebhook = path === '/telegram/webhook' && request.method === 'POST';
+    const groupMembershipResponse = await handleTelegramGroupMembership(request, env);
+    if (groupMembershipResponse) return groupMembershipResponse;
     // This wrapper reads gear and repairs rewards around the base handler.
     // Its own gate must precede even cloning/parsing the request body.
     if (isTelegramWebhook) {
