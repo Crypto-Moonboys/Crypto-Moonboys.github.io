@@ -22,6 +22,7 @@ jobs:
       - run: node --check game/nbg-level1.js
       - run: node --check game/nbg-audio.js
       - run: node --check game/nbg-london-leaderboards.js
+      - run: node --check workers/moonboys-api/telegram-group-membership.js
       - run: node --check workers/leaderboard/nbg-london-records.js
       - run: node --check workers/leaderboard/nbg-london-replay.js
       - run: node --check workers/leaderboard/nbg-london-prizes.js
