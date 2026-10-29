@@ -4,6 +4,12 @@
   var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json';
   var STORAGE_KEY = 'nbg-audio-settings-v1';
   var MAX_VOICES = 12;
+  var MAX_ENEMY_LOOPS = 3;
+  var MAX_ENEMY_LOOP_SOURCES = 6;
+  var ENEMY_LOOP_DISTANCE = 520;
+  var ENEMY_LOOP_FADE_SECONDS = 0.12;
+  var ENEMY_LOOP_MIN_VOLUME = 0.035;
+  var ENEMY_LOOP_MAX_VOLUME = 0.24;
   var DEFAULT_SETTINGS = { muted: false, musicLevel: 0.42, sfxLevel: 0.78 };
   var PRIORITY = {
     game_over: 100, level_complete: 100, record_saved: 95, record_rejected: 95,
@@ -18,8 +24,21 @@
     spray_hit: 2, enemy_defeat: 3, pigeon_pass: 1, health_low: 1
   };
   var COOLDOWN_MS = {
-    coin_combo: 160, health_low: 1000, pigeon_pass: 450,
+    coin_combo: 160, health_low: 1000, pigeon_pass: 450, pigeon_call: 800,
+    graffbot_spot: 600, london_rat_alert: 450, brown_rat_alert: 450,
+    turquoise_rat_alert: 450, balloon_girl_spot: 650,
     ui_confirm: 80, ui_back: 80
+  };
+  var ENEMY_AUDIO = {
+    bot: { moving: 'graffbot_walk', idle: 'graffbot_idle', alert: 'graffbot_spot' },
+    rat: { moving: 'london_rat_walk', alert: 'london_rat_alert' },
+    brownRat: { moving: 'brown_rat_walk', alert: 'brown_rat_alert' },
+    turquoiseRat: { moving: 'turquoise_rat_walk', alert: 'turquoise_rat_alert' },
+    parachuteRatA: { moving: 'parachute_rat_a_descent' },
+    parachuteRatB: { moving: 'parachute_rat_b_descent' },
+    parachuteRatC: { moving: 'parachute_rat_c_descent' },
+    balloon: { moving: 'balloon_girl_walk', presence: 'balloon_girl_presence', alert: 'balloon_girl_spot' },
+    pigeon: { moving: 'pigeon_flight', alert: 'pigeon_call' }
   };
 
   var settings = loadSettings();
@@ -37,6 +56,12 @@
   // entered activeVoices. Reset and mute must silence the abandoned request too.
   var effectRequestGeneration = 0;
   var lastPlayedAt = new Map();
+  var enemyLoopVoices = new Map();
+  var enemyLoopSources = [];
+  var enemyEncountered = new Set();
+  var enemyLoopRequestGeneration = 0;
+  var enemyLoopStartCounter = 0;
+  var enemyLoopsPaused = false;
   var musicSource = null;
   var musicWanted = false;
   var musicRequest = 0;
@@ -90,6 +115,9 @@
     manifest = data;
     var entries = Object.keys(data.effects || {}).map(function (id) {
       return [id, data.effects[id]];
+    });
+    Object.keys(data.enemyIdentities || {}).forEach(function (id) {
+      entries.push([id, data.enemyIdentities[id]]);
     });
     if (data.music && data.music.main) entries.push(['music:main', data.music.main]);
     return Promise.all(entries.map(function (entry) {
@@ -185,6 +213,7 @@
   function stopVoices() {
     effectRequestGeneration += 1;
     activeVoices.slice().forEach(stopVoice);
+    stopEnemyLoops(false, true);
   }
 
   function chooseVoiceToEvict(priority) {
@@ -242,6 +271,172 @@
       voice.source.start();
     });
     return { stop: function () { stopVoice(voice); } };
+  }
+  function removeEnemyLoopSource(voice) {
+    var index = enemyLoopSources.indexOf(voice);
+    if (index >= 0) enemyLoopSources.splice(index, 1);
+  }
+
+  function setEnemyLoopGain(voice, volume, immediate) {
+    if (!voice || !voice.gain || !audioContext) return;
+    var gain = voice.gain.gain;
+    var now = audioContext.currentTime;
+    var target = clampLevel(volume, 0);
+    try {
+      gain.cancelScheduledValues(now);
+      gain.setValueAtTime(Number(gain.value) || 0, now);
+      if (immediate) gain.setValueAtTime(target, now);
+      else gain.linearRampToValueAtTime(target, now + ENEMY_LOOP_FADE_SECONDS);
+    } catch (_) {
+      gain.value = target;
+    }
+  }
+
+  function stopEnemyLoopVoice(voice, immediate) {
+    if (!voice) return;
+    if (voice.cancelled && !immediate) return;
+    voice.cancelled = true;
+    if (enemyLoopVoices.get(voice.key) === voice) enemyLoopVoices.delete(voice.key);
+    if (!voice.source) return;
+    var stopAt = audioContext ? audioContext.currentTime : 0;
+    if (!immediate) {
+      setEnemyLoopGain(voice, 0, false);
+      stopAt += ENEMY_LOOP_FADE_SECONDS;
+    }
+    try { voice.source.stop(stopAt); } catch (_) {}
+    if (immediate) {
+      try { voice.source.disconnect(); } catch (_) {}
+      try { if (voice.gain) voice.gain.disconnect(); } catch (_) {}
+      removeEnemyLoopSource(voice);
+    }
+  }
+
+  function stopEnemyLoops(clearEncounters, immediate) {
+    enemyLoopRequestGeneration += 1;
+    Array.from(enemyLoopVoices.values()).forEach(function (voice) {
+      stopEnemyLoopVoice(voice, !!immediate);
+    });
+    if (immediate) enemyLoopSources.slice().forEach(function (voice) {
+      stopEnemyLoopVoice(voice, true);
+    });
+    if (clearEncounters) enemyEncountered = new Set();
+  }
+
+  function enemyLoopId(snapshot, config) {
+    if (!config) return '';
+    if (snapshot.state === 'combat') return '';
+    if (snapshot.identity === 'balloon' && snapshot.state === 'release') return config.presence || '';
+    if (snapshot.moving) return config.moving || '';
+    return config.idle || config.presence || '';
+  }
+
+  function enemyDistance(snapshot, listener) {
+    var supplied = Number(snapshot.distance);
+    if (Number.isFinite(supplied)) return Math.max(0, supplied);
+    var dx = Number(snapshot.x || 0) - Number(listener.x || 0);
+    var dy = (Number(snapshot.y || 0) - Number(listener.y || 0)) * 0.55;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function enemyLoopVolume(distance) {
+    var proximity = Math.max(0, 1 - distance / ENEMY_LOOP_DISTANCE);
+    return ENEMY_LOOP_MIN_VOLUME +
+      (ENEMY_LOOP_MAX_VOLUME - ENEMY_LOOP_MIN_VOLUME) * proximity * proximity;
+  }
+
+  function startEnemyLoop(candidate) {
+    var voice = {
+      key: candidate.key,
+      id: candidate.id,
+      targetVolume: candidate.volume,
+      source: null,
+      gain: null,
+      cancelled: false,
+      generation: enemyLoopRequestGeneration
+    };
+    enemyLoopVoices.set(candidate.key, voice);
+    decodeAsset(candidate.id).then(function (buffer) {
+      if (!buffer || voice.cancelled || voice.generation !== enemyLoopRequestGeneration ||
+          enemyLoopVoices.get(voice.key) !== voice || settings.muted || enemyLoopsPaused ||
+          document.hidden || !audioContext || audioContext.state !== 'running') return;
+      while (enemyLoopSources.length >= MAX_ENEMY_LOOP_SOURCES) {
+        stopEnemyLoopVoice(enemyLoopSources[0], true);
+      }
+      voice.source = audioContext.createBufferSource();
+      voice.gain = audioContext.createGain();
+      voice.source.buffer = buffer;
+      voice.source.loop = true;
+      voice.gain.gain.setValueAtTime(0, audioContext.currentTime);
+      voice.source.connect(voice.gain);
+      voice.gain.connect(sfxGain);
+      voice.source.onended = function () {
+        try { voice.source.disconnect(); } catch (_) {}
+        try { voice.gain.disconnect(); } catch (_) {}
+        removeEnemyLoopSource(voice);
+        if (enemyLoopVoices.get(voice.key) === voice) enemyLoopVoices.delete(voice.key);
+      };
+      enemyLoopSources.push(voice);
+      var duration = Number(buffer.duration) || 0;
+      var offset = duration > 0 ? (enemyLoopStartCounter * 0.37) % duration : 0;
+      enemyLoopStartCounter += 1;
+      voice.source.start(0, offset);
+      setEnemyLoopGain(voice, voice.targetVolume, false);
+    });
+    return voice;
+  }
+
+  function updateEnemyLoops(detail) {
+    var frame = detail || {};
+    if (settings.muted || enemyLoopsPaused || document.hidden || !unlocked ||
+        !audioContext || audioContext.state !== 'running') {
+      stopEnemyLoops(false, false);
+      return;
+    }
+    var listener = frame.listener || {};
+    var snapshots = Array.isArray(frame.enemies) ? frame.enemies : [];
+    var candidates = [];
+    snapshots.forEach(function (snapshot, index) {
+      if (!snapshot || snapshot.alive === false || snapshot.visible !== true) return;
+      var key = snapshot.key || snapshot.enemy;
+      var identity = snapshot.identity || snapshot.variant || snapshot.type;
+      var config = ENEMY_AUDIO[identity];
+      if (!key || !config) return;
+      var normalized = Object.assign({}, snapshot, { identity: identity });
+      var id = enemyLoopId(normalized, config);
+      if (!id) return;
+      var distance = enemyDistance(normalized, listener);
+      if (distance > ENEMY_LOOP_DISTANCE) return;
+      candidates.push({
+        key: key,
+        id: id,
+        alert: config.alert || '',
+        distance: distance,
+        volume: enemyLoopVolume(distance),
+        order: index
+      });
+    });
+    candidates.sort(function (left, right) {
+      return left.distance - right.distance || left.order - right.order;
+    });
+    candidates = candidates.slice(0, MAX_ENEMY_LOOPS);
+    var desired = new Set(candidates.map(function (candidate) { return candidate.key; }));
+    Array.from(enemyLoopVoices.values()).forEach(function (voice) {
+      if (!desired.has(voice.key)) stopEnemyLoopVoice(voice, false);
+    });
+    candidates.forEach(function (candidate) {
+      var voice = enemyLoopVoices.get(candidate.key);
+      if (voice && voice.id !== candidate.id) {
+        stopEnemyLoopVoice(voice, false);
+        voice = null;
+      }
+      if (!voice) voice = startEnemyLoop(candidate);
+      voice.targetVolume = candidate.volume;
+      setEnemyLoopGain(voice, candidate.volume, false);
+      if (candidate.alert && !enemyEncountered.has(candidate.key)) {
+        enemyEncountered.add(candidate.key);
+        playEffect(candidate.alert, { priority: 34, volume: 0.46 });
+      }
+    });
   }
 
   function stopMusicSource() {
@@ -324,14 +519,19 @@
   }
 
   window.addEventListener('nbg-audio-cue', cueFromRuntime);
+  window.addEventListener('nbg-enemy-audio-frame', function (event) {
+    updateEnemyLoops(event && event.detail ? event.detail : {});
+  });
 
   window.addEventListener('nbg-level-started', function () {
+    enemyLoopsPaused = false;
     playEffect('ui_start', { priority: 80 });
     startMusic();
   });
 
   window.addEventListener('nbg-level-reset', function () {
     stopVoices();
+    stopEnemyLoops(true, true);
     stopMusic();
   });
 
@@ -381,11 +581,13 @@
   });
 
   window.addEventListener('nbg-game-over', function () {
+    stopEnemyLoops(false, false);
     stopMusic();
     playEffect('game_over', { priority: 100 });
   });
 
   window.addEventListener('nbg-level-complete', function () {
+    stopEnemyLoops(false, false);
     stopMusic();
     playEffect('level_complete', { priority: 100 });
   });
@@ -399,7 +601,9 @@
   });
 
   document.addEventListener('arcade-pause-change', function (event) {
-    playEffect(event && event.detail && event.detail.paused ? 'ui_pause' : 'ui_resume', { priority: 76 });
+    enemyLoopsPaused = !!(event && event.detail && event.detail.paused);
+    if (enemyLoopsPaused) stopEnemyLoops(false, false);
+    playEffect(enemyLoopsPaused ? 'ui_pause' : 'ui_resume', { priority: 76 });
   });
 
   document.addEventListener('arcade-mute-change', function (event) {
@@ -425,11 +629,15 @@
   document.addEventListener('visibilitychange', function () {
     if (!audioContext) return;
     if (document.hidden) {
+      stopEnemyLoops(false, true);
       audioContext.suspend().catch(function () {});
       return;
     }
     if (unlocked && !settings.muted) resumeContext();
   });
+
+  window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); });
+  window.addEventListener('beforeunload', function () { stopEnemyLoops(false, true); });
 
   window._arcadeMuted = settings.muted;
   var api = {
@@ -438,6 +646,8 @@
     startMusic: startMusic,
     stopMusic: stopMusic,
     stopAllSounds: stopAllSounds,
+    updateEnemyLoops: updateEnemyLoops,
+    stopEnemyLoops: function () { stopEnemyLoops(true, true); },
     setMuted: setMuted,
     isMuted: isMuted,
     setLevels: setLevels,
@@ -451,6 +661,11 @@
         sfxLevel: settings.sfxLevel,
         activeVoices: activeVoices.length,
         maxVoices: MAX_VOICES,
+        activeEnemyLoops: enemyLoopVoices.size,
+        enemyLoopSources: enemyLoopSources.length,
+        enemyLoopIds: Array.from(enemyLoopVoices.values()).map(function (voice) { return voice.id; }),
+        enemyLoopVolumes: Array.from(enemyLoopVoices.values()).map(function (voice) { return voice.targetVolume; }),
+        maxEnemyLoops: MAX_ENEMY_LOOPS,
         musicWanted: musicWanted,
         musicPlaying: !!musicSource,
         manifestLoaded: !!manifest,

@@ -23,6 +23,15 @@ const expectedEffects = [
   'speed_boost_end', 'mystery_box', 'star_box', 'checkpoint'
 ].sort();
 
+const expectedEnemyIdentities = [
+  'graffbot_walk', 'graffbot_idle', 'graffbot_spot',
+  'london_rat_walk', 'london_rat_alert', 'brown_rat_walk', 'brown_rat_alert',
+  'turquoise_rat_walk', 'turquoise_rat_alert',
+  'parachute_rat_a_descent', 'parachute_rat_b_descent', 'parachute_rat_c_descent',
+  'balloon_girl_walk', 'balloon_girl_presence', 'balloon_girl_spot',
+  'pigeon_flight', 'pigeon_call'
+].sort();
+
 function createEventTarget() {
   const listeners = new Map();
   return {
@@ -51,6 +60,15 @@ function fakeAudioEnvironment(manifest, options = {}) {
   });
   const stored = new Map();
   const pendingAssetFetches = [];
+  const assetIds = new Map([
+    ...Object.entries(manifest.effects || {}).map(([id, file]) => [file, id]),
+    ...Object.entries(manifest.enemyIdentities || {}).map(([id, file]) => [file, id]),
+    ...(manifest.music?.main ? [[manifest.music.main, 'music:main']] : [])
+  ]);
+  const encodedAsset = (url) => {
+    const match = [...assetIds].find(([file]) => url.endsWith(file));
+    return { id: match ? match[1] : 'unknown', slice() { return this; } };
+  };
   window.localStorage = {
     getItem(key) { return stored.has(key) ? stored.get(key) : null; },
     setItem(key, value) { stored.set(key, String(value)); }
@@ -66,25 +84,31 @@ function fakeAudioEnvironment(manifest, options = {}) {
       contexts.push(this);
     }
     createGain() {
-      return {
-        gain: { value: 1, setValueAtTime(value) { this.value = value; } },
-        connect() {},
-        disconnect() {}
+      const gain = {
+        value: 1,
+        ramps: [],
+        setValueAtTime(value) { this.value = value; },
+        cancelScheduledValues() {},
+        linearRampToValueAtTime(value, time) {
+          this.value = value;
+          this.ramps.push({ value, time });
+        }
       };
+      return { gain, connect() {}, disconnect() {} };
     }
     createBufferSource() {
       const source = {
         loop: false,
         buffer: null,
         onended: null,
-        connect() {},
+        connect(target) { source.destination = target; },
         disconnect() {},
-        start() { sources.push(source); },
-        stop() { if (source.onended) source.onended(); }
+        start(...args) { source.startArgs = args; sources.push(source); },
+        stop(when) { source.stopped = true; source.stopAt = when; if (source.onended) source.onended(); }
       };
       return source;
     }
-    decodeAudioData() { return Promise.resolve({ duration: 1 }); }
+    decodeAudioData(data) { return Promise.resolve({ duration: 1, id: data.id }); }
     resume() { this.state = 'running'; return Promise.resolve(); }
     suspend() { this.state = 'suspended'; return Promise.resolve(); }
   }
@@ -99,13 +123,13 @@ function fakeAudioEnvironment(manifest, options = {}) {
       ok: true,
       status: 200,
       arrayBuffer: options.delayAssets ?
-        () => new Promise((resolve) => pendingAssetFetches.push(resolve)) :
-        async () => new ArrayBuffer(16)
+        () => new Promise((resolve) => pendingAssetFetches.push({ resolve, data: encodedAsset(url) })) :
+        async () => encodedAsset(url)
     };
   }
 
   function releaseAssets() {
-    for (const resolve of pendingAssetFetches.splice(0)) resolve(new ArrayBuffer(16));
+    for (const pending of pendingAssetFetches.splice(0)) pending.resolve(pending.data);
   }
 
   return { document, window, stored, sources, contexts, fetch, releaseAssets };
@@ -121,10 +145,16 @@ test('live audio payload contains exactly the approved compressed pack', async (
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   assert.deepEqual(Object.keys(manifest.effects).sort(), expectedEffects);
   assert.equal(Object.keys(manifest.effects).length, 42);
+  assert.deepEqual(Object.keys(manifest.enemyIdentities).sort(), expectedEnemyIdentities);
+  assert.equal(Object.keys(manifest.enemyIdentities).length, 17);
   assert.equal(manifest.music.main, 'music/main_theme_dark_industrial_loop.ogg');
 
-  const referenced = [...Object.values(manifest.effects), manifest.music.main];
-  assert.equal(new Set(referenced).size, 43);
+  const referenced = [
+    ...Object.values(manifest.effects),
+    ...Object.values(manifest.enemyIdentities),
+    manifest.music.main
+  ];
+  assert.equal(new Set(referenced).size, 60);
   for (const relative of referenced) {
     assert.equal(relative.endsWith('.ogg'), true, relative);
     assert.equal(relative.includes('..'), false, relative);
@@ -136,7 +166,7 @@ test('live audio payload contains exactly the approved compressed pack', async (
   }
 
   const deployedFiles = [];
-  for (const directory of ['sfx', 'music']) {
+  for (const directory of ['sfx', 'music', 'enemy']) {
     for (const file of await readdir(path.join(audioRoot, directory))) {
       deployedFiles.push(file);
     }
@@ -167,7 +197,7 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
   assert.equal(env.contexts.length, 0, 'AudioContext must not be created on page load');
   await flushPromises();
-  assert.equal(env.window.NBGAudio.getState().encodedAssets, 43);
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, 60);
   assert.equal(env.window.NBGAudio.getState().maxVoices, 12);
 
   env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
@@ -235,6 +265,171 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   assert.equal(env.contexts[0].state, 'running');
 });
 
+
+test('enemy identities use bounded persistent proximity loops with complete lifecycle control', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  const env = fakeAudioEnvironment(manifest);
+  const context = vm.createContext({
+    window: env.window,
+    document: env.document,
+    fetch: env.fetch,
+    CustomEvent: FakeCustomEvent,
+    URL,
+    Map,
+    Set,
+    Object,
+    Number,
+    Promise,
+    Date,
+    Array,
+    Math,
+    console
+  });
+
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises();
+  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  await flushPromises();
+
+  const dispatchFrame = (enemies) => {
+    env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
+      detail: { listener: { x: 0, y: 0 }, enemies }
+    }));
+  };
+  const snapshot = (key, identity, overrides = {}) => ({
+    key,
+    identity,
+    x: 20,
+    y: 0,
+    moving: true,
+    state: 'moving',
+    alive: true,
+    visible: true,
+    ...overrides
+  });
+
+  const loopMappings = [
+    ['bot', {}, 'graffbot_walk'],
+    ['bot', { moving: false, state: 'idle' }, 'graffbot_idle'],
+    ['rat', {}, 'london_rat_walk'],
+    ['brownRat', {}, 'brown_rat_walk'],
+    ['turquoiseRat', {}, 'turquoise_rat_walk'],
+    ['parachuteRatA', {}, 'parachute_rat_a_descent'],
+    ['parachuteRatB', {}, 'parachute_rat_b_descent'],
+    ['parachuteRatC', {}, 'parachute_rat_c_descent'],
+    ['balloon', {}, 'balloon_girl_walk'],
+    ['balloon', { moving: false, state: 'release' }, 'balloon_girl_presence'],
+    ['pigeon', {}, 'pigeon_flight']
+  ];
+
+  for (const [identity, overrides, expected] of loopMappings) {
+    dispatchFrame([snapshot({}, identity, overrides)]);
+    await flushPromises();
+    assert.deepEqual([...env.window.NBGAudio.getState().enemyLoopIds], [expected], identity);
+    dispatchFrame([]);
+    await flushPromises();
+    assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, identity + ' stopped');
+  }
+
+  for (const alert of [
+    'graffbot_spot', 'london_rat_alert', 'brown_rat_alert',
+    'turquoise_rat_alert', 'balloon_girl_spot', 'pigeon_call'
+  ]) {
+    assert.equal(env.sources.some((node) => node.buffer?.id === alert && node.loop === false), true, alert);
+  }
+
+  const keys = Array.from({ length: 5 }, () => ({}));
+  dispatchFrame([
+    snapshot(keys[0], 'bot', { distance: 10 }),
+    snapshot(keys[1], 'rat', { distance: 80 }),
+    snapshot(keys[2], 'brownRat', { distance: 160 }),
+    snapshot(keys[3], 'turquoiseRat', { distance: 240 }),
+    snapshot(keys[4], 'pigeon', { distance: 320 })
+  ]);
+  await flushPromises();
+  let state = env.window.NBGAudio.getState();
+  assert.equal(state.activeEnemyLoops, 3);
+  assert.equal(state.maxEnemyLoops, 3);
+  assert.deepEqual([...state.enemyLoopIds], ['graffbot_walk', 'london_rat_walk', 'brown_rat_walk']);
+  assert.equal(state.enemyLoopVolumes[0] > state.enemyLoopVolumes[1], true);
+  assert.equal(state.enemyLoopVolumes[1] > state.enemyLoopVolumes[2], true);
+
+  const loopStarts = env.sources.filter((node) => node.loop && node.buffer?.id !== 'music:main').length;
+  for (let frame = 0; frame < 50; frame += 1) {
+    dispatchFrame([
+      snapshot(keys[0], 'bot', { distance: 10 }),
+      snapshot(keys[1], 'rat', { distance: 80 }),
+      snapshot(keys[2], 'brownRat', { distance: 160 }),
+      snapshot(keys[3], 'turquoiseRat', { distance: 240 })
+    ]);
+  }
+  await flushPromises();
+  assert.equal(
+    env.sources.filter((node) => node.loop && node.buffer?.id !== 'music:main').length,
+    loopStarts,
+    'stable enemies must reuse persistent voices'
+  );
+  assert.equal(env.window.NBGAudio.getState().enemyLoopSources <= 3, true);
+
+  dispatchFrame([snapshot({}, 'rat', { visible: false })]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'offscreen enemies stay silent');
+  dispatchFrame([snapshot({}, 'rat', { distance: 521 })]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'distant enemies stay silent');
+  dispatchFrame([snapshot({}, 'rat', { moving: false, state: 'idle' })]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'stationary rats have no movement loop');
+  dispatchFrame([snapshot({}, 'bot', { moving: false, state: 'combat' })]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'Graffbot fire suppresses movement audio');
+
+  const lifecycleKey = {};
+  dispatchFrame([snapshot(lifecycleKey, 'rat')]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 1);
+  dispatchFrame([snapshot(lifecycleKey, 'rat', { alive: false })]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'death stops the loop');
+
+  dispatchFrame([snapshot(lifecycleKey, 'rat')]);
+  await flushPromises();
+  env.document.dispatchEvent(new FakeCustomEvent('arcade-pause-change', { detail: { paused: true } }));
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'pause stops loops');
+  env.document.dispatchEvent(new FakeCustomEvent('arcade-pause-change', { detail: { paused: false } }));
+  dispatchFrame([snapshot(lifecycleKey, 'rat')]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 1, 'resume permits loops');
+
+  env.document.hidden = true;
+  env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'hidden tab stops loops');
+  env.document.hidden = false;
+  env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
+  await flushPromises();
+  dispatchFrame([snapshot(lifecycleKey, 'rat')]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 1);
+
+  env.window.NBGAudio.setMuted(true);
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'mute stops loops');
+  env.window.NBGAudio.setMuted(false);
+  await flushPromises();
+  dispatchFrame([snapshot(lifecycleKey, 'rat')]);
+  await flushPromises();
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 1);
+
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-reset'));
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'reset stops loops');
+  dispatchFrame([snapshot(lifecycleKey, 'rat')]);
+  await flushPromises();
+  env.window.dispatchEvent(new FakeCustomEvent('pagehide'));
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0, 'page exit stops loops');
+});
+
+
 test('reset cancels effects still waiting for asset preload and decode', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   const source = await readFile(managerPath, 'utf8');
@@ -263,8 +458,19 @@ test('reset cancels effects still waiting for asset preload and decode', async (
   env.window.dispatchEvent(new FakeCustomEvent('nbg-audio-cue', {
     detail: { id: 'jump_1' }
   }));
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
+    detail: {
+      listener: { x: 0, y: 0 },
+      enemies: [{
+        key: 'pending-rat', identity: 'rat', distance: 20, moving: true,
+        state: 'moving', alive: true, visible: true
+      }]
+    }
+  }));
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 1);
   env.window.dispatchEvent(new FakeCustomEvent('nbg-level-reset'));
   assert.equal(env.window.NBGAudio.getState().activeVoices, 0);
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0);
 
   env.releaseAssets();
   await flushPromises(16);
@@ -291,8 +497,11 @@ test('runtime hooks are presentation-only and record sounds follow NBG server au
     assert.equal(runtime.includes("'" + cue + "'"), true, cue);
   }
   assert.match(runtime, /Presentation-only cue bus/);
+  assert.match(runtime, /nbg-enemy-audio-frame/);
+  assert.match(runtime, /var identity = airborne \? enemy\.variant : enemy\.type/);
+  assert.match(runtime, /rat\.variant === 'parachuteRatC' \? 'turquoiseRat' : 'brownRat'/);
   assert.doesNotMatch(manager, /NBGLevel1State|runReplayFrames|nextRunRandom/);
-  assert.doesNotMatch(workerReplay, /NBGAudio|nbg-audio-cue|AudioContext/);
+  assert.doesNotMatch(workerReplay, /NBGAudio|nbg-audio-cue|nbg-enemy-audio-frame|AudioContext/);
   assert.match(records, /authoritativeRejection/);
   assert.match(records, /accepted: true, authoritative: true/);
   assert.ok(html.indexOf('/game/nbg-audio.js') < html.indexOf('/game/nbg-level1.js'));
