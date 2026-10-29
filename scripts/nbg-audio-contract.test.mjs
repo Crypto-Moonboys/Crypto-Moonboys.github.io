@@ -60,6 +60,8 @@ function fakeAudioEnvironment(manifest, options = {}) {
   });
   const stored = new Map();
   const pendingAssetFetches = [];
+  const requests = [];
+  const remainingFailures = new Map(Object.entries(options.assetFailures || {}));
   const assetIds = new Map([
     ...Object.entries(manifest.effects || {}).map(([id, file]) => [file, id]),
     ...Object.entries(manifest.enemyIdentities || {}).map(([id, file]) => [file, id]),
@@ -114,17 +116,24 @@ function fakeAudioEnvironment(manifest, options = {}) {
   }
   window.AudioContext = FakeAudioContext;
 
-  async function fetch(input) {
+  async function fetch(input, init = {}) {
     const url = String(input);
-    if (url.endsWith('/manifest.json')) {
+    requests.push({ url, cache: init.cache || 'default' });
+    if (url.includes('/manifest.json')) {
       return { ok: true, status: 200, json: async () => manifest };
+    }
+    const data = encodedAsset(url);
+    const remaining = Number(remainingFailures.get(data.id) || 0);
+    if (remaining > 0) {
+      remainingFailures.set(data.id, remaining - 1);
+      return { ok: false, status: 503, arrayBuffer: async () => data };
     }
     return {
       ok: true,
       status: 200,
       arrayBuffer: options.delayAssets ?
-        () => new Promise((resolve) => pendingAssetFetches.push({ resolve, data: encodedAsset(url) })) :
-        async () => encodedAsset(url)
+        () => new Promise((resolve) => pendingAssetFetches.push({ resolve, data })) :
+        async () => data
     };
   }
 
@@ -132,7 +141,7 @@ function fakeAudioEnvironment(manifest, options = {}) {
     for (const pending of pendingAssetFetches.splice(0)) pending.resolve(pending.data);
   }
 
-  return { document, window, stored, sources, contexts, fetch, releaseAssets };
+  return { document, window, stored, sources, contexts, requests, fetch, releaseAssets };
 }
 
 async function flushPromises(rounds = 8) {
@@ -505,4 +514,97 @@ test('runtime hooks are presentation-only and record sounds follow NBG server au
   assert.match(records, /authoritativeRejection/);
   assert.match(records, /accepted: true, authoritative: true/);
   assert.ok(html.indexOf('/game/nbg-audio.js') < html.indexOf('/game/nbg-level1.js'));
+});
+
+
+test('enemy identity preload refreshes only the manifest and keeps audio cacheable', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  assert.match(source, /manifest\.json\?v=/);
+  const env = fakeAudioEnvironment(manifest);
+  const context = vm.createContext({ window: env.window, document: env.document,
+    fetch: env.fetch, CustomEvent: FakeCustomEvent, URL, Map, Set, Object,
+    Number, Promise, Date, Array, Math, console });
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises(12);
+
+  const manifestRequests = env.requests.filter(({ url }) => url.includes('/manifest.json'));
+  const assetRequests = env.requests.filter(({ url }) => !url.includes('/manifest.json'));
+  assert.equal(manifestRequests.length, 1);
+  assert.equal(manifestRequests[0].url.includes('?v='), true);
+  assert.equal(manifestRequests[0].cache, 'no-store');
+  assert.equal(assetRequests.length, 60);
+  assert.equal(assetRequests.every(({ cache }) => cache === 'force-cache'), true);
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, 60);
+  assert.equal(env.window.NBGAudio.getState().enemyAssetsLoaded, 17);
+  assert.deepEqual([...env.window.NBGAudio.getState().failedAssets], []);
+
+  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  await flushPromises();
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
+    detail: { listener: { x: 100, y: 100 }, enemies: [
+      { key: 'near-bot', identity: 'bot', x: 115, y: 100, moving: true,
+        state: 'moving', alive: true, visible: true }
+    ] }
+  }));
+  await flushPromises(12);
+  assert.deepEqual([...env.window.NBGAudio.getState().enemyLoopIds], ['graffbot_walk']);
+  assert.equal(env.window.NBGAudio.getState().enemyLoopSources, 1);
+  assert.equal(
+    env.sources.some((node) => node.loop === true && node.buffer?.id === 'graffbot_walk'),
+    true
+  );
+});
+
+test('enemy loop retries a transient per-file failure without redownloading the pack', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  const env = fakeAudioEnvironment(manifest, { assetFailures: { graffbot_walk: 2 } });
+  let nowMs = 1000;
+  class TestDate extends Date {
+    static now() { return nowMs; }
+  }
+  const quietConsole = { warn() {}, log() {}, error() {} };
+  const context = vm.createContext({ window: env.window, document: env.document,
+    fetch: env.fetch, CustomEvent: FakeCustomEvent, URL, Map, Set, Object,
+    Number, Promise, Date: TestDate, Array, Math, console: quietConsole });
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises(12);
+
+  let state = env.window.NBGAudio.getState();
+  assert.equal(state.encodedAssets, 59);
+  assert.equal(state.enemyAssetsLoaded, 16);
+  assert.equal(state.failedAssets.some(([id]) => id === 'graffbot_walk'), true);
+
+  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  await flushPromises();
+  const frame = new FakeCustomEvent('nbg-enemy-audio-frame', {
+    detail: { listener: { x: 100, y: 100 }, enemies: [
+      { key: 'retry-bot', identity: 'bot', x: 115, y: 100, moving: true,
+        state: 'moving', alive: true, visible: true }
+    ] }
+  });
+  env.window.dispatchEvent(frame);
+  await flushPromises(12);
+  assert.equal(env.window.NBGAudio.getState().activeEnemyLoops, 0);
+  assert.deepEqual(
+    env.requests.filter(({ url }) => url.endsWith('/enemy/graffbot_walk.ogg'))
+      .map(({ cache }) => cache),
+    ['force-cache', 'reload']
+  );
+
+  nowMs += 4000;
+  env.window.dispatchEvent(frame);
+  await flushPromises(12);
+  state = env.window.NBGAudio.getState();
+  assert.equal(state.encodedAssets, 60);
+  assert.equal(state.enemyAssetsLoaded, 17);
+  assert.equal(state.failedAssets.some(([id]) => id === 'graffbot_walk'), false);
+  assert.deepEqual([...state.enemyLoopIds], ['graffbot_walk']);
+  assert.equal(state.enemyLoopSources, 1);
+  assert.deepEqual(
+    env.requests.filter(({ url }) => url.endsWith('/enemy/graffbot_walk.ogg'))
+      .map(({ cache }) => cache),
+    ['force-cache', 'reload', 'reload']
+  );
 });

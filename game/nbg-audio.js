@@ -1,13 +1,14 @@
 (function () {
   'use strict';
 
-  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json';
+  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-identity-1671-r2';
   var STORAGE_KEY = 'nbg-audio-settings-v1';
   var MAX_VOICES = 12;
   var MAX_ENEMY_LOOPS = 3;
   var MAX_ENEMY_LOOP_SOURCES = 6;
   var ENEMY_LOOP_DISTANCE = 520;
   var ENEMY_LOOP_FADE_SECONDS = 0.12;
+  var ENEMY_LOOP_RETRY_MS = 3000;
   var ENEMY_LOOP_MIN_VOLUME = 0.035;
   var ENEMY_LOOP_MAX_VOLUME = 0.24;
   var DEFAULT_SETTINGS = { muted: false, musicLevel: 0.42, sfxLevel: 0.78 };
@@ -49,6 +50,8 @@
   var unlocked = false;
   var manifest = null;
   var encodedAssets = new Map();
+  var assetFailures = new Map();
+  var manifestError = null;
   var decodedBuffers = new Map();
   var decodePromises = new Map();
   var activeVoices = [];
@@ -60,6 +63,7 @@
   var enemyLoopSources = [];
   var enemyEncountered = new Set();
   var enemyLoopRequestGeneration = 0;
+  var enemyLoopRetryAt = new Map();
   var enemyLoopStartCounter = 0;
   var enemyLoopsPaused = false;
   var musicSource = null;
@@ -98,21 +102,30 @@
     return new URL(file, new URL(MANIFEST_URL, window.location.href)).href;
   }
 
-  function fetchAsset(id, file) {
-    return fetch(assetUrl(file), { cache: 'force-cache' }).then(function (response) {
+  function fetchAsset(id, file, options) {
+    var cacheMode = options && options.retry ? 'reload' : 'force-cache';
+    return fetch(assetUrl(file), { cache: cacheMode }).then(function (response) {
       if (!response.ok) throw new Error('NBG audio asset failed: ' + id + ' (' + response.status + ')');
       return response.arrayBuffer();
     }).then(function (data) {
       encodedAssets.set(id, data);
+      assetFailures.delete(id);
       return data;
+    }).catch(function (error) {
+      assetFailures.set(id, String(error && error.message || error));
+      console.warn('[NBG audio] asset unavailable: ' + id, error);
+      return null;
     });
   }
 
-  var manifestPromise = fetch(MANIFEST_URL, { cache: 'force-cache' }).then(function (response) {
+  var manifestPromise = fetch(MANIFEST_URL, { cache: 'no-store' }).then(function (response) {
     if (!response.ok) throw new Error('NBG audio manifest failed (' + response.status + ')');
     return response.json();
   }).then(function (data) {
     manifest = data;
+    if (Object.keys(data.enemyIdentities || {}).length !== 17) {
+      console.warn('[NBG audio] expected 17 enemy identity sounds, got ' + Object.keys(data.enemyIdentities || {}).length);
+    }
     var entries = Object.keys(data.effects || {}).map(function (id) {
       return [id, data.effects[id]];
     });
@@ -124,7 +137,8 @@
       return fetchAsset(entry[0], entry[1]);
     })).then(function () { return data; });
   }).catch(function (error) {
-    console.warn('[NBG audio] preload unavailable:', error && error.message ? error.message : error);
+    manifestError = String(error && error.message || error);
+    console.warn('[NBG audio] preload unavailable:', manifestError);
     return null;
   });
 
@@ -163,8 +177,14 @@
     if (decodePromises.has(id)) return decodePromises.get(id);
     var pending = manifestPromise.then(function () {
       var context = ensureContext();
-      var encoded = encodedAssets.get(id);
-      if (!context || !encoded) return null;
+      if (!context || !manifest) return null;
+      var file = (manifest.effects || {})[id] || (manifest.enemyIdentities || {})[id] ||
+        (id === 'music:main' && manifest.music && manifest.music.main);
+      if (!file) return null;
+      return encodedAssets.has(id) ? encodedAssets.get(id) : fetchAsset(id, file, { retry: true });
+    }).then(function (encoded) {
+      if (!encoded || !audioContext) return null;
+      var context = audioContext;
       return context.decodeAudioData(encoded.slice(0)).then(function (buffer) {
         decodedBuffers.set(id, buffer);
         return buffer;
@@ -174,6 +194,7 @@
       return null;
     });
     decodePromises.set(id, pending);
+    pending.then(function (buffer) { if (!buffer) decodePromises.delete(id); });
     return pending;
   }
 
@@ -319,7 +340,10 @@
     if (immediate) enemyLoopSources.slice().forEach(function (voice) {
       stopEnemyLoopVoice(voice, true);
     });
-    if (clearEncounters) enemyEncountered = new Set();
+    if (clearEncounters) {
+      enemyEncountered = new Set();
+      enemyLoopRetryAt.clear();
+    }
   }
 
   function enemyLoopId(snapshot, config) {
@@ -356,9 +380,16 @@
     };
     enemyLoopVoices.set(candidate.key, voice);
     decodeAsset(candidate.id).then(function (buffer) {
-      if (!buffer || voice.cancelled || voice.generation !== enemyLoopRequestGeneration ||
-          enemyLoopVoices.get(voice.key) !== voice || settings.muted || enemyLoopsPaused ||
-          document.hidden || !audioContext || audioContext.state !== 'running') return;
+      if (voice.cancelled || voice.generation !== enemyLoopRequestGeneration ||
+          enemyLoopVoices.get(voice.key) !== voice) return;
+      if (!buffer) {
+        enemyLoopVoices.delete(voice.key);
+        enemyLoopRetryAt.set(voice.id, Date.now() + ENEMY_LOOP_RETRY_MS);
+        return;
+      }
+      if (settings.muted || enemyLoopsPaused || document.hidden || !audioContext ||
+          audioContext.state !== 'running') return;
+      enemyLoopRetryAt.delete(voice.id);
       while (enemyLoopSources.length >= MAX_ENEMY_LOOP_SOURCES) {
         stopEnemyLoopVoice(enemyLoopSources[0], true);
       }
@@ -429,7 +460,10 @@
         stopEnemyLoopVoice(voice, false);
         voice = null;
       }
-      if (!voice) voice = startEnemyLoop(candidate);
+      if (!voice && Date.now() >= Number(enemyLoopRetryAt.get(candidate.id) || 0)) {
+        voice = startEnemyLoop(candidate);
+      }
+      if (!voice) return;
       voice.targetVolume = candidate.volume;
       setEnemyLoopGain(voice, candidate.volume, false);
       if (candidate.alert && !enemyEncountered.has(candidate.key)) {
@@ -670,6 +704,10 @@
         musicPlaying: !!musicSource,
         manifestLoaded: !!manifest,
         encodedAssets: encodedAssets.size,
+        expectedAssets: manifest ? Object.keys(manifest.effects || {}).length + Object.keys(manifest.enemyIdentities || {}).length + (manifest.music && manifest.music.main ? 1 : 0) : 0,
+        enemyAssetsLoaded: manifest ? Object.keys(manifest.enemyIdentities || {}).filter(function (id) { return encodedAssets.has(id); }).length : 0,
+        failedAssets: Array.from(assetFailures.entries()),
+        manifestError: manifestError,
         decodedAssets: decodedBuffers.size
       };
     }
