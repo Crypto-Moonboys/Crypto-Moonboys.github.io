@@ -559,37 +559,54 @@
     }
   }
 
-  async function beforeQueuedRun() {
-    var requestedGeneration = generation;
-    var access = await verifyGameAccess(false);
-    if (requestedGeneration !== generation || !access || access.allow !== true) return { allow: false };
-
+  function beforeQueuedRun() {
     var gate = window.MOONBOYS_IDENTITY;
     var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
 
-    // Local/dev validation keeps the historical guest/practice behaviour.
-    // Production can reach this point only after verified linked membership.
-    if (access.source !== 'telegram-group' && (!id || !gate ||
-        !gate.isTelegramLinked || !gate.isTelegramLinked())) {
-      return { allow: true };
+    // Preserve the original synchronous local/dev start path. Making every
+    // local start await an already-allowed Promise creates a fake pending run;
+    // identity bootstrap events can then clear a pre-init jump before physics.
+    if (!productionAccessGateEnabled()) {
+      if (!id || !gate || !gate.isTelegramLinked || !gate.isTelegramLinked() ||
+          uncertainOwner(id) || !serverStartQueues.has(id)) {
+        return { allow: true, source: 'non-production' };
+      }
+      var localPreparation = beginRankedRun();
+      preparedStartGeneration = generation;
+      return Promise.resolve(localPreparation).then(function () {
+        return { allow: true, source: 'non-production' };
+      });
     }
-    if (!id || !gate || !gate.isTelegramLinked || !gate.isTelegramLinked()) {
-      return { allow: false };
-    }
-    if (uncertainOwner(id) || !serverStartQueues.has(id)) return { allow: true };
 
-    // A same-owner HTTP start is still pending: create the replacement session
-    // BEFORE simulation begins so its real elapsed-time checks stay accurate.
-    // Ranking failure does not revoke already-verified group access; it only
-    // downgrades that eligible member to an unsaved practice run.
-    var preparingGeneration = generation + 1;
-    var preparingAccessVersion = accessVersion;
-    await beginRankedRun();
-    if (generation !== preparingGeneration || accessVersion !== preparingAccessVersion)
-      return { allow: false };
-    preparedStartGeneration = preparingGeneration;
-    // beginRankedRun owns the ranked/beta/practice status, including failures.
-    return { allow: true };
+    return (async function () {
+      var requestedGeneration = generation;
+      var access = await verifyGameAccess(false);
+      if (requestedGeneration !== generation || !access || access.allow !== true)
+        return { allow: false };
+
+      var currentGate = window.MOONBOYS_IDENTITY;
+      var currentId = String(currentGate && currentGate.getTelegramId ?
+        currentGate.getTelegramId() || '' : '');
+      if (!currentId || !currentGate || !currentGate.isTelegramLinked ||
+          !currentGate.isTelegramLinked()) {
+        return { allow: false };
+      }
+      if (uncertainOwner(currentId) || !serverStartQueues.has(currentId))
+        return { allow: true, source: 'telegram-group' };
+
+      // A same-owner HTTP start is still pending: create the replacement
+      // session BEFORE simulation begins so elapsed-time verification remains
+      // correct. beginRankedRun owns ranked/beta/practice status messages.
+      var preparingGeneration = generation + 1;
+      var preparingAccessVersion = accessVersion;
+      await beginRankedRun();
+      if (generation !== preparingGeneration ||
+          accessVersion !== preparingAccessVersion) {
+        return { allow: false };
+      }
+      preparedStartGeneration = preparingGeneration;
+      return { allow: true, source: 'telegram-group' };
+    }());
   }
 
   async function finishRankedRun(detail) {
