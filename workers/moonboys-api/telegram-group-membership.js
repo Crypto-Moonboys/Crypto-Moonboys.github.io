@@ -106,6 +106,34 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
     return json(headers, { ok: false, error: 'website_origin_required' }, 403);
   }
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+
+  // Public readiness probe used only to guarantee Worker-before-Pages rollout.
+  // It checks the bot's OWN status in the configured group and exposes no
+  // identity or secret. Telegram only guarantees other-user membership checks
+  // when this bot is an administrator.
+  if (request.method === 'GET') {
+    const token = String(env?.TELEGRAM_BOT_TOKEN || '').trim();
+    const groupId = String(env?.TELEGRAM_GROUP_CHAT_ID || '').trim();
+    const botMatch = token.match(/^(\d+):/);
+    const botId = botMatch ? botMatch[1] : '';
+    if (!env?.DB || !token || !groupId || !botId) {
+      return json(headers, { ok: false, error: 'telegram_group_membership_not_configured' }, 503);
+    }
+    const botStatus = await checkTelegramGroupMember(env, botId, fetchImpl);
+    if (!botStatus.ok) {
+      return json(headers, { ok: false, error: botStatus.error }, botStatus.status || 503);
+    }
+    if (!['creator', 'administrator'].includes(botStatus.chat_member_status)) {
+      return json(headers, { ok: false, error: 'telegram_group_membership_bot_not_admin' }, 503);
+    }
+    return json(headers, {
+      ok: true,
+      configured: true,
+      bot_admin: true,
+      group: '@gkniftyheads',
+    });
+  }
+
   if (request.method !== 'POST') return json(headers, { ok: false, error: 'method_not_allowed' }, 405);
   if (!env?.DB || !env?.TELEGRAM_BOT_TOKEN || !env?.TELEGRAM_GROUP_CHAT_ID) {
     return json(headers, { ok: false, error: 'telegram_group_membership_not_configured' }, 503);
