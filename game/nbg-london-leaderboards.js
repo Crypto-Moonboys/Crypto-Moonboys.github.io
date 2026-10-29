@@ -523,7 +523,16 @@
 
     var gate = window.MOONBOYS_IDENTITY;
     var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
-    if (!id || !gate.isTelegramLinked || !gate.isTelegramLinked()) return { allow: false };
+
+    // Local/dev validation keeps the historical guest/practice behaviour.
+    // Production can reach this point only after verified linked membership.
+    if (access.source !== 'telegram-group' && (!id || !gate ||
+        !gate.isTelegramLinked || !gate.isTelegramLinked())) {
+      return { allow: true };
+    }
+    if (!id || !gate || !gate.isTelegramLinked || !gate.isTelegramLinked()) {
+      return { allow: false };
+    }
     if (uncertainOwner(id) || !serverStartQueues.has(id)) return { allow: true };
 
     // A same-owner HTTP start is still pending: create the replacement session
@@ -533,9 +542,13 @@
     try {
       await beginRankedRun();
       preparedStartGeneration = generation;
-      setStatus('Telegram membership verified; ranked session prepared.');
+      setStatus(access.source === 'telegram-group' ?
+        'Telegram membership verified; ranked session prepared.' :
+        'Ranked session prepared.');
     } catch (error) {
-      setStatus('Telegram membership verified, but ranked scoring is temporarily unavailable.');
+      setStatus(access.source === 'telegram-group' ?
+        'Telegram membership verified, but ranked scoring is temporarily unavailable.' :
+        'Ranked scoring is temporarily unavailable.');
     }
     return { allow: true };
   }
