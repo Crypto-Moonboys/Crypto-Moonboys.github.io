@@ -60,6 +60,23 @@ function isActiveMember(member) {
   return member.status === 'restricted' && member.is_member === true;
 }
 
+async function readTelegramBotIdentity(token, fetchImpl = fetch) {
+  try {
+    const response = await fetchImpl('https://api.telegram.org/bot' + token + '/getMe', {
+      method: 'GET',
+      signal: AbortSignal.timeout(5000),
+    });
+    const body = await response.json().catch(() => null);
+    if (!response.ok || body?.ok !== true || !body.result) return null;
+    return {
+      id: String(body.result.id || ''),
+      username: String(body.result.username || ''),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetch) {
   const groupId = String(env?.TELEGRAM_GROUP_CHAT_ID || '').trim();
   const token = String(env?.TELEGRAM_BOT_TOKEN || '').trim();
@@ -119,17 +136,31 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
     if (!env?.DB || !token || !groupId || !botId) {
       return json(headers, { ok: false, error: 'telegram_group_membership_not_configured' }, 503);
     }
-    const botStatus = await checkTelegramGroupMember(env, botId, fetchImpl);
+    const [botStatus, botIdentity] = await Promise.all([
+      checkTelegramGroupMember(env, botId, fetchImpl),
+      readTelegramBotIdentity(token, fetchImpl),
+    ]);
     if (!botStatus.ok) {
-      return json(headers, { ok: false, error: botStatus.error }, botStatus.status || 503);
+      return json(headers, {
+        ok: false,
+        error: botStatus.error,
+        bot_username: botIdentity?.username || null,
+      }, botStatus.status || 503);
     }
     if (!['creator', 'administrator'].includes(botStatus.chat_member_status)) {
-      return json(headers, { ok: false, error: 'telegram_group_membership_bot_not_admin' }, 503);
+      return json(headers, {
+        ok: false,
+        error: 'telegram_group_membership_bot_not_admin',
+        bot_status: botStatus.chat_member_status,
+        bot_username: botIdentity?.username || null,
+      }, 503);
     }
     return json(headers, {
       ok: true,
       configured: true,
       bot_admin: true,
+      bot_status: botStatus.chat_member_status,
+      bot_username: botIdentity?.username || null,
       group: '@gkniftyheads',
     });
   }
