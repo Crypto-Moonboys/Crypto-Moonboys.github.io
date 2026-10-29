@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
+
 const LIVE_URL = process.env.NBG_GROUP_GATE_URL ||
   'https://api.cryptomoonboys.com/telegram/group-membership';
 const SITE_ORIGIN = 'https://cryptomoonboys.com';
@@ -30,7 +33,7 @@ export async function verifyNbgGroupGate(fetchImpl = fetch) {
   return true;
 }
 
-if (import.meta.url === new URL('file://' + process.argv[1]).href) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   verifyNbgGroupGate().catch(error => {
     console.error(error.message);
     process.exitCode = 1;

@@ -2464,64 +2464,62 @@
       var accessGateRequired = stage &&
         stage.getAttribute('data-nbg-access-gate') === 'telegram-group';
       var beforePlay = window.NBGLondonBeforeQueuedRun;
-      if (accessGateRequired && typeof beforePlay !== 'function') {
+      function denyStart() {
         clearInput();
         pendingJumpPresses = 0;
+        pendingInitialInput = null;
+        initialInputReplay = null;
         waitingForFirstInput = true;
+        pendingRunStartPromise = null;
+        pendingRunOwner = null;
         updateHud();
-        return Promise.resolve(window.NBGLevel1State);
+        return window.NBGLevel1State;
       }
-      var preparation = typeof beforePlay === 'function' ? beforePlay() : null;
-      if (!preparation || typeof preparation.then !== 'function')
-        return startSimulation();
-      // The jump press is held by pendingJumpPresses already, including if
-      // released while awaiting the signed session. Do not replay it twice.
-      if (control && control !== 'jump' && !pendingInitialInput)
-        pendingInitialInput = { control: control };
+      if (accessGateRequired && typeof beforePlay !== 'function')
+        return Promise.resolve(denyStart());
       var ownerGate = window.MOONBOYS_IDENTITY;
       var capturedOwner = String(ownerGate && ownerGate.getTelegramId ?
         ownerGate.getTelegramId() || '' : '');
       var capturedSequence = runSequence;
-      var wait = Promise.resolve(preparation).then(function (access) {
-        if (access && access.allow === false) {
-          clearInput();
-          pendingJumpPresses = 0;
-          pendingInitialInput = null;
-          initialInputReplay = null;
-          waitingForFirstInput = true;
-          if (pendingRunStartPromise === wait) {
-            pendingRunStartPromise = null;
-            pendingRunOwner = null;
-          }
-          updateHud();
-          return window.NBGLevel1State;
-        }
+      var preparation;
+      try {
+        preparation = typeof beforePlay === 'function' ? beforePlay() : null;
+      } catch (error) {
+        preparation = Promise.reject(error);
+      }
+      if (!preparation || typeof preparation.then !== 'function') {
+        if (accessGateRequired && (!preparation || preparation.allow !== true))
+          return Promise.resolve(denyStart());
+        return startSimulation();
+      }
+      // The jump press is held by pendingJumpPresses already, including if
+      // released while awaiting the signed session. Do not replay it twice.
+      if (control && control !== 'jump' && !pendingInitialInput)
+        pendingInitialInput = { control: control };
+      function isCurrentWait() {
+        return pendingRunStartPromise === wait && capturedSequence === runSequence &&
+          !complete && !gameOver;
+      }
+      function ownerStillMatches() {
         var gate = window.MOONBOYS_IDENTITY;
-        var currentOwner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
-        if (capturedSequence !== runSequence || complete || gameOver ||
-            currentOwner !== capturedOwner)
-          return window.NBGLevel1State;
-        if (pendingRunStartPromise === wait) {
-          pendingRunStartPromise = null;
-          pendingRunOwner = null;
-        }
+        return String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '') === capturedOwner;
+      }
+      var wait = Promise.resolve(preparation).then(function (access) {
+        // Old responses cannot start or clear input belonging to a reset/new run.
+        if (!isCurrentWait()) return window.NBGLevel1State;
+        if (!ownerStillMatches() || (access && access.allow === false) ||
+            (accessGateRequired && (!access || access.allow !== true)))
+          return denyStart();
+        pendingRunStartPromise = null;
+        pendingRunOwner = null;
         return startSimulation();
       }).catch(function () {
+        if (!isCurrentWait()) return window.NBGLevel1State;
         // A required access check is fail-closed. A non-gated/local test path
         // retains the historical practice fallback.
-        if (accessGateRequired) {
-          clearInput();
-          pendingJumpPresses = 0;
-          pendingInitialInput = null;
-          initialInputReplay = null;
-          waitingForFirstInput = true;
-          if (pendingRunStartPromise === wait) {
-            pendingRunStartPromise = null;
-            pendingRunOwner = null;
-          }
-          updateHud();
-          return window.NBGLevel1State;
-        }
+        if (accessGateRequired || !ownerStillMatches()) return denyStart();
+        pendingRunStartPromise = null;
+        pendingRunOwner = null;
         return startSimulation();
       });
       pendingRunOwner = capturedOwner;

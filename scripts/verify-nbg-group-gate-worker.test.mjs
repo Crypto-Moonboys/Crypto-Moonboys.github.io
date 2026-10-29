@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
 import {
   acceptsNbgGroupGateProbe,
   verifyNbgGroupGate,
 } from './verify-nbg-group-gate-worker.mjs';
 
-test('only explicit membership route method rejection proves the live route exists', () => {
+test('only explicit configured bot-admin readiness proves the gate is ready', () => {
   assert.equal(acceptsNbgGroupGateProbe(200, {
     ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
   }), true);
@@ -44,4 +46,29 @@ test('Pages checks live membership API before uploading the site', () => {
     'membership API gate must pass before Pages is configured');
   assert.ok(upload > membershipGate,
     'membership API gate must pass before Pages artifact upload');
+});
+
+test('readiness CLI runs from a native filesystem path and imports without argv[1]', () => {
+  const verifier = resolve('scripts/verify-nbg-group-gate-worker.mjs');
+  const prelude = `
+    import { pathToFileURL } from 'node:url';
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls++;
+      return new Response(JSON.stringify({
+        ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+      }), {status:200});
+    };
+  `;
+  for (const direct of [true, false]) {
+    const child = spawnSync(process.execPath, ['--input-type=module', '-e', prelude + `
+      process.argv[1] = ${direct ? JSON.stringify(verifier) : 'undefined'};
+      await import(pathToFileURL(${JSON.stringify(verifier)}).href);
+      await new Promise(resolve => setImmediate(resolve));
+      if (calls !== ${direct ? 1 : 0}) throw Error('unexpected readiness fetch count: ' + calls);
+    `], { encoding:'utf8' });
+    assert.equal(child.status, 0, child.stderr);
+    if (direct) assert.match(child.stdout, /Verified live moonboys-api/);
+    else assert.equal(child.stdout, '');
+  }
 });

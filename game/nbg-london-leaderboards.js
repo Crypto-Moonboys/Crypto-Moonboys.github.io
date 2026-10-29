@@ -36,6 +36,7 @@
   var accessRecheck = null;
   var accessState = { owner: null, allowed: false, checkedAt: 0, reason: 'unchecked' };
   var accessPromise = null;
+  var accessVersion = 0;
   var ACCESS_CACHE_MS = 60000;
 
   function formatTime(ms) {
@@ -61,7 +62,15 @@
 
   function productionAccessGateEnabled() {
     var cfg = window.MOONBOYS_API;
-    return !!(cfg && cfg.CONTEXT && cfg.CONTEXT.isProduction === true);
+    var loc = window.location;
+    if (loc && /^(cryptomoonboys\.com|www\.cryptomoonboys\.com|crypto-moonboys\.github\.io)$/i.test(loc.hostname || ''))
+      return true;
+    if (cfg && cfg.CONTEXT && typeof cfg.CONTEXT.isProduction === 'boolean')
+      return cfg.CONTEXT.isProduction;
+    // A failed config script must not silently turn the live game into a guest
+    // preview. Only recognisable local URLs can opt out without configuration.
+    return !!(loc && loc.protocol !== 'file:' &&
+      !/^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?|.*\.local)$/i.test(loc.hostname || ''));
   }
 
   function showAccessGate(message, reason) {
@@ -79,6 +88,7 @@
   }
 
   function resetAccessState() {
+    accessVersion += 1;
     accessState = { owner: null, allowed: false, checkedAt: 0, reason: 'unchecked' };
     accessPromise = null;
   }
@@ -95,6 +105,7 @@
     var owner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
     var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
     if (!linked || !owner) {
+      if (accessPromise || accessState.allowed) resetAccessState();
       accessState = { owner: owner || null, allowed: false, checkedAt: Date.now(), reason: 'login_required' };
       showAccessGate('Log in with Telegram, then join the GKniftyHEADS group to play NBG London.', 'login_required');
       setStatus('NBG London requires a linked Telegram account and GKniftyHEADS group membership.');
@@ -106,12 +117,23 @@
       hideAccessGate();
       return { allow: true, source: 'cache' };
     }
+    if (accessState.owner !== owner) resetAccessState();
     if (accessPromise) return accessPromise;
 
-    accessPromise = (async function () {
+    var version = accessVersion;
+    function isCurrent() {
+      var identity = window.MOONBOYS_IDENTITY;
+      return version === accessVersion && identity &&
+        typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked() &&
+        String(identity.getTelegramId ? identity.getTelegramId() || '' : '') === owner;
+    }
+    // Rechecks revoke cached permission immediately, including when auth throws.
+    accessState = { owner: owner, allowed: false, checkedAt: 0, reason: 'checking' };
+    var pending = (async function () {
       showAccessGate('Checking Telegram group membership…', 'checking');
       setStatus('Checking GKniftyHEADS Telegram group membership…');
       var auth = await signedAuth();
+      if (!isCurrent()) return { allow: false, reason: 'identity_changed' };
       if (!auth || String(auth.id) !== owner) {
         accessState = { owner: owner, allowed: false, checkedAt: Date.now(), reason: 'login_required' };
         showAccessGate('Telegram verification is required before NBG London can start.', 'login_required');
@@ -131,15 +153,23 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ telegram_auth: auth }),
-          cache: 'no-store'
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10000)
         });
         result = await response.json().catch(function () { return null; });
       } catch (error) {
+        if (!isCurrent()) return { allow: false, reason: 'identity_changed' };
         accessState = { owner: owner, allowed: false, checkedAt: Date.now(), reason: 'unavailable' };
         showAccessGate('Could not verify Telegram membership. The game stays locked; try again.', 'unavailable');
         return { allow: false, reason: 'unavailable' };
       }
 
+      if (!isCurrent()) return { allow: false, reason: 'identity_changed' };
+      if (response.status === 401) {
+        accessState = { owner: owner, allowed: false, checkedAt: Date.now(), reason: 'login_required' };
+        showAccessGate('Log in with Telegram again, then press Check access to play.', 'login_required');
+        return { allow: false, reason: 'login_required' };
+      }
       if (!response.ok || !result || result.ok !== true) {
         accessState = { owner: owner, allowed: false, checkedAt: Date.now(), reason: 'unavailable' };
         showAccessGate('Could not verify Telegram membership. The game stays locked; try again.', 'unavailable');
@@ -156,9 +186,17 @@
       hideAccessGate();
       setStatus('Telegram + GKniftyHEADS membership verified. NBG London is ready.');
       return { allow: true, source: 'telegram-group' };
-    }()).finally(function () { accessPromise = null; });
-
-    return accessPromise;
+    }()).catch(function () {
+      if (!isCurrent()) return { allow: false, reason: 'identity_changed' };
+      accessState = { owner: owner, allowed: false, checkedAt: Date.now(), reason: 'unavailable' };
+      showAccessGate('Could not verify Telegram membership. The game stays locked; try again.', 'unavailable');
+      return { allow: false, reason: 'unavailable' };
+    }).finally(function () {
+      // A stale owner's completion must not clear a newer owner's request.
+      if (accessPromise === pending) accessPromise = null;
+    });
+    accessPromise = pending;
+    return pending;
   }
 
   function setStatus(message) {
@@ -522,8 +560,9 @@
   }
 
   async function beforeQueuedRun() {
+    var requestedGeneration = generation;
     var access = await verifyGameAccess(false);
-    if (!access || access.allow !== true) return { allow: false };
+    if (requestedGeneration !== generation || !access || access.allow !== true) return { allow: false };
 
     var gate = window.MOONBOYS_IDENTITY;
     var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
@@ -543,17 +582,13 @@
     // BEFORE simulation begins so its real elapsed-time checks stay accurate.
     // Ranking failure does not revoke already-verified group access; it only
     // downgrades that eligible member to an unsaved practice run.
-    try {
-      await beginRankedRun();
-      preparedStartGeneration = generation;
-      setStatus(access.source === 'telegram-group' ?
-        'Telegram membership verified; ranked session prepared.' :
-        'Ranked session prepared.');
-    } catch (error) {
-      setStatus(access.source === 'telegram-group' ?
-        'Telegram membership verified, but ranked scoring is temporarily unavailable.' :
-        'Ranked scoring is temporarily unavailable.');
-    }
+    var preparingGeneration = generation + 1;
+    var preparingAccessVersion = accessVersion;
+    await beginRankedRun();
+    if (generation !== preparingGeneration || accessVersion !== preparingAccessVersion)
+      return { allow: false };
+    preparedStartGeneration = preparingGeneration;
+    // beginRankedRun owns the ranked/beta/practice status, including failures.
     return { allow: true };
   }
 
