@@ -226,6 +226,7 @@ const GROUPS = {
     ['node', 'scripts/nbg-hd-render-contract.test.mjs'],
     ['node', '--test', 'scripts/nbg-audio-contract.test.mjs'],
     ['node', '--test', 'scripts/verify-nbg-pages-worker-course.test.mjs'],
+    ['node', '--test', 'scripts/verify-nbg-group-gate-worker.test.mjs'],
     ['node', 'scripts/nbg-london-client-auth.test.mjs'],
     ['node', '--test', 'scripts/nbg-telegram-access-gate-client.test.mjs'],
     ['node', '--test', 'scripts/nbg-london-source-trust-gate.test.mjs'],
