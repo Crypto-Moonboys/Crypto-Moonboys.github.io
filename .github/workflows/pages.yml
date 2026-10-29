@@ -28,6 +28,11 @@ jobs:
         # Failure leaves the existing GitHub Pages deployment untouched.
         run: node scripts/verify-nbg-pages-worker-course.mjs
 
+      - name: Verify NBG Telegram group gate API before Pages rollout
+        # The live site must never publish a members-only client before the
+        # Moonboys API can perform the server-side Telegram membership check.
+        run: node scripts/verify-nbg-group-gate-worker.mjs
+
       - name: Configure Pages
         uses: actions/configure-pages@v6
 

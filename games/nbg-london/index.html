@@ -113,6 +113,48 @@
       margin: 0 auto;
       max-width: 900px;
     }
+
+    .nbg-access-gate {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: rgba(5, 8, 14, .88);
+      text-align: center;
+      color: #fff;
+      pointer-events: auto;
+    }
+    .nbg-access-gate[hidden] { display: none !important; }
+    .nbg-access-gate__panel {
+      width: min(92%, 520px);
+      border: 2px solid #7cff82;
+      border-radius: 12px;
+      padding: 18px;
+      background: #090d16;
+      box-shadow: 0 10px 36px rgba(0,0,0,.55);
+    }
+    .nbg-access-gate h2 { margin: 0 0 8px; color: #7cff82; }
+    .nbg-access-gate p { margin: 8px 0 14px; }
+    .nbg-access-gate__actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .nbg-access-gate__actions a,
+    .nbg-access-gate__actions button {
+      border: 1px solid #7acbff;
+      border-radius: 7px;
+      padding: 9px 12px;
+      background: #145a8a;
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+    }
     @media (max-width: 520px) {
       .nbg-record-board { padding: 12px; }
       .nbg-record-board th, .nbg-record-board td { padding: 7px 5px; font-size: .83rem; }
@@ -142,8 +184,19 @@
     <div class="nbg-shell" role="region" aria-label="NBG London Graffiti Run Level 1">
       <button id="startBtn" type="button" hidden data-overlay-fullscreen-only="true" data-overlay-hide-start="true" aria-hidden="true">Open fullscreen</button>
 
-      <section id="game-stage" class="nbg-game-stage is-active" aria-label="Playable Level 1">
+      <section id="game-stage" class="nbg-game-stage is-active" data-nbg-access-gate="telegram-group" aria-label="Playable Level 1">
         <canvas id="game" width="960" height="540" aria-label="NBG London Graffiti Run canvas"></canvas>
+        <div id="nbg-access-gate" class="nbg-access-gate" role="status" aria-live="polite" aria-atomic="true">
+          <div class="nbg-access-gate__panel">
+            <h2>Telegram members only</h2>
+            <p id="nbg-access-gate-message">Checking Telegram login and GKniftyHEADS group membership…</p>
+            <div class="nbg-access-gate__actions">
+              <a id="nbg-access-login" href="/gkniftyheads-incubator.html">Log in with Telegram</a>
+              <a id="nbg-access-group" href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">Join Telegram group</a>
+              <button id="nbg-access-recheck" type="button">Check access</button>
+            </div>
+          </div>
+        </div>
         <div class="hud-strip" aria-hidden="false">
           <span id="hud-xp">XP 0</span>
           <span id="hud-coins">COINS 0/12</span>
@@ -168,7 +221,7 @@
   <section id="nbg-record-board" class="nbg-record-board" aria-label="NBG London Telegram leaderboards">
     <h2>London All-Time Leaderboards</h2>
     <p id="nbg-record-account" aria-live="polite">Checking Telegram login…</p>
-    <p id="nbg-record-status" aria-live="polite">Only verified Telegram accounts save permanent completed runs. Guest scores are session-only.</p>
+    <p id="nbg-record-status" aria-live="polite">Live play requires a linked Telegram account and current GKniftyHEADS group membership. Verified completed runs can save records.</p>
     <p id="nbg-record-personal" aria-live="polite">Your all-time bests: log in with Telegram to save records.</p>
     <div class="nbg-record-switches" role="group" aria-label="Ranking type">
       <button type="button" data-nbg-metric="fastest" aria-pressed="true">Fastest Only</button>

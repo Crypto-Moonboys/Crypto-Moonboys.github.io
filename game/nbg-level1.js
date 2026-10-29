@@ -2457,35 +2457,69 @@
         cancelQueuedStartIfOwnerChanged();
         if (pendingRunStartPromise) return pendingRunStartPromise;
       }
-      // A fast reset can queue a new /run/start behind a still-unsettled
-      // request for this SAME Telegram owner. Hold simulation at elapsed 0
-      // until its actual signed server session exists. Guest/ordinary starts
-      // retain the original immediate play path.
+      // Production NBG is a Telegram-group-gated game. The page/art can load
+      // publicly, but physics must fail closed until the access controller has
+      // verified both Telegram login and current group membership server-side.
+      var stage = document.getElementById('game-stage');
+      var accessGateRequired = stage &&
+        stage.getAttribute('data-nbg-access-gate') === 'telegram-group';
       var beforePlay = window.NBGLondonBeforeQueuedRun;
-      var preparation = typeof beforePlay === 'function' ? beforePlay() : null;
-      if (!preparation || typeof preparation.then !== 'function')
-        return startSimulation();
-      // The jump press is held by pendingJumpPresses already, including if
-      // released while awaiting the signed session. Do not replay it twice.
-      if (control && control !== 'jump' && !pendingInitialInput)
-        pendingInitialInput = { control: control };
+      function denyStart() {
+        clearInput();
+        pendingJumpPresses = 0;
+        pendingInitialInput = null;
+        initialInputReplay = null;
+        waitingForFirstInput = true;
+        pendingRunStartPromise = null;
+        pendingRunOwner = null;
+        updateHud();
+        return window.NBGLevel1State;
+      }
+      if (accessGateRequired && typeof beforePlay !== 'function')
+        return Promise.resolve(denyStart());
       var ownerGate = window.MOONBOYS_IDENTITY;
       var capturedOwner = String(ownerGate && ownerGate.getTelegramId ?
         ownerGate.getTelegramId() || '' : '');
       var capturedSequence = runSequence;
-      var wait = Promise.resolve(preparation).catch(function () {
-        // Auth/network failure leaves gameplay playable as practice, without
-        // claiming an official score. Client displays the ranked error.
-      }).then(function () {
+      var preparation;
+      try {
+        preparation = typeof beforePlay === 'function' ? beforePlay() : null;
+      } catch (error) {
+        preparation = Promise.reject(error);
+      }
+      if (!preparation || typeof preparation.then !== 'function') {
+        if (accessGateRequired && (!preparation || preparation.allow !== true))
+          return Promise.resolve(denyStart());
+        return startSimulation();
+      }
+      // The jump press is held by pendingJumpPresses already, including if
+      // released while awaiting the signed session. Do not replay it twice.
+      if (control && control !== 'jump' && !pendingInitialInput)
+        pendingInitialInput = { control: control };
+      function isCurrentWait() {
+        return pendingRunStartPromise === wait && capturedSequence === runSequence &&
+          !complete && !gameOver;
+      }
+      function ownerStillMatches() {
         var gate = window.MOONBOYS_IDENTITY;
-        var currentOwner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
-        if (capturedSequence !== runSequence || complete || gameOver ||
-            currentOwner !== capturedOwner)
-          return window.NBGLevel1State;
-        if (pendingRunStartPromise === wait) {
-          pendingRunStartPromise = null;
-          pendingRunOwner = null;
-        }
+        return String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '') === capturedOwner;
+      }
+      var wait = Promise.resolve(preparation).then(function (access) {
+        // Old responses cannot start or clear input belonging to a reset/new run.
+        if (!isCurrentWait()) return window.NBGLevel1State;
+        if (!ownerStillMatches() || (access && access.allow === false) ||
+            (accessGateRequired && (!access || access.allow !== true)))
+          return denyStart();
+        pendingRunStartPromise = null;
+        pendingRunOwner = null;
+        return startSimulation();
+      }).catch(function () {
+        if (!isCurrentWait()) return window.NBGLevel1State;
+        // A required access check is fail-closed. A non-gated/local test path
+        // retains the historical practice fallback.
+        if (accessGateRequired || !ownerStillMatches()) return denyStart();
+        pendingRunStartPromise = null;
+        pendingRunOwner = null;
         return startSimulation();
       });
       pendingRunOwner = capturedOwner;

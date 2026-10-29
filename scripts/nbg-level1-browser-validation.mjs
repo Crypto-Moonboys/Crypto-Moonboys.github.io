@@ -3465,7 +3465,7 @@ assert.deepEqual(await page.evaluate(() => ({
   control: window.NBGLevel1State.pendingInitialInput?.control,
 })), { running: false, elapsed: 0, control: 'spray' },
 'queued ranked session must freeze physics and preserve initiating key press');
-await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.evaluate(() => window.__nbgReleaseQueuedStart({ allow: true, source: 'test-fixture' }));
 await page.waitForFunction(() => window.NBGLevel1State.running &&
   window.NBGLevel1State.runElapsedMs > 0);
 await page.evaluate(() => {
@@ -3499,7 +3499,7 @@ for (const mode of ['keyboard', 'touch']) {
     elapsed: window.NBGLevel1State.runElapsedMs,
   })), { running: false, elapsed: 0 },
   mode + ' Jump must not advance physics during queued start');
-  await page.evaluate(() => window.__nbgReleaseQueuedStart());
+  await page.evaluate(() => window.__nbgReleaseQueuedStart({ allow: true, source: 'test-fixture' }));
   await page.waitForFunction(() => window.NBGLevel1State.running &&
     window.NBGLevel1State.runElapsedMs > 50 && window.NBGLevel1State.jumpsUsed > 0);
   await page.waitForTimeout(100);
@@ -3581,7 +3581,7 @@ for (const mode of ['keyboard', 'touch']) {
     assert.equal(queued.pending, 3,
       mode + ' should store three distinct Jump presses: ' +
       JSON.stringify({ ...queued, immediateQueued }));
-    await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart());
+    await queuedPage.evaluate(() => window.__nbgReleaseQueuedStart({ allow: true, source: 'test-fixture' }));
     await queuedPage.waitForFunction(() => window.NBGLevel1State.running &&
       window.NBGLevel1State.jumpsUsed === 3 &&
       window.NBGLevel1State.parachuteSpawnCount === 1, null, { timeout: 1800 });
@@ -3603,7 +3603,7 @@ await page.evaluate(() => {
 await page.keyboard.press('s');
 await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
-await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.evaluate(() => window.__nbgReleaseQueuedStart({ allow: true, source: 'test-fixture' }));
 await page.waitForTimeout(150);
 assert.deepEqual(await page.evaluate(() => ({
   running: window.NBGLevel1State.running,
@@ -3627,13 +3627,18 @@ await page.evaluate(() => {
 await page.keyboard.press('s');
 await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
 await page.evaluate(() => {
-  // A genuine identity-change signal invalidates old owner gameplay waits.
-  window.NBGLondonBeforeQueuedRun = null;
+  // A genuine identity-change signal invalidates the old owner's gameplay
+  // wait. The new owner still has an access controller; model its immediate
+  // verified allow instead of deleting the production gate entirely.
+  window.NBGLondonBeforeQueuedRun = () => ({
+    allow: true,
+    source: 'test-fixture-new-owner'
+  });
   window.dispatchEvent(new Event('moonboys:identity-change'));
 });
 await page.keyboard.press('d');
 await page.waitForFunction(() => window.NBGLevel1State.running === true, null, { timeout: 2500 });
-await page.evaluate(() => window.__nbgReleaseQueuedStart());
+await page.evaluate(() => window.__nbgReleaseQueuedStart({ allow: true, source: 'test-fixture' }));
 await page.waitForTimeout(150);
 assert.equal(await page.evaluate(() => window.NBGLevel1State.running), true,
   'stale owner handshake must neither freeze nor restart new gameplay');
