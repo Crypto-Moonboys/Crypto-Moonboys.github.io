@@ -20,6 +20,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: node --check game/nbg-level1.js
+      - run: node --check game/nbg-audio.js
       - run: node --check game/nbg-london-leaderboards.js
       - run: node --check workers/leaderboard/nbg-london-records.js
       - run: node --check workers/leaderboard/nbg-london-replay.js
@@ -27,6 +28,7 @@ jobs:
       - run: node --check workers/leaderboard/deployment-entry.js
       - run: node --check scripts/nbg-level1-browser-validation.mjs
       - run: node scripts/nbg-hd-render-contract.test.mjs
+      - run: node --test scripts/nbg-audio-contract.test.mjs
       - run: node --test scripts/nbg-london-records.test.mjs
       - run: node --test scripts/nbg-london-replay.test.mjs
       - run: node --test scripts/nbg-london-client-auth.test.mjs

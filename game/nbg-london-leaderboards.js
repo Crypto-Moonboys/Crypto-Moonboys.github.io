@@ -161,8 +161,15 @@
         throw uncertainResponse;
       }
     }
-    if (!response.ok || !result || !result.ok)
-      throw new Error(result && result.error ? result.error : 'Leaderboard request failed');
+    if (!response.ok || !result || !result.ok) {
+      var requestError = new Error(result && result.error ? result.error : 'Leaderboard request failed');
+      // Only an explicit 4xx application response is an authoritative rejection.
+      // Network errors, gateway 5xx responses and timeouts must remain silent.
+      requestError.authoritativeRejection = Number(response.status) >= 400 &&
+        Number(response.status) < 500 && result && result.ok === false &&
+        typeof result.error === 'string' && result.error.length > 0;
+      throw requestError;
+    }
     return result;
   }
 
@@ -456,12 +463,21 @@
       setStatus('Official replay-verified result saved for ' + result.player + ': ' +
         formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() +
         ' verified game XP (may differ from practice HUD XP).');
+      window.dispatchEvent(new CustomEvent('nbg-record-result', {
+        detail: { accepted: true, authoritative: true, runId: session.run_id }
+      }));
       loadLeaders();
       loadPersonal();
       loadPrizeStandings();
     } catch (error) {
-      if (current === generation)
+      if (current === generation) {
         setStatus('Run not saved: ' + error.message + '. Unsaved runs are not queued.');
+        if (error && error.authoritativeRejection === true) {
+          window.dispatchEvent(new CustomEvent('nbg-record-result', {
+            detail: { accepted: false, authoritative: true }
+          }));
+        }
+      }
     }
   }
 

@@ -49,6 +49,8 @@ const SCOPES = {
     'art/invaders/**',
     'css/game-fullscreen.css',
     'games/**',
+    'game/nbg-*.js',
+    'game/assets/audio/nbg-dark-industrial/**',
     'js/arcade/**',
     'js/game-fullscreen.js',
     'js/arcade-*.js',
@@ -77,6 +79,7 @@ const SCOPES = {
     'scripts/*leaderboard*',
     'scripts/nbg-london-*.test.mjs',
     'scripts/nbg-hd-render-contract.test.mjs',
+    'scripts/nbg-audio-contract.test.mjs',
     // Publishing safety must be tested even on gate-only PRs.
     'scripts/verify-nbg-pages-worker-course.mjs',
     'scripts/verify-nbg-pages-worker-course.test.mjs',
