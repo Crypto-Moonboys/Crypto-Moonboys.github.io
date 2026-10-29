@@ -202,6 +202,7 @@ test('CORS and readiness handling fail closed', async () => {
   assert.deepEqual(await get.json(), {
     ok:true, configured:true, bot_admin:true,
     bot_status:'administrator', bot_username:'WIKICOMSBOT',
+    native_init_data:true, all_games_gate_version:1,
     group:'@gkniftyheads'
   });
   const adminMembershipCall = admin.calls.find(call => /\/getChatMember$/.test(call.url));
