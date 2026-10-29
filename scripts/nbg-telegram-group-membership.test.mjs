@@ -139,7 +139,7 @@ test('requires production group and bot configuration', async () => {
   }
 });
 
-test('CORS and method handling fail closed', async () => {
+test('CORS and readiness handling fail closed', async () => {
   const disallowed = await handleTelegramGroupMembership(
     new Request(API, {
       method: 'POST',
@@ -158,10 +158,24 @@ test('CORS and method handling fail closed', async () => {
   assert.equal(options.status, 204);
   assert.equal(options.headers.get('Access-Control-Allow-Origin'), SITE);
 
+  const admin = telegram('administrator');
   const get = await handleTelegramGroupMembership(new Request(API, {
     method: 'GET', headers: { Origin: SITE },
-  }), env());
-  assert.equal(get.status, 405);
+  }), env(), admin.fetchImpl);
+  assert.equal(get.status, 200);
+  assert.deepEqual(await get.json(), {
+    ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+  });
+  assert.deepEqual(admin.calls[0].body, {
+    chat_id:GROUP, user_id:123456,
+  });
+
+  const ordinary = telegram('member');
+  const notAdmin = await handleTelegramGroupMembership(new Request(API, {
+    method: 'GET', headers: { Origin: SITE },
+  }), env(), ordinary.fetchImpl);
+  assert.equal(notAdmin.status, 503);
+  assert.equal((await notAdmin.json()).error, 'telegram_group_membership_bot_not_admin');
 });
 
 test('direct checker rejects unsafe Telegram numeric ids', async () => {
