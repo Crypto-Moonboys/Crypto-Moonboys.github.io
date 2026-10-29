@@ -744,12 +744,17 @@ const hdProof = await page.evaluate(() => {
   const rect = canvas.getBoundingClientRect();
   const originalDraw = context.drawImage;
   let playerCssWidth = null;
+  let wallCssHeight = null;
   const playingArt = state.playerAnimations[state.player.anim];
   context.drawImage = function (image, ...args) {
     if (image === playingArt.image && args.length === 8) {
       const transform = this.getTransform();
       const backingWidth = Math.abs(transform.a) * args[6];
       playerCssWidth = backingWidth * rect.width / canvas.width;
+    }
+    if (image === state.objectImages.wall && args.length === 4) {
+      const transform = this.getTransform();
+      wallCssHeight = Math.abs(transform.d) * args[3] * rect.height / canvas.height;
     }
     return originalDraw.call(this, image, ...args);
   };
@@ -772,6 +777,8 @@ const hdProof = await page.evaluate(() => {
     cssHeight: rect.height,
     playerCssWidth,
     expectedPlayerCssWidth: playingArt.renderWidth * state.cameraZoom * rect.width / 480,
+    wallCssHeight,
+    expectedWallCssHeight: 88 * state.cameraZoom * rect.height / 270,
     courseVersion: state.recordedReplay?.course_version || 8,
     playerHitbox: [state.player.w, state.player.h],
     running: state.running
@@ -792,6 +799,8 @@ assert.deepEqual(hdProof.playerHitbox,[24,34]);
 assert.equal(hdProof.running,false);
 assert.ok(Math.abs(hdProof.playerCssWidth-hdProof.expectedPlayerCssWidth) < 1,
   '2x backing MUST NOT enlarge the displayed player or change camera framing');
+assert.ok(Math.abs(hdProof.wallCssHeight-hdProof.expectedWallCssHeight) < 1,
+  'the original wall must retain the same on-screen height with 2x more output pixels');
 assert.ok(Math.abs(hdProof.cssWidth/hdProof.cssHeight-16/9) < 0.03,
   'HD canvas still presents the original 16:9 world');
 
