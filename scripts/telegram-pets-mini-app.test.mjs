@@ -1812,6 +1812,7 @@ const entryInitializerSource = client.slice(client.indexOf('  var tg ='), client
 const entryLaunchSource = client.slice(client.indexOf('  function launchParameter('), client.indexOf('  function moonpetBotArtRequested('));
 const entryContextSource = client.slice(client.indexOf('  function freshInheritedTelegramInitData('), client.indexOf('  function syncViewportHeight('));
 const entryRequestSource = client.slice(client.indexOf('  function authBody('), client.indexOf('  async function typeBoot('));
+const entryMembershipSource = client.slice(client.indexOf('  async function verifyMoonpetGroupMembership()'), client.indexOf('  async function start()'));
 const entryStartSource = client.slice(client.indexOf('  async function start()'), client.indexOf("  window.addEventListener('pagehide'", client.indexOf('  async function start()')));
 const identityGateSource = fs.readFileSync(new URL('../js/identity-gate.js', import.meta.url), 'utf8');
 const authVerifierContext = vm.createContext({ crypto: webcrypto, TextEncoder });
@@ -1820,7 +1821,7 @@ const websiteAuthFields = { id: 123456789, first_name: 'Pixel', auth_date: nowSe
 const websiteAuthKey = await crypto.subtle.digest('SHA-256', encoder.encode(token));
 const websiteAuthHash = hex(await sign(websiteAuthKey, Object.keys(websiteAuthFields).sort().map(key => key + '=' + websiteAuthFields[key]).join('\n')));
 
-function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = { BASE_URL: 'https://api.cryptomoonboys.com' }, hostname = 'cryptomoonboys.com', failureResponse = null } = {}) {
+function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = { BASE_URL: 'https://api.cryptomoonboys.com' }, hostname = 'cryptomoonboys.com', failureResponse = null, groupMember = true, membershipFailure = null } = {}) {
   const requests = [];
   const startupScreen = { innerHTML: '' };
   const startupMessages = [];
@@ -1829,6 +1830,7 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
     ['moonboys_tg_auth', JSON.stringify({ ...websiteAuthFields, hash: websiteAuthHash })],
   ]);
   const window = {
+    setTimeout, clearTimeout,
     location: { hostname, pathname: '/moonpet-game.html', protocol: 'https:', origin: 'https://' + hostname, search: '', hash: inheritedInitData ? '#tgWebAppData=' + encodeURIComponent(inheritedInitData) : '' },
     Telegram: { WebApp: { initData: sdkInitData } },
   };
@@ -1837,11 +1839,13 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
   const fetch = async (url, options) => {
     const body = JSON.parse(options.body);
     requests.push({ url, body });
-    if (failureResponse) return { ok: false, status: failureResponse.status, json: async () => ({ error: failureResponse.error }) };
+    const membershipRequest = url.endsWith('/telegram/group-membership');
+    const failure = membershipRequest ? membershipFailure : failureResponse;
+    if (failure) return { ok: false, status: failure.status, json: async () => ({ error: failure.error }) };
     const verification = body.init_data
       ? await verifyTelegramMiniAppInitData(body.init_data, token, { now_ms: nowSeconds * 1000, max_age_seconds: 3600 })
       : { ok: await vm.runInContext('verifyTelegramAuth', authVerifierContext)(body.telegram_auth, token), reason: 'telegram_auth_invalid' };
-    return { ok: verification.ok, status: verification.ok ? 200 : 401, json: async () => verification.ok ? { state: { adopted: false } } : { error: verification.reason } };
+    return { ok: verification.ok, status: verification.ok ? 200 : 401, json: async () => verification.ok ? membershipRequest ? { ok:true,member:groupMember,status:groupMember?'member':'left' } : { state: { adopted: false } } : { error: verification.reason } };
   };
   const runtime = vm.createContext({ window, state: null, authenticationFailure: false, petActionRefreshRequired: false, Date: EntryDate, URLSearchParams, fetch, AbortController, setTimeout, clearTimeout, localStorage: {
     getItem: key => stored.get(key) || null, setItem: (key, value) => stored.set(key, String(value)), removeItem: key => stored.delete(key),
@@ -1853,17 +1857,18 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
   window.MOONBOYS_IDENTITY.restoreLinkedTelegramAuth = (...args) => { restores += 1; return restore(...args); };
   vm.runInContext(entryInitializerSource + entryLaunchSource + entryContextSource + entryRequestSource, runtime);
   return {
-    requests, configuredApi: window.MOONBOYS_API.BASE_URL,
+    requests, runtime, configuredApi: window.MOONBOYS_API.BASE_URL,
     restores: () => restores,
     start: () => vm.runInContext('(async function () { refreshTelegramContext(); await restoreBrowserAuth(); return post("/telegram-pets/app/state", { mode: "core" }); })()', runtime),
     startupScreen, startupMessages,
     runStartup: () => {
       Object.assign(runtime, {
-        nav: {}, screen: Object.assign(startupScreen, { appendChild() {} }), bindViewportSizing() {}, syncViewportHeight() {}, initBotArtMode: async () => {},
+        typingToken:0, bootLayer:{classList:{add(){}}}, panel:(title,body)=>'<h2>'+title+'</h2>'+body,
+        nav: {}, screen: Object.assign(startupScreen, { appendChild() {}, querySelector(){return {addEventListener(){}};} }), bindViewportSizing() {}, syncViewportHeight() {}, initBotArtMode: async () => {},
         requestAnimationFrame() {}, frame() {}, typeBoot: async () => {}, beginStateRequest: () => 1,
         tell: message => startupMessages.push(message), escapeHtml: value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
       });
-      vm.runInContext('var state = null; var reducedMotion = false;' + entryStartSource, runtime);
+      vm.runInContext('var state = null; var reducedMotion = false;' + entryMembershipSource + entryStartSource, runtime);
       return vm.runInContext('start()', runtime);
     },
   };
@@ -1915,7 +1920,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   await entry.runStartup();
   assert.match(entry.startupScreen.innerHTML, /data-utility="retry"/);
   assert.doesNotMatch(entry.startupScreen.innerHTML, /OPEN FRESH TELEGRAM SESSION/, 'Transient state failures keep normal connection recovery');
-  assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
+  assert.equal(entry.requests.length, 4, 'Membership is verified before the three read-only state attempts');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
 assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261029-members-only-v1/);
@@ -1951,12 +1956,12 @@ assert.match(client, /PET PROGRESSION[\s\S]*ACCOUNT SEASON XP/, 'season UI must 
 assert.match(client, /XP across your pets for this season[\s\S]*tiers[\s\S]*shared seasonal rank/, 'account seasonal values must not be presented as pet-instance fields');
 assert.match(client, /Math\.max\(3, provided\.length\)/, 'slot summary must always materialize all three seasonal slots');
 assert.match(client, /CURRENT ARCADE XP/, 'slot summary must display the shared Arcade XP balance');
-assert.match(client, /NEW PLAYER ENTRY \/\/ 1,000 LIFETIME ARCADE XP, KEPT \/\/ PET 1 IS FREE \/\/ PET 2 COSTS 500 SPENDABLE XP \/\/ PET 3 COSTS 1,000 SPENDABLE XP/, 'entry eligibility must be distinct from extra-space spending');
+assert.match(client, /NEW PLAYER ENTRY \/\/ 1,000 LIFETIME ARCADE XP, KEPT \/\/ PET 1 RESETS FREE \/\/ PET 2 COSTS 500 SPENDABLE XP EACH UNLOCK \/\/ PET 3 COSTS 1,000 SPENDABLE XP EACH UNLOCK/, 'entry eligibility must be distinct from extra-space spending');
 assert.match(client, /data-season-slot=/, 'each rendered slot must expose its slot number');
 assert.match(client, /unlockEnabled \? button\('UNLOCK SLOT ' \+ slotNumber, 'buy_pet_slot', \{ slot_number: slotNumber \}/, 'unlock controls must use the existing authenticated slot action');
 assert.match(client, /disabled: !affordable/, 'unaffordable slot unlocks must be disabled');
 assert.match(client, /NEED ' \+ number\(Math\.max\(0, cost - available\)\) \+ ' MORE ARCADE XP'/, 'disabled unlocks must explain the XP shortfall');
-assert.match(client, /Spendable Arcade XP unlocks an additional permanent pet space/, 'locked spaces must distinguish spendable Arcade XP from the lifetime entry requirement');
+assert.match(client, /Spendable Arcade XP unlocks this paid slot. Deleting it requires paying again./, 'locked spaces must distinguish spendable Arcade XP from the lifetime entry requirement');
 assert.doesNotMatch(client, /BUY SLOT|PURCHASE OFFLINE/, 'player-facing slot UI must not use payment language');
 assert.match(client, /owned \? selectable \? button\('SWITCH TO SLOT ' \+ slotNumber, 'switch_pet_slot', \{ pet_id: slot\.pet_id, slot_number: slotNumber \}\)/, 'only selectable owned inactive slots dispatch switch_pet_slot');
 assert.match(client, /active \? '<strong class="slot-active-marker"/, 'active slots must show a marker instead of a switch control');
@@ -2318,7 +2323,7 @@ assert.match(client, /REVEALED/);
 assert.match(client, /EVOLVED/);
 assert.match(client, /RARE FORM/);
 assert.match(client, /var guidance = state\.guidance \|\| \{\};\s*var identity = guidance\.identity \|\| \{\};/, 'CORE profile must read identity from the selected-pet guidance payload');
-assert.match(client, /var achievements = state\.guidance && state\.guidance\.achievements \|\| \[\];/, 'TASK achievements must read the selected-pet guidance achievement payload');
+assert.match(client, /var achievements = state\.guidance && Array\.isArray\(state\.guidance\.achievements\) \? state\.guidance\.achievements\.filter/, 'TASK achievements must read the selected-pet guidance achievement payload');
 assert.match(client, /var evolution = guidance\.evolution;/, 'CORE evolution panel must read selected-pet evolution guidance');
 assert.match(client, /var traits = \(guidance\.personalities \|\| \[\]\)/, 'CORE personality panel must read selected-pet personality guidance');
 assert.match(client, /var memory = identity\.memories \|\| \{\};/, 'CORE memory archive must read selected-pet memories');
@@ -2529,3 +2534,42 @@ assert.doesNotMatch(eggSavedBossMarkup, /data-action="(?:weekly_boss|seasonal_bo
 
 assert.doesNotMatch(worker, /buildPetMiniAppFutureSystemState|future_systems:|processPetPrestige|path === '\/telegram-pets\/app\/sanctuary'/, "retired runtime and routes are removed");
 assert.doesNotMatch(client, /COMING_SOON|PLANNED EXPANSION|Season Journey/, "client guidance has no dormant roadmap or reset-era copy");
+
+
+{
+  const entry=browserEntryHarness({sdkInitData:initData,groupMember:false});
+  await entry.runStartup();
+  assert.match(entry.startupScreen.innerHTML,/TELEGRAM MEMBERS ONLY/);
+  assert.match(entry.startupScreen.innerHTML,/data-membership-retry/);
+  assert.equal(entry.requests.length,1);
+  assert.match(entry.requests[0].url,/group-membership$/);
+  assert.equal(entry.requests.some(r=>r.url.includes('/telegram-pets/app/')),false);
+}
+{
+  const entry=browserEntryHarness({sdkInitData:initData,membershipFailure:{status:503,error:'telegram_group_membership_unavailable'}});
+  await entry.runStartup();
+  assert.match(entry.startupScreen.innerHTML,/data-membership-retry/);
+  assert.equal(entry.requests.length,1,'unavailable membership must never load a save');
+}
+
+
+{
+  let deadline,cleared=false;
+  const runtime=vm.createContext({apiBase:'https://api.test',initData:'signed',telegramAuth:null,AbortController,
+    window:{setTimeout:fn=>{deadline=fn;return 1;},clearTimeout:()=>{cleared=true;}},
+    fetch:async()=>({ok:true,status:200,json:()=>new Promise(()=>{})}),
+  });
+  vm.runInContext(entryMembershipSource,runtime);
+  const pending=vm.runInContext('verifyMoonpetGroupMembership()',runtime);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(cleared,false,'membership deadline must cover stalled body parsing');
+  deadline();
+  assert.equal((await pending).reason,'membership_check_timeout');
+  assert.equal(cleared,true,'membership timers must be cleaned after timeout');
+}
+{
+  const entry=browserEntryHarness();
+  vm.runInContext("window.MOONBOYS_IDENTITY.getFreshTelegramAuth = async () => ({id:'987654321',hash:'s1_new',auth_date:1})",entry.runtime);
+  await assert.rejects(entry.start(),error=>error.code==='telegram_identity_changed');
+  assert.equal(entry.requests.length,0,'account B cannot read a save through account A membership gate');
+}

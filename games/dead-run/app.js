@@ -50,6 +50,7 @@
   let profile = null;
   let activeSessionFromProfile = null;
   let arcadeAccessGranted = false;
+  let profileLoadVersion = 0;
   let serverState = null;
   let routePlan = null;
   let combatPlan = null;
@@ -109,6 +110,11 @@
     syncAccessControls(copy);
     if (ui.accessMessage) ui.accessMessage.textContent = copy;
     ui.accessGate?.classList.remove('hidden');
+  }
+
+  function isAccessFailure(error) {
+    return error?.status === 401 || error?.status === 403 ||
+      /^telegram_group_membership_/.test(error?.code || '');
   }
 
   function allowArcadeAccess() {
@@ -1062,11 +1068,15 @@
       startGpsWatch();
       setBanner(data.session.ranked ? 'RANKED GPS RUN LIVE' : 'PRACTICE RUN — DAILY LIMIT USED', 2200);
     } catch (error) {
+      if (isAccessFailure(error)) {
+        denyArcadeAccess(error.message);
+        return;
+      }
       ui.gpsStatus.textContent = `GPS required for ranked real mode: ${error.message}. Demo mode still works without location.`;
       ui.start.classList.remove('hidden');
       gameActive = false;
     } finally {
-      $('startBtn').disabled = false;
+      syncAccessControls();
     }
   }
 
@@ -1086,7 +1096,10 @@
       await requestWakeLock();
       startGpsWatch();
       setBanner('ACTIVE RUN RESUMED', 1800);
-    } catch (error) { ui.gpsStatus.textContent = `Resume failed: ${error.message}`; }
+    } catch (error) {
+      if (isAccessFailure(error)) denyArcadeAccess(error.message);
+      else ui.gpsStatus.textContent = `Resume failed: ${error.message}`;
+    }
   }
 
   async function startDemo() {
@@ -1178,11 +1191,14 @@
   }
 
   async function loadProfile() {
+    const version = ++profileLoadVersion;
     denyArcadeAccess('TELEGRAM MEMBERS ONLY · Checking Telegram login and GKniftyHEADS membership…');
-    try {
-      const hordeData = await apiGet('/api/dead-run/horde/current');
-      renderHorde(hordeData.horde);
-    } catch (_) { ui.horde.textContent = 'Global horde loads after server deployment.'; }
+    // The public horde feed is optional and cannot hold the membership gate.
+    apiGet('/api/dead-run/horde/current').then(hordeData => {
+      if (version === profileLoadVersion) renderHorde(hordeData.horde);
+    }).catch(() => {
+      if (version === profileLoadVersion) ui.horde.textContent = 'Global horde loads after server deployment.';
+    });
     if (!initData()) {
       denyArcadeAccess('TELEGRAM MEMBERS ONLY · Open this game through Telegram, then join GKniftyHEADS.');
       ui.gpsStatus.textContent = 'Open DEAD RUN from the Telegram games menu to verify membership.';
@@ -1190,6 +1206,7 @@
     }
     try {
       const data = await apiPost('/api/dead-run/profile');
+      if (version !== profileLoadVersion) return;
       allowArcadeAccess();
       profile = data.player;
       activeSessionFromProfile = data.active_session;
@@ -1198,6 +1215,7 @@
       ui.resume.classList.toggle('hidden', !activeSessionFromProfile?.session_id);
       if (activeSessionFromProfile?.session_id) ui.gpsStatus.textContent = 'An active run is waiting. Confirm safety and resume it, or continue later.';
     } catch (error) {
+      if (version !== profileLoadVersion) return;
       if (error.code === 'telegram_group_membership_required') {
         denyArcadeAccess('TELEGRAM MEMBERS ONLY · Join the GKniftyHEADS Telegram group to play DEAD RUN.');
         ui.gpsStatus.innerHTML = '<a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">Join GKniftyHEADS</a>, then reopen or reload the game.';

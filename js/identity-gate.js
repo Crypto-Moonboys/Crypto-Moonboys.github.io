@@ -458,10 +458,18 @@
     });
   }
 
+  function arcadeMembershipIdentityMatches(auth) {
+    return !!(auth && auth.id && isTelegramLinked() &&
+      String(auth.id) === String(getTelegramId() || ''));
+  }
+
   function verifyArcadeGroupMembership(auth, gameId) {
     var base = getApiBase();
     if (!base || !auth || !auth.id || !auth.hash || !auth.auth_date) {
       return Promise.resolve({ ok: false, reason: 'auth_restore_failed' });
+    }
+    if (!arcadeMembershipIdentityMatches(auth)) {
+      return Promise.resolve({ ok: false, reason: 'auth_mismatch' });
     }
     return fetch(base.replace(/\/$/, '') + '/telegram/group-membership', {
       method: 'POST',
@@ -472,6 +480,9 @@
         ? AbortSignal.timeout(10000) : undefined,
     }).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (data) {
+        // Another tab can replace or revoke the Telegram identity while the
+        // membership lookup is pending. Its response belongs only to this actor.
+        if (!arcadeMembershipIdentityMatches(auth)) return { ok: false, reason: 'auth_mismatch' };
         if (response.status === 401 || response.status === 403 && data?.error === 'verified telegram_auth payload required') {
           return { ok: false, reason: 'auth_expired', status: response.status };
         }
@@ -506,6 +517,9 @@
         var gameId = options && (options.game_id || options.gameId) || null;
         if (!result || !result.ok) return failCompetitiveArcadePageGate('auth_expired', options);
         return verifyArcadeGroupMembership(result.telegram_auth, gameId).then(function (membership) {
+          if (!arcadeMembershipIdentityMatches(result.telegram_auth)) {
+            return failCompetitiveArcadePageGate('auth_mismatch', { game_id: gameId });
+          }
           if (!membership || membership.ok !== true) {
             return failCompetitiveArcadePageGate(
               membership && membership.reason ? membership.reason : 'group_membership_unavailable',
@@ -558,6 +572,9 @@
           return failCompetitiveArcadePageGate('auth_expired', { game_id: gameId, anticheat: restoreResult.anticheat });
         }
         return verifyArcadeGroupMembership(restoredAuth, gameId).then(function (membership) {
+          if (!arcadeMembershipIdentityMatches(restoredAuth)) {
+            return failCompetitiveArcadePageGate('auth_mismatch', { game_id: gameId });
+          }
           if (!membership || membership.ok !== true) {
             return failCompetitiveArcadePageGate(
               membership && membership.reason ? membership.reason : 'group_membership_unavailable',

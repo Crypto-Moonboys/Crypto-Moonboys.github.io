@@ -698,7 +698,7 @@ for (const loginFailureCode of ['mini_app_auth_expired', 'mini_app_auth_replayed
     'Desktop bootstrap must not trigger host fullscreen');
   assert.equal(desktop.calls.filter(item => item === 'expand').length, 1,
     'Telegram normal expand operation remains available');
-  assert.equal(desktop.status.textContent, 'Account verified. Select a game.',
+  assert.equal(desktop.status.textContent, 'Telegram + GKniftyHEADS membership verified. Select a game.',
     'Removing forced fullscreen must not affect verified login');
   desktop.viewportHandlers[0]({ isStateStable: true });
   desktop.links[0].dispatch('click');

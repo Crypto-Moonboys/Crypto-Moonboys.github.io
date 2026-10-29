@@ -38,8 +38,8 @@ assert.match(read('game/nbg-london-leaderboards.js'), /\/telegram\/group-members
 
 const blockTopia = read('games/block-topia/index.html');
 const groupGate = blockTopia.indexOf('enforceCompetitiveArcadePageGate({ gameId: "blocktopia" })');
-const identityGate = blockTopia.indexOf('checkBlockTopiaGateIdentity(identity)');
-const xpGate = blockTopia.indexOf('fetchProgressionForGate(telegramAuth)');
+const identityGate = blockTopia.indexOf('const verified = await checkBlockTopiaGateIdentity(identity)', groupGate);
+const xpGate = blockTopia.indexOf('progression = await fetchProgressionForGate(telegramAuth)', identityGate);
 assert.ok(groupGate >= 0 && identityGate > groupGate && xpGate > identityGate,
   'Block Topia must verify group membership before identity/XP/multiplayer entry');
 
@@ -103,4 +103,3 @@ assert.match(launcher, /dead-run\/\?v=20261029-members-only-v1/,
   'Telegram launcher must open the membership-gated Dead Run release');
 
 console.log('All live games require Telegram login + GKniftyHEADS membership.');
-

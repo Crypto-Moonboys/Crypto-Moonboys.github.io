@@ -98,7 +98,7 @@ async function bootstrapIdentity({ storageSeed, fetchImpl }) {
   };
   context.globalThis = context;
   vm.runInNewContext(source, context, { filename: 'js/identity-gate.js' });
-  return { api: windowObj.MOONBOYS_IDENTITY, byId, windowObj, fetchCalls };
+  return { api: windowObj.MOONBOYS_IDENTITY, byId, windowObj, fetchCalls, localStorage };
 }
 
 async function waitTick() {
@@ -462,3 +462,24 @@ async function waitTick() {
 }
 
 console.log('Identity gate auth guard regression checks passed.');
+
+// Membership confirmed for A cannot unlock a page that now belongs to B or
+// whose account was unlinked while Telegram was answering the request.
+for (const changedOwner of ['456', null]) {
+  const auth = { id:'123', hash:'signed', auth_date:String(Math.floor(Date.now()/1000)) };
+  let releaseMembership;
+  const b = await bootstrapIdentity({
+    storageSeed: {moonboys_tg_id:'123',moonboys_tg_linked:'1',moonboys_tg_auth:JSON.stringify(auth)},
+    fetchImpl: async url => String(url).endsWith('/telegram/group-membership')
+      ? new Promise(resolve => { releaseMembership=resolve; })
+      : {ok:true,json:async()=>({linked:true,telegram_id:'123',telegram_auth:auth})},
+  });
+  const pending=b.api.enforceCompetitiveArcadePageGate({gameId:'snake-run'});
+  while (!releaseMembership) await waitTick();
+  if (changedOwner) b.localStorage.setItem('moonboys_tg_id',changedOwner);
+  else b.localStorage.removeItem('moonboys_tg_linked');
+  releaseMembership({ok:true,status:200,json:async()=>({ok:true,member:true})});
+  const result=await pending;
+  assert.equal(result.ok,false,'stale membership must not unlock a changed/unlinked identity');
+  assert.equal(result.reason,'auth_mismatch');
+}

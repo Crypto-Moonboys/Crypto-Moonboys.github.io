@@ -9,7 +9,7 @@ function sessionData(suffix = 'A') {
   return { ok: true, linked: true, telegram_id: ID, display_name: 'Returning player', csrf_token: 'csrf-test',
     telegram_auth: { id: ID, first_name: 'Returning', auth_date: Math.floor(Date.now() / 1000), hash: 's1_' + suffix.repeat(43), expires_at: Math.floor(Date.now() / 1000) + 300 } };
 }
-function browser({ seed = {}, storage = new Map(Object.entries(seed)), fetchImpl = async () => Response.json(sessionData()), capability = { ok: true, enabled: true }, config = { BASE_URL: 'https://api.cryptomoonboys.com' }, readyState = 'complete' } = {}) {
+function browser({ seed = {}, storage = new Map(Object.entries(seed)), membershipImpl = null, fetchImpl = async () => Response.json(sessionData()), capability = { ok: true, enabled: true }, config = { BASE_URL: 'https://api.cryptomoonboys.com' }, readyState = 'complete' } = {}) {
   const calls = [], events = [], timers = [], navigation = [];
   const deadlines = new Map();
   let timerId = 0;
@@ -31,6 +31,7 @@ function browser({ seed = {}, storage = new Map(Object.entries(seed)), fetchImpl
       calls.push(args);
       if (args[0].endsWith('/capabilities')) return typeof capability === 'function' ? capability(...args) : Response.json(capability);
       if (args[0].endsWith('/telegram/group-membership')) {
+        if (membershipImpl) return membershipImpl(...args);
         return Response.json({ ok: true, member: true, status: 'member', group: '@gkniftyheads' });
       }
       return fetchImpl(...args);
@@ -648,4 +649,20 @@ test('score renewal rejects a confirmed expired cookie before any score write', 
   assert.equal(result.state, 'auth_required');
   assert.equal(b.gate.isTelegramLinked(), false);
   assert.equal(b.calls.some(([url]) => url === 'https://leaderboard.test'), false);
+});
+
+
+test('membership for an old website account cannot unlock its replacement', async () => {
+  let current=sessionData(),releaseMembership;
+  const b=browser({fetchImpl:async()=>Response.json(current),membershipImpl:()=>new Promise(resolve=>{releaseMembership=resolve;})});
+  await b.gate.ready;
+  const pending=b.gate.enforceCompetitiveArcadePageGate({gameId:'snake'});
+  while(!releaseMembership) await new Promise(resolve=>setImmediate(resolve));
+  current={...sessionData('B'),telegram_id:'987654321',telegram_auth:{...sessionData('B').telegram_auth,id:'987654321'}};
+  await b.gate.getFreshTelegramAuth({force:true});
+  releaseMembership(Response.json({ok:true,member:true}));
+  const result=await pending;
+  assert.equal(result.ok,false);
+  assert.equal(result.reason,'auth_mismatch');
+  assert.equal(b.gate.getTelegramId(),'987654321');
 });
