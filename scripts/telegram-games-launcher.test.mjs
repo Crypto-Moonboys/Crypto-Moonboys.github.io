@@ -11,7 +11,7 @@ const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" conte
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20261020-games-six-links-v1', 'Games launcher must publish the one-tap Mini App login release token');
+assert.equal(launcherRelease, '20261029-all-games-members-only-v1', 'Games launcher must publish the one-tap Mini App login release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
@@ -112,7 +112,7 @@ assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games l
 
 const launcherDestinations = [
   ['MOONBOY HOME', '/my-moonboy.html'],
-  ['Moonpet OS', '/moonpet-game.html?v=20261012-home-e4-rooms-v1'],
+  ['Moonpet OS', '/moonpet-game.html?v=20261029-members-only-v1'],
   ['DEAD RUN', `/games/dead-run/?v=${deadRunRelease}`],
   ['ALLCITY RUNNER', '/games/nbg-london/'],
   ['FULL ARCADE', `/games/?v=${gameDestinationRelease}`],
