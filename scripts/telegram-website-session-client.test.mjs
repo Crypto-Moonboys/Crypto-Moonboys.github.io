@@ -27,7 +27,14 @@ function browser({ seed = {}, storage = new Map(Object.entries(seed)), fetchImpl
     createElement() { return { style: {}, appendChild, setAttribute() {}, querySelector() { return { addEventListener() {}, focus() {} }; }, addEventListener() {} }; },
     head: { appendChild }, body: { appendChild } };
   const context = vm.createContext({ window, document, setTimeout: () => 0, localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
-    fetch: async (...args) => { calls.push(args); return args[0].endsWith('/capabilities') ? typeof capability === 'function' ? capability(...args) : Response.json(capability) : fetchImpl(...args); }, AbortController, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
+    fetch: async (...args) => {
+      calls.push(args);
+      if (args[0].endsWith('/capabilities')) return typeof capability === 'function' ? capability(...args) : Response.json(capability);
+      if (args[0].endsWith('/telegram/group-membership')) {
+        return Response.json({ ok: true, member: true, status: 'member', group: '@gkniftyheads' });
+      }
+      return fetchImpl(...args);
+    }, AbortController, AbortSignal, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, console });
   vm.runInContext(source, context);
   return { gate: window.MOONBOYS_IDENTITY, storage, calls, events, timers, navigation, document, window, listeners, deadlines, context };
 }
