@@ -179,6 +179,8 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
       bot_admin: true,
       bot_status: botStatus.chat_member_status,
       bot_username: botIdentity?.username || null,
+      native_init_data: true,
+      all_games_gate_version: 1,
       group: '@gkniftyheads',
     });
   }
