@@ -286,6 +286,12 @@
 
       async function runGateAndLaunch() {
         const identity = window.MOONBOYS_IDENTITY || null;
+        if (!identity || typeof identity.enforceCompetitiveArcadePageGate !== "function") {
+          showGateScreen(buildErrorGate("Telegram membership verification is unavailable. Block Topia stays locked."));
+          return;
+        }
+        const communityGate = await identity.enforceCompetitiveArcadePageGate({ gameId: "blocktopia" });
+        if (!communityGate || communityGate.ok !== true) return;
         const verified = await checkBlockTopiaGateIdentity(identity);
         if (verified.status === "not_linked") {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
