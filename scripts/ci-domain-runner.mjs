@@ -222,6 +222,7 @@ const GROUPS = {
     // until a separately reviewed, independently verifiable source exists.
     ['node', 'scripts/nbg-london-replay.test.mjs'],
     ['node', 'scripts/nbg-london-records.test.mjs'],
+    ['node', 'scripts/nbg-hd-render-contract.test.mjs'],
     ['node', '--test', 'scripts/verify-nbg-pages-worker-course.test.mjs'],
     ['node', 'scripts/nbg-london-client-auth.test.mjs'],
     ['node', '--test', 'scripts/nbg-london-source-trust-gate.test.mjs'],
