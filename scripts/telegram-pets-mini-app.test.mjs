@@ -1477,8 +1477,8 @@ assert.match(miniAppStateSource, /seasonSlotsPromise\.then\(slots => op\('journe
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261012-home-e4-rooms-v1`/);
-assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20261020-games-six-links-v1`/,
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261029-members-only-v1`/);
+assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20261029-all-games-members-only-v1`/,
   'in-chat Games button must keep the verified Telegram launcher URL');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'OPEN GAMES'/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
@@ -2448,7 +2448,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20261002-audit-recovery-v2/);
-assert.match(worker, /20261012-home-e4-rooms-v1/);
+assert.match(worker, /20261029-members-only-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
