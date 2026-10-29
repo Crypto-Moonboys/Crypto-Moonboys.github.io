@@ -26,6 +26,18 @@
   <link rel="stylesheet" href="styles.css?v=20260902-dead-run-v5" />
 </head>
 <body class="page-standalone-tool">
+  <div id="deadRunAccessGate" class="dead-run-access-gate" role="status" aria-live="polite">
+    <div class="dead-run-access-panel">
+      <h2>TELEGRAM MEMBERS ONLY</h2>
+      <p id="deadRunAccessMessage">Checking Telegram login and GKniftyHEADS group membership…</p>
+      <div class="dead-run-access-actions">
+        <a href="/games/telegram/">OPEN IN TELEGRAM</a>
+        <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">JOIN TELEGRAM GROUP</a>
+        <button id="deadRunAccessCheck" type="button">CHECK ACCESS</button>
+      </div>
+    </div>
+  </div>
+
   <div id="app">
     <div id="map" class="map-fallback-active" aria-label="Dead Run game map">
       <div id="fallbackMapLayer" class="fallback-map-layer" aria-hidden="true"></div>
