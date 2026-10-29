@@ -1173,6 +1173,7 @@
   }
 
   async function loadProfile() {
+    denyArcadeAccess('TELEGRAM MEMBERS ONLY · Checking Telegram login and GKniftyHEADS membership…');
     try {
       const hordeData = await apiGet('/api/dead-run/horde/current');
       renderHorde(hordeData.horde);
