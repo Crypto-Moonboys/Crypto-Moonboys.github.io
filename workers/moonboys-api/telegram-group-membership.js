@@ -41,15 +41,17 @@ function authCheckString(fields) {
 async function verifyTelegramAuth(fields, botToken) {
   if (!fields || !botToken || !fields.hash) return false;
   const supplied = String(fields.hash).toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(supplied)) return false;
+  const suppliedBytes = new Uint8Array(32);
+  for (let i = 0; i < suppliedBytes.length; i += 1) {
+    suppliedBytes[i] = parseInt(supplied.slice(i * 2, i * 2 + 2), 16);
+  }
   const secret = await crypto.subtle.digest('SHA-256',
     new TextEncoder().encode(String(botToken)));
   const key = await crypto.subtle.importKey('raw', secret,
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const signature = await crypto.subtle.sign('HMAC', key,
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+  return crypto.subtle.verify('HMAC', key, suppliedBytes,
     new TextEncoder().encode(authCheckString(fields)));
-  const actual = Array.from(new Uint8Array(signature))
-    .map(byte => byte.toString(16).padStart(2, '0')).join('');
-  return actual === supplied;
 }
 
 function isActiveMember(member) {
