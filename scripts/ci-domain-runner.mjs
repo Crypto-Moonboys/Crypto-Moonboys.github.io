@@ -227,6 +227,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/nbg-audio-contract.test.mjs'],
     ['node', '--test', 'scripts/verify-nbg-pages-worker-course.test.mjs'],
     ['node', 'scripts/nbg-london-client-auth.test.mjs'],
+    ['node', '--test', 'scripts/nbg-telegram-access-gate-client.test.mjs'],
     ['node', '--test', 'scripts/nbg-london-source-trust-gate.test.mjs'],
     ['node', '--test', 'scripts/meme-swarm-mobile.test.mjs'],
     ['node', '--test', 'scripts/telegram-progression-auth.test.mjs'],
