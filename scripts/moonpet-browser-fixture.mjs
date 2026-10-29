@@ -54,6 +54,11 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
     const req=route.request(),url=new URL(req.url());
     if(url.hostname==='telegram.org')return route.fulfill({contentType:'text/javascript',body:'window.Telegram={WebApp:{initData:'+JSON.stringify(website||telegramDelay?'':fields.toString())+',platform:'+JSON.stringify(telegramDelay?'android':'unknown')+',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};'+(telegramDelay?'setTimeout(()=>{window.Telegram.WebApp.initData='+JSON.stringify(fields.toString())+';},'+telegramDelay+');':'' )});
     if(website&&url.pathname==='/js/identity-gate.js')return route.fulfill({contentType:'text/javascript',body:'window.fixtureAuth='+JSON.stringify(auth)+';window.fixtureWebsiteRestored=false;window.MOONBOYS_IDENTITY={restoreLinkedTelegramAuth:async()=>{await new Promise(resolve=>setTimeout(resolve,'+websiteDelay+'));window.fixtureWebsiteRestored=true;return {ok:true,telegram_auth:window.fixtureAuth};},getFreshTelegramAuth:async()=>window.fixtureAuth,getTelegramAuth:()=>window.fixtureAuth};'});
+    if(url.pathname==='/telegram/group-membership'){
+      if(url.origin!==origin){errors.push('sandbox_nonlocal_membership_origin:'+url.origin);return route.abort('blockedbyclient');}
+      const body=req.postDataJSON();requests.push({path:url.pathname,body});
+      return route.fulfill({status:200,json:{ok:true,member:true,status:'member',group:'@gkniftyheads'}});
+    }
     if(url.pathname.startsWith('/telegram-pets/app/')){
       if(url.origin!==origin){errors.push('sandbox_nonlocal_api_origin:'+url.origin);return route.abort('blockedbyclient');}
       const body=req.postDataJSON();requests.push({path:url.pathname,body});
