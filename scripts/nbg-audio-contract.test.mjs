@@ -31,6 +31,7 @@ const expectedEnemyIdentities = [
   'balloon_girl_walk', 'balloon_girl_presence', 'balloon_girl_spot',
   'pigeon_flight', 'pigeon_call'
 ].sort();
+const expectedAssetCount = expectedEffects.length + expectedEnemyIdentities.length + 1;
 
 function createEventTarget() {
   const listeners = new Map();
@@ -153,9 +154,9 @@ async function flushPromises(rounds = 8) {
 test('live audio payload contains exactly the approved compressed pack', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   assert.deepEqual(Object.keys(manifest.effects).sort(), expectedEffects);
-  assert.equal(Object.keys(manifest.effects).length, 42);
+  assert.equal(Object.keys(manifest.effects).length, expectedEffects.length);
   assert.deepEqual(Object.keys(manifest.enemyIdentities).sort(), expectedEnemyIdentities);
-  assert.equal(Object.keys(manifest.enemyIdentities).length, 17);
+  assert.equal(Object.keys(manifest.enemyIdentities).length, expectedEnemyIdentities.length);
   assert.equal(manifest.music.main, 'music/main_theme_dark_industrial_loop.ogg');
 
   const referenced = [
@@ -163,7 +164,7 @@ test('live audio payload contains exactly the approved compressed pack', async (
     ...Object.values(manifest.enemyIdentities),
     manifest.music.main
   ];
-  assert.equal(new Set(referenced).size, 60);
+  assert.equal(new Set(referenced).size, expectedAssetCount);
   for (const relative of referenced) {
     assert.equal(relative.endsWith('.ogg'), true, relative);
     assert.equal(relative.includes('..'), false, relative);
@@ -206,7 +207,7 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
   assert.equal(env.contexts.length, 0, 'AudioContext must not be created on page load');
   await flushPromises();
-  assert.equal(env.window.NBGAudio.getState().encodedAssets, 60);
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, expectedAssetCount);
   assert.equal(env.window.NBGAudio.getState().maxVoices, 12);
 
   env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
@@ -531,12 +532,12 @@ test('enemy identity preload refreshes only the manifest and keeps audio cacheab
   const manifestRequests = env.requests.filter(({ url }) => url.includes('/manifest.json'));
   const assetRequests = env.requests.filter(({ url }) => !url.includes('/manifest.json'));
   assert.equal(manifestRequests.length, 1);
-  assert.equal(manifestRequests[0].url.includes('?v='), true);
+  assert.equal(manifestRequests[0].url.includes('?v=enemy-attack-audio-r4'), true);
   assert.equal(manifestRequests[0].cache, 'no-store');
-  assert.equal(assetRequests.length, 60);
+  assert.equal(assetRequests.length, expectedAssetCount);
   assert.equal(assetRequests.every(({ cache }) => cache === 'force-cache'), true);
-  assert.equal(env.window.NBGAudio.getState().encodedAssets, 60);
-  assert.equal(env.window.NBGAudio.getState().enemyAssetsLoaded, 17);
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, expectedAssetCount);
+  assert.equal(env.window.NBGAudio.getState().enemyAssetsLoaded, expectedEnemyIdentities.length);
   assert.deepEqual([...env.window.NBGAudio.getState().failedAssets], []);
 
   env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
@@ -572,7 +573,7 @@ test('enemy loop retries a transient per-file failure without redownloading the 
   await flushPromises(12);
 
   let state = env.window.NBGAudio.getState();
-  assert.equal(state.encodedAssets, 59);
+  assert.equal(state.encodedAssets, expectedAssetCount - 1);
   assert.equal(state.enemyAssetsLoaded, 16);
   assert.equal(state.failedAssets.some(([id]) => id === 'graffbot_walk'), true);
 
@@ -597,8 +598,8 @@ test('enemy loop retries a transient per-file failure without redownloading the 
   env.window.dispatchEvent(frame);
   await flushPromises(12);
   state = env.window.NBGAudio.getState();
-  assert.equal(state.encodedAssets, 60);
-  assert.equal(state.enemyAssetsLoaded, 17);
+  assert.equal(state.encodedAssets, expectedAssetCount);
+  assert.equal(state.enemyAssetsLoaded, expectedEnemyIdentities.length);
   assert.equal(state.failedAssets.some(([id]) => id === 'graffbot_walk'), false);
   assert.deepEqual([...state.enemyLoopIds], ['graffbot_walk']);
   assert.equal(state.enemyLoopSources, 1);
@@ -618,7 +619,7 @@ test('Graffbot movement begins while unrelated audio downloads remain stalled', 
     Number, Promise, Date, Array, Math, console });
   vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
   await flushPromises(10);
-  assert.equal(env.window.NBGAudio.getState().encodedAssets, 59,
+  assert.equal(env.window.NBGAudio.getState().encodedAssets, expectedAssetCount - 1,
     'unrelated coin file remains stalled');
   env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
   await flushPromises();
@@ -637,6 +638,7 @@ test('Graffbot movement begins while unrelated audio downloads remain stalled', 
 
 test('each rat attack animation has a unique audio cue, without changing combat timing', async () => {
   const runtime = await readFile(path.join(root, 'game', 'nbg-level1.js'), 'utf8');
+  const manager = await readFile(managerPath, 'utf8');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   const mappings = {
     ratBladeFlurry: 'rat_attack',
@@ -650,9 +652,12 @@ test('each rat attack animation has a unique audio cue, without changing combat 
     assert.ok(manifest.effects[cue], cue + ' in manifest');
   }
   assert.equal(new Set(Object.values(mappings)).size, 5);
+  const priorities = { brown_rat_punch: 70, turquoise_rat_kick: 72, turquoise_rat_punch: 70 };
   for (const cue of ['brown_rat_punch', 'turquoise_rat_kick', 'turquoise_rat_punch']) {
+    assert.match(manager, new RegExp(cue + ': ' + priorities[cue] + '(?:,|\\n)'));
     const payload = await readFile(path.join(audioRoot, manifest.effects[cue]));
-    assert.equal(payload.subarray(0, 4).toString('ascii'), 'RIFF', cue + ' WAV header');
+    assert.equal(manifest.effects[cue].endsWith('.ogg'), true, cue + ' compressed path');
+    assert.equal(payload.subarray(0, 4).toString('ascii'), 'OggS', cue + ' OGG header');
     assert.ok(payload.length > 1000, cue + ' should contain audio');
   }
 });

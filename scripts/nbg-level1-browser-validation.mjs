@@ -118,6 +118,9 @@ async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewpo
 
 
 async function verifyEnemyAudioProfile(browser, targetUrl, profile) {
+  const manifest = readJson('game/assets/audio/nbg-dark-industrial/manifest.json');
+  const expectedAssetCount = Object.keys(manifest.effects || {}).length +
+    Object.keys(manifest.enemyIdentities || {}).length + (manifest.music?.main ? 1 : 0);
   const audioPage = await browser.newPage(profile.options);
   const errors = [];
   const failedRequests = [];
@@ -127,9 +130,8 @@ async function verifyEnemyAudioProfile(browser, targetUrl, profile) {
   });
   try {
     await audioPage.goto(targetUrl, { waitUntil: 'domcontentloaded' });
-    await audioPage.waitForFunction(() => window.NBGAudio?.getState().encodedAssets === 60, null, {
-      timeout: 10000
-    });
+    await audioPage.waitForFunction((count) => window.NBGAudio?.getState().encodedAssets === count,
+      expectedAssetCount, { timeout: 10000 });
     await audioPage.locator('#game').click({ position: { x: 120, y: 120 } });
     await audioPage.waitForFunction(() => window.NBGAudio?.getState().contextState === 'running', null, {
       timeout: 5000
