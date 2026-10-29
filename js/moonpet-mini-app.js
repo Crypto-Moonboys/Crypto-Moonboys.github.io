@@ -5544,9 +5544,11 @@
       '<div class="button-grid one">' +
         '<a class="terminal-link-button" href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">JOIN GKNIFTYHEADS</a>' +
         '<a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
-        '<button type="button" class="terminal-button" onclick="window.location.reload()">CHECK ACCESS</button>' +
+        '<button type="button" class="terminal-button" data-membership-retry>CHECK ACCESS</button>' +
       '</div>', 'telegram-membership');
     screen.appendChild(nav);
+    var retry = screen.querySelector('[data-membership-retry]');
+    if (retry) retry.addEventListener('click', function () { window.location.reload(); });
   }
 
   async function start() {
