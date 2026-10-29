@@ -431,6 +431,9 @@
     if (raw === 'account_blocked') return 'account_blocked';
     if (raw === 'auth_expired' || raw === 'telegram_auth_expired') return 'auth_expired';
     if (raw === 'auth_mismatch' || raw === 'telegram_id_mismatch') return 'auth_mismatch';
+    if (raw === 'telegram_group_membership_required' || raw === 'group_membership_required') return 'group_membership_required';
+    if (raw === 'telegram_group_membership_unavailable' || raw === 'group_membership_unavailable' ||
+        raw === 'telegram_group_membership_not_configured') return 'group_membership_unavailable';
     return 'auth_restore_failed';
   }
 
@@ -439,8 +442,14 @@
     var normalizedReason = normalizeCompetitiveGateFailureReason(reason || 'auth_required');
     if (normalizedReason === 'account_blocked') {
       showBlockedModal((opts.anticheat && opts.anticheat.blocked_reason) || 'Competitive activity violation detected.');
-    } else if (normalizedReason === 'not_linked' || normalizedReason === 'missing_auth' || normalizedReason === 'auth_expired' || normalizedReason === 'auth_restore_failed' || normalizedReason === 'auth_mismatch') {
-      showSyncGateModal(true);
+    } else if (normalizedReason === 'group_membership_required') {
+      showArcadeMembershipGateModal('group_required');
+    } else if (normalizedReason === 'group_membership_unavailable') {
+      showArcadeMembershipGateModal('unavailable');
+    } else if (normalizedReason === 'not_linked' || normalizedReason === 'missing_auth' ||
+        normalizedReason === 'auth_expired' || normalizedReason === 'auth_restore_failed' ||
+        normalizedReason === 'auth_mismatch') {
+      showArcadeMembershipGateModal('login_required');
     }
     setSyncHealth('bad', normalizedReason);
     return buildCompetitiveGateResult(false, normalizedReason, {
@@ -449,14 +458,68 @@
     });
   }
 
+  function verifyArcadeGroupMembership(auth, gameId) {
+    var base = getApiBase();
+    if (!base || !auth || !auth.id || !auth.hash || !auth.auth_date) {
+      return Promise.resolve({ ok: false, reason: 'auth_restore_failed' });
+    }
+    return fetch(base.replace(/\/$/, '') + '/telegram/group-membership', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth, game_id: gameId || null }),
+      cache: 'no-store',
+      signal: typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+        ? AbortSignal.timeout(10000) : undefined,
+    }).then(function (response) {
+      return response.json().catch(function () { return {}; }).then(function (data) {
+        if (response.status === 401 || response.status === 403 && data?.error === 'verified telegram_auth payload required') {
+          return { ok: false, reason: 'auth_expired', status: response.status };
+        }
+        if (!response.ok || data?.ok !== true) {
+          return {
+            ok: false,
+            reason: normalizeCompetitiveGateFailureReason(data?.error || 'group_membership_unavailable'),
+            status: response.status,
+          };
+        }
+        if (data.member !== true) {
+          return { ok: false, reason: 'group_membership_required', status: response.status };
+        }
+        return {
+          ok: true,
+          source: 'telegram_group_membership',
+          telegram_id: String(auth.id),
+          telegram_auth: auth,
+          group: data.group || '@gkniftyheads',
+          group_status: data.status || null,
+        };
+      });
+    }).catch(function () {
+      return { ok: false, reason: 'group_membership_unavailable', status: 0 };
+    });
+  }
+
   function enforceCompetitiveArcadePageGate(options) {
     if (websitePending) return websiteReady.then(function () { return enforceCompetitiveArcadePageGate(options); });
     if (websiteAuth || lsGet('moonboys_tg_session_mode') === 'website') {
       return restoreWebsiteSession(true).then(function (result) {
+        var gameId = options && (options.game_id || options.gameId) || null;
         if (!result || !result.ok) return failCompetitiveArcadePageGate('auth_expired', options);
-        return buildCompetitiveGateResult(true, '', {
-          game_id: options && (options.game_id || options.gameId) || null,
-          telegram_auth: result.telegram_auth, source: 'telegram_oidc', linked: true, verified_by_server: true,
+        return verifyArcadeGroupMembership(result.telegram_auth, gameId).then(function (membership) {
+          if (!membership || membership.ok !== true) {
+            return failCompetitiveArcadePageGate(
+              membership && membership.reason ? membership.reason : 'group_membership_unavailable',
+              { game_id: gameId }
+            );
+          }
+          return buildCompetitiveGateResult(true, '', {
+            game_id: gameId,
+            telegram_auth: result.telegram_auth,
+            source: 'telegram_oidc_group_member',
+            linked: true,
+            verified_by_server: true,
+            group_member: true,
+          });
         });
       });
     }
@@ -494,15 +557,24 @@
         if (isTelegramAuthExpired(restoredAuth)) {
           return failCompetitiveArcadePageGate('auth_expired', { game_id: gameId, anticheat: restoreResult.anticheat });
         }
-        setSyncHealth('good', 'arcade_gate_server_verified');
-        return buildCompetitiveGateResult(true, '', {
-          game_id: gameId,
-          telegram_auth: restoredAuth,
-          source: restoreResult.source || 'server_verified_competitive_gate',
-          linked: true,
-          verified_by_server: true,
-          anticheat: restoreResult.anticheat || null,
-          recovery: restoreResult.recovery || null,
+        return verifyArcadeGroupMembership(restoredAuth, gameId).then(function (membership) {
+          if (!membership || membership.ok !== true) {
+            return failCompetitiveArcadePageGate(
+              membership && membership.reason ? membership.reason : 'group_membership_unavailable',
+              { game_id: gameId, anticheat: restoreResult.anticheat }
+            );
+          }
+          setSyncHealth('good', 'arcade_gate_group_verified');
+          return buildCompetitiveGateResult(true, '', {
+            game_id: gameId,
+            telegram_auth: restoredAuth,
+            source: restoreResult.source || 'server_verified_competitive_gate',
+            linked: true,
+            verified_by_server: true,
+            group_member: true,
+            anticheat: restoreResult.anticheat || null,
+            recovery: restoreResult.recovery || null,
+          });
         });
       })
       .catch(function () {
@@ -1014,6 +1086,50 @@
 
   // ── Sync gate modal ─────────────────────────────────────────
 
+  var ARCADE_MEMBER_MODAL_ID = 'arcade-telegram-member-gate';
+  var TELEGRAM_GROUP_URL = 'https://t.me/gkniftyheads';
+
+  function showArcadeMembershipGateModal(mode) {
+    injectStyles();
+    var existing = document.getElementById(ARCADE_MEMBER_MODAL_ID);
+    if (existing) existing.remove();
+
+    var reason = String(mode || 'login_required');
+    var message = reason === 'group_required'
+      ? 'Join the GKniftyHEADS Telegram group, then check access again to play.'
+      : reason === 'unavailable'
+        ? 'Telegram membership could not be verified. The game stays locked until the server confirms access.'
+        : 'Log in with Telegram, then join the GKniftyHEADS group to play.';
+
+    var div = document.createElement('div');
+    div.id = ARCADE_MEMBER_MODAL_ID;
+    div.className = 'tg-sync-gate-overlay';
+    div.setAttribute('role', 'alertdialog');
+    div.setAttribute('aria-modal', 'true');
+    div.setAttribute('aria-label', 'Telegram members only');
+    div.setAttribute('aria-hidden', 'false');
+    div.innerHTML =
+      '<div class="tg-sync-gate-box arcade-member-gate-box">' +
+        '<p class="tg-sync-gate-title">TELEGRAM MEMBERS ONLY</p>' +
+        '<p class="tg-sync-gate-body">' + escapeModalText(message) + '</p>' +
+        '<div class="tg-sync-gate-actions">' +
+          '<button type="button" class="tg-sync-gate-btn" id="arcade-member-login">Log in with Telegram</button>' +
+          '<a class="tg-sync-gate-btn" id="arcade-member-group" href="' + TELEGRAM_GROUP_URL + '" target="_blank" rel="noopener noreferrer">Join Telegram group</a>' +
+          '<button type="button" class="tg-sync-gate-btn" id="arcade-member-recheck">Check access</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(div);
+    div.style.display = 'flex';
+
+    var login = div.querySelector('#arcade-member-login');
+    var group = div.querySelector('#arcade-member-group');
+    if (login) login.style.display = reason === 'group_required' ? 'none' : '';
+    if (group) group.style.display = reason === 'login_required' ? 'none' : '';
+    if (login) login.addEventListener('click', function () { loginWithTelegram(); });
+    var recheck = div.querySelector('#arcade-member-recheck');
+    if (recheck) recheck.addEventListener('click', function () { window.location.reload(); });
+  }
+
   var BOT_URL = 'https://t.me/WIKICOMSBOT';
 
   function getBotUrl() {
@@ -1043,6 +1159,12 @@
       '.tg-sync-gate-icon{font-size:48px;margin-bottom:12px;line-height:1}',
       '.tg-sync-gate-title{font-size:20px;font-weight:700;margin:0 0 12px;color:#fff}',
       '.tg-sync-gate-body{font-size:14px;line-height:1.6;color:#a0a0c0;margin:0 0 20px}',
+      '.arcade-member-gate-box{max-width:560px;border:2px solid #7cff82;background:#090d16;color:#fff}',
+      '.arcade-member-gate-box .tg-sync-gate-title{color:#7cff82;font-size:26px;letter-spacing:.04em}',
+      '.tg-sync-gate-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}',
+      '.tg-sync-gate-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;',
+        'border:1px solid #7acbff;border-radius:8px;background:#145a8a;color:#fff;',
+        'text-decoration:none;font:700 14px/1.2 inherit;cursor:pointer}',
       '.tg-sync-gate-btn{display:inline-block;background:#3d5afe;color:#fff;',
         'text-decoration:none;padding:10px 20px;border-radius:6px;font-weight:600;',
         'font-size:14px;margin-bottom:16px;transition:background .2s}',
