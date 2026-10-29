@@ -1164,7 +1164,7 @@
       '.tg-sync-gate-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}',
       '.tg-sync-gate-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;',
         'border:1px solid #7acbff;border-radius:8px;background:#145a8a;color:#fff;',
-        'text-decoration:none;font:700 14px/1.2 inherit;cursor:pointer}',
+        'text-decoration:none;font-weight:700;font-size:14px;line-height:1.2;font-family:inherit;cursor:pointer}',
       '.tg-sync-gate-btn{display:inline-block;background:#3d5afe;color:#fff;',
         'text-decoration:none;padding:10px 20px;border-radius:6px;font-weight:600;',
         'font-size:14px;margin-bottom:16px;transition:background .2s}',
