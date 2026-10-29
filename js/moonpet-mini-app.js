@@ -5498,6 +5498,57 @@
     requestAnimationFrame(frame);
   }
 
+  async function verifyMoonpetGroupMembership() {
+    if (!apiBase) return { ok: false, reason: 'membership_api_unavailable' };
+    var body = initData
+      ? { init_data: initData }
+      : telegramAuth
+        ? { telegram_auth: telegramAuth }
+        : null;
+    if (!body) return { ok: false, reason: 'telegram_auth_required' };
+    try {
+      var controller = typeof AbortController === 'function' ? new AbortController() : null;
+      var timer = controller ? window.setTimeout(function () { controller.abort(); }, 10000) : 0;
+      var response = await fetch(apiBase + '/telegram/group-membership', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        cache: 'no-store',
+        signal: controller ? controller.signal : undefined
+      });
+      if (timer) window.clearTimeout(timer);
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok || data.ok !== true) {
+        return { ok: false, reason: data.error || 'membership_check_failed', status: response.status };
+      }
+      if (data.member !== true) {
+        return { ok: false, reason: 'group_membership_required', status: response.status };
+      }
+      return { ok: true, status: data.status || 'member', group: data.group || '@gkniftyheads' };
+    } catch (error) {
+      return { ok: false, reason: error && error.name === 'AbortError' ? 'membership_check_timeout' : 'membership_check_failed' };
+    }
+  }
+
+  async function showMoonpetMembershipGate(result) {
+    typingToken += 1;
+    bootLayer.classList.add('is-hidden');
+    var groupRequired = result && result.reason === 'group_membership_required';
+    tell(groupRequired
+      ? 'TELEGRAM MEMBERS ONLY. JOIN GKNIFTYHEADS TO PLAY MOONPET OS.'
+      : 'TELEGRAM MEMBERSHIP COULD NOT BE VERIFIED. GAME LOCKED.', 'danger');
+    screen.innerHTML = panel('TELEGRAM MEMBERS ONLY',
+      '<div class="line">' + (groupRequired
+        ? 'YOUR TELEGRAM ACCOUNT IS VERIFIED, BUT GKNIFTYHEADS GROUP MEMBERSHIP IS REQUIRED TO PLAY.'
+        : 'MOONPET OS STAYS LOCKED UNTIL TELEGRAM LOGIN AND GKNIFTYHEADS MEMBERSHIP ARE VERIFIED.') + '</div>' +
+      '<div class="button-grid one">' +
+        '<a class="terminal-link-button" href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer">JOIN GKNIFTYHEADS</a>' +
+        '<a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN MOONPET OS IN TELEGRAM</a>' +
+        '<button type="button" class="terminal-button" onclick="window.location.reload()">CHECK ACCESS</button>' +
+      '</div>', 'telegram-membership');
+    screen.appendChild(nav);
+  }
+
   async function start() {
     // Website session restoration and Telegram discovery are independent.
     // A restored signed website proof ends the discovery wait on its next tick.
@@ -5532,6 +5583,14 @@
       await typeBoot(['AUTHENTICATION NOT FOUND', 'OPEN THE MINI APP INSIDE TELEGRAM', 'NO PLAYER DATA WAS READ'], { speed: 9, hold: 800 });
       return;
     }
+
+    var membership = await verifyMoonpetGroupMembership();
+    if (!membership.ok) {
+      await startupBoot;
+      await showMoonpetMembershipGate(membership);
+      return;
+    }
+
     try {
       var requestGeneration = beginStateRequest();
       var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' });
