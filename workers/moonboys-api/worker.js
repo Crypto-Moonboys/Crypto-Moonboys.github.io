@@ -15474,9 +15474,9 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20261020-games-six-links-v1`;
+const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20261029-all-games-members-only-v1`;
 const TELEGRAM_GAMES_MENU_TEXT = 'OPEN GAMES';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261012-home-e4-rooms-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261029-members-only-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
