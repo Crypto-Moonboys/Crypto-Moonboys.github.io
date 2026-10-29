@@ -8,6 +8,7 @@
   var MAX_ENEMY_LOOP_SOURCES = 6;
   var ENEMY_LOOP_DISTANCE = 520;
   var ENEMY_LOOP_FADE_SECONDS = 0.12;
+  var ENEMY_LOOP_RETRY_MS = 3000;
   var ENEMY_LOOP_MIN_VOLUME = 0.035;
   var ENEMY_LOOP_MAX_VOLUME = 0.24;
   var DEFAULT_SETTINGS = { muted: false, musicLevel: 0.42, sfxLevel: 0.78 };
@@ -62,6 +63,7 @@
   var enemyLoopSources = [];
   var enemyEncountered = new Set();
   var enemyLoopRequestGeneration = 0;
+  var enemyLoopRetryAt = new Map();
   var enemyLoopStartCounter = 0;
   var enemyLoopsPaused = false;
   var musicSource = null;
@@ -100,8 +102,9 @@
     return new URL(file, new URL(MANIFEST_URL, window.location.href)).href;
   }
 
-  function fetchAsset(id, file) {
-    return fetch(assetUrl(file), { cache: 'no-store' }).then(function (response) {
+  function fetchAsset(id, file, options) {
+    var cacheMode = options && options.retry ? 'reload' : 'force-cache';
+    return fetch(assetUrl(file), { cache: cacheMode }).then(function (response) {
       if (!response.ok) throw new Error('NBG audio asset failed: ' + id + ' (' + response.status + ')');
       return response.arrayBuffer();
     }).then(function (data) {
@@ -178,7 +181,7 @@
       var file = (manifest.effects || {})[id] || (manifest.enemyIdentities || {})[id] ||
         (id === 'music:main' && manifest.music && manifest.music.main);
       if (!file) return null;
-      return encodedAssets.has(id) ? encodedAssets.get(id) : fetchAsset(id, file);
+      return encodedAssets.has(id) ? encodedAssets.get(id) : fetchAsset(id, file, { retry: true });
     }).then(function (encoded) {
       if (!encoded || !audioContext) return null;
       var context = audioContext;
@@ -337,7 +340,10 @@
     if (immediate) enemyLoopSources.slice().forEach(function (voice) {
       stopEnemyLoopVoice(voice, true);
     });
-    if (clearEncounters) enemyEncountered = new Set();
+    if (clearEncounters) {
+      enemyEncountered = new Set();
+      enemyLoopRetryAt.clear();
+    }
   }
 
   function enemyLoopId(snapshot, config) {
@@ -374,9 +380,16 @@
     };
     enemyLoopVoices.set(candidate.key, voice);
     decodeAsset(candidate.id).then(function (buffer) {
-      if (!buffer || voice.cancelled || voice.generation !== enemyLoopRequestGeneration ||
-          enemyLoopVoices.get(voice.key) !== voice || settings.muted || enemyLoopsPaused ||
-          document.hidden || !audioContext || audioContext.state !== 'running') return;
+      if (voice.cancelled || voice.generation !== enemyLoopRequestGeneration ||
+          enemyLoopVoices.get(voice.key) !== voice) return;
+      if (!buffer) {
+        enemyLoopVoices.delete(voice.key);
+        enemyLoopRetryAt.set(voice.id, Date.now() + ENEMY_LOOP_RETRY_MS);
+        return;
+      }
+      if (settings.muted || enemyLoopsPaused || document.hidden || !audioContext ||
+          audioContext.state !== 'running') return;
+      enemyLoopRetryAt.delete(voice.id);
       while (enemyLoopSources.length >= MAX_ENEMY_LOOP_SOURCES) {
         stopEnemyLoopVoice(enemyLoopSources[0], true);
       }
@@ -447,7 +460,10 @@
         stopEnemyLoopVoice(voice, false);
         voice = null;
       }
-      if (!voice) voice = startEnemyLoop(candidate);
+      if (!voice && Date.now() >= Number(enemyLoopRetryAt.get(candidate.id) || 0)) {
+        voice = startEnemyLoop(candidate);
+      }
+      if (!voice) return;
       voice.targetVolume = candidate.volume;
       setEnemyLoopGain(voice, candidate.volume, false);
       if (candidate.alert && !enemyEncountered.has(candidate.key)) {
