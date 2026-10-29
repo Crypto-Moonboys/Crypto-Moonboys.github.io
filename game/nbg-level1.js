@@ -2457,11 +2457,20 @@
         cancelQueuedStartIfOwnerChanged();
         if (pendingRunStartPromise) return pendingRunStartPromise;
       }
-      // A fast reset can queue a new /run/start behind a still-unsettled
-      // request for this SAME Telegram owner. Hold simulation at elapsed 0
-      // until its actual signed server session exists. Guest/ordinary starts
-      // retain the original immediate play path.
+      // Production NBG is a Telegram-group-gated game. The page/art can load
+      // publicly, but physics must fail closed until the access controller has
+      // verified both Telegram login and current group membership server-side.
+      var stage = document.getElementById('game-stage');
+      var accessGateRequired = stage &&
+        stage.getAttribute('data-nbg-access-gate') === 'telegram-group';
       var beforePlay = window.NBGLondonBeforeQueuedRun;
+      if (accessGateRequired && typeof beforePlay !== 'function') {
+        clearInput();
+        pendingJumpPresses = 0;
+        waitingForFirstInput = true;
+        updateHud();
+        return Promise.resolve(window.NBGLevel1State);
+      }
       var preparation = typeof beforePlay === 'function' ? beforePlay() : null;
       if (!preparation || typeof preparation.then !== 'function')
         return startSimulation();
@@ -2473,10 +2482,20 @@
       var capturedOwner = String(ownerGate && ownerGate.getTelegramId ?
         ownerGate.getTelegramId() || '' : '');
       var capturedSequence = runSequence;
-      var wait = Promise.resolve(preparation).catch(function () {
-        // Auth/network failure leaves gameplay playable as practice, without
-        // claiming an official score. Client displays the ranked error.
-      }).then(function () {
+      var wait = Promise.resolve(preparation).then(function (access) {
+        if (access && access.allow === false) {
+          clearInput();
+          pendingJumpPresses = 0;
+          pendingInitialInput = null;
+          initialInputReplay = null;
+          waitingForFirstInput = true;
+          if (pendingRunStartPromise === wait) {
+            pendingRunStartPromise = null;
+            pendingRunOwner = null;
+          }
+          updateHud();
+          return window.NBGLevel1State;
+        }
         var gate = window.MOONBOYS_IDENTITY;
         var currentOwner = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
         if (capturedSequence !== runSequence || complete || gameOver ||
@@ -2485,6 +2504,23 @@
         if (pendingRunStartPromise === wait) {
           pendingRunStartPromise = null;
           pendingRunOwner = null;
+        }
+        return startSimulation();
+      }).catch(function () {
+        // A required access check is fail-closed. A non-gated/local test path
+        // retains the historical practice fallback.
+        if (accessGateRequired) {
+          clearInput();
+          pendingJumpPresses = 0;
+          pendingInitialInput = null;
+          initialInputReplay = null;
+          waitingForFirstInput = true;
+          if (pendingRunStartPromise === wait) {
+            pendingRunStartPromise = null;
+            pendingRunOwner = null;
+          }
+          updateHud();
+          return window.NBGLevel1State;
         }
         return startSimulation();
       });
