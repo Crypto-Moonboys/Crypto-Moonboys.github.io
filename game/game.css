@@ -132,6 +132,13 @@ canvas {
   image-rendering: pixelated;
 }
 
+/* NBG London only: the HD backing buffer is 960x540, with a 480x270
+   logical game view. Do not force nearest-neighbour scaling of the whole
+   canvas: smooth presentation of current artwork until HD sources arrive. */
+canvas#game {
+  image-rendering: auto;
+}
+
 .hud-strip {
   position: absolute;
   top: 3px;

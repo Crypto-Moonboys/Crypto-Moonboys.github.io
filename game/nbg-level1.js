@@ -3,8 +3,12 @@
 
   var ASSET_ROOT = '/game/assets/';
   var ASSET_MANIFEST = ASSET_ROOT + 'asset-manifest.json';
+  // All physics, positions, cameras and gameplay remain in 480x270 units.
+  // Only the output bitmap is doubled: replacement HD images can now render
+  // at greater real detail without changing hitboxes, timings or replay v8.
   var WIDTH = 480;
   var HEIGHT = 270;
+  var RENDER_SCALE = 2;
   var WORLD_WIDTH = 22000;
   var FLOOR_Y = 214;
   var TARGET_FRAME_MS = 1000 / 60;
@@ -158,8 +162,19 @@
   // Remove only the exact exterior green matte in each independent sprite
   // cell. A per-cell flood fill preserves enclosed green artwork and avoids
   // the former +/-18 RGB tolerance that erased genuine character pixels.
-  function prepareCrouchSheet(image) {
-    if (image.naturalWidth !== 1280 || image.naturalHeight !== 1280)
+  function prepareCrouchSheet(image, animation) {
+    // Source frames may be replaced with true 2x artwork later. Use the
+    // manifest grid, not the old hard-coded 256px cells / 1280px sheet.
+    var columns = animation.columns;
+    var frameWidth = animation.sourceFrameWidth;
+    var frameHeight = animation.sourceFrameHeight;
+    var rows = Math.ceil(((animation.frameStart || 0) + animation.frames) / columns);
+    if (!Number.isInteger(columns) || columns < 1 ||
+        !Number.isInteger(frameWidth) || frameWidth < 1 ||
+        !Number.isInteger(frameHeight) || frameHeight < 1 ||
+        !Number.isInteger(rows) || rows < 1 ||
+        image.naturalWidth !== columns * frameWidth ||
+        image.naturalHeight !== rows * frameHeight)
       throw new Error('Unexpected crouch sheet dimensions: ' + image.src);
     var canvas = document.createElement('canvas');
     canvas.width = image.naturalWidth;
@@ -169,33 +184,34 @@
     var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
     var rgba = pixels.data;
     var width = canvas.width;
-    var cell = 256;
     var matte = [rgba[0], rgba[1], rgba[2]];
-    for (var row = 0; row < 5; row += 1) {
-      for (var col = 0; col < 5; col += 1) {
-        var left = col * cell, top = row * cell;
-        var seen = new Uint8Array(cell * cell);
+    for (var row = 0; row < rows; row += 1) {
+      for (var col = 0; col < columns; col += 1) {
+        var left = col * frameWidth, top = row * frameHeight;
+        var seen = new Uint8Array(frameWidth * frameHeight);
         var stack = [];
-        for (var n = 0; n < cell; n += 1) {
-          stack.push(n, (cell - 1) * cell + n,
-            n * cell, n * cell + cell - 1);
+        for (var n = 0; n < frameWidth; n += 1) {
+          stack.push(n, (frameHeight - 1) * frameWidth + n);
+        }
+        for (var edge = 0; edge < frameHeight; edge += 1) {
+          stack.push(edge * frameWidth, edge * frameWidth + frameWidth - 1);
         }
         while (stack.length) {
           var local = stack.pop();
           if (seen[local]) continue;
           seen[local] = 1;
-          var x = left + local % cell;
-          var y = top + Math.floor(local / cell);
+          var x = left + local % frameWidth;
+          var y = top + Math.floor(local / frameWidth);
           var index = (y * width + x) * 4;
           if (rgba[index] !== matte[0] ||
               rgba[index + 1] !== matte[1] ||
               rgba[index + 2] !== matte[2]) continue;
           rgba[index + 3] = 0;
-          var lx = local % cell, ly = Math.floor(local / cell);
+          var lx = local % frameWidth, ly = Math.floor(local / frameWidth);
           if (lx > 0) stack.push(local - 1);
-          if (lx < cell - 1) stack.push(local + 1);
-          if (ly > 0) stack.push(local - cell);
-          if (ly < cell - 1) stack.push(local + cell);
+          if (lx < frameWidth - 1) stack.push(local + 1);
+          if (ly > 0) stack.push(local - frameWidth);
+          if (ly < frameHeight - 1) stack.push(local + frameWidth);
         }
       }
     }
@@ -392,8 +408,15 @@
   }
 
   function createRuntime(canvas, hud) {
+    // Backing resolution is not world resolution: 960x540 output covers the
+    // exact same 480x270 logical scene at exactly the same on-screen size.
+    // Avoid CSS/nearest-neighbour enlargement of the former 480px bitmap.
+    if (canvas.width !== WIDTH * RENDER_SCALE) canvas.width = WIDTH * RENDER_SCALE;
+    if (canvas.height !== HEIGHT * RENDER_SCALE) canvas.height = HEIGHT * RENDER_SCALE;
     var ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     var keys = {};
     var pendingJumpPresses = 0;
@@ -2010,6 +2033,11 @@
     }
 
     function render(time) {
+      // Always reset to the logical-to-HD transform before drawing; temporary
+      // sprite flips, camera zoom, and test hooks cannot accumulate transforms.
+      ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = '#0078fb';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -2118,6 +2146,9 @@
         get cameraX() { return cameraX; },
         get cameraY() { return cameraY; },
         get cameraZoom() { return cameraZoom; },
+        get renderScale() { return RENDER_SCALE; },
+        get renderWidth() { return canvas.width; },
+        get renderHeight() { return canvas.height; },
         get visibleWorldWidth() { return WIDTH / cameraZoom; },
         get checkpoint() { return checkpoint; },
         get finish() { return finish; },
@@ -2280,7 +2311,7 @@
               image: key === 'spray' && result.image ?
                 prepareFinalSpraySheet(result.image) :
                 key.indexOf('crouch') === 0 && result.image ?
-                  prepareCrouchSheet(result.image) : result.image
+                  prepareCrouchSheet(result.image, animation) : result.image
             };
             assetStatus['player.' + key] = {
               src: result.src,
