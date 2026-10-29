@@ -25,7 +25,7 @@ test('only explicit configured bot-admin readiness proves the gate is ready', ()
 
 test('live verifier accepts supported route and rejects old/missing route', async () => {
   const ok = async () => new Response(JSON.stringify({
-    ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+    ok:true, configured:true, bot_admin:true, native_init_data:true, all_games_gate_version:1, group:'@gkniftyheads'
   }), {status:200, headers:{'content-type':'application/json'}});
   assert.equal(await verifyNbgGroupGate(ok), true);
 
@@ -57,7 +57,7 @@ test('readiness CLI runs from a native filesystem path and imports without argv[
     globalThis.fetch = async () => {
       calls++;
       return new Response(JSON.stringify({
-        ok:true, configured:true, bot_admin:true, group:'@gkniftyheads'
+        ok:true, configured:true, bot_admin:true, native_init_data:true, all_games_gate_version:1, group:'@gkniftyheads'
       }), {status:200});
     };
   `;
