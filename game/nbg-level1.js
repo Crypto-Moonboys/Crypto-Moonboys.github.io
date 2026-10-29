@@ -1365,7 +1365,15 @@
             enemy.attackUntil = time + RAT_ATTACK_DURATION_MS;
             enemy.nextAttackAt = time + RAT_ATTACK_COOLDOWN_MS;
             enemy.attackFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
-            dispatchAudioCue(enemy.attackType === 'ratViperPounce' ? 'rat_pounce' : 'rat_attack');
+            // Match the exact rat attack animation; never add gameplay RNG or alter timing.
+            var ratAttackSounds = {
+              ratBladeFlurry: 'rat_attack',
+              ratViperPounce: 'rat_pounce',
+              brownRatPunch: 'brown_rat_punch',
+              turquoiseRatKick: 'turquoise_rat_kick',
+              turquoiseRatPunch: 'turquoise_rat_punch'
+            };
+            dispatchAudioCue(ratAttackSounds[enemy.attackType] || 'rat_attack');
           }
         }
         if (enemy.type === 'bot' && sprayTimer > 0 && Math.abs(player.x - enemy.x) < 65 && Math.abs(player.y - enemy.y) < 60 &&

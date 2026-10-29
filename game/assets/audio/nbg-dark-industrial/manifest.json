@@ -48,7 +48,10 @@
     "speed_boost_end": "sfx/speed_boost_end.ogg",
     "mystery_box": "sfx/mystery_box.ogg",
     "star_box": "sfx/star_box.ogg",
-    "checkpoint": "sfx/checkpoint.ogg"
+    "checkpoint": "sfx/checkpoint.ogg",
+    "brown_rat_punch": "sfx/brown_rat_punch.wav",
+    "turquoise_rat_kick": "sfx/turquoise_rat_kick.wav",
+    "turquoise_rat_punch": "sfx/turquoise_rat_punch.wav"
   },
   "enemyIdentities": {
     "graffbot_walk": "enemy/graffbot_walk.ogg",

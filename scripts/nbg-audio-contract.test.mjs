@@ -15,7 +15,7 @@ const expectedEffects = [
   'ui_start', 'ui_confirm', 'ui_back', 'ui_pause', 'ui_resume', 'game_over',
   'level_complete', 'record_saved', 'record_rejected', 'jump_1', 'jump_2',
   'jump_3_backflip', 'land_soft', 'land_heavy', 'spray_attack', 'spray_hit',
-  'rat_attack', 'rat_pounce', 'parachute_rat_drop', 'parachute_rat_land',
+  'rat_attack', 'rat_pounce', 'brown_rat_punch', 'turquoise_rat_kick', 'turquoise_rat_punch', 'parachute_rat_drop', 'parachute_rat_land',
   'graffbot_fire', 'graffbot_hurt', 'balloon_release', 'balloon_burst',
   'pigeon_pass', 'enemy_defeat', 'enemy_stomp', 'player_hurt', 'player_fall',
   'health_restore', 'health_low', 'coin_small', 'coin_medium', 'coin_large',
@@ -633,4 +633,26 @@ test('Graffbot movement begins while unrelated audio downloads remain stalled', 
   assert.equal(env.sources.some(node => node.loop && node.buffer?.id === 'graffbot_walk'), true);
   env.releaseAssets();
   await flushPromises();
+});
+
+test('each rat attack animation has a unique audio cue, without changing combat timing', async () => {
+  const runtime = await readFile(path.join(root, 'game', 'nbg-level1.js'), 'utf8');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const mappings = {
+    ratBladeFlurry: 'rat_attack',
+    ratViperPounce: 'rat_pounce',
+    brownRatPunch: 'brown_rat_punch',
+    turquoiseRatKick: 'turquoise_rat_kick',
+    turquoiseRatPunch: 'turquoise_rat_punch'
+  };
+  for (const [animation, cue] of Object.entries(mappings)) {
+    assert.match(runtime, new RegExp(animation + ": '" + cue + "'"));
+    assert.ok(manifest.effects[cue], cue + ' in manifest');
+  }
+  assert.equal(new Set(Object.values(mappings)).size, 5);
+  for (const cue of ['brown_rat_punch', 'turquoise_rat_kick', 'turquoise_rat_punch']) {
+    const payload = await readFile(path.join(audioRoot, manifest.effects[cue]));
+    assert.equal(payload.subarray(0, 4).toString('ascii'), 'RIFF', cue + ' WAV header');
+    assert.ok(payload.length > 1000, cue + ' should contain audio');
+  }
 });
