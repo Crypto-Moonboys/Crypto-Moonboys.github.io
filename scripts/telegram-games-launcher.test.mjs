@@ -205,7 +205,7 @@ class FakeElement {
   }
 }
 
-async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false, telegramPlatform = 'android', fullscreenSupported = true, fullscreenThrows = false, alreadyFullscreen = false } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false, groupMember = true, membershipUnavailable = false, telegramPlatform = 'android', fullscreenSupported = true, fullscreenThrows = false, alreadyFullscreen = false } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -336,6 +336,20 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
         telegram_auth: { id: sessionId, hash: 's1_signed' },
       }));
     }
+    if (url.endsWith('/telegram/group-membership')) {
+      assert.equal(options.method, 'POST');
+      assert.equal(options.headers['Content-Type'], 'application/json');
+      const membershipBody = JSON.parse(options.body);
+      assert.ok(membershipBody.init_data || membershipBody.telegram_auth,
+        'membership check must carry verified Telegram evidence');
+      if (membershipUnavailable) return Promise.resolve(jsonResponse(503, { ok: false, error: 'telegram_group_membership_unavailable' }));
+      return Promise.resolve(jsonResponse(200, {
+        ok: true,
+        member: groupMember,
+        status: groupMember ? 'member' : 'left',
+        group: '@gkniftyheads',
+      }));
+    }
     if (url.endsWith('/logout')) {
       if (options.method === 'POST') {
         assert.equal(options.headers['X-Moonboys-CSRF'], 'signed-csrf');
@@ -385,7 +399,7 @@ async function settle() {
   const harness = await runLauncher();
   harness.viewportHandlers[0]({ isStateStable: true });
   assert.equal(harness.body.getAttribute('aria-busy'), 'false', 'Stable viewport must clear busy state');
-  assert.equal(harness.status.textContent, 'Account verified. Select a game.', 'Stable viewport shows verified account after successful session check');
+  assert.equal(harness.status.textContent, 'Telegram + GKniftyHEADS membership verified. Select a game.', 'Stable viewport shows verified membership after successful account and group checks');
   assert.equal(harness.timers.find(timer => timer.ms === 1200).cleared, true, 'Stable viewport must clear its own fallback timer');
   assert.equal(harness.links[2].getAttribute('aria-disabled'), null, 'isStateStable=true must enable navigation links');
   harness.links[2].dispatch('click');
@@ -398,6 +412,19 @@ async function settle() {
   assert.equal(assignedUrl.searchParams.get('startapp'), 'arcade', 'Launcher query string must be preserved');
   assert.equal(assignedUrl.searchParams.has('tgWebAppData'), false, 'Telegram initData must not be copied into destination query parameters');
   assert.equal(assignedUrl.hash, `#tgWebAppData=${encodeURIComponent('user=%7B%22id%22%3A123%7D')}`, 'Telegram initData must be retained in the URL fragment');
+}
+
+{
+  const harness = await runLauncher({ groupMember: false });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  assert.match(harness.status.textContent, /TELEGRAM MEMBERS ONLY.*Join GKniftyHEADS/i,
+    'linked non-member must see the members-only message');
+  for (const link of harness.links) {
+    assert.equal(link.getAttribute('aria-disabled'), 'true',
+      'non-member must not receive any game navigation link');
+  }
+  assert.ok(harness.requests.some(request => request.url.endsWith('/telegram/group-membership')),
+    'launcher must verify group membership before enabling games');
 }
 
 {
