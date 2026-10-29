@@ -124,6 +124,15 @@
     return Math.max(min, Math.min(max, value));
   }
 
+  // Presentation-only cue bus. Audio listeners never feed state back into the
+  // deterministic replay, collision, scoring or Worker simulation.
+  function dispatchAudioCue(id, detail) {
+    if (!id || typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent('nbg-audio-cue', {
+      detail: Object.assign({ id: id }, detail || {})
+    }));
+  }
+
   function loadImage(src) {
     return new Promise(function (resolve) {
       var image = new Image();
@@ -475,6 +484,8 @@
     }
     var sprayTimer = 0;
     var speedBoostUntil = 0;
+    // WeakMap keeps proximity-only sound state off gameplay entities and replay data.
+    var pigeonAudioProximity = new WeakMap();
     var balloonRewardNotificationText = '';
     var balloonRewardNotificationUntil = 0;
     var parachuteRats = [];
@@ -856,6 +867,7 @@
         player.vy = JUMP_VELOCITY;
         player.grounded = false;
         jumpsUsed = 1;
+        dispatchAudioCue('jump_1');
       } else if (jumpPressed && !player.grounded && jumpsUsed === 1) {
         player.vy = DOUBLE_JUMP_VELOCITY;
         if (left !== right) {
@@ -863,6 +875,7 @@
           player.facing = left ? -1 : 1;
         }
         jumpsUsed = 2;
+        dispatchAudioCue('jump_2');
       } else if (jumpPressed && !player.grounded && jumpsUsed === 2) {
         // Third distinct mid-air press; landing, respawn and reset still
         // restore the full three-jump sequence.
@@ -874,10 +887,12 @@
         jumpsUsed = 3;
         backflipActive = true;
         setPlayerAnimation('backflip');
+        dispatchAudioCue('jump_3_backflip');
       }
 
       if (spray && sprayTimer <= 0) {
         sprayTimer = 230;
+        dispatchAudioCue('spray_attack');
       }
 
       if (!replay || step > 0) {
@@ -886,6 +901,8 @@
     }
 
     function resolveVerticalCollision(previousY) {
+      var wasGrounded = player.grounded;
+      var landingVelocity = player.vy;
       var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
       var solids = [floor].concat(platforms, crates);
       player.grounded = false;
@@ -900,6 +917,9 @@
           jumpsUsed = 0;
           backflipActive = false;
         }
+      }
+      if (!wasGrounded && player.grounded) {
+        dispatchAudioCue(landingVelocity >= 10 ? 'land_heavy' : 'land_soft');
       }
     }
 
@@ -1218,6 +1238,7 @@
           swayPhase: nextRunRandom() * Math.PI * 2, vx: 0, age: 0
         });
         parachuteSpawnCount += 1;
+        dispatchAudioCue('parachute_rat_drop');
       }
       for (var i = parachuteRats.length - 1; i >= 0; i -= 1) {
         var rat = parachuteRats[i];
@@ -1250,6 +1271,7 @@
             });
             landedCount += 1;
           }
+          dispatchAudioCue('parachute_rat_land');
           parachuteRats.splice(i, 1);
         }
       }
@@ -1305,6 +1327,7 @@
             enemy.balloonStartedAt = time;
             enemy.balloonFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
             balloonActive = true;
+            dispatchAudioCue('balloon_release');
           }
         }
 
@@ -1318,13 +1341,19 @@
           enemy.fireUntil = time + GRAFFBOT_FIRE_DURATION_MS;
           enemy.nextFireAt = enemy.fireUntil + GRAFFBOT_FIRE_COOLDOWN_MS;
           botFireActive = true;
+          dispatchAudioCue('graffbot_fire');
         }
 
         if (!balloonActive && !botFireActive) {
           enemy.x += enemy.vx * step;
           if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
         }
-        if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
+        if (enemy.type === 'pigeon') {
+          enemy.bob = Math.sin(time / 180) * 9;
+          var pigeonNear = Math.abs(player.x - enemy.x) < 54 && Math.abs(player.y - enemy.y) < 95;
+          if (pigeonNear && !pigeonAudioProximity.get(enemy)) dispatchAudioCue('pigeon_pass');
+          pigeonAudioProximity.set(enemy, pigeonNear);
+        }
         if (enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat') {
           var ratClose = Math.abs(player.x - enemy.x) < RAT_ATTACK_RANGE && Math.abs(player.y - enemy.y) < 65;
           if (ratClose && time >= (enemy.nextAttackAt || 0) && time >= (enemy.attackUntil || 0)) {
@@ -1336,6 +1365,7 @@
             enemy.attackUntil = time + RAT_ATTACK_DURATION_MS;
             enemy.nextAttackAt = time + RAT_ATTACK_COOLDOWN_MS;
             enemy.attackFacing = player.x + player.w / 2 < enemy.x + enemy.w / 2 ? -1 : 1;
+            dispatchAudioCue(enemy.attackType === 'ratViperPounce' ? 'rat_pounce' : 'rat_attack');
           }
         }
         if (enemy.type === 'bot' && sprayTimer > 0 && Math.abs(player.x - enemy.x) < 65 && Math.abs(player.y - enemy.y) < 60 &&
@@ -2073,7 +2103,11 @@
       lastTime = time;
 
       if (running) {
+        var previousRunElapsedMs = runElapsedMs;
         runElapsedMs += frameElapsedMs;
+        if (speedBoostUntil > 0 && previousRunElapsedMs < speedBoostUntil && runElapsedMs >= speedBoostUntil) {
+          dispatchAudioCue('speed_boost_end');
+        }
         recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
         if (gameOver) {
