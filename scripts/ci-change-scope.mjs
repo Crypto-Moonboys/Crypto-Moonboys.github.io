@@ -86,6 +86,8 @@ const SCOPES = {
     // Publishing safety must be tested even on gate-only PRs.
     'scripts/verify-nbg-pages-worker-course.mjs',
     'scripts/verify-nbg-pages-worker-course.test.mjs',
+    'scripts/verify-nbg-group-gate-worker.mjs',
+    'scripts/verify-nbg-group-gate-worker.test.mjs',
     '.github/workflows/pages.yml',
     'scripts/ci-change-scope.mjs',
     'scripts/*faction*',
