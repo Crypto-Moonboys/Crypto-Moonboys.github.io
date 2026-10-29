@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-identity-1671-r2';
+  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-identity-audio-r3';
   var STORAGE_KEY = 'nbg-audio-settings-v1';
   var MAX_VOICES = 12;
   var MAX_ENEMY_LOOPS = 3;
@@ -50,6 +50,7 @@
   var unlocked = false;
   var manifest = null;
   var encodedAssets = new Map();
+  var inFlightAssets = new Map();
   var assetFailures = new Map();
   var manifestError = null;
   var decodedBuffers = new Map();
@@ -103,8 +104,10 @@
   }
 
   function fetchAsset(id, file, options) {
+    if (encodedAssets.has(id)) return Promise.resolve(encodedAssets.get(id));
+    if (inFlightAssets.has(id)) return inFlightAssets.get(id);
     var cacheMode = options && options.retry ? 'reload' : 'force-cache';
-    return fetch(assetUrl(file), { cache: cacheMode }).then(function (response) {
+    var pending = fetch(assetUrl(file), { cache: cacheMode }).then(function (response) {
       if (!response.ok) throw new Error('NBG audio asset failed: ' + id + ' (' + response.status + ')');
       return response.arrayBuffer();
     }).then(function (data) {
@@ -115,7 +118,12 @@
       assetFailures.set(id, String(error && error.message || error));
       console.warn('[NBG audio] asset unavailable: ' + id, error);
       return null;
+    }).then(function (data) {
+      inFlightAssets.delete(id);
+      return data;
     });
+    inFlightAssets.set(id, pending);
+    return pending;
   }
 
   var manifestPromise = fetch(MANIFEST_URL, { cache: 'no-store' }).then(function (response) {
@@ -133,9 +141,10 @@
       entries.push([id, data.enemyIdentities[id]]);
     });
     if (data.music && data.music.main) entries.push(['music:main', data.music.main]);
-    return Promise.all(entries.map(function (entry) {
-      return fetchAsset(entry[0], entry[1]);
-    })).then(function () { return data; });
+    // Do not make requested SFX wait for every other file in the full pack.
+    // The manifest is ready immediately; background preload is best effort.
+    entries.forEach(function (entry) { fetchAsset(entry[0], entry[1]); });
+    return data;
   }).catch(function (error) {
     manifestError = String(error && error.message || error);
     console.warn('[NBG audio] preload unavailable:', manifestError);
