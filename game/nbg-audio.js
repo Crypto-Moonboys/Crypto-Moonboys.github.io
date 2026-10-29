@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-identity-audio-r3';
+  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-attack-audio-r4';
   var STORAGE_KEY = 'nbg-audio-settings-v1';
   var MAX_VOICES = 12;
   var MAX_ENEMY_LOOPS = 3;
@@ -15,7 +15,8 @@
   var PRIORITY = {
     game_over: 100, level_complete: 100, record_saved: 95, record_rejected: 95,
     player_hurt: 90, player_fall: 90, health_low: 88, checkpoint: 80,
-    graffbot_fire: 72, rat_pounce: 72, rat_attack: 70, enemy_stomp: 70,
+    graffbot_fire: 72, rat_pounce: 72, turquoise_rat_kick: 72,
+    rat_attack: 70, brown_rat_punch: 70, turquoise_rat_punch: 70, enemy_stomp: 70,
     jump_3_backflip: 65, speed_boost_pickup: 65, secret_found: 65,
     jump_2: 55, jump_1: 50, land_heavy: 50, spray_hit: 48,
     coin_small: 20, coin_medium: 24, coin_large: 28, coin_xl: 32
