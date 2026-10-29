@@ -19,6 +19,7 @@ try{
   await page.route('**/*',async route=>{
    const url=new URL(route.request().url());
    if(url.hostname==='telegram.org')return route.fulfill({contentType:'application/javascript',body:"window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};"});
+      if (url.pathname === '/telegram/group-membership') return route.fulfill({ status:200, json:{ ok:true, member:true, status:'member', group:'@gkniftyheads' } });
    if(url.pathname.endsWith('/telegram-pets/app/performance'))return route.fulfill({json:{ok:true}});
    if(url.pathname.includes('/telegram-pets/app/')){
     const body=route.request().postDataJSON();let result;
