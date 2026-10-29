@@ -330,7 +330,7 @@ async function waitTick() {
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'snake-run' });
   assert.equal(result.ok, false, 'guest direct route must be blocked');
   assert.equal(result.reason, 'not_linked', 'guest direct route should fail as not_linked');
-  assert.ok(byId.get('tg-sync-gate-modal'), 'guest direct route should render the Telegram activation modal');
+  assert.ok(byId.get('arcade-telegram-member-gate'), 'guest direct route should render the Telegram members-only modal');
 }
 
 // Telegram auth without /gklink activation is blocked
@@ -344,7 +344,7 @@ async function waitTick() {
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'pac-chain' });
   assert.equal(result.ok, false, 'Telegram-only identity must not pass competitive route gate');
   assert.equal(result.reason, 'not_linked', 'Telegram-only identity should still be treated as not_linked');
-  assert.ok(byId.get('tg-sync-gate-modal'), 'Telegram-only identity should render the activation modal');
+  assert.ok(byId.get('arcade-telegram-member-gate'), 'Telegram-only identity should render the members-only modal');
 }
 
 // fabricated localStorage identity cannot bypass server verification
@@ -363,7 +363,7 @@ async function waitTick() {
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'snake-run' });
   assert.equal(result.ok, false, 'fabricated local identity must not pass competitive route access');
   assert.equal(result.reason, 'not_linked', 'fabricated local identity should fail as not_linked when the server cannot confirm /gklink');
-  assert.ok(byId.get('tg-sync-gate-modal'), 'fabricated local identity should render the Telegram activation modal');
+  assert.ok(byId.get('arcade-telegram-member-gate'), 'fabricated local identity should render the members-only modal');
 }
 
 // fresh local auth with failed server verification is still blocked
@@ -380,7 +380,7 @@ async function waitTick() {
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
   assert.equal(result.ok, false, 'missing server-restored signed auth must still block the competitive route gate');
   assert.equal(result.reason, 'auth_restore_failed', 'missing server-restored signed auth must fail closed');
-  assert.ok(byId.get('tg-sync-gate-modal'), 'failed server verification should render the Telegram activation modal');
+  assert.ok(byId.get('arcade-telegram-member-gate'), 'failed server verification should render the members-only modal');
 }
 
 // network/preflight failure blocks gameplay
@@ -399,7 +399,7 @@ async function waitTick() {
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
   assert.equal(result.ok, false, 'preflight network failure must block gameplay');
   assert.equal(result.reason, 'auth_restore_failed', 'preflight network failure must fail closed');
-  assert.ok(byId.get('tg-sync-gate-modal'), 'preflight network failure should render the Telegram activation modal');
+  assert.ok(byId.get('arcade-telegram-member-gate'), 'preflight network failure should render the members-only modal');
 }
 
 // linked fresh auth is allowed only after server verification
@@ -411,23 +411,54 @@ async function waitTick() {
       moonboys_tg_linked: '1',
       moonboys_tg_auth: JSON.stringify(freshAuth),
     },
-    fetchImpl: async () => ({
-      ok: true,
-      json: async () => ({
-        linked: true,
-        telegram_id: '123',
-        telegram_auth: freshAuth,
-        anticheat: { is_blocked: false },
-      }),
-    }),
+    fetchImpl: async (url) => String(url).endsWith('/telegram/group-membership')
+      ? ({
+          ok: true,
+          status: 200,
+          json: async () => ({ ok: true, member: true, status: 'member', group: '@gkniftyheads' }),
+        })
+      : ({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            linked: true,
+            telegram_id: '123',
+            telegram_auth: freshAuth,
+            anticheat: { is_blocked: false },
+          }),
+        }),
   });
   const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'invaders-3008' });
   assert.equal(result.ok, true, 'server-verified linked fresh-auth user must be allowed through the competitive route gate');
   assert.equal(result.telegram_auth && result.telegram_auth.id, '123', 'allowed route should return the server-verified signed auth payload');
   assert.equal(result.verified_by_server, true, 'allowed route should be marked as server-verified');
-  assert.equal(fetchCalls.length, 1, 'competitive route gate must always hit the server preflight');
+  assert.equal(fetchCalls.length, 2, 'competitive route gate must verify both linked identity and Telegram group membership');
   const requestBody = JSON.parse(fetchCalls[0][1].body);
+  assert.match(String(fetchCalls[1][0]), /\/telegram\/group-membership$/, 'second gate request must verify Telegram group membership');
   assert.equal(requestBody.force, true, 'competitive route gate must force server-side verification');
+}
+
+
+// linked server-auth user who is not a Telegram group member is blocked
+{
+  const freshAuth = { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) };
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+      moonboys_tg_auth: JSON.stringify(freshAuth),
+    },
+    fetchImpl: async (url) => String(url).endsWith('/telegram/group-membership')
+      ? ({ ok: true, status: 200, json: async () => ({ ok: true, member: false, status: 'left', group: '@gkniftyheads' }) })
+      : ({ ok: true, status: 200, json: async () => ({
+          linked: true, telegram_id: '123', telegram_auth: freshAuth,
+          anticheat: { is_blocked: false },
+        }) }),
+  });
+  const result = await api.enforceCompetitiveArcadePageGate({ gameId: 'snake-run' });
+  assert.equal(result.ok, false, 'linked Telegram account must still be blocked when group membership is absent');
+  assert.equal(result.reason, 'group_membership_required');
+  assert.ok(byId.get('arcade-telegram-member-gate'), 'non-member should see the shared Telegram members-only gate');
 }
 
 console.log('Identity gate auth guard regression checks passed.');
