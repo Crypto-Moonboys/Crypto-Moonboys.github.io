@@ -65,4 +65,42 @@ assert.match(deadRunApp, /telegram_group_membership_required/,
 assert.match(deadRunHtml, /id="demoBtn"[^>]*disabled/,
   'Dead Run demo button must start fail-closed before verification');
 
-console.log('All live web Arcade games require Telegram login + GKniftyHEADS membership.');
+
+const membershipApi = read('workers/moonboys-api/telegram-group-membership.js');
+assert.match(membershipApi, /verifyTelegramMiniAppInitData/,
+  'shared membership endpoint must accept signed Mini App identity for native games');
+assert.match(membershipApi, /verifyMembershipActor/,
+  'shared membership endpoint must resolve website and Mini App identities through one actor gate');
+
+const launcher = read('games/telegram/index.html');
+assert.match(launcher, /\/telegram\/group-membership/,
+  'Telegram games launcher must verify group membership before enabling links');
+assert.ok(
+  launcher.indexOf("setStatus('Checking GKniftyHEADS membership...')") <
+    launcher.indexOf('accountReady = true'),
+  'Telegram launcher must check group membership before it marks the account ready'
+);
+assert.match(launcher, /TELEGRAM MEMBERS ONLY/,
+  'Telegram launcher must show members-only recovery copy for non-members');
+
+const moonpet = read('js/moonpet-mini-app.js');
+assert.match(moonpet, /verifyMoonpetGroupMembership/,
+  'MoonPet must verify group membership before reading game state');
+assert.ok(
+  moonpet.indexOf('var membership = await verifyMoonpetGroupMembership()') <
+    moonpet.indexOf("var initialStateRequest = post('/telegram-pets/app/state'"),
+  'MoonPet membership must be verified before any player state is loaded'
+);
+assert.match(moonpet, /panel\('TELEGRAM MEMBERS ONLY'/,
+  'MoonPet must render an explicit members-only lock screen');
+
+const moonpetHtml = read('moonpet-game.html');
+assert.match(moonpetHtml, /moonpet-mini-app\.js\?v=20261029-members-only-v1/,
+  'MoonPet must publish the cache-busted membership-gated client');
+assert.match(launcher, /moonpet-game\.html\?v=20261029-members-only-v1/,
+  'Telegram launcher must open the membership-gated MoonPet release');
+assert.match(launcher, /dead-run\/\?v=20261029-members-only-v1/,
+  'Telegram launcher must open the membership-gated Dead Run release');
+
+console.log('All live games require Telegram login + GKniftyHEADS membership.');
+
