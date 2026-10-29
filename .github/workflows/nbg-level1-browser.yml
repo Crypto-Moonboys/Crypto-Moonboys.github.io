@@ -33,6 +33,8 @@ jobs:
       - run: node --test scripts/nbg-london-records.test.mjs
       - run: node --test scripts/nbg-london-replay.test.mjs
       - run: node --test scripts/nbg-london-client-auth.test.mjs
+      - run: node --test scripts/nbg-telegram-group-membership.test.mjs
+      - run: node --test scripts/nbg-telegram-access-gate-client.test.mjs
       - run: node --test scripts/verify-nbg-pages-worker-course.test.mjs
       - name: Validate complete Level 1 three consecutive times
         run: |
