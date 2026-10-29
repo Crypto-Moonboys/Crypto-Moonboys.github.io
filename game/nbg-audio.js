@@ -33,6 +33,9 @@
   var decodedBuffers = new Map();
   var decodePromises = new Map();
   var activeVoices = [];
+  // Invalidate effects that are still waiting for fetch/decode and have not yet
+  // entered activeVoices. Reset and mute must silence the abandoned request too.
+  var effectRequestGeneration = 0;
   var lastPlayedAt = new Map();
   var musicSource = null;
   var musicWanted = false;
@@ -180,6 +183,7 @@
   }
 
   function stopVoices() {
+    effectRequestGeneration += 1;
     activeVoices.slice().forEach(stopVoice);
   }
 
@@ -209,11 +213,13 @@
       startedAt: nowMs,
       source: null,
       gain: null,
-      cancelled: false
+      cancelled: false,
+      generation: effectRequestGeneration
     };
 
     decodeAsset(id).then(function (buffer) {
-      if (!buffer || voice.cancelled || settings.muted || !audioContext) return;
+      if (!buffer || voice.cancelled || voice.generation !== effectRequestGeneration ||
+          settings.muted || !audioContext) return;
       var sameId = activeVoices.filter(function (item) { return item.id === id; });
       var limit = Number(PER_EFFECT_LIMIT[id] || 4);
       if (sameId.length >= limit) stopVoice(sameId[0]);

@@ -44,12 +44,13 @@ class FakeCustomEvent {
   }
 }
 
-function fakeAudioEnvironment(manifest) {
+function fakeAudioEnvironment(manifest, options = {}) {
   const document = Object.assign(createEventTarget(), { hidden: false });
   const window = Object.assign(createEventTarget(), {
     location: { href: 'https://example.test/games/nbg-london/' }
   });
   const stored = new Map();
+  const pendingAssetFetches = [];
   window.localStorage = {
     getItem(key) { return stored.has(key) ? stored.get(key) : null; },
     setItem(key, value) { stored.set(key, String(value)); }
@@ -94,10 +95,20 @@ function fakeAudioEnvironment(manifest) {
     if (url.endsWith('/manifest.json')) {
       return { ok: true, status: 200, json: async () => manifest };
     }
-    return { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(16) };
+    return {
+      ok: true,
+      status: 200,
+      arrayBuffer: options.delayAssets ?
+        () => new Promise((resolve) => pendingAssetFetches.push(resolve)) :
+        async () => new ArrayBuffer(16)
+    };
   }
 
-  return { document, window, stored, sources, contexts, fetch };
+  function releaseAssets() {
+    for (const resolve of pendingAssetFetches.splice(0)) resolve(new ArrayBuffer(16));
+  }
+
+  return { document, window, stored, sources, contexts, fetch, releaseAssets };
 }
 
 async function flushPromises(rounds = 8) {
@@ -222,6 +233,44 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
   await flushPromises();
   assert.equal(env.contexts[0].state, 'running');
+});
+
+test('reset cancels effects still waiting for asset preload and decode', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  const env = fakeAudioEnvironment(manifest, { delayAssets: true });
+  const context = vm.createContext({
+    window: env.window,
+    document: env.document,
+    fetch: env.fetch,
+    CustomEvent: FakeCustomEvent,
+    URL,
+    Map,
+    Object,
+    Number,
+    Promise,
+    Date,
+    Array,
+    Math,
+    console
+  });
+
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises();
+  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  await flushPromises();
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-audio-cue', {
+    detail: { id: 'jump_1' }
+  }));
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-reset'));
+  assert.equal(env.window.NBGAudio.getState().activeVoices, 0);
+
+  env.releaseAssets();
+  await flushPromises(16);
+  assert.equal(env.sources.length, 0, 'abandoned run effects must not start after reset');
+  assert.equal(env.window.NBGAudio.getState().activeVoices, 0);
+  assert.equal(env.window.NBGAudio.getState().musicPlaying, false);
 });
 
 test('runtime hooks are presentation-only and record sounds follow NBG server authority', async () => {
