@@ -3627,8 +3627,13 @@ await page.evaluate(() => {
 await page.keyboard.press('s');
 await page.waitForFunction(() => typeof window.__nbgReleaseQueuedStart === 'function');
 await page.evaluate(() => {
-  // A genuine identity-change signal invalidates old owner gameplay waits.
-  window.NBGLondonBeforeQueuedRun = null;
+  // A genuine identity-change signal invalidates the old owner's gameplay
+  // wait. The new owner still has an access controller; model its immediate
+  // verified allow instead of deleting the production gate entirely.
+  window.NBGLondonBeforeQueuedRun = () => ({
+    allow: true,
+    source: 'test-fixture-new-owner'
+  });
   window.dispatchEvent(new Event('moonboys:identity-change'));
 });
 await page.keyboard.press('d');
