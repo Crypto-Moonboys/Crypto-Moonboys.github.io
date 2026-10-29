@@ -41,9 +41,13 @@ assertContains(indexHtml, 'telegramAuth.hash', 'Block Topia gate must require si
 assertContains(indexHtml, 'telegramAuth.auth_date', 'Block Topia gate must require signed auth date');
 assertContains(indexHtml, 'fetchProgressionForGate(telegramAuth)', 'Block Topia gate must verify XP using signed Telegram auth');
 assertContains(indexHtml, 'BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP', 'Block Topia gate must keep required Arcade XP threshold');
+assertContains(indexHtml, 'enforceCompetitiveArcadePageGate({ gameId: "blocktopia" })',
+  'Block Topia must verify Telegram group membership before its existing XP gate');
+
 assertOrdered(
   indexHtml,
-  ['const verified = await checkBlockTopiaGateIdentity(identity)', 'const telegramAuth = verified.telegramAuth',
+  ['identity.enforceCompetitiveArcadePageGate({ gameId: "blocktopia" })',
+    'const verified = await checkBlockTopiaGateIdentity(identity)', 'const telegramAuth = verified.telegramAuth',
     'fetchProgressionForGate(telegramAuth)', 'await mountAndConnect(telegramAuth, arcadeXpTotal)', 'connectMultiplayer({', 'telegramAuth,'],
   'Block Topia verified signed auth + XP gate must run before Colyseus join',
 );
