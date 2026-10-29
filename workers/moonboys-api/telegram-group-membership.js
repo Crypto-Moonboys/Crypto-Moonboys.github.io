@@ -67,13 +67,17 @@ export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetc
   if (!/^\d{1,20}$/.test(String(telegramId || ''))) {
     return { ok: false, error: 'telegram_auth_invalid', status: 401 };
   }
+  const userId = Number(telegramId);
+  if (!Number.isSafeInteger(userId) || userId <= 0) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
 
   let response;
   try {
     response = await fetchImpl('https://api.telegram.org/bot' + token + '/getChatMember', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: groupId, user_id: Number(telegramId) }),
+      body: JSON.stringify({ chat_id: groupId, user_id: userId }),
       signal: AbortSignal.timeout(5000),
     });
   } catch {
