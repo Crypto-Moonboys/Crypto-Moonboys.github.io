@@ -735,6 +735,67 @@ assert.deepEqual(
 assert.equal(typeof startVisibility.cameraY, 'number', 'cameraY must exist in the browser test state');
 assert.equal(startVisibility.cameraY, 0, 'cameraY must start clean after finishInit');
 
+// HD rendering must only increase the actual canvas pixel density. The
+// 480x270 physical course and its on-screen art sizes remain unchanged.
+const hdProof = await page.evaluate(() => {
+  const canvas = document.getElementById('game');
+  const context = canvas.getContext('2d');
+  const state = window.NBGLevel1State;
+  const rect = canvas.getBoundingClientRect();
+  const originalDraw = context.drawImage;
+  let playerCssWidth = null;
+  const playingArt = state.playerAnimations[state.player.anim];
+  context.drawImage = function (image, ...args) {
+    if (image === playingArt.image && args.length === 8) {
+      const transform = this.getTransform();
+      const backingWidth = Math.abs(transform.a) * args[6];
+      playerCssWidth = backingWidth * rect.width / canvas.width;
+    }
+    return originalDraw.call(this, image, ...args);
+  };
+  try {
+    window.NBGLevel1Runtime.setCameraZoom(1.25);
+  } finally {
+    context.drawImage = originalDraw;
+  }
+  return {
+    backing: [canvas.width, canvas.height],
+    logical: [480,270],
+    zoom: state.cameraZoom,
+    renderScale: state.renderScale,
+    renderWidth: state.renderWidth,
+    renderHeight: state.renderHeight,
+    smoothing: context.imageSmoothingEnabled,
+    quality: context.imageSmoothingQuality,
+    cssRendering: getComputedStyle(canvas).imageRendering,
+    cssWidth: rect.width,
+    cssHeight: rect.height,
+    playerCssWidth,
+    expectedPlayerCssWidth: playingArt.renderWidth * state.cameraZoom * rect.width / 480,
+    courseVersion: state.recordedReplay?.course_version || 8,
+    playerHitbox: [state.player.w, state.player.h],
+    running: state.running
+  };
+});
+assert.deepEqual(hdProof.backing, [960,540],
+  'NBG uses 2x backing pixels instead of stretching a 480x270 bitmap');
+assert.equal(hdProof.renderWidth,960);
+assert.equal(hdProof.renderHeight,540);
+assert.equal(hdProof.renderScale,2);
+assert.equal(hdProof.cssRendering,'auto',
+  'the NBG canvas must not use nearest-neighbour CSS upscaling');
+assert.equal(hdProof.smoothing,true,
+  'old source PNGs must use high-quality interpolation until HD replacements arrive');
+assert.equal(hdProof.quality,'high');
+assert.equal(hdProof.zoom,1.25);
+assert.deepEqual(hdProof.playerHitbox,[24,34]);
+assert.equal(hdProof.running,false);
+assert.ok(Math.abs(hdProof.playerCssWidth-hdProof.expectedPlayerCssWidth) < 1,
+  '2x backing MUST NOT enlarge the displayed player or change camera framing');
+assert.ok(Math.abs(hdProof.cssWidth/hdProof.cssHeight-16/9) < 0.03,
+  'HD canvas still presents the original 16:9 world');
+
+
 // Default 1.25x zoom makes player/enemies visibly larger without changing
 // position, elapsed time, collision size or signed replay evidence. Presets
 // cycle in the existing fullscreen toolbar; the canvas HUD remains unscaled.
