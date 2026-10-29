@@ -1,4 +1,5 @@
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
+import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 
 const PATH = '/telegram/group-membership';
 const ALLOWED_ORIGINS = new Set([
@@ -20,7 +21,7 @@ function cors(request) {
   if (ALLOWED_ORIGINS.has(origin)) {
     headers.set('Access-Control-Allow-Origin', origin);
     headers.set('Access-Control-Allow-Headers', 'Content-Type');
-    headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   }
   return { origin, headers };
 }
@@ -114,6 +115,23 @@ export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetc
   };
 }
 
+async function verifyMembershipActor(body, env, verifyLegacyAuth) {
+  const initData = typeof body?.init_data === 'string' ? body.init_data.trim() : '';
+  if (initData) {
+    if (!env?.TELEGRAM_BOT_TOKEN) {
+      return { error: 'telegram_group_membership_not_configured', status: 503 };
+    }
+    const verified = await verifyTelegramMiniAppInitData(initData, env.TELEGRAM_BOT_TOKEN, {
+      max_age_seconds: 3600,
+    });
+    if (!verified.ok) {
+      return { error: verified.reason || 'mini_app_auth_rejected', status: 401 };
+    }
+    return { telegramId: verified.telegramId, source: 'telegram_mini_app' };
+  }
+  return verifyTelegramIdentityFromBody(body, env, verifyLegacyAuth);
+}
+
 export async function handleTelegramGroupMembership(request, env, fetchImpl = fetch) {
   const url = new URL(request.url);
   if (url.pathname.replace(/\/$/, '') !== PATH) return null;
@@ -183,12 +201,12 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
     return json(headers, { ok: false, error: 'invalid_request' }, 400);
   }
 
-  const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+  const verified = await verifyMembershipActor(body, env, verifyTelegramAuth);
   if (verified?.error) {
     return json(headers, { ok: false, error: verified.error }, verified.status || 401);
   }
   if (!verified?.telegramId) {
-    return json(headers, { ok: false, error: 'verified telegram_auth payload required' }, 401);
+    return json(headers, { ok: false, error: 'verified Telegram identity required' }, 401);
   }
 
   const membership = await checkTelegramGroupMember(env, verified.telegramId, fetchImpl);
