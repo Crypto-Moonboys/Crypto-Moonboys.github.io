@@ -5420,7 +5420,9 @@
       var home = savedHomeLayout(state);
       var room = state.lifecycle && state.lifecycle.phase === 'egg' ? 'main' : home.room;
       if (!HOME_ROOMS.includes(room)) room = 'main';
-      var musicActive = radioRequestedOn && !(state.lifecycle && state.lifecycle.phase === 'egg');
+      // Radio overlays are available in the Secret Bot chamber too; egg stage
+      // affects the room background, not radio-art visibility.
+      var musicActive = radioRequestedOn;
       var floorSaved = Boolean(state.pet_house && state.pet_house.available === true && state.pet && state.pet_house.pet_id === state.pet.pet_id && state.pet_house.floor_saved);
       if (room === 'main') {
         drawHomeWall(home.wall);
