@@ -1,7 +1,7 @@
 import { createProjectionDiagnostics, projectionSamplingEnabled } from './projection-diagnostics.js';
 // Request-local, allowlisted diagnostics. Never accept account data or errors as
 // event fields; even mode and stage names must come from these fixed lists.
-const STAGES = new Set(['request_parse', 'rate_limit', 'authentication', 'user_bootstrap',
+const STAGES = new Set(['request_parse', 'rate_limit', 'authentication', 'group_membership', 'user_bootstrap',
   'd1_bootstrap', 'state_recovery', 'daily_settlement', 'weekly_settlement',
   'boss_victory_recovery', 'journey_source_recovery', 'daily_journey_award_recovery', 'weekly_journey_award_recovery',
   'pet_state_projection', 'ownership_verification', 'response_serialization', 'total']);
