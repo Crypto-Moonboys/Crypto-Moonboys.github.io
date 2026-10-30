@@ -187,12 +187,24 @@ test('CORS and readiness handling fail closed', async () => {
   );
   assert.equal(disallowed.status, 403);
   assert.equal(disallowed.headers.get('Access-Control-Allow-Origin'), null);
+  assert.equal(disallowed.headers.get('Access-Control-Allow-Credentials'), null);
+
+  // The Telegram launcher fetches this cross-origin route with
+  // credentials: 'include'. Browsers require ACA-Credentials on both
+  // preflight and actual responses or throw an opaque Failed to fetch.
+  const allowed = await handleTelegramGroupMembership(
+    request({ init_data: miniAppInitData() }), env(), telegram('member').fetchImpl
+  );
+  assert.equal(allowed.status, 200);
+  assert.equal(allowed.headers.get('Access-Control-Allow-Origin'), SITE);
+  assert.equal(allowed.headers.get('Access-Control-Allow-Credentials'), 'true');
 
   const options = await handleTelegramGroupMembership(new Request(API, {
     method: 'OPTIONS', headers: { Origin: SITE },
   }), env());
   assert.equal(options.status, 204);
   assert.equal(options.headers.get('Access-Control-Allow-Origin'), SITE);
+  assert.equal(options.headers.get('Access-Control-Allow-Credentials'), 'true');
 
   const admin = telegram('administrator');
   const get = await handleTelegramGroupMembership(new Request(API, {
