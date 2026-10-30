@@ -43,6 +43,8 @@ try {
       })]);
       await slow.page.waitForTimeout(1800);
       assert.match(await slow.page.locator('#boot-text').textContent(),/CONNECTING TO D1 MEMORY CORE/);
+      assert.match(await slow.page.locator('#screen').textContent(),/CONNECTING TO LIVE SAVE/,
+        'controls region must show a loading explanation rather than an empty black area');
       assert.equal(await slow.page.locator('#boot-layer').evaluate(el=>el.classList.contains('is-hidden')),false,
         'boot overlay must stay visible while '+phase+' is pending');
       assert.equal(await slow.page.locator('#nav button[data-screen]').count(),0,
