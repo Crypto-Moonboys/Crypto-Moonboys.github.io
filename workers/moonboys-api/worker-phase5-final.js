@@ -30,19 +30,22 @@ const CORS_ALLOWED_ORIGINS = new Set([
   'https://crypto-moonboys.github.io',
 ]);
 
-function corsHeadersFor(request) {
+function corsHeadersFor(request, env) {
   const origin = String(request?.headers?.get('Origin') || '').trim();
-  return origin && CORS_ALLOWED_ORIGINS.has(origin)
+  const allowedOrigins = env?.CORS_ALLOWED_ORIGINS
+    ? new Set(String(env.CORS_ALLOWED_ORIGINS).split(',').map(value => value.trim()).filter(Boolean))
+    : CORS_ALLOWED_ORIGINS;
+  return origin && allowedOrigins.has(origin)
     ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' }
     : { Vary: 'Origin' };
 }
 
-function jsonError(request, message, status = 400) {
+function jsonError(request, message, status = 400, env) {
   return new Response(JSON.stringify({ error: message }), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      ...corsHeadersFor(request),
+      ...corsHeadersFor(request, env),
     },
   });
 }
@@ -358,10 +361,10 @@ export default {
     // "Failed to fetch", hiding the real HTTP error from the player.
     const isMoonpetMiniAppRoute = path === '/telegram-pets/app/state' ||
       path === '/telegram-pets/app/action';
-    const petCors = corsHeadersFor(request);
+    const petCors = corsHeadersFor(request, env);
     if (isMoonpetMiniAppRoute && request.method === 'OPTIONS') {
       if (!petCors['Access-Control-Allow-Origin']) {
-        return jsonError(request, 'origin_not_allowed', 403);
+        return jsonError(request, 'origin_not_allowed', 403, env);
       }
       return new Response(null, { status: 204, headers: {
         ...petCors,
@@ -423,7 +426,9 @@ export default {
     if (isMoonpetMiniAppRoute && petCors['Access-Control-Allow-Origin']) {
       const headers = new Headers(baseResponse.headers);
       headers.set('Access-Control-Allow-Origin', petCors['Access-Control-Allow-Origin']);
-      headers.set('Vary', 'Origin');
+      if (!headers.get('Vary')?.split(',').some(value => value.trim().toLowerCase() === 'origin')) {
+        headers.append('Vary', 'Origin');
+      }
       response = new Response(baseResponse.body, {
         status: baseResponse.status,
         statusText: baseResponse.statusText,
