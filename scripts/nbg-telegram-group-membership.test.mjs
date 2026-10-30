@@ -204,6 +204,7 @@ test('CORS and readiness handling fail closed', async () => {
   }), env());
   assert.equal(options.status, 204);
   assert.equal(options.headers.get('Access-Control-Allow-Origin'), SITE);
+  assert.equal(options.headers.get('Access-Control-Allow-Credentials'), 'true');
 
   const admin = telegram('administrator');
   const get = await handleTelegramGroupMembership(new Request(API, {
