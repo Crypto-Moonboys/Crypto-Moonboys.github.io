@@ -21,6 +21,25 @@ try {
       console.log('PASS MoonPet locked response '+status);
     } finally {await p.close();}
   }
+  // A delayed membership response must not dismiss the boot overlay and expose
+  // an empty game before the authoritative state arrives.
+  const slow=await h.setup();
+  try {
+    await slow.context.route('**/telegram/group-membership',async route=>{
+      await new Promise(resolve=>setTimeout(resolve,1800));
+      await route.fulfill({json:{ok:true,member:true,status:'member'}});
+    });
+    await slow.page.goto(h.origin+'/moonpet-game.html');
+    await slow.page.waitForFunction(()=>document.getElementById('boot-text').textContent.includes('CONNECTING TO D1 MEMORY CORE'));
+    assert.equal(await slow.page.locator('#boot-layer').evaluate(el=>el.classList.contains('is-hidden')),false,
+      'boot overlay must stay visible while verified membership/state is pending');
+    await slow.page.waitForFunction(()=>document.querySelectorAll('#nav button[data-screen]').length===6);
+    assert.equal(await slow.page.locator('#boot-layer').evaluate(el=>el.classList.contains('is-hidden')),true,
+      'verified member controls must appear after boot completes');
+    assert.deepEqual(slow.errors,[]);
+    console.log('PASS MoonPet slow membership retains boot then renders six controls');
+  } finally {await slow.close();}
+
   const member=await h.setup({website:true});
   try {
     await member.open();
