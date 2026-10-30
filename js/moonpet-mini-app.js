@@ -5603,12 +5603,16 @@
     // the background and keep drawPet in its safe loading state until bot art is ready.
     var spriteStartup = Promise.allSettled([initBotArtMode()]);
     requestAnimationFrame(frame);
-    var startupBoot = typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
+    // Keep startup visible until signed access and the authoritative core save resolve.
+    // Decorative typing must not dismiss the only loading indicator prematurely.
+    bootText.textContent = 'MOONPET BIOS 0.9\nCHECKING TELEGRAM SIGNATURE...\nCONNECTING TO D1 MEMORY CORE...';
+    bootLayer.classList.remove('is-hidden');
+    tell('VERIFYING TELEGRAM ACCESS AND LOADING LIVE SAVE.');
     spriteStartup.then(function () {
       if (state) drawWorld(performance.now());
     });
     if (!initData && !telegramAuth) {
-      await startupBoot;
+      bootLayer.classList.add('is-hidden');
       tell('LOG IN WITH TELEGRAM OR OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
       screen.innerHTML = panel('TELEGRAM SIGNATURE REQUIRED',
         '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
@@ -5623,7 +5627,6 @@
 
     var membership = await verifyMoonpetGroupMembership();
     if (!membership.ok) {
-      await startupBoot;
       await showMoonpetMembershipGate(membership);
       return;
     }
@@ -5658,6 +5661,8 @@
       window.setInterval(tickCooldownDom, 1000);
       window.setInterval(tickSeasonDisplay, 30000);
     } catch (error) {
+      typingToken += 1;
+      bootLayer.classList.add('is-hidden');
       var authenticationFailed = Number(error.status) === 401;
       var startupFaultMessage = authenticationFailed ? 'TELEGRAM SESSION EXPIRED OR INVALID. OPEN A FRESH SESSION FROM @WIKICOMSBOT.' : error.message || 'STARTUP FAILED';
       tell(startupFaultMessage, 'danger');
