@@ -1621,7 +1621,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261029-members-only-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261030-boot-controls-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1825,6 +1825,8 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
   const requests = [];
   const startupScreen = { innerHTML: '' };
   const startupMessages = [];
+  const startupBootText = { textContent: '' };
+  const startupBootClasses = new Set();
   const stored = new Map([
     ['moonboys_tg_id', '123456789'], ['moonboys_tg_linked', 'true'],
     ['moonboys_tg_auth', JSON.stringify({ ...websiteAuthFields, hash: websiteAuthHash })],
@@ -1860,10 +1862,11 @@ function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = {
     requests, runtime, configuredApi: window.MOONBOYS_API.BASE_URL,
     restores: () => restores,
     start: () => vm.runInContext('(async function () { refreshTelegramContext(); await restoreBrowserAuth(); return post("/telegram-pets/app/state", { mode: "core" }); })()', runtime),
-    startupScreen, startupMessages,
+    startupScreen, startupMessages, startupBootText, startupBootClasses,
     runStartup: () => {
       Object.assign(runtime, {
-        typingToken:0, bootLayer:{classList:{add(){}}}, panel:(title,body)=>'<h2>'+title+'</h2>'+body,
+        typingToken:0, bootText:startupBootText,
+        bootLayer:{classList:{add:name=>startupBootClasses.add(name),remove:name=>startupBootClasses.delete(name)}}, panel:(title,body)=>'<h2>'+title+'</h2>'+body,
         nav: {}, screen: Object.assign(startupScreen, { appendChild() {}, querySelector(){return {addEventListener(){}};} }), bindViewportSizing() {}, syncViewportHeight() {}, initBotArtMode: async () => {},
         requestAnimationFrame() {}, frame() {}, typeBoot: async () => {}, beginStateRequest: () => 1,
         tell: message => startupMessages.push(message), escapeHtml: value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
@@ -1907,6 +1910,7 @@ for (const config of [{ api: { BASE_URL: null } }, { api: {}, hostname: 'localho
 for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.repeat(64) + '&user=%7B%22id%22%3A123456789%7D']) {
   const entry = browserEntryHarness({ sdkInitData });
   await entry.runStartup();
+  assert.equal(entry.startupBootClasses.has('is-hidden'), true, 'Boot overlay must release authentication, membership and startup-fault recovery controls');
   assert.match(entry.startupScreen.innerHTML, /https:\/\/t\.me\/WIKICOMSBOT\?start=moonpet/);
   assert.match(entry.startupScreen.innerHTML, /OPEN FRESH TELEGRAM SESSION/);
   assert.match(entry.startupScreen.innerHTML, /Close this game and reopen Moonpet OS from the bot/);
@@ -1918,12 +1922,13 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
 {
   const entry = browserEntryHarness({ sdkInitData: initData, failureResponse: { status: 503, error: 'mini_app_state_failed' } });
   await entry.runStartup();
+  assert.equal(entry.startupBootClasses.has('is-hidden'), true, 'Boot overlay must release authentication, membership and startup-fault recovery controls');
   assert.match(entry.startupScreen.innerHTML, /data-utility="retry"/);
   assert.doesNotMatch(entry.startupScreen.innerHTML, /OPEN FRESH TELEGRAM SESSION/, 'Transient state failures keep normal connection recovery');
   assert.equal(entry.requests.length, 4, 'Membership is verified before the three read-only state attempts');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261029-members-only-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261030-boot-controls-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2539,6 +2544,7 @@ assert.doesNotMatch(client, /COMING_SOON|PLANNED EXPANSION|Season Journey/, "cli
 {
   const entry=browserEntryHarness({sdkInitData:initData,groupMember:false});
   await entry.runStartup();
+  assert.equal(entry.startupBootClasses.has('is-hidden'), true, 'Boot overlay must release authentication, membership and startup-fault recovery controls');
   assert.match(entry.startupScreen.innerHTML,/TELEGRAM MEMBERS ONLY/);
   assert.match(entry.startupScreen.innerHTML,/data-membership-retry/);
   assert.equal(entry.requests.length,1);
@@ -2548,6 +2554,7 @@ assert.doesNotMatch(client, /COMING_SOON|PLANNED EXPANSION|Season Journey/, "cli
 {
   const entry=browserEntryHarness({sdkInitData:initData,membershipFailure:{status:503,error:'telegram_group_membership_unavailable'}});
   await entry.runStartup();
+  assert.equal(entry.startupBootClasses.has('is-hidden'), true, 'Boot overlay must release authentication, membership and startup-fault recovery controls');
   assert.match(entry.startupScreen.innerHTML,/data-membership-retry/);
   assert.equal(entry.requests.length,1,'unavailable membership must never load a save');
 }

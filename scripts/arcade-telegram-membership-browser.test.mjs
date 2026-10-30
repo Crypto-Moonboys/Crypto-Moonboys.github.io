@@ -21,6 +21,44 @@ try {
       console.log('PASS MoonPet locked response '+status);
     } finally {await p.close();}
   }
+  // Hold each startup dependency beyond the old decorative boot duration.
+  // Releasing the response explicitly keeps the pending-state assertion honest.
+  for (const phase of ['membership','core']) {
+    const slow=await h.setup();
+    let release,markStarted;
+    const gate=new Promise(resolve=>{release=resolve;});
+    const started=new Promise(resolve=>{markStarted=resolve;});
+    try {
+      const pattern=phase==='membership'?'**/telegram/group-membership':'**/telegram-pets/app/state';
+      await slow.context.route(pattern,async route=>{
+        if(phase==='core'&&route.request().postDataJSON().mode!=='core')return route.fallback();
+        markStarted();
+        await gate;
+        return route.fallback();
+      });
+      await slow.page.goto(h.origin+'/moonpet-game.html');
+      await Promise.race([started,new Promise((_,reject)=>{
+        const timer=setTimeout(()=>reject(new Error('Startup dependency was never requested: '+phase)),10000);
+        started.then(()=>clearTimeout(timer));
+      })]);
+      await slow.page.waitForTimeout(1800);
+      assert.match(await slow.page.locator('#boot-text').textContent(),/CONNECTING TO D1 MEMORY CORE/);
+      assert.match(await slow.page.locator('#screen').textContent(),/CONNECTING TO LIVE SAVE/,
+        'controls region must show a loading explanation rather than an empty black area');
+      assert.equal(await slow.page.locator('#boot-layer').evaluate(el=>el.classList.contains('is-hidden')),false,
+        'boot overlay must stay visible while '+phase+' is pending');
+      assert.equal(await slow.page.locator('#nav button[data-screen]').count(),0,
+        'unverified or incomplete state must not expose game navigation');
+      if(phase==='membership')assert.equal(slow.requests.some(r=>r.path.startsWith('/telegram-pets/app/')),false);
+      release();
+      await slow.page.waitForFunction(()=>document.querySelectorAll('#nav button[data-screen]').length===6);
+      assert.equal(await slow.page.locator('#boot-layer').evaluate(el=>el.classList.contains('is-hidden')),true,
+        'verified member controls must appear after boot completes');
+      assert.deepEqual(slow.errors,[]);
+      console.log('PASS MoonPet pending '+phase+' retains boot then renders six controls');
+    } finally {release();await slow.close();}
+  }
+
   const member=await h.setup({website:true});
   try {
     await member.open();
