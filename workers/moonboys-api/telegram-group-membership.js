@@ -20,6 +20,8 @@ function cors(request) {
   });
   if (ALLOWED_ORIGINS.has(origin)) {
     headers.set('Access-Control-Allow-Origin', origin);
+    // The Telegram Games launcher uses cookie-authenticated cross-origin fetches.
+    headers.set('Access-Control-Allow-Credentials', 'true');
     headers.set('Access-Control-Allow-Headers', 'Content-Type');
     headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   }
