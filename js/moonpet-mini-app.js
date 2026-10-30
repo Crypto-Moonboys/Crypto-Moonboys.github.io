@@ -5607,6 +5607,10 @@
     // Decorative typing must not dismiss the only loading indicator prematurely.
     bootText.textContent = 'MOONPET BIOS 0.9\nCHECKING TELEGRAM SIGNATURE...\nCONNECTING TO D1 MEMORY CORE...';
     bootLayer.classList.remove('is-hidden');
+    // The boot layer covers only the companion canvas. Give the separate
+    // controls pane a real loading state instead of an unexplained black gap.
+    screen.innerHTML = panel('CONNECTING TO LIVE SAVE',
+      '<div class="line muted">Verifying Telegram access and loading your saved MoonPet. Game controls appear when your live save is ready.</div>', 'startup-loading');
     tell('VERIFYING TELEGRAM ACCESS AND LOADING LIVE SAVE.');
     spriteStartup.then(function () {
       if (state) drawWorld(performance.now());
