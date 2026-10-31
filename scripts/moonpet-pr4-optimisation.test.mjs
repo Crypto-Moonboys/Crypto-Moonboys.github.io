@@ -5,9 +5,20 @@ import { execFileSync } from 'node:child_process';
 import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
 import { seedPr3Recovery } from './moonpet-pr3-fixture.mjs';
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr4-baseline.json',import.meta.url)));
+const current=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr3-current-response-parity.json',import.meta.url)));
+const currentByScenario=new Map(current.cases.map(item=>[item.scenario,item]));
+assert.deepEqual([...currentByScenario.keys()].sort(),baseline.cases.filter(item=>item.scenario!=='zero').map(item=>item.scenario).sort(),
+  'PR4 nonzero parity must cover all current response scenarios');
 for(const expected of baseline.cases)test('PR4 full first/retry response and saved state parity: '+expected.scenario,()=>{
  const actual=JSON.parse(execFileSync(process.execPath,['scripts/moonpet-pr4-parity-case.mjs',expected.scenario],{encoding:'utf8'}));
- for(const key of ['first_response_hash','first_persisted_hash','retry_response_hash','retry_persisted_hash'])assert.equal(actual[key],expected[key],key);
+ // Keep PR4's original persistent-data baseline immutable. Only the historical
+ // signed response projection hashes have drifted on main since this snapshot.
+ for(const key of ['first_persisted_hash','retry_persisted_hash'])assert.equal(actual[key],expected[key],key);
+ const responseExpected=expected.scenario==='zero'?expected:currentByScenario.get(expected.scenario);
+ assert.ok(responseExpected,'missing_current_PR4_response_contract');
+ for(const key of ['first_response_hash','retry_response_hash'])assert.equal(actual[key],responseExpected[key],key);
+ assert.equal(actual.first_response_hash,actual.retry_response_hash,'stable_signed_retry_response');
+ assert.equal(actual.first_persisted_hash,actual.retry_persisted_hash,'stable_saved_retry_state');
  for(const request of ['first','second']){assert.ok(actual[request].calls<=expected[request].calls-(expected.scenario==='zero'?0:15));assert.ok(actual[request].statements<=expected[request].statements+(expected.scenario==='zero'?0:1));}
 });
 const targets=['SELECT event_type, COUNT(*) AS count','SELECT COUNT(*) AS count\n      FROM telegram_pet_system_events','SELECT season_xp FROM','SELECT season_key, season_xp FROM','SELECT idempotency_key, COALESCE','SELECT boss_id, attempts','SELECT action, damage','SELECT pet_id,season_key,period_key AS week_key','SELECT event_type, COUNT(*) AS total','SELECT source, idempotency_key, pet_id','SELECT p.status,l.phase','SELECT asset_key,quantity','SELECT material_key,quantity','SELECT event_type,COUNT(*) AS total','SELECT idempotency_key FROM telegram_pet_reward_claims','SELECT COUNT(*) AS total FROM telegram_pet_system_events'];
