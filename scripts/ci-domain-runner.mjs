@@ -181,6 +181,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-mini-app-parity.test.mjs'],
     ['node', 'scripts/moonpet-player-loop.test.mjs'],
     ['node', '--test', 'scripts/moonpet-passive-refresh.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-cooldown-pr4.test.mjs'],
     ['node', '--test', 'scripts/moonpet-refresh-audit-fixes.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pet-spaces.test.mjs'],
     ['node', '--test', 'scripts/moonpet-option-guidance.test.mjs'],
