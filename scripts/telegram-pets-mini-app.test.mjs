@@ -619,6 +619,11 @@ cooldownRefreshRuntime.refreshExpiredCooldownState();
 assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
   'busy cooldown expiry refreshes must retry later instead of being dropped');
 cooldownRefreshRuntime.setBusy(false);
+await cooldownRefreshRuntime.refreshExpiredCooldownState();
+assert.equal(cooldownRefreshRuntime.stats().postCalls, 2,
+  'a different expired cooldown key must still trigger an authoritative state read');
+assert.equal(cooldownRefreshRuntime.stats().renderCalls, 2,
+  'newly refreshed cooldown state must still render');
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
