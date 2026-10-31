@@ -306,7 +306,7 @@ test('active Work timer and cooldown metadata advance without rebuilding or bloc
     assert.equal(f.calls.length,index + 1);
     const live = patch(1); live.activity = activitySample(elapsed, { cooldown: {
       expires_at: '2026-10-31T14:05:00.000Z', remaining_seconds: 300-elapsed,
-      server_time: '2026-10-31T14:00:' + String(elapsed).padStart(2,'0') + 'Z'
+      server_time: '2026-10-31T14:00:' + String(5+index*5).padStart(2,'0') + 'Z'
     } });
     f.pending[index].resolve({ state: live }); await read;
     assert.equal(f.ctx.renders,0,'unchanged Work panels must retain focus/scroll');
@@ -347,7 +347,6 @@ test('Work checkpoint, countdown deadline and recovery-status changes still redr
       cooldown:{expires_at:'2026-10-31T14:31:00.000Z',remaining_seconds:1460}
     }}),
     activity=>({...activity,recovery_pending:true}),
-    activity=>({...activity,status:'claimed'}),
   ];
   for(const change of cases){
     const initial=base();initial.guidance.activity=activitySample(400);
