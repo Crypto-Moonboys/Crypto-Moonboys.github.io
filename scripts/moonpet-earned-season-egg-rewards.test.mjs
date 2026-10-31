@@ -13,12 +13,19 @@ const claim = (f, season_key = oldQuarter, request_id = 'earned-tier') => f.act(
   tier_id: 'street', season_key, request_id });
 
 async function eggs(f, count) {
-  for (let slot = 2; slot <= count; slot++) f.pet(`owned-${slot}`, oldQuarter, 200 * slot, slot);
-  const owned = f.sql.prepare("SELECT * FROM telegram_pet_instances WHERE status='active' ORDER BY slot_number").all();
-  for (const pet of owned) {
-    f.active(pet.pet_id, pet.season_key);
-    const deleted = await f.act({ action: 'delete_pet_slot', pet_id: pet.pet_id, confirm_pet_id: pet.pet_id, confirmed: true });
-    assert.equal(deleted.accepted, true, JSON.stringify(deleted));
+  // The free starter alone resets into a new egg on deletion. Paid pet
+  // deletion locks its space until a new Arcade XP purchase: never fabricate
+  // free paid replacements in this fixture.
+  const starter = f.sql.prepare("SELECT pet_id,season_key FROM telegram_pet_instances WHERE status='active'").get();
+  f.active(starter.pet_id, starter.season_key);
+  const deleted = await f.act({ action: 'delete_pet_slot', pet_id: starter.pet_id, confirm_pet_id: starter.pet_id, confirmed: true });
+  assert.equal(deleted.accepted, true, JSON.stringify(deleted));
+  assert.ok(deleted.replacement_pet_id, 'free starter receives a real replacement egg');
+  for (let slot = 2; slot <= count; slot++) {
+    const id = `owned-${slot}`;
+    f.pet(id, oldQuarter, 200 * slot, slot);
+    f.sql.prepare("UPDATE telegram_pet_season_slots SET acquisition_type='arcade_xp',arcade_xp_spent=? WHERE pet_id=?").run(slot === 2 ? 500 : 1000,id);
+    f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE pet_id=?").run(id);
   }
   for (const source of [oldQuarter, quarter]) f.sql.prepare('INSERT INTO telegram_pet_season_state(telegram_id,season_key,season_xp) VALUES(?,?,300)').run(f.owner, source);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_lifecycle_by_pet l JOIN telegram_pet_instances i USING(pet_id) WHERE i.status='active' AND l.phase='egg'").get().n, count);
@@ -26,7 +33,7 @@ async function eggs(f, count) {
   await hooks.getPetSeasonRewardState(f.db, f.owner);
 }
 
-for (const count of [1, 2, 3]) test(`${count} replacement eggs can collect old and current earned tiers without pet progress`, async t => {
+for (const count of [1, 2, 3]) test(`free replacement plus ${count - 1} paid-space eggs can collect old and current earned tiers without pet progress`, async t => {
   const f = fixture(`95310${count}`), clock = clockFixture(f);
   t.after(() => { clock.restore(); f.sql.close(); });
   await eggs(f, count);
@@ -47,7 +54,7 @@ for (const count of [1, 2, 3]) test(`${count} replacement eggs can collect old a
   const receipts = f.sql.prepare("SELECT idempotency_key,applied_rewards FROM telegram_pet_reward_claims WHERE source='pet_season_reward' ORDER BY idempotency_key").all();
   assert.deepEqual(receipts.map(row => row.idempotency_key), [oldQuarter, quarter].map(q => `season_reward:${f.owner}:${q}:street`));
   assert.ok(receipts.every(row => JSON.parse(row.applied_rewards).pet_xp === 0));
-  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_instances WHERE status='archived'").get().n, count, 'historical ownership remains');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_instances WHERE status='archived'").get().n, 1, 'original free pet history remains');
 });
 
 for (const race of ['switch', 'hatch', 'delete']) test(`egg season settlement rejects a concurrent ${race}`, async t => {
