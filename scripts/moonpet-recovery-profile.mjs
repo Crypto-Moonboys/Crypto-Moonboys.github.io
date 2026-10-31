@@ -29,7 +29,13 @@ export function summarizeMoonpetRecovery(input) {
     const request = requests.get(key) || { mode: record.mode, stages: [], totals: [], conflicted: false };
     if (request.mode !== record.mode) request.conflicted = true;
     if (record.stage === 'total') request.totals.push(record);
-    else request.stages.push(record);
+    else {
+      // Replayed/duplicated log lines must not give one request multiple
+      // votes in a stage percentile. Exclude the whole ambiguous request,
+      // whether repeated stages agree or differ in their durations.
+      if (request.stages.some(stage => stage.stage === record.stage)) request.conflicted = true;
+      request.stages.push(record);
+    }
     requests.set(key,request);
     accepted++;
   }
