@@ -15,7 +15,7 @@ node scripts/moonpet-recovery-profile.mjs .\private-worker-events.jsonl > .\moon
 node --test scripts/moonpet-recovery-profile.test.mjs
 ```
 
-Output contains **only** allowlisted mode, stage and outcome, sample count, median/p95/max wall time, and median SQL statement and D1 binding-call counts when available. Individual request IDs, pet/account IDs, tokens, SQL text, errors and input logs are never echoed. Invalid rows are counted but not returned. Failed/rejected requests are **not** mixed into completed latency distributions. Counts may be null for stages without instrumented D1 submissions. `state_recovery` includes nested settlement spans; **never sum nested span times**.
+Output contains **only** allowlisted mode, stage and outcome, sample count, median/p95/max wall time, and median SQL statement and D1 binding-call counts when available. Individual request IDs, pet/account IDs, tokens, SQL text, errors and input logs are never echoed. Invalid rows are counted but not returned. Stage timings are correlated in memory by request ID with the single final `total` event. A stage marked completed in a subsequently failed/rejected request belongs to that **failed/rejected request cohort**, not the completed-request distribution. Missing final events, duplicate terminals, and conflicting modes are excluded and counted as incomplete/ambiguous; no request IDs leave the process. The supplied JSONL must contain complete request event sequences. Failed/rejected requests are **not** mixed into completed latency distributions. Counts may be null for stages without instrumented D1 submissions. `state_recovery` includes nested settlement spans; **never sum nested span times**.
 
 ## Acceptance for next runtime optimisation
 
