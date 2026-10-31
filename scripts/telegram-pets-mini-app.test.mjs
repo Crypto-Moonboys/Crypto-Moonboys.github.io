@@ -602,9 +602,12 @@ cooldownRefreshRuntime.setState({
     { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 0 },
   ] },
 });
+const scheduledBeforeDuplicate = cooldownRefreshRuntime.stats().scheduled.length;
 await cooldownRefreshRuntime.refreshExpiredCooldownState();
-assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
-  'same-key expired refreshes must retry later instead of being silently dropped');
+assert.equal(cooldownRefreshRuntime.stats().scheduled.length, scheduledBeforeDuplicate,
+  'already-processed expiry must not spin a one-second timer when it cannot issue another request');
+assert.equal(cooldownRefreshRuntime.stats().postCalls, 1,
+  'same-key expiry is not a second authorized state read');
 cooldownRefreshRuntime.setState({
   adopted: true,
   cooldowns: { next_expires_at: '2026-08-22T11:59:59.000Z', entries: [
@@ -616,6 +619,11 @@ cooldownRefreshRuntime.refreshExpiredCooldownState();
 assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
   'busy cooldown expiry refreshes must retry later instead of being dropped');
 cooldownRefreshRuntime.setBusy(false);
+await cooldownRefreshRuntime.refreshExpiredCooldownState();
+assert.equal(cooldownRefreshRuntime.stats().postCalls, 2,
+  'a different expired cooldown key must still trigger an authoritative state read');
+assert.equal(cooldownRefreshRuntime.stats().renderCalls, 2,
+  'newly refreshed cooldown state must still render');
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
@@ -1621,7 +1629,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261031-live-noop-pr3-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261031-cooldown-pr4-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1928,7 +1936,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 4, 'Membership is verified before the three read-only state attempts');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261031-live-noop-pr3-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261031-cooldown-pr4-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

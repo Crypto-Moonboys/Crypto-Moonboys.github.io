@@ -2472,7 +2472,11 @@
     }
     var refreshKey = state && state.cooldowns && state.cooldowns.next_expires_at || collectCooldownEntries(state).map(function (entry) { return entry && entry.expires_at || ''; }).sort()[0] || '';
     if (refreshKey && refreshKey === lastCooldownRefreshKey) {
-      scheduleCooldownRefresh(1000);
+      // This expiry has already had its authoritative refresh attempt.
+      // The former one-second loop could never issue another state request
+      // for the same key, but kept waking the WebView indefinitely.
+      // A changed snapshot/cooldown key, action, or foreground reconciliation
+      // still schedules a new authoritative read through existing paths.
       return;
     }
     cooldownRefreshInFlight = true;

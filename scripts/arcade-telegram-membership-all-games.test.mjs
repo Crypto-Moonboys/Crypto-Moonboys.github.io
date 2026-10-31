@@ -95,7 +95,7 @@ assert.match(moonpet, /panel\('TELEGRAM MEMBERS ONLY'/,
   'MoonPet must render an explicit members-only lock screen');
 
 const moonpetHtml = read('moonpet-game.html');
-assert.match(moonpetHtml, /moonpet-mini-app\.js\?v=20261031-live-noop-pr3-v1/,
+assert.match(moonpetHtml, /moonpet-mini-app\.js\?v=20261031-cooldown-pr4-v1/,
   'MoonPet must publish the cache-busted membership-gated client');
 assert.match(launcher, /moonpet-game\.html\?v=20261029-members-only-v1/,
   'Telegram launcher must open the membership-gated MoonPet release');
