@@ -29,10 +29,27 @@ test('weekly period readiness has exact candidate/cursor parity for archived, re
 });
 
 const { execFileSync } = await import('node:child_process');
+// These are distinct contracts: the Oct 22 PR3 baseline freezes durable rewards,
+// while the Oct 31 main snapshot freezes the currently shipped signed presentation.
+// Do not overwrite old historical response hashes to mask future projection drift.
 const parityBaseline=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr3-baseline-parity.json',import.meta.url),'utf8'));
-for(const expected of parityBaseline.cases)test('baseline response and reward parity: '+expected.scenario,()=>{
+const currentResponses=JSON.parse(readFileSync(new URL('./fixtures/moonpet-pr3-current-response-parity.json',import.meta.url),'utf8'));
+const responseByScenario=new Map(currentResponses.cases.map(item=>[item.scenario,item]));
+assert.deepEqual([...responseByScenario.keys()].sort(),parityBaseline.cases.map(item=>item.scenario).sort());
+for(const expected of parityBaseline.cases)test('frozen reward and current response parity: '+expected.scenario,()=>{
  const actual=JSON.parse(execFileSync(process.execPath,['scripts/moonpet-pr3-parity-case.mjs',expected.scenario],{encoding:'utf8',env:{...process.env,MOONPET_PERF_SOURCE_ROOT:process.cwd()}}));
- for(const key of ['first_response_hash','first_persisted_hash','retry_response_hash','retry_persisted_hash'])assert.equal(actual[key],expected[key],key);
+ const responseExpected=responseByScenario.get(expected.scenario);
+ assert.ok(responseExpected,'missing_current_response_contract');
+ // Historical persisted hashes are authoritative: no XP/Gold/receipt/progression
+ // baseline can be silently refreshed when presentation fields are updated.
+ for(const key of ['first_persisted_hash','retry_persisted_hash'])
+   assert.equal(actual[key],expected[key],key+' historic persisted baseline');
+ // The current complete signed response remains a strict pinned fixture.
+ for(const key of ['first_response_hash','retry_response_hash'])
+   assert.equal(actual[key],responseExpected[key],key+' current signed projection');
+ assert.equal(actual.initial.response.adopted,true,'adopted_pet_authority');
+ assert.deepEqual(actual.initial.response,actual.retry.response,'repeat_signed_response_idempotence');
+ assert.deepEqual(actual.initial.persisted,actual.retry.persisted,'repeat_saved_state_idempotence');
  assert.ok(actual.second.calls<=expected.retry_calls-26);assert.ok(actual.second.statements<=expected.retry_statements+1);
  assert.ok(actual.first.calls<=expected.calls-26);assert.ok(actual.first.statements<=expected.statements+1);
 });

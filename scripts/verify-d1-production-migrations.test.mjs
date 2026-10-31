@@ -17,7 +17,8 @@ assert.ok(workflow.includes('{"name":"090_telegram_website_sessions.sql"}'), 'kn
 assert.ok(workflow.includes('{"name":"093_moonpet_radio_group_delivery_index.sql"}'), 'known-evidence workflow fixture must include the Radio delivery index migration');
 assert.ok(workflow.includes('{"name":"095_moonpet_home_garden.sql"}'), 'known-evidence workflow fixture must include the Home E3 garden migration');
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
-const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
+assert.match(workflow, /workflow_dispatch:\s*\n/, 'production migration verification remains manually dispatchable');
+assert.doesNotMatch(workflow, /^\s+pull_request:\s*$/m, 'production migration verification is opt-in, not PR-triggered');
 for (const name of [
   '077_moonpet_completion_rewards.sql',
   '078_moonpet_beta_season_xp_rebaseline.sql',
@@ -44,7 +45,6 @@ for (const name of [
   '099_nbg_london_competition_prizes.sql',
   '100_championship_clout_foundation.sql',
 ]) {
-  assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
 
@@ -53,7 +53,6 @@ for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
   production.d1_databases.wikicoms.required_migrations]) {
   assert.ok(source.includes(chatMenuMigration), 'Telegram menu cleanup must be registered in each D1 release authority');
 }
-assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + chatMenuMigration));
 assert.ok(remoteQueryStep.includes(chatMenuMigration));
 assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_chat_menu_cleanup/);
 
@@ -62,7 +61,6 @@ for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
   production.d1_databases.wikicoms.required_migrations]) {
   assert.ok(source.includes(cloutMigration), 'Clout migration must be in each required D1 authority');
 }
-assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + cloutMigration));
 assert.ok(remoteQueryStep.includes(cloutMigration));
 assert.match(schema, /CREATE TABLE IF NOT EXISTS championship_clout_effects/);
 assert.match(schema, /CREATE TABLE IF NOT EXISTS championship_clout_daily/);
@@ -71,7 +69,6 @@ const gardenMigration = '095_moonpet_home_garden.sql';
 assert.ok(REQUIRED_D1_MIGRATIONS.includes(gardenMigration));
 assert.ok(request.required_migrations.includes(gardenMigration));
 assert.ok(production.d1_databases.wikicoms.required_migrations.includes(gardenMigration));
-assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + gardenMigration));
 assert.ok(remoteQueryStep.includes(gardenMigration));
 assert.throws(() => validateRequest({ ...request, required_migrations: request.required_migrations.filter(n => n !== gardenMigration) }),
   /missing required migrations: 095_moonpet_home_garden\.sql/);
@@ -84,7 +81,6 @@ const radioDeliveryIndexMigration = '093_moonpet_radio_group_delivery_index.sql'
 assert.ok(REQUIRED_D1_MIGRATIONS.includes(radioDeliveryIndexMigration));
 assert.ok(request.required_migrations.includes(radioDeliveryIndexMigration));
 assert.ok(production.d1_databases.wikicoms.required_migrations.includes(radioDeliveryIndexMigration));
-assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + radioDeliveryIndexMigration));
 assert.ok(remoteQueryStep.includes(radioDeliveryIndexMigration));
 assert.throws(() => validateRequest({ ...request, required_migrations: request.required_migrations.filter(n => n !== radioDeliveryIndexMigration) }),
   /missing required migrations: 093_moonpet_radio_group_delivery_index\.sql/);
@@ -105,25 +101,6 @@ assert.match(schema, /CREATE TABLE IF NOT EXISTS moonpet_beta_xp_rebaseline_v2[\
   'canonical schema must include the repeatable migration 082 correction audit table');
 assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_community_xp_awards[\s\S]*PRIMARY KEY \(telegram_id, action, claim_key\)/,
   'canonical schema must retain the account/action/source identity used by atomic Community XP awards');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/061_moonpet_season_economy_calibration\.sql/, 'migration 061 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/062_moonpet_evolution_stage_5\.sql/, 'migration 062 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/063_arcade_xp_spendable_wallet\.sql/, 'migration 063 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/064_moonpet_beta_runtime_cutover\.sql/, 'migration 064 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/065_moonpet_reward_pet_id_authority\.sql/, 'migration 065 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/066_moonpet_run_pet_id_authority\.sql/, 'migration 066 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/067_moonpet_daily_journey_authority\.sql/, 'migration 067 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/068_moonpet_weekly_journey_authority\.sql/, 'migration 068 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/069_moonpet_breeding_authority\.sql/, 'migration 069 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/070_moonpet_pet_identity_achievement_authority\.sql/, 'migration 070 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/071_moonpet_arena_pet_authority\.sql/, 'migration 071 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/072_moonpet_identity_authority_verification\.sql/, 'migration 072 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/073_moonpet_per_pet_specialist_progression\.sql/, 'migration 073 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/074_moonpet_live_system_ownership_classification\.sql/, 'migration 074 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/075_dead_run_gps_survival\.sql/, 'migration 075 changes must trigger production migration verification');
-assert.match(pullRequestPaths, /scripts\/verify-d1-identity-authority-audit\.mjs/, 'identity authority audit parser changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
   /050_telegram_pet_guided_progression\.sql/,

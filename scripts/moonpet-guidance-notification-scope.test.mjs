@@ -391,7 +391,7 @@ for (const mutation of ['switch', 'archive_source']) test(`${mutation} after ale
   const selected = pets[2]; select(f, selected); needsCare(f, selected);
   let changed = false;
   f.db.beforeBatch = statements => {
-    if (!changed && statements.some(s => s.query.includes('SELECT slot_number FROM ('))) {
+    if (!changed && statements.some(s => s.query.includes('SELECT n.enabled'))) {
       changed = true;
       if (mutation === 'archive_source') archive(f, selected);
       select(f, pets[0]);
@@ -411,7 +411,7 @@ test('deleting an earlier historical space during preparation refreshes the surv
   select(f, pets[2]); needsCare(f, pets[2]);
   let changed = false;
   f.db.beforeBatch = statements => {
-    if (!changed && statements.some(s => s.query.includes('SELECT slot_number FROM ('))) {
+    if (!changed && statements.some(s => s.query.includes('SELECT n.enabled'))) {
       changed = true; archive(f, pets[0]);
     }
   };
