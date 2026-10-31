@@ -34,3 +34,7 @@ node scripts/ci-domain-runner.mjs worker-api
 The second command belongs to PR #1688 and should be run on that branch (or once merged). The PR3 test and Worker API domain belong on this PR #1689 branch. The full worker-api suite previously stopped at the old baseline hash assertions; it needs to finish cleanly before merging.
 
 **Do not deploy Worker or migrate D1** for this test-only PR.
+
+## PR4 parity gate discovered by complete Worker API run
+
+After PR3 parity passed 11/11, the Worker API domain reached `scripts/moonpet-pr4-optimisation.test.mjs` and found the **same seven** stale `first_response_hash` mismatches; its zero-pet case and non-parity fail-closed/concurrency tests passed. PR4's signed parity helper uses the same fixed-clock fixture, scenario seeds, challenge-token normalizer and persistence table selection as PR3. This PR now uses the same current signed-response contract for the seven nonzero PR4 scenarios, while keeping PR4's **original persisted first/retry hashes unchanged** and retaining its zero-pet original response baseline. All PR4 D1/SQL budgets and concurrency/failure tests remain in place. This change still needs a fresh full Worker API CI run before merge.
