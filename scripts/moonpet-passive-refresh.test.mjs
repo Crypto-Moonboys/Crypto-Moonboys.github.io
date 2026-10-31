@@ -273,6 +273,53 @@ test('timed-out mutations never replay automatically and completed requests clea
   assert.equal(net.requests[1].signal.aborted, false);
 });
 
+test('unchanged live presentation avoids rebuilding controls but keeps clock and notices current', async () => {
+  let notices = 0;
+  const f = context({ showPendingNotices: async () => { notices += 1; } });
+  const read = f.ctx.refreshLiveState();
+  assert.equal(f.calls.length, 1);
+  f.pending[0].resolve({ state: patch(1) }); await read;
+  assert.equal(f.ctx.renders, 0, 'no unchanged Explore DOM rebuild');
+  assert.equal(f.ctx.passiveRefreshInFlight, false);
+  assert.equal(f.ctx.state.server_time, '2026-10-06T00:00:00Z');
+  assert.equal(notices, 1, 'source-bound notice reconciliation must still run');
+  assert.equal(f.ctx.state.pet.pet_xp, 200);
+  assert.equal(f.ctx.state.inventory[0].item_key, 'keep');
+  // A later changed combat round still updates the screen normally.
+  f.at(25000);
+  const changed = f.ctx.refreshLiveState();
+  assert.equal(f.calls.length, 2);
+  f.pending[1].resolve({ state: patch(2) }); await changed;
+  assert.equal(f.ctx.renders, 1);
+  assert.equal(f.ctx.state.arena.current_round, 2);
+  assert.equal(notices, 2);
+});
+
+test('same round but changed Kaiju cards still updates the live Explore screen', async () => {
+  const f = context();
+  const response = patch(1);
+  response.kaiju.cards = [{ key: 'earned-card', count: 1 }];
+  const read = f.ctx.refreshLiveState();
+  f.pending[0].resolve({ state: response }); await read;
+  assert.equal(f.ctx.renders, 1);
+  assert.equal(f.ctx.state.kaiju.cards[0].key, 'earned-card');
+  assert.equal(f.calls.length, 1, 'display-only live change needs no extra full read');
+});
+
+test('same activity identity but newly ready reward still renders and notifies once', async () => {
+  const initial = base();
+  initial.guidance.activity = { id: 'training-one', status: 'active', ready: false };
+  const f = context({ activeScreen: 'work', state: initial });
+  f.at(20000);
+  const ready = patch(1);
+  ready.activity = { id: 'training-one', status: 'active', ready: true };
+  const read = f.ctx.refreshLiveState();
+  f.pending[0].resolve({ state: ready }); await read;
+  assert.equal(f.ctx.renders, 1);
+  assert.deepEqual(f.messages, ['TIMED ACTIVITY REWARD READY.']);
+  assert.deepEqual(f.haptics, ['success']);
+});
+
 test('a 7.5-second response renders and overlapping five-second polls start no new request', async () => {
   const f = context();
   const first = f.ctx.refreshLiveState();
