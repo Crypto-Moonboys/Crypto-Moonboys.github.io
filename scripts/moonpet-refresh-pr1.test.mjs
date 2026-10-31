@@ -10,7 +10,7 @@ const ticker = client.slice(start, end);
 
 test('season ticker keeps authoritative reconciliation without rebuilding Home every 30 seconds', () => {
   assert.match(ticker, /document\.hidden/);
-  assert.match(ticker, /tickCooldownDom\(\)/);
+  assert.doesNotMatch(ticker, /tickCooldownDom\(\)/, 'season timer must not duplicate the one-second scan');
   assert.match(ticker, /refreshSeasonSnapshot\(false\)/);
   assert.doesNotMatch(ticker, /\brender\s*\(/, 'unchanged Home must not be rebuilt by the timer');
   assert.doesNotMatch(ticker, /post\s*\(/, 'ticker must not add API requests');
