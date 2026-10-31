@@ -4956,13 +4956,13 @@
   }
 
   function tickSeasonDisplay() {
-    if (document.hidden) return;
-    if (!state || !state.adopted || busy || noticesBusy) return;
-    if (activeScreen === 'home') {
-      var scrollTop = screen.scrollTop;
-      render();
-      screen.scrollTop = scrollTop;
-    }
+    if (document.hidden || !state || !state.adopted || busy || noticesBusy) return;
+    // The one-second DOM ticker already updates all rendered countdown labels.
+    // Rebuilding Home every 30 seconds discards focused controls and makes
+    // unnecessary work even when the authoritative state has not changed.
+    // UTC/season changes still trigger the existing guarded server refresh;
+    // its successful response is responsible for rendering new values.
+    tickCooldownDom();
     refreshSeasonSnapshot(false);
   }
   // TEST-EXPORT: seasonalStateRefresh:end

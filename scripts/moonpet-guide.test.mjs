@@ -32,7 +32,7 @@ test('website guide and About blocks are exactly the shared in-game copy', () =>
   assert.ok(markup.startsWith(guide.game(guide.sections)));
   const html = read('moonpet-game.html');
   const guideAsset = '/js/moonpet-guide.js?v=20261027-v1-beta-guide-v1';
-  const appAsset = '/js/moonpet-mini-app.js?v=20261030-boot-controls-v1';
+  const appAsset = '/js/moonpet-mini-app.js?v=20261031-refresh-pr1-v1';
   assert.ok(html.includes(guideAsset) && html.includes(appAsset));
   assert.ok(html.indexOf(guideAsset) < html.indexOf(appAsset));
   assert.match(source, /MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261029-members-only-v1`/);
