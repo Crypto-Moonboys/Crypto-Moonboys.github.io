@@ -4825,6 +4825,19 @@
     });
   }
 
+  // Compare only fields published by a live-mode response. The server clock
+  // continues to be reconciled independently; countdowns have their own DOM
+  // updater. Full state and terminal recovery always render unconditionally.
+  function livePresentationFingerprint(snapshot) {
+    return JSON.stringify([
+      snapshot && snapshot.arena,
+      snapshot && snapshot.arena_queue,
+      snapshot && snapshot.arena_result,
+      snapshot && snapshot.kaiju,
+      snapshot && snapshot.guidance && snapshot.guidance.activity
+    ]);
+  }
+
   async function refreshLiveState() {
     if (document.hidden) return;
     if (stateNeedsFullHydration(state)) return;
@@ -4841,6 +4854,8 @@
       return;
     }
     passiveRefreshInFlight = true;
+    var beforePresentation = livePresentationFingerprint(state);
+    var polledScreen = activeScreen;
     var before = multiplayerFingerprint(state);
     var beforeActivity = state.guidance && state.guidance.activity;
     try {
@@ -4891,12 +4906,18 @@
         var serverTime = Date.parse(merged.server_time || '');
         if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
       }
-      // Read the current position after the request: the user may have scrolled
-      // while it was in flight. Keep an in-flow menu anchored to the section end.
-      var scrollTop = screen.scrollTop;
-      var atBottom = screen.scrollHeight - screen.clientHeight - scrollTop <= 1;
-      render();
-      screen.scrollTop = atBottom ? screen.scrollHeight : scrollTop;
+      // Only rebuild the controls when a server-published live field changes.
+      // An unchanged poll still updates clock offset, request guards and notices.
+      // Legacy full responses and terminal recovery must always render.
+      var presentationChanged = legacyFull || terminal || polledScreen !== activeScreen
+        || beforePresentation !== livePresentationFingerprint(state);
+      if (presentationChanged) {
+        // Read scroll position after the request, not before the player moves.
+        var scrollTop = screen.scrollTop;
+        var atBottom = screen.scrollHeight - screen.clientHeight - scrollTop <= 1;
+        render();
+        screen.scrollTop = atBottom ? screen.scrollHeight : scrollTop;
+      }
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
         tell('MULTIPLAYER STATE UPDATED.');
