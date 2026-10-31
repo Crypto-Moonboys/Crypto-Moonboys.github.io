@@ -273,6 +273,102 @@ test('timed-out mutations never replay automatically and completed requests clea
   assert.equal(net.requests[1].signal.aborted, false);
 });
 
+// The actual Worker adds elapsed_seconds and recomputed cooldown counters
+// to every activity response. Those fields must not cause a new DOM tree when
+// the displayed countdown deadline and reward preview are unchanged.
+function activitySample(elapsed, overrides = {}) {
+  const remaining = Math.max(0, 300 - elapsed);
+  const deadline = '2026-10-31T14:05:00.000Z';
+  const milestone = '2026-10-31T14:30:00.000Z';
+  return {
+    id: 'activity-realistic', activity_type: 'work', status: 'active', ready: elapsed >= 300,
+    recovery_pending: false, capped: false, ends_at: '2026-10-31T17:00:00.000Z',
+    elapsed_seconds: elapsed, remaining_seconds: remaining,
+    expires_at: elapsed < 300 ? deadline : null,
+    cooldown: elapsed < 300 ? { expires_at: deadline, remaining_seconds: remaining, server_time: '2026-10-31T14:00:00Z' } : null,
+    detail: elapsed < 300 ? 'Claim ready in ' + remaining + 's.' : 'Claim ready now.',
+    preview: elapsed >= 300 ? { seconds: elapsed, capped_seconds: elapsed, rewards: { moon_gold: 10, pet_xp: 2 } } : null,
+    next_checkpoint: {
+      seconds: 1800, rewards: { moon_gold: 26, pet_xp: 6 },
+      cooldown: { expires_at: milestone, remaining_seconds: Math.max(0,1800 - elapsed), server_time:'2026-10-31T14:00:00Z' }
+    },
+    ...overrides
+  };
+}
+
+test('active Work timer and cooldown metadata advance without rebuilding or blocking notices', async () => {
+  let notices = 0;
+  const initial = base(); initial.guidance.activity = activitySample(120);
+  const f = context({ activeScreen: 'work', state: initial, showPendingNotices: async () => { notices++; } });
+  f.at(20000);
+  for (const [index, elapsed] of [125, 130, 135].entries()) {
+    const read = f.ctx.refreshLiveState();
+    assert.equal(f.calls.length,index + 1);
+    const live = patch(1); live.activity = activitySample(elapsed, { cooldown: {
+      expires_at: '2026-10-31T14:05:00.000Z', remaining_seconds: 300-elapsed,
+      server_time: '2026-10-31T14:00:' + String(elapsed).padStart(2,'0') + 'Z'
+    } });
+    f.pending[index].resolve({ state: live }); await read;
+    assert.equal(f.ctx.renders,0,'unchanged Work panels must retain focus/scroll');
+    assert.equal(f.ctx.state.guidance.activity.elapsed_seconds,elapsed,'latest authoritative activity still stored');
+    assert.equal(f.ctx.state.guidance.activity.remaining_seconds,300-elapsed);
+    assert.equal(notices,index+1,'notice reconciliation stays enabled');
+    f.at(20000 + (index+1)*20000);
+  }
+  assert.equal(f.ctx.authenticationFailure,false);
+});
+
+test('Work preview accrual changes trigger render only when displayed rewards change', async () => {
+  const initial=base();
+  initial.guidance.activity=activitySample(350);
+  const f=context({activeScreen:'work',state:initial});
+  f.at(20000);
+  const same=patch(1); same.activity=activitySample(351);
+  const first=f.ctx.refreshLiveState(); f.pending[0].resolve({state:same}); await first;
+  assert.equal(f.ctx.renders,0,'preview seconds alone are not shown');
+  assert.equal(f.ctx.state.guidance.activity.preview.seconds,351);
+  f.at(40000);
+  const changed=patch(1); changed.activity=activitySample(360,{preview:{
+    seconds:360,capped_seconds:360,rewards:{moon_gold:11,pet_xp:2}
+  }});
+  const second=f.ctx.refreshLiveState(); f.pending[1].resolve({state:changed}); await second;
+  assert.equal(f.ctx.renders,1,'a changed reward preview must redraw');
+  assert.equal(f.ctx.state.guidance.activity.preview.rewards.moon_gold,11);
+});
+
+test('Work checkpoint, countdown deadline and recovery-status changes still redraw', async () => {
+  const cases=[
+    activity=>({...activity,next_checkpoint:{
+      seconds:1800,rewards:{moon_gold:30,pet_xp:6},
+      cooldown:{expires_at:'2026-10-31T14:30:00.000Z',remaining_seconds:1400}
+    }}),
+    activity=>({...activity,next_checkpoint:{
+      ...activity.next_checkpoint,
+      cooldown:{expires_at:'2026-10-31T14:31:00.000Z',remaining_seconds:1460}
+    }}),
+    activity=>({...activity,recovery_pending:true}),
+    activity=>({...activity,status:'claimed'}),
+  ];
+  for(const change of cases){
+    const initial=base();initial.guidance.activity=activitySample(400);
+    const f=context({activeScreen:'work',state:initial});
+    f.at(20000);
+    const live=patch(1);live.activity=change(activitySample(405));
+    const read=f.ctx.refreshLiveState();f.pending[0].resolve({state:live});await read;
+    assert.equal(f.ctx.renders,1,'visible Work change must render');
+  }
+});
+
+test('Work ready state transition renders after an advancing pre-ready countdown', async () => {
+  const initial=base(); initial.guidance.activity=activitySample(290);
+  const f=context({activeScreen:'work',state:initial}); f.at(20000);
+  const ready=patch(1);ready.activity=activitySample(300);
+  const read=f.ctx.refreshLiveState();f.pending[0].resolve({state:ready});await read;
+  assert.equal(f.ctx.renders,1);
+  assert.deepEqual(f.messages,['TIMED ACTIVITY REWARD READY.']);
+  assert.deepEqual(f.haptics,['success']);
+});
+
 test('unchanged live presentation avoids rebuilding controls but keeps clock and notices current', async () => {
   let notices = 0;
   const f = context({ showPendingNotices: async () => { notices += 1; } });
