@@ -59,8 +59,9 @@ async function withServer(handler, callback) {
   finally { await new Promise((resolve) => server.close(resolve)); }
 }
 
-test('scheduled workflow probes twice, deduplicates incidents and alerts only on state changes', () => {
-  assert.match(WORKFLOW, /cron: "\*\/15 \* \* \* \*"/);
+test('manual production workflow probes twice, deduplicates incidents and alerts only on state changes', () => {
+  assert.match(WORKFLOW, /^\s+workflow_dispatch:/m, 'production health monitoring remains manually dispatchable');
+  assert.doesNotMatch(WORKFLOW, /^\s+schedule:/m, 'routine production probes are opt-in, not cron scheduled');
   assert.match(WORKFLOW, /^\s+workflow_dispatch:/m);
   assert.match(WORKFLOW, /notification_test:/);
   assert.match(WORKFLOW, /github\.event_name == 'workflow_dispatch' && inputs\.notification_test && steps\.probe\.outputs\.result == 'healthy'/);

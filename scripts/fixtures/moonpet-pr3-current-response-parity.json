@@ -1,0 +1,42 @@
+{
+  "recorded_main_sha": "9561cf1ae023e4568324240f9f3192b5c43ba7d0",
+  "provenance": "2026-10-31 Windows Node 24 main and PR #1688 independent matching first_response_hash regressions; original archived PR3 response baseline retained unchanged",
+  "comparison": "Complete signed first/retry response hashes with challenge_token normalization from existing moonpet-pr3-parity-case.mjs. Frozen historical persistence remains in moonpet-pr3-baseline-parity.json.",
+  "cases": [
+    {
+      "scenario": "new",
+      "first_response_hash": "59de6ad9a5ebd9102ecb786853c900dfb48d7d4548b8142a1f02acffb449ce7a",
+      "retry_response_hash": "59de6ad9a5ebd9102ecb786853c900dfb48d7d4548b8142a1f02acffb449ce7a"
+    },
+    {
+      "scenario": "warm",
+      "first_response_hash": "59de6ad9a5ebd9102ecb786853c900dfb48d7d4548b8142a1f02acffb449ce7a",
+      "retry_response_hash": "59de6ad9a5ebd9102ecb786853c900dfb48d7d4548b8142a1f02acffb449ce7a"
+    },
+    {
+      "scenario": "three",
+      "first_response_hash": "57cca8ff7687f958254ca2af0664cd4bbfda0f1ab1df83672b5e7dcce63997e0",
+      "retry_response_hash": "57cca8ff7687f958254ca2af0664cd4bbfda0f1ab1df83672b5e7dcce63997e0"
+    },
+    {
+      "scenario": "heavy",
+      "first_response_hash": "f0f0400fc815aec9c31fd8fc1163d5d54693fbc8defc0678a244188f8c85ee98",
+      "retry_response_hash": "f0f0400fc815aec9c31fd8fc1163d5d54693fbc8defc0678a244188f8c85ee98"
+    },
+    {
+      "scenario": "archived",
+      "first_response_hash": "f9a5f51b9a619e094e68b1548b76e586880523c3e504f7824d4224926c162a83",
+      "retry_response_hash": "f9a5f51b9a619e094e68b1548b76e586880523c3e504f7824d4224926c162a83"
+    },
+    {
+      "scenario": "day_rollover",
+      "first_response_hash": "24b06b375b855168d6d47fd4bca1787ac89d6950302853da15065a07e9b8282d",
+      "retry_response_hash": "24b06b375b855168d6d47fd4bca1787ac89d6950302853da15065a07e9b8282d"
+    },
+    {
+      "scenario": "week_rollover",
+      "first_response_hash": "11a6952808781354b332c437397aba3d9cc2b38a5a464ef653d646b09c011c11",
+      "retry_response_hash": "11a6952808781354b332c437397aba3d9cc2b38a5a464ef653d646b09c011c11"
+    }
+  ]
+}
