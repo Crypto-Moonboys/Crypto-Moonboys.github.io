@@ -4825,6 +4825,61 @@
     });
   }
 
+  // A Work activity accrues elapsed_seconds and recalculates cooldown counters
+  // on each live response. Compare the fields actually rendered rather than
+  // triggering a full menu rebuild every time those counters advance.
+  // Absolute deadlines are handled by the existing one-second DOM countdown.
+  function stableActivityDeadline(source) {
+    if (!source) return null;
+    var expires = source.expires_at || source.cooldown_until || source.available_at || source.retry_at || null;
+    // The server normally supplies an absolute deadline. Without one, retain
+    // the relative value to avoid suppressing an otherwise visible countdown.
+    return expires || (source.remaining_seconds != null ? Number(source.remaining_seconds) : null);
+  }
+
+  function liveActivityPresentation(activity) {
+    if (!activity) return null;
+    var claimDeadline = stableActivityDeadline(activity.cooldown || activity);
+    var checkpoint = activity.next_checkpoint || null;
+    var nextDeadline = checkpoint && stableActivityDeadline(checkpoint.cooldown);
+    return {
+      id: activity.id,
+      activity_type: activity.activity_type,
+      status: activity.status,
+      ready: Boolean(activity.ready),
+      recovery_pending: Boolean(activity.recovery_pending),
+      unavailable: Boolean(activity.unavailable),
+      refresh_state: Boolean(activity.refresh_state),
+      capped: Boolean(activity.capped),
+      ends_at: activity.ends_at || null,
+      claim_deadline: claimDeadline,
+      // While waiting with a real deadline, detail is not displayed. Once
+      // ready (or no countdown exists), its text is part of the visible UI.
+      detail: activity.ready || claimDeadline == null ? activity.detail || '' : null,
+      // The preview's elapsed seconds advance every poll, but Work renders
+      // only its reward values. Changes to those values must still redraw.
+      preview: activity.preview ? activity.preview.rewards || {} : null,
+      next_checkpoint: checkpoint ? {
+        seconds: checkpoint.seconds,
+        rewards: checkpoint.rewards || {},
+        deadline: nextDeadline
+      } : null
+    };
+  }
+
+  // Compare only fields published by a live-mode response. The server clock
+  // continues to be reconciled independently; countdowns have their own DOM
+  // updater. Full state and terminal recovery always render unconditionally.
+  function livePresentationFingerprint(snapshot) {
+    return JSON.stringify([
+      snapshot && snapshot.arena,
+      snapshot && snapshot.arena_queue,
+      snapshot && snapshot.arena_result,
+      snapshot && snapshot.kaiju,
+      liveActivityPresentation(snapshot && snapshot.guidance && snapshot.guidance.activity)
+    ]);
+  }
+
   async function refreshLiveState() {
     if (document.hidden) return;
     if (stateNeedsFullHydration(state)) return;
@@ -4841,6 +4896,8 @@
       return;
     }
     passiveRefreshInFlight = true;
+    var beforePresentation = livePresentationFingerprint(state);
+    var polledScreen = activeScreen;
     var before = multiplayerFingerprint(state);
     var beforeActivity = state.guidance && state.guidance.activity;
     try {
@@ -4891,12 +4948,18 @@
         var serverTime = Date.parse(merged.server_time || '');
         if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
       }
-      // Read the current position after the request: the user may have scrolled
-      // while it was in flight. Keep an in-flow menu anchored to the section end.
-      var scrollTop = screen.scrollTop;
-      var atBottom = screen.scrollHeight - screen.clientHeight - scrollTop <= 1;
-      render();
-      screen.scrollTop = atBottom ? screen.scrollHeight : scrollTop;
+      // Only rebuild the controls when a server-published live field changes.
+      // An unchanged poll still updates clock offset, request guards and notices.
+      // Legacy full responses and terminal recovery must always render.
+      var presentationChanged = legacyFull || terminal || polledScreen !== activeScreen
+        || beforePresentation !== livePresentationFingerprint(state);
+      if (presentationChanged) {
+        // Read scroll position after the request, not before the player moves.
+        var scrollTop = screen.scrollTop;
+        var atBottom = screen.scrollHeight - screen.clientHeight - scrollTop <= 1;
+        render();
+        screen.scrollTop = atBottom ? screen.scrollHeight : scrollTop;
+      }
       var after = multiplayerFingerprint(state);
       if (before !== after && activeScreen === 'explore') {
         tell('MULTIPLAYER STATE UPDATED.');
