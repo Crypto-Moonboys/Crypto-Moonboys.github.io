@@ -1014,7 +1014,7 @@
             "manage"
       ],
       "delete_pet_slot": [
-            "Delete this pet and its progression. Slot 1 resets free; paid slots 2 and 3 lock and require another purchase.",
+            "Delete this pet permanently: its progression and training is lost. Slot 1 resets free; paid slots 2 and 3 lock and require another purchase.",
             "risk"
       ],
       "contract_start": [
