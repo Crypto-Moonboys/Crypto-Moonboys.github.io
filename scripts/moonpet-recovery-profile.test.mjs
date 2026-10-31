@@ -62,7 +62,7 @@ test('duplicate stages, even identical ones, never overweight percentile samples
     event('unique','full','state_recovery','completed',20),
     event('unique','full','total','completed',30)
   ];
-  const report=summarizeMoonpetRecovery(rows.join('\\n'));
+  const report=summarizeMoonpetRecovery(rows.join('\n'));
   assert.deepEqual(report.events,{accepted:8,ignored:0,invalid:0,incomplete:0,ambiguous:2});
   const recovery=report.groups.find(group=>group.stage==='state_recovery');
   assert.equal(recovery.count,1);
