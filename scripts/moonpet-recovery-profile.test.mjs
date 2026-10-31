@@ -2,43 +2,62 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { summarizeMoonpetRecovery } from './moonpet-recovery-profile.mjs';
 
-test('aggregates full recovery latency and counts without exporting identity or raw records',()=>{
-  const lines = Array.from({length:20},(_,index)=>JSON.stringify({
-    event:'moonpet_state_timing',request_id:'private-'+index,telegram_id:'secret',
-    mode:'full',stage:'state_recovery',outcome:'completed',
-    duration_ms:index+1,d1_calls:30,sql_statements:55,sql:'private SQL'
-  }));
+const event=(id,mode,stage,outcome,duration_ms,extra={})=>JSON.stringify({
+  event:'moonpet_state_timing',request_id:id,mode,stage,outcome,duration_ms,...extra
+});
+test('twenty completed requests aggregate recovery latency without exporting identity',()=>{
+  const lines=[];
+  for(let index=0;index<20;index++){
+    const id='private-'+index;
+    lines.push(event(id,'full','state_recovery','completed',index+1,{telegram_id:'secret',d1_calls:30,sql_statements:55,sql:'private SQL'}));
+    lines.push(event(id,'full','total','completed',index+100));
+  }
   const report=summarizeMoonpetRecovery(lines.join('\n'));
-  assert.equal(report.events.accepted,20);
-  assert.equal(report.groups.length,1);
-  assert.deepEqual(report.groups[0],{mode:'full',stage:'state_recovery',outcome:'completed',
-    count:20,p50_ms:10,p95_ms:19,max_ms:20,median_sql_statements:55,median_d1_calls:30});
-  const encoded=JSON.stringify(report);
-  for(const secret of ['telegram_id','request_id','private-','secret','private SQL'])assert.ok(!encoded.includes(secret));
+  assert.equal(report.events.accepted,40);
+  assert.equal(report.groups.length,2);
+  const recovery=report.groups.find(g=>g.stage==='state_recovery');
+  assert.deepEqual(recovery,{mode:'full',stage:'state_recovery',outcome:'completed',count:20,
+    p50_ms:10,p95_ms:19,max_ms:20,median_sql_statements:55,median_d1_calls:30});
+  for(const secret of ['telegram_id','request_id','private-','secret','private SQL'])
+    assert.ok(!JSON.stringify(report).includes(secret));
 });
 
-test('does not mix modes, stages, failed and completed attempts',()=>{
+test('successful recovery followed by failed projection is not completed recovery',()=>{
   const rows=[
-    {mode:'full',stage:'state_recovery',outcome:'completed',duration_ms:400},
-    {mode:'full',stage:'state_recovery',outcome:'failed',duration_ms:900},
-    {mode:'core',stage:'state_recovery',outcome:'completed',duration_ms:50},
-    {mode:'full',stage:'pet_state_projection',outcome:'completed',duration_ms:300},
+    event('failed-later','full','state_recovery','completed',400),
+    event('failed-later','full','pet_state_projection','failed',900),
+    event('success','full','state_recovery','completed',60),
+    event('failed-later','full','total','failed',950),
+    event('success','full','total','completed',100)
   ];
-  const result=summarizeMoonpetRecovery(rows.map(x=>JSON.stringify({event:'moonpet_state_timing',...x})).join('\n'));
-  assert.equal(result.groups.length,4);
-  assert.deepEqual(result.groups.map(x=>x.count),[1,1,1,1]);
-  assert.equal(result.groups.find(x=>x.outcome==='failed').p50_ms,900);
+  const report=summarizeMoonpetRecovery(rows.join('\n'));
+  const recoveries=report.groups.filter(g=>g.stage==='state_recovery');
+  assert.equal(recoveries.length,2);
+  assert.equal(recoveries.find(g=>g.outcome==='completed').p50_ms,60);
+  assert.equal(recoveries.find(g=>g.outcome==='failed').p50_ms,400);
 });
 
-test('filters malformed, unauthorized, unbounded and non-timing input',()=>{
-  const rows=['not JSON','{}',JSON.stringify({event:'untrusted',telegram_id:'hidden'}),
-    JSON.stringify({event:'moonpet_state_timing',mode:'full',stage:'other',outcome:'completed',duration_ms:1}),
-    JSON.stringify({event:'moonpet_state_timing',mode:'full',stage:'total',outcome:'completed',duration_ms:-1}),
-    JSON.stringify({event:'moonpet_state_timing',mode:'full',stage:'total',outcome:'completed',duration_ms:100,
-      d1_calls:3.2,sql_statements:-4}),
+test('missing final event or duplicate/conflicting request is excluded',()=>{
+  const rows=[
+    event('missing','full','state_recovery','completed',1000),
+    event('duplicate','full','state_recovery','completed',200),
+    event('duplicate','full','total','completed',230),
+    event('duplicate','full','total','failed',240),
+    event('different-mode','full','state_recovery','completed',300),
+    event('different-mode','core','total','completed',400)
   ];
-  const result=summarizeMoonpetRecovery(rows.join('\n'));
-  assert.deepEqual(result.events,{accepted:1,ignored:2,invalid:3});
-  assert.equal(result.groups[0].median_d1_calls,null);
-  assert.equal(result.groups[0].median_sql_statements,null);
+  const report=summarizeMoonpetRecovery(rows.join('\n'));
+  assert.equal(report.groups.length,0);
+  assert.deepEqual(report.events,{accepted:6,ignored:0,invalid:0,incomplete:1,ambiguous:2});
+});
+
+test('malformed, invalid, non-timing rows are rejected and missing D1 counts remain null',()=>{
+  const rows=['not JSON','{}',JSON.stringify({event:'untrusted',telegram_id:'hidden'}),
+    event('invalid','full','other','completed',1),
+    event('negative','full','total','completed',-1),
+    event('valid','full','total','completed',100,{d1_calls:3.2,sql_statements:-4})];
+  const report=summarizeMoonpetRecovery(rows.join('\n'));
+  assert.deepEqual(report.events,{accepted:1,ignored:2,invalid:3,incomplete:0,ambiguous:0});
+  assert.equal(report.groups[0].median_d1_calls,null);
+  assert.equal(report.groups[0].median_sql_statements,null);
 });
