@@ -602,9 +602,12 @@ cooldownRefreshRuntime.setState({
     { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 0 },
   ] },
 });
+const scheduledBeforeDuplicate = cooldownRefreshRuntime.stats().scheduled.length;
 await cooldownRefreshRuntime.refreshExpiredCooldownState();
-assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
-  'same-key expired refreshes must retry later instead of being silently dropped');
+assert.equal(cooldownRefreshRuntime.stats().scheduled.length, scheduledBeforeDuplicate,
+  'already-processed expiry must not spin a one-second timer when it cannot issue another request');
+assert.equal(cooldownRefreshRuntime.stats().postCalls, 1,
+  'same-key expiry is not a second authorized state read');
 cooldownRefreshRuntime.setState({
   adopted: true,
   cooldowns: { next_expires_at: '2026-08-22T11:59:59.000Z', entries: [
