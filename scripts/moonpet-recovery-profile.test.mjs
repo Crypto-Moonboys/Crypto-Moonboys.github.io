@@ -51,6 +51,26 @@ test('missing final event or duplicate/conflicting request is excluded',()=>{
   assert.deepEqual(report.events,{accepted:6,ignored:0,invalid:0,incomplete:1,ambiguous:2});
 });
 
+test('duplicate stages, even identical ones, never overweight percentile samples',()=>{
+  const rows=[
+    event('duplicate-identical','full','state_recovery','completed',900),
+    event('duplicate-identical','full','state_recovery','completed',900),
+    event('duplicate-identical','full','total','completed',1000),
+    event('duplicate-divergent','full','state_recovery','completed',700),
+    event('duplicate-divergent','full','state_recovery','completed',710),
+    event('duplicate-divergent','full','total','completed',800),
+    event('unique','full','state_recovery','completed',20),
+    event('unique','full','total','completed',30)
+  ];
+  const report=summarizeMoonpetRecovery(rows.join('\\n'));
+  assert.deepEqual(report.events,{accepted:8,ignored:0,invalid:0,incomplete:0,ambiguous:2});
+  const recovery=report.groups.find(group=>group.stage==='state_recovery');
+  assert.equal(recovery.count,1);
+  assert.equal(recovery.p50_ms,20);
+  assert.equal(recovery.p95_ms,20);
+  assert.equal(report.groups.find(group=>group.stage==='total').count,1);
+});
+
 test('malformed, invalid, non-timing rows are rejected and missing D1 counts remain null',()=>{
   const rows=['not JSON','{}',JSON.stringify({event:'untrusted',telegram_id:'hidden'}),
     event('invalid','full','other','completed',1),
