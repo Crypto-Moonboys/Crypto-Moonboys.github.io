@@ -2512,7 +2512,7 @@
     var nodes = document.querySelectorAll('[data-cooldown-expires-at]');
     nodes.forEach(function (node) {
       var text = countdownText({ expires_at: node.getAttribute('data-cooldown-expires-at') }, node.getAttribute('data-cooldown-prefix') || 'Available in ');
-      node.textContent = text;
+      if (node.textContent !== text) node.textContent = text;
     });
   }
   // TEST-EXPORT: cooldownRefresh:end
@@ -4962,7 +4962,7 @@
     // unnecessary work even when the authoritative state has not changed.
     // UTC/season changes still trigger the existing guarded server refresh;
     // its successful response is responsible for rendering new values.
-    tickCooldownDom();
+    // The one-second timer owns countdown text. Avoid a duplicate scan here.
     refreshSeasonSnapshot(false);
   }
   // TEST-EXPORT: seasonalStateRefresh:end
