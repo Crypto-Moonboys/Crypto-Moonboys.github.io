@@ -4825,6 +4825,48 @@
     });
   }
 
+  // A Work activity accrues elapsed_seconds and recalculates cooldown counters
+  // on each live response. Compare the fields actually rendered rather than
+  // triggering a full menu rebuild every time those counters advance.
+  // Absolute deadlines are handled by the existing one-second DOM countdown.
+  function stableActivityDeadline(source) {
+    if (!source) return null;
+    var expires = source.expires_at || source.cooldown_until || source.available_at || source.retry_at || null;
+    // The server normally supplies an absolute deadline. Without one, retain
+    // the relative value to avoid suppressing an otherwise visible countdown.
+    return expires || (source.remaining_seconds != null ? Number(source.remaining_seconds) : null);
+  }
+
+  function liveActivityPresentation(activity) {
+    if (!activity) return null;
+    var claimDeadline = stableActivityDeadline(activity.cooldown || activity);
+    var checkpoint = activity.next_checkpoint || null;
+    var nextDeadline = checkpoint && stableActivityDeadline(checkpoint.cooldown);
+    return {
+      id: activity.id,
+      activity_type: activity.activity_type,
+      status: activity.status,
+      ready: Boolean(activity.ready),
+      recovery_pending: Boolean(activity.recovery_pending),
+      unavailable: Boolean(activity.unavailable),
+      refresh_state: Boolean(activity.refresh_state),
+      capped: Boolean(activity.capped),
+      ends_at: activity.ends_at || null,
+      claim_deadline: claimDeadline,
+      // While waiting with a real deadline, detail is not displayed. Once
+      // ready (or no countdown exists), its text is part of the visible UI.
+      detail: activity.ready || claimDeadline == null ? activity.detail || '' : null,
+      // The preview's elapsed seconds advance every poll, but Work renders
+      // only its reward values. Changes to those values must still redraw.
+      preview: activity.preview ? activity.preview.rewards || {} : null,
+      next_checkpoint: checkpoint ? {
+        seconds: checkpoint.seconds,
+        rewards: checkpoint.rewards || {},
+        deadline: nextDeadline
+      } : null
+    };
+  }
+
   // Compare only fields published by a live-mode response. The server clock
   // continues to be reconciled independently; countdowns have their own DOM
   // updater. Full state and terminal recovery always render unconditionally.
@@ -4834,7 +4876,7 @@
       snapshot && snapshot.arena_queue,
       snapshot && snapshot.arena_result,
       snapshot && snapshot.kaiju,
-      snapshot && snapshot.guidance && snapshot.guidance.activity
+      liveActivityPresentation(snapshot && snapshot.guidance && snapshot.guidance.activity)
     ]);
   }
 
