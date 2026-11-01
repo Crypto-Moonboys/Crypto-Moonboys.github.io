@@ -196,8 +196,21 @@ async function assertHomepageLayout(page, label, mode) {
     assert(categories.x + categories.width <= preview.x, `${label}: category controls must be left of the avatar`);
     assert(selected.x >= preview.x + preview.width, `${label}: selected controls must be right of the avatar`);
   } else if (mode === 'portrait') {
-    assert(categories.y >= preview.y + preview.height - 1, `${label}: trait controls must sit below the avatar`);
-    assert(selected.y >= categories.y + categories.height - 1, `${label}: selected controls must sit below trait controls`);
+    assert(categories.y >= preview.y + preview.height - 1, `${label}: traits must sit below the preview`);
+    if (preview.width <= 699) {
+      assert(Math.abs(categories.y - selected.y) < 2, `${label}: traits and selected panels must share a row`);
+      assert(Math.abs(categories.x + categories.width - selected.x) < 2, `${label}: selected panel must be directly right of traits`);
+      assert(selected.x + selected.width <= builder.x + builder.width + 2, `${label}: selected controls must stay in the viewport`);
+      const traitGrid = await page.locator('.trait-grid').evaluate(element => ({
+        columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
+        width: element.clientWidth,
+        scrollWidth: element.scrollWidth
+      }));
+      assert.equal(traitGrid.columns, 2, `${label}: phone layout must show two traits per row`);
+      assert(traitGrid.scrollWidth <= traitGrid.width + 2, `${label}: trait grid must not overflow`);
+    } else {
+      assert(selected.y >= categories.y + categories.height - 1, `${label}: tablet portrait retains stacked controls`);
+    }
   } else {
     assert(categories.x >= preview.x + preview.width, `${label}: landscape controls must sit beside the avatar`);
   }
@@ -232,7 +245,13 @@ async function assertCategoryRow(page, label, pageScrollbarHidden = true) {
   assert.equal(categoryLayout.buttonCount, 9, `${label}: category row must contain exactly nine buttons`);
   assert.equal(categoryLayout.visibleButtonCount, 9, `${label}: all nine category buttons must be visible`);
   assert(categoryLayout.scrollWidth <= categoryLayout.clientWidth + 1, `${label}: category row must not overflow horizontally: ${JSON.stringify(categoryLayout)}`);
-  assert(Math.max(...categoryLayout.rowTops) - Math.min(...categoryLayout.rowTops) <= 1, `${label}: category buttons must remain on one row: ${JSON.stringify(categoryLayout)}`);
+  const compactPhone = await page.evaluate(() => matchMedia('(orientation: portrait) and (max-width: 699px)').matches);
+  if (compactPhone) {
+    const rowTops = [...new Set(categoryLayout.rowTops.map(Math.round))];
+    assert.equal(rowTops.length, 2, `${label}: nine category tabs must wrap into two visible rows on narrow phones`);
+  } else {
+    assert(Math.max(...categoryLayout.rowTops) - Math.min(...categoryLayout.rowTops) <= 1, `${label}: category buttons must remain on one row: ${JSON.stringify(categoryLayout)}`);
+  }
   assert.equal(categoryLayout.overflowX, 'visible', `${label}: category row must not be a horizontal scroll container`);
   if (pageScrollbarHidden) {
     assert.equal(categoryLayout.bodyScrollbarWidth, 'none', `${label}: standalone page scrollbar chrome must remain hidden`);
@@ -344,10 +363,13 @@ try {
   await assertHomepageLayout(homepageLandscape, '844x390', 'landscape');
   await homepageLandscape.close();
 
-  for (const [width, height] of [[390, 844], [320, 568]]) {
+  for (const [width, height] of [[390, 844], [320, 568], [390, 600]]) {
     const page = await openAt({ width, height }, homepageUrl);
     await assertHomepageLayout(page, `${width}x${height}`, 'portrait');
-    assert.equal(Math.round((await page.locator('.preview-panel').boundingBox()).width), width, `${width}x${height}: portrait preview must fill the viewport width`);
+    const preview = await page.locator('.preview-panel').boundingBox();
+    const expectedWidth = Math.min(width, height * 0.62, 460);
+    assert(Math.abs(preview.width - expectedWidth) <= 1, `${width}x${height}: preview must respect the viewport height cap without changing shape`);
+    assert(Math.abs(preview.height - expectedWidth) <= 1, `${width}x${height}: short phone preview must remain square`);
     if (width === 320) await assertDownloadDisclaimer(page, '320x568 homepage builder', true);
     await page.close();
   }

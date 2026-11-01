@@ -254,8 +254,73 @@ body.page-standalone-tool { overflow: hidden; }
   .avatar-builder-host .selection-panel { padding: 1rem; }
 }
 
-@media (orientation: portrait) and (max-width: 599px) {
-  .avatar-builder-host .trait-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Phone portrait: keep preview visible, with traits (two across) and
+   the current selection side by side instead of three stacked panels. */
+@media (orientation: portrait) and (max-width: 699px) {
+  .avatar-builder-host .builder-shell {
+    grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "preview preview" "categories selected";
+    gap: 0;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .avatar-builder-host .preview-panel {
+    grid-column: 1 / -1;
+    /* Width and height share the same cap so short phones remain square. */
+    width: min(100%, 62dvh, 460px);
+    max-height: none;
+    height: auto;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  .avatar-builder-host .category-panel,
+  .avatar-builder-host .selection-panel {
+    min-width: 0;
+    height: min(74dvh, 690px);
+    max-height: min(74dvh, 690px);
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+  }
+  .avatar-builder-host .category-panel { border-right: 1px solid var(--line); }
+  .avatar-builder-host .selection-panel { padding: .45rem; }
+  .avatar-builder-host .selection-heading { padding: 0 0 .4rem; }
+  .avatar-builder-host .selection-heading h2 { font-size: .78rem; }
+  .avatar-builder-host .eyebrow { font-size: .62rem; letter-spacing: .08em; }
+  .avatar-builder-host .category-tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: .35rem .15rem;
+    gap: .2rem;
+  }
+  .avatar-builder-host .category-button { width: min(100%, 34px); }
+  .avatar-builder-host .tray-heading { padding: .55rem .35rem .3rem; gap: .15rem; }
+  .avatar-builder-host .tray-heading h2 { font-size: .75rem; }
+  .avatar-builder-host #tray-count { font-size: .65rem; white-space: nowrap; }
+  .avatar-builder-host .trait-tray { max-height: none; min-height: 0; }
+  .avatar-builder-host .trait-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .4rem;
+    padding: .3rem .35rem .65rem;
+    align-content: start;
+  }
+  .avatar-builder-host .trait-button { max-width: none; }
+  .avatar-builder-host .trait-name { font-size: .65rem; }
+  .avatar-builder-host .pagination { gap: .2rem; padding: .25rem; }
+  .avatar-builder-host .page-button { width: 32px; min-width: 32px; min-height: 34px; }
+  .avatar-builder-host .page-label { min-width: 35px; font-size: .67rem; }
+  .avatar-builder-host .selected-list { overflow-y: auto; }
+  .avatar-builder-host .selected-item {
+    grid-template-columns: 20px minmax(0, 1fr) 25px;
+    gap: .25rem;
+    padding: .4rem 0;
+  }
+  .avatar-builder-host .selected-icon { width: 19px; height: 19px; }
+  .avatar-builder-host .selected-copy strong { font-size: .7rem; }
+  .avatar-builder-host .selected-copy span { font-size: .6rem; }
+  .avatar-builder-host .icon-button { width: 25px; height: 28px; font-size: .9rem; }
+  .avatar-builder-host .main-actions { gap: .25rem; padding-top: .4rem; }
+  .avatar-builder-host .action { min-height: 35px; padding: .35rem .25rem; font-size: .62rem; white-space: normal; }
+  .avatar-builder-host .download-helper { font-size: .56rem; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
