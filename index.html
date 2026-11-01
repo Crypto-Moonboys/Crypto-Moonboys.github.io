@@ -106,14 +106,10 @@
     .home-art-strip-track { display:flex; width:max-content; animation:homeArtStripScroll 145s linear infinite; }
     .home-art-strip-set { display:flex; flex:none; width:max-content; align-items:stretch; }
     .home-art-strip img { display:block; flex:none; width:auto; max-width:none; height:600px; object-fit:contain; border:0; margin:0; padding:0; user-select:none; -webkit-user-drag:none; pointer-events:none; }
-    .home-art-strip:hover .home-art-strip-track { animation-play-state:paused; }
+    /* Always auto-scroll: no hover pause, manual-scroll fallback or motion-setting stop. */
+    .home-art-strip-track { animation-play-state:running; }
     @keyframes homeArtStripScroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
     @media (max-width:700px) { .home-art-strip img { height:clamp(280px,70vw,600px); } }
-    @media (prefers-reduced-motion:reduce) {
-      .home-art-strip { overflow-x:auto; }
-      .home-art-strip-track { animation:none; }
-      .home-art-strip-set[aria-hidden="true"] { display:none; }
-    }
     /* Dialog overlays the homepage only on first visit; homepage markup stays indexable. */
     dialog#cm-bad-days-intro { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; border-radius:0; background:#000; overflow:hidden; }
     dialog#cm-bad-days-intro::backdrop { background:#000; }
