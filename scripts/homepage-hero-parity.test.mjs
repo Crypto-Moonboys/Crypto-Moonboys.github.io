@@ -56,8 +56,25 @@ try {
         const video = document.querySelector('main > .home-video');
         const videoRect = video.getBoundingClientRect();
         const artwork = [...duplicate.querySelectorAll(':scope > img')];
+        const fontPx = selector => {
+          const element = document.querySelector(selector);
+          return element ? Number.parseFloat(getComputedStyle(element).fontSize) : NaN;
+        };
+        const typography = {
+          hero: fontPx('#home-top-message > .simple-wrap:first-child > h1'),
+          secondary: fontPx('#home-top-message .hero-secondary-heading'),
+          pulse: fontPx('#home-top-message > .simple-wrap:first-child > .hero-pulse-line'),
+          missionTitle: fontPx('#home-core-mission-title'),
+          missionBody: fontPx('.home-core-mission > p'),
+          sectionTitle: fontPx('#open-creative-academy-title'),
+          sectionBody: fontPx('#open-creative-academy .history-blurb p:not(.history-lead)'),
+          sectionLead: fontPx('#open-creative-academy .history-lead'),
+          subsection: fontPx('.history-blurb h3'),
+          finalTitle: fontPx('.simple-final h2'),
+        };
         return {
           topStyles: styles(duplicate),
+          typography,
           messages: {
             topHeading: duplicate.firstElementChild.querySelector('h1').textContent,
             topPulse: duplicate.firstElementChild.querySelector('p').textContent,
@@ -98,6 +115,20 @@ try {
       assert.equal(result.topStyles[2].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No heading panel');
       assert.equal(result.topStyles[2].border.startsWith('0px'), true, 'No heading border');
       assert.equal(result.topStyles[3].color, 'rgb(243, 189, 37)', 'Second headline stays gold');
+      const type = result.typography;
+      assert(Object.values(type).every(Number.isFinite), width + 'px typography selectors must resolve');
+      assert(type.hero > type.secondary && type.secondary > type.sectionTitle,
+        width + 'px hero > supporting headline > section title');
+      assert(Math.abs(type.missionTitle - type.sectionTitle) < 0.5 &&
+        Math.abs(type.sectionTitle - type.finalTitle) < 0.5,
+        width + 'px all main section headings must share one responsive size');
+      assert(Math.abs(type.missionBody - type.sectionBody) < 0.5,
+        width + 'px body copy must match across mission and academy');
+      assert(type.sectionTitle > type.subsection && type.subsection > type.sectionLead &&
+        type.sectionLead >= type.missionBody && type.pulse > type.missionBody,
+        width + 'px headings, lead copy, animated line and body copy form a clear hierarchy');
+      assert(type.missionBody >= 18 && type.sectionBody >= 18,
+        width + 'px main content must remain comfortably readable');
       assert.ok(result.topStyles[4].animation.includes(reducedMotion === 'reduce' ? 'none' : 'heroPulse'));
       if (reducedMotion === 'no-preference') {
         for (const [name, selector] of [['top', '#home-top-message']]) {
