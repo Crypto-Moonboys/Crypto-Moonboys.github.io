@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/avatar-builder-test.css">
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script data-cfasync="false" defer src="/js/first-visit-intro.js"></script>
   <style>
     :root { --gold:#f3bd25; --cyan:#38d8e8; --ink:#050607; --muted:#aebbc4; }
     .simple-home { background:var(--ink); color:#fff; overflow-x:hidden; }
@@ -27,8 +28,6 @@
     .simple-wrap { width:min(1180px,calc(100% - 40px)); margin:0 auto; }
     .home-video { width:100%; margin:0; padding:0; background:#000; aspect-ratio:16/9; }
     .home-video > div,.home-video iframe { display:block; width:100%; height:100%; border:0; }
-    .build-moonboy-hero { width:100%; margin:0; padding:0; background:#000; }
-    .build-moonboy-hero img { display:block; width:100%; height:auto; }
     .home-neon-cityscape { width:100%; max-width:none; }
     .home-neon-cityscape img { width:100%; height:auto; object-fit:contain; }
     .home-mission-headline { border-top:0; }
@@ -86,6 +85,13 @@
     .simple-final h2 { all:unset; display:block; margin:0 0 24px; padding:0; color:#fff; background:transparent; border:0; border-radius:0; outline:0; box-shadow:none; font-size:clamp(2rem,4vw,4rem); line-height:1.15; text-align:center; text-transform:uppercase; }
     .simple-community { display:block; width:min(1180px,calc(100% - 40px)); margin:36px auto 0; }
     .simple-community img { display:block; width:100%; height:auto; }
+    /* Dialog overlays the homepage only on first visit; homepage markup stays indexable. */
+    dialog#cm-bad-days-intro { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; border-radius:0; background:#000; overflow:hidden; }
+    dialog#cm-bad-days-intro::backdrop { background:#000; }
+    #cm-bad-days-intro iframe { display:block; width:100%; height:100%; border:0; background:#000; }
+    .intro-replay { padding:18px 16px 32px; text-align:center; background:#050607; }
+    .intro-replay a { color:#f3bd25; font-size:.9rem; font-weight:800; text-decoration:underline; text-underline-offset:4px; }
+    .intro-replay a:focus-visible { outline:2px solid #fff; outline-offset:5px; }
     @media (max-width:800px) {
       .simple-routes,.simple-steps { grid-template-columns:1fr; }
       .simple-section { padding:54px 0; }
@@ -127,11 +133,6 @@
 
   <section id="build-moonboy" class="homepage-avatar-builder avatar-builder-host" data-builder-context="homepage" aria-label="Build a HODL Warrior"></section>
 
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bad Days 1"><img src="/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V1.jpg" alt="Crypto Moonboys Bad Days artwork 1" loading="eager" decoding="async" fetchpriority="high"></section>
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bad Days 2"><img src="/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V2.jpg" alt="Crypto Moonboys Bad Days artwork 2" loading="eager" decoding="async"></section>
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bad Days 3"><img src="/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V3.jpg" alt="Crypto Moonboys Bad Days artwork 3" loading="lazy" decoding="async"></section>
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bad Days 4"><img src="/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V4.jpg" alt="Crypto Moonboys Bad Days artwork 4" loading="lazy" decoding="async"></section>
-  <section class="build-moonboy-hero" aria-label="Crypto Moonboys Bad Days 5"><img src="/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V5.jpg" alt="Crypto Moonboys Bad Days artwork 5" loading="lazy" decoding="async"></section>
 
   <section id="how-it-works" aria-label="Crypto Moonboys mission">
   <section class="simple-section" id="open-creative-academy" aria-labelledby="open-creative-academy-title">
@@ -197,6 +198,8 @@
 
   <section class="simple-final"><div class="simple-wrap"><h2>WE DONT SELL OUT, WE $ELL UP.<br>THAT$ #GETTINUP...</h2></div><a href="/gkniftyheads-incubator.html" class="simple-community" aria-label="Join the Crypto Moonboys community"><img src="/img/homepage/CRYPTO%20MOONBOYS%20GKNIFTYHEADS%20DE.jpg" alt="Join the Crypto Moonboys community" loading="lazy" decoding="async"></a></section>
   <section class="final-feature" aria-label="Our bigger picture"><iframe src="https://www.youtube.com/embed/VZH8i0eTm5Y?rel=0&amp;modestbranding=1" title="Our bigger picture video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><a class="final-feature-link" href="https://substack.com/@treefproject/posts" target="_blank" rel="noopener noreferrer">Our BIGGER picture...</a></section>
+
+  <nav class="intro-replay" aria-label="Replay the Crypto Moonboys Bad Days introduction"><a href="/enter.html">REPLAY THE BAD DAYS INTRO</a></nav>
 
   <div class="home-hidden-stats" aria-hidden="true"><div class="stat-num stat-total-articles" data-stat="article-count"></div><div class="stat-label">Wiki Pages</div><div class="stat-num stat-total-categories" data-stat="category-count"></div><div class="stat-num stat-last-updated" data-stat="last_updated"></div></div>
 </main>
