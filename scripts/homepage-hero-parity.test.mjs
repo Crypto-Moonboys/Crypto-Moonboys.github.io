@@ -12,7 +12,8 @@ const output = process.env.HERO_SCREENSHOT_DIR || path.join(tmpdir(), 'homepage-
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = createServer(async (req, res) => {
   try {
-    const file = path.resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));
+    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
     assert.ok(file.startsWith(root + path.sep));
     const content = await readFile(file);
     res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });
@@ -104,6 +105,26 @@ try {
     }
     await page.close();
   }
+  // First visit: show the five-panel splash without navigating away from /.
+  // Enter/Skip must mark it seen; subsequent visits go straight to the homepage.
+  const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const visitor = await visitorContext.newPage();
+  await visitor.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+  await visitor.goto(origin + '/', { waitUntil: 'domcontentloaded' });
+  const introDialog = visitor.locator('dialog#cm-bad-days-intro');
+  await introDialog.waitFor({ state: 'visible' });
+  assert.equal(visitor.url(), origin + '/', 'First-visit splash must not redirect the real homepage');
+  const introFrame = visitor.frameLocator('#cm-bad-days-intro iframe');
+  assert.equal(await introFrame.locator('.build-moonboy-hero img').count(), 5, 'Intro frame contains all five panels');
+  await introFrame.locator('.skip-button').click();
+  await introDialog.waitFor({ state: 'detached' });
+  assert.equal(await visitor.evaluate(() => localStorage.getItem('cm-bad-days-intro-seen-v1')), '1');
+  await visitor.reload({ waitUntil: 'domcontentloaded' });
+  assert.equal(await visitor.locator('#cm-bad-days-intro').count(), 0, 'Returning visitors bypass the splash');
+  await visitor.goto(origin + '/enter.html', { waitUntil: 'domcontentloaded' });
+  assert.equal(await visitor.locator('.build-moonboy-hero img').count(), 5, 'Standalone replay retains the complete image run');
+  await visitorContext.close();
+  console.log('First-visit modal, skip, repeat visit and standalone replay checks passed');
   console.log('Screenshots: ' + output);
 } finally {
   await browser?.close();
