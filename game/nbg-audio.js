@@ -11,7 +11,7 @@
   var ENEMY_LOOP_RETRY_MS = 3000;
   var ENEMY_LOOP_MIN_VOLUME = 0.035;
   var ENEMY_LOOP_MAX_VOLUME = 0.24;
-  var DEFAULT_SETTINGS = { muted: false, musicLevel: 0.42, sfxLevel: 0.78 };
+  var DEFAULT_SETTINGS = { muted: false, musicMuted: false, sfxMuted: false, musicLevel: 0.70, sfxLevel: 0.45 };
   var PRIORITY = {
     game_over: 100, level_complete: 100, record_saved: 95, record_rejected: 95,
     player_hurt: 90, player_fall: 90, health_low: 88, checkpoint: 80,
@@ -87,8 +87,13 @@
       var stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
       if (stored && typeof stored === 'object') {
         if (typeof stored.muted === 'boolean') next.muted = stored.muted;
-        next.musicLevel = clampLevel(stored.musicLevel, next.musicLevel);
-        next.sfxLevel = clampLevel(stored.sfxLevel, next.sfxLevel);
+        if (typeof stored.musicMuted === 'boolean') next.musicMuted = stored.musicMuted;
+        if (typeof stored.sfxMuted === 'boolean') next.sfxMuted = stored.sfxMuted;
+        // Migrate only untouched old default levels. Respect user-selected values.
+        var oldMusic = clampLevel(stored.musicLevel, 0.42);
+        var oldEffects = clampLevel(stored.sfxLevel, 0.78);
+        next.musicLevel = oldMusic === 0.42 ? DEFAULT_SETTINGS.musicLevel : oldMusic;
+        next.sfxLevel = oldEffects === 0.78 ? DEFAULT_SETTINGS.sfxLevel : oldEffects;
       } else if (typeof window._arcadeMuted === 'boolean') {
         next.muted = window._arcadeMuted;
       }
@@ -182,8 +187,8 @@
     if (!audioContext || !masterGain) return;
     var now = audioContext.currentTime;
     masterGain.gain.setValueAtTime(settings.muted ? 0 : 1, now);
-    musicGain.gain.setValueAtTime(settings.muted || !musicWanted || document.hidden ? 0 : settings.musicLevel, now);
-    sfxGain.gain.setValueAtTime(settings.sfxLevel, now);
+    musicGain.gain.setValueAtTime(settings.muted || settings.musicMuted || !musicWanted || document.hidden ? 0 : settings.musicLevel, now);
+    sfxGain.gain.setValueAtTime(settings.muted || settings.sfxMuted ? 0 : settings.sfxLevel, now);
   }
 
   function decodeAsset(id) {
@@ -217,7 +222,7 @@
     var attempt = context.state === 'suspended' ? context.resume() : Promise.resolve();
     return Promise.resolve(attempt).then(function () {
       unlocked = context.state === 'running';
-      if (unlocked && musicWanted && !settings.muted) startMusicSource();
+      if (unlocked && musicWanted && !settings.muted && !settings.musicMuted) startMusicSource();
       return unlocked;
     }).catch(function () { return false; });
   }
@@ -263,7 +268,7 @@
 
   function playEffect(id, options) {
     var opts = options || {};
-    if (settings.muted || !id) return null;
+    if (settings.muted || settings.sfxMuted || !id) return null;
     var nowMs = Date.now();
     var cooldown = Number(opts.cooldownMs != null ? opts.cooldownMs : (COOLDOWN_MS[id] || 0));
     if (cooldown && nowMs - Number(lastPlayedAt.get(id) || 0) < cooldown) return null;
@@ -283,7 +288,7 @@
 
     decodeAsset(id).then(function (buffer) {
       if (!buffer || voice.cancelled || voice.generation !== effectRequestGeneration ||
-          settings.muted || !audioContext) return;
+          settings.muted || settings.sfxMuted || !audioContext) return;
       var sameId = activeVoices.filter(function (item) { return item.id === id; });
       var limit = Number(PER_EFFECT_LIMIT[id] || 4);
       if (sameId.length >= limit) stopVoice(sameId[0]);
@@ -401,7 +406,7 @@
         enemyLoopRetryAt.set(voice.id, Date.now() + ENEMY_LOOP_RETRY_MS);
         return;
       }
-      if (settings.muted || enemyLoopsPaused || document.hidden || !audioContext ||
+      if (settings.muted || settings.sfxMuted || enemyLoopsPaused || document.hidden || !audioContext ||
           audioContext.state !== 'running') return;
       enemyLoopRetryAt.delete(voice.id);
       while (enemyLoopSources.length >= MAX_ENEMY_LOOP_SOURCES) {
@@ -432,7 +437,7 @@
 
   function updateEnemyLoops(detail) {
     var frame = detail || {};
-    if (settings.muted || enemyLoopsPaused || document.hidden || !unlocked ||
+    if (settings.muted || settings.sfxMuted || enemyLoopsPaused || document.hidden || !unlocked ||
         !audioContext || audioContext.state !== 'running') {
       stopEnemyLoops(false, false);
       return;
@@ -527,7 +532,7 @@
   function primeMusicFromGesture() {
     var source = ensureMusicSource();
     if (!source || document.hidden) return;
-    if (musicWanted && !settings.muted) {
+    if (musicWanted && !settings.muted && !settings.musicMuted) {
       // A fresh touch also retries any browser-blocked playback synchronously.
       playMusicSource(source);
       return;
@@ -539,7 +544,7 @@
     var attempt;
     try { attempt = source.play(); } catch (_) { musicGesturePrimed = false; return; }
     Promise.resolve(attempt).then(function () {
-      if (source === musicSource && (!musicWanted || settings.muted)) {
+      if (source === musicSource && (!musicWanted || settings.muted || settings.musicMuted)) {
         source.pause();
         try { source.currentTime = 0; } catch (_) {}
       }
@@ -564,7 +569,7 @@
   }
 
   function playMusicSource(source) {
-    if (!source || source !== musicSource || !musicWanted || settings.muted || document.hidden) return;
+    if (!source || source !== musicSource || !musicWanted || settings.muted || settings.musicMuted || document.hidden) return;
     applyGainSettings();
     var playing;
     try { playing = source.play(); } catch (error) {
@@ -573,7 +578,7 @@
     }
     if (playing && typeof playing.catch === 'function') {
       playing.catch(function (error) {
-        if (source === musicSource && musicWanted && !settings.muted) {
+        if (source === musicSource && musicWanted && !settings.muted && !settings.musicMuted) {
           console.warn('[NBG audio] music playback blocked:', error);
         }
       });
@@ -581,11 +586,11 @@
   }
 
   function startMusicSource() {
-    if (!musicWanted || settings.muted || document.hidden || !unlocked ||
+    if (!musicWanted || settings.muted || settings.musicMuted || document.hidden || !unlocked ||
         !audioContext || audioContext.state !== 'running') return;
     var request = ++musicRequest;
     manifestPromise.then(function (data) {
-      if (request !== musicRequest || !musicWanted || settings.muted || document.hidden ||
+      if (request !== musicRequest || !musicWanted || settings.muted || settings.musicMuted || document.hidden ||
           !unlocked || !audioContext || audioContext.state !== 'running') return;
       var tracks = data && data.music && data.music.tracks;
       if (!Array.isArray(tracks) || tracks.length !== 2 || tracks[0] !== MUSIC_FIRST_TRACK) return;
@@ -606,7 +611,7 @@
     musicIndex = 0;
     musicWanted = true;
     applyGainSettings();
-    if (unlocked && !settings.muted) startMusicSource();
+    if (unlocked && !settings.muted && !settings.musicMuted) startMusicSource();
   }
 
   function stopMusic() {
@@ -625,7 +630,7 @@
     if (settings.muted) {
       stopVoices();
       pauseMusicSource();
-    } else if (unlocked) {
+    } else if (unlocked && !settings.musicMuted) {
       resumeContext().then(startMusicSource);
     }
     if (opts.emitEvent !== false) {
@@ -643,6 +648,69 @@
     saveSettings();
     applyGainSettings();
     return { music: settings.musicLevel, sfx: settings.sfxLevel };
+  }
+
+  function setMusicMuted(value) {
+    settings.musicMuted = !!value;
+    saveSettings();
+    applyGainSettings();
+    if (settings.musicMuted) {
+      pauseMusicSource();
+    } else if (!settings.muted && musicWanted && !document.hidden) {
+      resumeContext().then(startMusicSource);
+    }
+    syncIndependentMuteButtons();
+    return settings.musicMuted;
+  }
+
+  function setSfxMuted(value) {
+    settings.sfxMuted = !!value;
+    saveSettings();
+    applyGainSettings();
+    if (settings.sfxMuted) {
+      stopVoices();
+      stopEnemyLoops(false, true);
+    }
+    syncIndependentMuteButtons();
+    return settings.sfxMuted;
+  }
+
+  function syncIndependentMuteButtons() {
+    if (typeof document.getElementById !== 'function') return;
+    var musicButton = document.getElementById('nbg-music-mute');
+    var effectsButton = document.getElementById('nbg-sfx-mute');
+    [musicButton, effectsButton].forEach(function (button, index) {
+      if (!button) return;
+      var muted = index === 0 ? settings.musicMuted : settings.sfxMuted;
+      var label = index === 0 ? 'Music' : 'Effects';
+      button.setAttribute('aria-pressed', String(muted));
+      button.setAttribute('aria-label', muted ? 'Unmute ' + label.toLowerCase() : 'Mute ' + label.toLowerCase());
+      button.setAttribute('title', muted ? 'Unmute ' + label : 'Mute ' + label);
+      var name = button.querySelector('.btn-label');
+      if (name) name.textContent = ' ' + (muted ? label + ' OFF' : label + ' ON');
+      var icon = button.querySelector('.btn-icon');
+      if (icon) icon.textContent = muted ? '✕' : index === 0 ? '♫' : '◖';
+    });
+  }
+
+  function installIndependentMuteButtons() {
+    if (typeof document.getElementById !== 'function' || !document.createElement) return;
+    var bar = document.getElementById('overlay-ctrl-bar');
+    var master = document.getElementById('overlay-btn-mute');
+    if (!bar || !master) return;
+    function make(id, name, onclick) {
+      if (document.getElementById(id)) return;
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.id = id;
+      button.className = 'interactive nbg-audio-toggle';
+      button.innerHTML = '<span class="btn-icon" aria-hidden="true"></span><span class="btn-label"></span>';
+      button.addEventListener('click', onclick);
+      bar.insertBefore(button, master);
+    }
+    make('nbg-music-mute', 'Music', function () { setMusicMuted(!settings.musicMuted); });
+    make('nbg-sfx-mute', 'Effects', function () { setSfxMuted(!settings.sfxMuted); });
+    syncIndependentMuteButtons();
   }
 
   function isMuted() {
@@ -777,7 +845,7 @@
       return;
     }
     applyGainSettings();
-    if (unlocked && !settings.muted) resumeContext();
+    if (unlocked && !settings.muted && !settings.musicMuted) resumeContext();
   });
 
   window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); stopMusic(); });
@@ -793,6 +861,8 @@
     updateEnemyLoops: updateEnemyLoops,
     stopEnemyLoops: function () { stopEnemyLoops(true, true); },
     setMuted: setMuted,
+    setMusicMuted: setMusicMuted,
+    setSfxMuted: setSfxMuted,
     isMuted: isMuted,
     setLevels: setLevels,
     unlock: resumeContext,
@@ -801,6 +871,8 @@
         unlocked: unlocked,
         contextState: audioContext ? audioContext.state : 'unavailable',
         muted: settings.muted,
+        musicMuted: settings.musicMuted,
+        sfxMuted: settings.sfxMuted,
         musicLevel: settings.musicLevel,
         sfxLevel: settings.sfxLevel,
         activeVoices: activeVoices.length,
@@ -811,7 +883,7 @@
         enemyLoopVolumes: Array.from(enemyLoopVoices.values()).map(function (voice) { return voice.targetVolume; }),
         maxEnemyLoops: MAX_ENEMY_LOOPS,
         musicWanted: musicWanted,
-        musicPlaying: musicWanted && !settings.muted && !document.hidden && !!musicSource && !musicSource.paused,
+        musicPlaying: musicWanted && !settings.muted && !settings.musicMuted && !document.hidden && !!musicSource && !musicSource.paused,
         musicTrackIndex: musicIndex,
         musicTrack: manifest && manifest.music && manifest.music.tracks && manifest.music.tracks[musicIndex] || null,
         manifestLoaded: !!manifest,
@@ -826,6 +898,7 @@
   };
   window.NBGAudio = api;
   window.ArcadeAudio = api;
+  installIndependentMuteButtons();
   // game-fullscreen.js loads first, so refresh its button after restoring storage.
   document.dispatchEvent(new CustomEvent('arcade-mute-change', {
     detail: { muted: settings.muted }
