@@ -245,7 +245,13 @@ async function assertCategoryRow(page, label, pageScrollbarHidden = true) {
   assert.equal(categoryLayout.buttonCount, 9, `${label}: category row must contain exactly nine buttons`);
   assert.equal(categoryLayout.visibleButtonCount, 9, `${label}: all nine category buttons must be visible`);
   assert(categoryLayout.scrollWidth <= categoryLayout.clientWidth + 1, `${label}: category row must not overflow horizontally: ${JSON.stringify(categoryLayout)}`);
-  assert(Math.max(...categoryLayout.rowTops) - Math.min(...categoryLayout.rowTops) <= 1, `${label}: category buttons must remain on one row: ${JSON.stringify(categoryLayout)}`);
+  const compactPhone = await page.evaluate(() => matchMedia('(orientation: portrait) and (max-width: 699px)').matches);
+  if (compactPhone) {
+    const rowTops = [...new Set(categoryLayout.rowTops.map(Math.round))];
+    assert.equal(rowTops.length, 2, `${label}: nine category tabs must wrap into two visible rows on narrow phones`);
+  } else {
+    assert(Math.max(...categoryLayout.rowTops) - Math.min(...categoryLayout.rowTops) <= 1, `${label}: category buttons must remain on one row: ${JSON.stringify(categoryLayout)}`);
+  }
   assert.equal(categoryLayout.overflowX, 'visible', `${label}: category row must not be a horizontal scroll container`);
   if (pageScrollbarHidden) {
     assert.equal(categoryLayout.bodyScrollbarWidth, 'none', `${label}: standalone page scrollbar chrome must remain hidden`);
