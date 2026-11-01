@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-attack-audio-r4';
+  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=two-song-music-v1';
   var STORAGE_KEY = 'nbg-audio-settings-v1';
   var MAX_VOICES = 12;
   var MAX_ENEMY_LOOPS = 3;
@@ -71,6 +71,7 @@
   var musicSource = null;
   var musicWanted = false;
   var musicRequest = 0;
+  var musicIndex = 0;
 
   function clampLevel(value, fallback) {
     var number = Number(value);
@@ -141,7 +142,7 @@
     Object.keys(data.enemyIdentities || {}).forEach(function (id) {
       entries.push([id, data.enemyIdentities[id]]);
     });
-    if (data.music && data.music.main) entries.push(['music:main', data.music.main]);
+    // Long MP3 music streams through HTMLAudioElement, not the SFX decode cache.
     // Do not make requested SFX wait for every other file in the full pack.
     // The manifest is ready immediately; background preload is best effort.
     entries.forEach(function (entry) { fetchAsset(entry[0], entry[1]); });
@@ -175,6 +176,7 @@
   }
 
   function applyGainSettings() {
+    if (musicSource) musicSource.volume = settings.muted ? 0 : settings.musicLevel;
     if (!audioContext || !masterGain) return;
     var now = audioContext.currentTime;
     masterGain.gain.setValueAtTime(settings.muted ? 0 : 1, now);
@@ -188,8 +190,7 @@
     var pending = manifestPromise.then(function () {
       var context = ensureContext();
       if (!context || !manifest) return null;
-      var file = (manifest.effects || {})[id] || (manifest.enemyIdentities || {})[id] ||
-        (id === 'music:main' && manifest.music && manifest.music.main);
+      var file = (manifest.effects || {})[id] || (manifest.enemyIdentities || {})[id];
       if (!file) return null;
       return encodedAssets.has(id) ? encodedAssets.get(id) : fetchAsset(id, file, { retry: true });
     }).then(function (encoded) {
@@ -483,33 +484,78 @@
     });
   }
 
+  function pauseMusicSource() {
+    if (musicSource) {
+      try { musicSource.pause(); } catch (_) {}
+    }
+  }
+
   function stopMusicSource() {
     musicRequest += 1;
     if (!musicSource) return;
-    try { musicSource.stop(); } catch (_) {}
-    try { musicSource.disconnect(); } catch (_) {}
+    var source = musicSource;
     musicSource = null;
+    source.onended = null;
+    source.onerror = null;
+    try { source.pause(); source.removeAttribute('src'); source.load(); } catch (_) {}
+  }
+
+  function playMusicSource(source) {
+    if (!source || source !== musicSource || !musicWanted || settings.muted || document.hidden) return;
+    source.volume = settings.musicLevel;
+    var playing;
+    try { playing = source.play(); } catch (error) {
+      console.warn('[NBG audio] music playback blocked:', error);
+      return;
+    }
+    if (playing && typeof playing.catch === 'function') {
+      playing.catch(function (error) {
+        // Mobile browsers may require a fresh gesture; the next unlock retries.
+        if (source === musicSource && musicWanted && !settings.muted) {
+          console.warn('[NBG audio] music playback blocked:', error);
+        }
+      });
+    }
   }
 
   function startMusicSource() {
-    if (!musicWanted || settings.muted || !audioContext || audioContext.state !== 'running' || musicSource) return;
+    if (!musicWanted || settings.muted || document.hidden || !unlocked ||
+        !audioContext || audioContext.state !== 'running') return;
+    if (musicSource) {
+      if (musicSource.paused) playMusicSource(musicSource);
+      return;
+    }
     var request = ++musicRequest;
-    decodeAsset('music:main').then(function (buffer) {
-      if (!buffer || request !== musicRequest || !musicWanted || settings.muted ||
-          !audioContext || audioContext.state !== 'running' || musicSource) return;
-      var source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.loop = true;
-      source.connect(musicGain);
+    manifestPromise.then(function (data) {
+      if (request !== musicRequest || !musicWanted || settings.muted || document.hidden ||
+          !unlocked || !audioContext || audioContext.state !== 'running' || musicSource) return;
+      var tracks = data && data.music && data.music.tracks;
+      if (!Array.isArray(tracks) || tracks.length !== 2 || !window.Audio) return;
+      var source = new window.Audio();
+      source.preload = 'auto';
+      source.loop = false;
+      source.volume = settings.musicLevel;
+      source.src = assetUrl(tracks[musicIndex]);
       source.onended = function () {
-        if (musicSource === source) musicSource = null;
+        if (musicSource !== source || !musicWanted) return;
+        musicIndex = (musicIndex + 1) % tracks.length;
+        source.src = assetUrl(tracks[musicIndex]);
+        source.load();
+        playMusicSource(source);
+      };
+      source.onerror = function () {
+        console.warn('[NBG audio] music track unavailable:', tracks[musicIndex]);
+        // Do not spin on broken media or switch songs endlessly.
+        pauseMusicSource();
       };
       musicSource = source;
-      source.start();
+      playMusicSource(source);
     });
   }
 
   function startMusic() {
+    stopMusicSource();
+    musicIndex = 0;
     musicWanted = true;
     if (unlocked && !settings.muted) startMusicSource();
   }
@@ -517,6 +563,7 @@
   function stopMusic() {
     musicWanted = false;
     stopMusicSource();
+    musicIndex = 0;
   }
 
   function setMuted(muted, options) {
@@ -527,7 +574,7 @@
     applyGainSettings();
     if (settings.muted) {
       stopVoices();
-      stopMusicSource();
+      pauseMusicSource();
     } else if (unlocked) {
       resumeContext().then(startMusicSource);
     }
@@ -674,14 +721,15 @@
     if (!audioContext) return;
     if (document.hidden) {
       stopEnemyLoops(false, true);
+      pauseMusicSource();
       audioContext.suspend().catch(function () {});
       return;
     }
     if (unlocked && !settings.muted) resumeContext();
   });
 
-  window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); });
-  window.addEventListener('beforeunload', function () { stopEnemyLoops(false, true); });
+  window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); stopMusic(); });
+  window.addEventListener('beforeunload', function () { stopEnemyLoops(false, true); stopMusic(); });
 
   window._arcadeMuted = settings.muted;
   var api = {
@@ -711,10 +759,12 @@
         enemyLoopVolumes: Array.from(enemyLoopVoices.values()).map(function (voice) { return voice.targetVolume; }),
         maxEnemyLoops: MAX_ENEMY_LOOPS,
         musicWanted: musicWanted,
-        musicPlaying: !!musicSource,
+        musicPlaying: !!musicSource && !musicSource.paused,
+        musicTrackIndex: musicIndex,
+        musicTrack: manifest && manifest.music && manifest.music.tracks && manifest.music.tracks[musicIndex] || null,
         manifestLoaded: !!manifest,
         encodedAssets: encodedAssets.size,
-        expectedAssets: manifest ? Object.keys(manifest.effects || {}).length + Object.keys(manifest.enemyIdentities || {}).length + (manifest.music && manifest.music.main ? 1 : 0) : 0,
+        expectedAssets: manifest ? Object.keys(manifest.effects || {}).length + Object.keys(manifest.enemyIdentities || {}).length : 0,
         enemyAssetsLoaded: manifest ? Object.keys(manifest.enemyIdentities || {}).filter(function (id) { return encodedAssets.has(id); }).length : 0,
         failedAssets: Array.from(assetFailures.entries()),
         manifestError: manifestError,
