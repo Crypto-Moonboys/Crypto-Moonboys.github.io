@@ -283,17 +283,15 @@ try {
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
     const intro = document.getElementById('home-top-message');
     const builder = document.querySelector('.homepage-avatar-builder');
-    const firstHero = document.querySelector('[aria-label="Crypto Moonboys Bad Days 1"]');
-    const lastHero = document.querySelector('[aria-label="Crypto Moonboys Bad Days 5"]');
     const mission = document.getElementById('how-it-works');
     return Boolean(
-      intro && builder && firstHero && lastHero && mission &&
+      intro && builder && mission &&
       intro.nextElementSibling === builder &&
-      builder.nextElementSibling === firstHero &&
-      lastHero.nextElementSibling === mission
+      builder.nextElementSibling === mission &&
+      !document.querySelector('.build-moonboy-hero')
     );
   });
-  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro text -> builder -> Bad Days artwork -> academy');
+  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro text -> builder -> academy (art moved to splash)');
   const homepageScroll = await homepageDesktop.evaluate(() => ({
     bodyOverflowY: getComputedStyle(document.body).overflowY,
     pageOverflowY: getComputedStyle(document.documentElement).overflowY,
