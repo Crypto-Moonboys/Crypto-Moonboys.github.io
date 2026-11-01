@@ -30,7 +30,7 @@ try {
     // Keep real local scripts, CSS and artwork; avoid third-party video/API traffic.
     await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     await page.goto(origin + '/index.html', { waitUntil: 'domcontentloaded' });
-    await page.locator('.homepage-build-cta h1').waitFor();
+    await page.locator('#build-moonboy').waitFor();
     await page.evaluate(() => document.fonts.ready);
     await page.locator('.home-neon-cityscape img').evaluate(image => image.decode());
     // Load lazy artwork through its normal viewport trigger before checking
@@ -44,7 +44,8 @@ try {
       await page.emulateMedia({ reducedMotion });
       const result = await page.evaluate(() => {
         const duplicate = document.getElementById('home-top-message');
-        const original = document.querySelector('.homepage-build-cta');
+        const builder = document.getElementById('build-moonboy');
+        const mission = document.getElementById('how-it-works');
         const props = ['font-family', 'font-size', 'font-weight', 'line-height', 'color', 'background', 'text-shadow', 'animation', 'padding', 'margin', 'border', 'border-radius', 'outline', 'box-shadow', 'letter-spacing', 'text-transform', 'text-align', 'width', 'max-width', 'opacity', 'display', 'visibility'];
         // Sample both animations at the same phase without changing their CSS.
         document.querySelectorAll('.hero-pulse-line').forEach(e => e.getAnimations().forEach(a => { a.pause(); a.currentTime = 2250; }));
@@ -55,25 +56,23 @@ try {
         const videoRect = video.getBoundingClientRect();
         const artwork = [...duplicate.querySelectorAll(':scope > img')];
         return {
-          duplicate: styles(duplicate), original: styles(original),
+          topStyles: styles(duplicate),
           messages: {
             topHeading: duplicate.firstElementChild.querySelector('h1').textContent,
             topPulse: duplicate.firstElementChild.querySelector('p').textContent,
-            builderHeading: original.querySelector('h1').textContent,
-            builderPulse: original.querySelector('p').textContent,
           },
           first: document.querySelector('main').firstElementChild.classList.contains('home-neon-cityscape'),
           followsVideo: duplicate.previousElementSibling === video && video.previousElementSibling.classList.contains('home-neon-cityscape'),
           videoFullWidth: videoRect.width === innerWidth && Math.abs(videoRect.height - videoRect.width * 9 / 16) < 1,
           videoSource: video.querySelector('iframe').getAttribute('src'),
-          originalFollowsMission: duplicate.nextElementSibling === original,
-          builderBeforeBadDays: original.nextElementSibling.id === 'build-moonboy' &&
-            original.nextElementSibling.nextElementSibling?.getAttribute('aria-label') === 'Crypto Moonboys Bad Days 1',
-          originalBeforeBuilder: original.nextElementSibling.id === 'build-moonboy',
-          originalMoved: original.firstElementChild.dataset.homepageCtaMoved === 'true',
-          duplicateNotMoved: !duplicate.firstElementChild.dataset.homepageCtaMoved,
+          builderFollowsMissionText: duplicate.nextElementSibling === builder,
+          builderBeforeBadDays: builder?.nextElementSibling?.getAttribute('aria-label') === 'Crypto Moonboys Bad Days 1',
+          badDaysBeforeLaterMission: document.querySelector('[aria-label="Crypto Moonboys Bad Days 5"]')?.nextElementSibling === mission,
+          noObsoleteCta: !document.querySelector('.homepage-build-cta'),
+          noRemovedCopy: !document.body.textContent.includes('GET READY #PLAYERONE') &&
+            !document.body.textContent.includes('We Collaborate We Create We Inspire'),
           inlineStyles: duplicate.firstElementChild.querySelectorAll('[style]').length + Number(duplicate.hasAttribute('style')),
-          noOverflow: document.documentElement.scrollWidth === innerWidth && [duplicate, original].every(s => [...s.querySelectorAll('h1,p')].every(e => e.scrollWidth <= e.clientWidth)),
+          noOverflow: document.documentElement.scrollWidth === innerWidth && [duplicate].every(s => [...s.querySelectorAll('h1,p')].every(e => e.scrollWidth <= e.clientWidth)),
           imageFullWidth: rect.width === innerWidth,
           imageNaturalHeight: Math.abs(rect.height - rect.width * image.naturalHeight / image.naturalWidth) < 1,
           artworkSources: artwork.map(image => image.getAttribute('src')),
@@ -83,22 +82,20 @@ try {
           }),
         };
       });
-      assert.deepEqual(result.duplicate, result.original, width + 'px computed style parity');
       const text = html => html.replace(/<[^>]*>/g, '');
       assert.deepEqual(result.messages, {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
-        builderHeading: homepageContract.builder_heading_text, builderPulse: text(homepageContract.builder_pulse_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'originalFollowsMission', 'builderBeforeBadDays', 'originalBeforeBuilder', 'originalMoved', 'duplicateNotMoved', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeBadDays', 'badDaysBeforeLaterMission', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
-      assert.equal(result.duplicate[0].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No section panel');
-      assert.equal(result.duplicate[2].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No heading panel');
-      assert.equal(result.duplicate[2].border.startsWith('0px'), true, 'No heading border');
-      assert.ok(result.duplicate[4].animation.includes(reducedMotion === 'reduce' ? 'none' : 'heroPulse'));
+      assert.equal(result.topStyles[0].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No section panel');
+      assert.equal(result.topStyles[2].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No heading panel');
+      assert.equal(result.topStyles[2].border.startsWith('0px'), true, 'No heading border');
+      assert.ok(result.topStyles[4].animation.includes(reducedMotion === 'reduce' ? 'none' : 'heroPulse'));
       if (reducedMotion === 'no-preference') {
-        for (const [name, selector] of [['duplicate', '#home-top-message'], ['original', '.homepage-build-cta']]) {
+        for (const [name, selector] of [['top', '#home-top-message']]) {
           await page.locator(selector).screenshot({ path: path.join(output, width + '-' + name + '.png') });
         }
       }
