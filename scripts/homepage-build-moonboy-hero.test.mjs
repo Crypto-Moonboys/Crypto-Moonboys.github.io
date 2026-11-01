@@ -243,9 +243,9 @@ check(
 );
 check(
   (galleryHtml.match(/<img /g) || []).length === 18 &&
-  !/<a\\b|onclick=|lightbox|data-fancybox/i.test(galleryHtml) &&
+  !/<a\b|onclick=|lightbox|data-fancybox/i.test(galleryHtml) &&
   galleryHtml.includes('aria-hidden="true"') &&
-  /\\.home-art-strip img\\s*\\{[^}]*height:600px/.test(html) &&
+  /\.home-art-strip img\s*\{[^}]*height:600px/.test(html) &&
   /@keyframes homeArtStripScroll/.test(html),
   'Gallery scrolls seamlessly at 600px, with no clickable image enlargement'
 );
