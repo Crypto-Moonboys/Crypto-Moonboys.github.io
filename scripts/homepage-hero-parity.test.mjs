@@ -50,7 +50,7 @@ try {
         const props = ['font-family', 'font-size', 'font-weight', 'line-height', 'color', 'background', 'text-shadow', 'animation', 'padding', 'margin', 'border', 'border-radius', 'outline', 'box-shadow', 'letter-spacing', 'text-transform', 'text-align', 'width', 'max-width', 'opacity', 'display', 'visibility'];
         // Sample both animations at the same phase without changing their CSS.
         document.querySelectorAll('.hero-pulse-line').forEach(e => e.getAnimations().forEach(a => { a.pause(); a.currentTime = 2250; }));
-        const styles = section => [section, section.firstElementChild, section.querySelector('h1'), section.querySelector('h1 span'), section.querySelector('p')].map(e => Object.fromEntries(props.map(p => [p, getComputedStyle(e).getPropertyValue(p)])));
+        const styles = section => [section, section.firstElementChild, section.querySelector('h1'), section.querySelector('.hero-secondary-heading'), section.querySelector('p')].map(e => Object.fromEntries(props.map(p => [p, getComputedStyle(e).getPropertyValue(p)])));
         const image = document.querySelector('.home-neon-cityscape img');
         const rect = image.getBoundingClientRect();
         const video = document.querySelector('main > .home-video');
@@ -61,6 +61,7 @@ try {
           messages: {
             topHeading: duplicate.firstElementChild.querySelector('h1').textContent,
             topPulse: duplicate.firstElementChild.querySelector('p').textContent,
+            secondaryHeading: duplicate.firstElementChild.querySelector('.hero-secondary-heading').textContent,
           },
           first: document.querySelector('main').firstElementChild.classList.contains('home-neon-cityscape'),
           followsVideo: duplicate.previousElementSibling === video && video.previousElementSibling.classList.contains('home-neon-cityscape'),
@@ -87,6 +88,7 @@ try {
       const text = html => html.replace(/<[^>]*>/g, '');
       assert.deepEqual(result.messages, {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
+        secondaryHeading: text(homepageContract.top_secondary_heading_html),
       }, width + 'px distinct approved messages');
       for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'badDaysMovedToSplash', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
@@ -95,6 +97,7 @@ try {
       assert.equal(result.topStyles[0].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No section panel');
       assert.equal(result.topStyles[2].background.startsWith('rgba(0, 0, 0, 0)'), true, 'No heading panel');
       assert.equal(result.topStyles[2].border.startsWith('0px'), true, 'No heading border');
+      assert.equal(result.topStyles[3].color, 'rgb(243, 189, 37)', 'Second headline stays gold');
       assert.ok(result.topStyles[4].animation.includes(reducedMotion === 'reduce' ? 'none' : 'heroPulse'));
       if (reducedMotion === 'no-preference') {
         for (const [name, selector] of [['top', '#home-top-message']]) {
