@@ -81,6 +81,23 @@
       font-size: .72rem;
       flex-shrink: 0;
     }
+    /* NBG-only music/effects switches beside the existing master mute. */
+    #game-overlay #overlay-ctrl-bar .nbg-audio-toggle {
+      width: 40px;
+      min-width: 40px;
+      padding: 0 4px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      font-size: .68rem;
+    }
+    #game-overlay #overlay-ctrl-bar .nbg-audio-toggle[aria-pressed="true"] {
+      color: #f3bd25;
+      border-color: #f3bd25;
+    }
+    #game-overlay #overlay-ctrl-bar .nbg-audio-toggle:focus-visible {
+      outline: 2px solid #f3bd25;
+      outline-offset: 2px;
+    }
     #game-overlay #nbg-record-drawer {
       position: absolute;
       inset: var(--overlay-toolbar-height, 34px) 0 0;

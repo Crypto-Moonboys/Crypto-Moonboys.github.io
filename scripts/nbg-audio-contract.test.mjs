@@ -362,6 +362,112 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
 });
 
 
+test('NBG music and effects mute independently with balanced default levels', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const source = await readFile(managerPath, 'utf8');
+  const env = fakeAudioEnvironment(manifest);
+  const elements = new Map();
+  const bar = {
+    insertBefore(button, master) {
+      assert.equal(master.id, 'overlay-btn-mute');
+      elements.set(button.id, button);
+    }
+  };
+  const master = { id: 'overlay-btn-mute' };
+  elements.set('overlay-ctrl-bar', bar);
+  elements.set('overlay-btn-mute', master);
+  env.document.getElementById = id => elements.get(id) || null;
+  env.document.createElement = tag => {
+    assert.equal(tag, 'button');
+    const button = {
+      attrs: {},
+      addEventListener(name, fn) { this[name] = fn; },
+      setAttribute(name, value) { this.attrs[name] = value; },
+      querySelector() { return { set textContent(value) {} }; }
+    };
+    return button;
+  };
+  const context = vm.createContext({
+    window: env.window, document: env.document, fetch: env.fetch,
+    CustomEvent: FakeCustomEvent, URL, Map, Set, Object,
+    Number, Promise, Date, Array, Math, console
+  });
+  vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
+  await flushPromises();
+  const api = env.window.NBGAudio;
+  assert.equal(api.getState().musicLevel, 0.70);
+  assert.equal(api.getState().sfxLevel, 0.45);
+  assert.equal(elements.size, 4, 'Two NBG-only mute buttons are installed in toolbar');
+  assert.equal(elements.get('nbg-music-mute').attrs['aria-pressed'], 'false');
+  assert.equal(elements.get('nbg-sfx-mute').attrs['aria-pressed'], 'false');
+
+  env.document.dispatchGesture('pointerdown');
+  await flushPromises();
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
+  await flushPromises();
+  const graph = env.contexts[0];
+  assert.equal(graph.gains[1].gain.value, 0.70, 'music gain is independent');
+  assert.equal(graph.gains[2].gain.value, 0.45, 'effects gain is independent');
+  assert.equal(env.musicElements[0].paused, false);
+  const musicSrc = env.musicElements[0].src;
+
+  elements.get('nbg-music-mute').click();
+  assert.equal(api.getState().musicMuted, true);
+  assert.equal(api.getState().sfxMuted, false);
+  assert.equal(graph.gains[1].gain.value, 0);
+  assert.equal(graph.gains[2].gain.value, 0.45);
+  assert.equal(env.musicElements[0].paused, true);
+  assert.equal(elements.get('nbg-music-mute').attrs['aria-pressed'], 'true');
+  env.document.hidden = true;
+  env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
+  await flushPromises();
+  assert.equal(graph.state, 'suspended', 'tab hide suspends shared context');
+  env.document.hidden = false;
+  env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
+  await flushPromises();
+  assert.equal(graph.state, 'running', 'music-only mute must not block shared context resume');
+  assert.equal(env.musicElements[0].paused, true, 'music remains muted after tab return');
+  assert.equal(graph.gains[1].gain.value, 0, 'music gain remains silent');
+  assert.equal(graph.gains[2].gain.value, 0.45, 'effects gain remains enabled');
+
+  const effectBefore = env.sources.length;
+  api.playEffect('ui_confirm');
+  await flushPromises();
+  assert.equal(env.sources.length, effectBefore + 1, 'effects stay enabled when music is muted');
+  elements.get('nbg-music-mute').click();
+  await flushPromises();
+  assert.equal(env.musicElements[0].src, musicSrc, 'unmute resumes the same track');
+  assert.equal(env.musicElements[0].paused, false);
+  assert.equal(graph.gains[1].gain.value, 0.70);
+
+  elements.get('nbg-sfx-mute').click();
+  assert.equal(api.getState().musicMuted, false);
+  assert.equal(api.getState().sfxMuted, true);
+  assert.equal(graph.gains[2].gain.value, 0);
+  assert.equal(graph.gains[1].gain.value, 0.70);
+  assert.equal(env.musicElements[0].paused, false, 'music continues while effects are muted');
+  assert.equal(api.getState().activeVoices, 0, 'active effects are stopped');
+  const afterEffectsMute = env.sources.length;
+  api.playEffect('ui_confirm');
+  await flushPromises();
+  assert.equal(env.sources.length, afterEffectsMute, 'muted effects cannot start new voices');
+  assert.equal(elements.get('nbg-sfx-mute').attrs['aria-pressed'], 'true');
+
+  api.setMuted(true);
+  assert.equal(graph.gains[0].gain.value, 0, 'master mute still overrides both channels');
+  api.setMuted(false);
+  assert.equal(graph.gains[2].gain.value, 0, 'master unmute does not change effects-only mute');
+  elements.get('nbg-sfx-mute').click();
+  assert.equal(graph.gains[2].gain.value, 0.45);
+  const saved = JSON.parse(env.stored.get('nbg-audio-settings-v1'));
+  assert.equal(saved.musicMuted, false);
+  assert.equal(saved.sfxMuted, false);
+
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-complete'));
+  assert.equal(api.getState().musicPlaying, false);
+  assert.equal(graph.gains[1].gain.value, 0);
+});
+
 test('enemy identities use bounded persistent proximity loops with complete lifecycle control', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   const source = await readFile(managerPath, 'utf8');
