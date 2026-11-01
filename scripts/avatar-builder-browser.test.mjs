@@ -8,7 +8,6 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const homepageContract = JSON.parse(await readFile(path.join(ROOT, 'scripts/fixtures/homepage-approved-contract.json'), 'utf8'));
 const PAGE_SIZE = 24;
 const DOWNLOAD_DISCLAIMER = 'A download is not ownership of a Moonboy. For fun only.';
 const OLD_DOWNLOAD_HELPER = 'Downloads the avatar exactly as shown.';
@@ -184,15 +183,13 @@ async function assertDownloadDisclaimer(page, label, shouldWrap = false) {
 }
 
 async function assertHomepageLayout(page, label, mode) {
-  const [cta, builder, mission, categories, preview, selected] = await Promise.all([
-    page.locator('.homepage-build-cta').boundingBox(),
+  const [builder, mission, categories, preview, selected] = await Promise.all([
     page.locator('.homepage-avatar-builder').boundingBox(),
     page.locator('#how-it-works').boundingBox(),
     page.locator('.category-panel').boundingBox(),
     page.locator('.preview-panel').boundingBox(),
     page.locator('.selection-panel').boundingBox(),
   ]);
-  assert(cta.y < builder.y, `${label}: homepage CTA must appear before the builder`);
   assert(builder.y < mission.y, `${label}: builder must appear before the remaining mission section`);
   assert(Math.abs(preview.width - preview.height) < 1, `${label}: homepage avatar must remain square`);
   if (mode === 'desktop') {
@@ -280,21 +277,23 @@ async function assertHiddenVerticalScroller(page, selector, label) {
 
 try {
   const homepageDesktop = await openAt({ width: 1440, height: 900 }, homepageUrl);
-  const ctaHeading = (await homepageDesktop.locator('.homepage-build-cta h1').textContent()).replace(/\s+/g, ' ').trim();
-  assert.equal(ctaHeading, homepageContract.builder_heading_text, 'Homepage builder CTA retains the approved current wording');
-  assert.equal(await homepageDesktop.locator('#how-it-works > .simple-wrap:first-child > h1').count(), 0, 'Moved CTA heading must not remain inside the mission section');
+  assert.equal(await homepageDesktop.locator('.homepage-build-cta').count(), 0, 'Removed promotional CTA must not be recreated');
+  assert.equal(await homepageDesktop.locator('#how-it-works > .simple-wrap > h1').count(), 0, 'Removed promotional heading must not remain in the later mission');
   assert.equal(await homepageDesktop.locator('#home-top-message > .simple-wrap:first-child > h1').count(), 1, 'The distinct top introduction remains in place');
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
-    const cta = document.querySelector('.homepage-build-cta');
+    const intro = document.getElementById('home-top-message');
     const builder = document.querySelector('.homepage-avatar-builder');
+    const firstHero = document.querySelector('[aria-label="Crypto Moonboys Bad Days 1"]');
+    const lastHero = document.querySelector('[aria-label="Crypto Moonboys Bad Days 5"]');
     const mission = document.getElementById('how-it-works');
     return Boolean(
-      cta && builder && mission &&
-      (cta.compareDocumentPosition(builder) & Node.DOCUMENT_POSITION_FOLLOWING) &&
-      (builder.compareDocumentPosition(mission) & Node.DOCUMENT_POSITION_FOLLOWING)
+      intro && builder && firstHero && lastHero && mission &&
+      intro.nextElementSibling === builder &&
+      builder.nextElementSibling === firstHero &&
+      lastHero.nextElementSibling === mission
     );
   });
-  assert(homepageOrderIsCorrect, 'Homepage DOM order must be CTA -> builder -> remaining mission content');
+  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro text -> builder -> Bad Days artwork -> academy');
   const homepageScroll = await homepageDesktop.evaluate(() => ({
     bodyOverflowY: getComputedStyle(document.body).overflowY,
     pageOverflowY: getComputedStyle(document.documentElement).overflowY,
