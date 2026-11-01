@@ -201,6 +201,22 @@ check(
   'Seamless Bad Days art is off homepage and never cropped'
 );
 
+
+// Keep homepage typography on its shared responsive hierarchy.
+const homeTypeTokens = [
+  '--home-type-hero', '--home-type-secondary', '--home-type-section',
+  '--home-type-subsection', '--home-type-pulse', '--home-type-lead', '--home-type-body',
+];
+check(
+  homeTypeTokens.every(token => html.includes(token + ':clamp(')) &&
+  /\.hero-intro \.hero-pulse-line\s*\{[^}]*font-size:var\(--home-type-pulse\)/s.test(html) &&
+  /\.home-core-mission h2\s*\{[^}]*font-size:var\(--home-type-section\)/s.test(html) &&
+  /\.simple-section h2\s*\{[^}]*font-size:var\(--home-type-section\)/s.test(html) &&
+  /\.simple-section p\s*\{[^}]*font-size:var\(--home-type-body\)/s.test(html) &&
+  /\.history-blurb p\s*\{[^}]*font-size:var\(--home-type-body\)/s.test(html),
+  'Home uses a consistent responsive type hierarchy without competing small paragraph sizes'
+);
+
 if (failures > 0) {
   console.error(`\nHomepage hero audit failed with ${failures} issue(s).`);
   process.exit(1);
