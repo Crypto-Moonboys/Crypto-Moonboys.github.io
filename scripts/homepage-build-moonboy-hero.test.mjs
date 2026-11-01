@@ -80,6 +80,10 @@ const introMarkup = introStart !== -1 && introEnd !== -1
   ? html.slice(introStart, introEnd + '</section>'.length)
   : '';
 
+check(
+  html.includes('<h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>\n      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>\n      <h1 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h1>'),
+  'Homepage opening copy preserves the approved headline, pulse, headline order'
+);
 check(heroPositions.every(({ start }) => start !== -1), 'Splash page contains all five Bad Days artwork sections');
 check(
   heroImages.every(({ repoPath }) => fs.existsSync(repoPath)),
