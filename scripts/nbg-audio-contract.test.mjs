@@ -31,7 +31,7 @@ const expectedEnemyIdentities = [
   'balloon_girl_walk', 'balloon_girl_presence', 'balloon_girl_spot',
   'pigeon_flight', 'pigeon_call'
 ].sort();
-const expectedAssetCount = expectedEffects.length + expectedEnemyIdentities.length + 1;
+const expectedAssetCount = expectedEffects.length + expectedEnemyIdentities.length;
 
 function createEventTarget() {
   const listeners = new Map();
@@ -66,7 +66,6 @@ function fakeAudioEnvironment(manifest, options = {}) {
   const assetIds = new Map([
     ...Object.entries(manifest.effects || {}).map(([id, file]) => [file, id]),
     ...Object.entries(manifest.enemyIdentities || {}).map(([id, file]) => [file, id]),
-    ...(manifest.music?.main ? [[manifest.music.main, 'music:main']] : [])
   ]);
   const encodedAsset = (url) => {
     const match = [...assetIds].find(([file]) => url.endsWith(file));
@@ -79,6 +78,25 @@ function fakeAudioEnvironment(manifest, options = {}) {
 
   const sources = [];
   const contexts = [];
+  const musicElements = [];
+  class FakeMusicAudio {
+    constructor() {
+      this.paused = true;
+      this.volume = 1;
+      this.src = '';
+      this.loop = false;
+      this.onended = null;
+      this.onerror = null;
+      this.playCount = 0;
+      musicElements.push(this);
+    }
+    play() { this.paused = false; this.playCount++; return Promise.resolve(); }
+    pause() { this.paused = true; }
+    load() {}
+    removeAttribute(name) { if (name === 'src') this.src = ''; }
+    finish() { this.paused = true; if (this.onended) this.onended(); }
+  }
+  window.Audio = FakeMusicAudio;
   class FakeAudioContext {
     constructor() {
       this.state = 'suspended';
@@ -142,7 +160,7 @@ function fakeAudioEnvironment(manifest, options = {}) {
     for (const pending of pendingAssetFetches.splice(0)) pending.resolve(pending.data);
   }
 
-  return { document, window, stored, sources, contexts, requests, fetch, releaseAssets };
+  return { document, window, stored, sources, contexts, musicElements, requests, fetch, releaseAssets };
 }
 
 async function flushPromises(rounds = 8) {
@@ -157,14 +175,25 @@ test('live audio payload contains exactly the approved compressed pack', async (
   assert.equal(Object.keys(manifest.effects).length, expectedEffects.length);
   assert.deepEqual(Object.keys(manifest.enemyIdentities).sort(), expectedEnemyIdentities);
   assert.equal(Object.keys(manifest.enemyIdentities).length, expectedEnemyIdentities.length);
-  assert.equal(manifest.music.main, 'music/main_theme_dark_industrial_loop.ogg');
+  assert.deepEqual(manifest.music.tracks, [
+    'music/Rolling In Dark (6).mp3',
+    'music/Rolling In Dark (1).mp3'
+  ]);
 
   const referenced = [
     ...Object.values(manifest.effects),
-    ...Object.values(manifest.enemyIdentities),
-    manifest.music.main
+    ...Object.values(manifest.enemyIdentities)
   ];
   assert.equal(new Set(referenced).size, expectedAssetCount);
+  for (const track of manifest.music.tracks) {
+    assert.ok(track.endsWith('.mp3'));
+    const absolute = path.resolve(audioRoot, track);
+    assert.ok(absolute.startsWith(audioRoot + path.sep));
+    const bytes = await readFile(absolute);
+    assert.ok(bytes.length > 1000000, 'song must contain a substantial MP3 payload');
+    assert.ok(bytes.subarray(0, 3).toString('ascii') === 'ID3' ||
+      (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0), 'MP3 header');
+  }
   for (const relative of referenced) {
     assert.equal(relative.endsWith('.ogg'), true, relative);
     assert.equal(relative.includes('..'), false, relative);
@@ -219,7 +248,10 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   await flushPromises();
   assert.equal(env.window.NBGAudio.getState().musicWanted, true);
   assert.equal(env.window.NBGAudio.getState().musicPlaying, true);
-  assert.equal(env.sources.some((sourceNode) => sourceNode.loop === true), true);
+  assert.equal(env.musicElements.length, 1);
+  assert.match(env.musicElements[0].src, /Rolling%20In%20Dark%20\(6\)\.mp3$/);
+  assert.equal(env.musicElements[0].loop, false);
+  assert.equal(env.requests.some(({ url }) => url.endsWith('.mp3')), false, 'songs are not preloaded into SFX cache');
 
   const beforeSecret = env.sources.length;
   env.window.dispatchEvent(new FakeCustomEvent('nbg-xp-collected', {
@@ -259,20 +291,38 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   assert.equal(env.window.NBGAudio.getState().activeVoices <= 12, true);
 
   env.window.NBGAudio.setLevels({ music: 0.25, sfx: 0.6 });
+  assert.equal(env.musicElements[0].volume, 0.25);
   env.window.NBGAudio.setMuted(true);
+  assert.equal(env.musicElements[0].paused, true, 'mute pauses current song');
   assert.equal(JSON.parse(env.stored.get('nbg-audio-settings-v1')).muted, true);
   assert.equal(env.window.NBGAudio.getState().activeVoices, 0);
   env.window.NBGAudio.setMuted(false);
   await flushPromises();
-
+  assert.equal(env.musicElements[0].paused, false, 'unmute resumes');
+  env.musicElements[0].finish();
+  assert.match(env.musicElements[0].src, /Rolling%20In%20Dark%20\(1\)\.mp3$/, 'second song follows first');
+  env.musicElements[0].finish();
+  assert.match(env.musicElements[0].src, /Rolling%20In%20Dark%20\(6\)\.mp3$/, 'playlist cycles');
+  assert.equal(env.musicElements.length, 1, 'single music element plays sequentially');
   env.document.hidden = true;
   env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
   await flushPromises();
   assert.equal(env.contexts[0].state, 'suspended');
+  assert.equal(env.musicElements[0].paused, true, 'hidden page pauses music');
   env.document.hidden = false;
   env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
   await flushPromises();
   assert.equal(env.contexts[0].state, 'running');
+  assert.equal(env.musicElements[0].paused, false, 'visible page resumes music');
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-complete'));
+  assert.equal(env.window.NBGAudio.getState().musicPlaying, false);
+  assert.equal(env.musicElements[0].paused, true);
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
+  await flushPromises();
+  assert.equal(env.musicElements.length, 2, 'fresh run creates one new playlist player');
+  assert.match(env.musicElements[1].src, /Rolling%20In%20Dark%20\(6\)\.mp3$/, 'fresh run starts first song');
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-game-over'));
+  assert.equal(env.musicElements[1].paused, true, 'death stops music');
 });
 
 
@@ -365,7 +415,7 @@ test('enemy identities use bounded persistent proximity loops with complete life
   assert.equal(state.enemyLoopVolumes[0] > state.enemyLoopVolumes[1], true);
   assert.equal(state.enemyLoopVolumes[1] > state.enemyLoopVolumes[2], true);
 
-  const loopStarts = env.sources.filter((node) => node.loop && node.buffer?.id !== 'music:main').length;
+  const loopStarts = env.sources.filter((node) => node.loop).length;
   for (let frame = 0; frame < 50; frame += 1) {
     dispatchFrame([
       snapshot(keys[0], 'bot', { distance: 10 }),
@@ -376,7 +426,7 @@ test('enemy identities use bounded persistent proximity loops with complete life
   }
   await flushPromises();
   assert.equal(
-    env.sources.filter((node) => node.loop && node.buffer?.id !== 'music:main').length,
+    env.sources.filter((node) => node.loop).length,
     loopStarts,
     'stable enemies must reuse persistent voices'
   );
@@ -532,7 +582,7 @@ test('enemy identity preload refreshes only the manifest and keeps audio cacheab
   const manifestRequests = env.requests.filter(({ url }) => url.includes('/manifest.json'));
   const assetRequests = env.requests.filter(({ url }) => !url.includes('/manifest.json'));
   assert.equal(manifestRequests.length, 1);
-  assert.equal(manifestRequests[0].url.includes('?v=enemy-attack-audio-r4'), true);
+  assert.equal(manifestRequests[0].url.includes('?v=two-song-music-v1'), true);
   assert.equal(manifestRequests[0].cache, 'no-store');
   assert.equal(assetRequests.length, expectedAssetCount);
   assert.equal(assetRequests.every(({ cache }) => cache === 'force-cache'), true);
