@@ -689,7 +689,7 @@
       var name = button.querySelector('.btn-label');
       if (name) name.textContent = ' ' + (muted ? label + ' OFF' : label + ' ON');
       var icon = button.querySelector('.btn-icon');
-      if (icon) icon.textContent = muted ? '✕' : index === 0 ? '♫' : '◖';
+      if (icon) icon.textContent = index === 0 ? (muted ? '♪̸' : '♫') : (muted ? 'FX×' : 'FX');
     });
   }
 
