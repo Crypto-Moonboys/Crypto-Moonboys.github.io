@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const homepagePath = path.join(ROOT, 'index.html');
 const homeWidgetsPath = path.join(ROOT, 'js', 'home-widgets.js');
+const splashPath = path.join(ROOT, 'enter.html');
+const introScriptPath = path.join(ROOT, 'js', 'first-visit-intro.js');
 const heroImages = [
   {
     sectionLabel: 'Crypto Moonboys Bad Days 1',
@@ -60,14 +62,16 @@ function check(condition, message) {
 
 const html = fs.readFileSync(homepagePath, 'utf8');
 const homeWidgets = fs.readFileSync(homeWidgetsPath, 'utf8');
+const splash = fs.readFileSync(splashPath, 'utf8');
+const introScript = fs.readFileSync(introScriptPath, 'utf8');
 
 const heroPositions = heroImages.map(({ sectionLabel, publicPath }) => ({
   sectionLabel,
   publicPath,
-  start: html.indexOf(`<section class="build-moonboy-hero" aria-label="${sectionLabel}"`),
+  start: splash.indexOf(`<section class="build-moonboy-hero" aria-label="${sectionLabel}"`),
 }));
 const lastHeroEnd = heroPositions.length
-  ? html.indexOf('</section>', heroPositions[heroPositions.length - 1].start)
+  ? splash.indexOf('</section>', heroPositions[heroPositions.length - 1].start)
   : -1;
 const builderStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhomepage-avatar-builder\b)[^>]*>/);
 const introStart = html.search(/<section\b(?=[^>]*\bid="how-it-works")[^>]*>/);
@@ -76,18 +80,18 @@ const introMarkup = introStart !== -1 && introEnd !== -1
   ? html.slice(introStart, introEnd + '</section>'.length)
   : '';
 
-check(heroPositions.every(({ start }) => start !== -1), 'Homepage contains all five Bad Days hero sections');
+check(heroPositions.every(({ start }) => start !== -1), 'Splash page contains all five Bad Days artwork sections');
 check(
   heroImages.every(({ repoPath }) => fs.existsSync(repoPath)),
   'All Bad Days hero images exist in the repository'
 );
 check(
-  heroPositions.every(({ publicPath }) => html.includes(publicPath)),
-  'Homepage uses all five approved full-width Bad Days hero images'
+  heroPositions.every(({ publicPath }) => splash.includes(publicPath) && !html.includes(publicPath)),
+  'All five approved full-width images appear only on the splash page'
 );
 check(
   heroPositions.every((hero, index) => index === 0 || hero.start > heroPositions[index - 1].start),
-  'Bad Days hero images remain ordered V1 through V5'
+  'Splash art remains in order V1 through V5'
 );
 check(
   !html.includes('/img/homepage/BUILD%20A%20CRYPTO%20MOONBOY%20HERO%20PIC.jpg'),
@@ -100,8 +104,8 @@ check(
 );
 check(
   lastHeroEnd !== -1 && builderStart > html.indexOf('</section>', html.indexOf('id="home-top-message"')) &&
-    builderStart < heroPositions[0].start && introStart > lastHeroEnd,
-  'Builder follows the homepage mission text, before Bad Days V1–V5 and the later mission section'
+    builderStart < introStart && heroPositions.every(({ start }) => start >= 0),
+  'Builder remains under the mission text; Bad Days artwork is now on splash page'
 );
 check(
   introMarkup.includes('id="open-creative-academy"') &&
@@ -144,17 +148,53 @@ check(
   `Runtime home-widgets.js has no forbidden Moonboy/Crypto Moonboy builder CTA wording${forbiddenInWidgets.length ? ` — found: ${forbiddenInWidgets.map((p) => JSON.stringify(p)).join(', ')}` : ''}`
 );
 check(
-  /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(html),
-  'Hero section is explicitly full width'
+  /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(splash),
+  'Splash art section is full width'
 );
 check(
-  /\.build-moonboy-hero img\s*\{[^}]*display\s*:\s*block[^}]*width\s*:\s*100%[^}]*height\s*:\s*auto/is.test(html),
-  'Hero image is responsive and preserves its aspect ratio'
+  /\.build-moonboy-hero img\s*\{[^}]*display\s*:\s*block[^}]*width\s*:\s*100%[^}]*height\s*:\s*auto/is.test(splash),
+  'Splash art preserves natural aspect ratio'
 );
 check(
   !/class=["'][^"']*home-hero-left/.test(html) &&
     !/class=["'][^"']*home-hero-right/.test(html),
   'Homepage no longer uses the old split hero structure'
+);
+
+
+check(
+  html.includes('/js/first-visit-intro.js') &&
+    html.includes('dialog#cm-bad-days-intro') &&
+    introScript.includes('dialog.showModal()') &&
+    !introScript.includes('window.location.replace('),
+  'First visit opens a modal and does not redirect the homepage'
+);
+check(
+  introScript.includes("window.location.pathname !== '/'") &&
+    introScript.includes("window.localStorage.getItem(KEY) === '1'") &&
+    introScript.includes("window.localStorage.setItem(KEY, '1')") &&
+    introScript.includes('event.origin !== window.location.origin') &&
+    introScript.includes('event.source !== frame.contentWindow'),
+  'First-visit state and same-origin frame messages are guarded'
+);
+check(
+  splash.includes('content="noindex, follow"') &&
+    html.includes('rel="canonical" href="https://cryptomoonboys.com/"'),
+  'Splash is noindex; homepage canonical remains unchanged'
+);
+check(
+  (splash.match(/data-enter-site/g) || []).length >= 3 &&
+    splash.includes('PRESS START — ENTER THE WORLD') &&
+    splash.includes('SKIP INTRO') &&
+    splash.includes("window.parent.postMessage('cm:bad-days-intro:enter', window.location.origin)") &&
+    html.includes('href="/enter.html">REPLAY THE BAD DAYS INTRO</a>'),
+  'Enter, skip, embedded dismissal and replay are all available'
+);
+check(
+  !html.includes('class="build-moonboy-hero"') &&
+    !/object-fit:\s*cover/.test(splash) &&
+    splash.indexOf('Bad Days 1') < splash.indexOf('Bad Days 5'),
+  'Seamless Bad Days art is off homepage and never cropped'
 );
 
 if (failures > 0) {
