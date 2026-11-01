@@ -34,6 +34,8 @@
     .hero-intro { padding:clamp(42px,6vw,88px) 0; border-top:1px solid rgba(255,255,255,.08); }
     .hero-intro h1 { max-width:980px; margin:0 0 22px; color:#fff; font-size:clamp(2.6rem,5.5vw,6.4rem); line-height:.92; text-transform:uppercase; }
     .hero-intro h1 span { color:var(--gold); }
+    .hero-intro#home-top-message .hero-secondary-heading { color:var(--gold); margin-bottom:0; }
+    .hero-intro#home-top-message > .simple-wrap:first-child .hero-pulse-line { margin:0 0 22px; }
     .hero-pulse-line { max-width:980px; margin:0 0 28px; color:#fff; font-size:clamp(1.05rem,2vw,1.7rem); font-weight:900; letter-spacing:.04em; line-height:1.35; text-transform:uppercase; animation:heroPulse 4.5s ease-in-out infinite; }
     @keyframes heroPulse { 0%,100% { opacity:.62; text-shadow:0 0 0 rgba(255,255,255,0); } 50% { opacity:1; text-shadow:0 0 18px rgba(255,255,255,.72); } }
     @media (prefers-reduced-motion:reduce) { .hero-pulse-line { animation:none; opacity:1; } }
@@ -107,8 +109,9 @@
   <section class="home-video" aria-label="Crypto Moonboys featured video"><iframe src="https://www.youtube.com/embed/pyvZa_USoNc?rel=0" title="Crypto Moonboys featured video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></section>
   <section class="hero-intro" id="home-top-message" aria-label="Crypto Moonboys introduction">
     <div class="simple-wrap">
-      <h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.<br><span>🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</span></h1>
-    <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>
+      <h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>
+      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>
+      <h1 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h1>
     </div>
     <img src="/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg" alt="WAXP Pop Culture vs Meme Mayhem artwork" width="1983" height="793" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;margin:0 0 28px;">
     <div class="simple-wrap">
