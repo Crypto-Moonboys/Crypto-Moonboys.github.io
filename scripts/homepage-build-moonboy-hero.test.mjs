@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const homepagePath = path.join(ROOT, 'index.html');
 const homeWidgetsPath = path.join(ROOT, 'js', 'home-widgets.js');
-const homepageContract = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/homepage-approved-contract.json'), 'utf8'));
 const heroImages = [
   {
     sectionLabel: 'Crypto Moonboys Bad Days 1',
@@ -105,18 +104,22 @@ check(
   'Builder follows the homepage mission text, before Bad Days V1–V5 and the later mission section'
 );
 check(
-  introMarkup.includes(homepageContract.builder_heading_html),
-  'Homepage source contains the approved current builder CTA heading'
+  introMarkup.includes('id="open-creative-academy"') &&
+    !introMarkup.includes('GET READY #PLAYERONE') &&
+    !introMarkup.includes('We Collaborate We Create We Inspire'),
+  'Academy content remains without the removed promotional copy'
 );
 check(
-  introMarkup.includes(homepageContract.builder_pulse_html),
-  'Homepage source contains the approved build CTA supporting line'
+  !html.includes('GET READY #PLAYERONE') &&
+    !html.includes('JOIN US AND DISRUPT THE WORLD') &&
+    !html.includes('We Collaborate We Create We Inspire') &&
+    !html.includes('WE EMPOWER ⚡️⚡️⚡️'),
+  'Removed promotional text is absent from the homepage'
 );
 check(
-  homeWidgets.includes("section.className = 'hero-intro homepage-build-cta'") &&
-    homeWidgets.includes("builder.insertAdjacentElement('beforebegin', section)") &&
-    homeWidgets.includes('moveBuildCtaAboveBuilder();'),
-  'Homepage runtime moves the CTA into its own section immediately before the builder'
+  !homeWidgets.includes('moveBuildCtaAboveBuilder') &&
+    !homeWidgets.includes('homepage-build-cta'),
+  'No runtime code recreates the removed promotional text'
 );
 check(
   html.includes('href="/my-moonboy.html">BUILD A MOONBOY IDENTITY</a>') &&
@@ -127,10 +130,6 @@ check(
 check(
   html.includes('aria-label="Build a HODL Warrior"'),
   'Homepage avatar builder uses the approved HODL Warrior aria label'
-);
-check(
-  homeWidgets.includes("section.setAttribute('aria-label', 'Build a HODL Warrior')"),
-  'Runtime home-widgets.js CTA section uses the approved HODL Warrior aria label'
 );
 // Artwork alt text describes the approved image; it is not a creator CTA.
 const visibleCopy = html.replace(/<[^>]*>/g, ' ');
