@@ -66,8 +66,9 @@ try {
           videoFullWidth: videoRect.width === innerWidth && Math.abs(videoRect.height - videoRect.width * 9 / 16) < 1,
           videoSource: video.querySelector('iframe').getAttribute('src'),
           builderFollowsMissionText: duplicate.nextElementSibling === builder,
-          builderBeforeBadDays: builder?.nextElementSibling?.getAttribute('aria-label') === 'Crypto Moonboys Bad Days 1',
-          badDaysBeforeLaterMission: document.querySelector('[aria-label="Crypto Moonboys Bad Days 5"]')?.nextElementSibling === mission,
+          builderBeforeAcademy: builder?.nextElementSibling === mission,
+          badDaysMovedToSplash: !document.querySelector('.build-moonboy-hero') &&
+            !!document.querySelector('a[href="/enter.html"]'),
           noObsoleteCta: !document.querySelector('.homepage-build-cta'),
           noRemovedCopy: !document.body.textContent.includes('GET READY #PLAYERONE') &&
             !document.body.textContent.includes('We Collaborate We Create We Inspire'),
@@ -86,7 +87,7 @@ try {
       assert.deepEqual(result.messages, {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeBadDays', 'badDaysBeforeLaterMission', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'badDaysMovedToSplash', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
