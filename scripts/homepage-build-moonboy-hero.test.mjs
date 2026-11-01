@@ -217,6 +217,39 @@ check(
   'Home uses a consistent responsive type hierarchy without competing small paragraph sizes'
 );
 
+
+// The visual gallery is decorative: every approved asset appears twice for a
+// seamless marquee, with no clickable lightbox or links wrapping the images.
+const galleryStart = html.indexOf('<section class="home-art-strip"');
+const galleryEnd = html.indexOf('</section>', galleryStart);
+const galleryHtml = galleryStart >= 0 && galleryEnd > galleryStart
+  ? html.slice(galleryStart, galleryEnd + '</section>'.length) : '';
+const galleryImagePaths = [
+  "/img/homepage/Gritty%20New%20York%20Night%20Billboard%20Scene.jpg",
+  "/img/homepage/Moonboys%20Neon%20Graffiti%20Still%20Life.jpg",
+  "/img/homepage/Moonboys%20Sticker%20Pack%20in%20Neon%20Alley.jpg",
+  "/img/homepage/Moonboys%20Sticker%20Studio%20Chaos.jpg",
+  "/img/homepage/Moonboys%20Graffiti%20Tee%20Stack%20in%20Neon%20Studio.jpg",
+  "/img/homepage/Neon%20Graffiti%20Streetwear2%20Portrait.jpg",
+  "/img/homepage/Neon%20Noir%20EL%20MUERTE%20Graffiti%20Mural.jpg",
+  "/img/homepage/Neon%20Stickered%20Streets%20of%20New%20York.jpg",
+  "/img/homepage/Neon%20Street%20Art%20Character%20Poster.jpg"
+];
+check(
+  galleryStart > html.indexOf('THE WORLD IS YOUR CANVAS') &&
+  galleryEnd < builderStart &&
+  galleryImagePaths.every(src => galleryHtml.split('src="' + src + '"').length === 3),
+  'Nine gallery images appear twice, immediately above the Moonboy Builder'
+);
+check(
+  (galleryHtml.match(/<img /g) || []).length === 18 &&
+  !/<a\\b|onclick=|lightbox|data-fancybox/i.test(galleryHtml) &&
+  galleryHtml.includes('aria-hidden="true"') &&
+  /\\.home-art-strip img\\s*\\{[^}]*height:600px/.test(html) &&
+  /@keyframes homeArtStripScroll/.test(html),
+  'Gallery scrolls seamlessly at 600px, with no clickable image enlargement'
+);
+
 if (failures > 0) {
   console.error(`\nHomepage hero audit failed with ${failures} issue(s).`);
   process.exit(1);
