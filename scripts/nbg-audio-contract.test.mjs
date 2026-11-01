@@ -79,6 +79,7 @@ function fakeAudioEnvironment(manifest, options = {}) {
   const sources = [];
   const contexts = [];
   const musicElements = [];
+  let gestureActive = false;
   class FakeMusicAudio {
     constructor() {
       this.paused = true;
@@ -88,9 +89,13 @@ function fakeAudioEnvironment(manifest, options = {}) {
       this.onended = null;
       this.onerror = null;
       this.playCount = 0;
+      this.firstPlayInGesture = false;
       musicElements.push(this);
     }
-    play() { this.paused = false; this.playCount++; return Promise.resolve(); }
+    play() {
+      if (this.playCount === 0) this.firstPlayInGesture = gestureActive;
+      this.paused = false; this.playCount++; return Promise.resolve();
+    }
     pause() { this.paused = true; }
     load() {}
     removeAttribute(name) { if (name === 'src') this.src = ''; }
@@ -102,6 +107,8 @@ function fakeAudioEnvironment(manifest, options = {}) {
       this.state = 'suspended';
       this.currentTime = 0;
       this.destination = {};
+      this.gains = [];
+      this.mediaNodes = [];
       contexts.push(this);
     }
     createGain() {
@@ -115,7 +122,15 @@ function fakeAudioEnvironment(manifest, options = {}) {
           this.ramps.push({ value, time });
         }
       };
-      return { gain, connect() {}, disconnect() {} };
+      const node = { gain, connect() {}, disconnect() {} };
+      this.gains.push(node);
+      return node;
+    }
+    createMediaElementSource(element) {
+      if (this.mediaNodes.some(node => node.element === element)) throw new Error('media source reused');
+      const node = { element, destination: null, connect(target) { this.destination = target; } };
+      this.mediaNodes.push(node);
+      return node;
     }
     createBufferSource() {
       const source = {
@@ -160,7 +175,15 @@ function fakeAudioEnvironment(manifest, options = {}) {
     for (const pending of pendingAssetFetches.splice(0)) pending.resolve(pending.data);
   }
 
-  return { document, window, stored, sources, contexts, musicElements, requests, fetch, releaseAssets };
+  return {
+    document: Object.assign(document, {
+      dispatchGesture(type) {
+        gestureActive = true;
+        try { document.dispatchEvent(new FakeCustomEvent(type)); } finally { gestureActive = false; }
+      }
+    }),
+    window, stored, sources, contexts, musicElements, requests, fetch, releaseAssets
+  };
 }
 
 async function flushPromises(rounds = 8) {
@@ -239,7 +262,12 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   assert.equal(env.window.NBGAudio.getState().encodedAssets, expectedAssetCount);
   assert.equal(env.window.NBGAudio.getState().maxVoices, 12);
 
-  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  env.document.dispatchGesture('pointerdown');
+  assert.equal(env.musicElements.length, 1, 'music player is constructed synchronously in pointer gesture');
+  assert.equal(env.musicElements[0].firstPlayInGesture, true, 'iOS first play runs in user gesture');
+  assert.equal(env.contexts[0].mediaNodes.length, 1, 'one media source node is connected');
+  assert.equal(env.contexts[0].mediaNodes[0].destination, env.contexts[0].gains[1], 'music routes into Web Audio music gain');
+  assert.equal(env.contexts[0].gains[1].gain.value, 0, 'pre-game music must be silent');
   await flushPromises();
   assert.equal(env.contexts.length, 1);
   assert.equal(env.contexts[0].state, 'running');
@@ -291,9 +319,15 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   assert.equal(env.window.NBGAudio.getState().activeVoices <= 12, true);
 
   env.window.NBGAudio.setLevels({ music: 0.25, sfx: 0.6 });
-  assert.equal(env.musicElements[0].volume, 0.25);
+  assert.equal(env.musicElements[0].volume, 1, 'HTML element volume is kept at unity for iOS');
+  assert.equal(env.contexts[0].gains[1].gain.value, 0.25, 'music volume is applied through Web Audio');
+  env.window.NBGAudio.setLevels({ music: 0, sfx: 0.6 });
+  assert.equal(env.contexts[0].gains[1].gain.value, 0, 'music slider 0 must mute music independently of effects');
+  assert.equal(env.contexts[0].gains[2].gain.value, 0.6, 'music slider 0 must not alter effects');
+  env.window.NBGAudio.setLevels({ music: 0.25, sfx: 0.6 });
   env.window.NBGAudio.setMuted(true);
   assert.equal(env.musicElements[0].paused, true, 'mute pauses current song');
+  assert.equal(env.contexts[0].gains[1].gain.value, 0, 'mute also silences gain');
   assert.equal(JSON.parse(env.stored.get('nbg-audio-settings-v1')).muted, true);
   assert.equal(env.window.NBGAudio.getState().activeVoices, 0);
   env.window.NBGAudio.setMuted(false);
@@ -319,10 +353,12 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
   assert.equal(env.musicElements[0].paused, true);
   env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
   await flushPromises();
-  assert.equal(env.musicElements.length, 2, 'fresh run creates one new playlist player');
-  assert.match(env.musicElements[1].src, /Rolling%20In%20Dark%20\(6\)\.mp3$/, 'fresh run starts first song');
+  assert.equal(env.musicElements.length, 1, 'replays reuse the gesture-unlocked music element');
+  assert.equal(env.contexts[0].mediaNodes.length, 1, 'only one iOS MediaElementAudioSourceNode is ever created');
+  assert.match(env.musicElements[0].src, /Rolling%20In%20Dark%20\(6\)\.mp3$/, 'fresh run starts first song');
   env.window.dispatchEvent(new FakeCustomEvent('nbg-game-over'));
-  assert.equal(env.musicElements[1].paused, true, 'death stops music');
+  assert.equal(env.musicElements[0].paused, true, 'death stops music');
+  assert.equal(env.contexts[0].gains[1].gain.value, 0, 'terminal state silences gain');
 });
 
 
