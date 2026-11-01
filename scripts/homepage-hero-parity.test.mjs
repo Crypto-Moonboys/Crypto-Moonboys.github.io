@@ -115,6 +115,7 @@ try {
   await introDialog.waitFor({ state: 'visible' });
   assert.equal(visitor.url(), origin + '/', 'First-visit splash must not redirect the real homepage');
   const introFrame = visitor.frameLocator('#cm-bad-days-intro iframe');
+  await introFrame.locator('.build-moonboy-hero img').first().waitFor({ state: 'attached' });
   assert.equal(await introFrame.locator('.build-moonboy-hero img').count(), 5, 'Intro frame contains all five panels');
   await introFrame.locator('.skip-button').click();
   await introDialog.waitFor({ state: 'detached' });
