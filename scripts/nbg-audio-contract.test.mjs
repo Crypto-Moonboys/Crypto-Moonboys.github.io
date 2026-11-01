@@ -418,6 +418,18 @@ test('NBG music and effects mute independently with balanced default levels', as
   assert.equal(graph.gains[2].gain.value, 0.45);
   assert.equal(env.musicElements[0].paused, true);
   assert.equal(elements.get('nbg-music-mute').attrs['aria-pressed'], 'true');
+  env.document.hidden = true;
+  env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
+  await flushPromises();
+  assert.equal(graph.state, 'suspended', 'tab hide suspends shared context');
+  env.document.hidden = false;
+  env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
+  await flushPromises();
+  assert.equal(graph.state, 'running', 'music-only mute must not block shared context resume');
+  assert.equal(env.musicElements[0].paused, true, 'music remains muted after tab return');
+  assert.equal(graph.gains[1].gain.value, 0, 'music gain remains silent');
+  assert.equal(graph.gains[2].gain.value, 0.45, 'effects gain remains enabled');
+
   const effectBefore = env.sources.length;
   api.playEffect('ui_confirm');
   await flushPromises();
