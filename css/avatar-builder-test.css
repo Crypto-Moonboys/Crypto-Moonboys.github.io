@@ -267,8 +267,9 @@ body.page-standalone-tool { overflow: hidden; }
   }
   .avatar-builder-host .preview-panel {
     grid-column: 1 / -1;
-    width: min(100%, 460px);
-    max-height: min(62dvh, 460px);
+    /* Width and height share the same cap so short phones remain square. */
+    width: min(100%, 62dvh, 460px);
+    max-height: none;
     height: auto;
     aspect-ratio: 1;
     margin: 0 auto;
