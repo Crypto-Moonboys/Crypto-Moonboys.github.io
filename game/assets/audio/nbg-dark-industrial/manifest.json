@@ -4,7 +4,10 @@
   "sampleRate": 32000,
   "format": "Vorbis OGG",
   "music": {
-    "main": "music/main_theme_dark_industrial_loop.ogg"
+    "tracks": [
+      "music/Rolling In Dark (6).mp3",
+      "music/Rolling In Dark (1).mp3"
+    ]
   },
   "effects": {
     "ui_start": "sfx/ui_start.ogg",

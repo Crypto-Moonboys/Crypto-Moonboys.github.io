@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=enemy-attack-audio-r4';
+  var MANIFEST_URL = '/game/assets/audio/nbg-dark-industrial/manifest.json?v=two-song-music-v1';
   var STORAGE_KEY = 'nbg-audio-settings-v1';
   var MAX_VOICES = 12;
   var MAX_ENEMY_LOOPS = 3;
@@ -71,6 +71,10 @@
   var musicSource = null;
   var musicWanted = false;
   var musicRequest = 0;
+  var musicIndex = 0;
+  var musicMediaNode = null;
+  var musicGesturePrimed = false;
+  var MUSIC_FIRST_TRACK = 'music/Rolling In Dark (6).mp3';
 
   function clampLevel(value, fallback) {
     var number = Number(value);
@@ -141,7 +145,7 @@
     Object.keys(data.enemyIdentities || {}).forEach(function (id) {
       entries.push([id, data.enemyIdentities[id]]);
     });
-    if (data.music && data.music.main) entries.push(['music:main', data.music.main]);
+    // Long MP3 music streams through HTMLAudioElement, not the SFX decode cache.
     // Do not make requested SFX wait for every other file in the full pack.
     // The manifest is ready immediately; background preload is best effort.
     entries.forEach(function (entry) { fetchAsset(entry[0], entry[1]); });
@@ -178,7 +182,7 @@
     if (!audioContext || !masterGain) return;
     var now = audioContext.currentTime;
     masterGain.gain.setValueAtTime(settings.muted ? 0 : 1, now);
-    musicGain.gain.setValueAtTime(settings.musicLevel, now);
+    musicGain.gain.setValueAtTime(settings.muted || !musicWanted || document.hidden ? 0 : settings.musicLevel, now);
     sfxGain.gain.setValueAtTime(settings.sfxLevel, now);
   }
 
@@ -188,8 +192,7 @@
     var pending = manifestPromise.then(function () {
       var context = ensureContext();
       if (!context || !manifest) return null;
-      var file = (manifest.effects || {})[id] || (manifest.enemyIdentities || {})[id] ||
-        (id === 'music:main' && manifest.music && manifest.music.main);
+      var file = (manifest.effects || {})[id] || (manifest.enemyIdentities || {})[id];
       if (!file) return null;
       return encodedAssets.has(id) ? encodedAssets.get(id) : fetchAsset(id, file, { retry: true });
     }).then(function (encoded) {
@@ -220,6 +223,7 @@
   }
 
   function unlockFromInteraction() {
+    primeMusicFromGesture();
     resumeContext();
   }
 
@@ -483,40 +487,133 @@
     });
   }
 
+  // The streaming element is created in the user's initial gesture, not in the
+  // later async level-start event. Safari requires this for reliable playback.
+  // It is connected once to the existing Web Audio music gain to make level 0
+  // genuinely silent even on iOS where HTMLMediaElement.volume cannot be set.
+  function ensureMusicSource() {
+    if (musicSource) return musicSource;
+    var context = ensureContext();
+    if (!context || !context.createMediaElementSource || !window.Audio) return null;
+    var source = new window.Audio();
+    source.preload = 'auto';
+    source.loop = false;
+    source.src = assetUrl(MUSIC_FIRST_TRACK);
+    try {
+      musicMediaNode = context.createMediaElementSource(source);
+      musicMediaNode.connect(musicGain);
+    } catch (error) {
+      console.warn('[NBG audio] music mixer unavailable:', error);
+      return null; // Never play directly at unregulated device volume.
+    }
+    source.onended = function () {
+      if (source !== musicSource || !musicWanted) return;
+      var tracks = manifest && manifest.music && manifest.music.tracks;
+      if (!Array.isArray(tracks) || tracks.length !== 2) return;
+      musicIndex = (musicIndex + 1) % tracks.length;
+      source.src = assetUrl(tracks[musicIndex]);
+      source.load();
+      playMusicSource(source);
+    };
+    source.onerror = function () {
+      console.warn('[NBG audio] music track unavailable:', source.src);
+      pauseMusicSource();
+    };
+    musicSource = source;
+    applyGainSettings();
+    return source;
+  }
+
+  function primeMusicFromGesture() {
+    var source = ensureMusicSource();
+    if (!source || document.hidden) return;
+    if (musicWanted && !settings.muted) {
+      // A fresh touch also retries any browser-blocked playback synchronously.
+      playMusicSource(source);
+      return;
+    }
+    if (musicGesturePrimed) return;
+    musicGesturePrimed = true;
+    // This must be called synchronously inside pointerdown/touchstart/keydown.
+    // The gain graph is silent while !musicWanted, so the intro cannot leak.
+    var attempt;
+    try { attempt = source.play(); } catch (_) { musicGesturePrimed = false; return; }
+    Promise.resolve(attempt).then(function () {
+      if (source === musicSource && (!musicWanted || settings.muted)) {
+        source.pause();
+        try { source.currentTime = 0; } catch (_) {}
+      }
+    }, function () {
+      musicGesturePrimed = false; // Allow a later user gesture to retry.
+    });
+  }
+
+  function pauseMusicSource() {
+    if (musicSource) {
+      try { musicSource.pause(); } catch (_) {}
+    }
+  }
+
   function stopMusicSource() {
     musicRequest += 1;
-    if (!musicSource) return;
-    try { musicSource.stop(); } catch (_) {}
-    try { musicSource.disconnect(); } catch (_) {}
-    musicSource = null;
+    pauseMusicSource();
+    if (musicSource) {
+      try { musicSource.currentTime = 0; } catch (_) {}
+    }
+    // Reuse the unlocked element + its single MediaElementAudioSourceNode.
+  }
+
+  function playMusicSource(source) {
+    if (!source || source !== musicSource || !musicWanted || settings.muted || document.hidden) return;
+    applyGainSettings();
+    var playing;
+    try { playing = source.play(); } catch (error) {
+      console.warn('[NBG audio] music playback blocked:', error);
+      return;
+    }
+    if (playing && typeof playing.catch === 'function') {
+      playing.catch(function (error) {
+        if (source === musicSource && musicWanted && !settings.muted) {
+          console.warn('[NBG audio] music playback blocked:', error);
+        }
+      });
+    }
   }
 
   function startMusicSource() {
-    if (!musicWanted || settings.muted || !audioContext || audioContext.state !== 'running' || musicSource) return;
+    if (!musicWanted || settings.muted || document.hidden || !unlocked ||
+        !audioContext || audioContext.state !== 'running') return;
     var request = ++musicRequest;
-    decodeAsset('music:main').then(function (buffer) {
-      if (!buffer || request !== musicRequest || !musicWanted || settings.muted ||
-          !audioContext || audioContext.state !== 'running' || musicSource) return;
-      var source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.loop = true;
-      source.connect(musicGain);
-      source.onended = function () {
-        if (musicSource === source) musicSource = null;
-      };
-      musicSource = source;
-      source.start();
+    manifestPromise.then(function (data) {
+      if (request !== musicRequest || !musicWanted || settings.muted || document.hidden ||
+          !unlocked || !audioContext || audioContext.state !== 'running') return;
+      var tracks = data && data.music && data.music.tracks;
+      if (!Array.isArray(tracks) || tracks.length !== 2 || tracks[0] !== MUSIC_FIRST_TRACK) return;
+      var source = ensureMusicSource();
+      if (!source) return;
+      var desired = assetUrl(tracks[musicIndex]);
+      if (source.src !== desired) {
+        source.src = desired;
+        source.load();
+      }
+      if (source.paused) playMusicSource(source);
+      else applyGainSettings(); // Priming may still be playing silently.
     });
   }
 
   function startMusic() {
+    stopMusicSource();
+    musicIndex = 0;
     musicWanted = true;
+    applyGainSettings();
     if (unlocked && !settings.muted) startMusicSource();
   }
 
   function stopMusic() {
     musicWanted = false;
     stopMusicSource();
+    musicIndex = 0;
+    applyGainSettings();
   }
 
   function setMuted(muted, options) {
@@ -527,7 +624,7 @@
     applyGainSettings();
     if (settings.muted) {
       stopVoices();
-      stopMusicSource();
+      pauseMusicSource();
     } else if (unlocked) {
       resumeContext().then(startMusicSource);
     }
@@ -674,14 +771,17 @@
     if (!audioContext) return;
     if (document.hidden) {
       stopEnemyLoops(false, true);
+      pauseMusicSource();
+      applyGainSettings();
       audioContext.suspend().catch(function () {});
       return;
     }
+    applyGainSettings();
     if (unlocked && !settings.muted) resumeContext();
   });
 
-  window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); });
-  window.addEventListener('beforeunload', function () { stopEnemyLoops(false, true); });
+  window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); stopMusic(); });
+  window.addEventListener('beforeunload', function () { stopEnemyLoops(false, true); stopMusic(); });
 
   window._arcadeMuted = settings.muted;
   var api = {
@@ -711,10 +811,12 @@
         enemyLoopVolumes: Array.from(enemyLoopVoices.values()).map(function (voice) { return voice.targetVolume; }),
         maxEnemyLoops: MAX_ENEMY_LOOPS,
         musicWanted: musicWanted,
-        musicPlaying: !!musicSource,
+        musicPlaying: musicWanted && !settings.muted && !document.hidden && !!musicSource && !musicSource.paused,
+        musicTrackIndex: musicIndex,
+        musicTrack: manifest && manifest.music && manifest.music.tracks && manifest.music.tracks[musicIndex] || null,
         manifestLoaded: !!manifest,
         encodedAssets: encodedAssets.size,
-        expectedAssets: manifest ? Object.keys(manifest.effects || {}).length + Object.keys(manifest.enemyIdentities || {}).length + (manifest.music && manifest.music.main ? 1 : 0) : 0,
+        expectedAssets: manifest ? Object.keys(manifest.effects || {}).length + Object.keys(manifest.enemyIdentities || {}).length : 0,
         enemyAssetsLoaded: manifest ? Object.keys(manifest.enemyIdentities || {}).filter(function (id) { return encodedAssets.has(id); }).length : 0,
         failedAssets: Array.from(assetFailures.entries()),
         manifestError: manifestError,

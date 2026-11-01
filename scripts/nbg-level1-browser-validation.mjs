@@ -27,6 +27,7 @@ const mimeTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
   ['.js', 'text/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
+  ['.mp3', 'audio/mpeg'],
   ['.png', 'image/png'],
   ['.svg', 'image/svg+xml; charset=utf-8']
 ]);
@@ -120,7 +121,7 @@ async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewpo
 async function verifyEnemyAudioProfile(browser, targetUrl, profile) {
   const manifest = readJson('game/assets/audio/nbg-dark-industrial/manifest.json');
   const expectedAssetCount = Object.keys(manifest.effects || {}).length +
-    Object.keys(manifest.enemyIdentities || {}).length + (manifest.music?.main ? 1 : 0);
+    Object.keys(manifest.enemyIdentities || {}).length; // MP3 tracks are streamed on demand.
   const audioPage = await browser.newPage(profile.options);
   const errors = [];
   const failedRequests = [];
