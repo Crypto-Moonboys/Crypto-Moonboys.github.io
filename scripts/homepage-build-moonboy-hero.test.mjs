@@ -100,8 +100,9 @@ check(
   'Old stitched homepage hero images are absent'
 );
 check(
-  lastHeroEnd !== -1 && builderStart > lastHeroEnd && introStart > builderStart,
-  'Static homepage source keeps the builder after the Bad Days hero run and before the source mission section'
+  lastHeroEnd !== -1 && builderStart > html.indexOf('</section>', html.indexOf('id="home-top-message"')) &&
+    builderStart < heroPositions[0].start && introStart > lastHeroEnd,
+  'Builder follows the homepage mission text, before Bad Days V1–V5 and the later mission section'
 );
 check(
   introMarkup.includes(homepageContract.builder_heading_html),
