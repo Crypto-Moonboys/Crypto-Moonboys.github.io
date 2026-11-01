@@ -250,6 +250,15 @@ check(
   'Gallery scrolls seamlessly at 600px, with no clickable image enlargement'
 );
 
+check(
+  !/\.home-art-strip:hover\s+\.home-art-strip-track/.test(html) &&
+  !/\.home-art-strip\s*\{[^}]*overflow-x:\s*auto/.test(html) &&
+  !/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.home-art-strip/.test(html) &&
+  /\.home-art-strip-track\s*\{[^}]*animation-play-state:running/.test(html) &&
+  /animation:homeArtStripScroll 145s linear infinite/.test(html),
+  'Gallery never pauses on hover or switches to manual scrolling in reduced-motion mode'
+);
+
 if (failures > 0) {
   console.error(`\nHomepage hero audit failed with ${failures} issue(s).`);
   process.exit(1);
