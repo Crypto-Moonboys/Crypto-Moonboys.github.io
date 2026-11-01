@@ -845,7 +845,9 @@
       return;
     }
     applyGainSettings();
-    if (unlocked && !settings.muted && !settings.musicMuted) resumeContext();
+    // SFX and enemy identity loops share this context with the music channel.
+    // Music-only mute must not prevent their resumption after tab visibility.
+    if (unlocked && !settings.muted) resumeContext();
   });
 
   window.addEventListener('pagehide', function () { stopEnemyLoops(false, true); stopMusic(); });
