@@ -66,7 +66,9 @@ try {
           followsVideo: duplicate.previousElementSibling === video && video.previousElementSibling.classList.contains('home-neon-cityscape'),
           videoFullWidth: videoRect.width === innerWidth && Math.abs(videoRect.height - videoRect.width * 9 / 16) < 1,
           videoSource: video.querySelector('iframe').getAttribute('src'),
-          precedesBadDays: duplicate.nextElementSibling.getAttribute('aria-label') === 'Crypto Moonboys Bad Days 1',
+          originalFollowsMission: duplicate.nextElementSibling === original,
+          builderBeforeBadDays: original.nextElementSibling.id === 'build-moonboy' &&
+            original.nextElementSibling.nextElementSibling?.getAttribute('aria-label') === 'Crypto Moonboys Bad Days 1',
           originalBeforeBuilder: original.nextElementSibling.id === 'build-moonboy',
           originalMoved: original.firstElementChild.dataset.homepageCtaMoved === 'true',
           duplicateNotMoved: !duplicate.firstElementChild.dataset.homepageCtaMoved,
@@ -87,7 +89,7 @@ try {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
         builderHeading: homepageContract.builder_heading_text, builderPulse: text(homepageContract.builder_pulse_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'precedesBadDays', 'originalBeforeBuilder', 'originalMoved', 'duplicateNotMoved', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'originalFollowsMission', 'builderBeforeBadDays', 'originalBeforeBuilder', 'originalMoved', 'duplicateNotMoved', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
