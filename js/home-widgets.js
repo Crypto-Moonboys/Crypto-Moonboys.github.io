@@ -46,22 +46,6 @@
            '?d=identicon&s=' + (size || 32);
   }
 
-  // ── Homepage CTA placement ───────────────────────────────────
-
-  function moveBuildCtaAboveBuilder() {
-    var builder = document.querySelector('.homepage-avatar-builder');
-    var mission = document.getElementById('how-it-works');
-    var cta = mission && mission.querySelector(':scope > .simple-wrap:first-child');
-    if (!builder || !mission || !cta || cta.dataset.homepageCtaMoved === 'true') return;
-
-    var section = document.createElement('section');
-    section.className = 'hero-intro homepage-build-cta';
-    section.setAttribute('aria-label', 'Build a HODL Warrior');
-    cta.dataset.homepageCtaMoved = 'true';
-    section.appendChild(cta);
-    builder.insertAdjacentElement('beforebegin', section);
-  }
-
   // ── Generic placeholder renderer ────────────────────────────
 
   function placeholder(icon, text) {
@@ -288,7 +272,6 @@
   // ── Boot ─────────────────────────────────────────────────────
 
   function init() {
-    moveBuildCtaAboveBuilder();
     initSamStatus();
     initLiveFeed();
     initLeaderboard();
