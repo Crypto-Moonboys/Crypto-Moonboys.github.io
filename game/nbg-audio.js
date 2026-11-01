@@ -526,8 +526,8 @@
 
   function primeMusicFromGesture() {
     var source = ensureMusicSource();
-    if (!source || settings.muted || document.hidden) return;
-    if (musicWanted) {
+    if (!source || document.hidden) return;
+    if (musicWanted && !settings.muted) {
       // A fresh touch also retries any browser-blocked playback synchronously.
       playMusicSource(source);
       return;
