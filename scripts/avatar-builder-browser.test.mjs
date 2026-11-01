@@ -363,10 +363,13 @@ try {
   await assertHomepageLayout(homepageLandscape, '844x390', 'landscape');
   await homepageLandscape.close();
 
-  for (const [width, height] of [[390, 844], [320, 568]]) {
+  for (const [width, height] of [[390, 844], [320, 568], [390, 600]]) {
     const page = await openAt({ width, height }, homepageUrl);
     await assertHomepageLayout(page, `${width}x${height}`, 'portrait');
-    assert.equal(Math.round((await page.locator('.preview-panel').boundingBox()).width), width, `${width}x${height}: portrait preview must fill the viewport width`);
+    const preview = await page.locator('.preview-panel').boundingBox();
+    const expectedWidth = Math.min(width, height * 0.62, 460);
+    assert(Math.abs(preview.width - expectedWidth) <= 1, `${width}x${height}: preview must respect the viewport height cap without changing shape`);
+    assert(Math.abs(preview.height - expectedWidth) <= 1, `${width}x${height}: short phone preview must remain square`);
     if (width === 320) await assertDownloadDisclaimer(page, '320x568 homepage builder', true);
     await page.close();
   }
