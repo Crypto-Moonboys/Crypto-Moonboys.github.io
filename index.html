@@ -100,6 +100,20 @@
     .simple-final h2 { all:unset; display:block; margin:0 0 24px; padding:0; color:#fff; background:transparent; border:0; border-radius:0; outline:0; box-shadow:none; font-size:var(--home-type-section); font-weight:900; line-height:1.15; text-align:center; text-transform:uppercase; }
     .simple-community { display:block; width:min(1180px,calc(100% - 40px)); margin:36px auto 0; }
     .simple-community img { display:block; width:100%; height:auto; }
+
+    /* Purely decorative, continuously scrolling gallery before the Moonboy Builder. */
+    .home-art-strip { width:100%; overflow:hidden; background:#050607; padding:0; margin:0; }
+    .home-art-strip-track { display:flex; width:max-content; animation:homeArtStripScroll 145s linear infinite; }
+    .home-art-strip-set { display:flex; flex:none; width:max-content; align-items:stretch; }
+    .home-art-strip img { display:block; flex:none; width:auto; max-width:none; height:600px; object-fit:contain; border:0; margin:0; padding:0; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+    .home-art-strip:hover .home-art-strip-track { animation-play-state:paused; }
+    @keyframes homeArtStripScroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+    @media (max-width:700px) { .home-art-strip img { height:clamp(280px,70vw,600px); } }
+    @media (prefers-reduced-motion:reduce) {
+      .home-art-strip { overflow-x:auto; }
+      .home-art-strip-track { animation:none; }
+      .home-art-strip-set[aria-hidden="true"] { display:none; }
+    }
     /* Dialog overlays the homepage only on first visit; homepage markup stays indexable. */
     dialog#cm-bad-days-intro { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; border-radius:0; background:#000; overflow:hidden; }
     dialog#cm-bad-days-intro::backdrop { background:#000; }
@@ -140,6 +154,33 @@
         <p>Our games, factions, lore, XP, NFTs and wiki support your creative journey. The purpose is to help you create, collaborate and keep building with a global army behind you, all on the same page ⚡️⚡️⚡️</p>
         <p class="home-canvas-statement"><strong>THE WORLD IS YOUR CANVAS</strong></p>
       </div>
+    </div>
+  </section>
+
+  <section class="home-art-strip" aria-label="Crypto Moonboys street art gallery">
+    <div class="home-art-strip-track">
+    <div class="home-art-strip-set">
+      <img src="/img/homepage/Gritty%20New%20York%20Night%20Billboard%20Scene.jpg" alt="Gritty New York Night Billboard Scene" loading="eager" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Neon%20Graffiti%20Still%20Life.jpg" alt="Moonboys Neon Graffiti Still Life" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Sticker%20Pack%20in%20Neon%20Alley.jpg" alt="Moonboys Sticker Pack in Neon Alley" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Sticker%20Studio%20Chaos.jpg" alt="Moonboys Sticker Studio Chaos" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Graffiti%20Tee%20Stack%20in%20Neon%20Studio.jpg" alt="Moonboys Graffiti Tee Stack in Neon Studio" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Graffiti%20Streetwear2%20Portrait.jpg" alt="Neon Graffiti Streetwear2 Portrait" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Noir%20EL%20MUERTE%20Graffiti%20Mural.jpg" alt="Neon Noir EL MUERTE Graffiti Mural" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Stickered%20Streets%20of%20New%20York.jpg" alt="Neon Stickered Streets of New York" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Street%20Art%20Character%20Poster.jpg" alt="Neon Street Art Character Poster" loading="lazy" decoding="async" draggable="false">
+    </div>
+    <div class="home-art-strip-set" aria-hidden="true">
+      <img src="/img/homepage/Gritty%20New%20York%20Night%20Billboard%20Scene.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Neon%20Graffiti%20Still%20Life.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Sticker%20Pack%20in%20Neon%20Alley.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Sticker%20Studio%20Chaos.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Moonboys%20Graffiti%20Tee%20Stack%20in%20Neon%20Studio.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Graffiti%20Streetwear2%20Portrait.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Noir%20EL%20MUERTE%20Graffiti%20Mural.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Stickered%20Streets%20of%20New%20York.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+      <img src="/img/homepage/Neon%20Street%20Art%20Character%20Poster.jpg" alt="" loading="lazy" decoding="async" draggable="false">
+    </div>
     </div>
   </section>
 
