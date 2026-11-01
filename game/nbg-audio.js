@@ -811,7 +811,7 @@
         enemyLoopVolumes: Array.from(enemyLoopVoices.values()).map(function (voice) { return voice.targetVolume; }),
         maxEnemyLoops: MAX_ENEMY_LOOPS,
         musicWanted: musicWanted,
-        musicPlaying: !!musicSource && !musicSource.paused,
+        musicPlaying: musicWanted && !settings.muted && !document.hidden && !!musicSource && !musicSource.paused,
         musicTrackIndex: musicIndex,
         musicTrack: manifest && manifest.music && manifest.music.tracks && manifest.music.tracks[musicIndex] || null,
         manifestLoaded: !!manifest,
