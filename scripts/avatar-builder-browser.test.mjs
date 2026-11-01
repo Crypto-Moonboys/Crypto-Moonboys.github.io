@@ -196,8 +196,21 @@ async function assertHomepageLayout(page, label, mode) {
     assert(categories.x + categories.width <= preview.x, `${label}: category controls must be left of the avatar`);
     assert(selected.x >= preview.x + preview.width, `${label}: selected controls must be right of the avatar`);
   } else if (mode === 'portrait') {
-    assert(categories.y >= preview.y + preview.height - 1, `${label}: trait controls must sit below the avatar`);
-    assert(selected.y >= categories.y + categories.height - 1, `${label}: selected controls must sit below trait controls`);
+    assert(categories.y >= preview.y + preview.height - 1, `${label}: traits must sit below the preview`);
+    if (preview.width <= 699) {
+      assert(Math.abs(categories.y - selected.y) < 2, `${label}: traits and selected panels must share a row`);
+      assert(Math.abs(categories.x + categories.width - selected.x) < 2, `${label}: selected panel must be directly right of traits`);
+      assert(selected.x + selected.width <= builder.x + builder.width + 2, `${label}: selected controls must stay in the viewport`);
+      const traitGrid = await page.locator('.trait-grid').evaluate(element => ({
+        columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
+        width: element.clientWidth,
+        scrollWidth: element.scrollWidth
+      }));
+      assert.equal(traitGrid.columns, 2, `${label}: phone layout must show two traits per row`);
+      assert(traitGrid.scrollWidth <= traitGrid.width + 2, `${label}: trait grid must not overflow`);
+    } else {
+      assert(selected.y >= categories.y + categories.height - 1, `${label}: tablet portrait retains stacked controls`);
+    }
   } else {
     assert(categories.x >= preview.x + preview.width, `${label}: landscape controls must sit beside the avatar`);
   }
