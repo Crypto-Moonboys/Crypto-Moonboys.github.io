@@ -539,7 +539,7 @@
     var attempt;
     try { attempt = source.play(); } catch (_) { musicGesturePrimed = false; return; }
     Promise.resolve(attempt).then(function () {
-      if (source === musicSource && !musicWanted) {
+      if (source === musicSource && (!musicWanted || settings.muted)) {
         source.pause();
         try { source.currentTime = 0; } catch (_) {}
       }
