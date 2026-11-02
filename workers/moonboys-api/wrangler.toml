@@ -6,7 +6,7 @@ preview_urls = true
 
 [triggers]
 # Daily Telegram digest delivery at 09:00 UTC and five-minute Telegram checks.
-crons = ["*/5 * * * *", "0 9 * * *"]
+crons = ["*/5 * * * *", "0 9 * * *", "0 */4 * * *"]
 
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.
