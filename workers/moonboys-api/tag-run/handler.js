@@ -561,50 +561,93 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
       cfg.base_amount_units <= 0 || cfg.max_weekly_units <= 0) {
     return { status: 'not_configured', week };
   }
-  const query = [
-    'SELECT telegram_id,SUM(points) AS score',
-    'FROM tag_run_messages WHERE chat_id=? AND week_key=?',
-    'GROUP BY telegram_id ORDER BY score DESC,telegram_id ASC LIMIT ' +
-      (MAX_WEEKLY_RECIPIENTS + 1)
-  ].join(' ');
-  const earned = await env.DB.prepare(query).bind(chatId,week).all();
-  const rows = earned.results || [];
-  if (!rows.length) return { status: 'no_activity', week };
-  if (rows.length > MAX_WEEKLY_RECIPIENTS) return { status: 'needs_batched_review', week };
-  const multipliers = [cfg.top1_multiplier,cfg.top2_multiplier,cfg.top3_multiplier];
-  let plannedUnits = 0;
-  for (const [index] of rows.entries()) {
-    plannedUnits += cfg.base_amount_units * (multipliers[index] || 1);
-    if (!Number.isSafeInteger(plannedUnits) || plannedUnits > cfg.max_weekly_units) {
-      return { status: 'over_budget', week, recipientCount: rows.length };
-    }
-  }
-  // The D1 batch is a transaction. Snapshot immutable token amounts with the
-  // group; allocations use the SNAPSHOT, never a later edited token setting.
-  const insertPlan = env.DB.prepare(
-    'INSERT OR IGNORE INTO tag_run_weekly_plans ' +
-    '(chat_id,week_key,token_contract,token_symbol,token_precision,base_amount_units,' +
-    'max_weekly_units,top1_multiplier,top2_multiplier,top3_multiplier,' +
-    'planned_units,recipient_count,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
-  ).bind(chatId,week,cfg.token_contract,cfg.token_symbol,cfg.token_precision,
+
+  // D1.batch is a single transaction. The first write derives rankings,
+  // count, budget, and a frozen JSON roster from ONE SQL statement. The second
+  // write materialises ONLY that frozen roster, never live chat messages.
+  // A late message cannot change who receives a top-three multiplier or push
+  // the plan beyond the checked recipient/budget caps.
+  const insertPlan = env.DB.prepare([
+    'WITH scores AS (',
+    ' SELECT telegram_id, SUM(points) AS score, COUNT(*) AS posts',
+    ' FROM tag_run_messages WHERE chat_id=? AND week_key=?',
+    ' GROUP BY telegram_id',
+    '), ranked AS (',
+    ' SELECT telegram_id,score,posts,ROW_NUMBER() OVER',
+    ' (ORDER BY score DESC, posts DESC, telegram_id ASC) AS position',
+    ' FROM scores',
+    '), census AS (',
+    ' SELECT COUNT(*) AS recipient_count,',
+    ' COALESCE(SUM(? * CASE r.position WHEN 1 THEN ?',
+    ' WHEN 2 THEN ? WHEN 3 THEN ? ELSE 1 END),0) AS planned_units,',
+    " json_group_array(json_object('telegram_id',r.telegram_id,",
+    " 'position',r.position,'score',r.score,'posts',r.posts,",
+    " 'wax_account',w.wax_account,'wallet_status',",
+    " COALESCE(w.verification_status,'pending'))) AS standings_json",
+    ' FROM ranked r LEFT JOIN tag_run_wallets w ON w.telegram_id=r.telegram_id',
+    ') INSERT INTO tag_run_weekly_plans',
+    '(chat_id,week_key,token_contract,token_symbol,token_precision,base_amount_units,',
+    'max_weekly_units,top1_multiplier,top2_multiplier,top3_multiplier,',
+    'planned_units,recipient_count,standings_json,status)',
+    'SELECT ?,?,?,?,?,?,?,?,?,?,?,census.recipient_count,census.standings_json,',
+    "'review_only' FROM census",
+    'WHERE census.recipient_count BETWEEN 1 AND ?',
+    'AND census.planned_units BETWEEN 1 AND ?',
+    'ON CONFLICT(chat_id,week_key) DO NOTHING'
+  ].join(' ')).bind(
+    chatId,week,cfg.base_amount_units,cfg.top1_multiplier,
+    cfg.top2_multiplier,cfg.top3_multiplier,
+    chatId,week,cfg.token_contract,cfg.token_symbol,cfg.token_precision,
     cfg.base_amount_units,cfg.max_weekly_units,cfg.top1_multiplier,
-    cfg.top2_multiplier,cfg.top3_multiplier,plannedUnits,rows.length,'review_only');
+    cfg.top2_multiplier,cfg.top3_multiplier, // Snapshotted config
+    // The SELECT has 11 fixed plan fields then census count / JSON.
+    MAX_WEEKLY_RECIPIENTS,cfg.max_weekly_units
+  );
   const insertAllocations = env.DB.prepare([
-    'INSERT OR IGNORE INTO tag_run_weekly_allocations',
+    'INSERT INTO tag_run_weekly_allocations',
     '(chat_id,week_key,telegram_id,rank_position,street_cred,amount_units,',
     'registered_wax_account,wallet_verification_status,status)',
-    'SELECT p.chat_id,p.week_key,r.telegram_id,r.position,r.score,',
-    'p.base_amount_units * CASE r.position WHEN 1 THEN p.top1_multiplier',
-    'WHEN 2 THEN p.top2_multiplier WHEN 3 THEN p.top3_multiplier ELSE 1 END,',
-    'w.wax_account,COALESCE(w.verification_status,\'pending\'),\'review_only\'',
-    'FROM tag_run_weekly_plans p JOIN',
-    '(SELECT telegram_id,SUM(points) score,ROW_NUMBER() OVER',
-    '(ORDER BY SUM(points) DESC,telegram_id ASC) position FROM tag_run_messages',
-    'WHERE chat_id=? AND week_key=? GROUP BY telegram_id) r ON 1=1',
-    'LEFT JOIN tag_run_wallets w ON w.telegram_id=r.telegram_id',
-    'WHERE p.chat_id=? AND p.week_key=?'
-  ].join(' ')).bind(chatId,week,chatId,week);
-  await env.DB.batch([insertPlan, insertAllocations]);
-  return { status: 'review_only', week, recipientCount: rows.length,
-    plannedUnits, tokenSymbol: cfg.token_symbol };
+    'SELECT p.chat_id,p.week_key,',
+    "json_extract(member.value,'$.telegram_id'),",
+    "CAST(json_extract(member.value,'$.position') AS INTEGER),",
+    "CAST(json_extract(member.value,'$.score') AS INTEGER),",
+    "p.base_amount_units * CASE CAST(json_extract(member.value,'$.position') AS INTEGER)",
+    'WHEN 1 THEN p.top1_multiplier WHEN 2 THEN p.top2_multiplier',
+    'WHEN 3 THEN p.top3_multiplier ELSE 1 END,',
+    "json_extract(member.value,'$.wax_account'),",
+    "json_extract(member.value,'$.wallet_status'),'review_only'",
+    'FROM tag_run_weekly_plans AS p JOIN json_each(p.standings_json) AS member',
+    'WHERE p.chat_id=? AND p.week_key=? AND',
+    'NOT EXISTS (SELECT 1 FROM tag_run_weekly_allocations existing',
+    'WHERE existing.chat_id=p.chat_id AND existing.week_key=p.week_key)',
+    'ON CONFLICT(chat_id,week_key,telegram_id) DO NOTHING'
+  ].join(' ')).bind(chatId,week);
+
+  await env.DB.batch([insertPlan,insertAllocations]);
+  const created = await env.DB.prepare(
+    'SELECT planned_units,recipient_count,token_symbol FROM tag_run_weekly_plans ' +
+    'WHERE chat_id=? AND week_key=?'
+  ).bind(chatId,week).first();
+  if (!created) {
+    const activity = await env.DB.prepare(
+      'SELECT COUNT(DISTINCT telegram_id) AS recipients FROM tag_run_messages ' +
+      'WHERE chat_id=? AND week_key=?'
+    ).bind(chatId,week).first();
+    const count = Number(activity?.recipients || 0);
+    if (count === 0) return { status: 'no_activity', week };
+    if (count > MAX_WEEKLY_RECIPIENTS) {
+      return { status: 'needs_batched_review', week, recipientCount: count };
+    }
+    return { status: 'over_budget', week, recipientCount: count };
+  }
+  const tally = await env.DB.prepare(
+    'SELECT COUNT(*) AS members,COALESCE(SUM(amount_units),0) AS units ' +
+    'FROM tag_run_weekly_allocations WHERE chat_id=? AND week_key=?'
+  ).bind(chatId,week).first();
+  if (Number(tally?.members) !== Number(created.recipient_count) ||
+      Number(tally?.units) !== Number(created.planned_units)) {
+    throw new Error('TAG RUN draft invariant failed: allocations do not equal frozen plan');
+  }
+  return { status: 'review_only', week, recipientCount: created.recipient_count,
+    plannedUnits: created.planned_units, tokenSymbol: created.token_symbol };
 }
