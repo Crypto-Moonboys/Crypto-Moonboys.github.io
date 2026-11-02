@@ -73,7 +73,7 @@ async function streakCount(db, chatId, telegramId, nowMs) {
 }
 async function weeklyTop(db, chatId, weekKey) {
   const rows = await db.prepare(
-    'SELECT m.telegram_id, MAX(m.display_name) AS display_name, ' +
+    'SELECT m.telegram_id, COALESCE(MAX(t.display_name),MAX(m.display_name)) AS display_name, ' +
     'SUM(m.points) AS score, COUNT(*) AS posts, ' +
     'COALESCE(t.score,0) AS lifetime_score ' +
     'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
@@ -572,7 +572,16 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
   // A late message cannot change who receives a top-three multiplier or push
   // the plan beyond the checked recipient/budget caps.
   const insertPlan = env.DB.prepare([
-    'WITH scores AS (',
+    // One SQL snapshot owns BOTH configuration and membership. A concurrent
+    // /tagdisable, /tagtoken, /tagamount or /tagbonus committed before this
+    // statement cannot be overridden by an earlier configFor() read.
+    'WITH live_config AS (',
+    ' SELECT token_contract,token_symbol,token_precision,base_amount_units,',
+    ' max_weekly_units,top1_multiplier,top2_multiplier,top3_multiplier',
+    ' FROM tag_run_reward_config',
+    ' WHERE chat_id=? AND enabled=1 AND token_precision IS NOT NULL',
+    ' AND base_amount_units>0 AND max_weekly_units>0',
+    '), scores AS (',
     ' SELECT telegram_id, SUM(points) AS score, COUNT(*) AS posts',
     ' FROM tag_run_messages WHERE chat_id=? AND week_key=?',
     ' GROUP BY telegram_id',
@@ -582,31 +591,28 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     ' FROM scores',
     '), census AS (',
     ' SELECT COUNT(*) AS recipient_count,',
-    ' COALESCE(SUM(? * CASE r.position WHEN 1 THEN ?',
-    ' WHEN 2 THEN ? WHEN 3 THEN ? ELSE 1 END),0) AS planned_units,',
+    ' COALESCE(SUM(lc.base_amount_units * CASE r.position',
+    ' WHEN 1 THEN lc.top1_multiplier WHEN 2 THEN lc.top2_multiplier',
+    ' WHEN 3 THEN lc.top3_multiplier ELSE 1 END),0) AS planned_units,',
     " json_group_array(json_object('telegram_id',r.telegram_id,",
     " 'position',r.position,'score',r.score,'posts',r.posts,",
     " 'wax_account',w.wax_account,'wallet_status',",
     " COALESCE(w.verification_status,'pending'))) AS standings_json",
     ' FROM ranked r LEFT JOIN tag_run_wallets w ON w.telegram_id=r.telegram_id',
+    ' CROSS JOIN live_config lc',
     ') INSERT INTO tag_run_weekly_plans',
     '(chat_id,week_key,token_contract,token_symbol,token_precision,base_amount_units,',
     'max_weekly_units,top1_multiplier,top2_multiplier,top3_multiplier,',
     'planned_units,recipient_count,standings_json,status)',
-    'SELECT ?,?,?,?,?,?,?,?,?,?,census.planned_units,census.recipient_count,census.standings_json,',
-    "'review_only' FROM census",
+    'SELECT ?,?,lc.token_contract,lc.token_symbol,lc.token_precision,',
+    'lc.base_amount_units,lc.max_weekly_units,lc.top1_multiplier,',
+    'lc.top2_multiplier,lc.top3_multiplier,census.planned_units,',
+    "census.recipient_count,census.standings_json,'review_only'",
+    'FROM live_config lc CROSS JOIN census',
     'WHERE census.recipient_count BETWEEN 1 AND ?',
-    'AND census.planned_units BETWEEN 1 AND ?',
+    'AND census.planned_units BETWEEN 1 AND lc.max_weekly_units',
     'ON CONFLICT(chat_id,week_key) DO NOTHING'
-  ].join(' ')).bind(
-    chatId,week,cfg.base_amount_units,cfg.top1_multiplier,
-    cfg.top2_multiplier,cfg.top3_multiplier,
-    chatId,week,cfg.token_contract,cfg.token_symbol,cfg.token_precision,
-    cfg.base_amount_units,cfg.max_weekly_units,cfg.top1_multiplier,
-    cfg.top2_multiplier,cfg.top3_multiplier, // Snapshotted config
-    // The SELECT has 10 fixed config fields, then frozen planned/count/JSON.
-    MAX_WEEKLY_RECIPIENTS,cfg.max_weekly_units
-  );
+  ].join(' ')).bind(chatId,chatId,week,chatId,week,MAX_WEEKLY_RECIPIENTS);
   const insertAllocations = env.DB.prepare([
     'INSERT INTO tag_run_weekly_allocations',
     '(chat_id,week_key,telegram_id,rank_position,street_cred,amount_units,',
@@ -633,6 +639,14 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     'WHERE chat_id=? AND week_key=?'
   ).bind(chatId,week).first();
   if (!created) {
+    // Report a config race as disabled/not-configured, never as an erroneous
+    // budget failure. The real INSERT cannot write under a disabled setting.
+    const liveCfg = await configFor(env.DB, chatId);
+    if (!liveCfg || Number(liveCfg.enabled) !== 1 ||
+        liveCfg.token_precision == null || liveCfg.base_amount_units <= 0 ||
+        liveCfg.max_weekly_units <= 0) {
+      return { status: 'not_configured', week };
+    }
     const activity = await env.DB.prepare(
       'SELECT COUNT(DISTINCT telegram_id) AS recipients FROM tag_run_messages ' +
       'WHERE chat_id=? AND week_key=?'
