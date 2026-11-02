@@ -184,6 +184,16 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
     'raw message text must never be saved');
 });
 
+test('missing D1 binding is a retryable scoring failure, not a skipped eligible message', async t => {
+  const f = fixture(t);
+  delete f.env.DB;
+  await assert.rejects(
+    () => f.score(f.message('This legitimate long message must retain its point eligibility')),
+    /tag_run_database_unavailable/
+  );
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_messages').get().n, 0);
+});
+
 test('signed Telegram webhook returns retryable 503 on D1 scoring write failure', async () => {
   const secret = 'fixture-tag-run-webhook-secret_0123456789';
   const sent = [];
