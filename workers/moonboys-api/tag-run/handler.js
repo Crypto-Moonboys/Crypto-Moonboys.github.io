@@ -59,7 +59,7 @@ async function weeklyScore(db, chatId, telegramId, weekKey) {
 async function streakCount(db, chatId, telegramId, nowMs) {
   const result = await db.prepare(
     'SELECT DISTINCT day_key FROM tag_run_messages WHERE chat_id=? AND telegram_id=? ' +
-    'ORDER BY day_key DESC LIMIT 180'
+    'ORDER BY day_key DESC LIMIT 3660'
   ).bind(chatId, telegramId).all();
   const dates = new Set((result.results || []).map(row => row.day_key));
   const today = utcDay(nowMs);
