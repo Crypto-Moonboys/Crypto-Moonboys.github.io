@@ -3,13 +3,16 @@ import {
   eligibleTagComment, isValidWaxAccount, isValidTokenContract,
   parseTokenUnits, formatTokenUnits, adminTelegramIds, authenticatedGroupId
 } from './core.js';
+import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
 
 const TAG_COMMANDS = new Set([
   'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain',
-  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable'
+  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
+  ...V2_COMMANDS
 ]);
 const ADMIN_COMMANDS = new Set([
-  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable'
+  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
+  ...V2_ADMIN_COMMANDS
 ]);
 const COOLDOWN_SECONDS = 45;
 const DAILY_LIMIT = 30;
@@ -180,6 +183,8 @@ function helpMessage() {
     '/ranks — complete TAG RUN rank ladder\n' +
     '/rewards — weekly reward information\n' +
     '/rain — register a WAX account privately with the bot\n' +
+    '/pool — community token pot status (V2, when enabled)\n' +
+    '/myrewards — unfunded participation weight (V2, when enabled)\n' +
     '/help or /taghelp — this TAG RUN guide\n' +
     'Other bot commands such as /games, /daily and /gklink remain separate.\n' +
     'No website linking is required to earn TAG RUN points.';
@@ -236,6 +241,10 @@ export async function handleTagRunCommand(update, env, options = {}) {
     if (ADMIN_COMMANDS.has(name) && (!isAdmin || !isPrivate)) {
       await send('TAG RUN admin settings are available only to authorised admins in a private bot chat.');
       return true;
+    }
+    if (V2_COMMANDS.has(name)) {
+      return handleTagRunV2Command(env, { name, isAdmin, isPrivate, chatId,
+        telegramId, send, nowMs, fetchImpl });
     }
     if (name === 'help' || name === 'taghelp') {
       await send(helpMessage());
