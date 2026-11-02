@@ -31,8 +31,12 @@ function fixture(t, opts = {}) {
     async first() { return sqlite.prepare(this.query).get(...this.args) || null; }
     async all() { return { success: true, results: sqlite.prepare(this.query).all(...this.args) }; }
     async run() {
-      const result = sqlite.prepare(this.query).run(...this.args);
-      return { success: true, meta: { changes: Number(result.changes) } };
+      // Match Cloudflare D1 meta.changes, which counts writes in AFTER INSERT
+      // triggers as well as the direct statement (unlike sqlite.run().changes).
+      const before = sqlite.prepare('SELECT total_changes() AS n').get().n;
+      sqlite.prepare(this.query).run(...this.args);
+      const after = sqlite.prepare('SELECT total_changes() AS n').get().n;
+      return { success: true, meta: { changes: after - before } };
     }
   }
   const DB = {
@@ -269,11 +273,71 @@ test('daily limit 30, replies and first-next-day streak bonus accrue server side
   assert.equal(f.sqlite.prepare("SELECT COUNT(*) AS n FROM tag_run_messages WHERE week_key='2026-11-09'").get().n, 0);
 });
 
+
+test('D1 trigger-inclusive change counts still credit messages and enable immediate promotion delivery', async t => {
+  const f = fixture(t);
+  const first = f.message('An original discussion of the artwork with the whole group');
+  assert.equal(await f.score(first), true, 'a qualifying first message has trigger changes >1');
+  const tally = f.sqlite.prepare('SELECT score,posts FROM tag_run_member_totals').get();
+  assert.deepEqual(tally, { score: 10, posts: 1 });
+  assert.equal(await f.score(first), false, 'replayed message has zero changes');
+
+  const second = f.message('Another meaningful post about the creative street art scene',
+    { nowMs: MONDAY + 60000 });
+  assert.equal(await f.score(second, MONDAY + 60000), true);
+  const third = f.message('Third unique response about the texture and graffiti mural',
+    { nowMs: MONDAY + 120000 });
+  assert.equal(await f.score(third, MONDAY + 120000), true,
+    'rank-up receipt and member totals triggers must not make acceptance false');
+  const rank = f.sqlite.prepare('SELECT rank_name,status FROM tag_run_rank_announcements').get();
+  assert.equal(rank.rank_name, 'Fresh Ink');
+  assert.equal(rank.status, 'pending');
+  const delivery = await deliverTagRunRankAnnouncements(f.env, { fetchImpl: f.fetchImpl });
+  assert.equal(delivery.sent, 1, 'new rank is announced on immediate drain, not only cron');
+  assert.match(f.sent.at(-1).text, /Fresh Ink/);
+});
+
+test('cooldown uses member day index, including messages crossing UTC midnight', async t => {
+  const f = fixture(t);
+  const prior = Date.parse('2026-11-08T23:59:50Z');
+  const next = Date.parse('2026-11-09T00:00:10Z');
+  assert.equal(await f.score(f.message('Sunday nighttime original graffiti drawing ideas',
+    { nowMs: prior }),prior),true);
+  assert.equal(await f.score(f.message('Monday morning original new sticker artwork suggestions',
+    { nowMs: next }),next),false,
+    'new UTC day must still enforce cooldown from the previous day');
+  const later = Date.parse('2026-11-09T00:00:41Z');
+  assert.equal(await f.score(f.message('Monday next contribution about more street graphics',
+    { nowMs: later }),later),true);
+  const rows=f.sqlite.prepare('SELECT day_key,week_key,points FROM tag_run_messages ' +
+    'ORDER BY message_unix').all();
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].week_key, '2026-11-02');
+  assert.equal(rows[1].week_key, '2026-11-09');
+  assert.equal(rows[1].points, 15, 'previous-day streak bonus is retained');
+  const manager=readFileSync(new URL('../workers/moonboys-api/tag-run/handler.js',
+    import.meta.url),'utf8');
+  assert.match(manager, /day_key>=\? AND message_unix>\?/);
+  const plan=f.sqlite.prepare(
+    'EXPLAIN QUERY PLAN SELECT 1 FROM tag_run_messages ' +
+    'WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?'
+  ).all(GROUP,MEMBER,'2026-11-08',Math.floor(prior/1000));
+  assert.ok(plan.some(row => /tag_run_messages_member_day/.test(row.detail)),
+    'cooldown query should use bounded member-day index rather than lifetime scan');
+});
+
 test('commands are verified-group/private only and rain registers unverified WAX accounts', async t => {
   const f = fixture(t);
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'group' }), f.env), true);
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'private' }), f.env), true);
   assert.equal(isSharedLegacyProfile(f.message('/profile', { chat: 'private' }), f.env), true);
+  for (const legacy of ['/PROFILE', '/profile extra', '/PROFILE detailed stats',
+    '/profile@WIKICOMSBOT extra', '/PROFILE@wikicomsbot Something Else']) {
+    assert.equal(isSharedLegacyProfile(f.message(legacy, { chat: 'private' }), f.env),
+      true, legacy + ' must preserve original profile routing');
+  }
+  assert.equal(isSharedLegacyProfile(f.message('/profile@OTHERBOT extra', { chat: 'private' }),
+    f.env), false, 'other bots are not intercepted');
   assert.equal(isSharedLegacyProfile(f.message('/tagprofile', { chat: 'private' }), f.env), false);
   assert.equal(isTagRunCommand(f.message('/tagprofile', { chat: 'group' }), f.env), true);
   assert.equal(isTagRunCommand(f.message('/daily'), f.env), false);
