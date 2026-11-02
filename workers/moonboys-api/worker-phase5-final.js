@@ -7,6 +7,7 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
+import { isTagRunCommand, handleTagRunCommand, recordTagRunMessage, draftTagRunWeeklyRewards } from './tag-run/handler.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -415,6 +416,15 @@ export default {
       }
     }
 
+    // TAG RUN operates only after the existing Telegram secret verification.
+    // Its own commands are intentionally isolated from MoonPet /daily and the
+    // existing website login. All unrelated updates retain the base handler.
+    if (isTelegramWebhook && body && isTagRunCommand(body, env)) {
+      await handleTagRunCommand(body, env);
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     if (isTelegramWebhook && body) {
       await preparePetGearRead(env, body);
     }
@@ -458,6 +468,15 @@ export default {
       }
     }
 
+    // Receipt-only scoring. Failures never mutate Arcade XP, MoonPet or the
+    // Telegram webhook result. Normal group chat does not require a site link.
+    if (isTelegramWebhook && body && response.ok && env?.TAG_RUN_ENABLED === 'true') {
+      const scoring = recordTagRunMessage(body, env).catch((error) => {
+        console.warn('[TAG RUN] chat scoring unavailable', String(error?.message || error));
+      });
+      if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(scoring);
+      else await scoring;
+    }
     return response;
   },
 
@@ -465,6 +484,15 @@ export default {
     // Global GPS coordinate cleanup runs on every cron tick so expired and abandoned
     // sessions are scrubbed regardless of whether the user ever makes another request.
     ctx.waitUntil(cleanupExpiredSessions(env.DB, Date.now()).catch(() => {}));
+    // The weekly Monday-UTC draft is ledger-only and requires both feature
+    // flags plus explicit admin token/amount configuration. No WAX signatures.
+    if (env?.TAG_RUN_ENABLED === 'true' &&
+        env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'true') {
+      ctx.waitUntil(draftTagRunWeeklyRewards(env).catch((error) => {
+        console.warn('[TAG RUN] weekly review draft unavailable',
+          String(error?.message || error));
+      }));
+    }
     if (typeof baseWorker.scheduled === 'function') {
       return baseWorker.scheduled(event, env, ctx);
     }
