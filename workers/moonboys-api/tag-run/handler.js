@@ -153,9 +153,10 @@ export function isTagRunCommand(update, env) {
 // append TAG RUN's own profile as an additional message, not a replacement.
 export function isSharedLegacyProfile(update, env) {
   if (!isTagRunCommand(update, env)) return false;
-  const text = String(update?.message?.text || '').trim();
-  return text === '/profile' ||
-    text.toLowerCase() === ('/profile@' + String(env?.TELEGRAM_BOT_USERNAME || '').replace(/^@/, '').toLowerCase());
+  // The original bot also accepts /PROFILE, /profile@BotName and profile
+  // commands with arguments. Route all recognised variants through the
+  // legacy handler so XP/faction/quest details are never silently dropped.
+  return parseTagCommand(update?.message?.text, env?.TELEGRAM_BOT_USERNAME)?.name === 'profile';
 }
 export async function handleTagRunCommand(update, env, options = {}) {
   if (!isTagRunCommand(update, env)) return false;
@@ -532,7 +533,7 @@ export async function recordTagRunMessage(update, env, options = {}) {
     '  AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?)',
     '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?',
     'WHERE (SELECT COUNT(*) FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?) < ' + DAILY_LIMIT,
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND message_unix>?)',
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?)',
     'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND message_unix>?)'
   ].join(' ');
   const result = await env.DB.prepare(query).bind(
@@ -540,10 +541,13 @@ export async function recordTagRunMessage(update, env, options = {}) {
     chatId,telegramId,previous, chatId,telegramId,day,
     nowSeconds,cleanName(message.from),
     chatId,telegramId,day,
-    chatId,telegramId,nowSeconds - COOLDOWN_SECONDS,
+    chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
     chatId,telegramId,hash,nowSeconds - 86400
   ).run();
-  return Number(result?.meta?.changes || 0) === 1;
+  // D1 reports total statement changes, including member-total and rank-up
+  // trigger writes. The INSERT OR IGNORE is the only potential source of
+  // changes here, so any positive count means the message was accepted.
+  return Number(result?.meta?.changes || 0) > 0;
 }
 
 export async function draftTagRunWeeklyRewards(env, options = {}) {
