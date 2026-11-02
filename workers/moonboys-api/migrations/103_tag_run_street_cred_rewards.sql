@@ -142,6 +142,9 @@ CREATE TABLE IF NOT EXISTS tag_run_reward_config (
   top2_multiplier INTEGER NOT NULL DEFAULT 3 CHECK(top2_multiplier BETWEEN 1 AND 20),
   top3_multiplier INTEGER NOT NULL DEFAULT 2 CHECK(top3_multiplier BETWEEN 1 AND 20),
   enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0,1)),
+  -- Monotonic CAS version. Every admin mutation (including repeated disable)
+  -- increments revision to reject stale reads and delayed RPC responses.
+  revision INTEGER NOT NULL DEFAULT 0 CHECK(revision >= 0),
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
