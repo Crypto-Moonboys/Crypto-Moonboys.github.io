@@ -83,6 +83,37 @@ async function weeklyTop(db, chatId, weekKey) {
   ).bind(chatId, weekKey).all();
   return rows.results || [];
 }
+// Four-hour group bulletin. The schedule is separate from the 5-minute
+// maintenance tick, and never posts for groups other than the configured one.
+export async function postTagRunGroupBulletin(env, options = {}) {
+  if (!ACTIVE(env)) return { status: 'disabled' };
+  const chatId = authenticatedGroupId(env);
+  const nowMs = options.nowMs ?? Date.now();
+  const rows = await weeklyTop(env.DB, chatId, weekOf(nowMs));
+  const ranks = rows.map((row, index) =>
+    (index + 1) + '. ' + String(row.display_name || 'Tagger')
+      .replace(/[\\u0000-\\u001f\\u007f\\u202a-\\u202e\\u2066-\\u2069]/g, '')
+      .slice(0, 70) + ' — ' + String(Number(row.score) || 0) +
+    ' pts · ' + rankFor(row.lifetime_score).name);
+  const bot = String(env.TELEGRAM_BOT_USERNAME || 'WIKICOMSBOT').replace(/^@/, '');
+  const message = 'TAG RUN · STREET CRED\\n' +
+    'Make your mark in this group. Meaningful messages (10+ characters) earn ' +
+    '10 Street Cred; replies to other members add 2, and an active-day streak adds 5. ' +
+    'Maximum 30 credited messages per UTC day, with a 45-second cooldown. ' +
+    'No spam or repeated comments. Points here are separate from Arcade XP.\\n\\n' +
+    'THIS WEEK’S TOP 10 (UTC)\\n' +
+    (ranks.join('\\n') || 'No qualifying messages yet. Be the first to get on the wall.') +
+    '\\n\\n/tagprofile — your points and rank\\n/top — live weekly top 10' +
+    '\\n/ranks — all 29 ranks\\n/taghelp — full guide' +
+    '\\n/rain yourwaxaccount — register a WAX account by private DM to @' + bot +
+    ' (verification pending; no automatic payouts).';
+  const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch);
+  // Never retry an uncertain send: a delivered-but-unacknowledged Telegram
+  // response must not cause duplicate group notices.
+  if (!sent) console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed');
+  return { status: sent ? 'sent' : 'unconfirmed', count: rows.length };
+}
+
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
     'SELECT telegram_id, display_name, score, posts FROM tag_run_member_totals ' +
