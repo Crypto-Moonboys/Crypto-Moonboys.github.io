@@ -175,6 +175,9 @@ test('commands are verified-group/private only and rain registers unverified WAX
   assert.equal(wallet.verification_status, 'pending');
   assert.match((await f.command('/rain rXRPabcdef')).answer, /Usage/);
   assert.match((await f.command('/profile')).answer, /Newbie Tagger/);
+  const ranks = await f.command('/ranks', { chat: 'group' });
+  assert.match(ranks.answer, /0 — Newbie Tagger/);
+  assert.match(ranks.answer, /95,000 — Graffiti King/);
 });
 
 test('admin alone changes chain-verified token, weekly amounts and multipliers; draft is review-only', async t => {
@@ -218,6 +221,12 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
     { nowMs: Date.parse('2026-11-09T00:10:00Z') })).status, 'already_drafted');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) n FROM tag_run_weekly_allocations').get().n, 4);
   assert.match((await f.command('/rewards')).answer, /No tokens transfer automatically/);
+  const preview = await f.command('/tagplan', {
+    user: ADMIN, nowMs: Date.parse('2026-11-09T01:00:00Z')
+  });
+  assert.match(preview.answer, /REVIEW DRAFT/);
+  assert.match(preview.answer, /110\.0000 LFGK/);
+  assert.match(preview.answer, /NO transfers/);
 });
 
 test('reward plans fail closed if the weekly token budget cannot cover every active member', async t => {
