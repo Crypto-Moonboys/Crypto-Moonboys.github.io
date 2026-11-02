@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS tag_run_messages (
   day_key TEXT NOT NULL,
   week_key TEXT NOT NULL,
   content_hash TEXT NOT NULL,
-  points INTEGER NOT NULL CHECK(points BETWEEN 1 AND 6),
+  points INTEGER NOT NULL CHECK(points BETWEEN 1 AND 17),
   message_unix INTEGER NOT NULL,
   display_name TEXT NOT NULL DEFAULT '',
   PRIMARY KEY(chat_id, message_id)
