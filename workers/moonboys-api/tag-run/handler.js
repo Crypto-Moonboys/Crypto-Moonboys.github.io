@@ -512,7 +512,7 @@ export async function recordTagRunMessage(update, env, options = {}) {
   if (!Number.isFinite(sentSec) || Math.abs(nowMs / 1000 - sentSec) > 300 ||
       utcDay(sentSec * 1000) !== utcDay(nowMs)) return false;
   const hash = await hashComment(comment, options.cryptoImpl);
-  if (!hash) return false;
+  if (!hash) throw new Error('tag_run_content_hash_unavailable');
   const chatId = authenticatedGroupId(env);
   const telegramId = String(message.from.id);
   const nowSeconds = Math.floor(nowMs / 1000);
@@ -544,10 +544,16 @@ export async function recordTagRunMessage(update, env, options = {}) {
     chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
     chatId,telegramId,hash,nowSeconds - 86400
   ).run();
-  // D1 reports total statement changes, including member-total and rank-up
-  // trigger writes. The INSERT OR IGNORE is the only potential source of
-  // changes here, so any positive count means the message was accepted.
-  return Number(result?.meta?.changes || 0) > 0;
+  // A successful INSERT OR IGNORE may change zero rows for spam/replays. A
+  // missing result or failed DB write is NOT equivalent to a rejected post:
+  // throw so Telegram receives a 503 and retries the signed webhook.
+  if (!result || result.success === false ||
+      !Number.isSafeInteger(Number(result.meta?.changes)) ||
+      Number(result.meta.changes) < 0) {
+    throw new Error('tag_run_scoring_write_unconfirmed');
+  }
+  // D1 reports trigger writes (lifetime totals and rank-up outbox) too.
+  return Number(result.meta.changes) > 0;
 }
 
 export async function draftTagRunWeeklyRewards(env, options = {}) {
