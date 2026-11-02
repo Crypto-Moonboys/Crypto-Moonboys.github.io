@@ -468,9 +468,11 @@ export default {
       }
     }
 
-    // Receipt-only scoring. Failures never mutate Arcade XP, MoonPet or the
-    // Telegram webhook result. Normal group chat does not require a site link.
-    if (isTelegramWebhook && body && response.ok && env?.TAG_RUN_ENABLED === 'true') {
+    // Receipt-only scoring is independent of the legacy bot command result.
+    // The webhook was authenticated before parsing. Unknown chat messages must
+    // still earn TAG RUN points even if an unrelated legacy route declines them.
+    // Failures never mutate Arcade XP, MoonPet or the Telegram webhook result.
+    if (isTelegramWebhook && body && env?.TAG_RUN_ENABLED === 'true') {
       const scoring = recordTagRunMessage(body, env).catch((error) => {
         console.warn('[TAG RUN] chat scoring unavailable', String(error?.message || error));
       });
