@@ -589,7 +589,7 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     '(chat_id,week_key,token_contract,token_symbol,token_precision,base_amount_units,',
     'max_weekly_units,top1_multiplier,top2_multiplier,top3_multiplier,',
     'planned_units,recipient_count,standings_json,status)',
-    'SELECT ?,?,?,?,?,?,?,?,?,?,?,census.recipient_count,census.standings_json,',
+    'SELECT ?,?,?,?,?,?,?,?,?,?,census.planned_units,census.recipient_count,census.standings_json,',
     "'review_only' FROM census",
     'WHERE census.recipient_count BETWEEN 1 AND ?',
     'AND census.planned_units BETWEEN 1 AND ?',
@@ -600,7 +600,7 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     chatId,week,cfg.token_contract,cfg.token_symbol,cfg.token_precision,
     cfg.base_amount_units,cfg.max_weekly_units,cfg.top1_multiplier,
     cfg.top2_multiplier,cfg.top3_multiplier, // Snapshotted config
-    // The SELECT has 11 fixed plan fields then census count / JSON.
+    // The SELECT has 10 fixed config fields, then frozen planned/count/JSON.
     MAX_WEEKLY_RECIPIENTS,cfg.max_weekly_units
   );
   const insertAllocations = env.DB.prepare([
