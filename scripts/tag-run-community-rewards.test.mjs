@@ -164,9 +164,9 @@ test('commands are verified-group/private only and rain registers unverified WAX
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'private' }), f.env), true);
   assert.equal(isTagRunCommand(f.message('/daily'), f.env), false);
   assert.equal(isTagRunCommand(f.message('/help', { chat: 'private' }), f.env), false);
-  assert.equal(isTagRunCommand(f.message('/profile', {
-    chat: 'group', chat: { id: 123, type: 'supergroup' }
-  }), f.env), true); // Override covered by raw actor/group assertions elsewhere.
+  const outsider = f.message('/profile', { chat: 'group' });
+  outsider.message.chat.id = -1009999999999;
+  assert.equal(isTagRunCommand(outsider, f.env), false, 'other groups cannot use TAG RUN');
   const rain = await f.command('/rain abcde.wam');
   assert.equal(rain.handled, true);
   assert.match(rain.answer, /PENDING verification/);
