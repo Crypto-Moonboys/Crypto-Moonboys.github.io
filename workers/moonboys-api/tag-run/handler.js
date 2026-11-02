@@ -500,12 +500,15 @@ async function hashComment(value, cryptoImpl) {
 }
 
 export async function recordTagRunMessage(update, env, options = {}) {
-  if (!ACTIVE(env)) return false;
+  if (env?.TAG_RUN_ENABLED !== 'true') return false;
   const message = update?.message;
   if (!groupMatches(message, env) || !isTelegramId(message?.from?.id) ||
       !Number.isSafeInteger(message?.message_id) || message?.from?.is_bot) return false;
   const comment = eligibleTagComment(message);
   if (!comment) return false;
+  // A missing D1 binding is a scoring outage, not an ineligible message.
+  // Fail this authenticated group update with 503 through the wrapper.
+  if (!env?.DB) throw new Error('tag_run_database_unavailable');
   const nowMs = options.nowMs ?? Date.now();
   const sentSec = Number(message?.date);
   // No backdated or long-queued updates cross a UTC reward boundary.
