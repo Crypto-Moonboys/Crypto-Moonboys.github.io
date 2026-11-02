@@ -824,6 +824,7 @@ test('reward plans fail closed if the weekly token budget cannot cover every act
 
 test('four-hour bulletin publishes weekly top 10 and a bot introduction', async t => {
   const f = fixture(t);
+  f.env.TELEGRAM_GROUP_THREAD_ID = '23456';
   // An actual accepted message populates both the weekly and all-time tables.
   await f.score(f.message('Fresh tags for the community', { nowMs: MONDAY }));
   const sent = await postTagRunGroupBulletin(f.env, {
@@ -833,6 +834,8 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.equal(sent.count, 1);
   const bulletin = f.sent.at(-1);
   assert.equal(String(bulletin.chat_id), GROUP);
+  assert.equal(bulletin.message_thread_id, 23456,
+    'scheduled bulletin must target the configured announcement topic');
   assert.match(bulletin.text, /THIS WEEK.S TOP 10/);
   assert.match(bulletin.text, /1\. Tagger — 10 pts/);
   assert.match(bulletin.text, /45-second cooldown/);
@@ -852,4 +855,20 @@ test('four-hour bulletin never posts when scoring is disabled', async t => {
     nowMs: MONDAY, fetchImpl: f.fetchImpl
   })).status, 'disabled');
   assert.equal(f.sent.length, 0);
+});
+
+test('four-hour bulletin omits unset or invalid Telegram topic IDs', async t => {
+  const f = fixture(t);
+  const nowMs = MONDAY;
+  for (const threadId of [undefined, '', '0', '-1', 'not-a-topic', '12345678901234']) {
+    if (threadId === undefined) delete f.env.TELEGRAM_GROUP_THREAD_ID;
+    else f.env.TELEGRAM_GROUP_THREAD_ID = threadId;
+    const result = await postTagRunGroupBulletin(f.env, {
+      nowMs, fetchImpl: f.fetchImpl
+    });
+    assert.equal(result.status, 'sent');
+    assert.equal(String(f.sent.at(-1).chat_id), GROUP);
+    assert.equal(Object.hasOwn(f.sent.at(-1), 'message_thread_id'), false,
+      'invalid topic IDs must never be sent to Telegram');
+  }
 });
