@@ -337,6 +337,8 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
   assert.match(preview.answer, /REVIEW DRAFT/);
   assert.match(preview.answer, /110\.0000 LFGK/);
   assert.match(preview.answer, /NO transfers/);
+  const invalidWeek = await f.command('/tagplan 2026-13-01', { user: ADMIN });
+  assert.match(invalidWeek.answer, /Usage: \/tagplan/, 'invalid dates receive helpful usage rather than a generic failure');
 });
 
 test('reward plans fail closed if the weekly token budget cannot cover every active member', async t => {
