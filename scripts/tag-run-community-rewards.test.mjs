@@ -98,6 +98,34 @@ function fixture(t, opts = {}) {
   return { sqlite, DB, env, sent, pending, message, command, score };
 }
 
+
+test('deployment is fail-closed and webhook secret validation precedes TAG RUN ingress', async t => {
+  const f = fixture(t, { enabled: false });
+  const ignored = f.message('/top');
+  assert.equal(isTagRunCommand(ignored, f.env), false);
+  assert.equal(await f.score(f.message('A thoughtful message about the crew')),
+    false, 'TAG RUN must not write when disabled');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_messages').get().n, 0);
+  assert.equal((await draftTagRunWeeklyRewards(f.env)).status, 'disabled');
+
+  const wrapper = readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js',
+    import.meta.url), 'utf8');
+  const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
+    import.meta.url), 'utf8');
+  const verify = wrapper.indexOf('await verifyTelegramWebhookSecret(request, env)');
+  const parse = wrapper.indexOf('await readJsonSafe(request)');
+  const command = wrapper.indexOf('isTagRunCommand(body, env)');
+  assert(verify > 0 && verify < parse && parse < command,
+    'webhook authentication must precede JSON parsing and TAG RUN handling');
+  assert.match(wrapper, /recordTagRunMessage\(body, env\)/);
+  assert.match(wrapper, /draftTagRunWeeklyRewards\(env\)/);
+  assert.match(wrangler, /TAG_RUN_ENABLED = "false"/);
+  assert.match(wrangler, /TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"/);
+  const migration = SCHEMA;
+  assert.match(migration, /CHECK\(status = 'review_only'\)/);
+  assert.doesNotMatch(migration, /private_key|wax_secret|transact\(|onchain_transfer/i);
+});
+
 test('rank ladder matches all 29 approved thresholds and preserves UTC Monday weeks', () => {
   assert.equal(TAG_RUN_RANKS.length, 29);
   assert.deepEqual(TAG_RUN_RANKS[0], [0, 'Newbie Tagger']);
@@ -167,6 +195,10 @@ test('commands are verified-group/private only and rain registers unverified WAX
   const outsider = f.message('/profile', { chat: 'group' });
   outsider.message.chat.id = -1009999999999;
   assert.equal(isTagRunCommand(outsider, f.env), false, 'other groups cannot use TAG RUN');
+  const groupRain = await f.command('/rain abcde.wam', { chat: 'group' });
+  assert.match(groupRain.answer, /DM @/);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_wallets').get().n, 0,
+    'group commands may not register a payout account');
   const rain = await f.command('/rain abcde.wam');
   assert.equal(rain.handled, true);
   assert.match(rain.answer, /PENDING verification/);
