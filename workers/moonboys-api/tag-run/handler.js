@@ -267,8 +267,9 @@ export async function handleTagRunCommand(update, env, options = {}) {
     }
     if (name === 'tagplan') {
       const week = args || previousWeek(nowMs);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(week) ||
-          weekOf(Date.parse(week + 'T00:00:00.000Z')) !== week) {
+      const weekDateMs = /^\d{4}-\d{2}-\d{2}$/.test(week)
+        ? Date.parse(week + 'T00:00:00.000Z') : NaN;
+      if (!Number.isFinite(weekDateMs) || weekOf(weekDateMs) !== week) {
         await send('Usage: /tagplan [YYYY-MM-DD] where the date is a UTC Monday.');
         return true;
       }
