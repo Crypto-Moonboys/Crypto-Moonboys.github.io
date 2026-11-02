@@ -279,7 +279,8 @@ test('D1 trigger-inclusive change counts still credit messages and enable immedi
   const first = f.message('An original discussion of the artwork with the whole group');
   assert.equal(await f.score(first), true, 'a qualifying first message has trigger changes >1');
   const tally = f.sqlite.prepare('SELECT score,posts FROM tag_run_member_totals').get();
-  assert.deepEqual(tally, { score: 10, posts: 1 });
+  assert.equal(tally.score, 10);
+  assert.equal(tally.posts, 1);
   assert.equal(await f.score(first), false, 'replayed message has zero changes');
 
   const second = f.message('Another meaningful post about the creative street art scene',
