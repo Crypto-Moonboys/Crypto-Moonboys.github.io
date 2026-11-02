@@ -5,7 +5,7 @@ import {
 } from './core.js';
 
 const TAG_COMMANDS = new Set([
-  'profile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain',
+  'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain',
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable'
 ]);
 const ADMIN_COMMANDS = new Set([
@@ -73,9 +73,13 @@ async function streakCount(db, chatId, telegramId, nowMs) {
 }
 async function weeklyTop(db, chatId, weekKey) {
   const rows = await db.prepare(
-    'SELECT telegram_id, MAX(display_name) AS display_name, SUM(points) AS score, ' +
-    'COUNT(*) AS posts FROM tag_run_messages WHERE chat_id=? AND week_key=? ' +
-    'GROUP BY telegram_id ORDER BY score DESC, posts DESC, telegram_id ASC LIMIT 10'
+    'SELECT m.telegram_id, MAX(m.display_name) AS display_name, ' +
+    'SUM(m.points) AS score, COUNT(*) AS posts, ' +
+    'COALESCE(t.score,0) AS lifetime_score ' +
+    'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
+    'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
+    'WHERE m.chat_id=? AND m.week_key=? ' +
+    'GROUP BY m.telegram_id ORDER BY score DESC, posts DESC, m.telegram_id ASC LIMIT 10'
   ).bind(chatId, weekKey).all();
   return rows.results || [];
 }
@@ -107,7 +111,8 @@ function helpMessage() {
     'Send meaningful chat messages of 10+ characters for 10 pts, up to 30 eligible ' +
     'messages daily (45-second cooldown). +2 for replying to another member. ' +
     '+5 for the first eligible message after an active previous day.\n' +
-    '/profile — points, rank and streak\n' +
+    '/profile — existing bot profile plus TAG RUN stats\n' +
+    '/tagprofile — TAG RUN points, rank and streak only\n' +
     '/top — weekly leaderboard (/top all for all time)\n' +
     '/ranks — complete TAG RUN rank ladder\n' +
     '/rewards — weekly reward information\n' +
@@ -144,6 +149,14 @@ export function isTagRunCommand(update, env) {
   return true;
 }
 
+// /profile already exists in WIKICOMSBOT. Keep its XP/faction response and
+// append TAG RUN's own profile as an additional message, not a replacement.
+export function isSharedLegacyProfile(update, env) {
+  if (!isTagRunCommand(update, env)) return false;
+  const text = String(update?.message?.text || '').trim();
+  return text === '/profile' ||
+    text.toLowerCase() === ('/profile@' + String(env?.TELEGRAM_BOT_USERNAME || '').replace(/^@/, '').toLowerCase());
+}
 export async function handleTagRunCommand(update, env, options = {}) {
   if (!isTagRunCommand(update, env)) return false;
   const message = update.message;
@@ -186,7 +199,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         'This does not prove wallet ownership or activate token transfers.');
       return true;
     }
-    if (name === 'profile') {
+    if (name === 'profile' || name === 'tagprofile') {
       const [total, weekly, streak, wallet] = await Promise.all([
         memberScore(env.DB, chatId, telegramId),
         weeklyScore(env.DB, chatId, telegramId, weekOf(nowMs)),
@@ -219,7 +232,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         await weeklyTop(env.DB, chatId, weekOf(nowMs));
       const lines = rows.map((row, i) => (i + 1) + '. ' +
         String(row.display_name || 'Tagger').slice(0, 70) + ' — ' +
-        String(row.score) + ' pts · ' + rankFor(row.score).name);
+        String(row.score) + ' pts · ' + rankFor(all ? row.score : row.lifetime_score).name);
       await send('TAG RUN ' + (all ? 'ALL-TIME' : 'WEEKLY') + ' TOP 10\n' +
         (lines.join('\n') || 'No qualifying chat activity yet.') +
         '\nOnly trusted group chat messages count.');
@@ -495,7 +508,8 @@ export async function recordTagRunMessage(update, env, options = {}) {
   const nowMs = options.nowMs ?? Date.now();
   const sentSec = Number(message?.date);
   // No backdated or long-queued updates cross a UTC reward boundary.
-  if (!Number.isFinite(sentSec) || Math.abs(nowMs / 1000 - sentSec) > 300) return false;
+  if (!Number.isFinite(sentSec) || Math.abs(nowMs / 1000 - sentSec) > 300 ||
+      utcDay(sentSec * 1000) !== utcDay(nowMs)) return false;
   const hash = await hashComment(comment, options.cryptoImpl);
   if (!hash) return false;
   const chatId = authenticatedGroupId(env);
