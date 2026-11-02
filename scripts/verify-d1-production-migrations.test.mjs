@@ -874,3 +874,11 @@ assert.ok(production.d1_databases.wikicoms.required_migrations.includes(roomMigr
 assert.ok(workflow.includes('{"name":"096_moonpet_home_rooms.sql"}'));
 assert.throws(()=>validateRequest({...request,required_migrations:request.required_migrations.filter(name=>name!==roomMigration)}),/missing required migrations: 096_moonpet_home_rooms\.sql/);
 assert.throws(()=>verifyD1MigrationPayload([{success:true,results:request.required_migrations.filter(name=>name!==roomMigration).map(name=>({name}))}],request),/missing migrations: 096_moonpet_home_rooms\.sql/);
+
+const v2Migration = '104_tag_run_v2_community_token_pot.sql';
+assert.ok(REQUIRED_D1_MIGRATIONS.includes(v2Migration));
+assert.ok(request.required_migrations.includes(v2Migration));
+assert.ok(production.d1_databases.wikicoms.required_migrations.includes(v2Migration));
+assert.ok(workflow.includes('{"name":"104_tag_run_v2_community_token_pot.sql"}'));
+assert.throws(() => validateRequest({...request, required_migrations: request.required_migrations.filter(name => name !== v2Migration)}),
+  /missing required migrations: 104_tag_run_v2_community_token_pot\.sql/);
