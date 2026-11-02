@@ -6,10 +6,10 @@ import {
 
 const TAG_COMMANDS = new Set([
   'profile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain',
-  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagenable', 'tagdisable'
+  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable'
 ]);
 const ADMIN_COMMANDS = new Set([
-  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagenable', 'tagdisable'
+  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable'
 ]);
 const COOLDOWN_SECONDS = 45;
 const DAILY_LIMIT = 30;
@@ -242,9 +242,25 @@ export async function handleTagRunCommand(update, env, options = {}) {
       await send('TAG RUN ADMIN\n' + describeProgram(await configFor(env.DB, chatId)) +
         '\nCommands (private admin chat):\n' +
         '/tagtoken SYMBOL contract\n/tagamount base maxWeeklyBudget\n' +
-        '/tagbonus first second third\n/tagplan [YYYY-MM-DD]\n/tagenable\n/tagdisable\n' +
+        '/tagbonus first second third\n/tagplan [YYYY-MM-DD]\n/tagalerts\n/tagenable\n/tagdisable\n' +
         'Scheduled plans also require TAG_RUN_WEEKLY_REWARDS_ENABLED=true. ' +
         'All allocations remain review-only; automatic payments are disabled.');
+      return true;
+    }
+    if (name === 'tagalerts') {
+      const alerts = await env.DB.prepare(
+        'SELECT rank_name,display_name,telegram_id,total_points,status,' +
+        'attempt_count,created_at FROM tag_run_rank_announcements ' +
+        "WHERE chat_id=? AND status IN ('pending','attempted','needs_review') " +
+        'ORDER BY created_at DESC,source_message_id DESC LIMIT 20'
+      ).bind(chatId).all();
+      const lines = (alerts.results || []).map(alert =>
+        alert.status + ' · ' + String(alert.display_name || 'Tagger').slice(0, 70) +
+        ' · ' + alert.rank_name + ' (' + alert.total_points + ' pts)');
+      await send('TAG RUN RANK ANNOUNCEMENTS · ADMIN REVIEW\n' +
+        (lines.join('\n') || 'No pending or uncertain celebrations.') +
+        '\nAn attempted/needs_review send is never retried automatically; ' +
+        'check the group history before taking manual action.');
       return true;
     }
     if (name === 'tagplan') {
