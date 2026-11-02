@@ -430,17 +430,27 @@ export default {
       // /profile remains owned by the original bot too. The base handler
       // sends its established XP/level/faction/quest profile response.
     }
-    // Authenticated group activity is independent of whether the legacy
-    // command router accepts an ordinary non-command chat message.
+    // Persist authenticated group scoring BEFORE acknowledging Telegram.
+    // A transient DB failure returns non-2xx so Telegram retries this update;
+    // the (chat_id,message_id) receipt makes replays idempotent.
     if (isTelegramWebhook && body && env?.TAG_RUN_ENABLED === 'true') {
-      const scoring = recordTagRunMessage(body, env)
-        .then((accepted) => accepted
-          ? deliverTagRunRankAnnouncements(env, { limit: 3 })
-          : undefined)
-        .catch((error) => console.warn('[TAG RUN] group scoring/celebration failed',
-          String(error?.message || error)));
-      if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(scoring);
-      else await scoring;
+      let accepted;
+      try {
+        accepted = await recordTagRunMessage(body, env);
+      } catch (error) {
+        console.warn('[TAG RUN] scoring unavailable; Telegram should retry',
+          String(error?.message || error));
+        const retry = jsonError(request, 'tag_run_scoring_unavailable', 503, env);
+        retry.headers.set('Retry-After', '5');
+        return retry;
+      }
+      // Only Telegram announcement delivery is best-effort background work.
+      // If waitUntil is unavailable, cron drains still-pending notices.
+      if (accepted && typeof ctx?.waitUntil === 'function') {
+        ctx.waitUntil(deliverTagRunRankAnnouncements(env, { limit: 3 })
+          .catch((error) => console.warn('[TAG RUN] announcement queued for cron',
+            String(error?.message || error))));
+      }
     }
     if (isTelegramWebhook && body) {
       await preparePetGearRead(env, body);
