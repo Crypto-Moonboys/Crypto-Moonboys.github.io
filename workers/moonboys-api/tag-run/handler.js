@@ -371,6 +371,93 @@ export async function handleTagRunCommand(update, env, options = {}) {
   }
 }
 
+// Promotion delivery is an outbox consumer, not a second award calculation.
+// SQLite's AFTER INSERT trigger writes the pending receipt atomically with the
+// accepted chat message. Concurrent webhooks and cron can each attempt to drain
+// it, but only the one winning the pending→attempted CAS is allowed to send.
+// Ambiguous Telegram send failures are never auto-retried (prevent double posts).
+function rankAnnouncementText(row) {
+  return '🏆 TAG RUN · RANK UP!\n' +
+    '🎨 ' + String(row.display_name || 'A member').slice(0, 70) +
+    ' just reached ' + row.rank_name + '!\n' +
+    '⭐ ' + Number(row.total_points).toLocaleString('en-US') +
+    ' Street Cred\n' +
+    'Keep making your mark in the community.';
+}
+
+async function sendRankAnnouncement(env, row, fetchImpl) {
+  const token = String(env?.TELEGRAM_BOT_TOKEN || '');
+  const chatId = authenticatedGroupId(env);
+  if (!token || !chatId) return null;
+  const payload = {
+    chat_id: chatId,
+    text: rankAnnouncementText(row),
+    disable_web_page_preview: true
+  };
+  const threadId = String(env?.TELEGRAM_GROUP_THREAD_ID || '').trim();
+  if (/^[1-9][0-9]{0,12}$/.test(threadId)) {
+    payload.message_thread_id = Number(threadId);
+  }
+  const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) return null;
+  const body = await response.json();
+  const messageId = Number(body?.result?.message_id);
+  return body?.ok === true && Number.isSafeInteger(messageId) && messageId > 0
+    ? messageId : null;
+}
+
+export async function deliverTagRunRankAnnouncements(env, options = {}) {
+  if (!ACTIVE(env) || !env?.TELEGRAM_BOT_TOKEN) return { status: 'disabled' };
+  const chatId = authenticatedGroupId(env);
+  const limit = Math.min(10, Math.max(1, Number(options.limit) || 10));
+  const fetchImpl = options.fetchImpl || fetch;
+  const pending = await env.DB.prepare(
+    'SELECT chat_id,telegram_id,rank_threshold,rank_name,display_name,' +
+    'total_points,source_message_id FROM tag_run_rank_announcements ' +
+    "WHERE chat_id=? AND status='pending' ORDER BY created_at ASC, " +
+    'source_message_id ASC LIMIT ?'
+  ).bind(chatId, limit).all();
+  let sent = 0;
+  let needsReview = 0;
+  for (const row of pending.results || []) {
+    const claim = await env.DB.prepare(
+      "UPDATE tag_run_rank_announcements SET status='attempted'," +
+      'attempt_count=attempt_count+1,attempted_at=CURRENT_TIMESTAMP ' +
+      "WHERE chat_id=? AND telegram_id=? AND rank_threshold=? AND status='pending'"
+    ).bind(chatId, row.telegram_id, row.rank_threshold).run();
+    if (Number(claim?.meta?.changes || 0) !== 1) continue;
+    let telegramMessageId = null;
+    try {
+      telegramMessageId = await sendRankAnnouncement(env, row, fetchImpl);
+    } catch (error) {
+      // May have sent despite network error: leave for review; do not retry.
+      console.warn('[TAG RUN] rank announcement delivery uncertain',
+        String(error?.message || error));
+    }
+    if (telegramMessageId) {
+      await env.DB.prepare(
+        "UPDATE tag_run_rank_announcements SET status='sent'," +
+        'telegram_message_id=?,sent_at=CURRENT_TIMESTAMP ' +
+        "WHERE chat_id=? AND telegram_id=? AND rank_threshold=? AND status='attempted'"
+      ).bind(telegramMessageId, chatId, row.telegram_id, row.rank_threshold).run();
+      sent++;
+    } else {
+      // A timed-out or malformed send could already be visible to members.
+      // Manual review is safer than an automatic duplicate celebration.
+      await env.DB.prepare(
+        "UPDATE tag_run_rank_announcements SET status='needs_review' " +
+        "WHERE chat_id=? AND telegram_id=? AND rank_threshold=? AND status='attempted'"
+      ).bind(chatId, row.telegram_id, row.rank_threshold).run();
+      needsReview++;
+    }
+  }
+  return { status: 'processed', sent, needsReview };
+}
+
 async function hashComment(value, cryptoImpl) {
   const cryptoApi = cryptoImpl || globalThis.crypto;
   if (!cryptoApi?.subtle) return null;
