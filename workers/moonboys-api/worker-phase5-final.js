@@ -7,7 +7,7 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
-import { isTagRunCommand, handleTagRunCommand, recordTagRunMessage, draftTagRunWeeklyRewards } from './tag-run/handler.js';
+import { isTagRunCommand, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards } from './tag-run/handler.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -425,6 +425,18 @@ export default {
         headers: { 'Content-Type': 'application/json' }
       });
     }
+    // Authenticated group activity is independent of whether the legacy
+    // command router accepts an ordinary non-command chat message.
+    if (isTelegramWebhook && body && env?.TAG_RUN_ENABLED === 'true') {
+      const scoring = recordTagRunMessage(body, env)
+        .then((accepted) => accepted
+          ? deliverTagRunRankAnnouncements(env, { limit: 3 })
+          : undefined)
+        .catch((error) => console.warn('[TAG RUN] group scoring/celebration failed',
+          String(error?.message || error)));
+      if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(scoring);
+      else await scoring;
+    }
     if (isTelegramWebhook && body) {
       await preparePetGearRead(env, body);
     }
@@ -468,17 +480,6 @@ export default {
       }
     }
 
-    // Receipt-only scoring is independent of the legacy bot command result.
-    // The webhook was authenticated before parsing. Unknown chat messages must
-    // still earn TAG RUN points even if an unrelated legacy route declines them.
-    // Failures never mutate Arcade XP, MoonPet or the Telegram webhook result.
-    if (isTelegramWebhook && body && env?.TAG_RUN_ENABLED === 'true') {
-      const scoring = recordTagRunMessage(body, env).catch((error) => {
-        console.warn('[TAG RUN] chat scoring unavailable', String(error?.message || error));
-      });
-      if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(scoring);
-      else await scoring;
-    }
     return response;
   },
 
@@ -486,6 +487,13 @@ export default {
     // Global GPS coordinate cleanup runs on every cron tick so expired and abandoned
     // sessions are scrubbed regardless of whether the user ever makes another request.
     ctx.waitUntil(cleanupExpiredSessions(env.DB, Date.now()).catch(() => {}));
+    // Retry only celebrations that are still PENDING (never attempted).
+    // Ambiguous failures are held for manual review, preventing duplicate posts.
+    if (env?.TAG_RUN_ENABLED === 'true') {
+      ctx.waitUntil(deliverTagRunRankAnnouncements(env, { limit: 10 })
+        .catch((error) => console.warn('[TAG RUN] rank notice queue unavailable',
+          String(error?.message || error))));
+    }
     // The weekly Monday-UTC draft is ledger-only and requires both feature
     // flags plus explicit admin token/amount configuration. No WAX signatures.
     if (env?.TAG_RUN_ENABLED === 'true' &&
