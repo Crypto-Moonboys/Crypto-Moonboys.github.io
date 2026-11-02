@@ -30,7 +30,7 @@ const isPrivateChat = message => message?.chat?.type === 'private' &&
 const groupMatches = (message, env) => isGroupChat(message) &&
   String(message.chat.id) === authenticatedGroupId(env);
 const cleanName = from => (String(from?.first_name || '') + ' ' +
-  String(from?.last_name || '')).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 70)
+  String(from?.last_name || '')).replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().slice(0, 70)
   || ('Member ' + String(from?.id || '').slice(-4));
 
 async function messageReply(env, chatId, message, fetchImpl = fetch) {
@@ -201,7 +201,9 @@ export async function handleTagRunCommand(update, env, options = {}) {
         (rank.next ? ' (next at ' + rank.next.toLocaleString('en-US') + ')' : ' · MAX RANK') +
         '\nThis week: ' + recentWeekText(weekly?.score, weekly?.posts) +
         '\nDaily streak: ' + streak + ' day(s)' +
-        '\nWAX account: ' + (wallet ? wallet.wax_account + ' (' + wallet.verification_status + ')' :
+        '\nWAX account: ' + (wallet ? (isPrivate
+          ? wallet.wax_account + ' (' + wallet.verification_status + ')'
+          : 'registered (' + wallet.verification_status + ') — details in bot DM') :
           'not registered — DM /rain yourwaxaccount'));
       return true;
     }
@@ -396,6 +398,9 @@ function rankAnnouncementText(row) {
     ' just reached ' + row.rank_name + '!\n' +
     '⭐ ' + Number(row.total_points).toLocaleString('en-US') +
     ' Street Cred\n' +
+    (rankFor(row.total_points).next
+      ? 'Next rank at ' + rankFor(row.total_points).next.toLocaleString('en-US') + ' pts.\n'
+      : 'Highest TAG RUN rank achieved!\n') +
     'Keep making your mark in the community.';
 }
 
