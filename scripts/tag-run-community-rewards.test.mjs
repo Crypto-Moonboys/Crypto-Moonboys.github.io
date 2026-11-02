@@ -3,6 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { webcrypto } from 'node:crypto';
+import deployedWorker from '../workers/moonboys-api/worker-phase5-final.js';
 import {
   TAG_RUN_RANKS, rankFor, weekOf, previousWeek, eligibleTagComment,
   isValidWaxAccount, parseTokenUnits, formatTokenUnits
@@ -156,8 +157,12 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
   const f = fixture(t);
   assert.equal(eligibleTagComment({ message_id: 1, text: 'hi', from: { id: 1 } }), null);
   assert.equal(await f.score(f.message('This art has amazing movement in the background')), true);
-  assert.equal(await f.score(f.message('This art has amazing movement in the background', { nowMs: MONDAY + 50000 })), false,
-    'duplicate text within one day earns nothing');
+  // Advance BOTH the Telegram message timestamp and scoring clock. The
+  // 45-second cooldown has expired; only duplicate-content protection applies.
+  const duplicateTime = MONDAY + 50000;
+  assert.equal(await f.score(f.message('This art has amazing movement in the background',
+    { nowMs: duplicateTime }), duplicateTime), false,
+    'duplicate content remains blocked after the cooldown has expired');
   const original = f.message('Different fresh comment about the graffiti wall', { nowMs: MONDAY + 100000 });
   assert.equal(await f.score(original, MONDAY + 100000), true);
   assert.equal(await f.score(original, MONDAY + 100000), false, 'same Telegram message is deduplicated');
@@ -177,6 +182,55 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
   assert.equal(lifetime.posts, 2);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS count FROM tag_run_messages WHERE content_hash LIKE ?').get('%art%').count, 0,
     'raw message text must never be saved');
+});
+
+test('signed Telegram webhook returns retryable 503 on D1 scoring write failure', async () => {
+  const secret = 'fixture-tag-run-webhook-secret_0123456789';
+  const sent = [];
+  const nowSec = Math.floor(Date.now() / 1000);
+  const groupUpdate = {
+    update_id: 177001,
+    message: {
+      message_id: 377001, date: nowSec,
+      chat: { id: Number(GROUP), type: 'supergroup' },
+      from: { id: Number(MEMBER), first_name: 'Tagger' },
+      text: 'A legitimate original graffiti discussion should never lose points'
+    }
+  };
+  const dbQueries = [];
+  const env = {
+    TAG_RUN_ENABLED: 'true', TELEGRAM_WEBHOOK_SECRET: secret,
+    TELEGRAM_GROUP_CHAT_ID: GROUP, TELEGRAM_BOT_USERNAME: 'WIKICOMSBOT',
+    DB: {
+      prepare(sql) {
+        dbQueries.push(sql);
+        if (!sql.includes('INSERT OR IGNORE INTO tag_run_messages')) {
+          throw Error('unrelated database route executed after failed scoring');
+        }
+        return {
+          bind() {
+            return { async run() { throw Error('D1 temporarily unavailable'); } };
+          }
+        };
+      }
+    }
+  };
+  const request = new Request('https://moonboys-api.test/telegram/webhook', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-telegram-bot-api-secret-token': secret
+    },
+    body: JSON.stringify(groupUpdate)
+  });
+  const response = await deployedWorker.fetch(request, env, {
+    waitUntil(task) { sent.push(task); }
+  });
+  assert.equal(response.status, 503, 'Telegram must be allowed to retry a failed scoring write');
+  assert.equal(response.headers.get('Retry-After'), '5');
+  assert.deepEqual(await response.json(), { error: 'tag_run_scoring_unavailable' });
+  assert.equal(dbQueries.filter(sql => sql.includes('INSERT OR IGNORE INTO tag_run_messages')).length, 1);
+  assert.equal(sent.length, 0, 'no celebration is queued when scoring never persisted');
 });
 
 test('rank thresholds in SQL match the 29 names in the runtime ladder', async t => {
@@ -419,6 +473,23 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
   assert.match(invalidWeek.answer, /Usage: \/tagplan/, 'invalid dates receive helpful usage rather than a generic failure');
 });
 
+test('weekly leaderboard uses latest member display name, not lexicographic MAX', async t => {
+  const f = fixture(t);
+  const user = '8888999';
+  for (const [i, name] of ['Zoe', 'Alex'].entries()) {
+    const nowMs = MONDAY + i * 60000;
+    const update = f.message('A distinct thoughtful idea about the graffiti image ' + i,
+      { user, nowMs });
+    update.message.from.first_name = name;
+    assert.equal(await f.score(update, nowMs), true);
+  }
+  const board = await f.command('/top', { chat: 'group', nowMs: MONDAY + 120000 });
+  assert.match(board.answer, /Alex — 20 pts/);
+  assert.doesNotMatch(board.answer, /Zoe/, 'the previous name must not appear in weekly results');
+  const allTime = await f.command('/top all', { chat: 'group', nowMs: MONDAY + 120000 });
+  assert.match(allTime.answer, /Alex — 20 pts/);
+});
+
 test('weekly /top rank labels use all-time Street Cred and reward tie-break matches displayed order', async t => {
   const f = fixture(t);
   f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
@@ -455,6 +526,69 @@ test('weekly /top rank labels use all-time Street Cred and reward tie-break matc
     'FROM tag_run_weekly_allocations ORDER BY rank_position').all();
   assert.deepEqual(allocations.map(x=>x.telegram_id), [morePostsId,fewerPostsId]);
   assert.deepEqual(allocations.map(x=>x.amount_units), [500000,300000]);
+});
+
+for (const [label, mutate] of [
+  ['disable', (f) => f.sqlite.prepare(
+    'UPDATE tag_run_reward_config SET enabled=0 WHERE chat_id=?').run(GROUP)],
+  ['token replacement', async f => {
+    const change = await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN });
+    assert.match(change.answer, /Verified on WAX/);
+  }],
+  ['amount replacement', async f => {
+    const change = await f.command('/tagamount 12 1000', { user: ADMIN });
+    assert.match(change.answer, /Weekly base set/);
+  }],
+  ['bonus replacement', async f => {
+    const change = await f.command('/tagbonus 4 2 1', { user: ADMIN });
+    assert.match(change.answer, /Top-three multipliers updated/);
+  }],
+]) {
+  test('weekly plan cannot freeze stale settings after admin ' + label, async t => {
+    const f = fixture(t);
+    f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
+      '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
+      'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
+      .run(GROUP,'LFGK','kingsofgraff',4,100000,10000000);
+    assert.equal(await f.score(f.message('A real contribution to the art community')), true);
+    f.DB.beforeBatch = async () => { f.DB.beforeBatch = null; await mutate(f); };
+    f.env.TAG_RUN_WEEKLY_REWARDS_ENABLED='true';
+    const draft = await draftTagRunWeeklyRewards(f.env,
+      { nowMs: Date.parse('2026-11-09T00:05:00Z') });
+    assert.equal(draft.status, 'not_configured');
+    assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_weekly_plans').get().n,0);
+    assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_weekly_allocations').get().n,0);
+  });
+}
+
+test('weekly draft reads live token, budget and multipliers from same SQL statement', async t => {
+  const f = fixture(t);
+  f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
+    '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
+    'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
+    .run(GROUP,'LFGK','kingsofgraff',4,100000,10000000);
+  assert.equal(await f.score(f.message('One active member discussing graffiti style')),true);
+  f.DB.beforeBatch = async () => {
+    f.DB.beforeBatch=null;
+    f.sqlite.prepare('UPDATE tag_run_reward_config SET token_symbol=?,token_contract=?,' +
+      'token_precision=?,base_amount_units=?,max_weekly_units=?,top1_multiplier=?,' +
+      'top2_multiplier=?,top3_multiplier=?,enabled=1 WHERE chat_id=?')
+      .run('NEW','othercontract',2,200,1000000,2,1,1,GROUP);
+  };
+  f.env.TAG_RUN_WEEKLY_REWARDS_ENABLED='true';
+  const draft = await draftTagRunWeeklyRewards(f.env,
+    { nowMs: Date.parse('2026-11-09T00:05:00Z') });
+  assert.equal(draft.status,'review_only');
+  const plan=f.sqlite.prepare('SELECT * FROM tag_run_weekly_plans').get();
+  const allocation=f.sqlite.prepare('SELECT * FROM tag_run_weekly_allocations').get();
+  assert.equal(plan.token_symbol,'NEW');
+  assert.equal(plan.token_contract,'othercontract');
+  assert.equal(plan.token_precision,2);
+  assert.equal(plan.base_amount_units,200);
+  assert.equal(plan.top1_multiplier,2);
+  assert.equal(plan.planned_units,400);
+  assert.equal(allocation.amount_units,400);
+  assert.equal(plan.planned_units,allocation.amount_units);
 });
 
 test('a late score before the transaction cannot exceed the budget or include extra recipients', async t => {
