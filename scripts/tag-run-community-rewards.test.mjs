@@ -8,7 +8,7 @@ import {
   isValidWaxAccount, parseTokenUnits, formatTokenUnits
 } from '../workers/moonboys-api/tag-run/core.js';
 import {
-  isTagRunCommand, handleTagRunCommand, recordTagRunMessage,
+  isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage,
   deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards
 } from '../workers/moonboys-api/tag-run/handler.js';
 
@@ -257,12 +257,21 @@ test('daily limit 30, replies and first-next-day streak bonus accrue server side
     .get(post.message.message_id);
   assert.equal(earned.points, 10 + 2 + 5);
   assert.equal(f.sqlite.prepare('SELECT SUM(points) n FROM tag_run_messages').get().n, 317);
+  const lateSunday = Date.parse('2026-11-08T23:59:59Z');
+  const earlyMonday = Date.parse('2026-11-09T00:00:01Z');
+  assert.equal(await f.score(f.message('Long message sent just before the weekly cutover',
+    { nowMs: lateSunday }), earlyMonday), false,
+    'delivered-after-midnight message must not be misattributed to another UTC week');
+  assert.equal(f.sqlite.prepare("SELECT COUNT(*) AS n FROM tag_run_messages WHERE week_key='2026-11-09'").get().n, 0);
 });
 
 test('commands are verified-group/private only and rain registers unverified WAX accounts', async t => {
   const f = fixture(t);
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'group' }), f.env), true);
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'private' }), f.env), true);
+  assert.equal(isSharedLegacyProfile(f.message('/profile', { chat: 'private' }), f.env), true);
+  assert.equal(isSharedLegacyProfile(f.message('/tagprofile', { chat: 'private' }), f.env), false);
+  assert.equal(isTagRunCommand(f.message('/tagprofile', { chat: 'group' }), f.env), true);
   assert.equal(isTagRunCommand(f.message('/daily'), f.env), false);
   assert.equal(isTagRunCommand(f.message('/help', { chat: 'private' }), f.env), false);
   const outsider = f.message('/profile', { chat: 'group' });
@@ -301,7 +310,7 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
   assert.match((await f.command('/tagamount 10 1000', { user: ADMIN })).answer, /Weekly base set/);
   assert.equal(cfg().base_amount_units, 100000);
   assert.equal(cfg().max_weekly_units, 10000000);
-  assert.match((await f.command('/tagenable', { user: ADMIN })).answer, /review/);
+  assert.match((await f.command('/tagenable', { user: ADMIN })).answer, /drafts require separate approval/);
   assert.equal(cfg().enabled, 1);
   for (let i = 0; i < 4; i++) {
     const user = String(8000000 + i);
