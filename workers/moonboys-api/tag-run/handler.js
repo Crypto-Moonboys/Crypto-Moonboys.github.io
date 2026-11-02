@@ -47,9 +47,8 @@ function recentWeekText(score, posts) {
   return String(Number(score) || 0) + ' Street Cred · ' + String(Number(posts) || 0) + ' comments';
 }
 async function memberScore(db, chatId, telegramId) {
-  return db.prepare('SELECT COALESCE(SUM(points),0) AS score, COUNT(*) AS posts ' +
-    'FROM tag_run_messages WHERE chat_id=? AND telegram_id=?')
-    .bind(chatId, telegramId).first();
+  return db.prepare('SELECT score,posts FROM tag_run_member_totals ' +
+    'WHERE chat_id=? AND telegram_id=?').bind(chatId, telegramId).first();
 }
 async function weeklyScore(db, chatId, telegramId, weekKey) {
   return db.prepare('SELECT COALESCE(SUM(points),0) AS score, COUNT(*) AS posts ' +
@@ -82,9 +81,8 @@ async function weeklyTop(db, chatId, weekKey) {
 }
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
-    'SELECT telegram_id, MAX(display_name) AS display_name, SUM(points) AS score, ' +
-    'COUNT(*) AS posts FROM tag_run_messages WHERE chat_id=? ' +
-    'GROUP BY telegram_id ORDER BY score DESC, posts DESC, telegram_id ASC LIMIT 10'
+    'SELECT telegram_id, display_name, score, posts FROM tag_run_member_totals ' +
+    'WHERE chat_id=? ORDER BY score DESC, posts DESC, telegram_id ASC LIMIT 10'
   ).bind(chatId).all();
   return rows.results || [];
 }
