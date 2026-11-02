@@ -59,6 +59,8 @@ Only Telegram IDs listed in the Worker secret `ADMIN_TELEGRAM_IDS` can run these
 
 All amounts are converted to **integer smallest-token units** using precision read from WAX; no floating-point on-chain quantities. Program configuration snapshots with each week's draft so a later change of token or quantity does not rewrite historical reward plans.
 
+**Concurrent administrator commands:** Each reward configuration has a monotonically increasing database `revision`. Changing tokens, amounts, rank bonuses, enabling or disabling reward drafts increments that revision atomically. A slow WAX RPC or a command that read an older revision cannot overwrite the later change: the bot reports that the configuration changed, does not write stale quantities, and tells the admin to inspect `/tagstatus` before retrying. Even repeating `/tagdisable` increments the revision so a pending `/tagenable` cannot re-enable the programme. The feature flag for weekly drafts remains independent and OFF by default.
+
 ## Weekly rewards: what is and is not implemented
 
 After an eligible week closes, the existing five-minute Worker cron can produce one idempotent **review-only** ledger draft for the preceding Monday–Sunday UTC week.
