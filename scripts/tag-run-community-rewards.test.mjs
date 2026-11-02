@@ -10,7 +10,7 @@ import {
 } from '../workers/moonboys-api/tag-run/core.js';
 import {
   isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage,
-  deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards
+  deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin
 } from '../workers/moonboys-api/tag-run/handler.js';
 
 const SCHEMA = readFileSync(
@@ -139,7 +139,7 @@ test('deployment is fail-closed and webhook secret validation precedes TAG RUN i
     'webhook authentication must precede JSON parsing and TAG RUN handling');
   assert.match(wrapper, /recordTagRunMessage\(body, env\)/);
   assert.match(wrapper, /draftTagRunWeeklyRewards\(env\)/);
-  assert.match(wrangler, /TAG_RUN_ENABLED = "false"/);
+  assert.match(wrangler, /TAG_RUN_ENABLED = "true"/);
   assert.match(wrangler, /TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"/);
   const migration = SCHEMA;
   assert.match(migration, /CHECK\(status = 'review_only'\)/);
@@ -820,4 +820,55 @@ test('reward plans fail closed if the weekly token budget cannot cover every act
     { nowMs: Date.parse('2026-11-09T00:05:00Z') });
   assert.equal(draft.status, 'over_budget');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) n FROM tag_run_weekly_allocations').get().n, 0);
+});
+
+test('four-hour bulletin publishes weekly top 10 and a bot introduction', async t => {
+  const f = fixture(t);
+  f.env.TELEGRAM_GROUP_THREAD_ID = '23456';
+  // An actual accepted message populates both the weekly and all-time tables.
+  await f.score(f.message('Fresh tags for the community', { nowMs: MONDAY }));
+  const sent = await postTagRunGroupBulletin(f.env, {
+    nowMs: MONDAY, fetchImpl: f.fetchImpl
+  });
+  assert.equal(sent.status, 'sent');
+  assert.equal(sent.count, 1);
+  const bulletin = f.sent.at(-1);
+  assert.equal(String(bulletin.chat_id), GROUP);
+  assert.equal(bulletin.message_thread_id, 23456,
+    'scheduled bulletin must target the configured announcement topic');
+  assert.match(bulletin.text, /THIS WEEK.S TOP 10/);
+  assert.match(bulletin.text, /1\. Tagger — 10 pts/);
+  assert.match(bulletin.text, /45-second cooldown/);
+  assert.match(bulletin.text, /\/tagprofile/);
+  assert.match(bulletin.text, /\/rain yourwaxaccount/);
+  const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
+    import.meta.url), 'utf8');
+  assert.match(wrangler, /"0 \*\/4 \* \* \*"/);
+  const wrapper = readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js',
+    import.meta.url), 'utf8');
+  assert.match(wrapper, /event\?\.cron === '0 \*\/4 \* \* \*'/);
+});
+
+test('four-hour bulletin never posts when scoring is disabled', async t => {
+  const f = fixture(t, { enabled: false });
+  assert.equal((await postTagRunGroupBulletin(f.env, {
+    nowMs: MONDAY, fetchImpl: f.fetchImpl
+  })).status, 'disabled');
+  assert.equal(f.sent.length, 0);
+});
+
+test('four-hour bulletin omits unset or invalid Telegram topic IDs', async t => {
+  const f = fixture(t);
+  const nowMs = MONDAY;
+  for (const threadId of [undefined, '', '0', '-1', 'not-a-topic', '12345678901234']) {
+    if (threadId === undefined) delete f.env.TELEGRAM_GROUP_THREAD_ID;
+    else f.env.TELEGRAM_GROUP_THREAD_ID = threadId;
+    const result = await postTagRunGroupBulletin(f.env, {
+      nowMs, fetchImpl: f.fetchImpl
+    });
+    assert.equal(result.status, 'sent');
+    assert.equal(String(f.sent.at(-1).chat_id), GROUP);
+    assert.equal(Object.hasOwn(f.sent.at(-1), 'message_thread_id'), false,
+      'invalid topic IDs must never be sent to Telegram');
+  }
 });
