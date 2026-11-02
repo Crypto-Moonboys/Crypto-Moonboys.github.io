@@ -840,10 +840,10 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.match(bulletin.text, /\/rain yourwaxaccount/);
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
-  assert.match(wrangler, /"0 \\*\/4 \\* \\* \\*"/);
+  assert.match(wrangler, /"0 \*\/4 \* \* \*"/);
   const wrapper = readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js',
     import.meta.url), 'utf8');
-  assert.match(wrapper, /event\?\.cron === '0 \\*\/4 \\* \\* \\*'/);
+  assert.match(wrapper, /event\?\.cron === '0 \*\/4 \* \* \*'/);
 });
 
 test('four-hour bulletin never posts when scoring is disabled', async t => {
