@@ -20,6 +20,9 @@ Scoring is bounded to prevent bot/rank farming:
 - First qualifying comment of a day after an active previous UTC day: **+5 streak points**.
 - Identical normalised content cannot be credited twice in 24 hours.
 - Telegram update replay uses a unique `(chat_id,message_id)` receipt; repeat webhooks do not award twice.
+- An `AFTER INSERT` D1 trigger updates lifetime member totals and creates exactly one promotion announcement record whenever a rank threshold is crossed. Concurrent chat messages and webhook retries cannot create duplicate promotion receipts.
+- The bot posts a **TAG RUN RANK UP!** celebration into the configured Telegram community/group (optionally its configured thread): member name, new rank, lifetime Street Cred and next milestone. No member message body or WAX address is exposed.
+- The promotion queue has a single-send compare-and-set claim. Telegram failures or uncertain responses are flagged `needs_review`, never automatically re-sent, to avoid duplicate community posts. Scheduled jobs can deliver receipts still marked `pending`.
 - Only the configured Telegram supergroup contributes points. Private messages and channels never contribute.
 
 The score/rank system uses the complete user-approved 29-rank ladder from **Newbie Tagger** (0) to **Graffiti King** (95,000). Weekly leaderboards reset by **Monday 00:00 UTC**; lifetime rank does not reset. Ranks/leaderboards are specific to TAG RUN, **not Arcade XP**.
@@ -49,7 +52,8 @@ Only Telegram IDs listed in the Worker secret `ADMIN_TELEGRAM_IDS` can run these
 3. `/tagbonus 5 3 2` — optional top-three multipliers (defaults 5×, 3×, 2×); resets enabled state.
 4. `/tagstatus` — show contract, token, base/weekly budget, multipliers and current draft status.
 5. `/tagplan [YYYY-MM-DD]` — inspect the latest week's review-only WAX allocation draft or one from a specified UTC Monday, in an admin DM only.
-6. `/tagenable` / `/tagdisable` — switch configured reward drafting on/off. No on-chain transfers occur even when enabled.
+6. `/tagalerts` — privately inspect queued, uncertain or failed TAG RUN rank-up celebrations; ambiguous sends are never auto-retried.
+7. `/tagenable` / `/tagdisable` — switch configured reward drafting on/off. No on-chain transfers occur even when enabled.
 
 All amounts are converted to **integer smallest-token units** using precision read from WAX; no floating-point on-chain quantities. Program configuration snapshots with each week's draft so a later change of token or quantity does not rewrite historical reward plans.
 
@@ -78,7 +82,7 @@ The immutable draft captures the symbol, issuing contract, precision, user Teleg
 - Only the configured Telegram group is scored, after the existing server-side Telegram webhook secret check.
 - No client-supplied Telegram identity is accepted from the website; no website sync is required for Street Cred.
 - User text is processed transiently. The message ledger stores **SHA-256 content hashes**, points, timestamps and a public Telegram display name, **not raw message bodies**.
-- Wallet account names are public WAX identifiers but collected **only through private bot messages**.
+- Wallet account names are public WAX identifiers but collected **only through private bot messages**; `/profile` in a group shows registration status without revealing the WAX account. Only the same user's private bot chat displays the registered account.
 - No custodial credentials or WAX private keys belong in source code, D1 records, logs, member messages or bot commands.
 - Enabling recording should be announced to group members alongside the scoring and data-retention policy. A separate retention/privacy decision is required before live launch.
 
@@ -86,6 +90,6 @@ The immutable draft captures the symbol, issuing contract, precision, user Teleg
 
 `node --test scripts/tag-run-community-rewards.test.mjs`
 
-This suite covers the rank thresholds, Monday UTC boundaries, eligibility, duplicate update and comment rejection, 45-second cooldown, daily 30-message cap, streak/reply bonus, private WAX account registration, admin guards, on-chain token precision parsing via a mocked WAX RPC, amount/budget parsing, weekly plan idempotency, review-only allocation and over-budget fail-closed behavior.
+This suite covers all 29 SQL/JS rank thresholds, atomic cumulative totals and rank-up receipts, real group-message celebration payloads through mocked Telegram responses, duplicate/retry/concurrent delivery prevention, uncertain sends held for admin review, Monday UTC boundaries, eligibility, daily caps, streak/reply bonuses, private WAX account registration and privacy, admin guards, mock WAX token precision, budget calculations and review-only weekly allocations.
 
 Full CI and signed Telegram production validation are not established by this PR alone.
