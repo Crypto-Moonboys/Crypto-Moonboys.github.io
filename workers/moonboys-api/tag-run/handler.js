@@ -33,13 +33,24 @@ const cleanName = from => (String(from?.first_name || '') + ' ' +
   String(from?.last_name || '')).replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().slice(0, 70)
   || ('Member ' + String(from?.id || '').slice(-4));
 
-async function messageReply(env, chatId, message, fetchImpl = fetch) {
+async function messageReply(env, chatId, message, fetchImpl = fetch, useGroupTopic = false) {
   const token = String(env?.TELEGRAM_BOT_TOKEN || '');
   if (!token || !chatId) return false;
+  const payload = {
+    chat_id: chatId, text: String(message).slice(0, 3500),
+    disable_web_page_preview: true
+  };
+  // Scheduled group bulletins belong in the configured announcement topic.
+  // Ordinary command replies retain their existing chat routing.
+  if (useGroupTopic && String(chatId) === authenticatedGroupId(env)) {
+    const threadId = String(env?.TELEGRAM_GROUP_THREAD_ID || '').trim();
+    if (/^[1-9][0-9]{0,12}$/.test(threadId)) {
+      payload.message_thread_id = Number(threadId);
+    }
+  }
   const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: String(message).slice(0, 3500),
-      disable_web_page_preview: true })
+    body: JSON.stringify(payload)
   });
   return response.ok;
 }
@@ -107,7 +118,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     '\n/ranks — all 29 ranks\n/taghelp — full guide' +
     '\n/rain yourwaxaccount — register a WAX account by private DM to @' + bot +
     ' (verification pending; no automatic payouts).';
-  const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch);
+  const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch, true);
   // Never retry an uncertain send: a delivered-but-unacknowledged Telegram
   // response must not cause duplicate group notices.
   if (!sent) console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed');
