@@ -20,6 +20,7 @@ Scoring is bounded to prevent bot/rank farming:
 - First qualifying comment of a day after an active previous UTC day: **+5 streak points**.
 - Identical normalised content cannot be credited twice in 24 hours.
 - Telegram update replay uses a unique `(chat_id,message_id)` receipt; repeat webhooks do not award twice.
+- Messages delayed across a UTC midnight are **not** credited to the following day or week. Such events are rejected rather than silently assigned to the wrong reward period.
 - An `AFTER INSERT` D1 trigger updates lifetime member totals and creates exactly one promotion announcement record whenever a rank threshold is crossed. Concurrent chat messages and webhook retries cannot create duplicate promotion receipts.
 - The bot posts a **TAG RUN RANK UP!** celebration into the configured Telegram community/group (optionally its configured thread): member name, new rank, lifetime Street Cred and next milestone. No member message body or WAX address is exposed.
 - The promotion queue has a single-send compare-and-set claim. Telegram failures or uncertain responses are flagged `needs_review`, never automatically re-sent, to avoid duplicate community posts. Scheduled jobs can deliver receipts still marked `pending`.
@@ -31,8 +32,9 @@ The score/rank system uses the complete user-approved 29-rank ladder from **Newb
 
 | Command | Result |
 |---|---|
-| `/profile` | Lifetime Street Cred, rank, next threshold, current weekly points, streak and registered WAX wallet status |
-| `/top` | Top 10 for the current UTC week |
+| `/profile` | Combined response: existing WIKICOMSBOT XP/level/faction profile **plus** TAG RUN lifetime Street Cred, rank, weekly points and streak. Existing profile is not replaced. |
+| `/tagprofile` | TAG RUN stats only, without the original bot's profile reply. |
+| `/top` | Top 10 for the current UTC week, ordered by weekly points, eligible comment count, then Telegram ID. Rank titles show **lifetime** Street Cred. |
 | `/top all` | All-time Top 10 |
 | `/ranks` | Full 29-rank ladder with point thresholds |
 | `/rewards` | Selected WAX reward token, quantities, your weekly participation and previous review draft |
@@ -41,7 +43,7 @@ The score/rank system uses the complete user-approved 29-rank ladder from **Newb
 
 The bot cannot currently prove that the Telegram user owns a WAX account. **All `/rain` registrations are PENDING verification**; this is not permission to withdraw/send tokens. Never ask for wallet private keys or seed phrases in Telegram.
 
-Existing `/games`, `/daily`, `/gklink` and MoonPet commands remain handled by their preexisting code. The existing bot's private-chat `/help` remains unmodified (use `/taghelp` in DM).
+Existing `/games`, `/daily`, `/gklink` and MoonPet commands remain handled by their preexisting code. The existing bot's private-chat `/help` remains unmodified (use `/taghelp` in DM). The existing `/profile` command still returns its old XP, faction and quest details; TAG RUN adds a separate profile message to the same request rather than intercepting it.
 
 ## Reward configuration — admin-only, private bot chat
 
@@ -63,14 +65,14 @@ After an eligible week closes, the existing five-minute Worker cron can produce 
 
 Every eligible active member receives the base allocation; the ranked top three receive their configured multipliers. If more than 1,000 members are eligible, or the required total would exceed the administrator's weekly budget, **no partial plan is created**. The system stops for admin review rather than silently excluding members or exceeding the ceiling.
 
-The immutable draft captures the symbol, issuing contract, precision, user Telegram ID, rank, points, amount, and pending WAX account registration. It is explicitly marked `review_only`. No private key, transaction signing, transfer calls, token custody, claim link or automatic payment exists in this PR.
+The immutable draft captures the symbol, issuing contract, precision, user Telegram ID, rank, points, amount, and pending WAX account registration. The D1 batch writes the approved recipient count, token-unit budget and JSON standings from **one ranked snapshot** in its first statement, then materialises allocations strictly from that frozen JSON in the same transaction. The weekly leaderboard and plan use the same points → comment count → Telegram ID tie-breaker. Concurrent or delayed messages cannot change allocations after the plan was approved by SQL constraints. It is explicitly marked `review_only`. No private key, transaction signing, transfer calls, token custody, claim link or automatic payment exists in this PR.
 
 **A separate authorised payout release** is required to enable real tokens. Before that release, require: verified treasury WAX account, an action-limited signer with strict spending controls, wallet ownership challenges for recipients, on-chain balance/precision checks, per-batch approval, idempotent transaction IDs, failed-send reconciliation, eligibility review and explicit weekly budgeting. A bot token is not a WAX wallet signer.
 
 ## Deployment sequence (do not skip)
 
 1. Review and merge the PR after CI and signed Telegram webhook/browser testing. **Do not deploy automatically from this PR.**
-2. Check that migration `103_tag_run_street_cred_rewards.sql` is not already applied; use approved D1 migration runbook to apply to the production `wikicoms` binding once. Verify the expected tables/indexes through read-only D1 queries. Do **not** reset any live database or shared game tables.
+2. Check that migration `103_tag_run_street_cred_rewards.sql` is not already applied; use approved D1 migration runbook to apply to the production `wikicoms` binding once. Canonical `schema.sql`, the production required-migrations manifest, the evidence request, verification script, CI regression and manually dispatched workflow now all require migration 103. Verify the expected tables/indexes through read-only D1 queries. Do **not** reset any live database or shared game tables.
 3. Confirm `TELEGRAM_WEBHOOK_SECRET` matches the Telegram `setWebhook.secret_token` and the bot receives `message` updates. Before advertising TAG RUN commands, review the existing BotFather command menu and append `/profile`, `/top`, `/ranks`, `/rewards`, `/taghelp`, and `/rain` without removing existing game/Pet commands. Telegram bots need group administrator status or group Privacy Mode disabled through BotFather to observe normal chat text. The bot must be in the intended supergroup and `TELEGRAM_GROUP_CHAT_ID` must exactly match it.
 4. Deploy `moonboys-api` via the repository's provenance deployment wrapper, not direct unverified Wrangler.
 5. Only after step 2–4, intentionally change `TAG_RUN_ENABLED` to `"true"` in the reviewed Worker release. It is `"false"` by default. Test scoring, anti-spam, retries and `/profile`, `/top`, `/rewards`, `/rain` against the real Telegram group.
@@ -90,6 +92,6 @@ The immutable draft captures the symbol, issuing contract, precision, user Teleg
 
 `node --test scripts/tag-run-community-rewards.test.mjs`
 
-This suite covers all 29 SQL/JS rank thresholds, atomic cumulative totals and rank-up receipts, real group-message celebration payloads through mocked Telegram responses, duplicate/retry/concurrent delivery prevention, uncertain sends held for admin review, Monday UTC boundaries, eligibility, daily caps, streak/reply bonuses, private WAX account registration and privacy, admin guards, mock WAX token precision, budget calculations and review-only weekly allocations.
+This suite covers all 29 SQL/JS rank thresholds, atomic cumulative totals and rank-up receipts, real group-message celebration payloads through mocked Telegram responses, duplicate/retry/concurrent delivery prevention, uncertain sends held for admin review, Monday UTC and cross-day rejection, the legacy combined `/profile` route, lifetime rank labels in weekly `/top`, eligibility, daily caps, streak/reply bonuses, private WAX account registration and privacy, admin guards, mock WAX token precision, reward tie-breaks, SQL-enforced budget checks and frozen transactional allocation snapshots. The migration verifier also tests fail-closed production evidence for migration 103.
 
 Full CI and signed Telegram production validation are not established by this PR alone.
