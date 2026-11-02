@@ -20,6 +20,84 @@ CREATE INDEX IF NOT EXISTS tag_run_messages_member_week
 CREATE INDEX IF NOT EXISTS tag_run_messages_member_hash
   ON tag_run_messages(chat_id, telegram_id, content_hash, message_unix);
 
+-- Rank thresholds are mirrored from core.js and checked in contract tests.
+-- The receipt trigger is atomic with each accepted message, so concurrent
+-- messages cannot miss a rank crossing or create a duplicate celebration.
+CREATE TABLE IF NOT EXISTS tag_run_rank_levels (
+  threshold INTEGER PRIMARY KEY CHECK(threshold >= 0),
+  name TEXT NOT NULL UNIQUE
+);
+INSERT OR IGNORE INTO tag_run_rank_levels(threshold,name) VALUES
+  (0, 'Newbie Tagger'),
+  (25, 'Fresh Ink'),
+  (60, 'Sticker Bandit'),
+  (100, 'Street Rat'),
+  (150, 'Marker Maniac'),
+  (220, 'Alley Artist'),
+  (300, 'Stencil Starter'),
+  (420, 'Throwie Trainee'),
+  (580, 'Rooftop Rookie'),
+  (760, 'Trackside Tagger'),
+  (1000, 'Train Bomber'),
+  (1300, 'Night Shift Sprayer'),
+  (1700, 'Chrome Chaser'),
+  (2200, 'Outline Operator'),
+  (2800, 'Fill-In Fiend'),
+  (3500, 'Drip Doctor'),
+  (4400, 'Wildstyle Wrangler'),
+  (5500, 'Freight Phantom'),
+  (7000, 'Tunnel Tactician'),
+  (9000, 'Yard Ninja'),
+  (11500, 'Roller Renegade'),
+  (14500, 'Piece Prodigy'),
+  (18500, 'Burner Maker'),
+  (23500, 'Style General'),
+  (30000, 'City-Wide'),
+  (38000, 'Hall of Fame'),
+  (48000, 'Graffiti Veteran'),
+  (60000, 'Graffiti Legend'),
+  (95000, 'Graffiti King');
+
+CREATE TABLE IF NOT EXISTS tag_run_rank_announcements (
+  chat_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  rank_threshold INTEGER NOT NULL CHECK(rank_threshold > 0),
+  rank_name TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  total_points INTEGER NOT NULL CHECK(total_points > 0),
+  source_message_id INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK(status IN ('pending', 'attempted', 'sent', 'needs_review')),
+  telegram_message_id INTEGER,
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK(attempt_count BETWEEN 0 AND 1),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  attempted_at TEXT,
+  sent_at TEXT,
+  PRIMARY KEY(chat_id, telegram_id, rank_threshold)
+);
+CREATE INDEX IF NOT EXISTS tag_run_rank_announcements_queue
+  ON tag_run_rank_announcements(chat_id, status, created_at);
+
+CREATE TRIGGER IF NOT EXISTS tag_run_message_rank_up
+AFTER INSERT ON tag_run_messages
+BEGIN
+  INSERT OR IGNORE INTO tag_run_rank_announcements
+    (chat_id,telegram_id,rank_threshold,rank_name,display_name,total_points,source_message_id)
+  SELECT NEW.chat_id, NEW.telegram_id, levels.threshold, levels.name,
+    NEW.display_name, totals.score, NEW.message_id
+  FROM tag_run_rank_levels AS levels
+  CROSS JOIN (
+    SELECT COALESCE(SUM(points), 0) AS score
+    FROM tag_run_messages
+    WHERE chat_id=NEW.chat_id AND telegram_id=NEW.telegram_id
+  ) AS totals
+  WHERE levels.threshold > 0
+    AND totals.score >= levels.threshold
+    AND totals.score - NEW.points < levels.threshold
+  ORDER BY levels.threshold DESC
+  LIMIT 1;
+END;
+
 -- The chat member earns points without needing a website account link.
 -- Wallet registration is private and always UNVERIFIED until a future signed proof.
 CREATE TABLE IF NOT EXISTS tag_run_wallets (
