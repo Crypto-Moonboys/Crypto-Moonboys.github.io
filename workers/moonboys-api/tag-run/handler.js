@@ -94,6 +94,27 @@ async function configFor(db, chatId) {
   return db.prepare('SELECT * FROM tag_run_reward_config WHERE chat_id=?')
     .bind(chatId).first();
 }
+
+// Administrator writes use a monotonic compare-and-swap revision, NOT the
+// second-resolution updated_at timestamp. A stale /tagamount must never commit
+// values converted using an obsolete WAX token precision; a delayed /tagenable
+// must never reverse /tagdisable, /tagtoken or /tagbonus.
+async function writeConfigIfCurrent(db, query, args) {
+  const result = await db.prepare(query).bind(...args).run();
+  const changes = Number(result?.meta?.changes);
+  if (!result || result.success === false ||
+      !Number.isSafeInteger(changes) || changes < 0) {
+    throw new Error('tag_run_config_write_unconfirmed');
+  }
+  return changes > 0;
+}
+function configRevision(config) {
+  const revision = Number(config?.revision);
+  if (!Number.isSafeInteger(revision) || revision < 0) {
+    throw new Error('tag_run_config_revision_invalid');
+  }
+  return revision;
+}
 function describeProgram(program) {
   if (!program) return 'LFGK (kingsofgraff) · quantity not configured · WAX rewards OFF';
   const label = program.token_symbol + ' (' + program.token_contract + ')';
@@ -318,18 +339,33 @@ export async function handleTagRunCommand(update, env, options = {}) {
         await send('Usage: /tagtoken LFGK kingsofgraff (symbol + issuing WAX contract).');
         return true;
       }
+      // Capture the config revision BEFORE the external WAX RPC call. A slow
+      // response cannot undo a newer admin /tagdisable or token change.
+      const prior = await configFor(env.DB, chatId);
+      const revision = prior ? configRevision(prior) : null;
       const precision = await tokenInfoFromChain(contract, symbol, fetchImpl);
       if (precision == null) {
         await send('Token was not confirmed by WAX get_currency_stats. No changes made. ' +
           'Check the symbol and contract or retry later.');
         return true;
       }
-      await env.DB.prepare('INSERT INTO tag_run_reward_config ' +
-        '(chat_id,token_symbol,token_contract,token_precision) VALUES (?,?,?,?) ' +
-        'ON CONFLICT(chat_id) DO UPDATE SET token_symbol=excluded.token_symbol,' +
-        'token_contract=excluded.token_contract,token_precision=excluded.token_precision,' +
-        'base_amount_units=0,max_weekly_units=0,enabled=0,updated_at=CURRENT_TIMESTAMP')
-        .bind(chatId, symbol, contract, precision).run();
+      const saved = prior
+        ? await writeConfigIfCurrent(env.DB,
+          'UPDATE tag_run_reward_config SET token_symbol=?,token_contract=?,' +
+          'token_precision=?,base_amount_units=0,max_weekly_units=0,' +
+          'enabled=0,revision=revision+1,updated_at=CURRENT_TIMESTAMP ' +
+          'WHERE chat_id=? AND revision=?',
+          [symbol,contract,precision,chatId,revision])
+        : await writeConfigIfCurrent(env.DB,
+          'INSERT OR IGNORE INTO tag_run_reward_config ' +
+          '(chat_id,token_symbol,token_contract,token_precision,enabled,revision) ' +
+          'VALUES (?,?,?,?,0,1)',
+          [chatId,symbol,contract,precision]);
+      if (!saved) {
+        await send('TAG RUN configuration changed while the WAX token was being verified. ' +
+          'No changes made. Check /tagstatus and retry /tagtoken if still needed.');
+        return true;
+      }
       await send('Verified on WAX: ' + precision + '-decimal ' + symbol + ' @ ' + contract +
         '. Previous reward amounts reset and rewards disabled. Set /tagamount next.');
       return true;
@@ -341,6 +377,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         await send('First verify the reward token with /tagtoken SYMBOL contract.');
         return true;
       }
+      const revision = configRevision(cfg);
       const baseUnits = parseTokenUnits(base, cfg.token_precision);
       const budgetUnits = parseTokenUnits(max, cfg.token_precision);
       if (!baseUnits || !budgetUnits || baseUnits * cfg.top1_multiplier > budgetUnits ||
@@ -349,9 +386,20 @@ export async function handleTagRunCommand(update, env, options = {}) {
           'Both quantities must be positive; top rewards must fit the budget.');
         return true;
       }
-      await env.DB.prepare('UPDATE tag_run_reward_config SET base_amount_units=?,' +
-        'max_weekly_units=?,enabled=0,updated_at=CURRENT_TIMESTAMP WHERE chat_id=?')
-        .bind(baseUnits, budgetUnits, chatId).run();
+      // A token replacement changes the revision. Never apply quantities
+      // converted with an earlier token's precision to a different token.
+      const saved = await writeConfigIfCurrent(env.DB,
+        'UPDATE tag_run_reward_config SET base_amount_units=?,' +
+        'max_weekly_units=?,enabled=0,revision=revision+1,' +
+        'updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND revision=? ' +
+        'AND token_symbol=? AND token_contract=? AND token_precision=?',
+        [baseUnits,budgetUnits,chatId,revision,
+          cfg.token_symbol,cfg.token_contract,cfg.token_precision]);
+      if (!saved) {
+        await send('TAG RUN token or reward settings changed before /tagamount was saved. ' +
+          'No amounts changed. Review /tagstatus and enter quantities again.');
+        return true;
+      }
       await send('Weekly base set to ' + formatTokenUnits(baseUnits,cfg.token_precision) +
         ' ' + cfg.token_symbol + ' per active member, budget capped at ' +
         formatTokenUnits(budgetUnits,cfg.token_precision) + ' ' + cfg.token_symbol +
@@ -365,19 +413,36 @@ export async function handleTagRunCommand(update, env, options = {}) {
         await send('Usage: /tagbonus 5 3 2 (top 1, 2, 3 multipliers, 1–20 descending).');
         return true;
       }
-      await env.DB.prepare('INSERT INTO tag_run_reward_config(chat_id,top1_multiplier,' +
-        'top2_multiplier,top3_multiplier) VALUES(?,?,?,?) ON CONFLICT(chat_id) ' +
-        'DO UPDATE SET top1_multiplier=excluded.top1_multiplier,' +
-        'top2_multiplier=excluded.top2_multiplier,top3_multiplier=excluded.top3_multiplier,' +
-        'enabled=0,updated_at=CURRENT_TIMESTAMP').bind(chatId,...mult).run();
+      const prior = await configFor(env.DB, chatId);
+      const saved = prior
+        ? await writeConfigIfCurrent(env.DB,
+          'UPDATE tag_run_reward_config SET top1_multiplier=?,' +
+          'top2_multiplier=?,top3_multiplier=?,enabled=0,revision=revision+1,' +
+          'updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND revision=?',
+          [...mult,chatId,configRevision(prior)])
+        : await writeConfigIfCurrent(env.DB,
+          'INSERT OR IGNORE INTO tag_run_reward_config ' +
+          '(chat_id,top1_multiplier,top2_multiplier,top3_multiplier,enabled,revision) ' +
+          'VALUES (?,?,?,?,0,1)',[chatId,...mult]);
+      if (!saved) {
+        await send('TAG RUN settings changed while /tagbonus was being applied. ' +
+          'No changes made. Review /tagstatus and retry.');
+        return true;
+      }
       await send('Top-three multipliers updated to ×' + mult.join(' / ×') +
         '. Rewards OFF until /tagenable.');
       return true;
     }
     if (name === 'tagenable' || name === 'tagdisable') {
       if (name === 'tagdisable') {
-        await env.DB.prepare('UPDATE tag_run_reward_config SET enabled=0,' +
-          'updated_at=CURRENT_TIMESTAMP WHERE chat_id=?').bind(chatId).run();
+        // Even a repeated disable must bump the revision, invalidating any
+        // /tagenable that read the settings before this command.
+        const saved = await writeConfigIfCurrent(env.DB,
+          'INSERT INTO tag_run_reward_config(chat_id,enabled,revision) VALUES (?,0,1) ' +
+          'ON CONFLICT(chat_id) DO UPDATE SET enabled=0,' +
+          'revision=tag_run_reward_config.revision+1,updated_at=CURRENT_TIMESTAMP',
+          [chatId]);
+        if (!saved) throw new Error('tag_run_disable_write_unconfirmed');
         await send('TAG RUN weekly reward planning disabled. Street Cred continues.');
         return true;
       }
@@ -387,8 +452,17 @@ export async function handleTagRunCommand(update, env, options = {}) {
         await send('Cannot enable: verify token via /tagtoken and set sufficient /tagamount budget.');
         return true;
       }
-      await env.DB.prepare('UPDATE tag_run_reward_config SET enabled=1,' +
-        'updated_at=CURRENT_TIMESTAMP WHERE chat_id=?').bind(chatId).run();
+      const saved = await writeConfigIfCurrent(env.DB,
+        'UPDATE tag_run_reward_config SET enabled=1,revision=revision+1,' +
+        'updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND revision=? ' +
+        'AND token_precision IS NOT NULL AND base_amount_units>0 ' +
+        'AND max_weekly_units>=base_amount_units*top1_multiplier',
+        [chatId,configRevision(cfg)]);
+      if (!saved) {
+        await send('TAG RUN settings were changed or disabled while /tagenable ran. ' +
+          'Reward drafting was NOT enabled. Review /tagstatus and retry if intended.');
+        return true;
+      }
       await send('TAG RUN reward drafting configured. Actual cron activation requires ' +
         'TAG_RUN_WEEKLY_REWARDS_ENABLED=true in Worker deployment. ' +
         'NO on-chain payouts will be sent; drafts require separate approval.');
