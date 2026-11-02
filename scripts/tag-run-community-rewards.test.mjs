@@ -494,6 +494,16 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
   assert.match(invalidWeek.answer, /Usage: \/tagplan/, 'invalid dates receive helpful usage rather than a generic failure');
 });
 
+test('reward schema keeps a monotonic admin revision in migration 103 and canonical bootstrap', () => {
+  const source = readFileSync(new URL('../workers/moonboys-api/schema.sql',
+    import.meta.url), 'utf8');
+  const revision = /revision INTEGER NOT NULL DEFAULT 0 CHECK\(revision >= 0\)/;
+  assert.match(SCHEMA, revision);
+  assert.match(source, revision);
+  assert.match(SCHEMA, /CREATE TABLE IF NOT EXISTS tag_run_reward_config/);
+  assert.match(source, /CREATE TABLE IF NOT EXISTS tag_run_reward_config/);
+});
+
 test('admin mutations bump revision and a repeated disable invalidates pending enables', async t => {
   const f = fixture(t);
   const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config WHERE chat_id=?')
