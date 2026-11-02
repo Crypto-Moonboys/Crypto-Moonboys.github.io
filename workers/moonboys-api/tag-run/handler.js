@@ -1,15 +1,15 @@
 import {
-  rankFor, weekOf, previousWeek, previousDay, utcDay, parseTagCommand,
+  TAG_RUN_RANKS, rankFor, weekOf, previousWeek, previousDay, utcDay, parseTagCommand,
   eligibleTagComment, isValidWaxAccount, isValidTokenContract,
   parseTokenUnits, formatTokenUnits, adminTelegramIds, authenticatedGroupId
 } from './core.js';
 
 const TAG_COMMANDS = new Set([
-  'profile', 'top', 'rewards', 'help', 'taghelp', 'rain',
-  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagenable', 'tagdisable'
+  'profile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain',
+  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagenable', 'tagdisable'
 ]);
 const ADMIN_COMMANDS = new Set([
-  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagenable', 'tagdisable'
+  'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagenable', 'tagdisable'
 ]);
 const COOLDOWN_SECONDS = 45;
 const DAILY_LIMIT = 30;
@@ -111,6 +111,7 @@ function helpMessage() {
     '+5 for the first eligible message after an active previous day.\n' +
     '/profile — points, rank and streak\n' +
     '/top — weekly leaderboard (/top all for all time)\n' +
+    '/ranks — complete TAG RUN rank ladder\n' +
     '/rewards — weekly reward information\n' +
     '/rain — register a WAX account privately with the bot\n' +
     '/help or /taghelp — this TAG RUN guide\n' +
@@ -206,6 +207,12 @@ export async function handleTagRunCommand(update, env, options = {}) {
           'not registered — DM /rain yourwaxaccount'));
       return true;
     }
+    if (name === 'ranks') {
+      await send('TAG RUN · ALL 29 RANKS\n' +
+        TAG_RUN_RANKS.map(([points, title]) => points.toLocaleString('en-US') +
+          ' — ' + title).join('\n'));
+      return true;
+    }
     if (name === 'top') {
       const all = args.toLowerCase() === 'all';
       const rows = all ? await allTimeTop(env.DB, chatId) :
@@ -237,9 +244,40 @@ export async function handleTagRunCommand(update, env, options = {}) {
       await send('TAG RUN ADMIN\n' + describeProgram(await configFor(env.DB, chatId)) +
         '\nCommands (private admin chat):\n' +
         '/tagtoken SYMBOL contract\n/tagamount base maxWeeklyBudget\n' +
-        '/tagbonus first second third\n/tagenable\n/tagdisable\n' +
+        '/tagbonus first second third\n/tagplan [YYYY-MM-DD]\n/tagenable\n/tagdisable\n' +
         'Scheduled plans also require TAG_RUN_WEEKLY_REWARDS_ENABLED=true. ' +
         'All allocations remain review-only; automatic payments are disabled.');
+      return true;
+    }
+    if (name === 'tagplan') {
+      const week = args || previousWeek(nowMs);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(week) ||
+          weekOf(Date.parse(week + 'T00:00:00.000Z')) !== week) {
+        await send('Usage: /tagplan [YYYY-MM-DD] where the date is a UTC Monday.');
+        return true;
+      }
+      const plan = await env.DB.prepare('SELECT * FROM tag_run_weekly_plans ' +
+        'WHERE chat_id=? AND week_key=?').bind(chatId,week).first();
+      if (!plan) {
+        await send('TAG RUN · No review-only draft for week ' + week + '.');
+        return true;
+      }
+      const items = await env.DB.prepare('SELECT telegram_id,rank_position,street_cred,' +
+        'amount_units,wallet_verification_status FROM tag_run_weekly_allocations ' +
+        'WHERE chat_id=? AND week_key=? ORDER BY rank_position ASC LIMIT 20')
+        .bind(chatId,week).all();
+      const lines = (items.results || []).map(item =>
+        '#' + item.rank_position + ' · Telegram ' + item.telegram_id + ' · ' +
+        item.street_cred + ' pts · ' +
+        formatTokenUnits(item.amount_units,plan.token_precision) + ' ' +
+        plan.token_symbol + ' · WAX ' + item.wallet_verification_status);
+      await send('TAG RUN REVIEW DRAFT · ' + week + '\n' +
+        'Token: ' + plan.token_symbol + ' @ ' + plan.token_contract +
+        '\nTotal: ' + formatTokenUnits(plan.planned_units,plan.token_precision) +
+        ' ' + plan.token_symbol + ' across ' + plan.recipient_count +
+        ' members\nStatus: review_only; NO transfers\n' +
+        (lines.join('\n') || 'No allocation rows') +
+        '\nView all recipients in the D1 review ledger. Never pay an unverified WAX account.');
       return true;
     }
     if (name === 'tagtoken') {
@@ -360,7 +398,8 @@ export async function recordTagRunMessage(update, env, options = {}) {
   const week = weekOf(nowMs);
   const previous = previousDay(nowMs);
   const replyId = String(message.reply_to_message?.from?.id || '');
-  const replyBonus = isTelegramId(replyId) && replyId !== telegramId ? REPLY_BONUS : 0;
+  const replyBonus = isTelegramId(replyId) && replyId !== telegramId &&
+    !message.reply_to_message?.from?.is_bot ? REPLY_BONUS : 0;
   // One atomic statement owns idempotency, daily caps, cooldown, repeat-content
   // filtering and streak bonus. Replaying an update never awards points twice.
   const query = [
