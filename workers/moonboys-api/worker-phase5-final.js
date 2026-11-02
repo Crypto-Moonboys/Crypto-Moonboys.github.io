@@ -7,7 +7,7 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
-import { isTagRunCommand, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards } from './tag-run/handler.js';
+import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards } from './tag-run/handler.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -420,10 +420,15 @@ export default {
     // Its own commands are intentionally isolated from MoonPet /daily and the
     // existing website login. All unrelated updates retain the base handler.
     if (isTelegramWebhook && body && isTagRunCommand(body, env)) {
+      const sharedLegacyProfile = isSharedLegacyProfile(body, env);
       await handleTagRunCommand(body, env);
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      if (!sharedLegacyProfile) {
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      // /profile remains owned by the original bot too. The base handler
+      // sends its established XP/level/faction/quest profile response.
     }
     // Authenticated group activity is independent of whether the legacy
     // command router accepts an ordinary non-command chat message.
