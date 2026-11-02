@@ -2719,8 +2719,13 @@ CREATE TABLE IF NOT EXISTS tag_run_weekly_plans (
   top1_multiplier INTEGER NOT NULL,
   top2_multiplier INTEGER NOT NULL,
   top3_multiplier INTEGER NOT NULL,
-  planned_units INTEGER NOT NULL,
-  recipient_count INTEGER NOT NULL,
+  planned_units INTEGER NOT NULL CHECK(planned_units > 0),
+  recipient_count INTEGER NOT NULL CHECK(recipient_count BETWEEN 1 AND 1000),
+  -- Frozen ranked results are the sole source of allocation rows. Never rescan
+  -- live chat receipts after the budget validation or duplicate a payment plan.
+  standings_json TEXT NOT NULL CHECK(
+    json_valid(standings_json) AND json_type(standings_json)='array'
+  ),
   status TEXT NOT NULL DEFAULT 'review_only'
     CHECK(status = 'review_only'),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
