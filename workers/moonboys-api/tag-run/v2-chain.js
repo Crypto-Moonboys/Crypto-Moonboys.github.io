@@ -4,10 +4,7 @@
 // of donation provenance, finality at a snapshot, or spending authority.
 // This module MUST NOT contain signing, transfer, private keys or send actions.
 
-import { TIP_ACCOUNT, assetKey, parseQuantity } from './v2-core.js';
-
-export const WAX_MAINNET_CHAIN_ID =
-  '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4';
+import { TIP_ACCOUNT, assetKey, parseQuantity, WAX_MAINNET_CHAIN_ID } from './v2-core.js';
 export const WAX_CHAIN_API = 'https://wax.greymass.com';
 export const WAX_HYPERION = 'https://wax.eosrio.io';
 const MAX_DISCOVERED = 100;
