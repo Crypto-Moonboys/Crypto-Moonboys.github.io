@@ -70,6 +70,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '101_telegram_mini_app_login_replay.sql',
   '102_telegram_chat_menu_cleanup.sql',
   '103_tag_run_street_cred_rewards.sql',
+  '104_tag_run_v2_community_token_pot.sql',
 ]);
 
 function readJson(filePath, label) {
