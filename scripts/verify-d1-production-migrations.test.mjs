@@ -48,6 +48,20 @@ for (const name of [
   assert.ok(remoteQueryStep.includes(name));
 }
 
+// Parse the real wrangler --command SQL, not the separate synthetic contract
+// fixture. A missing remote IN-list entry must fail even if the fixture has it.
+const actualRemoteMigrationSql = remoteQueryStep.match(
+  /--command "SELECT name FROM d1_migrations WHERE name IN \\(([^"]+)\\) ORDER BY name"/
+)?.[1] || '';
+const actualRemoteMigrationNames = [
+  ...actualRemoteMigrationSql.matchAll(/'([^']+\\.sql)'/g)
+].map(match => match[1]);
+assert.ok(actualRemoteMigrationNames.length > 0, 'live D1 migration query must parse');
+assert.equal(new Set(actualRemoteMigrationNames).size, actualRemoteMigrationNames.length,
+  'live D1 migration query must not list duplicates');
+assert.deepEqual([...actualRemoteMigrationNames].sort(), [...REQUIRED_D1_MIGRATIONS].sort(),
+  'live D1 migration query must contain exactly the required production migrations');
+
 const tagRunMigration = '103_tag_run_street_cred_rewards.sql';
 for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
   production.d1_databases.wikicoms.required_migrations]) {
