@@ -7,6 +7,7 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
+import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards } from './tag-run/handler.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -415,6 +416,42 @@ export default {
       }
     }
 
+    // TAG RUN operates only after the existing Telegram secret verification.
+    // Its own commands are intentionally isolated from MoonPet /daily and the
+    // existing website login. All unrelated updates retain the base handler.
+    if (isTelegramWebhook && body && isTagRunCommand(body, env)) {
+      const sharedLegacyProfile = isSharedLegacyProfile(body, env);
+      await handleTagRunCommand(body, env);
+      if (!sharedLegacyProfile) {
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      // /profile remains owned by the original bot too. The base handler
+      // sends its established XP/level/faction/quest profile response.
+    }
+    // Persist authenticated group scoring BEFORE acknowledging Telegram.
+    // A transient DB failure returns non-2xx so Telegram retries this update;
+    // the (chat_id,message_id) receipt makes replays idempotent.
+    if (isTelegramWebhook && body && env?.TAG_RUN_ENABLED === 'true') {
+      let accepted;
+      try {
+        accepted = await recordTagRunMessage(body, env);
+      } catch (error) {
+        console.warn('[TAG RUN] scoring unavailable; Telegram should retry',
+          String(error?.message || error));
+        const retry = jsonError(request, 'tag_run_scoring_unavailable', 503, env);
+        retry.headers.set('Retry-After', '5');
+        return retry;
+      }
+      // Only Telegram announcement delivery is best-effort background work.
+      // If waitUntil is unavailable, cron drains still-pending notices.
+      if (accepted && typeof ctx?.waitUntil === 'function') {
+        ctx.waitUntil(deliverTagRunRankAnnouncements(env, { limit: 3 })
+          .catch((error) => console.warn('[TAG RUN] announcement queued for cron',
+            String(error?.message || error))));
+      }
+    }
     if (isTelegramWebhook && body) {
       await preparePetGearRead(env, body);
     }
@@ -465,6 +502,22 @@ export default {
     // Global GPS coordinate cleanup runs on every cron tick so expired and abandoned
     // sessions are scrubbed regardless of whether the user ever makes another request.
     ctx.waitUntil(cleanupExpiredSessions(env.DB, Date.now()).catch(() => {}));
+    // Retry only celebrations that are still PENDING (never attempted).
+    // Ambiguous failures are held for manual review, preventing duplicate posts.
+    if (env?.TAG_RUN_ENABLED === 'true') {
+      ctx.waitUntil(deliverTagRunRankAnnouncements(env, { limit: 10 })
+        .catch((error) => console.warn('[TAG RUN] rank notice queue unavailable',
+          String(error?.message || error))));
+    }
+    // The weekly Monday-UTC draft is ledger-only and requires both feature
+    // flags plus explicit admin token/amount configuration. No WAX signatures.
+    if (env?.TAG_RUN_ENABLED === 'true' &&
+        env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'true') {
+      ctx.waitUntil(draftTagRunWeeklyRewards(env).catch((error) => {
+        console.warn('[TAG RUN] weekly review draft unavailable',
+          String(error?.message || error));
+      }));
+    }
     if (typeof baseWorker.scheduled === 'function') {
       return baseWorker.scheduled(event, env, ctx);
     }

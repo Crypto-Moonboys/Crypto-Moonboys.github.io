@@ -48,6 +48,47 @@ for (const name of [
   assert.ok(remoteQueryStep.includes(name));
 }
 
+// Parse the real wrangler --command SQL, not the separate synthetic contract
+// fixture. A missing remote IN-list entry must fail even if the fixture has it.
+const actualRemoteMigrationSql = remoteQueryStep.match(
+  /--command "SELECT name FROM d1_migrations WHERE name IN \(([^"]+)\) ORDER BY name"/
+)?.[1] || '';
+const actualRemoteMigrationNames = [
+  ...actualRemoteMigrationSql.matchAll(/'([^']+\.sql)'/g)
+].map(match => match[1]);
+assert.ok(actualRemoteMigrationNames.length > 0, 'live D1 migration query must parse');
+assert.equal(new Set(actualRemoteMigrationNames).size, actualRemoteMigrationNames.length,
+  'live D1 migration query must not list duplicates');
+assert.deepEqual([...actualRemoteMigrationNames].sort(), [...REQUIRED_D1_MIGRATIONS].sort(),
+  'live D1 migration query must contain exactly the required production migrations');
+
+const tagRunMigration = '103_tag_run_street_cred_rewards.sql';
+for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
+  production.d1_databases.wikicoms.required_migrations]) {
+  assert.ok(source.includes(tagRunMigration), 'TAG RUN migration 103 must be required before deployment');
+}
+assert.ok(remoteQueryStep.includes(tagRunMigration), 'known-evidence workflow must include TAG RUN');
+for (const table of ['tag_run_messages', 'tag_run_member_totals', 'tag_run_rank_announcements',
+  'tag_run_weekly_plans', 'tag_run_weekly_allocations', 'tag_run_reward_config',
+  'tag_run_wallets', 'tag_run_rank_levels']) {
+  assert.ok(schema.includes('CREATE TABLE IF NOT EXISTS ' + table),
+    'TAG RUN ' + table + ' must exist in canonical bootstrap schema');
+}
+assert.match(schema, /CREATE TRIGGER IF NOT EXISTS tag_run_message_rank_up/);
+assert.throws(
+  () => validateRequest({ ...request,
+    required_migrations: request.required_migrations.filter(name => name !== tagRunMigration) }),
+  /missing required migrations: 103_tag_run_street_cred_rewards\.sql/,
+  'missing TAG RUN migration must fail the evidence request'
+);
+assert.throws(
+  () => verifyD1MigrationPayload([{ success: true,
+    results: request.required_migrations.filter(name => name !== tagRunMigration)
+      .map(name => ({ name })) }], request),
+  /missing migrations: 103_tag_run_street_cred_rewards\.sql/,
+  'absent TAG RUN migration must fail production verification'
+);
+
 const chatMenuMigration = '102_telegram_chat_menu_cleanup.sql';
 for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
   production.d1_databases.wikicoms.required_migrations]) {
