@@ -38,10 +38,14 @@ function fixture(t, opts = {}) {
   const DB = {
     prepare: sql => new Statement(sql),
     async batch(statements) {
+      if (typeof DB.beforeBatch === 'function') await DB.beforeBatch();
       sqlite.exec('BEGIN');
       try {
         const results = [];
-        for (const statement of statements) results.push(await statement.run());
+        for (let i = 0; i < statements.length; i++) {
+          results.push(await statements[i].run());
+          if (i === 0 && typeof DB.afterPlanInsert === 'function') await DB.afterPlanInsert();
+        }
         sqlite.exec('COMMIT');
         return results;
       } catch (error) {
@@ -348,6 +352,97 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
   assert.match(preview.answer, /NO transfers/);
   const invalidWeek = await f.command('/tagplan 2026-13-01', { user: ADMIN });
   assert.match(invalidWeek.answer, /Usage: \/tagplan/, 'invalid dates receive helpful usage rather than a generic failure');
+});
+
+test('weekly /top rank labels use all-time Street Cred and reward tie-break matches displayed order', async t => {
+  const f = fixture(t);
+  f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
+    '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
+    'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
+    .run(GROUP, 'LFGK', 'kingsofgraff', 4, 100000, 10000000);
+  const morePostsId = '8000009'; // Larger ID deliberately sorts last on ID alone.
+  const fewerPostsId = '7000001';
+  for (let i = 0; i < 6; i++) {
+    const nowMs = MONDAY + (i * 60000);
+    const update = f.message('Six unique original comments about street art number ' + i,
+      { user: morePostsId, nowMs });
+    update.message.from.first_name = 'MorePosts';
+    assert.equal(await f.score(update, nowMs), true);
+  }
+  for (let i = 0; i < 5; i++) {
+    const nowMs = MONDAY + (i * 60000);
+    const update = f.message('Five thoughtful replies with extra street art info ' + i,
+      { user: fewerPostsId, nowMs, replyTo: ADMIN });
+    update.message.from.first_name = 'FewerPosts';
+    assert.equal(await f.score(update, nowMs), true);
+  }
+  const board = await f.command('/top', { nowMs: MONDAY + 700000 });
+  assert(board.answer.indexOf('1. MorePosts') < board.answer.indexOf('2. FewerPosts'));
+  // The rank shown beside weekly points must come from lifetime Street Cred.
+  f.sqlite.prepare('UPDATE tag_run_member_totals SET score=95000 WHERE telegram_id=?')
+    .run(morePostsId);
+  const promotedBoard = await f.command('/top', { nowMs: MONDAY + 700000 });
+  assert.match(promotedBoard.answer, /MorePosts — 60 pts · Graffiti King/);
+  f.env.TAG_RUN_WEEKLY_REWARDS_ENABLED = 'true';
+  const drafted = await draftTagRunWeeklyRewards(f.env, { nowMs: Date.parse('2026-11-09T00:05:00Z') });
+  assert.equal(drafted.status, 'review_only');
+  const allocations = f.sqlite.prepare('SELECT telegram_id,rank_position,amount_units ' +
+    'FROM tag_run_weekly_allocations ORDER BY rank_position').all();
+  assert.deepEqual(allocations.map(x=>x.telegram_id), [morePostsId,fewerPostsId]);
+  assert.deepEqual(allocations.map(x=>x.amount_units), [500000,300000]);
+});
+
+test('a late score before the transaction cannot exceed the budget or include extra recipients', async t => {
+  const f = fixture(t);
+  f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
+    '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
+    'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
+    .run(GROUP, 'LFGK', 'kingsofgraff', 4, 100000, 500000);
+  assert.equal(await f.score(f.message('One qualified comment about graffiti on Monday')), true);
+  f.DB.beforeBatch = async () => {
+    f.DB.beforeBatch = null;
+    const nowMs = MONDAY + 60000;
+    assert.equal(await f.score(f.message('Another eligible tagger posts before the budget snapshot',
+      { user:'8000034', nowMs }), nowMs),true);
+  };
+  f.env.TAG_RUN_WEEKLY_REWARDS_ENABLED = 'true';
+  const draft = await draftTagRunWeeklyRewards(f.env,
+    { nowMs: Date.parse('2026-11-09T00:05:00Z') });
+  assert.equal(draft.status, 'over_budget', 'budget must be validated inside the SQL INSERT');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_weekly_plans').get().n, 0);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_weekly_allocations').get().n, 0);
+});
+
+test('allocations use the frozen ranked plan even if activity changes between batch statements', async t => {
+  const f = fixture(t);
+  f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
+    '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
+    'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
+    .run(GROUP, 'LFGK', 'kingsofgraff', 4, 100000, 1000000);
+  assert.equal(await f.score(f.message('One member earned a qualifying street art comment')),true);
+  f.DB.afterPlanInsert = async () => {
+    f.DB.afterPlanInsert = null;
+    const nowMs = MONDAY + 60000;
+    assert.equal(await f.score(f.message('Another member speaks after the roster was frozen',
+      { user:'8000054', nowMs }),nowMs),true);
+  };
+  f.env.TAG_RUN_WEEKLY_REWARDS_ENABLED = 'true';
+  const draft = await draftTagRunWeeklyRewards(f.env,
+    { nowMs: Date.parse('2026-11-09T00:05:00Z') });
+  assert.equal(draft.status,'review_only');
+  const plan = f.sqlite.prepare('SELECT * FROM tag_run_weekly_plans').get();
+  const allocations = f.sqlite.prepare('SELECT * FROM tag_run_weekly_allocations').all();
+  assert.equal(plan.recipient_count, 1);
+  assert.equal(plan.planned_units, 500000);
+  assert.equal(allocations.length, 1);
+  assert.equal(allocations[0].amount_units, plan.planned_units);
+  assert.equal(JSON.parse(plan.standings_json).length, 1, 'roster is immutable');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(DISTINCT telegram_id) AS n ' +
+    'FROM tag_run_messages').get().n, 2,
+    'late input exists but cannot alter the locked reward roster');
+  assert.equal((await draftTagRunWeeklyRewards(f.env,
+    { nowMs: Date.parse('2026-11-09T00:10:00Z') })).status,'already_drafted');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_weekly_allocations').get().n,1);
 });
 
 test('reward plans fail closed if the weekly token budget cannot cover every active member', async t => {
