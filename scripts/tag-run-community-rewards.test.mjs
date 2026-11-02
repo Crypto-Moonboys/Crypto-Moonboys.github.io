@@ -164,6 +164,9 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
   const totals = f.sqlite.prepare('SELECT SUM(points) AS points, COUNT(*) AS posts FROM tag_run_messages').get();
   assert.equal(totals.points, 20);
   assert.equal(totals.posts, 2);
+  const lifetime = f.sqlite.prepare('SELECT score,posts FROM tag_run_member_totals').get();
+  assert.equal(lifetime.score, 20);
+  assert.equal(lifetime.posts, 2);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS count FROM tag_run_messages WHERE content_hash LIKE ?').get('%art%').count, 0,
     'raw message text must never be saved');
 });
@@ -202,7 +205,9 @@ test('rank-ups are atomic, celebrated once in the group and never replayed', asy
   assert.deepEqual(f.sent.map(payload => payload.chat_id), [GROUP,GROUP]);
   assert.match(f.sent[0].text, /TAG RUN · RANK UP/);
   assert.match(f.sent[0].text, /Fresh Ink/);
+  assert.match(f.sent[0].text, /Next rank at 60 pts/);
   assert.match(f.sent[1].text, /Sticker Bandit/);
+  assert.match(f.sent[1].text, /Next rank at 100 pts/);
   assert(outbox().every(row => row.status === 'sent' && row.attempt_count === 1));
   assert.equal((await deliverTagRunRankAnnouncements(f.env,
     { fetchImpl: f.fetchImpl })).sent, 0, 'replayed cron never posts an old rank again');
@@ -274,7 +279,12 @@ test('commands are verified-group/private only and rain registers unverified WAX
   assert.equal(wallet.wax_account, 'abcde.wam');
   assert.equal(wallet.verification_status, 'pending');
   assert.match((await f.command('/rain rXRPabcdef')).answer, /Usage/);
-  assert.match((await f.command('/profile')).answer, /Newbie Tagger/);
+  const privateProfile = await f.command('/profile');
+  assert.match(privateProfile.answer, /Newbie Tagger/);
+  assert.match(privateProfile.answer, /abcde\.wam/, 'member can inspect own registered WAX account privately');
+  const groupProfile = await f.command('/profile', { chat: 'group' });
+  assert.match(groupProfile.answer, /registered \(pending\)/);
+  assert.doesNotMatch(groupProfile.answer, /abcde\.wam/, 'group profile must not reveal the WAX account');
   const ranks = await f.command('/ranks', { chat: 'group' });
   assert.match(ranks.answer, /0 — Newbie Tagger/);
   assert.match(ranks.answer, /95,000 — Graffiti King/);
