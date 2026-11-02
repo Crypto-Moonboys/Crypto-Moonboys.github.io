@@ -7,7 +7,7 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
-import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards } from './tag-run/handler.js';
+import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -508,6 +508,14 @@ export default {
       ctx.waitUntil(deliverTagRunRankAnnouncements(env, { limit: 10 })
         .catch((error) => console.warn('[TAG RUN] rank notice queue unavailable',
           String(error?.message || error))));
+    }
+    // Only the dedicated six-times-daily UTC cron posts this group bulletin;
+    // the overlapping 5-minute maintenance tick must never send it.
+    if (event?.cron === '0 */4 * * *' && env?.TAG_RUN_ENABLED === 'true') {
+      ctx.waitUntil(postTagRunGroupBulletin(env).catch((error) => {
+        console.warn('[TAG RUN] four-hour bulletin unavailable',
+          String(error?.message || error));
+      }));
     }
     // The weekly Monday-UTC draft is ledger-only and requires both feature
     // flags plus explicit admin token/amount configuration. No WAX signatures.
