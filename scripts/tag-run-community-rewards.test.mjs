@@ -32,6 +32,9 @@ function fixture(t, opts = {}) {
     async first() { return sqlite.prepare(this.query).get(...this.args) || null; }
     async all() { return { success: true, results: sqlite.prepare(this.query).all(...this.args) }; }
     async run() {
+      // Controlled interleaving at the exact SQL write boundary tests CAS
+      // races between live admin commands, not just sequential operations.
+      if (typeof DB.beforeRun === 'function') await DB.beforeRun(this);
       // Match Cloudflare D1 meta.changes, which counts writes in AFTER INSERT
       // triggers as well as the direct statement (unlike sqlite.run().changes).
       const before = sqlite.prepare('SELECT total_changes() AS n').get().n;
@@ -69,10 +72,18 @@ function fixture(t, opts = {}) {
   const fetchImpl = async (url, options) => {
     if (url.includes('get_currency_stats')) {
       const request = JSON.parse(options.body);
+      if (typeof env.beforeTokenRpc === 'function') await env.beforeTokenRpc(request);
       return {
         ok: true,
-        json: async () => request.code === 'kingsofgraff' && request.symbol === 'LFGK'
-          ? { LFGK: { max_supply: '1000000000.0000 LFGK' } } : {}
+        json: async () => {
+          if (request.code === 'kingsofgraff' && request.symbol === 'LFGK') {
+            return { LFGK: { max_supply: '1000000000.0000 LFGK' } };
+          }
+          if (request.code === 'otherissuer' && request.symbol === 'ART') {
+            return { ART: { max_supply: '10000000.00 ART' } };
+          }
+          return {};
+        }
       };
     }
     assert.match(url, /\/sendMessage$/);
@@ -481,6 +492,137 @@ test('admin alone changes chain-verified token, weekly amounts and multipliers; 
   assert.match(preview.answer, /NO transfers/);
   const invalidWeek = await f.command('/tagplan 2026-13-01', { user: ADMIN });
   assert.match(invalidWeek.answer, /Usage: \/tagplan/, 'invalid dates receive helpful usage rather than a generic failure');
+});
+
+test('admin mutations bump revision and a repeated disable invalidates pending enables', async t => {
+  const f = fixture(t);
+  const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config WHERE chat_id=?')
+    .get(GROUP);
+  assert.match((await f.command('/tagbonus 5 3 2', { user: ADMIN })).answer,
+    /Top-three multipliers updated/);
+  assert.equal(cfg().revision,1,'bonus-only setup creates the initial config');
+  assert.match((await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN })).answer,
+    /Verified on WAX/);
+  assert.equal(cfg().revision,2);
+  assert.equal(cfg().enabled,0);
+  assert.match((await f.command('/tagamount 10 1000', { user: ADMIN })).answer,
+    /Weekly base set/);
+  assert.equal(cfg().revision,3);
+  assert.match((await f.command('/tagenable', { user: ADMIN })).answer,
+    /drafts require separate approval/);
+  assert.equal(cfg().revision,4);
+  assert.equal(cfg().enabled,1);
+  assert.match((await f.command('/tagdisable', { user: ADMIN })).answer,/disabled/);
+  assert.equal(cfg().revision,5);
+  assert.equal(cfg().enabled,0);
+  assert.match((await f.command('/tagdisable', { user: ADMIN })).answer,/disabled/);
+  assert.equal(cfg().revision,6,
+    'repeated disable must advance revision even when already disabled');
+  assert.equal(cfg().enabled,0);
+});
+
+test('stale /tagamount cannot apply old precision after /tagtoken changes WAX token', async t => {
+  const f = fixture(t);
+  const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config').get();
+  await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN });
+  f.DB.beforeRun = async statement => {
+    if (!statement.query.startsWith('UPDATE tag_run_reward_config SET base_amount_units=')) return;
+    f.DB.beforeRun = null;
+    const change = await f.command('/tagtoken ART otherissuer', { user: ADMIN });
+    assert.match(change.answer, /Verified on WAX/);
+  };
+  const result = await f.command('/tagamount 10 1000', { user: ADMIN });
+  assert.match(result.answer,/No amounts changed/);
+  assert.equal(cfg().token_symbol,'ART');
+  assert.equal(cfg().token_contract,'otherissuer');
+  assert.equal(cfg().token_precision,2);
+  assert.equal(cfg().base_amount_units,0,
+    'no 4-decimal LFGK quantities may be committed to 2-decimal ART');
+  assert.equal(cfg().max_weekly_units,0);
+  assert.equal(cfg().enabled,0);
+  assert.equal(cfg().revision,2);
+});
+
+for (const concurrent of ['tagdisable', 'tagamount', 'tagbonus', 'tagtoken']) {
+  test('pending /tagenable cannot override later admin /' + concurrent, async t => {
+    const f = fixture(t);
+    const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config').get();
+    await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN });
+    await f.command('/tagamount 10 1000', { user: ADMIN });
+    assert.equal(cfg().enabled,0);
+    f.DB.beforeRun = async statement => {
+      if (!statement.query.startsWith('UPDATE tag_run_reward_config SET enabled=1')) return;
+      f.DB.beforeRun = null;
+      const command = concurrent === 'tagdisable' ? '/tagdisable'
+        : concurrent === 'tagamount' ? '/tagamount 12 2000'
+        : concurrent === 'tagbonus' ? '/tagbonus 4 2 1'
+        : '/tagtoken ART otherissuer';
+      const result = await f.command(command, { user: ADMIN });
+      assert.doesNotMatch(result.answer,/No changes made/);
+    };
+    const response = await f.command('/tagenable', { user: ADMIN });
+    assert.match(response.answer,/NOT enabled/);
+    assert.equal(cfg().enabled,0,
+      'out-of-date enable must not undo a later config change');
+    if (concurrent === 'tagtoken') {
+      assert.equal(cfg().token_symbol,'ART');
+      assert.equal(cfg().base_amount_units,0);
+    } else if (concurrent === 'tagamount') {
+      assert.equal(cfg().base_amount_units,120000);
+    } else if (concurrent === 'tagbonus') {
+      assert.equal(cfg().top1_multiplier,4);
+    }
+  });
+}
+
+test('slow /tagtoken RPC cannot undo a newer disable command', async t => {
+  const f = fixture(t);
+  const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config').get();
+  await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN });
+  await f.command('/tagamount 10 1000', { user: ADMIN });
+  await f.command('/tagenable', { user: ADMIN });
+  assert.equal(cfg().enabled,1);
+  f.env.beforeTokenRpc = async () => {
+    f.env.beforeTokenRpc = null;
+    const disabled = await f.command('/tagdisable', { user: ADMIN });
+    assert.match(disabled.answer,/disabled/);
+  };
+  const result = await f.command('/tagtoken ART otherissuer', { user: ADMIN });
+  assert.match(result.answer,/No changes made/);
+  assert.equal(cfg().token_symbol,'LFGK','delayed external verification cannot overwrite newer admin state');
+  assert.equal(cfg().token_precision,4);
+  assert.equal(cfg().base_amount_units,100000);
+  assert.equal(cfg().enabled,0);
+});
+
+test('late /tagbonus cannot overwrite newer token or disable changes', async t => {
+  const f = fixture(t);
+  const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config').get();
+  await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN });
+  f.DB.beforeRun = async statement => {
+    if (!statement.query.startsWith('UPDATE tag_run_reward_config SET top1_multiplier=')) return;
+    f.DB.beforeRun = null;
+    await f.command('/tagtoken ART otherissuer', { user: ADMIN });
+  };
+  const result = await f.command('/tagbonus 4 2 1', { user: ADMIN });
+  assert.match(result.answer,/No changes made/);
+  assert.equal(cfg().token_symbol,'ART');
+  assert.equal(cfg().top1_multiplier,5,
+    'stale bonus command must not overwrite the current token config');
+});
+
+test('slow first /tagtoken RPC cannot override a disable that creates the config row', async t => {
+  const f = fixture(t);
+  const cfg = () => f.sqlite.prepare('SELECT * FROM tag_run_reward_config').get();
+  f.env.beforeTokenRpc = async () => {
+    f.env.beforeTokenRpc = null;
+    await f.command('/tagdisable',{ user: ADMIN });
+  };
+  const result = await f.command('/tagtoken LFGK kingsofgraff', { user: ADMIN });
+  assert.match(result.answer,/No changes made/);
+  assert.equal(cfg().token_precision,null);
+  assert.equal(cfg().revision,1);
+  assert.equal(cfg().enabled,0);
 });
 
 test('weekly leaderboard uses latest member display name, not lexicographic MAX', async t => {
