@@ -78,19 +78,39 @@ CREATE TABLE IF NOT EXISTS tag_run_rank_announcements (
 CREATE INDEX IF NOT EXISTS tag_run_rank_announcements_queue
   ON tag_run_rank_announcements(chat_id, status, created_at);
 
+-- Incremental member totals keep every chat message O(1) rather than
+-- rescanning the user's entire message history for every rank crossing.
+CREATE TABLE IF NOT EXISTS tag_run_member_totals (
+  chat_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL,
+  score INTEGER NOT NULL CHECK(score >= 0),
+  posts INTEGER NOT NULL CHECK(posts >= 0),
+  display_name TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(chat_id, telegram_id)
+);
+CREATE INDEX IF NOT EXISTS tag_run_member_totals_leaderboard
+  ON tag_run_member_totals(chat_id, score DESC, posts DESC, telegram_id);
+
 CREATE TRIGGER IF NOT EXISTS tag_run_message_rank_up
 AFTER INSERT ON tag_run_messages
 BEGIN
+  INSERT INTO tag_run_member_totals
+    (chat_id,telegram_id,score,posts,display_name)
+  VALUES (NEW.chat_id,NEW.telegram_id,NEW.points,1,NEW.display_name)
+  ON CONFLICT(chat_id,telegram_id) DO UPDATE SET
+    score=tag_run_member_totals.score+excluded.score,
+    posts=tag_run_member_totals.posts+1,
+    display_name=excluded.display_name,
+    updated_at=CURRENT_TIMESTAMP;
+
   INSERT OR IGNORE INTO tag_run_rank_announcements
     (chat_id,telegram_id,rank_threshold,rank_name,display_name,total_points,source_message_id)
   SELECT NEW.chat_id, NEW.telegram_id, levels.threshold, levels.name,
     NEW.display_name, totals.score, NEW.message_id
   FROM tag_run_rank_levels AS levels
-  CROSS JOIN (
-    SELECT COALESCE(SUM(points), 0) AS score
-    FROM tag_run_messages
-    WHERE chat_id=NEW.chat_id AND telegram_id=NEW.telegram_id
-  ) AS totals
+  JOIN tag_run_member_totals AS totals
+    ON totals.chat_id=NEW.chat_id AND totals.telegram_id=NEW.telegram_id
   WHERE levels.threshold > 0
     AND totals.score >= levels.threshold
     AND totals.score - NEW.points < levels.threshold
