@@ -9,7 +9,7 @@ import {
 } from '../workers/moonboys-api/tag-run/core.js';
 import {
   isTagRunCommand, handleTagRunCommand, recordTagRunMessage,
-  draftTagRunWeeklyRewards
+  deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards
 } from '../workers/moonboys-api/tag-run/handler.js';
 
 const SCHEMA = readFileSync(
@@ -68,7 +68,7 @@ function fixture(t, opts = {}) {
     }
     assert.match(url, /\/sendMessage$/);
     sent.push(JSON.parse(options.body));
-    return { ok: true };
+    return { ok: true, json: async () => ({ ok: true, result: { message_id: sent.length } }) };
   };
   let updateNumber = 0;
   const message = (text, { user = MEMBER, nowMs = MONDAY, chat = 'group',
@@ -95,7 +95,7 @@ function fixture(t, opts = {}) {
     return { handled: result, answer: sent.at(-1)?.text };
   };
   t.after(() => sqlite.close());
-  return { sqlite, DB, env, sent, pending, message, command, score };
+  return { sqlite, DB, env, sent, pending, fetchImpl, message, command, score };
 }
 
 
@@ -166,6 +166,74 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
   assert.equal(totals.posts, 2);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS count FROM tag_run_messages WHERE content_hash LIKE ?').get('%art%').count, 0,
     'raw message text must never be saved');
+});
+
+test('rank thresholds in SQL match the 29 names in the runtime ladder', async t => {
+  const f = fixture(t);
+  const rows = f.sqlite.prepare('SELECT threshold,name FROM tag_run_rank_levels ' +
+    'ORDER BY threshold ASC').all();
+  assert.deepEqual(rows.map(row => [row.threshold, row.name]), TAG_RUN_RANKS);
+});
+
+test('rank-ups are atomic, celebrated once in the group and never replayed', async t => {
+  const f = fixture(t);
+  for (let i = 0; i < 6; i++) {
+    const now = MONDAY + i * 50000;
+    const update = f.message('Meaningful street culture discussion number ' + i + ' about our art',
+      { nowMs: now });
+    assert.equal(await f.score(update, now), true);
+  }
+  const totals = f.sqlite.prepare('SELECT score,posts FROM tag_run_member_totals ' +
+    'WHERE telegram_id=?').get(MEMBER);
+  assert.equal(totals.score, 60);
+  assert.equal(totals.posts, 6);
+  const outbox = () => f.sqlite.prepare('SELECT rank_threshold,rank_name,total_points,' +
+    'status,attempt_count FROM tag_run_rank_announcements ORDER BY rank_threshold').all();
+  assert.deepEqual(outbox().map(row => row.rank_threshold), [25,60]);
+  assert.equal(outbox()[0].total_points, 30, 'rank crossing recorded at award time');
+  assert.equal(outbox()[1].rank_name, 'Sticker Bandit');
+
+  const [first, second] = await Promise.all([
+    deliverTagRunRankAnnouncements(f.env, { fetchImpl: f.fetchImpl }),
+    deliverTagRunRankAnnouncements(f.env, { fetchImpl: f.fetchImpl })
+  ]);
+  assert.equal(first.sent + second.sent, 2, 'concurrent consumers must claim each notice once');
+  assert.equal(f.sent.length, 2);
+  assert.deepEqual(f.sent.map(payload => payload.chat_id), [GROUP,GROUP]);
+  assert.match(f.sent[0].text, /TAG RUN · RANK UP/);
+  assert.match(f.sent[0].text, /Fresh Ink/);
+  assert.match(f.sent[1].text, /Sticker Bandit/);
+  assert(outbox().every(row => row.status === 'sent' && row.attempt_count === 1));
+  assert.equal((await deliverTagRunRankAnnouncements(f.env,
+    { fetchImpl: f.fetchImpl })).sent, 0, 'replayed cron never posts an old rank again');
+  assert.equal(f.sent.length, 2);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_rank_announcements').get().n,
+    2, 'rank 0 never produces a celebration');
+
+  assert.match((await f.command('/tagalerts', { user: ADMIN })).answer,
+    /No pending or uncertain celebrations/);
+  assert.match((await f.command('/tagalerts')).answer,
+    /authorised admins/, 'members cannot see admin delivery information');
+});
+
+test('uncertain Telegram delivery stays marked for admin review, never auto-retries', async t => {
+  const f = fixture(t);
+  for (let i = 0; i < 3; i++) {
+    const now = MONDAY + i * 50000;
+    await f.score(f.message('Talking about authentic graffiti art number ' + i,
+      { nowMs: now }), now);
+  }
+  const failure = await deliverTagRunRankAnnouncements(f.env, {
+    fetchImpl: async () => ({ ok: false, status: 429 })
+  });
+  assert.equal(failure.needsReview, 1);
+  const row = f.sqlite.prepare('SELECT status,attempt_count FROM tag_run_rank_announcements').get();
+  assert.equal(row.status, 'needs_review');
+  assert.equal(row.attempt_count, 1);
+  const again = await deliverTagRunRankAnnouncements(f.env, { fetchImpl: f.fetchImpl });
+  assert.equal(again.sent, 0);
+  assert.equal(f.sent.length, 0);
+  assert.match((await f.command('/tagalerts', { user: ADMIN })).answer, /needs_review/);
 });
 
 test('daily limit 30, replies and first-next-day streak bonus accrue server side', async t => {
