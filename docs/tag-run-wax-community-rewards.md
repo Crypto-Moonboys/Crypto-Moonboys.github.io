@@ -31,6 +31,7 @@ The score/rank system uses the complete user-approved 29-rank ladder from **Newb
 | `/profile` | Lifetime Street Cred, rank, next threshold, current weekly points, streak and registered WAX wallet status |
 | `/top` | Top 10 for the current UTC week |
 | `/top all` | All-time Top 10 |
+| `/ranks` | Full 29-rank ladder with point thresholds |
 | `/rewards` | Selected WAX reward token, quantities, your weekly participation and previous review draft |
 | `/help` or `/taghelp` | TAG RUN scoring, rank and reward instructions |
 | `/rain` | In the group: prompts a private message. In the bot DM: `/rain waxaccount` registers a WAX account for future rewards (never an XRP wallet). |
@@ -47,7 +48,8 @@ Only Telegram IDs listed in the Worker secret `ADMIN_TELEGRAM_IDS` can run these
 2. `/tagamount 10 10000` — example values only: ten LFGK per eligible member, maximum 10,000 LFGK drafted in any week. This command **disables** further reward drafting until reviewed/re-enabled.
 3. `/tagbonus 5 3 2` — optional top-three multipliers (defaults 5×, 3×, 2×); resets enabled state.
 4. `/tagstatus` — show contract, token, base/weekly budget, multipliers and current draft status.
-5. `/tagenable` / `/tagdisable` — switch configured reward drafting on/off. No on-chain transfers occur even when enabled.
+5. `/tagplan [YYYY-MM-DD]` — inspect the latest week's review-only WAX allocation draft or one from a specified UTC Monday, in an admin DM only.
+6. `/tagenable` / `/tagdisable` — switch configured reward drafting on/off. No on-chain transfers occur even when enabled.
 
 All amounts are converted to **integer smallest-token units** using precision read from WAX; no floating-point on-chain quantities. Program configuration snapshots with each week's draft so a later change of token or quantity does not rewrite historical reward plans.
 
