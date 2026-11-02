@@ -14,7 +14,7 @@ crons = ["*/5 * * * *", "0 9 * * *"]
 TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 # TAG RUN launch is deliberately fail-closed pending D1 migration 103 and an
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
-TAG_RUN_ENABLED = "false"
+TAG_RUN_ENABLED = "true"
 TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
