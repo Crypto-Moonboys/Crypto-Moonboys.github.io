@@ -23,53 +23,98 @@ async function configFor(db) {
   return db.prepare('SELECT wallet_account,daily_bps,historical_ticket_bps,status,revision ' +
     'FROM tag_run_v2_pool_config WHERE config_id=1').first();
 }
+function nextUtcDay(day) {
+  const timestamp = Date.parse(String(day) + 'T00:00:00.000Z');
+  if (!Number.isFinite(timestamp) ||
+      new Date(timestamp).toISOString().slice(0, 10) !== day) {
+    throw new Error('invalid_capture_cursor_day');
+  }
+  return new Date(timestamp + 86400000).toISOString().slice(0, 10);
+}
 export async function saveYesterdayParticipation(env, options = {}) {
   if (!isV2Available(env)) return { status: 'disabled' };
   const cfg = await configFor(env.DB);
   if (!cfg || cfg.status === 'paused') return { status: 'paused' };
   const chatId = String(env.TELEGRAM_GROUP_CHAT_ID || '').trim();
-  const day = previousDay(options.nowMs ?? Date.now());
-  const result = await env.DB.prepare(
-    'SELECT telegram_id,message_id,points FROM tag_run_messages ' +
-    'WHERE chat_id=? AND day_key=? ORDER BY telegram_id,message_id LIMIT 30001'
-  ).bind(chatId, day).all();
-  if (result?.success === false || !Array.isArray(result?.results)) {
-    throw new Error('participation_receipts_unavailable');
+  const yesterday = previousDay(options.nowMs ?? Date.now());
+  const maxDays = Math.min(7, Math.max(1,
+    Number.isSafeInteger(options.maxDays) ? options.maxDays : 7));
+  const checkpoint = await env.DB.prepare(
+    'SELECT last_completed_day_key FROM tag_run_v2_capture_cursors WHERE chat_id=?'
+  ).bind(chatId).first();
+  // First V2 activation backfills the earliest still-preserved V1 receipt,
+  // not just yesterday. Subsequent failures replay the day after the most
+  // recently completed checkpoint before processing newer UTC days.
+  const oldest = checkpoint ? null : await env.DB.prepare(
+    'SELECT MIN(day_key) AS first_day FROM tag_run_messages ' +
+    'WHERE chat_id=? AND day_key<=?'
+  ).bind(chatId, yesterday).first();
+  let day = checkpoint?.last_completed_day_key
+    ? nextUtcDay(checkpoint.last_completed_day_key)
+    : String(oldest?.first_day || yesterday);
+  if (day > yesterday) {
+    return { status: 'up_to_date', day: yesterday,
+      eligible: 0, inserted: 0, processedDays: 0, backlogRemaining: false };
   }
-  const rows = result.results;
-  if (rows.length > 30000) throw new Error('participation_receipt_limit_exceeded');
-  const members = new Map();
-  for (const row of rows) {
-    const id = String(row.telegram_id);
-    if (!/^[0-9]{1,20}$/.test(id) ||
-        !Number.isSafeInteger(row.message_id) ||
-        !Number.isSafeInteger(row.points) || row.points < 1 || row.points > 17) {
-      throw new Error('malformed_daily_receipt');
+  let inserted = 0, eligible = 0, processedDays = 0;
+  let lastCompleted = checkpoint?.last_completed_day_key || null;
+  while (day <= yesterday && processedDays < maxDays) {
+    const result = await env.DB.prepare(
+      'SELECT telegram_id,message_id,points FROM tag_run_messages ' +
+      'WHERE chat_id=? AND day_key=? ORDER BY telegram_id,message_id LIMIT 30001'
+    ).bind(chatId, day).all();
+    if (result?.success === false || !Array.isArray(result?.results)) {
+      throw new Error('participation_receipts_unavailable');
     }
-    if (!members.has(id)) members.set(id, { points: 0, receipts: [] });
-    const member = members.get(id);
-    member.points += row.points;
-    if (member.points > MAX_POINTS_PER_DAY || member.receipts.length >= 30) {
-      throw new Error('daily_participation_authority_mismatch');
+    const rows = result.results;
+    if (rows.length > 30000) throw new Error('participation_receipt_limit_exceeded');
+    const members = new Map();
+    for (const row of rows) {
+      const id = String(row.telegram_id);
+      if (!/^[0-9]{1,20}$/.test(id) ||
+          !Number.isSafeInteger(row.message_id) ||
+          !Number.isSafeInteger(row.points) ||
+          row.points < 1 || row.points > 17) {
+        throw new Error('malformed_daily_receipt');
+      }
+      if (!members.has(id)) members.set(id, { points: 0, receipts: [] });
+      const member = members.get(id);
+      member.points += row.points;
+      if (member.points > MAX_POINTS_PER_DAY || member.receipts.length >= 30) {
+        throw new Error('daily_participation_authority_mismatch');
+      }
+      member.receipts.push([row.message_id,row.points]);
     }
-    member.receipts.push([row.message_id,row.points]);
+    for (const [telegramId, member] of members) {
+      const digest = await sha256Text(JSON.stringify({
+        chatId, day, telegramId, receipts: member.receipts
+      }), options.cryptoImpl);
+      const write = await env.DB.prepare(
+        'INSERT OR IGNORE INTO tag_run_v2_participation ' +
+        '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) ' +
+        'VALUES (?,?,?,?,?)'
+      ).bind(chatId,day,telegramId,member.points,digest).run();
+      if (write?.success === false) throw new Error('participation_write_failed');
+      inserted += Number(write?.meta?.changes) > 0 ? 1 : 0;
+    }
+    // Checkpoint advances only AFTER all participants for this day were
+    // recorded. A D1 failure leaves the cursor unchanged; the next run
+    // replays INSERT OR IGNORE, including any partially written rows.
+    const done = await env.DB.prepare(
+      'INSERT INTO tag_run_v2_capture_cursors (chat_id,last_completed_day_key) ' +
+      'VALUES (?,?) ON CONFLICT(chat_id) DO UPDATE SET ' +
+      'last_completed_day_key=excluded.last_completed_day_key, ' +
+      'updated_at=CURRENT_TIMESTAMP WHERE excluded.last_completed_day_key>' +
+      'tag_run_v2_capture_cursors.last_completed_day_key'
+    ).bind(chatId,day).run();
+    if (done?.success === false) throw new Error('capture_checkpoint_write_failed');
+    eligible += members.size;
+    processedDays++;
+    lastCompleted = day;
+    day = nextUtcDay(day);
   }
-  let inserted = 0;
-  for (const [telegramId, member] of members) {
-    const digest = await sha256Text(JSON.stringify({
-      chatId, day, telegramId, receipts: member.receipts
-    }), options.cryptoImpl);
-    const write = await env.DB.prepare(
-      'INSERT OR IGNORE INTO tag_run_v2_participation ' +
-      '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) ' +
-      'VALUES (?,?,?,?,?)'
-    ).bind(chatId,day,telegramId,member.points,digest).run();
-    if (write?.success === false) throw new Error('participation_write_failed');
-    inserted += Number(write?.meta?.changes) > 0 ? 1 : 0;
-  }
-  // This never consumes a pending ticket, creates a token award or interacts
-  // with any WAX account. Repeated daily cron calls remain INSERT OR IGNORE.
-  return { status: 'recorded', day, eligible: members.size, inserted };
+  return { status: 'recorded', day: lastCompleted, eligible, inserted,
+    processedDays, backlogRemaining: day <= yesterday };
 }
 async function pendingWeight(db, chatId, telegramId) {
   const query = await db.prepare(
