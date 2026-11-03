@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { inspectSchemaTables } from '../workers/moonboys-api/shared/schema-preflight.js';
+import { ensurePlayerStateTables, ensureDailyDigestTables } from
+  '../workers/moonboys-api/routes/daily-digest.js';
 
 const PLAYER = ['player_modifier_state','player_daily_mission_state',
   'player_faction_signal_state','player_streak_state','player_game_mastery_state'];
@@ -78,6 +80,42 @@ test('bad, missing, failed or mismatched D1 results fail closed',async()=>{
   const checked=await inspectSchemaTables(db,PLAYER);
   assert.equal(checked.ok,false);
   assert.equal(checked.error,'D1 unavailable');
+});
+
+test('digest guards preserve HTTP 503 migration response and first-missing table',async t=>{
+  const player=fixture(t,PLAYER.filter(x=>x!==PLAYER[2]));
+  const result=await ensurePlayerStateTables(player.db);
+  assert.equal(player.calls.length,1);
+  assert.equal(result.tableName,PLAYER[2]);
+  assert.equal(result.response.status,503);
+  assert.equal(result.response.headers.get('Retry-After'),'60');
+  assert.equal((await result.response.json()).reason,'migration_pending:'+PLAYER[2]);
+
+  const digest=fixture(t,DIGEST.filter(x=>x!==DIGEST[1]));
+  const result2=await ensureDailyDigestTables(digest.db);
+  assert.equal(digest.calls.length,1);
+  assert.equal(result2.tableName,DIGEST[1]);
+  assert.equal(result2.response.status,503);
+  assert.equal((await result2.response.json()).error,'daily_digest_unavailable');
+
+  const all=fixture(t,[...PLAYER,...DIGEST]);
+  assert.equal(await ensurePlayerStateTables(all.db),null);
+  assert.equal(await ensureDailyDigestTables(all.db),null);
+  assert.equal(all.calls.length,2,'one check for each distinct guard');
+});
+
+test('digest guards fail closed if D1 rejects or resolves an unsuccessful catalog query',async()=>{
+  const db={prepare(){return{bind(){return{async all(){
+    return {success:false,results:[]};
+  }};}};}};
+  for(const [guard,expected] of [
+    [ensurePlayerStateTables,'player_state_unavailable'],
+    [ensureDailyDigestTables,'daily_digest_unavailable']
+  ]) {
+    const value=await guard(db);
+    assert.equal(value.response.status,503);
+    assert.equal((await value.response.json()).error,expected);
+  }
 });
 
 test('catalog only accepts trusted table identifiers; duplicates do not add round trips',async t=>{
