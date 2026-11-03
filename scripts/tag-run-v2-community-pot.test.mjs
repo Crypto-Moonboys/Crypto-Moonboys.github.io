@@ -104,8 +104,9 @@ test('deterministic mixed token draw never allocates over 5% per asset',async()=
     assert.equal(bundles.reduce((sum,x)=>sum+BigInt(x.units),0n),
       BigInt(b.dailyBudgetUnits));
     assert(bundles.every(x=>x.status==='preview_only'));
-    assert(bundles.filter(x=>x.pool==='historical').length<=10);
-    assert(bundles.filter(x=>x.pool==='current').length>=10);
+    assert(bundles.some(x=>x.pool==='historical'));
+    assert(bundles.some(x=>x.pool==='current'));
+    assert(bundles.every(x=>['historical','current'].includes(x.pool)));
   }
   assert.equal(first.seedCommitment,await sha256Text(SEED,webcrypto));
   assert.notDeepEqual((await previewCommunityDraw({...input,
@@ -404,4 +405,23 @@ test('backfill cursor also advances across empty days before current day',async 
   assert.equal(next.inserted,0);
   assert.equal(f.sqlite.prepare('SELECT last_completed_day_key FROM tag_run_v2_capture_cursors')
     .get().last_completed_day_key,'2026-11-03');
+});
+
+test('half historical ticket probability gives old members a chance with one token unit',async()=>{
+  const a={...ASSET(),balanceUnits:'20'};
+  let sawHistorical=false,sawCurrent=false;
+  for(let i=0;i<32;i++){
+    const result=await previewCommunityDraw({
+      day:DAY,seedHex:i.toString(16).padStart(64,'0'),
+      cryptoImpl:webcrypto,assets:[a],
+      current:[{telegramId:'1111',points:10}],
+      historical:[{telegramId:'2222',points:10}]
+    });
+    assert.equal(result.bundles.length,1);
+    assert.equal(result.bundles[0].units,'1');
+    sawHistorical ||= result.bundles[0].pool==='historical';
+    sawCurrent ||= result.bundles[0].pool==='current';
+  }
+  assert.equal(sawHistorical,true,'historical weighted members can win even one unit');
+  assert.equal(sawCurrent,true,'current members retain a fair chance');
 });
