@@ -196,9 +196,88 @@ test('INSERT OR REPLACE cannot reset spent cap or pause while hold is unknown',t
     'WHERE intent_key=?').get(ids[0]).state,holdBefore.state);
   assert.equal(counters(db).outstandingUnits,'100');
   assert.equal(counters(db).allocatedUnits,'100');
+  assert.equal(counters(db).unknownFloorUnits,'100');
   assert.equal(counters(db).paused,true);
   assert.throws(()=>holdSimulatedIntent(db,{intentKey:ids[1]}),
     /atomic_rehearsal_emergency_pause/);
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
+test('direct UPDATE cannot wipe spent cap, unresolved incident floor or pause',t=>{
+  const db=fixture(t);
+  createSimulatedBudget(db,budget('100','100'));
+  holdSimulatedIntent(db,{intentKey:ids[0]});
+  markSimulatedUnknown(db,{intentKey:ids[0]});
+  setSimulatedPause(db,{...budget(),paused:true});
+  const original=counters(db);
+  const hold=db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
+    'WHERE intent_key=?').get(ids[0]).state;
+  const sql='UPDATE tag_run_v2_atomic_budget_rehearsal SET ';
+  for(const mutation of [
+    "allocated_units='0',outstanding_units='0',unknown_floor_units='0',revision=0,paused=0",
+    "allocated_units='0',outstanding_units='0',revision=revision+1",
+    "outstanding_units='0',revision=revision+1",
+    "unknown_floor_units='0',revision=revision+1",
+    "paused=0,revision=0",
+    "daily_limit_units='999999999',revision=revision+1",
+    "per_transfer_limit_units='999999999',revision=revision+1"
+  ]) {
+    assert.throws(()=>db.exec(sql+mutation),
+      /atomic_rehearsal_budget_immutable/,mutation);
+    assert.deepEqual(counters(db),original);
+  }
+  assert.equal(db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
+    'WHERE intent_key=?').get(ids[0]).state,hold);
+  assert.equal(original.availableCapUnits,'0');
+  assert.equal(original.unknownFloorUnits,'100');
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
+test('UPDATE OR REPLACE cannot move fresh scope onto spent paused scope',t=>{
+  const db=fixture(t);
+  createSimulatedBudget(db,budget('100','100'));
+  holdSimulatedIntent(db,{intentKey:ids[0]});
+  markSimulatedUnknown(db,{intentKey:ids[0]});
+  setSimulatedPause(db,{...budget(),paused:true});
+  const spent=counters(db);
+  const otherChat='-1009999999999';
+  createSimulatedBudget(db,{...budget('500','100'),chatId:otherChat});
+  const replacement='UPDATE OR REPLACE tag_run_v2_atomic_budget_rehearsal '+
+    'SET chat_id=? WHERE chat_id=? AND day_key=? AND asset_key=?';
+  assert.throws(()=>db.prepare(replacement).run(
+    CHAT,otherChat,DAY,KEY),/atomic_rehearsal_budget_immutable/);
+  assert.deepEqual(counters(db),spent);
+  const other=inspectSimulatedBudget(db,{
+    chatId:otherChat,dayKey:DAY,assetKey:KEY
+  });
+  assert.equal(other.allocatedUnits,'0');
+  assert.equal(other.paused,false);
+  assert.equal(spent.unknownFloorUnits,'100');
+  assert.equal(db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
+    'WHERE intent_key=?').get(ids[0]).state,'simulation_transfer_unknown');
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_atomic_budget_rehearsal')
+    .get().n,2);
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
+test('cancel a known hold without releasing a different unresolved incident',t=>{
+  const db=fixture(t);
+  createSimulatedBudget(db,budget('300','100'));
+  holdSimulatedIntent(db,{intentKey:ids[0]});
+  holdSimulatedIntent(db,{intentKey:ids[1]});
+  markSimulatedUnknown(db,{intentKey:ids[0]});
+  const afterUnknown=counters(db);
+  assert.equal(afterUnknown.unknownFloorUnits,'100');
+  assert.equal(afterUnknown.outstandingUnits,'200');
+  cancelSimulatedHold(db,{intentKey:ids[1]});
+  const afterCancel=counters(db);
+  assert.equal(afterCancel.allocatedUnits,'200');
+  assert.equal(afterCancel.outstandingUnits,'100');
+  assert.equal(afterCancel.unknownFloorUnits,'100');
+  assert.throws(()=>db.exec('UPDATE tag_run_v2_atomic_budget_rehearsal '+
+    "SET outstanding_units='0',revision=revision+1"),
+    /atomic_rehearsal_budget_immutable/);
+  assert.equal(counters(db).outstandingUnits,'100');
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
