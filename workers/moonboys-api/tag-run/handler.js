@@ -6,7 +6,7 @@ import {
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
 
 const TAG_COMMANDS = new Set([
-  'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain',
+  'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
   ...V2_COMMANDS
 ]);
@@ -183,6 +183,7 @@ function helpMessage() {
     '/ranks — complete TAG RUN rank ladder\n' +
     '/rewards — weekly reward information\n' +
     '/rain — register a WAX account privately with the bot\n' +
+    '/rainstatus — check your registered WAX account privately\n' +
     '/pool — community token pot status (V2, when enabled)\n' +
     '/myrewards — unfunded participation weight (V2, when enabled)\n' +
     '/help or /taghelp — this TAG RUN guide\n' +
@@ -270,6 +271,35 @@ export async function handleTagRunCommand(update, env, options = {}) {
         .bind(telegramId, args).run();
       await send('WAX account ' + args + ' registered as PENDING verification. ' +
         'This does not prove wallet ownership or activate token transfers.');
+      return true;
+    }
+    if (name === 'rainstatus') {
+      if (!isPrivate) {
+        await send('Wallet details are private. DM @' +
+          String(env.TELEGRAM_BOT_USERNAME || 'WIKICOMSBOT').replace(/^@/, '') +
+          ' with /rainstatus.');
+        return true;
+      }
+      const wallet = await env.DB.prepare(
+        'SELECT wax_account,verification_status,verified_at FROM tag_run_wallets ' +
+        'WHERE telegram_id=?'
+      ).bind(telegramId).first();
+      if (!wallet) {
+        await send('TAG RUN WAX WALLET\nNo WAX account registered. ' +
+          'DM /rain yourwaxaccount to set your destination. ' +
+          'No token transfers are enabled.');
+        return true;
+      }
+      await send('TAG RUN WAX WALLET\nRegistered destination: ' +
+        String(wallet.wax_account) +
+        '\nOwnership verification: ' +
+        (wallet.verification_status === 'verified' && wallet.verified_at
+          ? 'RECORDED VERIFIED (independent proof still required for future payouts)'
+          : 'PENDING — typing an account name does not verify ownership') +
+        '\nFuture route: bot sends directly to your registered WAX account ' +
+        'after independent ownership verification and payout authorization.' +
+        '\nCurrent status: FUNDED PAYOUTS DISABLED. ' +
+        'Do not share private keys or seed phrases.');
       return true;
     }
     if (name === 'profile' || name === 'tagprofile') {
