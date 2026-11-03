@@ -264,3 +264,65 @@ test('NULL evidence, invalid sequences and a paid status are forbidden',t=>{
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_lifecycle_events_rehearsal')
     .get().n,0);
 });
+
+test('journal reconciles hold → unknown → review from persisted block evidence alone',async t=>{
+  const db=setup(t),account='gkniftyheads',member='1111',amount='100';
+  const destinationDigest=await sha256Text(
+    [member,account,DAY].join('|'),webcrypto);
+  const intentKey=await sha256Text([
+    CHAT,DAY,ASSET,2,member,'current',amount,account,
+    destinationDigest,BLOCK,BLOCK
+  ].join('|'),webcrypto);
+  const intent={
+    intent_key:intentKey,chat_id:CHAT,day_key:DAY,asset_key:ASSET,
+    bundle_index:2,telegram_id:member,ticket_class:'current',
+    destination_account:account,destination_digest:destinationDigest,
+    amount_units:amount,snapshot_digest:BLOCK,
+    source_receipts_digest:BLOCK,status:'simulation_only'
+  };
+  db.prepare('INSERT INTO tag_run_v2_payout_intents_rehearsal '+
+    '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
+    'ticket_class,destination_account,destination_digest,amount_units,'+
+    'snapshot_digest,source_receipts_digest) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+    .run(intent.intent_key,intent.chat_id,intent.day_key,intent.asset_key,
+      intent.bundle_index,intent.telegram_id,intent.ticket_class,
+      intent.destination_account,intent.destination_digest,
+      intent.amount_units,intent.snapshot_digest,intent.source_receipts_digest);
+  add(db,'f'.repeat(64),intentKey,'simulate_hold',amount,account);
+  add(db,'1'.repeat(64),intentKey,'simulate_unknown',amount,account);
+  add(db,'8'.repeat(64),intentKey,'simulate_reconcile',
+    amount,account,TX,'12345',BLOCK,BLOCK,1234567);
+  // Simulate a fresh process reconstructing ALL necessary review inputs
+  // from SQLite rows without an extra API request or in-memory event object.
+  const saved=db.prepare('SELECT e.*,i.asset_key FROM '+
+    'tag_run_v2_lifecycle_events_rehearsal e JOIN '+
+    'tag_run_v2_payout_intents_rehearsal i ON i.intent_key=e.intent_key '+
+    'WHERE e.intent_key=? ORDER BY e.append_seq ASC').all(intentKey);
+  assert.deepEqual(saved.map(x=>x.append_seq),[1,2,3]);
+  const savedEvents=saved.map(x=>({
+    appendSeq:x.append_seq,eventId:x.event_id,intentKey:x.intent_key,
+    action:x.event_kind,
+    ...(x.event_kind==='simulate_reconcile'?{
+      transactionId:x.chain_tx_id,chainActionSequence:x.chain_action_sequence,
+      blockId:x.chain_block_id,blockNum:x.chain_block_num,
+      account:x.destination_account,assetKey:x.asset_key,
+      units:x.amount_units
+    }:{})
+  }));
+  assert.equal(savedEvents[2].blockId,BLOCK);
+  assert.equal(savedEvents[2].blockNum,1234567);
+  const report=await simulateV2PayoutLifecycle({
+    rehearsal:{status:'simulation_only',executable:false,
+      transferAttempted:false,reservable:false,funded:false,reviewed:false,
+      wallet:TIP_ACCOUNT,day:DAY,intents:[intent]},
+    limits:[{assetKey:ASSET,dayKey:DAY,
+      dailyLimitUnits:'100',maxTransferUnits:'100'}],
+    historicalEvents:savedEvents,paused:true,cryptoImpl:webcrypto
+  });
+  assert.equal(report.entries[0].state,'simulation_reconciliation_review');
+  assert.equal(report.entries[0].confirmedOnChain,false);
+  assert.equal(report.caps[0].simulatedHeldUnits,'100');
+  assert.equal(report.caps[0].fundedReservedUnits,'0');
+  assert.equal(report.caps[0].actualTransferredUnits,'0');
+  assert.equal(report.transferAttempted,false);
+});
