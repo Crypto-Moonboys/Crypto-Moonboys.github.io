@@ -39,6 +39,15 @@ function assertExecutionMode(env){
      env?.TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED!=='true' ||
      !env?.DB)fail('release_not_authorized');
 }
+function assertReconciliationMode(env){
+  // Stopping NEW payouts must never prevent confirmation of an action that
+  // was already handed to Anchor before the emergency stop. This does NOT
+  // unlock a cap, reserve a bundle or invoke the signer.
+  if(env?.TAG_RUN_ENABLED!=='true' ||
+     env?.TAG_RUN_WEEKLY_REWARDS_ENABLED!=='false' ||
+     env?.TAG_RUN_V2_TIP_ACCOUNT!==TIP_ACCOUNT || !env?.DB)
+    fail('reconciliation_not_authorized');
+}
 async function config(db){
   const row=read(await db.prepare(
     'SELECT wallet_account,status,daily_bps,historical_ticket_bps '+
@@ -303,7 +312,7 @@ export async function handoffApprovedPayout(env,{
 export async function markIrreversiblyConfirmed(env,{
   intentKey,transactionId,verifyIrreversibleAction
 }={}){
-  assertExecutionMode(env);
+  assertReconciliationMode(env);
   if(!HEX.test(intentKey||'')||!HEX.test(transactionId||'')||
      typeof verifyIrreversibleAction!=='function')fail('finality_unverified');
   const row=await env.DB.prepare('SELECT * FROM tag_run_v2_payout_intents '+
