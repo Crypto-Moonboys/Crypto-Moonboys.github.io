@@ -4,15 +4,17 @@
 
 This is an **offline-only rehearsal**, not a launch of funded reward accounting.
 PR1 (#1708) generated hypothetical direct-to-registered-WAX-account payout plans.
-PR2 adds a proposed **additive migration 105**, an independent exact-units
-reconciliation check and immutable draft rows for a disposable local D1-compatible
-SQLite rehearsal.
+PR2 adds a **rehearsal-only SQL fixture** at
+`scripts/fixtures/tag-run-v2-accounting-rehearsal.sql`, an independent
+exact-units reconciliation check, and immutable draft rows for a disposable
+local D1-compatible SQLite rehearsal.
 
-**DO NOT apply migration 105 to production D1 as part of this PR.** Its
-presence in source control does not authorize a migration. It creates tables
-only; no live Worker route, scheduled task, bot command, signer, transaction
-broadcaster, token approval, custody claim, real entitlement or ledger
-reservation is created.
+**This SQL is deliberately outside the production migrations directory.**
+`wrangler d1 migrations apply` must not discover it, and PR2 does not
+authorize its application to any production D1 database. Only an isolated
+fixture loads the SQL. No live Worker route, scheduled task, bot command,
+signer, transaction broadcaster, token approval, custody claim, real
+entitlement, or ledger reservation is created.
 
 ## Immutable rehearsal data
 
@@ -27,7 +29,8 @@ reservation is created.
    source receipt and snapshot digests. Only `simulation_only` status
    exists; no `payable`, `authorized`, `reserved` or `paid` state.
 
-The tables reject UPDATE and DELETE by database trigger, and reject
+All three TEXT digest primary keys are explicitly NOT NULL. The tables
+reject UPDATE and DELETE by database trigger, and reject
 conflicting INSERT requests **before** they can replace an existing primary
 or alternate-unique-key row. This includes `INSERT OR REPLACE` when SQLite
 `recursive_triggers=OFF`, which otherwise bypasses DELETE triggers.
@@ -93,9 +96,13 @@ npm run ci:worker-api
 node scripts/verify-d1-production-migrations.test.mjs
 ```
 
-Tests use an in-memory SQLite database with migrations 104 and 105,
-verify foreign keys, evidence immutability, distinct slots, frozen
-destinations, BigInt balance/5% arithmetic, and no live execution.
+Tests use an in-memory SQLite database with production schema migration 104
+and the **rehearsal-only SQL fixture**. They verify that no
+`105_tag_run_v2_accounting_rehearsal.sql` exists in Wrangler's migrations
+directory, and that all three immutable digest IDs reject omitted and
+explicit NULL values. They also verify foreign keys, record immutability,
+distinct slots, frozen destinations, exact BigInt accounting, and no
+live execution.
 
 **No production deploy required to activate this PR.** Keep all current
 funded V2 pool, draw and payout flags OFF and the pool paused. No reset.
