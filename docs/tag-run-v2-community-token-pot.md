@@ -44,6 +44,8 @@ TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"
 - The public `/pool` read-only summary shows the **most recent verified snapshot of each approved token**, not 20 records from whichever token has the most snapshot history.
 - V2 command delegates are awaited inside V1's existing fallback handler, so an asynchronous D1 error returns the existing temporary-unavailability reply.
 - The inbound scan uses **raw Hyperion `actions`**. Its quarantine ledger records only transfers referencing blocks independently confirmed by the chain's last irreversible block and an authoritative block-ID lookup; this still does **not** prove an incoming transfer is an approved donation.
+- **Fail-closed public/admin reads:** `/pool` and `/rewards` never render a failed token-balance read as a verified empty pot; `/poolstatus` never treats a failed approved-asset allowlist as empty, and `/drawaudit` never claims no audit records after a failed D1 query. All route failures use the existing TAG RUN temporary-unavailability fallback.
+- **Historical draw prerequisite:** `/drawpreview` requires the V2 capture cursor for this Telegram group to be complete through the target UTC day. Missing, behind, failed, or malformed cursors block preview; no seed is used or token bundle simulated until catch-up is complete. The 00:10 UTC idempotent capture can backfill up to seven missed days per run.
 - The current V2 draw is a **preview**, not a signed, irreversible, independently auditable payout.
 
 ## Important unfinished work before funded draws can be enabled
