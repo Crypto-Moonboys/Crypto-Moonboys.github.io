@@ -158,10 +158,18 @@ function rpcFixture({wrongChain=false,wrongAccount=false,
     if(url.endsWith('/get_account')) return {ok:true,json:async()=>({
       account_name:wrongAccount?'different':TIP_ACCOUNT
     })};
-    if(url.includes('/v2/state/get_tokens?')) return {ok:true,json:async()=>({
-      tokens:[{contract:'kingsofgraff',symbol:'LFGK',precision:reportedPrecision,amount:123456},
-        {contract:'scamtoken123',symbol:'SCAM',precision:4,amount:1}]
-    })};
+    if(url.includes('/v2/state/get_tokens?')) {
+      const params=new URL(url).searchParams;
+      const offset=Number(params.get('skip'));
+      const limit=Number(params.get('limit'));
+      const inventory=[
+        {contract:'kingsofgraff',symbol:'LFGK',precision:reportedPrecision,amount:123456},
+        {contract:'scamtoken123',symbol:'SCAM',precision:4,amount:1}
+      ];
+      return {ok:true,json:async()=>({
+        account:TIP_ACCOUNT,tokens:inventory.slice(offset,offset+limit)
+      })};
+    }
     if(url.endsWith('/get_currency_balance'))return {ok:!failBalance,
       json:async()=>[balanceQuantity]};
     throw new Error('unexpected_network_call');
@@ -748,4 +756,125 @@ test('public and admin V2 read failures use existing Telegram unavailable reply'
     assert.match(posted[0].text,/TAG RUN is temporarily unavailable/);
     assert.doesNotMatch(posted[0].text,/No independently verified|No review-only draw/);
   }
+});
+
+
+function pagedInventoryRpc(tokens, {
+  cappedPageSize=50, failAtSkip=null, malformedAtSkip=null,
+  wrongAccountAtSkip=null, duplicateAtSkip=null
+} = {}) {
+  const calls=[];
+  const fetchImpl=async (url,options={})=>{
+    calls.push({url,options});
+    if(url.endsWith('/get_info'))return {ok:true,json:async()=>({
+      chain_id:WAX_MAINNET_CHAIN_ID,last_irreversible_block_num:12345
+    })};
+    if(url.endsWith('/get_account'))return {ok:true,json:async()=>({
+      account_name:TIP_ACCOUNT
+    })};
+    if(url.includes('/v2/state/get_tokens?')){
+      const params=new URL(url).searchParams;
+      const skip=Number(params.get('skip')),requested=Number(params.get('limit'));
+      assert.equal(params.get('account'),TIP_ACCOUNT);
+      assert.equal(requested,50);
+      assert(Number.isSafeInteger(skip)&&skip>=0);
+      if(failAtSkip===skip)return {ok:false,json:async()=>({error:'offline'})};
+      if(malformedAtSkip===skip)return {ok:true,json:async()=>({
+        account:TIP_ACCOUNT,tokens:null
+      })};
+      const page=tokens.slice(skip,skip+Math.min(requested,cappedPageSize));
+      if(duplicateAtSkip===skip&&page.length)page[0]=tokens[0];
+      return {ok:true,json:async()=>({
+        account:wrongAccountAtSkip===skip?'otherwallet1':TIP_ACCOUNT,
+        tokens:page
+      })};
+    }
+    if(url.endsWith('/get_currency_balance')){
+      const req=JSON.parse(options.body);
+      assert.equal(req.account,TIP_ACCOUNT);
+      return {ok:true,json:async()=>['1.0000 '+req.symbol]};
+    }
+    throw Error('unexpected_rpc_'+url);
+  };
+  const inventoryCalls=()=>calls.filter(c=>c.url.includes('/v2/state/get_tokens?'));
+  const balanceCalls=()=>calls.filter(c=>c.url.endsWith('/get_currency_balance'));
+  const skips=()=>inventoryCalls().map(c=>Number(new URL(c.url).searchParams.get('skip')));
+  return {fetchImpl,calls,inventoryCalls,balanceCalls,skips};
+}
+function paginationTokens(count, {includeApprovedLast=false}={}){
+  return Array.from({length:count},(_,i)=>{
+    const symbol='T'+String.fromCharCode(65+Math.floor(i/26))+
+      String.fromCharCode(65+i%26);
+    return {contract:'kingsofgraff',symbol,precision:4,amount:1};
+  }).map((token,i)=>includeApprovedLast&&i===count-1
+    ?{...token,symbol:'LFGK'}:token);
+}
+test('token discovery reaches approved assets beyond Hyperion default first 50',async()=>{
+  const tokens=paginationTokens(51,{includeApprovedLast:true});
+  const rpc=pagedInventoryRpc(tokens);
+  const result=await discoverWaxTipTokens({fetchImpl:rpc.fetchImpl,
+    approvedAssets:[assetKey('kingsofgraff','LFGK',4)]});
+  assert.equal(result.assets.length,51);
+  assert.equal(result.assets.filter(x=>x.status==='observed_only').length,1);
+  assert.equal(result.assets.at(-1).symbol,'LFGK');
+  assert.deepEqual(rpc.skips(),[0,50,51],
+    'an empty final page is needed even after a short second page');
+  assert.equal(rpc.balanceCalls().length,1,
+    'only the approved asset is read after complete discovery');
+});
+
+test('token inventory refuses 101st asset and never reads partial balances',async()=>{
+  const tokens=paginationTokens(101,{includeApprovedLast:true});
+  const rpc=pagedInventoryRpc(tokens);
+  await assert.rejects(discoverWaxTipTokens({fetchImpl:rpc.fetchImpl,
+    approvedAssets:[assetKey('kingsofgraff',tokens[0].symbol,4)]}),
+    /wax_inventory_incomplete_or_excessive/);
+  assert.deepEqual(rpc.skips(),[0,50,100]);
+  assert.equal(rpc.balanceCalls().length,0,
+    'no approved balance may be reported for oversized inventory');
+});
+
+test('exactly 100 tokens are accepted only after empty-page proof',async()=>{
+  const tokens=paginationTokens(100);
+  const rpc=pagedInventoryRpc(tokens);
+  const result=await discoverWaxTipTokens({fetchImpl:rpc.fetchImpl});
+  assert.equal(result.assets.length,100);
+  assert(result.assets.every(x=>x.status==='quarantined_unknown_token'));
+  assert.deepEqual(rpc.skips(),[0,50,100]);
+  assert.equal(rpc.balanceCalls().length,0);
+});
+
+test('provider cap below requested page size does not hide later tokens',async()=>{
+  const tokens=paginationTokens(7,{includeApprovedLast:true});
+  const rpc=pagedInventoryRpc(tokens,{cappedPageSize:2});
+  const result=await discoverWaxTipTokens({fetchImpl:rpc.fetchImpl,
+    approvedAssets:[assetKey('kingsofgraff','LFGK',4)]});
+  assert.equal(result.assets.length,7);
+  assert.equal(result.assets.at(-1).status,'observed_only');
+  assert.deepEqual(rpc.skips(),[0,2,4,6,7]);
+});
+
+test('later-page Hyperion failure or malformed response blocks all observations',async()=>{
+  const tokens=paginationTokens(55,{includeApprovedLast:true});
+  for(const option of [
+    {failAtSkip:50},
+    {malformedAtSkip:50},
+    {wrongAccountAtSkip:50},
+    {duplicateAtSkip:50}
+  ]){
+    const rpc=pagedInventoryRpc(tokens,option);
+    await assert.rejects(discoverWaxTipTokens({fetchImpl:rpc.fetchImpl,
+      approvedAssets:[assetKey('kingsofgraff',tokens[0].symbol,4)]}),
+      /wax_inventory_(?:unavailable|incomplete_or_excessive|duplicate_asset)/);
+    assert.equal(rpc.balanceCalls().length,0);
+  }
+});
+
+test('invalid token identity on later page fails closed instead of hiding an asset',async()=>{
+  const tokens=paginationTokens(51);
+  tokens[50]={symbol:'BOGUS!',contract:'kingsofgraff',precision:4,amount:0};
+  const rpc=pagedInventoryRpc(tokens);
+  await assert.rejects(discoverWaxTipTokens({fetchImpl:rpc.fetchImpl}),
+    /wax_inventory_malformed_token/);
+  assert.equal(rpc.balanceCalls().length,0);
 });
