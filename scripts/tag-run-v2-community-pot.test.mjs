@@ -146,7 +146,7 @@ test('large balances and indivisible dust never overpay',async()=>{
 });
 
 function rpcFixture({wrongChain=false,wrongAccount=false,
-  failBalance=false}={}){
+  failBalance=false,reportedPrecision=4,balanceQuantity='12.3456 LFGK'}={}){
   const calls=[];
   const fetchImpl=async (url,opts={})=>{
     calls.push({url,options:opts});
@@ -158,11 +158,11 @@ function rpcFixture({wrongChain=false,wrongAccount=false,
       account_name:wrongAccount?'different':TIP_ACCOUNT
     })};
     if(url.includes('/v2/state/get_tokens?')) return {ok:true,json:async()=>({
-      tokens:[{contract:'kingsofgraff',symbol:'LFGK',precision:4,amount:123456},
+      tokens:[{contract:'kingsofgraff',symbol:'LFGK',precision:reportedPrecision,amount:123456},
         {contract:'scamtoken123',symbol:'SCAM',precision:4,amount:1}]
     })};
     if(url.endsWith('/get_currency_balance'))return {ok:!failBalance,
-      json:async()=>['12.3456 LFGK']};
+      json:async()=>[balanceQuantity]};
     throw new Error('unexpected_network_call');
   };
   return {calls,fetchImpl};
@@ -183,6 +183,16 @@ test('WAX account is discovered read-only and unknown tokens quarantined',async(
   assert.equal(rpc.calls.filter(x=>x.url.endsWith('/get_currency_balance')).length,1,
     'never query unapproved token contracts');
   assert(rpc.calls.every(x=>!x.url.includes('push_transaction')));
+});
+test('chain balances reject mismatched token precision instead of padding units',async()=>{
+  await assert.rejects(discoverWaxTipTokens({
+    fetchImpl:rpcFixture({reportedPrecision:8}).fetchImpl,
+    approvedAssets:[assetKey('kingsofgraff','LFGK',8)]
+  }),/wax_currency_precision_mismatch/);
+  await assert.rejects(discoverWaxTipTokens({
+    fetchImpl:rpcFixture({reportedPrecision:4,balanceQuantity:'12.345 LFGK'}).fetchImpl,
+    approvedAssets:[assetKey('kingsofgraff','LFGK',4)]
+  }),/wax_currency_precision_mismatch/);
 });
 test('WAX RPC wrong chain/account or balance outage fails closed',async()=>{
   await assert.rejects(readWaxTipAccount({fetchImpl:rpcFixture({wrongChain:true}).fetchImpl}),
