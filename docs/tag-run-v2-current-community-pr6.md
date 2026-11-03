@@ -22,6 +22,12 @@ the Telegram bot, production Worker or D1 production migrations.
 - BEFORE INSERT guards reject any PR2 payout intent, PR5 synthetic budget
   or PR5 synthetic hold whose `chat_id` is not that same configured group,
   including direct SQL writes bypassing the normal helper.
+- **Existing database safeguard:** Before the one-group scope can be bound,
+  SQLite checks all three existing PR2/PR5 tables for foreign-group rows.
+  If any existed before the PR6 fixture was installed, scope binding fails
+  with `current_community_existing_foreign_rows`; neither the rows nor the
+  scope are deleted, reassigned, or silently reconciled. Valid already
+  populated records for the exact configured group may be bound unchanged.
 - `bindCurrentTelegramCommunity()` validates an authoritative
   `-100...` Telegram group ID using the existing
   `authenticatedGroupId()` helper, locks it once and allows only an
@@ -68,4 +74,9 @@ echo Exit code: %ERRORLEVEL%
 
 Review scope binding, direct SQL bypasses, 5% base-unit arithmetic, atomic
 rollback, recipient immutability and absence of live transfer endpoints.
+The regression suite additionally loads the PR6 fixture over already-populated
+PR2/PR5 rehearsal tables. It rejects foreign intents, foreign budgets, foreign
+holds, and mixed-group legacy data while preserving those rows and leaving no
+scope bound. It also verifies that already-populated matching-group rows bind
+safely without any reset.
 No merge until full tests and review are complete.
