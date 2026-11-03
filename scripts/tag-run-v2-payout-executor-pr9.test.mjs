@@ -230,6 +230,31 @@ test('daily ceiling is cumulative across all allocations and cancellations',asyn
   assert.equal(f.intents().length,2);
 });
 
+test('unresolved prior-day token obligations block tomorrow against reused balance',async t=>{
+  const f=fixture(t);await openCap(f);
+  await reserveReviewedPayout(f.env,intentArgs);
+  const tomorrow='2026-11-03';
+  f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    'SELECT chat_id,?,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status '+
+    'FROM tag_run_v2_snapshots WHERE day_key=?'
+  ).run(tomorrow,DAY);
+  await initializeReviewedDailyCap(f.env,{...capArgs,day:tomorrow});
+  f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
+    'SET paused=1,revision=revision+1 WHERE day_key=?').run(DAY);
+  assert.throws(()=>f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
+    'SET paused=0,revision=revision+1 WHERE day_key=?')
+    .run(tomorrow),/v2_payout_asset_obligations_unresolved/);
+  assert.equal(f.sqlite.prepare('SELECT paused FROM tag_run_v2_payout_caps '+
+    'WHERE day_key=?').get(tomorrow).paused,1);
+  assert.equal(f.intents()[0].status,'reserved');
+  assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
 test('a mismatched registered wallet or group blocks irrevocable reservation',async t=>{
   const f=fixture(t);
   await openCap(f);
