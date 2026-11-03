@@ -172,3 +172,19 @@ test('missing approval flags prevent any payout ledger mutation',async()=>{
   }),/deployed_release_not_authorized/);
   assert.equal(calls,1);
 });
+
+
+test('an already-broadcast payout can be reconciled while new sends are paused',()=>{
+  const halted=makeSettings({
+    TAG_RUN_V2_POOL_ENABLED:'false',
+    TAG_RUN_V2_DRAWS_ENABLED:'false',
+    TAG_RUN_V2_PAYOUTS_ENABLED:'false',
+    TAG_RUN_V2_OBSERVATION_ENABLED:'true',
+    TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED:'false'
+  });
+  assert.throws(()=>validateDeployedPayoutSettings(halted),
+    /deployed_release_not_authorized/);
+  const permitted=validateDeployedPayoutSettings(halted,{reconciliationOnly:true});
+  assert.equal(permitted.TAG_RUN_ENABLED,'true');
+  assert.equal(permitted.TAG_RUN_V2_PAYOUTS_ENABLED,undefined);
+});
