@@ -9,11 +9,13 @@ Migration `105_tag_run_v2_payout_execution.sql` adds a **real persistent** D1 pa
 `workers/moonboys-api/tag-run/v2-payout-executor.js` implements explicit methods to:
 
 1. Create a **paused** daily 5% cap only with a reviewed approved token, a confirmed donation record and a `verified` historical snapshot whose exact spendable units reconcile: on-chain − allocated/unpaid − excluded. No head-balance-only funding.
-2. Reserve a winner's exact asset amount and registered WAX receiving account against the cumulative cap and an **independent, operator-chosen per-transfer maximum** using a revision-checked CAS and **one D1.batch transaction**. The reviewed draw must be marked `reviewed` with reviewer metadata; mere `preview_only` or rejected draws cannot reserve tokens. A SQL BEFORE INSERT check binds a new intent to the cap's `last_intent_key`, avoiding the “CAS updated zero rows but insert still succeeds” failure. Duplicate slots/keys, direct UPDATE/DELETE, overbudget and `INSERT OR REPLACE` are rejected.
+2. Reserve a winner's exact asset amount and registered WAX receiving account against the cumulative cap and an **independent, operator-chosen per-transfer maximum** using a revision-checked CAS and **one D1.batch transaction**.
+   - SQL now permits a new cap only with `paused=1`, empty last-intent key, zero committed/last-reserved units and revision zero. An active new-day cap must pass the overlap-protected UPDATE rather than an unchecked INSERT.
+   - Each cap increase records `last_reserved_units` and must equal `OLD.committed_units + last_reserved_units` using SQLite recursive decimal-digit arithmetic, never floating point or a 64-bit INTEGER. The corresponding intent INSERT must match **both** `last_intent_key` and `last_reserved_units`. This rejects the under-consumption attack where an intent for 100 units had only spent 1 unit from its cap. The reviewed draw must be marked `reviewed` with reviewer metadata; mere `preview_only` or rejected draws cannot reserve tokens. A SQL BEFORE INSERT check binds a new intent to the cap's `last_intent_key`, avoiding the “CAS updated zero rows but insert still succeeds” failure. Duplicate slots/keys, direct UPDATE/DELETE, overbudget and `INSERT OR REPLACE` are rejected.
 3. Reject overlapping active caps for the same token across UTC days while earlier reservations, uncertain sends or reconciliation reviews remain outstanding. A new day is NOT permission to double-spend the same inventory.
 4. Re-check the token's approval and snapshot before signing; revalidate the receiver's WAX mainnet account **without requiring the recipient to sign or claim**.
 5. Build an actual Antelope `transfer` action with `isthatajoint@tagrain`, exact token contract/symbol/precision, frozen `from`, `to`, quantity and an intent-identifying memo.
-6. **Before** handing the transfer to a separately approved signer/broadcaster, atomically move the intent to `broadcast_unknown`, but only if the community pool is still `review_only`, this token's cap is **unpaused**, and the approved asset/verified snapshot still exist **inside the same conditional UPDATE**. This blocks concurrent `/poolpause`, token-cap pause and asset revocation during the receiver's asynchronous WAX RPC check. Even an RPC timeout never automatically retries that intent. The exact original action must be reconciled on chain before marking confirmed. A pause after an intent has already entered `broadcast_unknown` may not stop an in-flight signed transfer; a protected signer must also have its own emergency stop.
+6. **Before** handing the transfer to a separately approved signer/broadcaster, atomically move the intent to `broadcast_unknown`, but only if the community pool is still `review_only`, this token's cap is **unpaused**, and the approved asset/verified snapshot **digest exactly equals the digest frozen in that intent** inside the same conditional UPDATE. This blocks concurrent `/poolpause`, token-cap pause and asset revocation during the receiver's asynchronous WAX RPC check. Even an RPC timeout never automatically retries that intent. The exact original action must be reconciled on chain before marking confirmed. A pause after an intent has already entered `broadcast_unknown` may not stop an in-flight signed transfer; a protected signer must also have its own emergency stop.
 7. `v2-payout-chain-reconcile.js` independently corroborates the outbound action through two Hyperion indexers, chain ID and last irreversible block, then checks contract, amount, destination, sender and memo against the frozen payout. Two indexers are corroboration, not Merkle inclusion proof.
 
 A separate positive `maxTransferUnits` parameter is **required** when
@@ -65,3 +67,17 @@ Tests use isolated Node `node:sqlite` loaded with actual migrations 103, 104, 10
 Run `npm run ci:worker-api` and the canonical D1 migration checks. Isolated SQLite parity does not substitute for real D1 concurrency, real Anchor signing or an actual WAX transfer test.
 
 **Honest status:** The durable payout ledger, action-building, signer handoff interface and chain reconciliation are implemented in this PR. The protected signing service and real authorized payout launch are **not** implemented by this PR. No transfer is authorized or attempted.
+
+
+### PR #1716 follow-up: direct SQL bypass regressions
+
+Review feedback identified three production-critical bypasses. The regression
+suite now rejects direct cap INSERT with `paused=0` or nonzero counters,
+forged cap consumption that increments by less than a bundle's amount,
+direct intent INSERT whose token amount differs from the exact reserved
+increment, and changes to a verified snapshot digest during the awaited
+recipient RPC. Large integer reservation increments above
+`Number.MAX_SAFE_INTEGER` are tested without floating point. All three
+cases **fail closed before calling a signer**. The canonical schema mirrors
+the migration definition exactly. No remote D1 change, signer installation,
+funding approval or chain transaction occurs during this PR review.
