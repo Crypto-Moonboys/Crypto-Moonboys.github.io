@@ -44,7 +44,7 @@ export async function readWaxTipAccount({ fetchImpl = fetch, account = TIP_ACCOU
   };
 }
 export async function discoverWaxTipTokens({ fetchImpl = fetch,
-  account = TIP_ACCOUNT, approvedAssets = [] } = {}) {
+  account = TIP_ACCOUNT, approvedAssets = [], observeAll = false } = {}) {
   const accountProof = await readWaxTipAccount({ fetchImpl, account });
   if (!Array.isArray(approvedAssets) || approvedAssets.length > MAX_DISCOVERED) {
     throw new Error('asset_allowlist_invalid');
@@ -94,9 +94,18 @@ export async function discoverWaxTipTokens({ fetchImpl = fetch,
   const assets = [];
   for (const token of discovered) {
     const key = token.key;
-    if (!approved.has(key)) {
+    if (!approved.has(key) && !observeAll) {
       assets.push({ key, contract: token.contract, symbol: token.symbol,
         precision: token.precision, status: 'quarantined_unknown_token' });
+      continue;
+    }
+    // Observation-only pilot may inspect positive balances of UNKNOWN tokens.
+    // This NEVER promotes them to the eligible allowlist or inserts a
+    // verified historical snapshot. An absent chain balance on a zero-balance
+    // Hyperion entry is not proof of transferability or custody.
+    if (!approved.has(key) && observeAll && token.amount === 0) {
+      assets.push({ key, contract: token.contract, symbol: token.symbol,
+        precision: token.precision, status: 'quarantined_zero_unverified' });
       continue;
     }
     const balancesResponse = await fetchImpl(
@@ -128,7 +137,8 @@ export async function discoverWaxTipTokens({ fetchImpl = fetch,
       precision: token.precision, balanceUnits,
       // Current chain balance is not an immutable last-irreversible-block
       // snapshot and cannot be used to reserve funds or auto-allocate tokens.
-      status: 'observed_only', confirmed: false,
+      status: approved.has(key) ? 'observed_only' : 'observed_quarantined',
+      confirmed: false,
       snapshotBlock: accountProof.latestIrreversibleBlock
     });
   }
