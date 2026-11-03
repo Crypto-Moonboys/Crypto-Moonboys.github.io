@@ -325,3 +325,30 @@ test('all production observation paths are free of WAX transfers and token settl
   assert.match(source,/tag_run_v2_assets/);
   assert.doesNotMatch(source,/INSERT INTO tag_run_v2_snapshots|INSERT INTO tag_run_v2_bundles|INSERT INTO tag_run_v2_draws/);
 });
+
+
+test('resolved failed capture cursor or oldest V1 receipt read cannot skip history',async t=>{
+  const f=fixture(t),original=f.DB.prepare.bind(f.DB);
+  receipts(f,'2026-11-01',MEMBER,10,331);
+  for(const [queryPart,failure] of [
+    ['SELECT last_completed_day_key FROM tag_run_v2_capture_cursors',
+      {success:false}],
+    ['SELECT MIN(day_key) AS first_day FROM tag_run_messages',
+      {success:false}]
+  ]){
+    f.env.DB={prepare(sql){
+      if(sql.startsWith(queryPart)){
+        return {bind(){return {async first(){return failure;}};}};
+      }
+      return original(sql);
+    }};
+    await assert.rejects(command(f,'poolbackfill'),
+      /participation_(?:capture_cursor|oldest_source_day)_unavailable/);
+    assert.equal(count(f,'tag_run_v2_capture_cursors'),0);
+    assert.equal(count(f,'tag_run_v2_participation'),0);
+  }
+  f.env.DB=f.DB;
+  const completed=await command(f,'poolbackfill');
+  assert.match(completed.messages[0],/Real member-day receipts inserted: 1/);
+  assert.equal(count(f,'tag_run_v2_participation'),1);
+});
