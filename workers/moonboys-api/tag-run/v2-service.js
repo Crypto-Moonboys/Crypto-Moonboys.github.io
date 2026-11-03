@@ -7,12 +7,13 @@ import {
   sha256Text, drawSeed, previewCommunityDraw
 } from './v2-core.js';
 import { discoverWaxTipTokens } from './v2-chain.js';
+import { quarantineInboundTipReceipts } from './v2-deposits.js';
 
 export const V2_COMMANDS = new Set([
-  'pool', 'myrewards', 'poolstatus', 'drawpreview', 'drawaudit', 'poolpause'
+  'pool', 'myrewards', 'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause'
 ]);
 export const V2_ADMIN_COMMANDS = new Set([
-  'poolstatus', 'drawpreview', 'drawaudit', 'poolpause'
+  'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause'
 ]);
 const isV2Available = env => env?.TAG_RUN_ENABLED === 'true' &&
   env?.TAG_RUN_V2_POOL_ENABLED === 'true' && !!env?.DB &&
@@ -169,6 +170,25 @@ export async function handleTagRunV2Command(env, options) {
     ).run();
     if (write?.success === false) throw new Error('pool_pause_write_failed');
     await send('Community Token Pot paused. TAG RUN Street Cred continues.');
+    return true;
+  }
+  if (name === 'poolscan') {
+    if (cfg.status === 'paused') {
+      await send('Community Pot paused; scanning is not enabled.');
+      return true;
+    }
+    try {
+      const result = await quarantineInboundTipReceipts(env, { fetchImpl });
+      await send('TAG RUN V2 · INBOUND SCAN (QUARANTINE ONLY)\n' +
+        'Irreversible inbound candidates: ' + result.seen +
+        '\nNew quarantined receipts: ' + result.inserted +
+        '\nHistory scan incomplete: ' + (result.truncated ? 'YES' : 'UNKNOWN') +
+        '\nNo donation is approved by this scan. No token draw or transfer.');
+    } catch (error) {
+      await send('Community Pot scan unavailable: ' +
+        String(error?.message || error).slice(0,120) +
+        '. No donation was approved and no transfer was attempted.');
+    }
     return true;
   }
   if (name === 'poolstatus') {
