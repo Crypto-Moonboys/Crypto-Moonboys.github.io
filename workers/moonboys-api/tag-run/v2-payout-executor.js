@@ -122,15 +122,19 @@ export async function reserveReviewedPayout(env,{
     env.DB.prepare('SELECT * FROM tag_run_v2_payout_caps '+
       'WHERE chat_id=? AND day_key=? AND asset_key=?')
       .bind(chatId,day,key).first(),
-    env.DB.prepare('SELECT telegram_id,units,status FROM tag_run_v2_bundles '+
-      'WHERE chat_id=? AND day_key=? AND asset_key=? AND bundle_index=?')
+    env.DB.prepare('SELECT b.telegram_id,b.units,b.status,'+
+      'd.status AS draw_status,d.reviewed_by FROM tag_run_v2_bundles b '+
+      'JOIN tag_run_v2_draws d ON d.chat_id=b.chat_id AND d.day_key=b.day_key '+
+      'WHERE b.chat_id=? AND b.day_key=? AND b.asset_key=? AND b.bundle_index=?')
       .bind(chatId,day,key,bundleIndex).first(),
     env.DB.prepare('SELECT telegram_id,wax_account FROM tag_run_wallets '+
       'WHERE telegram_id=?').bind(String(telegramId)).first()
   ]);
   if(!cap||cap.paused!==0||!HEX.test(cap.snapshot_digest)||
      !bundle||bundle.telegram_id!==String(telegramId)||
-     bundle.units!==amount.toString()||bundle.status!=='preview_only')
+     bundle.units!==amount.toString()||bundle.status!=='preview_only'||
+     bundle.draw_status!=='reviewed'||
+     typeof bundle.reviewed_by!=='string'||!bundle.reviewed_by)
     fail('cap_or_allocation_not_approved');
   if(!wallet||wallet.telegram_id!==String(telegramId)||
      wallet.wax_account!==receivingAccount)fail('registered_destination_changed');
