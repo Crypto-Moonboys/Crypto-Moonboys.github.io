@@ -28,6 +28,19 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_atomic_budget_rehearsal (
   PRIMARY KEY(chat_id,day_key,asset_key)
 ) WITHOUT ROWID;
 
+-- SQLite INSERT OR REPLACE can silently delete an existing budget row even
+-- when recursive_triggers=OFF, resetting allocated/outstanding/revision/paused.
+-- Reject scoped duplicates BEFORE INSERT, including while an unknown hold
+-- still points to the same scope through its foreign key.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_atomic_budget_no_replace
+BEFORE INSERT ON tag_run_v2_atomic_budget_rehearsal
+WHEN EXISTS (
+  SELECT 1 FROM tag_run_v2_atomic_budget_rehearsal old
+  WHERE old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+    AND old.asset_key=NEW.asset_key
+)
+BEGIN SELECT RAISE(ABORT,'atomic_rehearsal_duplicate_budget'); END;
+
 -- One simulated intention can have at most one hold, independent of retries.
 -- The mutable state is ONLY a rehearsal marker. Unknown/review allocations
 -- remain outstanding and may not be cancelled or retried.
