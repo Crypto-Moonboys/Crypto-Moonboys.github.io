@@ -551,3 +551,87 @@ test('/myrewards stays unavailable if independent observation gate is turned off
   assert.match(sent.at(-1),/not active yet/);
   assert.equal(count(f,'tag_run_v2_draws'),0);
 });
+
+
+test('public /pool reports only quarantined count and PAUSED observation state',async t=>{
+  const f=fixture(t),sent=[];
+  const insert=f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_assets '+
+    '(asset_key,chain_id,token_contract,token_symbol,token_precision) '+
+    'VALUES (?,?,?,?,?)'
+  );
+  insert.run(ASSET,WAX_MAINNET_CHAIN_ID,'kingsofgraff','LFGK',4);
+  insert.run(assetKey('wuffi','WUF',4),WAX_MAINNET_CHAIN_ID,'wuffi','WUF',4);
+  const changes=f.sqlite.prepare('SELECT total_changes() AS n').get().n;
+  const done=await handleTagRunV2Command(f.env,{
+    name:'pool',isPrivate:false,isAdmin:false,chatId:GROUP,
+    telegramId:'2222',send:async text=>sent.push(text)
+  });
+  assert.equal(done,true);
+  assert.match(sent[0],/COMMUNITY TOKEN POT \(READ-ONLY\)/);
+  assert.match(sent[0],/Pool: PAUSED.*Draws: OFF.*Transfers: OFF/);
+  assert.match(sent[0],/Observed token identities under review: 2/);
+  assert.match(sent[0],/Rewardable tokens: NONE/);
+  assert.match(sent[0],/Do not send tokens/);
+  assert.doesNotMatch(sent[0],/isthatajoint|1000000|WAX balance/);
+  assert.equal(f.sqlite.prepare('SELECT total_changes() AS n').get().n,changes);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+  assert.equal(count(f,'tag_run_v2_bundles'),0);
+  assert.equal(count(f,'tag_run_v2_snapshots'),0);
+});
+
+test('empty observation /pool remains truthful and makes no D1 writes',async t=>{
+  const f=fixture(t),sent=[];
+  await handleTagRunV2Command(f.env,{
+    name:'pool',isPrivate:true,isAdmin:false,chatId:GROUP,
+    telegramId:MEMBER,send:async value=>sent.push(value)
+  });
+  assert.match(sent[0],/under review: 0/);
+  assert.match(sent[0],/Rewardable tokens: NONE/);
+  assert.equal(count(f,'tag_run_v2_assets'),0);
+});
+
+test('/pool never presents invalid or failed D1 reads as an empty safe inventory',async t=>{
+  const f=fixture(t),original=f.env.DB;
+  const send=async()=>{throw Error('must not send on failed D1 proof');};
+  const call=()=>handleTagRunV2Command(f.env,{
+    name:'pool',isPrivate:false,isAdmin:false,chatId:GROUP,
+    telegramId:MEMBER,send
+  });
+  for(const failure of [
+    {success:false,results:[]},
+    {success:true,results:undefined},
+    {success:true,results:[{eligibility:'quarantined',n:'5'}]},
+    {success:true,results:[{eligibility:'unknown',n:5}]},
+    {success:true,results:[{eligibility:'approved',n:1}]}
+  ]) {
+    f.env.DB={prepare(sql){
+      if(sql.includes('GROUP BY eligibility'))return {
+        all:async()=>failure
+      };
+      return original.prepare(sql);
+    }};
+    await assert.rejects(call(),/pool_observation_assets|pool_observation_unexpected_approval/);
+  }
+  f.env.DB=original;
+  assert.equal(count(f,'tag_run_v2_bundles'),0);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+});
+
+test('/pool switches off when observation gate is disabled without enabling funding',async t=>{
+  const f=fixture(t),sent=[];
+  f.env.TAG_RUN_V2_OBSERVATION_ENABLED='false';
+  await handleTagRunV2Command(f.env,{
+    name:'pool',isPrivate:false,isAdmin:false,chatId:GROUP,
+    telegramId:'2222',send:async value=>sent.push(value)
+  });
+  assert.match(sent[0],/not active yet/);
+  f.env.TAG_RUN_V2_OBSERVATION_ENABLED='true';
+  f.env.TAG_RUN_V2_DRAWS_ENABLED='true';
+  await handleTagRunV2Command(f.env,{
+    name:'pool',isPrivate:false,isAdmin:false,chatId:GROUP,
+    telegramId:'2222',send:async value=>sent.push(value)
+  });
+  assert.match(sent[1],/not active yet/);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+});
