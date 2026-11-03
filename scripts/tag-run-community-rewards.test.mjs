@@ -462,7 +462,7 @@ test('commands are verified-group/private only and rain registers WAX payout des
   assert.match(privateProfile.answer, /Newbie Tagger/);
   assert.match(privateProfile.answer, /abcde\.wam/, 'member can inspect own registered WAX account privately');
   const groupProfile = await f.command('/profile', { chat: 'group' });
-  assert.match(groupProfile.answer, /registered \(pending\)/);
+  assert.match(groupProfile.answer, /destination registered/);
   assert.doesNotMatch(groupProfile.answer, /abcde\.wam/, 'group profile must not reveal the WAX account');
   const ranks = await f.command('/ranks', { chat: 'group' });
   assert.match(ranks.answer, /0 — Newbie Tagger/);
