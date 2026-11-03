@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_source_guard
 BEFORE INSERT ON tag_run_v2_payout_caps
 WHEN NOT EXISTS (
+  SELECT 1 FROM tag_run_v2_pool_config p
+  WHERE p.config_id=1 AND p.status='review_only'
+    AND p.wallet_account='isthatajoint' AND p.daily_bps=500
+    AND p.historical_ticket_bps=5000
+) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a
     ON a.asset_key=s.asset_key
   WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
@@ -113,7 +118,19 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_intents (
 ) WITHOUT ROWID;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_intent_source_guard
 BEFORE INSERT ON tag_run_v2_payout_intents
-WHEN NEW.status!='reserved' OR NEW.signed_tx_id IS NOT NULL OR NOT EXISTS (
+WHEN NEW.status!='reserved' OR NEW.signed_tx_id IS NOT NULL
+OR NOT EXISTS (
+  SELECT 1 FROM tag_run_v2_pool_config p
+  WHERE p.config_id=1 AND p.status='review_only'
+    AND p.wallet_account='isthatajoint' AND p.daily_bps=500
+    AND p.historical_ticket_bps=5000
+) OR NOT EXISTS (
+  SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a
+    ON a.asset_key=s.asset_key
+  WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
+    AND s.asset_key=NEW.asset_key AND s.status='verified'
+    AND a.eligibility='approved'
+) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_payout_caps c
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
     AND c.asset_key=NEW.asset_key AND c.snapshot_digest=NEW.snapshot_digest
