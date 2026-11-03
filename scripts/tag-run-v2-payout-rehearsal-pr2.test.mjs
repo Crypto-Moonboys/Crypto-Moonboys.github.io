@@ -153,7 +153,7 @@ test('offline D1-compatible ledger prevents duplicate slots and forbids mutating
   // Duplicate primary key and alternate unique slot must both be blocked
   // before SQLite REPLACE can silently delete the original row.
   const replace=db.prepare(sql.replace('INSERT INTO','INSERT OR REPLACE INTO'));
-  assert.throws(()=>replace.run(first.intent_key,first.chat_id,first.day_key,
+  assert.throws(()=>replace.run(first.intent_key,first.chat_id,'2026-11-03',
     first.asset_key,first.bundle_index,first.telegram_id,'otherwax',
     first.destination_digest,first.amount_units,first.snapshot_digest,
     first.source_receipts_digest),/immutable_rehearsal_intent/);
@@ -184,7 +184,7 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
      irreversible_block_num,block_id,donor_account,recipient_account,units,
      donor_intent_digest,custody_review_digest)
     VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
-  for(const [id,sequence] of [[HASH,'seq:1'],['d'.repeat(64),'seq:1']]){
+  for(const [id,sequence] of [[HASH,'seq:2'],['d'.repeat(64),'seq:1']]){
     assert.throws(()=>evidenceReplace.run(id,KEY,WAX_MAINNET_CHAIN_ID,
       sequence,TX,100,BLOCK,'otherwax',TIP_ACCOUNT,'20',HASH,BLOCK),
       /immutable_rehearsal_funding/);
@@ -206,8 +206,8 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
      block_id,onchain_units,reserved_units,excluded_units,available_units,
      five_percent_units,evidence_digest)
     VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
-  for(const id of [HASH,'d'.repeat(64)]){
-    assert.throws(()=>replaceSnapshot.run(id,CHAT,DAY,KEY,100,BLOCK,
+  for(const [id,day] of [[HASH,'2026-11-03'],['d'.repeat(64),DAY]]){
+    assert.throws(()=>replaceSnapshot.run(id,CHAT,day,KEY,100,BLOCK,
       '999999','20000','40000','939999','46999',HASH),
       /immutable_rehearsal_snapshot/);
   }
