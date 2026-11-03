@@ -29,9 +29,18 @@ export async function buildDirectWalletPayoutPlan({
     const key = assetKey(b?.contract,b?.symbol,b?.precision);
     if (key !== b.key || budgets.has(key)) failure('duplicate_or_invalid_budget');
     const amount = parseIntegerUnits(b.dailyBudgetUnits);
+    const balance = parseIntegerUnits(b.balanceUnits);
+    const reserved = parseIntegerUnits(b.reservedUnits);
+    const excluded = parseIntegerUnits(b.excludedUnits);
     const available = parseIntegerUnits(b.availableUnits);
-    if (amount !== available * BigInt(DAILY_BPS) / 10000n ||
-        available < 0n) failure('budget_not_reconciled');
+    // Do not trust a supplied availability figure: reconcile all four
+    // integer-base-unit fields against the actual preview input. A preview
+    // that inflates availability and its 5% budget together must fail closed.
+    if (reserved + excluded > balance ||
+        available !== balance - reserved - excluded ||
+        amount !== available * BigInt(DAILY_BPS) / 10000n) {
+      failure('budget_not_reconciled');
+    }
     budgets.set(key,{ amount, remaining:amount });
   }
   const selected = new Map();
