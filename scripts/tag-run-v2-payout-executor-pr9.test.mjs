@@ -750,6 +750,31 @@ test('failed finality or mismatched amount never confirms sent tokens',async t=>
   assert.equal(f.intents()[0].status,'broadcast_unknown');
 });
 
+test('already-broadcast UNKNOWN payout can be proven and confirmed after a release pause',async t=>{
+  const f=fixture(t);await openCap(f);
+  const item=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,intentKey:item.intentKey,
+    signAndBroadcast:async()=>({transactionId:TRANSACTION})
+  });
+  // Pausing *future* funded draws must not strand an irreversible transfer.
+  f.env.TAG_RUN_V2_PAYOUTS_ENABLED='false';
+  f.env.TAG_RUN_V2_POOL_ENABLED='false';
+  f.env.TAG_RUN_V2_DRAWS_ENABLED='false';
+  f.env.TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED='false';
+  f.env.TAG_RUN_V2_OBSERVATION_ENABLED='true';
+  const settled=await markIrreversiblyConfirmed(f.env,{
+    intentKey:item.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async()=>safeAction(item.intentKey)
+  });
+  assert.equal(settled.status,'confirmed');
+  assert.equal(f.intents()[0].signed_tx_id,TRANSACTION);
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:item.intentKey,fetchImpl:destinationRpc,
+    signAndBroadcast:async()=>{throw Error('must not be called');}
+  }),/v2_payout_release_not_authorized/);
+});
+
 test('no real signer endpoint, transfer flag or network broadcast is installed',()=>{
   const src=readFileSync(new URL(
     '../workers/moonboys-api/tag-run/v2-payout-executor.js',import.meta.url),
