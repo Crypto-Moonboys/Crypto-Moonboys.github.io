@@ -260,7 +260,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         return true;
       }
       if (!isValidWaxAccount(args)) {
-        await send('Usage: /rain yourwaxaccount\\nEnter a valid WAX account name. ' +
+        await send('Usage: /rain yourwaxaccount\nEnter a valid WAX account name. ' +
           'No wallet login or signature is needed. Double-check the destination: ' +
           'tokens sent to the wrong account may be unrecoverable.');
         return true;
@@ -291,11 +291,11 @@ export async function handleTagRunCommand(update, env, options = {}) {
         throw new Error('wax_destination_registration_write_failed');
       }
       await send('WAX payout destination REGISTERED: ' + args +
-        '\\nAccount exists on WAX mainnet. This does not prove account ownership, ' +
+        '\nAccount exists on WAX mainnet. This does not prove account ownership, ' +
         'and no signature is required by TAG RUN.' +
-        '\\nYou chose this receiving account; check the spelling carefully. ' +
+        '\nYou chose this receiving account; check the spelling carefully. ' +
         'Tokens sent to an incorrect account may be unrecoverable.' +
-        '\\nFunded payouts are currently DISABLED.');
+        '\nFunded payouts are currently DISABLED.');
       return true;
     }
     if (name === 'rainstatus') {
@@ -310,7 +310,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         'WHERE telegram_id=?'
       ).bind(telegramId).first();
       if (!wallet) {
-        await send('TAG RUN WAX WALLET\\nNo WAX account registered. ' +
+        await send('TAG RUN WAX WALLET\nNo WAX account registered. ' +
           'DM /rain yourwaxaccount to set your destination. ' +
           'No token transfers are enabled.');
         return true;
@@ -323,15 +323,15 @@ export async function handleTagRunCommand(update, env, options = {}) {
       } catch (_) {
         // Do not transform RPC failure into an assertion that the account exists.
       }
-      await send('TAG RUN WAX WALLET\\nRegistered destination: ' +
+      await send('TAG RUN WAX WALLET\nRegistered destination: ' +
         String(wallet.wax_account) +
-        '\\nRegistration: ' + (exists
+        '\nRegistration: ' + (exists
           ? 'REGISTERED — WAX mainnet account confirmed'
           : 'SAVED — chain account check currently unavailable; retry /rainstatus') +
-        '\\nNo wallet signature or ownership proof is required to choose ' +
+        '\nNo wallet signature or ownership proof is required to choose ' +
         'your payout destination. You are responsible for entering the correct account.' +
-        '\\nFuture route: approved rewards sent directly to your chosen WAX account.' +
-        '\\nCurrent status: FUNDED PAYOUTS DISABLED.');
+        '\nFuture route: approved rewards sent directly to your chosen WAX account.' +
+        '\nCurrent status: FUNDED PAYOUTS DISABLED.');
       return true;
     }
     if (name === 'profile' || name === 'tagprofile') {
