@@ -202,7 +202,10 @@ export async function handleTagRunV2Command(env, options) {
       'FROM tag_run_v2_assets a JOIN tag_run_v2_snapshots s ' +
       'ON s.asset_key=a.asset_key WHERE s.chat_id=? ' +
       "AND a.eligibility='approved' AND s.status='verified' " +
-      'ORDER BY s.day_key DESC LIMIT 20'
+      'AND s.day_key = (SELECT MAX(latest.day_key) ' +
+      'FROM tag_run_v2_snapshots latest WHERE latest.chat_id=s.chat_id ' +
+      "AND latest.asset_key=s.asset_key AND latest.status='verified') " +
+      'ORDER BY s.day_key DESC,a.token_symbol,a.token_contract LIMIT 20'
     ).bind(chatId).all();
     const lines = (rows.results || []).map(r=>r.token_symbol+' @ '+
       r.token_contract+' — '+r.spendable_units+' smallest units ('+r.day_key+')');
@@ -289,6 +292,12 @@ export async function handleTagRunV2Command(env, options) {
     if (cfg.status !== 'review_only') {
       await send('V2 draw preview is paused until custody and asset review are complete.');
       return true;
+    }
+    // The approved V2 foundation has fixed 5% daily and 50% historical
+    // probability. Reject unexpected DB settings rather than silently
+    // simulating different rates from those displayed to members.
+    if (cfg.daily_bps !== 500 || cfg.historical_ticket_bps !== 5000) {
+      throw new Error('v2_draw_rule_configuration_mismatch');
     }
     const day = previousDay(nowMs);
     const input = await drawInput(env.DB,chatId,day);
