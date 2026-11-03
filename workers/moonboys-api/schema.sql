@@ -2916,6 +2916,10 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
   snapshot_digest TEXT NOT NULL CHECK(length(snapshot_digest)=64 AND snapshot_digest NOT GLOB '*[^0-9a-f]*'),
   daily_limit_units TEXT NOT NULL CHECK(length(daily_limit_units) BETWEEN 1 AND 78 AND daily_limit_units NOT GLOB '*[^0-9]*' AND (daily_limit_units='0' OR substr(daily_limit_units,1,1)!='0')),
   last_intent_key TEXT NOT NULL DEFAULT '' CHECK(last_intent_key='' OR (length(last_intent_key)=64 AND last_intent_key NOT GLOB '*[^0-9a-f]*')),
+  per_transfer_limit_units TEXT NOT NULL CHECK(
+    length(per_transfer_limit_units) BETWEEN 1 AND 78
+    AND per_transfer_limit_units NOT GLOB '*[^0-9]*'
+    AND substr(per_transfer_limit_units,1,1)!='0'),
   committed_units TEXT NOT NULL DEFAULT '0' CHECK(length(committed_units) BETWEEN 1 AND 78 AND committed_units NOT GLOB '*[^0-9]*' AND (committed_units='0' OR substr(committed_units,1,1)!='0')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0 AND revision<=9007199254740991),
   paused INTEGER NOT NULL DEFAULT 1 CHECK(paused IN (0,1)),
@@ -2932,6 +2936,11 @@ WHEN NOT EXISTS (
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND a.eligibility='approved' AND s.snapshot_digest=NEW.snapshot_digest
     AND s.five_percent_units=NEW.daily_limit_units
+    AND (
+      length(NEW.daily_limit_units)>length(NEW.per_transfer_limit_units)
+      OR (length(NEW.daily_limit_units)=length(NEW.per_transfer_limit_units)
+          AND NEW.daily_limit_units>=NEW.per_transfer_limit_units)
+    )
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_deposits d
   WHERE d.asset_key=NEW.asset_key AND d.status='confirmed_donation'
@@ -2945,7 +2954,9 @@ CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_update_guard
 BEFORE UPDATE ON tag_run_v2_payout_caps
 WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
  OR NEW.asset_key!=OLD.asset_key OR NEW.snapshot_digest!=OLD.snapshot_digest
- OR NEW.daily_limit_units!=OLD.daily_limit_units OR NEW.authorized_by!=OLD.authorized_by
+ OR NEW.daily_limit_units!=OLD.daily_limit_units
+ OR NEW.per_transfer_limit_units!=OLD.per_transfer_limit_units
+ OR NEW.authorized_by!=OLD.authorized_by
  OR NEW.revision!=OLD.revision+1
  OR (NEW.committed_units!=OLD.committed_units AND (
       NEW.last_intent_key=OLD.last_intent_key
@@ -3014,6 +3025,11 @@ WHEN NEW.status!='reserved' OR NEW.signed_tx_id IS NOT NULL OR NOT EXISTS (
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
     AND c.asset_key=NEW.asset_key AND c.snapshot_digest=NEW.snapshot_digest
     AND c.paused=0 AND c.last_intent_key=NEW.intent_key
+    AND (
+      length(c.per_transfer_limit_units)>length(NEW.amount_units)
+      OR (length(c.per_transfer_limit_units)=length(NEW.amount_units)
+          AND c.per_transfer_limit_units>=NEW.amount_units)
+    )
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_wallets w
   WHERE w.telegram_id=NEW.telegram_id AND w.wax_account=NEW.receiving_account
