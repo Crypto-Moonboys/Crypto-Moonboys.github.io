@@ -114,17 +114,28 @@ test('cancellation releases outstanding but NEVER refills daily cap',t=>{
 });
 
 test('failed allocation rolls back both budget and intent and leaves no side effects',t=>{
-  const db=fixture(t,['100','101','100']);
+  const db=fixture(t);
   createSimulatedBudget(db,budget('1000','100'));
-  const revision=counters(db).revision;
+  const original=counters(db);
+  // Fail specifically at hold INSERT, AFTER the conditional budget UPDATE.
+  // An early limit check would not test transaction rollback.
+  db.exec("CREATE TRIGGER pr5_inject_hold_insert_failure "+
+    "BEFORE INSERT ON tag_run_v2_atomic_holds_rehearsal "+
+    "WHEN NEW.intent_key='"+ids[1]+"' "+
+    "BEGIN SELECT RAISE(ABORT,'forced_post_budget_failure'); END");
   assert.throws(()=>holdSimulatedIntent(db,{intentKey:ids[1]}),
-    /atomic_rehearsal_transfer_limit/);
-  assert.equal(counters(db).revision,revision);
-  assert.equal(counters(db).allocatedUnits,'0');
+    /forced_post_budget_failure/);
+  const after=counters(db);
+  assert.equal(after.revision,original.revision);
+  assert.equal(after.allocatedUnits,original.allocatedUnits);
+  assert.equal(after.outstandingUnits,original.outstandingUnits);
+  assert.equal(after.availableCapUnits,original.availableCapUnits);
   assert.equal(db.prepare('SELECT count(*) AS n FROM tag_run_v2_atomic_holds_rehearsal')
     .get().n,0);
+  // A different intent still succeeds using the untouched budget.
   assert.equal(holdSimulatedIntent(db,{intentKey:ids[0]}).state,
     'simulation_held');
+  assert.equal(counters(db).allocatedUnits,'100');
 });
 
 test('large integer amounts use BigInt and preserve base units without rounding',t=>{
@@ -146,8 +157,13 @@ test('SQL refuses recipient rewriting, REPLACE and illicit funded states',t=>{
   const replace=db.prepare('INSERT OR REPLACE INTO tag_run_v2_atomic_holds_rehearsal '+
     '(intent_key,chat_id,day_key,asset_key,amount_units,'+
     'destination_account,state) VALUES (?,?,?,?,?,?,?)');
+  // Keep account equal to the immutable source so the duplicate-key
+  // guard is the ONLY deliberate failure, independent of trigger order.
   assert.throws(()=>replace.run(ids[0],CHAT,DAY,KEY,'100',
-    'otherwax','simulation_held'),/atomic_rehearsal_duplicate_hold/);
+    'gkniftyheads','simulation_held'),/atomic_rehearsal_duplicate_hold/);
+  // Distinct intent exercises the source-account guard independently.
+  assert.throws(()=>replace.run(ids[1],CHAT,DAY,KEY,'100',
+    'otherwax','simulation_held'),/atomic_rehearsal_source_mismatch/);
   assert.throws(()=>db.prepare('UPDATE tag_run_v2_atomic_holds_rehearsal '+
     "SET destination_account='otherwax' WHERE intent_key=?").run(ids[0]),
     /atomic_rehearsal_hold_immutable/);
@@ -160,6 +176,32 @@ test('SQL refuses recipient rewriting, REPLACE and illicit funded states',t=>{
     "SET mode='funded'").run(),/CHECK/);
 });
 
+test('INSERT OR REPLACE cannot reset spent cap or pause while hold is unknown',t=>{
+  const db=fixture(t);
+  createSimulatedBudget(db,budget('100','100'));
+  holdSimulatedIntent(db,{intentKey:ids[0]});
+  markSimulatedUnknown(db,{intentKey:ids[0]});
+  setSimulatedPause(db,{...budget(),paused:true});
+  const before=counters(db);
+  const holdBefore=db.prepare('SELECT * FROM tag_run_v2_atomic_holds_rehearsal '+
+    'WHERE intent_key=?').get(ids[0]);
+  const replace=db.prepare('INSERT OR REPLACE INTO tag_run_v2_atomic_budget_rehearsal '+
+    '(chat_id,day_key,asset_key,daily_limit_units,per_transfer_limit_units,'+
+    'allocated_units,outstanding_units,revision,paused) '+
+    'VALUES (?,?,?,?,?,?,?,?,?)');
+  assert.throws(()=>replace.run(CHAT,DAY,KEY,
+    '100','100','0','0',0,0),/atomic_rehearsal_duplicate_budget/);
+  assert.deepEqual(counters(db),before);
+  assert.equal(db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
+    'WHERE intent_key=?').get(ids[0]).state,holdBefore.state);
+  assert.equal(counters(db).outstandingUnits,'100');
+  assert.equal(counters(db).allocatedUnits,'100');
+  assert.equal(counters(db).paused,true);
+  assert.throws(()=>holdSimulatedIntent(db,{intentKey:ids[1]}),
+    /atomic_rehearsal_emergency_pause/);
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
 test('fail-closed on invalid identities, cap shapes and missing budgets',t=>{
   const db=fixture(t);
   assert.throws(()=>holdSimulatedIntent(db,{intentKey:ids[0]}),
@@ -169,7 +211,8 @@ test('fail-closed on invalid identities, cap shapes and missing budgets',t=>{
   assert.throws(()=>createSimulatedBudget(db,budget('00100','10')),
     /atomic_rehearsal_invalid_units/);
   createSimulatedBudget(db,budget());
-  assert.throws(()=>createSimulatedBudget(db,budget()),/UNIQUE constraint failed/);
+  assert.throws(()=>createSimulatedBudget(db,budget()),
+    /atomic_rehearsal_duplicate_budget/);
   assert.throws(()=>holdSimulatedIntent(db,{intentKey:'invalid'}),
     /atomic_rehearsal_invalid_intent_key/);
 });
