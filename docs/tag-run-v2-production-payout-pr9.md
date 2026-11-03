@@ -9,12 +9,18 @@ Migration `105_tag_run_v2_payout_execution.sql` adds a **real persistent** D1 pa
 `workers/moonboys-api/tag-run/v2-payout-executor.js` implements explicit methods to:
 
 1. Create a **paused** daily 5% cap only with a reviewed approved token, a confirmed donation record and a `verified` historical snapshot whose exact spendable units reconcile: on-chain − allocated/unpaid − excluded. No head-balance-only funding.
-2. Reserve a winner's exact asset amount and registered WAX receiving account against the cumulative cap using a revision-checked CAS and **one D1.batch transaction**. The reviewed draw must be marked `reviewed` with reviewer metadata; mere `preview_only` or rejected draws cannot reserve tokens. A SQL BEFORE INSERT check binds a new intent to the cap's `last_intent_key`, avoiding the “CAS updated zero rows but insert still succeeds” failure. Duplicate slots/keys, direct UPDATE/DELETE, overbudget and `INSERT OR REPLACE` are rejected.
+2. Reserve a winner's exact asset amount and registered WAX receiving account against the cumulative cap and an **independent, operator-chosen per-transfer maximum** using a revision-checked CAS and **one D1.batch transaction**. The reviewed draw must be marked `reviewed` with reviewer metadata; mere `preview_only` or rejected draws cannot reserve tokens. A SQL BEFORE INSERT check binds a new intent to the cap's `last_intent_key`, avoiding the “CAS updated zero rows but insert still succeeds” failure. Duplicate slots/keys, direct UPDATE/DELETE, overbudget and `INSERT OR REPLACE` are rejected.
 3. Reject overlapping active caps for the same token across UTC days while earlier reservations, uncertain sends or reconciliation reviews remain outstanding. A new day is NOT permission to double-spend the same inventory.
 4. Re-check the token's approval and snapshot before signing; revalidate the receiver's WAX mainnet account **without requiring the recipient to sign or claim**.
 5. Build an actual Antelope `transfer` action with `isthatajoint@tagrain`, exact token contract/symbol/precision, frozen `from`, `to`, quantity and an intent-identifying memo.
 6. **Before** handing the transfer to a separately approved signer/broadcaster, atomically move the intent to `broadcast_unknown`. Even an RPC timeout never automatically retries that intent. The exact original action must be reconciled on chain before marking confirmed.
 7. `v2-payout-chain-reconcile.js` independently corroborates the outbound action through two Hyperion indexers, chain ID and last irreversible block, then checks contract, amount, destination, sender and memo against the frozen payout. Two indexers are corroboration, not Merkle inclusion proof.
+
+A separate positive `maxTransferUnits` parameter is **required** when
+initializing any reviewed cap and may not exceed that asset's 5% daily budget.
+It is immutable and checked again at SQL INSERT, so an administrator cannot
+silently override the per-transfer spending ceiling with a large bundle.
+No token-specific amount is guessed or automatically approved by this code.
 
 ## Anchor permission and signer — crucial distinction
 
