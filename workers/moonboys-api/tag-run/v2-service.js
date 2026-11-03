@@ -23,6 +23,37 @@ async function configFor(db) {
   return db.prepare('SELECT wallet_account,daily_bps,historical_ticket_bps,status,revision ' +
     'FROM tag_run_v2_pool_config WHERE config_id=1').first();
 }
+
+// A failed D1 read must never be presented as an empty wallet, allowlist,
+// or draw audit. Cloudflare D1 .all() returns { success, results }.
+function requiredRows(result, label) {
+  if (result?.success !== true || !Array.isArray(result.results)) {
+    throw new Error(label + '_unavailable');
+  }
+  return result.results;
+}
+
+// /drawpreview reads historical weights from completed UTC participation days.
+// If a catch-up job is still backfilling, a seemingly valid preview would
+// silently exclude eligible historical members. Even a missing cursor blocks.
+async function historicalBackfillComplete(db, chatId, day) {
+  const cursor = await db.prepare(
+    'SELECT last_completed_day_key FROM tag_run_v2_capture_cursors WHERE chat_id=?'
+  ).bind(chatId).first();
+  if (cursor === null) return false;
+  if (!cursor || typeof cursor.last_completed_day_key !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(cursor.last_completed_day_key)) {
+    throw new Error('participation_capture_cursor_unavailable');
+  }
+  const timestamp = Date.parse(cursor.last_completed_day_key + 'T00:00:00.000Z');
+  if (!Number.isFinite(timestamp) ||
+      new Date(timestamp).toISOString().slice(0, 10) !== cursor.last_completed_day_key) {
+    throw new Error('participation_capture_cursor_invalid');
+  }
+  // Requiring completion through the target UTC day is stronger than merely
+  // checking the prior-day backlog, and ensures initial capture also ran.
+  return cursor.last_completed_day_key >= day;
+}
 function nextUtcDay(day) {
   const timestamp = Date.parse(String(day) + 'T00:00:00.000Z');
   if (!Number.isFinite(timestamp) ||
@@ -207,7 +238,8 @@ export async function handleTagRunV2Command(env, options) {
       "AND latest.asset_key=s.asset_key AND latest.status='verified') " +
       'ORDER BY s.day_key DESC,a.token_symbol,a.token_contract LIMIT 20'
     ).bind(chatId).all();
-    const lines = (rows.results || []).map(r=>r.token_symbol+' @ '+
+    const balances = requiredRows(rows, 'pool_balance_read');
+    const lines = balances.map(r=>r.token_symbol+' @ '+
       r.token_contract+' — '+r.spendable_units+' smallest units ('+r.day_key+')');
     await send('TAG RUN · COMMUNITY TOKEN POT (READ-ONLY)\n' +
       'Pot status: '+cfg.status+'. Wallet: '+TIP_ACCOUNT+
@@ -257,11 +289,12 @@ export async function handleTagRunV2Command(env, options) {
     const allow = await env.DB.prepare(
       "SELECT asset_key FROM tag_run_v2_assets WHERE eligibility='approved' LIMIT 101"
     ).all();
-    if ((allow.results || []).length > 100) throw new Error('approved_asset_limit');
+    const approvedAssets = requiredRows(allow, 'pool_allowlist_read');
+    if (approvedAssets.length > 100) throw new Error('approved_asset_limit');
     let inventory;
     try {
       inventory = await discoverWaxTipTokens({
-        fetchImpl,approvedAssets:(allow.results||[]).map(r=>r.asset_key)
+        fetchImpl,approvedAssets:approvedAssets.map(r=>r.asset_key)
       });
     } catch (err) {
       await send('Community Pot RPC check failed closed: '+
@@ -283,8 +316,9 @@ export async function handleTagRunV2Command(env, options) {
       'SELECT day_key,status,created_at FROM tag_run_v2_draws ' +
       'WHERE chat_id=? ORDER BY day_key DESC LIMIT 10'
     ).bind(chatId).all();
+    const records = requiredRows(rows, 'pool_draw_audit_read');
     await send('TAG RUN V2 · REVIEW-ONLY DRAW AUDIT\n' +
-      ((rows.results||[]).map(r=>r.day_key+' · '+r.status).join('\n')||
+      (records.map(r=>r.day_key+' · '+r.status).join('\n')||
         'No review-only draw records. No payout records exist.'));
     return true;
   }
@@ -300,6 +334,13 @@ export async function handleTagRunV2Command(env, options) {
       throw new Error('v2_draw_rule_configuration_mismatch');
     }
     const day = previousDay(nowMs);
+    if (!(await historicalBackfillComplete(env.DB, chatId, day))) {
+      await send('TAG RUN V2 · DRAW PREVIEW BLOCKED\n' +
+        'Historical Street Cred participation is still being backfilled ' +
+        'through ' + day + ' UTC. No draw was simulated, token bundle ' +
+        'allocated or token transferred. Retry after catch-up completes.');
+      return true;
+    }
     const input = await drawInput(env.DB,chatId,day);
     if (!input.assets.length) {
       await send('No independently verified token snapshots for '+day+
