@@ -67,9 +67,18 @@ catalog count difference between live D1 (197 total, including `_cf_KV` and
 
 The earlier row-comparison command lacked guaranteed SQL ordering. The
 reproducible read-only script introduced alongside this note compares
-**order-independent row multisets** and schema objects and fails if the
-required MoonPet unique index, any original data or one of the seven payout
-triggers is missing. Run from the repository root, using the two existing
+**order-independent row multisets**, with exact BigInt reads for SQLite
+64-bit INTEGERs, and the complete schema. Only objects owned by the two new
+payout tables are excluded from original-schema parity; payout-prefixed indexes
+or triggers on existing tables still fail. It independently executes the
+checked-in migration 105 in an in-memory SQLite database and requires the
+rehearsal's **two payout table DDLs, one index and seven trigger bodies** to
+match that approved reference exactly. Names and counts alone are insufficient.
+The test fixture applies the real migration rather than seven synthetic
+no-op guards; negative tests cover removed/replaced protections, changed
+original schema objects and values above Number.MAX_SAFE_INTEGER.
+
+Run from the repository root, using the two existing
 local copies; it never contacts production:
 
 ```powershell
@@ -79,7 +88,7 @@ node --test scripts/tag-run-105-offline-preflight.test.mjs
 
 For renamed local files, add `--before <path>` and `--after <path>`.
 **Never commit, upload or paste the private SQL dump or restored DB content.**
-The `.gitignore` patterns added with this preflight cover the known local
+The focused preflight suite now contains **14** tests (7 existing + 7 new guard/integer/schema regressions).\nThe `.gitignore` patterns added with this preflight cover the known local
 backup, rehearsal and scratch names; they are not a substitute for private
 backup storage.
 
