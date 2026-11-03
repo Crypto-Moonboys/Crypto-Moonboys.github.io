@@ -8,6 +8,7 @@ import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
+import { saveYesterdayParticipation } from './tag-run/v2-service.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -514,6 +515,16 @@ export default {
     if (event?.cron === '0 */4 * * *' && env?.TAG_RUN_ENABLED === 'true') {
       ctx.waitUntil(postTagRunGroupBulletin(env).catch((error) => {
         console.warn('[TAG RUN] four-hour bulletin unavailable',
+          String(error?.message || error));
+      }));
+    }
+    // V2 daily participation is a separate read-only rollover ledger. The
+    // feature flag remains OFF until additive migration 104 is verified.
+    // This does not draw, reserve or transfer any WAX tokens.
+    if (event?.cron === '10 0 * * *' &&
+        env?.TAG_RUN_V2_POOL_ENABLED === 'true') {
+      ctx.waitUntil(saveYesterdayParticipation(env).catch((error) => {
+        console.warn('[TAG RUN V2] participation snapshot unavailable',
           String(error?.message || error));
       }));
     }

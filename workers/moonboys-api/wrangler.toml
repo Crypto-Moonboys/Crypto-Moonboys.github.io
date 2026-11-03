@@ -6,7 +6,7 @@ preview_urls = true
 
 [triggers]
 # Daily Telegram digest delivery at 09:00 UTC and five-minute Telegram checks.
-crons = ["*/5 * * * *", "0 9 * * *", "0 */4 * * *"]
+crons = ["*/5 * * * *", "0 9 * * *", "0 */4 * * *", "10 0 * * *"]
 
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.
@@ -16,6 +16,11 @@ TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
 TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"
+# V2 is read-only and OFF until migration 104 and chain/custody review.
+TAG_RUN_V2_POOL_ENABLED = "false"
+TAG_RUN_V2_DRAWS_ENABLED = "false"
+TAG_RUN_V2_PAYOUTS_ENABLED = "false"
+TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 PET_MINI_APP_ENABLED = "true"
