@@ -333,7 +333,7 @@ test('uncertain or non-irreversible inbound actions cannot create donations',asy
   assert.equal(corrupt.receipts.length,0);
 });
 
-test('partial D1 capture failure never advances cursor and retries missed day',async t=>{
+test('checkpoint outage retries set-based participation writes without duplicates',async t=>{
   const f=fixture(t);
   f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
   const sql='INSERT INTO tag_run_messages '+
@@ -343,20 +343,17 @@ test('partial D1 capture failure never advances cursor and retries missed day',a
   insert.run(GROUP,71,'1111','First','2026-11-02','2026-11-02',1793577600,'retry-one',10);
   insert.run(GROUP,72,'2222','Second','2026-11-02','2026-11-02',1793577700,'retry-two',10);
   const original=f.DB.prepare.bind(f.DB);
-  let writes=0;
+  let thrown=false;
   f.env.DB={
     prepare(query){
       const statement=original(query);
-      if(!query.startsWith('INSERT OR IGNORE INTO tag_run_v2_participation')) {
-        return statement;
-      }
+      if(!query.startsWith('INSERT INTO tag_run_v2_capture_cursors'))return statement;
       return {
         bind(...args){
           const bound=statement.bind(...args);
           return {
             async run(){
-              writes++;
-              if(writes===2) throw Error('simulated_D1_outage');
+              if(!thrown){thrown=true;throw Error('simulated_checkpoint_outage');}
               return bound.run();
             }
           };
@@ -367,16 +364,16 @@ test('partial D1 capture failure never advances cursor and retries missed day',a
   const nowMs=Date.parse('2026-11-03T00:10:00.000Z');
   await assert.rejects(saveYesterdayParticipation(f.env,{
     nowMs,cryptoImpl:webcrypto
-  }),/simulated_D1_outage/);
+  }),/simulated_checkpoint_outage/);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_participation')
-    .get().n,1,'first member may have been written before D1 failure');
+    .get().n,2,'set-based member write can commit before cursor failure');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_capture_cursors')
-    .get().n,0,'checkpoint cannot advance when any member write fails');
+    .get().n,0,'cursor cannot claim the day complete');
   f.env.DB=f.DB;
   const result=await saveYesterdayParticipation(f.env,{
     nowMs,cryptoImpl:webcrypto
   });
-  assert.equal(result.inserted,1,'retry should only insert the missed member');
+  assert.equal(result.inserted,0,'retry cannot double-count the two existing members');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_participation')
     .get().n,2);
   assert.equal(f.sqlite.prepare('SELECT last_completed_day_key FROM tag_run_v2_capture_cursors')
