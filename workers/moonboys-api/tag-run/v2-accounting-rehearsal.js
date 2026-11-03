@@ -70,6 +70,7 @@ export async function prepareV2PayoutRehearsal({
         entry.bundleIndex >= MAX_BUNDLES_PER_ASSET ||
         !['current','historical'].includes(entry.ticketClass) ||
         !digest(entry.idempotencyKey) ||
+        typeof entry.receivingAccount !== 'string' ||
         !isValidWaxAccount(entry.receivingAccount) ||
         entry.receivingAccount === TIP_ACCOUNT || entry.blocker) {
       fail('invalid_recipient_or_bundle');
