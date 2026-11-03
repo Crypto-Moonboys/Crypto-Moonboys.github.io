@@ -207,7 +207,7 @@ test('unique cap reservations commit once and freeze member destination',async t
   assert.equal(f.cap().last_intent_key,first.intentKey);
   assert.equal(f.intents()[0].receiving_account,RECEIVER);
   await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
-    /v2_payout_cap_immutable|v2_payout_intent_source_unapproved_or_duplicate/);
+    /v2_payout_cap_immutable/);
   assert.equal(f.cap().committed_units,'100',
     'D1 batch must roll back the cap update on a duplicate intent');
   assert.equal(f.intents().length,1);
