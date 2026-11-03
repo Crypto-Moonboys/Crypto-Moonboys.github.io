@@ -105,7 +105,7 @@ function jsonApi(fetchImpl, token, url, body) {
   })();
 }
 
-export function validateDeployedPayoutSettings(settings) {
+export function validateDeployedPayoutSettings(settings, { reconciliationOnly = false } = {}) {
   if (!settings || !Array.isArray(settings.bindings)) fail('worker_settings_unavailable');
   const bindings = new Map();
   for (const binding of settings.bindings) {
@@ -118,6 +118,12 @@ export function validateDeployedPayoutSettings(settings) {
     fail('worker_d1_binding_mismatch');
   const flags = {};
   for (const [name, expected] of Object.entries(REQUIRED_FLAGS)) {
+    // Operator may settle an UNKNOWN already-sent transfer while funded
+    // payouts are paused. Proof still requires two independent indexers.
+    if (reconciliationOnly && ![
+      'TAG_RUN_ENABLED', 'TAG_RUN_WEEKLY_REWARDS_ENABLED',
+      'TAG_RUN_V2_TIP_ACCOUNT'
+    ].includes(name)) continue;
     const entry = bindings.get(name);
     if (!entry || entry.type !== 'plain_text' || entry.text !== expected)
       fail('deployed_release_not_authorized_' + name);
@@ -291,7 +297,9 @@ export async function runOwnerPayout(argv, {
 
   const settings = await jsonApi(fetchImpl, auth.token,
     base + '/workers/scripts/' + SCRIPT + '/settings');
-  const flags = validateDeployedPayoutSettings(settings);
+  const flags = validateDeployedPayoutSettings(settings, {
+    reconciliationOnly: command === 'reconcile'
+  });
   const env = Object.freeze({
     ...flags, DB: db, TELEGRAM_GROUP_CHAT_ID: auth.group
   });
@@ -318,7 +326,16 @@ export async function runOwnerPayout(argv, {
     await confirmation('OPEN CAP ' + o.day + ' ' + key);
     const result = await db.prepare(
       'UPDATE tag_run_v2_payout_caps SET paused=0,revision=revision+1 ' +
-      "WHERE chat_id=? AND day_key=? AND asset_key=? AND paused=1 AND committed_units='0'"
+      "WHERE chat_id=? AND day_key=? AND asset_key=? AND paused=1 AND committed_units='0' " +
+      "AND EXISTS (SELECT 1 FROM tag_run_v2_pool_config p " +
+      "WHERE p.config_id=1 AND p.status='review_only' AND p.wallet_account='isthatajoint') " +
+      "AND EXISTS (SELECT 1 FROM tag_run_v2_snapshots s " +
+      "JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key " +
+      "WHERE s.chat_id=tag_run_v2_payout_caps.chat_id " +
+      "AND s.day_key=tag_run_v2_payout_caps.day_key " +
+      "AND s.asset_key=tag_run_v2_payout_caps.asset_key " +
+      "AND s.status='verified' AND a.eligibility='approved' " +
+      "AND s.snapshot_digest=tag_run_v2_payout_caps.snapshot_digest)"
     ).bind(chat, o.day, key).run();
     if (result?.meta?.changes !== 1) fail('cap_not_opened');
     log('CAP OPENED; each member reservation remains separately reviewed');
