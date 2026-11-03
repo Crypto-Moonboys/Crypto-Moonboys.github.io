@@ -243,7 +243,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
       return true;
     }
     if (V2_COMMANDS.has(name)) {
-      return handleTagRunV2Command(env, { name, isAdmin, isPrivate, chatId,
+      return await handleTagRunV2Command(env, { name, isAdmin, isPrivate, chatId,
         telegramId, send, nowMs, fetchImpl });
     }
     if (name === 'help' || name === 'taghelp') {
@@ -316,7 +316,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
       // description is replaced by the funded-by-tips token pot. V1 history
       // remains readable, and the V1 weekly draft cron remains disabled.
       if (env?.TAG_RUN_V2_POOL_ENABLED === 'true') {
-        return handleTagRunV2Command(env, { name: 'pool', isAdmin, isPrivate,
+        return await handleTagRunV2Command(env, { name: 'pool', isAdmin, isPrivate,
           chatId, telegramId, send, nowMs, fetchImpl });
       }
       const config = await configFor(env.DB, chatId);
