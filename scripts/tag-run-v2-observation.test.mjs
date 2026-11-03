@@ -9,7 +9,7 @@ import { observationEnabled,handleV2ObservationCommand } from
   '../workers/moonboys-api/tag-run/v2-pilot.js';
 import { handleTagRunCommand } from
   '../workers/moonboys-api/tag-run/handler.js';
-import { saveYesterdayParticipation } from
+import { saveYesterdayParticipation, handleTagRunV2Command } from
   '../workers/moonboys-api/tag-run/v2-service.js';
 import { WAX_HYPERION, WAX_HYPERION_FALLBACKS } from
   '../workers/moonboys-api/tag-run/v2-chain.js';
@@ -447,4 +447,107 @@ test('malformed successful primary inventory never silently falls back',async t=
   assert.equal(urls.length,1);
   assert(urls[0].startsWith(WAX_HYPERION+'/'));
   assert.equal(count(f,'tag_run_v2_assets'),0);
+});
+
+
+test('private /myrewards reads real completed-day unfunded credit with observation on',async t=>{
+  const f=fixture(t),messages=[];
+  // Source-authoritative completed-day records, never balances or prizes.
+  receipts(f,'2026-11-02',MEMBER,12,2301);
+  receipts(f,'2026-11-02','2222',10,2302);
+  const capture=await saveYesterdayParticipation(f.env,{
+    nowMs:NOW,cryptoImpl:webcrypto
+  });
+  assert.equal(capture.inserted,2);
+  // Today's V1 message must not be counted as historical participation.
+  receipts(f,'2026-11-03',MEMBER,17,2303);
+  const before=f.sqlite.prepare('SELECT total_changes() AS n').get().n;
+  const result=await handleTagRunV2Command(f.env,{
+    name:'myrewards',isAdmin:false,isPrivate:true,chatId:GROUP,
+    telegramId:MEMBER,send:async value=>messages.push(value),nowMs:NOW
+  });
+  assert.equal(result,true);
+  assert.match(messages[0],/READ-ONLY/);
+  assert.match(messages[0],/Unfunded participation weight: 12 points/);
+  assert.match(messages[0],/Pool: PAUSED.*Draws: OFF.*Transfers: OFF/);
+  assert.match(messages[0],/not tokens/);
+  assert.equal(f.sqlite.prepare('SELECT total_changes() AS n').get().n,before,
+    'member summary is strictly read-only');
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+  assert.equal(count(f,'tag_run_v2_bundles'),0);
+  assert.equal(count(f,'tag_run_v2_snapshots'),0);
+});
+
+test('/myrewards never discloses member credit publicly or another member privately',async t=>{
+  const f=fixture(t),sent=[];
+  f.sqlite.prepare('INSERT INTO tag_run_v2_participation '+
+    '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) '+
+    'VALUES (?,?,?,?,?)').run(GROUP,YESTERDAY,MEMBER,77,'a'.repeat(64));
+  const options={name:'myrewards',isAdmin:false,chatId:GROUP,
+    telegramId:'2222',send:async message=>sent.push(message)};
+  const previousDB=f.env.DB;
+  f.env.DB={prepare(){throw Error('no DB read allowed for public /myrewards');}};
+  assert.equal(await handleTagRunV2Command(f.env,{
+    ...options,isPrivate:false
+  }),true);
+  assert.match(sent.at(-1),/DM the bot/);
+  assert.doesNotMatch(sent.at(-1),/77 points/);
+  f.env.DB=previousDB;
+  assert.equal(await handleTagRunV2Command(f.env,{
+    ...options,isPrivate:true
+  }),true);
+  assert.match(sent.at(-1),/Unfunded participation weight: 0 points/);
+  assert.doesNotMatch(sent.at(-1),/77 points/);
+  assert.equal(await handleTagRunV2Command(f.env,{
+    ...options,isPrivate:true,telegramId:MEMBER
+  }),true);
+  assert.match(sent.at(-1),/Unfunded participation weight: 77 points/);
+});
+
+test('/myrewards fails closed on bad D1 reads, corrupt weight or unapproved pilot state',async t=>{
+  const f=fixture(t),sent=[];
+  const options={name:'myrewards',isAdmin:false,isPrivate:true,
+    chatId:GROUP,telegramId:MEMBER,send:async message=>sent.push(message)};
+  const before=f.env.DB;
+  f.env.DB={prepare(sql) {
+    if(sql.includes('FROM tag_run_v2_participation'))return {
+      bind(){return {async all(){return {success:false,results:[]};}};}
+    };
+    return before.prepare(sql);
+  }};
+  await assert.rejects(handleTagRunV2Command(f.env,options),
+    /pending_participation_unavailable/);
+  assert.equal(sent.length,0);
+  f.env.DB=before;
+  f.sqlite.prepare('INSERT INTO tag_run_v2_participation '+
+    '(chat_id,day_key,telegram_id,earned_weight,spent_historical_weight,'+
+    'source_receipts_digest) VALUES (?,?,?,?,?,?)').run(
+    GROUP,YESTERDAY,MEMBER,10,0,'a'.repeat(64));
+  f.env.DB={prepare(sql) {
+    if(sql.includes('FROM tag_run_v2_participation'))return {
+      bind(){return {async all(){return {success:true,results:[
+        {earned_weight:10,spent_historical_weight:11}
+      ]};}};}
+    };
+    return before.prepare(sql);
+  }};
+  await assert.rejects(handleTagRunV2Command(f.env,options),
+    /pending_participation_invalid/);
+  f.env.DB=before;
+  f.sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
+  await assert.rejects(handleTagRunV2Command(f.env,options),
+    /not active yet|observation_config_not_paused_and_verified/);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+  assert.equal(count(f,'tag_run_v2_bundles'),0);
+});
+
+test('/myrewards stays unavailable if independent observation gate is turned off',async t=>{
+  const f=fixture(t),sent=[];
+  f.env.TAG_RUN_V2_OBSERVATION_ENABLED='false';
+  await handleTagRunV2Command(f.env,{
+    name:'myrewards',isAdmin:false,isPrivate:true,chatId:GROUP,
+    telegramId:MEMBER,send:async message=>sent.push(message)
+  });
+  assert.match(sent.at(-1),/not active yet/);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
 });
