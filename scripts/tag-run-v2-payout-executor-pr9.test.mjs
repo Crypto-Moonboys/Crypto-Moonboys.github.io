@@ -268,21 +268,22 @@ test('SQL binds intent amount to exact cap delta, not only last intent key',asyn
 });
 
 test('exact cap addition preserves BigInt precision beyond 2^53',async t=>{
-  const large='9007199254740993';
-  const available=(BigInt(large)*20n).toString();
-  const f=fixture(t,{daily:large,available});
+  const large='9007199254740993',daily=(BigInt(large)*2n).toString();
+  const available=(BigInt(daily)*20n).toString();
+  const f=fixture(t,{daily,available});
   await openCap(f,{maxTransferUnits:large});
-  const first='e'.repeat(64),second='f'.repeat(64);
-  f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
+  const first='e'.repeat(64),second='f'.repeat(64),third='0'.repeat(64);
+  const update=f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
     'SET committed_units=?,last_reserved_units=?,last_intent_key=?,'+
-    'revision=revision+1').run(large,large,first);
+    'revision=revision+1');
+  update.run(large,large,first);
   assert.equal(f.cap().committed_units,large);
-  assert.throws(()=>f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
-    'SET committed_units=?,last_reserved_units=?,last_intent_key=?,'+
-    'revision=revision+1').run((BigInt(large)+1n).toString(),
-      '2',second),/v2_payout_cap_immutable/);
-  // The daily ceiling remains enforced even with exact large sums.
-  assert.equal(f.cap().committed_units,large);
+  update.run((BigInt(large)+1n).toString(),'1',second);
+  assert.equal(f.cap().committed_units,(BigInt(large)+1n).toString());
+  assert.throws(()=>update.run((BigInt(large)+3n).toString(),'1',third),
+    /v2_payout_cap_immutable/,
+    'direct SQL cannot spend 1 unit while incrementing by 2');
+  assert.equal(f.cap().committed_units,(BigInt(large)+1n).toString());
   assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
