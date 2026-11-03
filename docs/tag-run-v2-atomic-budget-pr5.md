@@ -35,10 +35,23 @@ allocation, outstanding amount, revision or emergency pause while a simulated
 unknown hold remains linked to it (even with recursive triggers disabled).
 
 Pausing stops new simulated holds. Previously held allocations can move
-to an `simulation_transfer_unknown` incident state while paused. Unknown
+to a `simulation_transfer_unknown` incident state while paused. Unknown
 allocations must never be released, cancelled or blindly resubmitted.
-A simulated cancellation of a still-known hold reduces *outstanding* but
+The transition atomically increments an `unknown_floor_units` balance using
+`BigInt`, and SQL enforces that this irreversible floor cannot decrease
+or exceed outstanding allocations. A simulated cancellation of a still-known
+hold reduces *outstanding* but cannot reduce the unknown floor and
 **does not refill the cumulative daily allocated cap**.
+
+Database-level BEFORE UPDATE and DELETE guards freeze budget scope, limits,
+and simulation mode; require monotone cumulative allocation, unknown floor
+and revision; enforce the allocated/outstanding/floor ordering using exact
+decimal-string length and lexical comparisons rather than floating point;
+and prevent reallocating during a pause. Even `UPDATE OR REPLACE` cannot
+move a fresh budget onto an existing spent, paused scope. No SQL mutation can
+reset a spent cap, clear unresolved incident funds, or erase an emergency
+pause by rewriting another field. These invariants complement the existing
+BEFORE INSERT guard against `INSERT OR REPLACE`.
 
 ## Important future-production blockers
 
@@ -74,6 +87,15 @@ Review for duplicate source allocations, exact integer caps, rollback,
 non-refill after cancellation, pause preservation, unknown-state
 non-release, frozen destination, SQL replacement bypasses, and runtime
 isolation. Tests deliberately separate the duplicate-hold guard from the
-source-account guard, preserve an unknown hold during a forbidden budget
-`INSERT OR REPLACE`, and inject a hold INSERT trigger failure *after* the
-budget UPDATE to prove the entire SQLite transaction rolls back. Do not merge until CI and review are clear; no deployment required.
+source-account guard, preserve an unknown hold during forbidden budget
+`INSERT OR REPLACE`, direct `UPDATE` and `UPDATE OR REPLACE` scope
+mutations, and inject a hold INSERT trigger failure *after* the budget
+UPDATE to prove the entire SQLite transaction rolls back.
+
+An additional regression opens two independent SQLite connections from
+two Node worker threads to the same disposable temporary database. A
+synchronisation barrier makes both compete for the final available hold;
+the test verifies exactly one succeeds, the losing contender cannot
+overspend, the winning intent is idempotent on retry, and no accounting
+is partially committed. This demonstrates offline SQLite lock serialization
+only, not Cloudflare D1 transactional guarantees. Do not merge until CI and review are clear; no deployment required.
