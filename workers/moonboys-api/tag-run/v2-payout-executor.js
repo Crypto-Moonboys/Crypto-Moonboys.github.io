@@ -162,10 +162,12 @@ export async function reserveReviewedPayout(env,{
   ].join('|'));
   const next=decimalAdd(cap.committed_units,amount.toString());
   const change=env.DB.prepare(
-    'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_intent_key=?,revision=revision+1 '+
+    'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_reserved_units=?,'+
+    'last_intent_key=?,revision=revision+1 '+
     'WHERE chat_id=? AND day_key=? AND asset_key=? AND paused=0 '+
     'AND revision=? AND committed_units=?'
-  ).bind(next,intentKey,chatId,day,key,cap.revision,cap.committed_units);
+  ).bind(next,amount.toString(),intentKey,chatId,day,key,
+    cap.revision,cap.committed_units);
   const insert=env.DB.prepare(
     'INSERT INTO tag_run_v2_payout_intents '+
     '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
@@ -237,11 +239,13 @@ export async function handoffApprovedPayout(env,{
   ).bind(intent.chat_id,intent.day_key,intent.asset_key).first();
   if(!cap||cap.paused!==0)fail('emergency_pause');
   const source=await env.DB.prepare(
-    'SELECT s.status,a.eligibility FROM tag_run_v2_snapshots s '+
+    'SELECT s.status,s.snapshot_digest,a.eligibility FROM tag_run_v2_snapshots s '+
     'JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
     'WHERE s.chat_id=? AND s.day_key=? AND s.asset_key=?'
   ).bind(intent.chat_id,intent.day_key,intent.asset_key).first();
-  if(!source||source.status!=='verified'||source.eligibility!=='approved')
+  if(!source||source.status!=='verified'||
+     source.snapshot_digest!==intent.snapshot_digest||
+     source.eligibility!=='approved')
     fail('funding_proof_revoked');
   // Recheck the user-selected receiving account exists on WAX mainnet
   // immediately before any irreversible send; no ownership signature needed.
@@ -267,7 +271,9 @@ export async function handoffApprovedPayout(env,{
     "WHERE s.chat_id=tag_run_v2_payout_intents.chat_id "+
     "AND s.day_key=tag_run_v2_payout_intents.day_key "+
     "AND s.asset_key=tag_run_v2_payout_intents.asset_key "+
-    "AND s.status='verified' AND a.eligibility='approved')"
+    "AND s.status='verified' "+
+    "AND s.snapshot_digest=tag_run_v2_payout_intents.snapshot_digest "+
+    "AND a.eligibility='approved')"
   ).bind(intentKey).run();
   if(lock?.success!==true||lock.meta?.changes!==1)
     fail('send_lock_blocked_or_already_submitted');
