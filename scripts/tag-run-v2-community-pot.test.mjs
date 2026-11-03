@@ -240,7 +240,8 @@ test('yesterday participation is unique, idempotent and carries unfunded weight'
   stmt.run(GROUP,2,'1111','First','2026-11-02','2026-11-02',1793577650,'unique-hash-two',12);
   stmt.run(GROUP,3,'2222','Second','2026-11-02','2026-11-02',1793577700,'unique-hash-three',10);
   const first=await saveYesterdayParticipation(f.env,{nowMs:now,cryptoImpl:webcrypto});
-  assert.deepEqual(first,{status:'recorded',day:DAY,eligible:2,inserted:2});
+  assert.deepEqual(first,{status:'recorded',day:DAY,eligible:2,inserted:2,
+    processedDays:1,backlogRemaining:false});
   const repeat=await saveYesterdayParticipation(f.env,{nowMs:now,cryptoImpl:webcrypto});
   assert.equal(repeat.inserted,0);
   const rows=f.sqlite.prepare('SELECT telegram_id,earned_weight,spent_historical_weight '+
@@ -330,4 +331,80 @@ test('uncertain or non-irreversible inbound actions cannot create donations',asy
     cryptoImpl:webcrypto
   });
   assert.equal(corrupt.receipts.length,0);
+});
+
+test('partial D1 capture failure never advances cursor and retries missed day',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const sql='INSERT INTO tag_run_messages '+
+    '(chat_id,message_id,telegram_id,display_name,day_key,week_key,message_unix,content_hash,points) '+
+    'VALUES (?,?,?,?,?,?,?,?,?)';
+  const insert=f.sqlite.prepare(sql);
+  insert.run(GROUP,71,'1111','First','2026-11-02','2026-11-02',1793577600,'retry-one',10);
+  insert.run(GROUP,72,'2222','Second','2026-11-02','2026-11-02',1793577700,'retry-two',10);
+  const original=f.DB.prepare.bind(f.DB);
+  let writes=0;
+  f.env.DB={
+    prepare(query){
+      const statement=original(query);
+      if(!query.startsWith('INSERT OR IGNORE INTO tag_run_v2_participation')) {
+        return statement;
+      }
+      return {
+        bind(...args){
+          const bound=statement.bind(...args);
+          return {
+            async run(){
+              writes++;
+              if(writes===2) throw Error('simulated_D1_outage');
+              return bound.run();
+            }
+          };
+        }
+      };
+    }
+  };
+  const nowMs=Date.parse('2026-11-03T00:10:00.000Z');
+  await assert.rejects(saveYesterdayParticipation(f.env,{
+    nowMs,cryptoImpl:webcrypto
+  }),/simulated_D1_outage/);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_participation')
+    .get().n,1,'first member may have been written before D1 failure');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_capture_cursors')
+    .get().n,0,'checkpoint cannot advance when any member write fails');
+  f.env.DB=f.DB;
+  const result=await saveYesterdayParticipation(f.env,{
+    nowMs,cryptoImpl:webcrypto
+  });
+  assert.equal(result.inserted,1,'retry should only insert the missed member');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_participation')
+    .get().n,2);
+  assert.equal(f.sqlite.prepare('SELECT last_completed_day_key FROM tag_run_v2_capture_cursors')
+    .get().last_completed_day_key,'2026-11-02');
+});
+test('backfill cursor also advances across empty days before current day',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const sql='INSERT INTO tag_run_messages '+
+    '(chat_id,message_id,telegram_id,display_name,day_key,week_key,message_unix,content_hash,points) '+
+    'VALUES (?,?,?,?,?,?,?,?,?)';
+  const insert=f.sqlite.prepare(sql);
+  insert.run(GROUP,81,'1111','First','2026-10-30','2026-10-26',1793320000,'backfill-one',10);
+  insert.run(GROUP,82,'2222','Second','2026-11-02','2026-11-02',1793577700,'backfill-two',10);
+  const result=await saveYesterdayParticipation(f.env,{
+    nowMs:Date.parse('2026-11-03T00:10:00.000Z'),cryptoImpl:webcrypto
+  });
+  assert.equal(result.processedDays,4,'October 30, 31 and November 1, 2');
+  assert.equal(result.eligible,2);
+  assert.equal(result.inserted,2);
+  assert.equal(result.backlogRemaining,false);
+  assert.equal(f.sqlite.prepare('SELECT last_completed_day_key FROM tag_run_v2_capture_cursors')
+    .get().last_completed_day_key,'2026-11-02');
+  const next=await saveYesterdayParticipation(f.env,{
+    nowMs:Date.parse('2026-11-04T00:10:00.000Z'),cryptoImpl:webcrypto
+  });
+  assert.equal(next.processedDays,1,'empty Nov 3 still gets a completion checkpoint');
+  assert.equal(next.inserted,0);
+  assert.equal(f.sqlite.prepare('SELECT last_completed_day_key FROM tag_run_v2_capture_cursors')
+    .get().last_completed_day_key,'2026-11-03');
 });
