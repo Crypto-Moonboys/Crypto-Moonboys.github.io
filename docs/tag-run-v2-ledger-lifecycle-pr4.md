@@ -77,7 +77,17 @@ regardless of `PRAGMA recursive_triggers=OFF`. The journal must be replayed
 using `SELECT ... ORDER BY append_seq ASC`: its second-resolution
 `created_at` and random event IDs do not establish chronological order.
 The other BEFORE INSERT conflict guards reject primary, alternative unique
-and chain-action collisions. UPDATE and DELETE are prohibited. The offline PR2 intent schema now retains the `ticket_class`
+and chain-action collisions. UPDATE and DELETE are prohibited.
+
+For `simulate_reconcile`, the journal persists the complete review payload:
+transaction ID, chain action sequence, block ID, positive safe-integer block
+number, evidence digest, and the frozen destination/amount. The asset key is
+reconstructed by joining the immutable PR2 intent. Only reconciliation rows
+may carry block evidence; non-reconciliation rows require those fields to be
+NULL. An offline journal-to-simulator regression recreates an entire
+`simulate_hold → simulate_unknown → simulate_reconcile` stream using
+`ORDER BY append_seq ASC`, with no in-memory or external chain lookup.
+That review is still `simulation_only` and must never assert a paid transfer. The offline PR2 intent schema now retains the `ticket_class`
 required to reconstruct its original hash. No production migration changes. The fixture cannot
 create real balances, approved donations, reservations, payouts or an
 on-chain transfer.
@@ -124,7 +134,9 @@ node scripts/verify-d1-production-migrations.test.mjs
 Additional tests exercise same-second `hold A → cancel A → hold B`
 with intentionally nonchronological event IDs and verify that journal order
 replays correctly while a timestamp/event-ID sort is rejected. They also
-test sequence uniqueness, gap/backdating rejection, and overwrite guards.
+test sequence uniqueness, gap/backdating rejection, overwrite guards,
+reconciliation block-field validation and the complete persisted
+hold/unknown/reconcile round trip.
 
 All tests use mocked crypto/chain inputs or disposable SQLite. No production
 D1 migration, bot command, Worker route or deployment is required.
