@@ -91,6 +91,64 @@ test('targeted care action suppresses run, explore, combat and boss scans',async
   } finally {f.close();}
 });
 
+test('targeted Explore recovers completed timed Explore activity claims and adventure',async()=>{
+  const f=await performanceFixture({warm:false});
+  try {
+    const petId='current-'+f.owner,season='pet-s2026-004';
+    f.sql.prepare(`INSERT INTO telegram_pet_activity_sessions
+      (id,telegram_id,activity_type,ends_at,claimed_at,status)
+      VALUES (?,?,'explore','2026-10-20 13:00:00',
+        '2026-10-20 13:02:00','completed')`)
+      .run('timed-explore-session',f.owner);
+    f.sql.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+      VALUES (?,?,?,'activity_claim',? ,?,'2026-10-20','2026-W43','accepted',?)`)
+      .run('timed-explore-receipt',petId,f.owner,'explore-session-claim',season,
+        JSON.stringify({context:{session_id:'timed-explore-session',activity_type:'explore'}}));
+    f.sql.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+      VALUES (?,?,?,'adventure',?,?,'2026-10-20','2026-W43','accepted',?)`)
+      .run('explore-adventure',petId,f.owner,'explore-adventure-key',season,
+        JSON.stringify({context:{source:'telegram_mini_app'}}));
+    f.sql.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+      VALUES (?,?,?,'feed',?,?,'2026-10-20','2026-W43','accepted',?)`)
+      .run('unrelated-feed',petId,f.owner,'unrelated-feed-key',season,
+        JSON.stringify({source:'telegram_mini_app'}));
+    const before=f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all();
+    const targeted=[],background=[];
+    const sourceSql=[];
+    f.db.beforeAll=statement=>{
+      if(statement.query.includes('WITH run_candidates AS MATERIALIZED')){
+        sourceSql.push(statement.query);
+      }
+    };
+    await recoverPetRuntimeAwards(f.db,f.owner,async (_db,_owner,key,action,row)=>{
+      targeted.push({key,action,runId:row.run_id});
+    },{action:'explore',limit:20});
+    assert.equal(sourceSql.length,1);
+    // Adventure and timed Explore can both yield action=explore: neither
+    // source may be excluded by the constant-false planning predicates.
+    assert.equal(sourceSql[0].match(/AND 0/g)?.length,6,
+      'four run branches plus combat and boss are pruned; Explore and care stay');
+    assert.deepEqual(targeted.map(x=>x.key).sort(),[
+      'runtime:activity:timed-explore-session',
+      'runtime:mini:explore-adventure-key'
+    ].sort());
+    assert(targeted.every(x=>x.action==='explore' && x.runId===''));
+    assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_specialist_events').get().n,0);
+    await recoverPetRuntimeAwards(f.db,f.owner,async (_db,_owner,key,action)=>{
+      background.push({key,action});
+    },{limit:20});
+    for(const item of targeted){
+      assert(background.some(x=>x.key===item.key && x.action===item.action),
+        'targeted evidence must also be available in background recovery');
+    }
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all(),before,
+      'read-only candidate discovery must not rewrite accepted gameplay receipts');
+  } finally {f.close();}
+});
+
 test('targeted action does not advance unrelated background recovery cursor',async()=>{
   const f=await performanceFixture({warm:false});
   try {
