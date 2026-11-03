@@ -273,7 +273,12 @@ export async function handoffApprovedPayout(env,{
     "AND s.asset_key=tag_run_v2_payout_intents.asset_key "+
     "AND s.status='verified' "+
     "AND s.snapshot_digest=tag_run_v2_payout_intents.snapshot_digest "+
-    "AND a.eligibility='approved')"
+    "AND a.eligibility='approved') "+
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_draws d "+
+    "WHERE d.chat_id=tag_run_v2_payout_intents.chat_id "+
+    "AND d.day_key=tag_run_v2_payout_intents.day_key "+
+    "AND d.status='reviewed' AND d.reviewed_by IS NOT NULL "+
+    "AND length(d.reviewed_by)>0)"
   ).bind(intentKey).run();
   if(lock?.success!==true||lock.meta?.changes!==1)
     fail('send_lock_blocked_or_already_submitted');
@@ -303,7 +308,12 @@ export async function markIrreversiblyConfirmed(env,{
      typeof verifyIrreversibleAction!=='function')fail('finality_unverified');
   const row=await env.DB.prepare('SELECT * FROM tag_run_v2_payout_intents '+
     'WHERE intent_key=?').bind(intentKey).first();
-  if(!row||row.status!=='broadcast_unknown')fail('not_pending_reconciliation');
+  // An already handed-off transfer can enter reconciliation_review while
+  // an operator investigates an uncertain result. Verified irreversible proof
+  // must still be able to settle that exact original transfer without any
+  // second broadcast or fresh reservation.
+  if(!row||!['broadcast_unknown','reconciliation_review'].includes(row.status))
+    fail('not_pending_reconciliation');
   assertGroup(env,row.chat_id);
   const want=buildReviewedWaxTransfer({...row,status:'reserved'});
   // Do not accept caller-supplied "irreversible:true" or an RPC submission
@@ -327,7 +337,8 @@ export async function markIrreversiblyConfirmed(env,{
   const r=await env.DB.prepare(
     "UPDATE tag_run_v2_payout_intents SET status='confirmed',signed_tx_id=?,"+
     "updated_at=CURRENT_TIMESTAMP WHERE intent_key=? "+
-    "AND status='broadcast_unknown' AND signed_tx_id IS NULL"
+    "AND status IN ('broadcast_unknown','reconciliation_review') "+
+    "AND signed_tx_id IS NULL"
   ).bind(transactionId,intentKey).run();
   if(r?.success!==true||r.meta?.changes!==1)fail('reconciliation_conflict');
   return Object.freeze({...rowInfo({...row,status:'confirmed',
