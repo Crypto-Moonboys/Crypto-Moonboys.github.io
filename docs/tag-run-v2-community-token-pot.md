@@ -19,9 +19,10 @@
 1. New additive migration **104** and matching canonical schema for public wallet metadata, approved/quarantined token identities, reviewed deposit-event slots, exact-string balances, participation weights, review-only draw records/bundles and audit receipts.
 2. `v2-core.js`: BigInt smallest-unit parsing and formatting, spendable token 5% budgets with floor rounding, chain-aware token identities, deterministic weight-based random bundles and a replayable SHA-256 seed commitment. The current draw API is **preview-only** and does not persist a pre-snapshot seed commitment; it is not yet a publicly verifiable live draw.
 3. `v2-chain.js`: read-only WAX mainnet chain ID and named-account check; Hyperion token discovery; chain RPC recheck of **approved assets only**. Provider balances remain `observed_only` because the RPC does not attest historical finality at the daily cutoff. Contract-unknown tokens stay quarantined.
-4. `v2-service.js`: read-only `/pool`, `/myrewards`, admin `/poolstatus`, `/drawpreview`, `/drawaudit`, `/poolpause`; and idempotent capture of the previous UTC day's verified V1 chat receipts into a separate participation ledger.
-5. Dedicated **00:10 UTC** participation cron, independent of the existing five-minute/9am/4-hour triggers. No daily draw executes with the new flags off.
-6. Old V1 reward draft tables are retained and legacy `TAG_RUN_WEEKLY_REWARDS_ENABLED=false` remains. `/rewards` switches to the V2 community pot description **only if V2 is explicitly enabled later**.
+4. `v2-deposits.js`: bounded Hyperion WAX inbound transfer scan, rejects non-irreversible/malformed actions and stores unique on-chain action receipts as **quarantined only**; repeating a scan cannot turn receipts into donations. The admin-only `/poolscan` command records candidate evidence, never funding credits. Pagination/full-history reconciliation remains a separate launch gate.
+5. `v2-service.js`: read-only `/pool`, `/myrewards`, admin `/poolstatus`, `/poolscan`, `/drawpreview`, `/drawaudit`, `/poolpause`; and idempotent capture of the previous UTC day's verified V1 chat receipts into a separate participation ledger.
+6. Dedicated **00:10 UTC** participation cron, independent of the existing five-minute/9am/4-hour triggers. No daily draw executes with the new flags off.
+7. Old V1 reward draft tables are retained and legacy `TAG_RUN_WEEKLY_REWARDS_ENABLED=false` remains. `/rewards` switches to the V2 community pot description **only if V2 is explicitly enabled later**.
 
 ### Fail-closed defaults
 
