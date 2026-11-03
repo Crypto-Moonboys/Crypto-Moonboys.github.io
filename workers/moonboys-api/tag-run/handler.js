@@ -4,6 +4,7 @@ import {
   parseTokenUnits, formatTokenUnits, adminTelegramIds, authenticatedGroupId
 } from './core.js';
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
+import { checkWaxDestination } from './wallet-destination.js';
 
 const TAG_COMMANDS = new Set([
   'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
@@ -253,24 +254,48 @@ export async function handleTagRunCommand(update, env, options = {}) {
     }
     if (name === 'rain') {
       if (!isPrivate) {
-        await send('Earn points here automatically. To register a WAX account, DM @' +
+        await send('To register your chosen WAX payout destination, DM @' +
           String(env.TELEGRAM_BOT_USERNAME || 'WIKICOMSBOT').replace(/^@/, '') +
-          ' with /rain yourwaxaccount. XRP addresses are not used for WAX rewards.');
+          ' with /rain yourwaxaccount.');
         return true;
       }
       if (!isValidWaxAccount(args)) {
-        await send('Usage: /rain yourwaxaccount\nEnter a WAX account name (not an XRP address). ' +
-          'Registration is pending verification; never send private keys or seed phrases.');
+        await send('Usage: /rain yourwaxaccount\\nEnter a valid WAX account name. ' +
+          'No wallet login or signature is needed. Double-check the destination: ' +
+          'tokens sent to the wrong account may be unrecoverable.');
         return true;
       }
-      await env.DB.prepare('INSERT INTO tag_run_wallets ' +
+      let check;
+      try {
+        check = await checkWaxDestination(args, fetchImpl);
+      } catch (error) {
+        console.warn('[TAG RUN] WAX destination validation unavailable', {
+          reason: String(error?.message || error)
+        });
+        await send('WAX account could not be confirmed on mainnet right now. ' +
+          'Your registration was NOT changed. Retry /rain when the WAX RPC is available.');
+        return true;
+      }
+      if (check.status !== 'exists') {
+        await send('Invalid WAX destination. Nothing was registered.');
+        return true;
+      }
+      const write = await env.DB.prepare('INSERT INTO tag_run_wallets ' +
         '(telegram_id,wax_account,verification_status,verified_at) VALUES (?,?,' +
         "'pending',NULL) ON CONFLICT(telegram_id) DO UPDATE SET " +
         "wax_account=excluded.wax_account, verification_status='pending', " +
         'verified_at=NULL,registered_at=CURRENT_TIMESTAMP')
         .bind(telegramId, args).run();
-      await send('WAX account ' + args + ' registered as PENDING verification. ' +
-        'This does not prove wallet ownership or activate token transfers.');
+      if (write?.success === false || !Number.isSafeInteger(write?.meta?.changes) ||
+          write.meta.changes < 1) {
+        throw new Error('wax_destination_registration_write_failed');
+      }
+      await send('WAX payout destination REGISTERED: ' + args +
+        '\\nAccount exists on WAX mainnet. This does not prove account ownership, ' +
+        'and no signature is required by TAG RUN.' +
+        '\\nYou chose this receiving account; check the spelling carefully. ' +
+        'Tokens sent to an incorrect account may be unrecoverable.' +
+        '\\nFunded payouts are currently DISABLED.');
       return true;
     }
     if (name === 'rainstatus') {
@@ -285,21 +310,28 @@ export async function handleTagRunCommand(update, env, options = {}) {
         'WHERE telegram_id=?'
       ).bind(telegramId).first();
       if (!wallet) {
-        await send('TAG RUN WAX WALLET\nNo WAX account registered. ' +
+        await send('TAG RUN WAX WALLET\\nNo WAX account registered. ' +
           'DM /rain yourwaxaccount to set your destination. ' +
           'No token transfers are enabled.');
         return true;
       }
-      await send('TAG RUN WAX WALLET\nRegistered destination: ' +
+      // Old /rain registrations may predate the mainnet existence check.
+      // Show them as saved destinations, not as independently proven ownership.
+      let exists = false;
+      try {
+        exists = (await checkWaxDestination(wallet.wax_account, fetchImpl)).status === 'exists';
+      } catch (_) {
+        // Do not transform RPC failure into an assertion that the account exists.
+      }
+      await send('TAG RUN WAX WALLET\\nRegistered destination: ' +
         String(wallet.wax_account) +
-        '\nOwnership verification: ' +
-        (wallet.verification_status === 'verified' && wallet.verified_at
-          ? 'RECORDED VERIFIED (independent proof still required for future payouts)'
-          : 'PENDING — typing an account name does not verify ownership') +
-        '\nFuture route: bot sends directly to your registered WAX account ' +
-        'after independent ownership verification and payout authorization.' +
-        '\nCurrent status: FUNDED PAYOUTS DISABLED. ' +
-        'Do not share private keys or seed phrases.');
+        '\\nRegistration: ' + (exists
+          ? 'REGISTERED — WAX mainnet account confirmed'
+          : 'SAVED — chain account check currently unavailable; retry /rainstatus') +
+        '\\nNo wallet signature or ownership proof is required to choose ' +
+        'your payout destination. You are responsible for entering the correct account.' +
+        '\\nFuture route: approved rewards sent directly to your chosen WAX account.' +
+        '\\nCurrent status: FUNDED PAYOUTS DISABLED.');
       return true;
     }
     if (name === 'profile' || name === 'tagprofile') {
@@ -360,7 +392,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
           ' allocations drafted for admin review' : 'No approved reward draft') +
         '\nEvery eligible active member can be included once the reward programme is ' +
         'configured. Top 3 receive multipliers. No tokens transfer automatically. ' +
-        'No website account sync needed to earn points; WAX wallet proof is required before payout.');
+        'No website account sync needed for Street Cred. Recipients choose a WAX account with /rain; funded payouts remain disabled.');
       return true;
     }
     if (name === 'tagstatus') {
@@ -417,7 +449,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         ' ' + plan.token_symbol + ' across ' + plan.recipient_count +
         ' members\nStatus: review_only; NO transfers\n' +
         (lines.join('\n') || 'No allocation rows') +
-        '\nView all recipients in the D1 review ledger. Never pay an unverified WAX account.');
+        '\nView all recipients in the D1 review ledger. Review-only; no payments. Payout destinations must be valid WAX accounts.');
       return true;
     }
     if (name === 'tagtoken') {
