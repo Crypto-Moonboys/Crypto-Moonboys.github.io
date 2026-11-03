@@ -41,7 +41,7 @@ export function parseQuantity(quantity, precision, symbol) {
   if (!SYMBOL.test(symbol)) throw new Error('invalid_symbol');
   const fractional = precision === 0 ? '' :
     '(?:\\.([0-9]{1,' + precision + '}))?';
-  const pattern = new RegExp('^(0|[1-9][0-9]*)' + fractional + ' ' + symbol + '
+  const pattern = new RegExp('^(0|[1-9][0-9]*)' + fractional + ' ' + symbol + '$');
   if (precision === 0 && String(quantity).includes('.')) {
     throw new Error('invalid_token_precision');
   }
