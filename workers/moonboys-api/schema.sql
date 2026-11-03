@@ -2920,6 +2920,12 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
     length(per_transfer_limit_units) BETWEEN 1 AND 78
     AND per_transfer_limit_units NOT GLOB '*[^0-9]*'
     AND substr(per_transfer_limit_units,1,1)!='0'),
+  -- Exact amount of the most recent cap increment. SQL INSERT intents
+  -- must match this amount, not just last_intent_key.
+  last_reserved_units TEXT NOT NULL DEFAULT '0' CHECK(
+    length(last_reserved_units) BETWEEN 1 AND 78
+    AND last_reserved_units NOT GLOB '*[^0-9]*'
+    AND (last_reserved_units='0' OR substr(last_reserved_units,1,1)!='0')),
   committed_units TEXT NOT NULL DEFAULT '0' CHECK(length(committed_units) BETWEEN 1 AND 78 AND committed_units NOT GLOB '*[^0-9]*' AND (committed_units='0' OR substr(committed_units,1,1)!='0')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0 AND revision<=9007199254740991),
   paused INTEGER NOT NULL DEFAULT 1 CHECK(paused IN (0,1)),
@@ -2929,7 +2935,9 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
 ) WITHOUT ROWID;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_source_guard
 BEFORE INSERT ON tag_run_v2_payout_caps
-WHEN NOT EXISTS (
+WHEN NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
+ OR NEW.last_reserved_units!='0' OR NEW.last_intent_key!=''
+ OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_pool_config p
   WHERE p.config_id=1 AND p.status='review_only'
     AND p.wallet_account='isthatajoint' AND p.daily_bps=500
@@ -2966,10 +2974,26 @@ WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
  OR (NEW.committed_units!=OLD.committed_units AND (
       NEW.last_intent_key=OLD.last_intent_key
    OR length(NEW.last_intent_key)!=64
+   OR NEW.last_reserved_units='0'
+   OR (length(NEW.per_transfer_limit_units)<length(NEW.last_reserved_units)
+      OR (length(NEW.per_transfer_limit_units)=length(NEW.last_reserved_units)
+          AND NEW.per_transfer_limit_units<NEW.last_reserved_units))
+   OR NEW.committed_units!=(
+   WITH RECURSIVE exact_add(pos,carry,digits) AS (
+     SELECT 0,0,''
+     UNION ALL
+     SELECT pos+1, (carry+CAST(CASE WHEN pos < length(OLD.committed_units) THEN substr(OLD.committed_units,length(OLD.committed_units)-pos,1) ELSE '0' END AS INTEGER)+CAST(CASE WHEN pos < length(NEW.last_reserved_units) THEN substr(NEW.last_reserved_units,length(NEW.last_reserved_units)-pos,1) ELSE '0' END AS INTEGER))/10, CAST((carry+CAST(CASE WHEN pos < length(OLD.committed_units) THEN substr(OLD.committed_units,length(OLD.committed_units)-pos,1) ELSE '0' END AS INTEGER)+CAST(CASE WHEN pos < length(NEW.last_reserved_units) THEN substr(NEW.last_reserved_units,length(NEW.last_reserved_units)-pos,1) ELSE '0' END AS INTEGER))%10 AS TEXT)||digits
+     FROM exact_add
+     WHERE pos < max(length(OLD.committed_units),length(NEW.last_reserved_units))
+   )
+   SELECT (CASE WHEN carry>0 THEN CAST(carry AS TEXT) ELSE '' END)||digits
+   FROM exact_add ORDER BY pos DESC LIMIT 1
+ )
    OR EXISTS (SELECT 1 FROM tag_run_v2_payout_intents i
       WHERE i.intent_key=NEW.last_intent_key)))
  OR (NEW.committed_units=OLD.committed_units AND
-     NEW.last_intent_key!=OLD.last_intent_key)
+     (NEW.last_intent_key!=OLD.last_intent_key OR
+      NEW.last_reserved_units!=OLD.last_reserved_units))
  OR NOT (length(NEW.committed_units)>length(OLD.committed_units)
       OR (length(NEW.committed_units)=length(OLD.committed_units)
        AND NEW.committed_units>=OLD.committed_units))
@@ -3042,6 +3066,7 @@ OR NOT EXISTS (
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
     AND c.asset_key=NEW.asset_key AND c.snapshot_digest=NEW.snapshot_digest
     AND c.paused=0 AND c.last_intent_key=NEW.intent_key
+    AND c.last_reserved_units=NEW.amount_units
     AND (
       length(c.per_transfer_limit_units)>length(NEW.amount_units)
       OR (length(c.per_transfer_limit_units)=length(NEW.amount_units)
