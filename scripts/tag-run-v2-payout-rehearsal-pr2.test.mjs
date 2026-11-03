@@ -81,7 +81,7 @@ test('deficits, forged daily budget or mismatched plan total fail closed',async(
 test('any recipient blocker rejects the entire rehearsal rather than hiding a missing destination',async()=>{
   const a=await build();
   for(const patch of [
-    {destination_account:'bad..wax'},
+    {receivingAccount:'bad..wax'},
     {receivingAccount:TIP_ACCOUNT},
     {status:'locked'},
     {blocker:'destination_requires_fresh_chain_check'},
