@@ -3,13 +3,33 @@
 // This file never invokes Wrangler, Cloudflare, D1 migrations or a WAX signer.
 import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const EXPECTED_INDEX = 'idx_telegram_pet_season_slots_pet_owner_tuple';
 const OWNER_COLUMNS = ['pet_id', 'telegram_id', 'season_key', 'slot_number'];
 const PAYOUT_TABLES = ['tag_run_v2_payout_caps', 'tag_run_v2_payout_intents'];
+// Build the reference catalogue by executing the checked-in migration, not by
+// trusting expected names or counting triggers in the rehearsal database.
+const PAYOUT_MIGRATION_URL = new URL('../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql', import.meta.url);
+
+function belongsToPayoutTable(row) {
+  return PAYOUT_TABLES.includes(row.tbl_name);
+}
+
+function expectedPayoutSchema() {
+  const reference = new DatabaseSync(':memory:');
+  try {
+    reference.exec(readFileSync(PAYOUT_MIGRATION_URL, 'utf8'));
+    const objects = readSchema(reference).filter(belongsToPayoutTable);
+    assert(objects.filter(row => row.type === 'table').length === 2
+      && objects.filter(row => row.type === 'index').length === 1
+      && objects.filter(row => row.type === 'trigger').length === 7,
+    'checked-in migration 105 has an unexpected payout schema; review the migration');
+    return objects;
+  } finally { reference.close(); }
+}
 
 function assert(condition, message) {
   if (!condition) throw Error(message);
@@ -62,7 +82,9 @@ function verifyDatabase(db, label) {
 function rowDigest(db, table) {
   const hashes = [];
   const sql = `SELECT * FROM ${quoteIdentifier(table)}`;
-  for (const row of db.prepare(sql).iterate()) {
+  const statement = db.prepare(sql);
+  statement.setReadBigInts(true);
+  for (const row of statement.iterate()) {
     const serialized = JSON.stringify(row, (_key, value) =>
       typeof value === 'bigint' ? { __bigint: String(value) } : value);
     hashes.push(createHash('sha256').update(serialized).digest('hex'));
@@ -96,9 +118,11 @@ export function verifyMigration105(beforePath, afterPath) {
     assert(JSON.stringify(added) === JSON.stringify([...PAYOUT_TABLES].sort()),
       `unexpected new tables: ${added.join(', ')}`);
     const beforeObjects = readSchema(before);
-    const afterObjects = readSchema(after).filter(row =>
-      !PAYOUT_TABLES.includes(row.name) && !row.name.startsWith('tag_run_v2_payout_'));
-    assert(JSON.stringify(beforeObjects) === JSON.stringify(afterObjects),
+    const afterObjects = readSchema(after);
+    // Only exclude schema objects *owned by* the two newly created payout
+    // tables. A payout-prefixed index on an existing wallet table is NOT exempt.
+    const unchangedObjects = afterObjects.filter(row => !belongsToPayoutTable(row));
+    assert(JSON.stringify(beforeObjects) === JSON.stringify(unchangedObjects),
       'original schema objects (tables, views, indexes or triggers) changed');
 
     let rows = 0;
@@ -112,10 +136,12 @@ export function verifyMigration105(beforePath, afterPath) {
       assert(Number(after.prepare(`SELECT COUNT(*) AS n FROM ${quoteIdentifier(table)}`).get().n) === 0,
         `payout table is not empty: ${table}`);
     }
-    const triggers = after.prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'tag_run_v2_payout_%' ORDER BY name").all().map(row => row.name);
-    assert(triggers.length === 7, `expected seven payout ledger guards, found ${triggers.length}`);
+    const actualPayoutObjects = afterObjects.filter(belongsToPayoutTable);
+    const approvedPayoutObjects = expectedPayoutSchema();
+    assert(JSON.stringify(actualPayoutObjects) === JSON.stringify(approvedPayoutObjects),
+      'payout schema differs from checked-in migration 105 (tables, index or guard triggers)');
     return { originalTables: beforeTables.length, originalRows: rows,
-      addedTables: added, newPayoutRows: 0, payoutTriggers: triggers.length,
+      addedTables: added, newPayoutRows: 0, payoutTriggers: 7,
       originalSchemaUnchanged: true, foreignKeyViolations: 0, integrity: 'ok' };
   } finally {
     after?.close();
