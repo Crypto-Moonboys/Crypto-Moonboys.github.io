@@ -26,7 +26,10 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
   const skipExplore = targetedRun || (action && action !== 'explore') ? ' AND 0' : '';
   // Keep unexpected/new activity actions eligible: only exclude this source
   // when the requested action unambiguously belongs to another source group.
-  const skipCare = targetedRun || ['explore','run_step','run_extract',
+  // Completed timed Explore sessions are activity_claim events in this
+  // care/activity branch. They emit action='explore' and must stay recoverable
+  // by targeted Explore retries, not only the background cursor.
+  const skipCare = targetedRun || ['run_step','run_extract',
     'arena_complete','kaiju_win','run_boss'].includes(action) ? ' AND 0' : '';
   const skipCombat = targetedRun || (action && action !== 'arena_complete' &&
     action !== 'kaiju_win') ? ' AND 0' : '';
