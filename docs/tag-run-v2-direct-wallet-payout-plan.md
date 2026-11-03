@@ -18,8 +18,11 @@ destination-locked payout approvals.
 `v2-direct-wallet-plan.js` is an offline, deterministic, read-only
 manifest generator built from an existing `previewCommunityDraw` output.
 
-- Per-asset allowance must match exactly 5% of available base units, using
-  `BigInt`, no floating-point token balances.
+- Per-asset `availableUnits` must equal `balanceUnits - reservedUnits -
+  excludedUnits` exactly, with reservations and exclusions no larger than
+  the chain balance. Only then may the allowance equal 5% of those available
+  integer base units, using `BigInt`, never floating-point balances.
+  A fabricated preview cannot inflate both availability and the daily budget.
 - Every bundle must have a unique (asset, index) slot, positive base units,
   a valid Telegram ID, a valid day and a recognized ticket class.
 - Total hypothetical allocations for an asset must not exceed its budget.
