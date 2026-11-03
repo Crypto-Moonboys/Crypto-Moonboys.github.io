@@ -9,6 +9,7 @@ import {
   formatQuantity, sha256Text, validUtcDay
 } from './v2-core.js';
 import { authenticatedGroupId, isValidWaxAccount } from './core.js';
+import { checkWaxDestination } from './wallet-destination.js';
 
 export const PAYOUT_EXECUTOR_IMPLEMENTED = true;
 export const PAYOUT_EXECUTOR_AUTO_ENABLED = false;
@@ -72,14 +73,21 @@ export async function initializeReviewedDailyCap(env,{
   const key=assetKey(contract,symbol,precision);
   const source=read(await env.DB.prepare(
     'SELECT s.snapshot_digest,s.status,s.spendable_units,'+
+    's.onchain_units,s.allocated_unpaid_units,s.excluded_units,'+
     's.five_percent_units,a.eligibility FROM tag_run_v2_snapshots s '+
     'JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
     'WHERE s.chat_id=? AND s.day_key=? AND s.asset_key=?'
   ).bind(chatId,day,key).first(),'snapshot');
   if(!source||source.status!=='verified'||source.eligibility!=='approved'||
      !HEX.test(source.snapshot_digest))fail('unapproved_snapshot');
-  const available=units(source.spendable_units),daily=units(source.five_percent_units);
-  if(daily!==available*500n/10000n||daily===0n)
+  const available=units(source.spendable_units),
+    onchain=units(source.onchain_units),
+    reserved=units(source.allocated_unpaid_units),
+    excluded=units(source.excluded_units),
+    daily=units(source.five_percent_units);
+  if(reserved+excluded>onchain ||
+     available!==onchain-reserved-excluded ||
+     daily!==available*500n/10000n||daily===0n)
     fail('snapshot_budget_mismatch');
   const r=await env.DB.prepare(
     'INSERT INTO tag_run_v2_payout_caps '+
@@ -200,7 +208,7 @@ export function buildReviewedWaxTransfer(intent,{permission='tagrain'}={}){
 // an operator must reconcile the original chain action. No public route
 // calls this function, and no signer is configured by this PR.
 export async function handoffApprovedPayout(env,{
-  intentKey,signAndBroadcast
+  intentKey,signAndBroadcast,fetchImpl=fetch
 }={}){
   assertExecutionMode(env);
   if(!HEX.test(intentKey||'')||typeof signAndBroadcast!=='function')
@@ -215,6 +223,17 @@ export async function handoffApprovedPayout(env,{
     'WHERE chat_id=? AND day_key=? AND asset_key=?'
   ).bind(intent.chat_id,intent.day_key,intent.asset_key).first();
   if(!cap||cap.paused!==0)fail('emergency_pause');
+  const source=await env.DB.prepare(
+    'SELECT s.status,a.eligibility FROM tag_run_v2_snapshots s '+
+    'JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
+    'WHERE s.chat_id=? AND s.day_key=? AND s.asset_key=?'
+  ).bind(intent.chat_id,intent.day_key,intent.asset_key).first();
+  if(!source||source.status!=='verified'||source.eligibility!=='approved')
+    fail('funding_proof_revoked');
+  // Recheck the user-selected receiving account exists on WAX mainnet
+  // immediately before any irreversible send; no ownership signature needed.
+  const destination=await checkWaxDestination(intent.receiving_account,fetchImpl);
+  if(destination.status!=='exists')fail('recipient_account_unavailable');
   const action=buildReviewedWaxTransfer(intent);
   const lock=await env.DB.prepare(
     "UPDATE tag_run_v2_payout_intents SET status='broadcast_unknown',"+
