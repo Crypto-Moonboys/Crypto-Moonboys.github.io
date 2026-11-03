@@ -1,6 +1,7 @@
 import { CANONICAL_FACTION_KEYS, normalizeFaction } from '../shared/faction-canon.js';
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { readCanonicalFactionProfile } from '../shared/faction-projection.js';
+import { inspectSchemaTables } from '../shared/schema-preflight.js';
 
 const PLAYER_STATE_TABLES = [
   'player_modifier_state',
@@ -65,47 +66,43 @@ function formatMissionIdLabel(missionId) {
 }
 
 async function ensurePlayerStateTables(db) {
-  for (const tableName of PLAYER_STATE_TABLES) {
-    const row = await db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`).bind(tableName).first().catch(() => null);
-    if (!row?.name) {
-      return {
-        _isPlayerStateUnavailable: true,
-        tableName,
-        response: new Response(JSON.stringify({
-          ok: false,
-          error: 'player_state_unavailable',
-          reason: `migration_pending:${tableName}`,
-          message: 'Player state tables are not yet configured. Apply migration 015.',
-        }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
-        }),
-      };
-    }
-  }
-  return null;
+  const schema = await inspectSchemaTables(db, PLAYER_STATE_TABLES);
+  // A failed lookup still fails closed as an unavailable schema. Keep the
+  // existing response contract and report the first missing/unknown table.
+  const tableName = schema.ok ? schema.missing[0] : PLAYER_STATE_TABLES[0];
+  if (!tableName) return null;
+  return {
+    _isPlayerStateUnavailable: true,
+    tableName,
+    response: new Response(JSON.stringify({
+      ok: false,
+      error: 'player_state_unavailable',
+      reason: `migration_pending:${tableName}`,
+      message: 'Player state tables are not yet configured. Apply migration 015.',
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+    }),
+  };
 }
 
 async function ensureDailyDigestTables(db) {
-  for (const tableName of DAILY_DIGEST_TABLES) {
-    const row = await db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`).bind(tableName).first().catch(() => null);
-    if (!row?.name) {
-      return {
-        _isDailyDigestUnavailable: true,
-        tableName,
-        response: new Response(JSON.stringify({
-          ok: false,
-          error: 'daily_digest_unavailable',
-          reason: `migration_pending:${tableName}`,
-          message: 'Daily digest and missed history tables are not yet configured. Apply migration 018.',
-        }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
-        }),
-      };
-    }
-  }
-  return null;
+  const schema = await inspectSchemaTables(db, DAILY_DIGEST_TABLES);
+  const tableName = schema.ok ? schema.missing[0] : DAILY_DIGEST_TABLES[0];
+  if (!tableName) return null;
+  return {
+    _isDailyDigestUnavailable: true,
+    tableName,
+    response: new Response(JSON.stringify({
+      ok: false,
+      error: 'daily_digest_unavailable',
+      reason: `migration_pending:${tableName}`,
+      message: 'Daily digest and missed history tables are not yet configured. Apply migration 018.',
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+    }),
+  };
 }
 
 async function getUserFaction(db, telegramId) {
