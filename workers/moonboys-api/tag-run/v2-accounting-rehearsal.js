@@ -97,7 +97,8 @@ export async function prepareV2PayoutRehearsal({
     intents.push(Object.freeze({
       intent_key:intentKey,chat_id:chatId,day_key:plan.day,
       asset_key:entry.assetKey,bundle_index:entry.bundleIndex,
-      telegram_id:String(entry.telegramId),destination_account:entry.receivingAccount,
+      telegram_id:String(entry.telegramId),ticket_class:entry.ticketClass,
+      destination_account:entry.receivingAccount,
       destination_digest:destinationDigest,amount_units:amount.toString(),
       snapshot_digest:state.snapshot.evidenceDigest,
       source_receipts_digest:receiptsDigest,status:REHEARSAL_STATUS

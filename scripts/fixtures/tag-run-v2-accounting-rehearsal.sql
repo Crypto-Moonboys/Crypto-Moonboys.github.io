@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_intents_rehearsal (
   asset_key TEXT NOT NULL REFERENCES tag_run_v2_assets(asset_key),
   bundle_index INTEGER NOT NULL CHECK(bundle_index BETWEEN 0 AND 19),
   telegram_id TEXT NOT NULL,
+  ticket_class TEXT NOT NULL CHECK(ticket_class IN ('current','historical')),
   destination_account TEXT NOT NULL,
   destination_digest TEXT NOT NULL CHECK(length(destination_digest)=64 AND destination_digest NOT GLOB '*[^0-9a-f]*'),
   amount_units TEXT NOT NULL CHECK(length(amount_units) BETWEEN 1 AND 78 AND amount_units NOT GLOB '*[^0-9]*' AND amount_units!='0'),
