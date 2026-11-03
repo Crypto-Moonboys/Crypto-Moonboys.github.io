@@ -60,6 +60,10 @@ function makeStatement(sql, params, tables) {
       return null;
     },
     async all() {
+      if (String(sql).includes('sqlite_master')) {
+        return { success: true, results: params.filter(name => tables.has(name))
+          .map(name => ({ name })) };
+      }
       return { results: [] };
     },
   };

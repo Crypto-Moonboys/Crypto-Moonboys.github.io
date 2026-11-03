@@ -2,6 +2,7 @@ import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from '../shared/faction-canon.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, canonicalFactionMetadataLookup } from '../shared/faction-projection.js';
 import { buildWtfPreviewSchedule, getWtfEventStatus } from '../shared/daily-wtf-schedule.js';
+import { inspectSchemaTables } from '../shared/schema-preflight.js';
 import {
   backfillMissedPerkGapsFromLastActiveDay,
   ensureDailyOpportunityStateForToday,
@@ -74,26 +75,19 @@ function normalizeBattleFaction(value) {
   return CANONICAL_FACTION_KEYS.includes(normalized) ? normalized : null;
 }
 
-async function hasTable(db, tableName) {
-  try {
-    const row = await db.prepare(
-      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
-    ).bind(tableName).first();
-    return { ok: true, exists: !!row?.name };
-  } catch (error) {
-    return { ok: false, exists: false, error };
-  }
-}
-
-async function getTableStatus(db, subsystem) {
+// One request-scoped schema inventory supplies every subsystem's migration
+// guard. Never cache globally: deployment/schema changes must be observed.
+function getTableStatus(schema, subsystem) {
   const tables = REQUIRED_TABLES[subsystem] || [];
   if (!tables.length) return statusLive('worker_api');
-  const missing = [];
-  for (const tableName of tables) {
-    const table = await hasTable(db, tableName);
-    if (!table.ok) return statusQueryFailed('worker_d1', { stage: 'table_check', table: tableName, error: table.error?.message || String(table.error) });
-    if (!table.exists) missing.push(tableName);
+  if (!schema.ok) {
+    return statusQueryFailed('worker_d1', {
+      stage: 'table_check',
+      table: tables[0],
+      error: schema.error,
+    });
   }
+  const missing = tables.filter(name => !schema.present.has(name));
   if (missing.length) return statusMigrationPending({ missing_tables: missing });
   return statusLiveEmpty('worker_d1', { tables, reason: 'tables_ready' });
 }
@@ -177,8 +171,10 @@ export async function buildDailyLoopState(env, options = {}) {
   const db = env.DB;
   const state = emptyLoopState({ utcDay, dayStartedAt, resetAt, secondsUntilReset, sourceStatus, nowMs });
 
+  const allRequiredTables = [...new Set(Object.values(REQUIRED_TABLES).flat())];
+  const schema = await inspectSchemaTables(db, allRequiredTables);
   for (const subsystem of Object.keys(REQUIRED_TABLES)) {
-    sourceStatus[subsystem] = await getTableStatus(db, subsystem);
+    sourceStatus[subsystem] = getTableStatus(schema, subsystem);
   }
 
   if (canQuery(sourceStatus, 'battle_chamber_activity')) {
