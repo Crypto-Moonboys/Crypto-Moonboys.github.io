@@ -352,3 +352,17 @@ test('resolved failed capture cursor or oldest V1 receipt read cannot skip histo
   assert.match(completed.messages[0],/Real member-day receipts inserted: 1/);
   assert.equal(count(f,'tag_run_v2_participation'),1);
 });
+
+
+test('live today Street Cred appears immediately without premature historical weight',async t=>{
+  const f=fixture(t);
+  receipts(f,'2026-11-03',MEMBER,10,818);
+  const state=await command(f,'poolstate');
+  assert.match(state.messages[0],/V1 scored messages for 2026-11-02: 0/);
+  assert.match(state.messages[0],/V1 scored today \(2026-11-03 UTC\): 1/);
+  assert.match(state.messages[0],/Backfill through 2026-11-02: PENDING/);
+  const backfilled=await command(f,'poolbackfill');
+  assert.match(backfilled.messages[0],/Real member-day receipts inserted: 0/);
+  assert.equal(count(f,'tag_run_v2_participation'),0,
+    'an unfinished current UTC day is not backfilled as historical participation');
+});
