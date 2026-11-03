@@ -16,7 +16,8 @@ TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
 TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"
-# V2 is read-only and OFF until migration 104 and chain/custody review.
+# V2 funded rewards remain OFF. An independent admin-only observer is
+# allowed after migration 104; on-chain custody/donation eligibility is NOT verified.
 # Owner-approved observation pilot: reads WAX head balances and captures
 # genuine V1 Street Cred; never allows funded draws or token transfers.
 TAG_RUN_V2_OBSERVATION_ENABLED = "true"
