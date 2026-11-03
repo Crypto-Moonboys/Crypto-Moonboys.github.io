@@ -228,6 +228,9 @@ export async function handoffApprovedPayout(env,{
   ).bind(intentKey).first();
   if(!intent||intent.status!=='reserved')fail('already_submitted_or_missing');
   assertGroup(env,intent.chat_id);
+  // Both pause layers must be honored. The final D1 UPDATE repeats
+  // these checks atomically after the asynchronous recipient RPC returns.
+  await config(env.DB);
   const cap=await env.DB.prepare(
     'SELECT paused FROM tag_run_v2_payout_caps '+
     'WHERE chat_id=? AND day_key=? AND asset_key=?'
@@ -245,12 +248,29 @@ export async function handoffApprovedPayout(env,{
   const destination=await checkWaxDestination(intent.receiving_account,fetchImpl);
   if(destination.status!=='exists')fail('recipient_account_unavailable');
   const action=buildReviewedWaxTransfer(intent);
+  // CAS on intent AND both live pause authorities in the SAME D1 UPDATE:
+  // a pause or asset revocation committed during the awaited RPC cannot
+  // slip past a stale preflight and cause an irreversible payout.
   const lock=await env.DB.prepare(
     "UPDATE tag_run_v2_payout_intents SET status='broadcast_unknown',"+
-    "updated_at=CURRENT_TIMESTAMP WHERE intent_key=? AND status='reserved'"
+    "updated_at=CURRENT_TIMESTAMP WHERE intent_key=? AND status='reserved' "+
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_payout_caps c "+
+    "JOIN tag_run_v2_pool_config p ON p.config_id=1 "+
+    "WHERE c.chat_id=tag_run_v2_payout_intents.chat_id "+
+    "AND c.day_key=tag_run_v2_payout_intents.day_key "+
+    "AND c.asset_key=tag_run_v2_payout_intents.asset_key "+
+    "AND c.paused=0 AND p.status='review_only' "+
+    "AND p.wallet_account='isthatajoint' AND p.daily_bps=500 "+
+    "AND p.historical_ticket_bps=5000) "+
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_snapshots s "+
+    "JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key "+
+    "WHERE s.chat_id=tag_run_v2_payout_intents.chat_id "+
+    "AND s.day_key=tag_run_v2_payout_intents.day_key "+
+    "AND s.asset_key=tag_run_v2_payout_intents.asset_key "+
+    "AND s.status='verified' AND a.eligibility='approved')"
   ).bind(intentKey).run();
   if(lock?.success!==true||lock.meta?.changes!==1)
-    fail('already_submitted_or_missing');
+    fail('send_lock_blocked_or_already_submitted');
   // Exception, timeout or a tx ID response does not change UNKNOWN state:
   // chain action confirmation must be separately verified against LIB.
   // External signer MUST approve the exact action + chainId before sending.
