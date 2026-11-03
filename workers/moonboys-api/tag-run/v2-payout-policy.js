@@ -41,10 +41,16 @@ export function evaluateRegisteredWalletPayout({
   }
 
   try {
+    const units = parseIntegerUnits(allocation?.units);
     if (allocation?.assetKey !== assetKey(allocation?.contract,
-        allocation?.symbol, allocation?.precision) ||
-        parseIntegerUnits(allocation?.units) <= 0n) {
+        allocation?.symbol, allocation?.precision) || units <= 0n) {
       blockers.push('allocation_asset_or_units_invalid');
+    }
+    // Compare exact base units; floating-point conversion can round amounts
+    // near a spending ceiling and silently misreport payout readiness.
+    if (safePositiveInteger(authority?.spendingLimitUnits) &&
+        units > BigInt(authority.spendingLimitUnits)) {
+      blockers.push('allocation_exceeds_spending_limit');
     }
   } catch (_) {
     blockers.push('allocation_asset_or_units_invalid');
