@@ -176,7 +176,7 @@ test('SQL refuses recipient rewriting, REPLACE and illicit funded states',t=>{
     "SET mode='funded' WHERE intent_key=?").run(ids[0]),
     /atomic_rehearsal_hold_immutable|CHECK/);
   assert.throws(()=>db.prepare('UPDATE tag_run_v2_atomic_budget_rehearsal '+
-    "SET mode='funded'").run(),/CHECK/);
+    "SET mode='funded'").run(),/atomic_rehearsal_budget_immutable/);
 });
 
 test('INSERT OR REPLACE cannot reset spent cap or pause while hold is unknown',t=>{
