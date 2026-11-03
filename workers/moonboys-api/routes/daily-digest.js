@@ -65,7 +65,7 @@ function formatMissionIdLabel(missionId) {
   return base.replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 60);
 }
 
-async function ensurePlayerStateTables(db) {
+export async function ensurePlayerStateTables(db) {
   const schema = await inspectSchemaTables(db, PLAYER_STATE_TABLES);
   // A failed lookup still fails closed as an unavailable schema. Keep the
   // existing response contract and report the first missing/unknown table.
@@ -86,7 +86,7 @@ async function ensurePlayerStateTables(db) {
   };
 }
 
-async function ensureDailyDigestTables(db) {
+export async function ensureDailyDigestTables(db) {
   const schema = await inspectSchemaTables(db, DAILY_DIGEST_TABLES);
   const tableName = schema.ok ? schema.missing[0] : DAILY_DIGEST_TABLES[0];
   if (!tableName) return null;
