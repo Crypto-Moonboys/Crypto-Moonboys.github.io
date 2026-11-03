@@ -312,6 +312,13 @@ export async function handleTagRunCommand(update, env, options = {}) {
       return true;
     }
     if (name === 'rewards') {
+      // Once V2 has been explicitly enabled, the legacy fixed-budget LFGK
+      // description is replaced by the funded-by-tips token pot. V1 history
+      // remains readable, and the V1 weekly draft cron remains disabled.
+      if (env?.TAG_RUN_V2_POOL_ENABLED === 'true') {
+        return handleTagRunV2Command(env, { name: 'pool', isAdmin, isPrivate,
+          chatId, telegramId, send, nowMs, fetchImpl });
+      }
       const config = await configFor(env.DB, chatId);
       const current = await weeklyScore(env.DB, chatId, telegramId, weekOf(nowMs));
       const plan = await env.DB.prepare('SELECT status,token_symbol,recipient_count ' +
