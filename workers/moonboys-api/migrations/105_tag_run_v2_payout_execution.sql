@@ -113,6 +113,12 @@ WHEN NEW.status!='reserved' OR NEW.signed_tx_id IS NOT NULL OR NOT EXISTS (
     AND b.asset_key=NEW.asset_key AND b.bundle_index=NEW.bundle_index
     AND b.telegram_id=NEW.telegram_id AND b.units=NEW.amount_units
     AND b.status='preview_only'
+    AND EXISTS (
+      SELECT 1 FROM tag_run_v2_draws d
+      WHERE d.chat_id=b.chat_id AND d.day_key=b.day_key
+        AND d.status='reviewed'
+        AND d.reviewed_by IS NOT NULL AND length(d.reviewed_by)>0
+    )
 ) OR EXISTS (
   SELECT 1 FROM tag_run_v2_payout_intents i
   WHERE i.intent_key=NEW.intent_key
