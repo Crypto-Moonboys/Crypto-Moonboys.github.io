@@ -130,7 +130,7 @@ const destinationRpc=async(url,opts={})=>{
   throw Error('unexpected recipient lookup '+url);
 };
 const safeAction=(intent)=>({
-  irreversible:true,chainId:WAX_MAINNET_CHAIN_ID,
+  irreversible:true,transactionId:TRANSACTION,chainId:WAX_MAINNET_CHAIN_ID,
   contract:'kingsofgraff',name:'transfer',
   from:TIP_ACCOUNT,to:RECEIVER,quantity:'0.0100 LFGK',
   memo:'TAG RUN V2 '+intent.slice(0,20),
@@ -396,9 +396,9 @@ test('direct SQL cannot redirect a valid-looking intent to an unregistered WAX a
   // Exercise the registered-wallet SQL guard independently: a malicious
   // direct caller supplies an otherwise matching freshly committed cap key.
   f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
-    'SET committed_units=?,last_intent_key=?,revision=revision+1 '+
-    'WHERE chat_id=? AND day_key=? AND asset_key=?'
-  ).run('200',forged,GROUP,DAY,A);
+    'SET committed_units=?,last_reserved_units=?,last_intent_key=?,'+
+    'revision=revision+1 WHERE chat_id=? AND day_key=? AND asset_key=?'
+  ).run('200','200',forged,GROUP,DAY,A);
   assert.throws(()=>f.sqlite.prepare(
     'INSERT INTO tag_run_v2_payout_intents '+
     '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
@@ -550,6 +550,57 @@ test('verified irreversible matching chain action confirms only once',async t=>{
     intentKey:first.intentKey,transactionId:TRANSACTION,
     verifyIrreversibleAction:async()=>safeAction(first.intentKey)
   }),/v2_payout_not_pending_reconciliation/);
+});
+
+test('mismatched chain proof transaction ID cannot be persisted or confirm payout',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
+    intentKey:row.intentKey,
+    signAndBroadcast:async()=>({transactionId:TRANSACTION})
+  });
+  const unrelated='e'.repeat(64);
+  assert.notEqual(unrelated,TRANSACTION);
+  let verificationCalls=0;
+  await assert.rejects(markIrreversiblyConfirmed(f.env,{
+    intentKey:row.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async query=>{
+      verificationCalls++;
+      assert.equal(query.transactionId,TRANSACTION);
+      return {...safeAction(row.intentKey),transactionId:unrelated};
+    }
+  }),/v2_payout_chain_action_mismatch/);
+  assert.equal(verificationCalls,1);
+  assert.equal(f.intents()[0].status,'broadcast_unknown');
+  assert.equal(f.intents()[0].signed_tx_id,null);
+  assert.equal(f.cap().committed_units,'100');
+  // A later matching, independently corroborated proof is still accepted,
+  // while the first forged ID must never become the ledger's tx ID.
+  const confirmed=await markIrreversiblyConfirmed(f.env,{
+    intentKey:row.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async()=>safeAction(row.intentKey)
+  });
+  assert.equal(confirmed.status,'confirmed');
+  assert.equal(confirmed.txId,TRANSACTION);
+  assert.equal(f.intents()[0].signed_tx_id,TRANSACTION);
+});
+
+test('missing chain proof transaction ID is not sufficient evidence',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,intentKey:row.intentKey,
+    signAndBroadcast:async()=>({transactionId:TRANSACTION})
+  });
+  const {transactionId:discarded,...proofWithoutTx}=safeAction(row.intentKey);
+  assert.equal(discarded,TRANSACTION);
+  await assert.rejects(markIrreversiblyConfirmed(f.env,{
+    intentKey:row.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async()=>proofWithoutTx
+  }),/v2_payout_chain_action_mismatch/);
+  assert.equal(f.intents()[0].status,'broadcast_unknown');
+  assert.equal(f.intents()[0].signed_tx_id,null);
 });
 
 test('failed finality or mismatched amount never confirms sent tokens',async t=>{
