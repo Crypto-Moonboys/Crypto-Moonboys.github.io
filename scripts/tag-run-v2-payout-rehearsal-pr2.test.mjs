@@ -83,6 +83,11 @@ test('any recipient blocker rejects the entire rehearsal rather than hiding a mi
   for(const patch of [
     {receivingAccount:'bad..wax'},
     {receivingAccount:TIP_ACCOUNT},
+    {receivingAccount:[TIP_ACCOUNT]},
+    {receivingAccount:['gkniftyheads']},
+    {receivingAccount:new String('gkniftyheads')},
+    {receivingAccount:{toString:()=> 'gkniftyheads'}},
+    {receivingAccount:null},
     {status:'locked'},
     {blocker:'destination_requires_fresh_chain_check'},
     {bundleIndex:20}
@@ -91,7 +96,7 @@ test('any recipient blocker rejects the entire rehearsal rather than hiding a mi
     await assert.rejects(rehearse({...a,plan:{...a.plan,entries}}),/rehearsal_/);
   }
   await assert.rejects(rehearse({...a,plan:{...a.plan,
-    entries:[a.plan.entries[0],a.plan.entries[0]]
+    entries:[...a.plan.entries.slice(0,-1),a.plan.entries[0]]
   }}),/rehearsal_duplicate_or_unknown_slot/);
 });
 
@@ -99,6 +104,10 @@ function fixture(t){
   const db=new DatabaseSync(':memory:');
   t.after(()=>db.close());
   db.exec('PRAGMA foreign_keys=ON');
+  // Explicitly reproduce Cloudflare/SQLite default: DELETE triggers do not
+  // protect rows replaced by INSERT OR REPLACE when recursion is disabled.
+  db.exec('PRAGMA recursive_triggers=OFF');
+  assert.equal(db.prepare('PRAGMA recursive_triggers').get().recursive_triggers,0);
   for(const filename of [
     '104_tag_run_v2_community_token_pot.sql',
     '105_tag_run_v2_accounting_rehearsal.sql'
@@ -130,7 +139,8 @@ test('offline D1-compatible ledger prevents duplicate slots and forbids mutating
   const first=result.intents[0];
   assert.throws(()=>insert.run('d'.repeat(64),first.chat_id,first.day_key,first.asset_key,
     first.bundle_index,first.telegram_id,'wrongaccount',first.destination_digest,
-    first.amount_units,first.snapshot_digest,first.source_receipts_digest),/UNIQUE/);
+    first.amount_units,first.snapshot_digest,first.source_receipts_digest),
+    /immutable_rehearsal_intent/);
   assert.throws(()=>db.prepare(`UPDATE tag_run_v2_payout_intents_rehearsal
     SET destination_account='otherwax' WHERE intent_key=?`).run(first.intent_key),
     /immutable_rehearsal_intent/);
@@ -138,6 +148,20 @@ test('offline D1-compatible ledger prevents duplicate slots and forbids mutating
     /immutable_rehearsal_intent/);
   assert.throws(()=>db.prepare(`UPDATE tag_run_v2_payout_intents_rehearsal
     SET status='paid'`).run(),/immutable_rehearsal_intent/);
+  assert.equal(db.prepare('SELECT destination_account FROM tag_run_v2_payout_intents_rehearsal WHERE intent_key=?')
+    .get(first.intent_key).destination_account,'gkniftyheads');
+  // Duplicate primary key and alternate unique slot must both be blocked
+  // before SQLite REPLACE can silently delete the original row.
+  const replace=db.prepare(sql.replace('INSERT INTO','INSERT OR REPLACE INTO'));
+  assert.throws(()=>replace.run(first.intent_key,first.chat_id,first.day_key,
+    first.asset_key,first.bundle_index,first.telegram_id,'otherwax',
+    first.destination_digest,first.amount_units,first.snapshot_digest,
+    first.source_receipts_digest),/immutable_rehearsal_intent/);
+  assert.throws(()=>replace.run('d'.repeat(64),first.chat_id,first.day_key,
+    first.asset_key,first.bundle_index,first.telegram_id,'otherwax',
+    first.destination_digest,first.amount_units,first.snapshot_digest,
+    first.source_receipts_digest),/immutable_rehearsal_intent/);
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_payout_intents_rehearsal').get().n,20);
   assert.equal(db.prepare('SELECT destination_account FROM tag_run_v2_payout_intents_rehearsal WHERE intent_key=?')
     .get(first.intent_key).destination_account,'gkniftyheads');
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
@@ -153,7 +177,21 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
   evidence.run(HASH,KEY,WAX_MAINNET_CHAIN_ID,'seq:1',TX,100,BLOCK,
     'gkniftyheads',TIP_ACCOUNT,'20',HASH,BLOCK);
   assert.throws(()=>evidence.run('d'.repeat(64),KEY,WAX_MAINNET_CHAIN_ID,
-    'seq:1',TX,100,BLOCK,'gkniftyheads',TIP_ACCOUNT,'20',HASH,BLOCK),/UNIQUE/);
+    'seq:1',TX,100,BLOCK,'gkniftyheads',TIP_ACCOUNT,'20',HASH,BLOCK),
+    /immutable_rehearsal_funding/);
+  const evidenceReplace=db.prepare(evidence.sourceSQL || `INSERT OR REPLACE INTO tag_run_v2_funding_evidence_rehearsal
+    (evidence_id,asset_key,chain_id,global_action_seq,transaction_id,
+     irreversible_block_num,block_id,donor_account,recipient_account,units,
+     donor_intent_digest,custody_review_digest)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
+  for(const [id,sequence] of [[HASH,'seq:1'],['d'.repeat(64),'seq:1']]){
+    assert.throws(()=>evidenceReplace.run(id,KEY,WAX_MAINNET_CHAIN_ID,
+      sequence,TX,100,BLOCK,'otherwax',TIP_ACCOUNT,'20',HASH,BLOCK),
+      /immutable_rehearsal_funding/);
+  }
+  assert.equal(db.prepare('SELECT donor_account FROM tag_run_v2_funding_evidence_rehearsal WHERE evidence_id=?')
+    .get(HASH).donor_account,'gkniftyheads');
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_funding_evidence_rehearsal').get().n,1);
   assert.throws(()=>db.prepare(`UPDATE tag_run_v2_funding_evidence_rehearsal
     SET status='approved'`).run(),/immutable_rehearsal_funding/);
   const snapshot=db.prepare(`INSERT INTO tag_run_v2_snapshot_evidence_rehearsal
@@ -163,6 +201,19 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
     VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
   snapshot.run(HASH,CHAT,DAY,KEY,100,BLOCK,
     '100000','20000','40000','40000','2000',HASH);
+  const replaceSnapshot=db.prepare(`INSERT OR REPLACE INTO tag_run_v2_snapshot_evidence_rehearsal
+    (snapshot_id,chat_id,day_key,asset_key,irreversible_block_num,
+     block_id,onchain_units,reserved_units,excluded_units,available_units,
+     five_percent_units,evidence_digest)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
+  for(const id of [HASH,'d'.repeat(64)]){
+    assert.throws(()=>replaceSnapshot.run(id,CHAT,DAY,KEY,100,BLOCK,
+      '999999','20000','40000','939999','46999',HASH),
+      /immutable_rehearsal_snapshot/);
+  }
+  assert.equal(db.prepare('SELECT onchain_units FROM tag_run_v2_snapshot_evidence_rehearsal WHERE snapshot_id=?')
+    .get(HASH).onchain_units,'100000');
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_snapshot_evidence_rehearsal').get().n,1);
   assert.throws(()=>db.prepare(`DELETE FROM tag_run_v2_snapshot_evidence_rehearsal`).run(),
     /immutable_rehearsal_snapshot/);
   assert.throws(()=>db.prepare(`UPDATE tag_run_v2_snapshot_evidence_rehearsal
