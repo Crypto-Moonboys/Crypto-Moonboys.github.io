@@ -28,7 +28,7 @@ const source={
     walletOwnershipProofValid:true,custodyVerified:true,
     donationConsentVerified:true,historicalSnapshotFinalized:true,
     assetApproved:true,legalReviewApproved:true,
-    separateSpendingApproval:true,spendingLimitUnits:100,
+    separateSpendingApproval:true,spendingLimitUnits:2000000,
     idempotencyAndReconciliationVerified:true
   }
 };
@@ -108,6 +108,41 @@ test('independent custody, consent, legal and spending gates are all mandatory',
   }
   assert(evaluate({authority:{spendingLimitUnits:0}})
     .blockers.includes('operator_authorities_incomplete'));
+});
+
+test('spending ceiling blocks exact base units above limit, not below or equal',()=>{
+  for(const units of ['99','100']) {
+    const decision=evaluate({
+      allocation:{units},authority:{spendingLimitUnits:100}
+    });
+    assert.equal(decision.allowed,false,'payouts stay hard disabled');
+    assert.equal(decision.transferAttempted,false);
+    assert.equal(decision.blockers.includes('allocation_exceeds_spending_limit'),false,
+      'allocation '+units+' is within the limit');
+  }
+  const over=evaluate({
+    allocation:{units:'101'},authority:{spendingLimitUnits:100}
+  });
+  assert(over.blockers.includes('allocation_exceeds_spending_limit'));
+  assert.equal(over.allowed,false);
+  assert.equal(over.transferAttempted,false);
+});
+
+test('spending comparison uses BigInt without unsafe number coercion',()=>{
+  const limit=Number.MAX_SAFE_INTEGER;
+  const equal=evaluate({
+    allocation:{units:String(limit)},authority:{spendingLimitUnits:limit}
+  });
+  assert.equal(equal.blockers.includes('allocation_exceeds_spending_limit'),false);
+  const exceeded=evaluate({
+    allocation:{units:(BigInt(limit)+1n).toString()},
+    authority:{spendingLimitUnits:limit}
+  });
+  assert(exceeded.blockers.includes('allocation_exceeds_spending_limit'));
+  assert.equal(exceeded.transferAttempted,false);
+  const invalid=evaluate({authority:{spendingLimitUnits:limit+1}});
+  assert(invalid.blockers.includes('operator_authorities_incomplete'));
+  assert.equal(invalid.allowed,false);
 });
 
 test('preflight cannot be bypassed by setting every input to approved',()=>{
