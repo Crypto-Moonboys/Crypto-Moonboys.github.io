@@ -11,6 +11,24 @@ CREATE TABLE tag_run_v2_current_community_scope_rehearsal (
   ),
   mode TEXT NOT NULL DEFAULT 'simulation_only' CHECK(mode='simulation_only')
 ) WITHOUT ROWID;
+-- Fail CLOSED when the PR2/PR5 disposable tables were populated before
+-- this fixture was installed. INSERT-only guards below cannot quarantine
+-- pre-existing foreign-group rows, and existing holds can still be mutated.
+-- Check all three sources before permitting the one immutable group binding.
+-- No deletes, reassignment, sweeping or background cleanup are performed.
+CREATE TRIGGER tag_run_v2_current_community_existing_rows_guard
+BEFORE INSERT ON tag_run_v2_current_community_scope_rehearsal
+WHEN EXISTS (
+  SELECT 1 FROM tag_run_v2_payout_intents_rehearsal i
+  WHERE i.chat_id!=NEW.group_chat_id
+) OR EXISTS (
+  SELECT 1 FROM tag_run_v2_atomic_budget_rehearsal b
+  WHERE b.chat_id!=NEW.group_chat_id
+) OR EXISTS (
+  SELECT 1 FROM tag_run_v2_atomic_holds_rehearsal h
+  WHERE h.chat_id!=NEW.group_chat_id
+)
+BEGIN SELECT RAISE(ABORT,'current_community_existing_foreign_rows'); END;
 CREATE TRIGGER tag_run_v2_current_community_no_replace
 BEFORE INSERT ON tag_run_v2_current_community_scope_rehearsal
 WHEN EXISTS (SELECT 1 FROM tag_run_v2_current_community_scope_rehearsal)
