@@ -2799,7 +2799,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_deposits (
   sender_account TEXT NOT NULL,
   recipient_account TEXT NOT NULL CHECK(recipient_account='isthatajoint'),
   asset_key TEXT NOT NULL REFERENCES tag_run_v2_assets(asset_key),
-  units TEXT NOT NULL CHECK(units GLOB '[0-9]*' AND length(units) BETWEEN 1 AND 78),
+  units TEXT NOT NULL CHECK(length(units) BETWEEN 1 AND 78 AND units NOT GLOB '*[^0-9]*' AND (units='0' OR substr(units,1,1)!='0')),
   memo_digest TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'quarantined'
     CHECK(status IN ('quarantined','confirmed_donation','refund_review','rejected')),
