@@ -186,11 +186,17 @@ async function pendingWeight(db, chatId, telegramId) {
     'SELECT earned_weight,spent_historical_weight FROM tag_run_v2_participation ' +
     'WHERE chat_id=? AND telegram_id=?'
   ).bind(chatId,telegramId).all();
-  if (query?.success === false || !Array.isArray(query?.results) ||
+  if (query?.success !== true || !Array.isArray(query?.results) ||
       query.results.length > 3660) throw new Error('pending_participation_unavailable');
-  return query.results.reduce((total,row) =>
-    total + Math.max(0, Number(row.earned_weight) -
-      Number(row.spent_historical_weight)),0);
+  return query.results.reduce((total,row) => {
+    const earned=row.earned_weight,spent=row.spent_historical_weight;
+    if (!Number.isSafeInteger(earned) || earned < 0 ||
+        earned > MAX_POINTS_PER_DAY || !Number.isSafeInteger(spent) ||
+        spent < 0 || spent > earned) {
+      throw new Error('pending_participation_invalid');
+    }
+    return total + earned - spent;
+  },0);
 }
 async function drawInput(db, chatId, day) {
   const [snapshots, recent, backlog] = await Promise.all([
@@ -237,6 +243,31 @@ export async function handleTagRunV2Command(env, options) {
       name,isAdmin,isPrivate,chatId,telegramId,send,nowMs,fetchImpl,
       capture: captureOptions => saveYesterdayParticipation(env,captureOptions)
     });
+  }
+  // Master #1697: let a member inspect their own REAL unfunded Street
+  // Cred participation during the observation-only pilot. Never expose
+  // member records in the group, authorize funded draws, or write D1.
+  if (name === 'myrewards' && !isPrivate) {
+    await send('DM the bot with /myrewards to view your own participation. ' +
+      'No token payouts are enabled.');
+    return true;
+  }
+  if (name === 'myrewards' && observationEnabled(env)) {
+    const cfg = await configFor(env.DB);
+    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT ||
+        cfg.status !== 'paused' || cfg.daily_bps !== 500 ||
+        cfg.historical_ticket_bps !== 5000) {
+      throw new Error('observation_config_not_paused_and_verified');
+    }
+    const pending=await pendingWeight(env.DB,chatId,telegramId);
+    await send('TAG RUN · YOUR COMMUNITY POT (READ-ONLY)\n' +
+      'Unfunded participation weight: '+pending+' points (not tokens).\n' +
+      'Only completed UTC days count toward this historical total.\n' +
+      'Historical activity can receive up to 50% of draw-ticket weight ' +
+      'when current and past participants both qualify.\n' +
+      'Pool: PAUSED. Assets: QUARANTINED. Draws: OFF. Transfers: OFF.\n' +
+      'No funds, token debt, reward promise or payout is recorded.');
+    return true;
   }
   if (!isV2Available(env)) {
     await send('TAG RUN V2 Community Token Pot is not active yet. ' +
