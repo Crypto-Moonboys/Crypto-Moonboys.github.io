@@ -153,6 +153,7 @@ OR NOT EXISTS (
     ON a.asset_key=s.asset_key
   WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
     AND s.asset_key=NEW.asset_key AND s.status='verified'
+    AND s.snapshot_digest=NEW.snapshot_digest
     AND a.eligibility='approved'
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_payout_caps c
@@ -199,6 +200,7 @@ WHEN NEW.intent_key!=OLD.intent_key OR NEW.chat_id!=OLD.chat_id
  OR NOT (
     (OLD.status='reserved' AND NEW.status='broadcast_unknown')
  OR (OLD.status='broadcast_unknown' AND NEW.status IN ('confirmed','reconciliation_review'))
+ OR (OLD.status='reconciliation_review' AND NEW.status='confirmed')
  OR (OLD.status=NEW.status AND OLD.signed_tx_id IS NEW.signed_tx_id)
  )
  OR (OLD.signed_tx_id IS NOT NULL AND NEW.signed_tx_id IS NOT OLD.signed_tx_id)
