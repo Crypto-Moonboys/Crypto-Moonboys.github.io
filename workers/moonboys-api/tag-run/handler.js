@@ -285,20 +285,20 @@ export async function handleTagRunCommand(update, env, options = {}) {
         'WHERE telegram_id=?'
       ).bind(telegramId).first();
       if (!wallet) {
-        await send('TAG RUN WAX WALLET\\nNo WAX account registered. ' +
+        await send('TAG RUN WAX WALLET\nNo WAX account registered. ' +
           'DM /rain yourwaxaccount to set your destination. ' +
           'No token transfers are enabled.');
         return true;
       }
-      await send('TAG RUN WAX WALLET\\nRegistered destination: ' +
+      await send('TAG RUN WAX WALLET\nRegistered destination: ' +
         String(wallet.wax_account) +
-        '\\nOwnership verification: ' +
+        '\nOwnership verification: ' +
         (wallet.verification_status === 'verified' && wallet.verified_at
           ? 'RECORDED VERIFIED (independent proof still required for future payouts)'
           : 'PENDING — typing an account name does not verify ownership') +
-        '\\nFuture route: bot sends directly to your registered WAX account ' +
+        '\nFuture route: bot sends directly to your registered WAX account ' +
         'after independent ownership verification and payout authorization.' +
-        '\\nCurrent status: FUNDED PAYOUTS DISABLED. ' +
+        '\nCurrent status: FUNDED PAYOUTS DISABLED. ' +
         'Do not share private keys or seed phrases.');
       return true;
     }
