@@ -312,7 +312,11 @@ export async function markIrreversiblyConfirmed(env,{
     transactionId,intentKey,chainId:WAX_MAINNET_CHAIN_ID
   });
   if(action?.irreversible!==true)fail('finality_unverified');
-  if(action.chainId!==WAX_MAINNET_CHAIN_ID ||
+  // The transaction ID persisted in immutable D1 must be the exact ID
+  // corroborated by the independent irreversible chain action, not merely
+  // an arbitrary ID supplied alongside otherwise matching action fields.
+  if(action.transactionId!==transactionId ||
+     action.chainId!==WAX_MAINNET_CHAIN_ID ||
      action.contract!==want.contract ||
      action.name!=='transfer'||action.from!==TIP_ACCOUNT ||
      action.to!==want.destination||action.quantity!==want.action.data.quantity||
