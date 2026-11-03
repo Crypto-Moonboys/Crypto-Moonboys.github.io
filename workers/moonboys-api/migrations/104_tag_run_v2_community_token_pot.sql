@@ -7,9 +7,9 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_pool_config (
   config_id INTEGER PRIMARY KEY CHECK(config_id=1),
   wallet_account TEXT NOT NULL DEFAULT 'isthatajoint'
     CHECK(wallet_account='isthatajoint'),
-  daily_bps INTEGER NOT NULL DEFAULT 500 CHECK(daily_bps BETWEEN 0 AND 500),
+  daily_bps INTEGER NOT NULL DEFAULT 500 CHECK(daily_bps = 500),
   historical_ticket_bps INTEGER NOT NULL DEFAULT 5000
-    CHECK(historical_ticket_bps BETWEEN 0 AND 5000),
+    CHECK(historical_ticket_bps = 5000),
   status TEXT NOT NULL DEFAULT 'paused'
     CHECK(status IN ('paused','read_only','review_only')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision >= 0),
