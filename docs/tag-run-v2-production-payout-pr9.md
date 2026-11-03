@@ -92,3 +92,34 @@ includes the requested transaction ID, with negative tests for unrelated and
 missing IDs. A failed proof leaves the reservation `broadcast_unknown`, with
 no `signed_tx_id` stored. The updated focused test file defines 30 tests;
 syntax validation alone does not constitute a passing Node/Worker suite.
+
+
+### Fixes for previously missed production-state findings (3 Nov 2026)
+
+1. **Snapshot race during reservation:** the BEFORE INSERT intent guard now
+   requires the exact `s.snapshot_digest=NEW.snapshot_digest` of the verified,
+   approved asset snapshot. If the snapshot is replaced between the JS
+   preflight and `D1.batch`, the intent insert aborts, rolling back the
+   preceding cap increment in the same transaction. The regression mutates
+   the snapshot immediately before executing the transactional batch and
+   asserts zero intents and an unchanged cap.
+2. **Reconciliation-review liveness:** SQL now allows only the narrow
+   `reconciliation_review → confirmed` transition; it does **not** allow
+   another `broadcast_unknown` transition or another signer call. The
+   production `markIrreversiblyConfirmed` method accepts both
+   `broadcast_unknown` and `reconciliation_review` as evidence-eligible
+   states, but requires an independent irreversible WAX transfer proof with
+   the exact transaction ID, contract, recipient, quantity, memo, block
+   and chain before the conditional `confirmed` update. Repeated or
+   incorrect proofs fail closed and the cap remains reserved until resolved.
+3. **Revoked draw before signing:** the final single-statement D1 send lock
+   now requires the associated draw to remain `reviewed`, including a
+   nonempty `reviewed_by`. Any rejection or withdrawal of review metadata,
+   including during the awaited receiving-wallet RPC, prevents the intent
+   from becoming `broadcast_unknown` and blocks the signer callback.
+
+The existing single-community and payout-off release gates are preserved.
+Canonical `schema.sql` and migration 105 are synchronized. The focused
+regression suite now defines **35 tests**; full Node/Worker CI and real D1
+execution must still pass before merge. No production migration or
+token transfer has been performed.
