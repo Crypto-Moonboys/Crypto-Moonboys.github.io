@@ -289,7 +289,7 @@ assert.match(routeSource, /status = 'settling'[\s\S]{0,220}updated_at < \?/, 'cl
 assert.match(routeSource, /settlingCutoff[\s\S]{0,80}ACTIVE_SESSION_TTL_MS/, 'settling cleanup must use the full session TTL');
 assert.doesNotMatch(routeSource, /30 \* 60 \* 1000/, 'settling cleanup must not use a shorter 30-minute TTL');
 assert.match(phase5Source, /cleanupExpiredSessions/, 'worker-phase5-final must import and call cleanupExpiredSessions');
-assert.match(phase5Source, /async scheduled[\s\S]{0,300}cleanupExpiredSessions/, 'scheduled handler must run cleanupExpiredSessions');
+assert.match(phase5Source, /async scheduled\(event, env, ctx\)[\s\S]*?if \(tasks\.maintenance\)[\s\S]*?cleanupExpiredSessions\(env\.DB, Date\.now\(\)\)/, 'scheduled cleanup runs only when the guarded maintenance task is due');
 assert.match(phase5Source, /ctx\.waitUntil[\s\S]{0,80}cleanupExpiredSessions/, 'scheduled cleanup must use ctx.waitUntil');
 
 // Client DOM and telemetry contracts.

@@ -93,6 +93,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/player-action-plan-saved-claims.test.mjs'],
     ['node', 'scripts/daily-loop-frontend-state.test.mjs'],
     ['node', 'scripts/scheduled-task-isolation.test.mjs'],
+    ['node', '--test', 'scripts/moonboys-cron-stagger-pr3.test.mjs'],
     ['node', 'scripts/market-indexer-removal-guard.test.mjs'],
     ['node', 'scripts/cors-origins.test.mjs'],
     ['node', 'scripts/worker-rate-limit.test.mjs'],

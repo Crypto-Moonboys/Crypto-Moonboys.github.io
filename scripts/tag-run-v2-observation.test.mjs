@@ -123,8 +123,13 @@ test('owner-approved pilot gate is enabled while every funded reward gate stays 
     'TAG_RUN_V2_PAYOUTS_ENABLED','TAG_RUN_WEEKLY_REWARDS_ENABLED']){
     assert.match(cfg,new RegExp(flag+' = "false"'));
   }
-  assert.match(read('workers/moonboys-api/worker-phase5-final.js'),
-    /TAG_RUN_V2_OBSERVATION_ENABLED === 'true'/);
+  const wrapper = read('workers/moonboys-api/worker-phase5-final.js');
+  const plan = read('workers/moonboys-api/scheduled/phase5-cron-plan.js');
+  assert.match(wrapper,/phase5CronTasks\(event, env\)/);
+  assert.match(wrapper,/if \(tasks\.participation\)[\s\S]*?saveYesterdayParticipation\(env\)/);
+  assert.match(plan,/TAG_RUN_V2_OBSERVATION_ENABLED === 'true'/,
+    'read-only capture must remain behind the independent observation gate');
+  assert.match(plan,/cron === MOONBOYS_CRON\.participation/);
   for(const key of ['TAG_RUN_V2_DRAWS_ENABLED','TAG_RUN_V2_PAYOUTS_ENABLED',
     'TAG_RUN_V2_POOL_ENABLED','TAG_RUN_WEEKLY_REWARDS_ENABLED']){
     f.env[key]='true';

@@ -9,6 +9,7 @@ import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
+import { phase5CronTasks } from './scheduled/phase5-cron-plan.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -500,39 +501,42 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    // Global GPS coordinate cleanup runs on every cron tick so expired and abandoned
-    // sessions are scrubbed regardless of whether the user ever makes another request.
-    ctx.waitUntil(cleanupExpiredSessions(env.DB, Date.now()).catch(() => {}));
-    // Retry only celebrations that are still PENDING (never attempted).
-    // Ambiguous failures are held for manual review, preventing duplicate posts.
-    if (env?.TAG_RUN_ENABLED === 'true') {
+    const tasks = phase5CronTasks(event, env);
+    // Do not run cleanup on every unrelated cron. The 5-minute base tick
+    // remains untouched for timed events; GPS cleanup runs every 10 minutes
+    // (falls back to every 5 if scheduledTime is unavailable).
+    if (tasks.maintenance) {
+      ctx.waitUntil(cleanupExpiredSessions(env.DB, Date.now()).catch((error) => {
+        console.warn('[DEAD RUN] scheduled session cleanup unavailable',
+          String(error?.message || error));
+      }));
+    }
+    // The authenticated Telegram webhook also triggers the first immediate
+    // notification drain. The 5-minute cron remains a bounded retry for
+    // pending-only rank announcements; dedicated bulletin/digest/capture
+    // cron events no longer redundantly recheck the same outbox.
+    if (tasks.rankNotices) {
       ctx.waitUntil(deliverTagRunRankAnnouncements(env, { limit: 10 })
         .catch((error) => console.warn('[TAG RUN] rank notice queue unavailable',
           String(error?.message || error))));
     }
-    // Only the dedicated six-times-daily UTC cron posts this group bulletin;
-    // the overlapping 5-minute maintenance tick must never send it.
-    if (event?.cron === '0 */4 * * *' && env?.TAG_RUN_ENABLED === 'true') {
+    if (tasks.bulletin) {
       ctx.waitUntil(postTagRunGroupBulletin(env).catch((error) => {
         console.warn('[TAG RUN] four-hour bulletin unavailable',
           String(error?.message || error));
       }));
     }
-    // V2 daily participation is a separate read-only rollover ledger. The
-    // feature flag remains OFF until additive migration 104 is verified.
-    // This does not draw, reserve or transfer any WAX tokens.
-    if (event?.cron === '10 0 * * *' &&
-        (env?.TAG_RUN_V2_POOL_ENABLED === 'true' ||
-         env?.TAG_RUN_V2_OBSERVATION_ENABLED === 'true')) {
+    // V2: read-only participation attribution is still for yesterday's UTC
+    // date. Only invocation time moves by two minutes; funded gates stay OFF.
+    if (tasks.participation) {
       ctx.waitUntil(saveYesterdayParticipation(env).catch((error) => {
         console.warn('[TAG RUN V2] participation snapshot unavailable',
           String(error?.message || error));
       }));
     }
-    // The weekly Monday-UTC draft is ledger-only and requires both feature
-    // flags plus explicit admin token/amount configuration. No WAX signatures.
-    if (env?.TAG_RUN_ENABLED === 'true' &&
-        env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'true') {
+    // Review-only weekly plans are disabled in production. A future separate
+    // activation runs once daily rather than on every 5-minute cron.
+    if (tasks.weeklyDraft) {
       ctx.waitUntil(draftTagRunWeeklyRewards(env).catch((error) => {
         console.warn('[TAG RUN] weekly review draft unavailable',
           String(error?.message || error));
