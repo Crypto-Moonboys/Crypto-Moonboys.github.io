@@ -116,6 +116,16 @@ async function openCap(f,options={}){
   f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
     'SET paused=0,revision=revision+1').run();
 }
+const destinationRpc=async(url,opts={})=>{
+  if(url.endsWith('/get_info'))return {ok:true,json:async()=>({
+    chain_id:WAX_MAINNET_CHAIN_ID
+  })};
+  if(url.endsWith('/get_account')){
+    const body=JSON.parse(opts.body);
+    return {ok:true,json:async()=>({account_name:body.account_name})};
+  }
+  throw Error('unexpected recipient lookup '+url);
+};
 const safeAction=(intent)=>({
   irreversible:true,chainId:WAX_MAINNET_CHAIN_ID,
   contract:'kingsofgraff',name:'transfer',
@@ -238,6 +248,7 @@ test('signer handoff marks unknown BEFORE call and never automatically retries',
   const first=await reserveReviewedPayout(f.env,intentArgs);
   let calls=0;
   const result=await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
     intentKey:first.intentKey,
     signAndBroadcast:async transfer=>{
       calls++;
@@ -252,6 +263,7 @@ test('signer handoff marks unknown BEFORE call and never automatically retries',
   assert.equal(result.networkResponseTxId,TRANSACTION);
   assert.equal(f.intents()[0].status,'broadcast_unknown');
   await assert.rejects(handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
     intentKey:first.intentKey,signAndBroadcast:async()=>{calls++;return {};}
   }),/v2_payout_already_submitted_or_missing/);
   assert.equal(calls,1);
@@ -261,6 +273,7 @@ test('signer/network errors keep UNKNOWN hold for manual reconciliation',async t
   const f=fixture(t);await openCap(f);
   const first=await reserveReviewedPayout(f.env,intentArgs);
   const out=await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
     intentKey:first.intentKey,signAndBroadcast:async()=>{throw Error('timeout');}
   });
   assert.equal(out.status,'broadcast_unknown');
@@ -269,10 +282,24 @@ test('signer/network errors keep UNKNOWN hold for manual reconciliation',async t
   assert.equal(f.intents()[0].status,'broadcast_unknown');
 });
 
+test('invalid receiver RPC blocks signer without recording UNKNOWN state',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  let signed=false;
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:row.intentKey,
+    fetchImpl:async()=>({ok:true,json:async()=>({chain_id:'wrong'})}),
+    signAndBroadcast:async()=>{signed=true;}
+  }),/wax_destination_wrong_chain/);
+  assert.equal(signed,false);
+  assert.equal(f.intents()[0].status,'reserved');
+});
+
 test('verified irreversible matching chain action confirms only once',async t=>{
   const f=fixture(t);await openCap(f);
   const first=await reserveReviewedPayout(f.env,intentArgs);
   await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
     intentKey:first.intentKey,signAndBroadcast:async()=>({transactionId:TRANSACTION})
   });
   const confirmed=await markIrreversiblyConfirmed(f.env,{
@@ -295,6 +322,7 @@ test('failed finality or mismatched amount never confirms sent tokens',async t=>
   const f=fixture(t);await openCap(f);
   const first=await reserveReviewedPayout(f.env,intentArgs);
   await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
     intentKey:first.intentKey,signAndBroadcast:async()=>({transactionId:TRANSACTION})
   });
   await assert.rejects(markIrreversiblyConfirmed(f.env,{
@@ -380,6 +408,7 @@ test('chain finality evidence must match stored destination, amount and memo',as
   const f=fixture(t);await openCap(f);
   const intent=await reserveReviewedPayout(f.env,intentArgs);
   await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,
     intentKey:intent.intentKey,signAndBroadcast:async()=>({
       transactionId:TRANSACTION
     })
