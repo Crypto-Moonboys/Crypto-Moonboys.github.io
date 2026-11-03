@@ -70,6 +70,18 @@ function fixture(t, opts = {}) {
     TELEGRAM_BOT_USERNAME: 'WIKICOMSBOT'
   };
   const fetchImpl = async (url, options) => {
+    if (url.endsWith('/v1/chain/get_info')) {
+      return { ok: true, json: async () => ({
+        chain_id: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4'
+      }) };
+    }
+    if (url.endsWith('/v1/chain/get_account')) {
+      const account = JSON.parse(options.body).account_name;
+      if (typeof env.beforeWaxDestination === 'function') {
+        return env.beforeWaxDestination(account);
+      }
+      return { ok: true, json: async () => ({ account_name:account }) };
+    }
     if (url.includes('get_currency_stats')) {
       const request = JSON.parse(options.body);
       if (typeof env.beforeTokenRpc === 'function') await env.beforeTokenRpc(request);
@@ -402,7 +414,7 @@ test('cooldown uses member day index, including messages crossing UTC midnight',
     'cooldown query should use bounded member-day index rather than lifetime scan');
 });
 
-test('commands are verified-group/private only and rain registers unverified WAX accounts', async t => {
+test('commands are verified-group/private only and rain registers WAX payout destinations', async t => {
   const f = fixture(t);
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'group' }), f.env), true);
   assert.equal(isTagRunCommand(f.message('/profile', { chat: 'private' }), f.env), true);
@@ -427,20 +439,61 @@ test('commands are verified-group/private only and rain registers unverified WAX
     'group commands may not register a payout account');
   const rain = await f.command('/rain abcde.wam');
   assert.equal(rain.handled, true);
-  assert.match(rain.answer, /PENDING verification/);
+  assert.match(rain.answer, /payout destination REGISTERED/);
   const wallet = f.sqlite.prepare('SELECT * FROM tag_run_wallets WHERE telegram_id=?').get(MEMBER);
   assert.equal(wallet.wax_account, 'abcde.wam');
   assert.equal(wallet.verification_status, 'pending');
   assert.match((await f.command('/rain rXRPabcdef')).answer, /Usage/);
+  const status = await f.command('/rainstatus');
+  assert.match(status.answer, /REGISTERED — WAX mainnet account confirmed/);
+  assert.match(status.answer, /FUNDED PAYOUTS DISABLED/);
+  const groupStatus = await f.command('/rainstatus',{chat:'group'});
+  assert.match(groupStatus.answer,/Wallet details are private/);
+  assert.doesNotMatch(groupStatus.answer,/abcde\.wam/);
+  const failedDestination = f.sqlite.prepare('SELECT wax_account FROM tag_run_wallets ' +
+    'WHERE telegram_id=?').get(MEMBER).wax_account;
+  f.env.beforeWaxDestination = async () => ({ok:false,status:503});
+  const unavailable = await f.command('/rain nonexist1234');
+  assert.match(unavailable.answer,/registration was NOT changed/);
+  assert.equal(f.sqlite.prepare('SELECT wax_account FROM tag_run_wallets ' +
+    'WHERE telegram_id=?').get(MEMBER).wax_account,failedDestination);
+  delete f.env.beforeWaxDestination;
   const privateProfile = await f.command('/profile');
   assert.match(privateProfile.answer, /Newbie Tagger/);
   assert.match(privateProfile.answer, /abcde\.wam/, 'member can inspect own registered WAX account privately');
   const groupProfile = await f.command('/profile', { chat: 'group' });
-  assert.match(groupProfile.answer, /registered \(pending\)/);
+  assert.match(groupProfile.answer, /destination registered/);
   assert.doesNotMatch(groupProfile.answer, /abcde\.wam/, 'group profile must not reveal the WAX account');
   const ranks = await f.command('/ranks', { chat: 'group' });
   assert.match(ranks.answer, /0 — Newbie Tagger/);
   assert.match(ranks.answer, /95,000 — Graffiti King/);
+});
+
+test('overlapping /rain requests never let slower earlier validation replace newer account',async t=>{
+  const f=fixture(t);
+  let signalOlderStarted;
+  const olderStarted=new Promise(resolve=>{ signalOlderStarted=resolve; });
+  let resumeOlder;
+  const blockOlder=new Promise(resolve=>{ resumeOlder=resolve; });
+  f.env.beforeWaxDestination=async account=>{
+    if(account==='olderaccount'){
+      signalOlderStarted();
+      await blockOlder;
+    }
+    return {ok:true,json:async()=>({account_name:account})};
+  };
+  const oldRequest=f.command('/rain olderaccount');
+  await olderStarted;
+  const newer=await f.command('/rain neweraccount');
+  assert.match(newer.answer,/payout destination REGISTERED: neweraccount/);
+  resumeOlder();
+  const stale=await oldRequest;
+  assert.match(stale.answer,/older \/rain request was ignored/);
+  const row=f.sqlite.prepare('SELECT wax_account,registered_at FROM tag_run_wallets '+
+    'WHERE telegram_id=?').get(MEMBER);
+  assert.equal(row.wax_account,'neweraccount');
+  assert.match(row.registered_at,/^2026-11-02 10:00:00\.[0-9]{15}$/);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_wallets').get().n,1);
 });
 
 test('admin alone changes chain-verified token, weekly amounts and multipliers; draft is review-only', async t => {

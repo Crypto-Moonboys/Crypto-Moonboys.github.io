@@ -25,7 +25,8 @@ const source={
     rulesDigest:HASH,receiptsDigest:HASH
   },
   authority:{
-    walletOwnershipProofValid:true,custodyVerified:true,
+    chainDestinationValidated:true,memberDestinationConsentRecorded:true,
+    custodyVerified:true,
     donationConsentVerified:true,historicalSnapshotFinalized:true,
     assetApproved:true,legalReviewApproved:true,
     separateSpendingApproval:true,spendingLimitUnits:2000000,
@@ -64,15 +65,22 @@ test('all existing funded gates OFF enforce payout block',()=>{
   }
 });
 
-test('a typed account or stolen Telegram ID is not wallet ownership proof',()=>{
-  assert(evaluate({wallet:{verification_status:'pending',verified_at:null}})
-    .blockers.includes('recipient_wallet_ownership_unverified'));
-  assert(evaluate({authority:{walletOwnershipProofValid:false}})
-    .blockers.includes('recipient_wallet_ownership_unverified'));
+test('member-selected destination requires mainnet existence and Telegram consent, not signature',()=>{
+  // DB continues to store pending in the legacy ownership-verification column;
+  // that value does not invalidate a selected receiving account.
+  const registered=evaluate({wallet:{
+    verification_status:'pending',verified_at:null
+  }});
+  assert.equal(registered.blockers.includes('recipient_destination_unconfirmed'),false);
+  assert.equal(registered.allowed,false,'payout execution is still unavailable');
+  assert(evaluate({authority:{chainDestinationValidated:false}})
+    .blockers.includes('recipient_destination_unconfirmed'));
+  assert(evaluate({authority:{memberDestinationConsentRecorded:false}})
+    .blockers.includes('recipient_destination_unconfirmed'));
   assert(evaluate({wallet:{telegram_id:'2222'}})
     .blockers.includes('recipient_identity_mismatch'));
   assert(evaluate({wallet:{wax_account:'wrongaccount'}})
-    .blockers.includes('recipient_wallet_ownership_unverified'));
+    .blockers.includes('recipient_destination_unconfirmed'));
 });
 
 test('invalid wallet or own custody account cannot be a payout recipient',()=>{
