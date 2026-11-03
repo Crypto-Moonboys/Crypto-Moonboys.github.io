@@ -522,7 +522,8 @@ export default {
     // feature flag remains OFF until additive migration 104 is verified.
     // This does not draw, reserve or transfer any WAX tokens.
     if (event?.cron === '10 0 * * *' &&
-        env?.TAG_RUN_V2_POOL_ENABLED === 'true') {
+        (env?.TAG_RUN_V2_POOL_ENABLED === 'true' ||
+         env?.TAG_RUN_V2_OBSERVATION_ENABLED === 'true')) {
       ctx.waitUntil(saveYesterdayParticipation(env).catch((error) => {
         console.warn('[TAG RUN V2] participation snapshot unavailable',
           String(error?.message || error));
