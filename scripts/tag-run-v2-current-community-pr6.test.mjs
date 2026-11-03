@@ -4,7 +4,9 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, existsSync } from 'node:fs';
 import { assetKey, WAX_MAINNET_CHAIN_ID, TIP_ACCOUNT } from
   '../workers/moonboys-api/tag-run/v2-core.js';
-import { setSimulatedPause } from './tag-run-v2-atomic-budget-rehearsal.mjs';
+import {
+  setSimulatedPause, createSimulatedBudget, holdSimulatedIntent
+} from './tag-run-v2-atomic-budget-rehearsal.mjs';
 import {
   CURRENT_COMMUNITY_REHEARSAL_ONLY, CURRENT_COMMUNITY_TRANSFERS_ENABLED,
   bindCurrentTelegramCommunity, previewOneCommunityDailyCaps,
@@ -21,7 +23,11 @@ const budgets=(db,chat=GROUP)=>db.prepare(
   'SELECT asset_key,daily_limit_units,paused FROM '+
   'tag_run_v2_atomic_budget_rehearsal WHERE chat_id=? ORDER BY asset_key'
 ).all(chat);
-function setup(t) {
+function installScope(db) {
+  db.exec(readFileSync(new URL(
+    './fixtures/tag-run-v2-current-community-pr6.sql',import.meta.url),'utf8'));
+}
+function setup(t,{loadCommunityScope=true}={}) {
   const db=new DatabaseSync(':memory:');
   t.after(()=>db.close());
   db.exec('PRAGMA foreign_keys=ON');
@@ -29,8 +35,7 @@ function setup(t) {
   for(const path of [
     '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
     './fixtures/tag-run-v2-accounting-rehearsal.sql',
-    './fixtures/tag-run-v2-atomic-budget-rehearsal.sql',
-    './fixtures/tag-run-v2-current-community-pr6.sql'
+    './fixtures/tag-run-v2-atomic-budget-rehearsal.sql'
   ]) db.exec(readFileSync(new URL(path,import.meta.url),'utf8'));
   const insert=db.prepare(
     'INSERT INTO tag_run_v2_assets '+
@@ -39,6 +44,7 @@ function setup(t) {
   );
   insert.run(A,WAX_MAINNET_CHAIN_ID,'kingsofgraff','LFGK',4);
   insert.run(B,WAX_MAINNET_CHAIN_ID,'eosio.token','WAX',8);
+  if(loadCommunityScope)installScope(db);
   return db;
 }
 function snapshot(db,key,options={}) {
@@ -114,6 +120,68 @@ test('direct SQL cannot enrol PR2 recipients or budgets from another group',t=>{
     'tag_run_v2_payout_intents_rehearsal').get().n,0);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM '+
     'tag_run_v2_atomic_budget_rehearsal').get().n,0);
+});
+
+for(const kind of ['foreign_intent','foreign_budget','foreign_hold','mixed_rows']) {
+  test('binding rejects pre-existing '+kind+' before scope fixture installation',t=>{
+    // Emulate a disposable PR2/PR5 DB populated BEFORE PR6 existed.
+    const db=setup(t,{loadCommunityScope:false});
+    if(kind==='foreign_intent'||kind==='foreign_hold')
+      insertIntent(db,OTHER);
+    if(kind==='foreign_budget'||kind==='foreign_hold'||kind==='mixed_rows')
+      createSimulatedBudget(db,{
+        chatId:OTHER,dayKey:DAY,assetKey:A,
+        dailyLimitUnits:'200',maxTransferUnits:'100',paused:false
+      });
+    if(kind==='foreign_hold')
+      holdSimulatedIntent(db,{intentKey:intent});
+    if(kind==='mixed_rows')insertIntent(db,GROUP);
+    const counts=()=>[
+      db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_payout_intents_rehearsal')
+        .get().n,
+      db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_atomic_budget_rehearsal')
+        .get().n,
+      db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_atomic_holds_rehearsal')
+        .get().n
+    ];
+    const before=counts();
+    installScope(db);
+    assert.throws(()=>bindCurrentTelegramCommunity(db,groupOptions),
+      /current_community_existing_foreign_rows/);
+    assert.throws(()=>db.prepare(
+      'INSERT OR REPLACE INTO tag_run_v2_current_community_scope_rehearsal '+
+      '(scope_id,group_chat_id) VALUES (1,?)').run(GROUP),
+      /current_community_existing_foreign_rows/);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM '+
+      'tag_run_v2_current_community_scope_rehearsal').get().n,0);
+    assert.deepEqual(counts(),before,'rejected binding never deletes existing rows');
+    if(kind==='foreign_hold')assert.equal(
+      db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
+        'WHERE intent_key=?').get(intent).state,'simulation_held');
+    assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+  });
+}
+
+test('populated PR2/PR5 tables for current group bind without reset',t=>{
+  const db=setup(t,{loadCommunityScope:false});
+  insertIntent(db,GROUP);
+  createSimulatedBudget(db,{
+    chatId:GROUP,dayKey:DAY,assetKey:A,
+    dailyLimitUnits:'200',maxTransferUnits:'100',paused:false
+  });
+  holdSimulatedIntent(db,{intentKey:intent});
+  const prior=db.prepare('SELECT allocated_units,outstanding_units,revision '+
+    'FROM tag_run_v2_atomic_budget_rehearsal').get();
+  installScope(db);
+  assert.equal(bindCurrentTelegramCommunity(db,groupOptions).replayed,false);
+  assert.equal(bindCurrentTelegramCommunity(db,groupOptions).replayed,true);
+  const now=db.prepare('SELECT allocated_units,outstanding_units,revision '+
+    'FROM tag_run_v2_atomic_budget_rehearsal').get();
+  assert.deepEqual({...now},{...prior});
+  assert.equal(db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
+    'WHERE intent_key=?').get(intent).state,'simulation_held');
+  assert.throws(()=>insertIntent(db,OTHER),/current_community_mismatch/);
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
 test('single configured group: daily per-token 5% previews remain paused and unfunded',t=>{
