@@ -13,6 +13,9 @@ import {
 import {
   saveYesterdayParticipation, handleTagRunV2Command
 } from '../workers/moonboys-api/tag-run/v2-service.js';
+import {
+  readInboundTipReceipts, quarantineInboundTipReceipts
+} from '../workers/moonboys-api/tag-run/v2-deposits.js';
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const V1 = read('workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql');
@@ -261,4 +264,69 @@ test('V2 bot commands are closed without feature flag and paused by default',asy
     ...opt,name:'drawpreview'
   }),true);
   assert.match(replies.at(-1),/restricted/);
+});
+
+function incomingRpcFixture({irreversible=true,unknownBlock=false}={}){
+  const calls=[];
+  const action={
+    act:{account:'kingsofgraff',name:'transfer',
+      data:{from:'somewallet11',to:TIP_ACCOUNT,
+        quantity:'7.0000 LFGK',memo:'Community tip'}},
+    block_num:123,block_id:'a'.repeat(64),trx_id:'b'.repeat(64),
+    global_sequence:'555',irreversible
+  };
+  if(unknownBlock) action.block_id='not-an-irreversible-hash';
+  const fetchImpl=async url=>{
+    calls.push(url);
+    if(url.endsWith('/get_info'))return {ok:true,json:async()=>({
+      chain_id:WAX_MAINNET_CHAIN_ID,last_irreversible_block_num:12345
+    })};
+    if(url.endsWith('/get_account'))return {ok:true,
+      json:async()=>({account_name:TIP_ACCOUNT})};
+    if(url.includes('/v2/history/get_actions?'))return {
+      ok:true,json:async()=>({actions:[action]})
+    };
+    throw Error('unexpected RPC '+url);
+  };
+  return {fetchImpl,calls};
+}
+test('read-only incoming transfers require WAX LIB and are quarantined',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const rpc=incomingRpcFixture();
+  const first=await readInboundTipReceipts({fetchImpl:rpc.fetchImpl,
+    cryptoImpl:webcrypto});
+  assert.equal(first.receipts.length,1);
+  assert.equal(first.receipts[0].assetKey,
+    assetKey('kingsofgraff','LFGK',4));
+  assert.equal(first.receipts[0].units,'70000');
+  assert.equal(first.receipts[0].status,'quarantined');
+  assert.equal(first.receipts[0].memoDigest.length,64);
+  const recorded=await quarantineInboundTipReceipts(f.env,{
+    fetchImpl:rpc.fetchImpl,cryptoImpl:webcrypto
+  });
+  assert.deepEqual({status:recorded.status,inserted:recorded.inserted},
+    {status:'quarantined_review_only',inserted:1});
+  const repeated=await quarantineInboundTipReceipts(f.env,{
+    fetchImpl:rpc.fetchImpl,cryptoImpl:webcrypto
+  });
+  assert.equal(repeated.inserted,0,'same global sequence can only be ingested once');
+  const deposit=f.sqlite.prepare('SELECT status,units FROM tag_run_v2_deposits').get();
+  assert.deepEqual(deposit,{status:'quarantined',units:'70000'});
+  assert.equal(f.sqlite.prepare('SELECT eligibility FROM tag_run_v2_assets').get().eligibility,
+    'quarantined');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_bundles').get().n,0);
+  assert(rpc.calls.every(url=>!url.includes('push_transaction')));
+});
+test('uncertain or non-irreversible inbound actions cannot create donations',async()=>{
+  const base=await readInboundTipReceipts({
+    fetchImpl:incomingRpcFixture({irreversible:false}).fetchImpl,
+    cryptoImpl:webcrypto
+  });
+  assert.equal(base.receipts.length,0);
+  const corrupt=await readInboundTipReceipts({
+    fetchImpl:incomingRpcFixture({unknownBlock:true}).fetchImpl,
+    cryptoImpl:webcrypto
+  });
+  assert.equal(corrupt.receipts.length,0);
 });
