@@ -162,14 +162,17 @@ export async function handleV2ObservationCommand(env, {
   await poolConfig(env.DB); // keep the funded pool paused even during observation
   const day=lastUtcDay(nowMs);
   if (name==='poolstate') {
-    const [cursor,assetCount,participationCount,receivedToday] = await Promise.all([
+    const currentDay = new Date(nowMs).toISOString().slice(0,10);
+    const [cursor,assetCount,participationCount,receivedCompleted,receivedToday] = await Promise.all([
       env.DB.prepare('SELECT last_completed_day_key FROM '+
         'tag_run_v2_capture_cursors WHERE chat_id=?').bind(chatId).first(),
       env.DB.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_assets').first(),
       env.DB.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_participation '+
         'WHERE chat_id=?').bind(chatId).first(),
       env.DB.prepare('SELECT COUNT(*) AS n FROM tag_run_messages '+
-        'WHERE chat_id=? AND day_key=?').bind(chatId,day).first()
+        'WHERE chat_id=? AND day_key=?').bind(chatId,day).first(),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM tag_run_messages '+
+        'WHERE chat_id=? AND day_key=?').bind(chatId,currentDay).first()
     ]);
     if (cursor!==null && (!cursor || !validUtcDay(cursor.last_completed_day_key))) {
       throw new Error('observation_capture_cursor_unavailable');
@@ -178,7 +181,8 @@ export async function handleV2ObservationCommand(env, {
       '\nPool: PAUSED · Funded draws: OFF · Transfers: OFF'+
       '\nRecorded asset identities: '+integerCount(assetCount,'n','asset_count')+
       '\nReal V2 participation rows: '+integerCount(participationCount,'n','participation_count')+
-      '\nV1 scored messages for '+day+': '+integerCount(receivedToday,'n','v1_receipts')+
+      '\nV1 scored messages for '+day+': '+integerCount(receivedCompleted,'n','v1_receipts')+
+      '\nV1 scored today ('+currentDay+' UTC): '+integerCount(receivedToday,'n','v1_today_receipts')+
       '\nCapture cursor: '+(cursor?.last_completed_day_key||'NOT STARTED')+
       '\nBackfill through '+day+': '+(cursor?.last_completed_day_key>=day?'COMPLETE':'PENDING')+
       '\nNo custody verification or reward commitments.');
