@@ -127,21 +127,19 @@ export function markSimulatedUnknown(db,{intentKey}={}) {
     const floor=units(b.unknown_floor_units),amount=units(h.amount_units);
     const outstanding=units(b.outstanding_units);
     if(floor+amount>outstanding)fail('incident_floor_exceeds_outstanding');
-    // First lock the unresolved amount as a monotone, non-refundable floor.
-    // All changes are in one BEGIN IMMEDIATE transaction: if marking the
-    // hold unknown fails, the floor adjustment is rolled back as well.
-    const locked=db.prepare('UPDATE tag_run_v2_atomic_budget_rehearsal '+
-      'SET unknown_floor_units=?,revision=revision+1 '+
-      'WHERE chat_id=? AND day_key=? AND asset_key=? AND revision=? '+
-      'AND unknown_floor_units=? AND outstanding_units=?').run(
-      (floor+amount).toString(),...scope(h),b.revision,
-      b.unknown_floor_units,b.outstanding_units
-    );
-    if(locked.changes!==1)fail('concurrent_budget_change');
+    // SQL AFTER UPDATE owns the non-refundable incident-floor increase.
+    // The same trigger fires for a direct SQL hold-state UPDATE, so callers
+    // cannot bypass the floor by skipping this Node helper.
     const result=db.prepare("UPDATE tag_run_v2_atomic_holds_rehearsal "+
       "SET state='simulation_transfer_unknown' "+
       "WHERE intent_key=? AND state='simulation_held'").run(intentKey);
     if(result.changes!==1)fail('concurrent_hold_change');
+    const recorded=db.prepare(budgetSql).get(...scope(h));
+    if(!recorded ||
+       units(recorded.unknown_floor_units)!==floor+amount ||
+       units(recorded.outstanding_units)!==outstanding ||
+       recorded.revision!==b.revision+1)
+      fail('unknown_floor_reconciliation_failed');
     return Object.freeze({...stateRow(db.prepare(holdSql).get(intentKey)),
       replayed:false});
   });
