@@ -42,12 +42,14 @@ function setup(t){
 // Never infer replay order from event ID or the second-resolution timestamp.
 const insertSql='INSERT INTO tag_run_v2_lifecycle_events_rehearsal '+
   '(append_seq,event_id,intent_key,event_kind,amount_units,destination_account,'+
-  'chain_tx_id,chain_action_sequence,evidence_digest) '+
+  'chain_tx_id,chain_action_sequence,chain_block_id,chain_block_num,'+
+  'evidence_digest) '+
   'VALUES ((SELECT COALESCE(MAX(append_seq),0)+1 FROM '+
-  'tag_run_v2_lifecycle_events_rehearsal),?,?,?,?,?,?,?,?)';
+  'tag_run_v2_lifecycle_events_rehearsal),?,?,?,?,?,?,?,?,?,?)';
 const add=(db,id,intent,type,amount='100',account='gkniftyheads',
-  tx=null,sequence=null,evidence=null)=>db.prepare(insertSql)
-  .run(id,intent,type,amount,account,tx,sequence,evidence);
+  tx=null,sequence=null,evidence=null,blockId=null,blockNum=null)=>
+  db.prepare(insertSql).run(id,intent,type,amount,account,
+    tx,sequence,blockId,blockNum,evidence);
 
 test('offline SQL cannot enter the production D1 migration runner',()=>{
   assert(!existsSync(new URL(
@@ -65,7 +67,7 @@ test('SQLite rehearsal journal accepts only immutable simulated events',t=>{
   add(db,'1'.repeat(64),FIRST,'simulate_hold');
   add(db,'2'.repeat(64),FIRST,'simulate_unknown');
   add(db,'3'.repeat(64),FIRST,'simulate_reconcile',
-    '100','gkniftyheads',TX,'12345',BLOCK);
+    '100','gkniftyheads',TX,'12345',BLOCK,BLOCK,1234567);
   const rows=db.prepare('SELECT event_kind,status FROM '+
     'tag_run_v2_lifecycle_events_rehearsal ORDER BY event_id').all();
   assert.deepEqual(rows.map(x=>x.event_kind),[
@@ -227,12 +229,12 @@ test('frozen destination and amount cannot be rewritten by another event',t=>{
 test('two intents cannot reuse the same purported chain action with REPLACE',t=>{
   const db=setup(t);
   add(db,'1'.repeat(64),FIRST,'simulate_reconcile','100',
-    'gkniftyheads',TX,'12345',BLOCK);
+    'gkniftyheads',TX,'12345',BLOCK,BLOCK,1234567);
   assert.throws(()=>add(db,'2'.repeat(64),SECOND,'simulate_reconcile','100',
-    'gkniftyheads',TX,'12345',BLOCK),/immutable_lifecycle_event/);
+    'gkniftyheads',TX,'12345',BLOCK,BLOCK,1234567),/immutable_lifecycle_event/);
   const replace=db.prepare(insertSql.replace('INSERT INTO','INSERT OR REPLACE INTO'));
   assert.throws(()=>replace.run('3'.repeat(64),SECOND,'simulate_reconcile',
-    '100','gkniftyheads',TX,'12345',BLOCK),/immutable_lifecycle_event/);
+    '100','gkniftyheads',TX,'12345',BLOCK,1234567,BLOCK),/immutable_lifecycle_event/);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_lifecycle_events_rehearsal')
     .get().n,1);
 });
@@ -241,8 +243,18 @@ test('NULL evidence, invalid sequences and a paid status are forbidden',t=>{
   const db=setup(t);
   for(const bad of [null,'0','01','1a','9'.repeat(26)]){
     assert.throws(()=>add(db,'1'.repeat(64),FIRST,'simulate_reconcile','100',
-      'gkniftyheads',TX,bad,BLOCK),/CHECK|NOT NULL/);
+      'gkniftyheads',TX,bad,BLOCK,BLOCK,1234567),/CHECK|NOT NULL/);
   }
+  for(const [blockId,blockNum] of [
+    [null,1234567],[BLOCK,null],['bad',1234567],
+    [BLOCK,0],[BLOCK,-1],[BLOCK,1.5],
+    [BLOCK,'not-a-number'],[BLOCK,9007199254740992]
+  ]){
+    assert.throws(()=>add(db,'1'.repeat(64),FIRST,'simulate_reconcile','100',
+      'gkniftyheads',TX,'12345',BLOCK,blockId,blockNum),/CHECK|NOT NULL/);
+  }
+  assert.throws(()=>add(db,'1'.repeat(64),FIRST,'simulate_hold','100',
+    'gkniftyheads',null,null,null,BLOCK,1234567),/CHECK/);
   const invalid=db.prepare('INSERT INTO tag_run_v2_lifecycle_events_rehearsal '+
     '(append_seq,event_id,intent_key,event_kind,amount_units,destination_account,status) '+
     'VALUES ((SELECT COALESCE(MAX(append_seq),0)+1 FROM '+
