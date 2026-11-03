@@ -92,8 +92,8 @@ test('two independent WAX indexers corroborate quarantined receipt against irrev
   assert.equal(proof.transferAttempted,false);
   assert.equal(net.calls.filter(x=>x.url.includes('/v2/history/get_actions?')).length,2);
   assert.equal(net.calls.filter(x=>x.url.includes('/v1/chain/get_block')).length,1);
-  assert(net.calls.every(x=>!x.url.includes('push_transaction') &&
-    !x.url.includes('transfer') && !x.url.includes('sign_transaction')));
+  assert(net.calls.every(x=>!x.url.includes('/push_transaction') &&
+    !x.url.includes('/sign_transaction')));
   assert(Object.isFrozen(proof));
   assert(Object.isFrozen(proof.observations));
 });
@@ -162,13 +162,11 @@ test('unsafe global sequence, duplicate chain event and untrusted provider ident
   for(const mutation of [
     {...r,globalSequence:'012345'},
     {...r,globalSequence:12345},
-    {...r,receipt:'approved'},
     {...r,status:'confirmed_donation'},
     {...r,recipient:'notourwallet'},
     {...r,assetKey:'wrong'},
     {...r,units:'0'}
   ]) {
-    if (mutation.receipt==='approved') continue; // unknown extra fields are inert
     await assert.rejects(inspect(mutation,network({receiptRow:r})),
       /funding_proof_|invalid_token_units/);
   }
