@@ -1,8 +1,9 @@
 # TAG RUN V2 — PR4 offline payout-ledger lifecycle and reconciliation rehearsal
 
-This PR is stacked on #1710 while GitHub still reports #1710 as open. It should
-target `main` **only after** #1710 is merged and the branch is rebased or its
-base is retargeted. Do not merge PR4 before its dependency.
+Dependency #1710 has merged into `main`. PR #1711 has been rebuilt as
+one clean commit directly on the merged `main` tree, preserving only its
+intended ledger lifecycle, offline fixtures, tests, CI and documentation
+changes. The historical dependency branch is no longer the PR base.
 
 ## Purpose
 
