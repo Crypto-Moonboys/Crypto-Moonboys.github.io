@@ -709,3 +709,43 @@ test('draw preview blocks before, during and after failed historical catch-up',a
   assert.match(messages.at(-1),/No independently verified token snapshots/);
   assert.doesNotMatch(messages.at(-1),/DRAW PREVIEW BLOCKED/);
 });
+
+
+test('public and admin V2 read failures use existing Telegram unavailable reply',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  f.env.TELEGRAM_BOT_TOKEN='123456:unit-test-only';
+  f.env.TELEGRAM_BOT_USERNAME='WIKICOMSBOT';
+  f.env.ADMIN_TELEGRAM_IDS='1111';
+  const original=f.DB.prepare.bind(f.DB);
+  for(const [command,fragment] of [
+    ['/pool','SELECT a.token_symbol,a.token_contract,s.spendable_units'],
+    ['/rewards','SELECT a.token_symbol,a.token_contract,s.spendable_units'],
+    ['/poolstatus','SELECT asset_key FROM tag_run_v2_assets'],
+    ['/drawaudit','SELECT day_key,status,created_at FROM tag_run_v2_draws']
+  ]){
+    f.env.DB={prepare(sql){
+      if(sql.startsWith(fragment)){
+        const failed={success:false,results:[]};
+        if(command==='/poolstatus')return {async all(){return failed;}};
+        return {bind(){return {async all(){return failed;}};}};
+      }
+      return original(sql);
+    }};
+    const posted=[];
+    const update={message:{
+      message_id:1,chat:{id:1111,type:'private'},
+      from:{id:1111,first_name:'Admin'},text:command
+    }};
+    assert.equal(await handleTagRunCommand(update,f.env,{
+      fetchImpl:async (url,options)=>{
+        assert.match(url,/\/sendMessage$/);
+        posted.push(JSON.parse(options.body));
+        return {ok:true};
+      }
+    }),true);
+    assert.equal(posted.length,1,command+' must provide one fallback');
+    assert.match(posted[0].text,/TAG RUN is temporarily unavailable/);
+    assert.doesNotMatch(posted[0].text,/No independently verified|No review-only draw/);
+  }
+});
