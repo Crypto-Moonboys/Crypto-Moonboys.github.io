@@ -280,15 +280,38 @@ export async function handleTagRunCommand(update, env, options = {}) {
         await send('Invalid WAX destination. Nothing was registered.');
         return true;
       }
+      // Telegram assigns increasing message IDs within the same private chat.
+      // Encode the message's UTC second plus its numeric ID in the fractional
+      // part of registered_at. This remains a sortable UTC timestamp while
+      // preserving ordering even when two requests share the same second.
+      // Older existing CURRENT_TIMESTAMP rows sort before newer registrations.
+      const messageUnix = Number(message.date);
+      const messageId = Number(message.message_id);
+      if (!Number.isSafeInteger(messageUnix) || messageUnix <= 0 ||
+          !Number.isSafeInteger(messageId) || messageId <= 0 ||
+          messageId > 999999999999999) {
+        throw new Error('wax_destination_message_order_unavailable');
+      }
+      const registeredAt = new Date(messageUnix * 1000).toISOString()
+        .slice(0, 19).replace('T', ' ') + '.' +
+        String(messageId).padStart(15, '0');
+      // Atomic DB compare-and-swap: network validation may finish out of order,
+      // but the earlier Telegram message can NEVER replace a later selection.
       const write = await env.DB.prepare('INSERT INTO tag_run_wallets ' +
-        '(telegram_id,wax_account,verification_status,verified_at) VALUES (?,?,' +
-        "'pending',NULL) ON CONFLICT(telegram_id) DO UPDATE SET " +
+        '(telegram_id,wax_account,verification_status,verified_at,registered_at) ' +
+        "VALUES (?,?,'pending',NULL,?) ON CONFLICT(telegram_id) DO UPDATE SET " +
         "wax_account=excluded.wax_account, verification_status='pending', " +
-        'verified_at=NULL,registered_at=CURRENT_TIMESTAMP')
-        .bind(telegramId, args).run();
+        'verified_at=NULL,registered_at=excluded.registered_at ' +
+        'WHERE tag_run_wallets.registered_at < excluded.registered_at')
+        .bind(telegramId, args, registeredAt).run();
       if (write?.success === false || !Number.isSafeInteger(write?.meta?.changes) ||
-          write.meta.changes < 1) {
+          write.meta.changes < 0) {
         throw new Error('wax_destination_registration_write_failed');
+      }
+      if (write.meta.changes === 0) {
+        await send('This older /rain request was ignored because a newer ' +
+          'wallet destination was already registered. Use /rainstatus to check.');
+        return true;
       }
       await send('WAX payout destination REGISTERED: ' + args +
         '\nAccount exists on WAX mainnet. This does not prove account ownership, ' +
