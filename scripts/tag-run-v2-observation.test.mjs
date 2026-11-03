@@ -11,6 +11,8 @@ import { handleTagRunCommand } from
   '../workers/moonboys-api/tag-run/handler.js';
 import { saveYesterdayParticipation } from
   '../workers/moonboys-api/tag-run/v2-service.js';
+import { WAX_HYPERION, WAX_HYPERION_FALLBACKS } from
+  '../workers/moonboys-api/tag-run/v2-chain.js';
 
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const GROUP='-1001234567890', MEMBER='1111';
@@ -365,4 +367,79 @@ test('live today Street Cred appears immediately without premature historical we
   assert.match(backfilled.messages[0],/Real member-day receipts inserted: 0/);
   assert.equal(count(f,'tag_run_v2_participation'),0,
     'an unfinished current UTC day is not backfilled as historical participation');
+});
+
+test('live inventory uses an alternate Hyperion when the primary returns non-2xx',async t=>{
+  const f=fixture(t),network=rpc();
+  const fetchImpl=(url,options)=>{
+    if(url.startsWith(WAX_HYPERION+'/v2/state/get_tokens')) {
+      return Promise.resolve({ok:false,status:503});
+    }
+    return network.fetchImpl(url,options);
+  };
+  const observed=await command(f,'poolobserve',{fetchImpl});
+  assert.match(observed.messages[0],/LIVE READ-ONLY INVENTORY/);
+  assert.equal(count(f,'tag_run_v2_assets'),3);
+  assert.equal(network.balances.length,2);
+  assert(network.calls.some(x=>x.url.startsWith(WAX_HYPERION_FALLBACKS[0]+
+    '/v2/state/get_tokens')));
+  assert.equal(count(f,'tag_run_v2_snapshots'),0);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+});
+
+test('transport failure on a later inventory page restarts from zero, not a mixed page',async t=>{
+  const f=fixture(t),tokens=Array.from({length:51},(_,i)=>({
+    contract:'kingsofgraff',
+    symbol:'C'+String.fromCharCode(65+Math.floor(i/26))+
+      String.fromCharCode(65+i%26),precision:4,amount:0
+  }));
+  const network=rpc(tokens);
+  const calls=[];
+  const fetchImpl=(url,options)=>{
+    if(url.includes('/v2/state/get_tokens?')){
+      calls.push(url);
+      if(url.startsWith(WAX_HYPERION+'/') &&
+          new URL(url).searchParams.get('skip')==='50') {
+        return Promise.resolve({ok:false,status:503});
+      }
+    }
+    return network.fetchImpl(url,options);
+  };
+  await command(f,'poolobserve',{fetchImpl});
+  assert.equal(count(f,'tag_run_v2_assets'),51);
+  assert(calls.some(x=>x.startsWith(WAX_HYPERION_FALLBACKS[0]+'/') &&
+    new URL(x).searchParams.get('skip')==='0'));
+  assert(calls.some(x=>x.startsWith(WAX_HYPERION_FALLBACKS[0]+'/') &&
+    new URL(x).searchParams.get('skip')==='50'));
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+});
+
+test('all inventory providers unavailable leaves all assets and funded ledgers untouched',async t=>{
+  const f=fixture(t),network=rpc();
+  const fetchImpl=(url,options)=>{
+    if(url.includes('/v2/state/get_tokens?')) throw new TypeError('fetch failed');
+    return network.fetchImpl(url,options);
+  };
+  await assert.rejects(command(f,'poolobserve',{fetchImpl}),
+    /wax_inventory_unavailable/);
+  assert.equal(count(f,'tag_run_v2_assets'),0);
+  assert.equal(count(f,'tag_run_v2_audit'),0);
+  assert.equal(count(f,'tag_run_v2_draws'),0);
+  assert.equal(count(f,'tag_run_v2_bundles'),0);
+});
+
+test('malformed successful primary inventory never silently falls back',async t=>{
+  const f=fixture(t),network=rpc(),urls=[];
+  const fetchImpl=(url,options)=>{
+    if(url.includes('/v2/state/get_tokens?')){
+      urls.push(url);
+      return Promise.resolve({ok:true,json:async()=>({account:TIP_ACCOUNT,tokens:'invalid'})});
+    }
+    return network.fetchImpl(url,options);
+  };
+  await assert.rejects(command(f,'poolobserve',{fetchImpl}),
+    /wax_inventory_incomplete_or_excessive/);
+  assert.equal(urls.length,1);
+  assert(urls[0].startsWith(WAX_HYPERION+'/'));
+  assert.equal(count(f,'tag_run_v2_assets'),0);
 });
