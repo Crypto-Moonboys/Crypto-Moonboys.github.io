@@ -179,7 +179,7 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
   assert.throws(()=>evidence.run('d'.repeat(64),KEY,WAX_MAINNET_CHAIN_ID,
     'seq:1',TX,100,BLOCK,'gkniftyheads',TIP_ACCOUNT,'20',HASH,BLOCK),
     /immutable_rehearsal_funding/);
-  const evidenceReplace=db.prepare(evidence.sourceSQL || `INSERT OR REPLACE INTO tag_run_v2_funding_evidence_rehearsal
+  const evidenceReplace=db.prepare(`INSERT OR REPLACE INTO tag_run_v2_funding_evidence_rehearsal
     (evidence_id,asset_key,chain_id,global_action_seq,transaction_id,
      irreversible_block_num,block_id,donor_account,recipient_account,units,
      donor_intent_digest,custody_review_digest)
