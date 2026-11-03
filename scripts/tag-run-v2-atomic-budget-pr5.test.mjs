@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Worker } from 'node:worker_threads';
 import { assetKey, TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID } from
   '../workers/moonboys-api/tag-run/v2-core.js';
 import {
@@ -17,9 +20,9 @@ const budget=(daily='200',max='100')=>({
   chatId:CHAT,dayKey:DAY,assetKey:KEY,
   dailyLimitUnits:daily,maxTransferUnits:max,paused:false
 });
-function fixture(t,amounts=['100','100','100']){
-  const db=new DatabaseSync(':memory:');
-  t.after(()=>db.close());
+function fixture(t,amounts=['100','100','100'],dbPath=':memory:',autoClose=true){
+  const db=new DatabaseSync(dbPath);
+  if(autoClose)t.after(()=>db.close());
   db.exec('PRAGMA foreign_keys=ON');
   db.exec('PRAGMA recursive_triggers=OFF');
   for(const name of [
@@ -279,6 +282,88 @@ test('cancel a known hold without releasing a different unresolved incident',t=>
     /atomic_rehearsal_budget_immutable/);
   assert.equal(counters(db).outstandingUnits,'100');
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
+test('independent worker connections serialize last allocation and idempotent retry',async t=>{
+  const dir=mkdtempSync(join(tmpdir(),'tag-run-pr5-'));
+  const file=join(dir,'atomic-rehearsal.sqlite');
+  const db=fixture(t,['100','100','100'],file,false);
+  t.after(()=>{
+    db.close();
+    rmSync(dir,{recursive:true,force:true});
+  });
+  createSimulatedBudget(db,budget('100','100'));
+  const gate=new SharedArrayBuffer(8);
+  const flags=new Int32Array(gate);
+  // Independent Node workers each own a SQLite connection to one shared
+  // temporary file; a barrier triggers both BEGIN IMMEDIATE attempts together.
+  const workerScript=[
+    "const {parentPort,workerData}=require('node:worker_threads');",
+    "const {DatabaseSync}=require('node:sqlite');",
+    "(async()=>{",
+    " const db=new DatabaseSync(workerData.file);",
+    " try {",
+    "  db.exec('PRAGMA foreign_keys=ON');",
+    "  db.exec('PRAGMA busy_timeout=5000');",
+    "  const {holdSimulatedIntent}=await import(workerData.moduleUrl);",
+    "  const gate=new Int32Array(workerData.gate);",
+    "  Atomics.add(gate,0,1);",
+    "  Atomics.wait(gate,1,0,5000);",
+    "  try {",
+    "   const result=holdSimulatedIntent(db,{intentKey:workerData.intentKey});",
+    "   parentPort.postMessage({ok:true,intentKey:workerData.intentKey,replayed:result.replayed,state:result.state});",
+    "  } catch(error) {",
+    "   parentPort.postMessage({ok:false,intentKey:workerData.intentKey,error:String(error)});",
+    "  }",
+    " } finally { db.close(); }",
+    "})().catch(error=>parentPort.postMessage({fatal:String(error)}));"
+  ].join('\n');
+  const moduleUrl=new URL('./tag-run-v2-atomic-budget-rehearsal.mjs',
+    import.meta.url).href;
+  const pending=ids.slice(0,2).map(intentKey=>{
+    const w=new Worker(workerScript,{eval:true,workerData:{
+      file,intentKey,moduleUrl,gate
+    }});
+    return {
+      outcome:new Promise((resolve,reject)=>{
+        w.once('message',resolve);
+        w.once('error',reject);
+      }),
+      exit:new Promise((resolve,reject)=>{
+        w.once('exit',code=>code===0?resolve():reject(
+          new Error('sqlite-worker-exit-'+code)));
+      })
+    };
+  });
+  try {
+    for(let i=0;Atomics.load(flags,0)<2&&i<500;i++){
+      await new Promise(resolve=>setTimeout(resolve,10));
+    }
+    assert.equal(Atomics.load(flags,0),2,
+      'both independent worker connections reached the contention barrier');
+    Atomics.store(flags,1,1);
+    Atomics.notify(flags,1,2);
+    const outcomes=await Promise.all(pending.map(p=>p.outcome));
+    await Promise.all(pending.map(p=>p.exit));
+    assert.equal(outcomes.filter(x=>x.ok).length,1,JSON.stringify(outcomes));
+    const winner=outcomes.find(x=>x.ok);
+    const loser=outcomes.find(x=>!x.ok);
+    assert.equal(winner.state,'simulation_held');
+    assert.match(loser.error,/atomic_rehearsal_daily_limit/);
+    assert.equal(holdSimulatedIntent(db,{intentKey:winner.intentKey}).replayed,true);
+    assert.throws(()=>holdSimulatedIntent(db,{intentKey:loser.intentKey}),
+      /atomic_rehearsal_daily_limit/);
+    const report=counters(db);
+    assert.equal(report.allocatedUnits,'100');
+    assert.equal(report.outstandingUnits,'100');
+    assert.equal(report.availableCapUnits,'0');
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM '+
+      'tag_run_v2_atomic_holds_rehearsal').get().n,1);
+    assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+  } finally {
+    Atomics.store(flags,1,1);
+    Atomics.notify(flags,1,2);
+  }
 });
 
 test('fail-closed on invalid identities, cap shapes and missing budgets',t=>{
