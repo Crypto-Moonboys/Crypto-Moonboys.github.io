@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  parseOwnerCommand, validateDeployedPayoutSettings,
+  parseOwnerCommand, validateDeployedPayoutSettings, makeD1RestAdapter,
+  makeAnchorConsoleSigner, runOwnerPayout,
   assertAnchorTransfer, anchorResultTransactionId
 } from './tag-run-v2-owner-payout.mjs';
 import { WAX_MAINNET_CHAIN_ID, TIP_ACCOUNT, assetKey } from
@@ -77,4 +78,97 @@ test('a broadcast transaction ID never means irreversible confirmation',()=>{
   assert.equal(anchorResultTransactionId({response:{transaction_id:ID}}),ID);
   assert.equal(anchorResultTransactionId({processed:{id:'unverified'}}),null);
   assert.equal(anchorResultTransactionId({}),null);
+});
+
+
+test('D1 HTTP adapter binds values and checks successful query envelopes',async()=>{
+  let body;
+  const db=makeD1RestAdapter({accountId:'a'.repeat(32),
+    token:'fixture-auth-token',
+    fetchImpl:async(_url,opts)=>{
+      body=JSON.parse(opts.body);
+      return {ok:true,json:async()=>({success:true,result:[
+        {success:true,results:[{intent_key:ID}],meta:{changes:0}}
+      ]})};
+    }
+  });
+  const row=await db.prepare('SELECT * FROM intents WHERE intent_key=?')
+    .bind(ID).first();
+  assert.equal(row.intent_key,ID);
+  assert.deepEqual(body.params,[ID]);
+  assert.equal(body.sql,'SELECT * FROM intents WHERE intent_key=?');
+});
+
+test('atomic remote D1 batch is one request with two statements',async()=>{
+  let body;
+  const db=makeD1RestAdapter({accountId:'a'.repeat(32),
+    token:'fixture-auth-token',
+    fetchImpl:async(_url,opts)=>{
+      body=JSON.parse(opts.body);
+      return {ok:true,json:async()=>({success:true,result:[
+        {success:true,results:[],meta:{changes:1}},
+        {success:true,results:[],meta:{changes:1}}
+      ]})};
+    }
+  });
+  await db.batch([
+    db.prepare('UPDATE caps SET spent=?').bind('100'),
+    db.prepare('INSERT INTO intents VALUES(?)').bind(ID)
+  ]);
+  assert.equal(body.batch.length,2);
+  assert.deepEqual(body.batch[1].params,[ID]);
+});
+
+test('Anchor adapter signs and broadcasts exactly one immutable action',async()=>{
+  let submitted,options,construct;
+  class Link{
+    constructor(value){construct=value;}
+    async transact(value,opts){
+      submitted=value;options=opts;
+      return {response:{transaction_id:ID}};
+    }
+  }
+  class Transport{}
+  const signer=await makeAnchorConsoleSigner({
+    importModule:async name=>name==='anchor-link'
+      ?{default:Link}:{default:Transport},
+    fetchImpl:async url=>({ok:true,json:async()=>url.endsWith('get_info')
+      ?{chain_id:WAX_MAINNET_CHAIN_ID}
+      :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'tagrain'}]}})
+  });
+  const receipt=await signer(request);
+  assert.deepEqual(receipt,{transactionId:ID});
+  assert.equal(construct.chains[0].chainId,WAX_MAINNET_CHAIN_ID);
+  assert.deepEqual(submitted.actions,[request.action]);
+  assert.deepEqual(options,{broadcast:true,noModify:true});
+});
+
+test('Anchor rejects missing delegated permission before signing',async()=>{
+  let created=false;
+  class Link{constructor(){created=true;}}
+  await assert.rejects(makeAnchorConsoleSigner({
+    importModule:async name=>name==='anchor-link'
+      ?{default:Link}:{default:class Transport{}},
+    fetchImpl:async url=>({ok:true,json:async()=>url.endsWith('get_info')
+      ?{chain_id:WAX_MAINNET_CHAIN_ID}
+      :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'active'}]}})
+  }),/restricted_wax_permission_missing/);
+  assert.equal(created,false);
+});
+
+test('missing approval flags prevent any payout ledger mutation',async()=>{
+  let calls=0;
+  const vars={CLOUDFLARE_API_TOKEN:'fixture-auth-token',
+    CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),
+    TAG_RUN_OPERATOR_GROUP_ID:'-1001234567890'};
+  await assert.rejects(runOwnerPayout(['send','--intent',ID,'--live'],{
+    vars,fetchImpl:async()=>{
+      calls++;
+      return {ok:true,json:async()=>({success:true,
+        result:makeSettings({TAG_RUN_V2_PAYOUTS_ENABLED:'false'})})};
+    },
+    confirmation:async()=>{throw Error('prompt should never run');},
+    signerFactory:async()=>{throw Error('signer should never run');}
+  }),/deployed_release_not_authorized/);
+  assert.equal(calls,1);
 });
