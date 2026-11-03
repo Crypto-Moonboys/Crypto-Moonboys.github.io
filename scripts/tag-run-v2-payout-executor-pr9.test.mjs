@@ -51,7 +51,9 @@ function fixture(t,{daily='500',available='10000',donation=true,
   sqlite.prepare('INSERT INTO tag_run_v2_draws '+
     '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
     'snapshots_digest) VALUES (?,?,?,?,?,?,?)'
-  ).run(GROUP,DAY,'preview_only',SNAP,RULES,RULES,SNAP);
+  ).run(GROUP,DAY,'reviewed',SNAP,RULES,RULES,SNAP);
+  sqlite.prepare('UPDATE tag_run_v2_draws SET reviewed_by=? '+
+    'WHERE chat_id=? AND day_key=?').run('independent-reviewer',GROUP,DAY);
   for(let i=0;i<3;i++){
     sqlite.prepare('INSERT INTO tag_run_v2_bundles '+
       '(chat_id,day_key,asset_key,bundle_index,telegram_id,'+
@@ -179,6 +181,18 @@ test('approved daily cap starts paused; cannot accept payouts without release',a
   await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
     /v2_payout_cap_or_allocation_not_approved/);
   assert.equal(f.intents().length,0);
+});
+
+test('payout cannot reserve an unreviewed or rejected draw',async t=>{
+  const f=fixture(t);await openCap(f);
+  f.sqlite.prepare("UPDATE tag_run_v2_draws SET status='preview_only'").run();
+  await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
+    /v2_payout_cap_or_allocation_not_approved/);
+  assert.equal(f.intents().length,0);
+  f.sqlite.prepare("UPDATE tag_run_v2_draws SET status='rejected'").run();
+  await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
+    /v2_payout_cap_or_allocation_not_approved/);
+  assert.equal(f.cap().committed_units,'0');
 });
 
 test('unique cap reservations commit once and freeze member destination',async t=>{
