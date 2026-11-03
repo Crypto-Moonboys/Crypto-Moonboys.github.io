@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { webcrypto } from 'node:crypto';
 import { previewCommunityDraw, assetKey, TIP_ACCOUNT,
@@ -108,19 +108,79 @@ function fixture(t){
   // protect rows replaced by INSERT OR REPLACE when recursion is disabled.
   db.exec('PRAGMA recursive_triggers=OFF');
   assert.equal(db.prepare('PRAGMA recursive_triggers').get().recursive_triggers,0);
-  for(const filename of [
-    '104_tag_run_v2_community_token_pot.sql',
-    '105_tag_run_v2_accounting_rehearsal.sql'
-  ]){
-    db.exec(readFileSync(new URL('../workers/moonboys-api/migrations/'+filename,
-      import.meta.url),'utf8'));
-  }
+  db.exec(readFileSync(new URL(
+    '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
+    import.meta.url),'utf8'));
+  db.exec(readFileSync(new URL(
+    './fixtures/tag-run-v2-accounting-rehearsal.sql',import.meta.url),'utf8'));
   db.prepare(`INSERT INTO tag_run_v2_assets
     (asset_key,chain_id,token_contract,token_symbol,token_precision)
     VALUES(?,?,?,?,?)`).run(KEY,WAX_MAINNET_CHAIN_ID,
       'kingsofgraff','LFGK',4);
   return db;
 }
+
+test('rehearsal SQL never enters Wrangler production migrations_dir',()=>{
+  const prodSql = new URL(
+    '../workers/moonboys-api/migrations/105_tag_run_v2_accounting_rehearsal.sql',
+    import.meta.url);
+  const offlineSql = new URL('./fixtures/tag-run-v2-accounting-rehearsal.sql',import.meta.url);
+  const wrangler = readFileSync(
+    new URL('../workers/moonboys-api/wrangler.toml',import.meta.url),'utf8');
+  assert.match(wrangler,/migrations_dir = "migrations"/);
+  assert.equal(existsSync(prodSql),false,
+    'offline-only SQL must never be picked up by wrangler d1 migrations apply');
+  assert.equal(existsSync(offlineSql),true);
+});
+
+test('SQLite requires non-NULL immutable digest identifiers on all three rehearsal tables',t=>{
+  const db=fixture(t);
+  // SQLite historically permits NULL in a TEXT PRIMARY KEY unless it is
+  // explicitly NOT NULL. Check both missing and explicit NULL identifiers
+  // with every other column valid; never create an unaddressable record.
+  const examples=[
+    {
+      table:'tag_run_v2_funding_evidence_rehearsal',id:'evidence_id',
+      columns:['asset_key','chain_id','global_action_seq','transaction_id',
+        'irreversible_block_num','block_id','donor_account','recipient_account',
+        'units','donor_intent_digest','custody_review_digest'],
+      values:[KEY,WAX_MAINNET_CHAIN_ID,'seq:missing-id',TX,100,BLOCK,
+        'gkniftyheads',TIP_ACCOUNT,'20',HASH,BLOCK]
+    },
+    {
+      table:'tag_run_v2_snapshot_evidence_rehearsal',id:'snapshot_id',
+      columns:['chat_id','day_key','asset_key','irreversible_block_num',
+        'block_id','onchain_units','reserved_units','excluded_units',
+        'available_units','five_percent_units','evidence_digest'],
+      values:[CHAT,DAY,KEY,100,BLOCK,'100000','20000','40000',
+        '40000','2000',HASH]
+    },
+    {
+      table:'tag_run_v2_payout_intents_rehearsal',id:'intent_key',
+      columns:['chat_id','day_key','asset_key','bundle_index','telegram_id',
+        'destination_account','destination_digest','amount_units',
+        'snapshot_digest','source_receipts_digest'],
+      values:[CHAT,DAY,KEY,0,'1111','gkniftyheads',HASH,'100',HASH,HASH]
+    }
+  ];
+  for(const {table,id,columns,values} of examples){
+    const placeholders=columns.map(()=>'?').join(',');
+    const withoutId=db.prepare(
+      'INSERT INTO '+table+' ('+columns.join(',')+') VALUES ('+placeholders+')');
+    assert.throws(()=>withoutId.run(...values),
+      new RegExp('NOT NULL constraint failed: '+table+'\\.'+id),
+      table+'.'+id+' must reject omitted identifiers');
+
+    const explicitNull=db.prepare(
+      'INSERT INTO '+table+' ('+[id,...columns].join(',')+') VALUES (?,'+placeholders+')');
+    assert.throws(()=>explicitNull.run(null,...values),
+      new RegExp('NOT NULL constraint failed: '+table+'\\.'+id),
+      table+'.'+id+' must reject NULL identifiers');
+
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM '+table).get().n,0,
+      'failed insert must not leave an immutable row');
+  }
+});
 
 test('offline D1-compatible ledger prevents duplicate slots and forbids mutating a recipient',async t=>{
   const db=fixture(t),result=await rehearse(await build());
