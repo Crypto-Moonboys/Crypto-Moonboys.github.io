@@ -566,3 +566,146 @@ test('schema and draw preview reject nonapproved daily or historical rates',asyn
     telegramId:'1111',send:async()=>{}
   }),/v2_draw_rule_configuration_mismatch/);
 });
+
+
+test('failed pool balance reads never appear as a verified empty pot',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const original=f.DB.prepare.bind(f.DB);
+  const options={
+    name:'pool',isAdmin:false,isPrivate:false,chatId:GROUP,
+    telegramId:'1111',send:async text=>messages.push(text)
+  };
+  const messages=[];
+  for(const result of [
+    {success:false,results:[]},
+    {success:true,results:null},
+    null
+  ]){
+    f.env.DB={prepare(sql){
+      if(sql.startsWith('SELECT a.token_symbol,a.token_contract,s.spendable_units')){
+        return {bind(){return {async all(){return result;}};}};
+      }
+      return original(sql);
+    }};
+    await assert.rejects(handleTagRunV2Command(f.env,options),
+      /pool_balance_read_unavailable/);
+    assert.equal(messages.length,0,'failed D1 reads cannot announce an empty pot');
+  }
+  f.env.DB=f.DB;
+  assert.equal(await handleTagRunV2Command(f.env,options),true);
+  assert.equal(messages.length,1);
+  assert.match(messages[0],/No independently verified eligible token balances yet/);
+});
+
+test('failed pool allowlist reads cannot masquerade as empty inventory',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const original=f.DB.prepare.bind(f.DB);
+  const messages=[];
+  let networkCalls=0;
+  const options={
+    name:'poolstatus',isAdmin:true,isPrivate:true,chatId:GROUP,
+    telegramId:'1111',send:async text=>messages.push(text),
+    fetchImpl:async()=>{networkCalls++;throw new Error('RPC must not run on a failed allowlist');}
+  };
+  for(const result of [
+    {success:false,results:[]},
+    {success:true,results:undefined},
+    {success:true,results:{}}
+  ]){
+    f.env.DB={prepare(sql){
+      if(sql.startsWith('SELECT asset_key FROM tag_run_v2_assets')){
+        return {async all(){return result;}};
+      }
+      return original(sql);
+    }};
+    await assert.rejects(handleTagRunV2Command(f.env,options),
+      /pool_allowlist_read_unavailable/);
+    assert.equal(messages.length,0);
+    assert.equal(networkCalls,0,'no RPC before a successful allowlist read');
+  }
+});
+
+test('failed draw audit reads cannot claim there are no draw records',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const original=f.DB.prepare.bind(f.DB);
+  const messages=[];
+  const options={
+    name:'drawaudit',isAdmin:true,isPrivate:true,chatId:GROUP,
+    telegramId:'1111',send:async text=>messages.push(text)
+  };
+  for(const result of [
+    {success:false,results:[]},
+    {success:true,results:null}
+  ]){
+    f.env.DB={prepare(sql){
+      if(sql.startsWith('SELECT day_key,status,created_at FROM tag_run_v2_draws')){
+        return {bind(){return {async all(){return result;}};}};
+      }
+      return original(sql);
+    }};
+    await assert.rejects(handleTagRunV2Command(f.env,options),
+      /pool_draw_audit_read_unavailable/);
+    assert.equal(messages.length,0);
+  }
+  f.env.DB=f.DB;
+  assert.equal(await handleTagRunV2Command(f.env,options),true);
+  assert.equal(messages.length,1);
+  assert.match(messages[0],/No review-only draw records/);
+});
+
+test('draw preview blocks before, during and after failed historical catch-up',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
+  const insert=f.sqlite.prepare('INSERT INTO tag_run_messages '+
+    '(chat_id,message_id,telegram_id,display_name,day_key,week_key,message_unix,content_hash,points) '+
+    'VALUES (?,?,?,?,?,?,?,?,?)');
+  insert.run(GROUP,901,'1111','Past tagger','2026-10-30','2026-10-26',
+    1793320000,'historical-first',10);
+  insert.run(GROUP,902,'2222','Recent tagger','2026-11-02','2026-11-02',
+    1793577700,'historical-second',12);
+  const nowMs=Date.parse('2026-11-03T00:15:00.000Z');
+  const messages=[];
+  const options={
+    name:'drawpreview',isAdmin:true,isPrivate:true,chatId:GROUP,
+    telegramId:'1111',nowMs,send:async text=>messages.push(text)
+  };
+  // A missing checkpoint is incomplete even when a prior day's V1 data exists.
+  assert.equal(await handleTagRunV2Command(f.env,options),true);
+  assert.match(messages.at(-1),/DRAW PREVIEW BLOCKED/);
+  assert.match(messages.at(-1),/Historical Street Cred participation/);
+  assert.doesNotMatch(messages.at(-1),/UNSAVED SIMULATION ONLY/);
+  const partial=await saveYesterdayParticipation(f.env,{
+    nowMs,cryptoImpl:webcrypto,maxDays:2
+  });
+  assert.equal(partial.backlogRemaining,true);
+  assert.equal(partial.day,'2026-10-31');
+  assert.equal(await handleTagRunV2Command(f.env,options),true);
+  assert.match(messages.at(-1),/DRAW PREVIEW BLOCKED/,
+    'pending November receipts must not be treated as empty history');
+  // Do not bypass the checkpoint when the D1 read itself failed.
+  const original=f.DB.prepare.bind(f.DB);
+  f.env.DB={prepare(sql){
+    if(sql.startsWith('SELECT last_completed_day_key FROM tag_run_v2_capture_cursors')){
+      return {bind(){return {async first(){return {success:false};}};}};
+    }
+    return original(sql);
+  }};
+  await assert.rejects(handleTagRunV2Command(f.env,options),
+    /participation_capture_cursor_unavailable/);
+  f.env.DB=f.DB;
+  const completed=await saveYesterdayParticipation(f.env,{
+    nowMs,cryptoImpl:webcrypto,maxDays:7
+  });
+  assert.equal(completed.backlogRemaining,false);
+  assert.equal(completed.day,'2026-11-02');
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_participation')
+    .get().n,2);
+  // Gate now passes: with no separately verified token snapshot, preview
+  // reports the absence of verified balances instead of fabricating a draw.
+  assert.equal(await handleTagRunV2Command(f.env,options),true);
+  assert.match(messages.at(-1),/No independently verified token snapshots/);
+  assert.doesNotMatch(messages.at(-1),/DRAW PREVIEW BLOCKED/);
+});
