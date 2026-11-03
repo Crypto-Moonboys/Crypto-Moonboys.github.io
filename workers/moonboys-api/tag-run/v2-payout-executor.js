@@ -63,7 +63,8 @@ const rowInfo=row=>Object.freeze({
 // approved asset and a VERIFIED irreversible snapshot; never use observed
 // head balances, quarantine records or an unsigned offline simulation.
 export async function initializeReviewedDailyCap(env,{
-  chatId,day,contract,symbol,precision,authorizedBy,paused=true
+  chatId,day,contract,symbol,precision,authorizedBy,maxTransferUnits,
+  paused=true
 }={}){
   assertExecutionMode(env);assertGroup(env,chatId);
   if(!validUtcDay(day)||!Number.isInteger(precision)||precision<0||
@@ -89,14 +90,17 @@ export async function initializeReviewedDailyCap(env,{
      available!==onchain-reserved-excluded ||
      daily!==available*500n/10000n||daily===0n)
     fail('snapshot_budget_mismatch');
+  const per=exact(maxTransferUnits);
+  if(per>daily)fail('invalid_transfer_cap');
   const r=await env.DB.prepare(
     'INSERT INTO tag_run_v2_payout_caps '+
-    '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,authorized_by) '+
-    'VALUES (?,?,?,?,?,?)'
-  ).bind(chatId,day,key,source.snapshot_digest,daily.toString(),authorizedBy).run();
+    '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,'+
+    'per_transfer_limit_units,authorized_by) VALUES (?,?,?,?,?,?,?)'
+  ).bind(chatId,day,key,source.snapshot_digest,daily.toString(),
+    per.toString(),authorizedBy).run();
   if(r?.success!==true||r.meta?.changes!==1)fail('cap_write_failed');
   return Object.freeze({chatId,day,assetKey:key,dailyLimitUnits:daily.toString(),
-    paused:true,authorized:false});
+    paused:true,perTransferLimitUnits:per.toString(),authorized:false});
 }
 
 // A CAP REMAINS PAUSED until an independent, reviewed admin write updates
@@ -149,6 +153,8 @@ export async function reserveReviewedPayout(env,{
      snapshot.snapshot_digest!==cap.snapshot_digest||
      asset?.eligibility!=='approved')fail('funding_proof_revoked');
   const spent=units(cap.committed_units),limit=units(cap.daily_limit_units);
+  const per=units(cap.per_transfer_limit_units);
+  if(amount>per)fail('transfer_cap_exceeded');
   if(spent+amount>limit)fail('daily_cap_exceeded');
   const intentKey=await sha256Text([
     chatId,day,key,bundleIndex,telegramId,receivingAccount,
