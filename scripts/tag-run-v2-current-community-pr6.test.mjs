@@ -65,14 +65,14 @@ function snapshot(db,key,options={}) {
     options.dayKey||DAY,key,123456,HEXA,onchain,reserved,excluded,
     available,percent,HEXB,options.status||'unverified');
 }
-function insertIntent(db,chatId=GROUP) {
+function insertIntent(db,chatId=GROUP,intentKey=intent,bundleIndex=0) {
   db.prepare(
     'INSERT INTO tag_run_v2_payout_intents_rehearsal '+
     '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
     'ticket_class,destination_account,destination_digest,amount_units,'+
     'snapshot_digest,source_receipts_digest) '+
     'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
-  ).run(intent,chatId,DAY,A,0,'1111','current','gkniftyheads',
+  ).run(intentKey,chatId,DAY,A,bundleIndex,'1111','current','gkniftyheads',
     HEXA,'100',HEXA,HEXB);
 }
 const groupOptions={telegramGroupChatId:GROUP};
@@ -180,7 +180,7 @@ test('populated PR2/PR5 tables for current group bind without reset',t=>{
   assert.deepEqual({...now},{...prior});
   assert.equal(db.prepare('SELECT state FROM tag_run_v2_atomic_holds_rehearsal '+
     'WHERE intent_key=?').get(intent).state,'simulation_held');
-  assert.throws(()=>insertIntent(db,OTHER),/current_community_mismatch/);
+  assert.throws(()=>insertIntent(db,OTHER,HEXB,1),/current_community_mismatch/);
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
