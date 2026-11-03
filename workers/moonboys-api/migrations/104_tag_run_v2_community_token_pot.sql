@@ -79,6 +79,16 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_snapshots (
 CREATE INDEX IF NOT EXISTS tag_run_v2_snapshots_day
   ON tag_run_v2_snapshots(chat_id,day_key,status);
 
+-- Failed/partial midnight captures must be retried before advancing days.
+-- The cursor is updated only after every member receipt for that UTC day
+-- has been persisted. Replaying incomplete days is safe via INSERT OR IGNORE.
+CREATE TABLE IF NOT EXISTS tag_run_v2_capture_cursors (
+  chat_id TEXT PRIMARY KEY,
+  last_completed_day_key TEXT NOT NULL
+    CHECK(last_completed_day_key GLOB '????-??-??'),
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- A member's unspent ticket weight is not a fungible-token debt. Its creation
 -- is tied to real V1 message receipts, which remain authoritative.
 CREATE TABLE IF NOT EXISTS tag_run_v2_participation (
