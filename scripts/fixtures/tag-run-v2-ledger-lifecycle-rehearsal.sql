@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_lifecycle_events_rehearsal (
   destination_account TEXT NOT NULL,
   chain_tx_id TEXT,
   chain_action_sequence TEXT,
+  chain_block_id TEXT,
+  chain_block_num INTEGER,
   evidence_digest TEXT,
   status TEXT NOT NULL DEFAULT 'simulation_only'
     CHECK(status='simulation_only'),
@@ -38,10 +40,17 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_lifecycle_events_rehearsal (
          chain_action_sequence IS NOT NULL AND
          length(chain_action_sequence) BETWEEN 1 AND 25 AND
          substr(chain_action_sequence,1,1) BETWEEN '1' AND '9' AND
-         chain_action_sequence NOT GLOB '*[^0-9]*')
+         chain_action_sequence NOT GLOB '*[^0-9]*' AND
+         chain_block_id IS NOT NULL AND
+         length(chain_block_id)=64 AND
+         chain_block_id NOT GLOB '*[^0-9a-f]*' AND
+         chain_block_num IS NOT NULL AND
+         typeof(chain_block_num)='integer' AND
+         chain_block_num BETWEEN 1 AND 9007199254740991)
     OR (event_kind!='simulate_reconcile' AND
         chain_tx_id IS NULL AND evidence_digest IS NULL AND
-        chain_action_sequence IS NULL))
+        chain_action_sequence IS NULL AND
+        chain_block_id IS NULL AND chain_block_num IS NULL))
 ) WITHOUT ROWID;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tag_run_v2_lifecycle_chain_review
   ON tag_run_v2_lifecycle_events_rehearsal(chain_tx_id,chain_action_sequence)
