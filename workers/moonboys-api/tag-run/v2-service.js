@@ -85,18 +85,32 @@ export async function saveYesterdayParticipation(env, options = {}) {
       }
       member.receipts.push([row.message_id,row.points]);
     }
-    for (const [telegramId, member] of members) {
-      const digest = await sha256Text(JSON.stringify({
-        chatId, day, telegramId, receipts: member.receipts
-      }), options.cryptoImpl);
-      const write = await env.DB.prepare(
-        'INSERT OR IGNORE INTO tag_run_v2_participation ' +
-        '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) ' +
-        'VALUES (?,?,?,?,?)'
-      ).bind(chatId,day,telegramId,member.points,digest).run();
-      if (write?.success === false) throw new Error('participation_write_failed');
-      inserted += Number(write?.meta?.changes) > 0 ? 1 : 0;
+    // One canonical day's receipt digest plus one set-based INSERT avoids
+    // thousands of per-member D1 round trips on a busy Telegram group.
+    // Every row of this UTC day refers to the same immutable source digest.
+    const digest = await sha256Text(JSON.stringify({
+      chatId, day, receipts: rows.map(r =>
+        [String(r.telegram_id),r.message_id,r.points])
+    }), options.cryptoImpl);
+    const write = await env.DB.prepare(
+      'INSERT OR IGNORE INTO tag_run_v2_participation ' +
+      '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) ' +
+      'SELECT chat_id,day_key,telegram_id,SUM(points),? FROM tag_run_messages ' +
+      'WHERE chat_id=? AND day_key=? GROUP BY chat_id,day_key,telegram_id'
+    ).bind(digest,chatId,day).run();
+    if (write?.success === false ||
+        !Number.isSafeInteger(write?.meta?.changes) ||
+        write.meta.changes < 0) throw new Error('participation_write_failed');
+    const audit = await env.DB.prepare(
+      'SELECT COUNT(*) AS recorded, ' +
+      'SUM(CASE WHEN source_receipts_digest<>? THEN 1 ELSE 0 END) AS bad_digest ' +
+      'FROM tag_run_v2_participation WHERE chat_id=? AND day_key=?'
+    ).bind(digest,chatId,day).first();
+    if (!audit || Number(audit.recorded) !== members.size ||
+        Number(audit.bad_digest || 0) !== 0) {
+      throw new Error('participation_reconciliation_failed');
     }
+    inserted += write.meta.changes;
     // Checkpoint advances only AFTER all participants for this day were
     // recorded. A D1 failure leaves the cursor unchanged; the next run
     // replays INSERT OR IGNORE, including any partially written rows.
