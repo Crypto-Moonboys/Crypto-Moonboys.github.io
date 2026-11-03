@@ -6,7 +6,14 @@
 
 import { TIP_ACCOUNT, assetKey, parseQuantity, WAX_MAINNET_CHAIN_ID } from './v2-core.js';
 export const WAX_CHAIN_API = 'https://wax.greymass.com';
+// Hyperion's public hosts are independent and may be unavailable separately.
+// Fail over only for transport / non-2xx failures; never accept malformed or
+// partial inventory as empty. Every retry starts from skip=0 on one host.
 export const WAX_HYPERION = 'https://wax.eosrio.io';
+export const WAX_HYPERION_FALLBACKS = Object.freeze([
+  'https://wax.eosusa.io',
+  'https://wax.eosphere.io'
+]);
 const MAX_DISCOVERED = 100;
 const TOKEN_PAGE_SIZE = 50;
 
@@ -50,47 +57,66 @@ export async function discoverWaxTipTokens({ fetchImpl = fetch,
     throw new Error('asset_allowlist_invalid');
   }
   const approved = new Set(approvedAssets);
-  const seen = new Set(), discovered = [];
-  // Hyperion's get_tokens defaults to 50 rows, with skip/limit implemented
-  // upstream even though those arguments are absent from the public docs.
-  // A short page is NOT proof of completion: deployments may cap the limit
-  // below 50. Only an explicit empty page confirms the end of inventory.
-  // Discover the ENTIRE bounded inventory before reading any token balances.
-  let skip = 0;
-  let completed = false;
-  for (let page = 0; page <= MAX_DISCOVERED; page++) {
-    const query = '?account=' + encodeURIComponent(account) +
-      '&skip=' + skip + '&limit=' + TOKEN_PAGE_SIZE;
-    const provider = await readJson(await fetchImpl(
-      WAX_HYPERION + '/v2/state/get_tokens' + query, { method: 'GET' }
-    ), 'wax_inventory');
-    if (provider.account !== account ||
-        !Array.isArray(provider.tokens) ||
-        provider.tokens.length > TOKEN_PAGE_SIZE) {
-      throw new Error('wax_inventory_incomplete_or_excessive');
+  // Do not mix pages from different indexers. If a provider is unreachable or
+  // returns a non-2xx response at ANY page, discard that attempt and restart
+  // the entire inventory on the next documented WAX mainnet Hyperion host.
+  // Incomplete, duplicate, or malformed 2xx payloads remain hard failures.
+  let discovered;
+  let unavailable = false;
+  for (const host of [WAX_HYPERION, ...WAX_HYPERION_FALLBACKS]) {
+    const seen = new Set(), candidate = [];
+    let skip = 0, completed = false, providerUnavailable = false;
+    for (let page = 0; page <= MAX_DISCOVERED; page++) {
+      const query = '?account=' + encodeURIComponent(account) +
+        '&skip=' + skip + '&limit=' + TOKEN_PAGE_SIZE;
+      let response;
+      try {
+        response = await fetchImpl(
+          host + '/v2/state/get_tokens' + query, { method: 'GET' }
+        );
+      } catch (_) {
+        providerUnavailable = true;
+        break;
+      }
+      if (!response?.ok) {
+        providerUnavailable = true;
+        break;
+      }
+      const provider = await readJson(response, 'wax_inventory');
+      if (provider.account !== account ||
+          !Array.isArray(provider.tokens) ||
+          provider.tokens.length > TOKEN_PAGE_SIZE) {
+        throw new Error('wax_inventory_incomplete_or_excessive');
+      }
+      if (provider.tokens.length === 0) {
+        completed = true;
+        break;
+      }
+      if (skip + provider.tokens.length > MAX_DISCOVERED) {
+        throw new Error('wax_inventory_incomplete_or_excessive');
+      }
+      for (const token of provider.tokens) {
+        let key;
+        try { key = assetKey(token?.contract, token?.symbol, token?.precision); }
+        catch (_) { throw new Error('wax_inventory_malformed_token'); }
+        if (seen.has(key)) throw new Error('wax_inventory_duplicate_asset');
+        seen.add(key);
+        candidate.push({ ...token, key });
+      }
+      skip += provider.tokens.length;
     }
-    if (provider.tokens.length === 0) {
-      completed = true;
-      break;
+    if (providerUnavailable) {
+      unavailable = true;
+      continue;
     }
-    if (skip + provider.tokens.length > MAX_DISCOVERED) {
-      throw new Error('wax_inventory_incomplete_or_excessive');
-    }
-    for (const token of provider.tokens) {
-      // Missing or malformed token identity cannot be silently discarded:
-      // that would falsely report an apparently complete inventory.
-      let key;
-      try { key = assetKey(token?.contract, token?.symbol, token?.precision); }
-      catch (_) { throw new Error('wax_inventory_malformed_token'); }
-      if (seen.has(key)) throw new Error('wax_inventory_duplicate_asset');
-      seen.add(key);
-      discovered.push({ ...token, key });
-    }
-    // Advance by the number of records actually returned, not the requested
-    // page size (which the Hyperion operator may clamp).
-    skip += provider.tokens.length;
+    if (!completed) throw new Error('wax_inventory_incomplete_or_excessive');
+    discovered = candidate;
+    break;
   }
-  if (!completed) throw new Error('wax_inventory_incomplete_or_excessive');
+  if (!discovered) {
+    throw new Error(unavailable ? 'wax_inventory_unavailable' :
+      'wax_inventory_incomplete_or_excessive');
+  }
   const assets = [];
   for (const token of discovered) {
     const key = token.key;
