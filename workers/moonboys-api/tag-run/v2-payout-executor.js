@@ -144,10 +144,10 @@ export async function reserveReviewedPayout(env,{
   ].join('|'));
   const next=decimalAdd(cap.committed_units,amount.toString());
   const change=env.DB.prepare(
-    'UPDATE tag_run_v2_payout_caps SET committed_units=?,revision=revision+1 '+
+    'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_intent_key=?,revision=revision+1 '+
     'WHERE chat_id=? AND day_key=? AND asset_key=? AND paused=0 '+
     'AND revision=? AND committed_units=?'
-  ).bind(next,chatId,day,key,cap.revision,cap.committed_units);
+  ).bind(next,intentKey,chatId,day,key,cap.revision,cap.committed_units);
   const insert=env.DB.prepare(
     'INSERT INTO tag_run_v2_payout_intents '+
     '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
@@ -241,16 +241,22 @@ export async function handoffApprovedPayout(env,{
 // Operator supplies independently verified irreversible WAX chain action
 // evidence. This function never trusts mere RPC submission success.
 export async function markIrreversiblyConfirmed(env,{
-  intentKey,transactionId,action
+  intentKey,transactionId,verifyIrreversibleAction
 }={}){
   assertExecutionMode(env);
   if(!HEX.test(intentKey||'')||!HEX.test(transactionId||'')||
-     action?.irreversible!==true)fail('finality_unverified');
+     typeof verifyIrreversibleAction!=='function')fail('finality_unverified');
   const row=await env.DB.prepare('SELECT * FROM tag_run_v2_payout_intents '+
     'WHERE intent_key=?').bind(intentKey).first();
   if(!row||row.status!=='broadcast_unknown')fail('not_pending_reconciliation');
   assertGroup(env,row.chat_id);
   const want=buildReviewedWaxTransfer({...row,status:'reserved'});
+  // Do not accept caller-supplied "irreversible:true" or an RPC submission
+  // response as proof; fetch chain action / LIB from an independent verifier.
+  const action=await verifyIrreversibleAction({
+    transactionId,intentKey,chainId:WAX_MAINNET_CHAIN_ID
+  });
+  if(action?.irreversible!==true)fail('finality_unverified');
   if(action.chainId!==WAX_MAINNET_CHAIN_ID ||
      action.contract!==want.contract ||
      action.name!=='transfer'||action.from!==TIP_ACCOUNT ||
