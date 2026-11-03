@@ -77,6 +77,51 @@ test('a simulated allocation exceeding five percent cannot be proposed',async()=
   }),/payout_plan_exceeds_daily_asset_budget/);
 });
 
+test('available units must match balance less all reserved and excluded units',async()=>{
+  const original=await preview();
+  const valid=await previewCommunityDraw({
+    ...input(),
+    assets:[{...input().assets[0],
+      balanceUnits:'100000',reservedUnits:'20000',excludedUnits:'40000'}]
+  });
+  const reconciled=await buildDirectWalletPayoutPlan({
+    preview:valid,destinations,cryptoImpl:webcrypto
+  });
+  assert.deepEqual(reconciled.totals.map(t=>({
+    budget:t.dailyBudgetUnits,allocated:t.hypotheticalAllocatedUnits,
+    remaining:t.hypotheticalUnallocatedUnits
+  })),[{budget:'2000',allocated:'2000',remaining:'0'}]);
+
+  // An attacker adjusting both availability and the daily budget can no
+  // longer make a fabricated 5000-unit allocation appear under the cap.
+  const inflated={...original,budgets:[{
+    ...original.budgets[0],
+    balanceUnits:'100000',reservedUnits:'20000',excludedUnits:'40000',
+    availableUnits:'100000',dailyBudgetUnits:'5000'
+  }]};
+  await assert.rejects(buildDirectWalletPayoutPlan({
+    preview:inflated,destinations,cryptoImpl:webcrypto
+  }),/payout_plan_budget_not_reconciled/);
+});
+
+test('preview budget must reject reservation/exclusion deficits and forged balances',async()=>{
+  const data=await preview(),base=data.budgets[0];
+  for(const patch of [
+    {balanceUnits:'100000',reservedUnits:'75000',excludedUnits:'40000',
+      availableUnits:'0',dailyBudgetUnits:'0'},
+    {balanceUnits:'120000',reservedUnits:'0',excludedUnits:'0',
+      availableUnits:'100000',dailyBudgetUnits:'5000'},
+    {balanceUnits:'100000',reservedUnits:'20000',excludedUnits:'40000',
+      availableUnits:'40000',dailyBudgetUnits:'5000'},
+    {reservedUnits:'not-an-integer'}
+  ]) {
+    await assert.rejects(buildDirectWalletPayoutPlan({
+      preview:{...data,budgets:[{...base,...patch}]},
+      destinations,cryptoImpl:webcrypto
+    }),/payout_plan_|invalid_token_units/);
+  }
+});
+
 test('the planner rejects fabricated budgets, unknown assets and executable statuses',async()=>{
   const data=await preview();
   for(const altered of [
