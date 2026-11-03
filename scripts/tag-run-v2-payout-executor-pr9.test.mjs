@@ -196,6 +196,96 @@ test('payout cannot reserve an unreviewed or rejected draw',async t=>{
   assert.equal(f.cap().committed_units,'0');
 });
 
+
+test('direct INSERT cannot create a live, already-spent or nonzero cap',t=>{
+  const f=fixture(t);
+  const insert=f.sqlite.prepare('INSERT INTO tag_run_v2_payout_caps '+
+    '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,'+
+    'per_transfer_limit_units,authorized_by,paused,revision,'+
+    'committed_units,last_reserved_units,last_intent_key) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
+  for(const [paused,revision,committed,reserved,key] of [
+    [0,0,'0','0',''], // cannot bypass overlap-checked UPDATE
+    [1,1,'0','0',''], // never insert pre-revised counters
+    [1,0,'1','1','e'.repeat(64)],
+    [1,0,'0','1','']
+  ]) {
+    assert.throws(()=>insert.run(GROUP,DAY,A,SNAP,'500','500',
+      'reviewed',paused,revision,committed,reserved,key),
+      /v2_payout_cap_source_unapproved_or_duplicate/);
+  }
+  assert.equal(f.cap(),undefined);
+});
+
+test('existing unresolved token cap cannot be bypassed by next-day direct live INSERT',async t=>{
+  const f=fixture(t);await openCap(f);
+  await reserveReviewedPayout(f.env,intentArgs);
+  const nextDay='2026-11-03';
+  f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    'SELECT chat_id,?,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status '+
+    'FROM tag_run_v2_snapshots WHERE day_key=?').run(nextDay,DAY);
+  assert.throws(()=>f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_payout_caps '+
+    '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,'+
+    'per_transfer_limit_units,authorized_by,paused) '+
+    'VALUES (?,?,?,?,?,?,?,0)'
+  ).run(GROUP,nextDay,A,SNAP,'500','500','reviewed'),
+  /v2_payout_cap_source_unapproved_or_duplicate/);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM '+
+    'tag_run_v2_payout_caps').get().n,1);
+  assert.equal(f.intents().length,1);
+});
+
+test('SQL binds intent amount to exact cap delta, not only last intent key',async t=>{
+  const f=fixture(t);await openCap(f);
+  const firstKey='e'.repeat(64);
+  assert.throws(()=>f.sqlite.prepare(
+    'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_reserved_units=?,'+
+    'last_intent_key=?,revision=revision+1'
+  ).run('1','100',firstKey),/v2_payout_cap_immutable/,
+  'cannot claim to reserve 100 while consuming only 1 unit');
+  assert.equal(f.cap().committed_units,'0');
+  // Even a mathematically valid but too-small cap update cannot support
+  // a larger reviewed bundle inserted directly using the same key.
+  f.sqlite.prepare(
+    'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_reserved_units=?,'+
+    'last_intent_key=?,revision=revision+1'
+  ).run('1','1',firstKey);
+  assert.throws(()=>f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_payout_intents '+
+    '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
+    'receiving_account,amount_units,snapshot_digest,authorization_digest,'+
+    'approved_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(firstKey,GROUP,DAY,A,0,MEMBER,RECEIVER,'100',SNAP,AUTH,'reviewed'),
+  /v2_payout_intent_source_unapproved_or_duplicate/);
+  assert.equal(f.intents().length,0);
+  assert.equal(f.cap().committed_units,'1');
+});
+
+test('exact cap addition preserves BigInt precision beyond 2^53',async t=>{
+  const large='9007199254740993';
+  const available=(BigInt(large)*20n).toString();
+  const f=fixture(t,{daily:large,available});
+  await openCap(f,{maxTransferUnits:large});
+  const first='e'.repeat(64),second='f'.repeat(64);
+  f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
+    'SET committed_units=?,last_reserved_units=?,last_intent_key=?,'+
+    'revision=revision+1').run(large,large,first);
+  assert.equal(f.cap().committed_units,large);
+  assert.throws(()=>f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
+    'SET committed_units=?,last_reserved_units=?,last_intent_key=?,'+
+    'revision=revision+1').run((BigInt(large)+1n).toString(),
+      '2',second),/v2_payout_cap_immutable/);
+  // The daily ceiling remains enforced even with exact large sums.
+  assert.equal(f.cap().committed_units,large);
+  assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
 test('unique cap reservations commit once and freeze member destination',async t=>{
   const f=fixture(t);
   await openCap(f);
@@ -360,6 +450,31 @@ for(const pauseKind of ['cap','pool','asset']){
     assert.equal(f.cap().committed_units,'100');
   });
 }
+
+test('snapshot digest replacement during WAX RPC blocks atomic signing lock',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  let signed=false;
+  const changed='e'.repeat(64);
+  const unstableRpc=async(url,options={})=>{
+    if(url.endsWith('/get_account')){
+      f.sqlite.prepare(
+        'UPDATE tag_run_v2_snapshots SET snapshot_digest=? '+
+        'WHERE chat_id=? AND day_key=? AND asset_key=?'
+      ).run(changed,GROUP,DAY,A);
+    }
+    return destinationRpc(url,options);
+  };
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:row.intentKey,fetchImpl:unstableRpc,
+    signAndBroadcast:async()=>{signed=true;}
+  }),/v2_payout_send_lock_blocked_or_already_submitted/);
+  assert.equal(signed,false);
+  assert.equal(f.intents()[0].status,'reserved');
+  assert.equal(f.intents()[0].snapshot_digest,SNAP);
+  assert.equal(f.cap().committed_units,'100');
+  assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
+});
 
 test('signer handoff marks unknown BEFORE call and never automatically retries',async t=>{
   const f=fixture(t);await openCap(f);
