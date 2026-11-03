@@ -21,3 +21,12 @@ workers/**/.wrangler/
 *.sqlite-wal
 # Locally hydrated Invaders generated PNGs; source-of-truth payloads are .png.base64.
 art/invaders/generated/*.png
+
+# Private production D1 backups and TAG RUN migration 105 local rehearsals.
+# Never commit database exports, restored data, or temporary one-off probes.
+/tag-run-pre-migration-*.sql
+/tag-run-*.db
+/tag-run-*.db-shm
+/tag-run-*.db-wal
+/tag-run-105-parity.cjs
+/tag-run-105-ledger-check.cjs
