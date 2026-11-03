@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
   committed_units TEXT NOT NULL DEFAULT '0' CHECK(length(committed_units) BETWEEN 1 AND 78 AND committed_units NOT GLOB '*[^0-9]*' AND (committed_units='0' OR substr(committed_units,1,1)!='0')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0 AND revision<=9007199254740991),
   paused INTEGER NOT NULL DEFAULT 1 CHECK(paused IN (0,1)),
-  authorized_by TEXT NOT NULL,
+  authorized_by TEXT NOT NULL CHECK(length(authorized_by)>0),
   PRIMARY KEY(chat_id,day_key,asset_key),
   FOREIGN KEY(chat_id,day_key,asset_key) REFERENCES tag_run_v2_snapshots(chat_id,day_key,asset_key)
 ) WITHOUT ROWID;
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_intents (
   authorization_digest TEXT NOT NULL CHECK(length(authorization_digest)=64 AND authorization_digest NOT GLOB '*[^0-9a-f]*'),
   status TEXT NOT NULL DEFAULT 'reserved' CHECK(status IN ('reserved','broadcast_unknown','confirmed','reconciliation_review')),
   signed_tx_id TEXT,
-  approved_by TEXT NOT NULL,
+  approved_by TEXT NOT NULL CHECK(length(approved_by)>0),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(chat_id,day_key,asset_key,bundle_index),
@@ -107,6 +107,9 @@ WHEN NEW.status!='reserved' OR NEW.signed_tx_id IS NOT NULL OR NOT EXISTS (
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
     AND c.asset_key=NEW.asset_key AND c.snapshot_digest=NEW.snapshot_digest
     AND c.paused=0 AND c.last_intent_key=NEW.intent_key
+) OR NOT EXISTS (
+  SELECT 1 FROM tag_run_wallets w
+  WHERE w.telegram_id=NEW.telegram_id AND w.wax_account=NEW.receiving_account
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_bundles b
   WHERE b.chat_id=NEW.chat_id AND b.day_key=NEW.day_key
