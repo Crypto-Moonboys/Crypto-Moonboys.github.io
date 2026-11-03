@@ -469,6 +469,33 @@ test('commands are verified-group/private only and rain registers WAX payout des
   assert.match(ranks.answer, /95,000 — Graffiti King/);
 });
 
+test('overlapping /rain requests never let slower earlier validation replace newer account',async t=>{
+  const f=fixture(t);
+  let signalOlderStarted;
+  const olderStarted=new Promise(resolve=>{ signalOlderStarted=resolve; });
+  let resumeOlder;
+  const blockOlder=new Promise(resolve=>{ resumeOlder=resolve; });
+  f.env.beforeWaxDestination=async account=>{
+    if(account==='olderaccount'){
+      signalOlderStarted();
+      await blockOlder;
+    }
+    return {ok:true,json:async()=>({account_name:account})};
+  };
+  const oldRequest=f.command('/rain olderaccount');
+  await olderStarted;
+  const newer=await f.command('/rain neweraccount');
+  assert.match(newer.answer,/payout destination REGISTERED: neweraccount/);
+  resumeOlder();
+  const stale=await oldRequest;
+  assert.match(stale.answer,/older \/rain request was ignored/);
+  const row=f.sqlite.prepare('SELECT wax_account,registered_at FROM tag_run_wallets '+
+    'WHERE telegram_id=?').get(MEMBER);
+  assert.equal(row.wax_account,'neweraccount');
+  assert.match(row.registered_at,/^2026-11-02 10:00:00\.[0-9]{15}$/);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_wallets').get().n,1);
+});
+
 test('admin alone changes chain-verified token, weekly amounts and multipliers; draft is review-only', async t => {
   const f = fixture(t);
   assert.match((await f.command('/tagtoken LFGK kingsofgraff')).answer, /authorised admins/);
