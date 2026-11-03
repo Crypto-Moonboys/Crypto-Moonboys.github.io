@@ -122,6 +122,22 @@ export function markSimulatedUnknown(db,{intentKey}={}) {
        h.state==='simulation_reconciliation_review')
       return Object.freeze({...stateRow(h),replayed:true});
     if(h.state!=='simulation_held')fail('invalid_transition');
+    const b=db.prepare(budgetSql).get(...scope(h));
+    if(!b)fail('budget_missing');
+    const floor=units(b.unknown_floor_units),amount=units(h.amount_units);
+    const outstanding=units(b.outstanding_units);
+    if(floor+amount>outstanding)fail('incident_floor_exceeds_outstanding');
+    // First lock the unresolved amount as a monotone, non-refundable floor.
+    // All changes are in one BEGIN IMMEDIATE transaction: if marking the
+    // hold unknown fails, the floor adjustment is rolled back as well.
+    const locked=db.prepare('UPDATE tag_run_v2_atomic_budget_rehearsal '+
+      'SET unknown_floor_units=?,revision=revision+1 '+
+      'WHERE chat_id=? AND day_key=? AND asset_key=? AND revision=? '+
+      'AND unknown_floor_units=? AND outstanding_units=?').run(
+      (floor+amount).toString(),...scope(h),b.revision,
+      b.unknown_floor_units,b.outstanding_units
+    );
+    if(locked.changes!==1)fail('concurrent_budget_change');
     const result=db.prepare("UPDATE tag_run_v2_atomic_holds_rehearsal "+
       "SET state='simulation_transfer_unknown' "+
       "WHERE intent_key=? AND state='simulation_held'").run(intentKey);
@@ -161,13 +177,15 @@ export function inspectSimulatedBudget(db,{chatId,dayKey,assetKey}={}) {
   const b=db.prepare(budgetSql).get(chatId,dayKey,assetKey);
   if(!b)fail('budget_missing');
   const allocated=units(b.allocated_units),outstanding=units(b.outstanding_units),
-    cap=units(b.daily_limit_units);
-  if(allocated>cap||outstanding>allocated)fail('invalid_budget');
+    incidentFloor=units(b.unknown_floor_units),cap=units(b.daily_limit_units);
+  if(allocated>cap||outstanding>allocated||incidentFloor>outstanding)
+    fail('invalid_budget');
   return Object.freeze({
     mode:'simulation_only',funded:false,executable:false,
     signerAvailable:false,transferAttempted:false,confirmedOnChain:false,
     paused:Boolean(b.paused),dailyLimitUnits:b.daily_limit_units,
     allocatedUnits:b.allocated_units,outstandingUnits:b.outstanding_units,
+    unknownFloorUnits:b.unknown_floor_units,
     availableCapUnits:(cap-allocated).toString(),revision:b.revision
   });
 }
