@@ -55,6 +55,26 @@ WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
        AND NEW.daily_limit_units>=NEW.committed_units))
  OR (NEW.committed_units!=OLD.committed_units AND (OLD.paused=1 OR NEW.paused=1))
 BEGIN SELECT RAISE(ABORT,'v2_payout_cap_immutable'); END;
+-- Only one active or unresolved cap may use a token asset at once.
+-- Across UTC days, old UNKNOWN/RESERVED obligations must first be reconciled;
+-- otherwise each day could independently spend 5% of the same old balance.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_no_overlap
+BEFORE UPDATE OF paused ON tag_run_v2_payout_caps
+WHEN NEW.paused=0 AND OLD.paused=1 AND EXISTS (
+  SELECT 1 FROM tag_run_v2_payout_caps other
+  WHERE other.asset_key=NEW.asset_key
+    AND (other.chat_id!=NEW.chat_id OR other.day_key!=NEW.day_key)
+    AND (
+      other.paused=0 OR EXISTS (
+        SELECT 1 FROM tag_run_v2_payout_intents i
+        WHERE i.chat_id=other.chat_id AND i.day_key=other.day_key
+          AND i.asset_key=other.asset_key
+          AND i.status IN ('reserved','broadcast_unknown','reconciliation_review')
+      )
+    )
+)
+BEGIN SELECT RAISE(ABORT,'v2_payout_asset_obligations_unresolved'); END;
+
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_no_delete
 BEFORE DELETE ON tag_run_v2_payout_caps
 BEGIN SELECT RAISE(ABORT,'v2_payout_cap_immutable'); END;
