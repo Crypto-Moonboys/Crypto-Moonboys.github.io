@@ -29,7 +29,10 @@ A second request for the same key returns the existing simulated result,
 never another allocation. The SQL table uses `WITHOUT ROWID` and BEFORE
 INSERT/UPDATE/DELETE guards to prevent replacing or redirecting a hold.
 The account is the player-selected WAX payout account; choice is not a proof
-of wallet ownership.
+of wallet ownership. A scoped budget has a BEFORE INSERT duplicate guard:
+`INSERT OR REPLACE` cannot delete and recreate the budget to zero its
+allocation, outstanding amount, revision or emergency pause while a simulated
+unknown hold remains linked to it (even with recursive triggers disabled).
 
 Pausing stops new simulated holds. Previously held allocations can move
 to an `simulation_transfer_unknown` incident state while paused. Unknown
@@ -70,4 +73,7 @@ echo Exit code: %ERRORLEVEL%
 Review for duplicate source allocations, exact integer caps, rollback,
 non-refill after cancellation, pause preservation, unknown-state
 non-release, frozen destination, SQL replacement bypasses, and runtime
-isolation. Do not merge until CI and review are clear; no deployment required.
+isolation. Tests deliberately separate the duplicate-hold guard from the
+source-account guard, preserve an unknown hold during a forbidden budget
+`INSERT OR REPLACE`, and inject a hold INSERT trigger failure *after* the
+budget UPDATE to prove the entire SQLite transaction rolls back. Do not merge until CI and review are clear; no deployment required.
