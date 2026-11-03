@@ -23,6 +23,8 @@ export async function prepareV2PayoutRehearsal({
       !digest(receiptsDigest) || !Array.isArray(plan.entries) ||
       !Array.isArray(plan.totals) || !Array.isArray(snapshots) ||
       plan.entries.length > MAX_ASSETS * MAX_BUNDLES_PER_ASSET ||
+      plan.hypotheticalBundles !== plan.entries.length ||
+      plan.missingDestinations !== 0 ||
       plan.totals.length > MAX_ASSETS || plan.totals.length !== snapshots.length) {
     fail('invalid_input');
   }
@@ -78,6 +80,10 @@ export async function prepareV2PayoutRehearsal({
     slots.add(slot);
     const amount = safeUnits(entry.units);
     if (amount === 0n) fail('zero_allocation');
+    const expectedSourceKey = await sha256Text(
+      [plan.day,entry.assetKey,entry.bundleIndex,entry.telegramId,
+       entry.ticketClass,entry.units].join('|'),cryptoImpl);
+    if (expectedSourceKey !== entry.idempotencyKey) fail('source_intent_key_mismatch');
     state.spent += amount;
     if (state.spent > state.daily) fail('daily_budget_exceeded');
     const destinationDigest = await sha256Text(
