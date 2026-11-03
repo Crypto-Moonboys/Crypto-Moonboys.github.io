@@ -83,6 +83,16 @@ export async function discoverWaxTipTokens({ fetchImpl = fetch,
         typeof balances[0] !== 'string') {
       throw new Error('wax_currency_balance_malformed');
     }
+    // Strictly match the on-chain quantity precision to the Hyperion identity:
+    // parseQuantity intentionally pads fractions elsewhere, which would turn
+    // a 4-decimal chain amount into an inflated 8-decimal observed balance.
+    const chainQuantity = balances[0].match(
+      /^(?:0|[1-9][0-9]*)(?:\.([0-9]{1,8}))? ([A-Z]{1,7})$/
+    );
+    if (!chainQuantity || chainQuantity[2] !== token.symbol ||
+        (chainQuantity[1] || '').length !== token.precision) {
+      throw new Error('wax_currency_precision_mismatch');
+    }
     const balanceUnits = parseQuantity(balances[0], token.precision, token.symbol);
     assets.push({
       key, contract: token.contract, symbol: token.symbol,
