@@ -2,7 +2,7 @@
 // Pure, intentionally non-executable preflight. It never sends, signs,
 // broadcasts, reserves, or records a token transfer. No feature flag can
 // bypass these prerequisites: custody, donor consent, finalized settlement,
-// legal policy and wallet ownership must all be independently established.
+// legal policy and destination validity must all be independently established.
 import { assetKey, parseIntegerUnits, TIP_ACCOUNT } from './v2-core.js';
 import { isValidWaxAccount } from './core.js';
 
@@ -34,10 +34,14 @@ export function evaluateRegisteredWalletPayout({
   if (!isValidWaxAccount(account) || account === TIP_ACCOUNT) {
     blockers.push('recipient_wallet_invalid');
   }
-  if (wallet?.verification_status !== 'verified' ||
-      !wallet?.verified_at || wallet?.wax_account !== allocation?.recipientAccount ||
-      authority?.walletOwnershipProofValid !== true) {
-    blockers.push('recipient_wallet_ownership_unverified');
+  // User entry selects a destination, not an assertion of wallet ownership.
+  // For future payouts, require a fresh WAX mainnet existence attestation and
+  // evidence that the same Telegram ID intentionally registered that account.
+  // Never require signing a wallet message just to receive a transfer.
+  if (wallet?.wax_account !== allocation?.recipientAccount ||
+      authority?.chainDestinationValidated !== true ||
+      authority?.memberDestinationConsentRecorded !== true) {
+    blockers.push('recipient_destination_unconfirmed');
   }
 
   try {
