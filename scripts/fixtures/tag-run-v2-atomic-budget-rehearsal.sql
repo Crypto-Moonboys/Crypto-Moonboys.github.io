@@ -21,6 +21,12 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_atomic_budget_rehearsal (
     length(outstanding_units) BETWEEN 1 AND 78 AND
     outstanding_units NOT GLOB '*[^0-9]*' AND
     (outstanding_units='0' OR substr(outstanding_units,1,1)!='0')),
+  -- Irreversible incident floor: cumulative unknown allocations cannot be
+  -- erased by resetting outstanding or even by cancelling other known holds.
+  unknown_floor_units TEXT NOT NULL DEFAULT '0' CHECK(
+    length(unknown_floor_units) BETWEEN 1 AND 78 AND
+    unknown_floor_units NOT GLOB '*[^0-9]*' AND
+    (unknown_floor_units='0' OR substr(unknown_floor_units,1,1)!='0')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(
     revision >= 0 AND revision <= 9007199254740991),
   paused INTEGER NOT NULL DEFAULT 1 CHECK(paused IN (0,1)),
@@ -40,6 +46,37 @@ WHEN EXISTS (
     AND old.asset_key=NEW.asset_key
 )
 BEGIN SELECT RAISE(ABORT,'atomic_rehearsal_duplicate_budget'); END;
+
+-- Freeze scope, caps, mode and counters against direct UPDATE/UPDATE OR
+-- REPLACE, including replacement of a spent budget by a new budget scope.
+-- Comparisons use canonical decimal TEXT (length + lexical), never SQLite
+-- floating point, so large token units retain exact ordering.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_atomic_budget_update_guard
+BEFORE UPDATE ON tag_run_v2_atomic_budget_rehearsal
+WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key OR
+  NEW.asset_key!=OLD.asset_key OR NEW.mode!=OLD.mode OR
+  NEW.daily_limit_units!=OLD.daily_limit_units OR
+  NEW.per_transfer_limit_units!=OLD.per_transfer_limit_units OR
+  NEW.revision!=OLD.revision+1 OR
+  NOT (length(NEW.allocated_units)>length(OLD.allocated_units) OR (length(NEW.allocated_units)=length(OLD.allocated_units) AND NEW.allocated_units>=OLD.allocated_units)) OR
+  NOT (length(NEW.daily_limit_units)>length(NEW.allocated_units) OR (length(NEW.daily_limit_units)=length(NEW.allocated_units) AND NEW.daily_limit_units>=NEW.allocated_units)) OR
+  NOT (length(NEW.allocated_units)>length(NEW.outstanding_units) OR (length(NEW.allocated_units)=length(NEW.outstanding_units) AND NEW.allocated_units>=NEW.outstanding_units)) OR
+  NOT (length(NEW.unknown_floor_units)>length(OLD.unknown_floor_units) OR (length(NEW.unknown_floor_units)=length(OLD.unknown_floor_units) AND NEW.unknown_floor_units>=OLD.unknown_floor_units)) OR
+  NOT (length(NEW.outstanding_units)>length(NEW.unknown_floor_units) OR (length(NEW.outstanding_units)=length(NEW.unknown_floor_units) AND NEW.outstanding_units>=NEW.unknown_floor_units)) OR
+  ((OLD.paused=1 OR NEW.paused=1) AND
+    (length(NEW.allocated_units)>length(OLD.allocated_units) OR (length(NEW.allocated_units)=length(OLD.allocated_units) AND NEW.allocated_units>OLD.allocated_units))) OR
+  ((length(NEW.allocated_units)>length(OLD.allocated_units) OR (length(NEW.allocated_units)=length(OLD.allocated_units) AND NEW.allocated_units>OLD.allocated_units)) AND
+    NOT (length(NEW.outstanding_units)>length(OLD.outstanding_units) OR (length(NEW.outstanding_units)=length(OLD.outstanding_units) AND NEW.outstanding_units>OLD.outstanding_units))) OR
+  ((length(OLD.outstanding_units)>length(NEW.outstanding_units) OR (length(OLD.outstanding_units)=length(NEW.outstanding_units) AND OLD.outstanding_units>NEW.outstanding_units)) AND
+    NOT EXISTS (
+      SELECT 1 FROM tag_run_v2_atomic_holds_rehearsal h
+      WHERE h.chat_id=OLD.chat_id AND h.day_key=OLD.day_key AND
+        h.asset_key=OLD.asset_key AND h.state='simulation_held'
+    ))
+BEGIN SELECT RAISE(ABORT,'atomic_rehearsal_budget_immutable'); END;
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_atomic_budget_no_delete
+BEFORE DELETE ON tag_run_v2_atomic_budget_rehearsal
+BEGIN SELECT RAISE(ABORT,'atomic_rehearsal_budget_immutable'); END;
 
 -- One simulated intention can have at most one hold, independent of retries.
 -- The mutable state is ONLY a rehearsal marker. Unknown/review allocations
