@@ -8,12 +8,16 @@ import {
 } from './v2-core.js';
 import { discoverWaxTipTokens } from './v2-chain.js';
 import { quarantineInboundTipReceipts } from './v2-deposits.js';
+import { OBSERVATION_ADMIN_COMMANDS, observationEnabled,
+  handleV2ObservationCommand } from './v2-pilot.js';
 
 export const V2_COMMANDS = new Set([
-  'pool', 'myrewards', 'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause'
+  'pool', 'myrewards', 'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause',
+  ...OBSERVATION_ADMIN_COMMANDS
 ]);
 export const V2_ADMIN_COMMANDS = new Set([
-  'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause'
+  'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause',
+  ...OBSERVATION_ADMIN_COMMANDS
 ]);
 const isV2Available = env => env?.TAG_RUN_ENABLED === 'true' &&
   env?.TAG_RUN_V2_POOL_ENABLED === 'true' && !!env?.DB &&
@@ -63,9 +67,14 @@ function nextUtcDay(day) {
   return new Date(timestamp + 86400000).toISOString().slice(0, 10);
 }
 export async function saveYesterdayParticipation(env, options = {}) {
-  if (!isV2Available(env)) return { status: 'disabled' };
+  const pilot = observationEnabled(env);
+  if (!isV2Available(env) && !pilot) return { status: 'disabled' };
   const cfg = await configFor(env.DB);
-  if (!cfg || cfg.status === 'paused') return { status: 'paused' };
+  if (!cfg || (cfg.status === 'paused' && !pilot)) return { status: 'paused' };
+  if (pilot && (cfg.wallet_account !== TIP_ACCOUNT || cfg.status !== 'paused' ||
+      cfg.daily_bps !== 500 || cfg.historical_ticket_bps !== 5000)) {
+    throw new Error('observation_config_not_paused_and_verified');
+  }
   const chatId = String(env.TELEGRAM_GROUP_CHAT_ID || '').trim();
   const yesterday = previousDay(options.nowMs ?? Date.now());
   const maxDays = Math.min(7, Math.max(1,
@@ -211,6 +220,12 @@ export async function handleTagRunV2Command(env, options) {
   if (V2_ADMIN_COMMANDS.has(name) && (!isAdmin || !isPrivate)) {
     await send('Community Pot administration is restricted to authorised bot DMs.');
     return true;
+  }
+  if (OBSERVATION_ADMIN_COMMANDS.has(name)) {
+    return await handleV2ObservationCommand(env, {
+      name,isAdmin,isPrivate,chatId,telegramId,send,nowMs,fetchImpl,
+      capture: captureOptions => saveYesterdayParticipation(env,captureOptions)
+    });
   }
   if (!isV2Available(env)) {
     await send('TAG RUN V2 Community Token Pot is not active yet. ' +
