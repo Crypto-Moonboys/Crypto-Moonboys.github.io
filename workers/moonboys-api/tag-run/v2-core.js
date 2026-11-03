@@ -150,23 +150,21 @@ export async function previewCommunityDraw({ day, assets, current, historical,
     if (!budget || (!currentWeights.length && !historicalWeights.length)) continue;
     const count = Number(budget < BigInt(MAX_BUNDLES_PER_ASSET)
       ? budget : BigInt(MAX_BUNDLES_PER_ASSET));
-    // The odd bundle belongs to current members, ensuring historical bundles
-    // are never more than half where both classes participate.
+    // When both groups qualify, historical activity receives exactly half
+    // the *ticket probability* for each bundle. Actual realized winners can
+    // vary, as in any lottery. This also lets historical members win when
+    // an asset has only a single indivisible smallest-unit reward.
     const mixed = currentWeights.length > 0 && historicalWeights.length > 0;
-    const historicSlots = mixed ? Math.floor(count / 2) :
-      historicalWeights.length && !currentWeights.length ? count : 0;
-    const labels = Array.from({ length: count }, (_, i) => i < historicSlots
-      ? 'historical' : 'current');
-    // Shuffle the class labels deterministically to prevent contract ordering
-    // or bundle indices from privileging historical/current participants.
-    const decorated = await Promise.all(labels.map(async (label, i) => ({
-      label, digest: await sha256Text(seedHex + '|class|' + day + '|' +
-        verified.key + '|' + i, cryptoImpl)
-    })));
-    decorated.sort((a, b) => a.digest.localeCompare(b.digest));
+    const classTickets = [
+      { telegramId: 'current', points: 1 },
+      { telegramId: 'historical', points: 1 }
+    ];
     const base = budget / BigInt(count), remainder = budget % BigInt(count);
     for (let i = 0; i < count; i++) {
-      const className = decorated[i].label;
+      const className = mixed
+        ? await pickWeighted(classTickets, seedHex,
+          day + '|' + verified.key + '|class|' + i, cryptoImpl)
+        : historicalWeights.length ? 'historical' : 'current';
       const pool = className === 'historical' ? historicalWeights : currentWeights;
       const winner = await pickWeighted(pool, seedHex,
         day + '|' + verified.key + '|' + i + '|' + className, cryptoImpl);
