@@ -153,6 +153,10 @@ function makeStatement(sql, params, tables, failPatterns, rowsByTable, calls) {
     async all() {
       calls.push({ method: 'all', sql, params });
       if (shouldFail(sql, failPatterns)) throw new Error(`mock query failed: ${failPatterns[0]}`);
+      if (sql.includes('sqlite_master')) {
+        return { success: true, results: params.filter(name => tables.has(name))
+          .map(name => ({ name })) };
+      }
       return { results: allRowsForSql(sql, rowsByTable) };
     },
     async run() {
@@ -162,6 +166,28 @@ function makeStatement(sql, params, tables, failPatterns, rowsByTable, calls) {
     },
   };
 }
+
+// Query-count proof: all 15 required daily-loop tables must be checked with
+// one catalog statement, never cached between independent requests.
+const metadataDb = makeDb({ existingTables: ALL_TABLES });
+const metadataState = await buildDailyLoopState({ DB: metadataDb },
+  { now: '2026-06-30T12:00:00.000Z' });
+const catalogCalls = metadataDb._calls.filter(call => call.sql.includes('sqlite_master'));
+assert.equal(catalogCalls.length, 1,
+  'schema check uses one D1 statement instead of 15 sequential lookups');
+assert.equal(catalogCalls[0].method, 'all');
+assert.equal(catalogCalls[0].params.length, 15);
+assert.equal(metadataState.source_status.identity.state, 'live_empty');
+
+const failedCatalogDb = makeDb({ existingTables: ALL_TABLES,
+  failPatterns: ['sqlite_master'] });
+const failedCatalog = await buildDailyLoopState({ DB: failedCatalogDb },
+  { now: '2026-06-30T12:00:00.000Z' });
+for (const [key, status] of Object.entries(failedCatalog.source_status)) {
+  assert.equal(status.state, key === 'sam_status' ? 'live' : 'query_failed',
+    'failed schema catalog must never be interpreted as tables_ready: ' + key);
+}
+assert.equal(failedCatalogDb._calls.filter(call => call.sql.includes('sqlite_master')).length, 1);
 
 assert.equal(getUtcDay(new Date('2026-06-30T23:59:59.999Z')), '2026-06-30');
 assert.equal(getUtcDay(new Date('2026-07-01T00:00:00.000Z')), '2026-07-01');
