@@ -39,7 +39,12 @@ test('locked wallet, chain, new migration and disabled V2 execution flags',()=>{
     assert.match(flags,new RegExp(key + ' = "false"'));
   }
   assert.match(flags,/TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"/);
-  assert.match(flags,/10 0 \* \* \*/);
+  assert.match(flags,/"12 0 \* \* \*"/);
+  const plan=read('workers/moonboys-api/scheduled/phase5-cron-plan.js');
+  const wrapper=read('workers/moonboys-api/worker-phase5-final.js');
+  assert.match(plan,/participation: '12 0 \* \* \*'/);
+  assert.match(plan,/cron === MOONBOYS_CRON\.participation/);
+  assert.match(wrapper,/if \(tasks\.participation\)[\s\S]*?saveYesterdayParticipation\(env\)/);
   assert.match(V2,/CREATE TABLE IF NOT EXISTS tag_run_v2_participation/);
   assert.match(V2,/CHECK\(status='preview_only'\)/);
   assert.doesNotMatch(V2,/private_key|wax_secret|transact\(|\bSIGNER\b/i);
