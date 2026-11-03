@@ -108,7 +108,8 @@ function fixture(t,{daily='500',available='10000',donation=true,
   return {sqlite,DB,env,cap,intents};
 }
 const capArgs={chatId:GROUP,day:DAY,contract:'kingsofgraff',
-  symbol:'LFGK',precision:4,authorizedBy:'two-person-reviewed'};
+  symbol:'LFGK',precision:4,authorizedBy:'two-person-reviewed',
+  maxTransferUnits:'500'};
 const intentArgs={chatId:GROUP,day:DAY,contract:'kingsofgraff',
   symbol:'LFGK',precision:4,bundleIndex:0,
   telegramId:MEMBER,receivingAccount:RECEIVER,amountUnits:'100',
@@ -215,6 +216,22 @@ test('unique cap reservations commit once and freeze member destination',async t
     /v2_payout_intent_immutable/);
   assert.throws(()=>f.sqlite.prepare('DELETE FROM tag_run_v2_payout_intents')
     .run(),/v2_payout_intent_immutable/);
+});
+
+test('per-transfer ceiling is independent of the total daily 5% cap',async t=>{
+  const f=fixture(t);
+  await openCap(f,{maxTransferUnits:'150'});
+  assert.equal(f.cap().per_transfer_limit_units,'150');
+  await reserveReviewedPayout(f.env,intentArgs);
+  await assert.rejects(reserveReviewedPayout(f.env,{
+    ...intentArgs,bundleIndex:1,amountUnits:'200'
+  }),/v2_payout_transfer_cap_exceeded/);
+  assert.equal(f.cap().committed_units,'100');
+  assert.equal(f.intents().length,1);
+  assert.throws(()=>f.sqlite.prepare(
+    'UPDATE tag_run_v2_payout_caps '+
+    "SET per_transfer_limit_units='500',revision=revision+1"
+  ).run(),/v2_payout_cap_immutable/);
 });
 
 test('daily ceiling is cumulative across all allocations and cancellations',async t=>{
