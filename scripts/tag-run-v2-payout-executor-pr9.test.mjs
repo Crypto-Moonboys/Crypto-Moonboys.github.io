@@ -282,6 +282,26 @@ test('a stale/parallel cap CAS cannot create a new payout without cap consumptio
   assert.equal(f.intents().length,1);
 });
 
+test('direct SQL cannot redirect a valid-looking intent to an unregistered WAX account',async t=>{
+  const f=fixture(t);await openCap(f);
+  const forged='e'.repeat(64);
+  // Exercise the registered-wallet SQL guard independently: a malicious
+  // direct caller supplies an otherwise matching freshly committed cap key.
+  f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
+    'SET committed_units=?,last_intent_key=?,revision=revision+1 '+
+    'WHERE chat_id=? AND day_key=? AND asset_key=?'
+  ).run('200',forged,GROUP,DAY,A);
+  assert.throws(()=>f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_payout_intents '+
+    '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
+    'receiving_account,amount_units,snapshot_digest,authorization_digest,'+
+    'approved_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(forged,GROUP,DAY,A,1,MEMBER,'otherwallet',
+    '200',SNAP,AUTH,'two-person-reviewed'),
+    /v2_payout_intent_source_unapproved_or_duplicate/);
+  assert.equal(f.intents().length,0);
+});
+
 test('signer handoff marks unknown BEFORE call and never automatically retries',async t=>{
   const f=fixture(t);await openCap(f);
   const first=await reserveReviewedPayout(f.env,intentArgs);
