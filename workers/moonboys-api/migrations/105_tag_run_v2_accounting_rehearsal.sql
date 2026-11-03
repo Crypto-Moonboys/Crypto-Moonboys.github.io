@@ -71,9 +71,41 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_intents_rehearsal (
 CREATE INDEX IF NOT EXISTS idx_tag_run_v2_rehearsal_member
   ON tag_run_v2_payout_intents_rehearsal(chat_id,telegram_id,day_key);
 
--- Rehearsal evidence is append-only: a second attempt either matches the
--- existing exact values (checked by JS), or must fail. No mutation can turn
--- a preview into a funded obligation or rewrite an approved destination.
+-- Rehearsal evidence is append-only: duplicates are rejected, including
+-- INSERT OR REPLACE. SQLite's REPLACE conflict algorithm may delete an
+-- existing row WITHOUT invoking DELETE triggers when recursive_triggers=OFF.
+-- Therefore every unique/primary-key conflict is rejected BEFORE INSERT,
+-- independent of recursive_triggers, rather than relying on DELETE guards.
+-- No mutation can turn a preview into a funded obligation or rewrite a
+-- selected account. An exact replay must be checked read-only by its caller.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_funding_rehearsal_no_replace
+  BEFORE INSERT ON tag_run_v2_funding_evidence_rehearsal
+  WHEN EXISTS (
+    SELECT 1 FROM tag_run_v2_funding_evidence_rehearsal old
+    WHERE old.evidence_id=NEW.evidence_id
+      OR (old.chain_id=NEW.chain_id
+          AND old.global_action_seq=NEW.global_action_seq)
+  )
+  BEGIN SELECT RAISE(ABORT, 'immutable_rehearsal_funding'); END;
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_rehearsal_no_replace
+  BEFORE INSERT ON tag_run_v2_snapshot_evidence_rehearsal
+  WHEN EXISTS (
+    SELECT 1 FROM tag_run_v2_snapshot_evidence_rehearsal old
+    WHERE old.snapshot_id=NEW.snapshot_id
+      OR (old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+          AND old.asset_key=NEW.asset_key)
+  )
+  BEGIN SELECT RAISE(ABORT, 'immutable_rehearsal_snapshot'); END;
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_rehearsal_no_replace
+  BEFORE INSERT ON tag_run_v2_payout_intents_rehearsal
+  WHEN EXISTS (
+    SELECT 1 FROM tag_run_v2_payout_intents_rehearsal old
+    WHERE old.intent_key=NEW.intent_key
+      OR (old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+          AND old.asset_key=NEW.asset_key
+          AND old.bundle_index=NEW.bundle_index)
+  )
+  BEGIN SELECT RAISE(ABORT, 'immutable_rehearsal_intent'); END;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_funding_rehearsal_no_update
   BEFORE UPDATE ON tag_run_v2_funding_evidence_rehearsal
   BEGIN SELECT RAISE(ABORT, 'immutable_rehearsal_funding'); END;
