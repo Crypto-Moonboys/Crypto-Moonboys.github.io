@@ -13,6 +13,7 @@ import {
 import {
   saveYesterdayParticipation, handleTagRunV2Command
 } from '../workers/moonboys-api/tag-run/v2-service.js';
+import { handleTagRunCommand } from '../workers/moonboys-api/tag-run/handler.js';
 import {
   readInboundTipReceipts, quarantineInboundTipReceipts
 } from '../workers/moonboys-api/tag-run/v2-deposits.js';
@@ -469,4 +470,99 @@ test('half historical ticket probability gives old members a chance with one tok
   }
   assert.equal(sawHistorical,true,'historical weighted members can win even one unit');
   assert.equal(sawCurrent,true,'current members retain a fair chance');
+});
+
+test('V2 command failures are awaited and return the established temporary error',async t=>{
+  const f=fixture(t);
+  f.env.TELEGRAM_BOT_TOKEN='123456:unit-test-only';
+  f.env.TELEGRAM_BOT_USERNAME='WIKICOMSBOT';
+  const original=f.DB.prepare.bind(f.DB);
+  f.env.DB={ prepare(sql){
+    if (sql.includes('FROM tag_run_v2_pool_config')) {
+      return { async first(){ throw new Error('simulated_v2_database_failure'); } };
+    }
+    return original(sql);
+  }};
+  for(const text of ['/pool','/rewards']){
+    const sent=[];
+    const update={message:{
+      message_id:42,chat:{id:Number(GROUP),type:'supergroup'},
+      from:{id:1111,first_name:'Community Tester'},text
+    }};
+    const handled=await handleTagRunCommand(update,f.env,{
+      fetchImpl:async (url,options)=>{
+        assert.match(url,/\/sendMessage$/);
+        sent.push(JSON.parse(options.body));
+        return {ok:true};
+      }
+    });
+    assert.equal(handled,true);
+    assert.equal(sent.length,1,'each failed command gets one fallback reply');
+    assert.match(sent[0].text,/TAG RUN is temporarily unavailable/);
+  }
+});
+
+test('/pool displays newest verified snapshot per approved asset, not latest 20 rows',async t=>{
+  const f=fixture(t);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
+  const assets=[
+    {key:assetKey('kingsofgraff','LFGK',4),contract:'kingsofgraff',
+      symbol:'LFGK',precision:4},
+    {key:assetKey('eosio.token','WAX',8),contract:'eosio.token',
+      symbol:'WAX',precision:8}
+  ];
+  const assetInsert=f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_assets '+
+    '(asset_key,chain_id,token_contract,token_symbol,token_precision,eligibility) '+
+    "VALUES (?,?,?,?,?,'approved')"
+  );
+  for(const a of assets)assetInsert.run(a.key,WAX_MAINNET_CHAIN_ID,
+    a.contract,a.symbol,a.precision);
+  const insert=f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'verified')"
+  );
+  const start=Date.parse('2026-10-10T00:00:00.000Z');
+  for(let i=0;i<22;i++){
+    const day=new Date(start+i*86400000).toISOString().slice(0,10);
+    insert.run(GROUP,day,assets[0].key,TIP_ACCOUNT,123,
+      'a'.repeat(64),'1000000','0','0',String(1000+i),'50',
+      'test-digest-'+i);
+  }
+  insert.run(GROUP,'2026-10-09',assets[1].key,TIP_ACCOUNT,123,
+    'a'.repeat(64),'1000000','0','0','789','50','test-wax-digest');
+  const sent=[];
+  assert.equal(await handleTagRunV2Command(f.env,{
+    name:'pool',isAdmin:false,isPrivate:false,chatId:GROUP,
+    telegramId:'1111',send:async x=>sent.push(x)
+  }),true);
+  assert.equal(sent.length,1);
+  assert.match(sent[0],/WAX @ eosio\.token — 789 smallest units/);
+  assert.match(sent[0],/LFGK @ kingsofgraff — 1021 smallest units/);
+  assert.equal((sent[0].match(/LFGK @ kingsofgraff/g)||[]).length,1);
+});
+
+test('schema and draw preview reject nonapproved daily or historical rates',async t=>{
+  const f=fixture(t);
+  assert.throws(()=>f.sqlite.exec(
+    'UPDATE tag_run_v2_pool_config SET daily_bps=0'
+  ),/CHECK constraint failed/);
+  assert.throws(()=>f.sqlite.exec(
+    'UPDATE tag_run_v2_pool_config SET historical_ticket_bps=0'
+  ),/CHECK constraint failed/);
+  f.env.DB={prepare(sql){
+    if(sql.includes('FROM tag_run_v2_pool_config')){
+      return {async first(){return {wallet_account:TIP_ACCOUNT,
+        daily_bps:0,historical_ticket_bps:5000,
+        status:'review_only',revision:0};}};
+    }
+    throw new Error('draw queried before rule validation');
+  }};
+  await assert.rejects(handleTagRunV2Command(f.env,{
+    name:'drawpreview',isAdmin:true,isPrivate:true,chatId:GROUP,
+    telegramId:'1111',send:async()=>{}
+  }),/v2_draw_rule_configuration_mismatch/);
 });
