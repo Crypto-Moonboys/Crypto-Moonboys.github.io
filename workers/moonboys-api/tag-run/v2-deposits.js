@@ -43,6 +43,10 @@ export async function readInboundTipReceipts({ fetchImpl = fetch,
         typeof action.block_id !== 'string' ||
         !TX_ID.test(action.block_id) ||
         !TX_ID.test(action.trx_id)) continue;
+    // Hyperion global sequences may exceed JS Number.MAX_SAFE_INTEGER.
+    // Never dedupe rounded numbers as though they were immutable chain IDs.
+    if (typeof action.global_sequence === 'number' &&
+        !Number.isSafeInteger(action.global_sequence)) continue;
     const sequence = String(action.global_sequence ?? '');
     if (!SEQUENCE.test(sequence)) continue;
     const quantity = String(data?.quantity || '');
