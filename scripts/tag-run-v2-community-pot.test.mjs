@@ -108,7 +108,7 @@ test('deterministic mixed token draw never allocates over 5% per asset',async()=
   assert.notDeepEqual((await previewCommunityDraw({...input,
     seedHex:'ad'.repeat(32)})).bundles,first.bundles,
     'different seeds should change at least some winners');
-  assert.throws(()=>previewCommunityDraw({...input,assets:[assets[0],assets[0]]}),
+  await assert.rejects(previewCommunityDraw({...input,assets:[assets[0],assets[0]]}),
     /duplicate_asset/);
 });
 
