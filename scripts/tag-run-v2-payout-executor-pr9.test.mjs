@@ -11,6 +11,8 @@ import {
   initializeReviewedDailyCap,reserveReviewedPayout,buildReviewedWaxTransfer,
   handoffApprovedPayout,markIrreversiblyConfirmed
 } from '../workers/moonboys-api/tag-run/v2-payout-executor.js';
+import { verifyIrreversibleWaxPayout } from
+  '../workers/moonboys-api/tag-run/v2-payout-chain-reconcile.js';
 
 const GROUP='-1001234567890',OTHER='-1007777777777';
 const DAY='2026-11-02',A=assetKey('kingsofgraff','LFGK',4);
@@ -319,4 +321,81 @@ test('no real signer endpoint, transfer flag or network broadcast is installed',
   }
   assert.doesNotMatch(src,/private.?key|seed.?phrase|push_transaction|WAX_SIGNER_URL/i);
   assert.equal(PAYOUT_EXECUTOR_AUTO_ENABLED,false);
+});
+
+
+function waxEvidenceMock({wrongChain=false,unfinalized=false,
+  secondDifferent=false,wrongBlock=false}={}){
+  let hostIndex=0;
+  const row={
+    global_sequence:'555',trx_id:TRANSACTION,block_num:101,
+    block_id:'f'.repeat(64),
+    act:{account:'kingsofgraff',name:'transfer',
+      data:{from:TIP_ACCOUNT,to:RECEIVER,quantity:'0.0100 LFGK',
+        memo:'TAG RUN V2 '+('1'.repeat(20))}}
+  };
+  return async(url,{method='GET'}={})=>{
+    if(url.endsWith('/get_info'))return {ok:true,json:async()=>({
+      chain_id:wrongChain?'wrong':WAX_MAINNET_CHAIN_ID,
+      last_irreversible_block_num:unfinalized?100:150
+    })};
+    if(url.endsWith('/get_block'))return {ok:true,json:async()=>({
+      block_num:101,id:wrongBlock?'e'.repeat(64):'f'.repeat(64)
+    })};
+    if(url.includes('/v2/history/get_actions?')){
+      hostIndex++;
+      const second=hostIndex===2;
+      return {ok:true,json:async()=>({actions:[{
+        ...row,act:second&&secondDifferent?{...row.act,
+          data:{...row.act.data,to:'otherwallet'}}:row.act
+      }]})};
+    }
+    throw Error('unexpected proof fetch '+url+' '+method);
+  };
+}
+
+test('outbound reconciliation independently checks two indexers and chain LIB',async()=>{
+  const result=await verifyIrreversibleWaxPayout({
+    transactionId:TRANSACTION,globalSequence:'555',
+    fetchImpl:waxEvidenceMock()
+  });
+  assert.equal(result.irreversible,true);
+  assert.equal(result.merkleInclusionProven,false);
+  assert.equal(result.corroborators,2);
+  assert.equal(result.to,RECEIVER);
+  assert.equal(result.contract,'kingsofgraff');
+});
+test('chain reconciliation fails closed for wrong chain, unfinalized or disagreement',async()=>{
+  for(const opts of [
+    {wrongChain:true},{unfinalized:true},
+    {secondDifferent:true},{wrongBlock:true}
+  ]){
+    await assert.rejects(verifyIrreversibleWaxPayout({
+      transactionId:TRANSACTION,globalSequence:'555',
+      fetchImpl:waxEvidenceMock(opts)
+    }),/payout_chain_/);
+  }
+});
+test('chain finality evidence must match stored destination, amount and memo',async t=>{
+  const f=fixture(t);await openCap(f);
+  const intent=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    intentKey:intent.intentKey,signAndBroadcast:async()=>({
+      transactionId:TRANSACTION
+    })
+  });
+  const fetchImpl=async(url,opts)=>{
+    const original=waxEvidenceMock();
+    return original(url,opts);
+  };
+  // Mock history action memo belongs to a DIFFERENT intent. The independent
+  // verifier accepts the chain event itself; ledger reconciliation refuses
+  // it as a mismatch to the frozen, original transfer request.
+  await assert.rejects(markIrreversiblyConfirmed(f.env,{
+    intentKey:intent.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:args=>verifyIrreversibleWaxPayout({
+      ...args,globalSequence:'555',fetchImpl
+    })
+  }),/v2_payout_chain_action_mismatch/);
+  assert.equal(f.intents()[0].status,'broadcast_unknown');
 });
