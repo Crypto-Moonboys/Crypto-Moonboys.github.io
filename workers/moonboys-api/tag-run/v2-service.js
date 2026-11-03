@@ -269,6 +269,43 @@ export async function handleTagRunV2Command(env, options) {
       'No funds, token debt, reward promise or payout is recorded.');
     return true;
   }
+  // Master #1697: public READ-ONLY pool status while funded V2 stays OFF.
+  // Never display unverified treasury amounts or invite tips before custody
+  // and donation policy review. This is an on-demand command, not a bulletin.
+  if (name === 'pool' && observationEnabled(env)) {
+    const cfg = await configFor(env.DB);
+    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT ||
+        cfg.status !== 'paused' || cfg.daily_bps !== 500 ||
+        cfg.historical_ticket_bps !== 5000) {
+      throw new Error('observation_config_not_paused_and_verified');
+    }
+    const result = await env.DB.prepare(
+      'SELECT eligibility,COUNT(*) AS n FROM tag_run_v2_assets ' +
+      'GROUP BY eligibility'
+    ).all();
+    const assets=requiredRows(result,'pool_observation_assets');
+    if (assets.length>3) throw new Error('pool_observation_assets_invalid');
+    let quarantined=0,approved=0,suspended=0;
+    for(const row of assets) {
+      if(!['quarantined','approved','suspended'].includes(row.eligibility) ||
+         !Number.isSafeInteger(row.n) || row.n<0 || row.n>100) {
+        throw new Error('pool_observation_assets_invalid');
+      }
+      if(row.eligibility==='quarantined')quarantined+=row.n;
+      else if(row.eligibility==='approved')approved+=row.n;
+      else suspended+=row.n;
+    }
+    if(approved!==0)throw new Error('pool_observation_unexpected_approval');
+    await send('TAG RUN · COMMUNITY TOKEN POT (READ-ONLY)\n' +
+      'Pool: PAUSED. Draws: OFF. Transfers: OFF.\n' +
+      'Observed token identities under review: '+quarantined+'.\n' +
+      'Suspended assets: '+suspended+'. Rewardable tokens: NONE.\n' +
+      'Street Cred and all 29 ranks continue normally.\n' +
+      'Unfunded participation credit is not a token balance.\n' +
+      'Do not send tokens: custody and donation policy are not approved.\n' +
+      'DM /myrewards to view your own participation.');
+    return true;
+  }
   if (!isV2Available(env)) {
     await send('TAG RUN V2 Community Token Pot is not active yet. ' +
       'Street Cred and the 29 ranks continue normally. No token payouts are enabled.');
