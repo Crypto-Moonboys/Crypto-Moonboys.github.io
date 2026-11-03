@@ -19,9 +19,9 @@
 1. New additive migration **104** and matching canonical schema for public wallet metadata, approved/quarantined token identities, reviewed deposit-event slots, exact-string balances, participation weights, review-only draw records/bundles and audit receipts.
 2. `v2-core.js`: BigInt smallest-unit parsing and formatting, spendable token 5% budgets with floor rounding, chain-aware token identities, deterministic weight-based random bundles and a replayable SHA-256 seed commitment. The current draw API is **preview-only** and does not persist a pre-snapshot seed commitment; it is not yet a publicly verifiable live draw.
 3. `v2-chain.js`: read-only WAX mainnet chain ID and named-account check; Hyperion token discovery; chain RPC recheck of **approved assets only**. Provider balances remain `observed_only` because the RPC does not attest historical finality at the daily cutoff. Contract-unknown tokens stay quarantined.
-4. `v2-deposits.js`: bounded Hyperion WAX inbound transfer scan, rejects non-irreversible/malformed actions and stores unique on-chain action receipts as **quarantined only**; repeating a scan cannot turn receipts into donations. The admin-only `/poolscan` command records candidate evidence, never funding credits. Pagination/full-history reconciliation remains a separate launch gate.
+4. `v2-deposits.js`: bounded **full (non-simple) Hyperion** WAX inbound transfer scan, requires each candidate's block number to be at/below the independently checked last irreversible block and checks its real block ID using WAX `get_block`; rejects malformed or conflicting block evidence and stores unique on-chain action receipts as **quarantined only**; repeating a scan cannot turn receipts into donations. The admin-only `/poolscan` command records candidate evidence, never funding credits. Pagination/full-history reconciliation remains a separate launch gate.
 5. `v2-service.js`: read-only `/pool`, `/myrewards`, admin `/poolstatus`, `/poolscan`, `/drawpreview`, `/drawaudit`, `/poolpause`; and idempotent capture of the previous UTC day's verified V1 chat receipts into a separate participation ledger.
-6. Dedicated **00:10 UTC** participation cron, independent of the existing five-minute/9am/4-hour triggers. No daily draw executes with the new flags off.
+6. Dedicated **00:10 UTC** participation cron with a monotonic completion checkpoint: an incomplete day is retried and up to seven missed UTC days are backfilled per run; no daily draw executes with the V2 flags off.
 7. Old V1 reward draft tables are retained and legacy `TAG_RUN_WEEKLY_REWARDS_ENABLED=false` remains. `/rewards` switches to the V2 community pot description **only if V2 is explicitly enabled later**.
 
 ### Fail-closed defaults
@@ -36,6 +36,15 @@ TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"
 ```
 
 **A flag must not be turned on just to try it.** Additive D1 migration 104, backup, strict on-chain wallet/custody proof, read-only live inventory verification and a signed Telegram acceptance plan are required first.
+
+### Fixed initial V2 rules and review-fix behavior
+
+- Migration 104 constrains `daily_bps` to **exactly 500 (5%)** and `historical_ticket_bps` to **exactly 5000 (50%)**. The preview refuses mismatched settings. Changing the percentages requires a separately reviewed migration and code update; these are not adjustable admin controls.
+- WAX balance observation rejects Hyperion token identities whose precision differs from the chain's actual `get_currency_balance` quantity. Unknown contracts remain quarantined.
+- The public `/pool` read-only summary shows the **most recent verified snapshot of each approved token**, not 20 records from whichever token has the most snapshot history.
+- V2 command delegates are awaited inside V1's existing fallback handler, so an asynchronous D1 error returns the existing temporary-unavailability reply.
+- The inbound scan uses **raw Hyperion `actions`**. Its quarantine ledger records only transfers referencing blocks independently confirmed by the chain's last irreversible block and an authoritative block-ID lookup; this still does **not** prove an incoming transfer is an approved donation.
+- The current V2 draw is a **preview**, not a signed, irreversible, independently auditable payout.
 
 ## Important unfinished work before funded draws can be enabled
 
