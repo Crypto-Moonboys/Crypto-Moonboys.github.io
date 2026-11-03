@@ -4,7 +4,7 @@
 import { previousDay } from './core.js';
 import {
   TIP_ACCOUNT, MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT,
-  sha256Text, drawSeed, previewCommunityDraw
+  sha256Text, drawSeed, previewCommunityDraw, validUtcDay
 } from './v2-core.js';
 import { discoverWaxTipTokens } from './v2-chain.js';
 import { quarantineInboundTipReceipts } from './v2-deposits.js';
