@@ -350,8 +350,8 @@ export async function handleTagRunCommand(update, env, options = {}) {
         '\nThis week: ' + recentWeekText(weekly?.score, weekly?.posts) +
         '\nDaily streak: ' + streak + ' day(s)' +
         '\nWAX account: ' + (wallet ? (isPrivate
-          ? wallet.wax_account + ' (' + wallet.verification_status + ')'
-          : 'registered (' + wallet.verification_status + ') — details in bot DM') :
+          ? wallet.wax_account + ' (registered destination)'
+          : 'destination registered — details in bot DM') :
           'not registered — DM /rain yourwaxaccount'));
       return true;
     }
