@@ -312,7 +312,8 @@ test('read-only incoming transfers require WAX LIB and are quarantined',async t=
   });
   assert.equal(repeated.inserted,0,'same global sequence can only be ingested once');
   const deposit=f.sqlite.prepare('SELECT status,units FROM tag_run_v2_deposits').get();
-  assert.deepEqual(deposit,{status:'quarantined',units:'70000'});
+  assert.equal(deposit.status,'quarantined');
+  assert.equal(deposit.units,'70000');
   assert.equal(f.sqlite.prepare('SELECT eligibility FROM tag_run_v2_assets').get().eligibility,
     'quarantined');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_bundles').get().n,0);
