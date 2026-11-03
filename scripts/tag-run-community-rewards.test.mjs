@@ -449,7 +449,7 @@ test('commands are verified-group/private only and rain registers WAX payout des
   assert.match(status.answer, /FUNDED PAYOUTS DISABLED/);
   const groupStatus = await f.command('/rainstatus',{chat:'group'});
   assert.match(groupStatus.answer,/Wallet details are private/);
-  assert.doesNotMatch(groupStatus.answer,/abcde\\.wam/);
+  assert.doesNotMatch(groupStatus.answer,/abcde\.wam/);
   const failedDestination = f.sqlite.prepare('SELECT wax_account FROM tag_run_wallets ' +
     'WHERE telegram_id=?').get(MEMBER).wax_account;
   f.env.beforeWaxDestination = async () => ({ok:false,status:503});
