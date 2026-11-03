@@ -16,7 +16,7 @@ Migration `105_tag_run_v2_payout_execution.sql` adds a **real persistent** D1 pa
 4. Re-check the token's approval and snapshot before signing; revalidate the receiver's WAX mainnet account **without requiring the recipient to sign or claim**.
 5. Build an actual Antelope `transfer` action with `isthatajoint@tagrain`, exact token contract/symbol/precision, frozen `from`, `to`, quantity and an intent-identifying memo.
 6. **Before** handing the transfer to a separately approved signer/broadcaster, atomically move the intent to `broadcast_unknown`, but only if the community pool is still `review_only`, this token's cap is **unpaused**, and the approved asset/verified snapshot **digest exactly equals the digest frozen in that intent** inside the same conditional UPDATE. This blocks concurrent `/poolpause`, token-cap pause and asset revocation during the receiver's asynchronous WAX RPC check. Even an RPC timeout never automatically retries that intent. The exact original action must be reconciled on chain before marking confirmed. A pause after an intent has already entered `broadcast_unknown` may not stop an in-flight signed transfer; a protected signer must also have its own emergency stop.
-7. `v2-payout-chain-reconcile.js` independently corroborates the outbound action through two Hyperion indexers, chain ID and last irreversible block, then checks contract, amount, destination, sender and memo against the frozen payout. Two indexers are corroboration, not Merkle inclusion proof.
+7. `v2-payout-chain-reconcile.js` independently corroborates the outbound action through two Hyperion indexers, chain ID and last irreversible block, then checks **the exact transaction ID**, contract, amount, destination, sender and memo against the frozen payout. A proof for another transaction ID, or a proof lacking its transaction ID, must never set the immutable `signed_tx_id` or leave the uncertain-transfer state. Two indexers are corroboration, not Merkle inclusion proof.
 
 A separate positive `maxTransferUnits` parameter is **required** when
 initializing any reviewed cap and may not exceed that asset's 5% daily budget.
@@ -81,3 +81,14 @@ recipient RPC. Large integer reservation increments above
 cases **fail closed before calling a signer**. The canonical schema mirrors
 the migration definition exactly. No remote D1 change, signer installation,
 funding approval or chain transaction occurs during this PR review.
+
+### Latest reconciliation and fixture hardening
+
+The direct-SQL registered-wallet regression must set `last_reserved_units`
+for the same amount as `committed_units` when constructing a legitimate cap
+transition. This ensures the test reaches the wallet guard instead of failing
+prematurely on the cap-accounting trigger. The chain confirmation fixture now
+includes the requested transaction ID, with negative tests for unrelated and
+missing IDs. A failed proof leaves the reservation `broadcast_unknown`, with
+no `signed_tx_id` stored. The updated focused test file defines 30 tests;
+syntax validation alone does not constitute a passing Node/Worker suite.
