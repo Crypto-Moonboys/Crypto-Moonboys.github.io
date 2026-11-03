@@ -158,9 +158,9 @@ test('SQLite requires non-NULL immutable digest identifiers on all three rehears
     {
       table:'tag_run_v2_payout_intents_rehearsal',id:'intent_key',
       columns:['chat_id','day_key','asset_key','bundle_index','telegram_id',
-        'destination_account','destination_digest','amount_units',
+        'ticket_class','destination_account','destination_digest','amount_units',
         'snapshot_digest','source_receipts_digest'],
-      values:[CHAT,DAY,KEY,0,'1111','gkniftyheads',HASH,'100',HASH,HASH]
+      values:[CHAT,DAY,KEY,0,'1111','current','gkniftyheads',HASH,'100',HASH,HASH]
     }
   ];
   for(const {table,id,columns,values} of examples){
@@ -186,19 +186,20 @@ test('offline D1-compatible ledger prevents duplicate slots and forbids mutating
   const db=fixture(t),result=await rehearse(await build());
   const sql=`INSERT INTO tag_run_v2_payout_intents_rehearsal
     (intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,
-    destination_account,destination_digest,amount_units,snapshot_digest,
+    ticket_class,destination_account,destination_digest,amount_units,snapshot_digest,
     source_receipts_digest)
-    VALUES(?,?,?,?,?,?,?,?,?,?,?)`;
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`;
   const insert=db.prepare(sql);
   for(const x of result.intents){
     insert.run(x.intent_key,x.chat_id,x.day_key,x.asset_key,x.bundle_index,
-      x.telegram_id,x.destination_account,x.destination_digest,x.amount_units,
-      x.snapshot_digest,x.source_receipts_digest);
+      x.telegram_id,x.ticket_class,x.destination_account,x.destination_digest,
+      x.amount_units,x.snapshot_digest,x.source_receipts_digest);
   }
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_payout_intents_rehearsal').get().n,20);
   const first=result.intents[0];
   assert.throws(()=>insert.run('d'.repeat(64),first.chat_id,first.day_key,first.asset_key,
-    first.bundle_index,first.telegram_id,'wrongaccount',first.destination_digest,
+    first.bundle_index,first.telegram_id,first.ticket_class,
+    'wrongaccount',first.destination_digest,
     first.amount_units,first.snapshot_digest,first.source_receipts_digest),
     /immutable_rehearsal_intent/);
   assert.throws(()=>db.prepare(`UPDATE tag_run_v2_payout_intents_rehearsal
@@ -214,12 +215,12 @@ test('offline D1-compatible ledger prevents duplicate slots and forbids mutating
   // before SQLite REPLACE can silently delete the original row.
   const replace=db.prepare(sql.replace('INSERT INTO','INSERT OR REPLACE INTO'));
   assert.throws(()=>replace.run(first.intent_key,first.chat_id,'2026-11-03',
-    first.asset_key,first.bundle_index,first.telegram_id,'otherwax',
-    first.destination_digest,first.amount_units,first.snapshot_digest,
+    first.asset_key,first.bundle_index,first.telegram_id,first.ticket_class,
+    'otherwax',first.destination_digest,first.amount_units,first.snapshot_digest,
     first.source_receipts_digest),/immutable_rehearsal_intent/);
   assert.throws(()=>replace.run('d'.repeat(64),first.chat_id,first.day_key,
-    first.asset_key,first.bundle_index,first.telegram_id,'otherwax',
-    first.destination_digest,first.amount_units,first.snapshot_digest,
+    first.asset_key,first.bundle_index,first.telegram_id,first.ticket_class,
+    'otherwax',first.destination_digest,first.amount_units,first.snapshot_digest,
     first.source_receipts_digest),/immutable_rehearsal_intent/);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_payout_intents_rehearsal').get().n,20);
   assert.equal(db.prepare('SELECT destination_account FROM tag_run_v2_payout_intents_rehearsal WHERE intent_key=?')
