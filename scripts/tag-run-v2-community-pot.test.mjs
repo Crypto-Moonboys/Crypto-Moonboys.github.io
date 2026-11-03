@@ -278,25 +278,33 @@ test('V2 bot commands are closed without feature flag and paused by default',asy
   assert.match(replies.at(-1),/restricted/);
 });
 
-function incomingRpcFixture({irreversible=true,unknownBlock=false}={}){
+function incomingRpcFixture({pastLib=false,unknownBlock=false,
+  invalidBlockReply=false,blockUnavailable=false,twoActions=false}={}){
   const calls=[];
+  // Raw Hyperion actions include 'actions' and no 'irreversible' or block_id.
   const action={
     act:{account:'kingsofgraff',name:'transfer',
       data:{from:'somewallet11',to:TIP_ACCOUNT,
         quantity:'7.0000 LFGK',memo:'Community tip'}},
-    block_num:123,block_id:'a'.repeat(64),trx_id:'b'.repeat(64),
-    global_sequence:'555',irreversible
+    block_num:pastLib?12346:123,trx_id:'b'.repeat(64),
+    global_sequence:'555'
   };
-  if(unknownBlock) action.block_id='not-an-irreversible-hash';
-  const fetchImpl=async url=>{
-    calls.push(url);
+  if(unknownBlock)action.block_id='c'.repeat(64);
+  const actions=[action];
+  if(twoActions)actions.push({...action,
+    trx_id:'d'.repeat(64),global_sequence:'556'});
+  const fetchImpl=async (url,opts={})=>{
+    calls.push({url,options:opts});
     if(url.endsWith('/get_info'))return {ok:true,json:async()=>({
       chain_id:WAX_MAINNET_CHAIN_ID,last_irreversible_block_num:12345
     })};
     if(url.endsWith('/get_account'))return {ok:true,
       json:async()=>({account_name:TIP_ACCOUNT})};
+    if(url.endsWith('/get_block'))return {ok:!blockUnavailable,
+      json:async()=>({id:'a'.repeat(64),
+        block_num:invalidBlockReply?124:123})};
     if(url.includes('/v2/history/get_actions?'))return {
-      ok:true,json:async()=>({actions:[action]})
+      ok:true,json:async()=>({actions})
     };
     throw Error('unexpected RPC '+url);
   };
@@ -309,6 +317,14 @@ test('read-only incoming transfers require WAX LIB and are quarantined',async t=
   const first=await readInboundTipReceipts({fetchImpl:rpc.fetchImpl,
     cryptoImpl:webcrypto});
   assert.equal(first.receipts.length,1);
+  assert.equal(first.receipts[0].blockId,'a'.repeat(64));
+  const historyUrl=rpc.calls.find(c=>c.url.includes('/v2/history/get_actions?'))?.url;
+  assert(historyUrl,'Hyperion raw get_actions request must be issued');
+  const params=new URL(historyUrl).searchParams;
+  assert.equal(params.get('simple'),null,'raw action mode cannot be simple');
+  assert.equal(params.get('checkLib'),'true');
+  assert.equal(rpc.calls.filter(c=>c.url.endsWith('/get_block')).length,1,
+    'read verified block provenance from chain RPC');
   assert.equal(first.receipts[0].assetKey,
     assetKey('kingsofgraff','LFGK',4));
   assert.equal(first.receipts[0].units,'70000');
@@ -329,19 +345,38 @@ test('read-only incoming transfers require WAX LIB and are quarantined',async t=
   assert.equal(f.sqlite.prepare('SELECT eligibility FROM tag_run_v2_assets').get().eligibility,
     'quarantined');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_bundles').get().n,0);
-  assert(rpc.calls.every(url=>!url.includes('push_transaction')));
+  assert(rpc.calls.every(c=>!c.url.includes('push_transaction')));
 });
-test('uncertain or non-irreversible inbound actions cannot create donations',async()=>{
-  const base=await readInboundTipReceipts({
-    fetchImpl:incomingRpcFixture({irreversible:false}).fetchImpl,
+test('non-LIB or mismatched block actions cannot create donations',async()=>{
+  const nonFinal=await readInboundTipReceipts({
+    fetchImpl:incomingRpcFixture({pastLib:true}).fetchImpl,
     cryptoImpl:webcrypto
   });
-  assert.equal(base.receipts.length,0);
-  const corrupt=await readInboundTipReceipts({
+  assert.equal(nonFinal.receipts.length,0,
+    'block number beyond independently checked LIB is never ingested');
+  const conflicting=await readInboundTipReceipts({
     fetchImpl:incomingRpcFixture({unknownBlock:true}).fetchImpl,
     cryptoImpl:webcrypto
   });
-  assert.equal(corrupt.receipts.length,0);
+  assert.equal(conflicting.receipts.length,0,
+    'provider block ID mismatch is rejected');
+  await assert.rejects(readInboundTipReceipts({
+    fetchImpl:incomingRpcFixture({invalidBlockReply:true}).fetchImpl,
+    cryptoImpl:webcrypto
+  }),/wax_irreversible_block_mismatch/);
+  await assert.rejects(readInboundTipReceipts({
+    fetchImpl:incomingRpcFixture({blockUnavailable:true}).fetchImpl,
+    cryptoImpl:webcrypto
+  }),/wax_irreversible_block_unavailable/);
+});
+test('full Hyperion actions from the same block reuse one WAX block check',async()=>{
+  const rpc=incomingRpcFixture({twoActions:true});
+  const scan=await readInboundTipReceipts({
+    fetchImpl:rpc.fetchImpl,cryptoImpl:webcrypto
+  });
+  assert.equal(scan.receipts.length,2);
+  assert.equal(rpc.calls.filter(c=>c.url.endsWith('/get_block')).length,1);
+  assert(scan.receipts.every(r=>r.status==='quarantined'));
 });
 
 test('checkpoint outage retries set-based participation writes without duplicates',async t=>{
