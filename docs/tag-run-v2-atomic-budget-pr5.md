@@ -37,9 +37,15 @@ unknown hold remains linked to it (even with recursive triggers disabled).
 Pausing stops new simulated holds. Previously held allocations can move
 to a `simulation_transfer_unknown` incident state while paused. Unknown
 allocations must never be released, cancelled or blindly resubmitted.
-The transition atomically increments an `unknown_floor_units` balance using
-`BigInt`, and SQL enforces that this irreversible floor cannot decrease
-or exceed outstanding allocations. A simulated cancellation of a still-known
+The `AFTER UPDATE OF state` SQL trigger atomically increments the
+`unknown_floor_units` balance for **every** held-to-unknown transition,
+including direct SQL statements that bypass the Node helper. The trigger
+performs exact digit-by-digit decimal addition inside SQLite, rather than
+using 64-bit integer or floating-point arithmetic, and the budget guard
+enforces that this irreversible floor cannot decrease or exceed outstanding
+allocations. The Node helper now updates only the hold state and checks the
+SQL-owned floor and revision after the transition. A failed floor update
+aborts the hold-state change within the same SQLite transaction. A simulated cancellation of a still-known
 hold reduces *outstanding* but cannot reduce the unknown floor and
 **does not refill the cumulative daily allocated cap**.
 
@@ -91,6 +97,13 @@ source-account guard, preserve an unknown hold during forbidden budget
 `INSERT OR REPLACE`, direct `UPDATE` and `UPDATE OR REPLACE` scope
 mutations, and inject a hold INSERT trigger failure *after* the budget
 UPDATE to prove the entire SQLite transaction rolls back.
+
+Direct held-to-unknown SQL transitions are regression-tested with two
+simultaneously held allocations: the first must increment the incident
+floor, and a subsequent direct attempt to zero outstanding balance must
+fail even while the second hold remains active. The tests also cover
+repeated updates that must not double count, cancellation of the other
+known hold, and 64-bit-overflow-sized base-unit sums.
 
 An additional regression opens two independent SQLite connections from
 two Node worker threads to the same disposable temporary database. A
