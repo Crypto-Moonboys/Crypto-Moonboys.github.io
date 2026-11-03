@@ -263,6 +263,67 @@ test('UPDATE OR REPLACE cannot move fresh scope onto spent paused scope',t=>{
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
+test('direct SQL held-to-unknown transition cannot evade incident floor accounting',t=>{
+  const db=fixture(t);
+  createSimulatedBudget(db,budget('200','100'));
+  holdSimulatedIntent(db,{intentKey:ids[0]});
+  holdSimulatedIntent(db,{intentKey:ids[1]});
+  const prior=counters(db);
+  assert.equal(prior.outstandingUnits,'200');
+  const direct=db.prepare('UPDATE tag_run_v2_atomic_holds_rehearsal '+
+    "SET state='simulation_transfer_unknown' "+
+    "WHERE intent_key=? AND state='simulation_held'");
+  assert.equal(direct.run(ids[0]).changes,1);
+  const locked=counters(db);
+  assert.equal(locked.unknownFloorUnits,'100',
+    'SQLite, not the JS helper, must account for direct state changes');
+  assert.equal(locked.outstandingUnits,'200');
+  assert.equal(locked.allocatedUnits,'200');
+  assert.equal(locked.revision,prior.revision+1);
+  // Old-state-gated trigger is exactly once even on a duplicate direct UPDATE.
+  assert.equal(db.prepare('UPDATE tag_run_v2_atomic_holds_rehearsal '+
+    "SET state='simulation_transfer_unknown' WHERE intent_key=?")
+    .run(ids[0]).changes,1);
+  assert.equal(counters(db).unknownFloorUnits,'100');
+  assert.throws(()=>db.exec('UPDATE tag_run_v2_atomic_budget_rehearsal '+
+    "SET outstanding_units='0',revision=revision+1"),
+    /atomic_rehearsal_budget_immutable/);
+  assert.equal(counters(db).outstandingUnits,'200');
+  // Cancelling the unrelated known hold cannot consume the unknown floor.
+  cancelSimulatedHold(db,{intentKey:ids[1]});
+  assert.equal(counters(db).outstandingUnits,'100');
+  assert.equal(counters(db).unknownFloorUnits,'100');
+  assert.throws(()=>db.exec('UPDATE tag_run_v2_atomic_budget_rehearsal '+
+    "SET outstanding_units='0',revision=revision+1"),
+    /atomic_rehearsal_budget_immutable/);
+  assert.equal(markSimulatedUnknown(db,{intentKey:ids[0]}).replayed,true);
+  assert.equal(counters(db).unknownFloorUnits,'100');
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
+test('SQL unknown-floor trigger adds exact BigInt values across direct and helper updates',t=>{
+  const big='9007199254740993',total='18014398509481986';
+  const db=fixture(t,[big,big,'1']);
+  createSimulatedBudget(db,budget(total,big));
+  holdSimulatedIntent(db,{intentKey:ids[0]});
+  holdSimulatedIntent(db,{intentKey:ids[1]});
+  db.prepare('UPDATE tag_run_v2_atomic_holds_rehearsal '+
+    "SET state='simulation_transfer_unknown' "+
+    "WHERE intent_key=?").run(ids[0]);
+  assert.equal(counters(db).unknownFloorUnits,big);
+  const next=markSimulatedUnknown(db,{intentKey:ids[1]});
+  assert.equal(next.state,'simulation_transfer_unknown');
+  assert.equal(counters(db).unknownFloorUnits,total);
+  assert.equal(counters(db).outstandingUnits,total);
+  assert.equal(counters(db).availableCapUnits,'0');
+  assert.equal(markSimulatedUnknown(db,{intentKey:ids[1]}).replayed,true);
+  assert.equal(counters(db).unknownFloorUnits,total);
+  assert.throws(()=>db.exec('UPDATE tag_run_v2_atomic_budget_rehearsal '+
+    "SET unknown_floor_units='1',revision=revision+1"),
+    /atomic_rehearsal_budget_immutable/);
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
 test('cancel a known hold without releasing a different unresolved incident',t=>{
   const db=fixture(t);
   createSimulatedBudget(db,budget('300','100'));
