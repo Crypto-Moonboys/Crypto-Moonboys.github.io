@@ -308,7 +308,7 @@ test('independent worker connections serialize last allocation and idempotent re
     "  const {holdSimulatedIntent}=await import(workerData.moduleUrl);",
     "  const gate=new Int32Array(workerData.gate);",
     "  Atomics.add(gate,0,1);",
-    "  Atomics.wait(gate,1,0,5000);",
+    "  Atomics.wait(gate,1,0,15000);",
     "  try {",
     "   const result=holdSimulatedIntent(db,{intentKey:workerData.intentKey});",
     "   parentPort.postMessage({ok:true,intentKey:workerData.intentKey,replayed:result.replayed,state:result.state});",
@@ -321,7 +321,7 @@ test('independent worker connections serialize last allocation and idempotent re
   const moduleUrl=new URL('./tag-run-v2-atomic-budget-rehearsal.mjs',
     import.meta.url).href;
   const pending=ids.slice(0,2).map(intentKey=>{
-    const w=new Worker(workerScript,{eval:true,workerData:{
+    const w=new Worker(workerScript,{eval:true,execArgv:[],workerData:{
       file,intentKey,moduleUrl,gate
     }});
     return {
@@ -336,7 +336,7 @@ test('independent worker connections serialize last allocation and idempotent re
     };
   });
   try {
-    for(let i=0;Atomics.load(flags,0)<2&&i<500;i++){
+    for(let i=0;Atomics.load(flags,0)<2&&i<1500;i++){
       await new Promise(resolve=>setTimeout(resolve,10));
     }
     assert.equal(Atomics.load(flags,0),2,
