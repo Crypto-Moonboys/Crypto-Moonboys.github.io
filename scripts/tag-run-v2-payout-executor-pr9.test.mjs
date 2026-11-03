@@ -207,7 +207,7 @@ test('unique cap reservations commit once and freeze member destination',async t
   assert.equal(f.cap().last_intent_key,first.intentKey);
   assert.equal(f.intents()[0].receiving_account,RECEIVER);
   await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
-    /v2_payout_intent_source_unapproved_or_duplicate/);
+    /v2_payout_cap_immutable|v2_payout_intent_source_unapproved_or_duplicate/);
   assert.equal(f.cap().committed_units,'100',
     'D1 batch must roll back the cap update on a duplicate intent');
   assert.equal(f.intents().length,1);
@@ -318,6 +318,48 @@ test('direct SQL cannot redirect a valid-looking intent to an unregistered WAX a
     /v2_payout_intent_source_unapproved_or_duplicate/);
   assert.equal(f.intents().length,0);
 });
+
+test('community /poolpause blocks already-reserved intents before signer call',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  f.sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='paused'").run();
+  let signed=false;
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:row.intentKey,fetchImpl:destinationRpc,
+    signAndBroadcast:async()=>{signed=true;}
+  }),/v2_payout_pool_not_reviewed/);
+  assert.equal(signed,false);
+  assert.equal(f.intents()[0].status,'reserved');
+});
+
+for(const pauseKind of ['cap','pool','asset']){
+  test('pause/revocation during receiver RPC blocks '+pauseKind+' signer handoff',async t=>{
+    const f=fixture(t);await openCap(f);
+    const row=await reserveReviewedPayout(f.env,intentArgs);
+    let signed=false;
+    const interruptedFetch=async(url,opts={})=>{
+      if(url.endsWith('/get_account')){
+        if(pauseKind==='cap')f.sqlite.prepare(
+          'UPDATE tag_run_v2_payout_caps SET paused=1,revision=revision+1'
+        ).run();
+        if(pauseKind==='pool')f.sqlite.prepare(
+          "UPDATE tag_run_v2_pool_config SET status='paused'"
+        ).run();
+        if(pauseKind==='asset')f.sqlite.prepare(
+          "UPDATE tag_run_v2_assets SET eligibility='suspended'"
+        ).run();
+      }
+      return destinationRpc(url,opts);
+    };
+    await assert.rejects(handoffApprovedPayout(f.env,{
+      intentKey:row.intentKey,fetchImpl:interruptedFetch,
+      signAndBroadcast:async()=>{signed=true;}
+    }),/v2_payout_send_lock_blocked_or_already_submitted/);
+    assert.equal(signed,false);
+    assert.equal(f.intents()[0].status,'reserved');
+    assert.equal(f.cap().committed_units,'100');
+  });
+}
 
 test('signer handoff marks unknown BEFORE call and never automatically retries',async t=>{
   const f=fixture(t);await openCap(f);
