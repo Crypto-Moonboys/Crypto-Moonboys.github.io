@@ -8,22 +8,22 @@ payable obligations, reserve funds, sign, broadcast or send WAX tokens.
 
 ## Important distinction: checking evidence is not authorizing funding
 
-The existing read-only \`readInboundTipReceipts()\` returns quarantined
-transfer evidence. The new \`inspectWaxFundingEvidence()\` accepts 1–20
+The existing read-only `readInboundTipReceipts()` returns quarantined
+transfer evidence. The new `inspectWaxFundingEvidence()` accepts 1–20
 such receipts and checks:
 
-1. The pinned WAX mainnet chain ID and treasury account \`isthatajoint\`
-   using \`get_info\` and \`get_account\`. Account existence is **not proof
+1. The pinned WAX mainnet chain ID and treasury account `isthatajoint`
+   using `get_info` and `get_account`. Account existence is **not proof
    of treasury private-key possession**.
 2. Each receipt's block is at or before a chain RPC's last irreversible block
-   (LIB), and \`get_block\` returns the matching 64-character block hash.
+   (LIB), and `get_block` returns the matching 64-character block hash.
    This establishes a corroborated irreversible **block reference**.
 3. Two distinct, documented Hyperion hosts must independently report the
    *same* transfer action by immutable global sequence, transaction ID,
    block number, token contract, sender, destination, exact token quantity
    and SHA-256 of the memo. One provider's success is **not sufficient**.
-4. \`get_currency_stats\` confirms the current token symbol and precision,
-   while \`get_currency_balance\` returns a **current head balance**.
+4. `get_currency_stats` confirms the current token symbol and precision,
+   while `get_currency_balance` returns a **current head balance**.
    Neither supplies the token account's historical balance at the LIB.
 5. Missing data, malformed precision, ambiguous action responses, mismatched
    host evidence, chain RPC errors, unsafe numeric action sequences, stale
@@ -32,21 +32,21 @@ such receipts and checks:
 Two indexers agreeing is independent **indexer corroboration**, not a
 cryptographic transaction Merkle inclusion proof. An indexer may have the
 same underlying data source as another. Even successful review leaves
-\`donationConsentVerified=false\`,
-\`treasuryCustodyVerified=false\`,
-\`historicalSnapshotFinalized=false\`,
-\`fundingApproved=false\`, and
-\`transferAttempted=false\`.
+`donationConsentVerified=false`,
+`treasuryCustodyVerified=false`,
+`historicalSnapshotFinalized=false`,
+`fundingApproved=false`, and
+`transferAttempted=false`.
 
 ### Source and network boundaries
 
-- Existing modules: \`tag-run/v2-chain.js\`, \`tag-run/v2-deposits.js\`,
-  \`tag-run/v2-core.js\`.
-- New modules: \`tag-run/v2-funding-evidence-review.js\` and
-  \`tag-run/v2-funding-review-summary.js\`.
-- Only the read-only chain endpoints \`get_info\`, \`get_account\`,
-  \`get_block\`, \`get_currency_stats\`, \`get_currency_balance\` and
-  two Hyperion \`get_actions\` reads are used.
+- Existing modules: `tag-run/v2-chain.js`, `tag-run/v2-deposits.js`,
+  `tag-run/v2-core.js`.
+- New modules: `tag-run/v2-funding-evidence-review.js` and
+  `tag-run/v2-funding-review-summary.js`.
+- Only the read-only chain endpoints `get_info`, `get_account`,
+  `get_block`, `get_currency_stats`, `get_currency_balance` and
+  two Hyperion `get_actions` reads are used.
 - **No production Telegram command, cron, database migration, Worker route,
   flag or signing credential is added.** The modules are not imported by
   any deployed production entrypoint.
@@ -56,7 +56,7 @@ same underlying data source as another. Even successful review leaves
 
 ## Provisional accounting, not funding
 
-\`reconcileUnapprovedFunding()\` uses exact decimal-string \`BigInt\` units.
+`reconcileUnapprovedFunding()` uses exact decimal-string `BigInt` units.
 It totals corroborated inbound amounts by token identity and separately
 reports the current head balance and any caller-supplied known exclusions
 or reservations. It rejects duplicates, malformed evidence and deficits.
@@ -67,10 +67,10 @@ outgoing transfers, other incoming transfers, supply changes, fees or
 a partially scanned history. Until independently approved donation
 sources and finalized historical state exist, the report enforces:
 
-- \`independentlyApprovedDonationUnits: "0"\`
-- \`fundedRewardBudgetUnits: "0"\`
-- \`spendingEnabled: false\`
-- \`historicalBalanceFinalized: false\`
+- `independentlyApprovedDonationUnits: "0"`
+- `fundedRewardBudgetUnits: "0"`
+- `spendingEnabled: false`
+- `historicalBalanceFinalized: false`
 
 No amount in these reports should be presented to players as money owed.
 
@@ -105,14 +105,14 @@ Do not place signing keys in GitHub, ChatGPT, Telegram or logs.
 
 Run on the PR branch using Node 22.13+:
 
-\`\`\`bat
+```bat
 node --test scripts/tag-run-v2-funding-proof-pr3.test.mjs
 node --test scripts/tag-run-v2-payout-rehearsal-pr2.test.mjs
 node --test scripts/tag-run-v2-direct-wallet-plan.test.mjs
 node --test scripts/tag-run-v2-community-pot.test.mjs
 npm run ci:worker-api
 node scripts/verify-d1-production-migrations.test.mjs
-\`\`\`
+```
 
 Mock-RPC tests cover two corroborating providers, mismatched and absent
 history, irreversible-block mismatches, wrong chain/treasury account,
