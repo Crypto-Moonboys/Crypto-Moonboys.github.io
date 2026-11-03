@@ -27,9 +27,13 @@ reservation is created.
    source receipt and snapshot digests. Only `simulation_only` status
    exists; no `payable`, `authorized`, `reserved` or `paid` state.
 
-The tables reject UPDATE and DELETE by database trigger, reject duplicate
-asset/day/bundle slots, and keep the existing migration 104 V1/V2 data
-untouched. There is no automatic insertion of observed wallet holdings:
+The tables reject UPDATE and DELETE by database trigger, and reject
+conflicting INSERT requests **before** they can replace an existing primary
+or alternate-unique-key row. This includes `INSERT OR REPLACE` when SQLite
+`recursive_triggers=OFF`, which otherwise bypasses DELETE triggers.
+Identical replays must be handled by a separate read/compare, never by
+replacing an immutable row. Duplicate asset/day/bundle slots are rejected.
+The existing migration 104 V1/V2 data is untouched. There is no automatic insertion of observed wallet holdings:
 an asset balance by itself is **not donated** and a block height by itself
 does not establish irreversible cutoff proof.
 
@@ -43,8 +47,10 @@ does not establish irreversible cutoff proof.
   `floor(available_units * 500 / 10000)`.
 - Planned totals equal that 5% amount, every bundle is positive and
   unique per asset/bundle index, and planned amounts reconcile exactly.
-- A frozen, syntactically valid, non-treasury WAX destination is provided
-  for every member; no wallet signature or login is needed for registration.
+- A frozen, **primitive string**, syntactically valid, non-treasury WAX
+  destination is provided for every member. Arrays, objects and boxed
+  strings are rejected, including values that coerce to a valid account name;
+  no wallet signature or login is needed for registration.
   The `chainAccountChecked` flag in earlier simulation inputs is not
   durable proof for a future payout. Before release, re-check on-chain
   account existence and compare the latest /rain registration version.
