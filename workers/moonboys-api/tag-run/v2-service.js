@@ -82,6 +82,12 @@ export async function saveYesterdayParticipation(env, options = {}) {
   const checkpoint = await env.DB.prepare(
     'SELECT last_completed_day_key FROM tag_run_v2_capture_cursors WHERE chat_id=?'
   ).bind(chatId).first();
+  // A resolved D1 read error can be a truthy object, not just a thrown
+  // exception. It MUST NOT be interpreted as "no checkpoint".
+  if (checkpoint !== null &&
+      (!checkpoint || !validUtcDay(checkpoint.last_completed_day_key))) {
+    throw new Error('participation_capture_cursor_unavailable');
+  }
   // First V2 activation backfills the earliest still-preserved V1 receipt,
   // not just yesterday. Subsequent failures replay the day after the most
   // recently completed checkpoint before processing newer UTC days.
@@ -89,6 +95,11 @@ export async function saveYesterdayParticipation(env, options = {}) {
     'SELECT MIN(day_key) AS first_day FROM tag_run_messages ' +
     'WHERE chat_id=? AND day_key<=?'
   ).bind(chatId, yesterday).first();
+  if (!checkpoint &&
+      (!oldest || !Object.prototype.hasOwnProperty.call(oldest,'first_day') ||
+       (oldest.first_day != null && !validUtcDay(oldest.first_day)))) {
+    throw new Error('participation_oldest_source_day_unavailable');
+  }
   let day = checkpoint?.last_completed_day_key
     ? nextUtcDay(checkpoint.last_completed_day_key)
     : String(oldest?.first_day || yesterday);
