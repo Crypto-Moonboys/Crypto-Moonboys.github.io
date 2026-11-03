@@ -14,6 +14,27 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
   // Targeted retries must not move the background queue past unrelated sources.
   const rotate = !filter.run_id && !filter.action && !filter.event_key;
   const recoveryKey = "c.day_key||':'||c.pet_id||':'||c.season_key||':'||c.event_key";
+  // A targeted run repair cannot consume non-run candidates (their run_id is
+  // always ''). Push its ID into every run-source branch before joins and
+  // suppress the unrelated historic event branches at SQL planning time.
+  // Default rotating recovery builds exactly the original SQL / bind order.
+  const targetedRun = Boolean(filter.run_id);
+  const action = String(filter.action || '');
+  const runWhere = targetedRun ? ' AND r.run_id=?' : '';
+  const skipRunStep = action && action !== 'run_step' ? ' AND 0' : '';
+  const skipRunExtract = action && action !== 'run_extract' ? ' AND 0' : '';
+  const skipExplore = targetedRun || (action && action !== 'explore') ? ' AND 0' : '';
+  // Keep unexpected/new activity actions eligible: only exclude this source
+  // when the requested action unambiguously belongs to another source group.
+  // Completed timed Explore sessions are activity_claim events in this
+  // care/activity branch. They emit action='explore' and must stay recoverable
+  // by targeted Explore retries, not only the background cursor.
+  const skipCare = targetedRun || ['run_step','run_extract',
+    'arena_complete','kaiju_win','run_boss'].includes(action) ? ' AND 0' : '';
+  const skipCombat = targetedRun || (action && action !== 'arena_complete' &&
+    action !== 'kaiju_win') ? ' AND 0' : '';
+  const skipBoss = targetedRun || (action && action !== 'run_boss') ? ' AND 0' : '';
+
   // Match JS trim before excluding paid rows. Old oversized API keys may have
   // longer specialist receipts than their 120-character primary source key;
   // those ambiguous prefixes must not be paid again under the shortened key.
@@ -31,7 +52,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     FROM telegram_pet_run_steps s JOIN telegram_pet_runs r
       ON r.run_id=s.run_id AND r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id
     WHERE s.telegram_id=? AND NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=r.run_id)
-      AND (?='' OR s.event_key=? OR r.status='completed' AND s.step_index=r.depth)
+      AND (?='' OR s.event_key=? OR r.status='completed' AND s.step_index=r.depth)${runWhere}${skipRunStep}
     UNION ALL
     SELECT e.pet_id,e.season_key,r.run_id,'run_extract',e.day_key,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.runtime_event_key'),
@@ -40,7 +61,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
       ON e.event_key=SUBSTR('pet_run_extract:'||r.telegram_id||':'||r.run_id,1,120)
       AND r.telegram_id=e.telegram_id AND r.pet_id=e.pet_id AND r.season_key=e.season_key
     WHERE e.telegram_id=? AND e.status='accepted' AND e.event_type='run_extract' AND r.status='extracted'
-      AND NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=r.run_id)
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=r.run_id)${runWhere}${skipRunExtract}
     UNION ALL
     SELECT room.pet_id,r.season_key,r.run_id,'run_step',date(room.resolved_at),
       json_extract(CASE WHEN json_valid(room.outcome_data) THEN room.outcome_data ELSE '{}' END,'$.runtime_event_key'),
@@ -48,7 +69,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     FROM telegram_pet_run_rooms room JOIN telegram_pet_runs r
       ON r.run_id=room.run_id AND r.telegram_id=room.telegram_id AND r.pet_id=room.pet_id
     JOIN telegram_pet_daily_runs d ON d.run_id=r.run_id AND d.telegram_id=r.telegram_id AND d.pet_id=r.pet_id
-    WHERE room.telegram_id=? AND room.status IN ('resolved','failed')
+    WHERE room.telegram_id=? AND room.status IN ('resolved','failed')${runWhere}${skipRunStep}
     UNION ALL
     SELECT m.pet_id,r.season_key,r.run_id,'run_extract',date(m.created_at),
       json_extract(CASE WHEN json_valid(m.event_data) THEN m.event_data ELSE '{}' END,'$.runtime_event_key'),
@@ -56,7 +77,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     FROM telegram_pet_run_analytics m JOIN telegram_pet_runs r
       ON r.run_id=m.run_id AND r.telegram_id=m.telegram_id AND r.pet_id=m.pet_id
     JOIN telegram_pet_daily_runs d ON d.run_id=r.run_id AND d.telegram_id=r.telegram_id AND d.pet_id=r.pet_id
-    WHERE m.telegram_id=? AND m.event_type='run_end' AND r.status='extracted' AND r.current_room<r.max_room
+    WHERE m.telegram_id=? AND m.event_type='run_end' AND r.status='extracted' AND r.current_room<r.max_room${runWhere}${skipRunExtract}
   ), other_candidates(pet_id,season_key,run_id,action,day_key,event_key,equipment_snapshot,equipment_action,source_event_id) AS MATERIALIZED (
     SELECT e.pet_id,e.season_key,'','explore',e.day_key,
       CASE WHEN e.event_type='adventure' THEN
@@ -65,7 +86,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
           WHEN 'telegram_pets_api' THEN 'runtime:api:'||e.event_key END
         ELSE json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.runtime_event_key') END,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.equipment_snapshot'), NULL, e.id
-    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'${skipExplore}
       AND e.event_type IN ('adventure','district_mission','event_chain')
     UNION ALL
     SELECT e.pet_id,e.season_key,'',CASE e.event_type WHEN 'work' THEN 'job' WHEN 'activity_claim' THEN
@@ -82,7 +103,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
           WHEN 'telegram_pets_api' THEN 'runtime:api:'||e.event_key END),
       COALESCE(json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.equipment_snapshot'),
         json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.equipment_snapshot')), NULL, e.id
-    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'${skipCare}
       AND (e.event_type IN ('feed','play','clean','sleep','train','energy_drink','dance','cuddles','work','daily_chest')
         OR e.event_type='activity_claim' AND EXISTS (SELECT 1 FROM telegram_pet_activity_sessions activity
           WHERE activity.id=json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.session_id')
@@ -92,7 +113,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     SELECT e.pet_id,e.season_key,'',CASE e.event_type WHEN 'arena_battle' THEN 'arena_complete' ELSE 'kaiju_win' END,
       e.day_key,'runtime:'||e.event_key,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.equipment_snapshot'), NULL, e.id
-    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'${skipCombat}
       AND (e.event_type='arena_battle' AND e.reason IN ('arena_win','arena_draw','arena_loss')
         OR e.event_type='kaiju_battle' AND e.reason='kaiju_win')
     UNION ALL
@@ -103,7 +124,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
       ON e.telegram_id=b.telegram_id AND e.pet_id=b.pet_id AND e.season_key=b.pet_season_key
       AND e.event_key='seasonal:'||b.season_key||':'||b.telegram_id||':'||b.pet_id
       AND e.event_type='seasonal_boss' AND e.status='accepted'
-    WHERE b.telegram_id=? AND b.defeated_at IS NOT NULL AND b.boss_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
+    WHERE b.telegram_id=?${skipBoss} AND b.defeated_at IS NOT NULL AND b.boss_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
   ), raw_candidates AS (
     SELECT * FROM run_candidates UNION ALL SELECT * FROM other_candidates
   ), candidates AS (
@@ -124,8 +145,13 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     GROUP BY c.pet_id,c.season_key,c.event_key
     ORDER BY ${rotate ? `CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,` : ''}
       ${recoveryKey} LIMIT ?`)
-    .bind(owner, filter.event_key || '', filter.event_key || '', owner, owner, owner, owner, owner, owner, owner,
-      ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '', boundedRecoveryLimit(filter.limit, 20)).all().then(requirePetReadResult);
+    .bind(owner, filter.event_key || '', filter.event_key || '', ...(targetedRun ? [filter.run_id] : []),
+      owner, ...(targetedRun ? [filter.run_id] : []),
+      owner, ...(targetedRun ? [filter.run_id] : []),
+      owner, ...(targetedRun ? [filter.run_id] : []),
+      owner, owner, owner, owner, ...Object.keys(PET_SEASONAL_BOSSES),
+      owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '',
+      boundedRecoveryLimit(filter.limit, 20)).all().then(requirePetReadResult);
   if (rotate && !await claimPetRecoveryBatch(db, owner, 'runtime', rows.results || [])) return;
   for (const row of rows.results || []) {
     try { await award(db, owner, row.event_key, row.action, row); }

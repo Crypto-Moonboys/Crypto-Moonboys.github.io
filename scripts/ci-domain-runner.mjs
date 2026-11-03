@@ -71,6 +71,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-pr8-full-state.test.mjs'],
     ['node', '--test', 'scripts/moonpet-sandbox-stress.test.mjs'],
     ['node', '--test', 'scripts/moonpet-recovery-profiling.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-runtime-targeted-pr2.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pr3-optimisation.test.mjs'],
     ['node', '--test', 'scripts/moonpet-pr4-optimisation.test.mjs'],
     ['node', '--test', 'scripts/radio-stream.test.mjs'],
