@@ -896,10 +896,15 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.match(bulletin.text, /\/rain yourwaxaccount/);
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
-  assert.match(wrangler, /"0 \*\/4 \* \* \*"/);
+  assert.match(wrangler, /"3 \*\/4 \* \* \*"/);
   const wrapper = readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js',
     import.meta.url), 'utf8');
-  assert.match(wrapper, /event\?\.cron === '0 \*\/4 \* \* \*'/);
+  const plan = readFileSync(new URL('../workers/moonboys-api/scheduled/phase5-cron-plan.js',
+    import.meta.url), 'utf8');
+  assert.match(plan, /bulletin: '3 \*\/4 \* \* \*'/);
+  assert.match(plan, /cron === MOONBOYS_CRON\.bulletin && env\.TAG_RUN_ENABLED === 'true'/);
+  assert.match(wrapper, /if \(tasks\.bulletin\)[\s\S]*?postTagRunGroupBulletin\(env\)/);
+  assert.match(wrapper, /phase5CronTasks\(event, env\)/);
 });
 
 test('four-hour bulletin never posts when scoring is disabled', async t => {
