@@ -144,6 +144,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/tag-run-v2-community-pot.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-observation.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-payout-policy.test.mjs'],
+    ['node', '--test', 'scripts/tag-run-v2-direct-wallet-plan.test.mjs'],
     ['node', '--test', 'scripts/tag-run-wallet-destination.test.mjs'],
     ['node', '--test', 'scripts/championship-clout-foundation.test.mjs'],
     ['node', '--test', 'scripts/championship-clout-pilot.test.mjs'],
