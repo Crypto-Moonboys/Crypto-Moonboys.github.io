@@ -287,6 +287,34 @@ test('exact cap addition preserves BigInt precision beyond 2^53',async t=>{
   assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
+test('snapshot replacement between reservation preflight and D1.batch rolls back atomically',async t=>{
+  const f=fixture(t);await openCap(f);
+  const changed='e'.repeat(64);
+  const batch=f.DB.batch.bind(f.DB);
+  let called=0;
+  f.DB.batch=async operations=>{
+    called++;
+    // A competing provider/reviewer replaced the verified snapshot
+    // AFTER the JS read but BEFORE the transactional cap+intent writes.
+    f.sqlite.prepare('UPDATE tag_run_v2_snapshots SET snapshot_digest=? '+
+      'WHERE chat_id=? AND day_key=? AND asset_key=?'
+    ).run(changed,GROUP,DAY,A);
+    return batch(operations);
+  };
+  await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
+    /v2_payout_intent_source_unapproved_or_duplicate/);
+  assert.equal(called,1);
+  assert.equal(f.cap().committed_units,'0',
+    'the cap increment must roll back together with the rejected intent');
+  assert.equal(f.cap().last_intent_key,'');
+  assert.equal(f.cap().last_reserved_units,'0');
+  assert.equal(f.intents().length,0,
+    'no stuck unresolved payout can block a later asset cap');
+  assert.equal(f.sqlite.prepare('SELECT snapshot_digest FROM '+
+    'tag_run_v2_snapshots WHERE day_key=?').get(DAY).snapshot_digest,changed);
+  assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
 test('unique cap reservations commit once and freeze member destination',async t=>{
   const f=fixture(t);
   await openCap(f);
@@ -477,6 +505,48 @@ test('snapshot digest replacement during WAX RPC blocks atomic signing lock',asy
   assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
+test('rejected draw after reservation blocks signing before recipient lookup',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  f.sqlite.prepare("UPDATE tag_run_v2_draws SET status='rejected' "+
+    'WHERE chat_id=? AND day_key=?').run(GROUP,DAY);
+  let called=0;
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:row.intentKey,fetchImpl:destinationRpc,
+    signAndBroadcast:async()=>{called++;}
+  }),/v2_payout_send_lock_blocked_or_already_submitted/);
+  assert.equal(called,0);
+  assert.equal(f.intents()[0].status,'reserved');
+  assert.equal(f.intents()[0].signed_tx_id,null);
+});
+
+for(const revocation of ['rejected','reviewer_removed']){
+  test('draw '+revocation+' during recipient RPC blocks atomic signer lock',async t=>{
+    const f=fixture(t);await openCap(f);
+    const row=await reserveReviewedPayout(f.env,intentArgs);
+    let called=0;
+    const interruptedRpc=async(url,options={})=>{
+      if(url.endsWith('/get_account')){
+        if(revocation==='rejected'){
+          f.sqlite.prepare("UPDATE tag_run_v2_draws SET status='rejected' "+
+            'WHERE chat_id=? AND day_key=?').run(GROUP,DAY);
+        }else{
+          f.sqlite.prepare("UPDATE tag_run_v2_draws SET reviewed_by=NULL "+
+            'WHERE chat_id=? AND day_key=?').run(GROUP,DAY);
+        }
+      }
+      return destinationRpc(url,options);
+    };
+    await assert.rejects(handoffApprovedPayout(f.env,{
+      intentKey:row.intentKey,fetchImpl:interruptedRpc,
+      signAndBroadcast:async()=>{called++;}
+    }),/v2_payout_send_lock_blocked_or_already_submitted/);
+    assert.equal(called,0,'no irreversible signer call after draw revocation');
+    assert.equal(f.intents()[0].status,'reserved');
+    assert.equal(f.cap().committed_units,'100','reservation remains locked');
+  });
+}
+
 test('signer handoff marks unknown BEFORE call and never automatically retries',async t=>{
   const f=fixture(t);await openCap(f);
   const first=await reserveReviewedPayout(f.env,intentArgs);
@@ -550,6 +620,65 @@ test('verified irreversible matching chain action confirms only once',async t=>{
     intentKey:first.intentKey,transactionId:TRANSACTION,
     verifyIrreversibleAction:async()=>safeAction(first.intentKey)
   }),/v2_payout_not_pending_reconciliation/);
+});
+
+test('proof-verified transfer confirms out of reconciliation_review without another send',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  let signCalls=0;
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,intentKey:row.intentKey,
+    signAndBroadcast:async()=>{
+      signCalls++;
+      throw Error('submit timed out, must reconcile');
+    }
+  });
+  assert.equal(signCalls,1);
+  f.sqlite.prepare("UPDATE tag_run_v2_payout_intents "+
+    "SET status='reconciliation_review' WHERE intent_key=?"
+  ).run(row.intentKey);
+  assert.equal(f.intents()[0].status,'reconciliation_review');
+  assert.throws(()=>f.sqlite.prepare("UPDATE tag_run_v2_payout_intents "+
+    "SET status='broadcast_unknown' WHERE intent_key=?"
+  ).run(row.intentKey),/v2_payout_intent_immutable/,
+  'review cannot cause another signer handoff');
+  const settled=await markIrreversiblyConfirmed(f.env,{
+    intentKey:row.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async proof=>{
+      assert.equal(proof.transactionId,TRANSACTION);
+      return safeAction(row.intentKey);
+    }
+  });
+  assert.equal(settled.status,'confirmed');
+  assert.equal(settled.txId,TRANSACTION);
+  assert.equal(f.intents()[0].status,'confirmed');
+  assert.equal(f.intents()[0].signed_tx_id,TRANSACTION);
+  assert.equal(signCalls,1,'reconciliation never signs or sends again');
+  await assert.rejects(markIrreversiblyConfirmed(f.env,{
+    intentKey:row.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async()=>safeAction(row.intentKey)
+  }),/v2_payout_not_pending_reconciliation/);
+});
+
+test('invalid proof leaves reconciliation_review untouched and tokens reserved',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,intentKey:row.intentKey,
+    signAndBroadcast:async()=>({transactionId:TRANSACTION})
+  });
+  f.sqlite.prepare("UPDATE tag_run_v2_payout_intents "+
+    "SET status='reconciliation_review' WHERE intent_key=?"
+  ).run(row.intentKey);
+  await assert.rejects(markIrreversiblyConfirmed(f.env,{
+    intentKey:row.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async()=>({
+      ...safeAction(row.intentKey),transactionId:'e'.repeat(64)
+    })
+  }),/v2_payout_chain_action_mismatch/);
+  assert.equal(f.intents()[0].status,'reconciliation_review');
+  assert.equal(f.intents()[0].signed_tx_id,null);
+  assert.equal(f.cap().committed_units,'100');
 });
 
 test('mismatched chain proof transaction ID cannot be persisted or confirm payout',async t=>{
