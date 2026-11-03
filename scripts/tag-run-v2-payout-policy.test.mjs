@@ -25,7 +25,8 @@ const source={
     rulesDigest:HASH,receiptsDigest:HASH
   },
   authority:{
-    chainDestinationValidated:true,memberDestinationConsentRecorded:true,\n    custodyVerified:true,
+    chainDestinationValidated:true,memberDestinationConsentRecorded:true,
+    custodyVerified:true,
     donationConsentVerified:true,historicalSnapshotFinalized:true,
     assetApproved:true,legalReviewApproved:true,
     separateSpendingApproval:true,spendingLimitUnits:2000000,
