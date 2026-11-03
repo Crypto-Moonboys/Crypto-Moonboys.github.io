@@ -3,7 +3,7 @@
 // quarantined; missing LIB/provenance fails closed. NO signing or transfers.
 import { TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey, parseQuantity,
   sha256Text, validUtcDay } from './v2-core.js';
-import { readWaxTipAccount, WAX_HYPERION } from './v2-chain.js';
+import { readWaxTipAccount, WAX_HYPERION, WAX_CHAIN_API } from './v2-chain.js';
 
 const MAX_SCAN = 100;
 const TX_ID = /^[a-f0-9]{64}$/i;
@@ -19,7 +19,7 @@ export async function readInboundTipReceipts({ fetchImpl = fetch,
   const proof = await readWaxTipAccount({ fetchImpl, account });
   const params = new URLSearchParams({
     account, limit:String(limit), sort:'desc', 'act.name':'transfer',
-    checkLib:'true', simple:'true'
+    checkLib:'true' // Full actions: simple=true changes 'actions' to 'simple_actions'.
   });
   const response = await fetchImpl(WAX_HYPERION +
     '/v2/history/get_actions?' + params.toString(), { method:'GET' });
@@ -28,21 +28,44 @@ export async function readInboundTipReceipts({ fetchImpl = fetch,
   if (!page || !Array.isArray(page.actions) || page.actions.length > limit) {
     throw new Error('wax_history_malformed');
   }
+  // Full Hyperion actions generally have no block_id or irreversible flag.
+  // Resolve block provenance from the authoritative WAX chain RPC, cache
+  // repeated blocks and compare against the chain's LIB from get_info.
+  const blockIds = new Map();
+  async function verifiedBlockId(blockNum) {
+    if (blockIds.has(blockNum)) return blockIds.get(blockNum);
+    const response = await fetchImpl(WAX_CHAIN_API + '/v1/chain/get_block', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ block_num_or_id: blockNum })
+    });
+    if (!response?.ok) throw new Error('wax_irreversible_block_unavailable');
+    const block = await response.json();
+    if (!block || block.block_num !== blockNum ||
+        typeof block.id !== 'string' || !TX_ID.test(block.id)) {
+      throw new Error('wax_irreversible_block_mismatch');
+    }
+    blockIds.set(blockNum, block.id.toLowerCase());
+    return block.id.toLowerCase();
+  }
   const receipts = [];
   for (const action of page.actions) {
     const transfer = action?.act;
     const data = transfer?.data;
     if (transfer?.name !== 'transfer' || data?.to !== account ||
         data?.from === account) continue;
-    // Only immutable / chain-confirmed actions are eligible for a
-    // QUARANTINED inbound ledger. No unconfirmed action is accepted.
-    if (action.irreversible !== true ||
-        !Number.isSafeInteger(action.block_num) ||
+    // Only chain-LIB-final blocks qualify as QUARANTINED receipt evidence.
+    // The simple-mode 'irreversible' flag is not present on raw actions.
+    if (!Number.isSafeInteger(action.block_num) ||
         action.block_num <= 0 ||
         action.block_num > proof.latestIrreversibleBlock ||
-        typeof action.block_id !== 'string' ||
-        !TX_ID.test(action.block_id) ||
-        !TX_ID.test(action.trx_id)) continue;
+        !TX_ID.test(String(action.trx_id || ''))) continue;
+    const blockId = await verifiedBlockId(action.block_num);
+    // A provider-supplied block ID is optional in raw Hyperion records, but
+    // reject it if present and inconsistent with the chain RPC.
+    if (action.block_id != null &&
+        (typeof action.block_id !== 'string' ||
+         action.block_id.toLowerCase() !== blockId)) continue;
     // Hyperion global sequences may exceed JS Number.MAX_SAFE_INTEGER.
     // Never dedupe rounded numbers as though they were immutable chain IDs.
     if (typeof action.global_sequence === 'number' &&
@@ -62,7 +85,7 @@ export async function readInboundTipReceipts({ fetchImpl = fetch,
     receipts.push({
       chainId:WAX_MAINNET_CHAIN_ID,globalSequence:sequence,
       transactionId:action.trx_id.toLowerCase(),
-      blockNum:action.block_num,blockId:action.block_id.toLowerCase(),
+      blockNum:action.block_num,blockId,
       sender:String(data.from || ''),recipient:account,
       contract:transfer.account,symbol:match[3],precision,
       assetKey:key,units,
