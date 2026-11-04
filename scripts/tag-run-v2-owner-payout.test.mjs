@@ -322,6 +322,77 @@ test('missing approval flags prevent any payout ledger mutation',async()=>{
 });
 
 
+
+test('owner SEND rechecks deployed flags after wallet approval, before broadcast',async()=>{
+  const group='-1001234567890';
+  const frozen={
+    ...intent,chat_id:group,day_key:'2026-11-02',
+    snapshot_digest:'f'.repeat(64)
+  };
+  let deployedReads=0,queries=0,signed=0,pushed=0,state='reserved';
+  const response=(result)=>({ok:true,json:async()=>({success:true,result})});
+  const fetchImpl=async(url,options={})=>{
+    if(url.endsWith('/workers/scripts/moonboys-api/settings')){
+      deployedReads++;
+      return response(makeSettings(deployedReads>=3
+        ?{TAG_RUN_V2_PAYOUTS_ENABLED:'false'}:{}));
+    }
+    if(url.endsWith('/query')){
+      queries++;
+      const sql=JSON.parse(options.body).sql;
+      let row;
+      if(sql.startsWith('SELECT * FROM tag_run_v2_payout_intents')){
+        row={...frozen,status:state};
+      } else if(sql.startsWith('SELECT wallet_account,status,daily_bps')){
+        row={wallet_account:TIP_ACCOUNT,status:'review_only',
+          daily_bps:500,historical_ticket_bps:5000};
+      } else if(sql.startsWith('SELECT paused FROM tag_run_v2_payout_caps')){
+        row={paused:0};
+      } else if(sql.startsWith('SELECT s.status,s.snapshot_digest')){
+        row={status:'verified',snapshot_digest:frozen.snapshot_digest,
+          eligibility:'approved'};
+      } else if(sql.startsWith("UPDATE tag_run_v2_payout_intents SET status='broadcast_unknown'")){
+        state='broadcast_unknown';
+        return response([{success:true,results:[],meta:{changes:1}}]);
+      } else {
+        throw Error('unexpected D1 SQL in fixture');
+      }
+      return response([{success:true,results:row?[row]:[],meta:{changes:0}}]);
+    }
+    if(url.endsWith('/get_info')){
+      return {ok:true,json:async()=>({chain_id:WAX_MAINNET_CHAIN_ID})};
+    }
+    if(url.endsWith('/get_account')){
+      return {ok:true,json:async()=>({account_name:frozen.receiving_account})};
+    }
+    throw Error('unexpected API URL');
+  };
+  const previous=process.exitCode;
+  try {
+    await runOwnerPayout(['send','--intent',ID,'--live'],{
+      vars:{CLOUDFLARE_API_TOKEN:'fixture-cloudflare-token',
+        CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),
+        TAG_RUN_OPERATOR_GROUP_ID:group},
+      fetchImpl,
+      confirmation:async()=>{},
+      signerFactory:async({beforeBroadcast})=>async(request)=>{
+        signed++;
+        // Simulate successful Anchor approval returning a signature.
+        // The owner runner, not the test signer, controls the fresh gate.
+        await beforeBroadcast(request);
+        pushed++;
+        return {transactionId:ID};
+      },
+      log:()=>{}
+    });
+  } finally {process.exitCode=previous;}
+  assert.equal(deployedReads,3,'initial, pre-lock and post-sign checks');
+  assert.equal(state,'broadcast_unknown');
+  assert.equal(signed,1);
+  assert.equal(pushed,0,'revocation must stop the network submission');
+  assert.ok(queries>=5);
+});
+
 test('an already-broadcast payout can be reconciled while new sends are paused',()=>{
   const halted=makeSettings({
     TAG_RUN_V2_POOL_ENABLED:'false',
