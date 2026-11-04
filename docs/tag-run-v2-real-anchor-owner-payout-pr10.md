@@ -16,11 +16,23 @@ approve donations, enable funded draws, or send funds on its own.
   reviewed draw, immutable bundle, registered member destination and exact
   per-transfer spending ceiling enforced by the existing payout executor.
 - Uses Anchor Link console transport to request a REAL WAX mainnet
-  transaction from isthatajoint@tagrain, with exactly one transfer action.
-  The owner personally approves in Anchor. No private WAX key is used in
-  code, uploaded to Cloudflare or stored in GitHub.
+  signature for exactly one transfer action from isthatajoint@tagrain.
+  It sets `broadcast: false`: an open Anchor approval prompt NEVER
+  broadcasts a payment merely because the owner signs. It validates the
+  returned actual signed action (chain, signer, contract, recipient, quantity,
+  memo, no extra actions) before considering submission.
+- After Anchor returns the signature, the owner runner refreshes the deployed
+  Worker release flags and the D1 intent, cap pause, verified snapshot, token
+  approval, reviewed draw and registered wallet. Only if every check remains
+  valid does it submit exactly one signed transaction to WAX through the
+  Anchor-provided chain client. A pause **during Anchor approval** stops the
+  submission. No private WAX key is used in code, Cloudflare or GitHub.
 - Writes broadcast_unknown BEFORE requesting an Anchor signature, so a
-  timeout, rejection or uncertain submission is never automatically retried.
+  timeout, rejection, lost response or uncertain submission is never
+  automatically retried. There is still a narrow cross-system race between
+  the final read and the network push: an emergency stop is not a blockchain
+  recall. A hardware/protected broadcaster with an independently enforced
+  kill switch is needed for unattended execution.
 - Separately reconciles a matching irreversible WAX transfer from two
   independent Hyperion indexers and an authoritative last irreversible block.
   Submission success or a transaction ID is NOT proof of payment.
@@ -79,7 +91,7 @@ Install the local-only Anchor console transport, without saving dependencies
 to the repository manifests:
 
 ```powershell
-npm install --no-save --package-lock=false anchor-link anchor-link-console-transport
+npm install --no-save --package-lock=false anchor-link anchor-link-console-transport @wharfkit/antelope
 ```
 
 The operator runner does not import Anchor until the owner explicitly
@@ -110,10 +122,14 @@ The owner must not invent authorization digests, fabricate donation proofs,
 change token contracts or approve lottery payments before the independent
 legal and custody reviews.
 
-**STOP on broadcast_unknown:** if Anchor errors or is cancelled after the
-atomic send lock, do not click again or re-run SEND. Reconcile the original
-transaction; if it did not broadcast, use a separately reviewed exception
-policy. A WAX tx ID returned from Anchor is not a final settlement record.
+**STOP on broadcast_unknown:** if Anchor rejects, the release is revoked
+while Anchor is open, the browser/console loses connection, or the network
+returns an uncertain response after the atomic send lock, do not click again
+or re-run SEND. The runner will not submit a previously signed payload once
+the fresh post-sign gate fails. Investigate/reconcile the original intent;
+only a separately reviewed exception policy may resolve an unsent UNKNOWN.
+The WAX transaction ID returned from `push_transaction` is not finality
+evidence. There is no automatic retry, alternate endpoint or replay.
 
 ## Test commands
 
@@ -125,7 +141,12 @@ npm run ci:worker-api
 echo $LASTEXITCODE
 ```
 
-Tests fake signer and Cloudflare responses; only an explicitly authorized,
+Tests include fake signer and Cloudflare responses, a paused Worker during
+an open Anchor signing prompt, frozen-action comparison, revocation of the
+D1 cap, and proof that a failing broadcast gets only one push attempt.
+
+These fixtures do not prove wallet/device integration or atomic cancellation
+of every possible cross-system pause/broadcast race. Only an explicitly authorized,
 small real WAX transfer validates custody, chain finality and receipts.
 No automated or protected headless signer is installed. A future automated
 service would require a separately secured signing authority, never
