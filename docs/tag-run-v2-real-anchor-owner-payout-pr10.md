@@ -20,7 +20,10 @@ approve donations, enable funded draws, or send funds on its own.
   It sets `broadcast: false`: an open Anchor approval prompt NEVER
   broadcasts a payment merely because the owner signs. It validates the
   returned actual signed action (chain, signer, contract, recipient, quantity,
-  memo, no extra actions) before considering submission.
+  memo, no extra actions) **and independently re-encodes the expected
+  standard transfer ABI to compare exact raw on-chain action bytes** before
+  considering submission. Any contract with a nonstandard transfer layout
+  is rejected rather than silently accepting altered binary payloads.
 - After Anchor returns the signature, the owner runner refreshes the deployed
   Worker release flags and the D1 intent, cap pause, verified snapshot, token
   approval, reviewed draw and registered wallet. Only if every check remains
