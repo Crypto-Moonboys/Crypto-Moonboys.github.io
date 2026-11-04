@@ -60,7 +60,11 @@ const fakeAnchorModules = Link => async name => {
   if (name === 'anchor-link-console-transport')
     return {default:class Transport{}};
   if (name === '@wharfkit/antelope') return {
-    SignedTransaction:{from:tx=>({ ...tx,id:ID })}
+    SignedTransaction:{from:tx=>({ ...tx,id:ID })},
+    ABI:{from:source=>source},
+    Serializer:{encode:({object})=>({
+      toString:()=>object.to === request.destination ? '00000000' : 'ffffffff'
+    })}
   };
   throw Error('unapproved mock import');
 };
@@ -270,6 +274,11 @@ test('modified Anchor transaction and extra actions never reach broadcaster',asy
     {...mockSigned(),resolvedTransaction:{
       ...mockSigned().resolvedTransaction,
       actions:[request.action,request.action]
+    }},
+    {...mockSigned(),transaction:{
+      ...mockSigned().transaction,
+      // The decoded display remains correct, but signed raw bytes were changed.
+      actions:[{...mockSigned().transaction.actions[0],data:'ffffffff'}]
     }}
   ]){
     let pushed=false,checked=false;
