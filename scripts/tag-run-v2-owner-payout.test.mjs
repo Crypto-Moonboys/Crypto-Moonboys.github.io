@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   parseOwnerCommand, validateDeployedPayoutSettings, makeD1RestAdapter,
   makeAnchorConsoleSigner, runOwnerPayout,
-  assertAnchorTransfer, anchorResultTransactionId
+  assertAnchorTransfer, assertSignedAnchorTransfer, anchorResultTransactionId
 } from './tag-run-v2-owner-payout.mjs';
 import { WAX_MAINNET_CHAIN_ID, TIP_ACCOUNT, assetKey } from
   '../workers/moonboys-api/tag-run/v2-core.js';
@@ -34,6 +34,41 @@ const intent={intent_key:ID,status:'reserved',
   asset_key:assetKey('kingsofgraff','LFGK',4),
   receiving_account:'gkniftyheads',amount_units:'100'};
 const request=buildReviewedWaxTransfer(intent);
+function mockSigned({
+  action=request.action, push=async()=>({transaction_id:ID}),
+  signer={actor:TIP_ACCOUNT,permission:'tagrain'}, processed=undefined
+}={}) {
+  return {
+    signer, processed,
+    chain:{chainId:WAX_MAINNET_CHAIN_ID,client:{v1:{chain:{
+      push_transaction:push
+    }}}},
+    signatures:['SIG_K1_fixture'],
+    transaction:{
+      actions:[{account:action.account,name:action.name,
+        authorization:action.authorization,data:'00000000'}],
+      context_free_actions:[],transaction_extensions:[],delay_sec:0
+    },
+    resolvedTransaction:{
+      actions:[action],context_free_actions:[],
+      transaction_extensions:[],delay_sec:0
+    }
+  };
+}
+const fakeAnchorModules = Link => async name => {
+  if (name === 'anchor-link') return {default:Link};
+  if (name === 'anchor-link-console-transport')
+    return {default:class Transport{}};
+  if (name === '@wharfkit/antelope') return {
+    SignedTransaction:{from:tx=>({ ...tx,id:ID })}
+  };
+  throw Error('unapproved mock import');
+};
+const mockWaxRpc = async url=>({
+  ok:true,json:async()=>url.endsWith('get_info')
+    ?{chain_id:WAX_MAINNET_CHAIN_ID}
+    :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'tagrain'}]}
+});
 
 test('all mutations require an explicit live flag',()=>{
   for(const command of ['send','reserve','create-cap','open-cap','reconcile']){
@@ -128,41 +163,145 @@ test('atomic remote D1 batch is one request with two statements',async()=>{
   assert.deepEqual(body.batch[1].params,[ID]);
 });
 
-test('Anchor adapter signs and broadcasts exactly one immutable action',async()=>{
+test('Anchor signs offline then rechecks authority before the ONE network broadcast',async()=>{
   let submitted,options,construct;
+  const order=[];
   class Link{
     constructor(value){construct=value;}
     async transact(value,opts){
+      order.push('anchor-sign');
       submitted=value;options=opts;
-      return {response:{transaction_id:ID}};
+      return mockSigned({push:async()=>{
+        order.push('broadcast');
+        return {transaction_id:ID};
+      }});
     }
   }
-  class Transport{}
   const signer=await makeAnchorConsoleSigner({
-    importModule:async name=>name==='anchor-link'
-      ?{default:Link}:{default:Transport},
-    fetchImpl:async url=>({ok:true,json:async()=>url.endsWith('get_info')
-      ?{chain_id:WAX_MAINNET_CHAIN_ID}
-      :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'tagrain'}]}})
+    importModule:fakeAnchorModules(Link),
+    fetchImpl:mockWaxRpc,
+    beforeBroadcast:async signedRequest=>{
+      order.push('fresh-release-and-D1-check');
+      assert.equal(signedRequest.intentKey,ID);
+    }
   });
   const receipt=await signer(request);
   assert.deepEqual(receipt,{transactionId:ID});
   assert.equal(construct.chains[0].chainId,WAX_MAINNET_CHAIN_ID);
   assert.deepEqual(submitted.actions,[request.action]);
-  assert.deepEqual(options,{broadcast:true,noModify:true});
+  assert.deepEqual(options,{broadcast:false,noModify:true});
+  assert.deepEqual(order,['anchor-sign','fresh-release-and-D1-check','broadcast']);
 });
 
 test('Anchor rejects missing delegated permission before signing',async()=>{
   let created=false;
   class Link{constructor(){created=true;}}
   await assert.rejects(makeAnchorConsoleSigner({
-    importModule:async name=>name==='anchor-link'
-      ?{default:Link}:{default:class Transport{}},
+    importModule:fakeAnchorModules(Link),
+    beforeBroadcast:async()=>{},
     fetchImpl:async url=>({ok:true,json:async()=>url.endsWith('get_info')
       ?{chain_id:WAX_MAINNET_CHAIN_ID}
       :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'active'}]}})
   }),/restricted_wax_permission_missing/);
   assert.equal(created,false);
+});
+
+test('signer requires a post-approval broadcasting guard',async()=>{
+  await assert.rejects(makeAnchorConsoleSigner({
+    importModule:async()=>{throw Error('must not import');}
+  }),/broadcast_guard_required/);
+});
+
+test('emergency revocation while Anchor approval is open prevents the push',async()=>{
+  let approve, pushes=0, guardCalls=0, revoked=false;
+  const approval=new Promise(resolve=>{approve=resolve;});
+  class Link {
+    async transact(){return await approval;}
+  }
+  const signer=await makeAnchorConsoleSigner({
+    importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
+    beforeBroadcast:async()=>{
+      guardCalls++;
+      if(revoked)throw Error('owner revoked payouts while Anchor was open');
+    }
+  });
+  const attempt=signer(request);
+  // The signed response is delayed: simulated user is still in Anchor.
+  revoked=true;
+  approve(mockSigned({push:async()=>{
+    pushes++;
+    return {transaction_id:ID};
+  }}));
+  await assert.rejects(attempt,/owner revoked payouts while Anchor was open/);
+  assert.equal(guardCalls,1);
+  assert.equal(pushes,0);
+});
+
+test('revoked D1 cap after approval also blocks the broadcast',async()=>{
+  let paused=false,pushes=0;
+  class Link {
+    async transact(){
+      paused=true;
+      return mockSigned({push:async()=>{
+        pushes++;
+        return {transaction_id:ID};
+      }});
+    }
+  }
+  const signer=await makeAnchorConsoleSigner({
+    importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
+    beforeBroadcast:async()=>{
+      if(paused)throw Error('broadcast_authorization_revoked');
+    }
+  });
+  await assert.rejects(signer(request),/broadcast_authorization_revoked/);
+  assert.equal(pushes,0);
+});
+
+test('modified Anchor transaction and extra actions never reach broadcaster',async()=>{
+  const changed={
+    ...request.action,
+    data:{...request.action.data,to:'attacker1234'}
+  };
+  for(const signed of [
+    mockSigned({action:changed}),
+    mockSigned({processed:{id:ID}}),
+    {...mockSigned(),signer:{actor:TIP_ACCOUNT,permission:'active'}},
+    {...mockSigned(),resolvedTransaction:{
+      ...mockSigned().resolvedTransaction,
+      actions:[request.action,request.action]
+    }}
+  ]){
+    let pushed=false,checked=false;
+    signed.chain.client.v1.chain.push_transaction=async()=>{pushed=true;};
+    class Link {async transact(){return signed;}}
+    const signer=await makeAnchorConsoleSigner({
+      importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
+      beforeBroadcast:async()=>{checked=true;}
+    });
+    await assert.rejects(signer(request),
+      /anchor_signed_(transaction_modified|response_invalid)/);
+    assert.equal(checked,false);
+    assert.equal(pushed,false);
+  }
+});
+
+test('push error does not trigger a second broadcast or automatic retry',async()=>{
+  let pushes=0;
+  class Link {
+    async transact(){
+      return mockSigned({push:async()=>{
+        pushes++;
+        throw Error('network timing uncertain');
+      }});
+    }
+  }
+  const signer=await makeAnchorConsoleSigner({
+    importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
+    beforeBroadcast:async()=>{}
+  });
+  await assert.rejects(signer(request),/network timing uncertain/);
+  assert.equal(pushes,1);
 });
 
 test('missing approval flags prevent any payout ledger mutation',async()=>{
