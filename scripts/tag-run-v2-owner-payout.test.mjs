@@ -54,6 +54,15 @@ test('operator refuses incomplete or conflicting deployed release flags',()=>{
   assert.throws(()=>validateDeployedPayoutSettings({
     bindings:[{name:'DB',type:'d1',id:'wrong'}]
   }),/worker_d1_binding_mismatch/);
+  // The current Cloudflare API returns database_id and treats id as a
+  // deprecated optional alias. Both shapes must be accepted.
+  const modern=makeSettings();
+  modern.bindings[0]={name:'DB',type:'d1',database_id:D1};
+  assert.equal(validateDeployedPayoutSettings(modern)
+    .TAG_RUN_V2_PAYOUTS_ENABLED,'true');
+  modern.bindings[0].id='wrong';
+  assert.throws(()=>validateDeployedPayoutSettings(modern),
+    /worker_d1_binding_mismatch/);
 });
 
 test('signer enforces exact WAX chain and delegated tagrain permission',()=>{
