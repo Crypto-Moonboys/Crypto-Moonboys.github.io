@@ -114,7 +114,12 @@ export function validateDeployedPayoutSettings(settings, { reconciliationOnly = 
     bindings.set(binding.name, binding);
   }
   const d1 = bindings.get('DB');
-  if (!d1 || d1.type !== 'd1' || d1.id !== DB_ID)
+  // Cloudflare's current binding model uses database_id; id is a
+  // deprecated optional alias. Reject conflicting aliases rather than
+  // accepting whichever happens to be populated.
+  if (!d1 || d1.type !== 'd1' ||
+    (d1.database_id ?? d1.id) !== DB_ID ||
+    (d1.database_id && d1.id && d1.database_id !== d1.id))
     fail('worker_d1_binding_mismatch');
   const flags = {};
   for (const [name, expected] of Object.entries(REQUIRED_FLAGS)) {
