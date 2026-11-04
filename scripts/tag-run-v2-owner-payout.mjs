@@ -207,9 +207,52 @@ export function assertAnchorTransfer(request) {
   return act;
 }
 
+
+/**
+ * Validate the ACTUAL signed Anchor result, not just the original prompt.
+ * Anchor Link promises a decoded resolvedTransaction. No co-signer action,
+ * additional authorization, modified recipient, quantity or memo is allowed.
+ */
+export function assertSignedAnchorTransfer(result, request) {
+  const want = assertAnchorTransfer(request);
+  const same = (a, b) => a !== undefined && a !== null && String(a) === String(b);
+  if (!result || result.processed != null ||
+      !same(result.chain?.chainId, WAX_MAINNET_CHAIN_ID) ||
+      !same(result.signer?.actor, TIP_ACCOUNT) ||
+      !same(result.signer?.permission, 'tagrain') ||
+      !Array.isArray(result.signatures) || result.signatures.length < 1)
+    fail('anchor_signed_response_invalid');
+  const tx = result.transaction;
+  const decoded = result.resolvedTransaction;
+  if (!tx || !decoded ||
+      !Array.isArray(tx.actions) || tx.actions.length !== 1 ||
+      !Array.isArray(decoded.actions) || decoded.actions.length !== 1 ||
+      !Array.isArray(tx.context_free_actions) || tx.context_free_actions.length ||
+      !Array.isArray(decoded.context_free_actions) || decoded.context_free_actions.length ||
+      !Array.isArray(tx.transaction_extensions) || tx.transaction_extensions.length ||
+      !Array.isArray(decoded.transaction_extensions) || decoded.transaction_extensions.length ||
+      !same(tx.delay_sec, '0') || !same(decoded.delay_sec, '0'))
+    fail('anchor_signed_transaction_modified');
+  for (const action of [tx.actions[0], decoded.actions[0]]) {
+    if (!same(action?.account, want.account) ||
+        !same(action?.name, want.name) ||
+        !Array.isArray(action.authorization) || action.authorization.length !== 1 ||
+        !same(action.authorization[0]?.actor, TIP_ACCOUNT) ||
+        !same(action.authorization[0]?.permission, 'tagrain'))
+      fail('anchor_signed_transaction_modified');
+  }
+  const data = decoded.actions[0].data;
+  const fields = ['from', 'to', 'quantity', 'memo'];
+  if (!data || typeof data !== 'object' ||
+      Object.keys(data).sort().join(',') !== fields.sort().join(',') ||
+      fields.some(key => !same(data[key], want.data[key])))
+    fail('anchor_signed_transaction_modified');
+  return result;
+}
+
 export function anchorResultTransactionId(response) {
   const candidates = [response?.transaction?.id, response?.transactionId,
-    response?.processed?.id, response?.response?.transaction_id];
+    response?.transaction_id, response?.processed?.id, response?.response?.transaction_id];
   for (const item of candidates) {
     const value = typeof item === 'string' ? item : item?.toString?.();
     if (HEX.test(value || '')) return value;
@@ -218,16 +261,25 @@ export function anchorResultTransactionId(response) {
 }
 
 export async function makeAnchorConsoleSigner({
-  importModule = name => import(name), fetchImpl = fetch
+  importModule = name => import(name), fetchImpl = fetch,
+  // A fresh, independently authenticated release AND D1 authority check.
+  // REQUIRED: this is called AFTER wallet approval, immediately before push.
+  beforeBroadcast
 } = {}) {
-  let Link, Transport;
+  if (typeof beforeBroadcast !== 'function')
+    fail('broadcast_guard_required');
+  let Link, Transport, SignedTransaction;
   try {
-    const [linkModule, transportModule] = await Promise.all([
-      importModule('anchor-link'), importModule('anchor-link-console-transport')
+    const [linkModule, transportModule, antelope] = await Promise.all([
+      importModule('anchor-link'),
+      importModule('anchor-link-console-transport'),
+      importModule('@wharfkit/antelope')
     ]);
     Link = linkModule.default || linkModule.AnchorLink;
     Transport = transportModule.default || transportModule.ConsoleTransport;
-    if (typeof Link !== 'function' || typeof Transport !== 'function')
+    SignedTransaction = antelope.SignedTransaction;
+    if (typeof Link !== 'function' || typeof Transport !== 'function' ||
+        typeof SignedTransaction?.from !== 'function')
       fail('anchor_adapter_invalid');
   } catch (_) {
     fail('anchor_dependencies_missing');
@@ -260,10 +312,34 @@ export async function makeAnchorConsoleSigner({
   });
   return async request => {
     const action = assertAnchorTransfer(request);
-    const result = await link.transact({ actions: [action] }, {
-      broadcast: true, noModify: true
+    // Anchor only SIGNS and returns its result. A pending QR/Anchor approval
+    // can NEVER broadcast the transaction on its own. Do not change to true.
+    const signed = await link.transact({ actions: [action] }, {
+      broadcast: false, noModify: true
     });
-    return { transactionId: anchorResultTransactionId(result) };
+    assertSignedAnchorTransfer(signed, request);
+    // Use the same transaction representation as Anchor Link internally.
+    // Never reconstruct an action from CLI arguments.
+    const tx = SignedTransaction.from({
+      ...signed.transaction, signatures: signed.signatures
+    });
+    if (!HEX.test(String(tx?.id || ''))) fail('anchor_transaction_invalid');
+    if (typeof signed.chain?.client?.v1?.chain?.push_transaction !== 'function')
+      fail('anchor_broadcast_unavailable');
+
+    // LAST release gate: this executes after signing/approval has finished.
+    // It checks freshly deployed flags plus D1 UNKNOWN, pool/cap pause,
+    // approved asset, snapshot, draw and member destination.
+    // Any rejection leaves UNKNOWN for manual reconciliation; no push.
+    await beforeBroadcast(request);
+
+    // Exactly one submission attempt. Never automatically repeat on error,
+    // timeout, ambiguous response or cancellation.
+    const pushed = await signed.chain.client.v1.chain.push_transaction(tx);
+    const responseId = anchorResultTransactionId(pushed);
+    if (responseId && responseId !== String(tx.id))
+      fail('anchor_transaction_id_mismatch');
+    return { transactionId: responseId || String(tx.id) };
   };
 }
 
@@ -379,12 +455,40 @@ export async function runOwnerPayout(argv, {
       action.action.data.quantity + ' TO ' + action.destination);
     // Dependency, chain and permission checks MUST finish before the
     // executor atomically changes reserved -> broadcast_unknown.
-    const signer = await signerFactory({ fetchImpl });
     const verifyReleaseAuthorization = async () => {
       const currentSettings = await jsonApi(fetchImpl, auth.token,
         base + '/workers/scripts/' + SCRIPT + '/settings');
       validateDeployedPayoutSettings(currentSettings);
     };
+    const beforeBroadcast = async request => {
+      // Do not rely on any pre-sign flags: pause may occur while Anchor is open.
+      await verifyReleaseAuthorization();
+      const row = await db.prepare(
+        'SELECT i.intent_key FROM tag_run_v2_payout_intents i ' +
+        'JOIN tag_run_v2_payout_caps c ON c.chat_id=i.chat_id ' +
+        'AND c.day_key=i.day_key AND c.asset_key=i.asset_key ' +
+        'JOIN tag_run_v2_pool_config p ON p.config_id=1 ' +
+        'JOIN tag_run_v2_snapshots s ON s.chat_id=i.chat_id ' +
+        'AND s.day_key=i.day_key AND s.asset_key=i.asset_key ' +
+        'JOIN tag_run_v2_assets a ON a.asset_key=i.asset_key ' +
+        'JOIN tag_run_v2_draws d ON d.chat_id=i.chat_id AND d.day_key=i.day_key ' +
+        'JOIN tag_run_wallets w ON w.telegram_id=i.telegram_id ' +
+        "WHERE i.intent_key=? AND i.status='broadcast_unknown' " +
+        'AND i.signed_tx_id IS NULL AND i.chat_id=? ' +
+        'AND i.asset_key=? AND i.receiving_account=? AND i.amount_units=? ' +
+        "AND c.paused=0 AND c.snapshot_digest=i.snapshot_digest " +
+        "AND p.status='review_only' AND p.wallet_account='isthatajoint' " +
+        'AND p.daily_bps=500 AND p.historical_ticket_bps=5000 ' +
+        "AND s.status='verified' AND s.snapshot_digest=i.snapshot_digest " +
+        "AND a.eligibility='approved' AND d.status='reviewed' " +
+        'AND d.reviewed_by IS NOT NULL AND length(d.reviewed_by)>0 ' +
+        'AND w.wax_account=i.receiving_account'
+      ).bind(o.intent, auth.group, intent.asset_key,
+        intent.receiving_account, intent.amount_units).first();
+      if (!row || row.intent_key !== o.intent)
+        fail('broadcast_authorization_revoked');
+    };
+    const signer = await signerFactory({ fetchImpl, beforeBroadcast });
     const result = await handoffApprovedPayout(env, {
       intentKey: o.intent, signAndBroadcast: signer,
       verifyReleaseAuthorization, fetchImpl
