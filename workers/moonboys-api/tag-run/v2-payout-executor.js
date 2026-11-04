@@ -229,11 +229,14 @@ export function buildReviewedWaxTransfer(intent,{permission='tagrain'}={}){
 // an operator must reconcile the original chain action. No public route
 // calls this function, and no signer is configured by this PR.
 export async function handoffApprovedPayout(env,{
-  intentKey,signAndBroadcast,fetchImpl=fetch
+  intentKey,signAndBroadcast,verifyReleaseAuthorization,fetchImpl=fetch
 }={}){
   assertExecutionMode(env);
   if(!HEX.test(intentKey||'')||typeof signAndBroadcast!=='function')
     fail('missing_authorized_signer');
+  if(verifyReleaseAuthorization!==undefined&&
+     typeof verifyReleaseAuthorization!=='function')
+    fail('invalid_release_authorization_check');
   const intent=await env.DB.prepare(
     'SELECT * FROM tag_run_v2_payout_intents WHERE intent_key=?'
   ).bind(intentKey).first();
@@ -260,6 +263,7 @@ export async function handoffApprovedPayout(env,{
   // immediately before any irreversible send; no ownership signature needed.
   const destination=await checkWaxDestination(intent.receiving_account,fetchImpl);
   if(destination.status!=='exists')fail('recipient_account_unavailable');
+  if(verifyReleaseAuthorization)await verifyReleaseAuthorization();
   const action=buildReviewedWaxTransfer(intent);
   // CAS on intent AND both live pause authorities in the SAME D1 UPDATE:
   // a pause or asset revocation committed during the awaited RPC cannot

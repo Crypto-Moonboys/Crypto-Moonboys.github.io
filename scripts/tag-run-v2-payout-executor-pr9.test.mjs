@@ -586,6 +586,23 @@ test('signer/network errors keep UNKNOWN hold for manual reconciliation',async t
   assert.equal(f.intents()[0].status,'broadcast_unknown');
 });
 
+test('release authorization is refreshed after recipient check and before send lock',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  let signed=false,checked=false;
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:row.intentKey,fetchImpl:destinationRpc,
+    verifyReleaseAuthorization:async()=>{
+      checked=true;
+      throw Error('deployed payout release was revoked');
+    },
+    signAndBroadcast:async()=>{signed=true;}
+  }),/deployed payout release was revoked/);
+  assert.equal(checked,true);
+  assert.equal(signed,false);
+  assert.equal(f.intents()[0].status,'reserved');
+});
+
 test('invalid receiver RPC blocks signer without recording UNKNOWN state',async t=>{
   const f=fixture(t);await openCap(f);
   const row=await reserveReviewedPayout(f.env,intentArgs);
@@ -620,6 +637,23 @@ test('verified irreversible matching chain action confirms only once',async t=>{
     intentKey:first.intentKey,transactionId:TRANSACTION,
     verifyIrreversibleAction:async()=>safeAction(first.intentKey)
   }),/v2_payout_not_pending_reconciliation/);
+});
+
+test('database rejects confirmed settlements without a valid transaction ID',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,intentKey:row.intentKey,
+    signAndBroadcast:async()=>({transactionId:TRANSACTION})
+  });
+  for(const txId of [null,'not-a-transaction-id']){
+    assert.throws(()=>f.sqlite.prepare(
+      "UPDATE tag_run_v2_payout_intents SET status='confirmed',signed_tx_id=? "+
+      'WHERE intent_key=?'
+    ).run(txId,row.intentKey));
+    assert.equal(f.intents()[0].status,'broadcast_unknown');
+    assert.equal(f.intents()[0].signed_tx_id,null);
+  }
 });
 
 test('proof-verified transfer confirms out of reconciliation_review without another send',async t=>{

@@ -375,8 +375,14 @@ export async function runOwnerPayout(argv, {
     // Dependency, chain and permission checks MUST finish before the
     // executor atomically changes reserved -> broadcast_unknown.
     const signer = await signerFactory({ fetchImpl });
+    const verifyReleaseAuthorization = async () => {
+      const currentSettings = await jsonApi(fetchImpl, auth.token,
+        base + '/workers/scripts/' + SCRIPT + '/settings');
+      validateDeployedPayoutSettings(currentSettings);
+    };
     const result = await handoffApprovedPayout(env, {
-      intentKey: o.intent, signAndBroadcast: signer, fetchImpl
+      intentKey: o.intent, signAndBroadcast: signer,
+      verifyReleaseAuthorization, fetchImpl
     });
     // Even a known tx ID is NOT a confirmed payout without two-indexer LIB.
     log(JSON.stringify(result));

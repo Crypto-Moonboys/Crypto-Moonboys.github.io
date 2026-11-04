@@ -137,8 +137,11 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_intents (
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(chat_id,day_key,asset_key,bundle_index),
   FOREIGN KEY(chat_id,day_key,asset_key) REFERENCES tag_run_v2_payout_caps(chat_id,day_key,asset_key),
-  CHECK((status='reserved' AND signed_tx_id IS NULL)
-     OR (status!='reserved'))
+  CHECK((status IN ('reserved','broadcast_unknown','reconciliation_review')
+         AND signed_tx_id IS NULL)
+     OR (status='confirmed' AND signed_tx_id IS NOT NULL
+         AND length(signed_tx_id)=64
+         AND signed_tx_id NOT GLOB '*[^0-9a-f]*'))
 ) WITHOUT ROWID;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_intent_source_guard
 BEFORE INSERT ON tag_run_v2_payout_intents
@@ -203,6 +206,9 @@ WHEN NEW.intent_key!=OLD.intent_key OR NEW.chat_id!=OLD.chat_id
  OR (OLD.status='reconciliation_review' AND NEW.status='confirmed')
  OR (OLD.status=NEW.status AND OLD.signed_tx_id IS NEW.signed_tx_id)
  )
+ OR (NEW.status='confirmed' AND (NEW.signed_tx_id IS NULL
+     OR length(NEW.signed_tx_id)!=64
+     OR NEW.signed_tx_id GLOB '*[^0-9a-f]*'))
  OR (OLD.signed_tx_id IS NOT NULL AND NEW.signed_tx_id IS NOT OLD.signed_tx_id)
 BEGIN SELECT RAISE(ABORT,'v2_payout_intent_immutable'); END;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_intent_no_delete
