@@ -268,7 +268,7 @@ export async function makeAnchorConsoleSigner({
 } = {}) {
   if (typeof beforeBroadcast !== 'function')
     fail('broadcast_guard_required');
-  let Link, Transport, SignedTransaction;
+  let Link, Transport, SignedTransaction, ABI, Serializer;
   try {
     const [linkModule, transportModule, antelope] = await Promise.all([
       importModule('anchor-link'),
@@ -278,8 +278,12 @@ export async function makeAnchorConsoleSigner({
     Link = linkModule.default || linkModule.AnchorLink;
     Transport = transportModule.default || transportModule.ConsoleTransport;
     SignedTransaction = antelope.SignedTransaction;
+    ABI = antelope.ABI;
+    Serializer = antelope.Serializer;
     if (typeof Link !== 'function' || typeof Transport !== 'function' ||
-        typeof SignedTransaction?.from !== 'function')
+        typeof SignedTransaction?.from !== 'function' ||
+        typeof ABI?.from !== 'function' ||
+        typeof Serializer?.encode !== 'function')
       fail('anchor_adapter_invalid');
   } catch (_) {
     fail('anchor_dependencies_missing');
@@ -318,6 +322,22 @@ export async function makeAnchorConsoleSigner({
       broadcast: false, noModify: true
     });
     assertSignedAnchorTransfer(signed, request);
+    // Verify the RAW action bytes that will be broadcast, independently of
+    // the decoded/wallet-displayed fields. Every supported token must use
+    // the standard fungible-token transfer ABI; nonstandard layouts fail shut.
+    const canonicalTransferAbi = ABI.from({
+      structs:[{name:'transfer',base:'',fields:[
+        {name:'from',type:'name'},
+        {name:'to',type:'name'},
+        {name:'quantity',type:'asset'},
+        {name:'memo',type:'string'}
+      ]}]
+    });
+    const expectedBytes = Serializer.encode({
+      object:action.data,abi:canonicalTransferAbi,type:'transfer'
+    });
+    if (String(signed.transaction.actions[0].data) !== String(expectedBytes))
+      fail('anchor_signed_transaction_modified');
     // Use the same transaction representation as Anchor Link internally.
     // Never reconstruct an action from CLI arguments.
     const tx = SignedTransaction.from({
