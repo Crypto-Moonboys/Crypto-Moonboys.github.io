@@ -39,6 +39,15 @@ function assertExecutionMode(env){
      env?.TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED!=='true' ||
      !env?.DB)fail('release_not_authorized');
 }
+function assertReconciliationMode(env){
+  // Stopping NEW payouts must never prevent confirmation of an action that
+  // was already handed to Anchor before the emergency stop. This does NOT
+  // unlock a cap, reserve a bundle or invoke the signer.
+  if(env?.TAG_RUN_ENABLED!=='true' ||
+     env?.TAG_RUN_WEEKLY_REWARDS_ENABLED!=='false' ||
+     env?.TAG_RUN_V2_TIP_ACCOUNT!==TIP_ACCOUNT || !env?.DB)
+    fail('reconciliation_not_authorized');
+}
 async function config(db){
   const row=read(await db.prepare(
     'SELECT wallet_account,status,daily_bps,historical_ticket_bps '+
@@ -220,11 +229,14 @@ export function buildReviewedWaxTransfer(intent,{permission='tagrain'}={}){
 // an operator must reconcile the original chain action. No public route
 // calls this function, and no signer is configured by this PR.
 export async function handoffApprovedPayout(env,{
-  intentKey,signAndBroadcast,fetchImpl=fetch
+  intentKey,signAndBroadcast,verifyReleaseAuthorization,fetchImpl=fetch
 }={}){
   assertExecutionMode(env);
   if(!HEX.test(intentKey||'')||typeof signAndBroadcast!=='function')
     fail('missing_authorized_signer');
+  if(verifyReleaseAuthorization!==undefined&&
+     typeof verifyReleaseAuthorization!=='function')
+    fail('invalid_release_authorization_check');
   const intent=await env.DB.prepare(
     'SELECT * FROM tag_run_v2_payout_intents WHERE intent_key=?'
   ).bind(intentKey).first();
@@ -251,6 +263,7 @@ export async function handoffApprovedPayout(env,{
   // immediately before any irreversible send; no ownership signature needed.
   const destination=await checkWaxDestination(intent.receiving_account,fetchImpl);
   if(destination.status!=='exists')fail('recipient_account_unavailable');
+  if(verifyReleaseAuthorization)await verifyReleaseAuthorization();
   const action=buildReviewedWaxTransfer(intent);
   // CAS on intent AND both live pause authorities in the SAME D1 UPDATE:
   // a pause or asset revocation committed during the awaited RPC cannot
@@ -303,7 +316,7 @@ export async function handoffApprovedPayout(env,{
 export async function markIrreversiblyConfirmed(env,{
   intentKey,transactionId,verifyIrreversibleAction
 }={}){
-  assertExecutionMode(env);
+  assertReconciliationMode(env);
   if(!HEX.test(intentKey||'')||!HEX.test(transactionId||'')||
      typeof verifyIrreversibleAction!=='function')fail('finality_unverified');
   const row=await env.DB.prepare('SELECT * FROM tag_run_v2_payout_intents '+

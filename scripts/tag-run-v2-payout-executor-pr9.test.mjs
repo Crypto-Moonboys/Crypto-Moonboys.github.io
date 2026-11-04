@@ -19,15 +19,20 @@ const DAY='2026-11-02',A=assetKey('kingsofgraff','LFGK',4);
 const MEMBER='1111',RECEIVER='gkniftyheads',SNAP='a'.repeat(64),
   RULES='b'.repeat(64),AUTH='c'.repeat(64),TRANSACTION='d'.repeat(64);
 function fixture(t,{daily='500',available='10000',donation=true,
-  approved=true,verified=true,recipient=RECEIVER}={}){
+  approved=true,verified=true,recipient=RECEIVER,canonicalSchema=false}={}){
   const sqlite=new DatabaseSync(':memory:');
   t.after(()=>sqlite.close());
   sqlite.exec('PRAGMA foreign_keys=ON;PRAGMA recursive_triggers=OFF;');
-  for(const file of [
-    '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
-    '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
-    '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql'
-  ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
+  if(canonicalSchema){
+    sqlite.exec(readFileSync(new URL(
+      '../workers/moonboys-api/schema.sql',import.meta.url),'utf8'));
+  }else{
+    for(const file of [
+      '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
+      '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
+      '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql'
+    ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
+  }
   sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
   sqlite.prepare('INSERT INTO tag_run_v2_assets '+
     '(asset_key,chain_id,token_contract,token_symbol,token_precision,eligibility) '+
@@ -586,6 +591,23 @@ test('signer/network errors keep UNKNOWN hold for manual reconciliation',async t
   assert.equal(f.intents()[0].status,'broadcast_unknown');
 });
 
+test('release authorization is refreshed after recipient check and before send lock',async t=>{
+  const f=fixture(t);await openCap(f);
+  const row=await reserveReviewedPayout(f.env,intentArgs);
+  let signed=false,checked=false;
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:row.intentKey,fetchImpl:destinationRpc,
+    verifyReleaseAuthorization:async()=>{
+      checked=true;
+      throw Error('deployed payout release was revoked');
+    },
+    signAndBroadcast:async()=>{signed=true;}
+  }),/deployed payout release was revoked/);
+  assert.equal(checked,true);
+  assert.equal(signed,false);
+  assert.equal(f.intents()[0].status,'reserved');
+});
+
 test('invalid receiver RPC blocks signer without recording UNKNOWN state',async t=>{
   const f=fixture(t);await openCap(f);
   const row=await reserveReviewedPayout(f.env,intentArgs);
@@ -620,6 +642,25 @@ test('verified irreversible matching chain action confirms only once',async t=>{
     intentKey:first.intentKey,transactionId:TRANSACTION,
     verifyIrreversibleAction:async()=>safeAction(first.intentKey)
   }),/v2_payout_not_pending_reconciliation/);
+});
+
+test('migration and canonical schema reject confirmed settlements without a valid transaction ID',async t=>{
+  for(const canonicalSchema of [false,true]){
+    const f=fixture(t,{canonicalSchema});await openCap(f);
+    const row=await reserveReviewedPayout(f.env,intentArgs);
+    await handoffApprovedPayout(f.env,{
+      fetchImpl:destinationRpc,intentKey:row.intentKey,
+      signAndBroadcast:async()=>({transactionId:TRANSACTION})
+    });
+    for(const txId of [null,'not-a-transaction-id']){
+      assert.throws(()=>f.sqlite.prepare(
+        "UPDATE tag_run_v2_payout_intents SET status='confirmed',signed_tx_id=? "+
+        'WHERE intent_key=?'
+      ).run(txId,row.intentKey));
+      assert.equal(f.intents()[0].status,'broadcast_unknown');
+      assert.equal(f.intents()[0].signed_tx_id,null);
+    }
+  }
 });
 
 test('proof-verified transfer confirms out of reconciliation_review without another send',async t=>{
@@ -748,6 +789,31 @@ test('failed finality or mismatched amount never confirms sent tokens',async t=>
     verifyIrreversibleAction:async()=>({...safeAction(first.intentKey),quantity:'100.0000 LFGK'})
   }),/v2_payout_chain_action_mismatch/);
   assert.equal(f.intents()[0].status,'broadcast_unknown');
+});
+
+test('already-broadcast UNKNOWN payout can be proven and confirmed after a release pause',async t=>{
+  const f=fixture(t);await openCap(f);
+  const item=await reserveReviewedPayout(f.env,intentArgs);
+  await handoffApprovedPayout(f.env,{
+    fetchImpl:destinationRpc,intentKey:item.intentKey,
+    signAndBroadcast:async()=>({transactionId:TRANSACTION})
+  });
+  // Pausing *future* funded draws must not strand an irreversible transfer.
+  f.env.TAG_RUN_V2_PAYOUTS_ENABLED='false';
+  f.env.TAG_RUN_V2_POOL_ENABLED='false';
+  f.env.TAG_RUN_V2_DRAWS_ENABLED='false';
+  f.env.TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED='false';
+  f.env.TAG_RUN_V2_OBSERVATION_ENABLED='true';
+  const settled=await markIrreversiblyConfirmed(f.env,{
+    intentKey:item.intentKey,transactionId:TRANSACTION,
+    verifyIrreversibleAction:async()=>safeAction(item.intentKey)
+  });
+  assert.equal(settled.status,'confirmed');
+  assert.equal(f.intents()[0].signed_tx_id,TRANSACTION);
+  await assert.rejects(handoffApprovedPayout(f.env,{
+    intentKey:item.intentKey,fetchImpl:destinationRpc,
+    signAndBroadcast:async()=>{throw Error('must not be called');}
+  }),/v2_payout_release_not_authorized/);
 });
 
 test('no real signer endpoint, transfer flag or network broadcast is installed',()=>{
