@@ -19,15 +19,20 @@ const DAY='2026-11-02',A=assetKey('kingsofgraff','LFGK',4);
 const MEMBER='1111',RECEIVER='gkniftyheads',SNAP='a'.repeat(64),
   RULES='b'.repeat(64),AUTH='c'.repeat(64),TRANSACTION='d'.repeat(64);
 function fixture(t,{daily='500',available='10000',donation=true,
-  approved=true,verified=true,recipient=RECEIVER}={}){
+  approved=true,verified=true,recipient=RECEIVER,canonicalSchema=false}={}){
   const sqlite=new DatabaseSync(':memory:');
   t.after(()=>sqlite.close());
   sqlite.exec('PRAGMA foreign_keys=ON;PRAGMA recursive_triggers=OFF;');
-  for(const file of [
-    '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
-    '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
-    '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql'
-  ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
+  if(canonicalSchema){
+    sqlite.exec(readFileSync(new URL(
+      '../workers/moonboys-api/schema.sql',import.meta.url),'utf8'));
+  }else{
+    for(const file of [
+      '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
+      '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
+      '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql'
+    ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
+  }
   sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
   sqlite.prepare('INSERT INTO tag_run_v2_assets '+
     '(asset_key,chain_id,token_contract,token_symbol,token_precision,eligibility) '+
@@ -639,20 +644,22 @@ test('verified irreversible matching chain action confirms only once',async t=>{
   }),/v2_payout_not_pending_reconciliation/);
 });
 
-test('database rejects confirmed settlements without a valid transaction ID',async t=>{
-  const f=fixture(t);await openCap(f);
-  const row=await reserveReviewedPayout(f.env,intentArgs);
-  await handoffApprovedPayout(f.env,{
-    fetchImpl:destinationRpc,intentKey:row.intentKey,
-    signAndBroadcast:async()=>({transactionId:TRANSACTION})
-  });
-  for(const txId of [null,'not-a-transaction-id']){
-    assert.throws(()=>f.sqlite.prepare(
-      "UPDATE tag_run_v2_payout_intents SET status='confirmed',signed_tx_id=? "+
-      'WHERE intent_key=?'
-    ).run(txId,row.intentKey));
-    assert.equal(f.intents()[0].status,'broadcast_unknown');
-    assert.equal(f.intents()[0].signed_tx_id,null);
+test('migration and canonical schema reject confirmed settlements without a valid transaction ID',async t=>{
+  for(const canonicalSchema of [false,true]){
+    const f=fixture(t,{canonicalSchema});await openCap(f);
+    const row=await reserveReviewedPayout(f.env,intentArgs);
+    await handoffApprovedPayout(f.env,{
+      fetchImpl:destinationRpc,intentKey:row.intentKey,
+      signAndBroadcast:async()=>({transactionId:TRANSACTION})
+    });
+    for(const txId of [null,'not-a-transaction-id']){
+      assert.throws(()=>f.sqlite.prepare(
+        "UPDATE tag_run_v2_payout_intents SET status='confirmed',signed_tx_id=? "+
+        'WHERE intent_key=?'
+      ).run(txId,row.intentKey));
+      assert.equal(f.intents()[0].status,'broadcast_unknown');
+      assert.equal(f.intents()[0].signed_tx_id,null);
+    }
   }
 });
 
