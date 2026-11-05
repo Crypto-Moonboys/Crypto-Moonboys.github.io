@@ -60,3 +60,37 @@ npm run ci:worker-api
 Tests mock both providers and exercise good observations, missing links, unexpected extra action links, authority/key/threshold changes, **owner and active key/delegation/wait disagreements, malformed parent authority structures and order-only equivalence**, malformed ABI, code hash mismatches, unpinned hash, wrong chain, mismatched balance, precision and RPC outages, and CLI argument safety.
 
 No automatic workflow triggers are added; the manual Worker API domain suite is extended with the new focused test. PR review and explicit owner approval are required before merge. Production funded draws and transfers remain OFF.
+
+## Structured failure diagnostics
+
+If the verifier cannot validate both providers, it continues to return
+`BLOCKED` and `independent_wax_rpc_evidence_unavailable`, with a new
+`diagnostics` array. Each entry has only the allowlisted RPC provider,
+the read-only endpoint or validation stage, and a bounded machine-readable
+error code. No RPC response body, raw exception, credentials, private keys
+or request payloads are included.
+
+For example:
+
+```json
+{
+  "status":"BLOCKED",
+  "reasonCodes":["independent_wax_rpc_evidence_unavailable"],
+  "diagnostics":[{
+    "provider":"https://wax.eosphere.io",
+    "stage":"get_currency_stats",
+    "code":"token_precision_mismatch"
+  }],
+  "releaseAuthorized":false
+}
+```
+
+`rpc_transport_failure`, `rpc_http_failure` and `rpc_invalid_json`
+distinguish connectivity/HTTP/JSON errors from parsed-response validation.
+Both providers are inspected using `Promise.allSettled`, so one failure
+cannot suppress the other. Validity is still all-or-nothing; the diagnostics
+are **not** an approval bypass.
+
+After merging this change, repeat the exact local read-only command and
+use the new `diagnostics` entries to determine the true cause. Do not
+change WAX permissions, sign a transaction or enable funded draws.
