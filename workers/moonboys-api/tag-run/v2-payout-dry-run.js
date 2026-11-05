@@ -123,7 +123,7 @@ export async function previewReviewedPayoutAuthorization(env, {
       String(bundle.telegram_id));
 
   if (!pool || pool.wallet_account !== TIP_ACCOUNT || pool.status !== 'review_only' ||
-      ((pool.daily_bps !== 500 || pool.active_daily_bps !== 100 || pool.active_policy_version !== 2) || pool.active_daily_bps !== 100 || pool.active_policy_version !== 2) || pool.historical_ticket_bps !== 5000)
+      (pool.daily_bps !== 500 || pool.active_daily_bps !== 100 || pool.active_policy_version !== 2) || pool.historical_ticket_bps !== 5000)
     reasons.add(REASONS.unreviewedPool);
   const identityMatches = asset?.asset_key === key &&
     asset?.chain_id === WAX_MAINNET_CHAIN_ID &&
@@ -217,7 +217,7 @@ export async function previewReviewedPayoutAuthorization(env, {
     daily = validSource?.daily ?? null;
     if (!validSource || !validDigest(cap.snapshot_digest) ||
         cap.snapshot_digest !== snapshot.snapshot_digest || cap.reward_policy_bps !== 100 ||
-        !isText(cap.authorized_by) || limit === null || committed === null ||
+        cap.reward_policy_bps !== 100 || !isText(cap.authorized_by) || limit === null || committed === null ||
         per === null || per === 0n || per > limit || limit !== daily ||
         committed > limit || asNumber(cap.revision) < 0)
       reasons.add(REASONS.capMismatch);
