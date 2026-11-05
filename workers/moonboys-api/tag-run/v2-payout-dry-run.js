@@ -169,20 +169,13 @@ export async function previewReviewedPayoutAuthorization(env, {
     reasons.add(REASONS.insufficientDonation);
   if (!cap) reasons.add(REASONS.capMissing);
   else if (cap.paused !== 0) reasons.add(REASONS.capPaused);
-  if (!draw || draw.status !== 'reviewed' || !isText(draw.reviewed_by))
+  if (!draw || draw.status !== 'reviewed' || draw.reward_policy_bps !== 100 || !isText(draw.reviewed_by))
     reasons.add(REASONS.drawUnreviewed);
-  // Preserve the historical single-snapshot commitment for existing
-  // reviewed draws. Multi-asset draws require the v1 canonical aggregate
-  // digest. A mixed or truncated set always fails closed.
+  // Policy v2 requires the same domain-separated canonical commitment for
+  // SINGLE and MULTI-token draws. Legacy v1 raw digests never authorize 1%.
   let snapshotSetBound = false;
-  if (snapshotSet.length === 1 && snapshotSet[0]?.asset_key === key &&
-      snapshotSet[0]?.status === 'verified' &&
-      draw?.snapshots_digest === snapshot?.snapshot_digest &&
-      validDigest(draw.snapshots_digest)) {
-    snapshotSetBound = true;
-  } else if (snapshotSet.length >= 2 && snapshotSet.length <= 100 &&
-      validDigest(draw?.snapshots_digest) &&
-      snapshotSet.some(row => row.asset_key === key)) {
+  if (snapshotSet.length >= 1 && snapshotSet.length <= 100 &&
+      validDigest(draw?.snapshots_digest)) {
     try {
       const computed = await canonicalSnapshotSetDigest({
         chatId,day,rows:snapshotSet
@@ -216,7 +209,7 @@ export async function previewReviewedPayoutAuthorization(env, {
     per = safeUnits(cap.per_transfer_limit_units);
     daily = validSource?.daily ?? null;
     if (!validSource || !validDigest(cap.snapshot_digest) ||
-        cap.snapshot_digest !== snapshot.snapshot_digest || cap.reward_policy_bps !== 100 ||
+        cap.snapshot_digest !== snapshot.snapshot_digest ||
         cap.reward_policy_bps !== 100 || !isText(cap.authorized_by) || limit === null || committed === null ||
         per === null || per === 0n || per > limit || limit !== daily ||
         committed > limit || asNumber(cap.revision) < 0)
