@@ -8,7 +8,7 @@ This is an **isolated manual test**, not a production signing service. Do not de
 - Run from this directory in a disposable workspace:
 
 ```powershell
-npm install --no-save --package-lock=false anchor-link@1.0.5 anchor-link-browser-transport esbuild
+npm install --no-save --package-lock=false anchor-link@^3.3.0 anchor-link-browser-transport@3.6.1 esbuild
 npx esbuild identity.mjs --bundle --format=esm --platform=browser --outfile=identity.bundle.js
 python -m http.server 8765 --bind 127.0.0.1
 ```
