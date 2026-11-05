@@ -36,10 +36,10 @@ function fixture(t,{perTransfer='500'}={}){
     'approved','2026-11-02T23:00:00Z','independent-token-reviewer');
   sqlite.prepare('INSERT INTO tag_run_v2_deposits '+
     '(chain_id,global_action_seq,transaction_id,block_num,block_id,'+
-    'sender_account,recipient_account,asset_key,units,memo_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+    'sender_account,recipient_account,asset_key,units,memo_digest,status,reviewed_at) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
   ).run(WAX_MAINNET_CHAIN_ID,'11','e'.repeat(64),101,'f'.repeat(64),
-    'somewallet11',TIP_ACCOUNT,A,'10000',SNAP,'confirmed_donation');
+    'somewallet11',TIP_ACCOUNT,A,'10000',SNAP,'confirmed_donation','2026-11-02T23:05:00Z');
   sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
@@ -72,6 +72,7 @@ function fixture(t,{perTransfer='500'}={}){
       const statement=(args=[])=>({
         sql,args,bind(...values){return statement(values);},
         async first(){return sqlite.prepare(sql).get(...args)??null;},
+        async all(){return {success:true,results:sqlite.prepare(sql).all(...args)};},
         async run(){
           const r=sqlite.prepare(sql).run(...args);
           return {success:true,meta:{changes:r.changes}};
@@ -197,10 +198,18 @@ test('snapshot arithmetic detects 5% inflation and digest/source revocation',asy
   f.sqlite.prepare("UPDATE tag_run_v2_snapshots SET five_percent_units='501'").run();
   includes(await f.preview(),'snapshot_budget_invalid');
 });
-test('wallet destination substitution is rejected',async t=>{
+test('invalid registered destination is blocked',async t=>{
   const f=fixture(t);
-  f.sqlite.prepare("UPDATE tag_run_wallets SET wax_account='attacker1234'").run();
+  f.sqlite.prepare("UPDATE tag_run_wallets SET wax_account='NOT_WAX'").run();
   includes(await f.preview(),'registered_destination_missing');
+});
+test('changed valid registered destination is read from authoritative D1',async t=>{
+  const f=fixture(t);
+  f.sqlite.prepare("UPDATE tag_run_wallets SET wax_account='newrecipient1'").run();
+  const p=await f.preview();
+  assert.equal(p.status,'REVIEW_CANDIDATE');
+  assert.equal(p.receivingAccount,'newrecipient1');
+  assert.equal(p.unsignedAction.data.to,'newrecipient1');
 });
 test('per-transfer limit is enforced using BigInt units',async t=>{
   const f=fixture(t,{perTransfer:'100'});
@@ -233,6 +242,62 @@ test('invalid group and bundle selectors are rejected before D1 reads',async t=>
   const f=fixture(t);
   await assert.rejects(f.preview({chatId:'-100other'}),/selector_invalid/);
   await assert.rejects(f.preview({bundleIndex:20}),/selector_invalid/);
+});
+
+
+test('approved asset metadata must match exact WAX asset identity',async t=>{
+  const f=fixture(t);
+  f.sqlite.prepare("UPDATE tag_run_v2_assets SET token_symbol='DUMPIT'").run();
+  includes(await f.preview(),'asset_not_approved');
+  f.sqlite.prepare("UPDATE tag_run_v2_assets SET token_symbol='LFGK',chain_id=?")
+    .run('0'.repeat(64));
+  includes(await f.preview(),'asset_not_approved');
+  f.sqlite.prepare("UPDATE tag_run_v2_assets SET chain_id=?,token_contract='wuffi'")
+    .run(WAX_MAINNET_CHAIN_ID);
+  includes(await f.preview(),'asset_not_approved');
+  f.sqlite.prepare("UPDATE tag_run_v2_assets SET token_contract='kingsofgraff',token_precision=8").run();
+  includes(await f.preview(),'asset_not_approved');
+});
+test('partial refund-review deposits cannot justify the confirmed funded balance',async t=>{
+  const f=fixture(t);
+  f.sqlite.prepare("UPDATE tag_run_v2_deposits SET units='1'").run();
+  f.sqlite.prepare('INSERT INTO tag_run_v2_deposits '+
+    '(chain_id,global_action_seq,transaction_id,block_num,block_id,'+
+    'sender_account,recipient_account,asset_key,units,memo_digest,status) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(WAX_MAINNET_CHAIN_ID,'12','d'.repeat(64),101,'f'.repeat(64),
+    'somewallet11',TIP_ACCOUNT,A,'9999',SNAP,'refund_review');
+  includes(await f.preview(),'donation_funding_snapshot_unreconciled');
+});
+test('future donations or unreviewed donations cannot fund an earlier LIB',async t=>{
+  const f=fixture(t);
+  f.sqlite.prepare("UPDATE tag_run_v2_deposits SET block_num=102").run();
+  includes(await f.preview(),'donation_funding_snapshot_unreconciled');
+  includes(await f.preview(),'confirmed_donation_missing');
+  f.sqlite.prepare('UPDATE tag_run_v2_deposits SET block_num=101,reviewed_at=NULL').run();
+  includes(await f.preview(),'confirmed_donation_missing');
+});
+test('mismatched reviewed draw snapshot commitment blocks the payout',async t=>{
+  const f=fixture(t);
+  f.sqlite.prepare('UPDATE tag_run_v2_draws SET snapshots_digest=?')
+    .run('e'.repeat(64));
+  includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
+});
+test('multi-asset draws fail closed until a canonical aggregate digest exists',async t=>{
+  const f=fixture(t);
+  const second=assetKey('kingsofgraff','DUMPIT',8);
+  f.sqlite.prepare('INSERT INTO tag_run_v2_assets '+
+    '(asset_key,chain_id,token_contract,token_symbol,token_precision) '+
+    'VALUES (?,?,?,?,?)'
+  ).run(second,WAX_MAINNET_CHAIN_ID,'kingsofgraff','DUMPIT',8);
+  f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
+    '100','0','0','100','5','e'.repeat(64),'verified');
+  includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
 });
 
 test('CLI arguments require explicit exact asset selection and never imply approval',()=>{
