@@ -88,7 +88,7 @@ export async function initializeReviewedDailyCap(env,{
     'JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
     'WHERE s.chat_id=? AND s.day_key=? AND s.asset_key=?'
   ).bind(chatId,day,key).first(),'snapshot');
-  if(!source||source.status!=='verified'||source.eligibility!=='approved'||
+  if(!source||source.status!=='verified'||source.reward_policy_bps!==100||source.eligibility!=='approved'||
      !HEX.test(source.snapshot_digest))fail('unapproved_snapshot');
   const available=units(source.spendable_units),
     onchain=units(source.onchain_units),
