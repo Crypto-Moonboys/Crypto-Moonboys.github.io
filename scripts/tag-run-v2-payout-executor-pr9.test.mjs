@@ -231,10 +231,12 @@ test('existing unresolved token cap cannot be bypassed by next-day direct live I
   f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
     'SELECT chat_id,?,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status '+
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units '+
     'FROM tag_run_v2_snapshots WHERE day_key=?').run(nextDay,DAY);
   assert.throws(()=>f.sqlite.prepare(
     'INSERT INTO tag_run_v2_payout_caps '+
@@ -380,10 +382,12 @@ test('unresolved prior-day token obligations block tomorrow against reused balan
   f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
     'SELECT chat_id,?,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status '+
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units '+
     'FROM tag_run_v2_snapshots WHERE day_key=?'
   ).run(tomorrow,DAY);
   await initializeReviewedDailyCap(f.env,{...capArgs,day:tomorrow});
