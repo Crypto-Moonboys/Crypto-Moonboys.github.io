@@ -260,8 +260,8 @@ test('hypothetical draw blocks until prior real participation is fully captured'
   assert.match(simulated.messages[0],/UNSAVED UNVERIFIED WHAT-IF ONLY/);
   assert.match(simulated.messages[0],/Current eligible members: 1/);
   assert.match(simulated.messages[0],/Historical eligible members: 1/);
-  assert.match(simulated.messages[0],/1000\\.0000 LFGK/);
-  assert.match(simulated.messages[0],/1000000\\.0000 WUF/);
+  assert.match(simulated.messages[0],/1000\.0000 LFGK/);
+  assert.match(simulated.messages[0],/1000000\.0000 WUF/);
   assert.match(simulated.messages[0],/No DB draw\/claim\/reserve\/payout is saved/);
   assert.equal(count(f,'tag_run_v2_draws'),0);
   assert.equal(count(f,'tag_run_v2_bundles'),0);
