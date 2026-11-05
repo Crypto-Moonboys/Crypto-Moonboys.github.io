@@ -50,7 +50,7 @@ The SHA-256 input is the UTF-8 encoding of the JSON array:
 - The exact 5% per-token budget is
   `floor((onchain - allocated_unpaid - excluded) * 500 / 10000)`.
 - Each snapshot must have a matching stored contract/symbol/precision/chain
-  record, and the source must be from the specified UTC day.
+  record. The digest is bound to the selected UTC day; independent evidence\n  must establish the source's timing.
 - The hash is domain separated and bound to WAX chain, treasury, group and day.
 
 **Compatibility:** Existing *single-asset* reviewed draws may retain their
