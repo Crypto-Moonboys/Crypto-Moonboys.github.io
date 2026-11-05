@@ -44,8 +44,9 @@ CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_no_replace_policy
 BEFORE INSERT ON tag_run_v2_snapshots
 WHEN EXISTS (
   SELECT 1 FROM tag_run_v2_snapshots old
-  WHERE old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
-    AND old.asset_key=NEW.asset_key
+  WHERE (old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+    AND old.asset_key=NEW.asset_key)
+    OR old.rowid=NEW.rowid
 )
 BEGIN SELECT RAISE(ABORT,'v2_snapshot_policy_replacement_forbidden'); END;
 
@@ -53,7 +54,8 @@ CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_no_replace_policy
 BEFORE INSERT ON tag_run_v2_draws
 WHEN EXISTS (
   SELECT 1 FROM tag_run_v2_draws old
-  WHERE old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+  WHERE (old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key)
+    OR old.rowid=NEW.rowid
 )
 BEGIN SELECT RAISE(ABORT,'v2_draw_policy_replacement_forbidden'); END;
 
@@ -66,6 +68,22 @@ CREATE TRIGGER IF NOT EXISTS tag_run_v2_legacy_draw_no_delete
 BEFORE DELETE ON tag_run_v2_draws
 WHEN OLD.reward_policy_bps=500
 BEGIN SELECT RAISE(ABORT,'v2_legacy_draw_immutable'); END;
+
+
+-- UPDATE OR REPLACE can delete a colliding legacy row without firing DELETE
+-- triggers when recursive_triggers is OFF. All evidence identity, including
+-- writable rowid, is immutable regardless of current policy version.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_scope_immutable
+BEFORE UPDATE ON tag_run_v2_snapshots
+WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
+  OR NEW.asset_key!=OLD.asset_key OR NEW.rowid!=OLD.rowid
+BEGIN SELECT RAISE(ABORT,'v2_snapshot_scope_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_scope_immutable
+BEFORE UPDATE ON tag_run_v2_draws
+WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
+  OR NEW.rowid!=OLD.rowid
+BEGIN SELECT RAISE(ABORT,'v2_draw_scope_immutable'); END;
 
 -- Replace only the two legacy 5%-specific insertion checks. Preserve all
 -- other payout guards, accounting triggers, immutable records and indices.
