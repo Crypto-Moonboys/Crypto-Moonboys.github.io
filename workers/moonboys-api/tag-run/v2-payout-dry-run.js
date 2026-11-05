@@ -73,11 +73,11 @@ function calculateSnapshot(source, digest) {
   const reserved = safeUnits(source.allocated_unpaid_units);
   const excluded = safeUnits(source.excluded_units);
   const spendable = safeUnits(source.spendable_units);
-  const five = safeUnits(source.five_percent_units);
-  if ([onchain, reserved, excluded, spendable, five].some(x => x === null) ||
+  const daily = safeUnits(source.daily_reward_units);
+  if ([onchain, reserved, excluded, spendable, daily].some(x => x === null) ||
       reserved + excluded > onchain || spendable !== onchain - reserved - excluded ||
-      five !== spendable * 500n / 10000n || five === 0n) return null;
-  return { five, spendable };
+      source.reward_policy_bps !== 100 || daily !== spendable * 100n / 10000n || daily === 0n) return null;
+  return { daily, spendable };
 }
 
 // Source arguments identify an existing reviewed draw and member bundle.
@@ -100,12 +100,12 @@ export async function previewReviewedPayoutAuthorization(env, {
 
   const [pool, asset, deposits, snapshot, cap, draw, bundle, duplicate, overlap, snapshotSet] =
     await Promise.all([
-      first(db, 'SELECT wallet_account,status,daily_bps,historical_ticket_bps FROM tag_run_v2_pool_config WHERE config_id=1'),
+      first(db, 'SELECT wallet_account,status,daily_bps,active_daily_bps,active_policy_version,historical_ticket_bps FROM tag_run_v2_pool_config WHERE config_id=1'),
       first(db, 'SELECT asset_key,chain_id,token_contract,token_symbol,token_precision,eligibility,reviewed_by,verified_at FROM tag_run_v2_assets WHERE asset_key=?',key),
       all(db, 'SELECT chain_id,global_action_seq,transaction_id,block_num,block_id,recipient_account,asset_key,units,memo_digest,status,reviewed_at FROM tag_run_v2_deposits WHERE asset_key=? ORDER BY block_num,global_action_seq LIMIT 5001',key),
       first(db, 'SELECT * FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=? AND asset_key=?',chatId,day,key),
       first(db, 'SELECT * FROM tag_run_v2_payout_caps WHERE chat_id=? AND day_key=? AND asset_key=?',chatId,day,key),
-      first(db, 'SELECT status,reviewed_by,snapshots_digest FROM tag_run_v2_draws WHERE chat_id=? AND day_key=?',chatId,day),
+      first(db, 'SELECT status,reviewed_by,snapshots_digest,reward_policy_bps FROM tag_run_v2_draws WHERE chat_id=? AND day_key=?',chatId,day),
       first(db, 'SELECT telegram_id,units,status FROM tag_run_v2_bundles WHERE chat_id=? AND day_key=? AND asset_key=? AND bundle_index=?',chatId,day,key,bundleIndex),
       first(db, 'SELECT intent_key FROM tag_run_v2_payout_intents WHERE chat_id=? AND day_key=? AND asset_key=? AND bundle_index=? LIMIT 1',chatId,day,key,bundleIndex),
       first(db,
@@ -123,7 +123,7 @@ export async function previewReviewedPayoutAuthorization(env, {
       String(bundle.telegram_id));
 
   if (!pool || pool.wallet_account !== TIP_ACCOUNT || pool.status !== 'review_only' ||
-      pool.daily_bps !== 500 || pool.historical_ticket_bps !== 5000)
+      ((pool.daily_bps !== 500 || pool.active_daily_bps !== 100 || pool.active_policy_version !== 2) || pool.active_daily_bps !== 100 || pool.active_policy_version !== 2) || pool.historical_ticket_bps !== 5000)
     reasons.add(REASONS.unreviewedPool);
   const identityMatches = asset?.asset_key === key &&
     asset?.chain_id === WAX_MAINNET_CHAIN_ID &&
@@ -214,9 +214,9 @@ export async function previewReviewedPayoutAuthorization(env, {
     const limit = safeUnits(cap.daily_limit_units);
     const committed = safeUnits(cap.committed_units);
     per = safeUnits(cap.per_transfer_limit_units);
-    daily = validSource?.five ?? null;
+    daily = validSource?.daily ?? null;
     if (!validSource || !validDigest(cap.snapshot_digest) ||
-        cap.snapshot_digest !== snapshot.snapshot_digest ||
+        cap.snapshot_digest !== snapshot.snapshot_digest || cap.reward_policy_bps !== 100 ||
         !isText(cap.authorized_by) || limit === null || committed === null ||
         per === null || per === 0n || per > limit || limit !== daily ||
         committed > limit || asNumber(cap.revision) < 0)
