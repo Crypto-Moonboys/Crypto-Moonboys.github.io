@@ -205,11 +205,11 @@ test('invalid registered destination is blocked',async t=>{
 });
 test('changed valid registered destination is read from authoritative D1',async t=>{
   const f=fixture(t);
-  f.sqlite.prepare("UPDATE tag_run_wallets SET wax_account='newrecipient1'").run();
+  f.sqlite.prepare("UPDATE tag_run_wallets SET wax_account='newreceiver1'").run();
   const p=await f.preview();
   assert.equal(p.status,'REVIEW_CANDIDATE');
-  assert.equal(p.receivingAccount,'newrecipient1');
-  assert.equal(p.unsignedAction.data.to,'newrecipient1');
+  assert.equal(p.receivingAccount,'newreceiver1');
+  assert.equal(p.unsignedAction.data.to,'newreceiver1');
 });
 test('per-transfer limit is enforced using BigInt units',async t=>{
   const f=fixture(t,{perTransfer:'100'});
