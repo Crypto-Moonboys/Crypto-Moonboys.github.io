@@ -101,7 +101,7 @@ async function observeTokens(env, fetchImpl) {
   if (result.assets.length>100 || result.account!==TIP_ACCOUNT) {
     throw new Error('observation_inventory_incomplete');
   }
-  return result;
+  return { ...result, approvedAssetKeys: approvedAssets };
 }
 function conciseInventory(result) {
   const positive=result.assets.filter(a=>a.balanceUnits &&
@@ -239,7 +239,11 @@ export async function handleV2ObservationCommand(env, {
     const [inventory,weight]=await Promise.all([
       observeTokens(env,fetchImpl),latestActivity(env.DB,chatId,day)
     ]);
-    const positive=inventory.assets.filter(a=>a.balanceUnits&&a.balanceUnits!=='0');
+    // Only exact D1 allowlisted token identities enter this hypothetical preview.
+    const approvedKeys=new Set(inventory.approvedAssetKeys);
+    const observedPositive=inventory.assets.filter(a=>a.balanceUnits&&a.balanceUnits!=='0');
+    const positive=observedPositive.filter(a=>
+      approvedKeys.has(a.key) && a.status==='observed_only');
     if (positive.length>12) {
       throw new Error('observation_simulation_asset_limit');
     }
@@ -256,11 +260,14 @@ export async function handleV2ObservationCommand(env, {
     });
     const parts=simulated.budgets.map(b=>
       formatQuantity(b.dailyBudgetUnits,b.precision,b.symbol)+' ('+b.contract+')');
-    await send('TAG RUN V2 · UNSAVED UNVERIFIED WHAT-IF ONLY\n'+
+    await send('TAG RUN V2 · UNSAVED UNVERIFIED ALLOWLIST WHAT-IF ONLY\n'+
       'Wallet: '+TIP_ACCOUNT+' · target: '+day+' UTC'+
+      '\nObserved positive tokens: '+observedPositive.length+
+      '\nApproved positive observed: '+positive.length+
+      '\nQuarantined positive excluded: '+(observedPositive.length-positive.length)+
       '\nCurrent eligible members: '+weight.current.length+
       '\nHistorical eligible members: '+weight.historical.length+
-      '\nHypothetical 1% pools: '+(parts.join('; ')||'none')+
+      '\nHypothetical 1% approved-token pools: '+(parts.join('; ')||'none — no allowlisted positive balances')+
       '\nHypothetical bundles: '+simulated.bundles.length+
       '\nHistorical/current lottery weight: 50%/50% when both groups exist.'+
       '\nNo asset is approved by this calculation; chain head balances are NOT '+
