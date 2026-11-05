@@ -3157,3 +3157,45 @@ BEGIN SELECT RAISE(ABORT,'v2_legacy_cap_cannot_activate'); END;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_policy_immutable
 BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_payout_caps
 BEGIN SELECT RAISE(ABORT,'v2_payout_cap_policy_immutable'); END;
+
+-- Legacy policy markers are HISTORICAL, not editable release approvals.
+-- New policy rows are born as v2; UPDATE is never a supported conversion.
+-- BEFORE INSERT duplicate guards also cover INSERT OR REPLACE even when
+-- SQLite recursive_triggers is OFF (its internal DELETE trigger may not run).
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_policy_immutable
+BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_snapshots
+WHEN NEW.reward_policy_bps!=OLD.reward_policy_bps
+BEGIN SELECT RAISE(ABORT,'v2_snapshot_policy_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_policy_immutable
+BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_draws
+WHEN NEW.reward_policy_bps!=OLD.reward_policy_bps
+BEGIN SELECT RAISE(ABORT,'v2_draw_policy_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_no_replace_policy
+BEFORE INSERT ON tag_run_v2_snapshots
+WHEN EXISTS (
+  SELECT 1 FROM tag_run_v2_snapshots old
+  WHERE old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+    AND old.asset_key=NEW.asset_key
+)
+BEGIN SELECT RAISE(ABORT,'v2_snapshot_policy_replacement_forbidden'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_no_replace_policy
+BEFORE INSERT ON tag_run_v2_draws
+WHEN EXISTS (
+  SELECT 1 FROM tag_run_v2_draws old
+  WHERE old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+)
+BEGIN SELECT RAISE(ABORT,'v2_draw_policy_replacement_forbidden'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_legacy_snapshot_no_delete
+BEFORE DELETE ON tag_run_v2_snapshots
+WHEN OLD.reward_policy_bps=500
+BEGIN SELECT RAISE(ABORT,'v2_legacy_snapshot_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_legacy_draw_no_delete
+BEFORE DELETE ON tag_run_v2_draws
+WHEN OLD.reward_policy_bps=500
+BEGIN SELECT RAISE(ABORT,'v2_legacy_draw_immutable'); END;
+
