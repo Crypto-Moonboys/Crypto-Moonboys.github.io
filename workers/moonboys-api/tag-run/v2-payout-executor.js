@@ -50,10 +50,10 @@ function assertReconciliationMode(env){
 }
 async function config(db){
   const row=read(await db.prepare(
-    'SELECT wallet_account,status,daily_bps,historical_ticket_bps '+
+    'SELECT wallet_account,status,daily_bps,active_daily_bps,active_policy_version,historical_ticket_bps '+
     'FROM tag_run_v2_pool_config WHERE config_id=1').first(),'config');
   if(!row||row.wallet_account!==TIP_ACCOUNT||row.status!=='review_only'||
-     row.daily_bps!==500||row.historical_ticket_bps!==5000)
+     (row.daily_bps!==500||row.active_daily_bps!==100||row.active_policy_version!==2)||row.historical_ticket_bps!==5000)
     fail('pool_not_reviewed');
 }
 const decimalAdd=(a,b)=>{
@@ -84,7 +84,7 @@ export async function initializeReviewedDailyCap(env,{
   const source=read(await env.DB.prepare(
     'SELECT s.snapshot_digest,s.status,s.spendable_units,'+
     's.onchain_units,s.allocated_unpaid_units,s.excluded_units,'+
-    's.five_percent_units,a.eligibility FROM tag_run_v2_snapshots s '+
+    's.daily_reward_units,s.reward_policy_bps,a.eligibility FROM tag_run_v2_snapshots s '+
     'JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
     'WHERE s.chat_id=? AND s.day_key=? AND s.asset_key=?'
   ).bind(chatId,day,key).first(),'snapshot');
@@ -94,17 +94,17 @@ export async function initializeReviewedDailyCap(env,{
     onchain=units(source.onchain_units),
     reserved=units(source.allocated_unpaid_units),
     excluded=units(source.excluded_units),
-    daily=units(source.five_percent_units);
+    daily=units(source.daily_reward_units);
   if(reserved+excluded>onchain ||
      available!==onchain-reserved-excluded ||
-     daily!==available*500n/10000n||daily===0n)
+     source.reward_policy_bps!==100||daily!==available*100n/10000n||daily===0n)
     fail('snapshot_budget_mismatch');
   const per=exact(maxTransferUnits);
   if(per>daily)fail('invalid_transfer_cap');
   const r=await env.DB.prepare(
     'INSERT INTO tag_run_v2_payout_caps '+
     '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,'+
-    'per_transfer_limit_units,authorized_by) VALUES (?,?,?,?,?,?,?)'
+    'per_transfer_limit_units,authorized_by,reward_policy_bps) VALUES (?,?,?,?,?,?,?,100)'
   ).bind(chatId,day,key,source.snapshot_digest,daily.toString(),
     per.toString(),authorizedBy).run();
   if(r?.success!==true||r.meta?.changes!==1)fail('cap_write_failed');
@@ -276,21 +276,21 @@ export async function handoffApprovedPayout(env,{
     "WHERE c.chat_id=tag_run_v2_payout_intents.chat_id "+
     "AND c.day_key=tag_run_v2_payout_intents.day_key "+
     "AND c.asset_key=tag_run_v2_payout_intents.asset_key "+
-    "AND c.paused=0 AND p.status='review_only' "+
-    "AND p.wallet_account='isthatajoint' AND p.daily_bps=500 "+
+    "AND c.paused=0 AND c.reward_policy_bps=100 AND p.status='review_only' "+
+    "AND p.wallet_account='isthatajoint' AND p.daily_bps=500 AND p.active_daily_bps=100 AND p.active_policy_version=2 "+
     "AND p.historical_ticket_bps=5000) "+
     "AND EXISTS (SELECT 1 FROM tag_run_v2_snapshots s "+
     "JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key "+
     "WHERE s.chat_id=tag_run_v2_payout_intents.chat_id "+
     "AND s.day_key=tag_run_v2_payout_intents.day_key "+
     "AND s.asset_key=tag_run_v2_payout_intents.asset_key "+
-    "AND s.status='verified' "+
+    "AND s.status='verified' AND s.reward_policy_bps=100 "+
     "AND s.snapshot_digest=tag_run_v2_payout_intents.snapshot_digest "+
     "AND a.eligibility='approved') "+
     "AND EXISTS (SELECT 1 FROM tag_run_v2_draws d "+
     "WHERE d.chat_id=tag_run_v2_payout_intents.chat_id "+
     "AND d.day_key=tag_run_v2_payout_intents.day_key "+
-    "AND d.status='reviewed' AND d.reviewed_by IS NOT NULL "+
+    "AND d.status='reviewed' AND d.reward_policy_bps=100 AND d.reviewed_by IS NOT NULL "+
     "AND length(d.reviewed_by)>0)"
   ).bind(intentKey).run();
   if(lock?.success!==true||lock.meta?.changes!==1)
