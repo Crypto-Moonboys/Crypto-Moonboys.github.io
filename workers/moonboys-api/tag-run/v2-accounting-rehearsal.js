@@ -43,7 +43,7 @@ export async function prepareV2PayoutRehearsal({
     const reserved = safeUnits(snapshot.reservedUnits);
     const excluded = safeUnits(snapshot.excludedUnits);
     const available = safeUnits(snapshot.availableUnits);
-    const daily = safeUnits(snapshot.fivePercentUnits);
+    const daily = safeUnits(snapshot.dailyRewardUnits);
     if (reserved + excluded > onchain ||
         available !== onchain-reserved-excluded ||
         daily !== available * BigInt(DAILY_BPS)/10000n) {

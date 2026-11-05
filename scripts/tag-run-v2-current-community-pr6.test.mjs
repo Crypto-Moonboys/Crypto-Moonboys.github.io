@@ -54,7 +54,7 @@ function snapshot(db,key,options={}) {
   const reserved=options.reservedUnits||(second?'0':'20000');
   const excluded=options.excludedUnits||(second?'0':'40000');
   const percent=options.fivePercentUnits||
-    (BigInt(available)*500n/10000n).toString();
+    (BigInt(available)*100n/10000n).toString();
   db.prepare(
     'INSERT INTO tag_run_v2_snapshot_evidence_rehearsal '+
     '(snapshot_id,chat_id,day_key,asset_key,irreversible_block_num,'+
@@ -184,7 +184,7 @@ test('populated PR2/PR5 tables for current group bind without reset',t=>{
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
-test('single configured group: daily per-token 5% previews remain paused and unfunded',t=>{
+test('single configured group: daily per-token 1% previews remain paused and unfunded',t=>{
   const db=setup(t);
   bindCurrentTelegramCommunity(db,groupOptions);
   snapshot(db,A);snapshot(db,B);
@@ -200,7 +200,7 @@ test('single configured group: daily per-token 5% previews remain paused and unf
   assert.equal(out.transferAttempted,false);
   assert.equal(out.executable,false);
   assert.deepEqual(out.assets.map(x=>x.hypotheticalDailyUnits),
-    ['2000','10000']);
+    ['400','2000']);
   assert(budgets(db).every(x=>x.paused===1));
   assert.equal(budgets(db,OTHER).length,0);
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
@@ -223,7 +223,7 @@ test('missing second asset snapshot rolls back earlier synthetic budget inserts'
   assert.equal(budgets(db).length,2);
 });
 
-test('inaccurate snapshot 5% or available balance fails closed, no synthetic allocation',t=>{
+test('inaccurate snapshot 1% or available balance fails closed, no synthetic allocation',t=>{
   const db=setup(t);
   bindCurrentTelegramCommunity(db,groupOptions);
   snapshot(db,A,{fivePercentUnits:'2001'});
@@ -292,7 +292,7 @@ test('unverified snapshot budgets retain exact BigInt units above Number.MAX_SAF
   const db=setup(t);
   bindCurrentTelegramCommunity(db,groupOptions);
   const large='9007199254740993000';
-  const hypothetical=(BigInt(large)*500n/10000n).toString();
+  const hypothetical=(BigInt(large)*100n/10000n).toString();
   snapshot(db,A,{onchainUnits:large,reservedUnits:'0',excludedUnits:'0',
     availableUnits:large,fivePercentUnits:hypothetical});
   const model=previewOneCommunityDailyCaps(db,{

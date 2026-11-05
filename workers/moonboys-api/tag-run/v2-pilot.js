@@ -38,10 +38,10 @@ function integerCount(row, field, label) {
   return n;
 }
 async function poolConfig(db) {
-  const cfg = await db.prepare('SELECT wallet_account,status,daily_bps,' +
+  const cfg = await db.prepare('SELECT wallet_account,status,daily_bps,active_daily_bps,active_policy_version,' +
     'historical_ticket_bps FROM tag_run_v2_pool_config WHERE config_id=1').first();
   if (!cfg || cfg.wallet_account !== TIP_ACCOUNT || cfg.status !== 'paused' ||
-      cfg.daily_bps !== 500 || cfg.historical_ticket_bps !== 5000) {
+      (cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 || cfg.active_policy_version !== 2) || cfg.historical_ticket_bps !== 5000) {
     throw new Error('observation_config_not_paused_and_verified');
   }
   return cfg;
@@ -260,7 +260,7 @@ export async function handleV2ObservationCommand(env, {
       'Wallet: '+TIP_ACCOUNT+' · target: '+day+' UTC'+
       '\nCurrent eligible members: '+weight.current.length+
       '\nHistorical eligible members: '+weight.historical.length+
-      '\nHypothetical 5% pools: '+(parts.join('; ')||'none')+
+      '\nHypothetical 1% pools: '+(parts.join('; ')||'none')+
       '\nHypothetical bundles: '+simulated.bundles.length+
       '\nHistorical/current lottery weight: 50%/50% when both groups exist.'+
       '\nNo asset is approved by this calculation; chain head balances are NOT '+

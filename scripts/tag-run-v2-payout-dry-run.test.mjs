@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
-import { webcrypto } from 'node:crypto';
+import { webcrypto, createHash } from 'node:crypto';
 import {
   TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey
 } from '../workers/moonboys-api/tag-run/v2-core.js';
@@ -12,7 +12,7 @@ import {
   reserveReviewedPayout, buildReviewedWaxTransfer
 } from '../workers/moonboys-api/tag-run/v2-payout-executor.js';
 import {parseDryRunArgs,selectOnlyDatabase} from './tag-run-v2-payout-dry-run.mjs';
-import {canonicalSnapshotSetDigest} from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
+import {canonicalSnapshotSetDigest,canonicalSnapshotSetPayload} from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 
 const GROUP='-1001234567890', DAY='2026-11-02';
 const A=assetKey('kingsofgraff','LFGK',4);
@@ -26,7 +26,8 @@ function fixture(t,{perTransfer='500'}={}){
   for(const file of [
     '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
     '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
-    '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql'
+    '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql',
+      '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql'
   ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
   sqlite.prepare(
     "UPDATE tag_run_v2_pool_config SET status='review_only'").run();
@@ -40,18 +41,26 @@ function fixture(t,{perTransfer='500'}={}){
     'sender_account,recipient_account,asset_key,units,memo_digest,status,reviewed_at) '+
     'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
   ).run(WAX_MAINNET_CHAIN_ID,'11','e'.repeat(64),101,'f'.repeat(64),
-    'somewallet11',TIP_ACCOUNT,A,'10000',SNAP,'confirmed_donation','2026-11-02T23:05:00Z');
+    'somewallet11',TIP_ACCOUNT,A,'50000',SNAP,'confirmed_donation','2026-11-02T23:05:00Z');
   sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,A,TIP_ACCOUNT,101,'f'.repeat(64),
-    '10000','0','0','10000','500',SNAP,'verified');
+    '50000','0','0','50000','0',SNAP,'verified','500');
+  const snapshotRow=sqlite.prepare(
+    'SELECT s.*,a.chain_id,a.token_contract,a.token_symbol,a.token_precision '+
+    'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key'
+  ).get();
+  const committedSetDigest=createHash('sha256').update(canonicalSnapshotSetPayload({
+    chatId:GROUP,day:DAY,rows:[snapshotRow]
+  })).digest('hex');
   sqlite.prepare('INSERT INTO tag_run_v2_draws '+
     '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
-    'snapshots_digest,reviewed_by) VALUES (?,?,?,?,?,?,?,?)'
-  ).run(GROUP,DAY,'reviewed',SNAP,RULES,RULES,SNAP,'independent-draw-reviewer');
+    'snapshots_digest,reviewed_by,reward_policy_bps) VALUES (?,?,?,?,?,?,?,?,100)'
+  ).run(GROUP,DAY,'reviewed',SNAP,RULES,RULES,committedSetDigest,'independent-draw-reviewer');
   for(let i=0;i<3;i++){
     sqlite.prepare('INSERT INTO tag_run_v2_bundles '+
       '(chat_id,day_key,asset_key,bundle_index,telegram_id,ticket_class,units) '+
@@ -62,7 +71,7 @@ function fixture(t,{perTransfer='500'}={}){
     'VALUES (?,?)').run(MEMBER,RECEIVER);
   sqlite.prepare('INSERT INTO tag_run_v2_payout_caps '+
     '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,'+
-    'per_transfer_limit_units,authorized_by) VALUES (?,?,?,?,?,?,?)'
+    'per_transfer_limit_units,authorized_by,reward_policy_bps) VALUES (?,?,?,?,?,?,?,100)'
   ).run(GROUP,DAY,A,SNAP,'500',perTransfer,'reviewed-cap-approval');
   sqlite.prepare('UPDATE tag_run_v2_payout_caps SET paused=0,revision=revision+1').run();
 
@@ -194,9 +203,9 @@ test('pool pause, cap pause and unreviewed draw each block',async t=>{
   f.sqlite.prepare("UPDATE tag_run_v2_draws SET status='rejected'").run();
   includes(await f.preview(),'draw_not_reviewed');
 });
-test('snapshot arithmetic detects 5% inflation and digest/source revocation',async t=>{
+test('snapshot arithmetic detects 1% inflation and digest/source revocation',async t=>{
   const f=fixture(t);
-  f.sqlite.prepare("UPDATE tag_run_v2_snapshots SET five_percent_units='501'").run();
+  f.sqlite.prepare("UPDATE tag_run_v2_snapshots SET daily_reward_units='501'").run();
   includes(await f.preview(),'snapshot_budget_invalid');
 });
 test('invalid registered destination is blocked',async t=>{
@@ -225,7 +234,7 @@ test('duplicate bundle reservation is detected from the real payout ledger',asyn
   assert.equal(result.unsignedAction,null);
   assert.equal(f.commitCount(),before);
 });
-test('remaining cumulative 5% cap cannot be exceeded by another bundle',async t=>{
+test('remaining cumulative 1% cap cannot be exceeded by another bundle',async t=>{
   const f=fixture(t);
   await f.reserve(0);
   await f.reserve(1);
@@ -294,10 +303,11 @@ test('multi-asset draws without a canonical commitment fail closed',async t=>{
   f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
-    '100','0','0','100','5','e'.repeat(64),'verified');
+    '100','0','0','100','0','e'.repeat(64),'verified','1');
   includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
 });
 
@@ -311,10 +321,11 @@ test('reviewed multi-token draw passes only when its canonical snapshot set dige
   f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
-    '100','0','0','100','5','e'.repeat(64),'verified');
+    '100','0','0','100','0','e'.repeat(64),'verified','1');
   const rows=f.sqlite.prepare('SELECT s.*,a.chain_id,a.token_contract,a.token_symbol,a.token_precision '+
     'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
     'WHERE s.chat_id=? AND s.day_key=? ORDER BY s.asset_key LIMIT 101').all(GROUP,DAY);

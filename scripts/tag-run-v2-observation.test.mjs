@@ -21,12 +21,16 @@ const NOW=Date.parse('2026-11-03T02:00:00Z');
 const ASSET=assetKey('kingsofgraff','LFGK',4);
 const migration103=read('workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql');
 const migration104=read('workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql');
+const migration105=read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql');
+const migration106=read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
 
 function fixture(t){
   const sqlite=new DatabaseSync(':memory:');
   sqlite.exec('PRAGMA foreign_keys=ON;');
   sqlite.exec(migration103);
   sqlite.exec(migration104);
+  sqlite.exec(migration105);
+  sqlite.exec(migration106);
   t.after(()=>sqlite.close());
   const DB={prepare(sql){return {
     bind(...args){return {
@@ -256,8 +260,8 @@ test('hypothetical draw blocks until prior real participation is fully captured'
   assert.match(simulated.messages[0],/UNSAVED UNVERIFIED WHAT-IF ONLY/);
   assert.match(simulated.messages[0],/Current eligible members: 1/);
   assert.match(simulated.messages[0],/Historical eligible members: 1/);
-  assert.match(simulated.messages[0],/5000\.0000 LFGK/);
-  assert.match(simulated.messages[0],/5000000\.0000 WUF/);
+  assert.match(simulated.messages[0],/1000\.0000 LFGK/);
+  assert.match(simulated.messages[0],/1000000\.0000 WUF/);
   assert.match(simulated.messages[0],/No DB draw\/claim\/reserve\/payout is saved/);
   assert.equal(count(f,'tag_run_v2_draws'),0);
   assert.equal(count(f,'tag_run_v2_bundles'),0);

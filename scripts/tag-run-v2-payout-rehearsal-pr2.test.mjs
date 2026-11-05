@@ -28,7 +28,7 @@ async function build(){
     precision:4,day:DAY,evidenceDigest:HASH,blockId:BLOCK,
     irreversibleBlockNum:1234567,status:'unverified',
     onchainUnits:'100000',reservedUnits:'20000',
-    excludedUnits:'40000',availableUnits:'40000',fivePercentUnits:'2000'}];
+    excludedUnits:'40000',availableUnits:'40000',dailyRewardUnits:'400'}];
   return {plan,snapshots};
 }
 const rehearse=({plan,snapshots})=>prepareV2PayoutRehearsal({
@@ -46,16 +46,16 @@ test('exact integer balance minus reserved and excluded governs offline intent t
   assert.equal(result.transferAttempted,false);
   assert.equal(REHEARSAL_EXECUTABLE,false);
   assert.equal(result.intents.length,20);
-  assert.equal(result.intents.reduce((n,x)=>n+BigInt(x.amount_units),0n),2000n);
+  assert.equal(result.intents.reduce((n,x)=>n+BigInt(x.amount_units),0n),400n);
   assert(result.intents.every(x=>x.destination_account==='gkniftyheads' &&
     x.status==='simulation_only' && /^[a-f0-9]{64}$/.test(x.intent_key)));
   assert(result.blockers.includes('funding_not_reserved'));
   assert(Object.isFrozen(result.intents));
 });
 
-test('jointly inflated available and 5% values fail despite matching preview totals',async()=>{
+test('jointly inflated available and 1% values fail despite matching preview totals',async()=>{
   const x=await build();
-  x.snapshots[0]={...x.snapshots[0],availableUnits:'100000',fivePercentUnits:'5000'};
+  x.snapshots[0]={...x.snapshots[0],availableUnits:'100000',dailyRewardUnits:'1000'};
   await assert.rejects(rehearse(x),/rehearsal_snapshot_units_not_reconciled/);
 });
 
@@ -63,7 +63,7 @@ test('deficits, forged daily budget or mismatched plan total fail closed',async(
   const a=await build();
   for(const patch of [
     {onchainUnits:'100000',reservedUnits:'80000',excludedUnits:'40000'},
-    {fivePercentUnits:'5000'},
+    {dailyRewardUnits:'1000'},
     {availableUnits:'39999'},
     {blockId:'not-a-digest'},
     {irreversibleBlockNum:0},
@@ -74,7 +74,7 @@ test('deficits, forged daily budget or mismatched plan total fail closed',async(
     }),/rehearsal_/);
   }
   await assert.rejects(rehearse({...a,plan:{
-    ...a.plan,totals:[{...a.plan.totals[0],dailyBudgetUnits:'3000'}]
+    ...a.plan,totals:[{...a.plan.totals[0],dailyBudgetUnits:'600'}]
   }}),/rehearsal_plan_totals_mismatch/);
 });
 
@@ -153,7 +153,7 @@ test('SQLite requires non-NULL immutable digest identifiers on all three rehears
         'block_id','onchain_units','reserved_units','excluded_units',
         'available_units','five_percent_units','evidence_digest'],
       values:[CHAT,DAY,KEY,100,BLOCK,'100000','20000','40000',
-        '40000','2000',HASH]
+        '40000','400',HASH]
     },
     {
       table:'tag_run_v2_payout_intents_rehearsal',id:'intent_key',
@@ -261,7 +261,7 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
      five_percent_units,evidence_digest)
     VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
   snapshot.run(HASH,CHAT,DAY,KEY,100,BLOCK,
-    '100000','20000','40000','40000','2000',HASH);
+    '100000','20000','40000','40000','400',HASH);
   const replaceSnapshot=db.prepare(`INSERT OR REPLACE INTO tag_run_v2_snapshot_evidence_rehearsal
     (snapshot_id,chat_id,day_key,asset_key,irreversible_block_num,
      block_id,onchain_units,reserved_units,excluded_units,available_units,
@@ -269,7 +269,7 @@ test('rehearsal funding and snapshot evidence cannot be approved or rewritten in
     VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
   for(const [id,day] of [[HASH,'2026-11-03'],['d'.repeat(64),DAY]]){
     assert.throws(()=>replaceSnapshot.run(id,CHAT,day,KEY,100,BLOCK,
-      '999999','20000','40000','939999','46999',HASH),
+      '999999','20000','40000','939999','9399',HASH),
       /immutable_rehearsal_snapshot/);
   }
   assert.equal(db.prepare('SELECT onchain_units FROM tag_run_v2_snapshot_evidence_rehearsal WHERE snapshot_id=?')

@@ -40,7 +40,7 @@ test('real preview can produce deterministic proposed direct-to-registered-accou
   assert.deepEqual(first.totals.map(t=>({
     budget:t.dailyBudgetUnits,allocated:t.hypotheticalAllocatedUnits,
     remaining:t.hypotheticalUnallocatedUnits
-  })),[{budget:'5000',allocated:'5000',remaining:'0'}]);
+  })),[{budget:'1000',allocated:'1000',remaining:'0'}]);
   assert(first.blockers.includes('no_signer_or_transfer_executor'));
   assert(Object.isFrozen(first.entries));
 });
@@ -69,9 +69,9 @@ test('distinct bundle allocations may share a winning member but duplicate slots
   }),/payout_plan_duplicate_bundle_slot/);
 });
 
-test('a simulated allocation exceeding five percent cannot be proposed',async()=>{
+test('a simulated allocation exceeding one percent cannot be proposed',async()=>{
   const data=await preview();
-  const invalid={...data,bundles:[{...data.bundles[0],units:'5001'}]};
+  const invalid={...data,bundles:[{...data.bundles[0],units:'1001'}]};
   await assert.rejects(buildDirectWalletPayoutPlan({
     preview:invalid,destinations,cryptoImpl:webcrypto
   }),/payout_plan_exceeds_daily_asset_budget/);
@@ -90,14 +90,14 @@ test('available units must match balance less all reserved and excluded units',a
   assert.deepEqual(reconciled.totals.map(t=>({
     budget:t.dailyBudgetUnits,allocated:t.hypotheticalAllocatedUnits,
     remaining:t.hypotheticalUnallocatedUnits
-  })),[{budget:'2000',allocated:'2000',remaining:'0'}]);
+  })),[{budget:'400',allocated:'400',remaining:'0'}]);
 
   // An attacker adjusting both availability and the daily budget can no
-  // longer make a fabricated 5000-unit allocation appear under the cap.
+  // longer make a fabricated 1000-unit allocation appear under the cap.
   const inflated={...original,budgets:[{
     ...original.budgets[0],
     balanceUnits:'100000',reservedUnits:'20000',excludedUnits:'40000',
-    availableUnits:'100000',dailyBudgetUnits:'5000'
+    availableUnits:'100000',dailyBudgetUnits:'1000'
   }]};
   await assert.rejects(buildDirectWalletPayoutPlan({
     preview:inflated,destinations,cryptoImpl:webcrypto
@@ -110,9 +110,9 @@ test('preview budget must reject reservation/exclusion deficits and forged balan
     {balanceUnits:'100000',reservedUnits:'75000',excludedUnits:'40000',
       availableUnits:'0',dailyBudgetUnits:'0'},
     {balanceUnits:'120000',reservedUnits:'0',excludedUnits:'0',
-      availableUnits:'100000',dailyBudgetUnits:'5000'},
+      availableUnits:'100000',dailyBudgetUnits:'1000'},
     {balanceUnits:'100000',reservedUnits:'20000',excludedUnits:'40000',
-      availableUnits:'40000',dailyBudgetUnits:'5000'},
+      availableUnits:'40000',dailyBudgetUnits:'1000'},
     {reservedUnits:'not-an-integer'}
   ]) {
     await assert.rejects(buildDirectWalletPayoutPlan({
@@ -125,7 +125,7 @@ test('preview budget must reject reservation/exclusion deficits and forged balan
 test('the planner rejects fabricated budgets, unknown assets and executable statuses',async()=>{
   const data=await preview();
   for(const altered of [
-    {...data,budgets:[{...data.budgets[0],dailyBudgetUnits:'5001'}]},
+    {...data,budgets:[{...data.budgets[0],dailyBudgetUnits:'1001'}]},
     {...data,bundles:[{...data.bundles[0],assetKey:'wrong'}]},
     {...data,bundles:[{...data.bundles[0],status:'locked'}]},
     {...data,status:'reviewed'},

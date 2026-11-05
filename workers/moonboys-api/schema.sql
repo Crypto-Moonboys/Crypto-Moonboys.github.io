@@ -2767,7 +2767,9 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_pool_config (
   status TEXT NOT NULL DEFAULT 'paused'
     CHECK(status IN ('paused','read_only','review_only')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision >= 0),
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  active_daily_bps INTEGER NOT NULL DEFAULT 100 CHECK(active_daily_bps = 100),
+  active_policy_version INTEGER NOT NULL DEFAULT 2 CHECK(active_policy_version = 2)
 );
 INSERT OR IGNORE INTO tag_run_v2_pool_config(config_id,wallet_account)
 VALUES(1,'isthatajoint');
@@ -2828,6 +2830,8 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_snapshots (
   status TEXT NOT NULL DEFAULT 'unverified'
     CHECK(status IN ('unverified','verified','quarantined')),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  reward_policy_bps INTEGER NOT NULL DEFAULT 500 CHECK(reward_policy_bps IN (100,500)),
+  daily_reward_units TEXT NOT NULL DEFAULT '0' CHECK(length(daily_reward_units) BETWEEN 1 AND 78 AND daily_reward_units NOT GLOB '*[^0-9]*' AND (daily_reward_units='0' OR substr(daily_reward_units,1,1)!='0')),
   PRIMARY KEY(chat_id,day_key,asset_key)
 );
 CREATE INDEX IF NOT EXISTS tag_run_v2_snapshots_day
@@ -2874,6 +2878,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_draws (
   snapshots_digest TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   reviewed_by TEXT,
+  reward_policy_bps INTEGER NOT NULL DEFAULT 500 CHECK(reward_policy_bps IN (100,500)),
   PRIMARY KEY(chat_id,day_key)
 );
 CREATE TABLE IF NOT EXISTS tag_run_v2_bundles (
@@ -2930,17 +2935,19 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0 AND revision<=9007199254740991),
   paused INTEGER NOT NULL DEFAULT 1 CHECK(paused IN (0,1)),
   authorized_by TEXT NOT NULL CHECK(length(authorized_by)>0),
+  reward_policy_bps INTEGER NOT NULL DEFAULT 500 CHECK(reward_policy_bps IN (100,500)),
   PRIMARY KEY(chat_id,day_key,asset_key),
   FOREIGN KEY(chat_id,day_key,asset_key) REFERENCES tag_run_v2_snapshots(chat_id,day_key,asset_key)
 ) WITHOUT ROWID;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_source_guard
 BEFORE INSERT ON tag_run_v2_payout_caps
-WHEN NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
+WHEN NEW.reward_policy_bps!=100 OR NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
  OR NEW.last_reserved_units!='0' OR NEW.last_intent_key!=''
  OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_pool_config p
   WHERE p.config_id=1 AND p.status='review_only'
     AND p.wallet_account='isthatajoint' AND p.daily_bps=500
+    AND p.active_daily_bps=100 AND p.active_policy_version=2
     AND p.historical_ticket_bps=5000
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a
@@ -2948,7 +2955,8 @@ WHEN NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
   WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND a.eligibility='approved' AND s.snapshot_digest=NEW.snapshot_digest
-    AND s.five_percent_units=NEW.daily_limit_units
+    AND s.reward_policy_bps=100 AND s.daily_reward_units=NEW.daily_limit_units
+    AND s.daily_reward_units=(CASE WHEN length(s.spendable_units)<=2 THEN '0' ELSE substr(s.spendable_units,1,length(s.spendable_units)-2) END)
     AND (
       length(NEW.daily_limit_units)>length(NEW.per_transfer_limit_units)
       OR (length(NEW.daily_limit_units)=length(NEW.per_transfer_limit_units)
@@ -3057,6 +3065,7 @@ OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_pool_config p
   WHERE p.config_id=1 AND p.status='review_only'
     AND p.wallet_account='isthatajoint' AND p.daily_bps=500
+    AND p.active_daily_bps=100 AND p.active_policy_version=2
     AND p.historical_ticket_bps=5000
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a
@@ -3064,12 +3073,14 @@ OR NOT EXISTS (
   WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND s.snapshot_digest=NEW.snapshot_digest
+    AND s.reward_policy_bps=100
+    AND s.daily_reward_units=(CASE WHEN length(s.spendable_units)<=2 THEN '0' ELSE substr(s.spendable_units,1,length(s.spendable_units)-2) END)
     AND a.eligibility='approved'
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_payout_caps c
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
     AND c.asset_key=NEW.asset_key AND c.snapshot_digest=NEW.snapshot_digest
-    AND c.paused=0 AND c.last_intent_key=NEW.intent_key
+    AND c.paused=0 AND c.reward_policy_bps=100 AND c.last_intent_key=NEW.intent_key
     AND c.last_reserved_units=NEW.amount_units
     AND (
       length(c.per_transfer_limit_units)>length(NEW.amount_units)
@@ -3088,7 +3099,7 @@ OR NOT EXISTS (
     AND EXISTS (
       SELECT 1 FROM tag_run_v2_draws d
       WHERE d.chat_id=b.chat_id AND d.day_key=b.day_key
-        AND d.status='reviewed'
+        AND d.status='reviewed' AND d.reward_policy_bps=100
         AND d.reviewed_by IS NOT NULL AND length(d.reviewed_by)>0
     )
 ) OR EXISTS (
@@ -3123,3 +3134,90 @@ BEFORE DELETE ON tag_run_v2_payout_intents
 BEGIN SELECT RAISE(ABORT,'v2_payout_intent_immutable'); END;
 CREATE INDEX IF NOT EXISTS tag_run_v2_payout_intents_state
 ON tag_run_v2_payout_intents(status,day_key);
+
+-- Old caps may remain as historical evidence but can never be unpaused for
+-- 1% execution. A cap from policy v2 also requires a v2 reviewed draw.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_policy_activation_guard
+BEFORE UPDATE OF paused ON tag_run_v2_payout_caps
+WHEN NEW.paused=0 AND (
+  NEW.reward_policy_bps!=100
+  OR NOT EXISTS (
+    SELECT 1 FROM tag_run_v2_draws d
+    WHERE d.chat_id=NEW.chat_id AND d.day_key=NEW.day_key
+      AND d.status='reviewed' AND d.reward_policy_bps=100
+  )
+  OR NOT EXISTS (
+    SELECT 1 FROM tag_run_v2_snapshots s
+    WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
+      AND s.asset_key=NEW.asset_key AND s.status='verified'
+      AND s.reward_policy_bps=100
+      AND s.daily_reward_units=NEW.daily_limit_units
+      AND s.daily_reward_units=(CASE WHEN length(s.spendable_units)<=2 THEN '0' ELSE substr(s.spendable_units,1,length(s.spendable_units)-2) END)
+  )
+)
+BEGIN SELECT RAISE(ABORT,'v2_legacy_cap_cannot_activate'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_policy_immutable
+BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_payout_caps
+BEGIN SELECT RAISE(ABORT,'v2_payout_cap_policy_immutable'); END;
+
+-- Legacy policy markers are HISTORICAL, not editable release approvals.
+-- New policy rows are born as v2; UPDATE is never a supported conversion.
+-- BEFORE INSERT duplicate guards also cover INSERT OR REPLACE even when
+-- SQLite recursive_triggers is OFF (its internal DELETE trigger may not run).
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_policy_immutable
+BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_snapshots
+WHEN NEW.reward_policy_bps!=OLD.reward_policy_bps
+BEGIN SELECT RAISE(ABORT,'v2_snapshot_policy_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_policy_immutable
+BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_draws
+WHEN NEW.reward_policy_bps!=OLD.reward_policy_bps
+BEGIN SELECT RAISE(ABORT,'v2_draw_policy_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_no_replace_policy
+BEFORE INSERT ON tag_run_v2_snapshots
+WHEN EXISTS (
+  SELECT 1 FROM tag_run_v2_snapshots old
+  WHERE (old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key
+    AND old.asset_key=NEW.asset_key)
+    OR old.rowid=NEW.rowid
+)
+BEGIN SELECT RAISE(ABORT,'v2_snapshot_policy_replacement_forbidden'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_no_replace_policy
+BEFORE INSERT ON tag_run_v2_draws
+WHEN EXISTS (
+  SELECT 1 FROM tag_run_v2_draws old
+  WHERE (old.chat_id=NEW.chat_id AND old.day_key=NEW.day_key)
+    OR old.rowid=NEW.rowid
+)
+BEGIN SELECT RAISE(ABORT,'v2_draw_policy_replacement_forbidden'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_legacy_snapshot_no_delete
+BEFORE DELETE ON tag_run_v2_snapshots
+WHEN OLD.reward_policy_bps=500
+BEGIN SELECT RAISE(ABORT,'v2_legacy_snapshot_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_legacy_draw_no_delete
+BEFORE DELETE ON tag_run_v2_draws
+WHEN OLD.reward_policy_bps=500
+BEGIN SELECT RAISE(ABORT,'v2_legacy_draw_immutable'); END;
+
+
+
+-- UPDATE OR REPLACE can delete a colliding legacy row without firing DELETE
+-- triggers when recursive_triggers is OFF. All evidence identity, including
+-- writable rowid, is immutable regardless of current policy version.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_snapshot_scope_immutable
+BEFORE UPDATE ON tag_run_v2_snapshots
+WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
+  OR NEW.asset_key!=OLD.asset_key OR NEW.rowid!=OLD.rowid
+BEGIN SELECT RAISE(ABORT,'v2_snapshot_scope_immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_draw_scope_immutable
+BEFORE UPDATE ON tag_run_v2_draws
+WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key
+  OR NEW.rowid!=OLD.rowid
+BEGIN SELECT RAISE(ABORT,'v2_draw_scope_immutable'); END;
+

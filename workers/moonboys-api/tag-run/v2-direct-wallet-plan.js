@@ -35,7 +35,7 @@ export async function buildDirectWalletPayoutPlan({
     const available = parseIntegerUnits(b.availableUnits);
     // Do not trust a supplied availability figure: reconcile all four
     // integer-base-unit fields against the actual preview input. A preview
-    // that inflates availability and its 5% budget together must fail closed.
+    // that inflates availability and its 1% budget together must fail closed.
     if (reserved + excluded > balance ||
         available !== balance - reserved - excluded ||
         amount !== available * BigInt(DAILY_BPS) / 10000n) {
