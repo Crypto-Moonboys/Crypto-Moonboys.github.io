@@ -30,6 +30,10 @@ old digests. Migration **106** is additive and introduces:
 - Reissued cap and intent insertion guards, and separate activation/immutability
   triggers. New cap/intent writes must match policy 100, and old 500 caps cannot
   become active under the new 1% policy.
+- Legacy snapshot/draw policy markers are immutable via SQL triggers. Attempted
+  UPDATE reclassification, DELETE, and INSERT OR REPLACE on existing primary keys
+  are rejected, including with SQLite recursive_triggers=OFF. Historical
+  verified/reviewed evidence cannot be relabelled into policy 100 by D1 writes.
 
 The old `five_percent_units` name remains in D1 to preserve history;
 new policy-v2 records use `daily_reward_units` as the **only** effective
@@ -54,6 +58,9 @@ hash cannot authorize payouts by itself.
 
 ```powershell
 node --test scripts/tag-run-v2-one-percent-policy.test.mjs
+node --test scripts/tag-run-v2-ledger-lifecycle-pr4.test.mjs
+node --test scripts/tag-run-v2-observation.test.mjs
+node --test scripts/tag-run-v2-payout-rehearsal-pr2.test.mjs
 node --test scripts/tag-run-v2-snapshot-commitment.test.mjs
 node --test scripts/tag-run-v2-community-pot.test.mjs
 node --test scripts/tag-run-v2-payout-executor-pr9.test.mjs
