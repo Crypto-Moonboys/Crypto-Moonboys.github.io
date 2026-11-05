@@ -21,4 +21,4 @@ for(const [label,override] of [
 ]) test(label+' rejected',()=>assert.throws(()=>assertTagrainIdentity({...valid,...override})));
 test('parsed key object equals registered EOS key',()=>assert.equal(keysMatch(PublicKey.from(actualKey),actualKey),true));
 test('PUB_K1 and EOS representations compare equal',()=>assert.equal(keysMatch(PublicKey.from(actualKey).toString(),actualKey),true));
-test('different real key is rejected',()=>assert.equal(keysMatch(PublicKey.from('EOS57xWyUxp6gMvGNREN39g9Cn1QpThHJnVga1RQwcErwghVCtwYE'),actualKey),false));
+test('different real key is rejected',()=>assert.equal(keysMatch(PublicKey.from('EOS5h14TvsjPhibLmkZ22Wk16kqQNyQ9PYyvwQppCkDi1WDDq7WRU'),actualKey),false));
