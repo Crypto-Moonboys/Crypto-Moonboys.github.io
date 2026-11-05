@@ -18,11 +18,19 @@ button.addEventListener('click', async () => {
     // login provides the identity scope required by Anchor Link. Verify the returned authority strictly.
     const proof = await link.login('tagraintest');
     const signer = proof.session?.auth;
-    const recovered = String(proof.signerKey ?? proof.session?.publicKey ?? '');
+    const recovered = proof.signerKey ?? proof.session?.publicKey;
+    const recoveredText = recovered == null ? '' : String(recovered);
+    const normalizedKey = recovered && typeof recovered.equals === 'function'
+      ? recovered.equals(EXPECTED_KEY)
+      : recoveredText === EXPECTED_KEY;
     if (String(signer?.actor) !== ACTOR || String(signer?.permission) !== PERMISSION) {
       throw new Error('Unexpected identity signer');
     }
-    if (recovered !== EXPECTED_KEY) throw new Error('Recovered key does not match registered TAGRAIN key');
+    if (!normalizedKey) {
+      throw new Error(recovered == null
+        ? 'No signer public key returned by Anchor login'
+        : 'Returned signer key does not match registered TAGRAIN key');
+    }
     status.textContent = 'PASS: Anchor identity proof verified for isthatajoint@tagrain. No transaction broadcast.';
   } catch (error) {
     status.textContent = 'FAIL: ' + (error instanceof Error ? error.message : 'Identity verification failed');
