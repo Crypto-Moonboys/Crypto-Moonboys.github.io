@@ -13,7 +13,7 @@ authority. Its release switches remain OFF.
 - Exact WAX mainnet, token contract, symbol, and precision; local
   operator asset allowlist is mandatory but does NOT override D1.
 - Asset eligibility must be `approved` in D1, with verified and reviewed metadata.
-- At least one `confirmed_donation` deposit; observed balance alone is inadequate.
+- Independently reviewed `confirmed_donation` receipts on the matching WAX chain, bound to the asset and snapshot's irreversible block cutoff. Sum receipt units with BigInt, ignoring refund-review/quarantine and post-snapshot receipts; require provenance totaling at least the on-chain snapshot balance less excluded units. Above 5,000 receipts, fail closed until a separately reviewed scaling mechanism exists. This is a necessary D1 provenance check, not independent proof of ownership or donation intent.
 - Pool `review_only`, wallet `isthatajoint`, daily budget BPS 500,
   historical ticket BPS 5000.
 - Verified irreversible source snapshot with full exact-string/BigInt arithmetic.
@@ -84,3 +84,9 @@ cumulative remaining cap, wallet substitution, asset quarantine, donation
 revocation, snapshot tampering, draw/pool/cap pauses, read failures and
 SELECT-only CLI query enforcement. Additional full Worker tests are
 required before merge. Passing test fixtures are not proof of live funding.
+
+## PR #1720 review remediation (2026-11-05)
+
+Fixed four Codex findings: use a genuinely invalid WAX destination for rejection coverage while a valid changed registration is read from D1; compare all four stored asset identity columns; validate reviewed confirmed donations at or before snapshot irreversible block with BigInt balance reconciliation; validate draw snapshot commitment and fail closed on multi-asset draws lacking a published aggregate digest scheme. New SQLite test cases cover identity tampering, partial/refund-review donor balances, future/revoked donation evidence and mismatched/ambiguous draw commitments.
+
+**Validation:** syntax checks and eight isolated pure-logic scenarios passed after patching. Full migration-backed `node --test scripts/tag-run-v2-payout-dry-run.test.mjs` and `npm run ci:worker-api` are still outstanding; do not claim they have passed. No payout activation or production D1 mutation is authorised by this dry run.
