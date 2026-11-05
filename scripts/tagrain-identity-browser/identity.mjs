@@ -1,3 +1,4 @@
+import { assertTagrainIdentity } from './verify.mjs';
 import { Link } from 'anchor-link';
 import BrowserTransport from 'anchor-link-browser-transport';
 
@@ -14,23 +15,21 @@ button.addEventListener('click', async () => {
     const link = new Link({
       chains: [{ chainId: CHAIN_ID, nodeUrl: 'https://wax.greymass.com' }],
       transport: new BrowserTransport(),
+      verifyProofs: true,
     });
     // login provides the identity scope required by Anchor Link. Verify the returned authority strictly.
     const proof = await link.login('tagraintest');
     const signer = proof.session?.auth;
-    const recovered = proof.signerKey ?? proof.session?.publicKey;
-    const recoveredText = recovered == null ? '' : String(recovered);
-    const normalizedKey = recovered && typeof recovered.equals === 'function'
-      ? recovered.equals(EXPECTED_KEY)
-      : recoveredText === EXPECTED_KEY;
-    if (String(signer?.actor) !== ACTOR || String(signer?.permission) !== PERMISSION) {
-      throw new Error('Unexpected identity signer');
-    }
-    if (!normalizedKey) {
-      throw new Error(recovered == null
-        ? 'No signer public key returned by Anchor login'
-        : 'Returned signer key does not match registered TAGRAIN key');
-    }
+    // verifyProofs=true requires Anchor Link to check the signature against the live authority.
+    // The verified account is only populated when that verification succeeds.
+    const verifiedAccount = proof.account;
+    const recovered = proof.proof?.recover();
+    const chainId = proof.chain?.id ?? proof.chain?.chainId;
+    assertTagrainIdentity({
+      actor: signer?.actor, permission: signer?.permission,
+      recoveredKey: recovered, expectedKey: EXPECTED_KEY,
+      chainId, expectedChainId: CHAIN_ID, verifiedAccount,
+    });
     status.textContent = 'PASS: Anchor identity proof verified for isthatajoint@tagrain. No transaction broadcast.';
   } catch (error) {
     status.textContent = 'FAIL: ' + (error instanceof Error ? error.message : 'Identity verification failed');
