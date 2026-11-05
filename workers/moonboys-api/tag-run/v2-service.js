@@ -24,7 +24,7 @@ const isV2Available = env => env?.TAG_RUN_ENABLED === 'true' &&
   env?.TAG_RUN_V2_TIP_ACCOUNT === TIP_ACCOUNT;
 
 async function configFor(db) {
-  return db.prepare('SELECT wallet_account,daily_bps,historical_ticket_bps,status,revision ' +
+  return db.prepare('SELECT wallet_account,daily_bps,active_daily_bps,active_policy_version,historical_ticket_bps,status,revision ' +
     'FROM tag_run_v2_pool_config WHERE config_id=1').first();
 }
 
@@ -72,7 +72,7 @@ export async function saveYesterdayParticipation(env, options = {}) {
   const cfg = await configFor(env.DB);
   if (!cfg || (cfg.status === 'paused' && !pilot)) return { status: 'paused' };
   if (pilot && (cfg.wallet_account !== TIP_ACCOUNT || cfg.status !== 'paused' ||
-      cfg.daily_bps !== 500 || cfg.historical_ticket_bps !== 5000)) {
+      (cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 || cfg.active_policy_version !== 2) || cfg.historical_ticket_bps !== 5000)) {
     throw new Error('observation_config_not_paused_and_verified');
   }
   const chatId = String(env.TELEGRAM_GROUP_CHAT_ID || '').trim();
@@ -255,7 +255,7 @@ export async function handleTagRunV2Command(env, options) {
   if (name === 'myrewards' && observationEnabled(env)) {
     const cfg = await configFor(env.DB);
     if (!cfg || cfg.wallet_account !== TIP_ACCOUNT ||
-        cfg.status !== 'paused' || cfg.daily_bps !== 500 ||
+        cfg.status !== 'paused' || (cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 || cfg.active_policy_version !== 2) ||
         cfg.historical_ticket_bps !== 5000) {
       throw new Error('observation_config_not_paused_and_verified');
     }
@@ -300,7 +300,7 @@ export async function handleTagRunV2Command(env, options) {
       r.token_contract+' — '+r.spendable_units+' smallest units ('+r.day_key+')');
     await send('TAG RUN · COMMUNITY TOKEN POT (READ-ONLY)\n' +
       'Pot status: '+cfg.status+'. Wallet: '+TIP_ACCOUNT+
-      '\nDaily review pool: at most 5% of each approved unreserved token.'+
+      '\nDaily review pool: at most 1% of each approved unreserved token.'+
       '\n'+(lines.join('\n')||'No independently verified eligible token balances yet.')+
       '\nStreet Cred is permanent. Token bonuses are not guaranteed.');
     return true;
@@ -384,10 +384,10 @@ export async function handleTagRunV2Command(env, options) {
       await send('V2 draw preview is paused until custody and asset review are complete.');
       return true;
     }
-    // The approved V2 foundation has fixed 5% daily and 50% historical
+    // The approved V2 foundation has fixed 1% daily and 50% historical
     // probability. Reject unexpected DB settings rather than silently
     // simulating different rates from those displayed to members.
-    if (cfg.daily_bps !== 500 || cfg.historical_ticket_bps !== 5000) {
+    if ((cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 || cfg.active_policy_version !== 2) || cfg.historical_ticket_bps !== 5000) {
       throw new Error('v2_draw_rule_configuration_mismatch');
     }
     const day = previousDay(nowMs);
