@@ -96,6 +96,11 @@ test('1% policy cap must match approved v2 snapshot, not 5% legacy amount',t=>{
     /v2_payout_cap_source_unapproved_or_duplicate/);
   assert.throws(()=>cap.run(CHAT,DAY,ASSET,SNAP,'100','100','reviewed',500),
     /v2_payout_cap_source_unapproved_or_duplicate/);
+  // SQL must enforce exact 1% itself, not trust a forged 1% policy label.
+  db.prepare("UPDATE tag_run_v2_snapshots SET daily_reward_units='500'").run();
+  assert.throws(()=>cap.run(CHAT,DAY,ASSET,SNAP,'500','100','reviewed',100),
+    /v2_payout_cap_source_unapproved_or_duplicate/);
+  db.prepare("UPDATE tag_run_v2_snapshots SET daily_reward_units='100'").run();
   cap.run(CHAT,DAY,ASSET,SNAP,'100','100','reviewed',100);
   assert.throws(()=>db.prepare(
     'UPDATE tag_run_v2_payout_caps SET reward_policy_bps=500'
