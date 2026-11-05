@@ -4,6 +4,7 @@ import {
   reviewWaxTransferAuthority,WAX_AUTHORITY_READ_ONLY,WAX_AUTHORITY_PROVIDERS
 } from '../workers/moonboys-api/tag-run/v2-wax-authority-review.js';
 import { WAX_MAINNET_CHAIN_ID } from '../workers/moonboys-api/tag-run/v2-core.js';
+import {parseOnchainReviewArgs} from './tag-run-v2-wax-authority-review.mjs';
 
 const HASH='a'.repeat(64);
 const KEY='EOS8i9TNBsg1LYGntvSDKfzVhK3dmXZgkNbRPJ89n9fMMLC8iunGk';
@@ -177,4 +178,20 @@ test('input restrictions block malformed code hashes and tokens',async()=>{
   await assert.rejects(()=>review(fixture(),{
     ...TARGET,precision:9
   }),/invalid_precision|invalid_token_identity/);
+});
+
+test('CLI rejects missing identity and does not infer audited WASM hash',()=>{
+  assert.equal(parseOnchainReviewArgs(['--help']).help,true);
+  assert.deepEqual(parseOnchainReviewArgs([
+    '--contract','kingsofgraff','--symbol','LFGK','--precision','4'
+  ]),{
+    contract:'kingsofgraff',symbol:'LFGK',precision:4,expectedCodeHash:null
+  });
+  assert.throws(()=>parseOnchainReviewArgs([
+    '--contract','kingsofgraff','--symbol','LFGK'
+  ]),/exact_token_identity_required/);
+  assert.throws(()=>parseOnchainReviewArgs([
+    '--contract','kingsofgraff','--symbol','LFGK','--precision','4',
+    '--live','true'
+  ]),/unexpected_arguments/);
 });
