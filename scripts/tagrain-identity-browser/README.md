@@ -35,3 +35,9 @@ Run `node --test verify.test.mjs` from this directory. All ten tests must pass. 
 ## Dependency security scope
 
 The existing repository-root `npm audit --omit=dev` reports vulnerable `body-parser`, `qs`, and `zod` dependencies through Express/PixelLab. Running it from this folder without an independent manifest audits the same parent project. The one-off `npm install --no-save` also reported additional advisories; these must not be represented as cleared. Audit a separate disposable directory with its own manifest/lockfile for the exact browser-harness dependencies before treating dependency security as signed off. Never run `npm audit fix` on the main repo solely for this harness.
+
+## Isolated dependency audit — 2026-11-05
+
+Operator ran a disposable audit in `D:\TAGRAIN-AUDIT` using `anchor-link@3.3.0`, `anchor-link-browser-transport@3.6.1`, `@greymass/eosio`, and `esbuild`. `npm audit --omit=dev` reported **6 vulnerabilities (3 low, 3 moderate, 0 high/critical)**. Findings include `elliptic` (cryptographic primitive implementation, no fix available) and `uuid <11.1.1` (missing bounds check, no fix available), with transitive dependencies. This is **not a clean audit**; risks must be accepted explicitly for localhost-only manual use or dependencies replaced before broader deployment. No approval for production signing, reward payout or token transfer follows from this result.
+
+Manual browser identity proof succeeded with `verifyProofs: true` and parsed public-key equality; 10 unit tests and bundle build passed in operator's Windows environment. This is evidence of one successful manual test, not proof of general security or of transaction-signing authority.
