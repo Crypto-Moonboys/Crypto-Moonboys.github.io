@@ -60,7 +60,7 @@ test('pure ledger applies simulated cap, freeze and no-transfer invariants',asyn
   assert.equal(result.entries[0].state,'simulation_held');
   assert.equal(result.entries[0].receivingAccount,'gkniftyheads');
   assert.equal(result.entries[0].confirmedOnChain,false);
-  assert.equal(result.caps[0].simulatedHeldUnits,'100');
+  assert.equal(result.caps[0].simulatedHeldUnits,'20');
   assert.equal(result.caps[0].fundedReservedUnits,'0');
   assert.equal(result.caps[0].actualTransferredUnits,'0');
   assert(Object.isFrozen(result.entries[0]));
@@ -91,17 +91,17 @@ test('paused mode replays accepted historical hold/unknown and permits incident 
   }),/ledger_rehearsal_historical_append_order_invalid/);
   const past=await simulate(source,{historicalEvents:original,paused:true});
   assert.equal(past.entries[0].state,'simulation_transfer_unknown');
-  assert.equal(past.caps[0].simulatedHeldUnits,'100');
+  assert.equal(past.caps[0].simulatedHeldUnits,'20');
   assert.equal(past.caps[0].fundedReservedUnits,'0');
   const reviewEvent={...event(first.intent_key,'simulate_reconcile',3),
     transactionId:'c'.repeat(64),chainActionSequence:'12345',
     blockId:'d'.repeat(64),blockNum:1000,account:'gkniftyheads',
-    assetKey:KEY,units:'100'};
+    assetKey:KEY,units:'20'};
   const reviewed=await simulate(source,{
     historicalEvents:original,paused:true,events:[reviewEvent]
   });
   assert.equal(reviewed.entries[0].state,'simulation_reconciliation_review');
-  assert.equal(reviewed.caps[0].simulatedHeldUnits,'100');
+  assert.equal(reviewed.caps[0].simulatedHeldUnits,'20');
   assert.equal(reviewed.entries[0].confirmedOnChain,false);
   assert.equal(reviewed.caps[0].actualTransferredUnits,'0');
   await assert.rejects(simulate(source,{
@@ -142,20 +142,20 @@ test('intent hash binds amount, class, snapshot, receipt and recipient fields',a
 test('daily and per-transfer cap checks use exact integer arithmetic',async()=>{
   const source=await createRehearsal(),first=source.intents[0].intent_key,
     second=source.intents[1].intent_key;
-  await assert.rejects(simulate(source,{limits:[cap('99','99')],
+  await assert.rejects(simulate(source,{limits:[cap('19','19')],
     events:[event(first,'simulate_hold',1)]}),
   /ledger_rehearsal_per_transfer_cap_exceeded/);
-  await assert.rejects(simulate(source,{limits:[cap('150','100')],
+  await assert.rejects(simulate(source,{limits:[cap('30','20')],
     events:[event(first,'simulate_hold',1),event(second,'simulate_hold',2)]}),
   /ledger_rehearsal_daily_cap_exceeded/);
-  const exact=await simulate(source,{limits:[cap('200','100')],
+  const exact=await simulate(source,{limits:[cap('40','20')],
     events:[event(first,'simulate_hold',1),event(second,'simulate_hold',2)]});
-  assert.equal(exact.caps[0].simulatedHeldUnits,'200');
-  const released=await simulate(source,{limits:[cap('100','100')],
+  assert.equal(exact.caps[0].simulatedHeldUnits,'40');
+  const released=await simulate(source,{limits:[cap('20','20')],
     events:[event(first,'simulate_hold',1),event(first,'simulate_cancel',2),
       event(second,'simulate_hold',3)]});
-  assert.equal(released.caps[0].simulatedHeldUnits,'100');
-  assert.equal(released.caps[0].simulatedReleasedUnits,'100');
+  assert.equal(released.caps[0].simulatedHeldUnits,'20');
+  assert.equal(released.caps[0].simulatedReleasedUnits,'20');
   assert.equal(released.entries[0].state,'simulation_cancelled');
 });
 
@@ -164,7 +164,7 @@ test('exact retries are idempotent, altered repeats or duplicate holds are rejec
   const request=event(key,'simulate_hold',5);
   const same=await simulate(source,{events:[request,request]});
   assert.deepEqual(same.entries[0].eventIds,[request.eventId]);
-  assert.equal(same.caps[0].simulatedHeldUnits,'100');
+  assert.equal(same.caps[0].simulatedHeldUnits,'20');
   await assert.rejects(simulate(source,{
     events:[request,{...request,action:'simulate_cancel'}]
   }),/ledger_rehearsal_conflicting_idempotency_key/);
@@ -178,7 +178,7 @@ test('uncertain transfer never releases funds or allows blind retry/cancellation
   const pending=[event(key,'simulate_hold',1),event(key,'simulate_unknown',2)];
   const held=await simulate(source,{events:pending});
   assert.equal(held.entries[0].state,'simulation_transfer_unknown');
-  assert.equal(held.caps[0].simulatedHeldUnits,'100');
+  assert.equal(held.caps[0].simulatedHeldUnits,'20');
   await assert.rejects(simulate(source,{
     events:[...pending,event(key,'simulate_cancel',3)]
   }),/ledger_rehearsal_cannot_cancel_uncertain_transfer/);
@@ -192,14 +192,14 @@ test('unverified chain reconciliation is only a review marker, not confirmed pay
   const reconcile=(key,n)=>({...event(key,'simulate_reconcile',n),
     transactionId:'c'.repeat(64),chainActionSequence:'12345',
     blockId:'d'.repeat(64),blockNum:1000,account:'gkniftyheads',
-    assetKey:KEY,units:'100'});
+    assetKey:KEY,units:'20'});
   const one=[event(a.intent_key,'simulate_hold',1),
     event(a.intent_key,'simulate_unknown',2),
     reconcile(a.intent_key,3)];
   const result=await simulate(source,{events:one});
   assert.equal(result.entries[0].state,'simulation_reconciliation_review');
   assert.equal(result.entries[0].confirmedOnChain,false);
-  assert.equal(result.caps[0].simulatedHeldUnits,'100');
+  assert.equal(result.caps[0].simulatedHeldUnits,'20');
   assert.equal(result.caps[0].actualTransferredUnits,'0');
   await assert.rejects(simulate(source,{events:[
     ...one,event(b.intent_key,'simulate_hold',4),
