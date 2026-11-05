@@ -18,7 +18,7 @@ get_currency_balance
 For the exact treasury `isthatajoint` and selected fungible token identity, the verifier requires:
 
 - Both providers are WAX mainnet with a positive last irreversible block.
-- Owner and active permissions exist and `tagrain` is a child of `active`.
+- Owner and active permissions exist with a valid `owner` → `active` → `tagrain` hierarchy. **Both independent providers must agree on the complete owner and active authority definitions**—threshold, keys/weights, delegated actor/permission/weights, waits/weights, and linked actions. Set ordering differences are normalized; malformed or conflicting authority evidence fails closed.
 - `tagrain` has threshold 1, exactly the previously verified public signing key with weight 1, no other delegated account or wait authorities.
 - There are no unexpected action links. A matching `contract::transfer` link is observed only; it is NEVER created by this tool.
 - The `transfer` ABI is the standard `(from:name,to:name,quantity:asset,memo:string)` layout.
@@ -57,6 +57,6 @@ node --test scripts/tag-run-v2-wax-authority-review.test.mjs
 npm run ci:worker-api
 ```
 
-Tests mock both providers and exercise good observations, missing links, unexpected extra action links, authority/key/threshold changes, malformed ABI, code hash mismatches, unpinned hash, wrong chain, mismatched balance, precision and RPC outages, and CLI argument safety.
+Tests mock both providers and exercise good observations, missing links, unexpected extra action links, authority/key/threshold changes, **owner and active key/delegation/wait disagreements, malformed parent authority structures and order-only equivalence**, malformed ABI, code hash mismatches, unpinned hash, wrong chain, mismatched balance, precision and RPC outages, and CLI argument safety.
 
 No automatic workflow triggers are added; the manual Worker API domain suite is extended with the new focused test. PR review and explicit owner approval are required before merge. Production funded draws and transfers remain OFF.
