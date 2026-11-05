@@ -28,7 +28,7 @@ async function build(){
     precision:4,day:DAY,evidenceDigest:HASH,blockId:BLOCK,
     irreversibleBlockNum:1234567,status:'unverified',
     onchainUnits:'100000',reservedUnits:'20000',
-    excludedUnits:'40000',availableUnits:'40000',fivePercentUnits:'2000'}];
+    excludedUnits:'40000',availableUnits:'40000',dailyRewardUnits:'400'}];
   return {plan,snapshots};
 }
 const rehearse=({plan,snapshots})=>prepareV2PayoutRehearsal({
@@ -53,9 +53,9 @@ test('exact integer balance minus reserved and excluded governs offline intent t
   assert(Object.isFrozen(result.intents));
 });
 
-test('jointly inflated available and 5% values fail despite matching preview totals',async()=>{
+test('jointly inflated available and 1% values fail despite matching preview totals',async()=>{
   const x=await build();
-  x.snapshots[0]={...x.snapshots[0],availableUnits:'100000',fivePercentUnits:'5000'};
+  x.snapshots[0]={...x.snapshots[0],availableUnits:'100000',dailyRewardUnits:'1000'};
   await assert.rejects(rehearse(x),/rehearsal_snapshot_units_not_reconciled/);
 });
 
@@ -63,7 +63,7 @@ test('deficits, forged daily budget or mismatched plan total fail closed',async(
   const a=await build();
   for(const patch of [
     {onchainUnits:'100000',reservedUnits:'80000',excludedUnits:'40000'},
-    {fivePercentUnits:'5000'},
+    {dailyRewardUnits:'1000'},
     {availableUnits:'39999'},
     {blockId:'not-a-digest'},
     {irreversibleBlockNum:0},
@@ -74,7 +74,7 @@ test('deficits, forged daily budget or mismatched plan total fail closed',async(
     }),/rehearsal_/);
   }
   await assert.rejects(rehearse({...a,plan:{
-    ...a.plan,totals:[{...a.plan.totals[0],dailyBudgetUnits:'3000'}]
+    ...a.plan,totals:[{...a.plan.totals[0],dailyBudgetUnits:'600'}]
   }}),/rehearsal_plan_totals_mismatch/);
 });
 
