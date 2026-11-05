@@ -2762,6 +2762,8 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_pool_config (
   wallet_account TEXT NOT NULL DEFAULT 'isthatajoint'
     CHECK(wallet_account='isthatajoint'),
   daily_bps INTEGER NOT NULL DEFAULT 500 CHECK(daily_bps = 500),
+  active_daily_bps INTEGER NOT NULL DEFAULT 100 CHECK(active_daily_bps = 100),
+  active_policy_version INTEGER NOT NULL DEFAULT 2 CHECK(active_policy_version = 2),
   historical_ticket_bps INTEGER NOT NULL DEFAULT 5000
     CHECK(historical_ticket_bps = 5000),
   status TEXT NOT NULL DEFAULT 'paused'
@@ -2824,6 +2826,8 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_snapshots (
   excluded_units TEXT NOT NULL,
   spendable_units TEXT NOT NULL,
   five_percent_units TEXT NOT NULL,
+  reward_policy_bps INTEGER NOT NULL DEFAULT 500 CHECK(reward_policy_bps IN (100,500)),
+  daily_reward_units TEXT NOT NULL DEFAULT '0' CHECK(length(daily_reward_units) BETWEEN 1 AND 78 AND daily_reward_units NOT GLOB '*[^0-9]*' AND (daily_reward_units='0' OR substr(daily_reward_units,1,1)!='0')),
   snapshot_digest TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'unverified'
     CHECK(status IN ('unverified','verified','quarantined')),
@@ -2867,6 +2871,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_draws (
   day_key TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'preview_only'
     CHECK(status IN ('preview_only','rejected','reviewed')),
+  reward_policy_bps INTEGER NOT NULL DEFAULT 500 CHECK(reward_policy_bps IN (100,500)),
   seed_commitment TEXT NOT NULL,
   seed_reveal TEXT,
   rules_digest TEXT NOT NULL,
@@ -2928,6 +2933,7 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
     AND (last_reserved_units='0' OR substr(last_reserved_units,1,1)!='0')),
   committed_units TEXT NOT NULL DEFAULT '0' CHECK(length(committed_units) BETWEEN 1 AND 78 AND committed_units NOT GLOB '*[^0-9]*' AND (committed_units='0' OR substr(committed_units,1,1)!='0')),
   revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0 AND revision<=9007199254740991),
+  reward_policy_bps INTEGER NOT NULL DEFAULT 500 CHECK(reward_policy_bps IN (100,500)),
   paused INTEGER NOT NULL DEFAULT 1 CHECK(paused IN (0,1)),
   authorized_by TEXT NOT NULL CHECK(length(authorized_by)>0),
   PRIMARY KEY(chat_id,day_key,asset_key),
@@ -2935,12 +2941,13 @@ CREATE TABLE IF NOT EXISTS tag_run_v2_payout_caps (
 ) WITHOUT ROWID;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_source_guard
 BEFORE INSERT ON tag_run_v2_payout_caps
-WHEN NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
+WHEN NEW.reward_policy_bps!=100 OR NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
  OR NEW.last_reserved_units!='0' OR NEW.last_intent_key!=''
  OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_pool_config p
   WHERE p.config_id=1 AND p.status='review_only'
     AND p.wallet_account='isthatajoint' AND p.daily_bps=500
+    AND p.active_daily_bps=100 AND p.active_policy_version=2
     AND p.historical_ticket_bps=5000
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a
@@ -2948,7 +2955,7 @@ WHEN NEW.paused!=1 OR NEW.revision!=0 OR NEW.committed_units!='0'
   WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND a.eligibility='approved' AND s.snapshot_digest=NEW.snapshot_digest
-    AND s.five_percent_units=NEW.daily_limit_units
+    AND s.reward_policy_bps=100 AND s.daily_reward_units=NEW.daily_limit_units
     AND (
       length(NEW.daily_limit_units)>length(NEW.per_transfer_limit_units)
       OR (length(NEW.daily_limit_units)=length(NEW.per_transfer_limit_units)
@@ -3057,6 +3064,7 @@ OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_pool_config p
   WHERE p.config_id=1 AND p.status='review_only'
     AND p.wallet_account='isthatajoint' AND p.daily_bps=500
+    AND p.active_daily_bps=100 AND p.active_policy_version=2
     AND p.historical_ticket_bps=5000
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a
@@ -3064,12 +3072,13 @@ OR NOT EXISTS (
   WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND s.snapshot_digest=NEW.snapshot_digest
+    AND s.reward_policy_bps=100
     AND a.eligibility='approved'
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_payout_caps c
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
     AND c.asset_key=NEW.asset_key AND c.snapshot_digest=NEW.snapshot_digest
-    AND c.paused=0 AND c.last_intent_key=NEW.intent_key
+    AND c.paused=0 AND c.reward_policy_bps=100 AND c.last_intent_key=NEW.intent_key
     AND c.last_reserved_units=NEW.amount_units
     AND (
       length(c.per_transfer_limit_units)>length(NEW.amount_units)
@@ -3088,7 +3097,7 @@ OR NOT EXISTS (
     AND EXISTS (
       SELECT 1 FROM tag_run_v2_draws d
       WHERE d.chat_id=b.chat_id AND d.day_key=b.day_key
-        AND d.status='reviewed'
+        AND d.status='reviewed' AND d.reward_policy_bps=100
         AND d.reviewed_by IS NOT NULL AND length(d.reviewed_by)>0
     )
 ) OR EXISTS (
@@ -3123,3 +3132,28 @@ BEFORE DELETE ON tag_run_v2_payout_intents
 BEGIN SELECT RAISE(ABORT,'v2_payout_intent_immutable'); END;
 CREATE INDEX IF NOT EXISTS tag_run_v2_payout_intents_state
 ON tag_run_v2_payout_intents(status,day_key);
+
+-- Old caps may remain as historical evidence but can never be unpaused for
+-- 1% execution. A cap from policy v2 also requires a v2 reviewed draw.
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_policy_activation_guard
+BEFORE UPDATE OF paused ON tag_run_v2_payout_caps
+WHEN NEW.paused=0 AND (
+  NEW.reward_policy_bps!=100
+  OR NOT EXISTS (
+    SELECT 1 FROM tag_run_v2_draws d
+    WHERE d.chat_id=NEW.chat_id AND d.day_key=NEW.day_key
+      AND d.status='reviewed' AND d.reward_policy_bps=100
+  )
+  OR NOT EXISTS (
+    SELECT 1 FROM tag_run_v2_snapshots s
+    WHERE s.chat_id=NEW.chat_id AND s.day_key=NEW.day_key
+      AND s.asset_key=NEW.asset_key AND s.status='verified'
+      AND s.reward_policy_bps=100
+      AND s.daily_reward_units=NEW.daily_limit_units
+  )
+)
+BEGIN SELECT RAISE(ABORT,'v2_legacy_cap_cannot_activate'); END;
+
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_payout_cap_policy_immutable
+BEFORE UPDATE OF reward_policy_bps ON tag_run_v2_payout_caps
+BEGIN SELECT RAISE(ABORT,'v2_payout_cap_policy_immutable'); END;
