@@ -11,6 +11,7 @@ import { previewReviewedPayoutAuthorization, PAYOUT_DRY_RUN_ONLY } from
 import {
   reserveReviewedPayout, buildReviewedWaxTransfer
 } from '../workers/moonboys-api/tag-run/v2-payout-executor.js';
+import {parseDryRunArgs,selectOnlyDatabase} from './tag-run-v2-payout-dry-run.mjs';
 
 const GROUP='-1001234567890', DAY='2026-11-02';
 const A=assetKey('kingsofgraff','LFGK',4);
@@ -232,4 +233,31 @@ test('invalid group and bundle selectors are rejected before D1 reads',async t=>
   const f=fixture(t);
   await assert.rejects(f.preview({chatId:'-100other'}),/selector_invalid/);
   await assert.rejects(f.preview({bundleIndex:20}),/selector_invalid/);
+});
+
+test('CLI arguments require explicit exact asset selection and never imply approval',()=>{
+  const args=parseDryRunArgs([
+    '--asset','kingsofgraff:LFGK:4','--day',DAY,'--bundle','0'
+  ]);
+  assert.deepEqual(args.operatorAllowlist,[]);
+  assert.equal(args.bundleIndex,0);
+  const reviewed=parseDryRunArgs([
+    '--asset','kingsofgraff:LFGK:4','--day',DAY,'--bundle','0',
+    '--allow-asset','kingsofgraff:LFGK:4'
+  ]);
+  assert.deepEqual(reviewed.operatorAllowlist,[A]);
+  assert.throws(()=>parseDryRunArgs([
+    '--asset','kingsofgraff:LFGK:4','--bundle','20'
+  ]),/bundle_index_invalid/);
+});
+test('Cloudflare adapter is wrapped in SELECT-only capability',()=>{
+  let called=0;
+  const db=selectOnlyDatabase({
+    prepare(sql){called++;return {bind(){return {first:async()=>({sql})}}};}
+  });
+  assert.throws(()=>db.prepare('UPDATE accounts SET status=1'),
+    /write_statement_forbidden/);
+  assert.throws(()=>db.prepare('SELECT 1; DELETE FROM users'),
+    /write_statement_forbidden/);
+  assert.equal(called,0);
 });
