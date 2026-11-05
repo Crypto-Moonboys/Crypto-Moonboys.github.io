@@ -12,7 +12,7 @@ import { simulateV2PayoutLifecycle, LEDGER_EXECUTION_AVAILABLE } from
 
 const HASH='a'.repeat(64),BLOCK='b'.repeat(64);
 const KEY=assetKey('kingsofgraff','LFGK',4), DAY='2026-11-02';
-const cap=(daily='2000',max='100')=>({
+const cap=(daily='400',max='100')=>({
   assetKey:KEY,dayKey:DAY,dailyLimitUnits:daily,maxTransferUnits:max
 });
 const event=(intentKey,action,n)=>({
