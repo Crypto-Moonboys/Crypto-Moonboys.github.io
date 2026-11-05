@@ -50,7 +50,7 @@ export function selectOnlyDatabase(db) {
       return Object.freeze({
         bind(...params) {
           const statement = db.prepare(sql).bind(...params);
-          return Object.freeze({first: () => statement.first()});
+          return Object.freeze({first: () => statement.first(), all: () => statement.all()});
         }
       });
     }
