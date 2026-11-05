@@ -19,6 +19,16 @@ const CODE_HASH = /^[0-9a-f]{64}$/;
 const KNOWN_TAGRAIN_KEY =
   'EOS8i9TNBsg1LYGntvSDKfzVhK3dmXZgkNbRPJ89n9fMMLC8iunGk';
 const fail = label => { throw new Error('wax_auth_' + label); };
+const diagnostic = (host, stage, code) => Object.freeze({
+  provider: WAX_AUTHORITY_PROVIDERS.includes(host) ? host : 'unknown',
+  stage: RPC_METHODS.includes(stage) ? stage : 'validation',
+  code: /^[a-z0-9_]{1,90}$/.test(code) ? code : 'unexpected_validation_error'
+});
+const knownError = error => {
+  const message = error instanceof Error ? error.message : '';
+  return /^wax_auth_[a-z0-9_]{1,90}$/.test(message)
+    ? message.slice('wax_auth_'.length) : 'unexpected_validation_error';
+};
 const isInt = v => Number.isSafeInteger(v) && v > 0;
 const allowed = (host, method) => WAX_AUTHORITY_PROVIDERS.includes(host) &&
   RPC_METHODS.includes(method);
@@ -127,46 +137,85 @@ async function rpc(fetchImpl, host, method, data) {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(data)
     });
-  } catch { fail(method + '_unavailable'); }
-  if (response?.ok !== true) fail(method + '_unavailable');
+  } catch { fail('rpc_transport_failure'); }
+  if (response?.ok !== true) fail('rpc_http_failure');
   try { return await response.json(); }
-  catch { fail(method + '_invalid_json'); }
+  catch { fail('rpc_invalid_json'); }
+}
+async function observedStep(host, stage, work) {
+  try { return await work(); }
+  catch(error) {
+    // Only bounded, predefined labels are exposed. Never forward RPC error
+    // bodies, URLs with credentials, arbitrary messages, keys or payloads.
+    const wrapped = new Error('wax_auth_observation_failed');
+    wrapped.diagnostic = error?.diagnostic ??
+      diagnostic(host,stage,knownError(error));
+    throw wrapped;
+  }
 }
 async function observeProvider(fetchImpl, host, contract, symbol, precision) {
   // Only public read endpoints. No get_required_keys, no transaction methods.
-  const info = await rpc(fetchImpl,host,'get_info',{});
-  if (info?.chain_id !== WAX_MAINNET_CHAIN_ID ||
-      !isInt(info.last_irreversible_block_num)) fail('wrong_chain_or_lib');
-  const [account,abi,code,stats,balances] = await Promise.all([
-    rpc(fetchImpl,host,'get_account',{account_name:TIP_ACCOUNT}),
-    rpc(fetchImpl,host,'get_abi',{account_name:contract}),
-    rpc(fetchImpl,host,'get_code_hash',{account_name:contract}),
-    rpc(fetchImpl,host,'get_currency_stats',{code:contract,symbol}),
-    rpc(fetchImpl,host,'get_currency_balance',{
-      code:contract,account:TIP_ACCOUNT,symbol
-    })
-  ]);
-  if (!code || (code.account_name && code.account_name !== contract) ||
-      !CODE_HASH.test(code.code_hash || '') ||
-      /^0+$/.test(code.code_hash)) fail('contract_code_hash_invalid');
-  if (!stats || typeof stats !== 'object' || Array.isArray(stats) ||
-      !stats[symbol] || !isValidWaxAccount(stats[symbol].issuer))
-    fail('token_stats_missing');
-  const supplyUnits = validQuantity(stats[symbol].supply,symbol,precision);
-  const maxUnits = validQuantity(stats[symbol].max_supply,symbol,precision);
-  if (supplyUnits === null || maxUnits === null ||
-      BigInt(supplyUnits) > BigInt(maxUnits)) fail('token_precision_mismatch');
-  if (!Array.isArray(balances) || balances.length > 1)
-    fail('token_balance_unavailable');
-  const balanceUnits = balances.length === 0 ? '0' :
-    validQuantity(balances[0],symbol,precision);
-  if (balanceUnits === null) fail('token_balance_precision_mismatch');
+  const info = await observedStep(host,'get_info',async () => {
+    const result = await rpc(fetchImpl,host,'get_info',{});
+    if (result?.chain_id !== WAX_MAINNET_CHAIN_ID ||
+        !isInt(result.last_irreversible_block_num)) fail('wrong_chain_or_lib');
+    return result;
+  });
+  const tasks = [
+    ['get_account',{account_name:TIP_ACCOUNT}],
+    ['get_abi',{account_name:contract}],
+    ['get_code_hash',{account_name:contract}],
+    ['get_currency_stats',{code:contract,symbol}],
+    ['get_currency_balance',{code:contract,account:TIP_ACCOUNT,symbol}]
+  ];
+  // Sequential stage-specific checks make failure reporting deterministic.
+  // Each call remains read-only and the provider host is fixed.
+  const responses = [];
+  for (const [method,data] of tasks) {
+    responses.push(await observedStep(host,method,async () =>
+      rpc(fetchImpl,host,method,data)));
+  }
+  const [account,abi,code,stats,balances] = responses;
+  const {codeHash,supplyUnits,maxUnits,balanceUnits} =
+    await observedStep(host,'validation',async () => {
+      const codeHash = await observedStep(host,'get_code_hash',async () => {
+        if (!code || (code.account_name && code.account_name !== contract) ||
+            !CODE_HASH.test(code.code_hash || '') || /^0+$/.test(code.code_hash))
+          fail('contract_code_hash_invalid');
+        return code.code_hash;
+      });
+      const [supplyUnits,maxUnits] =
+        await observedStep(host,'get_currency_stats',async () => {
+          if (!stats || typeof stats !== 'object' || Array.isArray(stats) ||
+              !stats[symbol] || !isValidWaxAccount(stats[symbol].issuer))
+            fail('token_stats_missing');
+          const supply = validQuantity(stats[symbol].supply,symbol,precision);
+          const max = validQuantity(stats[symbol].max_supply,symbol,precision);
+          if (supply === null || max === null || BigInt(supply) > BigInt(max))
+            fail('token_precision_mismatch');
+          return [supply,max];
+        });
+      const balanceUnits =
+        await observedStep(host,'get_currency_balance',async () => {
+          if (!Array.isArray(balances) || balances.length > 1)
+            fail('token_balance_unavailable');
+          const amount = balances.length === 0 ? '0' :
+            validQuantity(balances[0],symbol,precision);
+          if (amount === null) fail('token_balance_precision_mismatch');
+          return amount;
+        });
+      return {codeHash,supplyUnits,maxUnits,balanceUnits};
+    });
+  const accountState = await observedStep(host,'get_account',async () =>
+    normalizedAccount(account,contract));
+  const abiState = await observedStep(host,'get_abi',async () =>
+    normalizedAbi(abi,contract));
   return {
     chainId: info.chain_id,
     lastIrreversibleBlock: info.last_irreversible_block_num,
-    account: normalizedAccount(account,contract),
-    abi: normalizedAbi(abi,contract),
-    codeHash: code.code_hash,
+    account: accountState,
+    abi: abiState,
+    codeHash,
     token: {symbol,precision,issuer:stats[symbol].issuer,
       supplyUnits,maxUnits,balanceUnits}
   };
@@ -198,13 +247,20 @@ export async function reviewWaxTransferAuthority({
       (!CODE_HASH.test(expectedCodeHash) || /^0+$/.test(expectedCodeHash)))
     fail('invalid_expected_code_hash');
   if (typeof fetchImpl !== 'function') fail('fetch_unavailable');
-  let evidence;
-  try {
-    evidence = await Promise.all(WAX_AUTHORITY_PROVIDERS.map(host =>
+  const observations = await Promise.allSettled(
+    WAX_AUTHORITY_PROVIDERS.map(host =>
       observeProvider(fetchImpl,host,contract,symbol,precision)));
-  } catch {
-    return blocked('independent_wax_rpc_evidence_unavailable');
-  }
+  const diagnostics = observations.flatMap((item,index) =>
+    item.status === 'rejected' ? [
+      item.reason?.diagnostic ??
+      diagnostic(WAX_AUTHORITY_PROVIDERS[index],'validation',
+        knownError(item.reason))
+    ] : []);
+  if (diagnostics.length) return Object.freeze({
+    ...blocked('independent_wax_rpc_evidence_unavailable'),
+    diagnostics
+  });
+  const evidence = observations.map(item => item.value);
   const [a,b] = evidence;
   const reasonCodes = [];
   if (!compare(a,b)) reasonCodes.push('independent_provider_state_disagreement');
