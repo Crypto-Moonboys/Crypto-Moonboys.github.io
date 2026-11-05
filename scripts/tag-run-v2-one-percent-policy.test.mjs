@@ -145,3 +145,67 @@ test('legacy 5% reviewed evidence cannot be relabelled, replaced or deleted',t=>
   assert.deepEqual(db.prepare('SELECT * FROM tag_run_v2_draws').get(),beforeDraw);
   assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
 });
+
+test('legacy rowid conflicts and UPDATE OR REPLACE identity moves are forbidden',t=>{
+  const db=setup(t,{oldEvidence:true});
+  db.exec('PRAGMA recursive_triggers=OFF');
+  assert.equal(db.prepare('PRAGMA recursive_triggers').get().recursive_triggers,0);
+  const oldSnapshot=db.prepare('SELECT rowid FROM tag_run_v2_snapshots WHERE day_key=?').get(DAY).rowid;
+  const oldDraw=db.prepare('SELECT rowid FROM tag_run_v2_draws WHERE day_key=?').get(DAY).rowid;
+  const nextDay='2026-11-06';
+
+  // A different composite key must not bypass the INSERT OR REPLACE guard
+  // by explicitly colliding with the legacy rowid.
+  assert.throws(()=>db.prepare(
+    'INSERT OR REPLACE INTO tag_run_v2_snapshots '+
+    '(rowid,chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,100,'100')"
+  ).run(oldSnapshot,CHAT,nextDay,ASSET,TIP_ACCOUNT,101,BLOCK,
+    '10000','0','0','10000','0',SNAP,'verified'),
+    /v2_snapshot_policy_replacement_forbidden/);
+  assert.throws(()=>db.prepare(
+    'INSERT OR REPLACE INTO tag_run_v2_draws '+
+    '(rowid,chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
+    'snapshots_digest,reward_policy_bps) '+
+    "VALUES (?,? ,?,'reviewed',?,?,?,?,100)"
+  ).run(oldDraw,CHAT,nextDay,SNAP,SNAP,SNAP,SNAP),
+    /v2_draw_policy_replacement_forbidden/);
+
+  // A legitimate v2 record at another day cannot be moved onto a legacy
+  // primary key using UPDATE OR REPLACE, or onto its rowid.
+  db.prepare('INSERT INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,'100')"
+  ).run(CHAT,nextDay,ASSET,TIP_ACCOUNT,102,BLOCK,'10000','0','0','10000','0',
+    'c'.repeat(64),'verified');
+  db.prepare('INSERT INTO tag_run_v2_draws '+
+    '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
+    'snapshots_digest,reward_policy_bps) VALUES (?,?,'+
+    "'reviewed',?,?,?,?,100)"
+  ).run(CHAT,nextDay,SNAP,SNAP,SNAP,SNAP);
+
+  for(const [table,marker] of [
+    ['tag_run_v2_snapshots','v2_snapshot_scope_immutable'],
+    ['tag_run_v2_draws','v2_draw_scope_immutable']
+  ]) {
+    assert.throws(()=>db.prepare(
+      'UPDATE OR REPLACE '+table+' SET day_key=? WHERE day_key=?'
+    ).run(DAY,nextDay),new RegExp(marker));
+    const legacyRowid=table.endsWith('snapshots')?oldSnapshot:oldDraw;
+    assert.throws(()=>db.prepare(
+      'UPDATE OR REPLACE '+table+' SET rowid=? WHERE day_key=?'
+    ).run(legacyRowid,nextDay),new RegExp(marker));
+    assert.equal(db.prepare('SELECT reward_policy_bps AS policy FROM '+table+
+      ' WHERE day_key=?').get(DAY).policy,500);
+    assert.equal(db.prepare('SELECT reward_policy_bps AS policy FROM '+table+
+      ' WHERE day_key=?').get(nextDay).policy,100);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM '+table).get().n,2);
+  }
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
