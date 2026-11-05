@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
-import { canonicalSnapshotSetPayload,canonicalSnapshotSetDigest,SNAPSHOT_COMMITMENT_DOMAIN } from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
+import { canonicalSnapshotSetPayload,canonicalSnapshotSetDigest,SNAPSHOT_COMMITMENT_DOMAIN,canonicalLegacySnapshotSetDigest,canonicalLegacySnapshotSetPayload } from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 import { assetKey,WAX_MAINNET_CHAIN_ID,TIP_ACCOUNT } from '../workers/moonboys-api/tag-run/v2-core.js';
 const DAY='2026-11-02',CHAT='-1001234567890';
 const base=(contract,symbol,precision,block=100,units='10000')=>({
@@ -10,7 +10,9 @@ const base=(contract,symbol,precision,block=100,units='10000')=>({
  status:'verified',wallet_account:TIP_ACCOUNT,chain_irreversible_block:block,
  chain_block_id:'b'.repeat(64),snapshot_digest:'a'.repeat(64),
  onchain_units:units,allocated_unpaid_units:'0',excluded_units:'0',
- spendable_units:units,five_percent_units:(BigInt(units)*500n/10000n).toString()
+ spendable_units:units,reward_policy_bps:100,
+ daily_reward_units:(BigInt(units)*100n/10000n).toString(),
+ five_percent_units:(BigInt(units)*500n/10000n).toString()
 });
 const a=base('kingsofgraff','LFGK',4);
 const b=base('wuffi','WUF',4,101,'1000000000000000000000000');
@@ -29,7 +31,7 @@ test('changes to any snapshot source or balance invalidate commitment',async()=>
   {chain_irreversible_block:102},
   {chain_block_id:'d'.repeat(64)},
   {onchain_units:'10001',spendable_units:'10001'},
-  {allocated_unpaid_units:'1',spendable_units:'9999',five_percent_units:'499'},
+  {allocated_unpaid_units:'1',spendable_units:'9999',daily_reward_units:'99'},
   {excluded_units:'1',spendable_units:'9999',five_percent_units:'499'},
  ]) {
   const changed={...a,...patch};
@@ -55,4 +57,20 @@ test('duplicate, missing, malformed or over-limit snapshots fail closed',()=>{
 });
 test('one asset canonical digest differs from legacy raw snapshot digest',async()=>{
  assert.notEqual(await canonicalSnapshotSetDigest(args([a]),webcrypto),a.snapshot_digest);
+});
+
+test('legacy 5% snapshot retains a different v1 digest and is rejected as new policy',async()=>{
+ const historical={...a,reward_policy_bps:500};
+ const legacy=await canonicalLegacySnapshotSetDigest(args([historical]),webcrypto);
+ assert.match(legacy,/^[0-9a-f]{64}$/);
+ assert.ok(canonicalLegacySnapshotSetPayload(args([historical])).includes('tag-run-v2:snapshot-set:v1'));
+ assert.throws(()=>canonicalSnapshotSetPayload(args([historical])),/snapshot_policy_version_mismatch/);
+ assert.throws(()=>canonicalLegacySnapshotSetPayload(args([a])),/snapshot_policy_version_mismatch/);
+ assert.notEqual(legacy,await canonicalSnapshotSetDigest(args([a]),webcrypto));
+});
+test('v2 1% snapshot rejects forged budgets and missing policy evidence',()=>{
+ assert.throws(()=>canonicalSnapshotSetPayload(args([{...a,reward_policy_bps:500}])),/snapshot_policy_version_mismatch/);
+ assert.throws(()=>canonicalSnapshotSetPayload(args([{...a,reward_policy_bps:undefined}])),/snapshot_policy_version_mismatch/);
+ assert.throws(()=>canonicalSnapshotSetPayload(args([{...a,daily_reward_units:'500'}])),/invalid_snapshot_budget/);
+ assert.throws(()=>canonicalSnapshotSetPayload(args([{...a,daily_reward_units:'101'}])),/invalid_snapshot_budget/);
 });
