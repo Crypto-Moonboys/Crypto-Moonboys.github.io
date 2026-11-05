@@ -473,7 +473,7 @@ test('backfill cursor also advances across empty days before current day',async 
 });
 
 test('half historical ticket probability gives old members a chance with one token unit',async()=>{
-  const a={...ASSET(),balanceUnits:'20'};
+  const a={...ASSET(),balanceUnits:'100'};
   let sawHistorical=false,sawCurrent=false;
   for(let i=0;i<32;i++){
     const result=await previewCommunityDraw({
