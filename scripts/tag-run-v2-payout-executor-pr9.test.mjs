@@ -390,6 +390,18 @@ test('unresolved prior-day token obligations block tomorrow against reused balan
     'reward_policy_bps,daily_reward_units '+
     'FROM tag_run_v2_snapshots WHERE day_key=?'
   ).run(tomorrow,DAY);
+  // Complete tomorrow's independent policy-100 draw precondition so the
+  // activation attempt specifically exercises the cross-day overlap guard.
+  f.sqlite.prepare('INSERT INTO tag_run_v2_draws '+
+    '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
+    'snapshots_digest,reviewed_by,reward_policy_bps) '+
+    'SELECT chat_id,?,status,seed_commitment,rules_digest,weights_digest,'+
+    'snapshots_digest,reviewed_by,reward_policy_bps '+
+    'FROM tag_run_v2_draws WHERE day_key=?'
+  ).run(tomorrow,DAY);
+  assert.equal(f.sqlite.prepare(
+    'SELECT status,reward_policy_bps,reviewed_by FROM tag_run_v2_draws WHERE day_key=?'
+  ).get(tomorrow).reward_policy_bps,100);
   await initializeReviewedDailyCap(f.env,{...capArgs,day:tomorrow});
   f.sqlite.prepare('UPDATE tag_run_v2_payout_caps '+
     'SET paused=1,revision=revision+1 WHERE day_key=?').run(DAY);
