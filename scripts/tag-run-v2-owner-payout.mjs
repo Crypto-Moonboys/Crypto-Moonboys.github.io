@@ -498,7 +498,7 @@ export async function runOwnerPayout(argv, {
         'AND i.asset_key=? AND i.receiving_account=? AND i.amount_units=? ' +
         "AND c.paused=0 AND c.snapshot_digest=i.snapshot_digest " +
         "AND p.status='review_only' AND p.wallet_account='isthatajoint' " +
-        'AND p.daily_bps=500 AND p.historical_ticket_bps=5000 ' +
+        'AND p.daily_bps=500 AND p.active_daily_bps=100 AND p.active_policy_version=2 AND p.historical_ticket_bps=5000 ' +
         "AND s.status='verified' AND s.snapshot_digest=i.snapshot_digest " +
         "AND a.eligibility='approved' AND d.status='reviewed' " +
         'AND d.reviewed_by IS NOT NULL AND length(d.reviewed_by)>0 ' +
