@@ -32,7 +32,7 @@ test('changes to any snapshot source or balance invalidate commitment',async()=>
   {chain_block_id:'d'.repeat(64)},
   {onchain_units:'10001',spendable_units:'10001'},
   {allocated_unpaid_units:'1',spendable_units:'9999',daily_reward_units:'99'},
-  {excluded_units:'1',spendable_units:'9999',five_percent_units:'499'},
+  {excluded_units:'1',spendable_units:'9999',daily_reward_units:'99'},
  ]) {
   const changed={...a,...patch};
   const next=await canonicalSnapshotSetDigest(args([changed,b]),webcrypto);
