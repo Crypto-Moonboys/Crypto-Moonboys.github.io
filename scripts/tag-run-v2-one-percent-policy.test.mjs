@@ -112,3 +112,31 @@ test('legacy 5% snapshot cannot silently become v2 committed budget',async t=>{
   const historical=await canonicalLegacySnapshotSetDigest({chatId:CHAT,day:DAY,rows:[row]},webcrypto);
   assert.match(historical,/^[0-9a-f]{64}$/);
 });
+
+test('legacy 5% reviewed evidence cannot be relabelled, replaced or deleted',t=>{
+  const db=setup(t,{oldEvidence:true});
+  const beforeSnapshot=db.prepare('SELECT * FROM tag_run_v2_snapshots').get();
+  const beforeDraw=db.prepare('SELECT * FROM tag_run_v2_draws').get();
+  for(const [sql,re] of [
+    ["UPDATE tag_run_v2_snapshots SET reward_policy_bps=100,daily_reward_units='100'",/v2_snapshot_policy_immutable/],
+    ["UPDATE tag_run_v2_draws SET reward_policy_bps=100",/v2_draw_policy_immutable/],
+    ["DELETE FROM tag_run_v2_snapshots",/v2_legacy_snapshot_immutable/],
+    ["DELETE FROM tag_run_v2_draws",/v2_legacy_draw_immutable/]
+  ]) assert.throws(()=>db.exec(sql),re);
+  assert.throws(()=>db.prepare('INSERT OR REPLACE INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status,reward_policy_bps,daily_reward_units) '+
+    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,? ,100,'100')").run(
+      CHAT,DAY,ASSET,TIP_ACCOUNT,101,BLOCK,
+      '10000','0','0','10000','0',SNAP,'verified'),
+    /v2_snapshot_policy_replacement_forbidden/);
+  assert.throws(()=>db.prepare('INSERT OR REPLACE INTO tag_run_v2_draws '+
+    '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
+    'snapshots_digest,reward_policy_bps) '+
+    "VALUES (?,?,'reviewed',?,?,?,?,100)").run(CHAT,DAY,SNAP,SNAP,SNAP,SNAP),
+    /v2_draw_policy_replacement_forbidden/);
+  assert.deepEqual(db.prepare('SELECT * FROM tag_run_v2_snapshots').get(),beforeSnapshot);
+  assert.deepEqual(db.prepare('SELECT * FROM tag_run_v2_draws').get(),beforeDraw);
+  assert.equal(db.prepare('PRAGMA foreign_key_check').all().length,0);
+});
