@@ -354,7 +354,7 @@ test('owner SEND rechecks deployed flags after wallet approval, before broadcast
         row={...frozen,status:state};
       } else if(sql.startsWith('SELECT wallet_account,status,daily_bps')){
         row={wallet_account:TIP_ACCOUNT,status:'review_only',
-          daily_bps:500,historical_ticket_bps:5000};
+          daily_bps:500,active_daily_bps:100,active_policy_version:2,historical_ticket_bps:5000};
       } else if(sql.startsWith('SELECT paused FROM tag_run_v2_payout_caps')){
         row={paused:0};
       } else if(sql.startsWith('SELECT s.status,s.snapshot_digest')){
