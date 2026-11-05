@@ -303,10 +303,11 @@ test('multi-asset draws without a canonical commitment fail closed',async t=>{
   f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
-    '100','0','0','100','5','e'.repeat(64),'verified');
+    '100','0','0','100','0','e'.repeat(64),'verified','1');
   includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
 });
 
@@ -320,10 +321,11 @@ test('reviewed multi-token draw passes only when its canonical snapshot set dige
   f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
-    '100','0','0','100','5','e'.repeat(64),'verified');
+    '100','0','0','100','0','e'.repeat(64),'verified','1');
   const rows=f.sqlite.prepare('SELECT s.*,a.chain_id,a.token_contract,a.token_symbol,a.token_precision '+
     'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
     'WHERE s.chat_id=? AND s.day_key=? ORDER BY s.asset_key LIMIT 101').all(GROUP,DAY);
