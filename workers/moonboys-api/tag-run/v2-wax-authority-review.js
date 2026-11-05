@@ -31,31 +31,73 @@ function validQuantity(qty, symbol, precision) {
   try { return parseQuantity(qty, precision, symbol); }
   catch { return null; }
 }
+// Every controlling authority is compared between independent providers.
+// Normalize authority arrays as sets (order is not security-relevant), but
+// never discard a key, delegated permission, wait, threshold or action link.
+function normalizedPermission(entry) {
+  const auth = entry?.required_auth;
+  if (!entry || typeof entry.perm_name !== 'string' ||
+      typeof entry.parent !== 'string' || !auth ||
+      !Number.isSafeInteger(auth.threshold) || auth.threshold < 1 ||
+      !Array.isArray(auth.keys) || !Array.isArray(auth.accounts) ||
+      !Array.isArray(auth.waits) || !Array.isArray(entry.linked_actions))
+    fail('permission_data_incomplete');
+  const sort = array => array.sort((a,b) =>
+    JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  const keys = sort(auth.keys.map(k => {
+    if (typeof k?.key !== 'string' || !k.key ||
+        !Number.isSafeInteger(k.weight) || k.weight < 1)
+      fail('permission_key_invalid');
+    return [k.key,k.weight];
+  }));
+  const accounts = sort(auth.accounts.map(a => {
+    if (typeof a?.permission?.actor !== 'string' ||
+        typeof a?.permission?.permission !== 'string' ||
+        !a.permission.actor || !a.permission.permission ||
+        !Number.isSafeInteger(a.weight) || a.weight < 1)
+      fail('permission_delegate_invalid');
+    return [a.permission.actor,a.permission.permission,a.weight];
+  }));
+  const waits = sort(auth.waits.map(w => {
+    if (!Number.isSafeInteger(w?.wait_sec) || w.wait_sec < 0 ||
+        !Number.isSafeInteger(w?.weight) || w.weight < 1)
+      fail('permission_wait_invalid');
+    return [w.wait_sec,w.weight];
+  }));
+  const links = sort(entry.linked_actions.map(link => {
+    if (typeof link?.account !== 'string' || !link.account ||
+        typeof link?.action !== 'string' || !link.action)
+      fail('permission_link_invalid');
+    return [link.account,link.action];
+  }));
+  return {parent:entry.parent,threshold:auth.threshold,
+    keys,accounts,waits,links};
+}
 function normalizedAccount(row, contract) {
   if (row?.account_name !== TIP_ACCOUNT || !Array.isArray(row.permissions))
     fail('account_unavailable_or_invalid');
-  const owner = row.permissions.find(p => p.perm_name === 'owner');
-  const active = row.permissions.find(p => p.perm_name === 'active');
-  const tagrain = row.permissions.find(p => p.perm_name === 'tagrain');
-  if (!owner || !active || !tagrain) fail('required_permission_missing');
-  const auth = tagrain.required_auth;
-  if (!auth || !Array.isArray(auth.keys) ||
-      !Array.isArray(auth.accounts) || !Array.isArray(auth.waits) ||
-      !Array.isArray(tagrain.linked_actions)) fail('permission_data_incomplete');
-  const keys = auth.keys.map(k => [k.key,k.weight]);
-  const links = tagrain.linked_actions.map(x => [x.account,x.action])
-    .sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  const named = name => row.permissions.filter(p => p?.perm_name === name);
+  const ownerRows = named('owner'),activeRows = named('active'),
+    tagrainRows = named('tagrain');
+  if (ownerRows.length !== 1 || activeRows.length !== 1 ||
+      tagrainRows.length !== 1) fail('required_permission_missing');
+  const owner = normalizedPermission(ownerRows[0]);
+  const active = normalizedPermission(activeRows[0]);
+  const tagrain = normalizedPermission(tagrainRows[0]);
+  const {keys,accounts,waits,links} = tagrain;
   return {
-    parent: tagrain.parent, threshold: auth.threshold, keys,
-    accounts: auth.accounts.length, waits: auth.waits.length, links,
-    hasOwner: owner.perm_name === 'owner',
-    hasActive: active.perm_name === 'active',
-    exactOneKey: auth.threshold === 1 && keys.length === 1 &&
+    parent: tagrain.parent,threshold:tagrain.threshold,
+    keys,accounts:accounts.length,waits:waits.length,links,
+    // Keep complete controlling authority state, not only the names.
+    // Otherwise two disagreeing account controllers can look identical.
+    ownerAuthority:owner,activeAuthority:active,
+    parentHierarchyValid:owner.parent === '' && active.parent === 'owner',
+    exactOneKey:tagrain.threshold === 1 && keys.length === 1 &&
       keys[0][0] === KNOWN_TAGRAIN_KEY && keys[0][1] === 1 &&
-      auth.accounts.length === 0 && auth.waits.length === 0,
-    transferLinked: links.length === 1 && links[0][0] === contract &&
+      accounts.length === 0 && waits.length === 0,
+    transferLinked:links.length === 1 && links[0][0] === contract &&
       links[0][1] === 'transfer',
-    noUnexpectedLinks: links.length <= 1 &&
+    noUnexpectedLinks:links.length <= 1 &&
       links.every(([a,b])=>a===contract && b==='transfer')
   };
 }
@@ -166,8 +208,10 @@ export async function reviewWaxTransferAuthority({
   const [a,b] = evidence;
   const reasonCodes = [];
   if (!compare(a,b)) reasonCodes.push('independent_provider_state_disagreement');
-  if (a.account.parent !== 'active' || !a.account.exactOneKey ||
-      !b.account.exactOneKey) reasonCodes.push('tagrain_authority_mismatch');
+  if (a.account.parent !== 'active' || b.account.parent !== 'active' ||
+      !a.account.parentHierarchyValid || !b.account.parentHierarchyValid ||
+      !a.account.exactOneKey || !b.account.exactOneKey)
+    reasonCodes.push('tagrain_authority_mismatch');
   if (!a.account.noUnexpectedLinks || !b.account.noUnexpectedLinks)
     reasonCodes.push('tagrain_has_unexpected_action_links');
   if (!a.account.transferLinked || !b.account.transferLinked)
