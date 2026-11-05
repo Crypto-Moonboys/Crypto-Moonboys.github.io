@@ -256,12 +256,27 @@ test('hypothetical draw blocks until prior real participation is fully captured'
   assert.match(blocked.messages[0],/SIMULATION BLOCKED/);
   assert.equal(network.calls.length,0);
   await command(f,'poolbackfill');
+  const quarantined=await command(f,'pooltest',{fetchImpl:network.fetchImpl});
+  assert.match(quarantined.messages[0],/UNSAVED UNVERIFIED ALLOWLIST WHAT-IF ONLY/);
+  assert.match(quarantined.messages[0],/Observed positive tokens: 2/);
+  assert.match(quarantined.messages[0],/Approved positive observed: 0/);
+  assert.match(quarantined.messages[0],/Quarantined positive excluded: 2/);
+  assert.match(quarantined.messages[0],/Hypothetical 1% approved-token pools: none/);
+  assert.match(quarantined.messages[0],/Hypothetical bundles: 0/);
+  assert.doesNotMatch(quarantined.messages[0],/1000\.0000 LFGK/);
+  await command(f,'poolobserve',{fetchImpl:network.fetchImpl});
+  // Test-only independent approval on a disposable SQLite database.
+  f.sqlite.prepare("UPDATE tag_run_v2_assets SET eligibility='approved',"+
+    "reviewed_by='fixture-review',verified_at='2026-11-02' "+
+    "WHERE asset_key=?").run(ASSET);
   const simulated=await command(f,'pooltest',{fetchImpl:network.fetchImpl});
-  assert.match(simulated.messages[0],/UNSAVED UNVERIFIED WHAT-IF ONLY/);
+  assert.match(simulated.messages[0],/UNSAVED UNVERIFIED ALLOWLIST WHAT-IF ONLY/);
   assert.match(simulated.messages[0],/Current eligible members: 1/);
   assert.match(simulated.messages[0],/Historical eligible members: 1/);
+  assert.match(simulated.messages[0],/Approved positive observed: 1/);
+  assert.match(simulated.messages[0],/Quarantined positive excluded: 1/);
   assert.match(simulated.messages[0],/1000\.0000 LFGK/);
-  assert.match(simulated.messages[0],/1000000\.0000 WUF/);
+  assert.doesNotMatch(simulated.messages[0],/1000000\.0000 WUF/);
   assert.match(simulated.messages[0],/No DB draw\/claim\/reserve\/payout is saved/);
   assert.equal(count(f,'tag_run_v2_draws'),0);
   assert.equal(count(f,'tag_run_v2_bundles'),0);
