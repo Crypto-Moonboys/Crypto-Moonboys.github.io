@@ -2956,6 +2956,7 @@ WHEN NEW.reward_policy_bps!=100 OR NEW.paused!=1 OR NEW.revision!=0 OR NEW.commi
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND a.eligibility='approved' AND s.snapshot_digest=NEW.snapshot_digest
     AND s.reward_policy_bps=100 AND s.daily_reward_units=NEW.daily_limit_units
+    AND s.daily_reward_units=(CASE WHEN length(s.spendable_units)<=2 THEN '0' ELSE substr(s.spendable_units,1,length(s.spendable_units)-2) END)
     AND (
       length(NEW.daily_limit_units)>length(NEW.per_transfer_limit_units)
       OR (length(NEW.daily_limit_units)=length(NEW.per_transfer_limit_units)
@@ -3073,6 +3074,7 @@ OR NOT EXISTS (
     AND s.asset_key=NEW.asset_key AND s.status='verified'
     AND s.snapshot_digest=NEW.snapshot_digest
     AND s.reward_policy_bps=100
+    AND s.daily_reward_units=(CASE WHEN length(s.spendable_units)<=2 THEN '0' ELSE substr(s.spendable_units,1,length(s.spendable_units)-2) END)
     AND a.eligibility='approved'
 ) OR NOT EXISTS (
   SELECT 1 FROM tag_run_v2_payout_caps c
@@ -3150,6 +3152,7 @@ WHEN NEW.paused=0 AND (
       AND s.asset_key=NEW.asset_key AND s.status='verified'
       AND s.reward_policy_bps=100
       AND s.daily_reward_units=NEW.daily_limit_units
+      AND s.daily_reward_units=(CASE WHEN length(s.spendable_units)<=2 THEN '0' ELSE substr(s.spendable_units,1,length(s.spendable_units)-2) END)
   )
 )
 BEGIN SELECT RAISE(ABORT,'v2_legacy_cap_cannot_activate'); END;
