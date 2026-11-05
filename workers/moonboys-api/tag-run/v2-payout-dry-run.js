@@ -7,6 +7,7 @@ import {
   parseIntegerUnits, sha256Text, validUtcDay
 } from './v2-core.js';
 import { authenticatedGroupId, isValidWaxAccount } from './core.js';
+import { canonicalSnapshotSetDigest } from './v2-snapshot-commitment.js';
 
 export const PAYOUT_DRY_RUN_ONLY = true;
 const HEX = /^[0-9a-f]{64}$/;
@@ -113,7 +114,7 @@ export async function previewReviewedPayoutAuthorization(env, {
         'WHERE i.chat_id=c.chat_id AND i.day_key=c.day_key AND i.asset_key=c.asset_key ' +
         "AND i.status IN ('reserved','broadcast_unknown','reconciliation_review'))) LIMIT 1",
         key,chatId,day),
-      all(db,'SELECT asset_key,snapshot_digest,status FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=? ORDER BY asset_key LIMIT 2',chatId,day)
+      all(db,'SELECT s.*,a.chain_id,a.token_contract,a.token_symbol,a.token_precision FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key WHERE s.chat_id=? AND s.day_key=? ORDER BY s.asset_key LIMIT 101',chatId,day)
     ]);
   let wallet = null;
   if (bundle?.telegram_id && /^[0-9]{1,20}$/.test(String(bundle.telegram_id)))
@@ -170,16 +171,28 @@ export async function previewReviewedPayoutAuthorization(env, {
   else if (cap.paused !== 0) reasons.add(REASONS.capPaused);
   if (!draw || draw.status !== 'reviewed' || !isText(draw.reviewed_by))
     reasons.add(REASONS.drawUnreviewed);
-  // Migration 104 has no canonical digest algorithm for a multi-asset
-  // snapshots_digest. Only a single-asset draw can be proven directly.
-  // Multiple snapshots fail closed until canonical aggregate digest rules
-  // are shipped, reviewed and tested.
-  if (snapshotSet.length !== 1 ||
-      snapshotSet[0]?.asset_key !== key ||
-      snapshotSet[0]?.status !== 'verified' ||
-      !validDigest(draw?.snapshots_digest) ||
-      draw.snapshots_digest !== snapshot?.snapshot_digest)
-    reasons.add(REASONS.drawBinding);
+  // Preserve the historical single-snapshot commitment for existing
+  // reviewed draws. Multi-asset draws require the v1 canonical aggregate
+  // digest. A mixed or truncated set always fails closed.
+  let snapshotSetBound = false;
+  if (snapshotSet.length === 1 && snapshotSet[0]?.asset_key === key &&
+      snapshotSet[0]?.status === 'verified' &&
+      draw?.snapshots_digest === snapshot?.snapshot_digest &&
+      validDigest(draw.snapshots_digest)) {
+    snapshotSetBound = true;
+  } else if (snapshotSet.length >= 2 && snapshotSet.length <= 100 &&
+      validDigest(draw?.snapshots_digest) &&
+      snapshotSet.some(row => row.asset_key === key)) {
+    try {
+      const computed = await canonicalSnapshotSetDigest({
+        chatId,day,rows:snapshotSet
+      },cryptoImpl);
+      snapshotSetBound = computed === draw.snapshots_digest;
+    } catch {
+      snapshotSetBound = false;
+    }
+  }
+  if (!snapshotSetBound) reasons.add(REASONS.drawBinding);
   const amount = safeUnits(bundle?.units);
   if (!bundle || bundle.status !== 'preview_only' ||
       !/^[0-9]{1,20}$/.test(String(bundle.telegram_id || '')) ||

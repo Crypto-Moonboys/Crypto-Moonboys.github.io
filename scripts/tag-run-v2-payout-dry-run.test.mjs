@@ -12,6 +12,7 @@ import {
   reserveReviewedPayout, buildReviewedWaxTransfer
 } from '../workers/moonboys-api/tag-run/v2-payout-executor.js';
 import {parseDryRunArgs,selectOnlyDatabase} from './tag-run-v2-payout-dry-run.mjs';
+import {canonicalSnapshotSetDigest} from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 
 const GROUP='-1001234567890', DAY='2026-11-02';
 const A=assetKey('kingsofgraff','LFGK',4);
@@ -283,7 +284,7 @@ test('mismatched reviewed draw snapshot commitment blocks the payout',async t=>{
     .run('e'.repeat(64));
   includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
 });
-test('multi-asset draws fail closed until a canonical aggregate digest exists',async t=>{
+test('multi-asset draws without a canonical commitment fail closed',async t=>{
   const f=fixture(t);
   const second=assetKey('kingsofgraff','DUMPIT',8);
   f.sqlite.prepare('INSERT INTO tag_run_v2_assets '+
@@ -297,6 +298,32 @@ test('multi-asset draws fail closed until a canonical aggregate digest exists',a
     'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
   ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
     '100','0','0','100','5','e'.repeat(64),'verified');
+  includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
+});
+
+test('reviewed multi-token draw passes only when its canonical snapshot set digest matches',async t=>{
+  const f=fixture(t);
+  const second=assetKey('kingsofgraff','DUMPIT',8);
+  f.sqlite.prepare('INSERT INTO tag_run_v2_assets '+
+    '(asset_key,chain_id,token_contract,token_symbol,token_precision) '+
+    'VALUES (?,?,?,?,?)'
+  ).run(second,WAX_MAINNET_CHAIN_ID,'kingsofgraff','DUMPIT',8);
+  f.sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
+    'spendable_units,five_percent_units,snapshot_digest,status) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(GROUP,DAY,second,TIP_ACCOUNT,101,'f'.repeat(64),
+    '100','0','0','100','5','e'.repeat(64),'verified');
+  const rows=f.sqlite.prepare('SELECT s.*,a.chain_id,a.token_contract,a.token_symbol,a.token_precision '+
+    'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key '+
+    'WHERE s.chat_id=? AND s.day_key=? ORDER BY s.asset_key LIMIT 101').all(GROUP,DAY);
+  const digest=await canonicalSnapshotSetDigest({chatId:GROUP,day:DAY,rows},webcrypto);
+  f.sqlite.prepare('UPDATE tag_run_v2_draws SET snapshots_digest=?').run(digest);
+  const result=await f.preview();
+  assert.equal(result.status,'REVIEW_CANDIDATE',JSON.stringify(result.reasonCodes));
+  assert.equal(result.evidence.reviewedDrawSnapshotBound,true);
+  f.sqlite.prepare('UPDATE tag_run_v2_snapshots SET chain_irreversible_block=102 WHERE asset_key=?').run(second);
   includes(await f.preview(),'draw_snapshot_commitment_unverifiable');
 });
 
