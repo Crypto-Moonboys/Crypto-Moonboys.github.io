@@ -21,6 +21,8 @@ import {
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const V1 = read('workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql');
 const V2 = read('workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql');
+const V3 = read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql');
+const V4 = read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
 const GROUP = '-1001234567890';
 const ASSET = (contract='kingsofgraff',symbol='LFGK',precision=4) => ({
   contract,symbol,precision,key:assetKey(contract,symbol,precision),
@@ -67,10 +69,10 @@ test('pure BigInt math never uses USD prices or floating-point token math',()=>{
     reservedUnits:'80000000000000000000000000000',
     excludedUnits:'0'});
   assert.equal(a.availableUnits,'20000000000000000000000000000');
-  assert.equal(a.dailyBudgetUnits,'1000000000000000000000000000');
+  assert.equal(a.dailyBudgetUnits,'200000000000000000000000000');
   const b=eligibleAsset({...ASSET(),balanceUnits:'1001',reservedUnits:'1',
     excludedUnits:'1'});
-  assert.equal(b.dailyBudgetUnits,'49'); // floor(999 * 0.05)
+  assert.equal(b.dailyBudgetUnits,'9'); // floor(999 * 0.01)
   assert.equal(eligibleAsset({...ASSET(),balanceUnits:'1'}).dailyBudgetUnits,'0');
   assert.throws(()=>eligibleAsset({...ASSET(),balanceUnits:'10',
     reservedUnits:'11'}),/treasury_balance_deficit/);
@@ -94,7 +96,7 @@ test('same token symbol at different contracts is a separate asset',()=>{
   assert.throws(()=>assetKey('bad!contract','LFGK',4),/invalid_token_identity/);
 });
 
-test('deterministic mixed token draw never allocates over 5% per asset',async()=>{
+test('deterministic mixed token draw never allocates over 1% per asset',async()=>{
   const assets=[ASSET(),ASSET('eosio.token','WAX',8)];
   const current=[{telegramId:'1111',points:150},{telegramId:'2222',points:40}];
   const historical=[{telegramId:'3333',points:1000},{telegramId:'4444',points:50}];
@@ -224,6 +226,8 @@ function fixture(t){
   sqlite.exec('PRAGMA foreign_keys=ON;');
   sqlite.exec(V1);
   sqlite.exec(V2);
+  sqlite.exec(V3);
+  sqlite.exec(V4);
   const DB={prepare(query){return {
     bind(...args){return {
       async all(){return {success:true,results:sqlite.prepare(query).all(...args)};},
@@ -245,7 +249,9 @@ test('additive migration preserves existing V1 records and starts paused',t=>{
   const f=fixture(t);
   const cfg=f.sqlite.prepare('SELECT * FROM tag_run_v2_pool_config').get();
   assert.equal(cfg.wallet_account,TIP_ACCOUNT);
-  assert.equal(cfg.daily_bps,500);
+  assert.equal(cfg.daily_bps,500); // immutable historical policy v1
+  assert.equal(cfg.active_daily_bps,100);
+  assert.equal(cfg.active_policy_version,2);
   assert.equal(cfg.historical_ticket_bps,5000);
   assert.equal(cfg.status,'paused');
   assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
@@ -569,7 +575,7 @@ test('schema and draw preview reject nonapproved daily or historical rates',asyn
   f.env.DB={prepare(sql){
     if(sql.includes('FROM tag_run_v2_pool_config')){
       return {async first(){return {wallet_account:TIP_ACCOUNT,
-        daily_bps:0,historical_ticket_bps:5000,
+        daily_bps:0,active_daily_bps:100,active_policy_version:2,historical_ticket_bps:5000,
         status:'review_only',revision:0};}};
     }
     throw new Error('draw queried before rule validation');
