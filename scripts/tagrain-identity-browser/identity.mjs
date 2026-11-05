@@ -15,10 +15,10 @@ button.addEventListener('click', async () => {
       chains: [{ chainId: CHAIN_ID, nodeUrl: 'https://wax.greymass.com' }],
       transport: new BrowserTransport(),
     });
-    // Unlike login(identifier), identify enforces a specific account and permission.
-    const proof = await link.identify({ actor: ACTOR, permission: PERMISSION });
-    const signer = proof.res?.signer;
-    const recovered = String(proof.signerKey ?? '');
+    // login provides the identity scope required by Anchor Link. Verify the returned authority strictly.
+    const proof = await link.login('tagraintest');
+    const signer = proof.session?.auth;
+    const recovered = String(proof.signerKey ?? proof.session?.publicKey ?? '');
     if (String(signer?.actor) !== ACTOR || String(signer?.permission) !== PERMISSION) {
       throw new Error('Unexpected identity signer');
     }
