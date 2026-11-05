@@ -15,6 +15,8 @@ const REASONS = Object.freeze({
   unapprovedAsset: 'asset_not_approved',
   missingReview: 'asset_review_evidence_missing',
   unconfirmedDonation: 'confirmed_donation_missing',
+  insufficientDonation: 'donation_funding_snapshot_unreconciled',
+  drawBinding: 'draw_snapshot_commitment_unverifiable',
   unverifiedSnapshot: 'verified_snapshot_missing',
   badSnapshot: 'snapshot_budget_invalid',
   unreviewedPool: 'pool_not_review_only',
@@ -46,9 +48,12 @@ async function first(db, sql, ...params) {
   if (!isRow(row)) invalid('database_response_invalid');
   return row;
 }
-function exactPositive(value) {
-  const units = nonnegative(value);
-  return units > 0n ? units : null;
+async function all(db, sql, ...params) {
+  if (!/^SELECT\s/i.test(sql) || sql.includes(';')) invalid('non_read_only_sql');
+  const result = await db.prepare(sql).bind(...params).all();
+  if (!result || result.success !== true || !Array.isArray(result.results))
+    invalid('database_response_invalid');
+  return result.results;
 }
 function safeUnits(value) {
   try { return nonnegative(value); } catch { return null; }
@@ -92,14 +97,14 @@ export async function previewReviewedPayoutAuthorization(env, {
   if (!validDigest(reviewDigest) || !isText(reviewedBy))
     reasons.add(REASONS.operatorReview);
 
-  const [pool, asset, deposit, snapshot, cap, draw, bundle, duplicate, overlap] =
+  const [pool, asset, deposits, snapshot, cap, draw, bundle, duplicate, overlap, snapshotSet] =
     await Promise.all([
       first(db, 'SELECT wallet_account,status,daily_bps,historical_ticket_bps FROM tag_run_v2_pool_config WHERE config_id=1'),
-      first(db, 'SELECT asset_key,eligibility,reviewed_by,verified_at FROM tag_run_v2_assets WHERE asset_key=?',key),
-      first(db, "SELECT 1 AS found FROM tag_run_v2_deposits WHERE asset_key=? AND status='confirmed_donation' LIMIT 1",key),
+      first(db, 'SELECT asset_key,chain_id,token_contract,token_symbol,token_precision,eligibility,reviewed_by,verified_at FROM tag_run_v2_assets WHERE asset_key=?',key),
+      all(db, 'SELECT chain_id,global_action_seq,transaction_id,block_num,block_id,recipient_account,asset_key,units,memo_digest,status,reviewed_at FROM tag_run_v2_deposits WHERE asset_key=? ORDER BY block_num,global_action_seq LIMIT 5001',key),
       first(db, 'SELECT * FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=? AND asset_key=?',chatId,day,key),
       first(db, 'SELECT * FROM tag_run_v2_payout_caps WHERE chat_id=? AND day_key=? AND asset_key=?',chatId,day,key),
-      first(db, 'SELECT status,reviewed_by FROM tag_run_v2_draws WHERE chat_id=? AND day_key=?',chatId,day),
+      first(db, 'SELECT status,reviewed_by,snapshots_digest FROM tag_run_v2_draws WHERE chat_id=? AND day_key=?',chatId,day),
       first(db, 'SELECT telegram_id,units,status FROM tag_run_v2_bundles WHERE chat_id=? AND day_key=? AND asset_key=? AND bundle_index=?',chatId,day,key,bundleIndex),
       first(db, 'SELECT intent_key FROM tag_run_v2_payout_intents WHERE chat_id=? AND day_key=? AND asset_key=? AND bundle_index=? LIMIT 1',chatId,day,key,bundleIndex),
       first(db,
@@ -107,7 +112,8 @@ export async function previewReviewedPayoutAuthorization(env, {
         "AND (c.paused=0 OR EXISTS (SELECT 1 FROM tag_run_v2_payout_intents i " +
         'WHERE i.chat_id=c.chat_id AND i.day_key=c.day_key AND i.asset_key=c.asset_key ' +
         "AND i.status IN ('reserved','broadcast_unknown','reconciliation_review'))) LIMIT 1",
-        key,chatId,day)
+        key,chatId,day),
+      all(db,'SELECT asset_key,snapshot_digest,status FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=? ORDER BY asset_key LIMIT 2',chatId,day)
     ]);
   let wallet = null;
   if (bundle?.telegram_id && /^[0-9]{1,20}$/.test(String(bundle.telegram_id)))
@@ -118,15 +124,62 @@ export async function previewReviewedPayoutAuthorization(env, {
   if (!pool || pool.wallet_account !== TIP_ACCOUNT || pool.status !== 'review_only' ||
       pool.daily_bps !== 500 || pool.historical_ticket_bps !== 5000)
     reasons.add(REASONS.unreviewedPool);
-  if (!asset || asset.asset_key !== key || asset.eligibility !== 'approved')
+  const identityMatches = asset?.asset_key === key &&
+    asset?.chain_id === WAX_MAINNET_CHAIN_ID &&
+    asset?.token_contract === contract &&
+    asset?.token_symbol === symbol &&
+    asset?.token_precision === precision;
+  if (!identityMatches || asset?.eligibility !== 'approved')
     reasons.add(REASONS.unapprovedAsset);
   if (!isText(asset?.reviewed_by) || !isText(asset?.verified_at))
     reasons.add(REASONS.missingReview);
-  if (!deposit) reasons.add(REASONS.unconfirmedDonation);
+  // D1 deposit status alone is insufficient. Receipts must belong to the
+  // exact chain/asset, be reviewed and be no newer than the snapshot LIB.
+  // An onchain balance with no sufficient eligible donation provenance
+  // must never be treated as spendable in a dry run.
+  let donationTotal = 0n, validDonationCount = 0;
+  const cutoff = asNumber(snapshot?.chain_irreversible_block);
+  if (deposits.length > 5000) reasons.add(REASONS.insufficientDonation);
+  for (const receipt of deposits) {
+    if (receipt?.status !== 'confirmed_donation') continue;
+    const amount = safeUnits(receipt.units);
+    if (receipt.chain_id !== WAX_MAINNET_CHAIN_ID ||
+        receipt.asset_key !== key ||
+        receipt.recipient_account !== TIP_ACCOUNT ||
+        !Number.isSafeInteger(receipt.block_num) ||
+        receipt.block_num < 1 || receipt.block_num > cutoff ||
+        !validDigest(receipt.block_id) ||
+        !validDigest(receipt.transaction_id) ||
+        !validDigest(receipt.memo_digest) ||
+        !isText(receipt.global_action_seq) ||
+        !isText(receipt.reviewed_at) ||
+        amount === null || amount === 0n) continue;
+    donationTotal += amount;
+    validDonationCount++;
+  }
+  if (!validDonationCount) reasons.add(REASONS.unconfirmedDonation);
+  const onchainForFunding = safeUnits(snapshot?.onchain_units);
+  const excludedForFunding = safeUnits(snapshot?.excluded_units);
+  const needProvenance = onchainForFunding !== null &&
+    excludedForFunding !== null && excludedForFunding <= onchainForFunding
+      ? onchainForFunding - excludedForFunding : null;
+  if (needProvenance === null ||
+      donationTotal < needProvenance || deposits.length > 5000)
+    reasons.add(REASONS.insufficientDonation);
   if (!cap) reasons.add(REASONS.capMissing);
   else if (cap.paused !== 0) reasons.add(REASONS.capPaused);
   if (!draw || draw.status !== 'reviewed' || !isText(draw.reviewed_by))
     reasons.add(REASONS.drawUnreviewed);
+  // Migration 104 has no canonical digest algorithm for a multi-asset
+  // snapshots_digest. Only a single-asset draw can be proven directly.
+  // Multiple snapshots fail closed until canonical aggregate digest rules
+  // are shipped, reviewed and tested.
+  if (snapshotSet.length !== 1 ||
+      snapshotSet[0]?.asset_key !== key ||
+      snapshotSet[0]?.status !== 'verified' ||
+      !validDigest(draw?.snapshots_digest) ||
+      draw.snapshots_digest !== snapshot?.snapshot_digest)
+    reasons.add(REASONS.drawBinding);
   const amount = safeUnits(bundle?.units);
   if (!bundle || bundle.status !== 'preview_only' ||
       !/^[0-9]{1,20}$/.test(String(bundle.telegram_id || '')) ||
@@ -192,7 +245,10 @@ export async function previewReviewedPayoutAuthorization(env, {
     evidence: Object.freeze({
       operatorAllowlist: allowAsset(operatorAllowlist,key),
       assetReviewedInD1: isText(asset?.reviewed_by) && isText(asset?.verified_at),
-      confirmedDonationInD1: Boolean(deposit),
+      confirmedDonationInD1: validDonationCount > 0,
+      donationFundingReconciledInD1: needProvenance !== null &&
+        donationTotal >= needProvenance && deposits.length <= 5000,
+      reviewedDrawSnapshotBound: !reasons.has(REASONS.drawBinding),
       verifiedSnapshotInD1: Boolean(validSource),
       reviewedDrawInD1: draw?.status === 'reviewed' && isText(draw.reviewed_by),
       duplicateReserved: Boolean(duplicate),
