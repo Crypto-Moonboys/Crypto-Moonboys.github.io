@@ -278,7 +278,7 @@ test('SQL binds intent amount to exact cap delta, not only last intent key',asyn
 
 test('exact cap addition preserves BigInt precision beyond 2^53',async t=>{
   const large='9007199254740993',daily=(BigInt(large)*2n).toString();
-  const available=(BigInt(daily)*20n).toString();
+  const available=(BigInt(daily)*100n).toString();
   const f=fixture(t,{daily,available});
   await openCap(f,{maxTransferUnits:large});
   const first='e'.repeat(64),second='f'.repeat(64),third='0'.repeat(64);
