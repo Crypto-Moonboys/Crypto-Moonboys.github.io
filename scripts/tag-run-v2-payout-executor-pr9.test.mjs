@@ -18,7 +18,7 @@ const GROUP='-1001234567890',OTHER='-1007777777777';
 const DAY='2026-11-02',A=assetKey('kingsofgraff','LFGK',4);
 const MEMBER='1111',RECEIVER='gkniftyheads',SNAP='a'.repeat(64),
   RULES='b'.repeat(64),AUTH='c'.repeat(64),TRANSACTION='d'.repeat(64);
-function fixture(t,{daily='500',available='10000',donation=true,
+function fixture(t,{daily='500',available='50000',donation=true,
   approved=true,verified=true,recipient=RECEIVER,canonicalSchema=false}={}){
   const sqlite=new DatabaseSync(':memory:');
   t.after(()=>sqlite.close());
@@ -30,7 +30,8 @@ function fixture(t,{daily='500',available='10000',donation=true,
     for(const file of [
       '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
       '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
-      '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql'
+      '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql',
+      '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql'
     ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
   }
   sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
@@ -48,14 +49,15 @@ function fixture(t,{daily='500',available='10000',donation=true,
   sqlite.prepare('INSERT INTO tag_run_v2_snapshots '+
     '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,'+
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
-    'spendable_units,five_percent_units,snapshot_digest,status) '+
-    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    'spendable_units,five_percent_units,snapshot_digest,status,'+
+    'reward_policy_bps,daily_reward_units) '+
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,A,TIP_ACCOUNT,101,'f'.repeat(64),
-    available,'0','0',available,daily,SNAP,
-    verified?'verified':'unverified');
+    available,'0','0',available,'0',SNAP,
+    verified?'verified':'unverified',daily);
   sqlite.prepare('INSERT INTO tag_run_v2_draws '+
     '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
-    'snapshots_digest) VALUES (?,?,?,?,?,?,?)'
+    'snapshots_digest,reward_policy_bps) VALUES (?,?,?,?,?,?,?,100)'
   ).run(GROUP,DAY,'reviewed',SNAP,RULES,RULES,SNAP);
   sqlite.prepare('UPDATE tag_run_v2_draws SET reviewed_by=? '+
     'WHERE chat_id=? AND day_key=?').run('independent-reviewer',GROUP,DAY);
@@ -172,7 +174,7 @@ test('funding requires approved token, confirmed donation and verified snapshot'
   }
 });
 
-test('never accept an invented daily cap greater than 5% of available funds',async t=>{
+test('never accept an invented daily cap greater than 1% of available funds',async t=>{
   const f=fixture(t,{daily:'501',available:'10000'});
   await assert.rejects(initializeReviewedDailyCap(f.env,capArgs),
     /v2_payout_snapshot_budget_mismatch/);
@@ -342,7 +344,7 @@ test('unique cap reservations commit once and freeze member destination',async t
     .run(),/v2_payout_intent_immutable/);
 });
 
-test('per-transfer ceiling is independent of the total daily 5% cap',async t=>{
+test('per-transfer ceiling is independent of the total daily 1% cap',async t=>{
   const f=fixture(t);
   await openCap(f,{maxTransferUnits:'150'});
   assert.equal(f.cap().per_transfer_limit_units,'150');
