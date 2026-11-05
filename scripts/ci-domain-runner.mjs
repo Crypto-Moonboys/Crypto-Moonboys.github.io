@@ -154,6 +154,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/tag-run-v2-payout-executor-pr9.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-payout-dry-run.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-snapshot-commitment.test.mjs'],
+    ['node', '--test', 'scripts/tag-run-v2-wax-authority-review.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-owner-payout.test.mjs'],
     ['node', '--test', 'scripts/tag-run-105-offline-preflight.test.mjs'],
     ['node', '--test', 'scripts/tag-run-wallet-destination.test.mjs'],
