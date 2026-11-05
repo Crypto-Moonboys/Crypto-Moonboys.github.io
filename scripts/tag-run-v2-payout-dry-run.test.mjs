@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
-import { webcrypto } from 'node:crypto';
+import { webcrypto, createHash } from 'node:crypto';
 import {
   TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey
 } from '../workers/moonboys-api/tag-run/v2-core.js';
@@ -12,7 +12,7 @@ import {
   reserveReviewedPayout, buildReviewedWaxTransfer
 } from '../workers/moonboys-api/tag-run/v2-payout-executor.js';
 import {parseDryRunArgs,selectOnlyDatabase} from './tag-run-v2-payout-dry-run.mjs';
-import {canonicalSnapshotSetDigest} from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
+import {canonicalSnapshotSetDigest,canonicalSnapshotSetPayload} from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 
 const GROUP='-1001234567890', DAY='2026-11-02';
 const A=assetKey('kingsofgraff','LFGK',4);
@@ -50,10 +50,17 @@ function fixture(t,{perTransfer='500'}={}){
     'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
   ).run(GROUP,DAY,A,TIP_ACCOUNT,101,'f'.repeat(64),
     '50000','0','0','50000','0',SNAP,'verified','500');
+  const snapshotRow=sqlite.prepare(
+    'SELECT s.*,a.chain_id,a.token_contract,a.token_symbol,a.token_precision '+
+    'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key'
+  ).get();
+  const committedSetDigest=createHash('sha256').update(canonicalSnapshotSetPayload({
+    chatId:GROUP,day:DAY,rows:[snapshotRow]
+  })).digest('hex');
   sqlite.prepare('INSERT INTO tag_run_v2_draws '+
     '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,'+
     'snapshots_digest,reviewed_by,reward_policy_bps) VALUES (?,?,?,?,?,?,?,?,100)'
-  ).run(GROUP,DAY,'reviewed',SNAP,RULES,RULES,SNAP,'independent-draw-reviewer');
+  ).run(GROUP,DAY,'reviewed',SNAP,RULES,RULES,committedSetDigest,'independent-draw-reviewer');
   for(let i=0;i<3;i++){
     sqlite.prepare('INSERT INTO tag_run_v2_bundles '+
       '(chat_id,day_key,asset_key,bundle_index,telegram_id,ticket_class,units) '+
