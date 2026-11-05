@@ -8,7 +8,8 @@ import { isValidWaxAccount } from './core.js';
 export const TIP_ACCOUNT = 'isthatajoint';
 export const WAX_MAINNET_CHAIN_ID =
   '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4';
-export const DAILY_BPS = 500; // 5%, independently for each verified asset.
+export const DAILY_BPS = 100; // 1%, independently for each verified asset; policy v2.
+export const REWARD_POLICY_VERSION = 2;
 export const HISTORIC_MAX_BPS = 5000; // At most half the ticket draw when both groups exist.
 export const MAX_ASSETS = 100;
 export const MAX_BUNDLES_PER_ASSET = 20;
