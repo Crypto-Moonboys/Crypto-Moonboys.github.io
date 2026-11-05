@@ -25,3 +25,9 @@ The button calls `Link.identify` with an explicit account/permission and relies 
 - Browser/Anchor compatibility and dependency advisories must be reviewed before merge. This draft is **not release approval**.
 
 Note: `anchor-link-browser-transport` integration is proposed, **not yet validated in a live browser**. If build or browser handshake fails, report error and do not fall back to a broadcast transaction.
+
+## Automated negative tests (no wallet prompts)
+
+Run `node --test verify.test.mjs` from this directory. All seven tests must pass. The live browser proof additionally requires `verifyProofs: true`, a populated verified account, correct chain and the registered signing key. Rebuild after pulling this PR.
+
+**Important:** A prior green result without explicit `verifyProofs: true` was not sufficient evidence of cryptographic authority verification. Retest the live Anchor flow after this change. Do not merge based on the earlier screenshot alone.
