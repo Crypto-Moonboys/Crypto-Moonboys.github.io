@@ -34,7 +34,7 @@ async function createRehearsal(){
     precision:4,day:DAY,evidenceDigest:HASH,blockId:BLOCK,
     irreversibleBlockNum:1234567,status:'unverified',
     onchainUnits:'100000',reservedUnits:'20000',
-    excludedUnits:'40000',availableUnits:'40000',fivePercentUnits:'2000'}];
+    excludedUnits:'40000',availableUnits:'40000',dailyRewardUnits:'400'}];
   return prepareV2PayoutRehearsal({
     chatId:'-1001234567890',plan,snapshots,
     receiptsDigest:HASH,cryptoImpl:webcrypto
