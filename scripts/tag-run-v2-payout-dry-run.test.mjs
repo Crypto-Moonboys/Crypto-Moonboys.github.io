@@ -156,7 +156,7 @@ test('preflight works in observe-only deployment but does not release spending',
 test('operator allowlist must identify exact contract/symbol/precision/chain',async t=>{
   const f=fixture(t);
   for(const list of [[],['kingsofgraff:LFGK:4'],
-    [assetKey('kingsofgraff','DUMPIT',8)]){
+    [assetKey('kingsofgraff','DUMPIT',8)]]){
     const p=await f.preview({operatorAllowlist:list});
     assert.equal(p.status,'BLOCKED');includes(p,'operator_asset_allowlist_missing');
     assert.equal(p.unsignedAction,null);
