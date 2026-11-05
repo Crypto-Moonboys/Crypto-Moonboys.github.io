@@ -54,7 +54,7 @@ function snapshot(db,key,options={}) {
   const reserved=options.reservedUnits||(second?'0':'20000');
   const excluded=options.excludedUnits||(second?'0':'40000');
   const percent=options.fivePercentUnits||
-    (BigInt(available)*500n/10000n).toString();
+    (BigInt(available)*100n/10000n).toString();
   db.prepare(
     'INSERT INTO tag_run_v2_snapshot_evidence_rehearsal '+
     '(snapshot_id,chat_id,day_key,asset_key,irreversible_block_num,'+
@@ -292,7 +292,7 @@ test('unverified snapshot budgets retain exact BigInt units above Number.MAX_SAF
   const db=setup(t);
   bindCurrentTelegramCommunity(db,groupOptions);
   const large='9007199254740993000';
-  const hypothetical=(BigInt(large)*500n/10000n).toString();
+  const hypothetical=(BigInt(large)*100n/10000n).toString();
   snapshot(db,A,{onchainUnits:large,reservedUnits:'0',excludedUnits:'0',
     availableUnits:large,fivePercentUnits:hypothetical});
   const model=previewOneCommunityDailyCaps(db,{
