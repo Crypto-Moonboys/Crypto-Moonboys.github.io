@@ -16,8 +16,14 @@ function fixture(changes={}) {
     [{account:'kingsofgraff',action:'transfer'}];
   const account={
     account_name:'isthatajoint',permissions:[
-      {perm_name:'owner',parent:'',required_auth:{}},
-      {perm_name:'active',parent:'owner',required_auth:{}},
+      {perm_name:'owner',parent:'',
+        required_auth:{threshold:1,
+          keys:[{key:'OWNER_FIXTURE_KEY',weight:1}],accounts:[],waits:[]},
+        linked_actions:[]},
+      {perm_name:'active',parent:'owner',
+        required_auth:{threshold:1,
+          keys:[{key:'ACTIVE_FIXTURE_KEY',weight:1}],accounts:[],waits:[]},
+        linked_actions:[]},
       {perm_name:'tagrain',parent:'active',
         required_auth:{threshold:1,
           keys:[{key:KEY,weight:1}],accounts:[],waits:[]},
@@ -126,6 +132,72 @@ test('unexpected on-chain key and hierarchy both fail closed',async()=>{
     has(await review(f),'tagrain_authority_mismatch');
   }
 });
+test('different active controller keys between providers reject agreement',async()=>{
+  const f=fixture({mutate:(host,method,row)=>{
+    if(host===WAX_AUTHORITY_PROVIDERS[1] && method==='get_account')
+      row.permissions[1].required_auth.keys[0].key='OTHER_ACTIVE_FIXTURE_KEY';
+  }});
+  const result=await review(f);
+  assert.equal(result.status,'BLOCKED');
+  has(result,'independent_provider_state_disagreement');
+  assert.equal(result.sameHeadStateObservation,false);
+  assert.equal(result.releaseAuthorized,false);
+});
+test('different owner authorities or delegated weights reject agreement',async()=>{
+  for(const mutate of [
+    row => { row.permissions[0].required_auth.keys[0].key='OTHER_OWNER_FIXTURE_KEY'; },
+    row => { row.permissions[0].required_auth.threshold=2; },
+    row => { row.permissions[1].required_auth.accounts.push({
+      permission:{actor:'otheractor',permission:'active'},weight:1
+    }); },
+    row => { row.permissions[0].required_auth.waits.push({wait_sec:3600,weight:1}); },
+    row => { row.permissions[1].required_auth.keys[0].weight=2; }
+  ]){
+    const f=fixture({mutate:(host,method,row)=>{
+      if(host===WAX_AUTHORITY_PROVIDERS[1] && method==='get_account')
+        mutate(row);
+    }});
+    const result=await review(f);
+    has(result,'independent_provider_state_disagreement');
+    assert.equal(result.sameHeadStateObservation,false);
+    assert.equal(result.status,'BLOCKED');
+  }
+});
+test('reordered owner authority key/delegation lists compare identically',async()=>{
+  const f=fixture({mutate:(host,method,row)=>{
+    if(method!=='get_account')return;
+    const active=row.permissions[1].required_auth;
+    active.keys.push({key:'SECOND_ACTIVE_FIXTURE_KEY',weight:1});
+    active.accounts.push(
+      {permission:{actor:'anotheracct1',permission:'active'},weight:1},
+      {permission:{actor:'anotheracct2',permission:'owner'},weight:2});
+    if(host===WAX_AUTHORITY_PROVIDERS[1]){
+      active.keys.reverse();
+      active.accounts.reverse();
+    }
+  }});
+  const result=await review(f);
+  assert.equal(result.status,'MANUAL_REVIEW_REQUIRED');
+  assert.equal(result.sameHeadStateObservation,true);
+  assert.equal(result.releaseAuthorized,false);
+});
+test('missing or malformed parent authority data fails closed',async()=>{
+  for(const mutate of [
+    row => { row.permissions[0].required_auth={}; },
+    row => { delete row.permissions[1].linked_actions; },
+    row => { row.permissions[0].required_auth.keys[0].weight=0; },
+    row => { row.permissions[1].required_auth.accounts=[{permission:{actor:'x'},weight:1}]; }
+  ]){
+    const f=fixture({mutate:(host,method,row)=>{
+      if(host===WAX_AUTHORITY_PROVIDERS[1] && method==='get_account')
+        mutate(row);
+    }});
+    const result=await review(f);
+    assert.equal(result.status,'BLOCKED');
+    has(result,'independent_wax_rpc_evidence_unavailable');
+  }
+});
+
 test('contract hash disagreement and unapproved deployed WASM block',async()=>{
   let f=fixture({mutate:(host,method,row)=>{
     if(host===WAX_AUTHORITY_PROVIDERS[1] && method==='get_code_hash')
