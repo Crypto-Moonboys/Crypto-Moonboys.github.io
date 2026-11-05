@@ -1,7 +1,7 @@
 import { Link } from 'anchor-link';
 import BrowserTransport from 'anchor-link-browser-transport';
 
-const CHAIN_ID = '1064487b3cd1a897e03ae5d6a85651747e2e152090f99c1d19d44e01aea5a4';
+const CHAIN_ID = '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4';
 const ACTOR = 'isthatajoint';
 const PERMISSION = 'tagrain';
 const EXPECTED_KEY = 'EOS8i9TNBsg1LYGntvSDKfzVhK3dmXZgkNbRPJ89n9fMMLC8iunGk';
