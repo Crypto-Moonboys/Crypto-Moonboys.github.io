@@ -23,7 +23,8 @@ button.addEventListener('click', async () => {
     // verifyProofs=true requires Anchor Link to check the signature against the live authority.
     // The verified account is only populated when that verification succeeds.
     const verifiedAccount = proof.account;
-    const recovered = proof.proof?.recover();
+    // Anchor Link verifies the identity signature; the authenticated session exposes its signer public key.
+    const recovered = proof.session?.publicKey;
     const chainId = proof.chain?.id ?? proof.chain?.chainId;
     assertTagrainIdentity({
       actor: signer?.actor, permission: signer?.permission,
