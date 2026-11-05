@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import { eligibleAsset, assetKey, TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, DAILY_BPS } from
   '../workers/moonboys-api/tag-run/v2-core.js';
-import { canonicalSnapshotSetDigest, canonicalLegacySnapshotSetDigest } from
+import { canonicalSnapshotSetPayload, canonicalLegacySnapshotSetDigest } from
   '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 
 const read = n => readFileSync(new URL('../workers/moonboys-api/migrations/'+n,import.meta.url),'utf8');
@@ -81,7 +81,7 @@ test('1% policy cap must match approved v2 snapshot, not 5% legacy amount',t=>{
     'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,'+
     'spendable_units,five_percent_units,snapshot_digest,status,'+
     'reward_policy_bps,daily_reward_units) '+
-    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,100,'100')").run(
+    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,'100')").run(
     CHAT,DAY,ASSET,TIP_ACCOUNT,101,BLOCK,'10000','0','0','10000',
     '0',SNAP,'verified');
   db.prepare('INSERT INTO tag_run_v2_draws '+
@@ -107,7 +107,7 @@ test('legacy 5% snapshot cannot silently become v2 committed budget',async t=>{
   const row=db.prepare('SELECT s.*, a.token_contract,a.token_symbol,a.token_precision,'+
     'a.chain_id,a.asset_key FROM tag_run_v2_snapshots s '+
     'JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key').get();
-  assert.throws(()=>canonicalSnapshotSetDigest({chatId:CHAT,day:DAY,rows:[row]},webcrypto),
+  assert.throws(()=>canonicalSnapshotSetPayload({chatId:CHAT,day:DAY,rows:[row]}),
     /snapshot_policy_version_mismatch/);
   const historical=await canonicalLegacySnapshotSetDigest({chatId:CHAT,day:DAY,rows:[row]},webcrypto);
   assert.match(historical,/^[0-9a-f]{64}$/);
