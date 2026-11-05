@@ -267,3 +267,63 @@ test('CLI rejects missing identity and does not infer audited WASM hash',()=>{
     '--live','true'
   ]),/unexpected_arguments/);
 });
+
+test('provider transport failures expose endpoint and provider only',async()=>{
+  const f=fixture({throwOn:'get_account'});
+  const r=await review(f);
+  assert.equal(r.status,'BLOCKED');
+  assert.deepEqual(r.diagnostics,[{
+    provider:WAX_AUTHORITY_PROVIDERS[1],
+    stage:'get_account',
+    code:'rpc_transport_failure'
+  }]);
+  assert.equal(r.releaseAuthorized,false);
+  assert.equal(r.transactionBroadcast,false);
+});
+test('invalid token stats identify endpoint without leaking raw RPC response',async()=>{
+  const f=fixture({mutate:(host,method,row)=>{
+    if(host===WAX_AUTHORITY_PROVIDERS[1] && method==='get_currency_stats')
+      row.LFGK.supply='not a quantity';
+  }});
+  const r=await review(f);
+  assert.deepEqual(r.diagnostics,[{
+    provider:WAX_AUTHORITY_PROVIDERS[1],
+    stage:'get_currency_stats',
+    code:'token_precision_mismatch'
+  }]);
+  assert.equal(r.status,'BLOCKED');
+});
+test('malformed permission data identifies get_account stage',async()=>{
+  const f=fixture({mutate:(host,method,row)=>{
+    if(host===WAX_AUTHORITY_PROVIDERS[0] && method==='get_account')
+      delete row.permissions[1].required_auth.keys;
+  }});
+  const r=await review(f);
+  assert.deepEqual(r.diagnostics,[{
+    provider:WAX_AUTHORITY_PROVIDERS[0],
+    stage:'get_account',
+    code:'permission_data_incomplete'
+  }]);
+});
+test('independent provider failures are both reported in fixed order',async()=>{
+  const f=fixture({mutate:(host,method,row)=>{
+    if(method==='get_code_hash') delete row.code_hash;
+  }});
+  const r=await review(f);
+  assert.equal(r.diagnostics.length,2);
+  assert.deepEqual(r.diagnostics.map(x=>x.provider),WAX_AUTHORITY_PROVIDERS);
+  assert.ok(r.diagnostics.every(x=>
+    x.stage==='get_code_hash' && x.code==='contract_code_hash_invalid'));
+});
+test('untrusted RPC exception text is never included in diagnostics',async()=>{
+  const f=fixture();
+  const result=await reviewWaxTransferAuthority({...TARGET,
+    fetchImpl:async(url,opts)=>{
+      if(url.endsWith('/get_abi'))throw Error('SECRET_PRIVATE_KEY_DO_NOT_PRINT');
+      return f.fetchImpl(url,opts);
+    }
+  });
+  assert.equal(result.status,'BLOCKED');
+  assert.equal(JSON.stringify(result).includes('SECRET_PRIVATE_KEY'),false);
+  assert.ok(result.diagnostics.every(x=>x.code==='rpc_transport_failure'));
+});
