@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-11-06T11:02:37.630Z",
+  "generated_at": "2026-11-07T10:23:06.661Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -37,7 +37,7 @@
     },
     {
       "owner": "pepperstake",
-      "live_assets": 1130
+      "live_assets": 1129
     },
     {
       "owner": "q4oia.wam",
@@ -1501,6 +1501,10 @@
     },
     {
       "owner": "ignitehubsss",
+      "live_assets": 1
+    },
+    {
+      "owner": "brothainvest",
       "live_assets": 1
     },
     {
