@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T10:32:03.314Z",
+  "generated_at": "2026-11-09T11:45:04.629Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -24,10 +24,10 @@
       "status": "degraded",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-11-08T10:31:58.786Z",
-      "last_successful_check": "2026-11-08T10:31:58.786Z",
-      "last_successful_update": "2026-11-08T10:31:43.625Z",
-      "source_updated_at": "2026-11-08T10:31:43.625Z",
+      "checked_at": "2026-11-09T11:44:58.266Z",
+      "last_successful_check": "2026-11-09T11:44:58.266Z",
+      "last_successful_update": "2026-11-09T11:44:43.064Z",
+      "source_updated_at": "2026-11-09T11:44:43.064Z",
       "source_age_minutes": 0,
       "last_error": "WAX get_info checkpoint unavailable: Feed fetch timeout after 15000ms | Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -40,7 +40,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-08T10:31:37.996Z"
+          "checked_at": "2026-11-09T11:44:35.659Z"
         },
         "num_assets": {
           "ok": true,
@@ -49,7 +49,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-08T10:31:38.284Z"
+          "checked_at": "2026-11-09T11:44:36.896Z"
         },
         "marketcap": {
           "ok": true,
@@ -58,7 +58,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-08T10:31:41.572Z"
+          "checked_at": "2026-11-09T11:44:39.575Z"
         },
         "top_users": {
           "ok": false,
@@ -67,7 +67,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-11-08T10:31:41.720Z"
+          "checked_at": "2026-11-09T11:44:39.817Z"
         },
         "top_templates": {
           "ok": true,
@@ -76,7 +76,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-08T10:31:42.374Z"
+          "checked_at": "2026-11-09T11:44:40.575Z"
         },
         "volume": {
           "ok": true,
@@ -85,7 +85,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-08T10:31:42.815Z"
+          "checked_at": "2026-11-09T11:44:41.999Z"
         },
         "sales_volume_graph": {
           "ok": true,
@@ -94,7 +94,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-08T10:31:42.978Z"
+          "checked_at": "2026-11-09T11:44:42.244Z"
         }
       },
       "notes": [
@@ -138,10 +138,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-11-08T10:32:03.311Z",
-      "last_successful_check": "2026-11-08T10:32:03.311Z",
-      "last_successful_update": "2026-11-08T10:32:03.311Z",
-      "source_updated_at": "2026-11-08T10:32:03.311Z",
+      "checked_at": "2026-11-09T11:45:04.625Z",
+      "last_successful_check": "2026-11-09T11:45:04.625Z",
+      "last_successful_update": "2026-11-09T11:45:04.625Z",
+      "source_updated_at": "2026-11-09T11:45:04.625Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -176,7 +176,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-11-08T10:32:03.314Z",
+      "checked_at": "2026-11-09T11:45:04.629Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
