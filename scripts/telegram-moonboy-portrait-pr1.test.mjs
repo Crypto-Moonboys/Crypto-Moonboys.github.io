@@ -136,7 +136,11 @@ test('manifest is loaded only from fixed homepage URL with a byte limit', async 
   const loaded = await loadHomepageMoonboyManifest(fakeFetch(calls));
   assert.equal(calls.length, 1);
   assert.equal(calls[0].url, PORTRAIT_MANIFEST_URL);
+  assert.equal(calls[0].init.redirect, 'manual');
   assert.equal(loaded.traits.length, original.traits.length);
+  await assert.rejects(loadHomepageMoonboyManifest(async () =>
+    new Response(null, { status: 302, headers: { location: 'https://example.com/' } })),
+  /telegram_moonboy_manifest_unavailable/);
   await assert.rejects(loadHomepageMoonboyManifest(async () =>
     new Response(new Uint8Array(600_001))), /telegram_moonboy_manifest_oversize/);
 });
@@ -185,7 +189,7 @@ test('composer scales all nine layers and draws them in homepage order', async (
   }
   assert.deepEqual(fake.calls.filter(x => x[0] === 'output').map(x => x[1]),
     [{ format: 'image/jpeg', quality: 76 }]);
-  assert.equal(requests.every(x => x.init.redirect === 'error'), true);
+  assert.equal(requests.every(x => x.init.redirect === 'manual'), true);
 });
 
 test('oversized JPEG triggers lower-quality retry; final result is always bounded', async () => {
