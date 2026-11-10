@@ -227,7 +227,7 @@ test('missing binding, failed asset, unsupported output or oversized layer never
   }), /telegram_moonboy_layer_oversize/);
 });
 
-test('no Telegram sending, token transfers, mutation or paid binding is enabled', () => {
+test('no Telegram sending, token transfers or mutation is enabled by the binding release', () => {
   const source = readFileSync(new URL(
     '../workers/moonboys-api/telegram/moonboy-portrait.js', import.meta.url), 'utf8');
   for (const forbidden of ['/sendPhoto', '/sendMessage', 'push_transaction',
@@ -236,6 +236,6 @@ test('no Telegram sending, token transfers, mutation or paid binding is enabled'
   }
   const wrangler = readFileSync(new URL(
     '../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
-  assert.equal(wrangler.includes('binding = "IMAGES"'), false,
-    'PR1 must not provision or bill the Images binding');
+  assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/,
+    'post-merge release must provision the approved Images binding');
 });

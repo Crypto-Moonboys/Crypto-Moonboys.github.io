@@ -11,7 +11,7 @@ const checks = [
   ['production photos OFF', /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"/.test(wrangler)],
   ['production mode OFF', /TELEGRAM_MOONBOY_MEDIA_MODE = "off"/.test(wrangler)],
   ['production message kinds empty', /TELEGRAM_MOONBOY_MESSAGE_KINDS = ""/.test(wrangler)],
-  ['no paid Images binding', !/binding\s*=\s*"IMAGES"/.test(wrangler)],
+  ['Images binding provisioned', /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/.test(wrangler)],
   ['core command kind approved', /'games-pin', 'core-command'/.test(gateway)],
   ['pet notification kind approved', /'pet-notification'/.test(gateway)],
   ['request-scoped command routing present', /createTelegramCommandMediaContext\(env, update\)/.test(worker)],
@@ -25,4 +25,4 @@ for (const [name, ok] of checks) {
   failed ||= !ok;
 }
 if (failed) process.exitCode = 1;
-else console.log('PASS code is ready for a separately approved Images binding and private canary');
+else console.log('PASS Images binding is ready for a separately targeted private canary');

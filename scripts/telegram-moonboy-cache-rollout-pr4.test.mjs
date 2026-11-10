@@ -267,5 +267,5 @@ test('production defaults keep all PR4 classes and paid transforms off', () => {
   assert.match(wrangler, /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"/);
   assert.match(wrangler, /TELEGRAM_MOONBOY_MEDIA_MODE = "off"/);
   assert.match(wrangler, /TELEGRAM_MOONBOY_MESSAGE_KINDS = ""/);
-  assert.doesNotMatch(wrangler, /binding\s*=\s*"IMAGES"/);
+  assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/);
 });

@@ -229,7 +229,7 @@ test('invalid token, chat, thread, parse mode or oversized text fail before netw
   }
 });
 
-test('image send is opt-in: no production routes or paid Images binding enabled', () => {
+test('image send remains opt-in while the approved Images binding is provisioned', () => {
   const transport = readFileSync(new URL(
     '../workers/moonboys-api/telegram/moonboy-photo-transport.js', import.meta.url), 'utf8');
   assert.equal(transport.includes('env.DB.prepare'), false);
@@ -237,5 +237,5 @@ test('image send is opt-in: no production routes or paid Images binding enabled'
   assert.equal(transport.includes('TAG_RUN_V2_PAYOUTS_ENABLED'), false);
   const wrangler = readFileSync(new URL(
     '../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
-  assert.equal(wrangler.includes('binding = "IMAGES"'), false);
+  assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/);
 });

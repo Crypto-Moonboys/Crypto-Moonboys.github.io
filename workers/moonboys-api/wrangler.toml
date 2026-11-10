@@ -16,7 +16,9 @@ crons = ["*/5 * * * *", "0 9 * * *", "3 */4 * * *", "12 0 * * *"]
 TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 # #1726 PR3: Moonboy PFP artwork on bot-controlled Telegram messages.
 # Explicit opt-in only. The canary chat ID remains an external secret/setting.
-# Do not add a paid [images] binding or turn these flags ON in this PR.
+# The Images binding is provisioned for the owner-approved private release.
+# Keep every delivery gate OFF in source; canary activation is a separate,
+# explicitly targeted production setting after this safe deployment succeeds.
 TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"
 TELEGRAM_MOONBOY_MEDIA_MODE = "off"
 TELEGRAM_MOONBOY_MESSAGE_KINDS = ""
@@ -60,6 +62,11 @@ head_sampling_rate = 0.1
 # Public deployment provenance: version tag must be the full repository commit.
 [version_metadata]
 binding = "CF_VERSION_METADATA"
+
+# Cloudflare Images optimization binding used by the server-side Moonboy
+# composer. Transformations remain unreachable while the gates above are OFF.
+[images]
+binding = "IMAGES"
 
 # D1 database binding — production wikicoms database.
 [[d1_databases]]
