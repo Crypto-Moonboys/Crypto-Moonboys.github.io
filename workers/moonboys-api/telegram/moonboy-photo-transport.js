@@ -115,7 +115,11 @@ async function sendTelegramRequest(fetchImpl, url, init) {
 
 async function sendText({ token, chatId, text, options, fetchImpl }) {
   const payload = { chat_id: chatId, text, ...options };
-  // Text-only API supports entities, not caption_entities.
+  // Text-only API supports entities, not caption_entities. Convert rather
+  // than silently discard formatting on a definitive photo rejection.
+  if (payload.entities === undefined && payload.caption_entities !== undefined) {
+    payload.entities = payload.caption_entities;
+  }
   delete payload.caption_entities;
   const response = await sendTelegramRequest(fetchImpl, telegramUrl(token, 'sendMessage'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
