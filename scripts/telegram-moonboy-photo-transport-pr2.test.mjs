@@ -162,7 +162,11 @@ test('HTTP 429, 5xx, malformed acknowledgements are uncertain, not retryable', a
   for (const response of [
     reject(429), reject(500),
     new Response('<html>unknown</html>', { status: 200 }),
-    new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 })
+    new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 }),
+    ...[null, '', '42', 'not-a-number', 0, -1, 1.5,
+      Number.MAX_SAFE_INTEGER + 1, true].map(message_id =>
+      new Response(JSON.stringify({ ok: true, result: { message_id } }),
+        { status: 200 }))
   ]) {
     const h = harness(response);
     const result = await sendTelegramMoonboyMessage(base(h));
