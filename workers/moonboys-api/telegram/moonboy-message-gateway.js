@@ -7,10 +7,25 @@ import {
 import {
   sendTelegramMoonboyMessage, TELEGRAM_PHOTO_CAPTION_LIMIT
 } from './moonboy-photo-transport.js';
+import {
+  readMoonboyMediaCache, cacheMoonboyPortrait, cacheMoonboyTelegramFileId
+} from './moonboy-media-cache.js';
 
 const ID = /^-?[0-9]{1,20}$/;
 const SEED = /^[A-Za-z0-9_.:|/-]{1,200}$/;
-const APPROVED_KIND = new Set(['tag-command', 'tag-bulletin', 'tag-rank']);
+const LEGACY_DEFAULT_KIND = new Set(['tag-command', 'tag-bulletin', 'tag-rank']);
+const APPROVED_KIND = new Set([
+  ...LEGACY_DEFAULT_KIND,
+  'daily-digest', 'group-announcement', 'games-pin', 'core-command'
+]);
+
+function messageKindEnabled(env, messageKind) {
+  if (!APPROVED_KIND.has(messageKind)) return false;
+  if (LEGACY_DEFAULT_KIND.has(messageKind)) return true;
+  const configured = String(env?.TELEGRAM_MOONBOY_MESSAGE_KINDS || '')
+    .split(',').map(value => value.trim()).filter(Boolean);
+  return configured.includes(messageKind);
+}
 
 // Fail-closed allowlist: a private Telegram canary may only run in the
 // explicitly chosen private chat; a later controlled group rollout needs both
@@ -20,7 +35,7 @@ export function isMoonboyTelegramMediaEnabled(env, {
   chatId, chatKind, messageKind
 } = {}) {
   if (env?.TELEGRAM_MOONBOY_PHOTOS_ENABLED !== 'true' ||
-      !env?.IMAGES?.input || !APPROVED_KIND.has(messageKind)) return false;
+      !env?.IMAGES?.input || !messageKindEnabled(env, messageKind)) return false;
   const destination = String(chatId ?? '');
   if (!ID.test(destination)) return false;
   const mode = String(env?.TELEGRAM_MOONBOY_MEDIA_MODE || 'off');
@@ -53,7 +68,8 @@ export function moonboyTelegramMessageSeed(kind, chatId, logicalId, sequence = 0
 // is terminal and MUST NEVER result in a second text or photo attempt.
 export async function sendControlledMoonboyTelegram({
   env, chatId, chatKind, messageKind, seed, text,
-  options = {}, fetchImpl = fetch, cryptoImpl = globalThis.crypto
+  options = {}, fetchImpl = fetch, cryptoImpl = globalThis.crypto,
+  cacheImpl = undefined
 } = {}) {
   if (!isMoonboyTelegramMediaEnabled(env, { chatId, chatKind, messageKind })) {
     return { status: 'disabled' };
@@ -67,28 +83,58 @@ export async function sendControlledMoonboyTelegram({
   if (typeof seed !== 'string' || !SEED.test(seed)) {
     return { status: 'composition_failed', reason: 'invalid_seed' };
   }
+  const startedAt = Date.now();
+  let cacheSource = 'miss';
+  let rendered = false;
   let portrait;
   try {
-    const manifest = await loadHomepageMoonboyManifest(fetchImpl);
-    portrait = await composeTelegramMoonboy({
-      images: env.IMAGES, manifest, seed, fetchImpl, cryptoImpl
-    });
+    const cached = await readMoonboyMediaCache(cacheImpl, seed);
+    cacheSource = cached.source || 'miss';
+    if (cached.telegramFileId) {
+      portrait = { telegramFileId: cached.telegramFileId };
+    } else if (cached.portrait) {
+      portrait = cached.portrait;
+    } else {
+      const manifest = await loadHomepageMoonboyManifest(fetchImpl);
+      portrait = await composeTelegramMoonboy({
+        images: env.IMAGES, manifest, seed, fetchImpl, cryptoImpl
+      });
+      rendered = true;
+      await cacheMoonboyPortrait(cacheImpl, seed, portrait);
+    }
   } catch {
-    // This catch wraps ONLY manifest/image creation. Zero Telegram requests
-    // happened, so the legacy text send is safe. Do not include secrets or
-    // member text in logs.
+    // Cache, manifest and image creation happen before Telegram. A failure is
+    // definitive, so the exact legacy text route remains safe.
+    console.log('telegram_moonboy_media', JSON.stringify({
+      message_kind: messageKind, status: 'composition_failed',
+      cache: cacheSource, rendered, duration_ms: Date.now() - startedAt
+    }));
     return { status: 'composition_failed', reason: 'render_unavailable' };
   }
   // After transport starts, even a thrown exception can follow a successful
-  // Telegram upload/acknowledgement. Do not let an exception escape into a
-  // command handler's existing error-reply catch; that would post twice.
-  // Always classify transport exceptions as terminal uncertainty.
+  // Telegram upload/acknowledgement. Never let it trigger a duplicate message.
   try {
-    return await sendTelegramMoonboyMessage({
+    const outcome = await sendTelegramMoonboyMessage({
       token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait,
       options, fetchImpl
     });
+    if (outcome.status === 'sent' && outcome.telegramFileId) {
+      await cacheMoonboyTelegramFileId(cacheImpl, seed, outcome.telegramFileId);
+    }
+    console.log('telegram_moonboy_media', JSON.stringify({
+      message_kind: messageKind, status: outcome.status,
+      cache: cacheSource, rendered,
+      render_bytes: rendered ? portrait?.bytes?.byteLength || 0 : 0,
+      file_id_reused: outcome.fileIdReused === true,
+      method: outcome.method || null,
+      duration_ms: Date.now() - startedAt
+    }));
+    return outcome;
   } catch {
+    console.log('telegram_moonboy_media', JSON.stringify({
+      message_kind: messageKind, status: 'uncertain',
+      cache: cacheSource, rendered, duration_ms: Date.now() - startedAt
+    }));
     return {
       status: 'uncertain', reason: 'photo_transport_exception',
       method: 'sendPhoto', photoSkipped: false

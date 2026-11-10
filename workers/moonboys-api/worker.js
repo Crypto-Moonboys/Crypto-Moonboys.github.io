@@ -15,6 +15,7 @@ import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
+import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
@@ -753,6 +754,41 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
     console.log('TG send exception:', error?.message || error);
     return { ok: false, status: 0, error: error?.message || String(error) };
   }
+}
+
+async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
+  chatKind = 'private', messageKind, logicalId, sequence = 0
+} = {}) {
+  let outcome;
+  try {
+    const seed = moonboyTelegramMessageSeed(messageKind, chatId, logicalId, sequence);
+    outcome = await sendControlledMoonboyTelegram({
+      env, chatId, chatKind, messageKind, seed, text,
+      options: { parse_mode: 'HTML', ...extra }
+    });
+  } catch (error) {
+    logApiFailure('telegram_moonboy_gateway_pre_send_failed', {
+      message_kind: messageKind || null,
+      reason: error?.message || String(error)
+    });
+    outcome = { status: 'composition_failed', reason: 'gateway_pre_send_failed' };
+  }
+  if (outcome?.status === 'disabled' || outcome?.status === 'composition_failed') {
+    return sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, text, extra);
+  }
+  if (outcome?.status === 'sent') {
+    return {
+      ok: true, status: 200, response: null,
+      telegram_message_id: outcome.telegramMessageId || null,
+      telegram_file_id: outcome.telegramFileId || null,
+      media_method: outcome.method || null
+    };
+  }
+  return {
+    ok: false, status: 0, uncertain: outcome?.status === 'uncertain',
+    error: outcome?.reason || 'telegram_media_unconfirmed',
+    media_method: outcome?.method || 'sendPhoto'
+  };
 }
 
 async function answerTelegramCallback(botToken, callbackQueryId, text = '') {
@@ -9421,7 +9457,7 @@ async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
     SET status = 'pending', sent_at = NULL, error_message = NULL, metadata_json = ?, updated_at = ?
     WHERE telegram_id = ? AND utc_day = ?
       AND (
-        (? = 1 AND status <> 'sent')
+        (? = 1 AND status NOT IN ('sent', 'needs_review'))
         OR status = 'failed'
         OR (status = 'pending' AND (updated_at IS NULL OR updated_at <= ?))
       )
@@ -9440,7 +9476,7 @@ async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
 }
 
 async function finalizeDailyDigestLog(db, telegramId, utcDay, status, payload = {}) {
-  const safeStatus = status === 'sent' ? 'sent' : 'failed';
+  const safeStatus = status === 'sent' ? 'sent' : (status === 'needs_review' ? 'needs_review' : 'failed');
   const safeError = payload?.error ? String(payload.error).slice(0, 500) : null;
   const safeMetadata = normaliseMissedMetadata(payload?.metadata || null);
   const nowIso = new Date().toISOString();
@@ -9562,7 +9598,7 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     `Weekly standing: ${escapeHtml(weeklyStanding)}\n` +
     `Next best action: ${escapeHtml(nextBestAction)}`;
 
-  const sendResult = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, telegramId, message, {
+  const sendResult = await sendBaseWorkerMoonboyMessage(env, telegramId, message, {
     reply_markup: {
       inline_keyboard: [
         [
@@ -9575,10 +9611,13 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
         ],
       ],
     },
+  }, {
+    chatKind: 'private', messageKind: 'daily-digest', logicalId: utcDay
   });
 
   return {
     ok: !!sendResult?.ok,
+    uncertain: sendResult?.uncertain === true,
     status: sendResult?.status || null,
     error: sendResult?.ok ? null : (sendResult?.error || sendResult?.response || 'telegram_send_failed'),
     context: {
@@ -9618,6 +9657,7 @@ async function runTelegramDailyDigest(env, options = {}) {
     skipped_pending_recent: 0,
     skipped_unlinked: targetTelegramId && !linkedIds.length ? 1 : 0,
     failed: 0,
+    needs_review: 0,
     failures: [],
   };
   const processTelegramId = async (telegramId) => {
@@ -9642,6 +9682,22 @@ async function runTelegramDailyDigest(env, options = {}) {
       });
       return { kind: 'sent', telegram_id: telegramId };
     }
+    if (result.uncertain) {
+      await finalizeDailyDigestLog(db, telegramId, utcDay, 'needs_review', {
+        error: result.error || 'telegram_media_unconfirmed',
+        metadata: {
+          trigger: options.trigger || 'manual',
+          status: result.status || null,
+          delivery: 'uncertain',
+          ...result.context,
+        },
+      });
+      return {
+        kind: 'needs_review',
+        telegram_id: telegramId,
+        error: result.error || 'telegram_media_unconfirmed',
+      };
+    }
     await finalizeDailyDigestLog(db, telegramId, utcDay, 'failed', {
       error: result.error || 'telegram_send_failed',
       metadata: {
@@ -9665,6 +9721,16 @@ async function runTelegramDailyDigest(env, options = {}) {
         if (entry.kind === 'sent') {
           summary.processed += 1;
           summary.sent += 1;
+          continue;
+        }
+        if (entry.kind === 'needs_review') {
+          summary.processed += 1;
+          summary.needs_review += 1;
+          summary.failures.push({
+            telegram_id: entry.telegram_id,
+            error: entry.error,
+            delivery: 'uncertain',
+          });
           continue;
         }
         if (entry.kind === 'failed') {
@@ -11834,7 +11900,12 @@ async function sendTelegramGroupAnnouncement(env, candidate) {
   }
   const extra = { disable_web_page_preview: true };
   if (groupConfig.message_thread_id) extra.message_thread_id = Number(groupConfig.message_thread_id) || groupConfig.message_thread_id;
-  const result = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, groupConfig.chat_id, candidate.message, extra);
+  const result = await sendBaseWorkerMoonboyMessage(
+    env, groupConfig.chat_id, candidate.message, extra, {
+      chatKind: 'group', messageKind: 'group-announcement',
+      logicalId: candidate.announcement_key
+    }
+  );
   if (!result?.ok) {
     logApiFailure('telegram_group_send_failed', {
       announcement_key: candidate.announcement_key,
@@ -11873,6 +11944,7 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
     sent_count: 0,
     skipped_count: 0,
     failed_count: 0,
+    needs_review_count: 0,
     dry_run: dryRun,
     errors: [],
   };
@@ -11905,6 +11977,18 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
       continue;
     }
     const errorMessage = result?.response || result?.error || 'telegram_group_send_failed';
+    if (result?.uncertain) {
+      await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'needs_review', {
+        error: errorMessage, metadata: { delivery: 'uncertain' }
+      });
+      summary.needs_review_count += 1;
+      summary.errors.push({
+        announcement_key: candidate.announcement_key,
+        error: clampText(errorMessage, 500, 'telegram_media_unconfirmed'),
+        delivery: 'uncertain'
+      });
+      continue;
+    }
     await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'failed', { error: errorMessage });
     summary.failed_count += 1;
     summary.errors.push({ announcement_key: candidate.announcement_key, error: clampText(errorMessage, 500, 'telegram_group_send_failed') });
