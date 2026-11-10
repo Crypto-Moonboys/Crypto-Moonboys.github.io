@@ -1,0 +1,261 @@
+{
+  "capturedAt": "2026-11-10T19:10:12.211Z",
+  "mode": "READ_ONLY_HEAD_OBSERVATIONS",
+  "chainStateModified": false,
+  "releaseAuthorized": false,
+  "wasmAuditApproved": false,
+  "providers": [
+    {
+      "host": "https://wax.greymass.com",
+      "chainId": "1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4",
+      "lastIrreversibleBlock": 465700282,
+      "observedCodeHash": "c08fb0c42b5b71f3b4a5c17afdeacfd9ca7036b2c1efdbd80cd91c4ad6f00408",
+      "tagrain": {
+        "perm_name": "tagrain",
+        "parent": "active",
+        "required_auth": {
+          "threshold": 1,
+          "keys": [
+            {
+              "key": "EOS8i9TNBsg1LYGntvSDKfzVhK3dmXZgkNbRPJ89n9fMMLC8iunGk",
+              "weight": 1
+            }
+          ],
+          "accounts": [],
+          "waits": []
+        },
+        "linked_actions": []
+      },
+      "reads": [
+        {
+          "query": {
+            "code": "kingsofgraff",
+            "scope": "kingsofgraff",
+            "table": "configs",
+            "limit": 100
+          },
+          "result": {
+            "rows": [
+              {
+                "code": "DUMPIT",
+                "is_tradeable": 1,
+                "tx_fees": []
+              }
+            ],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "kingsofgraff",
+            "scope": "1262962252",
+            "table": "exempted",
+            "lower_bound": "isthatajoint",
+            "upper_bound": "isthatajoint",
+            "limit": 2
+          },
+          "result": {
+            "rows": [],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "kingsofgraff",
+            "scope": "92673856591172",
+            "table": "exempted",
+            "lower_bound": "isthatajoint",
+            "upper_bound": "isthatajoint",
+            "limit": 2
+          },
+          "result": {
+            "rows": [],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "bagzregistry",
+            "scope": "bagzregistry",
+            "table": "exempted",
+            "lower_bound": "isthatajoint",
+            "upper_bound": "isthatajoint",
+            "limit": 2
+          },
+          "result": {
+            "rows": [],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "bagzregistry",
+            "scope": "bagzregistry",
+            "table": "dexes",
+            "limit": 100
+          },
+          "result": {
+            "rows": [
+              {
+                "account": "alcorammswap"
+              },
+              {
+                "account": "alcordexmain"
+              },
+              {
+                "account": "swap.adex"
+              },
+              {
+                "account": "swap.alcor"
+              },
+              {
+                "account": "swap.box"
+              },
+              {
+                "account": "swap.nefty"
+              },
+              {
+                "account": "swap.taco"
+              },
+              {
+                "account": "swap.we"
+              }
+            ],
+            "more": false,
+            "next_key": ""
+          }
+        }
+      ]
+    },
+    {
+      "host": "https://wax.eosphere.io",
+      "chainId": "1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4",
+      "lastIrreversibleBlock": 465700294,
+      "observedCodeHash": "c08fb0c42b5b71f3b4a5c17afdeacfd9ca7036b2c1efdbd80cd91c4ad6f00408",
+      "tagrain": {
+        "perm_name": "tagrain",
+        "parent": "active",
+        "required_auth": {
+          "threshold": 1,
+          "keys": [
+            {
+              "key": "EOS8i9TNBsg1LYGntvSDKfzVhK3dmXZgkNbRPJ89n9fMMLC8iunGk",
+              "weight": 1
+            }
+          ],
+          "accounts": [],
+          "waits": []
+        },
+        "linked_actions": []
+      },
+      "reads": [
+        {
+          "query": {
+            "code": "kingsofgraff",
+            "scope": "kingsofgraff",
+            "table": "configs",
+            "limit": 100
+          },
+          "result": {
+            "rows": [
+              {
+                "code": "DUMPIT",
+                "is_tradeable": 1,
+                "tx_fees": []
+              }
+            ],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "kingsofgraff",
+            "scope": "1262962252",
+            "table": "exempted",
+            "lower_bound": "isthatajoint",
+            "upper_bound": "isthatajoint",
+            "limit": 2
+          },
+          "result": {
+            "rows": [],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "kingsofgraff",
+            "scope": "92673856591172",
+            "table": "exempted",
+            "lower_bound": "isthatajoint",
+            "upper_bound": "isthatajoint",
+            "limit": 2
+          },
+          "result": {
+            "rows": [],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "bagzregistry",
+            "scope": "bagzregistry",
+            "table": "exempted",
+            "lower_bound": "isthatajoint",
+            "upper_bound": "isthatajoint",
+            "limit": 2
+          },
+          "result": {
+            "rows": [],
+            "more": false,
+            "next_key": ""
+          }
+        },
+        {
+          "query": {
+            "code": "bagzregistry",
+            "scope": "bagzregistry",
+            "table": "dexes",
+            "limit": 100
+          },
+          "result": {
+            "rows": [
+              {
+                "account": "alcorammswap"
+              },
+              {
+                "account": "alcordexmain"
+              },
+              {
+                "account": "swap.adex"
+              },
+              {
+                "account": "swap.alcor"
+              },
+              {
+                "account": "swap.box"
+              },
+              {
+                "account": "swap.nefty"
+              },
+              {
+                "account": "swap.taco"
+              },
+              {
+                "account": "swap.we"
+              }
+            ],
+            "more": false,
+            "next_key": ""
+          }
+        }
+      ]
+    }
+  ]
+}
