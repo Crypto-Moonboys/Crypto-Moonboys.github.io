@@ -5,6 +5,7 @@ export const TELEGRAM_PHOTO_CAPTION_LIMIT = 1024;
 export const TELEGRAM_TEXT_LIMIT = 4096;
 export const TELEGRAM_PHOTO_MAX_BYTES = 500_000;
 const CHAT_ID = /^-?[0-9]{1,20}$/;
+const TELEGRAM_FILE_ID = /^[A-Za-z0-9_-]{20,256}$/;
 const THREAD_ID = /^[1-9][0-9]{0,12}$/;
 const PHOTO_REJECTION_STATUS = new Set([400, 403, 404, 413, 422]);
 
@@ -161,6 +162,34 @@ export async function sendTelegramMoonboyMessage({
   if (photo === undefined || photo === null || body.length > TELEGRAM_PHOTO_CAPTION_LIMIT) {
     const result = await sendText({ token, chatId: id, text: body, options: safeOptions, fetchImpl });
     return { ...result, method: 'sendMessage', photoSkipped: body.length > TELEGRAM_PHOTO_CAPTION_LIMIT };
+  }
+
+  // A confirmed Telegram file_id avoids both a paid image transformation and
+  // a JPEG upload. It is accepted only from the bounded PR4 cache, never from
+  // inbound Telegram/user data.
+  if (photo && typeof photo === 'object' &&
+      TELEGRAM_FILE_ID.test(String(photo.telegramFileId || ''))) {
+    const payload = {
+      chat_id: id, photo: String(photo.telegramFileId), caption: body,
+      ...photoOptions(safeOptions)
+    };
+    const outcome = await sendTelegramRequest(fetchImpl, photoUrl, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (outcome.status === 'sent') {
+      return { ...outcome, method: 'sendPhoto', photoSkipped: false,
+        fileIdReused: true };
+    }
+    if (outcome.status !== 'rejected') {
+      return { ...outcome, method: 'sendPhoto', photoSkipped: false,
+        fileIdReused: true };
+    }
+    const fallback = await sendText({
+      token, chatId: id, text: body, options: safeOptions, fetchImpl
+    });
+    return { ...fallback, method: 'sendMessage', photoSkipped: true,
+      fileIdReused: true, photoRejection: outcome.reason };
   }
 
   let bytes;
