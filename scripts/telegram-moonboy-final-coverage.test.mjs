@@ -65,6 +65,7 @@ test('Worker centralizes all command text while preserving existing-media and pi
   assert.match(source, /logicalId: commandContext\.logicalId/);
   assert.match(source, /sequence: commandContext\.nextSequence\(\)/);
   assert.match(source, /messageKind: 'pet-notification'/);
+  assert.match(source, /signal: requestOptions\.signal/);
   assert.match(source, /VALUES \(\?,\?,'needs_review'\)/);
   assert.match(source, /ensureTelegramGamesPinned\(unwrapTelegramBotToken\(botToken\)/);
   assert.match(source, /photoResult\.ok[\s\S]*sendTelegramMessage\(unwrapTelegramBotToken\(botToken\)/);

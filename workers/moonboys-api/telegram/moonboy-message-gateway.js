@@ -70,7 +70,7 @@ export function moonboyTelegramMessageSeed(kind, chatId, logicalId, sequence = 0
 export async function sendControlledMoonboyTelegram({
   env, chatId, chatKind, messageKind, seed, text,
   options = {}, fetchImpl = fetch, cryptoImpl = globalThis.crypto,
-  cacheImpl = undefined
+  cacheImpl = undefined, signal = undefined
 } = {}) {
   if (!isMoonboyTelegramMediaEnabled(env, { chatId, chatKind, messageKind })) {
     return { status: 'disabled' };
@@ -117,7 +117,7 @@ export async function sendControlledMoonboyTelegram({
   try {
     const outcome = await sendTelegramMoonboyMessage({
       token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait,
-      options, fetchImpl
+      options, fetchImpl, signal
     });
     if (outcome.status === 'sent' && outcome.telegramFileId) {
       await cacheMoonboyTelegramFileId(cacheImpl, seed, outcome.telegramFileId);

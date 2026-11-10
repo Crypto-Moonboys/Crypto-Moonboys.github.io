@@ -775,7 +775,8 @@ async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
     const seed = moonboyTelegramMessageSeed(messageKind, chatId, logicalId, sequence);
     outcome = await sendControlledMoonboyTelegram({
       env, chatId, chatKind, messageKind, seed, text,
-      options: { parse_mode: 'HTML', ...extra }
+      options: { parse_mode: 'HTML', ...extra },
+      signal: requestOptions.signal
     });
   } catch (error) {
     logApiFailure('telegram_moonboy_gateway_pre_send_failed', {

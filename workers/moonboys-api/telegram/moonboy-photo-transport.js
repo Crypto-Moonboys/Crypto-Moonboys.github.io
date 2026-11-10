@@ -119,7 +119,7 @@ async function sendTelegramRequest(fetchImpl, url, init) {
   return { status: 'uncertain', reason: 'telegram_unconfirmed' };
 }
 
-async function sendText({ token, chatId, text, options, fetchImpl }) {
+async function sendText({ token, chatId, text, options, fetchImpl, signal }) {
   const payload = { chat_id: chatId, text, ...options };
   // Text-only API supports entities, not caption_entities. Convert rather
   // than silently discard formatting on a definitive photo rejection.
@@ -129,7 +129,7 @@ async function sendText({ token, chatId, text, options, fetchImpl }) {
   delete payload.caption_entities;
   const response = await sendTelegramRequest(fetchImpl, telegramUrl(token, 'sendMessage'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload), ...(signal ? { signal } : {})
   });
   return response;
 }
@@ -150,7 +150,8 @@ function photoOptions(options) {
 // one original sendMessage (no photo) to preserve full content atomically.
 // The later coverage PR can add a separately reviewed long-text strategy.
 export async function sendTelegramMoonboyMessage({
-  token, chatId, text, photo, options = {}, fetchImpl = fetch
+  token, chatId, text, photo, options = {}, fetchImpl = fetch,
+  signal = undefined
 } = {}) {
   const id = validateChatId(chatId);
   const body = validateText(text);
@@ -160,7 +161,7 @@ export async function sendTelegramMoonboyMessage({
   const photoUrl = telegramUrl(token, 'sendPhoto');
 
   if (photo === undefined || photo === null || body.length > TELEGRAM_PHOTO_CAPTION_LIMIT) {
-    const result = await sendText({ token, chatId: id, text: body, options: safeOptions, fetchImpl });
+    const result = await sendText({ token, chatId: id, text: body, options: safeOptions, fetchImpl, signal });
     return { ...result, method: 'sendMessage', photoSkipped: body.length > TELEGRAM_PHOTO_CAPTION_LIMIT };
   }
 
@@ -175,7 +176,7 @@ export async function sendTelegramMoonboyMessage({
     };
     const outcome = await sendTelegramRequest(fetchImpl, photoUrl, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload), ...(signal ? { signal } : {})
     });
     if (outcome.status === 'sent') {
       return { ...outcome, method: 'sendPhoto', photoSkipped: false,
@@ -186,7 +187,7 @@ export async function sendTelegramMoonboyMessage({
         fileIdReused: true };
     }
     const fallback = await sendText({
-      token, chatId: id, text: body, options: safeOptions, fetchImpl
+      token, chatId: id, text: body, options: safeOptions, fetchImpl, signal
     });
     return { ...fallback, method: 'sendMessage', photoSkipped: true,
       fileIdReused: true, photoRejection: outcome.reason };
@@ -196,7 +197,7 @@ export async function sendTelegramMoonboyMessage({
   try { bytes = validatePhoto(photo); }
   catch {
     // A definite pre-send image validation failure is safe to fall back.
-    const result = await sendText({ token, chatId: id, text: body, options: safeOptions, fetchImpl });
+    const result = await sendText({ token, chatId: id, text: body, options: safeOptions, fetchImpl, signal });
     return { ...result, method: 'sendMessage', photoSkipped: true };
   }
 
@@ -208,7 +209,7 @@ export async function sendTelegramMoonboyMessage({
   }
   form.set('photo', new Blob([bytes], { type: 'image/jpeg' }), 'moonboy.jpg');
   const outcome = await sendTelegramRequest(fetchImpl, photoUrl, {
-    method: 'POST', body: form
+    method: 'POST', body: form, ...(signal ? { signal } : {})
   });
   if (outcome.status === 'sent') return { ...outcome, method: 'sendPhoto', photoSkipped: false };
   if (outcome.status !== 'rejected') {
@@ -217,7 +218,7 @@ export async function sendTelegramMoonboyMessage({
   // Telegram explicitly rejected the upload (not a timeout or unknown error).
   // Fall back once to text, preserving the full original text and topic.
   const fallback = await sendText({
-    token, chatId: id, text: body, options: safeOptions, fetchImpl
+    token, chatId: id, text: body, options: safeOptions, fetchImpl, signal
   });
   return { ...fallback, method: 'sendMessage', photoSkipped: true,
     photoRejection: outcome.reason };
