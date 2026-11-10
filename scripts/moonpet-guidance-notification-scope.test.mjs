@@ -344,7 +344,7 @@ for (const count of [1, 2, 17, 35]) test(`slow preparation of ${count} due playe
       assert.equal(messages[0].chat_id, tail);
       assert.match(messages[0].text, /health is low/);
       assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_recovery_cursors WHERE setting_key LIKE 'moonpet:notifications:sent:%'").get().n, 1);
-      assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_recovery_cursors WHERE setting_key LIKE 'moonpet:notifications:checking:%'").get().n, 1, 'quiet prefixes consume neither delivery leases nor sent cooldowns');
+      assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_recovery_cursors WHERE setting_key LIKE 'moonpet:notifications:checking:%'").get().n, 0, 'confirmed delivery clears its durable pre-send lock and quiet prefixes consume none');
       t.mock.timers.tick(300000);
     }
   });

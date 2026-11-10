@@ -96,7 +96,7 @@ test('Worker pins only private /start and /games and retains group safe buttons'
     source.indexOf('function petMiniAppLaunchUrl'));
   assert.match(pin, /if \(String\(chatType\) !== 'private'\) return;/,
     'Never pin messages in groups without user consent');
-  assert.match(pin, /await ensureTelegramGamesPinned\(botToken, chatId, TELEGRAM_GAMES_MENU_URL\)/);
+  assert.match(pin, /await ensureTelegramGamesPinned\(unwrapTelegramBotToken\(botToken\), chatId, TELEGRAM_GAMES_MENU_URL\)/);
   assert.match(pin, /async function cmdGamesLauncher[\s\S]*await pinGamesForPrivateChat\(botToken, chatId, chatType\)/);
   const welcome = source.slice(source.indexOf('async function cmdGkStart'),
     source.indexOf('async function cmdGkHelp'));
