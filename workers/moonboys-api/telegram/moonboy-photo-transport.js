@@ -100,9 +100,14 @@ async function sendTelegramRequest(fetchImpl, url, init) {
   } catch {
     return { status: 'uncertain', reason: 'unreadable_telegram_response' };
   }
-  if (response.ok && result?.ok === true && result?.result?.message_id !== undefined) {
+  const messageId = result?.result?.message_id;
+  // A malformed or missing acknowledgement is not proof of delivery.
+  // Telegram message IDs are positive integers; reject null, strings,
+  // fractions and unsafe numeric values without attempting a fallback.
+  if (response.ok && result?.ok === true &&
+      Number.isSafeInteger(messageId) && messageId > 0) {
     return {
-      status: 'sent', telegramMessageId: result.result.message_id,
+      status: 'sent', telegramMessageId: messageId,
       telegramFileId: result.result.photo?.at(-1)?.file_id || null
     };
   }
