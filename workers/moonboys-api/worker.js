@@ -16,6 +16,7 @@ import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
+import { createTelegramCommandMediaContext, readTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
@@ -733,6 +734,15 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
     console.log('TG send skipped', JSON.stringify({ hasBotToken: !!botToken, hasChatId: !!chatId }));
     return { ok: false, status: 0, error: 'missing_chat_or_token' };
   }
+  const commandContext = readTelegramCommandMediaContext(botToken);
+  if (commandContext) {
+    return sendBaseWorkerMoonboyMessage(commandContext.env, chatId, text, extra, {
+      chatKind: commandContext.chatKind,
+      messageKind: 'core-command',
+      logicalId: commandContext.logicalId,
+      sequence: commandContext.nextSequence(),
+    });
+  }
   try {
     const response = await fetch(
       `https://api.telegram.org/bot${botToken}/sendMessage`,
@@ -757,14 +767,16 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
 }
 
 async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
-  chatKind = 'private', messageKind, logicalId, sequence = 0
+  chatKind = 'private', messageKind, logicalId, sequence = 0,
+  requestOptions = {}
 } = {}) {
   let outcome;
   try {
     const seed = moonboyTelegramMessageSeed(messageKind, chatId, logicalId, sequence);
     outcome = await sendControlledMoonboyTelegram({
       env, chatId, chatKind, messageKind, seed, text,
-      options: { parse_mode: 'HTML', ...extra }
+      options: { parse_mode: 'HTML', ...extra },
+      signal: requestOptions.signal
     });
   } catch (error) {
     logApiFailure('telegram_moonboy_gateway_pre_send_failed', {
@@ -774,7 +786,7 @@ async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
     outcome = { status: 'composition_failed', reason: 'gateway_pre_send_failed' };
   }
   if (outcome?.status === 'disabled' || outcome?.status === 'composition_failed') {
-    return sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, text, extra);
+    return sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, text, extra, requestOptions);
   }
   if (outcome?.status === 'sent') {
     return {
@@ -8083,8 +8095,7 @@ async function getPetNotificationPreference(db, telegramId) {
 }
 
 async function runPetNeedsNotifications(env, options = {}) {
-  const tok = env.TELEGRAM_BOT_TOKEN;
-  if (!tok) return { ok: false, error: 'telegram_bot_token_missing' };
+  if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, error: 'telegram_bot_token_missing' };
   const limit = boundedRecoveryLimit(options.limit, PET_NOTIFICATION_BATCH_LIMIT);
   const scanOwner = '__moonpet_notification_scheduler__';
   const scanKey = 'moonpet:notifications:scan';
@@ -8175,11 +8186,14 @@ async function runPetNeedsNotifications(env, options = {}) {
       if (acquired.success !== true || !Number.isSafeInteger(acquired.meta?.changes)
         || acquired.meta.changes !== acquired.results.length) throw new Error('pet_notification_scan_unavailable');
       if (acquired.results.length !== 1) { skipped += 1; continue; }
-      // Renew only this scanner's still-valid lease immediately before send.
+      // Convert this scanner's still-valid lease into a durable pre-send lock.
+      // It is removed only after a definitive failure or a confirmed receipt;
+      // if needs_review persistence itself fails after an uncertain transport,
+      // this lock still prevents an automatic duplicate.
       // Capture the current permanent-space ordinal in the same guarded batch;
       // the immutable source slot may be shared by pets from older seasons.
       const deliverySource = await scope.db.batch([scope.db.prepare(`UPDATE telegram_pet_recovery_cursors
-        SET setting_value=json_set(setting_value,'$.expires_at',datetime('now','+1 minute')), updated_at=CURRENT_TIMESTAMP
+        SET setting_value=json_set(setting_value,'$.expires_at','9999-12-31 23:59:59'), updated_at=CURRENT_TIMESTAMP
         WHERE telegram_id=? AND setting_key=? AND json_extract(setting_value,'$.token')=?
           AND json_extract(setting_value,'$.expires_at') > CURRENT_TIMESTAMP
           AND EXISTS (SELECT n.enabled FROM telegram_pet_notification_settings n
@@ -8205,11 +8219,49 @@ async function runPetNeedsNotifications(env, options = {}) {
       // Selection can change while Telegram is sending. Name the captured pet
       // explicitly and record delivery against that same immutable source.
       const sourceLabel = `${guidanceState.pet.pet_name} · pet space ${sourceSpaces[0].slot_number}`;
-      const result = await sendTelegramMessage(tok, telegramId,
+      const notificationAttempt = safeJsonParse(scanToken, {}).revision || String(Date.now());
+      const result = await sendBaseWorkerMoonboyMessage(env, telegramId,
         `<b>Crypto Moonboy Pet Update</b>\nFor ${escapeHtml(sourceLabel)}\n${escapeHtml(alert.text)}\n\nAlert settings are inside Moonpet OS.`,
         { reply_markup: buildPetMiniAppLaunchReplyMarkup(alert.destination || 'home') },
-        { signal: AbortSignal.timeout(15000) });
-      if (!result?.ok) { failed += 1; continue; }
+        {
+          chatKind: 'private', messageKind: 'pet-notification',
+          logicalId: notificationAttempt, sequence: sourceSpaces[0].slot_number,
+          requestOptions: { signal: AbortSignal.timeout(15000) }
+        });
+      if (result?.uncertain) {
+        // An unknown Telegram photo outcome cannot be retried safely. Persist a
+        // non-date marker in the existing delivery cursor so the scheduler's
+        // date comparison excludes it until an operator reviews/removes it.
+        const review = await env.DB.batch([
+          env.DB.prepare(`INSERT INTO telegram_pet_recovery_cursors
+            (telegram_id,setting_key,setting_value) VALUES (?,?,'needs_review')
+            ON CONFLICT(telegram_id,setting_key) DO UPDATE SET
+              setting_value=excluded.setting_value, updated_at=CURRENT_TIMESTAMP`)
+            .bind(telegramId, deliveryKey),
+          env.DB.prepare(`DELETE FROM telegram_pet_recovery_cursors
+            WHERE telegram_id=? AND setting_key=? AND json_extract(setting_value,'$.token')=?`)
+            .bind(telegramId, checkingKey, scanToken),
+        ]);
+        if (!Array.isArray(review) || review.length !== 2) throw new Error('pet_notification_review_lock_unavailable');
+        for (const saved of review) {
+          requirePetMutationResult(saved);
+          if (saved.success !== true || !Number.isSafeInteger(saved.meta?.changes)) {
+            throw new Error('pet_notification_review_lock_unavailable');
+          }
+        }
+        failed += 1;
+        continue;
+      }
+      if (!result?.ok) {
+        const released = requirePetMutationResult(await env.DB.prepare(`DELETE FROM telegram_pet_recovery_cursors
+          WHERE telegram_id=? AND setting_key=? AND json_extract(setting_value,'$.token')=?`)
+          .bind(telegramId, checkingKey, scanToken).run());
+        if (released.success !== true || !Number.isSafeInteger(released.meta?.changes)) {
+          throw new Error('pet_notification_delivery_lock_unavailable');
+        }
+        failed += 1;
+        continue;
+      }
       sent += 1;
       const delivery = await env.DB.batch([
         env.DB.prepare(`INSERT INTO telegram_pet_recovery_cursors (telegram_id,setting_key,setting_value)
@@ -8221,13 +8273,17 @@ async function runPetNeedsNotifications(env, options = {}) {
           WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots
             WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
           .bind(alert.reason, telegramId, telegramId, pet.pet_id, pet.season_key),
+        env.DB.prepare(`DELETE FROM telegram_pet_recovery_cursors
+          WHERE telegram_id=? AND setting_key=? AND json_extract(setting_value,'$.token')=?`)
+          .bind(telegramId, checkingKey, scanToken),
       ]);
-      if (!Array.isArray(delivery) || delivery.length !== 2) throw new Error('pet_notification_write_unavailable');
+      if (!Array.isArray(delivery) || delivery.length !== 3) throw new Error('pet_notification_write_unavailable');
       for (const saved of delivery) {
         requirePetMutationResult(saved);
         if (saved.success !== true || !Number.isSafeInteger(saved.meta?.changes)) throw new Error('pet_notification_write_unavailable');
       }
-      if (delivery[0].meta.changes !== 1 || ![0, 1].includes(delivery[1].meta.changes)) throw new Error('pet_notification_write_unavailable');
+      if (delivery[0].meta.changes !== 1 || ![0, 1].includes(delivery[1].meta.changes) ||
+          delivery[2].meta.changes !== 1) throw new Error('pet_notification_write_unavailable');
       if (guidanceNotices.length) await markPetGuidanceNoticesShown(env.DB, telegramId, guidanceNotices.slice(0, 3));
     } catch (error) {
       failed += 1;
@@ -16455,10 +16511,13 @@ async function sendTelegramPetReply(botToken, chatId, text, extra = {}, mediaKey
   const photoResult = await sendTelegramPhoto(botToken, chatId, photoUrl, photoExtra)
     .catch((error) => ({ ok: false, error: error?.message || String(error) }));
   if (!photoResult.ok) {
-    return finishDelivery(await sendTelegramMessage(botToken, chatId, text, extra));
+    return finishDelivery(await sendTelegramMessage(unwrapTelegramBotToken(botToken), chatId, text, extra));
   }
   if (!captionOnly) {
-    return finishDelivery(await sendTelegramMessage(botToken, chatId, text, replyMarkup ? { ...extra, reply_markup: replyMarkup } : extra));
+    return finishDelivery(await sendTelegramMessage(
+      unwrapTelegramBotToken(botToken), chatId, text,
+      replyMarkup ? { ...extra, reply_markup: replyMarkup } : extra
+    ));
   }
   return finishDelivery(photoResult);
 }
@@ -16690,7 +16749,7 @@ export const __petMediaTestHooks = Object.freeze({
 
 async function handleTelegramUpdate(update, env) {
   const db  = env.DB;
-  const tok = env.TELEGRAM_BOT_TOKEN;
+  const tok = createTelegramCommandMediaContext(env, update);
 
   const msg = update.message || update.edited_message;
 
@@ -17206,7 +17265,10 @@ async function pinGamesForPrivateChat(botToken, chatId, chatType) {
   if (String(chatType) !== 'private') return;
   // Best effort only: welcome and /games replies must still work if Telegram
   // disallows pinning, or if the user already has other pinned messages.
-  await ensureTelegramGamesPinned(botToken, chatId, TELEGRAM_GAMES_MENU_URL)
+  // The pin is infrastructure, not a conversational reply. Keep its confirmed
+  // sendMessage -> message_id -> pin/delete lifecycle intact; /games itself is
+  // routed through the Moonboy gateway by the request-scoped command context.
+  await ensureTelegramGamesPinned(unwrapTelegramBotToken(botToken), chatId, TELEGRAM_GAMES_MENU_URL)
     .catch(() => ({ ok: false, status: 'pin_unavailable' }));
 }
 

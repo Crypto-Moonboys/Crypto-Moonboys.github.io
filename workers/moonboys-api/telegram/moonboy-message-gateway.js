@@ -16,7 +16,8 @@ const SEED = /^[A-Za-z0-9_.:|/-]{1,200}$/;
 const LEGACY_DEFAULT_KIND = new Set(['tag-command', 'tag-bulletin', 'tag-rank']);
 const APPROVED_KIND = new Set([
   ...LEGACY_DEFAULT_KIND,
-  'daily-digest', 'group-announcement', 'games-pin', 'core-command'
+  'daily-digest', 'group-announcement', 'pet-notification',
+  'games-pin', 'core-command'
 ]);
 
 function messageKindEnabled(env, messageKind) {
@@ -69,7 +70,7 @@ export function moonboyTelegramMessageSeed(kind, chatId, logicalId, sequence = 0
 export async function sendControlledMoonboyTelegram({
   env, chatId, chatKind, messageKind, seed, text,
   options = {}, fetchImpl = fetch, cryptoImpl = globalThis.crypto,
-  cacheImpl = undefined
+  cacheImpl = undefined, signal = undefined
 } = {}) {
   if (!isMoonboyTelegramMediaEnabled(env, { chatId, chatKind, messageKind })) {
     return { status: 'disabled' };
@@ -116,7 +117,7 @@ export async function sendControlledMoonboyTelegram({
   try {
     const outcome = await sendTelegramMoonboyMessage({
       token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait,
-      options, fetchImpl
+      options, fetchImpl, signal
     });
     if (outcome.status === 'sent' && outcome.telegramFileId) {
       await cacheMoonboyTelegramFileId(cacheImpl, seed, outcome.telegramFileId);

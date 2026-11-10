@@ -1395,7 +1395,8 @@ assert.deepEqual(
 const notifications = asyncBlock('runPetNeedsNotifications');
 assert.ok(notifications.includes('telegram_pet_notification_settings'), 'pet notifications must read the notification preference table');
 assert.ok(notifications.includes('PET_NOTIFICATION_COOLDOWN_MINUTES'), 'pet notifications must apply a cooldown');
-assert.ok(notifications.includes('sendTelegramMessage'), 'pet notifications must send Telegram messages');
+assert.ok(notifications.includes('sendBaseWorkerMoonboyMessage'),
+  'pet notifications must use the shared fail-closed Telegram message gateway');
 
 const scheduled = worker.slice(worker.indexOf('async scheduled(event, env, _ctx)'), worker.indexOf('async function cmdGkStart'));
 assert.ok(scheduled.includes('shouldRunPetNotifications'), 'scheduled pet notifications must be gated by the cron check');

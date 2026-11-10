@@ -158,6 +158,24 @@ test('network timeout after photo attempt is uncertain and NEVER triggers text d
   assert.equal(h.calls.length, 1);
 });
 
+test('aborted photo deadline is forwarded and remains uncertain without text retry', async () => {
+  const controller = new AbortController();
+  controller.abort(new DOMException('deadline exceeded', 'AbortError'));
+  const h = harness((_url, init) => {
+    assert.equal(init.signal, controller.signal);
+    throw controller.signal.reason;
+  });
+  const result = await sendTelegramMoonboyMessage(base(h, {
+    signal: controller.signal
+  }));
+  assert.deepEqual(result, {
+    status: 'uncertain', reason: 'transport_failure',
+    method: 'sendPhoto', photoSkipped: false
+  });
+  assert.equal(h.calls.length, 1);
+  assert.match(h.calls[0].url, /\/sendPhoto$/);
+});
+
 test('HTTP 429, 5xx, malformed acknowledgements are uncertain, not retryable', async () => {
   for (const response of [
     reject(429), reject(500),
