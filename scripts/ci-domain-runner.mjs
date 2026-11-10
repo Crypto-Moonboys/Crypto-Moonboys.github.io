@@ -84,6 +84,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-daily-loop-commands.test.mjs'],
     ['node', 'scripts/daily-loop-live-smoke.test.mjs'],
     ['node', 'scripts/telegram-group-event-announcements.test.mjs'],
+    ['node', '--test', 'scripts/telegram-moonboy-cache-rollout-pr4.test.mjs'],
     ['node', 'scripts/daily-wtf-timed-events.test.mjs'],
     ['node', 'scripts/daily-loop-state-contract.test.mjs'],
     ['node', '--test', 'scripts/d1-schema-preflight-batching.test.mjs'],
