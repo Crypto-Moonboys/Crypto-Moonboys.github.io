@@ -19,6 +19,7 @@ TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 # Do not add a paid [images] binding or turn these flags ON in this PR.
 TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"
 TELEGRAM_MOONBOY_MEDIA_MODE = "off"
+TELEGRAM_MOONBOY_MESSAGE_KINDS = ""
 # TAG RUN launch is deliberately fail-closed pending D1 migration 103 and an
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
