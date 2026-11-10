@@ -128,7 +128,10 @@ export async function chooseTelegramMoonboyTraits(manifest, seed, cryptoImpl = g
 
 export async function loadHomepageMoonboyManifest(fetchImpl = fetch) {
   const response = await fetchImpl(PORTRAIT_MANIFEST_URL, {
-    method: 'GET', redirect: 'error',
+    // Cloudflare Workers does not implement redirect:"error". Manual mode
+    // preserves the same fail-closed policy because boundedBytes rejects every
+    // non-2xx response, including 3xx redirects, without following Location.
+    method: 'GET', redirect: 'manual',
     headers: { Accept: 'application/json' }
   });
   const bytes = await boundedBytes(response, MAX_MANIFEST_BYTES, 'manifest');
@@ -153,7 +156,7 @@ export async function composeTelegramMoonboy({
   const plan = await chooseTelegramMoonboyTraits(manifest, seed, cryptoImpl);
   const layers = await Promise.all(plan.layers.map(async layer => {
     const response = await fetchImpl(PORTRAIT_ASSET_ORIGIN + layer.path, {
-      method: 'GET', redirect: 'error',
+      method: 'GET', redirect: 'manual',
       headers: { Accept: 'image/webp' }
     });
     // An HTTP failure is an unavailable layer, regardless of the error
