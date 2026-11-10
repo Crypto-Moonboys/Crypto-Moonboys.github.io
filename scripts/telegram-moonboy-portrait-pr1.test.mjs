@@ -179,14 +179,13 @@ test('composer scales all nine layers and draws them in homepage order', async (
     assert.deepEqual(overlay[3], { left: 0, top: 0, composite: 'over' });
   }
   const transforms = fake.calls.filter(x => x[0] === 'transform');
-  assert.equal(transforms.length, 9);
-  assert.deepEqual(await Promise.all(transforms.map(x => x[1])),
-    [1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  for (const transform of transforms) {
-    assert.deepEqual(transform[2], {
-      width: PORTRAIT_SIZE, height: PORTRAIT_SIZE, fit: 'fill'
-    });
-  }
+  assert.equal(transforms.length, 1);
+  assert.deepEqual(await Promise.all(transforms.map(x => x[1])), [1]);
+  assert.deepEqual(transforms[0][2], {
+    width: PORTRAIT_SIZE, height: PORTRAIT_SIZE, fit: 'squeeze'
+  });
+  assert.equal(overlays.length + transforms.length, 9,
+    'Cloudflare Images pipeline must stay below the ten-transform maximum');
   assert.deepEqual(fake.calls.filter(x => x[0] === 'output').map(x => x[1]),
     [{ format: 'image/jpeg', quality: 76 }]);
   assert.equal(requests.every(x => x.init.redirect === 'manual'), true);
