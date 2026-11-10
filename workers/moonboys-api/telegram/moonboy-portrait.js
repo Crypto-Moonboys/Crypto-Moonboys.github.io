@@ -156,7 +156,10 @@ export async function composeTelegramMoonboy({
       method: 'GET', redirect: 'error',
       headers: { Accept: 'image/webp' }
     });
-    const contentType = response?.headers?.get?.('content-type') || '';
+    // An HTTP failure is an unavailable layer, regardless of the error
+    // response's MIME type (404 HTML/text is not a malformed WebP).
+    if (!response?.ok) fail('layer_unavailable');
+    const contentType = response.headers?.get?.('content-type') || '';
     if (!/^image\/webp(?:;|$)/i.test(contentType)) fail('invalid_layer_format');
     return boundedBytes(response, MAX_LAYER_BYTES, 'layer');
   }));
