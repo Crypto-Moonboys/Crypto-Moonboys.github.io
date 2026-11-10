@@ -4,6 +4,17 @@
 broadcasting path. It does NOT apply migration 105, select token assets,
 approve donations, enable funded draws, or send funds on its own.
 
+## Contract guard prerequisite — 10 November 2026
+
+SEND now also requires an independently reviewed exact token/code/ABI approval in
+`scripts/config/tag-run-v2-contract-approvals.json`. That registry ships empty.
+The signer rechecks zero-fee transfer behaviour, code/ABI/permission state and
+full debit coverage before signing and after Anchor approval. Nonempty fee
+vectors and changed configuration block submission. See
+[contract and total-debit guards](tag-run-v2-contract-send-guards.md) for policy
+fields, the supported adapters and the residual on-chain state-change race.
+No observed hash or test fixture constitutes approval.
+
 ## What the release runner actually does
 
 - Runs locally on the owner's Windows computer, never in the public Worker,

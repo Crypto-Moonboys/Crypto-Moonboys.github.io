@@ -10,6 +10,8 @@ import { WAX_MAINNET_CHAIN_ID, TIP_ACCOUNT, assetKey } from
 import { buildReviewedWaxTransfer } from
   '../workers/moonboys-api/tag-run/v2-payout-executor.js';
 
+import { contractPolicy, debitAuthority, contractRpc } from
+  './fixtures/tag-run-v2/contract-send-fixture.mjs';
 const ID='a'.repeat(64);
 const D1='8a36e17a-18fa-4b98-90e1-3f269164b166';
 const settings=Object.freeze({
@@ -68,11 +70,7 @@ const fakeAnchorModules = Link => async name => {
   };
   throw Error('unapproved mock import');
 };
-const mockWaxRpc = async url=>({
-  ok:true,json:async()=>url.endsWith('get_info')
-    ?{chain_id:WAX_MAINNET_CHAIN_ID}
-    :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'tagrain'}]}
-});
+const mockWaxRpc = contractRpc();
 
 test('all mutations require an explicit live flag',()=>{
   for(const command of ['send','reserve','create-cap','open-cap','reconcile']){
@@ -182,11 +180,14 @@ test('Anchor signs offline then rechecks authority before the ONE network broadc
     }
   }
   const signer=await makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
     importModule:fakeAnchorModules(Link),
     fetchImpl:mockWaxRpc,
     beforeBroadcast:async signedRequest=>{
       order.push('fresh-release-and-D1-check');
       assert.equal(signedRequest.intentKey,ID);
+      return debitAuthority();
     }
   });
   const receipt=await signer(request);
@@ -194,15 +195,17 @@ test('Anchor signs offline then rechecks authority before the ONE network broadc
   assert.equal(construct.chains[0].chainId,WAX_MAINNET_CHAIN_ID);
   assert.deepEqual(submitted.actions,[request.action]);
   assert.deepEqual(options,{broadcast:false,noModify:true});
-  assert.deepEqual(order,['anchor-sign','fresh-release-and-D1-check','broadcast']);
+  assert.deepEqual(order,['anchor-sign','fresh-release-and-D1-check','fresh-release-and-D1-check','broadcast']);
 });
 
 test('Anchor rejects missing delegated permission before signing',async()=>{
   let created=false;
   class Link{constructor(){created=true;}}
   await assert.rejects(makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
     importModule:fakeAnchorModules(Link),
-    beforeBroadcast:async()=>{},
+    beforeBroadcast:async()=>debitAuthority(),
     fetchImpl:async url=>({ok:true,json:async()=>url.endsWith('get_info')
       ?{chain_id:WAX_MAINNET_CHAIN_ID}
       :{account_name:TIP_ACCOUNT,permissions:[{perm_name:'active'}]}})
@@ -212,6 +215,8 @@ test('Anchor rejects missing delegated permission before signing',async()=>{
 
 test('signer requires a post-approval broadcasting guard',async()=>{
   await assert.rejects(makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
     importModule:async()=>{throw Error('must not import');}
   }),/broadcast_guard_required/);
 });
@@ -223,10 +228,13 @@ test('emergency revocation while Anchor approval is open prevents the push',asyn
     async transact(){return await approval;}
   }
   const signer=await makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
     importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
     beforeBroadcast:async()=>{
       guardCalls++;
       if(revoked)throw Error('owner revoked payouts while Anchor was open');
+      return debitAuthority();
     }
   });
   const attempt=signer(request);
@@ -253,6 +261,8 @@ test('revoked D1 cap after approval also blocks the broadcast',async()=>{
     }
   }
   const signer=await makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
     importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
     beforeBroadcast:async()=>{
       if(paused)throw Error('broadcast_authorization_revoked');
@@ -285,6 +295,8 @@ test('modified Anchor transaction and extra actions never reach broadcaster',asy
     signed.chain.client.v1.chain.push_transaction=async()=>{pushed=true;};
     class Link {async transact(){return signed;}}
     const signer=await makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
       importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
       beforeBroadcast:async()=>{checked=true;}
     });
@@ -306,8 +318,10 @@ test('push error does not trigger a second broadcast or automatic retry',async()
     }
   }
   const signer=await makeAnchorConsoleSigner({
+    loadContractPolicy:async()=>contractPolicy(),
+    beforeSign:async()=>debitAuthority(),
     importModule:fakeAnchorModules(Link),fetchImpl:mockWaxRpc,
-    beforeBroadcast:async()=>{}
+    beforeBroadcast:async()=>debitAuthority()
   });
   await assert.rejects(signer(request),/network timing uncertain/);
   assert.equal(pushes,1);
@@ -383,6 +397,7 @@ test('owner SEND rechecks deployed flags after wallet approval, before broadcast
         CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),
         TAG_RUN_OPERATOR_GROUP_ID:group},
       fetchImpl,
+      loadContractPolicy:async()=>contractPolicy(),
       confirmation:async()=>{},
       signerFactory:async({beforeBroadcast})=>async(request)=>{
         signed++;

@@ -44,7 +44,7 @@ function validQuantity(qty, symbol, precision) {
 // Every controlling authority is compared between independent providers.
 // Normalize authority arrays as sets (order is not security-relevant), but
 // never discard a key, delegated permission, wait, threshold or action link.
-function normalizedPermission(entry) {
+export function normalizeWaxPermission(entry) {
   const auth = entry?.required_auth;
   if (!entry || typeof entry.perm_name !== 'string' ||
       typeof entry.parent !== 'string' || !auth ||
@@ -91,9 +91,9 @@ function normalizedAccount(row, contract) {
     tagrainRows = named('tagrain');
   if (ownerRows.length !== 1 || activeRows.length !== 1 ||
       tagrainRows.length !== 1) fail('required_permission_missing');
-  const owner = normalizedPermission(ownerRows[0]);
-  const active = normalizedPermission(activeRows[0]);
-  const tagrain = normalizedPermission(tagrainRows[0]);
+  const owner = normalizeWaxPermission(ownerRows[0]);
+  const active = normalizeWaxPermission(activeRows[0]);
+  const tagrain = normalizeWaxPermission(tagrainRows[0]);
   const {keys,accounts,waits,links} = tagrain;
   return {
     parent: tagrain.parent,threshold:tagrain.threshold,
