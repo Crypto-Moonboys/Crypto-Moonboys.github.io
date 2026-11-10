@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-09T11:45:04.629Z",
+  "generated_at": "2026-11-10T11:21:15.250Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -24,12 +24,12 @@
       "status": "degraded",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-11-09T11:44:58.266Z",
-      "last_successful_check": "2026-11-09T11:44:58.266Z",
-      "last_successful_update": "2026-11-09T11:44:43.064Z",
-      "source_updated_at": "2026-11-09T11:44:43.064Z",
+      "checked_at": "2026-11-10T11:21:09.248Z",
+      "last_successful_check": "2026-11-10T11:21:09.248Z",
+      "last_successful_update": "2026-11-10T11:21:08.804Z",
+      "source_updated_at": "2026-11-10T11:21:08.804Z",
       "source_age_minutes": 0,
-      "last_error": "WAX get_info checkpoint unavailable: Feed fetch timeout after 15000ms | Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
+      "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
       "analytics_status": "degraded",
       "endpoint_status": {
@@ -40,7 +40,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-09T11:44:35.659Z"
+          "checked_at": "2026-11-10T11:21:03.225Z"
         },
         "num_assets": {
           "ok": true,
@@ -49,7 +49,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-09T11:44:36.896Z"
+          "checked_at": "2026-11-10T11:21:04.219Z"
         },
         "marketcap": {
           "ok": true,
@@ -58,7 +58,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-09T11:44:39.575Z"
+          "checked_at": "2026-11-10T11:21:06.541Z"
         },
         "top_users": {
           "ok": false,
@@ -67,7 +67,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-11-09T11:44:39.817Z"
+          "checked_at": "2026-11-10T11:21:06.769Z"
         },
         "top_templates": {
           "ok": true,
@@ -76,7 +76,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-09T11:44:40.575Z"
+          "checked_at": "2026-11-10T11:21:07.479Z"
         },
         "volume": {
           "ok": true,
@@ -85,7 +85,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-09T11:44:41.999Z"
+          "checked_at": "2026-11-10T11:21:08.055Z"
         },
         "sales_volume_graph": {
           "ok": true,
@@ -94,7 +94,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-11-09T11:44:42.244Z"
+          "checked_at": "2026-11-10T11:21:08.281Z"
         }
       },
       "notes": [
@@ -106,7 +106,7 @@
         "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
         "Historic burn baseline is pending until confirmed burn events are captured. No burn-baseline-active claim is permitted before then.",
         "AtomicAssets latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data; current rarity maths still uses per-template live count verification.",
-        "WAX get_info checkpoint not updated; rarity data preserved."
+        "WAX get_info checkpoint updated for scan metadata only."
       ]
     },
     "noballgamess_rarity": {
@@ -138,10 +138,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-11-09T11:45:04.625Z",
-      "last_successful_check": "2026-11-09T11:45:04.625Z",
-      "last_successful_update": "2026-11-09T11:45:04.625Z",
-      "source_updated_at": "2026-11-09T11:45:04.625Z",
+      "checked_at": "2026-11-10T11:21:15.247Z",
+      "last_successful_check": "2026-11-10T11:21:15.247Z",
+      "last_successful_update": "2026-11-10T11:21:15.247Z",
+      "source_updated_at": "2026-11-10T11:21:15.247Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -176,7 +176,7 @@
       "status": "error",
       "stale": true,
       "stale_after_hours": 30,
-      "checked_at": "2026-11-09T11:45:04.629Z",
+      "checked_at": "2026-11-10T11:21:15.250Z",
       "last_successful_check": null,
       "last_successful_update": null,
       "source_updated_at": null,
