@@ -179,6 +179,18 @@ test('text fallback timeout also remains uncertain, without an extra retry', asy
   assert.equal(h.calls.length, 2);
 });
 
+test('caption_entities survive a definitive photo rejection as text entities', async () => {
+  const h = harness(reject(400), ok(99));
+  const entities = [{ type: 'bold', offset: 0, length: 3 }];
+  const result = await sendTelegramMoonboyMessage(base(h, {
+    text: 'New rank', options: { message_thread_id: topic, caption_entities: entities }
+  }));
+  assert.equal(result.method, 'sendMessage');
+  assert.equal(h.calls.length, 2);
+  assert.deepEqual(jsonBody(h.calls[1]).entities, entities);
+  assert.equal(jsonBody(h.calls[1]).caption_entities, undefined);
+});
+
 test('invalid token, chat, thread, parse mode or oversized text fail before network', async () => {
   const cases = [
     { token: 'unsafe/bot/token' },
