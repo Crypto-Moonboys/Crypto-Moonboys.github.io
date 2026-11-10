@@ -5,6 +5,7 @@ import {
 } from './core.js';
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
 import { checkWaxDestination } from './wallet-destination.js';
+import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../telegram/moonboy-message-gateway.js';
 
 const TAG_COMMANDS = new Set([
   'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
@@ -37,7 +38,7 @@ const cleanName = from => (String(from?.first_name || '') + ' ' +
   String(from?.last_name || '')).replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().slice(0, 70)
   || ('Member ' + String(from?.id || '').slice(-4));
 
-async function messageReply(env, chatId, message, fetchImpl = fetch, useGroupTopic = false) {
+async function messageReply(env, chatId, message, fetchImpl = fetch, useGroupTopic = false, mediaContext = null) {
   const token = String(env?.TELEGRAM_BOT_TOKEN || '');
   if (!token || !chatId) return false;
   const payload = {
@@ -50,6 +51,22 @@ async function messageReply(env, chatId, message, fetchImpl = fetch, useGroupTop
     const threadId = String(env?.TELEGRAM_GROUP_THREAD_ID || '').trim();
     if (/^[1-9][0-9]{0,12}$/.test(threadId)) {
       payload.message_thread_id = Number(threadId);
+    }
+  }
+  // Strict opt-in: the legacy transport remains byte-for-byte unchanged when
+  // media is OFF, unavailable or the image failed before any Telegram request.
+  // Never use text fallback after an uncertain Telegram photo submission.
+  if (mediaContext) {
+    const media = await sendControlledMoonboyTelegram({
+      env, chatId, chatKind: mediaContext.chatKind,
+      messageKind: mediaContext.messageKind, seed: mediaContext.seed,
+      text: payload.text, options: {
+        ...(payload.message_thread_id
+          ? { message_thread_id: payload.message_thread_id } : {})
+      }, fetchImpl
+    });
+    if (media.status !== 'disabled' && media.status !== 'composition_failed') {
+      return media.status === 'sent';
     }
   }
   const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
@@ -122,7 +139,11 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     '\n/ranks — all 29 ranks\n/taghelp — full guide' +
     '\n/rain yourwaxaccount — register a WAX account by private DM to @' + bot +
     ' (verification pending; no automatic payouts).';
-  const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch, true);
+  const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch, true, {
+    chatKind: 'group', messageKind: 'tag-bulletin',
+    seed: moonboyTelegramMessageSeed('tag-bulletin', chatId,
+      Math.floor(nowMs / (4 * 60 * 60 * 1000)))
+  });
   // Never retry an uncertain send: a delivered-but-unacknowledged Telegram
   // response must not cause duplicate group notices.
   if (!sent) console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed');
@@ -237,7 +258,13 @@ export async function handleTagRunCommand(update, env, options = {}) {
   const { name, args } = parseTagCommand(message.text, env.TELEGRAM_BOT_USERNAME);
   const nowMs = options.nowMs ?? Date.now();
   const fetchImpl = options.fetchImpl || fetch;
-  const send = text => messageReply(env, message.chat.id, text, fetchImpl);
+  let replySequence = 0;
+  const send = text => messageReply(env, message.chat.id, text, fetchImpl, false, {
+    chatKind: isPrivate ? 'private' : 'group',
+    messageKind: 'tag-command',
+    seed: moonboyTelegramMessageSeed('tag-command', message.chat.id,
+      message.message_id ?? 0, replySequence++)
+  });
   const isAdmin = adminTelegramIds(env).has(telegramId);
   try {
     if (ADMIN_COMMANDS.has(name) && (!isAdmin || !isPrivate)) {
@@ -648,6 +675,21 @@ async function sendRankAnnouncement(env, row, fetchImpl) {
   const threadId = String(env?.TELEGRAM_GROUP_THREAD_ID || '').trim();
   if (/^[1-9][0-9]{0,12}$/.test(threadId)) {
     payload.message_thread_id = Number(threadId);
+  }
+  const media = await sendControlledMoonboyTelegram({
+    env, chatId, chatKind: 'group', messageKind: 'tag-rank',
+    seed: moonboyTelegramMessageSeed('tag-rank', chatId,
+      String(row.source_message_id) + '-' + String(row.rank_threshold)),
+    text: payload.text,
+    options: payload.message_thread_id
+      ? { message_thread_id: payload.message_thread_id } : {},
+    fetchImpl
+  });
+  if (media.status === 'sent') return media.telegramMessageId;
+  if (media.status !== 'disabled' && media.status !== 'composition_failed') {
+    // The outbox caller will mark needs_review. A timeout/unknown photo send
+    // must never fall through to a second text message.
+    return null;
   }
   const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'POST',
