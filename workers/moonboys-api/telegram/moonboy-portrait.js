@@ -166,19 +166,22 @@ export async function composeTelegramMoonboy({
     if (!/^image\/webp(?:;|$)/i.test(contentType)) fail('invalid_layer_format');
     return boundedBytes(response, MAX_LAYER_BYTES, 'layer');
   }));
-  // Cloudflare Images composites in draw order, and overlay dimensions match
-  // the homepage's 1000x1000 layers scaled together to the same 640px square.
+  // Cloudflare Images allows at most ten transforms in one pipeline. All
+  // homepage layers are already the same 1000x1000 size, so composite the
+  // eight overlays first, then resize the completed square once: nine total
+  // operations instead of resizing every input separately (seventeen).
   // Retry at progressively smaller JPEG quality only if output > 500 KB.
   for (const quality of [76, 62, 48]) {
-    let transform = images.input(blobStream(layers[0]))
-      .transform({ width: PORTRAIT_SIZE, height: PORTRAIT_SIZE, fit: 'fill' });
+    let transform = images.input(blobStream(layers[0]));
     for (let i = 1; i < layers.length; i++) {
       transform = transform.draw(
-        images.input(blobStream(layers[i]))
-          .transform({ width: PORTRAIT_SIZE, height: PORTRAIT_SIZE, fit: 'fill' }),
+        images.input(blobStream(layers[i])),
         { left: 0, top: 0, composite: 'over' }
       );
     }
+    transform = transform.transform({
+      width: PORTRAIT_SIZE, height: PORTRAIT_SIZE, fit: 'squeeze'
+    });
     const output = await transform.output({ format: 'image/jpeg', quality });
     const response = output.response();
     if (!/^image\/jpeg(?:;|$)/i.test(response.headers?.get?.('content-type') || '')) {
