@@ -79,10 +79,19 @@ export async function sendControlledMoonboyTelegram({
     // member text in logs.
     return { status: 'composition_failed', reason: 'render_unavailable' };
   }
-  // Deliberately no catch+fallback here. Once the photo transport begins,
-  // even a thrown error could represent a completed Telegram send.
-  return sendTelegramMoonboyMessage({
-    token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait,
-    options, fetchImpl
-  });
+  // After transport starts, even a thrown exception can follow a successful
+  // Telegram upload/acknowledgement. Do not let an exception escape into a
+  // command handler's existing error-reply catch; that would post twice.
+  // Always classify transport exceptions as terminal uncertainty.
+  try {
+    return await sendTelegramMoonboyMessage({
+      token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait,
+      options, fetchImpl
+    });
+  } catch {
+    return {
+      status: 'uncertain', reason: 'photo_transport_exception',
+      method: 'sendPhoto', photoSkipped: false
+    };
+  }
 }
