@@ -4,7 +4,7 @@
 import { TELEGRAM_PHOTO_MAX_BYTES } from './moonboy-photo-transport.js';
 
 const CACHE_VERSION = 'v1';
-const CACHE_ORIGIN = 'https://telegram-moonboy-cache.invalid/';
+const CACHE_ORIGIN = 'https://cryptomoonboys.com/__telegram_moonboy_cache__/';
 const FILE_ID = /^[A-Za-z0-9_-]{20,256}$/;
 const SEED = /^[A-Za-z0-9_.:|/-]{1,200}$/;
 const MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
