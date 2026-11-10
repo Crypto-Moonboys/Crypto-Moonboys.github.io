@@ -13,6 +13,9 @@ import {
   markIrreversiblyConfirmed
 } from '../workers/moonboys-api/tag-run/v2-payout-executor.js';
 import { verifyIrreversibleWaxPayout } from '../workers/moonboys-api/tag-run/v2-payout-chain-reconcile.js';
+import { loadApprovedContractPolicy, requireApprovedContract, assertPayoutDebitAuthority,
+  inspectApprovedPayoutContract, assertUnchangedPayoutContract
+} from './tag-run-v2-contract-send-guard.mjs';
 import { WAX_CHAIN_API } from '../workers/moonboys-api/tag-run/v2-chain.js';
 import {
   assetKey, TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID
@@ -264,10 +267,12 @@ export async function makeAnchorConsoleSigner({
   importModule = name => import(name), fetchImpl = fetch,
   // A fresh, independently authenticated release AND D1 authority check.
   // REQUIRED: this is called AFTER wallet approval, immediately before push.
-  beforeBroadcast
+  beforeBroadcast, beforeSign, loadContractPolicy = loadApprovedContractPolicy
 } = {}) {
   if (typeof beforeBroadcast !== 'function')
     fail('broadcast_guard_required');
+  if (typeof beforeSign !== 'function' || typeof loadContractPolicy !== 'function')
+    fail('presign_guard_required');
   let Link, Transport, SignedTransaction, ABI, Serializer;
   try {
     const [linkModule, transportModule, antelope] = await Promise.all([
@@ -315,7 +320,21 @@ export async function makeAnchorConsoleSigner({
     storage: null
   });
   return async request => {
+    // Keep the frozen intent independent of caller mutation while Anchor is open.
+    request = structuredClone(request);
     const action = assertAnchorTransfer(request);
+    Object.freeze(action.data);
+    action.authorization.forEach(Object.freeze);
+    Object.freeze(action.authorization);
+    Object.freeze(action);
+    Object.freeze(request);
+    const initialDebit = await beforeSign(request);
+    const initialContract = await inspectApprovedPayoutContract({
+      request, policy: await loadContractPolicy(), debitAuthority: initialDebit, fetchImpl
+    });
+    const signingApproval = requireApprovedContract(await loadContractPolicy(), request);
+    if (signingApproval.policyDigest !== initialContract.policyDigest)
+      fail('contract_policy_changed');
     // Anchor only SIGNS and returns its result. A pending QR/Anchor approval
     // can NEVER broadcast the transaction on its own. Do not change to true.
     const signed = await link.transact({ actions: [action] }, {
@@ -351,8 +370,21 @@ export async function makeAnchorConsoleSigner({
     // It checks freshly deployed flags plus D1 UNKNOWN, pool/cap pause,
     // approved asset, snapshot, draw and member destination.
     // Any rejection leaves UNKNOWN for manual reconciliation; no push.
-    await beforeBroadcast(request);
+    const finalDebit = await beforeBroadcast(request);
+    const finalContract = await inspectApprovedPayoutContract({
+      request, policy: await loadContractPolicy(), debitAuthority: finalDebit, fetchImpl
+    });
+    assertUnchangedPayoutContract(initialContract, finalContract);
+    // A pause/cap change during the RPC reads must still stop submission.
+    const lastDebit = assertPayoutDebitAuthority(await beforeBroadcast(request), request);
+    if (BigInt(lastDebit.requiredBalanceUnits) > BigInt(finalContract.observedBalanceUnits))
+      fail('treasury_reservation_deficit');
+    const lastApproval = requireApprovedContract(await loadContractPolicy(), request);
+    if (lastApproval.policyDigest !== finalContract.policyDigest)
+      fail('contract_policy_changed');
 
+    // RPC observations are not an atomic on-chain code/config cancellation guard.
+    // Independent review must accept that residual race before release.
     // Exactly one submission attempt. Never automatically repeat on error,
     // timeout, ambiguous response or cancellation.
     const pushed = await signed.chain.client.v1.chain.push_transaction(tx);
@@ -375,7 +407,7 @@ export async function confirmExactly(text, { input = stdin, output = stdout } = 
 export async function runOwnerPayout(argv, {
   vars = process.env, fetchImpl = fetch,
   confirmation = confirmExactly, signerFactory = makeAnchorConsoleSigner,
-  log = console.log
+  log = console.log, loadContractPolicy = loadApprovedContractPolicy
 } = {}) {
   const { command, options: o } = parseOwnerCommand(argv);
   const auth = getOperatorCredentials(vars);
@@ -471,6 +503,8 @@ export async function runOwnerPayout(argv, {
     ).bind(o.intent).first();
     if (!intent || intent.status !== 'reserved') fail('intent_not_reserved');
     const action = buildReviewedWaxTransfer(intent);
+    // Empty/unapproved registry blocks BEFORE a prompt or UNKNOWN write.
+    requireApprovedContract(await loadContractPolicy(), action);
     await confirmation('SEND ' + o.intent + ' ' +
       action.action.data.quantity + ' TO ' + action.destination);
     // Dependency, chain and permission checks MUST finish before the
@@ -484,7 +518,10 @@ export async function runOwnerPayout(argv, {
       // Do not rely on any pre-sign flags: pause may occur while Anchor is open.
       await verifyReleaseAuthorization();
       const row = await db.prepare(
-        'SELECT i.intent_key FROM tag_run_v2_payout_intents i ' +
+        'SELECT i.intent_key,i.amount_units,c.committed_units,c.daily_limit_units,' +
+        'c.per_transfer_limit_units,c.reward_policy_bps AS cap_reward_policy_bps,' +
+        's.reward_policy_bps,s.onchain_units,s.allocated_unpaid_units,s.excluded_units,' +
+        's.spendable_units,s.daily_reward_units FROM tag_run_v2_payout_intents i ' +
         'JOIN tag_run_v2_payout_caps c ON c.chat_id=i.chat_id ' +
         'AND c.day_key=i.day_key AND c.asset_key=i.asset_key ' +
         'JOIN tag_run_v2_pool_config p ON p.config_id=1 ' +
@@ -500,15 +537,18 @@ export async function runOwnerPayout(argv, {
         "AND p.status='review_only' AND p.wallet_account='isthatajoint' " +
         'AND p.daily_bps=500 AND p.active_daily_bps=100 AND p.active_policy_version=2 AND p.historical_ticket_bps=5000 ' +
         "AND s.status='verified' AND s.snapshot_digest=i.snapshot_digest " +
-        "AND a.eligibility='approved' AND d.status='reviewed' " +
+        "AND a.eligibility='approved' AND d.status='reviewed' AND d.reward_policy_bps=100 " +
         'AND d.reviewed_by IS NOT NULL AND length(d.reviewed_by)>0 ' +
         'AND w.wax_account=i.receiving_account'
       ).bind(o.intent, auth.group, intent.asset_key,
         intent.receiving_account, intent.amount_units).first();
       if (!row || row.intent_key !== o.intent)
         fail('broadcast_authorization_revoked');
+      assertPayoutDebitAuthority(row, request);
+      return row;
     };
-    const signer = await signerFactory({ fetchImpl, beforeBroadcast });
+    const signer = await signerFactory({ fetchImpl, beforeBroadcast,
+      beforeSign: beforeBroadcast, loadContractPolicy });
     const result = await handoffApprovedPayout(env, {
       intentKey: o.intent, signAndBroadcast: signer,
       verifyReleaseAuthorization, fetchImpl

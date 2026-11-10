@@ -157,6 +157,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/tag-run-v2-one-percent-policy.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-wax-authority-review.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-owner-payout.test.mjs'],
+    ['node', '--test', 'scripts/tag-run-v2-contract-send-guard.test.mjs'],
     ['node', '--test', 'scripts/tag-run-105-offline-preflight.test.mjs'],
     ['node', '--test', 'scripts/tag-run-wallet-destination.test.mjs'],
     ['node', '--test', 'scripts/championship-clout-foundation.test.mjs'],
