@@ -5,7 +5,7 @@ export const CODE = 'b'.repeat(64);
 export const ABI_BYTES = Buffer.from('fixture ABI, not a deployed contract');
 export const ABI = createHash('sha256').update(ABI_BYTES).digest('hex');
 export const debitAuthority = () => ({
-  amount_units:'100',committed_units:'100',daily_limit_units:'1000',
+  outstanding_bundle_units_json:'["100"]',amount_units:'100',committed_units:'100',daily_limit_units:'1000',
   per_transfer_limit_units:'500',reward_policy_bps:100,cap_reward_policy_bps:100,
   onchain_units:'100000',allocated_unpaid_units:'0',excluded_units:'0',
   spendable_units:'100000',daily_reward_units:'1000'
