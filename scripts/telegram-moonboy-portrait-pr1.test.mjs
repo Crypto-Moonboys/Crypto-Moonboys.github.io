@@ -15,7 +15,8 @@ const seed = 'bulletin:-1001234567890:2026-11-10:16';
 const clone = () => structuredClone(original);
 
 function imageResponse(bytes = 20, type = 'image/webp') {
-  return new Response(new Uint8Array(bytes), {
+  const payload = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  return new Response(payload, {
     status: 200, headers: { 'content-type': type }
   });
 }
@@ -25,15 +26,21 @@ function fakeImages({ outputSizes = [36_000], outputType = 'image/jpeg' } = {}) 
   const images = {
     input(stream) {
       assert.equal(typeof stream?.getReader, 'function');
-      calls.push(['input']);
+      // Decode the actual WebP stream supplied to Images.input. The fake
+      // fetcher writes a distinct marker byte into each source, so a test
+      // cannot pass just because fetch order or draw counts look correct.
+      const sourceId = new Response(stream).arrayBuffer()
+        .then(buffer => new Uint8Array(buffer)[0]);
+      calls.push(['input', sourceId]);
       return {
+        sourceId,
         transform(opts) {
-          calls.push(['transform', opts]);
+          calls.push(['transform', sourceId, opts]);
           return this;
         },
-        draw(other, opts) {
-          assert.ok(other);
-          calls.push(['draw', opts]);
+        draw(overlay, opts) {
+          assert.ok(overlay?.sourceId, 'draw must consume an input handle');
+          calls.push(['draw', sourceId, overlay.sourceId, opts]);
           return this;
         },
         async output(opts) {
@@ -56,7 +63,9 @@ function fakeFetch(paths, options = {}) {
     }
     if (options.failUrl === url) return new Response('missing', { status: 404 });
     const bytes = options.largeLayer ? 850_001 : 32;
-    return imageResponse(bytes);
+    const payload = new Uint8Array(bytes);
+    payload[0] = paths.length; // 1..9: distinct layer identities
+    return imageResponse(payload);
   };
 }
 
@@ -149,9 +158,31 @@ test('composer scales all nine layers and draws them in homepage order', async (
   assert.equal(output.height, PORTRAIT_SIZE);
   assert.equal(output.byteSize, 36_000);
   assert.ok(output.byteSize <= PORTRAIT_MAX_BYTES);
-  assert.equal(fake.calls.filter(x => x[0] === 'input').length, 9);
-  assert.equal(fake.calls.filter(x => x[0] === 'draw').length, 8);
-  assert.equal(fake.calls.filter(x => x[0] === 'transform').length, 9);
+  // Validate *which* input streams the binding used and the actual order
+  // passed to Images.draw. Reversing the overlays must break this test.
+  const inputs = fake.calls.filter(x => x[0] === 'input');
+  assert.equal(inputs.length, 9);
+  assert.deepEqual(await Promise.all(inputs.map(x => x[1])),
+    [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const overlays = fake.calls.filter(x => x[0] === 'draw');
+  assert.equal(overlays.length, 8);
+  assert.deepEqual(await Promise.all(overlays.map(x => x[1])),
+    Array(8).fill(1), 'all overlays must use the background as the base');
+  assert.deepEqual(await Promise.all(overlays.map(x => x[2])),
+    [2, 3, 4, 5, 6, 7, 8, 9],
+    'overlays must match builder bottom-to-top category order');
+  for (const overlay of overlays) {
+    assert.deepEqual(overlay[3], { left: 0, top: 0, composite: 'over' });
+  }
+  const transforms = fake.calls.filter(x => x[0] === 'transform');
+  assert.equal(transforms.length, 9);
+  assert.deepEqual(await Promise.all(transforms.map(x => x[1])),
+    [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  for (const transform of transforms) {
+    assert.deepEqual(transform[2], {
+      width: PORTRAIT_SIZE, height: PORTRAIT_SIZE, fit: 'fill'
+    });
+  }
   assert.deepEqual(fake.calls.filter(x => x[0] === 'output').map(x => x[1]),
     [{ format: 'image/jpeg', quality: 76 }]);
   assert.equal(requests.every(x => x.init.redirect === 'error'), true);
