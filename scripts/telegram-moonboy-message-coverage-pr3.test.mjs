@@ -352,12 +352,12 @@ test('rank-up photo timeout produces needs_review, never a duplicate text post',
   assert.match(db.transitions[1].sql, /status='needs_review'/);
 });
 
-test('no paid Images binding or live media toggle introduced in production defaults', () => {
+test('approved Images binding is present while live media remains off by default', () => {
   const wrangler = readFileSync(new URL(
     '../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
   assert.match(wrangler, /TELEGRAM_MOONBOY_PHOTOS_ENABLED\s*=\s*"false"/);
   assert.match(wrangler, /TELEGRAM_MOONBOY_MEDIA_MODE\s*=\s*"off"/);
-  assert.equal(wrangler.includes('binding = "IMAGES"'), false);
+  assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/);
   const handler = readFileSync(new URL(
     '../workers/moonboys-api/tag-run/handler.js', import.meta.url), 'utf8');
   assert.match(handler, /sendControlledMoonboyTelegram/);

@@ -71,11 +71,11 @@ test('Worker centralizes all command text while preserving existing-media and pi
   assert.match(source, /photoResult\.ok[\s\S]*sendTelegramMessage\(unwrapTelegramBotToken\(botToken\)/);
 });
 
-test('production remains cost-off and has no Images binding', () => {
+test('production remains delivery-off with the approved Images binding', () => {
   const wrangler = readFileSync(
     new URL('../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
   assert.match(wrangler, /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"/);
   assert.match(wrangler, /TELEGRAM_MOONBOY_MEDIA_MODE = "off"/);
   assert.match(wrangler, /TELEGRAM_MOONBOY_MESSAGE_KINDS = ""/);
-  assert.doesNotMatch(wrangler, /binding\s*=\s*"IMAGES"/);
+  assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/);
 });
