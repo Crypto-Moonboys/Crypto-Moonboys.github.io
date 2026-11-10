@@ -48,7 +48,8 @@ function fakeImages() {
     }
   };
 }
-function harness({failManifest = false,photoFailure = false} = {}) {
+function harness({failManifest = false,photoFailure = false,
+  malformedPhotoAck = false} = {}) {
   const calls = [];
   return {
     calls,
@@ -66,6 +67,13 @@ function harness({failManifest = false,photoFailure = false} = {}) {
         });
       }
       if (url.endsWith('/sendPhoto') && photoFailure) throw new Error('timeout after upload');
+      if (url.endsWith('/sendPhoto') && malformedPhotoAck) {
+        // Telegram accepted a message ID, but the malformed photo property
+        // throws inside PR2's file_id extraction. This is post-send uncertainty.
+        return new Response(JSON.stringify({
+          ok: true, result: { message_id: 345, photo: {} }
+        }), { headers: { 'content-type': 'application/json' } });
+      }
       if (url.endsWith('/sendMessage') || url.endsWith('/sendPhoto')) {
         return new Response(JSON.stringify({
           ok: true, result: {
@@ -216,6 +224,16 @@ test('real TAG RUN /taghelp replies get Moonboy JPEG only in private canary', as
   assert.match(callsOf(h, '/sendPhoto')[0].init.body.get('caption'), /TAG RUN/);
 });
 
+test('post-photo transport exception cannot produce a second /taghelp reply', async () => {
+  const h = harness({ malformedPhotoAck: true });
+  const result = await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
+  assert.equal(result, true);
+  assert.equal(callsOf(h, '/sendPhoto').length, 1,
+    'Telegram may have accepted this photo already');
+  assert.equal(callsOf(h, '/sendMessage').length, 0,
+    'command handler must not emit its temporary-error text after upload');
+});
+
 test('private canary image composition failure preserves original text-only TAG RUN reply', async () => {
   const h = harness({ failManifest: true });
   await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
@@ -306,6 +324,19 @@ test('rank-up receipt retains exactly-once attempt and sent receipt in explicit 
   assert.match(db.transitions[1].sql, /status='sent'/);
   assert.equal(db.transitions[1].args[0], 345);
   assert.equal(callsOf(h, '/sendPhoto')[0].init.body.get('message_thread_id'), '456');
+});
+
+test('malformed photo acknowledgement sends rank receipt to needs_review without retry', async () => {
+  const h = harness({ malformedPhotoAck: true });
+  const db = rankDb(rank);
+  const result = await deliverTagRunRankAnnouncements(enabled({
+    DB: db, TELEGRAM_MOONBOY_MEDIA_MODE: 'group'
+  }), { fetchImpl: h.fetchImpl });
+  assert.equal(result.sent, 0);
+  assert.equal(result.needsReview, 1);
+  assert.equal(callsOf(h, '/sendPhoto').length, 1);
+  assert.equal(callsOf(h, '/sendMessage').length, 0);
+  assert.match(db.transitions[1].sql, /status='needs_review'/);
 });
 
 test('rank-up photo timeout produces needs_review, never a duplicate text post', async () => {
