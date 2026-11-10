@@ -93,10 +93,14 @@ npm run ci:worker-api
 echo $LASTEXITCODE
 ```
 
-Mock validation checks the live handler and outbound request selection: OFF
-sends one old-style text message, private canary composes and sends a photo,
-wrong chat cannot activate, group bulletin preserves topic, rank receipt CAS
-is retained, uncertain upload cannot be double-sent.
+The 19 focused test cases exercise the real TAG RUN handler and outbound
+request selection: OFF sends one old-style text message, private canary composes
+and sends a photo, wrong chat cannot activate, group bulletin preserves topic,
+rank receipt CAS is retained, and uncertain upload cannot be double-sent.
+Malformed Telegram acknowledgements that throw **after a photo attempt** are
+caught at the gateway boundary and marked terminal `uncertain`; the command
+handler must not send its temporary-unavailability reply, and the rank outbox
+must mark `needs_review` without resending.
 
 **NOT proven by mocked tests:** real Cloudflare Images binding image
 composition/colour-alpha parity, Telegram live sendPhoto permission and actual
