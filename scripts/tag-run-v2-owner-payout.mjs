@@ -521,7 +521,13 @@ export async function runOwnerPayout(argv, {
         'SELECT i.intent_key,i.amount_units,c.committed_units,c.daily_limit_units,' +
         'c.per_transfer_limit_units,c.reward_policy_bps AS cap_reward_policy_bps,' +
         's.reward_policy_bps,s.onchain_units,s.allocated_unpaid_units,s.excluded_units,' +
-        's.spendable_units,s.daily_reward_units FROM tag_run_v2_payout_intents i ' +
+        's.spendable_units,s.daily_reward_units,' +
+        '(SELECT json_group_array(b.units) FROM tag_run_v2_bundles b ' +
+        'JOIN tag_run_v2_draws pd ON pd.chat_id=b.chat_id AND pd.day_key=b.day_key ' +
+        'LEFT JOIN tag_run_v2_payout_intents pi ON pi.chat_id=b.chat_id AND pi.day_key=b.day_key ' +
+        'AND pi.asset_key=b.asset_key AND pi.bundle_index=b.bundle_index ' +
+        "WHERE b.asset_key=i.asset_key AND pd.status='reviewed' AND (pi.status IS NULL OR pi.status!='confirmed')) " +
+        'AS outstanding_bundle_units_json FROM tag_run_v2_payout_intents i ' +
         'JOIN tag_run_v2_payout_caps c ON c.chat_id=i.chat_id ' +
         'AND c.day_key=i.day_key AND c.asset_key=i.asset_key ' +
         'JOIN tag_run_v2_pool_config p ON p.config_id=1 ' +

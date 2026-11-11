@@ -72,6 +72,8 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '103_tag_run_street_cred_rewards.sql',
   '104_tag_run_v2_community_token_pot.sql',
   '105_tag_run_v2_payout_execution.sql',
+  '106_tag_run_v2_one_percent_policy.sql',
+  '107_tag_run_v2_persisted_draws.sql',
 ]);
 
 function readJson(filePath, label) {

@@ -87,7 +87,7 @@ test('fee or amount cannot exceed per-transfer, cumulative daily or 1% snapshot 
 test('BigInt reservation and balance checks preserve units above JS-safe range',async()=>{
   const amount='9007199254740993', total=(BigInt(amount)*100n).toString();
   const req=buildReviewedWaxTransfer({...intent,amount_units:amount});
-  const authority={...debitAuthority(),amount_units:amount,committed_units:amount,
+  const authority={...debitAuthority(),outstanding_bundle_units_json:JSON.stringify([amount]),amount_units:amount,committed_units:amount,
     daily_limit_units:amount,per_transfer_limit_units:amount,onchain_units:total,
     spendable_units:total,daily_reward_units:amount};
   const result=await inspect({request:req,debitAuthority:authority,
@@ -329,4 +329,16 @@ test('controller changes agreed by both providers during Anchor prompt still blo
   }};
   const signer=await makeSigner(Link,state);
   await assert.rejects(signer(request),/configuration_changed/);assert.equal(pushes,0);
+});
+
+test('unregistered and not-yet-intented winner bundles remain protected treasury liabilities',async()=>{
+  const authority={...debitAuthority(),outstanding_bundle_units_json:'["100","900"]'};
+  await assert.rejects(inspect({debitAuthority:authority,fetchImpl:contractRpc({balance:'0.0999 LFGK'})}),/treasury_reservation_deficit/);
+  const result=await inspect({debitAuthority:authority,fetchImpl:contractRpc({balance:'0.1000 LFGK'})});
+  assert.equal(result.requiredBalanceUnits,'1000');assert.equal(result.totalDebitUnits,'100');
+});
+
+test('missing, malformed, oversized or insufficient bundle liabilities block debit authority',()=>{
+  for(const value of [undefined,'not-json','null','[]','["99"]','["-1"]','[100]',JSON.stringify(Array(20001).fill('1'))])
+    assert.throws(()=>assertPayoutDebitAuthority({...debitAuthority(),outstanding_bundle_units_json:value},request));
 });

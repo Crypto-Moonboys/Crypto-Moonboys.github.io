@@ -92,8 +92,16 @@ export function assertPayoutDebitAuthority(authority, request) {
       spendable !== onchain - reserved - excluded ||
       budget !== spendable / 100n || daily !== budget || amount > per || per > daily ||
       amount > committed || committed > daily) fail('total_debit_exceeds_reservation_or_cap');
+  let obligations;
+  try { obligations=JSON.parse(authority.outstanding_bundle_units_json); }
+  catch { fail('debit_authority_invalid'); }
+  if (!Array.isArray(obligations) || !obligations.length || obligations.length > 20000)
+    fail('debit_authority_invalid');
+  const owed=obligations.reduce((sum,value)=>sum+units(value),0n);
+  if (owed < amount) fail('debit_authority_invalid');
+  const held=reserved+committed;
   return {totalDebitUnits:amount.toString(),feeUnits:'0',
-    requiredBalanceUnits:(reserved + excluded + committed).toString()};
+    requiredBalanceUnits:(excluded+(owed>held?owed:held)).toString()};
 }
 async function rpc(fetchImpl, host, method, body) {
   // All callers below use fixed read endpoints. No supplied URL or push method.
