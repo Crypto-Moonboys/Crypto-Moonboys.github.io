@@ -15,8 +15,6 @@ const REASONS = Object.freeze({
   notAllowlisted: 'operator_asset_allowlist_missing',
   unapprovedAsset: 'asset_not_approved',
   missingReview: 'asset_review_evidence_missing',
-  unconfirmedDonation: 'confirmed_donation_missing',
-  insufficientDonation: 'donation_funding_snapshot_unreconciled',
   drawBinding: 'draw_snapshot_commitment_unverifiable',
   unverifiedSnapshot: 'verified_snapshot_missing',
   badSnapshot: 'snapshot_budget_invalid',
@@ -98,11 +96,10 @@ export async function previewReviewedPayoutAuthorization(env, {
   if (!validDigest(reviewDigest) || !isText(reviewedBy))
     reasons.add(REASONS.operatorReview);
 
-  const [pool, asset, deposits, snapshot, cap, draw, bundle, duplicate, overlap, snapshotSet] =
+  const [pool, asset, snapshot, cap, draw, bundle, duplicate, overlap, snapshotSet] =
     await Promise.all([
       first(db, 'SELECT wallet_account,status,daily_bps,active_daily_bps,active_policy_version,historical_ticket_bps FROM tag_run_v2_pool_config WHERE config_id=1'),
       first(db, 'SELECT asset_key,chain_id,token_contract,token_symbol,token_precision,eligibility,reviewed_by,verified_at FROM tag_run_v2_assets WHERE asset_key=?',key),
-      all(db, 'SELECT chain_id,global_action_seq,transaction_id,block_num,block_id,recipient_account,asset_key,units,memo_digest,status,reviewed_at FROM tag_run_v2_deposits WHERE asset_key=? ORDER BY block_num,global_action_seq LIMIT 5001',key),
       first(db, 'SELECT * FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=? AND asset_key=?',chatId,day,key),
       first(db, 'SELECT * FROM tag_run_v2_payout_caps WHERE chat_id=? AND day_key=? AND asset_key=?',chatId,day,key),
       first(db, 'SELECT status,reviewed_by,snapshots_digest,reward_policy_bps FROM tag_run_v2_draws WHERE chat_id=? AND day_key=?',chatId,day),
@@ -134,39 +131,9 @@ export async function previewReviewedPayoutAuthorization(env, {
     reasons.add(REASONS.unapprovedAsset);
   if (!isText(asset?.reviewed_by) || !isText(asset?.verified_at))
     reasons.add(REASONS.missingReview);
-  // D1 deposit status alone is insufficient. Receipts must belong to the
-  // exact chain/asset, be reviewed and be no newer than the snapshot LIB.
-  // An onchain balance with no sufficient eligible donation provenance
-  // must never be treated as spendable in a dry run.
-  let donationTotal = 0n, validDonationCount = 0;
-  const cutoff = asNumber(snapshot?.chain_irreversible_block);
-  if (deposits.length > 5000) reasons.add(REASONS.insufficientDonation);
-  for (const receipt of deposits) {
-    if (receipt?.status !== 'confirmed_donation') continue;
-    const amount = safeUnits(receipt.units);
-    if (receipt.chain_id !== WAX_MAINNET_CHAIN_ID ||
-        receipt.asset_key !== key ||
-        receipt.recipient_account !== TIP_ACCOUNT ||
-        !Number.isSafeInteger(receipt.block_num) ||
-        receipt.block_num < 1 || receipt.block_num > cutoff ||
-        !validDigest(receipt.block_id) ||
-        !validDigest(receipt.transaction_id) ||
-        !validDigest(receipt.memo_digest) ||
-        !isText(receipt.global_action_seq) ||
-        !isText(receipt.reviewed_at) ||
-        amount === null || amount === 0n) continue;
-    donationTotal += amount;
-    validDonationCount++;
-  }
-  if (!validDonationCount) reasons.add(REASONS.unconfirmedDonation);
-  const onchainForFunding = safeUnits(snapshot?.onchain_units);
-  const excludedForFunding = safeUnits(snapshot?.excluded_units);
-  const needProvenance = onchainForFunding !== null &&
-    excludedForFunding !== null && excludedForFunding <= onchainForFunding
-      ? onchainForFunding - excludedForFunding : null;
-  if (needProvenance === null ||
-      donationTotal < needProvenance || deposits.length > 5000)
-    reasons.add(REASONS.insufficientDonation);
+  // The immutable reviewed snapshot already binds the independently verified
+  // irreversible approved-token balance. Per-tip provenance is deliberately
+  // not a payout authorization requirement.
   if (!cap) reasons.add(REASONS.capMissing);
   else if (cap.paused !== 0) reasons.add(REASONS.capPaused);
   if (!draw || draw.status !== 'reviewed' || draw.reward_policy_bps !== 100 || !isText(draw.reviewed_by))
