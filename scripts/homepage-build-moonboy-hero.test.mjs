@@ -130,10 +130,10 @@ check(
   'No runtime code recreates the removed promotional text'
 );
 check(
-  html.includes('href="/my-moonboy.html">BUILD A MOONBOY IDENTITY</a>') &&
-    html.includes('href="/gpt-users.html">BRING YOUR OWN IP</a>') &&
-    html.includes('Start with the public ChatGPT Creator Studio'),
-  'Homepage supports both approved identity and existing-IP creator routes'
+  html.includes('href="/my-moonboy.html">check their verified missions on My Moonboy</a>') &&
+    html.includes('href="/gpt-users.html">ChatGPT Creator Studio</a>') &&
+    html.includes('Build a body of work and direct relationships with supporters, customers, collaborators'),
+  'Homepage supports the current My Moonboy and ChatGPT Creator Studio routes'
 );
 check(
   html.includes('aria-label="Build a HODL Warrior"'),
