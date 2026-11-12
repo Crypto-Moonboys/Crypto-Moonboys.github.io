@@ -4,6 +4,7 @@ import { appendFileSync } from 'node:fs';
 
 const SCOPES = {
   wiki: [
+    'scripts/ci-domain-groups.test.mjs',
     'AGENTS.md',
     'AGENT_EDITING_RULES.md',
     '.copilot-instructions.md',
@@ -45,6 +46,7 @@ const SCOPES = {
     'package-lock.json',
   ],
   arcade: [
+    'scripts/website-onboarding-entry.test.mjs',
     'art/btqm/**',
     'art/invaders/**',
     'css/game-fullscreen.css',
@@ -122,6 +124,7 @@ const SCOPES = {
     'package-lock.json',
   ],
   visual: [
+    'scripts/homepage-hero-parity.test.mjs',
     // Signed sandbox executes the Worker, its imported gameplay rules and SQL schema.
     'workers/moonboys-api/**',
     'workers/shared/**',
