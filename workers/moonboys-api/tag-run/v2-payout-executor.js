@@ -12,7 +12,7 @@ import { authenticatedGroupId, isValidWaxAccount } from './core.js';
 import { checkWaxDestination } from './wallet-destination.js';
 
 export const PAYOUT_EXECUTOR_IMPLEMENTED = true;
-export const PAYOUT_EXECUTOR_AUTO_ENABLED = false;
+export const PAYOUT_EXECUTOR_AUTO_ENABLED = true;
 const HEX=/^[0-9a-f]{64}$/;
 const fail=reason=>{throw new Error('v2_payout_'+reason);};
 const read=(response,label)=>{
@@ -65,6 +65,7 @@ const rowInfo=row=>Object.freeze({
   intentKey:row.intent_key,chatId:row.chat_id,day:row.day_key,
   assetKey:row.asset_key,destination:row.receiving_account,
   amountUnits:row.amount_units,status:row.status,txId:row.signed_tx_id,
+  submissionTxId:row.submission_tx_id ?? null,
   transferConfirmed:row.status==='confirmed'
 });
 
@@ -203,7 +204,8 @@ export async function reserveReviewedPayout(env,{
 export function buildReviewedWaxTransfer(intent,{permission='tagrain'}={}){
   if(!intent||intent.status!=='reserved'||!HEX.test(intent.intent_key)||
      !isValidWaxAccount(intent.receiving_account)||
-     intent.receiving_account===TIP_ACCOUNT||permission!=='tagrain')
+     intent.receiving_account===TIP_ACCOUNT||
+     !['tagrain','active'].includes(permission))
     fail('intent_not_reserved');
   const parts=String(intent.asset_key||'').split(':');
   if(parts.length!==4||parts[0]!==WAX_MAINNET_CHAIN_ID)
@@ -222,6 +224,132 @@ export function buildReviewedWaxTransfer(intent,{permission='tagrain'}={}){
   return Object.freeze({chainId:WAX_MAINNET_CHAIN_ID,action,
     intentKey:intent.intent_key,from:TIP_ACCOUNT,contract,
     destination:intent.receiving_account,amountUnits:intent.amount_units});
+}
+
+
+function assertAutomaticExecutionMode(env) {
+  assertExecutionMode(env);
+  if (env?.TAG_RUN_V2_AUTOMATION_ENABLED !== 'true' ||
+      env?.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED !== 'true' ||
+      env?.TAG_RUN_V2_SIGNER_PERMISSION !== 'active') {
+    fail('automation_release_not_authorized');
+  }
+}
+
+export async function openReviewedDailyCap(env, { chatId, day, assetKey: key } = {}) {
+  assertAutomaticExecutionMode(env);
+  assertGroup(env, chatId);
+  if (!validUtcDay(day) || typeof key !== 'string' || !key) fail('invalid_cap_authority');
+  const result = await env.DB.prepare(
+    "UPDATE tag_run_v2_payout_caps SET paused=0,revision=revision+1 " +
+    "WHERE chat_id=? AND day_key=? AND asset_key=? AND paused=1 AND committed_units='0' " +
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_pool_config p WHERE p.config_id=1 " +
+    "AND p.status='review_only' AND p.wallet_account='isthatajoint' " +
+    "AND p.active_daily_bps=100 AND p.active_policy_version=2) " +
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a " +
+    "ON a.asset_key=s.asset_key WHERE s.chat_id=tag_run_v2_payout_caps.chat_id " +
+    "AND s.day_key=tag_run_v2_payout_caps.day_key " +
+    "AND s.asset_key=tag_run_v2_payout_caps.asset_key AND s.status='verified' " +
+    "AND s.reward_policy_bps=100 AND a.eligibility='approved' " +
+    "AND length(a.approved_code_hash)=64 AND length(a.approved_abi_hash)=64 " +
+    "AND s.snapshot_digest=tag_run_v2_payout_caps.snapshot_digest)"
+  ).bind(chatId, day, key).run();
+  if (result?.success !== true || result.meta?.changes !== 1) fail('cap_not_opened');
+  return Object.freeze({ chatId, day, assetKey: key, paused: false });
+}
+
+// Persist the exact signed bytes and transaction ID before any network push.
+// A crash can only cause the SAME signed transaction to be re-broadcast.
+export async function stagePreparedAutomaticPayout(env, {
+  intentKey, transactionId, signedTransactionJson,
+  verifyPinnedContract, fetchImpl = fetch
+} = {}) {
+  assertAutomaticExecutionMode(env);
+  if (!HEX.test(intentKey || '') || !HEX.test(transactionId || '') ||
+      typeof signedTransactionJson !== 'string' ||
+      signedTransactionJson.length < 100 || signedTransactionJson.length > 20000 ||
+      typeof verifyPinnedContract !== 'function') fail('prepared_transaction_invalid');
+  let parsed;
+  try { parsed = JSON.parse(signedTransactionJson); }
+  catch (_) { fail('prepared_transaction_invalid'); }
+  if (!parsed || typeof parsed !== 'object') fail('prepared_transaction_invalid');
+  const intent = await env.DB.prepare(
+    'SELECT * FROM tag_run_v2_payout_intents WHERE intent_key=?'
+  ).bind(intentKey).first();
+  if (!intent || intent.status !== 'reserved') fail('already_submitted_or_missing');
+  assertGroup(env, intent.chat_id);
+  await config(env.DB);
+  const source = await env.DB.prepare(
+    'SELECT s.status,s.snapshot_digest,a.eligibility,a.approved_code_hash,' +
+    'a.approved_abi_hash FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ' +
+    'ON a.asset_key=s.asset_key WHERE s.chat_id=? AND s.day_key=? AND s.asset_key=?'
+  ).bind(intent.chat_id,intent.day_key,intent.asset_key).first();
+  if (!source || source.status !== 'verified' ||
+      source.snapshot_digest !== intent.snapshot_digest ||
+      source.eligibility !== 'approved' ||
+      !HEX.test(source.approved_code_hash || '') ||
+      !HEX.test(source.approved_abi_hash || '')) fail('funding_proof_revoked');
+  const destination = await checkWaxDestination(intent.receiving_account, fetchImpl);
+  if (destination.status !== 'exists') fail('recipient_account_unavailable');
+  const request = buildReviewedWaxTransfer(intent, { permission: 'active' });
+  const observed = await verifyPinnedContract({
+    contract: request.contract,
+    symbol: request.action.data.quantity.split(' ').at(-1),
+    precision: request.action.data.quantity.includes('.')
+      ? request.action.data.quantity.split(' ')[0].split('.')[1].length : 0,
+    expectedCodeHash: source.approved_code_hash,
+    expectedAbiHash: source.approved_abi_hash
+  });
+  if (observed?.codeHash !== source.approved_code_hash ||
+      observed?.abiHash !== source.approved_abi_hash) fail('contract_pin_changed');
+  const lock = await env.DB.prepare(
+    "UPDATE tag_run_v2_payout_intents SET status='broadcast_unknown'," +
+    "submission_tx_id=?,signed_transaction_json=?,updated_at=CURRENT_TIMESTAMP " +
+    "WHERE intent_key=? AND status='reserved' " +
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_payout_caps c " +
+    "JOIN tag_run_v2_pool_config p ON p.config_id=1 " +
+    "WHERE c.chat_id=tag_run_v2_payout_intents.chat_id " +
+    "AND c.day_key=tag_run_v2_payout_intents.day_key " +
+    "AND c.asset_key=tag_run_v2_payout_intents.asset_key AND c.paused=0 " +
+    "AND c.reward_policy_bps=100 AND p.status='review_only' " +
+    "AND p.wallet_account='isthatajoint' AND p.active_daily_bps=100 " +
+    "AND p.active_policy_version=2) " +
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_snapshots s " +
+    "JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key " +
+    "WHERE s.chat_id=tag_run_v2_payout_intents.chat_id " +
+    "AND s.day_key=tag_run_v2_payout_intents.day_key " +
+    "AND s.asset_key=tag_run_v2_payout_intents.asset_key " +
+    "AND s.status='verified' AND s.reward_policy_bps=100 " +
+    "AND s.snapshot_digest=tag_run_v2_payout_intents.snapshot_digest " +
+    "AND a.eligibility='approved' AND a.approved_code_hash=? " +
+    "AND a.approved_abi_hash=?) " +
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_draws d " +
+    "WHERE d.chat_id=tag_run_v2_payout_intents.chat_id " +
+    "AND d.day_key=tag_run_v2_payout_intents.day_key " +
+    "AND d.status='reviewed' AND d.reward_policy_bps=100)"
+  ).bind(transactionId, signedTransactionJson, intentKey,
+    source.approved_code_hash, source.approved_abi_hash).run();
+  if (lock?.success !== true || lock.meta?.changes !== 1) {
+    fail('send_lock_blocked_or_already_submitted');
+  }
+  return Object.freeze({ intentKey, transactionId, status: 'broadcast_unknown',
+    signedTransactionJson });
+}
+
+export async function loadPreparedAutomaticPayout(env, { intentKey } = {}) {
+  assertAutomaticExecutionMode(env);
+  if (!HEX.test(intentKey || '')) fail('prepared_transaction_invalid');
+  const row = await env.DB.prepare(
+    'SELECT * FROM tag_run_v2_payout_intents WHERE intent_key=?'
+  ).bind(intentKey).first();
+  if (!row || row.status !== 'broadcast_unknown' ||
+      !HEX.test(row.submission_tx_id || '') ||
+      typeof row.signed_transaction_json !== 'string') {
+    fail('prepared_transaction_missing');
+  }
+  assertGroup(env, row.chat_id);
+  return Object.freeze({ ...rowInfo(row),
+    signedTransactionJson: row.signed_transaction_json });
 }
 
 // Calling this changes D1 to UNKNOWN *before* asking any signer to
@@ -327,6 +455,8 @@ export async function markIrreversiblyConfirmed(env,{
   // second broadcast or fresh reservation.
   if(!row||!['broadcast_unknown','reconciliation_review'].includes(row.status))
     fail('not_pending_reconciliation');
+  if (row.submission_tx_id && row.submission_tx_id !== transactionId)
+    fail('chain_action_mismatch');
   assertGroup(env,row.chat_id);
   const want=buildReviewedWaxTransfer({...row,status:'reserved'});
   // Do not accept caller-supplied "irreversible:true" or an RPC submission
