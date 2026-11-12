@@ -23,6 +23,8 @@ const migration103=read('workers/moonboys-api/migrations/103_tag_run_street_cred
 const migration104=read('workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql');
 const migration105=read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql');
 const migration106=read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
+const migration108=read('workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql');
+const migration109=read('workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql');
 
 function fixture(t){
   const sqlite=new DatabaseSync(':memory:');
@@ -31,6 +33,8 @@ function fixture(t){
   sqlite.exec(migration104);
   sqlite.exec(migration105);
   sqlite.exec(migration106);
+  sqlite.exec(migration108);
+  sqlite.exec(migration109);
   t.after(()=>sqlite.close());
   const DB={prepare(sql){return {
     bind(...args){return {
@@ -90,6 +94,32 @@ function rpc(tokens=[
       return {ok:true,json:async()=>({
         account:TIP_ACCOUNT,tokens:tokens.slice(skip,skip+limit)
       })};
+    }
+    if(url.endsWith('/get_abi')){
+      const {account_name}=JSON.parse(options.body);
+      return {ok:true,json:async()=>({account_name,abi:{
+        actions:[{name:'transfer',type:'transfer'}],
+        structs:[{name:'transfer',base:'',fields:[
+          {name:'from',type:'name'},{name:'to',type:'name'},
+          {name:'quantity',type:'asset'},{name:'memo',type:'string'}
+        ]}]
+      }})};
+    }
+    if(url.endsWith('/get_code_hash')){
+      const {account_name}=JSON.parse(options.body);
+      return {ok:true,json:async()=>({
+        account_name,code_hash:'c'.repeat(64)
+      })};
+    }
+    if(url.endsWith('/get_currency_stats')){
+      const {symbol}=JSON.parse(options.body);
+      const found=tokens.find(item=>item.symbol===symbol);
+      if(!found) return {ok:true,json:async()=>({})};
+      const decimals='0'.repeat(found.precision);
+      const quantity='1'+(found.precision?'.'+decimals:'')+' '+symbol;
+      return {ok:true,json:async()=>({[symbol]:{
+        supply:quantity,max_supply:quantity,issuer:'gkniftyheads'
+      }})};
     }
     if(url.endsWith('/get_currency_balance')){
       const {code,symbol,account}=JSON.parse(options.body);
