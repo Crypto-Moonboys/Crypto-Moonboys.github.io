@@ -818,8 +818,8 @@ export async function handleTagRunV2Command(env, options) {
         'Irreversible inbound candidates: ' + result.seen +
         '\nNew quarantined receipts: ' + result.inserted +
         '\nHistory scan incomplete: ' + (result.truncated ? 'YES' : 'UNKNOWN') +
-        '\nUse /pooldonation with an exact reviewed action sequence. ' +
-        'No donation was approved and no token draw or transfer occurred.');
+        '\nUse /poolapprove or /poolquarantine for each exact token identity. ' +
+        'This scan itself does not draw, sign or transfer tokens.');
     } catch (error) {
       await send('Community Pot scan unavailable: ' +
         String(error?.message || error).slice(0,120) +
@@ -928,7 +928,7 @@ export async function handleTagRunV2Command(env, options) {
         'Irreversible inbound candidates: ' + result.seen +
         '\nNew quarantined receipts: ' + result.inserted +
         '\nHistory scan incomplete: ' + (result.truncated ? 'YES' : 'UNKNOWN') +
-        '\nNo donation is approved by this scan. No token draw or transfer.');
+        '\nApproved identities fund automatically; this scan itself does not draw, sign or transfer.');
     } catch (error) {
       await send('Community Pot scan unavailable: ' +
         String(error?.message || error).slice(0,120) +
