@@ -216,6 +216,7 @@ export async function handleV2ObservationCommand(env, {
       (assets.length>16?'\nMore tokens omitted from the Telegram preview.':'')+
       '\nAll unreviewed assets remain quarantined. Complete the independent '+
       'contract and precision review, then use /poolapprove with its review reference. '+
+      'Use /poolquarantine with a reason to remove eligibility immediately. '+
       'Donation provenance remains a separate gate.');
     return true;
   }
