@@ -436,8 +436,9 @@ async function handleAssetAdminCommand(env, options) {
   }
   if (name === 'poolapprove' && row.eligibility === 'approved') {
     await send(parsed.symbol + ' @ ' + parsed.contract +
-      ' is already approved for token eligibility. Donation provenance, contract hashes, ' +
-      'draws and payouts remain separate gates.');
+      ' is already approved for the Community Pot. Every independently verified ' +
+      'irreversible wallet unit is eligible automatically; individual tips need no approval. ' +
+      'Draws and payouts remain controlled by their release switches.');
     return true;
   }
   if (name === 'poolquarantine' && row.eligibility === 'quarantined') {
