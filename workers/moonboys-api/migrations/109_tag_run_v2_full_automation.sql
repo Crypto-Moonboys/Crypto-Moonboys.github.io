@@ -68,3 +68,11 @@ BEGIN SELECT RAISE(ABORT,'v2_payout_intent_immutable'); END;
 
 CREATE INDEX IF NOT EXISTS tag_run_v2_payout_submission_tx
 ON tag_run_v2_payout_intents(submission_tx_id);
+
+-- This is the durable policy-state transition only. Runtime automation still
+-- fails closed until all release flags and both Worker secrets are present.
+UPDATE tag_run_v2_pool_config
+SET status='review_only',revision=revision+1,updated_at=CURRENT_TIMESTAMP
+WHERE config_id=1 AND wallet_account='isthatajoint' AND status='paused'
+  AND daily_bps=500 AND active_daily_bps=100
+  AND active_policy_version=2 AND historical_ticket_bps=5000;
