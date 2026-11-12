@@ -191,6 +191,10 @@ test('approved snapshot does not depend on individual deposit status',async t=>{
   f.sqlite.prepare("UPDATE tag_run_v2_deposits SET status='refund_review'").run();
   const p=await f.preview();
   assert.equal(p.status,'REVIEW_CANDIDATE');
+  assert.equal(p.evidence.approvedTokenIdentityInD1,true);
+  assert.equal(p.evidence.irreversibleBalanceSnapshotInD1,true);
+  assert.equal('confirmedDonationInD1' in p.evidence,false);
+  assert.equal('donationFundingReconciledInD1' in p.evidence,false);
   assert.equal(p.transactionBroadcast,false);
 });
 
