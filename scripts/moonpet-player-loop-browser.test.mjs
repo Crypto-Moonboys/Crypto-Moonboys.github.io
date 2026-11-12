@@ -758,13 +758,14 @@ try {
       faultAction = action;
       await page.locator(`[data-action="${action}"]`).click();
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
-      // The status message is written before the async action handler clears its
-      // busy lock in finally. Let that handler settle before clicking Refresh,
-      // otherwise the click can be correctly ignored and no state request starts.
-      await page.waitForTimeout(50);
       assert.equal(faultResult.accepted, true, 'the response disappears only after the real care receipt commits');
       const savedXP = (await hooks.getPetProfile(db, id)).pet_xp;
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
+      // The status message is written before the async action handler clears its
+      // busy lock. Keep the immediate fail-closed assertion above, then cross one
+      // browser frame before clicking Refresh. A fixed delay can let automatic
+      // recovery re-enable controls before the locked-state assertion runs.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => resolve())));
       const sent = actions.length;
       await page.locator('[data-panel="care"] [data-action="train"]').evaluate(node => node.click());
       assert.equal(actions.length, sent);
