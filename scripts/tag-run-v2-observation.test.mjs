@@ -614,9 +614,13 @@ test('private admin can approve an observed token identity without approving fun
   assert.ok(asset.verified_at);
   assert.equal(asset.reviewed_by,'telegram:'+MEMBER);
   const audit=f.sqlite.prepare(
-    'SELECT event_type,reason,reviewed_by FROM tag_run_v2_audit'
+    "SELECT event_key,event_type,reason,reviewed_by FROM tag_run_v2_audit " +
+    "WHERE event_type='asset_eligibility_approved'"
   ).get();
   assert.equal(audit.event_type,'asset_eligibility_approved');
+  assert.ok(audit.event_key.includes(ASSET));
+  assert.ok(audit.reason.includes('asset_key='+ASSET));
+  assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
   assert.match(audit.reason,/review=independent-review-1697/);
   assert.match(audit.reason,/donation provenance and contract approval remain separate/);
   assert.equal(audit.reviewed_by,'telegram:'+MEMBER);
@@ -650,7 +654,10 @@ test('approval is private-admin only, paused-only and fails closed on chain mism
   assert.equal(f.sqlite.prepare(
     'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
   ).get(ASSET).eligibility,'quarantined');
-  assert.equal(count(f,'tag_run_v2_audit'),0);
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit " +
+    "WHERE event_type LIKE 'asset_eligibility_%'"
+  ).get().n,0);
 });
 
 test('private admin quarantine is immediate and has no network dependency',async t=>{
@@ -674,8 +681,12 @@ test('private admin quarantine is immediate and has no network dependency',async
   assert.equal(asset.verified_at,null);
   assert.equal(asset.reviewed_by,'telegram:'+MEMBER);
   const audit=f.sqlite.prepare(
-    "SELECT reason FROM tag_run_v2_audit WHERE event_type='asset_eligibility_quarantined'"
+    "SELECT event_key,reason FROM tag_run_v2_audit " +
+    "WHERE event_type='asset_eligibility_quarantined'"
   ).get();
+  assert.ok(audit.event_key.includes(ASSET));
+  assert.ok(audit.reason.includes('asset_key='+ASSET));
+  assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
   assert.match(audit.reason,/emergency transfer restrictions changed/);
 });
 
@@ -694,7 +705,10 @@ test('asset admin commands reject malformed identities and preserve state',async
   assert.equal(f.sqlite.prepare(
     'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
   ).get(ASSET).eligibility,'quarantined');
-  assert.equal(count(f,'tag_run_v2_audit'),0);
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit " +
+    "WHERE event_type LIKE 'asset_eligibility_%'"
+  ).get().n,0);
 });
 
 
