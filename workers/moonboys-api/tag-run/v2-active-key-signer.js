@@ -143,13 +143,12 @@ export async function broadcastPreparedTransaction({
   catch (_) { fail('prepared_transaction_invalid'); }
   if (String(signed.id) !== transactionId) fail('transaction_id_mismatch');
   await beforeBroadcast();
-  const client = new APIClient({
-    provider: new FetchProvider(WAX_CHAIN_API, { fetch: fetchImpl })
-  });
   const packed = PackedTransaction.fromSigned(signed);
   let result;
-  try { result = await client.v1.chain.push_transaction(packed); }
-  catch (_) { fail('broadcast_unconfirmed'); }
+  try {
+    result = await post(fetchImpl, WAX_CHAIN_API, 'push_transaction',
+      Serializer.objectify(packed));
+  } catch (_) { fail('broadcast_unconfirmed'); }
   const returned = String(result?.transaction_id || result?.processed?.id || '');
   if (returned && returned !== transactionId) fail('transaction_id_mismatch');
   return Object.freeze({ transactionId, submitted: true });
