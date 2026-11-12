@@ -49,11 +49,11 @@ stops verification before any query.
    `wikicoms`. If its value was not saved, create another dedicated read token;
    GitHub cannot reveal an existing secret value.
 2. Keep `CLOUDFLARE_ACCOUNT_ID` set to that database's account ID.
-3. If the shared `CLOUDFLARE_API_TOKEN` secret was replaced with the D1 read token,
-   restore its original value from secure storage. If unavailable, create a
-   replacement scoped to the permissions required by its deployment consumers.
-   The D1 read token does not grant Workers deployment or R2 access. Do not revoke
-   existing tokens as part of this setup.
+3. The repository currently has no other tracked workflow reference to the shared
+   `CLOUDFLARE_API_TOKEN` after this change. If that secret was overwritten with
+   the D1 read token and its original value was not saved, no replacement is needed
+   for current tracked workflows. Keep the secret in place; review permissions
+   before assigning it to any future deployment workflow.
 4. After this workflow change is merged, manually run **D1 Production Migration
    Verify** on `main`. Confirm both jobs pass and the
    `d1-production-migration-evidence` artifact is uploaded.
