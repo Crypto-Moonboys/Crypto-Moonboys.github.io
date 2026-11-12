@@ -883,7 +883,7 @@ assert.ok(workflow.includes('{"name":"104_tag_run_v2_community_token_pot.sql"}')
 assert.throws(() => validateRequest({...request, required_migrations: request.required_migrations.filter(name => name !== v2Migration)}),
   /missing required migrations: 104_tag_run_v2_community_token_pot\.sql/);
 
-for(const name of ['106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql']){
+for(const name of ['106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql','108_tag_run_v2_allowlist_funding.sql']){
   for(const list of [REQUIRED_D1_MIGRATIONS,request.required_migrations,production.d1_databases.wikicoms.required_migrations])assert.ok(list.includes(name));
   assert.ok(remoteQueryStep.includes(name));assert.ok(workflow.includes('{"name":"'+name+'"}'));
   assert.throws(()=>verifyD1MigrationPayload([{success:true,results:request.required_migrations.filter(n=>n!==name).map(name=>({name}))}],request),/missing migrations/);
