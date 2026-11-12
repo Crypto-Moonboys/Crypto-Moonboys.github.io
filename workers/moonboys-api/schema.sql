@@ -2962,9 +2962,6 @@ WHEN NEW.reward_policy_bps!=100 OR NEW.paused!=1 OR NEW.revision!=0 OR NEW.commi
       OR (length(NEW.daily_limit_units)=length(NEW.per_transfer_limit_units)
           AND NEW.daily_limit_units>=NEW.per_transfer_limit_units)
     )
-) OR NOT EXISTS (
-  SELECT 1 FROM tag_run_v2_deposits d
-  WHERE d.asset_key=NEW.asset_key AND d.status='confirmed_donation'
 ) OR EXISTS (
   SELECT 1 FROM tag_run_v2_payout_caps c
   WHERE c.chat_id=NEW.chat_id AND c.day_key=NEW.day_key
