@@ -121,7 +121,6 @@ export async function quarantineInboundTipReceipts(env, options={}) {
     env?.TAG_RUN_ENABLED === 'true' &&
     env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false' &&
     env?.TAG_RUN_V2_OBSERVATION_ENABLED === 'true' &&
-    env?.TAG_RUN_V2_POOL_ENABLED === 'false' &&
     env?.TAG_RUN_V2_DRAWS_ENABLED === 'false' &&
     env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'false';
   if ((env?.TAG_RUN_V2_POOL_ENABLED !== 'true' && !pausedObservation) ||
