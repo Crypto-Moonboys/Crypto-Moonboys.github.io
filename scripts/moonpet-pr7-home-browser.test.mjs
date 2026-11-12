@@ -121,13 +121,10 @@ try {
       assert.equal(changedOwner.requests.some(r=>r.body.telegram_auth?.id===980302),false,
         'the new actor must pass a fresh page membership gate before state reads');
       changedOwner.release();await pause(150);
-      const beforeBlockedAction=changedOwner.requests.length;
-      await changedOwner.page.locator('[data-action="feed"]').click();
-      await changedOwner.page.locator('#terminal-output').getByText(
-        'TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.'
-      ).waitFor();
-      assert.equal(changedOwner.requests.length,beforeBlockedAction,
-        'visible old-owner controls remain unusable after the identity gate closes');
+      assert.equal(await changedOwner.page.locator('[data-action="feed"]').isVisible(),false,
+        'old-owner care controls must be hidden after the identity gate closes');
+      assert.equal(changedOwner.requests.length,beforeRefresh,
+        'late warmup and hidden old-owner controls cannot send another API request');
       assert.deepEqual(changedOwner.errors,[]);
     }finally{await changedOwner.close();}
     if(viewport.width===360){
