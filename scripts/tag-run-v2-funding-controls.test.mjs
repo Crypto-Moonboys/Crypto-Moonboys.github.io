@@ -403,7 +403,7 @@ test('snapshot rows and audit roll back together and a saved day is never replac
   assert.deepEqual(f.sqlite.prepare('SELECT * FROM tag_run_v2_snapshots').get(), before);
 });
 
-test('donation revocation during snapshot preparation blocks the whole set', async t => {
+test('receipt status changes do not revoke an approved token snapshot', async t => {
   const f = fixture(t);
   await addReceipt(f, { status: 'confirmed_donation' });
   const batch = f.env.DB.batch.bind(f.env.DB);
@@ -419,10 +419,10 @@ test('donation revocation during snapshot preparation blocks the whole set', asy
     return batch(statements);
   };
   const result = await admin(f, 'poolsnapshot', DAY + ' race-review-1697');
-  assert.match(result.messages[0], /failed atomically/);
+  assert.match(result.messages[0], /VERIFIED IRREVERSIBLE 1% SNAPSHOT SET/);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_v2_snapshots'
-  ).get().n, 0);
+  ).get().n, 1);
   assert.equal(f.sqlite.prepare(
     "SELECT status FROM tag_run_v2_deposits WHERE global_action_seq='123'"
   ).get().status, 'refund_review');
