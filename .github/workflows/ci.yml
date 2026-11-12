@@ -92,6 +92,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -243,7 +245,9 @@ jobs:
         run: npm run ci:wax
 
   ci-visual:
-    runs-on: ubuntu-latest
+    # Playwright 1.59.1 in this repository does not support the ubuntu-26.04
+    # image currently served by ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - name: Checkout

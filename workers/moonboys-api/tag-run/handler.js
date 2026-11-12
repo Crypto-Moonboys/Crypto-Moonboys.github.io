@@ -272,7 +272,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
       return true;
     }
     if (V2_COMMANDS.has(name)) {
-      return await handleTagRunV2Command(env, { name, isAdmin, isPrivate, chatId,
+      return await handleTagRunV2Command(env, { name, args, isAdmin, isPrivate, chatId,
         telegramId, send, nowMs, fetchImpl });
     }
     if (name === 'help' || name === 'taghelp') {

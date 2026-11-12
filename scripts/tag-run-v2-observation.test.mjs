@@ -43,7 +43,19 @@ function fixture(t){
     async all(){return {success:true,results:sqlite.prepare(sql).all()};},
     async run(){const r=sqlite.prepare(sql).run();
       return {success:true,meta:{changes:r.changes}};}
-  };}};
+  };},
+  async batch(statements){
+    sqlite.exec('BEGIN IMMEDIATE;');
+    try {
+      const results=[];
+      for(const statement of statements) results.push(await statement.run());
+      sqlite.exec('COMMIT;');
+      return results;
+    } catch(error) {
+      sqlite.exec('ROLLBACK;');
+      throw error;
+    }
+  }};
   const env={
     DB,TAG_RUN_ENABLED:'true',TAG_RUN_WEEKLY_REWARDS_ENABLED:'false',
     TAG_RUN_V2_OBSERVATION_ENABLED:'true',TAG_RUN_V2_POOL_ENABLED:'false',
@@ -106,6 +118,15 @@ async function command(f,name,{nowMs=NOW,fetchImpl=rpc().fetchImpl,
     capture:opts=>saveYesterdayParticipation(f.env,{
       ...opts,cryptoImpl:webcrypto
     })
+  });
+  return {result,messages};
+}
+async function adminCommand(f,name,args,{fetchImpl=rpc().fetchImpl,
+  isAdmin=true,isPrivate=true}={}){
+  const messages=[];
+  const result=await handleTagRunV2Command(f.env,{
+    name,args,isAdmin,isPrivate,chatId:GROUP,telegramId:MEMBER,
+    send:async message=>messages.push(message),nowMs:NOW,fetchImpl
   });
   return {result,messages};
 }
@@ -211,7 +232,9 @@ test('poolreview displays token status without approving any token',async t=>{
   const reviewed=await command(f,'poolreview');
   assert.match(reviewed.messages[0],/TOKEN REVIEW QUEUE/);
   assert.match(reviewed.messages[0],/LFGK \(kingsofgraff, 4 decimals\): quarantined/);
-  assert.match(reviewed.messages[0],/Approval requires independent/);
+  assert.match(reviewed.messages[0],/use \/poolapprove with its review reference/);
+  assert.match(reviewed.messages[0],/Use \/poolquarantine with a reason/);
+  assert.match(reviewed.messages[0],/Donation provenance remains a separate gate/);
   assert.equal(f.sqlite.prepare(
     "SELECT COUNT(*) AS n FROM tag_run_v2_assets WHERE eligibility='approved'"
   ).get().n,0);
@@ -569,4 +592,162 @@ test('/myrewards stays unavailable if independent observation gate is turned off
   });
   assert.match(sent.at(-1),/not active yet/);
   assert.equal(count(f,'tag_run_v2_draws'),0);
+});
+
+
+test('private admin can approve an observed token identity without approving funding',async t=>{
+  const f=fixture(t),observe=rpc();
+  await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
+  const approval=rpc();
+  const result=await adminCommand(f,'poolapprove',
+    'kingsofgraff LFGK 4 independent-review-1697',
+    {fetchImpl:approval.fetchImpl});
+  assert.equal(result.result,true);
+  assert.match(result.messages[0],/APPROVED FOR TOKEN ELIGIBILITY ONLY/);
+  assert.match(result.messages[0],/Donation provenance: still quarantined separately/);
+  assert.match(result.messages[0],/Draws: OFF · Payouts: OFF/);
+  assert.deepEqual(approval.balances,[['kingsofgraff','LFGK']]);
+  const asset=f.sqlite.prepare(
+    'SELECT eligibility,verified_at,reviewed_by FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET);
+  assert.equal(asset.eligibility,'approved');
+  assert.ok(asset.verified_at);
+  assert.equal(asset.reviewed_by,'telegram:'+MEMBER);
+  const audit=f.sqlite.prepare(
+    "SELECT event_key,event_type,reason,reviewed_by FROM tag_run_v2_audit " +
+    "WHERE event_type='asset_eligibility_approved'"
+  ).get();
+  assert.equal(audit.event_type,'asset_eligibility_approved');
+  assert.ok(audit.event_key.includes(ASSET));
+  assert.ok(audit.reason.includes('asset_key='+ASSET));
+  assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
+  assert.match(audit.reason,/review=independent-review-1697/);
+  assert.match(audit.reason,/donation provenance and contract approval remain separate/);
+  assert.equal(audit.reviewed_by,'telegram:'+MEMBER);
+  assert.equal(count(f,'tag_run_v2_deposits'),0);
+});
+
+test('approval is private-admin only, paused-only and fails closed on chain mismatch',async t=>{
+  const f=fixture(t),observe=rpc();
+  await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
+  for(const access of [
+    {isAdmin:false,isPrivate:true},
+    {isAdmin:true,isPrivate:false}
+  ]){
+    const network=rpc();
+    const result=await adminCommand(f,'poolapprove',
+      'kingsofgraff LFGK 4 review-1697',{...access,fetchImpl:network.fetchImpl});
+    assert.match(result.messages[0],/authorised bot DMs/);
+    assert.equal(network.calls.length,0);
+  }
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
+  const paused=rpc();
+  const blocked=await adminCommand(f,'poolapprove',
+    'kingsofgraff LFGK 4 review-1697',{fetchImpl:paused.fetchImpl});
+  assert.match(blocked.messages[0],/must be paused/);
+  assert.equal(paused.calls.length,0);
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='paused'");
+  const wrong=rpc(undefined,{wrongChain:true});
+  const failed=await adminCommand(f,'poolapprove',
+    'kingsofgraff LFGK 4 review-1697',{fetchImpl:wrong.fetchImpl});
+  assert.match(failed.messages[0],/live WAX chain and token identity recheck failed/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET).eligibility,'quarantined');
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit " +
+    "WHERE event_type LIKE 'asset_eligibility_%'"
+  ).get().n,0);
+});
+
+test('private admin quarantine is immediate and has no network dependency',async t=>{
+  const f=fixture(t),observe=rpc();
+  await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
+  await adminCommand(f,'poolapprove',
+    'kingsofgraff LFGK 4 review-1697',{fetchImpl:rpc().fetchImpl});
+  let networkCalls=0;
+  const result=await adminCommand(f,'poolquarantine',
+    'kingsofgraff LFGK 4 emergency transfer restrictions changed',{
+      fetchImpl:async()=>{networkCalls++;throw Error('must not call network');}
+    });
+  assert.equal(result.result,true);
+  assert.equal(networkCalls,0);
+  assert.match(result.messages[0],/QUARANTINED NOW/);
+  assert.match(result.messages[0],/Future snapshot, draw and send eligibility checks will reject/);
+  const asset=f.sqlite.prepare(
+    'SELECT eligibility,verified_at,reviewed_by FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET);
+  assert.equal(asset.eligibility,'quarantined');
+  assert.equal(asset.verified_at,null);
+  assert.equal(asset.reviewed_by,'telegram:'+MEMBER);
+  const audit=f.sqlite.prepare(
+    "SELECT event_key,reason FROM tag_run_v2_audit " +
+    "WHERE event_type='asset_eligibility_quarantined'"
+  ).get();
+  assert.ok(audit.event_key.includes(ASSET));
+  assert.ok(audit.reason.includes('asset_key='+ASSET));
+  assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
+  assert.match(audit.reason,/emergency transfer restrictions changed/);
+});
+
+test('asset admin commands reject malformed identities and preserve state',async t=>{
+  const f=fixture(t),network=rpc();
+  await command(f,'poolobserve',{fetchImpl:network.fetchImpl});
+  for(const [name,args] of [
+    ['poolapprove','kingsofgraff lfgk 4 review-1697'],
+    ['poolapprove','kingsofgraff LFGK 9 review-1697'],
+    ['poolapprove','kingsofgraff LFGK 4 has spaces'],
+    ['poolquarantine','kingsofgraff LFGK 4 no']
+  ]){
+    const result=await adminCommand(f,name,args,{fetchImpl:network.fetchImpl});
+    assert.match(result.messages[0],/Usage:/);
+  }
+  assert.equal(f.sqlite.prepare(
+    'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET).eligibility,'quarantined');
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit " +
+    "WHERE event_type LIKE 'asset_eligibility_%'"
+  ).get().n,0);
+});
+
+
+test('asset eligibility and audit change roll back together on audit failure',async t=>{
+  const f=fixture(t),observe=rpc();
+  await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
+  f.sqlite.exec(
+    "CREATE TRIGGER fail_asset_approval_audit BEFORE INSERT ON tag_run_v2_audit " +
+    "WHEN NEW.event_type='asset_eligibility_approved' BEGIN " +
+    "SELECT RAISE(ABORT,'forced audit failure'); END;"
+  );
+  const result=await adminCommand(f,'poolapprove',
+    'kingsofgraff LFGK 4 rollback-review-1697',{fetchImpl:rpc().fetchImpl});
+  assert.match(result.messages[0],/failed atomically/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET).eligibility,'quarantined');
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit WHERE event_type='asset_eligibility_approved'"
+  ).get().n,0);
+});
+
+test('top-level Telegram handler forwards asset command arguments',async t=>{
+  const f=fixture(t),observe=rpc();
+  await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
+  const network=rpc(),sent=[];
+  const handled=await handleTagRunCommand({message:{
+    message_id:501,chat:{id:Number(MEMBER),type:'private'},
+    from:{id:Number(MEMBER),first_name:'Admin'},
+    text:'/poolapprove kingsofgraff LFGK 4 handler-review-1697'
+  }},f.env,{fetchImpl:async (url,options)=>{
+    if(url.includes('sendMessage')){
+      sent.push(JSON.parse(options.body));return {ok:true};
+    }
+    return network.fetchImpl(url,options);
+  }});
+  assert.equal(handled,true);
+  assert.match(sent[0].text,/APPROVED FOR TOKEN ELIGIBILITY ONLY/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET).eligibility,'approved');
 });

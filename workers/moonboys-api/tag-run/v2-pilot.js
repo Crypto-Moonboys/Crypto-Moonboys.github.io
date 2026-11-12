@@ -214,8 +214,10 @@ export async function handleV2ObservationCommand(env, {
     await send('TAG RUN V2 · TOKEN REVIEW QUEUE\n'+
       (lines.join('\n')||'No token identities observed yet. Run /poolobserve.')+
       (assets.length>16?'\nMore tokens omitted from the Telegram preview.':'')+
-      '\nAll unreviewed assets remain quarantined. Approval requires independent '+
-      'contract/precision/custody/donation review, not a Telegram command.');
+      '\nAll unreviewed assets remain quarantined. Complete the independent '+
+      'contract and precision review, then use /poolapprove with its review reference. '+
+      'Use /poolquarantine with a reason to remove eligibility immediately. '+
+      'Donation provenance remains a separate gate.');
     return true;
   }
   if (name==='poolobserve') {
