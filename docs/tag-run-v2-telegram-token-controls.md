@@ -21,6 +21,11 @@ This approves token eligibility only. It does not:
 - verify an immutable balance snapshot;
 - enable draws, signing or payouts.
 
+After a token is approved, use the separately reviewed private-admin funding
+controls in `docs/tag-run-v2-telegram-funding-controls.md` to approve an exact
+quarantined donation receipt and capture a completed day's irreversible 1%
+snapshot set. Token approval never performs either step automatically.
+
 Run `/poolobserve` first if the identity has not yet been recorded.
 
 ## Quarantine immediately

@@ -1,5 +1,11 @@
 # TAG RUN V2 — Community Token Pot / `isthatajoint`
 
+> Historical foundation: this document records the original 5% preview design.
+> The approved current policy is the additive 1% policy in
+> `docs/tag-run-v2-daily-one-percent-policy.md`. The private-admin receipt and
+> irreversible historical snapshot path is documented in
+> `docs/tag-run-v2-telegram-funding-controls.md`; payouts remain off.
+
 **GitHub master issue:** [#1697](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1697).
 **Live V1 acceptance:** [#1696](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1696).
 
