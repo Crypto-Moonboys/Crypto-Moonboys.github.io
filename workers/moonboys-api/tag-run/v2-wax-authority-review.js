@@ -2,7 +2,7 @@
 // This is NOT a signer, approval to linkauth, custody certificate, WASM audit,
 // historical LIB snapshot, or authority to execute any payout.
 import {
-  TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey, parseQuantity
+  TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey, parseQuantity, sha256Text
 } from './v2-core.js';
 import { isValidWaxAccount } from './core.js';
 
@@ -238,6 +238,70 @@ function blocked(reason) {
     historicalFinalityProven:false
   });
 }
+
+const canonicalJson = value => JSON.stringify(value, function(_key, item) {
+  if (item && typeof item === 'object' && !Array.isArray(item)) {
+    return Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]]));
+  }
+  return item;
+});
+
+// Pin the exact live token contract reviewed by /poolapprove. This check is
+// permission-agnostic: automatic payouts use active authority, while legacy
+// owner tooling may still use tagrain. Both independent providers must agree.
+export async function reviewWaxTokenContract({
+  contract, symbol, precision, fetchImpl = fetch
+} = {}) {
+  const key = assetKey(contract, symbol, precision);
+  if (typeof fetchImpl !== 'function') fail('fetch_unavailable');
+  const observe = async host => {
+    const info = await rpc(fetchImpl, host, 'get_info', {});
+    if (info?.chain_id !== WAX_MAINNET_CHAIN_ID ||
+        !isInt(info.last_irreversible_block_num)) fail('wrong_chain_or_lib');
+    const [abiRow, codeRow, stats] = await Promise.all([
+      rpc(fetchImpl, host, 'get_abi', { account_name: contract }),
+      rpc(fetchImpl, host, 'get_code_hash', { account_name: contract }),
+      rpc(fetchImpl, host, 'get_currency_stats', { code: contract, symbol })
+    ]);
+    const abi = normalizedAbi(abiRow, contract);
+    if (!abi.standardTransfer) fail('nonstandard_transfer_abi');
+    if (!codeRow || (codeRow.account_name && codeRow.account_name !== contract) ||
+        !CODE_HASH.test(codeRow.code_hash || '') || /^0+$/.test(codeRow.code_hash)) {
+      fail('contract_code_hash_invalid');
+    }
+    if (!stats || typeof stats !== 'object' || Array.isArray(stats) ||
+        !stats[symbol] || !isValidWaxAccount(stats[symbol].issuer) ||
+        validQuantity(stats[symbol].supply, symbol, precision) === null ||
+        validQuantity(stats[symbol].max_supply, symbol, precision) === null) {
+      fail('token_precision_mismatch');
+    }
+    const abiHash = await sha256Text(canonicalJson(abiRow.abi));
+    return Object.freeze({
+      chainId: info.chain_id,
+      assetKey: key,
+      codeHash: codeRow.code_hash,
+      abiHash,
+      transferFields: abi.fields,
+      issuer: stats[symbol].issuer
+    });
+  };
+  const settled = await Promise.allSettled(
+    WAX_AUTHORITY_PROVIDERS.map(host => observe(host))
+  );
+  if (settled.some(item => item.status !== 'fulfilled')) {
+    fail('independent_contract_evidence_unavailable');
+  }
+  const rows = settled.map(item => item.value);
+  if (JSON.stringify(rows[0]) !== JSON.stringify(rows[1])) {
+    fail('independent_provider_state_disagreement');
+  }
+  return Object.freeze({
+    ...rows[0],
+    sourceHosts: [...WAX_AUTHORITY_PROVIDERS],
+    independentlyCorroborated: true
+  });
+}
+
 export async function reviewWaxTransferAuthority({
   contract,symbol,precision,expectedCodeHash=null,fetchImpl=fetch
 }={}) {
