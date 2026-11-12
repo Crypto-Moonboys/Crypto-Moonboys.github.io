@@ -1,9 +1,8 @@
 // TAG RUN V2 production payout custody boundary.
-// This module holds REAL durable D1 payout intents and may submit an already
-// signed WAX transaction after explicit release authorization. It is NOT
-// mounted on any public route or cron. No signing key is held by this Worker.
-// Runtime payout flags default OFF; no transfer occurs without an injected,
-// independently approved signer capable of signing exactly this action.
+// This module owns durable D1 caps, intents and prepared-transaction locks.
+// The scheduled automation may call it only behind the complete release gate;
+// no public route can reserve, sign or broadcast a payout. The signer receives
+// one exact reviewed transfer and its key exists only as a Worker secret.
 import {
   TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey, parseIntegerUnits,
   formatQuantity, sha256Text, validUtcDay
@@ -113,8 +112,8 @@ export async function initializeReviewedDailyCap(env,{
     paused:true,perTransferLimitUnits:per.toString(),authorized:false});
 }
 
-// A CAP REMAINS PAUSED until an independent, reviewed admin write updates
-// paused=0. This method cannot unpause an allocation or alter authorities.
+// A cap remains paused until the automatic release policy verifies its pinned
+// asset, reviewed draw and immutable snapshot, then opens it separately.
 // All reservations spend a CUMULATIVE cap, including cancelled/unknown items.
 // D1.batch is a single transaction; any duplicate/over-budget INSERT aborts
 // the preceding CAS update rather than leaving a partial reserved amount.
