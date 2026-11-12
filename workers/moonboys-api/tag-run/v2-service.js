@@ -198,7 +198,7 @@ async function handleSnapshotApproval(env, options, parsed) {
   }
   if (Number(existing.n) > 0) {
     await send('Verified snapshot set already exists for ' + parsed.selector +
-      '. It was not replaced. Draws and payouts remain OFF.');
+      '. It was not replaced; the automatic cycle will reuse the stored set.');
     return true;
   }
   const approvedResult = await env.DB.prepare(
@@ -389,7 +389,7 @@ async function handleSnapshotApproval(env, options, parsed) {
     '\nApproved assets included: ' + rows.length +
     '\nQuarantined/suspended assets excluded: ' + Number(quarantinedCount.n) +
     '\nReview reference: ' + parsed.reference +
-    '\nDraws: OFF · Payouts: OFF');
+    '\nThe automatic commit/reveal and payout cycle will consume this frozen set.');
   return true;
 }
 
