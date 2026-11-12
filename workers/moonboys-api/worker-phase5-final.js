@@ -10,6 +10,7 @@ import { handleTelegramGroupMembership } from './telegram-group-membership.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
 import { phase5CronTasks } from './scheduled/phase5-cron-plan.js';
+import { runAutomaticCommunityPot } from './tag-run/v2-automation.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -526,11 +527,28 @@ export default {
           String(error?.message || error));
       }));
     }
-    // V2: read-only participation attribution is still for yesterday's UTC
-    // date. Only invocation time moves by two minutes; funded gates stay OFF.
+    // The daily boundary first freezes yesterday's participation, then starts
+    // the automatic snapshot/commit cycle when its explicit release is live.
     if (tasks.participation) {
-      ctx.waitUntil(saveYesterdayParticipation(env).catch((error) => {
-        console.warn('[TAG RUN V2] participation snapshot unavailable',
+      const automatic = env?.TAG_RUN_V2_AUTOMATION_ENABLED === 'true' &&
+        env?.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED === 'true';
+      const work = automatic
+        ? runAutomaticCommunityPot(env, {
+            dailyStart: true, nowMs: Number(event?.scheduledTime) || Date.now()
+          })
+        : saveYesterdayParticipation(env);
+      ctx.waitUntil(work.catch((error) => {
+        console.warn('[TAG RUN V2] daily cycle unavailable',
+          String(error?.message || error));
+      }));
+    }
+    // Five-minute ticks advance only persisted state: reveal after LIB, review,
+    // reserve, same-ID broadcast and irreversible reconciliation.
+    if (tasks.automationTick) {
+      ctx.waitUntil(runAutomaticCommunityPot(env, {
+        dailyStart: false, nowMs: Number(event?.scheduledTime) || Date.now()
+      }).catch((error) => {
+        console.warn('[TAG RUN V2] automatic payout tick unavailable',
           String(error?.message || error));
       }));
     }
