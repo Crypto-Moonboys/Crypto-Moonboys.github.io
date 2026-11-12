@@ -113,16 +113,21 @@ try {
       // credentials; it must not silently swap owners inside the old session.
       const beforeRefresh=changedOwner.requests.length;
       await changedOwner.page.locator('[data-utility="sync"]').click();
-      await changedOwner.page.locator('[data-panel="telegram-auth"]').waitFor();
+      await changedOwner.page.locator('#terminal-output').getByText(
+        'TELEGRAM ACCOUNT CHANGED. RELOAD MOONPET OS TO VERIFY ACCESS.'
+      ).waitFor();
       assert.equal(changedOwner.requests.length,beforeRefresh,
         'changed website identity must be blocked before any API request');
       assert.equal(changedOwner.requests.some(r=>r.body.telegram_auth?.id===980302),false,
         'the new actor must pass a fresh page membership gate before state reads');
       changedOwner.release();await pause(150);
-      assert.equal(await changedOwner.page.locator('[data-panel="telegram-auth"]').count(),1,
-        'late old-owner warmup cannot replace the account-change gate');
-      assert.equal(await changedOwner.page.locator('[data-action="feed"]').count(),0,
-        'account change leaves no usable old-owner care controls');
+      const beforeBlockedAction=changedOwner.requests.length;
+      await changedOwner.page.locator('[data-action="feed"]').click();
+      await changedOwner.page.locator('#terminal-output').getByText(
+        'TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.'
+      ).waitFor();
+      assert.equal(changedOwner.requests.length,beforeBlockedAction,
+        'visible old-owner controls remain unusable after the identity gate closes');
       assert.deepEqual(changedOwner.errors,[]);
     }finally{await changedOwner.close();}
     if(viewport.width===360){
