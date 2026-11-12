@@ -18,7 +18,8 @@ const MIGRATIONS = [
   '105_tag_run_v2_payout_execution.sql',
   '106_tag_run_v2_one_percent_policy.sql',
   '107_tag_run_v2_persisted_draws.sql',
-  '108_tag_run_v2_allowlist_funding.sql'
+  '108_tag_run_v2_allowlist_funding.sql',
+  '109_tag_run_v2_full_automation.sql'
 ];
 const GROUP = '-1001234567890';
 const ADMIN = '1111';
@@ -90,9 +91,10 @@ function fixture(t) {
   sqlite.prepare(
     'INSERT INTO tag_run_v2_assets ' +
     '(asset_key,chain_id,token_contract,token_symbol,token_precision,' +
-    'eligibility,verified_at,reviewed_by) VALUES (?,?,?,?,?,\'approved\',' +
-    'CURRENT_TIMESTAMP,?)'
-  ).run(ASSET, WAX_MAINNET_CHAIN_ID, CONTRACT, SYMBOL, 4, 'telegram:' + ADMIN);
+    'eligibility,verified_at,reviewed_by,approved_code_hash,approved_abi_hash) ' +
+    'VALUES (?,?,?,?,?,\'approved\',CURRENT_TIMESTAMP,?,?,?)'
+  ).run(ASSET, WAX_MAINNET_CHAIN_ID, CONTRACT, SYMBOL, 4,
+    'telegram:' + ADMIN, 'c'.repeat(64), 'd'.repeat(64));
   sqlite.prepare(
     'INSERT INTO tag_run_v2_assets ' +
     '(asset_key,chain_id,token_contract,token_symbol,token_precision,' +
@@ -212,9 +214,27 @@ function network({ mismatchHistory = false, unavailable = false } = {}) {
       ]);
       return { ok: true, json: async () => ({ block_num: block, id: ids.get(block) }) };
     }
+    if (url.endsWith('/get_abi')) return {
+      ok: true, json: async () => ({
+        account_name: CONTRACT,
+        abi: {
+          actions: [{ name: 'transfer', type: 'transfer' }],
+          structs: [{ name: 'transfer', base: '', fields: [
+            { name: 'from', type: 'name' }, { name: 'to', type: 'name' },
+            { name: 'quantity', type: 'asset' }, { name: 'memo', type: 'string' }
+          ] }]
+        }
+      })
+    };
+    if (url.endsWith('/get_code_hash')) return {
+      ok: true, json: async () => ({
+        account_name: CONTRACT, code_hash: 'c'.repeat(64)
+      })
+    };
     if (url.endsWith('/get_currency_stats')) return {
       ok: true, json: async () => ({ LFGK: {
-        supply: '1000.0000 LFGK', max_supply: '1000000.0000 LFGK'
+        supply: '1000.0000 LFGK', max_supply: '1000000.0000 LFGK',
+        issuer: 'gkniftyheads'
       } })
     };
     if (url.endsWith('/get_currency_balance')) return {
