@@ -50,7 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # Dedicated D1 read credential; keep deployment credentials separate.
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v7
@@ -66,7 +67,7 @@ jobs:
           missing=0
 
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "Missing CLOUDFLARE_API_TOKEN"
+            echo "Missing CLOUDFLARE_D1_READ_TOKEN repository secret"
             missing=1
           fi
 

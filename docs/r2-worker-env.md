@@ -26,11 +26,42 @@ them in source files.
 |---|---|
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier for API calls and Wrangler |
 | `CLOUDFLARE_API_TOKEN` | API token with R2 and Workers permissions |
+| `CLOUDFLARE_D1_READ_TOKEN` | GitHub Actions token with Account / D1 / Read for production migration evidence only |
 | `CLOUDFLARE_R2_BUCKET` | Name of the R2 bucket used by all services |
 | `R2_ENDPOINT_URL` | S3-compatible endpoint URL for the R2 bucket |
 | `R2_ACCESS_KEY_ID` | S3-compatible access key ID for R2 |
 | `R2_SECRET_ACCESS_KEY` | S3-compatible secret access key for R2 |
 | `R2_PUBLIC_BASE_URL` | Public base URL for serving R2 objects (no trailing slash) |
+
+---
+
+## D1 production evidence credential setup
+
+The manual `.github/workflows/d1-production-migration-verify.yml` workflow reads
+`CLOUDFLARE_D1_READ_TOKEN` and maps it to Wrangler's standard
+`CLOUDFLARE_API_TOKEN` environment variable inside the job. It does not fall back
+to the shared `CLOUDFLARE_API_TOKEN` repository secret. A missing dedicated secret
+stops verification before any query.
+
+1. In repository **Settings → Secrets and variables → Actions**, add
+   `CLOUDFLARE_D1_READ_TOKEN` with the working `github-d1-evidence` token.
+   This token needs only **Account → D1 → Read**, scoped to the account containing
+   `wikicoms`. If its value was not saved, create another dedicated read token;
+   GitHub cannot reveal an existing secret value.
+2. Keep `CLOUDFLARE_ACCOUNT_ID` set to that database's account ID.
+3. If the shared `CLOUDFLARE_API_TOKEN` secret was replaced with the D1 read token,
+   restore its original value from secure storage. If unavailable, create a
+   replacement scoped to the permissions required by its deployment consumers.
+   The D1 read token does not grant Workers deployment or R2 access. Do not revoke
+   existing tokens as part of this setup.
+4. After this workflow change is merged, manually run **D1 Production Migration
+   Verify** on `main`. Confirm both jobs pass and the
+   `d1-production-migration-evidence` artifact is uploaded.
+
+These are GitHub Actions credential changes. No Worker deployment or D1 migration
+is required. Existing deployed services do not take credentials from a repository
+secret at runtime. Reverting the workflow change would make verification depend
+on the shared token again, including its D1 permissions.
 
 ---
 
