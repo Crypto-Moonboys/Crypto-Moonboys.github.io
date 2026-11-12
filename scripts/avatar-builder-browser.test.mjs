@@ -298,19 +298,28 @@ try {
   const homepageDesktop = await openAt({ width: 1440, height: 900 }, homepageUrl);
   assert.equal(await homepageDesktop.locator('.homepage-build-cta').count(), 0, 'Removed promotional CTA must not be recreated');
   assert.equal(await homepageDesktop.locator('#how-it-works > .simple-wrap > h1').count(), 0, 'Removed promotional heading must not remain in the later mission');
-  assert.equal(await homepageDesktop.locator('#home-top-message > .simple-wrap:first-child > h1').count(), 1, 'The distinct top introduction remains in place');
+  assert.deepEqual(
+    await homepageDesktop.locator('#home-top-message > .simple-wrap:first-child > h1').allTextContents(),
+    [
+      '🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.',
+      '🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.'
+    ],
+    'Both approved top-introduction headings remain in place'
+  );
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
     const intro = document.getElementById('home-top-message');
+    const gallery = document.querySelector('.home-art-strip');
     const builder = document.querySelector('.homepage-avatar-builder');
     const mission = document.getElementById('how-it-works');
     return Boolean(
-      intro && builder && mission &&
-      intro.nextElementSibling === builder &&
+      intro && gallery && builder && mission &&
+      intro.nextElementSibling === gallery &&
+      gallery.nextElementSibling === builder &&
       builder.nextElementSibling === mission &&
       !document.querySelector('.build-moonboy-hero')
     );
   });
-  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro text -> builder -> academy (art moved to splash)');
+  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro -> nine-image gallery -> builder -> academy');
   const homepageScroll = await homepageDesktop.evaluate(() => ({
     bodyOverflowY: getComputedStyle(document.body).overflowY,
     pageOverflowY: getComputedStyle(document.documentElement).overflowY,

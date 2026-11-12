@@ -48,8 +48,8 @@ const ciRunLines = workflow
   .map((line) => line.trim())
   .filter((line) => line.startsWith('run:'));
 const domainRunLines = ciRunLines.filter((line) => line.startsWith('run: npm run ci:'));
-// Generated-PR dispatch uses a separate, mutually exclusive Wiki step so the
-// original push/PR provenance expression stays unchanged.
+// Manual dispatch supports either a validated generated-graph PR baseline or
+// the trusted branch comparison baseline computed by the workflow.
 assert.equal(domainRunLines.length, expectedScripts.length + 1,
   'five CI domains plus a mutually exclusive dispatch Wiki command are required');
 for (const scriptName of expectedScripts.filter(name => name !== 'ci:wiki')) {
@@ -63,10 +63,10 @@ const dispatchedWiki = getStepBlock(workflow, 'Run wiki tests explicitly dispatc
 assert.ok(ordinaryWiki.includes("github.event_name != 'workflow_dispatch'") &&
   dispatchedWiki.includes("github.event_name == 'workflow_dispatch'"),
   'normal and dispatched Wiki test steps cannot run on the same event');
-assert.ok(dispatchedWiki.includes('BASE_SHA: ${{ steps.graph_dispatch.outputs.base_sha }}') &&
+assert.ok(dispatchedWiki.includes('BASE_SHA: ${{ (steps.graph_dispatch.outputs.base_sha || steps.manual_base.outputs.base_sha) }}') &&
   dispatchedWiki.includes('HEAD_SHA: ${{ github.sha }}') &&
   dispatchedWiki.includes("CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}"),
-  'dispatch Wiki verification must use exact base/head SHA and the existing canon-approval gate');
+  'dispatch Wiki verification must use the verified graph or manual branch base, exact head and canon approval');
 // An arbitrary base_sha supplied to workflow_dispatch must never skip required CI.
 for (const [name, source] of [['CI', workflow], ['Graph', graphWorkflow]]) {
   assert.ok(source.includes('pr_number:') && !source.includes('inputs.base_sha'),
@@ -85,11 +85,20 @@ for (const stepName of [
   assert.ok(block.includes('steps.graph_dispatch.outputs.base_sha'),
     stepName + ' must use the verified PR base, never the dispatch input');
 }
+for (const [name, source, count] of [['CI', workflow, 5], ['Graph', graphWorkflow, 1]]) {
+  assert.equal(source.split('      - name: Resolve manual branch comparison baseline').length - 1, count,
+    name + ' must resolve a trusted manual baseline in every job');
+  const baseline = getStepBlock(source, 'Resolve manual branch comparison baseline');
+  assert.ok(baseline.includes("if: inputs.pr_number == ''") &&
+    baseline.includes('git merge-base HEAD origin/main') &&
+    baseline.includes('git rev-parse HEAD'),
+    name + ' must derive branch/main baselines from repository history');
+}
 const normalGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces');
 const dispatchedGraphWiki = getStepBlock(graphWorkflow, 'Validate regenerated wiki surfaces explicitly dispatched');
 assert.ok(normalGraphWiki.includes("github.event_name != 'workflow_dispatch'") &&
   dispatchedGraphWiki.includes("github.event_name == 'workflow_dispatch'") &&
-  dispatchedGraphWiki.includes('BASE_SHA: ${{ steps.graph_dispatch.outputs.base_sha }}') &&
+  dispatchedGraphWiki.includes('BASE_SHA: ${{ (steps.graph_dispatch.outputs.base_sha || steps.manual_base.outputs.base_sha) }}') &&
   dispatchedGraphWiki.includes('HEAD_SHA: ${{ github.sha }}'),
   'graph Wiki verification must retain normal authority and precise dispatch heads');
 assert.equal(
@@ -215,23 +224,11 @@ assert.ok(
   'Pages artifact preparation must reject protected repository paths before deleting the artifact target',
 );
 
-for (const graphPath of [
-  '"categories/**"',
-  '"about.html"',
-  '"hubs.html"',
-  '"sam.html"',
-  '"sitemap.xml"',
-  '"index_stats.json"',
-  '"sam-memory.json"',
-  '"website-publish-payloads/**"',
-  '"sam-wiki-publisher.py"',
-  '"scripts/**"',
-]) {
-  assert.ok(
-    graphWorkflow.includes(graphPath),
-    `graph publishing integrity workflow must run for ${graphPath}`,
-  );
-}
+assert.ok(
+  graphWorkflow.includes('run: node scripts/generate-publishing-surfaces.mjs') &&
+    graphWorkflow.includes('run: node scripts/graph-publishing-integrity.test.mjs'),
+  'manual graph verification must regenerate and validate publishing surfaces',
+);
 
 assert.ok(
   graphWorkflow.includes('git diff --exit-code --') && graphWorkflow.includes('sam-memory.json'),
@@ -302,9 +299,14 @@ for (const [name, workflowSource] of [
   ['graph publishing integrity', graphWorkflow],
 ]) {
   assert.ok(
-    workflowSource.includes('types: [opened, synchronize, reopened, labeled, unlabeled]'),
-    `${name} workflow must rerun ownership checks when canon approval labels are added or removed`,
+    workflowSource.includes('workflow_dispatch:'),
+    `${name} workflow must provide manual verification`,
   );
+  const triggerBlock = workflowSource.match(/^on:\n([\s\S]*?)(?=^\S)/m)?.[1] || '';
+  assert.ok(triggerBlock.includes('workflow_dispatch:'),
+    name + ' must define the manual trigger');
+  assert.doesNotMatch(triggerBlock, /^\s*(?:push|pull_request|workflow_run|schedule):/m,
+    name + ' must not restore automatic validation triggers');
   assert.ok(
     workflowSource.includes('CANON_PROSE_CHANGE_APPROVED:') && workflowSource.includes(canonApprovalExpression),
     `${name} workflow must use the exact-PR approval resolver`,

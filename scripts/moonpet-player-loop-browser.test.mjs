@@ -116,7 +116,17 @@ Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtl
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const server = http.createServer(async (request, response) => {
   try {
-    const target = path.resolve(root, '.' + decodeURIComponent(new URL(request.url, 'http://localhost').pathname));
+    const pathname = new URL(request.url, 'http://localhost').pathname;
+    // Every player in this gameplay fixture is a verified group member.
+    // Serve the membership prerequisite for contexts whose page route delegates
+    // local requests to this server, including the egg season-reward scenario.
+    if (pathname === '/telegram/group-membership') {
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify({ ok: true, member: true, status: 'member',
+        group: '@gkniftyheads' }));
+      return;
+    }
+    const target = path.resolve(root, '.' + decodeURIComponent(pathname));
     if (!target.startsWith(root + path.sep)) throw Error('outside root');
     response.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream');
     response.end(await fs.readFile(target));
@@ -751,6 +761,11 @@ try {
       assert.equal(faultResult.accepted, true, 'the response disappears only after the real care receipt commits');
       const savedXP = (await hooks.getPetProfile(db, id)).pet_xp;
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
+      // The status message is written before the async action handler clears its
+      // busy lock. Keep the immediate fail-closed assertion above, then cross one
+      // browser frame before clicking Refresh. A fixed delay can let automatic
+      // recovery re-enable controls before the locked-state assertion runs.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => resolve())));
       const sent = actions.length;
       await page.locator('[data-panel="care"] [data-action="train"]').evaluate(node => node.click());
       assert.equal(actions.length, sent);

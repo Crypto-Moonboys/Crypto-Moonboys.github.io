@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile, mkdir } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const homepageContract = JSON.parse(await readFile(path.join(root, 'scripts/fixtures/homepage-approved-contract.json'), 'utf8'));
-const output = process.env.HERO_SCREENSHOT_DIR || path.join(tmpdir(), 'homepage-hero-verification');
+const output = process.env.HERO_SCREENSHOT_DIR || path.join(root, 'test-artifacts', 'homepage-hero-verification');
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = createServer(async (req, res) => {
   try {
@@ -33,7 +32,10 @@ try {
     await page.goto(origin + '/index.html', { waitUntil: 'domcontentloaded' });
     await page.locator('#build-moonboy').waitFor();
     await page.evaluate(() => document.fonts.ready);
-    await page.locator('.home-neon-cityscape img').evaluate(image => image.decode());
+    // The featured video is now first; the cityscape hero image was removed.
+    await page.locator('main > .home-video').first().waitFor();
+    assert.equal(await page.locator('main .home-neon-cityscape').count(), 0,
+      'The retired cityscape hero must not return above the approved video');
     // Load lazy artwork through its normal viewport trigger before checking
     // natural dimensions; decode alone does not start an offscreen lazy load.
     for (const image of await page.locator('#home-top-message > img').all()) {
@@ -51,9 +53,9 @@ try {
         // Sample both animations at the same phase without changing their CSS.
         document.querySelectorAll('.hero-pulse-line').forEach(e => e.getAnimations().forEach(a => { a.pause(); a.currentTime = 2250; }));
         const styles = section => [section, section.firstElementChild, section.querySelector('h1'), section.querySelector('.hero-secondary-heading'), section.querySelector('p')].map(e => Object.fromEntries(props.map(p => [p, getComputedStyle(e).getPropertyValue(p)])));
-        const image = document.querySelector('.home-neon-cityscape img');
-        const rect = image.getBoundingClientRect();
         const video = document.querySelector('main > .home-video');
+        const gallery = document.querySelector('main > .home-art-strip');
+        const gallerySets = [...gallery.querySelectorAll('.home-art-strip-set')];
         const videoRect = video.getBoundingClientRect();
         const artwork = [...duplicate.querySelectorAll(':scope > img')];
         const fontPx = selector => {
@@ -80,11 +82,15 @@ try {
             topPulse: duplicate.firstElementChild.querySelector('p').textContent,
             secondaryHeading: duplicate.firstElementChild.querySelector('.hero-secondary-heading').textContent,
           },
-          first: document.querySelector('main').firstElementChild.classList.contains('home-neon-cityscape'),
-          followsVideo: duplicate.previousElementSibling === video && video.previousElementSibling.classList.contains('home-neon-cityscape'),
+          first: document.querySelector('main').firstElementChild === video,
+          followsVideo: duplicate.previousElementSibling === video,
           videoFullWidth: videoRect.width === innerWidth && Math.abs(videoRect.height - videoRect.width * 9 / 16) < 1,
           videoSource: video.querySelector('iframe').getAttribute('src'),
-          builderFollowsMissionText: duplicate.nextElementSibling === builder,
+          builderFollowsMissionText: duplicate.nextElementSibling === gallery && gallery.nextElementSibling === builder,
+          galleryLoop: gallerySets.length === 2 && gallerySets[1].getAttribute('aria-hidden') === 'true' &&
+            gallerySets.every(set => set.querySelectorAll('img').length === 9) &&
+            JSON.stringify([...gallerySets[0].querySelectorAll('img')].map(img => img.getAttribute('src'))) ===
+              JSON.stringify([...gallerySets[1].querySelectorAll('img')].map(img => img.getAttribute('src'))),
           builderBeforeAcademy: builder?.nextElementSibling === mission,
           badDaysMovedToSplash: !document.querySelector('.build-moonboy-hero') &&
             !!document.querySelector('a[href="/enter.html"]'),
@@ -93,8 +99,6 @@ try {
             !document.body.textContent.includes('We Collaborate We Create We Inspire'),
           inlineStyles: duplicate.firstElementChild.querySelectorAll('[style]').length + Number(duplicate.hasAttribute('style')),
           noOverflow: document.documentElement.scrollWidth === innerWidth && [duplicate].every(s => [...s.querySelectorAll('h1,p')].every(e => e.scrollWidth <= e.clientWidth)),
-          imageFullWidth: rect.width === innerWidth,
-          imageNaturalHeight: Math.abs(rect.height - rect.width * image.naturalHeight / image.naturalWidth) < 1,
           artworkSources: artwork.map(image => image.getAttribute('src')),
           artworkNaturalHeight: artwork.length === 2 && artwork.every(image => {
             const r = image.getBoundingClientRect();
@@ -107,7 +111,7 @@ try {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
         secondaryHeading: text(homepageContract.top_secondary_heading_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'badDaysMovedToSplash', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'imageFullWidth', 'imageNaturalHeight', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'badDaysMovedToSplash', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);

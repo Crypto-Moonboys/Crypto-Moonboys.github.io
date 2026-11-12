@@ -32,6 +32,7 @@ let failures = 0;
 let passes = 0;
 let redirects = 0;
 let standaloneTools = 0;
+let standaloneIntros = 0;
 
 function fail(message) { console.error(`  [FAIL] ${message}`); failures += 1; }
 function pass(message) { console.log(`  [PASS] ${message}`); passes += 1; }
@@ -177,6 +178,34 @@ function isStandaloneToolPage(bodyAttrs) {
   return bodyAttrs.includes('page-standalone-tool');
 }
 
+
+function isStandaloneIntroPage(pagePath, bodyAttrs) {
+  const classes = bodyAttrs.match(/\bclass=["']([^"']*)["']/i)?.[1].split(/\s+/) || [];
+  return pagePath === 'enter.html' && classes.includes('page-splash');
+}
+
+function validateIntroPage(html) {
+  const errors = [];
+  const panels = [...html.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)]
+    .map(match => match[1]);
+  const expected = Array.from({ length: 5 }, (_, i) =>
+    '/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V' + (i + 1) + '.jpg');
+  if (JSON.stringify(panels) !== JSON.stringify(expected)) {
+    errors.push('standalone intro must retain the five Bad Days panels in order');
+  }
+  const links = [...html.matchAll(/<a\b[^>]*\bdata-enter-site\b[^>]*>/gi)];
+  if (links.length !== 3 || links.some(([tag]) => !/\bhref=["']\/["']/.test(tag))) {
+    errors.push('standalone intro must retain all three Enter/Skip links to home');
+  }
+  if (!html.includes("window.parent.postMessage('cm:bad-days-intro:enter', window.location.origin)")) {
+    errors.push('standalone intro must retain its same-origin dialog exit');
+  }
+  if (scriptCount(html, '/js/site-shell.js') !== 0) {
+    errors.push('standalone intro must not mount a second global shell inside the homepage dialog');
+  }
+  return errors;
+}
+
 function extractBodyAttrs(html) {
   const m = html.match(/<body\s+([^>]*)>/i);
   return m ? m[1].trim() : '';
@@ -286,6 +315,18 @@ for (const pagePath of publicPages) {
     continue;
   }
   
+  // Only the exact standalone intro has its own chrome; ordinary content
+  // pages cannot bypass the shell guard by adding a splash class.
+  if (isStandaloneIntroPage(pagePath, bodyAttrs)) {
+    const errors = validateIntroPage(html);
+    if (errors.length) {
+      for (const error of errors) fail(pagePath + ' - ' + error);
+      failingPages.push(pagePath);
+    } else pass(pagePath + ' - standalone Bad Days intro, panels and exit links verified');
+    standaloneIntros += 1;
+    continue;
+  }
+
   // Standalone tools: allowed to have custom scripts
   if (isStandaloneToolPage(bodyAttrs)) {
     pass(`${pagePath} - standalone tool (custom scripts allowed)`);
@@ -328,7 +369,8 @@ console.log('\n--- Result ---');
 console.log(`  Public pages scanned  : ${publicPages.length}`);
 console.log(`  Redirects skipped     : ${redirects}`);
 console.log(`  Standalone tools      : ${standaloneTools}`);
-console.log(`  Content pages checked : ${publicPages.length - redirects - standaloneTools}`);
+console.log(`  Standalone intros     : ${standaloneIntros}`);
+console.log(`  Content pages checked : ${publicPages.length - redirects - standaloneTools - standaloneIntros}`);
 console.log(`  Passes                : ${passes}`);
 console.log(`  Failures              : ${failures}`);
 

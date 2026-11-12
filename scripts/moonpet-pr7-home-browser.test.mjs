@@ -108,11 +108,23 @@ try {
     try{
       changedOwner.block();await changedOwner.open();await changedOwner.started;
       await changedOwner.switchOwner();
-      const response=changedOwner.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().telegram_auth?.id===980302);
-      await changedOwner.page.locator('[data-utility="sync"]').click();await response;
-      await changedOwner.page.waitForFunction(()=>/GOLD\s+7(?:\D|$)/.test(document.getElementById('hud').textContent));
+      // Account changes invalidate both the loaded save and its membership
+      // approval. Refresh must require a reload before sending another actor's
+      // credentials; it must not silently swap owners inside the old session.
+      const beforeRefresh=changedOwner.requests.length;
+      await changedOwner.page.locator('[data-utility="sync"]').click();
+      await changedOwner.page.locator('#terminal-output').getByText(
+        'TELEGRAM ACCOUNT CHANGED. RELOAD MOONPET OS TO VERIFY ACCESS.'
+      ).waitFor();
+      assert.equal(changedOwner.requests.length,beforeRefresh,
+        'changed website identity must be blocked before any API request');
+      assert.equal(changedOwner.requests.some(r=>r.body.telegram_auth?.id===980302),false,
+        'the new actor must pass a fresh page membership gate before state reads');
       changedOwner.release();await pause(150);
-      assert.match(await changedOwner.page.locator('#hud').textContent(),/GOLD\s+7(?:\D|$)/);
+      assert.equal(await changedOwner.page.locator('[data-action="feed"]').isVisible(),false,
+        'old-owner care controls must be hidden after the identity gate closes');
+      assert.equal(changedOwner.requests.length,beforeRefresh,
+        'late warmup and hidden old-owner controls cannot send another API request');
       assert.deepEqual(changedOwner.errors,[]);
     }finally{await changedOwner.close();}
     if(viewport.width===360){

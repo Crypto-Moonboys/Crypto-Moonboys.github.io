@@ -10,17 +10,24 @@ const manual = read('how-to-play.html');
 const community = read('gkniftyheads-incubator.html');
 const wiki = read('wiki/crypto-moonboys.html');
 
-const ctas = home.match(/<nav class="simple-actions"[^>]*>([\s\S]*?)<\/nav>/)?.[1] || '';
-assert.deepEqual([...ctas.matchAll(/href="([^"]+)"/g)].map(m => m[1]), [
-  '/my-moonboy.html', '/gpt-users.html',
-], 'Homepage offers exactly the two approved identity entry CTAs in order');
-assert.deepEqual([...ctas.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].map(m => m[1]), [
-  'BUILD A MOONBOY IDENTITY', 'BRING YOUR OWN IP',
-], 'Both identity routes keep their approved labels');
-const communityCtas = home.match(/<nav class="simple-actions" aria-label="Build your character world with the community">([\s\S]*?)<\/nav>/)?.[1] || '';
-assert.deepEqual([...communityCtas.matchAll(/href="([^"]+)"/g)].map(m => m[1]), [
-  '/gpt-users.html', '/gkniftyheads-incubator.html',
-], 'World building and community remain available in the dedicated section');
+// The current homepage leads with the inline builder and explains both IP routes
+// in its mission copy. The former simple-actions button bars were removed.
+assert.match(home, /<section\b[^>]*id="build-moonboy"[^>]*data-builder-context="homepage"/,
+  'Homepage provides the inline Moonboy identity builder');
+const mission = home.match(/<div class="home-core-mission"[^>]*>([\s\S]*?)<\/div>/)?.[1] || '';
+assert.match(mission, /GK Moonboy or Flygirl/,
+  'Mission still explains the GK character route');
+assert.match(mission, /bring your own characters, artist identity, brand or project/,
+  'Mission still explains the existing-IP route');
+const academy = home.match(/<section\b[^>]*id="open-creative-academy"[^>]*>([\s\S]*?)<\/section>/)?.[1] || '';
+assert.match(academy, /href="\/gpt-users\.html"/,
+  'Academy provides the public ChatGPT Creator Studio route');
+assert.match(academy, /href="\/swarmsy\.html"/,
+  'Academy provides the optional SWARMSY PC route');
+assert.match(home, /class="simple-community"[^>]*aria-label="Join the Crypto Moonboys community"/,
+  'Homepage retains its dedicated community entry');
+assert.match(home, /href="\/gkniftyheads-incubator\.html" class="simple-community"/,
+  'Community entry opens the live community page');
 assert.match(home, /id="build-moonboy"/);
 assert.match(home, /href="\/gpt-users\.html"/, 'Independent web AI route remains available');
 assert.doesNotMatch(home, /<h2>Choose how <span>you start/, 'Homepage no longer duplicates route instructions');
