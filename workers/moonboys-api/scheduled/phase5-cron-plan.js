@@ -22,6 +22,9 @@ export function phase5CronTasks(event, env = {}) {
   return Object.freeze({
     maintenance,
     rankNotices: cron === MOONBOYS_CRON.timed && env.TAG_RUN_ENABLED === 'true',
+    automationTick: cron === MOONBOYS_CRON.timed &&
+      env.TAG_RUN_V2_AUTOMATION_ENABLED === 'true' &&
+      env.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED === 'true',
     bulletin: cron === MOONBOYS_CRON.bulletin && env.TAG_RUN_ENABLED === 'true',
     participation: cron === MOONBOYS_CRON.participation &&
       (env.TAG_RUN_V2_POOL_ENABLED === 'true' ||
