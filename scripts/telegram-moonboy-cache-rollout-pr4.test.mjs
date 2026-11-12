@@ -261,11 +261,11 @@ test('base Worker routes digest and announcement receipts through PR4 gateway', 
   assert.match(source, /finalizeTelegramGroupAnnouncement\(env\.DB, candidate, 'needs_review'/);
 });
 
-test('production defaults keep all PR4 classes and paid transforms off', () => {
+test('production defaults preserve approved group artwork classes', () => {
   const wrangler = readFileSync(
     new URL('../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
-  assert.match(wrangler, /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"/);
-  assert.match(wrangler, /TELEGRAM_MOONBOY_MEDIA_MODE = "off"/);
-  assert.match(wrangler, /TELEGRAM_MOONBOY_MESSAGE_KINDS = ""/);
+  assert.match(wrangler, /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "true"/);
+  assert.match(wrangler, /TELEGRAM_MOONBOY_MEDIA_MODE = "group"/);
+  assert.match(wrangler, /TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification,core-command"/);
   assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/);
 });
