@@ -14,14 +14,12 @@ crons = ["*/5 * * * *", "0 9 * * *", "3 */4 * * *", "12 0 * * *"]
 # in the Cloudflare dashboard if the deployed worker URLs change.
 [vars]
 TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
-# #1726 PR3: Moonboy PFP artwork on bot-controlled Telegram messages.
-# Explicit opt-in only. The canary chat ID remains an external secret/setting.
-# The Images binding is provisioned for the owner-approved private release.
-# Keep every delivery gate OFF in source; canary activation is a separate,
-# explicitly targeted production setting after this safe deployment succeeds.
-TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"
-TELEGRAM_MOONBOY_MEDIA_MODE = "off"
-TELEGRAM_MOONBOY_MESSAGE_KINDS = ""
+# Owner-approved group artwork restored 12 November 2026.
+# Keep these release settings in source so routine deployments preserve them.
+# Delivery remains restricted to the configured official Telegram group.
+TELEGRAM_MOONBOY_PHOTOS_ENABLED = "true"
+TELEGRAM_MOONBOY_MEDIA_MODE = "group"
+TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification,core-command"
 # TAG RUN launch is deliberately fail-closed pending D1 migration 103 and an
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
