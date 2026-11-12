@@ -17,7 +17,8 @@ const MIGRATIONS = [
   '104_tag_run_v2_community_token_pot.sql',
   '105_tag_run_v2_payout_execution.sql',
   '106_tag_run_v2_one_percent_policy.sql',
-  '107_tag_run_v2_persisted_draws.sql'
+  '107_tag_run_v2_persisted_draws.sql',
+  '108_tag_run_v2_allowlist_funding.sql'
 ];
 const GROUP = '-1001234567890';
 const ADMIN = '1111';
