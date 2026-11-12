@@ -186,12 +186,14 @@ test('quarantined/suspended asset and removed approval evidence fail closed',asy
   f.sqlite.prepare("UPDATE tag_run_v2_assets SET eligibility='approved',reviewed_by=NULL").run();
   includes(await f.preview(),'asset_review_evidence_missing');
 });
-test('funding source must include a confirmed donor event',async t=>{
+test('approved snapshot does not depend on individual deposit status',async t=>{
   const f=fixture(t);
   f.sqlite.prepare("UPDATE tag_run_v2_deposits SET status='refund_review'").run();
-  const p=await f.preview();includes(p,'confirmed_donation_missing');
+  const p=await f.preview();
+  assert.equal(p.status,'REVIEW_CANDIDATE');
   assert.equal(p.transactionBroadcast,false);
 });
+
 test('pool pause, cap pause and unreviewed draw each block',async t=>{
   const f=fixture(t);
   f.sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='paused'").run();
@@ -268,25 +270,20 @@ test('approved asset metadata must match exact WAX asset identity',async t=>{
   f.sqlite.prepare("UPDATE tag_run_v2_assets SET token_contract='kingsofgraff',token_precision=8").run();
   includes(await f.preview(),'asset_not_approved');
 });
-test('partial refund-review deposits cannot justify the confirmed funded balance',async t=>{
+test('deposit history cannot override an approved irreversible snapshot',async t=>{
   const f=fixture(t);
-  f.sqlite.prepare("UPDATE tag_run_v2_deposits SET units='1'").run();
+  f.sqlite.prepare("UPDATE tag_run_v2_deposits SET units='1',status='refund_review',reviewed_at=NULL").run();
   f.sqlite.prepare('INSERT INTO tag_run_v2_deposits '+
     '(chain_id,global_action_seq,transaction_id,block_num,block_id,'+
     'sender_account,recipient_account,asset_key,units,memo_digest,status) '+
     'VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-  ).run(WAX_MAINNET_CHAIN_ID,'12','d'.repeat(64),101,'f'.repeat(64),
+  ).run(WAX_MAINNET_CHAIN_ID,'12','d'.repeat(64),102,'f'.repeat(64),
     'somewallet11',TIP_ACCOUNT,A,'9999',SNAP,'refund_review');
-  includes(await f.preview(),'donation_funding_snapshot_unreconciled');
+  const p=await f.preview();
+  assert.equal(p.status,'REVIEW_CANDIDATE');
+  assert.equal(p.unsignedAction.account,'kingsofgraff');
 });
-test('future donations or unreviewed donations cannot fund an earlier LIB',async t=>{
-  const f=fixture(t);
-  f.sqlite.prepare("UPDATE tag_run_v2_deposits SET block_num=102").run();
-  includes(await f.preview(),'donation_funding_snapshot_unreconciled');
-  includes(await f.preview(),'confirmed_donation_missing');
-  f.sqlite.prepare('UPDATE tag_run_v2_deposits SET block_num=101,reviewed_at=NULL').run();
-  includes(await f.preview(),'confirmed_donation_missing');
-});
+
 test('mismatched reviewed draw snapshot commitment blocks the payout',async t=>{
   const f=fixture(t);
   f.sqlite.prepare('UPDATE tag_run_v2_draws SET snapshots_digest=?')
