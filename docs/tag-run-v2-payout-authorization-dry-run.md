@@ -4,9 +4,9 @@
 reserving funds, changing production flags, modifying WAX authorities or
 signing/broadcasting tokens. This adds no public route, cron or migration.
 
-This is an **operator preflight**, not another payout implementation. The
-existing production payout executor/ledger remains the only transaction
-authority. Its release switches remain OFF.
+This is an **operator preflight**, not the automatic signer. The production
+executor/ledger and scheduled automation remain the only transaction
+authority; this preview never inherits their release permission.
 
 ## Security and reviewed source checks
 
@@ -72,9 +72,10 @@ Full on-chain authorization/WASM review, approved token identity and balance sna
 legal and treasury authorization, and safeguarded owner signing are required
 before a separately approved real payout.
 
-**Production:** V2 inventory and allowlist controls are active; funded draws and payouts remain OFF.
-No automatic scheduling, Worker deploy, SQL migration, token transfer or
-account permission change is part of this PR.
+**Production release:** PR #1746 adds separately gated automatic scheduling,
+signing and payout execution. This dry-run module remains SELECT-only and can
+never reserve, sign, broadcast or authorize that release. See
+`docs/tag-run-v2-full-automation-release.md` for the actual deployment gates.
 
 ## Regression test scope
 
