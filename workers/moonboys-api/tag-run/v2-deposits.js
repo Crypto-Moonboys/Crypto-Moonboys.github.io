@@ -3,7 +3,7 @@
 // quarantined; missing LIB/provenance fails closed. NO signing or transfers.
 import { TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey, parseQuantity,
   sha256Text, validUtcDay } from './v2-core.js';
-import { readWaxTipAccount, WAX_HYPERION, WAX_CHAIN_API } from './v2-chain.js';
+import { readWaxTipAccount, WAX_HYPERION, WAX_HYPERION_FALLBACKS,\n  WAX_CHAIN_API } from './v2-chain.js';
 
 const MAX_SCAN = 100;
 const TX_ID = /^[a-f0-9]{64}$/i;
@@ -21,13 +21,27 @@ export async function readInboundTipReceipts({ fetchImpl = fetch,
     account, limit:String(limit), sort:'desc', 'act.name':'transfer',
     checkLib:'true' // Full actions: simple=true changes 'actions' to 'simple_actions'.
   });
-  const response = await fetchImpl(WAX_HYPERION +
-    '/v2/history/get_actions?' + params.toString(), { method:'GET' });
-  if (!response?.ok) throw new Error('wax_history_unavailable');
-  const page = await response.json();
-  if (!page || !Array.isArray(page.actions) || page.actions.length > limit) {
-    throw new Error('wax_history_malformed');
+  let page;
+  for (const host of [WAX_HYPERION, ...WAX_HYPERION_FALLBACKS]) {
+    let response;
+    try {
+      response = await fetchImpl(host +
+        '/v2/history/get_actions?' + params.toString(), { method:'GET' });
+    } catch (_) {
+      continue;
+    }
+    if (!response?.ok) continue;
+    try {
+      page = await response.json();
+    } catch (_) {
+      throw new Error('wax_history_malformed');
+    }
+    if (!page || !Array.isArray(page.actions) || page.actions.length > limit) {
+      throw new Error('wax_history_malformed');
+    }
+    break;
   }
+  if (!page) throw new Error('wax_history_unavailable');
   // Full Hyperion actions generally have no block_id or irreversible flag.
   // Resolve block provenance from the authoritative WAX chain RPC, cache
   // repeated blocks and compare against the chain's LIB from get_info.
