@@ -9,7 +9,6 @@ import {
 } from './v2-core.js';
 import { discoverWaxTipTokens } from './v2-chain.js';
 import { quarantineInboundTipReceipts } from './v2-deposits.js';
-import { inspectWaxFundingEvidence } from './v2-funding-evidence-review.js';
 import { irreversibleSnapshotDigest, readIrreversibleTokenBalances } from
   './v2-funding-controls.js';
 import { OBSERVATION_ADMIN_COMMANDS, observationEnabled,
@@ -99,105 +98,13 @@ function exactUnits(value, label) {
   catch (_) { throw new Error(label + '_invalid'); }
 }
 
-async function handleDonationApproval(env, options, parsed) {
-  const { telegramId, send, fetchImpl, cryptoImpl } = options;
-  const cfg = await configFor(env.DB);
-  if (!fundingControlsPaused(env, cfg)) {
-    await send('Donation approval refused: the verified 1% Community Pot must be ' +
-      'paused, with draws and payouts off.');
-    return true;
-  }
-  const row = await env.DB.prepare(
-    'SELECT d.*,a.chain_id AS asset_chain_id,a.token_contract,a.token_symbol,' +
-    'a.token_precision,a.eligibility,a.reviewed_by AS asset_reviewer,' +
-    'a.verified_at AS asset_verified_at FROM tag_run_v2_deposits d ' +
-    'JOIN tag_run_v2_assets a ON a.asset_key=d.asset_key ' +
-    'WHERE d.chain_id=? AND d.global_action_seq=?'
-  ).bind(WAX_MAINNET_CHAIN_ID, parsed.selector).first();
-  if (!row) {
-    await send('Donation receipt not found. Record the irreversible inbound transfer ' +
-      'as quarantined evidence before approving it.');
-    return true;
-  }
-  if (row.status === 'confirmed_donation') {
-    await send('Donation receipt ' + parsed.selector + ' is already approved. ' +
-      'Draws and payouts remain OFF.');
-    return true;
-  }
-  if (row.status !== 'quarantined' || row.asset_chain_id !== WAX_MAINNET_CHAIN_ID ||
-      row.eligibility !== 'approved' || !row.asset_reviewer ||
-      !row.asset_verified_at) {
-    await send('Donation approval refused: the receipt and exact token identity must ' +
-      'both be quarantined/approved in the expected states. Nothing changed.');
-    return true;
-  }
-  const receipt = {
-    chainId: row.chain_id, globalSequence: String(row.global_action_seq),
-    transactionId: row.transaction_id, blockNum: row.block_num,
-    blockId: row.block_id, sender: row.sender_account,
-    recipient: row.recipient_account, contract: row.token_contract,
-    symbol: row.token_symbol, precision: row.token_precision,
-    assetKey: row.asset_key, units: row.units,
-    memoDigest: row.memo_digest, status: row.status
-  };
-  let proof;
-  try {
-    proof = await inspectWaxFundingEvidence({
-      receipts: [receipt], fetchImpl, cryptoImpl
-    });
-  } catch (_) {
-    await send('Donation approval refused: the exact transfer could not be ' +
-      'reconfirmed at an irreversible WAX block through both history providers. ' +
-      'Nothing changed.');
-    return true;
-  }
-  const observation = proof?.observations?.[0];
-  if (!observation || observation.globalSequence !== parsed.selector ||
-      observation.assetKey !== row.asset_key ||
-      observation.blockReferenceIrreversible !== true) {
-    await send('Donation approval refused: independent chain evidence did not match. ' +
-      'Nothing changed.');
-    return true;
-  }
-  const actor = 'telegram:' + String(telegramId);
-  const eventKey = 'telegram-donation:approve:' + row.chain_id + ':' +
-    parsed.selector + ':' + globalThis.crypto.randomUUID();
-  const reason = 'global_action_seq=' + parsed.selector +
-    '; transaction_id=' + row.transaction_id + '; asset_key=' + row.asset_key +
-    '; units=' + row.units + '; block=' + row.block_num +
-    '; chain_proof=' + observation.proofDigest + '; review=' + parsed.reference +
-    '; private admin confirmed donation intent after two-provider chain recheck.';
-  let results;
-  try {
-    results = await env.DB.batch([
-      env.DB.prepare(
-        "UPDATE tag_run_v2_deposits SET status='confirmed_donation'," +
-        'reviewed_at=CURRENT_TIMESTAMP WHERE chain_id=? AND global_action_seq=? ' +
-        "AND status='quarantined' AND asset_key=? AND EXISTS (" +
-        'SELECT 1 FROM tag_run_v2_assets a WHERE a.asset_key=? ' +
-        "AND a.eligibility='approved' AND length(a.reviewed_by)>0 " +
-        'AND length(a.verified_at)>0) AND EXISTS (' +
-        'SELECT 1 FROM tag_run_v2_pool_config p WHERE p.config_id=1 ' +
-        "AND p.wallet_account='isthatajoint' AND p.status='paused' " +
-        'AND p.daily_bps=500 AND p.active_daily_bps=100 ' +
-        'AND p.active_policy_version=2 AND p.historical_ticket_bps=5000)'
-      ).bind(row.chain_id, parsed.selector, row.asset_key, row.asset_key),
-      env.DB.prepare(
-        'INSERT INTO tag_run_v2_audit (event_key,event_type,reason,reviewed_by) ' +
-        'SELECT ?,?,?,? WHERE changes()=1'
-      ).bind(eventKey, 'donation_approved', reason, actor)
-    ]);
-  } catch (_) { results = null; }
-  if (!successfulBatch(results)) {
-    await send('Donation approval failed atomically; no receipt was approved. ' +
-      'Check D1 and retry.');
-    return true;
-  }
-  await send('DONATION APPROVED\nAction sequence: ' + parsed.selector +
-    '\nToken: ' + row.token_symbol + ' @ ' + row.token_contract +
-    '\nIrreversible transfer: rechecked through two history providers' +
-    '\nReview reference: ' + parsed.reference +
-    '\nDraws: OFF · Payouts: OFF');
+async function handleDonationApproval(_env, options, _parsed) {
+  await options.send(
+    'Individual tip approval is not required. Token eligibility is controlled by ' +
+    '/poolapprove and /poolquarantine. Approved tokens use the verified irreversible ' +
+    'isthatajoint balance; unknown or quarantined tokens are excluded. ' +
+    'Draws and payouts remain OFF.'
+  );
   return true;
 }
 
@@ -309,16 +216,8 @@ async function handleSnapshotApproval(env, options, parsed) {
     asset.chain_id !== WAX_MAINNET_CHAIN_ID || !asset.reviewed_by ||
     !asset.verified_at)) throw new Error('snapshot_approved_asset_invalid');
 
-  const [donationResult, confirmedPayoutResult, outstandingResult,
+  const [confirmedPayoutResult, outstandingResult,
     quarantinedCount] = await Promise.all([
-    env.DB.prepare(
-      'SELECT d.chain_id,d.global_action_seq,d.transaction_id,d.block_num,' +
-      'd.block_id,d.recipient_account,d.asset_key,d.units,d.memo_digest,' +
-      'd.reviewed_at FROM tag_run_v2_deposits d JOIN tag_run_v2_assets a ' +
-      'ON a.asset_key=d.asset_key WHERE d.status=\'confirmed_donation\' ' +
-      "AND a.eligibility='approved' " +
-      'ORDER BY d.asset_key,d.block_num,d.global_action_seq LIMIT 5001'
-    ).all(),
     env.DB.prepare(
       'SELECT i.intent_key,i.asset_key,i.amount_units,i.signed_tx_id,' +
       'i.updated_at FROM tag_run_v2_payout_intents i ' +
@@ -342,11 +241,10 @@ async function handleSnapshotApproval(env, options, parsed) {
       "SELECT COUNT(*) AS n FROM tag_run_v2_assets WHERE eligibility!='approved'"
     ).first()
   ]);
-  const donations = requiredRows(donationResult, 'snapshot_donation_read');
   const confirmedPayouts = requiredRows(confirmedPayoutResult,
     'snapshot_confirmed_payout_read');
   const outstanding = requiredRows(outstandingResult, 'snapshot_obligation_read');
-  if (donations.length > 5000 || confirmedPayouts.length > 20000 ||
+  if (confirmedPayouts.length > 20000 ||
       outstanding.length > 20000 ||
       !quarantinedCount ||
       !Number.isSafeInteger(Number(quarantinedCount.n)) ||
@@ -368,22 +266,10 @@ async function handleSnapshotApproval(env, options, parsed) {
       item => item.assetKey === asset.asset_key);
     if (!balanceEvidence) throw new Error('snapshot_evidence_missing');
     const onchain = exactUnits(balanceEvidence.balanceUnits, 'snapshot_balance');
-    let donated = 0n;
-    const eligibleDonations = donations.filter(row =>
-      row.asset_key === asset.asset_key &&
-      Number.isSafeInteger(row.block_num) && row.block_num <= evidence.cutoffBlock);
-    for (const deposit of eligibleDonations) {
-      if (deposit.chain_id !== WAX_MAINNET_CHAIN_ID ||
-          deposit.recipient_account !== TIP_ACCOUNT || !deposit.reviewed_at ||
-          !GLOBAL_ACTION_SEQUENCE.test(String(deposit.global_action_seq)) ||
-          !Number.isSafeInteger(deposit.block_num) || deposit.block_num < 1 ||
-          !/^[0-9a-f]{64}$/.test(String(deposit.transaction_id || '')) ||
-          !/^[0-9a-f]{64}$/.test(String(deposit.block_id || '')) ||
-          !/^[0-9a-f]{64}$/.test(String(deposit.memo_digest || ''))) {
-        throw new Error('snapshot_donation_invalid');
-      }
-      donated += exactUnits(deposit.units, 'snapshot_donation');
-    }
+    // Token approval is the funding gate. Every unit in the independently
+    // verified irreversible wallet balance is eligible unless already reserved.
+    // Individual inbound tips do not require a second human approval.
+    const eligibleDonations = [];
     let confirmedSpent = 0n;
     const assetConfirmedPayouts = confirmedPayouts.filter(
       item => item.asset_key === asset.asset_key);
@@ -403,20 +289,16 @@ async function handleSnapshotApproval(env, options, parsed) {
     for (const obligation of assetOutstanding) {
       allocated += exactUnits(obligation.units, 'snapshot_obligation');
     }
-    // A confirmed payout is immutable only after independent irreversible
-    // chain reconciliation. Because this fresh cutoff is fetched later, every
-    // such payout has already spent donation backing through this cutoff.
-    const remainingDonationBacking = donated > confirmedSpent
-      ? donated - confirmedSpent : 0n;
-    const excluded = onchain > remainingDonationBacking
-      ? onchain - remainingDonationBacking : 0n;
-    if (allocated + excluded > onchain) {
+    // Confirmed transfers are already reflected in this later chain balance.
+    // Subtracting them again would double-debit the pot. Only unpaid reservations
+    // reduce the currently spendable approved-token balance.
+    const excluded = 0n;
+    if (allocated > onchain) {
       await send('Snapshot refused: approved ' + asset.token_symbol + ' balance ' +
-        'cannot cover its unpaid obligations and donation-backed funds. ' +
-        'Nothing changed.');
+        'cannot cover its unpaid reward obligations. Nothing changed.');
       return true;
     }
-    const spendable = onchain - allocated - excluded;
+    const spendable = onchain - allocated;
     const daily = spendable / 100n;
     const digestEvidence = {
       ...balanceEvidence, cutoffBlock: evidence.cutoffBlock,
@@ -599,7 +481,7 @@ async function handleAssetAdminCommand(env, options) {
     reason = identity +
       '; token eligibility approved after live WAX identity recheck at irreversible block ' +
       proof.latestIrreversibleBlock + '; review=' + parsed.detail +
-      '; donation provenance and contract approval remain separate.';
+      '; all irreversible wallet units become Community Pot eligible; contract approval remains separate.';
   } else {
     verifiedAt = false;
     reason = identity +
@@ -642,10 +524,10 @@ async function handleAssetAdminCommand(env, options) {
     return true;
   }
   if (name === 'poolapprove') {
-    await send('APPROVED FOR TOKEN ELIGIBILITY ONLY\n' +
+    await send('APPROVED FOR COMMUNITY POT\n' +
       parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
       '\nLive WAX identity: rechecked\nReview reference: ' + parsed.detail +
-      '\nDonation provenance: still quarantined separately' +
+      '\nAll irreversible wallet units of this token are eligible; individual tips need no approval.' +
       '\nContract code/ABI approval: unchanged\nDraws: OFF · Payouts: OFF');
   } else {
     await send('QUARANTINED NOW\n' +
