@@ -82,6 +82,12 @@ function isHtmlPartial(rel) {
   return rel.startsWith('wiki/components/');
 }
 
+function isExplicitShellExemption(rel) {
+  // Repository-local browser fixtures are not deployed content pages.
+  // The Bad Days entry page is a deliberately standalone splash experience.
+  return rel.startsWith('scripts/') || rel === 'enter.html';
+}
+
 function scriptCount(html, src) {
   const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return (html.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
@@ -286,7 +292,7 @@ const exemptShellPages = [];
 for (const rel of publicHtmlFiles) {
   if (rel.startsWith('_')) continue;
   const html = read(rel) || '';
-  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html)) {
+  if (isHtmlPartial(rel) || isRedirectPage(html) || isStandaloneToolPage(html) || isExplicitShellExemption(rel)) {
     exemptShellPages.push(rel);
     continue;
   }
