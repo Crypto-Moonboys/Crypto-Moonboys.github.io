@@ -45,6 +45,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['npm', 'run', 'worker:build-check'],
     ['node', '--test', 'scripts/moonpet-projection-diagnostics.test.mjs'],
     ['node', '--test', 'scripts/moonpet-recovery-projection.test.mjs'],
     ['node', '--test', 'scripts/moonpet-beta-streamline.test.mjs'],
