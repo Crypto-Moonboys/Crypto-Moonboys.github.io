@@ -100,6 +100,8 @@ async function handleAssetAdminCommand(env, options) {
   }
 
   const actor = 'telegram:' + String(telegramId);
+  const identity = 'asset_key=' + parsed.key + '; contract=' + parsed.contract +
+    '; symbol=' + parsed.symbol + '; precision=' + parsed.precision;
   let reason;
   let verifiedAt;
   if (name === 'poolapprove') {
@@ -133,16 +135,19 @@ async function handleAssetAdminCommand(env, options) {
       return true;
     }
     verifiedAt = true;
-    reason = 'Token eligibility approved after live WAX identity recheck at irreversible block ' +
+    reason = identity +
+      '; token eligibility approved after live WAX identity recheck at irreversible block ' +
       proof.latestIrreversibleBlock + '; review=' + parsed.detail +
       '; donation provenance and contract approval remain separate.';
   } else {
     verifiedAt = false;
-    reason = 'Token eligibility quarantined by Telegram admin; reason=' + parsed.detail +
+    reason = identity +
+      '; token eligibility quarantined by Telegram admin; reason=' + parsed.detail +
       '; existing audit history retained.';
   }
 
-  const eventKey = 'telegram-asset:' + name + ':' + globalThis.crypto.randomUUID();
+  const eventKey = 'telegram-asset:' + name + ':' + parsed.key + ':' +
+    globalThis.crypto.randomUUID();
   let results;
   try {
     results = await env.DB.batch([
