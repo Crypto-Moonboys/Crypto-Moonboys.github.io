@@ -233,6 +233,7 @@ test('poolreview displays token status without approving any token',async t=>{
   assert.match(reviewed.messages[0],/TOKEN REVIEW QUEUE/);
   assert.match(reviewed.messages[0],/LFGK \(kingsofgraff, 4 decimals\): quarantined/);
   assert.match(reviewed.messages[0],/use \/poolapprove with its review reference/);
+  assert.match(reviewed.messages[0],/Use \/poolquarantine with a reason/);
   assert.match(reviewed.messages[0],/Donation provenance remains a separate gate/);
   assert.equal(f.sqlite.prepare(
     "SELECT COUNT(*) AS n FROM tag_run_v2_assets WHERE eligibility='approved'"
@@ -694,6 +695,26 @@ test('asset admin commands reject malformed identities and preserve state',async
     'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
   ).get(ASSET).eligibility,'quarantined');
   assert.equal(count(f,'tag_run_v2_audit'),0);
+});
+
+
+test('asset eligibility and audit change roll back together on audit failure',async t=>{
+  const f=fixture(t),observe=rpc();
+  await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
+  f.sqlite.exec(
+    "CREATE TRIGGER fail_asset_approval_audit BEFORE INSERT ON tag_run_v2_audit " +
+    "WHEN NEW.event_type='asset_eligibility_approved' BEGIN " +
+    "SELECT RAISE(ABORT,'forced audit failure'); END;"
+  );
+  const result=await adminCommand(f,'poolapprove',
+    'kingsofgraff LFGK 4 rollback-review-1697',{fetchImpl:rpc().fetchImpl});
+  assert.match(result.messages[0],/failed atomically/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+  ).get(ASSET).eligibility,'quarantined');
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit WHERE event_type='asset_eligibility_approved'"
+  ).get().n,0);
 });
 
 test('top-level Telegram handler forwards asset command arguments',async t=>{
