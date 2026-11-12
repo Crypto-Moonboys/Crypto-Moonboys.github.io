@@ -11,13 +11,13 @@ export const OBSERVATION_ADMIN_COMMANDS = new Set([
   'poolobserve', 'poolreview', 'poolstate', 'poolbackfill', 'pooltest'
 ]);
 
-// Even if a future deployment accidentally enables a funded gate,
-// this observation-only pilot must refuse to proceed. Keep all four off.
+// Pool administration may be enabled while the verified configuration remains
+// paused. Observation stays available in that state, but any draw, payout or
+// legacy funded-reward gate immediately closes this read-only pilot.
 export function observationEnabled(env) {
   return env?.TAG_RUN_ENABLED === 'true' &&
     env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false' &&
     env?.TAG_RUN_V2_OBSERVATION_ENABLED === 'true' &&
-    env?.TAG_RUN_V2_POOL_ENABLED === 'false' &&
     env?.TAG_RUN_V2_DRAWS_ENABLED === 'false' &&
     env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'false' &&
     env?.TAG_RUN_V2_TIP_ACCOUNT === TIP_ACCOUNT &&

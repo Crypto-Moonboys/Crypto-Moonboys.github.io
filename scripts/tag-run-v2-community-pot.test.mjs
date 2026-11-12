@@ -36,7 +36,8 @@ test('locked wallet, chain, new migration and disabled V2 execution flags',()=>{
   assert.equal(TIP_ACCOUNT,'isthatajoint');
   assert.match(WAX_MAINNET_CHAIN_ID,/^[0-9a-f]{64}$/);
   const flags=read('workers/moonboys-api/wrangler.toml');
-  for(const key of ['TAG_RUN_V2_POOL_ENABLED','TAG_RUN_V2_DRAWS_ENABLED',
+  assert.match(flags,/TAG_RUN_V2_POOL_ENABLED = "true"/);
+  for(const key of ['TAG_RUN_V2_DRAWS_ENABLED',
     'TAG_RUN_V2_PAYOUTS_ENABLED']) {
     assert.match(flags,new RegExp(key + ' = "false"'));
   }

@@ -24,12 +24,12 @@ TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notificati
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
 TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"
-# V2 funded rewards remain OFF. An independent admin-only observer is
-# allowed after migration 104; on-chain custody/donation eligibility is NOT verified.
-# Owner-approved observation pilot: reads WAX head balances and captures
-# genuine V1 Street Cred; never allows funded draws or token transfers.
+# V2 pool administration and observation are owner-approved. The pool gate
+# exposes fail-closed review controls only; funded draws and payouts remain OFF.
+# Reads WAX balances/receipt history and captures genuine Street Cred without
+# allowing signing, broadcasting or token transfers.
 TAG_RUN_V2_OBSERVATION_ENABLED = "true"
-TAG_RUN_V2_POOL_ENABLED = "false"
+TAG_RUN_V2_POOL_ENABLED = "true"
 TAG_RUN_V2_DRAWS_ENABLED = "false"
 TAG_RUN_V2_PAYOUTS_ENABLED = "false"
 TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"
