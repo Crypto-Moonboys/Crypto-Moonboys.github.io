@@ -47,11 +47,14 @@ test('active-key transfer is exact and never defaults from caller data', () => {
   });
 });
 
-test('automatic runner fails closed without flags and encrypted secrets', async () => {
+test('automatic release still fails closed without its encrypted secrets', async () => {
   await assert.rejects(runAutomaticCommunityPot({}), /release_not_authorized/);
   const config = read('workers/moonboys-api/wrangler.toml');
-  assert.match(config, /TAG_RUN_V2_AUTOMATION_ENABLED = "false"/);
-  assert.match(config, /TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED = "false"/);
+  assert.match(config, /TAG_RUN_V2_OBSERVATION_ENABLED = "false"/);
+  assert.match(config, /TAG_RUN_V2_DRAWS_ENABLED = "true"/);
+  assert.match(config, /TAG_RUN_V2_PAYOUTS_ENABLED = "true"/);
+  assert.match(config, /TAG_RUN_V2_AUTOMATION_ENABLED = "true"/);
+  assert.match(config, /TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED = "true"/);
   assert.doesNotMatch(config, /TAG_RUN_V2_ACTIVE_PRIVATE_KEY\s*=/);
   assert.doesNotMatch(config, /TAG_RUN_V2_AUTOMATION_SEED_KEY\s*=/);
 });
