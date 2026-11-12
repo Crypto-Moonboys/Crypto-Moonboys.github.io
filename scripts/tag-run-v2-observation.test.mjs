@@ -239,7 +239,7 @@ test('poolreview displays token status without approving any token',async t=>{
   assert.match(reviewed.messages[0],/LFGK \(kingsofgraff, 4 decimals\): quarantined/);
   assert.match(reviewed.messages[0],/use \/poolapprove with its review reference/);
   assert.match(reviewed.messages[0],/Use \/poolquarantine with a reason/);
-  assert.match(reviewed.messages[0],/Donation provenance remains a separate gate/);
+  assert.match(reviewed.messages[0],/Approved tokens use their verified irreversible wallet balance/);
   assert.equal(f.sqlite.prepare(
     "SELECT COUNT(*) AS n FROM tag_run_v2_assets WHERE eligibility='approved'"
   ).get().n,0);
@@ -600,7 +600,7 @@ test('/myrewards stays unavailable if independent observation gate is turned off
 });
 
 
-test('private admin can approve an observed token identity without approving funding',async t=>{
+test('private admin can approve an observed token identity for all wallet funding',async t=>{
   const f=fixture(t),observe=rpc();
   await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
   const approval=rpc();
@@ -608,8 +608,8 @@ test('private admin can approve an observed token identity without approving fun
     'kingsofgraff LFGK 4 independent-review-1697',
     {fetchImpl:approval.fetchImpl});
   assert.equal(result.result,true);
-  assert.match(result.messages[0],/APPROVED FOR TOKEN ELIGIBILITY ONLY/);
-  assert.match(result.messages[0],/Donation provenance: still quarantined separately/);
+  assert.match(result.messages[0],/APPROVED FOR COMMUNITY POT/);
+  assert.match(result.messages[0],/All irreversible wallet units of this token are eligible/);
   assert.match(result.messages[0],/Draws: OFF · Payouts: OFF/);
   assert.deepEqual(approval.balances,[['kingsofgraff','LFGK']]);
   const asset=f.sqlite.prepare(
@@ -627,7 +627,7 @@ test('private admin can approve an observed token identity without approving fun
   assert.ok(audit.reason.includes('asset_key='+ASSET));
   assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
   assert.match(audit.reason,/review=independent-review-1697/);
-  assert.match(audit.reason,/donation provenance and contract approval remain separate/);
+  assert.match(audit.reason,/all irreversible wallet units become Community Pot eligible; contract approval remains separate/);
   assert.equal(audit.reviewed_by,'telegram:'+MEMBER);
   assert.equal(count(f,'tag_run_v2_deposits'),0);
 });
@@ -751,7 +751,7 @@ test('top-level Telegram handler forwards asset command arguments',async t=>{
     return network.fetchImpl(url,options);
   }});
   assert.equal(handled,true);
-  assert.match(sent[0].text,/APPROVED FOR TOKEN ELIGIBILITY ONLY/);
+  assert.match(sent[0].text,/APPROVED FOR COMMUNITY POT/);
   assert.equal(f.sqlite.prepare(
     'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
   ).get(ASSET).eligibility,'approved');
