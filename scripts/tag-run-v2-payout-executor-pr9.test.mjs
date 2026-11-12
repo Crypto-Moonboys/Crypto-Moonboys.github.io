@@ -173,6 +173,13 @@ test('funding requires approved token and verified snapshot',async t=>{
   }
 });
 
+test('approved irreversible snapshot creates a cap without per-tip approval',async t=>{
+  const f=fixture(t,{donation:false});
+  const cap=await initializeReviewedDailyCap(f.env,capArgs);
+  assert.equal(cap.dailyLimitUnits,'500');
+  assert.equal(cap.paused,true);
+});
+
 test('never accept an invented daily cap greater than 1% of available funds',async t=>{
   const f=fixture(t,{daily:'501',available:'10000'});
   await assert.rejects(initializeReviewedDailyCap(f.env,capArgs),
