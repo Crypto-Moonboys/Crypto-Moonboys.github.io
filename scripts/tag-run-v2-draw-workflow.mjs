@@ -1,4 +1,5 @@
-// Owner-operated persisted draw workflow; no signer, transfer or scheduling.
+// Persisted commit/reveal draw workflow. It remains signer-agnostic; the
+// scheduled automation supplies distinct commit and policy-review identities.
 import { canonicalSnapshotSetDigest } from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 import { previewCommunityDraw, sha256Text, validUtcDay, parseIntegerUnits,
   MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT, TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID
