@@ -116,7 +116,17 @@ Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtl
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const server = http.createServer(async (request, response) => {
   try {
-    const target = path.resolve(root, '.' + decodeURIComponent(new URL(request.url, 'http://localhost').pathname));
+    const pathname = new URL(request.url, 'http://localhost').pathname;
+    // Every player in this gameplay fixture is a verified group member.
+    // Serve the membership prerequisite for contexts whose page route delegates
+    // local requests to this server, including the egg season-reward scenario.
+    if (pathname === '/telegram/group-membership') {
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify({ ok: true, member: true, status: 'member',
+        group: '@gkniftyheads' }));
+      return;
+    }
+    const target = path.resolve(root, '.' + decodeURIComponent(pathname));
     if (!target.startsWith(root + path.sep)) throw Error('outside root');
     response.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream');
     response.end(await fs.readFile(target));
