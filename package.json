@@ -59,7 +59,8 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.1",
-    "jose": "^6.2.12"
+    "jose": "^6.2.12",
+    "@wharfkit/antelope": "1.2.0"
   },
   "overrides": {
     "sharp": "$sharp",
