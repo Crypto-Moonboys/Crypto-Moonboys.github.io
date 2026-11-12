@@ -66,7 +66,7 @@ test('migration pins contracts and freezes one signed transaction before push', 
   for (const token of [
     'approved_code_hash', 'approved_abi_hash', 'submission_tx_id',
     'signed_transaction_json', 'v2_asset_contract_pin_required',
-    'v2_payout_intent_immutable'
+    'v2_payout_intent_immutable', "SET status='review_only'"
   ]) assert.match(migration, new RegExp(token));
   const signer = read(
     'workers/moonboys-api/tag-run/v2-active-key-signer.js'
@@ -78,6 +78,9 @@ test('migration pins contracts and freezes one signed transaction before push', 
   );
   assert.match(automation, /stagePreparedAutomaticPayout/);
   assert.match(automation, /discoverAndVerifyIrreversibleWaxPayout/);
+  const service = read('workers/moonboys-api/tag-run/v2-service.js');
+  assert.match(service, /UPDATE tag_run_v2_payout_caps SET paused=1/);
+  assert.match(service, /COMMUNITY POT EMERGENCY PAUSE ACTIVE/);
 });
 
 
