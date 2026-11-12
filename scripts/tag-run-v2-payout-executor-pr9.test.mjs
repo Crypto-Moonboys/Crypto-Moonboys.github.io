@@ -31,7 +31,8 @@ function fixture(t,{daily='500',available='50000',donation=true,
       '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
       '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
       '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql',
-      '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql'
+      '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql',
+      '../workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql'
     ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
   }
   sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
@@ -163,10 +164,8 @@ test('production payout code exists but cannot execute in observation deployment
   assert.equal(f.intents().length,0);
 });
 
-test('funding requires approved token, confirmed donation and verified snapshot',async t=>{
-  for(const variant of [
-    {donation:false},{approved:false},{verified:false}
-  ]){
+test('funding requires approved token and verified snapshot',async t=>{
+  for(const variant of [{approved:false},{verified:false}]){
     const f=fixture(t,variant);
     await assert.rejects(initializeReviewedDailyCap(f.env,capArgs),
       /v2_payout_unapproved_snapshot|v2_payout_cap_source_unapproved/);
