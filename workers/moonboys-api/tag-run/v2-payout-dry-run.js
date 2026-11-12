@@ -218,9 +218,9 @@ export async function previewReviewedPayoutAuthorization(env, {
     evidence: Object.freeze({
       operatorAllowlist: allowAsset(operatorAllowlist,key),
       assetReviewedInD1: isText(asset?.reviewed_by) && isText(asset?.verified_at),
-      confirmedDonationInD1: validDonationCount > 0,
-      donationFundingReconciledInD1: needProvenance !== null &&
-        donationTotal >= needProvenance && deposits.length <= 5000,
+      approvedTokenIdentityInD1: identityMatches &&
+        asset?.eligibility === 'approved',
+      irreversibleBalanceSnapshotInD1: Boolean(validSource),
       reviewedDrawSnapshotBound: !reasons.has(REASONS.drawBinding),
       verifiedSnapshotInD1: Boolean(validSource),
       reviewedDrawInD1: draw?.status === 'reviewed' && isText(draw.reviewed_by),
