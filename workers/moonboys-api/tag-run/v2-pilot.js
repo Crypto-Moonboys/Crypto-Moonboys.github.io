@@ -217,7 +217,7 @@ export async function handleV2ObservationCommand(env, {
       '\nAll unreviewed assets remain quarantined. Complete the independent '+
       'contract and precision review, then use /poolapprove with its review reference. '+
       'Use /poolquarantine with a reason to remove eligibility immediately. '+
-      'Donation provenance remains a separate gate.');
+      'Approved tokens use their verified irreversible wallet balance; individual tips need no approval.');
     return true;
   }
   if (name==='poolobserve') {
