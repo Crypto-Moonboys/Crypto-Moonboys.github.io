@@ -394,6 +394,9 @@ async function handleSnapshotApproval(env, options, parsed) {
 }
 
 async function handleFundingAdminCommand(env, options) {
+  if (options.name === 'pooldonation') {
+    return handleDonationApproval(env, options, null);
+  }
   const parsed = parseFundingAdminArgs(options.name, options.args);
   if (!parsed) {
     await options.send(options.name === 'pooldonation'
