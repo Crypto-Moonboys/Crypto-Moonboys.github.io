@@ -482,6 +482,7 @@ async function handleAssetAdminCommand(env, options) {
     '; symbol=' + parsed.symbol + '; precision=' + parsed.precision;
   let reason;
   let verifiedAt;
+  let contractReview = null;
   if (name === 'poolapprove') {
     const cfg = await configFor(env.DB);
     if (!cfg || cfg.wallet_account !== TIP_ACCOUNT ||
@@ -492,7 +493,7 @@ async function handleAssetAdminCommand(env, options) {
         'with draws and payouts off.');
       return true;
     }
-    let proof, contractReview;
+    let proof;
     try {
       [proof, contractReview] = await Promise.all([
         discoverWaxTipTokens({
