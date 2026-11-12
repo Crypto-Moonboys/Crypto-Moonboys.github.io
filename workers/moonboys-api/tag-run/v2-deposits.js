@@ -3,7 +3,8 @@
 // quarantined; missing LIB/provenance fails closed. NO signing or transfers.
 import { TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, assetKey, parseQuantity,
   sha256Text, validUtcDay } from './v2-core.js';
-import { readWaxTipAccount, WAX_HYPERION, WAX_HYPERION_FALLBACKS,\n  WAX_CHAIN_API } from './v2-chain.js';
+import { readWaxTipAccount, WAX_HYPERION, WAX_HYPERION_FALLBACKS,
+  WAX_CHAIN_API } from './v2-chain.js';
 
 const MAX_SCAN = 100;
 const TX_ID = /^[a-f0-9]{64}$/i;
