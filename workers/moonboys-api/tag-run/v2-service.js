@@ -1,6 +1,6 @@
-// TAG RUN V2 read-only bot commands and participation ingestion.
-// All operations are disabled until migration 104 and separate approval.
-// NO token transfers, no wallet secret handling, no D1 token entitlements.
+// TAG RUN V2 Community Pot commands, participation and funding snapshots.
+// Automatic signing lives in the separately gated scheduled automation module;
+// private keys are accepted only through encrypted Worker secret bindings.
 import { previousDay } from './core.js';
 import {
   TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT,
@@ -103,7 +103,7 @@ async function handleDonationApproval(_env, options, _parsed) {
     'Individual tip approval is not required. Token eligibility is controlled by ' +
     '/poolapprove and /poolquarantine. Approved tokens use the verified irreversible ' +
     'isthatajoint balance; unknown or quarantined tokens are excluded. ' +
-    'Draws and payouts remain OFF.'
+    'Approved token balances enter the automatic 1% daily cycle.'
   );
   return true;
 }
@@ -583,8 +583,7 @@ async function handleAssetAdminCommand(env, options) {
     await send('QUARANTINED NOW\n' +
       parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
       '\nReason: ' + parsed.detail +
-      '\nFuture snapshot, draw and send eligibility checks will reject this token.' +
-      '\nDraws: OFF · Payouts: OFF');
+      '\nFuture snapshot, draw, reservation and signing checks reject this token immediately.');
   }
   return true;
 }
@@ -882,7 +881,7 @@ export async function handleTagRunV2Command(env, options) {
     const balances = requiredRows(rows, 'pool_balance_read');
     const lines = balances.map(r=>r.token_symbol+' @ '+
       r.token_contract+' — '+r.spendable_units+' smallest units ('+r.day_key+')');
-    await send('TAG RUN · COMMUNITY TOKEN POT (READ-ONLY)\n' +
+    await send('TAG RUN · AUTOMATIC COMMUNITY TOKEN POT\n' +
       'Pot status: '+cfg.status+'. Wallet: '+TIP_ACCOUNT+
       '\nDaily review pool: at most 1% of each approved unreserved token.'+
       '\n'+(lines.join('\n')||'No independently verified eligible token balances yet.')+
@@ -895,16 +894,27 @@ export async function handleTagRunV2Command(env, options) {
       'Unfunded participation weight: '+pending+' points (not a token balance).'+
       '\nHistorical activity receives up to 50% of ticket weight when current ' +
       'and past participants both qualify.\n'+
-      'Funded token payouts: NOT ENABLED. No monetary promise or pending transfer.');
+      'Approved token rewards run automatically; use /rainstatus to check your registered WAX destination.');
     return true;
   }
   if (name === 'poolpause') {
-    const write = await env.DB.prepare(
-      "UPDATE tag_run_v2_pool_config SET status='paused',revision=revision+1," +
-      'updated_at=CURRENT_TIMESTAMP WHERE config_id=1'
-    ).run();
-    if (write?.success === false) throw new Error('pool_pause_write_failed');
-    await send('Community Token Pot paused. TAG RUN Street Cred continues.');
+    const writes = await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE tag_run_v2_pool_config SET status='paused',revision=revision+1," +
+        "updated_at=CURRENT_TIMESTAMP WHERE config_id=1 AND status!='paused'"
+      ),
+      env.DB.prepare(
+        'UPDATE tag_run_v2_payout_caps SET paused=1,revision=revision+1 ' +
+        'WHERE paused=0'
+      )
+    ]);
+    if (!Array.isArray(writes) || writes.length !== 2 ||
+        writes.some(result => result?.success !== true)) {
+      throw new Error('pool_pause_write_failed');
+    }
+    await send('COMMUNITY POT EMERGENCY PAUSE ACTIVE\\n' +
+      'New snapshots, draws, reservations, signing and broadcast retries are stopped. ' +
+      'Street Cred continues; already submitted transactions remain reconciliation-only.');
     return true;
   }
   if (name === 'poolscan') {
@@ -943,13 +953,12 @@ export async function handleTagRunV2Command(env, options) {
         '. No token allocation or transfer attempted.');
       return true;
     }
-    await send('TAG RUN V2 · ADMIN READ-ONLY INVENTORY\n'+
+    await send('TAG RUN V2 · AUTOMATIC POT INVENTORY\n'+
       'Wallet exists on WAX mainnet: '+inventory.account+
       '\nDiscovered assets: '+inventory.assets.length+
       '\nApproved observed: '+inventory.assets.filter(x=>x.status==='observed_only').length+
       '\nQuarantined/unknown: '+inventory.assets.filter(x=>x.status!=='observed_only').length+
-      '\nCustody verified: NO. Finalized snapshot: NO.'+
-      '\nNo automated token allocation, claims or transfers.');
+      '\nOnly approved, contract-pinned identities can enter automatic snapshots and payouts.');
     return true;
   }
   if (name === 'drawaudit') {
