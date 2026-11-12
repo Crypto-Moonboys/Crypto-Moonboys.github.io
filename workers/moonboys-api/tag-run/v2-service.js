@@ -13,6 +13,7 @@ import { irreversibleSnapshotDigest, readIrreversibleTokenBalances } from
   './v2-funding-controls.js';
 import { OBSERVATION_ADMIN_COMMANDS, observationEnabled,
   handleV2ObservationCommand } from './v2-pilot.js';
+import { reviewWaxTokenContract } from './v2-wax-authority-review.js';
 
 export const V2_COMMANDS = new Set([
   'pool', 'myrewards', 'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause',
@@ -84,13 +85,12 @@ function parseFundingAdminArgs(name, args) {
   return { selector: parts[0], reference: parts[1] };
 }
 
-function fundingControlsPaused(env, cfg) {
-  return cfg && cfg.wallet_account === TIP_ACCOUNT && cfg.status === 'paused' &&
+function fundingControlsReady(env, cfg) {
+  return cfg && cfg.wallet_account === TIP_ACCOUNT &&
+    ['paused', 'review_only'].includes(cfg.status) &&
     cfg.daily_bps === 500 && cfg.active_daily_bps === 100 &&
     cfg.active_policy_version === 2 && cfg.historical_ticket_bps === 5000 &&
-    env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false' &&
-    env?.TAG_RUN_V2_DRAWS_ENABLED === 'false' &&
-    env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'false';
+    env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false';
 }
 
 function exactUnits(value, label) {
@@ -122,7 +122,7 @@ function snapshotInsert(db, row, chatId, day, cutoffBlock, cutoffBlockId) {
     'AND length(a.verified_at)>0 ' +
     'AND EXISTS (SELECT 1 FROM tag_run_v2_pool_config p ' +
     'WHERE p.config_id=1 AND p.wallet_account=\'isthatajoint\' ' +
-    "AND p.status='paused' AND p.daily_bps=500 " +
+    "AND p.status IN ('paused','review_only') AND p.daily_bps=500 " +
     'AND p.active_daily_bps=100 AND p.active_policy_version=2 ' +
     'AND p.historical_ticket_bps=5000) ' +
     'AND NOT EXISTS (SELECT 1 FROM json_each(?) j WHERE NOT EXISTS (' +
@@ -185,7 +185,7 @@ async function handleSnapshotApproval(env, options, parsed) {
     return true;
   }
   const cfg = await configFor(env.DB);
-  if (!fundingControlsPaused(env, cfg)) {
+  if (!fundingControlsReady(env, cfg)) {
     await send('Snapshot refused: the verified 1% Community Pot must be paused, ' +
       'with draws and payouts off.');
     return true;
@@ -393,6 +393,35 @@ async function handleSnapshotApproval(env, options, parsed) {
   return true;
 }
 
+
+export async function createAutomaticSnapshot(env, {
+  day, fetchImpl = fetch, cryptoImpl = globalThis.crypto,
+  nowMs = Date.now()
+} = {}) {
+  const chatId = String(env?.TELEGRAM_GROUP_CHAT_ID || '').trim();
+  if (!validUtcDay(day) || !/^-100[0-9]{5,20}$/.test(chatId)) {
+    throw new Error('automatic_snapshot_arguments_invalid');
+  }
+  const messages = [];
+  await handleSnapshotApproval(env, {
+    telegramId: 'automation', chatId,
+    send: async message => { messages.push(String(message)); },
+    fetchImpl, cryptoImpl, nowMs
+  }, {
+    selector: day,
+    reference: 'automatic-' + day.replaceAll('-', '')
+  });
+  const row = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=?'
+  ).bind(chatId, day).first();
+  const count = Number(row?.n);
+  if (!Number.isSafeInteger(count) || count < 1) {
+    throw new Error('automatic_snapshot_not_created');
+  }
+  return Object.freeze({ status: 'verified', chatId, day, assets: count,
+    message: messages.at(-1) || '' });
+}
+
 async function handleFundingAdminCommand(env, options) {
   if (options.name === 'pooldonation') {
     return handleDonationApproval(env, options, null);
@@ -434,13 +463,6 @@ async function handleAssetAdminCommand(env, options) {
       'then use the exact contract, uppercase symbol and precision shown there.');
     return true;
   }
-  if (name === 'poolapprove' && row.eligibility === 'approved') {
-    await send(parsed.symbol + ' @ ' + parsed.contract +
-      ' is already approved for the Community Pot. Every independently verified ' +
-      'irreversible wallet unit is eligible automatically; individual tips need no approval. ' +
-      'Draws and payouts remain controlled by their release switches.');
-    return true;
-  }
   if (name === 'poolquarantine' && row.eligibility === 'quarantined') {
     await send(parsed.symbol + ' @ ' + parsed.contract + ' is already quarantined.');
     return true;
@@ -453,20 +475,25 @@ async function handleAssetAdminCommand(env, options) {
   let verifiedAt;
   if (name === 'poolapprove') {
     const cfg = await configFor(env.DB);
-    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT || cfg.status !== 'paused' ||
+    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT ||
+        !['paused', 'review_only'].includes(cfg.status) ||
         cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 ||
-        cfg.active_policy_version !== 2 || cfg.historical_ticket_bps !== 5000 ||
-        env?.TAG_RUN_V2_DRAWS_ENABLED === 'true' ||
-        env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'true') {
+        cfg.active_policy_version !== 2 || cfg.historical_ticket_bps !== 5000) {
       await send('Approval refused: the verified 1% Community Pot policy must be paused, ' +
         'with draws and payouts off.');
       return true;
     }
-    let proof;
+    let proof, contractReview;
     try {
-      proof = await discoverWaxTipTokens({
-        fetchImpl, account: TIP_ACCOUNT, approvedAssets: [parsed.key]
-      });
+      [proof, contractReview] = await Promise.all([
+        discoverWaxTipTokens({
+          fetchImpl, account: TIP_ACCOUNT, approvedAssets: [parsed.key]
+        }),
+        reviewWaxTokenContract({
+          fetchImpl, contract: parsed.contract,
+          symbol: parsed.symbol, precision: parsed.precision
+        })
+      ]);
     } catch (_) {
       await send('Approval refused: live WAX chain and token identity recheck failed. ' +
         'Nothing changed; retry later or quarantine the token.');
@@ -476,16 +503,20 @@ async function handleAssetAdminCommand(env, options) {
     if (proof.chainId !== WAX_MAINNET_CHAIN_ID || !live ||
         live.status !== 'observed_only' ||
         live.contract !== parsed.contract || live.symbol !== parsed.symbol ||
-        live.precision !== parsed.precision) {
-      await send('Approval refused: the exact token identity was not confirmed in the live ' +
-        'isthatajoint inventory. Nothing changed.');
+        live.precision !== parsed.precision ||
+        contractReview?.assetKey !== parsed.key ||
+        contractReview?.independentlyCorroborated !== true) {
+      await send('Approval refused: the exact token identity and standard transfer contract ' +
+        'were not confirmed by both WAX providers. Nothing changed.');
       return true;
     }
     verifiedAt = true;
     reason = identity +
       '; token eligibility approved after live WAX identity recheck at irreversible block ' +
       proof.latestIrreversibleBlock + '; review=' + parsed.detail +
-      '; all irreversible wallet units become Community Pot eligible; contract approval remains separate.';
+      '; code_hash=' + contractReview.codeHash +
+      '; abi_hash=' + contractReview.abiHash +
+      '; all irreversible wallet units become Community Pot eligible.';
   } else {
     verifiedAt = false;
     reason = identity +
@@ -500,12 +531,15 @@ async function handleAssetAdminCommand(env, options) {
     results = await env.DB.batch([
       env.DB.prepare(
         "UPDATE tag_run_v2_assets SET eligibility=?," +
-        (verifiedAt ? 'verified_at=CURRENT_TIMESTAMP,' : 'verified_at=NULL,') +
+        (verifiedAt
+          ? 'verified_at=CURRENT_TIMESTAMP,approved_code_hash=?,approved_abi_hash=?,'
+          : 'verified_at=NULL,') +
         'reviewed_by=?,updated_at=CURRENT_TIMESTAMP WHERE asset_key=? ' +
         'AND chain_id=? AND token_contract=? AND token_symbol=? ' +
         'AND token_precision=? AND eligibility=?'
       ).bind(
         name === 'poolapprove' ? 'approved' : 'quarantined',
+        ...(verifiedAt ? [contractReview.codeHash, contractReview.abiHash] : []),
         actor, parsed.key, WAX_MAINNET_CHAIN_ID, parsed.contract,
         parsed.symbol, parsed.precision, row.eligibility
       ),
@@ -532,7 +566,9 @@ async function handleAssetAdminCommand(env, options) {
       parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
       '\nLive WAX identity: rechecked\nReview reference: ' + parsed.detail +
       '\nAll irreversible wallet units of this token are eligible; individual tips need no approval.' +
-      '\nContract code/ABI approval: unchanged\nDraws: OFF · Payouts: OFF');
+      '\nContract code hash: ' + contractReview.codeHash +
+      '\nContract ABI hash: ' + contractReview.abiHash +
+      '\nAutomatic rewards use this pinned contract only.');
   } else {
     await send('QUARANTINED NOW\n' +
       parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
