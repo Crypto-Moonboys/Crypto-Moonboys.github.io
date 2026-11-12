@@ -271,6 +271,10 @@ test('approved token makes individual tip approval unnecessary', async t => {
   assert.equal(f.sqlite.prepare(
     "SELECT COUNT(*) AS n FROM tag_run_v2_audit WHERE event_type='donation_approved'"
   ).get().n, 0);
+  const alreadyApproved = await admin(f, 'poolapprove',
+    CONTRACT + ' ' + SYMBOL + ' 4 review-2026-11-12');
+  assert.match(alreadyApproved.messages[0], /already approved for the Community Pot/);
+  assert.match(alreadyApproved.messages[0], /individual tips need no approval/);
 });
 
 test('verified snapshot includes approved assets, excludes quarantine and feeds persisted draw inputs', async t => {
