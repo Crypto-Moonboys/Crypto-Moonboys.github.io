@@ -308,16 +308,18 @@ try {
   );
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
     const intro = document.getElementById('home-top-message');
+    const gallery = document.querySelector('.home-art-strip');
     const builder = document.querySelector('.homepage-avatar-builder');
     const mission = document.getElementById('how-it-works');
     return Boolean(
-      intro && builder && mission &&
-      intro.nextElementSibling === builder &&
+      intro && gallery && builder && mission &&
+      intro.nextElementSibling === gallery &&
+      gallery.nextElementSibling === builder &&
       builder.nextElementSibling === mission &&
       !document.querySelector('.build-moonboy-hero')
     );
   });
-  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro text -> builder -> academy (art moved to splash)');
+  assert(homepageOrderIsCorrect, 'Homepage DOM order must be intro -> nine-image gallery -> builder -> academy');
   const homepageScroll = await homepageDesktop.evaluate(() => ({
     bodyOverflowY: getComputedStyle(document.body).overflowY,
     pageOverflowY: getComputedStyle(document.documentElement).overflowY,
