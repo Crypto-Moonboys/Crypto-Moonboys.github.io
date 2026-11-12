@@ -203,15 +203,16 @@ export async function readIrreversibleTokenBalances({
 }
 
 export async function irreversibleSnapshotDigest({
-  chatId, day, asset, evidence, allocatedUnpaidUnits, excludedUnits,
-  spendableUnits, dailyRewardUnits, cryptoImpl = globalThis.crypto
+  chatId, day, asset, evidence, confirmedSpentUnits,
+  allocatedUnpaidUnits, excludedUnits, spendableUnits, dailyRewardUnits,
+  cryptoImpl = globalThis.crypto
 }) {
   return sha256Text(JSON.stringify([
     SNAPSHOT_EVIDENCE_DOMAIN, WAX_MAINNET_CHAIN_ID, TIP_ACCOUNT, chatId, day,
     asset.asset_key, asset.token_contract, asset.token_symbol,
     asset.token_precision, evidence.cutoffBlock, evidence.cutoffBlockId,
     evidence.balanceUnits, evidence.stateBlock, evidence.stateBlockId,
-    allocatedUnpaidUnits, excludedUnits, spendableUnits,
+    confirmedSpentUnits, allocatedUnpaidUnits, excludedUnits, spendableUnits,
     DAILY_BPS, dailyRewardUnits, ...SNAPSHOT_HISTORY_PROVIDERS
   ]), cryptoImpl);
 }

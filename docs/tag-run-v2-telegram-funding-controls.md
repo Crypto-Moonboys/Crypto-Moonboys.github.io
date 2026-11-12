@@ -46,6 +46,8 @@ All approved assets are written together; quarantined and suspended assets are
 excluded. For each approved asset:
 
 - confirmed donation units through the cutoff back the eligible balance;
+- previously confirmed irreversible payout units are deducted from that
+  donation backing before any current balance can be considered eligible;
 - any balance not backed by an approved donation is excluded;
 - every outstanding reviewed-but-unpaid bundle is reserved;
 - spendable units are `balance - unpaid reservations - exclusions`;

@@ -114,6 +114,72 @@ async function addReceipt(f, { asset = ASSET, sequence = '123',
     status === 'confirmed_donation' ? '2026-11-12T12:00:00Z' : null);
 }
 
+function addConfirmedPayout(f, { units = '1000' } = {}) {
+  const oldDay = '2026-11-10';
+  const snapshot = '8'.repeat(64);
+  const intent = '7'.repeat(64);
+  f.sqlite.prepare(
+    "UPDATE tag_run_v2_pool_config SET status='review_only',revision=revision+1"
+  ).run();
+  f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_snapshots ' +
+    '(chat_id,day_key,asset_key,wallet_account,chain_irreversible_block,' +
+    'chain_block_id,onchain_units,allocated_unpaid_units,excluded_units,' +
+    'spendable_units,five_percent_units,snapshot_digest,status,' +
+    'reward_policy_bps,daily_reward_units) ' +
+    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,100,?)'
+  ).run(GROUP, oldDay, ASSET, TIP_ACCOUNT, 90, '5'.repeat(64),
+    '100000', '0', '0', '100000', '0', snapshot, 'verified', '1000');
+  f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_draws ' +
+    '(chat_id,day_key,status,seed_commitment,rules_digest,weights_digest,' +
+    'snapshots_digest,reviewed_by,reward_policy_bps) ' +
+    "VALUES (?,?,'reviewed',?,?,?,?,?,100)"
+  ).run(GROUP, oldDay, '1'.repeat(64), '2'.repeat(64),
+    '3'.repeat(64), snapshot, 'historical-reviewer');
+  f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_bundles ' +
+    '(chat_id,day_key,asset_key,bundle_index,telegram_id,ticket_class,units) ' +
+    "VALUES (?,?,?,0,'2222','current',?)"
+  ).run(GROUP, oldDay, ASSET, units);
+  f.sqlite.prepare(
+    "INSERT INTO tag_run_wallets (telegram_id,wax_account) VALUES ('2222','paidmember11')"
+  ).run();
+  f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_payout_caps ' +
+    '(chat_id,day_key,asset_key,snapshot_digest,daily_limit_units,' +
+    'per_transfer_limit_units,authorized_by,reward_policy_bps) ' +
+    "VALUES (?,?,?,?,?,?,'historical-approval',100)"
+  ).run(GROUP, oldDay, ASSET, snapshot, '1000', '1000');
+  f.sqlite.prepare(
+    'UPDATE tag_run_v2_payout_caps SET paused=0,revision=revision+1 ' +
+    'WHERE chat_id=? AND day_key=? AND asset_key=?'
+  ).run(GROUP, oldDay, ASSET);
+  f.sqlite.prepare(
+    'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_reserved_units=?,' +
+    'last_intent_key=?,revision=revision+1 ' +
+    'WHERE chat_id=? AND day_key=? AND asset_key=?'
+  ).run(units, units, intent, GROUP, oldDay, ASSET);
+  f.sqlite.prepare(
+    'INSERT INTO tag_run_v2_payout_intents ' +
+    '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,' +
+    'receiving_account,amount_units,snapshot_digest,authorization_digest,' +
+    "status,signed_tx_id,approved_by) VALUES (?,?,?,?,0,'2222',?,?,?,?,'reserved',NULL,?)"
+  ).run(intent, GROUP, oldDay, ASSET, 'paidmember11', units, snapshot,
+    '9'.repeat(64), 'historical-approval');
+  f.sqlite.prepare(
+    "UPDATE tag_run_v2_payout_intents SET status='broadcast_unknown'," +
+    'updated_at=CURRENT_TIMESTAMP WHERE intent_key=?'
+  ).run(intent);
+  f.sqlite.prepare(
+    "UPDATE tag_run_v2_payout_intents SET status='confirmed',signed_tx_id=?," +
+    'updated_at=CURRENT_TIMESTAMP WHERE intent_key=?'
+  ).run('6'.repeat(64), intent);
+  f.sqlite.prepare(
+    "UPDATE tag_run_v2_pool_config SET status='paused',revision=revision+1"
+  ).run();
+}
+
 function network({ mismatchHistory = false, unavailable = false } = {}) {
   const calls = [];
   const memo = 'community gift';
@@ -263,6 +329,32 @@ test('verified snapshot includes approved assets, excludes quarantine and feeds 
   assert.deepEqual(input.snapshots.map(row => row.asset_key), [ASSET]);
   assert.deepEqual(input.deposits.map(row => row.global_action_seq), ['123']);
   assert.equal(input.snapshots[0].daily_reward_units, '1000');
+});
+
+test('confirmed payouts reduce donation backing before quarantined funds are excluded', async t => {
+  const f = fixture(t);
+  await addReceipt(f, { status: 'confirmed_donation', units: '100000' });
+  addConfirmedPayout(f, { units: '1000' });
+  await addReceipt(f, {
+    sequence: '124', status: 'quarantined', units: '1000'
+  });
+  const result = await admin(f, 'poolsnapshot',
+    DAY + ' spent-backing-review-1697');
+  assert.match(result.messages[0], /VERIFIED IRREVERSIBLE 1% SNAPSHOT SET/);
+  const snapshot = f.sqlite.prepare(
+    'SELECT onchain_units,allocated_unpaid_units,excluded_units,' +
+    'spendable_units,daily_reward_units FROM tag_run_v2_snapshots ' +
+    'WHERE chat_id=? AND day_key=? AND asset_key=?'
+  ).get(GROUP, DAY, ASSET);
+  assert.deepEqual({ ...snapshot }, {
+    onchain_units: '100000', allocated_unpaid_units: '0',
+    excluded_units: '1000', spendable_units: '99000',
+    daily_reward_units: '990'
+  });
+  const audit = JSON.parse(f.sqlite.prepare(
+    "SELECT reason FROM tag_run_v2_audit WHERE event_type='snapshot_verified'"
+  ).get().reason);
+  assert.equal(audit.approved_assets[0].confirmed_spent_units, '1000');
 });
 
 test('provider disagreement, quarantine and access failures create no funding evidence', async t => {

@@ -229,6 +229,17 @@ function snapshotInsert(db, row, chatId, day, cutoffBlock, cutoffBlockId) {
     'AND d.memo_digest=json_extract(j.value,\'$.memo_digest\') ' +
     "AND d.status='confirmed_donation' " +
     'AND d.reviewed_at=json_extract(j.value,\'$.reviewed_at\'))) ' +
+    'AND (SELECT COUNT(*) FROM tag_run_v2_payout_intents i ' +
+    "WHERE i.asset_key=a.asset_key AND i.status='confirmed')" +
+    '=json_array_length(?) ' +
+    'AND NOT EXISTS (SELECT 1 FROM json_each(?) j WHERE NOT EXISTS (' +
+    'SELECT 1 FROM tag_run_v2_payout_intents i WHERE ' +
+    'i.intent_key=json_extract(j.value,\'$.intent_key\') ' +
+    'AND i.asset_key=json_extract(j.value,\'$.asset_key\') ' +
+    'AND i.amount_units=json_extract(j.value,\'$.amount_units\') ' +
+    'AND i.signed_tx_id=json_extract(j.value,\'$.signed_tx_id\') ' +
+    'AND i.updated_at=json_extract(j.value,\'$.updated_at\') ' +
+    "AND i.status='confirmed')) " +
     'AND (SELECT COUNT(*) FROM tag_run_v2_bundles b ' +
     'JOIN tag_run_v2_draws d ON d.chat_id=b.chat_id AND d.day_key=b.day_key ' +
     'LEFT JOIN tag_run_v2_payout_intents i ON i.chat_id=b.chat_id ' +
@@ -251,6 +262,7 @@ function snapshotInsert(db, row, chatId, day, cutoffBlock, cutoffBlockId) {
     '),?,?,?,?,?,?,?,?,?,?,?,\'verified\',100,?)'
   ).bind(chatId, row.asset_key, WAX_MAINNET_CHAIN_ID, row.token_contract,
     row.token_symbol, row.token_precision, row.donations_json,
+    row.confirmed_payouts_json, row.confirmed_payouts_json,
     row.outstanding_json, row.outstanding_json,
     day, row.asset_key, TIP_ACCOUNT,
     cutoffBlock, cutoffBlockId, row.onchain_units,
@@ -297,7 +309,8 @@ async function handleSnapshotApproval(env, options, parsed) {
     asset.chain_id !== WAX_MAINNET_CHAIN_ID || !asset.reviewed_by ||
     !asset.verified_at)) throw new Error('snapshot_approved_asset_invalid');
 
-  const [donationResult, outstandingResult, quarantinedCount] = await Promise.all([
+  const [donationResult, confirmedPayoutResult, outstandingResult,
+    quarantinedCount] = await Promise.all([
     env.DB.prepare(
       'SELECT d.chain_id,d.global_action_seq,d.transaction_id,d.block_num,' +
       'd.block_id,d.recipient_account,d.asset_key,d.units,d.memo_digest,' +
@@ -305,6 +318,13 @@ async function handleSnapshotApproval(env, options, parsed) {
       'ON a.asset_key=d.asset_key WHERE d.status=\'confirmed_donation\' ' +
       "AND a.eligibility='approved' " +
       'ORDER BY d.asset_key,d.block_num,d.global_action_seq LIMIT 5001'
+    ).all(),
+    env.DB.prepare(
+      'SELECT i.intent_key,i.asset_key,i.amount_units,i.signed_tx_id,' +
+      'i.updated_at FROM tag_run_v2_payout_intents i ' +
+      'JOIN tag_run_v2_assets a ON a.asset_key=i.asset_key ' +
+      "WHERE i.status='confirmed' AND a.eligibility='approved' " +
+      'ORDER BY i.asset_key,i.updated_at,i.intent_key LIMIT 20001'
     ).all(),
     env.DB.prepare(
       'SELECT b.chat_id,b.day_key,b.asset_key,b.bundle_index,b.units ' +
@@ -323,8 +343,11 @@ async function handleSnapshotApproval(env, options, parsed) {
     ).first()
   ]);
   const donations = requiredRows(donationResult, 'snapshot_donation_read');
+  const confirmedPayouts = requiredRows(confirmedPayoutResult,
+    'snapshot_confirmed_payout_read');
   const outstanding = requiredRows(outstandingResult, 'snapshot_obligation_read');
-  if (donations.length > 5000 || outstanding.length > 20000 ||
+  if (donations.length > 5000 || confirmedPayouts.length > 20000 ||
+      outstanding.length > 20000 ||
       !quarantinedCount ||
       !Number.isSafeInteger(Number(quarantinedCount.n)) ||
       Number(quarantinedCount.n) < 0) throw new Error('snapshot_source_limit');
@@ -361,13 +384,32 @@ async function handleSnapshotApproval(env, options, parsed) {
       }
       donated += exactUnits(deposit.units, 'snapshot_donation');
     }
+    let confirmedSpent = 0n;
+    const assetConfirmedPayouts = confirmedPayouts.filter(
+      item => item.asset_key === asset.asset_key);
+    for (const payout of assetConfirmedPayouts) {
+      const amount = exactUnits(payout.amount_units, 'snapshot_confirmed_payout');
+      if (amount <= 0n ||
+          !/^[0-9a-f]{64}$/.test(String(payout.intent_key || '')) ||
+          !/^[0-9a-f]{64}$/.test(String(payout.signed_tx_id || '')) ||
+          typeof payout.updated_at !== 'string' || !payout.updated_at) {
+        throw new Error('snapshot_confirmed_payout_invalid');
+      }
+      confirmedSpent += amount;
+    }
     let allocated = 0n;
     const assetOutstanding = outstanding.filter(
       item => item.asset_key === asset.asset_key);
     for (const obligation of assetOutstanding) {
       allocated += exactUnits(obligation.units, 'snapshot_obligation');
     }
-    const excluded = onchain > donated ? onchain - donated : 0n;
+    // A confirmed payout is immutable only after independent irreversible
+    // chain reconciliation. Because this fresh cutoff is fetched later, every
+    // such payout has already spent donation backing through this cutoff.
+    const remainingDonationBacking = donated > confirmedSpent
+      ? donated - confirmedSpent : 0n;
+    const excluded = onchain > remainingDonationBacking
+      ? onchain - remainingDonationBacking : 0n;
     if (allocated + excluded > onchain) {
       await send('Snapshot refused: approved ' + asset.token_symbol + ' balance ' +
         'cannot cover its unpaid obligations and donation-backed funds. ' +
@@ -382,6 +424,7 @@ async function handleSnapshotApproval(env, options, parsed) {
     };
     const row = {
       ...asset, onchain_units: onchain.toString(),
+      confirmed_spent_units: confirmedSpent.toString(),
       allocated_unpaid_units: allocated.toString(),
       excluded_units: excluded.toString(), spendable_units: spendable.toString(),
       daily_reward_units: daily.toString(), state_block: balanceEvidence.stateBlock,
@@ -394,6 +437,11 @@ async function handleSnapshotApproval(env, options, parsed) {
         units: deposit.units, memo_digest: deposit.memo_digest,
         reviewed_at: deposit.reviewed_at
       }))),
+      confirmed_payouts_json: JSON.stringify(assetConfirmedPayouts.map(payout => ({
+        intent_key: payout.intent_key, asset_key: payout.asset_key,
+        amount_units: payout.amount_units, signed_tx_id: payout.signed_tx_id,
+        updated_at: payout.updated_at
+      }))),
       outstanding_json: JSON.stringify(assetOutstanding.map(obligation => ({
         chat_id: obligation.chat_id, day_key: obligation.day_key,
         asset_key: obligation.asset_key, bundle_index: obligation.bundle_index,
@@ -402,6 +450,7 @@ async function handleSnapshotApproval(env, options, parsed) {
     };
     row.snapshot_digest = await irreversibleSnapshotDigest({
       chatId, day: parsed.selector, asset, evidence: digestEvidence,
+      confirmedSpentUnits: row.confirmed_spent_units,
       allocatedUnpaidUnits: row.allocated_unpaid_units,
       excludedUnits: row.excluded_units, spendableUnits: row.spendable_units,
       dailyRewardUnits: row.daily_reward_units, cryptoImpl
@@ -421,6 +470,7 @@ async function handleSnapshotApproval(env, options, parsed) {
       asset_key: row.asset_key, snapshot_digest: row.snapshot_digest,
       state_block: row.state_block, state_block_id: row.state_block_id,
       onchain_units: row.onchain_units,
+      confirmed_spent_units: row.confirmed_spent_units,
       allocated_unpaid_units: row.allocated_unpaid_units,
       excluded_units: row.excluded_units,
       daily_reward_units: row.daily_reward_units
