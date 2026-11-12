@@ -3,8 +3,8 @@
 // NO token transfers, no wallet secret handling, no D1 token entitlements.
 import { previousDay } from './core.js';
 import {
-  TIP_ACCOUNT, MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT,
-  sha256Text, drawSeed, previewCommunityDraw, validUtcDay
+  TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT,
+  assetKey, sha256Text, drawSeed, previewCommunityDraw, validUtcDay
 } from './v2-core.js';
 import { discoverWaxTipTokens } from './v2-chain.js';
 import { quarantineInboundTipReceipts } from './v2-deposits.js';
@@ -13,11 +13,11 @@ import { OBSERVATION_ADMIN_COMMANDS, observationEnabled,
 
 export const V2_COMMANDS = new Set([
   'pool', 'myrewards', 'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause',
-  ...OBSERVATION_ADMIN_COMMANDS
+  'poolapprove', 'poolquarantine', ...OBSERVATION_ADMIN_COMMANDS
 ]);
 export const V2_ADMIN_COMMANDS = new Set([
   'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause',
-  ...OBSERVATION_ADMIN_COMMANDS
+  'poolapprove', 'poolquarantine', ...OBSERVATION_ADMIN_COMMANDS
 ]);
 const isV2Available = env => env?.TAG_RUN_ENABLED === 'true' &&
   env?.TAG_RUN_V2_POOL_ENABLED === 'true' && !!env?.DB &&
@@ -35,6 +35,160 @@ function requiredRows(result, label) {
     throw new Error(label + '_unavailable');
   }
   return result.results;
+}
+
+const ASSET_ADMIN_COMMANDS = new Set(['poolapprove', 'poolquarantine']);
+const APPROVAL_REFERENCE = /^[A-Za-z0-9][A-Za-z0-9._:/#-]{2,79}$/;
+const CONTROL_CHARACTER = /[\u0000-\u001f\u007f]/u;
+
+function parseAssetAdminArgs(name, args) {
+  const raw = String(args || '').trim();
+  if (!raw || CONTROL_CHARACTER.test(raw)) return null;
+  const parts = raw.split(/\s+/u);
+  if ((name === 'poolapprove' && parts.length !== 4) ||
+      (name === 'poolquarantine' && parts.length < 4)) return null;
+  const [contract, symbol, precisionText, ...detailParts] = parts;
+  if (!/^[0-8]$/.test(precisionText)) return null;
+  let key;
+  try { key = assetKey(contract, symbol, Number(precisionText)); }
+  catch (_) { return null; }
+  const detail = detailParts.join(' ');
+  if (name === 'poolapprove' && !APPROVAL_REFERENCE.test(detail)) return null;
+  if (name === 'poolquarantine' &&
+      (detail.length < 3 || detail.length > 160)) return null;
+  return { key, contract, symbol, precision: Number(precisionText), detail };
+}
+
+function successfulBatch(results) {
+  return Array.isArray(results) && results.length === 2 &&
+    results.every(result => result?.success === true &&
+      result?.meta?.changes === 1);
+}
+
+async function handleAssetAdminCommand(env, options) {
+  const { name, args, telegramId, send, fetchImpl } = options;
+  const parsed = parseAssetAdminArgs(name, args);
+  if (!parsed) {
+    await send(name === 'poolapprove'
+      ? 'Usage: /poolapprove contract SYMBOL precision review-reference\n' +
+        'Example: /poolapprove kingsofgraff LFGK 4 review-2026-11-12'
+      : 'Usage: /poolquarantine contract SYMBOL precision reason\n' +
+        'Example: /poolquarantine kingsofgraff LFGK 4 unexpected-transfer-fee');
+    return true;
+  }
+  const row = await env.DB.prepare(
+    'SELECT asset_key,chain_id,token_contract,token_symbol,token_precision,' +
+    'eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+  ).bind(parsed.key).first();
+  if (!row || row.chain_id !== WAX_MAINNET_CHAIN_ID ||
+      row.token_contract !== parsed.contract ||
+      row.token_symbol !== parsed.symbol ||
+      row.token_precision !== parsed.precision) {
+    await send('Token identity is not in the observed WAX inventory. Run /poolobserve first, ' +
+      'then use the exact contract, uppercase symbol and precision shown there.');
+    return true;
+  }
+  if (name === 'poolapprove' && row.eligibility === 'approved') {
+    await send(parsed.symbol + ' @ ' + parsed.contract +
+      ' is already approved for token eligibility. Donation provenance, contract hashes, ' +
+      'draws and payouts remain separate gates.');
+    return true;
+  }
+  if (name === 'poolquarantine' && row.eligibility === 'quarantined') {
+    await send(parsed.symbol + ' @ ' + parsed.contract + ' is already quarantined.');
+    return true;
+  }
+
+  const actor = 'telegram:' + String(telegramId);
+  let reason;
+  let verifiedAt;
+  if (name === 'poolapprove') {
+    const cfg = await configFor(env.DB);
+    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT || cfg.status !== 'paused' ||
+        cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 ||
+        cfg.active_policy_version !== 2 || cfg.historical_ticket_bps !== 5000 ||
+        env?.TAG_RUN_V2_DRAWS_ENABLED === 'true' ||
+        env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'true') {
+      await send('Approval refused: the verified 1% Community Pot policy must be paused, ' +
+        'with draws and payouts off.');
+      return true;
+    }
+    let proof;
+    try {
+      proof = await discoverWaxTipTokens({
+        fetchImpl, account: TIP_ACCOUNT, approvedAssets: [parsed.key]
+      });
+    } catch (_) {
+      await send('Approval refused: live WAX chain and token identity recheck failed. ' +
+        'Nothing changed; retry later or quarantine the token.');
+      return true;
+    }
+    const live = proof.assets.find(asset => asset.key === parsed.key);
+    if (proof.chainId !== WAX_MAINNET_CHAIN_ID || !live ||
+        live.status !== 'observed_only' ||
+        live.contract !== parsed.contract || live.symbol !== parsed.symbol ||
+        live.precision !== parsed.precision) {
+      await send('Approval refused: the exact token identity was not confirmed in the live ' +
+        'isthatajoint inventory. Nothing changed.');
+      return true;
+    }
+    verifiedAt = true;
+    reason = 'Token eligibility approved after live WAX identity recheck at irreversible block ' +
+      proof.latestIrreversibleBlock + '; review=' + parsed.detail +
+      '; donation provenance and contract approval remain separate.';
+  } else {
+    verifiedAt = false;
+    reason = 'Token eligibility quarantined by Telegram admin; reason=' + parsed.detail +
+      '; existing audit history retained.';
+  }
+
+  const eventKey = 'telegram-asset:' + name + ':' + globalThis.crypto.randomUUID();
+  let results;
+  try {
+    results = await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE tag_run_v2_assets SET eligibility=?," +
+        (verifiedAt ? 'verified_at=CURRENT_TIMESTAMP,' : 'verified_at=NULL,') +
+        'reviewed_by=?,updated_at=CURRENT_TIMESTAMP WHERE asset_key=? ' +
+        'AND chain_id=? AND token_contract=? AND token_symbol=? ' +
+        'AND token_precision=? AND eligibility=?'
+      ).bind(
+        name === 'poolapprove' ? 'approved' : 'quarantined',
+        actor, parsed.key, WAX_MAINNET_CHAIN_ID, parsed.contract,
+        parsed.symbol, parsed.precision, row.eligibility
+      ),
+      env.DB.prepare(
+        'INSERT INTO tag_run_v2_audit ' +
+        '(event_key,event_type,reason,reviewed_by) ' +
+        'SELECT ?,?,?,? WHERE changes()=1'
+      ).bind(eventKey,
+        name === 'poolapprove'
+          ? 'asset_eligibility_approved'
+          : 'asset_eligibility_quarantined',
+        reason, actor)
+    ]);
+  } catch (_) {
+    results = null;
+  }
+  if (!successfulBatch(results)) {
+    await send('Token control failed atomically; nothing was approved or quarantined. ' +
+      'Check D1 and retry.');
+    return true;
+  }
+  if (name === 'poolapprove') {
+    await send('APPROVED FOR TOKEN ELIGIBILITY ONLY\n' +
+      parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
+      '\nLive WAX identity: rechecked\nReview reference: ' + parsed.detail +
+      '\nDonation provenance: still quarantined separately' +
+      '\nContract code/ABI approval: unchanged\nDraws: OFF · Payouts: OFF');
+  } else {
+    await send('QUARANTINED NOW\n' +
+      parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
+      '\nReason: ' + parsed.detail +
+      '\nFuture snapshot, draw and send eligibility checks will reject this token.' +
+      '\nDraws: OFF · Payouts: OFF');
+  }
+  return true;
 }
 
 // /drawpreview reads historical weights from completed UTC participation days.
@@ -232,11 +386,16 @@ async function drawInput(db, chatId, day) {
   };
 }
 export async function handleTagRunV2Command(env, options) {
-  const { name, isAdmin, isPrivate, chatId, telegramId, send,
+  const { name, args = '', isAdmin, isPrivate, chatId, telegramId, send,
     nowMs = Date.now(), fetchImpl = fetch } = options;
   if (V2_ADMIN_COMMANDS.has(name) && (!isAdmin || !isPrivate)) {
     await send('Community Pot administration is restricted to authorised bot DMs.');
     return true;
+  }
+  if (ASSET_ADMIN_COMMANDS.has(name)) {
+    return await handleAssetAdminCommand(env, {
+      name,args,telegramId,send,fetchImpl
+    });
   }
   if (OBSERVATION_ADMIN_COMMANDS.has(name)) {
     return await handleV2ObservationCommand(env, {
