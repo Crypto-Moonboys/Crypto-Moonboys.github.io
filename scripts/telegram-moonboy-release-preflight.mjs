@@ -8,9 +8,9 @@ const wrangler = readFileSync(new URL(
   '../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
 
 const checks = [
-  ['production photos OFF', /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "false"/.test(wrangler)],
-  ['production mode OFF', /TELEGRAM_MOONBOY_MEDIA_MODE = "off"/.test(wrangler)],
-  ['production message kinds empty', /TELEGRAM_MOONBOY_MESSAGE_KINDS = ""/.test(wrangler)],
+  ['production group photos ON', /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "true"/.test(wrangler)],
+  ['production mode group', /TELEGRAM_MOONBOY_MEDIA_MODE = "group"/.test(wrangler)],
+  ['production approved message kinds', /TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification,core-command"/.test(wrangler)],
   ['Images binding provisioned', /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/.test(wrangler)],
   ['core command kind approved', /'games-pin', 'core-command'/.test(gateway)],
   ['pet notification kind approved', /'pet-notification'/.test(gateway)],
