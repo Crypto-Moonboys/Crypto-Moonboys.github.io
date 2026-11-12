@@ -453,7 +453,7 @@ async function handleAssetAdminCommand(env, options) {
   }
   const row = await env.DB.prepare(
     'SELECT asset_key,chain_id,token_contract,token_symbol,token_precision,' +
-    'eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+    'eligibility,approved_code_hash,approved_abi_hash FROM tag_run_v2_assets WHERE asset_key=?'
   ).bind(parsed.key).first();
   if (!row || row.chain_id !== WAX_MAINNET_CHAIN_ID ||
       row.token_contract !== parsed.contract ||
@@ -461,6 +461,15 @@ async function handleAssetAdminCommand(env, options) {
       row.token_precision !== parsed.precision) {
     await send('Token identity is not in the observed WAX inventory. Run /poolobserve first, ' +
       'then use the exact contract, uppercase symbol and precision shown there.');
+    return true;
+  }
+  if (name === 'poolapprove' && row.eligibility === 'approved' &&
+      /^[0-9a-f]{64}$/.test(String(row.approved_code_hash || '')) &&
+      /^[0-9a-f]{64}$/.test(String(row.approved_abi_hash || ''))) {
+    await send(parsed.symbol + ' @ ' + parsed.contract +
+      ' is already approved for the Community Pot. Every independently verified ' +
+      'irreversible wallet unit is eligible automatically; individual tips need no approval. ' +
+      'Its pinned code/ABI hashes remain the automatic payout authority.');
     return true;
   }
   if (name === 'poolquarantine' && row.eligibility === 'quarantined') {
