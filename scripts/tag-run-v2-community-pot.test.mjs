@@ -8,7 +8,7 @@ import {
   formatQuantity, eligibleAsset, validUtcDay, sha256Text, previewCommunityDraw
 } from '../workers/moonboys-api/tag-run/v2-core.js';
 import {
-  readWaxTipAccount, discoverWaxTipTokens
+  readWaxTipAccount, discoverWaxTipTokens, WAX_HYPERION, WAX_HYPERION_FALLBACKS
 } from '../workers/moonboys-api/tag-run/v2-chain.js';
 import {
   saveYesterdayParticipation, handleTagRunV2Command
@@ -366,6 +366,21 @@ test('read-only incoming transfers require WAX LIB and are quarantined',async t=
     'quarantined');
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_bundles').get().n,0);
   assert(rpc.calls.every(c=>!c.url.includes('push_transaction')));
+});
+test('incoming receipt scan fails over when the primary Hyperion host is unavailable',async()=>{
+  const rpc=incomingRpcFixture();
+  const fetchImpl=async (url,opts={})=>{
+    if(url.startsWith(WAX_HYPERION + '/v2/history/get_actions?')) {
+      rpc.calls.push({url,options:opts});
+      return {ok:false,status:503};
+    }
+    return rpc.fetchImpl(url,opts);
+  };
+  const scan=await readInboundTipReceipts({fetchImpl,cryptoImpl:webcrypto});
+  assert.equal(scan.receipts.length,1);
+  assert(rpc.calls.some(c=>c.url.startsWith(
+    WAX_HYPERION_FALLBACKS[0] + '/v2/history/get_actions?')),
+  'a transport/non-2xx primary failure must retry the first approved fallback');
 });
 test('non-LIB or mismatched block actions cannot create donations',async()=>{
   const nonFinal=await readInboundTipReceipts({
