@@ -375,7 +375,14 @@ export async function runAutomaticCommunityPot(env, {
 } = {}) {
   assertMode(env);
   const result = { mode: 'automatic', dailyStart, steps: [] };
-  if (dailyStart) {
+  const targetDay = previousDay(nowMs);
+  const existingDaily = await env.DB.prepare(
+    'SELECT 1 AS present FROM tag_run_v2_draw_workflows WHERE chat_id=? AND day_key=?'
+  ).bind(String(env.TELEGRAM_GROUP_CHAT_ID), targetDay).first();
+  // A transient midnight RPC/D1 failure must not skip the day forever. The
+  // five-minute tick retries the same deterministic snapshot/commit until its
+  // persisted workflow exists; once present this path becomes a single read.
+  if (dailyStart || !existingDaily) {
     result.steps.push(await startDaily(env, { nowMs, fetchImpl, cryptoImpl }));
   }
   result.steps.push(await advanceDraw(env, { nowMs, fetchImpl }));
