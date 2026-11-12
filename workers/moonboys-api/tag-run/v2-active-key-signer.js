@@ -2,8 +2,8 @@
 // The private key is accepted only from a Worker secret binding. Never log it,
 // persist it, return it, or place it in wrangler.toml.
 import {
-  APIClient, ABI, Action, Serializer, Transaction,
-  SignedTransaction, PrivateKey
+  APIClient, FetchProvider, ABI, Action, Serializer, Transaction,
+  SignedTransaction, PackedTransaction, PrivateKey
 } from '@wharfkit/antelope';
 import { TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID } from './v2-core.js';
 import { WAX_CHAIN_API } from './v2-chain.js';
@@ -98,7 +98,9 @@ export async function prepareActiveKeyTransaction({
 } = {}) {
   const action = assertRequest(structuredClone(request));
   const key = await assertActiveKeyAuthority(privateKey, fetchImpl);
-  const client = new APIClient({ url: WAX_CHAIN_API, fetch: fetchImpl });
+  const client = new APIClient({
+    provider: new FetchProvider(WAX_CHAIN_API, { fetch: fetchImpl })
+  });
   const info = await client.v1.chain.get_info();
   if (String(info.chain_id) !== WAX_MAINNET_CHAIN_ID) fail('wrong_chain');
   const data = Serializer.encode({
@@ -141,9 +143,12 @@ export async function broadcastPreparedTransaction({
   catch (_) { fail('prepared_transaction_invalid'); }
   if (String(signed.id) !== transactionId) fail('transaction_id_mismatch');
   await beforeBroadcast();
-  const client = new APIClient({ url: WAX_CHAIN_API, fetch: fetchImpl });
+  const client = new APIClient({
+    provider: new FetchProvider(WAX_CHAIN_API, { fetch: fetchImpl })
+  });
+  const packed = PackedTransaction.fromSigned(signed);
   let result;
-  try { result = await client.v1.chain.push_transaction(signed); }
+  try { result = await client.v1.chain.push_transaction(packed); }
   catch (_) { fail('broadcast_unconfirmed'); }
   const returned = String(result?.transaction_id || result?.processed?.id || '');
   if (returned && returned !== transactionId) fail('transaction_id_mismatch');
