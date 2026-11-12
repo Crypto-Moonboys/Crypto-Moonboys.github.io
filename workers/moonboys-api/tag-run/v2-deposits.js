@@ -102,12 +102,20 @@ export async function readInboundTipReceipts({ fetchImpl = fetch,
   };
 }
 export async function quarantineInboundTipReceipts(env, options={}) {
-  if (env?.TAG_RUN_V2_POOL_ENABLED !== 'true' ||
+  const pausedObservation = options.allowPausedObservation === true &&
+    env?.TAG_RUN_ENABLED === 'true' &&
+    env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false' &&
+    env?.TAG_RUN_V2_OBSERVATION_ENABLED === 'true' &&
+    env?.TAG_RUN_V2_POOL_ENABLED === 'false' &&
+    env?.TAG_RUN_V2_DRAWS_ENABLED === 'false' &&
+    env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'false';
+  if ((env?.TAG_RUN_V2_POOL_ENABLED !== 'true' && !pausedObservation) ||
       env?.TAG_RUN_V2_TIP_ACCOUNT !== TIP_ACCOUNT || !env.DB) {
     return {status:'disabled'};
   }
   const cfg=await env.DB.prepare('SELECT status FROM tag_run_v2_pool_config WHERE config_id=1').first();
-  if (!cfg || cfg.status==='paused') return {status:'paused'};
+  if (!cfg || (cfg.status==='paused' && !pausedObservation)) return {status:'paused'};
+  if (pausedObservation && cfg.status!=='paused') return {status:'paused'};
   const scan=await readInboundTipReceipts(options);
   let inserted=0;
   // This is an evidence-inventory action only, never a funding entitlement.

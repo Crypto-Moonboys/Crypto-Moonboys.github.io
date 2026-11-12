@@ -1,5 +1,14 @@
 # TAG RUN V2 — Admin-only observation pilot (Issue #1699)
 
+> Historical pilot scope: this document describes the original observation
+> commands approved on 3 November 2026. The later private-admin token and
+> funding controls are documented in
+> `docs/tag-run-v2-telegram-token-controls.md` and
+> `docs/tag-run-v2-telegram-funding-controls.md`. Those later controls may
+> approve exact receipts and verified 1% snapshots while draw and payout flags
+> remain off; they do not change `/poolobserve` or `/pooltest` into funding
+> commands.
+
 **Scope:** Read live WAX blockchain inventory and test real Telegram Street Cred participation without creating claimable tokens, approved donations, commitments, wallet signatures or payouts.
 
 ## Deployment state
