@@ -58,7 +58,7 @@ function fixture(t){
   }};
   const env={
     DB,TAG_RUN_ENABLED:'true',TAG_RUN_WEEKLY_REWARDS_ENABLED:'false',
-    TAG_RUN_V2_OBSERVATION_ENABLED:'true',TAG_RUN_V2_POOL_ENABLED:'false',
+    TAG_RUN_V2_OBSERVATION_ENABLED:'true',TAG_RUN_V2_POOL_ENABLED:'true',
     TAG_RUN_V2_DRAWS_ENABLED:'false',TAG_RUN_V2_PAYOUTS_ENABLED:'false',
     TAG_RUN_V2_TIP_ACCOUNT:TIP_ACCOUNT,TELEGRAM_GROUP_CHAT_ID:GROUP,
     TELEGRAM_BOT_TOKEN:'123456:unit-test-token',TELEGRAM_BOT_USERNAME:'WIKICOMSBOT',
@@ -144,7 +144,8 @@ test('owner-approved pilot gate is enabled while every funded reward gate stays 
   const f=fixture(t),cfg=read('workers/moonboys-api/wrangler.toml');
   assert.equal(observationEnabled(f.env),true);
   assert.match(cfg,/TAG_RUN_V2_OBSERVATION_ENABLED = "true"/);
-  for(const flag of ['TAG_RUN_V2_POOL_ENABLED','TAG_RUN_V2_DRAWS_ENABLED',
+  assert.match(cfg,/TAG_RUN_V2_POOL_ENABLED = "true"/);
+  for(const flag of ['TAG_RUN_V2_DRAWS_ENABLED',
     'TAG_RUN_V2_PAYOUTS_ENABLED','TAG_RUN_WEEKLY_REWARDS_ENABLED']){
     assert.match(cfg,new RegExp(flag+' = "false"'));
   }
@@ -156,11 +157,15 @@ test('owner-approved pilot gate is enabled while every funded reward gate stays 
     'read-only capture must remain behind the independent observation gate');
   assert.match(plan,/cron === MOONBOYS_CRON\.participation/);
   for(const key of ['TAG_RUN_V2_DRAWS_ENABLED','TAG_RUN_V2_PAYOUTS_ENABLED',
-    'TAG_RUN_V2_POOL_ENABLED','TAG_RUN_WEEKLY_REWARDS_ENABLED']){
+    'TAG_RUN_WEEKLY_REWARDS_ENABLED']){
     f.env[key]='true';
     assert.equal(observationEnabled(f.env),false,key+' must close observation');
     f.env[key]='false';
   }
+  f.env.TAG_RUN_V2_POOL_ENABLED='false';
+  assert.equal(observationEnabled(f.env),true,
+    'pool administration gate must not disable safe paused observation');
+  f.env.TAG_RUN_V2_POOL_ENABLED='true';
   assert.equal(f.sqlite.prepare('SELECT status FROM tag_run_v2_pool_config').get().status,
     'paused');
   assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
