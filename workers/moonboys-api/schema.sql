@@ -2622,10 +2622,10 @@ INSERT OR IGNORE INTO tag_run_rank_levels(threshold,name) VALUES
 -- Private-admin TAG RUN member blocks. Historical receipts remain immutable.
 CREATE TABLE IF NOT EXISTS tag_run_member_blocks (
   chat_id TEXT NOT NULL,
-  telegram_id TEXT NOT NULL CHECK(telegram_id GLOB '[0-9]*' AND length(telegram_id) BETWEEN 1 AND 20),
-  username TEXT NOT NULL COLLATE NOCASE CHECK(length(username) BETWEEN 5 AND 32),
+  telegram_id TEXT NOT NULL CHECK(telegram_id NOT GLOB '*[^0-9]*' AND length(telegram_id) BETWEEN 1 AND 20),
+  username TEXT NOT NULL COLLATE NOCASE CHECK(length(username) BETWEEN 5 AND 32 AND username NOT GLOB '*[^A-Za-z0-9_]*'),
   blocked INTEGER NOT NULL DEFAULT 1 CHECK(blocked IN (0,1)),
-  updated_by TEXT NOT NULL CHECK(updated_by GLOB '[0-9]*' AND length(updated_by) BETWEEN 1 AND 20),
+  updated_by TEXT NOT NULL CHECK(updated_by NOT GLOB '*[^0-9]*' AND length(updated_by) BETWEEN 1 AND 20),
   blocked_at TEXT,
   unblocked_at TEXT,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
