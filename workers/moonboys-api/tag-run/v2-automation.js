@@ -253,6 +253,14 @@ async function createOrOpenCap(env) {
     "SELECT 1 FROM tag_run_v2_pool_config p WHERE p.config_id=1 " +
     "AND p.status='review_only' AND p.wallet_account='isthatajoint' " +
     "AND p.active_daily_bps=100 AND p.active_policy_version=2) " +
+    "AND EXISTS (SELECT 1 FROM tag_run_v2_bundles b " +
+    "JOIN tag_run_wallets w ON w.telegram_id=b.telegram_id " +
+    "LEFT JOIN tag_run_v2_payout_intents bi ON bi.chat_id=b.chat_id " +
+    "AND bi.day_key=b.day_key AND bi.asset_key=b.asset_key " +
+    "AND bi.bundle_index=b.bundle_index " +
+    "WHERE b.chat_id=c.chat_id AND b.day_key=c.day_key " +
+    "AND b.asset_key=c.asset_key AND b.status='preview_only' " +
+    "AND bi.intent_key IS NULL) " +
     "AND NOT EXISTS (" +
     "SELECT 1 FROM tag_run_v2_payout_caps other " +
     "WHERE other.asset_key=c.asset_key " +
