@@ -77,6 +77,7 @@ jobs:
           BASE_SHA: ${{ steps.audit_base.outputs.base_sha }}
           HEAD_SHA: ${{ github.sha }}
           CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
+          CI_COLLECT_ALL_FAILURES: ${{ matrix.domain == 'visual' && '1' || '0' }}
         run: npm run ci:${{ matrix.domain }}
 
       - name: Upload browser failure artifacts
