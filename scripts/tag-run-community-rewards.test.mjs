@@ -21,7 +21,8 @@ const MEMBER_BLOCKS = [
   '105_tag_run_v2_payout_execution.sql',
   '106_tag_run_v2_one_percent_policy.sql',
   '107_tag_run_v2_persisted_draws.sql',
-  '110_tag_run_admin_member_blocks.sql'
+  '110_tag_run_admin_member_blocks.sql',
+  '111_tag_run_reward_only_blocks.sql'
 ].map(name => readFileSync(
   new URL('../workers/moonboys-api/migrations/' + name, import.meta.url), 'utf8'
 )).join('\n');
@@ -153,7 +154,7 @@ function fixture(t, opts = {}) {
 }
 
 
-test('private admins block and unblock a username without deleting audit history', async t => {
+test('private admins apply reward-only blocks without hiding community activity', async t => {
   const f = fixture(t);
   assert.equal(await f.score(f.message(
     'This first meaningful graffiti message records the member identity'
@@ -163,23 +164,29 @@ test('private admins block and unblock a username without deleting audit history
   ).get(MEMBER).username, 'target_user');
 
   const blocked = await f.command('/block @TARGET_USER', { user: ADMIN });
-  assert.match(blocked.answer, /TAG RUN MEMBER BLOCKED/);
+  assert.match(blocked.answer, /TAG RUN REWARDS BLOCKED/);
+  assert.match(blocked.answer, /Street Cred, ranks and leaderboards: ON/);
   assert.equal(f.sqlite.prepare(
     'SELECT blocked FROM tag_run_member_blocks WHERE chat_id=? AND telegram_id=?'
   ).get(GROUP,MEMBER).blocked, 1);
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_reward_exclusion_periods ' +
+    'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL'
+  ).get(GROUP,MEMBER).n,1);
 
   const whileBlocked = MONDAY + 60000;
   assert.equal(await f.score(f.message(
-    'This valid message must earn nothing while the member is blocked',
+    'This valid community message keeps earning Street Cred while reward blocked',
     { nowMs: whileBlocked }
-  ), whileBlocked), false);
+  ), whileBlocked), true);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
-  ).get(MEMBER).n, 1, 'historical receipt remains but no new score is written');
-  assert.doesNotMatch((await f.command('/top')).answer, /Tagger/);
+  ).get(MEMBER).n,2,'reward exclusion must not suppress Street Cred receipts');
+  assert.match((await f.command('/top')).answer, /Tagger/,
+    'reward-blocked members remain visible in community rankings');
 
   assert.match((await f.command('/block @target_user')).answer,
-    /authorised admins/, 'members cannot change block state');
+    /authorised admins/, 'members cannot change reward block state');
   assert.match((await f.command('/block @target_user',
     { user: ADMIN, chat: 'group' })).answer, /authorised admins/,
     'admin controls stay private');
@@ -187,17 +194,30 @@ test('private admins block and unblock a username without deleting audit history
     { user: ADMIN })).answer, /must have been seen|not.*known/i);
 
   const unblocked = await f.command('/unblock @target_user', { user: ADMIN });
-  assert.match(unblocked.answer, /TAG RUN MEMBER UNBLOCKED/);
+  assert.match(unblocked.answer, /TAG RUN REWARDS UNBLOCKED/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_reward_exclusion_periods ' +
+    'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL'
+  ).get(GROUP,MEMBER).n,0);
   const afterUnblock = MONDAY + 120000;
   assert.equal(await f.score(f.message(
-    'Future Street Cred returns after the private admin unblocks the member',
+    'Street Cred continues after the private admin reward unblock',
     { nowMs: afterUnblock }
   ), afterUnblock), true);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
-  ).get(MEMBER).n, 2);
-});
+  ).get(MEMBER).n,3);
 
+  assert.equal(await f.score(f.message(
+    'The admin identity can participate while excluding itself from rewards',
+    { user: ADMIN,nowMs:MONDAY + 180000,username:'admin_owner' }
+  ),MONDAY + 180000),true);
+  const selfBlock=await f.command('/block @admin_owner',{user:ADMIN});
+  assert.match(selfBlock.answer,/TAG RUN REWARDS BLOCKED/);
+  assert.match(selfBlock.answer,/Admin access: unchanged/);
+  assert.match((await f.command('/unblock @admin_owner',{user:ADMIN})).answer,
+    /TAG RUN REWARDS UNBLOCKED/);
+});
 
 test('deployment is fail-closed and webhook secret validation precedes TAG RUN ingress', async t => {
   const f = fixture(t, { enabled: false });
