@@ -6,6 +6,7 @@ import {
   sendControlledMoonboyTelegram
 } from '../workers/moonboys-api/telegram/moonboy-message-gateway.js';
 import {
+  MOONBOY_MEDIA_CACHE_VERSION,
   readMoonboyMediaCache, cacheMoonboyPortrait, cacheMoonboyTelegramFileId
 } from '../workers/moonboys-api/telegram/moonboy-media-cache.js';
 
@@ -122,6 +123,18 @@ test('legacy TAG RUN kinds retain PR3 opt-in behavior without the new list', () 
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
     chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
   }), true);
+});
+
+test('v2 portraits do not reuse v1 media cache entries or Telegram file_ids', async () => {
+  assert.equal(MOONBOY_MEDIA_CACHE_VERSION, 'v2');
+  const cache = fakeCache();
+  const seed = 'tag-command:123:gender-migration:0';
+  const stale = new Request('https://cryptomoonboys.com/__telegram_moonboy_cache__/v1/telegram-file/' +
+    encodeURIComponent(seed));
+  cache.rows.set(stale.url, new Response(JSON.stringify({
+    version: 'v1', file_id: 'telegram-file-id-1234567890'
+  }), { headers: { 'content-type': 'application/json' } }));
+  assert.equal((await readMoonboyMediaCache(cache, seed)).hit, false);
 });
 
 test('first logical send renders once and stores JPEG plus confirmed file_id', async () => {
