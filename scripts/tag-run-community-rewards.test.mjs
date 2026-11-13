@@ -1044,8 +1044,16 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.match(bulletin.text, /THIS WEEK.S TOP 10/);
   assert.match(bulletin.text, /1\. Tagger — 10 pts/);
   assert.match(bulletin.text, /45-second cooldown/);
-  assert.match(bulletin.text, /\/tagprofile/);
-  assert.match(bulletin.text, /\/rain yourwaxaccount/);
+  assert.match(bulletin.text, /COMMUNITY POT REWARDS/);
+  assert.match(bulletin.text, /up to 1% of each approved, unreserved token balance/);
+  assert.match(bulletin.text, /up to 20 random reward bundles/);
+  assert.match(bulletin.text, /Maximum combined boost: \\+37%/);
+  assert.match(bulletin.text, /Reward-blocked members still earn Street Cred/);
+  assert.match(bulletin.text, /automatic contract, balance, reservation and signing checks/);
+  assert.match(bulletin.text, /\\/tagprofile/);
+  assert.match(bulletin.text, /\\/pool/);
+  assert.match(bulletin.text, /\\/myrewards/);
+  assert.match(bulletin.text, /\\/rain yourwaxaccount/);
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
   assert.match(wrangler, /"3 \*\/4 \* \* \*"/);
@@ -1091,12 +1099,18 @@ test('daily weekly monthly and seasonal leaderboard commands expose the live cha
   update.message.from.first_name = 'BoardTagger';
   assert.equal(await f.score(update, MONDAY), true);
   for (const command of ['/tagdaily','/tagweekly','/tagmonthly','/tagseason',
-    '/top daily','/top weekly','/top monthly','/top season','/top all']) {
+    '/top daily','/top weekly','/top monthly','/top season']) {
     const answer = (await f.command(command, { nowMs: MONDAY })).answer;
     assert.match(answer, /TOP 10/);
     assert.match(answer, /BoardTagger — 10 pts/);
     assert.match(answer, /Every other eligible participant keeps their normal lottery chance/);
+    assert.match(answer, /when this period closes/);
   }
+  const allTime = (await f.command('/top all', { nowMs: MONDAY })).answer;
+  assert.match(allTime, /TAG RUN ALL TOP 10/);
+  assert.match(allTime, /BoardTagger — 10 pts/);
+  assert.match(allTime, /historical only; they do not close or add a reward boost/);
+  assert.doesNotMatch(allTime, /when this period closes/);
   assert.match((await f.command('/top yearly', { nowMs: MONDAY })).answer,
     /Usage: \/top daily\|weekly\|monthly\|season\|all/);
 });
