@@ -10,6 +10,8 @@ ALTER TABLE tag_run_v2_payout_intents
   ADD COLUMN submission_tx_id TEXT;
 ALTER TABLE tag_run_v2_payout_intents
   ADD COLUMN signed_transaction_json TEXT;
+ALTER TABLE tag_run_v2_payout_intents
+  ADD COLUMN reconcile_after TEXT;
 
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_asset_contract_pin_guard
 BEFORE UPDATE ON tag_run_v2_assets
@@ -68,6 +70,9 @@ BEGIN SELECT RAISE(ABORT,'v2_payout_intent_immutable'); END;
 
 CREATE INDEX IF NOT EXISTS tag_run_v2_payout_submission_tx
 ON tag_run_v2_payout_intents(submission_tx_id);
+
+CREATE INDEX IF NOT EXISTS tag_run_v2_payout_reconcile_queue
+ON tag_run_v2_payout_intents(status,reconcile_after,updated_at);
 
 -- This is the durable policy-state transition only. Runtime automation still
 -- fails closed until all release flags and both Worker secrets are present.
