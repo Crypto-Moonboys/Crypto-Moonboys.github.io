@@ -304,7 +304,7 @@ test('unverified snapshot budgets retain exact BigInt units above Number.MAX_SAF
   assert.equal(model.funded,false);
 });
 
-test('no new production migration, payout route or multi-community activation',()=>{
+test('no unapproved community migration or multi-community activation; current production gates are explicit',()=>{
   const sql=readFileSync(new URL(
     './fixtures/tag-run-v2-current-community-pr6.sql',import.meta.url),'utf8');
   assert(sql.includes('current_community_scope_locked'));
@@ -312,8 +312,11 @@ test('no new production migration, payout route or multi-community activation',(
   const wrangler=readFileSync(new URL(
     '../workers/moonboys-api/wrangler.toml',import.meta.url),'utf8');
   assert.match(wrangler,/migrations_dir = "migrations"/);
-  assert.match(wrangler,/TAG_RUN_V2_PAYOUTS_ENABLED = "false"/);
-  assert.match(wrangler,/TAG_RUN_V2_DRAWS_ENABLED = "false"/);
+  // The PR6 fixture remains unfunded; production TAG RUN was subsequently
+  // approved for draws and payouts. Do not confuse the historical fixture
+  // with the current Worker release configuration.
+  assert.match(wrangler,/TAG_RUN_V2_PAYOUTS_ENABLED = "true"/);
+  assert.match(wrangler,/TAG_RUN_V2_DRAWS_ENABLED = "true"/);
   assert(!existsSync(new URL(
     '../workers/moonboys-api/migrations/108_tag_run_v2_current_community.sql',
     import.meta.url)));
