@@ -215,10 +215,13 @@ test('private admins apply reward-only blocks without hiding community activity'
   );
   assert.equal(await f.score(delayed, delayedProcessedMs), true);
   const delayedRow = f.sqlite.prepare(
-    'SELECT message_unix FROM tag_run_messages WHERE chat_id=? AND message_id=?'
+    'SELECT message_unix,processed_unix FROM tag_run_messages ' +
+    'WHERE chat_id=? AND message_id=?'
   ).get(GROUP,delayed.message.message_id);
   assert.equal(delayedRow.message_unix,Math.floor(delayedSentMs / 1000),
     'reward authority must preserve Telegram send time');
+  assert.equal(delayedRow.processed_unix,Math.floor(delayedProcessedMs / 1000),
+    'anti-spam authority must preserve Worker processing time');
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_messages m WHERE m.chat_id=? ' +
     'AND m.message_id=? AND EXISTS (' +
@@ -323,6 +326,30 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
   assert.equal(lifetime.posts, 2);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS count FROM tag_run_messages WHERE content_hash LIKE ?').get('%art%').count, 0,
     'raw message text must never be saved');
+});
+
+test('delayed Telegram updates cannot bypass the processing-time cooldown', async t => {
+  const f = fixture(t);
+  const sent = MONDAY + 1000;
+  const processed = MONDAY + 121000;
+  assert.equal(await f.score(f.message(
+    'First delayed but meaningful contribution about the painted wall',
+    { nowMs: processed, date: Math.floor(sent / 1000) }
+  ),processed),true);
+  assert.equal(await f.score(f.message(
+    'Second delayed contribution arrived one second after the first',
+    { nowMs: processed + 1000, date: Math.floor((sent + 1000) / 1000) }
+  ),processed + 1000),false);
+  assert.equal(await f.score(f.message(
+    'Third delayed contribution also remains inside the cooldown',
+    { nowMs: processed + 2000, date: Math.floor((sent + 2000) / 1000) }
+  ),processed + 2000),false);
+  const rows=f.sqlite.prepare(
+    'SELECT message_unix,processed_unix FROM tag_run_messages'
+  ).all();
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].message_unix,Math.floor(sent/1000));
+  assert.equal(rows[0].processed_unix,Math.floor(processed/1000));
 });
 
 test('missing D1 binding is a retryable scoring failure, not a skipped eligible message', async t => {
@@ -528,13 +555,13 @@ test('cooldown uses member day index, including messages crossing UTC midnight',
   assert.equal(rows[1].points, 15, 'previous-day streak bonus is retained');
   const manager=readFileSync(new URL('../workers/moonboys-api/tag-run/handler.js',
     import.meta.url),'utf8');
-  assert.match(manager, /day_key>=\? AND message_unix>\?/);
+  assert.match(manager, /day_key>=\? AND processed_unix>\?/);
   const plan=f.sqlite.prepare(
     'EXPLAIN QUERY PLAN SELECT 1 FROM tag_run_messages ' +
-    'WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?'
+    'WHERE chat_id=? AND telegram_id=? AND day_key>=? AND processed_unix>?'
   ).all(GROUP,MEMBER,'2026-11-08',Math.floor(prior/1000));
-  assert.ok(plan.some(row => /tag_run_messages_member_day/.test(row.detail)),
-    'cooldown query should use bounded member-day index rather than lifetime scan');
+  assert.ok(plan.some(row => /tag_run_messages_member_processing/.test(row.detail)),
+    'cooldown query should use the bounded processing-time index');
 });
 
 test('commands are verified-group/private only and rain registers WAX payout destinations', async t => {
