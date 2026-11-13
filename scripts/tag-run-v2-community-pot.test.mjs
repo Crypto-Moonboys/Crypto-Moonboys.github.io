@@ -35,14 +35,21 @@ const ASSET = (contract='kingsofgraff',symbol='LFGK',precision=4) => ({
 const SEED = 'bc'.repeat(32);
 const DAY = '2026-11-02';
 
-test('locked wallet, chain, new migration and disabled V2 execution flags',()=>{
+test('locked wallet, chain, migrations and approved live V2 execution flags',()=>{
   assert.equal(TIP_ACCOUNT,'isthatajoint');
   assert.match(WAX_MAINNET_CHAIN_ID,/^[0-9a-f]{64}$/);
   const flags=read('workers/moonboys-api/wrangler.toml');
   assert.match(flags,/TAG_RUN_V2_POOL_ENABLED = "true"/);
+  // Production draws and payouts were separately approved after the
+  // read-only pilot. Keep the deployed flags aligned with the live release;
+  // the original migration remains preview-only for historical integrity.
   for(const key of ['TAG_RUN_V2_DRAWS_ENABLED',
-    'TAG_RUN_V2_PAYOUTS_ENABLED']) {
-    assert.match(flags,new RegExp(key + ' = "false"'));
+    'TAG_RUN_V2_PAYOUTS_ENABLED',
+    'TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED',
+    'TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED',
+    'TAG_RUN_V2_AUTOMATION_ENABLED',
+    'TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED']) {
+    assert.match(flags,new RegExp(key + ' = "true"'));
   }
   assert.match(flags,/TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"/);
   assert.match(flags,/"12 0 \* \* \*"/);
