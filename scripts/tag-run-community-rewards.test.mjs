@@ -1052,7 +1052,9 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.match(bulletin.text, /THIS WEEK.S TOP 10/);
   assert.match(bulletin.text, /1\. Tagger — 10 pts/);
   assert.match(bulletin.text, /COMMUNITY POT/);
-  assert.match(bulletin.text, /Daily random rewards from approved WAX tokens/);
+  assert.match(bulletin.text, /DAILY WAX TOKEN DRAWS/);
+  assert.match(bulletin.text, /weighted random draw/);
+  assert.match(bulletin.text, /Up to 20 reward bundles per approved token/);
   assert.match(bulletin.text, /\/tagprofile/);
   assert.match(bulletin.text, /\/top/);
   assert.match(bulletin.text, /\/pool/);
