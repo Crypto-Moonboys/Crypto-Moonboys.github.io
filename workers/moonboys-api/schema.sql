@@ -2619,7 +2619,7 @@ INSERT OR IGNORE INTO tag_run_rank_levels(threshold,name) VALUES
   (60000, 'Graffiti Legend'),
   (95000, 'Graffiti King');
 
--- Private-admin TAG RUN member blocks. Historical receipts remain immutable.
+-- Private-admin TAG RUN reward exclusions. Street Cred and community state remain active.
 CREATE TABLE IF NOT EXISTS tag_run_member_blocks (
   chat_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL CHECK(telegram_id NOT GLOB '*[^0-9]*' AND length(telegram_id) BETWEEN 1 AND 20),
