@@ -1,4 +1,5 @@
 import { clearOptionalStack, defaultStack, indexManifest, randomStack } from './avatar-builder-core.mjs';
+import { createHomepagePresetCycle } from './avatar-builder-homepage-presets.mjs';
 import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgrounds/registry.js';
 
 const PAGE_SIZE = 24;
@@ -52,6 +53,7 @@ host.innerHTML = `
   <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>`;
 
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
+let nextHomepagePreset = null;
 let layerRenderGeneration = 0;
 let exportInProgress = false;
 let backgroundLoadGeneration = 0;
@@ -383,10 +385,11 @@ elements.selectedList.addEventListener('click', (event) => {
 });
 
 elements.randomize.addEventListener('click', () => {
+  if (!state.manifest || (isHomepage && !nextHomepagePreset)) return;
   dismissHomepageIntro();
-  state.selected = randomStack(state.manifest);
+  state.selected = isHomepage ? nextHomepagePreset() : randomStack(state.manifest);
   renderAll();
-  announce('A complete random avatar stack is ready.');
+  announce(isHomepage ? 'A preset Moonboy is ready.' : 'A complete random avatar stack is ready.');
 });
 
 elements.clearAll.addEventListener('click', () => {
@@ -404,6 +407,7 @@ async function initialize() {
     if (!response.ok) throw new Error(`Manifest request failed (${response.status})`);
     state.manifest = await response.json();
     ({ traitsById: state.traitsById, traitsByCategory: state.traitsByCategory } = indexManifest(state.manifest));
+    nextHomepagePreset = isHomepage ? createHomepagePresetCycle(state.manifest) : null;
     state.activeCategory = state.manifest.categoryOrder[0];
     const initialStack = defaultStack(state.manifest);
     state.selected = isHomepage ? clearOptionalStack(state.manifest, initialStack) : initialStack;

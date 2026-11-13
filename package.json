@@ -33,7 +33,7 @@
     "test:wiki-structure": "node wiki/validators/wiki-structure-check.js",
     "test:nbg-level1": "node scripts/nbg-level1-browser-validation.mjs --serve",
     "avatar:assets": "node scripts/build-avatar-assets.mjs",
-    "test:avatar-builder": "node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs",
+    "test:avatar-builder": "node scripts/avatar-builder-homepage-presets.test.mjs && node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs",
     "moonpet:art:check": "node scripts/moonpet-art-architecture.test.mjs",
     "moonpet:multi-bot:test": "node scripts/moonpet-multi-bot-art.test.mjs",
     "moonpet:extract:test": "node scripts/generate-moonpet-assets-extraction.test.js",
