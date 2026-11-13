@@ -2636,6 +2636,30 @@ CREATE INDEX IF NOT EXISTS tag_run_member_blocks_username
 CREATE INDEX IF NOT EXISTS tag_run_member_blocks_active
   ON tag_run_member_blocks(chat_id,blocked,telegram_id);
 
+-- Reward-only exclusion history. Community activity remains visible while
+-- messages inside these periods cannot become token reward weight.
+CREATE TABLE IF NOT EXISTS tag_run_reward_exclusion_periods (
+  exclusion_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chat_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL
+    CHECK(telegram_id NOT GLOB '*[^0-9]*' AND length(telegram_id) BETWEEN 1 AND 20),
+  started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ended_at TEXT,
+  updated_by TEXT NOT NULL
+    CHECK(updated_by NOT GLOB '*[^0-9]*' AND length(updated_by) BETWEEN 1 AND 20),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK(ended_at IS NULL OR ended_at>=started_at),
+  FOREIGN KEY(chat_id,telegram_id)
+    REFERENCES tag_run_member_blocks(chat_id,telegram_id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS tag_run_reward_exclusion_open
+  ON tag_run_reward_exclusion_periods(chat_id,telegram_id)
+  WHERE ended_at IS NULL;
+CREATE INDEX IF NOT EXISTS tag_run_reward_exclusion_lookup
+  ON tag_run_reward_exclusion_periods(
+    chat_id,telegram_id,started_at,ended_at
+  );
+
 CREATE TABLE IF NOT EXISTS tag_run_rank_announcements (
   chat_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
