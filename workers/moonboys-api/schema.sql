@@ -2571,6 +2571,7 @@ CREATE TABLE IF NOT EXISTS tag_run_messages (
   content_hash TEXT NOT NULL,
   points INTEGER NOT NULL CHECK(points BETWEEN 1 AND 17),
   message_unix INTEGER NOT NULL,
+  processed_unix INTEGER,
   display_name TEXT NOT NULL DEFAULT '',
   PRIMARY KEY(chat_id, message_id)
 );
@@ -2580,6 +2581,18 @@ CREATE INDEX IF NOT EXISTS tag_run_messages_member_week
   ON tag_run_messages(chat_id, week_key, telegram_id);
 CREATE INDEX IF NOT EXISTS tag_run_messages_member_hash
   ON tag_run_messages(chat_id, telegram_id, content_hash, message_unix);
+CREATE INDEX IF NOT EXISTS tag_run_messages_member_processing
+  ON tag_run_messages(chat_id, telegram_id, day_key, processed_unix);
+CREATE INDEX IF NOT EXISTS tag_run_messages_hash_processing
+  ON tag_run_messages(chat_id, telegram_id, content_hash, processed_unix);
+CREATE TRIGGER IF NOT EXISTS tag_run_message_processing_clock
+AFTER INSERT ON tag_run_messages
+WHEN NEW.processed_unix IS NULL
+BEGIN
+  UPDATE tag_run_messages
+  SET processed_unix=NEW.message_unix
+  WHERE chat_id=NEW.chat_id AND message_id=NEW.message_id;
+END;
 
 -- Rank thresholds are mirrored from core.js and checked in contract tests.
 -- The receipt trigger is atomic with each accepted message, so concurrent
@@ -2619,7 +2632,7 @@ INSERT OR IGNORE INTO tag_run_rank_levels(threshold,name) VALUES
   (60000, 'Graffiti Legend'),
   (95000, 'Graffiti King');
 
--- Private-admin TAG RUN member blocks. Historical receipts remain immutable.
+-- Private-admin TAG RUN reward exclusions. Street Cred and community state remain active.
 CREATE TABLE IF NOT EXISTS tag_run_member_blocks (
   chat_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL CHECK(telegram_id NOT GLOB '*[^0-9]*' AND length(telegram_id) BETWEEN 1 AND 20),
@@ -2635,6 +2648,30 @@ CREATE INDEX IF NOT EXISTS tag_run_member_blocks_username
   ON tag_run_member_blocks(chat_id,username COLLATE NOCASE);
 CREATE INDEX IF NOT EXISTS tag_run_member_blocks_active
   ON tag_run_member_blocks(chat_id,blocked,telegram_id);
+
+-- Reward-only exclusion history. Community activity remains visible while
+-- messages inside these periods cannot become token reward weight.
+CREATE TABLE IF NOT EXISTS tag_run_reward_exclusion_periods (
+  exclusion_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chat_id TEXT NOT NULL,
+  telegram_id TEXT NOT NULL
+    CHECK(telegram_id NOT GLOB '*[^0-9]*' AND length(telegram_id) BETWEEN 1 AND 20),
+  started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ended_at TEXT,
+  updated_by TEXT NOT NULL
+    CHECK(updated_by NOT GLOB '*[^0-9]*' AND length(updated_by) BETWEEN 1 AND 20),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK(ended_at IS NULL OR ended_at>=started_at),
+  FOREIGN KEY(chat_id,telegram_id)
+    REFERENCES tag_run_member_blocks(chat_id,telegram_id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS tag_run_reward_exclusion_open
+  ON tag_run_reward_exclusion_periods(chat_id,telegram_id)
+  WHERE ended_at IS NULL;
+CREATE INDEX IF NOT EXISTS tag_run_reward_exclusion_lookup
+  ON tag_run_reward_exclusion_periods(
+    chat_id,telegram_id,started_at,ended_at
+  );
 
 CREATE TABLE IF NOT EXISTS tag_run_rank_announcements (
   chat_id TEXT NOT NULL,

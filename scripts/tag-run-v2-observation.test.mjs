@@ -27,6 +27,7 @@ const migration107=read('workers/moonboys-api/migrations/107_tag_run_v2_persiste
 const migration108=read('workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql');
 const migration109=read('workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql');
 const migration110=read('workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql');
+const migration111=read('workers/moonboys-api/migrations/111_tag_run_reward_only_blocks.sql');
 
 function fixture(t){
   const sqlite=new DatabaseSync(':memory:');
@@ -39,6 +40,7 @@ function fixture(t){
   sqlite.exec(migration108);
   sqlite.exec(migration109);
   sqlite.exec(migration110);
+  sqlite.exec(migration111);
   t.after(()=>sqlite.close());
   const DB={prepare(sql){return {
     bind(...args){return {

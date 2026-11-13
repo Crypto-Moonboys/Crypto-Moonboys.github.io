@@ -21,7 +21,8 @@ const MEMBER_BLOCKS = [
   '105_tag_run_v2_payout_execution.sql',
   '106_tag_run_v2_one_percent_policy.sql',
   '107_tag_run_v2_persisted_draws.sql',
-  '110_tag_run_admin_member_blocks.sql'
+  '110_tag_run_admin_member_blocks.sql',
+  '111_tag_run_reward_only_blocks.sql'
 ].map(name => readFileSync(
   new URL('../workers/moonboys-api/migrations/' + name, import.meta.url), 'utf8'
 )).join('\n');
@@ -153,7 +154,7 @@ function fixture(t, opts = {}) {
 }
 
 
-test('private admins block and unblock a username without deleting audit history', async t => {
+test('private admins apply reward-only blocks without hiding community activity', async t => {
   const f = fixture(t);
   assert.equal(await f.score(f.message(
     'This first meaningful graffiti message records the member identity'
@@ -163,23 +164,29 @@ test('private admins block and unblock a username without deleting audit history
   ).get(MEMBER).username, 'target_user');
 
   const blocked = await f.command('/block @TARGET_USER', { user: ADMIN });
-  assert.match(blocked.answer, /TAG RUN MEMBER BLOCKED/);
+  assert.match(blocked.answer, /TAG RUN REWARDS BLOCKED/);
+  assert.match(blocked.answer, /Street Cred, ranks and leaderboards: ON/);
   assert.equal(f.sqlite.prepare(
     'SELECT blocked FROM tag_run_member_blocks WHERE chat_id=? AND telegram_id=?'
   ).get(GROUP,MEMBER).blocked, 1);
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_reward_exclusion_periods ' +
+    'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL'
+  ).get(GROUP,MEMBER).n,1);
 
   const whileBlocked = MONDAY + 60000;
   assert.equal(await f.score(f.message(
-    'This valid message must earn nothing while the member is blocked',
+    'This valid community message keeps earning Street Cred while reward blocked',
     { nowMs: whileBlocked }
-  ), whileBlocked), false);
+  ), whileBlocked), true);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
-  ).get(MEMBER).n, 1, 'historical receipt remains but no new score is written');
-  assert.doesNotMatch((await f.command('/top')).answer, /Tagger/);
+  ).get(MEMBER).n,2,'reward exclusion must not suppress Street Cred receipts');
+  assert.match((await f.command('/top')).answer, /Tagger/,
+    'reward-blocked members remain visible in community rankings');
 
   assert.match((await f.command('/block @target_user')).answer,
-    /authorised admins/, 'members cannot change block state');
+    /authorised admins/, 'members cannot change reward block state');
   assert.match((await f.command('/block @target_user',
     { user: ADMIN, chat: 'group' })).answer, /authorised admins/,
     'admin controls stay private');
@@ -187,17 +194,63 @@ test('private admins block and unblock a username without deleting audit history
     { user: ADMIN })).answer, /must have been seen|not.*known/i);
 
   const unblocked = await f.command('/unblock @target_user', { user: ADMIN });
-  assert.match(unblocked.answer, /TAG RUN MEMBER UNBLOCKED/);
-  const afterUnblock = MONDAY + 120000;
+  assert.match(unblocked.answer, /TAG RUN REWARDS UNBLOCKED/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_reward_exclusion_periods ' +
+    'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL'
+  ).get(GROUP,MEMBER).n,0);
+
+  // Telegram may deliver an update after /unblock even though it was sent
+  // during the exclusion. Reward matching must use message.date, not the
+  // later Worker processing clock.
+  f.sqlite.prepare(
+    'UPDATE tag_run_reward_exclusion_periods SET started_at=?,ended_at=? ' +
+    'WHERE chat_id=? AND telegram_id=?'
+  ).run('2026-11-02 10:00:30','2026-11-02 10:02:00',GROUP,MEMBER);
+  const delayedSentMs = MONDAY + 110000;
+  const delayedProcessedMs = MONDAY + 130000;
+  const delayed = f.message(
+    'This delayed delivery still earns Street Cred but no token reward weight',
+    { nowMs: delayedProcessedMs, date: Math.floor(delayedSentMs / 1000) }
+  );
+  assert.equal(await f.score(delayed, delayedProcessedMs), true);
+  const delayedRow = f.sqlite.prepare(
+    'SELECT message_unix,processed_unix FROM tag_run_messages ' +
+    'WHERE chat_id=? AND message_id=?'
+  ).get(GROUP,delayed.message.message_id);
+  assert.equal(delayedRow.message_unix,Math.floor(delayedSentMs / 1000),
+    'reward authority must preserve Telegram send time');
+  assert.equal(delayedRow.processed_unix,Math.floor(delayedProcessedMs / 1000),
+    'anti-spam authority must preserve Worker processing time');
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_messages m WHERE m.chat_id=? ' +
+    'AND m.message_id=? AND EXISTS (' +
+    'SELECT 1 FROM tag_run_reward_exclusion_periods e ' +
+    'WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id ' +
+    'AND unixepoch(e.started_at)<=m.message_unix ' +
+    'AND m.message_unix<unixepoch(e.ended_at))'
+  ).get(GROUP,delayed.message.message_id).n,1,
+  'delayed blocked-period activity must remain excluded from rewards');
+
+  const afterUnblock = MONDAY + 180000;
   assert.equal(await f.score(f.message(
-    'Future Street Cred returns after the private admin unblocks the member',
+    'Street Cred continues after the private admin reward unblock',
     { nowMs: afterUnblock }
   ), afterUnblock), true);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
-  ).get(MEMBER).n, 2);
-});
+  ).get(MEMBER).n,4);
 
+  assert.equal(await f.score(f.message(
+    'The admin identity can participate while excluding itself from rewards',
+    { user: ADMIN,nowMs:MONDAY + 180000,username:'admin_owner' }
+  ),MONDAY + 180000),true);
+  const selfBlock=await f.command('/block @admin_owner',{user:ADMIN});
+  assert.match(selfBlock.answer,/TAG RUN REWARDS BLOCKED/);
+  assert.match(selfBlock.answer,/Admin access: unchanged/);
+  assert.match((await f.command('/unblock @admin_owner',{user:ADMIN})).answer,
+    /TAG RUN REWARDS UNBLOCKED/);
+});
 
 test('deployment is fail-closed and webhook secret validation precedes TAG RUN ingress', async t => {
   const f = fixture(t, { enabled: false });
@@ -273,6 +326,30 @@ test('meaningful group posts earn at most once, ignore bots, spam, replays and p
   assert.equal(lifetime.posts, 2);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS count FROM tag_run_messages WHERE content_hash LIKE ?').get('%art%').count, 0,
     'raw message text must never be saved');
+});
+
+test('delayed Telegram updates cannot bypass the processing-time cooldown', async t => {
+  const f = fixture(t);
+  const sent = MONDAY + 1000;
+  const processed = MONDAY + 121000;
+  assert.equal(await f.score(f.message(
+    'First delayed but meaningful contribution about the painted wall',
+    { nowMs: processed, date: Math.floor(sent / 1000) }
+  ),processed),true);
+  assert.equal(await f.score(f.message(
+    'Second delayed contribution arrived one second after the first',
+    { nowMs: processed + 1000, date: Math.floor((sent + 1000) / 1000) }
+  ),processed + 1000),false);
+  assert.equal(await f.score(f.message(
+    'Third delayed contribution also remains inside the cooldown',
+    { nowMs: processed + 2000, date: Math.floor((sent + 2000) / 1000) }
+  ),processed + 2000),false);
+  const rows=f.sqlite.prepare(
+    'SELECT message_unix,processed_unix FROM tag_run_messages'
+  ).all();
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].message_unix,Math.floor(sent/1000));
+  assert.equal(rows[0].processed_unix,Math.floor(processed/1000));
 });
 
 test('missing D1 binding is a retryable scoring failure, not a skipped eligible message', async t => {
@@ -478,13 +555,13 @@ test('cooldown uses member day index, including messages crossing UTC midnight',
   assert.equal(rows[1].points, 15, 'previous-day streak bonus is retained');
   const manager=readFileSync(new URL('../workers/moonboys-api/tag-run/handler.js',
     import.meta.url),'utf8');
-  assert.match(manager, /day_key>=\? AND message_unix>\?/);
+  assert.match(manager, /day_key>=\? AND processed_unix>\?/);
   const plan=f.sqlite.prepare(
     'EXPLAIN QUERY PLAN SELECT 1 FROM tag_run_messages ' +
-    'WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?'
+    'WHERE chat_id=? AND telegram_id=? AND day_key>=? AND processed_unix>?'
   ).all(GROUP,MEMBER,'2026-11-08',Math.floor(prior/1000));
-  assert.ok(plan.some(row => /tag_run_messages_member_day/.test(row.detail)),
-    'cooldown query should use bounded member-day index rather than lifetime scan');
+  assert.ok(plan.some(row => /tag_run_messages_member_processing/.test(row.detail)),
+    'cooldown query should use the bounded processing-time index');
 });
 
 test('commands are verified-group/private only and rain registers WAX payout destinations', async t => {

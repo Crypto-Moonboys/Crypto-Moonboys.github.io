@@ -1,6 +1,6 @@
--- TAG RUN private-admin member blocks.
--- Historical Street Cred/audit receipts remain immutable; active blocks stop
--- new scoring and all future unreserved Community Pot selection.
+-- TAG RUN private-admin reward blocks.
+-- Street Cred, ranks, leaderboards and audit receipts remain active; reward
+-- blocks stop current Community Pot eligibility and unreserved payouts.
 
 CREATE TABLE IF NOT EXISTS tag_run_member_blocks (
   chat_id TEXT NOT NULL,

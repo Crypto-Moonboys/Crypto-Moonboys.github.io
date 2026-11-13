@@ -664,8 +664,10 @@ export async function saveYesterdayParticipation(env, options = {}) {
     const result = await env.DB.prepare(
       'SELECT m.telegram_id,m.message_id,m.points FROM tag_run_messages m ' +
       'WHERE m.chat_id=? AND m.day_key=? AND NOT EXISTS (' +
-      'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
-      'AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
+      'SELECT 1 FROM tag_run_reward_exclusion_periods e ' +
+      'WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id ' +
+      'AND unixepoch(e.started_at)<=m.message_unix AND ' +
+      '(e.ended_at IS NULL OR m.message_unix<unixepoch(e.ended_at))) ' +
       'ORDER BY m.telegram_id,m.message_id LIMIT 30001'
     ).bind(chatId, day).all();
     if (result?.success === false || !Array.isArray(result?.results)) {
@@ -702,8 +704,10 @@ export async function saveYesterdayParticipation(env, options = {}) {
       '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) ' +
       'SELECT m.chat_id,m.day_key,m.telegram_id,SUM(m.points),? FROM tag_run_messages m ' +
       'WHERE m.chat_id=? AND m.day_key=? AND NOT EXISTS (' +
-      'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
-      'AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
+      'SELECT 1 FROM tag_run_reward_exclusion_periods e ' +
+      'WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id ' +
+      'AND unixepoch(e.started_at)<=m.message_unix AND ' +
+      '(e.ended_at IS NULL OR m.message_unix<unixepoch(e.ended_at))) ' +
       'GROUP BY m.chat_id,m.day_key,m.telegram_id'
     ).bind(digest,chatId,day).run();
     if (write?.success === false ||
@@ -712,9 +716,7 @@ export async function saveYesterdayParticipation(env, options = {}) {
     const audit = await env.DB.prepare(
       'SELECT COUNT(*) AS recorded, ' +
       'SUM(CASE WHEN source_receipts_digest<>? THEN 1 ELSE 0 END) AS bad_digest ' +
-      'FROM tag_run_v2_participation p WHERE p.chat_id=? AND p.day_key=? ' +
-      'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
-      'WHERE b.chat_id=p.chat_id AND b.telegram_id=p.telegram_id AND b.blocked=1)'
+      'FROM tag_run_v2_participation p WHERE p.chat_id=? AND p.day_key=?'
     ).bind(digest,chatId,day).first();
     if (!audit || Number(audit.recorded) !== members.size ||
         Number(audit.bad_digest || 0) !== 0) {
@@ -769,7 +771,11 @@ async function drawInput(db, chatId, day) {
     db.prepare('SELECT m.telegram_id,SUM(m.points) AS points FROM tag_run_messages m ' +
       'WHERE m.chat_id=? AND m.day_key=? AND NOT EXISTS (' +
       'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
-      'AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
+      'AND b.telegram_id=m.telegram_id AND b.blocked=1) AND NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_reward_exclusion_periods e ' +
+      'WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id ' +
+      'AND unixepoch(e.started_at)<=m.message_unix AND ' +
+      '(e.ended_at IS NULL OR m.message_unix<unixepoch(e.ended_at))) ' +
       'GROUP BY m.telegram_id ORDER BY m.telegram_id LIMIT 2001')
       .bind(chatId,day).all(),
     db.prepare('SELECT p.telegram_id, SUM(p.earned_weight-p.spent_historical_weight) AS points ' +
