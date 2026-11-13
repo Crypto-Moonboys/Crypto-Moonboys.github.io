@@ -19,6 +19,36 @@ const SEED_PATTERN = /^[A-Za-z0-9_.:|/-]{1,200}$/;
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
+// Curated female-only variants from the supplied TRAITS.txt. IDs use the
+// authoritative homepage manifest naming convention; no image assets copied.
+// Face and hat pools are exclusive by avatar type. Female portraits may use
+// either shared/male or female-specific clothes and arms; male portraits may
+// not use the explicitly female-only clothes or arm variants.
+export const TELEGRAM_FEMALE_ONLY_TRAITS = Object.freeze({
+  'clothes': Object.freeze([2, 3, 12, 14, 44, 45, 46, 54, 64, 65, 66, 67, 68, 85, 92, 93, 109, 110].map(n => 'clothes-mc-clothes-' + n)),
+  'face': Object.freeze([13, 20, 21, 39, 40, 41, 109, 110, 111, 115, 116, 148].map(n => 'face-mb-face-' + n)),
+  'hat': Object.freeze([2, 8, 9, 56, 58, 62, 81, 82, 83, 84, 86, 116, 117, 118, 135, 175, 178, 182, 186, 187, 188, 189, 199, 204, 213, 216, 217, 218, 219, 221, 224, 227].map(n => 'hat-mb-hat-' + n)),
+  'left-arm': Object.freeze([14].map(n => 'left-arm-mb-left-' + n)),
+  'right-arm': Object.freeze([60, 67, 68, 75].map(n => 'right-arm-mb-right-' + n)),
+});
+const FEMALE_ONLY_IDS = new Map(Object.entries(TELEGRAM_FEMALE_ONLY_TRAITS)
+  .map(([category, ids]) => [category, new Set(ids)]));
+
+function avatarPool(entries, category, avatarType) {
+  const femaleOnly = FEMALE_ONLY_IDS.get(category);
+  if (!femaleOnly) return entries;
+  if (avatarType === 'female') {
+    // Male faces/hats never appear in the female branch.
+    if (category === 'face' || category === 'hat') {
+      return entries.filter(entry => femaleOnly.has(entry.id));
+    }
+    return entries;
+  }
+  // Male portraits exclude all explicitly female-only variants.
+  return entries.filter(entry => !femaleOnly.has(entry.id));
+}
+
+
 const fail = reason => { throw new Error('telegram_moonboy_' + reason); };
 
 // Read response streams with a hard cap, even if Content-Length is absent or
@@ -101,26 +131,32 @@ function validateManifest(manifest) {
   return entries;
 }
 
-// A stable logical-message seed makes retries reproducible. Each category is
-// independently hashed, and each selection is from the live homepage catalogue.
+// A stable logical-message seed makes retries reproducible. Select avatar type
+// first with a dedicated SHA-256 bit (balanced 50/50 independent of pool sizes),
+// then independently select every category from its eligible catalogue.
 export async function chooseTelegramMoonboyTraits(manifest, seed, cryptoImpl = globalThis.crypto) {
   if (typeof seed !== 'string' || !SEED_PATTERN.test(seed)) fail('invalid_seed');
   if (!cryptoImpl?.subtle?.digest) fail('crypto_unavailable');
   const choices = validateManifest(manifest);
+  const genderData = new TextEncoder().encode('telegram-moonboy:v2|avatar-type|' + seed);
+  const genderDigest = new Uint8Array(await cryptoImpl.subtle.digest('SHA-256', genderData));
+  const avatarType = (genderDigest[0] & 1) === 0 ? 'female' : 'male';
   const layers = [];
   for (const category of PORTRAIT_LAYER_ORDER) {
     const data = new TextEncoder().encode(
-      'telegram-moonboy:v1|' + manifest.version + '|' + category + '|' + seed
+      'telegram-moonboy:v2|' + manifest.version + '|' + avatarType + '|' + category + '|' + seed
     );
     const hash = new Uint8Array(await cryptoImpl.subtle.digest('SHA-256', data));
     const number = new DataView(hash.buffer, hash.byteOffset, hash.byteLength)
       .getUint32(0, false);
-    const pool = choices.get(category);
+    const pool = avatarPool(choices.get(category), category, avatarType);
+    if (!pool.length) fail('missing_' + avatarType + '_category_' + category);
     const picked = pool[number % pool.length];
     layers.push(Object.freeze({ ...picked }));
   }
   return Object.freeze({
     manifestVersion: manifest.version,
+    avatarType,
     size: PORTRAIT_SIZE,
     layers: Object.freeze(layers)
   });
@@ -196,6 +232,7 @@ export async function composeTelegramMoonboy({
         height: PORTRAIT_SIZE,
         byteSize: imageBytes.byteLength,
         selected: Object.freeze(plan.layers.map(l => l.id)),
+        avatarType: plan.avatarType,
         manifestVersion: plan.manifestVersion
       });
     }
