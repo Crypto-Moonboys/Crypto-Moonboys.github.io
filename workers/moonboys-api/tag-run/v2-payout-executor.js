@@ -170,21 +170,28 @@ export async function reserveReviewedPayout(env,{
     amount.toString(),cap.snapshot_digest,authorizationDigest
   ].join('|'));
   const next=decimalAdd(cap.committed_units,amount.toString());
+  // Recheck the active block inside the same transaction that reserves the
+  // cap and inserts the intent. The pre-selection check is only an early exit;
+  // this predicate closes the /block race immediately before D1.batch.
   const change=env.DB.prepare(
     'UPDATE tag_run_v2_payout_caps SET committed_units=?,last_reserved_units=?,'+
     'last_intent_key=?,revision=revision+1 '+
     'WHERE chat_id=? AND day_key=? AND asset_key=? AND paused=0 '+
-    'AND revision=? AND committed_units=?'
+    'AND revision=? AND committed_units=? '+
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b '+
+    'WHERE b.chat_id=? AND b.telegram_id=? AND b.blocked=1)'
   ).bind(next,amount.toString(),intentKey,chatId,day,key,
-    cap.revision,cap.committed_units);
+    cap.revision,cap.committed_units,chatId,String(telegramId));
   const insert=env.DB.prepare(
     'INSERT INTO tag_run_v2_payout_intents '+
     '(intent_key,chat_id,day_key,asset_key,bundle_index,telegram_id,'+
     'receiving_account,amount_units,snapshot_digest,authorization_digest,'+
-    'approved_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+    'approved_by) SELECT ?,?,?,?,?,?,?,?,?,?,? '+
+    'WHERE NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b '+
+    'WHERE b.chat_id=? AND b.telegram_id=? AND b.blocked=1)'
   ).bind(intentKey,chatId,day,key,bundleIndex,String(telegramId),
     receivingAccount,amount.toString(),cap.snapshot_digest,
-    authorizationDigest,approvedBy);
+    authorizationDigest,approvedBy,chatId,String(telegramId));
   // Atomicity depends on verified Cloudflare D1 .batch contract and SQL
   // constraints; concurrent callers cannot double reserve the same cap.
   const results=await env.DB.batch([change,insert]);
