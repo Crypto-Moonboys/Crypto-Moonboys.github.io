@@ -36,4 +36,19 @@ assert.ok(checked >= 40, 'the non-wiki sitemap landing-page coverage must not si
 assert.match(fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8'),
   /^Sitemap: https:\/\/cryptomoonboys\.com\/sitemap\.xml$/m,
   'robots must advertise the canonical sitemap');
+// Keep the home entity/website graph factual and valid JSON.
+const homeHead = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').split(/<\/head>/i)[0];
+const jsonLd = homeHead.match(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i)?.[1];
+assert.ok(jsonLd, 'homepage must publish structured data in the initial HTML');
+const schema = JSON.parse(jsonLd);
+const graph = schema['@graph'] || [];
+assert.ok(graph.some(entity => entity['@type'] === 'Organization' && entity.url === BASE + '/'),
+  'homepage needs real creator umbrella organization identity');
+assert.ok(graph.some(entity => entity['@type'] === 'WebSite' && entity.url === BASE + '/'),
+  'homepage needs WebSite identity without a fabricated search endpoint');
+// The legacy route must not compete with the real public Moonboy Builder.
+const builderRedirect = fs.readFileSync(path.join(ROOT, 'avatar-builder-test.html'), 'utf8');
+assert.match(builderRedirect, /<meta\b(?=[^>]*name=["']robots["'])(?=[^>]*content=["']noindex)/i,
+  'legacy Moonboy Builder redirect must be noindex');
+
 console.log('SEO landing-page metadata regression PASSED — ' + checked + ' sitemap URLs checked');
