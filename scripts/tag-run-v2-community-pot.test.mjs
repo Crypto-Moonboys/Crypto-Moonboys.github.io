@@ -63,9 +63,10 @@ test('locked wallet, chain, new migration and disabled V2 execution flags',()=>{
   for(const names of [evidence.required_migrations,
     production.d1_databases.wikicoms.required_migrations]) {
     assert(names.includes('104_tag_run_v2_community_token_pot.sql'));
+    assert(names.includes('111_tag_run_reward_only_blocks.sql'));
   }
   assert.match(read('.github/workflows/d1-production-migration-verify.yml'),
-    /104_tag_run_v2_community_token_pot\.sql/);
+    /111_tag_run_reward_only_blocks\.sql/);
 });
 
 test('pure BigInt math never uses USD prices or floating-point token math',()=>{
