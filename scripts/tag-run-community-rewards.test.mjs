@@ -16,9 +16,15 @@ import {
 const SCHEMA = readFileSync(
   new URL('../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql', import.meta.url), 'utf8'
 );
-const MEMBER_BLOCKS = readFileSync(
-  new URL('../workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql', import.meta.url), 'utf8'
-);
+const MEMBER_BLOCKS = [
+  '104_tag_run_v2_community_token_pot.sql',
+  '105_tag_run_v2_payout_execution.sql',
+  '106_tag_run_v2_one_percent_policy.sql',
+  '107_tag_run_v2_persisted_draws.sql',
+  '110_tag_run_admin_member_blocks.sql'
+].map(name => readFileSync(
+  new URL('../workers/moonboys-api/migrations/' + name, import.meta.url), 'utf8'
+)).join('\n');
 const GROUP = '-1001234567890';
 const ADMIN = '9000001';
 const MEMBER = '9000002';
