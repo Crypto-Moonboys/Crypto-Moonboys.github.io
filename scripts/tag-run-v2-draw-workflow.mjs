@@ -51,7 +51,10 @@ export async function loadDrawInputs(db,chatId,day){
   if(!snapshots.length||snapshots.length>100||snapshots.some(s=>s.eligibility!=='approved'||!text(s.asset_reviewer)||!s.asset_verified_at))fail('asset_not_reviewed');
   const snapshotsDigest=await canonicalSnapshotSetDigest({chatId,day,rows:snapshots});
   const participation=await all(db,'SELECT day_key,telegram_id,earned_weight,spent_historical_weight,source_receipts_digest '+
-    'FROM tag_run_v2_participation WHERE chat_id=? AND day_key<=? ORDER BY day_key,telegram_id LIMIT 20001',chatId,day);
+    'FROM tag_run_v2_participation p WHERE p.chat_id=? AND p.day_key<=? ' +
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=p.chat_id ' +
+    'AND b.telegram_id=p.telegram_id AND b.blocked=1) ' +
+    'ORDER BY p.day_key,p.telegram_id LIMIT 20001',chatId,day);
   if(participation.length>20000)fail('participation_limit');
   for(const row of participation){
     if(!validUtcDay(row.day_key)||!String(row.telegram_id).match(/^[0-9]{1,20}$/)||
