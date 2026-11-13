@@ -3,7 +3,8 @@
 // billable binding is introduced. Cache absence/failure is always non-fatal.
 import { TELEGRAM_PHOTO_MAX_BYTES } from './moonboy-photo-transport.js';
 
-const CACHE_VERSION = 'v1';
+// New cache namespace: old pre-gender portraits and file_ids are ineligible.
+const CACHE_VERSION = 'v2';
 const CACHE_ORIGIN = 'https://cryptomoonboys.com/__telegram_moonboy_cache__/';
 const FILE_ID = /^[A-Za-z0-9_-]{20,256}$/;
 const SEED = /^[A-Za-z0-9_.:|/-]{1,200}$/;
