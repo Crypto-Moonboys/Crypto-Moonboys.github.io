@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { commitDraw,revealDraw,reviewDraw,rejectDraw,inspectPersistedDraw,loadDrawInputs } from './tag-run-v2-draw-workflow.mjs';
+import { commitDraw,revealDraw,reviewDraw,rejectDraw,inspectPersistedDraw,loadDrawInputs,replayDraw } from './tag-run-v2-draw-workflow.mjs';
 import { chooseFutureWaxBlock,readIrreversibleWaxBlock } from './tag-run-v2-draw-entropy.mjs';
 import { parseDrawCommand,validateDrawSettings,runDrawOperator,loadPrivateDrawSeed } from './tag-run-v2-owner-draw.mjs';
 import { sha256Text,assetKey,TIP_ACCOUNT,WAX_MAINNET_CHAIN_ID } from '../workers/moonboys-api/tag-run/v2-core.js';
@@ -59,7 +59,7 @@ function fixture(t,{canonical=false,multi=false,total='10000',historical=true,tr
 }
 
 
-test('blocked member is excluded from persisted draw inputs without deleting history',async t=>{
+test('blocked member stays in audited draw inputs but is excluded from selection',async t=>{
   const f=fixture(t);
   f.sql.prepare(
     'INSERT INTO tag_run_member_blocks ' +
@@ -67,12 +67,36 @@ test('blocked member is excluded from persisted draw inputs without deleting his
     'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP)'
   ).run(GROUP,'1111','target_user','9000001');
   const input=await loadDrawInputs(f.DB,GROUP,DAY);
-  assert.equal(input.participation.some(row=>row.telegram_id==='1111'),false);
+  const blocked=input.participation.find(row=>row.telegram_id==='1111');
+  assert.equal(blocked?.blocked,1,
+    'the immutable source row remains present with frozen eligibility');
+  const replay=await replayDraw(input,SEED,BLOCK_ID);
+  assert.equal(replay.bundles.some(row=>row.telegramId==='1111'),false);
+  const receipt=await f.commit();
+  assert.equal(receipt.state,'committed',
+    'migration 107 completeness guards accept the full participation set');
+  const stored=JSON.parse(f.sql.prepare(
+    'SELECT input_json FROM tag_run_v2_draw_workflows WHERE chat_id=? AND day_key=?'
+  ).get(GROUP,DAY).input_json);
+  assert.equal(stored.participation.find(
+    row=>row.telegram_id==='1111')?.blocked,1);
   assert.equal(f.sql.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_v2_participation WHERE telegram_id=?'
   ).get('1111').n,1,'participation audit row remains immutable');
 });
 
+test('block racing a draw commit is rejected by the atomic insert guard',async t=>{
+  const f=fixture(t);
+  f.state.beforeBatch=()=>f.sql.prepare(
+    'INSERT INTO tag_run_member_blocks ' +
+    '(chat_id,telegram_id,username,blocked,updated_by,blocked_at) ' +
+    'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP)'
+  ).run(GROUP,'1111','target_user','9000001');
+  await assert.rejects(f.commit(),/v2_draw_member_block_changed/);
+  assert.equal(f.sql.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_v2_draw_workflows'
+  ).get().n,0);
+});
 
 test('commit stores exact 1% inputs before future entropy, without bundles or token debt',async t=>{
   const f=fixture(t);const receipt=await f.commit();assert.equal(receipt.state,'committed');assert.equal(receipt.bundles,0);
