@@ -371,4 +371,14 @@ assert.ok(fullLinuxWorkflow.includes('needs: [all-domains]') &&
 assert.doesNotMatch(fullLinuxWorkflow, /ci-change-scope|should_run|wrangler deploy|--remote/,
   'full Linux tests must not be change-scoped or deploy production resources');
 
+// A manual full Visual run must continue after each independent test failure,
+// but still fail the job if ANY command failed. Regular CI stays fail-fast.
+assert.ok(fullLinuxWorkflow.includes("CI_COLLECT_ALL_FAILURES: ${{ matrix.domain == 'visual' && '1' || '0' }}"),
+  'full Linux workflow must collect all Visual failures without changing other domains');
+assert.ok(runner.includes("process.env.CI_COLLECT_ALL_FAILURES === '1'") &&
+  runner.includes("if (!collectFailures) process.exit(result.status || 1)") &&
+  runner.includes("if (failures.length)") &&
+  runner.includes("process.exit(1)"),
+  'diagnostic collection must retain default fail-fast and fail on aggregate errors');
+
 console.log('CI domain grouping tests PASSED.');
