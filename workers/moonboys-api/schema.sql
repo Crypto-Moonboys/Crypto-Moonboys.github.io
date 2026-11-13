@@ -3349,6 +3349,21 @@ CREATE TRIGGER IF NOT EXISTS tag_run_v2_workflow_insert_guard BEFORE INSERT ON t
         AND b.units=json_extract(j.value,'$.units') AND d.status='reviewed' AND (i.status IS NULL OR i.status!='confirmed')
     )) THEN RAISE(ABORT,'v2_draw_reservations_changed') END;
 END;
+CREATE TRIGGER IF NOT EXISTS tag_run_v2_workflow_member_block_insert_guard
+BEFORE INSERT ON tag_run_v2_draw_workflows BEGIN
+  SELECT CASE WHEN EXISTS(
+    SELECT 1 FROM json_each(NEW.input_json,'$.participation') j
+    WHERE json_type(j.value,'$.blocked') IS NULL
+      OR json_type(j.value,'$.blocked')!='integer'
+      OR json_extract(j.value,'$.blocked') NOT IN (0,1)
+      OR json_extract(j.value,'$.blocked')!=CASE WHEN EXISTS(
+        SELECT 1 FROM tag_run_member_blocks b
+        WHERE b.chat_id=NEW.chat_id
+          AND b.telegram_id=json_extract(j.value,'$.telegram_id')
+          AND b.blocked=1
+      ) THEN 1 ELSE 0 END
+  ) THEN RAISE(ABORT,'v2_draw_member_block_changed') END;
+END;
 CREATE TRIGGER IF NOT EXISTS tag_run_v2_workflow_update_guard BEFORE UPDATE ON tag_run_v2_draw_workflows BEGIN
   SELECT CASE WHEN NEW.chat_id!=OLD.chat_id OR NEW.day_key!=OLD.day_key OR NEW.committed_by!=OLD.committed_by
     OR NEW.input_json!=OLD.input_json OR NEW.inputs_digest!=OLD.inputs_digest OR NEW.seed_commitment!=OLD.seed_commitment
