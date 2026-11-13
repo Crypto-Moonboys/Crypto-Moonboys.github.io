@@ -78,6 +78,9 @@ test('automatic queue stages are isolated and rotate blocked obligations', () =>
   // A newer cap is not opened while an older cap or unresolved intent for the
   // same asset exists. A race with the D1 overlap trigger is treated as wait.
   assert.match(automation, /waiting_for_prior_asset_obligations/);
+  assert.match(automation, /s\.status='verified'/);
+  assert.match(automation, /a\.eligibility='approved'/);
+  assert.match(automation, /length\(a\.approved_code_hash\)=64/);
   assert.match(automation, /other\.paused=0 OR EXISTS/);
   assert.match(automation, /oi\.status IN \('reserved','broadcast_unknown','reconciliation_review'\)/);
 
