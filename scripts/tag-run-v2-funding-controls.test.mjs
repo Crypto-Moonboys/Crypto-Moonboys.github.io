@@ -308,7 +308,7 @@ test('verified snapshot includes approved assets, excludes quarantine and feeds 
   assert.match(result.messages[0], /VERIFIED IRREVERSIBLE 1% SNAPSHOT SET/);
   assert.match(result.messages[0], /Approved assets included: 1/);
   assert.match(result.messages[0], /Quarantined\/suspended assets excluded: 1/);
-  assert.match(result.messages[0], /Payouts: OFF/);
+  assert.match(result.messages[0], /automatic commit\/reveal and payout cycle will consume this frozen set/);
   const snapshots = f.sqlite.prepare(
     'SELECT * FROM tag_run_v2_snapshots ORDER BY asset_key'
   ).all();
