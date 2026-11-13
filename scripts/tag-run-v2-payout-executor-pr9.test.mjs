@@ -867,21 +867,22 @@ test('already-broadcast UNKNOWN payout can be proven and confirmed after a relea
   }),/v2_payout_release_not_authorized/);
 });
 
-test('no real signer endpoint, transfer flag or network broadcast is installed',()=>{
+test('payout executor contains no embedded signing secret or direct broadcast; production gates match approved release',()=>{
   const src=readFileSync(new URL(
     '../workers/moonboys-api/tag-run/v2-payout-executor.js',import.meta.url),
   'utf8');
   const flags=readFileSync(new URL(
     '../workers/moonboys-api/wrangler.toml',import.meta.url),'utf8');
-  for(const flag of ['TAG_RUN_WEEKLY_REWARDS_ENABLED',
-    'TAG_RUN_V2_POOL_ENABLED','TAG_RUN_V2_DRAWS_ENABLED',
-    'TAG_RUN_V2_PAYOUTS_ENABLED']){
-    assert.match(flags,new RegExp(flag+' = "false"'));
+  assert.match(flags,/TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"/);
+  for(const flag of ['TAG_RUN_V2_POOL_ENABLED','TAG_RUN_V2_DRAWS_ENABLED',
+    'TAG_RUN_V2_PAYOUTS_ENABLED','TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED']) {
+    assert.match(flags,new RegExp(flag+' = "true"'));
   }
+  // Even with production gates enabled, this executor must not embed a
+  // signing secret, expose a direct chain push route or bypass its signer.
   assert.doesNotMatch(src,/private.?key|seed.?phrase|push_transaction|WAX_SIGNER_URL/i);
   assert.equal(PAYOUT_EXECUTOR_AUTO_ENABLED,true);
 });
-
 
 function waxEvidenceMock({wrongChain=false,unfinalized=false,
   secondDifferent=false,wrongBlock=false}={}){
