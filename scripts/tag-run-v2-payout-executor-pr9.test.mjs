@@ -32,8 +32,10 @@ function fixture(t,{daily='500',available='50000',donation=true,
       '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
       '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql',
       '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql',
+      '../workers/moonboys-api/migrations/107_tag_run_v2_persisted_draws.sql',
       '../workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql',
-      '../workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql'
+      '../workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql',
+      '../workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql'
     ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
   }
   sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
@@ -328,6 +330,30 @@ test('snapshot replacement between reservation preflight and D1.batch rolls back
     'no stuck unresolved payout can block a later asset cap');
   assert.equal(f.sqlite.prepare('SELECT snapshot_digest FROM '+
     'tag_run_v2_snapshots WHERE day_key=?').get(DAY).snapshot_digest,changed);
+  assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
+});
+
+test('block between payout preflight and D1.batch prevents any reservation',async t=>{
+  const f=fixture(t);await openCap(f);
+  const batch=f.DB.batch.bind(f.DB);
+  let called=0;
+  f.DB.batch=async operations=>{
+    called++;
+    f.sqlite.prepare(
+      'INSERT INTO tag_run_member_blocks '+
+      '(chat_id,telegram_id,username,blocked,updated_by,blocked_at) '+
+      'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP)'
+    ).run(GROUP,MEMBER,'target_user','9000001');
+    return batch(operations);
+  };
+  await assert.rejects(reserveReviewedPayout(f.env,intentArgs),
+    /reservation_batch_failed/);
+  assert.equal(called,1);
+  assert.equal(f.cap().committed_units,'0');
+  assert.equal(f.cap().last_intent_key,'');
+  assert.equal(f.cap().last_reserved_units,'0');
+  assert.equal(f.intents().length,0,
+    'an active block must prevent both the cap mutation and intent insert');
   assert.equal(f.sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
 });
 
