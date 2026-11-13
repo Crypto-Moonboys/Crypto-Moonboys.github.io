@@ -938,23 +938,23 @@ export async function recordTagRunMessage(update, env, options = {}) {
   // filtering and streak bonus. Replaying an update never awards points twice.
   const query = [
     'INSERT OR IGNORE INTO tag_run_messages',
-    '(chat_id,telegram_id,message_id,day_key,week_key,content_hash,points,message_unix,display_name)',
+    '(chat_id,telegram_id,message_id,day_key,week_key,content_hash,points,' +
+    'message_unix,processed_unix,display_name)',
     'SELECT ?,?,?,?,?,?,',
     '  ' + BASE_POINTS + ' + ? + CASE WHEN',
     '  EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?)',
     '  AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?)',
-    '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?',
+    '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?, ?',
     'WHERE (SELECT COUNT(*) FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?) < ' + DAILY_LIMIT,
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?)',
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND message_unix>?)'
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key>=? AND processed_unix>?)',
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND processed_unix>?)'
   ].join(' ');
   const result = await env.DB.prepare(query).bind(
     chatId,telegramId,message.message_id,day,week,hash,replyBonus,
     chatId,telegramId,previous, chatId,telegramId,day,
-    // Reward exclusions follow Telegram's authenticated send time. Keep
-    // processing time for day/cooldown gates, but never let a delayed update
-    // cross an unblock boundary and become reward-eligible.
-    sentSec,cleanName(message.from),
+    // Reward exclusions follow Telegram's authenticated send time; cooldown
+    // and duplicate-content gates use the separate Worker processing clock.
+    sentSec,nowSeconds,cleanName(message.from),
     chatId,telegramId,day,
     chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
     chatId,telegramId,hash,nowSeconds - 86400
