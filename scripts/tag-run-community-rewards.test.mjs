@@ -1080,3 +1080,21 @@ test('four-hour bulletin omits unset or invalid Telegram topic IDs', async t => 
       'invalid topic IDs must never be sent to Telegram');
   }
 });
+
+
+test('daily weekly monthly and seasonal leaderboard commands expose the live chat board', async t => {
+  const f = fixture(t);
+  const update = f.message('A distinct thoughtful contribution for every leaderboard',
+    { nowMs: MONDAY });
+  update.message.from.first_name = 'BoardTagger';
+  assert.equal(await f.score(update, MONDAY), true);
+  for (const command of ['/tagdaily','/tagweekly','/tagmonthly','/tagseason',
+    '/top daily','/top weekly','/top monthly','/top season','/top all']) {
+    const answer = (await f.command(command, { nowMs: MONDAY })).answer;
+    assert.match(answer, /TOP 10/);
+    assert.match(answer, /BoardTagger — 10 pts/);
+    assert.match(answer, /Every other eligible participant keeps their normal lottery chance/);
+  }
+  assert.match((await f.command('/top yearly', { nowMs: MONDAY })).answer,
+    /Usage: \/top daily\|weekly\|monthly\|season\|all/);
+});
