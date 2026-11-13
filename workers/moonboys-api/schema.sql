@@ -2571,6 +2571,7 @@ CREATE TABLE IF NOT EXISTS tag_run_messages (
   content_hash TEXT NOT NULL,
   points INTEGER NOT NULL CHECK(points BETWEEN 1 AND 17),
   message_unix INTEGER NOT NULL,
+  processed_unix INTEGER,
   display_name TEXT NOT NULL DEFAULT '',
   PRIMARY KEY(chat_id, message_id)
 );
@@ -2580,6 +2581,18 @@ CREATE INDEX IF NOT EXISTS tag_run_messages_member_week
   ON tag_run_messages(chat_id, week_key, telegram_id);
 CREATE INDEX IF NOT EXISTS tag_run_messages_member_hash
   ON tag_run_messages(chat_id, telegram_id, content_hash, message_unix);
+CREATE INDEX IF NOT EXISTS tag_run_messages_member_processing
+  ON tag_run_messages(chat_id, telegram_id, day_key, processed_unix);
+CREATE INDEX IF NOT EXISTS tag_run_messages_hash_processing
+  ON tag_run_messages(chat_id, telegram_id, content_hash, processed_unix);
+CREATE TRIGGER IF NOT EXISTS tag_run_message_processing_clock
+AFTER INSERT ON tag_run_messages
+WHEN NEW.processed_unix IS NULL
+BEGIN
+  UPDATE tag_run_messages
+  SET processed_unix=NEW.message_unix
+  WHERE chat_id=NEW.chat_id AND message_id=NEW.message_id;
+END;
 
 -- Rank thresholds are mirrored from core.js and checked in contract tests.
 -- The receipt trigger is atomic with each accepted message, so concurrent
