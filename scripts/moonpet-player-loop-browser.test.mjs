@@ -775,7 +775,22 @@ try {
       assert.equal(actions.at(-1), action, 'the expected care action reached the server');
       assert.equal(faultResult?.accepted, true, 'the lost response follows this action\'s committed care receipt');
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
-      const savedXP = (await hooks.getPetProfile(db, id)).pet_xp;
+      // The Mini App state reads the active pet instance, which is the same
+      // authority used by the recovery response. A legacy profile projection
+      // may lag a just-committed care receipt. Snapshot both the canonical
+      // instance and its accepted event *before* the explicit Refresh.
+      const savedXP = (await hooks.buildPetMiniAppState(db, id, token)).pet.pet_xp;
+      const instanceXP = sqlite.prepare(
+        'SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?'
+      ).get(id)?.pet_xp;
+      assert.equal(savedXP, instanceXP,
+        'active instance and Mini App state agree after the care receipt');
+      const careReceiptCount = () => sqlite.prepare(
+        "SELECT COUNT(*) AS n FROM telegram_pet_events WHERE telegram_id=? AND event_type=? AND status='accepted'"
+      ).get(id, action).n;
+      const receiptsBeforeRefresh = careReceiptCount();
+      assert.equal(receiptsBeforeRefresh, 1,
+        'exactly one accepted receipt exists for this care action before recovery');
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
       // The status message is written before the async action handler clears its
       // busy lock. Keep the immediate fail-closed assertion above, then cross one
@@ -794,7 +809,13 @@ try {
       assert.equal((await recoveredResponse.json()).state.pet.pet_xp, savedXP, 'the response includes the committed care XP');
       await page.locator('[data-panel="care"] [data-action="train"]:enabled').waitFor();
       assert.equal(actions.length, sent, 'Refresh only reads state');
-      assert.equal((await hooks.getPetProfile(db, id)).pet_xp, savedXP, 'Refresh cannot repay the uncertain care action');
+      assert.equal((await hooks.buildPetMiniAppState(db, id, token)).pet.pet_xp, savedXP,
+        'Refresh cannot repay the uncertain care action');
+      assert.equal(sqlite.prepare(
+        'SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?'
+      ).get(id)?.pet_xp, instanceXP, 'Refresh cannot modify committed instance XP');
+      assert.equal(careReceiptCount(), receiptsBeforeRefresh,
+        'Refresh cannot create another accepted care receipt');
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
     }
     sessionExpired = true;
