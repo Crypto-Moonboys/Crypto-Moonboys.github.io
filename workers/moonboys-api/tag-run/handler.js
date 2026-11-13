@@ -3,6 +3,7 @@ import {
   eligibleTagComment, isValidWaxAccount, isValidTokenContract,
   parseTokenUnits, formatTokenUnits, adminTelegramIds, authenticatedGroupId
 } from './core.js';
+import { sendTagRunBulletin } from './bulletin-transport.js';
 import { personalTagRun } from './engagement.js';
 import { leaderboardPeriods } from './v2-leaderboard.js';
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
@@ -174,15 +175,11 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     '\n/mytagrun — private daily mission, progress and reward dashboard' +
     '\nDaily recaps, confirmed token drops, rollover highlights and weekly titles are posted automatically.' +
     '\n/taghelp — full guide';
-  const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch, true, {
-    chatKind: 'group', messageKind: 'tag-bulletin',
-    seed: moonboyTelegramMessageSeed('tag-bulletin', chatId,
-      Math.floor(nowMs / (4 * 60 * 60 * 1000)))
+  const delivery = await sendTagRunBulletin(env, message, options.fetchImpl || fetch);
+  if (delivery.status !== 'sent') console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed', {
+    photoStatus: delivery.photoStatus, textStatus: delivery.textStatus
   });
-  // Never retry an uncertain send: a delivered-but-unacknowledged Telegram
-  // response must not cause duplicate group notices.
-  if (!sent) console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed');
-  return { status: sent ? 'sent' : 'unconfirmed', count: rows.length };
+  return { ...delivery, count: rows.length };
 }
 
 async function allTimeTop(db, chatId) {
