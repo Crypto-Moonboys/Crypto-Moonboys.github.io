@@ -652,7 +652,7 @@ test('private admin can approve an observed token identity for all wallet fundin
   assert.equal(result.result,true);
   assert.match(result.messages[0],/APPROVED FOR COMMUNITY POT/);
   assert.match(result.messages[0],/All irreversible wallet units of this token are eligible/);
-  assert.match(result.messages[0],/Draws: OFF · Payouts: OFF/);
+  assert.match(result.messages[0],/Automatic rewards use this pinned contract only/);
   assert.deepEqual(approval.balances,[['kingsofgraff','LFGK']]);
   const asset=f.sqlite.prepare(
     'SELECT eligibility,verified_at,reviewed_by FROM tag_run_v2_assets WHERE asset_key=?'
@@ -674,7 +674,7 @@ test('private admin can approve an observed token identity for all wallet fundin
   assert.equal(count(f,'tag_run_v2_deposits'),0);
 });
 
-test('approval is private-admin only, paused-only and fails closed on chain mismatch',async t=>{
+test('approval is private-admin only, rejects unsupported pool states and fails closed on chain mismatch',async t=>{
   const f=fixture(t),observe=rpc();
   await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
   for(const access of [
@@ -687,7 +687,9 @@ test('approval is private-admin only, paused-only and fails closed on chain mism
     assert.match(result.messages[0],/authorised bot DMs/);
     assert.equal(network.calls.length,0);
   }
-  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
+  // review_only is a valid production policy state; read_only is not.
+  // The refusal must occur before any WAX network request.
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
   const paused=rpc();
   const blocked=await adminCommand(f,'poolapprove',
     'kingsofgraff LFGK 4 review-1697',{fetchImpl:paused.fetchImpl});
@@ -720,7 +722,7 @@ test('private admin quarantine is immediate and has no network dependency',async
   assert.equal(result.result,true);
   assert.equal(networkCalls,0);
   assert.match(result.messages[0],/QUARANTINED NOW/);
-  assert.match(result.messages[0],/Future snapshot, draw and send eligibility checks will reject/);
+  assert.match(result.messages[0],/Future snapshot, draw, reservation and signing checks reject this token immediately/);
   const asset=f.sqlite.prepare(
     'SELECT eligibility,verified_at,reviewed_by FROM tag_run_v2_assets WHERE asset_key=?'
   ).get(ASSET);
