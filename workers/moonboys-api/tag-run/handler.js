@@ -9,11 +9,13 @@ import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../te
 
 const TAG_COMMANDS = new Set([
   'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
+  'block', 'unblock',
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
   ...V2_COMMANDS
 ]);
 const ADMIN_COMMANDS = new Set([
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
+  'block', 'unblock',
   ...V2_ADMIN_COMMANDS
 ]);
 const COOLDOWN_SECONDS = 45;
@@ -111,6 +113,8 @@ async function weeklyTop(db, chatId, weekKey) {
     'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
     'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
     'WHERE m.chat_id=? AND m.week_key=? ' +
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
+    'WHERE b.chat_id=m.chat_id AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
     'GROUP BY m.telegram_id ORDER BY score DESC, posts DESC, m.telegram_id ASC LIMIT 10'
   ).bind(chatId, weekKey).all();
   return rows.results || [];
@@ -152,8 +156,10 @@ export async function postTagRunGroupBulletin(env, options = {}) {
 
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
-    'SELECT telegram_id, display_name, score, posts FROM tag_run_member_totals ' +
-    'WHERE chat_id=? ORDER BY score DESC, posts DESC, telegram_id ASC LIMIT 10'
+    'SELECT t.telegram_id, t.display_name, t.score, t.posts FROM tag_run_member_totals t ' +
+    'WHERE t.chat_id=? AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
+    'WHERE b.chat_id=t.chat_id AND b.telegram_id=t.telegram_id AND b.blocked=1) ' +
+    'ORDER BY t.score DESC, t.posts DESC, t.telegram_id ASC LIMIT 10'
   ).bind(chatId).all();
   return rows.results || [];
 }
@@ -212,6 +218,113 @@ function helpMessage() {
     'Other bot commands such as /games, /daily and /gklink remain separate.\n' +
     'No website linking is required to earn TAG RUN points.';
 }
+const TELEGRAM_USERNAME = /^[A-Za-z0-9_]{5,32}$/;
+function commandUsername(args) {
+  const match = String(args || '').trim().match(/^@([A-Za-z0-9_]{5,32})$/);
+  return match ? match[1] : null;
+}
+async function usernameRows(db, query, args) {
+  const result = await db.prepare(query).bind(...args).all();
+  if (result?.success === false || !Array.isArray(result?.results)) {
+    throw new Error('tag_run_username_lookup_unavailable');
+  }
+  return result.results;
+}
+async function resolveMemberByUsername(db, chatId, username, includeBlockedAlias) {
+  let rows = await usernameRows(db,
+    'SELECT telegram_id,username FROM telegram_users ' +
+    'WHERE username=? COLLATE NOCASE ORDER BY updated_at DESC,telegram_id LIMIT 2',
+    [username]);
+  if (!rows.length && includeBlockedAlias) {
+    rows = await usernameRows(db,
+      'SELECT telegram_id,username FROM tag_run_member_blocks ' +
+      'WHERE chat_id=? AND username=? COLLATE NOCASE ' +
+      'ORDER BY updated_at DESC,telegram_id LIMIT 2',
+      [chatId,username]);
+  }
+  if (rows.length !== 1) return { status: rows.length ? 'ambiguous' : 'missing' };
+  const telegramId = String(rows[0].telegram_id || '');
+  const resolvedUsername = String(rows[0].username || '');
+  if (!isTelegramId(telegramId) || !TELEGRAM_USERNAME.test(resolvedUsername)) {
+    throw new Error('tag_run_username_lookup_invalid');
+  }
+  return { status: 'found', telegramId, username: resolvedUsername };
+}
+async function handleMemberBlockCommand(env, {
+  name,args,chatId,telegramId,send
+}) {
+  const username = commandUsername(args);
+  if (!username) {
+    await send('Usage: /' + name + ' @username');
+    return true;
+  }
+  const target = await resolveMemberByUsername(
+    env.DB,chatId,username,name === 'unblock'
+  );
+  if (target.status === 'missing') {
+    await send('@' + username + ' is not known to TAG RUN yet. ' +
+      'They must send at least one eligible message in the group first.');
+    return true;
+  }
+  if (target.status === 'ambiguous') {
+    await send('@' + username + ' matches more than one Telegram identity. ' +
+      'Nothing changed; resolve the duplicate identity before retrying.');
+    return true;
+  }
+  if (adminTelegramIds(env).has(target.telegramId)) {
+    await send('Authorised TAG RUN admins cannot be blocked.');
+    return true;
+  }
+  if (name === 'block') {
+    const write = await env.DB.prepare(
+      'INSERT INTO tag_run_member_blocks ' +
+      '(chat_id,telegram_id,username,blocked,updated_by,blocked_at,unblocked_at,updated_at) ' +
+      'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP,NULL,CURRENT_TIMESTAMP) ' +
+      'ON CONFLICT(chat_id,telegram_id) DO UPDATE SET ' +
+      'username=excluded.username,blocked=1,updated_by=excluded.updated_by,' +
+      'blocked_at=CURRENT_TIMESTAMP,unblocked_at=NULL,updated_at=CURRENT_TIMESTAMP'
+    ).bind(chatId,target.telegramId,target.username,telegramId).run();
+    if (write?.success === false || !Number.isSafeInteger(Number(write?.meta?.changes)) ||
+        Number(write.meta.changes) < 1) {
+      throw new Error('tag_run_member_block_write_unconfirmed');
+    }
+    // Suppress unsent historical celebrations immediately. Audit rows remain.
+    const suppress = await env.DB.prepare(
+      "UPDATE tag_run_rank_announcements SET status='needs_review' " +
+      "WHERE chat_id=? AND telegram_id=? AND status='pending'"
+    ).bind(chatId,target.telegramId).run();
+    if (suppress?.success === false) {
+      throw new Error('tag_run_member_block_announcement_write_unconfirmed');
+    }
+    await send('TAG RUN MEMBER BLOCKED\n@' + target.username +
+      ' · Telegram ID ' + target.telegramId +
+      '\nNew Street Cred: OFF' +
+      '\nFuture Community Pot eligibility: OFF' +
+      '\nExisting audit history is retained. Any transfer already reserved or ' +
+      'broadcast before this block cannot be reversed.');
+    return true;
+  }
+  const write = await env.DB.prepare(
+    'UPDATE tag_run_member_blocks SET blocked=0,updated_by=?,' +
+    'unblocked_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP ' +
+    'WHERE chat_id=? AND telegram_id=? AND blocked=1'
+  ).bind(telegramId,chatId,target.telegramId).run();
+  if (write?.success === false || !Number.isSafeInteger(Number(write?.meta?.changes)) ||
+      Number(write.meta.changes) < 0) {
+    throw new Error('tag_run_member_unblock_write_unconfirmed');
+  }
+  if (Number(write.meta.changes) === 0) {
+    await send('@' + target.username + ' is already unblocked.');
+    return true;
+  }
+  await send('TAG RUN MEMBER UNBLOCKED\n@' + target.username +
+    ' · Telegram ID ' + target.telegramId +
+    '\nNew Street Cred: ON' +
+    '\nFuture Community Pot eligibility: ON' +
+    '\nHistorical scores remain unchanged.');
+  return true;
+}
+
 async function tokenInfoFromChain(contract, symbol, fetchImpl = fetch) {
   const response = await fetchImpl(RPC_URL, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -274,6 +387,11 @@ export async function handleTagRunCommand(update, env, options = {}) {
     if (V2_COMMANDS.has(name)) {
       return await handleTagRunV2Command(env, { name, args, isAdmin, isPrivate, chatId,
         telegramId, send, nowMs, fetchImpl });
+    }
+    if (name === 'block' || name === 'unblock') {
+      return await handleMemberBlockCommand(env, {
+        name,args,chatId,telegramId,send
+      });
     }
     if (name === 'help' || name === 'taghelp') {
       await send(helpMessage());
@@ -711,8 +829,11 @@ export async function deliverTagRunRankAnnouncements(env, options = {}) {
   const pending = await env.DB.prepare(
     'SELECT chat_id,telegram_id,rank_threshold,rank_name,display_name,' +
     'total_points,source_message_id FROM tag_run_rank_announcements ' +
-    "WHERE chat_id=? AND status='pending' ORDER BY created_at ASC, " +
-    'source_message_id ASC LIMIT ?'
+    "WHERE chat_id=? AND status='pending' " +
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
+    'WHERE b.chat_id=tag_run_rank_announcements.chat_id ' +
+    'AND b.telegram_id=tag_run_rank_announcements.telegram_id AND b.blocked=1) ' +
+    'ORDER BY created_at ASC, source_message_id ASC LIMIT ?'
   ).bind(chatId, limit).all();
   let sent = 0;
   let needsReview = 0;
@@ -777,6 +898,23 @@ export async function recordTagRunMessage(update, env, options = {}) {
   if (!hash) throw new Error('tag_run_content_hash_unavailable');
   const chatId = authenticatedGroupId(env);
   const telegramId = String(message.from.id);
+  const observedUsername = TELEGRAM_USERNAME.test(String(message.from.username || ''))
+    ? String(message.from.username) : null;
+  const identity = await env.DB.prepare(
+    'INSERT INTO telegram_users(telegram_id,username,first_name,last_name,updated_at) ' +
+    'VALUES (?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(telegram_id) DO UPDATE SET ' +
+    'username=COALESCE(excluded.username,telegram_users.username),' +
+    'first_name=COALESCE(excluded.first_name,telegram_users.first_name),' +
+    'last_name=COALESCE(excluded.last_name,telegram_users.last_name),' +
+    'updated_at=CURRENT_TIMESTAMP'
+  ).bind(telegramId,observedUsername,
+    String(message.from.first_name || '').slice(0,64) || null,
+    String(message.from.last_name || '').slice(0,64) || null).run();
+  if (identity?.success === false ||
+      !Number.isSafeInteger(Number(identity?.meta?.changes)) ||
+      Number(identity.meta.changes) < 1) {
+    throw new Error('tag_run_member_identity_write_unconfirmed');
+  }
   const nowSeconds = Math.floor(nowMs / 1000);
   const day = utcDay(nowMs);
   const week = weekOf(nowMs);
@@ -796,7 +934,9 @@ export async function recordTagRunMessage(update, env, options = {}) {
     '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?',
     'WHERE (SELECT COUNT(*) FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?) < ' + DAILY_LIMIT,
     'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?)',
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND message_unix>?)'
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND message_unix>?)',
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
+    'WHERE b.chat_id=? AND b.telegram_id=? AND b.blocked=1)'
   ].join(' ');
   const result = await env.DB.prepare(query).bind(
     chatId,telegramId,message.message_id,day,week,hash,replyBonus,
@@ -804,7 +944,8 @@ export async function recordTagRunMessage(update, env, options = {}) {
     nowSeconds,cleanName(message.from),
     chatId,telegramId,day,
     chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
-    chatId,telegramId,hash,nowSeconds - 86400
+    chatId,telegramId,hash,nowSeconds - 86400,
+    chatId,telegramId
   ).run();
   // A successful INSERT OR IGNORE may change zero rows for spam/replays. A
   // missing result or failed DB write is NOT equivalent to a rejected post:
