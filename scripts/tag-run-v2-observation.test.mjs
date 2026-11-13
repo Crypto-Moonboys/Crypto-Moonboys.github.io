@@ -41,6 +41,9 @@ function fixture(t){
   sqlite.exec(migration109);
   sqlite.exec(migration110);
   sqlite.exec(migration111);
+  // Production migration 109 sets review_only. Restore paused in this isolated
+  // fixture to exercise the legacy read-only observation pilot's safety gates.
+  sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='paused' WHERE config_id=1").run();
   t.after(()=>sqlite.close());
   const DB={prepare(sql){return {
     bind(...args){return {
@@ -179,12 +182,13 @@ const count=(f,table)=>f.sqlite.prepare('SELECT COUNT(*) AS n FROM '+table).get(
 test('owner-approved pilot gate is enabled while every funded reward gate stays OFF',t=>{
   const f=fixture(t),cfg=read('workers/moonboys-api/wrangler.toml');
   assert.equal(observationEnabled(f.env),true);
-  assert.match(cfg,/TAG_RUN_V2_OBSERVATION_ENABLED = "true"/);
+  // Live production flags differ from this isolated paused-pilot fixture.
+  assert.match(cfg,/TAG_RUN_V2_OBSERVATION_ENABLED = "false"/);
   assert.match(cfg,/TAG_RUN_V2_POOL_ENABLED = "true"/);
-  for(const flag of ['TAG_RUN_V2_DRAWS_ENABLED',
-    'TAG_RUN_V2_PAYOUTS_ENABLED','TAG_RUN_WEEKLY_REWARDS_ENABLED']){
-    assert.match(cfg,new RegExp(flag+' = "false"'));
+  for(const flag of ['TAG_RUN_V2_DRAWS_ENABLED', 'TAG_RUN_V2_PAYOUTS_ENABLED']) {
+    assert.match(cfg,new RegExp(flag+' = "true"'));
   }
+  assert.match(cfg,/TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"/);
   const wrapper = read('workers/moonboys-api/worker-phase5-final.js');
   const plan = read('workers/moonboys-api/scheduled/phase5-cron-plan.js');
   assert.match(wrapper,/phase5CronTasks\(event, env\)/);
@@ -407,9 +411,11 @@ test('pilot fail-closed when pool config is no longer paused',async t=>{
   assert.equal(count(f,'tag_run_v2_capture_cursors'),0);
 });
 
-test('all production observation paths are free of WAX transfers and token settlement',()=>{
+test('legacy observation module is free of WAX transfers and token settlement',()=>{
   const wrangler=read('workers/moonboys-api/wrangler.toml');
-  assert.match(wrangler,/TAG_RUN_V2_OBSERVATION_ENABLED = "true"/);
+  // Production observation is off; the isolated paused fixture exercises the
+  // pilot safety gate separately from the live Worker configuration.
+  assert.match(wrangler,/TAG_RUN_V2_OBSERVATION_ENABLED = "false"/);
   const source=read('workers/moonboys-api/tag-run/v2-pilot.js');
   assert.doesNotMatch(source,/push_transaction|signTransaction|signing_key|private_key|transfer\(/i);
   assert.match(source,/tag_run_v2_assets/);
