@@ -75,6 +75,13 @@ test('automatic queue stages are isolated and rotate blocked obligations', () =>
     assert.match(runner, new RegExp("runIsolatedStep\\(result, '" + step + "'"));
   }
 
+  // A permanently blocked committed/revealed draw remains fail-closed but
+  // cannot prevent a later eligible day from advancing.
+  assert.match(automation, /for \(const row of queue\)/);
+  assert.match(automation, /skippedBlockedDraws/);
+  assert.match(automation, /status: 'draw_queue_waiting'/);
+  assert.doesNotMatch(automation, /ORDER BY day_key LIMIT 1/);
+
   // A newer cap is not opened while an older cap or unresolved intent for the
   // same asset exists. A race with the D1 overlap trigger is treated as wait.
   assert.match(automation, /waiting_for_prior_asset_obligations/);
