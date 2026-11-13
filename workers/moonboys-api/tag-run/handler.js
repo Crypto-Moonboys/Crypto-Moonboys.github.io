@@ -3,12 +3,14 @@ import {
   eligibleTagComment, isValidWaxAccount, isValidTokenContract,
   parseTokenUnits, formatTokenUnits, adminTelegramIds, authenticatedGroupId
 } from './core.js';
+import { leaderboardPeriods } from './v2-leaderboard.js';
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
 import { checkWaxDestination } from './wallet-destination.js';
 import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../telegram/moonboy-message-gateway.js';
 
 const TAG_COMMANDS = new Set([
-  'profile', 'tagprofile', 'top', 'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
+  'profile', 'tagprofile', 'top', 'tagdaily', 'tagweekly', 'tagmonthly', 'tagseason',
+  'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
   'block', 'unblock',
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
   ...V2_COMMANDS
@@ -105,6 +107,17 @@ async function streakCount(db, chatId, telegramId, nowMs) {
   }
   return streak;
 }
+async function periodTop(db, chatId, startDay, endDay) {
+  const rows = await db.prepare(
+    'SELECT m.telegram_id, COALESCE(MAX(t.display_name),MAX(m.display_name)) AS display_name, ' +
+    'SUM(m.points) AS score, COUNT(*) AS posts, COALESCE(t.score,0) AS lifetime_score ' +
+    'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
+    'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
+    'WHERE m.chat_id=? AND m.day_key>=? AND m.day_key<=? ' +
+    'GROUP BY m.telegram_id ORDER BY score DESC, length(m.telegram_id) ASC, m.telegram_id ASC LIMIT 10'
+  ).bind(chatId, startDay, endDay).all();
+  return rows.results || [];
+}
 async function weeklyTop(db, chatId, weekKey) {
   const rows = await db.prepare(
     'SELECT m.telegram_id, COALESCE(MAX(t.display_name),MAX(m.display_name)) AS display_name, ' +
@@ -113,7 +126,7 @@ async function weeklyTop(db, chatId, weekKey) {
     'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
     'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
     'WHERE m.chat_id=? AND m.week_key=? ' +
-    'GROUP BY m.telegram_id ORDER BY score DESC, posts DESC, m.telegram_id ASC LIMIT 10'
+    'GROUP BY m.telegram_id ORDER BY score DESC, length(m.telegram_id) ASC, m.telegram_id ASC LIMIT 10'
   ).bind(chatId, weekKey).all();
   return rows.results || [];
 }
@@ -155,7 +168,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
     'SELECT telegram_id,display_name,score,posts FROM tag_run_member_totals ' +
-    'WHERE chat_id=? ORDER BY score DESC,posts DESC,telegram_id ASC LIMIT 10'
+    'WHERE chat_id=? ORDER BY score DESC,length(telegram_id) ASC,telegram_id ASC LIMIT 10'
   ).bind(chatId).all();
   return rows.results || [];
 }
@@ -203,7 +216,8 @@ function helpMessage() {
     '+5 for the first eligible message after an active previous day.\n' +
     '/profile — existing bot profile plus TAG RUN stats\n' +
     '/tagprofile — TAG RUN points, rank and streak only\n' +
-    '/top — weekly leaderboard (/top all for all time)\n' +
+    '/top — weekly leaderboard; use /top daily, monthly, season or all\n' +
+    '/tagdaily /tagweekly /tagmonthly /tagseason — direct leaderboard shortcuts\n' +
     '/ranks — complete TAG RUN rank ladder\n' +
     '/rewards — weekly reward information\n' +
     '/rain — register a WAX account privately with the bot\n' +
@@ -544,16 +558,26 @@ export async function handleTagRunCommand(update, env, options = {}) {
           ' — ' + title).join('\n'));
       return true;
     }
-    if (name === 'top') {
-      const all = args.toLowerCase() === 'all';
-      const rows = all ? await allTimeTop(env.DB, chatId) :
-        await weeklyTop(env.DB, chatId, weekOf(nowMs));
+    if (['top','tagdaily','tagweekly','tagmonthly','tagseason'].includes(name)) {
+      const aliases = { tagdaily: 'daily', tagweekly: 'weekly',
+        tagmonthly: 'monthly', tagseason: 'seasonal' };
+      let scope = aliases[name] || String(args || '').trim().toLowerCase() || 'weekly';
+      if (scope === 'season') scope = 'seasonal';
+      if (!['daily','weekly','monthly','seasonal','all'].includes(scope)) {
+        await send('Usage: /top daily|weekly|monthly|season|all');
+        return true;
+      }
+      const today = utcDay(nowMs);
+      const periods = leaderboardPeriods(today);
+      const rows = scope === 'all' ? await allTimeTop(env.DB, chatId) :
+        await periodTop(env.DB, chatId, periods[scope].start, periods[scope].end);
       const lines = rows.map((row, i) => (i + 1) + '. ' +
         String(row.display_name || 'Tagger').slice(0, 70) + ' — ' +
-        String(row.score) + ' pts · ' + rankFor(all ? row.score : row.lifetime_score).name);
-      await send('TAG RUN ' + (all ? 'ALL-TIME' : 'WEEKLY') + ' TOP 10\n' +
+        String(row.score) + ' pts · ' + rankFor(scope === 'all' ? row.score : row.lifetime_score).name);
+      await send('TAG RUN ' + scope.toUpperCase() + ' TOP 10\n' +
         (lines.join('\n') || 'No qualifying chat activity yet.') +
-        '\nOnly trusted group chat messages count.');
+        '\nTop 3 receive a small capped Community Pot ticket boost when this period closes.' +
+        '\nEvery other eligible participant keeps their normal lottery chance.');
       return true;
     }
     if (name === 'rewards') {
@@ -1014,7 +1038,7 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     ' GROUP BY m.telegram_id',
     '), ranked AS (',
     ' SELECT telegram_id,score,posts,ROW_NUMBER() OVER',
-    ' (ORDER BY score DESC, posts DESC, telegram_id ASC) AS position',
+    ' (ORDER BY score DESC, length(telegram_id) ASC, telegram_id ASC) AS position',
     ' FROM scores',
     '), census AS (',
     ' SELECT COUNT(*) AS recipient_count,',

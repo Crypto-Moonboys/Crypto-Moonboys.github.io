@@ -132,12 +132,15 @@ export function drawSeed(cryptoImpl = globalThis.crypto) {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 export async function previewCommunityDraw({ day, assets, current, historical,
-  seedHex, wallet = TIP_ACCOUNT, cryptoImpl = globalThis.crypto }) {
+  seedHex, wallet = TIP_ACCOUNT, currentWeightMaximum = MAX_POINTS_PER_DAY,
+  cryptoImpl = globalThis.crypto }) {
   if (!validUtcDay(day)) throw new Error('invalid_draw_day');
   if (wallet !== TIP_ACCOUNT) throw new Error('unexpected_treasury_wallet');
   if (!HEX_SEED.test(seedHex || '')) throw new Error('invalid_random_seed');
   if (!Array.isArray(assets) || assets.length > MAX_ASSETS) throw new Error('too_many_assets');
-  const currentWeights = weights(current, MAX_POINTS_PER_DAY, 'current');
+  const currentMaximum = positiveWhole(currentWeightMaximum, 100000000, 'current_weight_maximum');
+  if (currentMaximum < MAX_POINTS_PER_DAY) throw new Error('invalid_current_weight_maximum');
+  const currentWeights = weights(current, currentMaximum, 'current');
   const historicalWeights = weights(historical, MAX_HISTORICAL_WEIGHT, 'historical');
   const seen = new Set();
   const budgets = [];

@@ -855,14 +855,14 @@ test('weekly leaderboard uses latest member display name, not lexicographic MAX'
   assert.match(allTime.answer, /Alex — 20 pts/);
 });
 
-test('weekly /top rank labels use all-time Street Cred and reward tie-break matches displayed order', async t => {
+test('weekly /top and reward draft use the same deterministic member-id tie-break', async t => {
   const f = fixture(t);
   f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
     '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
     'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
     .run(GROUP, 'LFGK', 'kingsofgraff', 4, 100000, 10000000);
   const morePostsId = '8000009'; // Larger ID deliberately sorts last on ID alone.
-  const fewerPostsId = '7000001';
+  const fewerPostsId = '900001'; // Shorter numeric ID must sort first.
   for (let i = 0; i < 6; i++) {
     const nowMs = MONDAY + (i * 60000);
     const update = f.message('Six unique original comments about street art number ' + i,
@@ -878,7 +878,9 @@ test('weekly /top rank labels use all-time Street Cred and reward tie-break matc
     assert.equal(await f.score(update, nowMs), true);
   }
   const board = await f.command('/top', { nowMs: MONDAY + 700000 });
-  assert(board.answer.indexOf('1. MorePosts') < board.answer.indexOf('2. FewerPosts'));
+  assert(board.answer.indexOf('1. FewerPosts') < board.answer.indexOf('2. MorePosts'));
+  const allTime = await f.command('/top all', { nowMs: MONDAY + 700000 });
+  assert(allTime.answer.indexOf('1. FewerPosts') < allTime.answer.indexOf('2. MorePosts'));
   // The rank shown beside weekly points must come from lifetime Street Cred.
   f.sqlite.prepare('UPDATE tag_run_member_totals SET score=95000 WHERE telegram_id=?')
     .run(morePostsId);
@@ -889,7 +891,7 @@ test('weekly /top rank labels use all-time Street Cred and reward tie-break matc
   assert.equal(drafted.status, 'review_only');
   const allocations = f.sqlite.prepare('SELECT telegram_id,rank_position,amount_units ' +
     'FROM tag_run_weekly_allocations ORDER BY rank_position').all();
-  assert.deepEqual(allocations.map(x=>x.telegram_id), [morePostsId,fewerPostsId]);
+  assert.deepEqual(allocations.map(x=>x.telegram_id), [fewerPostsId,morePostsId]);
   assert.deepEqual(allocations.map(x=>x.amount_units), [500000,300000]);
 });
 
@@ -1079,4 +1081,22 @@ test('four-hour bulletin omits unset or invalid Telegram topic IDs', async t => 
     assert.equal(Object.hasOwn(f.sent.at(-1), 'message_thread_id'), false,
       'invalid topic IDs must never be sent to Telegram');
   }
+});
+
+
+test('daily weekly monthly and seasonal leaderboard commands expose the live chat board', async t => {
+  const f = fixture(t);
+  const update = f.message('A distinct thoughtful contribution for every leaderboard',
+    { nowMs: MONDAY });
+  update.message.from.first_name = 'BoardTagger';
+  assert.equal(await f.score(update, MONDAY), true);
+  for (const command of ['/tagdaily','/tagweekly','/tagmonthly','/tagseason',
+    '/top daily','/top weekly','/top monthly','/top season','/top all']) {
+    const answer = (await f.command(command, { nowMs: MONDAY })).answer;
+    assert.match(answer, /TOP 10/);
+    assert.match(answer, /BoardTagger — 10 pts/);
+    assert.match(answer, /Every other eligible participant keeps their normal lottery chance/);
+  }
+  assert.match((await f.command('/top yearly', { nowMs: MONDAY })).answer,
+    /Usage: \/top daily\|weekly\|monthly\|season\|all/);
 });
