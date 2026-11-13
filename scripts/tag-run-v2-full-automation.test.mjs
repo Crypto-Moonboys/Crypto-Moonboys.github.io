@@ -90,8 +90,10 @@ test('automatic queue stages are isolated and rotate blocked obligations', () =>
   assert.match(automation, /WHERE i\.status='reserved' AND a\.eligibility='approved' AND c\.paused=0/);
   assert.match(automation, /status: 'queue_serviced', outcomes/);
 
-  // Failed finality lookups rotate by updated_at so one missing transaction
-  // cannot monopolise every reconciliation tick.
+  // Reconciliation and same-ID rebroadcast use independent clocks: a failed
+  // finality lookup rotates fairly without suppressing the frozen-tx retry.
+  assert.match(automation, /reconcile_after<=CURRENT_TIMESTAMP/);
+  assert.match(automation, /SET reconcile_after=datetime\('now','\+4 minutes'\)/);
   assert.match(automation, /updated_at<=datetime\('now','-4 minutes'\)/);
   assert.match(automation, /reconciliation_retry_conflict/);
 });
@@ -102,7 +104,8 @@ test('migration pins contracts and freezes one signed transaction before push', 
   );
   for (const token of [
     'approved_code_hash', 'approved_abi_hash', 'submission_tx_id',
-    'signed_transaction_json', 'v2_asset_contract_pin_required',
+    'signed_transaction_json', 'reconcile_after',
+    'v2_asset_contract_pin_required',
     'v2_payout_intent_immutable', "SET status='review_only'"
   ]) assert.match(migration, new RegExp(token));
   const signer = read(
