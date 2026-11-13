@@ -10,6 +10,9 @@ import { WAX_CHAIN_API } from './v2-chain.js';
 import { WAX_AUTHORITY_PROVIDERS } from './v2-wax-authority-review.js';
 
 const HEX = /^[0-9a-f]{64}$/;
+// WAX permits a one-hour transaction lifetime. Keep the frozen transaction
+// valid through at least one 30-minute automation retry without re-signing it.
+export const ACTIVE_TRANSACTION_LIFETIME_SECONDS = 3600;
 const fail = reason => { throw new Error('v2_active_signer_' + reason); };
 
 const canonicalTransferAbi = ABI.from({
@@ -113,7 +116,7 @@ export async function prepareActiveKeyTransaction({
     data
   });
   const transaction = Transaction.from({
-    ...info.getTransactionHeader(600),
+    ...info.getTransactionHeader(ACTIVE_TRANSACTION_LIFETIME_SECONDS),
     context_free_actions: [],
     actions: [encodedAction],
     transaction_extensions: []

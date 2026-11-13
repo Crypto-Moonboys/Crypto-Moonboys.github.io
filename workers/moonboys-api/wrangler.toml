@@ -8,7 +8,7 @@ preview_urls = true
 # Existing 5-minute timed events and 09:00 Telegram digest stay unchanged.
 # Offset TAG RUN bulletin and V2 participation capture from the 5-minute tick.
 # These offsets do not change UTC day/week eligibility, award policy or resets.
-crons = ["*/5 * * * *", "0 9 * * *", "3 */4 * * *", "12 0 * * *"]
+crons = ["*/5 * * * *", "*/30 * * * *", "0 9 * * *", "3 */4 * * *", "12 0 * * *"]
 
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.

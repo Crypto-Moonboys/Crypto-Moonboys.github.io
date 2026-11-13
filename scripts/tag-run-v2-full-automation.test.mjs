@@ -9,8 +9,10 @@ import { buildReviewedWaxTransfer, PAYOUT_EXECUTOR_AUTO_ENABLED } from
   '../workers/moonboys-api/tag-run/v2-payout-executor.js';
 import { runAutomaticCommunityPot } from
   '../workers/moonboys-api/tag-run/v2-automation.js';
-import { prepareActiveKeyTransaction, broadcastPreparedTransaction } from
-  '../workers/moonboys-api/tag-run/v2-active-key-signer.js';
+import {
+  prepareActiveKeyTransaction, broadcastPreparedTransaction,
+  ACTIVE_TRANSACTION_LIFETIME_SECONDS
+} from '../workers/moonboys-api/tag-run/v2-active-key-signer.js';
 import { PrivateKey } from '@wharfkit/antelope';
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
@@ -21,10 +23,13 @@ test('automation cron remains behind both explicit release switches', () => {
     TAG_RUN_V2_AUTOMATION_ENABLED: 'true',
     TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED: 'false'
   };
-  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.timed }, base).automationTick, false);
+  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.automation }, base).automationTick, false);
   base.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED = 'true';
-  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.timed }, base).automationTick, true);
+  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.timed }, base).automationTick, false);
+  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.automation }, base).automationTick, true);
   assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.bulletin }, base).automationTick, false);
+  assert.ok(ACTIVE_TRANSACTION_LIFETIME_SECONDS > 30 * 60,
+    'a frozen signed transaction must survive the next 30-minute retry tick');
 });
 
 test('active-key transfer is exact and never defaults from caller data', () => {

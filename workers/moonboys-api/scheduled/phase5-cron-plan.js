@@ -3,6 +3,7 @@
 // Base Worker still owns the original five-minute timed-event and 09:00 jobs.
 export const MOONBOYS_CRON = Object.freeze({
   timed: '*/5 * * * *',
+  automation: '*/30 * * * *',
   digest: '0 9 * * *',
   bulletin: '3 */4 * * *',
   participation: '12 0 * * *',
@@ -22,7 +23,9 @@ export function phase5CronTasks(event, env = {}) {
   return Object.freeze({
     maintenance,
     rankNotices: cron === MOONBOYS_CRON.timed && env.TAG_RUN_ENABLED === 'true',
-    automationTick: cron === MOONBOYS_CRON.timed &&
+    // Automatic Community Pot state advances on its own lower-frequency cron.
+    // The five-minute base tick remains dedicated to existing maintenance and notices.
+    automationTick: cron === MOONBOYS_CRON.automation &&
       env.TAG_RUN_V2_AUTOMATION_ENABLED === 'true' &&
       env.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED === 'true',
     bulletin: cron === MOONBOYS_CRON.bulletin && env.TAG_RUN_ENABLED === 'true',

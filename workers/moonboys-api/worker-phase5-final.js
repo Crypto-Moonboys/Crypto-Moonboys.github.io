@@ -542,8 +542,8 @@ export default {
           String(error?.message || error));
       }));
     }
-    // Five-minute ticks advance only persisted state: reveal after LIB, review,
-    // reserve, same-ID broadcast and irreversible reconciliation.
+    // Thirty-minute Community Pot ticks advance only persisted state: reveal
+    // after LIB, review, reserve, same-ID broadcast and irreversible reconciliation.
     if (tasks.automationTick) {
       ctx.waitUntil(runAutomaticCommunityPot(env, {
         dailyStart: false, nowMs: Number(event?.scheduledTime) || Date.now()

@@ -20,7 +20,7 @@ test('configured and wrapper-owned cron strings stay in parity',()=>{
     assert(cfg.includes(JSON.stringify(c)),c);
   }
   assert.deepEqual(Object.values(MOONBOYS_CRON),[
-    '*/5 * * * *','0 9 * * *','3 */4 * * *','12 0 * * *'
+    '*/5 * * * *','*/30 * * * *','0 9 * * *','3 */4 * * *','12 0 * * *'
   ]);
   assert(!cfg.includes('"0 */4 * * *"'));
   assert(!cfg.includes('"10 0 * * *"'));
@@ -41,6 +41,17 @@ test('5-minute tick drains rank notices but only every other tick cleans expired
   assert.equal(at10.participation,false);
   const jitter=phase5CronTasks({cron:MOONBOYS_CRON.timed,scheduledTime:NaN},enabled);
   assert.equal(jitter.maintenance,true,'missing scheduledTime must never strand cleanup');
+  assert.equal(at10.automationTick,false,'base tick must not advance Community Pot payouts');
+});
+
+test('30-minute Community Pot progression is isolated from base maintenance',()=>{
+  const on={...enabled,TAG_RUN_V2_AUTOMATION_ENABLED:'true',
+    TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED:'true'};
+  const due=phase5CronTasks(event(MOONBOYS_CRON.automation,'2026-11-03T00:30:00Z'),on);
+  only(due,'automationTick');
+  assert.equal(phase5CronTasks(
+    event(MOONBOYS_CRON.timed,'2026-11-03T00:30:00Z'),on
+  ).automationTick,false);
 });
 
 test('four-hour bulletin is isolated from timed maintenance and rank queue',()=>{
