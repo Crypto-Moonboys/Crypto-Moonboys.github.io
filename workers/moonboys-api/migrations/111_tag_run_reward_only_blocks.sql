@@ -3,6 +3,27 @@
 -- periods prevent messages sent while reward-blocked from later becoming
 -- Community Pot weight after an unblock.
 
+-- Preserve both clocks: Telegram send time owns reward exclusion, while the
+-- Worker processing clock owns cooldown and duplicate-content enforcement.
+ALTER TABLE tag_run_messages ADD COLUMN processed_unix INTEGER;
+UPDATE tag_run_messages
+SET processed_unix=message_unix
+WHERE processed_unix IS NULL;
+CREATE INDEX IF NOT EXISTS tag_run_messages_member_processing
+  ON tag_run_messages(chat_id,telegram_id,day_key,processed_unix);
+CREATE INDEX IF NOT EXISTS tag_run_messages_hash_processing
+  ON tag_run_messages(chat_id,telegram_id,content_hash,processed_unix);
+-- Keeps the already-deployed migration-103 Worker safe during the short
+-- migration-before-deploy window: its message_unix value was processing time.
+CREATE TRIGGER IF NOT EXISTS tag_run_message_processing_clock
+AFTER INSERT ON tag_run_messages
+WHEN NEW.processed_unix IS NULL
+BEGIN
+  UPDATE tag_run_messages
+  SET processed_unix=NEW.message_unix
+  WHERE chat_id=NEW.chat_id AND message_id=NEW.message_id;
+END;
+
 CREATE TABLE IF NOT EXISTS tag_run_reward_exclusion_periods (
   exclusion_id INTEGER PRIMARY KEY AUTOINCREMENT,
   chat_id TEXT NOT NULL,
