@@ -58,6 +58,22 @@ function fixture(t,{canonical=false,multi=false,total='10000',historical=true,tr
   return {sql,DB,state,env,keys,commit,reveal,review};
 }
 
+
+test('blocked member is excluded from persisted draw inputs without deleting history',async t=>{
+  const f=fixture(t);
+  f.sql.prepare(
+    'INSERT INTO tag_run_member_blocks ' +
+    '(chat_id,telegram_id,username,blocked,updated_by,blocked_at) ' +
+    'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP)'
+  ).run(GROUP,'1111','target_user','9000001');
+  const input=await loadDrawInputs(f.DB,GROUP,DAY);
+  assert.equal(input.participation.some(row=>row.telegram_id==='1111'),false);
+  assert.equal(f.sql.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_v2_participation WHERE telegram_id=?'
+  ).get('1111').n,1,'participation audit row remains immutable');
+});
+
+
 test('commit stores exact 1% inputs before future entropy, without bundles or token debt',async t=>{
   const f=fixture(t);const receipt=await f.commit();assert.equal(receipt.state,'committed');assert.equal(receipt.bundles,0);
   assert.equal(f.sql.prepare('SELECT count(*) n FROM tag_run_v2_bundles').get().n,0);
