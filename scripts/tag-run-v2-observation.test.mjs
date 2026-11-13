@@ -334,9 +334,12 @@ test('hypothetical draw blocks until prior real participation is fully captured'
   assert.doesNotMatch(quarantined.messages[0],/1000\.0000 LFGK/);
   await command(f,'poolobserve',{fetchImpl:network.fetchImpl});
   // Test-only independent approval on a disposable SQLite database.
+  // Migration 109 requires pinned contract hashes for every approved asset.
+  // Use fixture-only hashes; keep the production D1 safety trigger intact.
   f.sqlite.prepare("UPDATE tag_run_v2_assets SET eligibility='approved',"+
-    "reviewed_by='fixture-review',verified_at='2026-11-02' "+
-    "WHERE asset_key=?").run(ASSET);
+    "reviewed_by='fixture-review',verified_at='2026-11-02',"+
+    "approved_code_hash=?,approved_abi_hash=? WHERE asset_key=?")
+    .run('c'.repeat(64),'a'.repeat(64),ASSET);
   const simulated=await command(f,'pooltest',{fetchImpl:network.fetchImpl});
   assert.match(simulated.messages[0],/UNSAVED UNVERIFIED ALLOWLIST WHAT-IF ONLY/);
   assert.match(simulated.messages[0],/Current eligible members: 1/);
@@ -630,14 +633,15 @@ test('/myrewards fails closed on bad D1 reads, corrupt weight or unapproved pilo
   assert.equal(count(f,'tag_run_v2_bundles'),0);
 });
 
-test('/myrewards stays unavailable if independent observation gate is turned off',async t=>{
+test('/myrewards remains safe and read-only if independent observation is off',async t=>{
   const f=fixture(t),sent=[];
   f.env.TAG_RUN_V2_OBSERVATION_ENABLED='false';
   await handleTagRunV2Command(f.env,{
     name:'myrewards',isAdmin:false,isPrivate:true,chatId:GROUP,
     telegramId:MEMBER,send:async message=>sent.push(message)
   });
-  assert.match(sent.at(-1),/not active yet/);
+  assert.match(sent.at(-1),/TAG RUN · YOUR COMMUNITY POT/);
+  assert.match(sent.at(-1),/Approved token rewards run automatically/);
   assert.equal(count(f,'tag_run_v2_draws'),0);
 });
 
@@ -669,7 +673,7 @@ test('private admin can approve an observed token identity for all wallet fundin
   assert.ok(audit.reason.includes('asset_key='+ASSET));
   assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
   assert.match(audit.reason,/review=independent-review-1697/);
-  assert.match(audit.reason,/all irreversible wallet units become Community Pot eligible; contract approval remains separate/);
+  assert.match(audit.reason,/all irreversible wallet units become Community Pot eligible/);
   assert.equal(audit.reviewed_by,'telegram:'+MEMBER);
   assert.equal(count(f,'tag_run_v2_deposits'),0);
 });
