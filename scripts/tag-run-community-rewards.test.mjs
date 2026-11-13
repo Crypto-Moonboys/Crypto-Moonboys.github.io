@@ -855,7 +855,7 @@ test('weekly leaderboard uses latest member display name, not lexicographic MAX'
   assert.match(allTime.answer, /Alex — 20 pts/);
 });
 
-test('weekly /top rank labels use all-time Street Cred and reward tie-break matches displayed order', async t => {
+test('weekly /top and reward draft use the same deterministic member-id tie-break', async t => {
   const f = fixture(t);
   f.sqlite.prepare('INSERT INTO tag_run_reward_config ' +
     '(chat_id,token_symbol,token_contract,token_precision,base_amount_units,' +
@@ -878,7 +878,7 @@ test('weekly /top rank labels use all-time Street Cred and reward tie-break matc
     assert.equal(await f.score(update, nowMs), true);
   }
   const board = await f.command('/top', { nowMs: MONDAY + 700000 });
-  assert(board.answer.indexOf('1. MorePosts') < board.answer.indexOf('2. FewerPosts'));
+  assert(board.answer.indexOf('1. FewerPosts') < board.answer.indexOf('2. MorePosts'));
   // The rank shown beside weekly points must come from lifetime Street Cred.
   f.sqlite.prepare('UPDATE tag_run_member_totals SET score=95000 WHERE telegram_id=?')
     .run(morePostsId);
@@ -889,7 +889,7 @@ test('weekly /top rank labels use all-time Street Cred and reward tie-break matc
   assert.equal(drafted.status, 'review_only');
   const allocations = f.sqlite.prepare('SELECT telegram_id,rank_position,amount_units ' +
     'FROM tag_run_weekly_allocations ORDER BY rank_position').all();
-  assert.deepEqual(allocations.map(x=>x.telegram_id), [morePostsId,fewerPostsId]);
+  assert.deepEqual(allocations.map(x=>x.telegram_id), [fewerPostsId,morePostsId]);
   assert.deepEqual(allocations.map(x=>x.amount_units), [500000,300000]);
 });
 
