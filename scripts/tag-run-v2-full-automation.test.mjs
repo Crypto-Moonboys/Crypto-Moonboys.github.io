@@ -21,9 +21,10 @@ test('automation cron remains behind both explicit release switches', () => {
     TAG_RUN_V2_AUTOMATION_ENABLED: 'true',
     TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED: 'false'
   };
-  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.timed }, base).automationTick, false);
+  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.automation }, base).automationTick, false);
   base.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED = 'true';
-  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.timed }, base).automationTick, true);
+  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.timed }, base).automationTick, false);
+  assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.automation }, base).automationTick, true);
   assert.equal(phase5CronTasks({ cron: MOONBOYS_CRON.bulletin }, base).automationTick, false);
 });
 
