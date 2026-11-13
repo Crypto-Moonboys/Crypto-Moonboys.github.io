@@ -35,7 +35,7 @@ No signing secrets, new cron or token permission changes are needed. Existing le
 
 ## Verification
 
-The pure mission, award, exact-quantity and notification-claim checks were executed in an isolated JavaScript harness (six checks passed). The SQLite migration/scoring/dashboard tests and SQLite notification integration test are included for Node 24. Local Node execution was blocked by the Windows sandbox lock, so these tests and Worker dry-run still require the focused checks below before release:
+The pure mission, award, exact-quantity and notification-claim checks were executed in an isolated JavaScript harness (six checks passed). The SQLite migration/scoring/dashboard tests and SQLite notification integration test are included for Node 24. Local Node execution was blocked by the Windows sandbox lock. The GitHub review environment ran the three-file suite on the first commit: 54 passed and two failed (the notification adapter and a stale signer comment-marker assertion). Both test defects were fixed. The Worker dry-run passed there. Final review on 9c83b8409a reported no findings, but did not publish final rerun counts. Keep the PR in draft until a green focused run is recorded:
 
 node --test scripts/tag-run-engagement.test.mjs scripts/tag-run-community-rewards.test.mjs scripts/tag-run-v2-full-automation.test.mjs
 npx wrangler deploy --dry-run --config workers/moonboys-api/wrangler.toml
