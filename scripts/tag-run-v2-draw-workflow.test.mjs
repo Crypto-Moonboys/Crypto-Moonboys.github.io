@@ -16,7 +16,7 @@ function fixture(t,{canonical=false,multi=false,total='10000',historical=true,tr
   const sql=new DatabaseSync(':memory:');t.after(()=>sql.close());sql.exec('PRAGMA foreign_keys=ON;PRAGMA recursive_triggers=OFF');
   if(canonical)sql.exec(read('schema.sql'));
   else for(const name of ['103_tag_run_street_cred_rewards.sql','104_tag_run_v2_community_token_pot.sql',
-    '105_tag_run_v2_payout_execution.sql','106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql','108_tag_run_v2_allowlist_funding.sql','109_tag_run_v2_full_automation.sql'])if(migrate||!name.startsWith('107_'))sql.exec(read('migrations/'+name));
+    '105_tag_run_v2_payout_execution.sql','106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql','108_tag_run_v2_allowlist_funding.sql','109_tag_run_v2_full_automation.sql','110_tag_run_admin_member_blocks.sql'])if(migrate||!name.startsWith('107_'))sql.exec(read('migrations/'+name));
   sql.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
   const keys=[];
   for(const [symbol,precision] of [['LFGK',4],...(multi?[['DUMPIT',8]]:[])]){
