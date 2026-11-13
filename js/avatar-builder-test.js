@@ -46,7 +46,7 @@ host.innerHTML = `
         <button class="action action-primary action-export" type="button" id="download-png" aria-label="Download avatar as PNG" disabled>Download PNG</button>
         <button class="action action-danger" type="button" id="clear-all">Clear All</button>
       </div>
-      <p class="download-helper">A download is not ownership of a Moonboy. For fun only.</p>
+      <p class="download-helper">A download is not ownership of a Moonboy YET. For fun only till LIVE SOON.</p>
       <a class="back-link" href="${isHomepage ? '/moonboy-builder.html' : '/'}">${isHomepage ? 'Open standalone builder' : 'Back to Crypto Moonboys'}</a>
     </aside>
   </div>

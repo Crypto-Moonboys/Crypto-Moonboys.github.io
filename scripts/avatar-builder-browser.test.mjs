@@ -10,7 +10,7 @@ import { createHomepagePresetCycle } from '../js/avatar-builder-homepage-presets
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE_SIZE = 24;
-const DOWNLOAD_DISCLAIMER = 'A download is not ownership of a Moonboy. For fun only.';
+const DOWNLOAD_DISCLAIMER = 'A download is not ownership of a Moonboy YET. For fun only till LIVE SOON.';
 const OLD_DOWNLOAD_HELPER = 'Downloads the avatar exactly as shown.';
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
 const hatTraits = manifest.traits.filter((trait) => trait.category === 'hat');
