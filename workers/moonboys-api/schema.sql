@@ -2572,6 +2572,7 @@ CREATE TABLE IF NOT EXISTS tag_run_messages (
   points INTEGER NOT NULL CHECK(points BETWEEN 1 AND 17),
   message_unix INTEGER NOT NULL,
   processed_unix INTEGER,
+  reply_to_id TEXT,
   display_name TEXT NOT NULL DEFAULT '',
   PRIMARY KEY(chat_id, message_id)
 );
@@ -3676,3 +3677,22 @@ SET status='review_only',revision=revision+1,updated_at=CURRENT_TIMESTAMP
 WHERE config_id=1 AND wallet_account='isthatajoint' AND status='paused'
   AND daily_bps=500 AND active_daily_bps=100
   AND active_policy_version=2 AND historical_ticket_bps=5000;
+
+CREATE INDEX IF NOT EXISTS tag_run_messages_reply_target
+ ON tag_run_messages(chat_id,telegram_id,day_key,reply_to_id);
+CREATE INDEX IF NOT EXISTS tag_run_messages_group_hash
+ ON tag_run_messages(chat_id,content_hash,processed_unix);
+CREATE TABLE IF NOT EXISTS tag_run_engagement_posts (
+ chat_id TEXT NOT NULL,
+ event_key TEXT NOT NULL,
+ status TEXT NOT NULL CHECK(status IN ('attempted','sent','needs_review')),
+ body TEXT NOT NULL CHECK(length(body) BETWEEN 1 AND 3500),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY(chat_id,event_key)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS tag_run_engagement_config (
+ config_id INTEGER PRIMARY KEY CHECK(config_id=1),
+ started_day TEXT NOT NULL
+);
+INSERT OR IGNORE INTO tag_run_engagement_config(config_id,started_day)
+ VALUES(1,date('now'));

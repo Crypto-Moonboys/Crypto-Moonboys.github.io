@@ -1,6 +1,7 @@
 // Scheduled TAG RUN V2 Community Pot automation.
 // Unknown assets remain quarantined. Only explicitly approved, pinned standard
 // token contracts can reach the active-key signer.
+import { runTagRunEngagement } from './engagement.js';
 import { previousDay } from './core.js';
 import { TIP_ACCOUNT, sha256Text } from './v2-core.js';
 import {
@@ -587,5 +588,7 @@ export async function runAutomaticCommunityPot(env, {
   await runIsolatedStep(result, 'reserve', () => reserveOne(env));
   await runIsolatedStep(result, 'broadcast', () =>
     broadcastOne(env, fetchImpl, nowMs));
+  await runIsolatedStep(result, 'engagement', () =>
+    runTagRunEngagement(env, { nowMs, fetchImpl }));
   return Object.freeze(result);
 }
