@@ -1,4 +1,5 @@
-// Owner-operated persisted draw workflow; no signer, transfer or scheduling.
+// Persisted commit/reveal draw workflow. It remains signer-agnostic; the
+// scheduled automation supplies distinct commit and policy-review identities.
 import { canonicalSnapshotSetDigest } from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 import { previewCommunityDraw, sha256Text, validUtcDay, parseIntegerUnits,
   MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT, TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID
@@ -58,21 +59,10 @@ export async function loadDrawInputs(db,chatId,day){
       !Number.isSafeInteger(row.spent_historical_weight)||row.spent_historical_weight<0||
       row.spent_historical_weight>row.earned_weight||!HEX.test(row.source_receipts_digest))fail('participation_invalid');
   }
-  const deposits=await all(db,'SELECT d.* FROM tag_run_v2_deposits d WHERE d.asset_key IN '+
-    '(SELECT asset_key FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=?) '+
-    "AND d.status='confirmed_donation' ORDER BY d.asset_key,d.global_action_seq LIMIT 5001",chatId,day);
-  if(deposits.length>5000)fail('donation_limit');
-  for(const s of snapshots){
-    let funded=0n;
-    for(const d of deposits.filter(d=>d.asset_key===s.asset_key)){
-      if(d.chain_id!==WAX_MAINNET_CHAIN_ID||d.recipient_account!==TIP_ACCOUNT||
-        !HEX.test(d.transaction_id)||!HEX.test(d.block_id)||!HEX.test(d.memo_digest)||!d.reviewed_at||
-        !String(d.global_action_seq).match(/^[1-9][0-9]*$/)||!Number.isSafeInteger(d.block_num)||d.block_num<1||
-        d.block_num>s.chain_irreversible_block||exact(d.units)===0n)fail('donation_unverified');
-      funded+=exact(d.units);
-    }
-    if(funded<exact(s.onchain_units)-exact(s.excluded_units))fail('donation_balance_unreconciled');
-  }
+  // Funding authority comes from the reviewed token identity and its
+  // independently verified irreversible balance snapshot. Individual inbound
+  // transfer approvals are not part of policy v2.
+  const deposits=[];
   const outstanding=await all(db,'SELECT b.chat_id,b.day_key,b.asset_key,b.bundle_index,b.units '+
     'FROM tag_run_v2_bundles b JOIN tag_run_v2_draws d ON d.chat_id=b.chat_id AND d.day_key=b.day_key '+
     'LEFT JOIN tag_run_v2_payout_intents i ON i.chat_id=b.chat_id AND i.day_key=b.day_key '+

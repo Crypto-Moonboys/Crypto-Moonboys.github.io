@@ -4,20 +4,20 @@
 reserving funds, changing production flags, modifying WAX authorities or
 signing/broadcasting tokens. This adds no public route, cron or migration.
 
-This is an **operator preflight**, not another payout implementation. The
-existing production payout executor/ledger remains the only transaction
-authority. Its release switches remain OFF.
+This is an **operator preflight**, not the automatic signer. The production
+executor/ledger and scheduled automation remain the only transaction
+authority; this preview never inherits their release permission.
 
 ## Security and reviewed source checks
 
 - Exact WAX mainnet, token contract, symbol, and precision; local
   operator asset allowlist is mandatory but does NOT override D1.
 - Asset eligibility must be `approved` in D1, with verified and reviewed metadata.
-- Independently reviewed `confirmed_donation` receipts on the matching WAX chain, bound to the asset and snapshot's irreversible block cutoff. Sum receipt units with BigInt, ignoring refund-review/quarantine and post-snapshot receipts; require provenance totaling at least the on-chain snapshot balance less excluded units. Above 5,000 receipts, fail closed until a separately reviewed scaling mechanism exists. This is a necessary D1 provenance check, not independent proof of ownership or donation intent.
+- Token identity must be explicitly approved in D1. Funding comes from the independently corroborated irreversible `isthatajoint` balance snapshot; individual inbound tips do not require separate approval. Unknown or quarantined token identities remain excluded.
 - Pool `review_only`, wallet `isthatajoint`, daily budget BPS 500,
   historical ticket BPS 5000.
 - Verified irreversible source snapshot with full exact-string/BigInt arithmetic.
-  The 5% daily cap is floor((onchain - allocated - excluded) * 500 / 10000).
+  The 1% daily cap is floor((onchain - allocated - excluded) * 100 / 10000).
 - Exact payout cap bound to the immutable snapshot, no pause, cumulative
   committed amount and per-transfer limit. Reject cross-day unresolved caps.
 - Reviewed draw + reviewer, frozen nonzero `preview_only` bundle, registered
@@ -68,20 +68,21 @@ adapter only to perform authenticated SELECT queries.
 Do not infer symbol-specific controls from WAX `linkauth`. Linking
 `kingsofgraff::transfer` affects both LFGK and DUMPIT; permission links
 cannot restrict quantity or destination. No contract link is created here.
-Full on-chain authorization/WASM review, funding provenance, approved draw,
+Full on-chain authorization/WASM review, approved token identity and balance snapshot, approved draw,
 legal and treasury authorization, and safeguarded owner signing are required
 before a separately approved real payout.
 
-**Production:** V2 pool funding, funded draws and payouts remain OFF.
-No automatic scheduling, Worker deploy, SQL migration, token transfer or
-account permission change is part of this PR.
+**Production release:** PR #1746 adds separately gated automatic scheduling,
+signing and payout execution. This dry-run module remains SELECT-only and can
+never reserve, sign, broadcast or authorize that release. See
+`docs/tag-run-v2-full-automation-release.md` for the actual deployment gates.
 
 ## Regression test scope
 
-Tests use an in-memory SQLite database with migrations 103, 104 and 105,
-and cover 5% BigInt arithmetic, duplicate reservations, per-transfer cap,
-cumulative remaining cap, wallet substitution, asset quarantine, donation
-revocation, snapshot tampering, draw/pool/cap pauses, read failures and
+Tests use an in-memory SQLite database with the current TAG RUN migrations,
+and cover 1% BigInt arithmetic, duplicate reservations, per-transfer cap,
+cumulative remaining cap, wallet substitution, asset quarantine,
+snapshot tampering, draw/pool/cap pauses, read failures and
 SELECT-only CLI query enforcement. Additional full Worker tests are
 required before merge. Passing test fixtures are not proof of live funding.
 
@@ -90,3 +91,7 @@ required before merge. Passing test fixtures are not proof of live funding.
 Fixed four Codex findings: use a genuinely invalid WAX destination for rejection coverage while a valid changed registration is read from D1; compare all four stored asset identity columns; validate reviewed confirmed donations at or before snapshot irreversible block with BigInt balance reconciliation; validate draw snapshot commitment and fail closed on multi-asset draws lacking a published aggregate digest scheme. New SQLite test cases cover identity tampering, partial/refund-review donor balances, future/revoked donation evidence and mismatched/ambiguous draw commitments.
 
 **Validation:** syntax checks and eight isolated pure-logic scenarios passed after patching. Full migration-backed `node --test scripts/tag-run-v2-payout-dry-run.test.mjs` and `npm run ci:worker-api` are still outstanding; do not claim they have passed. No payout activation or production D1 mutation is authorised by this dry run.
+
+## PR #1746 policy alignment (2026-11-12)
+
+Per-transfer donation approval was removed. The payout preflight now trusts only the reviewed token identity, immutable verified snapshot, canonical draw commitment, payout cap and registered destination. Deposit rows cannot add or remove authority.

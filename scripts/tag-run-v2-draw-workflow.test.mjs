@@ -16,7 +16,7 @@ function fixture(t,{canonical=false,multi=false,total='10000',historical=true,tr
   const sql=new DatabaseSync(':memory:');t.after(()=>sql.close());sql.exec('PRAGMA foreign_keys=ON;PRAGMA recursive_triggers=OFF');
   if(canonical)sql.exec(read('schema.sql'));
   else for(const name of ['103_tag_run_street_cred_rewards.sql','104_tag_run_v2_community_token_pot.sql',
-    '105_tag_run_v2_payout_execution.sql','106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql'])if(migrate||!name.startsWith('107_'))sql.exec(read('migrations/'+name));
+    '105_tag_run_v2_payout_execution.sql','106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql','108_tag_run_v2_allowlist_funding.sql','109_tag_run_v2_full_automation.sql'])if(migrate||!name.startsWith('107_'))sql.exec(read('migrations/'+name));
   sql.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
   const keys=[];
   for(const [symbol,precision] of [['LFGK',4],...(multi?[['DUMPIT',8]]:[])]){
@@ -69,14 +69,16 @@ test('read-only pilot cannot create a committed or funded draw',async t=>{
   const f=fixture(t);f.env.TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED='false';
   await assert.rejects(f.commit(),/release_not_approved/);assert.equal(f.sql.prepare('SELECT count(*) n FROM tag_run_v2_draws').get().n,0);
 });
-test('incomplete day/capture, quarantine, missing donations and dust all fail closed',async t=>{
+test('incomplete day/capture, token quarantine and dust fail closed while receipt status does not',async t=>{
   for(const edit of [f=>{f.env.TAG_RUN_V2_DRAWS_ENABLED='false';},
     f=>f.sql.exec("UPDATE tag_run_v2_capture_cursors SET last_completed_day_key='2026-11-08'"),
     f=>f.sql.exec("UPDATE tag_run_v2_assets SET eligibility='quarantined'"),
-    f=>f.sql.exec("UPDATE tag_run_v2_deposits SET status='quarantined'"),
     f=>f.sql.exec('DELETE FROM tag_run_v2_participation')]){
     const f=fixture(t);edit(f);await assert.rejects(f.commit());
   }
+  const receiptOnly=fixture(t);
+  receiptOnly.sql.exec("UPDATE tag_run_v2_deposits SET status='quarantined'");
+  assert.equal((await receiptOnly.commit()).state,'committed');
   const dust=fixture(t,{total:'99'});await assert.rejects(dust.commit(),/no_funded_eligible_bundles/);
   const f=fixture(t);await assert.rejects(f.commit({day:'2099-01-01'}),/day_not_complete/);
 });
@@ -139,14 +141,16 @@ for(const stage of ['commit','reveal','review'])test(stage+' rolls back its firs
 test('D1 trigger-inclusive change counts do not turn a committed transition into failure',async t=>{
   const f=fixture(t,{triggerCounts:true});await f.commit();await f.reveal();assert.equal((await f.review()).state,'reviewed');
 });
-test('pause or funding revocation during final batch preparation rolls back',async t=>{
+test('pool pause or token suspension during final batch preparation rolls back while receipt status does not',async t=>{
   for(const change of [f=>f.sql.exec("UPDATE tag_run_v2_pool_config SET status='paused'"),
-    f=>f.sql.exec("UPDATE tag_run_v2_assets SET eligibility='suspended'"),
-    f=>f.sql.exec("UPDATE tag_run_v2_deposits SET status='refund_review'")]){
+    f=>f.sql.exec("UPDATE tag_run_v2_assets SET eligibility='suspended'")]){
     const f=fixture(t);await f.commit();await f.reveal();f.state.beforeBatch=()=>change(f);
     await assert.rejects(f.review());assert.equal(f.sql.prepare('SELECT state FROM tag_run_v2_draw_workflows').get().state,'revealed');
     assert.equal(f.sql.prepare('SELECT count(*) n FROM tag_run_v2_draw_weight_claims').get().n,0);
   }
+  const receiptOnly=fixture(t);await receiptOnly.commit();await receiptOnly.reveal();
+  receiptOnly.state.beforeBatch=()=>receiptOnly.sql.exec("UPDATE tag_run_v2_deposits SET status='refund_review'");
+  assert.equal((await receiptOnly.review()).state,'reviewed');
 });
 test('source changes, inserted late participants and snapshot replacement cannot silently redraw',async t=>{
   const f=fixture(t);await f.commit();f.sql.exec('UPDATE tag_run_v2_participation SET earned_weight=earned_weight+1 WHERE earned_weight<510');

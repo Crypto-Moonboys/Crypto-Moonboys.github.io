@@ -1,6 +1,6 @@
-// TAG RUN V2 read-only bot commands and participation ingestion.
-// All operations are disabled until migration 104 and separate approval.
-// NO token transfers, no wallet secret handling, no D1 token entitlements.
+// TAG RUN V2 Community Pot commands, participation and funding snapshots.
+// Automatic signing lives in the separately gated scheduled automation module;
+// private keys are accepted only through encrypted Worker secret bindings.
 import { previousDay } from './core.js';
 import {
   TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID, MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT,
@@ -9,11 +9,11 @@ import {
 } from './v2-core.js';
 import { discoverWaxTipTokens } from './v2-chain.js';
 import { quarantineInboundTipReceipts } from './v2-deposits.js';
-import { inspectWaxFundingEvidence } from './v2-funding-evidence-review.js';
 import { irreversibleSnapshotDigest, readIrreversibleTokenBalances } from
   './v2-funding-controls.js';
 import { OBSERVATION_ADMIN_COMMANDS, observationEnabled,
   handleV2ObservationCommand } from './v2-pilot.js';
+import { reviewWaxTokenContract } from './v2-wax-authority-review.js';
 
 export const V2_COMMANDS = new Set([
   'pool', 'myrewards', 'poolstatus', 'poolscan', 'drawpreview', 'drawaudit', 'poolpause',
@@ -85,13 +85,12 @@ function parseFundingAdminArgs(name, args) {
   return { selector: parts[0], reference: parts[1] };
 }
 
-function fundingControlsPaused(env, cfg) {
-  return cfg && cfg.wallet_account === TIP_ACCOUNT && cfg.status === 'paused' &&
+function fundingControlsReady(env, cfg) {
+  return cfg && cfg.wallet_account === TIP_ACCOUNT &&
+    ['paused', 'review_only'].includes(cfg.status) &&
     cfg.daily_bps === 500 && cfg.active_daily_bps === 100 &&
     cfg.active_policy_version === 2 && cfg.historical_ticket_bps === 5000 &&
-    env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false' &&
-    env?.TAG_RUN_V2_DRAWS_ENABLED === 'false' &&
-    env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'false';
+    env?.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false';
 }
 
 function exactUnits(value, label) {
@@ -99,105 +98,13 @@ function exactUnits(value, label) {
   catch (_) { throw new Error(label + '_invalid'); }
 }
 
-async function handleDonationApproval(env, options, parsed) {
-  const { telegramId, send, fetchImpl, cryptoImpl } = options;
-  const cfg = await configFor(env.DB);
-  if (!fundingControlsPaused(env, cfg)) {
-    await send('Donation approval refused: the verified 1% Community Pot must be ' +
-      'paused, with draws and payouts off.');
-    return true;
-  }
-  const row = await env.DB.prepare(
-    'SELECT d.*,a.chain_id AS asset_chain_id,a.token_contract,a.token_symbol,' +
-    'a.token_precision,a.eligibility,a.reviewed_by AS asset_reviewer,' +
-    'a.verified_at AS asset_verified_at FROM tag_run_v2_deposits d ' +
-    'JOIN tag_run_v2_assets a ON a.asset_key=d.asset_key ' +
-    'WHERE d.chain_id=? AND d.global_action_seq=?'
-  ).bind(WAX_MAINNET_CHAIN_ID, parsed.selector).first();
-  if (!row) {
-    await send('Donation receipt not found. Record the irreversible inbound transfer ' +
-      'as quarantined evidence before approving it.');
-    return true;
-  }
-  if (row.status === 'confirmed_donation') {
-    await send('Donation receipt ' + parsed.selector + ' is already approved. ' +
-      'Draws and payouts remain OFF.');
-    return true;
-  }
-  if (row.status !== 'quarantined' || row.asset_chain_id !== WAX_MAINNET_CHAIN_ID ||
-      row.eligibility !== 'approved' || !row.asset_reviewer ||
-      !row.asset_verified_at) {
-    await send('Donation approval refused: the receipt and exact token identity must ' +
-      'both be quarantined/approved in the expected states. Nothing changed.');
-    return true;
-  }
-  const receipt = {
-    chainId: row.chain_id, globalSequence: String(row.global_action_seq),
-    transactionId: row.transaction_id, blockNum: row.block_num,
-    blockId: row.block_id, sender: row.sender_account,
-    recipient: row.recipient_account, contract: row.token_contract,
-    symbol: row.token_symbol, precision: row.token_precision,
-    assetKey: row.asset_key, units: row.units,
-    memoDigest: row.memo_digest, status: row.status
-  };
-  let proof;
-  try {
-    proof = await inspectWaxFundingEvidence({
-      receipts: [receipt], fetchImpl, cryptoImpl
-    });
-  } catch (_) {
-    await send('Donation approval refused: the exact transfer could not be ' +
-      'reconfirmed at an irreversible WAX block through both history providers. ' +
-      'Nothing changed.');
-    return true;
-  }
-  const observation = proof?.observations?.[0];
-  if (!observation || observation.globalSequence !== parsed.selector ||
-      observation.assetKey !== row.asset_key ||
-      observation.blockReferenceIrreversible !== true) {
-    await send('Donation approval refused: independent chain evidence did not match. ' +
-      'Nothing changed.');
-    return true;
-  }
-  const actor = 'telegram:' + String(telegramId);
-  const eventKey = 'telegram-donation:approve:' + row.chain_id + ':' +
-    parsed.selector + ':' + globalThis.crypto.randomUUID();
-  const reason = 'global_action_seq=' + parsed.selector +
-    '; transaction_id=' + row.transaction_id + '; asset_key=' + row.asset_key +
-    '; units=' + row.units + '; block=' + row.block_num +
-    '; chain_proof=' + observation.proofDigest + '; review=' + parsed.reference +
-    '; private admin confirmed donation intent after two-provider chain recheck.';
-  let results;
-  try {
-    results = await env.DB.batch([
-      env.DB.prepare(
-        "UPDATE tag_run_v2_deposits SET status='confirmed_donation'," +
-        'reviewed_at=CURRENT_TIMESTAMP WHERE chain_id=? AND global_action_seq=? ' +
-        "AND status='quarantined' AND asset_key=? AND EXISTS (" +
-        'SELECT 1 FROM tag_run_v2_assets a WHERE a.asset_key=? ' +
-        "AND a.eligibility='approved' AND length(a.reviewed_by)>0 " +
-        'AND length(a.verified_at)>0) AND EXISTS (' +
-        'SELECT 1 FROM tag_run_v2_pool_config p WHERE p.config_id=1 ' +
-        "AND p.wallet_account='isthatajoint' AND p.status='paused' " +
-        'AND p.daily_bps=500 AND p.active_daily_bps=100 ' +
-        'AND p.active_policy_version=2 AND p.historical_ticket_bps=5000)'
-      ).bind(row.chain_id, parsed.selector, row.asset_key, row.asset_key),
-      env.DB.prepare(
-        'INSERT INTO tag_run_v2_audit (event_key,event_type,reason,reviewed_by) ' +
-        'SELECT ?,?,?,? WHERE changes()=1'
-      ).bind(eventKey, 'donation_approved', reason, actor)
-    ]);
-  } catch (_) { results = null; }
-  if (!successfulBatch(results)) {
-    await send('Donation approval failed atomically; no receipt was approved. ' +
-      'Check D1 and retry.');
-    return true;
-  }
-  await send('DONATION APPROVED\nAction sequence: ' + parsed.selector +
-    '\nToken: ' + row.token_symbol + ' @ ' + row.token_contract +
-    '\nIrreversible transfer: rechecked through two history providers' +
-    '\nReview reference: ' + parsed.reference +
-    '\nDraws: OFF · Payouts: OFF');
+async function handleDonationApproval(_env, options, _parsed) {
+  await options.send(
+    'Individual tip approval is not required. Token eligibility is controlled by ' +
+    '/poolapprove and /poolquarantine. Approved tokens use the verified irreversible ' +
+    'isthatajoint balance; unknown or quarantined tokens are excluded. ' +
+    'Approved token balances enter the automatic 1% daily cycle.'
+  );
   return true;
 }
 
@@ -215,7 +122,7 @@ function snapshotInsert(db, row, chatId, day, cutoffBlock, cutoffBlockId) {
     'AND length(a.verified_at)>0 ' +
     'AND EXISTS (SELECT 1 FROM tag_run_v2_pool_config p ' +
     'WHERE p.config_id=1 AND p.wallet_account=\'isthatajoint\' ' +
-    "AND p.status='paused' AND p.daily_bps=500 " +
+    "AND p.status IN ('paused','review_only') AND p.daily_bps=500 " +
     'AND p.active_daily_bps=100 AND p.active_policy_version=2 ' +
     'AND p.historical_ticket_bps=5000) ' +
     'AND NOT EXISTS (SELECT 1 FROM json_each(?) j WHERE NOT EXISTS (' +
@@ -278,7 +185,7 @@ async function handleSnapshotApproval(env, options, parsed) {
     return true;
   }
   const cfg = await configFor(env.DB);
-  if (!fundingControlsPaused(env, cfg)) {
+  if (!fundingControlsReady(env, cfg)) {
     await send('Snapshot refused: the verified 1% Community Pot must be paused, ' +
       'with draws and payouts off.');
     return true;
@@ -291,7 +198,7 @@ async function handleSnapshotApproval(env, options, parsed) {
   }
   if (Number(existing.n) > 0) {
     await send('Verified snapshot set already exists for ' + parsed.selector +
-      '. It was not replaced. Draws and payouts remain OFF.');
+      '. It was not replaced; the automatic cycle will reuse the stored set.');
     return true;
   }
   const approvedResult = await env.DB.prepare(
@@ -309,16 +216,8 @@ async function handleSnapshotApproval(env, options, parsed) {
     asset.chain_id !== WAX_MAINNET_CHAIN_ID || !asset.reviewed_by ||
     !asset.verified_at)) throw new Error('snapshot_approved_asset_invalid');
 
-  const [donationResult, confirmedPayoutResult, outstandingResult,
+  const [confirmedPayoutResult, outstandingResult,
     quarantinedCount] = await Promise.all([
-    env.DB.prepare(
-      'SELECT d.chain_id,d.global_action_seq,d.transaction_id,d.block_num,' +
-      'd.block_id,d.recipient_account,d.asset_key,d.units,d.memo_digest,' +
-      'd.reviewed_at FROM tag_run_v2_deposits d JOIN tag_run_v2_assets a ' +
-      'ON a.asset_key=d.asset_key WHERE d.status=\'confirmed_donation\' ' +
-      "AND a.eligibility='approved' " +
-      'ORDER BY d.asset_key,d.block_num,d.global_action_seq LIMIT 5001'
-    ).all(),
     env.DB.prepare(
       'SELECT i.intent_key,i.asset_key,i.amount_units,i.signed_tx_id,' +
       'i.updated_at FROM tag_run_v2_payout_intents i ' +
@@ -342,11 +241,10 @@ async function handleSnapshotApproval(env, options, parsed) {
       "SELECT COUNT(*) AS n FROM tag_run_v2_assets WHERE eligibility!='approved'"
     ).first()
   ]);
-  const donations = requiredRows(donationResult, 'snapshot_donation_read');
   const confirmedPayouts = requiredRows(confirmedPayoutResult,
     'snapshot_confirmed_payout_read');
   const outstanding = requiredRows(outstandingResult, 'snapshot_obligation_read');
-  if (donations.length > 5000 || confirmedPayouts.length > 20000 ||
+  if (confirmedPayouts.length > 20000 ||
       outstanding.length > 20000 ||
       !quarantinedCount ||
       !Number.isSafeInteger(Number(quarantinedCount.n)) ||
@@ -368,22 +266,10 @@ async function handleSnapshotApproval(env, options, parsed) {
       item => item.assetKey === asset.asset_key);
     if (!balanceEvidence) throw new Error('snapshot_evidence_missing');
     const onchain = exactUnits(balanceEvidence.balanceUnits, 'snapshot_balance');
-    let donated = 0n;
-    const eligibleDonations = donations.filter(row =>
-      row.asset_key === asset.asset_key &&
-      Number.isSafeInteger(row.block_num) && row.block_num <= evidence.cutoffBlock);
-    for (const deposit of eligibleDonations) {
-      if (deposit.chain_id !== WAX_MAINNET_CHAIN_ID ||
-          deposit.recipient_account !== TIP_ACCOUNT || !deposit.reviewed_at ||
-          !GLOBAL_ACTION_SEQUENCE.test(String(deposit.global_action_seq)) ||
-          !Number.isSafeInteger(deposit.block_num) || deposit.block_num < 1 ||
-          !/^[0-9a-f]{64}$/.test(String(deposit.transaction_id || '')) ||
-          !/^[0-9a-f]{64}$/.test(String(deposit.block_id || '')) ||
-          !/^[0-9a-f]{64}$/.test(String(deposit.memo_digest || ''))) {
-        throw new Error('snapshot_donation_invalid');
-      }
-      donated += exactUnits(deposit.units, 'snapshot_donation');
-    }
+    // Token approval is the funding gate. Every unit in the independently
+    // verified irreversible wallet balance is eligible unless already reserved.
+    // Individual inbound tips do not require a second human approval.
+    const eligibleDonations = [];
     let confirmedSpent = 0n;
     const assetConfirmedPayouts = confirmedPayouts.filter(
       item => item.asset_key === asset.asset_key);
@@ -403,20 +289,16 @@ async function handleSnapshotApproval(env, options, parsed) {
     for (const obligation of assetOutstanding) {
       allocated += exactUnits(obligation.units, 'snapshot_obligation');
     }
-    // A confirmed payout is immutable only after independent irreversible
-    // chain reconciliation. Because this fresh cutoff is fetched later, every
-    // such payout has already spent donation backing through this cutoff.
-    const remainingDonationBacking = donated > confirmedSpent
-      ? donated - confirmedSpent : 0n;
-    const excluded = onchain > remainingDonationBacking
-      ? onchain - remainingDonationBacking : 0n;
-    if (allocated + excluded > onchain) {
+    // Confirmed transfers are already reflected in this later chain balance.
+    // Subtracting them again would double-debit the pot. Only unpaid reservations
+    // reduce the currently spendable approved-token balance.
+    const excluded = 0n;
+    if (allocated > onchain) {
       await send('Snapshot refused: approved ' + asset.token_symbol + ' balance ' +
-        'cannot cover its unpaid obligations and donation-backed funds. ' +
-        'Nothing changed.');
+        'cannot cover its unpaid reward obligations. Nothing changed.');
       return true;
     }
-    const spendable = onchain - allocated - excluded;
+    const spendable = onchain - allocated;
     const daily = spendable / 100n;
     const digestEvidence = {
       ...balanceEvidence, cutoffBlock: evidence.cutoffBlock,
@@ -507,11 +389,43 @@ async function handleSnapshotApproval(env, options, parsed) {
     '\nApproved assets included: ' + rows.length +
     '\nQuarantined/suspended assets excluded: ' + Number(quarantinedCount.n) +
     '\nReview reference: ' + parsed.reference +
-    '\nDraws: OFF · Payouts: OFF');
+    '\nThe automatic commit/reveal and payout cycle will consume this frozen set.');
   return true;
 }
 
+
+export async function createAutomaticSnapshot(env, {
+  day, fetchImpl = fetch, cryptoImpl = globalThis.crypto,
+  nowMs = Date.now()
+} = {}) {
+  const chatId = String(env?.TELEGRAM_GROUP_CHAT_ID || '').trim();
+  if (!validUtcDay(day) || !/^-100[0-9]{5,20}$/.test(chatId)) {
+    throw new Error('automatic_snapshot_arguments_invalid');
+  }
+  const messages = [];
+  await handleSnapshotApproval(env, {
+    telegramId: 'automation', chatId,
+    send: async message => { messages.push(String(message)); },
+    fetchImpl, cryptoImpl, nowMs
+  }, {
+    selector: day,
+    reference: 'automatic-' + day.replaceAll('-', '')
+  });
+  const row = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_v2_snapshots WHERE chat_id=? AND day_key=?'
+  ).bind(chatId, day).first();
+  const count = Number(row?.n);
+  if (!Number.isSafeInteger(count) || count < 1) {
+    throw new Error('automatic_snapshot_not_created');
+  }
+  return Object.freeze({ status: 'verified', chatId, day, assets: count,
+    message: messages.at(-1) || '' });
+}
+
 async function handleFundingAdminCommand(env, options) {
+  if (options.name === 'pooldonation') {
+    return handleDonationApproval(env, options, null);
+  }
   const parsed = parseFundingAdminArgs(options.name, options.args);
   if (!parsed) {
     await options.send(options.name === 'pooldonation'
@@ -539,7 +453,7 @@ async function handleAssetAdminCommand(env, options) {
   }
   const row = await env.DB.prepare(
     'SELECT asset_key,chain_id,token_contract,token_symbol,token_precision,' +
-    'eligibility FROM tag_run_v2_assets WHERE asset_key=?'
+    'eligibility,approved_code_hash,approved_abi_hash FROM tag_run_v2_assets WHERE asset_key=?'
   ).bind(parsed.key).first();
   if (!row || row.chain_id !== WAX_MAINNET_CHAIN_ID ||
       row.token_contract !== parsed.contract ||
@@ -549,10 +463,13 @@ async function handleAssetAdminCommand(env, options) {
       'then use the exact contract, uppercase symbol and precision shown there.');
     return true;
   }
-  if (name === 'poolapprove' && row.eligibility === 'approved') {
+  if (name === 'poolapprove' && row.eligibility === 'approved' &&
+      /^[0-9a-f]{64}$/.test(String(row.approved_code_hash || '')) &&
+      /^[0-9a-f]{64}$/.test(String(row.approved_abi_hash || ''))) {
     await send(parsed.symbol + ' @ ' + parsed.contract +
-      ' is already approved for token eligibility. Donation provenance, contract hashes, ' +
-      'draws and payouts remain separate gates.');
+      ' is already approved for the Community Pot. Every independently verified ' +
+      'irreversible wallet unit is eligible automatically; individual tips need no approval. ' +
+      'Its pinned code/ABI hashes remain the automatic payout authority.');
     return true;
   }
   if (name === 'poolquarantine' && row.eligibility === 'quarantined') {
@@ -565,22 +482,28 @@ async function handleAssetAdminCommand(env, options) {
     '; symbol=' + parsed.symbol + '; precision=' + parsed.precision;
   let reason;
   let verifiedAt;
+  let contractReview = null;
   if (name === 'poolapprove') {
     const cfg = await configFor(env.DB);
-    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT || cfg.status !== 'paused' ||
+    if (!cfg || cfg.wallet_account !== TIP_ACCOUNT ||
+        !['paused', 'review_only'].includes(cfg.status) ||
         cfg.daily_bps !== 500 || cfg.active_daily_bps !== 100 ||
-        cfg.active_policy_version !== 2 || cfg.historical_ticket_bps !== 5000 ||
-        env?.TAG_RUN_V2_DRAWS_ENABLED === 'true' ||
-        env?.TAG_RUN_V2_PAYOUTS_ENABLED === 'true') {
+        cfg.active_policy_version !== 2 || cfg.historical_ticket_bps !== 5000) {
       await send('Approval refused: the verified 1% Community Pot policy must be paused, ' +
         'with draws and payouts off.');
       return true;
     }
     let proof;
     try {
-      proof = await discoverWaxTipTokens({
-        fetchImpl, account: TIP_ACCOUNT, approvedAssets: [parsed.key]
-      });
+      [proof, contractReview] = await Promise.all([
+        discoverWaxTipTokens({
+          fetchImpl, account: TIP_ACCOUNT, approvedAssets: [parsed.key]
+        }),
+        reviewWaxTokenContract({
+          fetchImpl, contract: parsed.contract,
+          symbol: parsed.symbol, precision: parsed.precision
+        })
+      ]);
     } catch (_) {
       await send('Approval refused: live WAX chain and token identity recheck failed. ' +
         'Nothing changed; retry later or quarantine the token.');
@@ -590,16 +513,20 @@ async function handleAssetAdminCommand(env, options) {
     if (proof.chainId !== WAX_MAINNET_CHAIN_ID || !live ||
         live.status !== 'observed_only' ||
         live.contract !== parsed.contract || live.symbol !== parsed.symbol ||
-        live.precision !== parsed.precision) {
-      await send('Approval refused: the exact token identity was not confirmed in the live ' +
-        'isthatajoint inventory. Nothing changed.');
+        live.precision !== parsed.precision ||
+        contractReview?.assetKey !== parsed.key ||
+        contractReview?.independentlyCorroborated !== true) {
+      await send('Approval refused: the exact token identity and standard transfer contract ' +
+        'were not confirmed by both WAX providers. Nothing changed.');
       return true;
     }
     verifiedAt = true;
     reason = identity +
       '; token eligibility approved after live WAX identity recheck at irreversible block ' +
       proof.latestIrreversibleBlock + '; review=' + parsed.detail +
-      '; donation provenance and contract approval remain separate.';
+      '; code_hash=' + contractReview.codeHash +
+      '; abi_hash=' + contractReview.abiHash +
+      '; all irreversible wallet units become Community Pot eligible.';
   } else {
     verifiedAt = false;
     reason = identity +
@@ -614,12 +541,15 @@ async function handleAssetAdminCommand(env, options) {
     results = await env.DB.batch([
       env.DB.prepare(
         "UPDATE tag_run_v2_assets SET eligibility=?," +
-        (verifiedAt ? 'verified_at=CURRENT_TIMESTAMP,' : 'verified_at=NULL,') +
+        (verifiedAt
+          ? 'verified_at=CURRENT_TIMESTAMP,approved_code_hash=?,approved_abi_hash=?,'
+          : 'verified_at=NULL,') +
         'reviewed_by=?,updated_at=CURRENT_TIMESTAMP WHERE asset_key=? ' +
         'AND chain_id=? AND token_contract=? AND token_symbol=? ' +
         'AND token_precision=? AND eligibility=?'
       ).bind(
         name === 'poolapprove' ? 'approved' : 'quarantined',
+        ...(verifiedAt ? [contractReview.codeHash, contractReview.abiHash] : []),
         actor, parsed.key, WAX_MAINNET_CHAIN_ID, parsed.contract,
         parsed.symbol, parsed.precision, row.eligibility
       ),
@@ -642,17 +572,18 @@ async function handleAssetAdminCommand(env, options) {
     return true;
   }
   if (name === 'poolapprove') {
-    await send('APPROVED FOR TOKEN ELIGIBILITY ONLY\n' +
+    await send('APPROVED FOR COMMUNITY POT\n' +
       parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
       '\nLive WAX identity: rechecked\nReview reference: ' + parsed.detail +
-      '\nDonation provenance: still quarantined separately' +
-      '\nContract code/ABI approval: unchanged\nDraws: OFF · Payouts: OFF');
+      '\nAll irreversible wallet units of this token are eligible; individual tips need no approval.' +
+      '\nContract code hash: ' + contractReview.codeHash +
+      '\nContract ABI hash: ' + contractReview.abiHash +
+      '\nAutomatic rewards use this pinned contract only.');
   } else {
     await send('QUARANTINED NOW\n' +
       parsed.symbol + ' @ ' + parsed.contract + ' · precision ' + parsed.precision +
       '\nReason: ' + parsed.detail +
-      '\nFuture snapshot, draw and send eligibility checks will reject this token.' +
-      '\nDraws: OFF · Payouts: OFF');
+      '\nFuture snapshot, draw, reservation and signing checks reject this token immediately.');
   }
   return true;
 }
@@ -887,8 +818,8 @@ export async function handleTagRunV2Command(env, options) {
         'Irreversible inbound candidates: ' + result.seen +
         '\nNew quarantined receipts: ' + result.inserted +
         '\nHistory scan incomplete: ' + (result.truncated ? 'YES' : 'UNKNOWN') +
-        '\nUse /pooldonation with an exact reviewed action sequence. ' +
-        'No donation was approved and no token draw or transfer occurred.');
+        '\nUse /poolapprove or /poolquarantine for each exact token identity. ' +
+        'This scan itself does not draw, sign or transfer tokens.');
     } catch (error) {
       await send('Community Pot scan unavailable: ' +
         String(error?.message || error).slice(0,120) +
@@ -950,7 +881,7 @@ export async function handleTagRunV2Command(env, options) {
     const balances = requiredRows(rows, 'pool_balance_read');
     const lines = balances.map(r=>r.token_symbol+' @ '+
       r.token_contract+' — '+r.spendable_units+' smallest units ('+r.day_key+')');
-    await send('TAG RUN · COMMUNITY TOKEN POT (READ-ONLY)\n' +
+    await send('TAG RUN · AUTOMATIC COMMUNITY TOKEN POT\n' +
       'Pot status: '+cfg.status+'. Wallet: '+TIP_ACCOUNT+
       '\nDaily review pool: at most 1% of each approved unreserved token.'+
       '\n'+(lines.join('\n')||'No independently verified eligible token balances yet.')+
@@ -963,16 +894,27 @@ export async function handleTagRunV2Command(env, options) {
       'Unfunded participation weight: '+pending+' points (not a token balance).'+
       '\nHistorical activity receives up to 50% of ticket weight when current ' +
       'and past participants both qualify.\n'+
-      'Funded token payouts: NOT ENABLED. No monetary promise or pending transfer.');
+      'Approved token rewards run automatically; use /rainstatus to check your registered WAX destination.');
     return true;
   }
   if (name === 'poolpause') {
-    const write = await env.DB.prepare(
-      "UPDATE tag_run_v2_pool_config SET status='paused',revision=revision+1," +
-      'updated_at=CURRENT_TIMESTAMP WHERE config_id=1'
-    ).run();
-    if (write?.success === false) throw new Error('pool_pause_write_failed');
-    await send('Community Token Pot paused. TAG RUN Street Cred continues.');
+    const writes = await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE tag_run_v2_pool_config SET status='paused',revision=revision+1," +
+        "updated_at=CURRENT_TIMESTAMP WHERE config_id=1 AND status!='paused'"
+      ),
+      env.DB.prepare(
+        'UPDATE tag_run_v2_payout_caps SET paused=1,revision=revision+1 ' +
+        'WHERE paused=0'
+      )
+    ]);
+    if (!Array.isArray(writes) || writes.length !== 2 ||
+        writes.some(result => result?.success !== true)) {
+      throw new Error('pool_pause_write_failed');
+    }
+    await send('COMMUNITY POT EMERGENCY PAUSE ACTIVE\\n' +
+      'New snapshots, draws, reservations, signing and broadcast retries are stopped. ' +
+      'Street Cred continues; already submitted transactions remain reconciliation-only.');
     return true;
   }
   if (name === 'poolscan') {
@@ -986,7 +928,7 @@ export async function handleTagRunV2Command(env, options) {
         'Irreversible inbound candidates: ' + result.seen +
         '\nNew quarantined receipts: ' + result.inserted +
         '\nHistory scan incomplete: ' + (result.truncated ? 'YES' : 'UNKNOWN') +
-        '\nNo donation is approved by this scan. No token draw or transfer.');
+        '\nApproved identities fund automatically; this scan itself does not draw, sign or transfer.');
     } catch (error) {
       await send('Community Pot scan unavailable: ' +
         String(error?.message || error).slice(0,120) +
@@ -1011,13 +953,12 @@ export async function handleTagRunV2Command(env, options) {
         '. No token allocation or transfer attempted.');
       return true;
     }
-    await send('TAG RUN V2 · ADMIN READ-ONLY INVENTORY\n'+
+    await send('TAG RUN V2 · AUTOMATIC POT INVENTORY\n'+
       'Wallet exists on WAX mainnet: '+inventory.account+
       '\nDiscovered assets: '+inventory.assets.length+
       '\nApproved observed: '+inventory.assets.filter(x=>x.status==='observed_only').length+
       '\nQuarantined/unknown: '+inventory.assets.filter(x=>x.status!=='observed_only').length+
-      '\nCustody verified: NO. Finalized snapshot: NO.'+
-      '\nNo automated token allocation, claims or transfers.');
+      '\nOnly approved, contract-pinned identities can enter automatic snapshots and payouts.');
     return true;
   }
   if (name === 'drawaudit') {

@@ -23,6 +23,8 @@ const migration103=read('workers/moonboys-api/migrations/103_tag_run_street_cred
 const migration104=read('workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql');
 const migration105=read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql');
 const migration106=read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
+const migration108=read('workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql');
+const migration109=read('workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql');
 
 function fixture(t){
   const sqlite=new DatabaseSync(':memory:');
@@ -31,6 +33,8 @@ function fixture(t){
   sqlite.exec(migration104);
   sqlite.exec(migration105);
   sqlite.exec(migration106);
+  sqlite.exec(migration108);
+  sqlite.exec(migration109);
   t.after(()=>sqlite.close());
   const DB={prepare(sql){return {
     bind(...args){return {
@@ -90,6 +94,32 @@ function rpc(tokens=[
       return {ok:true,json:async()=>({
         account:TIP_ACCOUNT,tokens:tokens.slice(skip,skip+limit)
       })};
+    }
+    if(url.endsWith('/get_abi')){
+      const {account_name}=JSON.parse(options.body);
+      return {ok:true,json:async()=>({account_name,abi:{
+        actions:[{name:'transfer',type:'transfer'}],
+        structs:[{name:'transfer',base:'',fields:[
+          {name:'from',type:'name'},{name:'to',type:'name'},
+          {name:'quantity',type:'asset'},{name:'memo',type:'string'}
+        ]}]
+      }})};
+    }
+    if(url.endsWith('/get_code_hash')){
+      const {account_name}=JSON.parse(options.body);
+      return {ok:true,json:async()=>({
+        account_name,code_hash:'c'.repeat(64)
+      })};
+    }
+    if(url.endsWith('/get_currency_stats')){
+      const {symbol}=JSON.parse(options.body);
+      const found=tokens.find(item=>item.symbol===symbol);
+      if(!found) return {ok:true,json:async()=>({})};
+      const decimals='0'.repeat(found.precision);
+      const quantity='1'+(found.precision?'.'+decimals:'')+' '+symbol;
+      return {ok:true,json:async()=>({[symbol]:{
+        supply:quantity,max_supply:quantity,issuer:'gkniftyheads'
+      }})};
     }
     if(url.endsWith('/get_currency_balance')){
       const {code,symbol,account}=JSON.parse(options.body);
@@ -239,7 +269,7 @@ test('poolreview displays token status without approving any token',async t=>{
   assert.match(reviewed.messages[0],/LFGK \(kingsofgraff, 4 decimals\): quarantined/);
   assert.match(reviewed.messages[0],/use \/poolapprove with its review reference/);
   assert.match(reviewed.messages[0],/Use \/poolquarantine with a reason/);
-  assert.match(reviewed.messages[0],/Donation provenance remains a separate gate/);
+  assert.match(reviewed.messages[0],/Approved tokens use their verified irreversible wallet balance/);
   assert.equal(f.sqlite.prepare(
     "SELECT COUNT(*) AS n FROM tag_run_v2_assets WHERE eligibility='approved'"
   ).get().n,0);
@@ -600,7 +630,7 @@ test('/myrewards stays unavailable if independent observation gate is turned off
 });
 
 
-test('private admin can approve an observed token identity without approving funding',async t=>{
+test('private admin can approve an observed token identity for all wallet funding',async t=>{
   const f=fixture(t),observe=rpc();
   await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
   const approval=rpc();
@@ -608,8 +638,8 @@ test('private admin can approve an observed token identity without approving fun
     'kingsofgraff LFGK 4 independent-review-1697',
     {fetchImpl:approval.fetchImpl});
   assert.equal(result.result,true);
-  assert.match(result.messages[0],/APPROVED FOR TOKEN ELIGIBILITY ONLY/);
-  assert.match(result.messages[0],/Donation provenance: still quarantined separately/);
+  assert.match(result.messages[0],/APPROVED FOR COMMUNITY POT/);
+  assert.match(result.messages[0],/All irreversible wallet units of this token are eligible/);
   assert.match(result.messages[0],/Draws: OFF · Payouts: OFF/);
   assert.deepEqual(approval.balances,[['kingsofgraff','LFGK']]);
   const asset=f.sqlite.prepare(
@@ -627,7 +657,7 @@ test('private admin can approve an observed token identity without approving fun
   assert.ok(audit.reason.includes('asset_key='+ASSET));
   assert.match(audit.reason,/contract=kingsofgraff; symbol=LFGK; precision=4/);
   assert.match(audit.reason,/review=independent-review-1697/);
-  assert.match(audit.reason,/donation provenance and contract approval remain separate/);
+  assert.match(audit.reason,/all irreversible wallet units become Community Pot eligible; contract approval remains separate/);
   assert.equal(audit.reviewed_by,'telegram:'+MEMBER);
   assert.equal(count(f,'tag_run_v2_deposits'),0);
 });
@@ -751,7 +781,7 @@ test('top-level Telegram handler forwards asset command arguments',async t=>{
     return network.fetchImpl(url,options);
   }});
   assert.equal(handled,true);
-  assert.match(sent[0].text,/APPROVED FOR TOKEN ELIGIBILITY ONLY/);
+  assert.match(sent[0].text,/APPROVED FOR COMMUNITY POT/);
   assert.equal(f.sqlite.prepare(
     'SELECT eligibility FROM tag_run_v2_assets WHERE asset_key=?'
   ).get(ASSET).eligibility,'approved');

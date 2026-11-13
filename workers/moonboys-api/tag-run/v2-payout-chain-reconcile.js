@@ -97,3 +97,40 @@ export async function verifyIrreversibleWaxPayout({
     corroborators:2,merkleInclusionProven:false
   });
 }
+
+
+export async function discoverAndVerifyIrreversibleWaxPayout({
+  transactionId, fetchImpl = fetch,
+  corroborators = [WAX_HYPERION, WAX_HYPERION_FALLBACKS[0]]
+} = {}) {
+  if (!HEX.test(transactionId || '') ||
+      !Array.isArray(corroborators) || corroborators.length !== 2 ||
+      corroborators[0] === corroborators[1] ||
+      corroborators.some(host =>
+        ![WAX_HYPERION, ...WAX_HYPERION_FALLBACKS].includes(host))) {
+    fail('invalid_chain_proof_input');
+  }
+  const params = new URLSearchParams({
+    account: TIP_ACCOUNT, trx_id: transactionId,
+    'act.name': 'transfer', sort: 'desc', limit: '10', checkLib: 'true'
+  });
+  let agreedSequence = null;
+  for (const host of corroborators) {
+    const history = await get(fetchImpl,
+      host + '/v2/history/get_actions?' + params.toString());
+    if (!Array.isArray(history?.actions)) fail('history_malformed');
+    const matches = history.actions.filter(row =>
+      row?.trx_id === transactionId &&
+      row?.act?.name === 'transfer' &&
+      row?.act?.data?.from === TIP_ACCOUNT);
+    if (matches.length !== 1) fail('missing_or_ambiguous_action');
+    const sequence = String(matches[0].global_sequence ?? '');
+    if (!SEQ.test(sequence)) fail('history_action_mismatch');
+    if (agreedSequence === null) agreedSequence = sequence;
+    else if (agreedSequence !== sequence) fail('provider_disagreement');
+  }
+  return verifyIrreversibleWaxPayout({
+    transactionId, globalSequence: agreedSequence,
+    fetchImpl, corroborators
+  });
+}

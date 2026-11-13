@@ -10,7 +10,9 @@ async function read(fetchImpl,host,method,body){
     if(!response?.ok||!response.body?.getReader)fail();
     reader=response.body.getReader();const chunks=[];let bytes=0;
     for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.length;if(bytes>524288){await reader.cancel();fail();}chunks.push(value);}
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    const merged=new Uint8Array(bytes);let offset=0;
+    for(const chunk of chunks){merged.set(chunk,offset);offset+=chunk.length;}
+    return JSON.parse(new TextDecoder().decode(merged));
   }catch{fail();}finally{reader?.releaseLock();}
 }
 async function info(fetchImpl,host){

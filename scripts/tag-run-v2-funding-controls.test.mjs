@@ -17,7 +17,9 @@ const MIGRATIONS = [
   '104_tag_run_v2_community_token_pot.sql',
   '105_tag_run_v2_payout_execution.sql',
   '106_tag_run_v2_one_percent_policy.sql',
-  '107_tag_run_v2_persisted_draws.sql'
+  '107_tag_run_v2_persisted_draws.sql',
+  '108_tag_run_v2_allowlist_funding.sql',
+  '109_tag_run_v2_full_automation.sql'
 ];
 const GROUP = '-1001234567890';
 const ADMIN = '1111';
@@ -89,9 +91,10 @@ function fixture(t) {
   sqlite.prepare(
     'INSERT INTO tag_run_v2_assets ' +
     '(asset_key,chain_id,token_contract,token_symbol,token_precision,' +
-    'eligibility,verified_at,reviewed_by) VALUES (?,?,?,?,?,\'approved\',' +
-    'CURRENT_TIMESTAMP,?)'
-  ).run(ASSET, WAX_MAINNET_CHAIN_ID, CONTRACT, SYMBOL, 4, 'telegram:' + ADMIN);
+    'eligibility,verified_at,reviewed_by,approved_code_hash,approved_abi_hash) ' +
+    'VALUES (?,?,?,?,?,\'approved\',CURRENT_TIMESTAMP,?,?,?)'
+  ).run(ASSET, WAX_MAINNET_CHAIN_ID, CONTRACT, SYMBOL, 4,
+    'telegram:' + ADMIN, 'c'.repeat(64), 'd'.repeat(64));
   sqlite.prepare(
     'INSERT INTO tag_run_v2_assets ' +
     '(asset_key,chain_id,token_contract,token_symbol,token_precision,' +
@@ -211,9 +214,27 @@ function network({ mismatchHistory = false, unavailable = false } = {}) {
       ]);
       return { ok: true, json: async () => ({ block_num: block, id: ids.get(block) }) };
     }
+    if (url.endsWith('/get_abi')) return {
+      ok: true, json: async () => ({
+        account_name: CONTRACT,
+        abi: {
+          actions: [{ name: 'transfer', type: 'transfer' }],
+          structs: [{ name: 'transfer', base: '', fields: [
+            { name: 'from', type: 'name' }, { name: 'to', type: 'name' },
+            { name: 'quantity', type: 'asset' }, { name: 'memo', type: 'string' }
+          ] }]
+        }
+      })
+    };
+    if (url.endsWith('/get_code_hash')) return {
+      ok: true, json: async () => ({
+        account_name: CONTRACT, code_hash: 'c'.repeat(64)
+      })
+    };
     if (url.endsWith('/get_currency_stats')) return {
       ok: true, json: async () => ({ LFGK: {
-        supply: '1000.0000 LFGK', max_supply: '1000000.0000 LFGK'
+        supply: '1000.0000 LFGK', max_supply: '1000000.0000 LFGK',
+        issuer: 'gkniftyheads'
       } })
     };
     if (url.endsWith('/get_currency_balance')) return {
@@ -252,38 +273,33 @@ async function admin(f, name, args, options = {}) {
   return { result, messages };
 }
 
-test('private admin approves exact irreversible donation evidence atomically', async t => {
+test('approved token makes individual tip approval unnecessary', async t => {
   const f = fixture(t);
+  await addReceipt(f);
   const rpc = network();
-  const scanned = await admin(f, 'poolscan', '', { fetchImpl: rpc.fetchImpl });
-  assert.match(scanned.messages[0], /QUARANTINE ONLY/);
-  assert.equal(f.sqlite.prepare(
-    "SELECT status FROM tag_run_v2_deposits WHERE global_action_seq='123'"
-  ).get().status, 'quarantined');
-  const result = await admin(f, 'pooldonation', '123 donation-review-1697', {
+  const result = await admin(f, 'pooldonation', '', {
     fetchImpl: rpc.fetchImpl
   });
   assert.equal(result.result, true);
-  assert.match(result.messages[0], /DONATION APPROVED/);
-  assert.match(result.messages[0], /Draws: OFF · Payouts: OFF/);
-  const receipt = f.sqlite.prepare(
-    'SELECT status,reviewed_at FROM tag_run_v2_deposits WHERE global_action_seq=\'123\''
-  ).get();
-  assert.equal(receipt.status, 'confirmed_donation');
-  assert.ok(receipt.reviewed_at);
-  const audit = f.sqlite.prepare(
-    "SELECT reason,reviewed_by FROM tag_run_v2_audit WHERE event_type='donation_approved'"
-  ).get();
-  assert.match(audit.reason, /review=donation-review-1697/);
-  assert.match(audit.reason, /chain_proof=[0-9a-f]{64}/);
-  assert.equal(audit.reviewed_by, 'telegram:' + ADMIN);
-  assert.equal(rpc.calls.filter(call => call.url.includes('/get_actions?')).length, 3);
-  assert(rpc.calls.every(call => !/push_transaction|sign_transaction/.test(call.url)));
+  assert.match(result.messages[0], /Individual tip approval is not required/);
+  assert.match(result.messages[0], /poolapprove/);
+  assert.match(result.messages[0], /poolquarantine/);
+  assert.equal(f.sqlite.prepare(
+    "SELECT status FROM tag_run_v2_deposits WHERE global_action_seq='123'"
+  ).get().status, 'quarantined');
+  assert.equal(rpc.calls.length, 0);
+  assert.equal(f.sqlite.prepare(
+    "SELECT COUNT(*) AS n FROM tag_run_v2_audit WHERE event_type='donation_approved'"
+  ).get().n, 0);
+  const alreadyApproved = await admin(f, 'poolapprove',
+    CONTRACT + ' ' + SYMBOL + ' 4 review-2026-11-12');
+  assert.match(alreadyApproved.messages[0], /already approved for the Community Pot/);
+  assert.match(alreadyApproved.messages[0], /individual tips need no approval/);
 });
 
 test('verified snapshot includes approved assets, excludes quarantine and feeds persisted draw inputs', async t => {
   const f = fixture(t);
-  await addReceipt(f, { status: 'confirmed_donation' });
+  await addReceipt(f, { status: 'quarantined' });
   const rpc = network();
   const result = await admin(f, 'poolsnapshot', DAY + ' snapshot-review-1697', {
     fetchImpl: rpc.fetchImpl
@@ -327,11 +343,11 @@ test('verified snapshot includes approved assets, excludes quarantine and feeds 
   f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
   const input = await loadDrawInputs(f.DB, GROUP, DAY);
   assert.deepEqual(input.snapshots.map(row => row.asset_key), [ASSET]);
-  assert.deepEqual(input.deposits.map(row => row.global_action_seq), ['123']);
+  assert.deepEqual(input.deposits.map(row => row.global_action_seq), []);
   assert.equal(input.snapshots[0].daily_reward_units, '1000');
 });
 
-test('confirmed payouts reduce donation backing before quarantined funds are excluded', async t => {
+test('approved wallet balance is eligible without per-tip provenance', async t => {
   const f = fixture(t);
   await addReceipt(f, { status: 'confirmed_donation', units: '100000' });
   addConfirmedPayout(f, { units: '1000' });
@@ -348,8 +364,8 @@ test('confirmed payouts reduce donation backing before quarantined funds are exc
   ).get(GROUP, DAY, ASSET);
   assert.deepEqual({ ...snapshot }, {
     onchain_units: '100000', allocated_unpaid_units: '0',
-    excluded_units: '1000', spendable_units: '99000',
-    daily_reward_units: '990'
+    excluded_units: '0', spendable_units: '100000',
+    daily_reward_units: '1000'
   });
   const audit = JSON.parse(f.sqlite.prepare(
     "SELECT reason FROM tag_run_v2_audit WHERE event_type='snapshot_verified'"
@@ -357,7 +373,7 @@ test('confirmed payouts reduce donation backing before quarantined funds are exc
   assert.equal(audit.approved_assets[0].confirmed_spent_units, '1000');
 });
 
-test('provider disagreement, quarantine and access failures create no funding evidence', async t => {
+test('access control remains private-admin and provider disagreement blocks snapshots', async t => {
   const f = fixture(t);
   await addReceipt(f);
   for (const access of [
@@ -365,43 +381,24 @@ test('provider disagreement, quarantine and access failures create no funding ev
     { isAdmin: true, isPrivate: false }
   ]) {
     const rpc = network();
-    const result = await admin(f, 'pooldonation', '123 review-1697', {
+    const result = await admin(f, 'pooldonation', '', {
       ...access, fetchImpl: rpc.fetchImpl
     });
     assert.match(result.messages[0], /authorised bot DMs/);
     assert.equal(rpc.calls.length, 0);
   }
-  f.sqlite.prepare(
-    "UPDATE tag_run_v2_assets SET eligibility='quarantined',verified_at=NULL " +
-    'WHERE asset_key=?'
-  ).run(ASSET);
-  const blockedRpc = network();
-  const blocked = await admin(f, 'pooldonation', '123 review-1697', {
-    fetchImpl: blockedRpc.fetchImpl
-  });
-  assert.match(blocked.messages[0], /approval refused/i);
-  assert.equal(blockedRpc.calls.length, 0);
+  const deprecated = await admin(f, 'pooldonation', '');
+  assert.match(deprecated.messages[0], /Individual tip approval is not required/);
   assert.equal(f.sqlite.prepare(
     "SELECT status FROM tag_run_v2_deposits WHERE global_action_seq='123'"
   ).get().status, 'quarantined');
 
-  f.sqlite.prepare(
-    "UPDATE tag_run_v2_assets SET eligibility='approved'," +
-    'verified_at=CURRENT_TIMESTAMP WHERE asset_key=?'
-  ).run(ASSET);
-  f.sqlite.prepare(
-    "UPDATE tag_run_v2_deposits SET status='confirmed_donation'," +
-    'reviewed_at=CURRENT_TIMESTAMP'
-  ).run();
   const mismatch = await admin(f, 'poolsnapshot', DAY + ' review-1697', {
     fetchImpl: network({ mismatchHistory: true }).fetchImpl
   });
   assert.match(mismatch.messages[0], /did not agree/);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_v2_snapshots'
-  ).get().n, 0);
-  assert.equal(f.sqlite.prepare(
-    "SELECT COUNT(*) AS n FROM tag_run_v2_audit WHERE event_type='snapshot_verified'"
   ).get().n, 0);
 });
 
@@ -430,7 +427,7 @@ test('snapshot rows and audit roll back together and a saved day is never replac
   assert.deepEqual(f.sqlite.prepare('SELECT * FROM tag_run_v2_snapshots').get(), before);
 });
 
-test('donation revocation during snapshot preparation blocks the whole set', async t => {
+test('receipt status changes do not revoke an approved token snapshot', async t => {
   const f = fixture(t);
   await addReceipt(f, { status: 'confirmed_donation' });
   const batch = f.env.DB.batch.bind(f.env.DB);
@@ -446,10 +443,10 @@ test('donation revocation during snapshot preparation blocks the whole set', asy
     return batch(statements);
   };
   const result = await admin(f, 'poolsnapshot', DAY + ' race-review-1697');
-  assert.match(result.messages[0], /failed atomically/);
+  assert.match(result.messages[0], /VERIFIED IRREVERSIBLE 1% SNAPSHOT SET/);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_v2_snapshots'
-  ).get().n, 0);
+  ).get().n, 1);
   assert.equal(f.sqlite.prepare(
     "SELECT status FROM tag_run_v2_deposits WHERE global_action_seq='123'"
   ).get().status, 'refund_review');
@@ -458,8 +455,6 @@ test('donation revocation during snapshot preparation blocks the whole set', asy
 test('funding controls reject malformed selectors and any enabled payout gate', async t => {
   const f = fixture(t);
   for (const [name, args] of [
-    ['pooldonation', '0123 review-1697'],
-    ['pooldonation', '123 review with spaces'],
     ['poolsnapshot', '2026-02-30 review-1697'],
     ['poolsnapshot', '2026-11-12 review-1697']
   ]) {
@@ -470,12 +465,9 @@ test('funding controls reject malformed selectors and any enabled payout gate', 
   await addReceipt(f);
   f.env.TAG_RUN_V2_PAYOUTS_ENABLED = 'true';
   const rpc = network();
-  const blocked = await admin(f, 'pooldonation', '123 review-1697', {
+  const deprecated = await admin(f, 'pooldonation', '', {
     fetchImpl: rpc.fetchImpl
   });
-  assert.match(blocked.messages[0], /payouts off/);
+  assert.match(deprecated.messages[0], /Individual tip approval is not required/);
   assert.equal(rpc.calls.length, 0);
-  assert.equal(f.sqlite.prepare(
-    "SELECT status FROM tag_run_v2_deposits WHERE global_action_seq='123'"
-  ).get().status, 'quarantined');
 });

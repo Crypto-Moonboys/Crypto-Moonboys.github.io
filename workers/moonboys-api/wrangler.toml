@@ -24,14 +24,18 @@ TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notificati
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
 TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"
-# V2 pool administration and observation are owner-approved. The pool gate
-# exposes fail-closed review controls only; funded draws and payouts remain OFF.
-# Reads WAX balances/receipt history and captures genuine Street Cred without
-# allowing signing, broadcasting or token transfers.
-TAG_RUN_V2_OBSERVATION_ENABLED = "true"
+# Owner-approved automatic 1% Community Pot release. This remains fail-closed
+# unless migration 109 is applied and BOTH encrypted Worker secrets exist.
+# Unknown/quarantined assets are excluded; approved assets are contract-pinned.
+TAG_RUN_V2_OBSERVATION_ENABLED = "false"
 TAG_RUN_V2_POOL_ENABLED = "true"
-TAG_RUN_V2_DRAWS_ENABLED = "false"
-TAG_RUN_V2_PAYOUTS_ENABLED = "false"
+TAG_RUN_V2_DRAWS_ENABLED = "true"
+TAG_RUN_V2_PAYOUTS_ENABLED = "true"
+TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED = "true"
+TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED = "true"
+TAG_RUN_V2_AUTOMATION_ENABLED = "true"
+TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED = "true"
+TAG_RUN_V2_SIGNER_PERMISSION = "active"
 TAG_RUN_V2_TIP_ACCOUNT = "isthatajoint"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"

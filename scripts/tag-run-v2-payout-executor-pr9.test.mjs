@@ -31,7 +31,9 @@ function fixture(t,{daily='500',available='50000',donation=true,
       '../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql',
       '../workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql',
       '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql',
-      '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql'
+      '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql',
+      '../workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql',
+      '../workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql'
     ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
   }
   sqlite.prepare("UPDATE tag_run_v2_pool_config SET status='review_only'").run();
@@ -147,7 +149,7 @@ const safeAction=(intent)=>({
 test('production payout code exists but cannot execute in observation deployment',async t=>{
   const f=fixture(t);
   assert.equal(PAYOUT_EXECUTOR_IMPLEMENTED,true);
-  assert.equal(PAYOUT_EXECUTOR_AUTO_ENABLED,false);
+  assert.equal(PAYOUT_EXECUTOR_AUTO_ENABLED,true);
   assert.throws(()=>buildReviewedWaxTransfer({status:'preview_only'}),
     /v2_payout_intent_not_reserved/);
   for(const flag of ['TAG_RUN_V2_POOL_ENABLED','TAG_RUN_V2_DRAWS_ENABLED',
@@ -163,15 +165,20 @@ test('production payout code exists but cannot execute in observation deployment
   assert.equal(f.intents().length,0);
 });
 
-test('funding requires approved token, confirmed donation and verified snapshot',async t=>{
-  for(const variant of [
-    {donation:false},{approved:false},{verified:false}
-  ]){
+test('funding requires approved token and verified snapshot',async t=>{
+  for(const variant of [{approved:false},{verified:false}]){
     const f=fixture(t,variant);
     await assert.rejects(initializeReviewedDailyCap(f.env,capArgs),
       /v2_payout_unapproved_snapshot|v2_payout_cap_source_unapproved/);
     assert.equal(f.cap(),undefined);
   }
+});
+
+test('approved irreversible snapshot creates a cap without per-tip approval',async t=>{
+  const f=fixture(t,{donation:false});
+  const cap=await initializeReviewedDailyCap(f.env,capArgs);
+  assert.equal(cap.dailyLimitUnits,'500');
+  assert.equal(cap.paused,true);
 });
 
 test('never accept an invented daily cap greater than 1% of available funds',async t=>{
@@ -846,7 +853,7 @@ test('no real signer endpoint, transfer flag or network broadcast is installed',
     assert.match(flags,new RegExp(flag+' = "false"'));
   }
   assert.doesNotMatch(src,/private.?key|seed.?phrase|push_transaction|WAX_SIGNER_URL/i);
-  assert.equal(PAYOUT_EXECUTOR_AUTO_ENABLED,false);
+  assert.equal(PAYOUT_EXECUTOR_AUTO_ENABLED,true);
 });
 
 
