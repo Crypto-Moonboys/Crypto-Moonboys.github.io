@@ -113,8 +113,6 @@ async function weeklyTop(db, chatId, weekKey) {
     'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
     'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
     'WHERE m.chat_id=? AND m.week_key=? ' +
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
-    'WHERE b.chat_id=m.chat_id AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
     'GROUP BY m.telegram_id ORDER BY score DESC, posts DESC, m.telegram_id ASC LIMIT 10'
   ).bind(chatId, weekKey).all();
   return rows.results || [];
@@ -156,10 +154,8 @@ export async function postTagRunGroupBulletin(env, options = {}) {
 
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
-    'SELECT t.telegram_id, t.display_name, t.score, t.posts FROM tag_run_member_totals t ' +
-    'WHERE t.chat_id=? AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
-    'WHERE b.chat_id=t.chat_id AND b.telegram_id=t.telegram_id AND b.blocked=1) ' +
-    'ORDER BY t.score DESC, t.posts DESC, t.telegram_id ASC LIMIT 10'
+    'SELECT telegram_id,display_name,score,posts FROM tag_run_member_totals ' +
+    'WHERE chat_id=? ORDER BY score DESC,posts DESC,telegram_id ASC LIMIT 10'
   ).bind(chatId).all();
   return rows.results || [];
 }
@@ -271,57 +267,76 @@ async function handleMemberBlockCommand(env, {
       'Nothing changed; resolve the duplicate identity before retrying.');
     return true;
   }
-  if (adminTelegramIds(env).has(target.telegramId)) {
-    await send('Authorised TAG RUN admins cannot be blocked.');
-    return true;
-  }
+  const checkedChanges = result => {
+    const changes = Number(result?.meta?.changes);
+    if (result?.success === false || !Number.isSafeInteger(changes) ||
+        changes < 0) throw new Error('tag_run_reward_block_write_unconfirmed');
+    return changes;
+  };
   if (name === 'block') {
-    const write = await env.DB.prepare(
+    const state = env.DB.prepare(
       'INSERT INTO tag_run_member_blocks ' +
       '(chat_id,telegram_id,username,blocked,updated_by,blocked_at,unblocked_at,updated_at) ' +
       'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP,NULL,CURRENT_TIMESTAMP) ' +
       'ON CONFLICT(chat_id,telegram_id) DO UPDATE SET ' +
       'username=excluded.username,blocked=1,updated_by=excluded.updated_by,' +
-      'blocked_at=CURRENT_TIMESTAMP,unblocked_at=NULL,updated_at=CURRENT_TIMESTAMP'
-    ).bind(chatId,target.telegramId,target.username,telegramId).run();
-    if (write?.success === false || !Number.isSafeInteger(Number(write?.meta?.changes)) ||
-        Number(write.meta.changes) < 1) {
-      throw new Error('tag_run_member_block_write_unconfirmed');
+      'blocked_at=CASE WHEN tag_run_member_blocks.blocked=1 ' +
+      'THEN tag_run_member_blocks.blocked_at ELSE CURRENT_TIMESTAMP END,' +
+      'unblocked_at=NULL,updated_at=CURRENT_TIMESTAMP'
+    ).bind(chatId,target.telegramId,target.username,telegramId);
+    const period = env.DB.prepare(
+      'INSERT INTO tag_run_reward_exclusion_periods ' +
+      '(chat_id,telegram_id,updated_by) SELECT ?,?,? WHERE NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_reward_exclusion_periods ' +
+      'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL)'
+    ).bind(chatId,target.telegramId,telegramId,chatId,target.telegramId);
+    const results = await env.DB.batch([state,period]);
+    if (!Array.isArray(results) || results.length !== 2 ||
+        checkedChanges(results[0]) < 1) {
+      throw new Error('tag_run_reward_block_write_unconfirmed');
     }
-    // Suppress unsent historical celebrations immediately. Audit rows remain.
-    const suppress = await env.DB.prepare(
-      "UPDATE tag_run_rank_announcements SET status='needs_review' " +
-      "WHERE chat_id=? AND telegram_id=? AND status='pending'"
-    ).bind(chatId,target.telegramId).run();
-    if (suppress?.success === false) {
-      throw new Error('tag_run_member_block_announcement_write_unconfirmed');
-    }
-    await send('TAG RUN MEMBER BLOCKED\n@' + target.username +
+    checkedChanges(results[1]);
+    await send('TAG RUN REWARDS BLOCKED\n@' + target.username +
       ' · Telegram ID ' + target.telegramId +
-      '\nNew Street Cred: OFF' +
-      '\nFuture Community Pot eligibility: OFF' +
-      '\nExisting audit history is retained. Any transfer already reserved or ' +
-      'broadcast before this block cannot be reversed.');
+      '\nStreet Cred, ranks and leaderboards: ON' +
+      '\nCommunity participation: ON' +
+      '\nCommunity Pot rewards: OFF' +
+      '\nExisting unpaid reward weight is paused. Messages sent while ' +
+      'reward-blocked remain in Street Cred history but earn no token weight.' +
+      (adminTelegramIds(env).has(target.telegramId)
+        ? '\nAdmin access: unchanged.' : ''));
     return true;
   }
-  const write = await env.DB.prepare(
+  const state = env.DB.prepare(
     'UPDATE tag_run_member_blocks SET blocked=0,updated_by=?,' +
     'unblocked_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP ' +
     'WHERE chat_id=? AND telegram_id=? AND blocked=1'
-  ).bind(telegramId,chatId,target.telegramId).run();
-  if (write?.success === false || !Number.isSafeInteger(Number(write?.meta?.changes)) ||
-      Number(write.meta.changes) < 0) {
-    throw new Error('tag_run_member_unblock_write_unconfirmed');
+  ).bind(telegramId,chatId,target.telegramId);
+  const period = env.DB.prepare(
+    'UPDATE tag_run_reward_exclusion_periods SET ended_at=CURRENT_TIMESTAMP ' +
+    'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL'
+  ).bind(chatId,target.telegramId);
+  const results = await env.DB.batch([state,period]);
+  if (!Array.isArray(results) || results.length !== 2) {
+    throw new Error('tag_run_reward_unblock_write_unconfirmed');
   }
-  if (Number(write.meta.changes) === 0) {
-    await send('@' + target.username + ' is already unblocked.');
+  const stateChanges = checkedChanges(results[0]);
+  const periodChanges = checkedChanges(results[1]);
+  if (stateChanges === 0 && periodChanges === 0) {
+    await send('@' + target.username + ' is already reward-unblocked.');
     return true;
   }
-  await send('TAG RUN MEMBER UNBLOCKED\n@' + target.username +
+  if (stateChanges !== 1 || periodChanges !== 1) {
+    throw new Error('tag_run_reward_unblock_write_unconfirmed');
+  }
+  await send('TAG RUN REWARDS UNBLOCKED\n@' + target.username +
     ' · Telegram ID ' + target.telegramId +
-    '\nNew Street Cred: ON' +
-    '\nFuture Community Pot eligibility: ON' +
-    '\nHistorical scores remain unchanged.');
+    '\nStreet Cred, ranks and leaderboards remained ON' +
+    '\nCommunity Pot rewards: ON' +
+    '\nPreviously earned unpaid eligibility resumes. Messages sent during ' +
+    'the exclusion period remain Street Cred only.' +
+    (adminTelegramIds(env).has(target.telegramId)
+      ? '\nAdmin access: unchanged.' : ''));
   return true;
 }
 
@@ -830,9 +845,6 @@ export async function deliverTagRunRankAnnouncements(env, options = {}) {
     'SELECT chat_id,telegram_id,rank_threshold,rank_name,display_name,' +
     'total_points,source_message_id FROM tag_run_rank_announcements ' +
     "WHERE chat_id=? AND status='pending' " +
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
-    'WHERE b.chat_id=tag_run_rank_announcements.chat_id ' +
-    'AND b.telegram_id=tag_run_rank_announcements.telegram_id AND b.blocked=1) ' +
     'ORDER BY created_at ASC, source_message_id ASC LIMIT ?'
   ).bind(chatId, limit).all();
   let sent = 0;
@@ -934,9 +946,7 @@ export async function recordTagRunMessage(update, env, options = {}) {
     '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?',
     'WHERE (SELECT COUNT(*) FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?) < ' + DAILY_LIMIT,
     'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key>=? AND message_unix>?)',
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND message_unix>?)',
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
-    'WHERE b.chat_id=? AND b.telegram_id=? AND b.blocked=1)'
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND message_unix>?)'
   ].join(' ');
   const result = await env.DB.prepare(query).bind(
     chatId,telegramId,message.message_id,day,week,hash,replyBonus,
@@ -944,8 +954,7 @@ export async function recordTagRunMessage(update, env, options = {}) {
     nowSeconds,cleanName(message.from),
     chatId,telegramId,day,
     chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
-    chatId,telegramId,hash,nowSeconds - 86400,
-    chatId,telegramId
+    chatId,telegramId,hash,nowSeconds - 86400
   ).run();
   // A successful INSERT OR IGNORE may change zero rows for spam/replays. A
   // missing result or failed DB write is NOT equivalent to a rejected post:
@@ -992,8 +1001,14 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     ' AND base_amount_units>0 AND max_weekly_units>0',
     '), scores AS (',
     ' SELECT telegram_id, SUM(points) AS score, COUNT(*) AS posts',
-    ' FROM tag_run_messages WHERE chat_id=? AND week_key=?',
-    ' GROUP BY telegram_id',
+    ' FROM tag_run_messages m WHERE m.chat_id=? AND m.week_key=?',
+    ' AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b',
+    ' WHERE b.chat_id=m.chat_id AND b.telegram_id=m.telegram_id AND b.blocked=1)',
+    ' AND NOT EXISTS (SELECT 1 FROM tag_run_reward_exclusion_periods e',
+    ' WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id',
+    ' AND unixepoch(e.started_at)<=m.message_unix',
+    ' AND (e.ended_at IS NULL OR m.message_unix<unixepoch(e.ended_at)))',
+    ' GROUP BY m.telegram_id',
     '), ranked AS (',
     ' SELECT telegram_id,score,posts,ROW_NUMBER() OVER',
     ' (ORDER BY score DESC, posts DESC, telegram_id ASC) AS position',
@@ -1057,8 +1072,14 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
       return { status: 'not_configured', week };
     }
     const activity = await env.DB.prepare(
-      'SELECT COUNT(DISTINCT telegram_id) AS recipients FROM tag_run_messages ' +
-      'WHERE chat_id=? AND week_key=?'
+      'SELECT COUNT(DISTINCT m.telegram_id) AS recipients FROM tag_run_messages m ' +
+      'WHERE m.chat_id=? AND m.week_key=? AND NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
+      'AND b.telegram_id=m.telegram_id AND b.blocked=1) AND NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_reward_exclusion_periods e ' +
+      'WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id ' +
+      'AND unixepoch(e.started_at)<=m.message_unix AND ' +
+      '(e.ended_at IS NULL OR m.message_unix<unixepoch(e.ended_at)))'
     ).bind(chatId,week).first();
     const count = Number(activity?.recipients || 0);
     if (count === 0) return { status: 'no_activity', week };
