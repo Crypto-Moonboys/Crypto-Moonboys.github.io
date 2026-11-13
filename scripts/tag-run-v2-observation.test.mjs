@@ -23,6 +23,7 @@ const migration103=read('workers/moonboys-api/migrations/103_tag_run_street_cred
 const migration104=read('workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql');
 const migration105=read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql');
 const migration106=read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
+const migration107=read('workers/moonboys-api/migrations/107_tag_run_v2_persisted_draws.sql');
 const migration108=read('workers/moonboys-api/migrations/108_tag_run_v2_allowlist_funding.sql');
 const migration109=read('workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql');
 const migration110=read('workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql');
@@ -34,6 +35,7 @@ function fixture(t){
   sqlite.exec(migration104);
   sqlite.exec(migration105);
   sqlite.exec(migration106);
+  sqlite.exec(migration107);
   sqlite.exec(migration108);
   sqlite.exec(migration109);
   sqlite.exec(migration110);
