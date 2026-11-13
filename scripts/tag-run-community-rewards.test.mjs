@@ -118,7 +118,7 @@ function fixture(t, opts = {}) {
         }
       };
     }
-    assert.match(url, /\/sendMessage$/);
+    assert.match(url, /\/(?:sendMessage|sendPhoto)$/);
     sent.push(JSON.parse(options.body));
     return { ok: true, json: async () => ({ ok: true, result: { message_id: sent.length } }) };
   };
@@ -1037,7 +1037,12 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   });
   assert.equal(sent.status, 'sent');
   assert.equal(sent.count, 1);
+  const photo = f.sent.at(-2);
+  assert.equal(photo.photo, 'https://cryptomoonboys.com/img/Neon%20GKNIFTYHEADS%20Tag-Run%20Launch.jpg');
+  assert.equal(photo.message_thread_id, 23456);
+  assert.equal(String(photo.chat_id), GROUP);
   const bulletin = f.sent.at(-1);
+  assert(bulletin.text.length > 1024, 'Full bulletin must not be squeezed into a photo caption');
   assert.equal(String(bulletin.chat_id), GROUP);
   assert.equal(bulletin.message_thread_id, 23456,
     'scheduled bulletin must target the configured announcement topic');

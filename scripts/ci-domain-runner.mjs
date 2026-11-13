@@ -145,6 +145,7 @@ const GROUPS = {
     ['node', 'scripts/community-xp-sync.test.mjs'],
     ['node', 'scripts/community-xp-awards.test.mjs'],
     ['node', '--test', 'scripts/tag-run-community-rewards.test.mjs'],
+    ['node', '--test', 'scripts/tag-run-bulletin-transport.test.mjs'],
     ['node', '--test', 'scripts/tag-run-engagement.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-community-pot.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-observation.test.mjs'],
