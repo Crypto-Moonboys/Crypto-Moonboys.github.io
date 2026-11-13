@@ -1047,13 +1047,13 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.match(bulletin.text, /COMMUNITY POT REWARDS/);
   assert.match(bulletin.text, /up to 1% of each approved, unreserved token balance/);
   assert.match(bulletin.text, /up to 20 random reward bundles/);
-  assert.match(bulletin.text, /Maximum combined boost: \\+37%/);
+  assert.match(bulletin.text, /Maximum combined boost: \+37%/);
   assert.match(bulletin.text, /Reward-blocked members still earn Street Cred/);
   assert.match(bulletin.text, /automatic contract, balance, reservation and signing checks/);
-  assert.match(bulletin.text, /\\/tagprofile/);
-  assert.match(bulletin.text, /\\/pool/);
-  assert.match(bulletin.text, /\\/myrewards/);
-  assert.match(bulletin.text, /\\/rain yourwaxaccount/);
+  assert.match(bulletin.text, /\/tagprofile/);
+  assert.match(bulletin.text, /\/pool/);
+  assert.match(bulletin.text, /\/myrewards/);
+  assert.match(bulletin.text, /\/rain yourwaxaccount/);
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
   assert.match(wrangler, /"3 \*\/4 \* \* \*"/);
