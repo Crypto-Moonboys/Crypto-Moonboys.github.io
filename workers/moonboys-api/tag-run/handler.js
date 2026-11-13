@@ -143,17 +143,34 @@ export async function postTagRunGroupBulletin(env, options = {}) {
       .slice(0, 70) + ' — ' + String(Number(row.score) || 0) +
     ' pts · ' + rankFor(row.lifetime_score).name);
   const bot = String(env.TELEGRAM_BOT_USERNAME || 'WIKICOMSBOT').replace(/^@/, '');
-  const message = 'TAG RUN · STREET CRED\n' +
+  const message = 'TAG RUN · STREET CRED + COMMUNITY POT\n' +
     'Make your mark in this group. Meaningful messages (10+ characters) earn ' +
     '10 Street Cred; replies to other members add 2, and an active-day streak adds 5. ' +
     'Maximum 30 credited messages per UTC day, with a 45-second cooldown. ' +
-    'No spam or repeated comments. Points here are separate from Arcade XP.\n\n' +
+    'No spam or repeated comments. Points are separate from Arcade XP.\n\n' +
+    'COMMUNITY POT REWARDS\n' +
+    'Once per UTC day, the automatic draw can use up to 1% of each approved, ' +
+    'unreserved token balance held in the isthatajoint WAX wallet. Quarantined or ' +
+    'unknown tokens are excluded. Each approved token can be split into up to 20 ' +
+    'random reward bundles. A leaderboard place improves lottery odds only; it does ' +
+    'not guarantee a reward or increase the 1% token pot.\n' +
+    'Daily top 3 boosts: +15% / +10% / +5%. Weekly close: +10% / +7% / +4%. ' +
+    'Monthly close: +7% / +5% / +3%. Seasonal calendar-quarter close: ' +
+    '+5% / +3% / +2%. Maximum combined boost: +37%. Every other eligible member ' +
+    'keeps their normal chance. Reward-blocked members still earn Street Cred and ' +
+    'appear on leaderboards, but receive no token rewards.\n' +
+    'Rewards go directly to each winner’s registered WAX account after automatic ' +
+    'contract, balance, reservation and signing checks pass. Register privately with ' +
+    '@' + bot + ' using /rain yourwaxaccount.\n\n' +
     'THIS WEEK’S TOP 10 (UTC)\n' +
     (ranks.join('\n') || 'No qualifying messages yet. Be the first to get on the wall.') +
-    '\n\n/tagprofile — your points and rank\n/top — live weekly top 10' +
-    '\n/ranks — all 29 ranks\n/taghelp — full guide' +
-    '\n/rain yourwaxaccount — register a WAX account by private DM to @' + bot +
-    ' (verification pending; no automatic payouts).';
+    '\n\nCOMMANDS\n/tagprofile — your points, rank and streak' +
+    '\n/top — weekly top 10; add daily, monthly, season or all' +
+    '\n/tagdaily /tagweekly /tagmonthly /tagseason — direct leaderboards' +
+    '\n/ranks — all 29 ranks\n/pool — live Community Pot status' +
+    '\n/myrewards — your reward participation status' +
+    '\n/rainstatus — check your registered WAX account privately' +
+    '\n/taghelp — full guide';
   const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch, true, {
     chatKind: 'group', messageKind: 'tag-bulletin',
     seed: moonboyTelegramMessageSeed('tag-bulletin', chatId,
@@ -574,10 +591,12 @@ export async function handleTagRunCommand(update, env, options = {}) {
       const lines = rows.map((row, i) => (i + 1) + '. ' +
         String(row.display_name || 'Tagger').slice(0, 70) + ' — ' +
         String(row.score) + ' pts · ' + rankFor(scope === 'all' ? row.score : row.lifetime_score).name);
+      const footer = scope === 'all'
+        ? '\nAll-time standings are historical only; they do not close or add a reward boost.'
+        : '\nTop 3 receive a small capped Community Pot ticket boost when this period closes.' +
+          '\nEvery other eligible participant keeps their normal lottery chance.';
       await send('TAG RUN ' + scope.toUpperCase() + ' TOP 10\n' +
-        (lines.join('\n') || 'No qualifying chat activity yet.') +
-        '\nTop 3 receive a small capped Community Pot ticket boost when this period closes.' +
-        '\nEvery other eligible participant keeps their normal lottery chance.');
+        (lines.join('\n') || 'No qualifying chat activity yet.') + footer);
       return true;
     }
     if (name === 'rewards') {
