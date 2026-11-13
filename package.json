@@ -8,6 +8,8 @@
   },
   "scripts": {
     "test": "npm run ci:arcade && npm run ci:worker-api && npm run ci:wiki && npm run ci:wax && npm run ci:visual",
+    "seo:audit": "node scripts/seo-sitemap-audit.mjs",
+    "seo:test": "node scripts/seo-metadata-regression.test.mjs",
     "ci:wiki": "node scripts/ci-domain-runner.mjs wiki",
     "ci:worker-api": "node scripts/ci-domain-runner.mjs worker-api",
     "ci:arcade": "node scripts/ci-domain-runner.mjs arcade",
