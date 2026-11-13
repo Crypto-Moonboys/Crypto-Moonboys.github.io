@@ -59,6 +59,43 @@ test('automatic release still fails closed without its encrypted secrets', async
   assert.doesNotMatch(config, /TAG_RUN_V2_AUTOMATION_SEED_KEY\s*=/);
 });
 
+
+test('automatic queue stages are isolated and rotate blocked obligations', () => {
+  const automation = read(
+    'workers/moonboys-api/tag-run/v2-automation.js'
+  );
+  const runner = automation.slice(
+    automation.indexOf('export async function runAutomaticCommunityPot')
+  );
+  assert.ok(runner.indexOf("'reconcile'") < runner.indexOf("'daily_setup'"));
+  for (const step of [
+    'reconcile', 'close_finished_cap', 'daily_setup', 'advance_draw',
+    'create_or_open_cap', 'reserve', 'broadcast'
+  ]) {
+    assert.match(runner, new RegExp("runIsolatedStep\\(result, '" + step + "'"));
+  }
+
+  // A newer cap is not opened while an older cap or unresolved intent for the
+  // same asset exists. A race with the D1 overlap trigger is treated as wait.
+  assert.match(automation, /waiting_for_prior_asset_obligations/);
+  assert.match(automation, /other\.paused=0 OR EXISTS/);
+  assert.match(automation, /oi\.status IN \('reserved','broadcast_unknown','reconciliation_review'\)/);
+
+  // Unknown submissions are retried only as the exact frozen transaction,
+  // expire into reconciliation-only state, and never prevent a reserved item
+  // for another approved/open asset from being selected in the same tick.
+  assert.match(automation, /expired_reconciliation_only/);
+  assert.match(automation, /SET status='reconciliation_review'/);
+  assert.match(automation, /status: 'same_transaction_rebroadcast'/);
+  assert.match(automation, /WHERE i\.status='reserved' AND a\.eligibility='approved' AND c\.paused=0/);
+  assert.match(automation, /status: 'queue_serviced', outcomes/);
+
+  // Failed finality lookups rotate by updated_at so one missing transaction
+  // cannot monopolise every reconciliation tick.
+  assert.match(automation, /updated_at<=datetime\('now','-4 minutes'\)/);
+  assert.match(automation, /reconciliation_retry_conflict/);
+});
+
 test('migration pins contracts and freezes one signed transaction before push', () => {
   const migration = read(
     'workers/moonboys-api/migrations/109_tag_run_v2_full_automation.sql'
