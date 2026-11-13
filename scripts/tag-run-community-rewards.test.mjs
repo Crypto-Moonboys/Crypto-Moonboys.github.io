@@ -199,14 +199,44 @@ test('private admins apply reward-only blocks without hiding community activity'
     'SELECT COUNT(*) AS n FROM tag_run_reward_exclusion_periods ' +
     'WHERE chat_id=? AND telegram_id=? AND ended_at IS NULL'
   ).get(GROUP,MEMBER).n,0);
-  const afterUnblock = MONDAY + 120000;
+
+  // Telegram may deliver an update after /unblock even though it was sent
+  // during the exclusion. Reward matching must use message.date, not the
+  // later Worker processing clock.
+  f.sqlite.prepare(
+    'UPDATE tag_run_reward_exclusion_periods SET started_at=?,ended_at=? ' +
+    'WHERE chat_id=? AND telegram_id=?'
+  ).run('2026-11-02 10:00:30','2026-11-02 10:02:00',GROUP,MEMBER);
+  const delayedSentMs = MONDAY + 110000;
+  const delayedProcessedMs = MONDAY + 130000;
+  const delayed = f.message(
+    'This delayed delivery still earns Street Cred but no token reward weight',
+    { nowMs: delayedProcessedMs, date: Math.floor(delayedSentMs / 1000) }
+  );
+  assert.equal(await f.score(delayed, delayedProcessedMs), true);
+  const delayedRow = f.sqlite.prepare(
+    'SELECT message_unix FROM tag_run_messages WHERE chat_id=? AND message_id=?'
+  ).get(GROUP,delayed.message.message_id);
+  assert.equal(delayedRow.message_unix,Math.floor(delayedSentMs / 1000),
+    'reward authority must preserve Telegram send time');
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_messages m WHERE m.chat_id=? ' +
+    'AND m.message_id=? AND EXISTS (' +
+    'SELECT 1 FROM tag_run_reward_exclusion_periods e ' +
+    'WHERE e.chat_id=m.chat_id AND e.telegram_id=m.telegram_id ' +
+    'AND unixepoch(e.started_at)<=m.message_unix ' +
+    'AND m.message_unix<unixepoch(e.ended_at))'
+  ).get(GROUP,delayed.message.message_id).n,1,
+  'delayed blocked-period activity must remain excluded from rewards');
+
+  const afterUnblock = MONDAY + 180000;
   assert.equal(await f.score(f.message(
     'Street Cred continues after the private admin reward unblock',
     { nowMs: afterUnblock }
   ), afterUnblock), true);
   assert.equal(f.sqlite.prepare(
     'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
-  ).get(MEMBER).n,3);
+  ).get(MEMBER).n,4);
 
   assert.equal(await f.score(f.message(
     'The admin identity can participate while excluding itself from rewards',
