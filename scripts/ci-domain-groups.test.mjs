@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+const fullLinuxWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/full-linux-test-suite.yml'), 'utf8');
 const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/pages.yml'), 'utf8');
 const graphWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/graph-publishing-integrity.yml'), 'utf8');
 const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-pages-artifact.mjs'), 'utf8');
@@ -344,5 +345,30 @@ for (const scope of ['wiki', 'arcade', 'wax', 'visual', 'graph']) {
     `${scope} CI scope must run when the shared CI domain runner changes`,
   );
 }
+
+// Manual comprehensive CI is distinct from the change-scoped routine workflow.
+const fullLinuxTriggers = fullLinuxWorkflow.match(/^on:\n([\s\S]*?)(?=^\S)/m)?.[1] || '';
+assert.match(fullLinuxTriggers, /^  workflow_dispatch:/m,
+  'full Linux suite must be manually dispatchable');
+assert.doesNotMatch(fullLinuxTriggers, /^\s*(?:push|pull_request|workflow_run|schedule):/m,
+  'full Linux suite must not restore automatic testing triggers');
+const fullDomains = [...fullLinuxWorkflow.matchAll(/^          - domain: ([a-z-]+)$/gm)]
+  .map(match => match[1]);
+assert.deepEqual(fullDomains, ['wiki', 'worker-api', 'arcade', 'wax', 'visual'],
+  'the full Linux suite must include each existing CI domain exactly once');
+assert.match(fullLinuxWorkflow, /fail-fast: false/,
+  'all domains must be allowed to finish even if one fails');
+assert.ok(fullLinuxWorkflow.includes('run: npm run ci:${{ matrix.domain }}'),
+  'all unfiltered domain runners must execute in full Linux CI');
+assert.ok(fullLinuxWorkflow.includes('npx playwright install --with-deps chromium'),
+  'full Linux visual tests require a real Chromium install');
+assert.ok(fullLinuxWorkflow.includes('npm run invaders:ship:hydrate'),
+  'full Linux arcade tests require generated Invaders assets');
+assert.ok(fullLinuxWorkflow.includes('needs: [all-domains]') &&
+  fullLinuxWorkflow.includes('if: always()') &&
+  fullLinuxWorkflow.includes('if [ "$MATRIX_RESULT" != \'success\' ]; then'),
+  'the full suite must fail on a non-successful domain matrix');
+assert.doesNotMatch(fullLinuxWorkflow, /ci-change-scope|should_run|wrangler deploy|--remote/,
+  'full Linux tests must not be change-scoped or deploy production resources');
 
 console.log('CI domain grouping tests PASSED.');

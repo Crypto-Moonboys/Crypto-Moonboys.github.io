@@ -20,6 +20,38 @@
 6. For PRs, give a concise summary: changed files, behavior, tests actually performed, tests not performed, risks, deploy notes and GK approval pending.
 7. Do not re-enable `push`, `pull_request`, `workflow_run` or `schedule` for validation workflows without GK's explicit approval. Automatic *publishing* and scheduled content generation are distinct from validation.
 
+## Manual full Linux test suite — no skipped domains
+
+For an explicit, comprehensive pre-release or post-merge check, open
+**Actions → Full Linux Test Suite → Run workflow**, choose `main` (or an
+intended feature branch) and click **Run workflow**. This is a separate
+`workflow_dispatch`-only workflow at
+`.github/workflows/full-linux-test-suite.yml`. It does **not** run
+automatically on pushes, PRs or schedules and does not deploy Pages,
+Workers, or D1 migrations.
+
+It runs the **entire existing domain runners**, unconditionally and
+in parallel on Ubuntu 24.04 / Node 22:
+
+- Wiki/canon: `npm run ci:wiki` (includes Linux `/proc/self/fd` and symlink checks)
+- Worker/API: `npm run ci:worker-api` (including TAG RUN draw/payout tests)
+- Arcade: `npm run ci:arcade` (hydrates the Invaders ship asset)
+- WAX: `npm run ci:wax`
+- Visual/browser: `npm run ci:visual` (installs Chromium first)
+
+No changed-file scope classifier can skip these five domains. Matrix
+`fail-fast: false` lets all domains finish even if one fails. The final
+**All five domains must pass** job fails if any matrix job failed, was
+cancelled, or skipped. A green final job means all five domain jobs
+succeeded for the shown commit; it does **not** verify live blockchain
+transactions, production API health, or deployment readiness.
+
+The lightweight **CI** workflow remains intentionally change-scoped,
+so its green status by itself does **not** prove every domain ran. This
+full-suite workflow is the unambiguous option when such proof is needed.
+A full-suite run can expose unrelated pre-existing defects; don't
+disable tests or security gates to make it green.
+
 ## Operational cautions
 
 - GitHub branch protection/rulesets can still require named checks even if workflows are manual-only. If merges are blocked by **Expected — Waiting for status**, GK must adjust required status checks in repository settings; automation cannot truthfully substitute a pass.

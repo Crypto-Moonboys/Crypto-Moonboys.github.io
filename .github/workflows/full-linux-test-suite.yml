@@ -1,0 +1,109 @@
+name: Full Linux Test Suite
+
+# Explicit, operator-triggered full validation. The routine CI workflow stays
+# intentionally change-scoped; see docs/ci-workflow-policy.md.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  all-domains:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - domain: wiki
+            label: Wiki and canon
+          - domain: worker-api
+            label: Worker and API
+          - domain: arcade
+            label: Arcade
+          - domain: wax
+            label: WAX and NFTs
+          - domain: visual
+            label: Visual and browser
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Resolve branch comparison baseline
+        id: audit_base
+        shell: bash
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          if [ "$GITHUB_REF" = 'refs/heads/main' ]; then
+            # Consistent with existing manual CI: test the current main tree
+            # without treating an already-merged commit as an unapproved PR.
+            echo "base_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_sha=$(git merge-base HEAD origin/main)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Resolve canon prose approval
+        if: matrix.domain == 'wiki'
+        id: canon_approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-canon-prose-approval.mjs
+
+      - name: Hydrate Invaders player-ship PNG asset
+        if: matrix.domain == 'arcade'
+        run: npm run invaders:ship:hydrate
+
+      - name: Install Playwright Chromium
+        if: matrix.domain == 'visual'
+        timeout-minutes: 15
+        run: npx playwright install --with-deps chromium
+
+      - name: Run complete domain tests (no changed-file filtering)
+        env:
+          BASE_SHA: ${{ steps.audit_base.outputs.base_sha }}
+          HEAD_SHA: ${{ github.sha }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
+        run: npm run ci:${{ matrix.domain }}
+
+      - name: Upload browser failure artifacts
+        if: failure() && matrix.domain == 'visual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: full-linux-visual-failure-${{ github.run_id }}
+          path: test-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  require-all-domains:
+    name: All five domains must pass
+    if: always()
+    needs: [all-domains]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify complete Linux suite result
+        shell: bash
+        env:
+          MATRIX_RESULT: ${{ needs.all-domains.result }}
+        run: |
+          echo "## Full Linux Test Suite" >> "$GITHUB_STEP_SUMMARY"
+          echo "Branch: \`$GITHUB_REF_NAME\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: \`$GITHUB_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "All five unfiltered domain jobs (Wiki, Worker/API, Arcade, WAX, Visual): **$MATRIX_RESULT**" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$MATRIX_RESULT" != 'success' ]; then
+            echo "The complete Linux test suite did not pass." >&2
+            exit 1
+          fi
