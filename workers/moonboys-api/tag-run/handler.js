@@ -168,7 +168,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
     'SELECT telegram_id,display_name,score,posts FROM tag_run_member_totals ' +
-    'WHERE chat_id=? ORDER BY score DESC,telegram_id ASC LIMIT 10'
+    'WHERE chat_id=? ORDER BY score DESC,length(telegram_id) ASC,telegram_id ASC LIMIT 10'
   ).bind(chatId).all();
   return rows.results || [];
 }
