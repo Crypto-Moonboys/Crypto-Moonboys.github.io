@@ -951,7 +951,10 @@ export async function recordTagRunMessage(update, env, options = {}) {
   const result = await env.DB.prepare(query).bind(
     chatId,telegramId,message.message_id,day,week,hash,replyBonus,
     chatId,telegramId,previous, chatId,telegramId,day,
-    nowSeconds,cleanName(message.from),
+    // Reward exclusions follow Telegram's authenticated send time. Keep
+    // processing time for day/cooldown gates, but never let a delayed update
+    // cross an unblock boundary and become reward-eligible.
+    sentSec,cleanName(message.from),
     chatId,telegramId,day,
     chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
     chatId,telegramId,hash,nowSeconds - 86400
