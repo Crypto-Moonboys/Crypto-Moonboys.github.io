@@ -158,7 +158,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     'Daily random rewards from approved WAX tokens. Every eligible member has a chance; leaderboard positions boost your odds. Rewards are not guaranteed.',
     '',
     'THIS WEEK\'S TOP 10 (UTC)',
-    ranks.join('\\n') || 'No qualifying messages yet. Be first on the wall.',
+    ranks.join('\n') || 'No qualifying messages yet. Be first on the wall.',
     '',
     'JOIN THE ACTION',
     '/tagprofile — Check your rank',
@@ -167,7 +167,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     '/tipbot — Full rules, rewards & commands',
     '',
     'CHAT MORE. RANK UP. GET IN THE DRAW.'
-  ].join('\\n');
+  ].join('\n');
   const delivery = await sendTagRunBulletin(env, message, options.fetchImpl || fetch);
   if (delivery.status !== 'sent') console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed', {
     photoStatus: delivery.photoStatus, textStatus: delivery.textStatus
@@ -289,7 +289,7 @@ function tipbotMessage() {
     '',
     'MAKE YOUR MARK. BUILD YOUR STREET CRED. GET IN THE DRAW.',
     'Powered by Crypto Moonboys on WAX.'
-  ].join('\\n');
+  ].join('\n');
 }
 const TELEGRAM_USERNAME = /^[A-Za-z0-9_]{5,32}$/;
 function commandUsername(args) {
