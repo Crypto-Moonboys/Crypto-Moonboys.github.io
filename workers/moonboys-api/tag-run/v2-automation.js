@@ -433,8 +433,9 @@ async function reconcileOne(env, fetchImpl) {
     "SELECT intent_key,submission_tx_id FROM tag_run_v2_payout_intents " +
     "WHERE status IN ('broadcast_unknown','reconciliation_review') " +
     "AND submission_tx_id IS NOT NULL " +
-    "AND updated_at<=datetime('now','-4 minutes') " +
-    'ORDER BY updated_at,intent_key LIMIT 1'
+    "AND (reconcile_after IS NULL OR reconcile_after<=CURRENT_TIMESTAMP) " +
+    "ORDER BY COALESCE(reconcile_after,'1970-01-01 00:00:00')," +
+    'updated_at,intent_key LIMIT 1'
   ).first();
   if (!intent) return { status: 'idle' };
   let proof;
@@ -444,8 +445,10 @@ async function reconcileOne(env, fetchImpl) {
     });
   } catch (_) {
     const rotated = await env.DB.prepare(
-      "UPDATE tag_run_v2_payout_intents SET updated_at=CURRENT_TIMESTAMP " +
-      "WHERE intent_key=? AND status IN ('broadcast_unknown','reconciliation_review')"
+      "UPDATE tag_run_v2_payout_intents " +
+      "SET reconcile_after=datetime('now','+4 minutes') " +
+      "WHERE intent_key=? " +
+      "AND status IN ('broadcast_unknown','reconciliation_review')"
     ).bind(intent.intent_key).run();
     if (rotated?.success !== true || rotated.meta?.changes !== 1) {
       fail('reconciliation_retry_conflict');
