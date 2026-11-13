@@ -756,9 +756,25 @@ try {
     for (const action of ['feed', 'play']) {
       await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
       faultAction = action;
+      faultResult = undefined;
+      // The previous care failure deliberately leaves its terminal message
+      // visible. On the next iteration that stale message is not evidence
+      // that the next action (play) reached and committed on the server.
+      // Observe the exact new request's simulated lost response first.
+      const lostResponse = action === 'feed'
+        ? page.waitForEvent('requestfailed', {
+          predicate: request => request.url().endsWith('/telegram-pets/app/action') &&
+            request.postDataJSON()?.action === action
+        })
+        : page.waitForResponse(response =>
+          response.url().endsWith('/telegram-pets/app/action') &&
+          response.request().postDataJSON()?.action === action
+        );
       await page.locator(`[data-action="${action}"]`).click();
+      await lostResponse;
+      assert.equal(actions.at(-1), action, 'the expected care action reached the server');
+      assert.equal(faultResult?.accepted, true, 'the lost response follows this action\'s committed care receipt');
       await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
-      assert.equal(faultResult.accepted, true, 'the response disappears only after the real care receipt commits');
       const savedXP = (await hooks.getPetProfile(db, id)).pet_xp;
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
       // The status message is written before the async action handler clears its
