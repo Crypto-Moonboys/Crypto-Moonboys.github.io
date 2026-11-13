@@ -210,7 +210,7 @@ async function advanceDraw(env, { nowMs, fetchImpl }) {
   const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
   const queue = await rows(env.DB,
     "SELECT day_key,state FROM tag_run_v2_draw_workflows WHERE chat_id=? " +
-    "AND state IN ('committed','revealed') ORDER BY day_key LIMIT 366",
+    "AND state IN ('committed','revealed') ORDER BY day_key",
     chatId);
   if (!queue.length) return { status: 'idle' };
 
