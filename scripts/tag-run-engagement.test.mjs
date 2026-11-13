@@ -100,11 +100,15 @@ test('notification runner uses confirmed ledger evidence, real non-winners and o
       {telegram_id:'9',earned_weight:10,spent_historical_weight:0,blocked:0},
       {telegram_id:'10',earned_weight:10,spent_historical_weight:0,blocked:0}
     ]}));
-  const DB={prepare(query){return {bind(...args){return {
-    first:async()=>sql.prepare(query).get(...args)||null,
-    all:async()=>({success:true,results:sql.prepare(query).all(...args)}),
-    run:async()=>({success:true,meta:{changes:sql.prepare(query).run(...args).changes}})
-  };}};}};
+  const DB={prepare(query){
+    const statement=(args=[])=>({
+      bind(...values){return statement(values);},
+      first:async()=>sql.prepare(query).get(...args)||null,
+      all:async()=>({success:true,results:sql.prepare(query).all(...args)}),
+      run:async()=>({success:true,meta:{changes:sql.prepare(query).run(...args).changes}})
+    });
+    return statement();
+  }};
   const sent=[];
   const env={DB,TAG_RUN_ENGAGEMENT_ENABLED:'true',TELEGRAM_GROUP_CHAT_ID:chat,TELEGRAM_BOT_TOKEN:'fake'};
   const opts={nowMs:Date.parse('2026-11-16T12:00:00Z'),fetchImpl:async(url,options)=>{
