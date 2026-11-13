@@ -70,7 +70,8 @@ for (const source of [REQUIRED_D1_MIGRATIONS, request.required_migrations,
 assert.ok(remoteQueryStep.includes(tagRunMigration), 'known-evidence workflow must include TAG RUN');
 for (const table of ['tag_run_messages', 'tag_run_member_totals', 'tag_run_rank_announcements',
   'tag_run_weekly_plans', 'tag_run_weekly_allocations', 'tag_run_reward_config',
-  'tag_run_wallets', 'tag_run_rank_levels', 'tag_run_member_blocks']) {
+  'tag_run_wallets', 'tag_run_rank_levels', 'tag_run_member_blocks',
+  'tag_run_reward_exclusion_periods']) {
   assert.ok(schema.includes('CREATE TABLE IF NOT EXISTS ' + table),
     'TAG RUN ' + table + ' must exist in canonical bootstrap schema');
 }
@@ -883,7 +884,7 @@ assert.ok(workflow.includes('{"name":"104_tag_run_v2_community_token_pot.sql"}')
 assert.throws(() => validateRequest({...request, required_migrations: request.required_migrations.filter(name => name !== v2Migration)}),
   /missing required migrations: 104_tag_run_v2_community_token_pot\.sql/);
 
-for(const name of ['106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql','108_tag_run_v2_allowlist_funding.sql','109_tag_run_v2_full_automation.sql','110_tag_run_admin_member_blocks.sql']){
+for(const name of ['106_tag_run_v2_one_percent_policy.sql','107_tag_run_v2_persisted_draws.sql','108_tag_run_v2_allowlist_funding.sql','109_tag_run_v2_full_automation.sql','110_tag_run_admin_member_blocks.sql','111_tag_run_reward_only_blocks.sql']){
   for(const list of [REQUIRED_D1_MIGRATIONS,request.required_migrations,production.d1_databases.wikicoms.required_migrations])assert.ok(list.includes(name));
   assert.ok(remoteQueryStep.includes(name));assert.ok(workflow.includes('{"name":"'+name+'"}'));
   assert.throws(()=>verifyD1MigrationPayload([{success:true,results:request.required_migrations.filter(n=>n!==name).map(name=>({name}))}],request),/missing migrations/);
