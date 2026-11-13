@@ -12,13 +12,18 @@ const fail=reason=>{throw Error('v2_draw_'+reason);};
 export const LEGACY_DRAW_RULES=Object.freeze({domain:'tag-run-v2:persisted-draw:v1',dailyBps:100,
   historicalClassBps:5000,maxBundlesPerAsset:20,maxHistoricalWeight:MAX_HISTORICAL_WEIGHT,
   historicalWinClaimCap:MAX_POINTS_PER_DAY,entropy:'committed-secret-plus-future-wax-block-v1'});
-export const DRAW_RULES=Object.freeze({domain:'tag-run-v2:persisted-draw:v2',dailyBps:100,
+export const DRAW_RULES=Object.freeze({domain:'tag-run-v2:persisted-draw:v1',rulesVersion:2,dailyBps:100,
   historicalClassBps:5000,maxBundlesPerAsset:20,maxHistoricalWeight:MAX_HISTORICAL_WEIGHT,
   historicalWinClaimCap:MAX_POINTS_PER_DAY,entropy:'committed-secret-plus-future-wax-block-v1',
   currentTicketScaleBps:BASE_TICKET_BPS,leaderboardBonusBps:LEADERBOARD_BONUS_BPS,
   leaderboardPeriods:'daily-close;weekly-sunday;monthly-last-day;seasonal-calendar-quarter'});
-const rulesForDomain=domain=>domain===DRAW_RULES.domain?DRAW_RULES:
-  domain===LEGACY_DRAW_RULES.domain?LEGACY_DRAW_RULES:null;
+export const drawRulesDigest=rules=>sha256Text(stable(rules));
+async function rulesForInput(input){
+  if(input?.domain!==LEGACY_DRAW_RULES.domain||!HEX.test(input?.rulesDigest||''))return null;
+  if(input.rulesDigest===await drawRulesDigest(DRAW_RULES))return DRAW_RULES;
+  if(input.rulesDigest===await drawRulesDigest(LEGACY_DRAW_RULES))return LEGACY_DRAW_RULES;
+  return null;
+}
 const stable=value=>JSON.stringify(value,function(_key,row){
   if(row&&typeof row==='object'&&!Array.isArray(row))
     return Object.fromEntries(Object.keys(row).sort().map(key=>[key,row[key]]));
@@ -96,13 +101,13 @@ async function loadDrawInputsForRules(db,chatId,day,rules){
   }
   const weightsDigest=await sha256Text(stable(participation));
   return {domain:rules.domain,chatId,day,snapshots,participation,deposits,outstanding,
-    snapshotsDigest,weightsDigest,rulesDigest:await sha256Text(stable(rules))};
+    snapshotsDigest,weightsDigest,rulesDigest:await drawRulesDigest(rules)};
 }
 export async function loadDrawInputs(db,chatId,day){
   return loadDrawInputsForRules(db,chatId,day,DRAW_RULES);
 }
 function candidates(input,rules){
-  const current=rules.domain===DRAW_RULES.domain
+  const current=rules===DRAW_RULES
     ? currentLeaderboardCandidates(input.participation,input.day)
       .map(({telegramId,points})=>({telegramId,points}))
     : [];
@@ -110,7 +115,7 @@ function candidates(input,rules){
   for(const row of input.participation){
     if(row.blocked===1)continue;
     if(row.day_key===input.day){
-      if(rules.domain===LEGACY_DRAW_RULES.domain&&row.earned_weight>0)
+      if(rules===LEGACY_DRAW_RULES&&row.earned_weight>0)
         current.push({telegramId:row.telegram_id,points:row.earned_weight});
     } else historical.set(row.telegram_id,(historical.get(row.telegram_id)||0)+row.earned_weight-row.spent_historical_weight);
   }
@@ -120,11 +125,11 @@ function candidates(input,rules){
   return {current,historical:previous};
 }
 export async function replayDraw(input,seedHex,beaconId){
-  const rules=rulesForDomain(input?.domain);
+  const rules=await rulesForInput(input);
   if(!rules||!HEX.test(seedHex)||!HEX.test(beaconId))fail('invalid_replay');
   const seed=await sha256Text(stable([rules.domain,seedHex,beaconId]));
   const result=await previewCommunityDraw({day:input.day,...candidates(input,rules),seedHex:seed,
-    currentWeightMaximum:rules.domain===DRAW_RULES.domain?MAX_RANKED_POINTS_PER_DAY:MAX_POINTS_PER_DAY,
+    currentWeightMaximum:rules===DRAW_RULES?MAX_RANKED_POINTS_PER_DAY:MAX_POINTS_PER_DAY,
     assets:input.snapshots.map(s=>({key:s.asset_key,contract:s.token_contract,symbol:s.token_symbol,
       precision:s.token_precision,balanceUnits:s.onchain_units,reservedUnits:s.allocated_unpaid_units,
       excludedUnits:s.excluded_units,approved:true,confirmed:true}))});
@@ -170,9 +175,9 @@ export async function commitDraw(env,{day,seedCommitment,committedBy,chooseFutur
 async function verifyStored(db,row){
   if(!row||await sha256Text(row.input_json)!==row.inputs_digest)fail('stored_input_tampered');
   const input=JSON.parse(row.input_json);
-  const rules=rulesForDomain(input.domain);
+  const rules=await rulesForInput(input);
   if(!rules||row.chat_id!==input.chatId||row.day_key!==input.day||await canonicalSnapshotSetDigest({chatId:row.chat_id,day:row.day_key,rows:input.snapshots})!==input.snapshotsDigest||
-    await sha256Text(stable(input.participation))!==input.weightsDigest||input.rulesDigest!==await sha256Text(stable(rules)))fail('stored_commitment_tampered');
+    await sha256Text(stable(input.participation))!==input.weightsDigest||input.rulesDigest!==await drawRulesDigest(rules))fail('stored_commitment_tampered');
   const parent=await first(db,'SELECT * FROM tag_run_v2_draws WHERE chat_id=? AND day_key=?',row.chat_id,row.day_key);
   if(!parent||parent.seed_commitment!==row.seed_commitment||parent.snapshots_digest!==input.snapshotsDigest||
     parent.weights_digest!==input.weightsDigest||parent.rules_digest!==input.rulesDigest||parent.reward_policy_bps!==100)fail('parent_commitment_tampered');
@@ -193,7 +198,7 @@ export async function revealDraw(env,{day,seedHex,readIrreversibleBlock,verifyRe
   const input=await verifyStored(env.DB,row);
   if(['revealed','reviewed'].includes(row.state))return drawReceipt(row);
   if(row.state!=='committed')fail('invalid_transition');
-  if(stable(await loadDrawInputsForRules(env.DB,chatId,day,rulesForDomain(input.domain)))!==row.input_json)fail('source_changed_since_commit');
+  if(stable(await loadDrawInputsForRules(env.DB,chatId,day,await rulesForInput(input)))!==row.input_json)fail('source_changed_since_commit');
   const beacon=await readIrreversibleBlock(row.beacon_block);
   if(beacon?.block!==row.beacon_block||beacon.irreversible!==true||!HEX.test(beacon.id)||parseInt(beacon.id.slice(0,8),16)!==row.beacon_block)fail('beacon_not_irreversible');
   const plan=await replayDraw(input,seedHex,beacon.id);
@@ -210,7 +215,7 @@ export async function reviewDraw(env,{day,reviewedBy,expectedInputsDigest,verify
   const input=await verifyStored(env.DB,row);
   if(row.state==='reviewed')return drawReceipt(row);
   if(row.state!=='revealed')fail('reveal_required');
-  if(stable(await loadDrawInputsForRules(env.DB,chatId,day,rulesForDomain(input.domain)))!==row.input_json)fail('source_changed_since_commit');
+  if(stable(await loadDrawInputsForRules(env.DB,chatId,day,await rulesForInput(input)))!==row.input_json)fail('source_changed_since_commit');
   await verifyRelease();
   validBatch(await env.DB.batch([
     env.DB.prepare("UPDATE tag_run_v2_draw_workflows SET state='reviewed',reviewed_by=? WHERE chat_id=? AND day_key=? AND state='revealed'").bind(reviewedBy,chatId,day),
