@@ -27,7 +27,8 @@ is 37%, and the unboosted ticket weight remains the member's earned Street Cred.
 Historical rollover keeps its existing 50% ticket-class cap and is not
 repeatedly boosted.
 
-Rank ties are resolved deterministically by Telegram user ID after points.
+Rank ties are resolved deterministically by Telegram user ID after points. The
+same ordering is used by public boards, legacy drafts and V2 reward bonuses.
 Reward-blocked members continue earning Street Cred and remain visible on public
 chat leaderboards, but they are excluded before reward standings and bonuses
 are calculated.
@@ -40,5 +41,6 @@ are calculated.
 - `/top season` or `/tagseason`
 - `/top all`
 
-No D1 migration is required. The draw-rules domain is versioned so persisted v1
-commit/reveal workflows remain replayable and verifiable.
+No D1 migration is required. The deployed persisted-input domain remains v1;
+the rules digest carries rulesVersion 2, while legacy v1 digests remain
+replayable and verifiable.
