@@ -25,6 +25,7 @@ const V3 = read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution
 const V4 = read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
 const V5 = read('workers/moonboys-api/migrations/107_tag_run_v2_persisted_draws.sql');
 const V6 = read('workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql');
+const V7 = read('workers/moonboys-api/migrations/111_tag_run_reward_only_blocks.sql');
 const GROUP = '-1001234567890';
 const ASSET = (contract='kingsofgraff',symbol='LFGK',precision=4) => ({
   contract,symbol,precision,key:assetKey(contract,symbol,precision),
@@ -233,6 +234,7 @@ function fixture(t){
   sqlite.exec(V4);
   sqlite.exec(V5);
   sqlite.exec(V6);
+  sqlite.exec(V7);
   const DB={prepare(query){return {
     bind(...args){return {
       async all(){return {success:true,results:sqlite.prepare(query).all(...args)};},
@@ -286,29 +288,46 @@ test('yesterday participation is unique, idempotent and carries unfunded weight'
     [['1111',22,0],['2222',10,0]]);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_v2_bundles').get().n,0);
 });
-test('blocked members are excluded from capture without deleting source receipts',async t=>{
+test('reward-blocked messages stay Street Cred only after unblock',async t=>{
   const f=fixture(t);
   const now=Date.parse('2026-11-03T00:10:00.000Z');
   f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
   const stmt=f.sqlite.prepare('INSERT INTO tag_run_messages '+
     '(chat_id,message_id,telegram_id,display_name,day_key,week_key,message_unix,content_hash,points) '+
     'VALUES (?,?,?,?,?,?,?,?,?)');
-  stmt.run(GROUP,1,'1111','Allowed','2026-11-02','2026-11-02',1793577600,'allowed-hash-one',10);
-  stmt.run(GROUP,2,'2222','Blocked','2026-11-02','2026-11-02',1793577650,'blocked-hash-one',10);
+  stmt.run(GROUP,1,'1111','Allowed','2026-11-02','2026-11-02',
+    1793577600,'allowed-hash-one',10);
+  stmt.run(GROUP,2,'2222','Reward Paused','2026-11-02','2026-11-02',
+    1793577610,'before-block-hash',10);
+  stmt.run(GROUP,3,'2222','Reward Paused','2026-11-02','2026-11-02',
+    1793577650,'during-block-hash',10);
   f.sqlite.prepare(
     'INSERT INTO tag_run_member_blocks '+
-    '(chat_id,telegram_id,username,blocked,updated_by,blocked_at) '+
-    'VALUES (?,?,?,1,?,CURRENT_TIMESTAMP)'
-  ).run(GROUP,'2222','blocked_user','9000001');
-  const result=await saveYesterdayParticipation(f.env,{nowMs:now,cryptoImpl:webcrypto});
-  assert.equal(result.eligible,1);
-  assert.equal(result.inserted,1);
+    '(chat_id,telegram_id,username,blocked,updated_by,blocked_at,unblocked_at) '+
+    'VALUES (?,?,?,0,?,?,?)'
+  ).run(GROUP,'2222','blocked_user','9000001',
+    '2026-11-02 00:00:25','2026-11-02 00:01:30');
+  f.sqlite.prepare(
+    'INSERT INTO tag_run_reward_exclusion_periods '+
+    '(chat_id,telegram_id,started_at,ended_at,updated_by) VALUES (?,?,?,?,?)'
+  ).run(GROUP,'2222','2026-11-02 00:00:25',
+    '2026-11-02 00:01:30','9000001');
+  const result=await saveYesterdayParticipation(f.env,{
+    nowMs:now,cryptoImpl:webcrypto
+  });
+  assert.equal(result.eligible,2);
+  assert.equal(result.inserted,2);
   assert.deepEqual(f.sqlite.prepare(
-    'SELECT telegram_id FROM tag_run_v2_participation ORDER BY telegram_id'
-  ).all().map(row=>row.telegram_id),['1111']);
-  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM tag_run_messages').get().n,2,
-    'source receipts remain immutable');
+    'SELECT telegram_id,earned_weight FROM tag_run_v2_participation '+
+    'ORDER BY telegram_id'
+  ).all().map(row=>[row.telegram_id,row.earned_weight]),
+  [['1111',10],['2222',10]],
+  'pre-block weight resumes after unblock; in-period Street Cred is never token weight');
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_messages'
+  ).get().n,3,'all Street Cred source receipts remain immutable');
 });
+
 test('V2 bot commands are closed without feature flag and paused by default',async t=>{
   const f=fixture(t);
   const replies=[];
