@@ -1042,23 +1042,24 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.equal(photo.message_thread_id, 23456);
   assert.equal(String(photo.chat_id), GROUP);
   const bulletin = f.sent.at(-1);
-  assert(bulletin.text.length > 1024, 'Full bulletin must not be squeezed into a photo caption');
+  assert(bulletin.text.length < 1024, 'Shortened bulletin should be concise');
+  assert.equal(photo.caption, 'TAG RUN · STREET CRED + COMMUNITY POT',
+    'launch image uses a distinct short caption, not the bulletin body');
   assert.equal(String(bulletin.chat_id), GROUP);
   assert.equal(bulletin.message_thread_id, 23456,
     'scheduled bulletin must target the configured announcement topic');
+  assert.match(bulletin.text, /TAG RUN \| CHAT • EARN • WIN/);
   assert.match(bulletin.text, /THIS WEEK.S TOP 10/);
   assert.match(bulletin.text, /1\. Tagger — 10 pts/);
-  assert.match(bulletin.text, /45-second cooldown/);
-  assert.match(bulletin.text, /COMMUNITY POT REWARDS/);
-  assert.match(bulletin.text, /up to 1% of each approved, unreserved token balance/);
-  assert.match(bulletin.text, /up to 20 random reward bundles/);
-  assert.match(bulletin.text, /Maximum combined boost: \+37%/);
-  assert.match(bulletin.text, /Reward-blocked members still earn Street Cred/);
-  assert.match(bulletin.text, /automatic contract, balance, reservation and signing checks/);
+  assert.match(bulletin.text, /COMMUNITY POT/);
+  assert.match(bulletin.text, /Daily random rewards from approved WAX tokens/);
   assert.match(bulletin.text, /\/tagprofile/);
+  assert.match(bulletin.text, /\/top/);
   assert.match(bulletin.text, /\/pool/);
-  assert.match(bulletin.text, /\/myrewards/);
-  assert.match(bulletin.text, /\/rain yourwaxaccount/);
+  assert.match(bulletin.text, /\/tipbot — Full rules, rewards & commands/);
+  assert.match(bulletin.text, /\n\nHOW IT WORKS\n/);
+  assert.match(bulletin.text, /\n\nTHIS WEEK.S TOP 10 \(UTC\)\n/);
+  assert(!bulletin.text.includes('\\n'), 'Bulletin must use real newlines, not escaped text');
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
   assert.match(wrangler, /"3 \*\/4 \* \* \*"/);
