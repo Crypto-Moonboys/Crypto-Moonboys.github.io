@@ -29,6 +29,16 @@ function fixture(t,{perTransfer='500'}={}){
     '../workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql',
       '../workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql'
   ])sqlite.exec(readFileSync(new URL(file,import.meta.url),'utf8'));
+  // The payout executor's atomic reservation SQL checks member blocks.
+  // This legacy 103–106 fixture predates migration 110; load only its
+  // canonical table DDL without applying later production workflow migrations.
+  const memberBlocksMigration=readFileSync(new URL(
+    '../workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql',
+    import.meta.url),'utf8');
+  const memberBlocksTable=memberBlocksMigration.match(
+    /CREATE TABLE IF NOT EXISTS tag_run_member_blocks\s*\([\s\S]*?\) WITHOUT ROWID;/);
+  assert.ok(memberBlocksTable, 'migration 110 must define the member-block table');
+  sqlite.exec(memberBlocksTable[0]);
   sqlite.prepare(
     "UPDATE tag_run_v2_pool_config SET status='review_only'").run();
   sqlite.prepare('INSERT INTO tag_run_v2_assets '+
