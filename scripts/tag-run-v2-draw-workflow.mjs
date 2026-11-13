@@ -50,14 +50,23 @@ export async function loadDrawInputs(db,chatId,day){
     'WHERE s.chat_id=? AND s.day_key=? ORDER BY s.asset_key LIMIT 101',chatId,day);
   if(!snapshots.length||snapshots.length>100||snapshots.some(s=>s.eligibility!=='approved'||!text(s.asset_reviewer)||!s.asset_verified_at))fail('asset_not_reviewed');
   const snapshotsDigest=await canonicalSnapshotSetDigest({chatId,day,rows:snapshots});
-  const participation=await all(db,'SELECT day_key,telegram_id,earned_weight,spent_historical_weight,source_receipts_digest '+
-    'FROM tag_run_v2_participation WHERE chat_id=? AND day_key<=? ORDER BY day_key,telegram_id LIMIT 20001',chatId,day);
+  // Keep every immutable participation row in the committed input so the
+  // migration 107 completeness guards still prove the source set. Eligibility
+  // is frozen separately as part of the signed input digest.
+  const participation=await all(db,'SELECT p.day_key,p.telegram_id,p.earned_weight,'+
+    'p.spent_historical_weight,p.source_receipts_digest,'+
+    'CASE WHEN EXISTS (SELECT 1 FROM tag_run_member_blocks b '+
+    'WHERE b.chat_id=p.chat_id AND b.telegram_id=p.telegram_id AND b.blocked=1) '+
+    'THEN 1 ELSE 0 END AS blocked '+
+    'FROM tag_run_v2_participation p WHERE p.chat_id=? AND p.day_key<=? '+
+    'ORDER BY p.day_key,p.telegram_id LIMIT 20001',chatId,day);
   if(participation.length>20000)fail('participation_limit');
   for(const row of participation){
     if(!validUtcDay(row.day_key)||!String(row.telegram_id).match(/^[0-9]{1,20}$/)||
       !Number.isSafeInteger(row.earned_weight)||row.earned_weight<0||row.earned_weight>MAX_POINTS_PER_DAY||
       !Number.isSafeInteger(row.spent_historical_weight)||row.spent_historical_weight<0||
-      row.spent_historical_weight>row.earned_weight||!HEX.test(row.source_receipts_digest))fail('participation_invalid');
+      row.spent_historical_weight>row.earned_weight||!HEX.test(row.source_receipts_digest)||
+      (row.blocked!==0&&row.blocked!==1))fail('participation_invalid');
   }
   // Funding authority comes from the reviewed token identity and its
   // independently verified irreversible balance snapshot. Individual inbound
@@ -82,6 +91,7 @@ export async function loadDrawInputs(db,chatId,day){
 function candidates(input){
   const current=[],historical=new Map();
   for(const row of input.participation){
+    if(row.blocked===1)continue;
     if(row.day_key===input.day){if(row.earned_weight>0)current.push({telegramId:row.telegram_id,points:row.earned_weight});}
     else historical.set(row.telegram_id,(historical.get(row.telegram_id)||0)+row.earned_weight-row.spent_historical_weight);
   }

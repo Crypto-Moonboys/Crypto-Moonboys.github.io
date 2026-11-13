@@ -296,7 +296,9 @@ async function createOrOpenCap(env) {
     "AND bi.bundle_index=b.bundle_index " +
     "WHERE b.chat_id=c.chat_id AND b.day_key=c.day_key " +
     "AND b.asset_key=c.asset_key AND b.status='preview_only' " +
-    "AND bi.intent_key IS NULL) " +
+    "AND bi.intent_key IS NULL AND NOT EXISTS (" +
+    "SELECT 1 FROM tag_run_member_blocks mb WHERE mb.chat_id=b.chat_id " +
+    "AND mb.telegram_id=b.telegram_id AND mb.blocked=1)) " +
     "AND NOT EXISTS (" +
     "SELECT 1 FROM tag_run_v2_payout_caps other " +
     "WHERE other.asset_key=c.asset_key " +
@@ -336,7 +338,9 @@ async function reserveOne(env) {
     'LEFT JOIN tag_run_v2_payout_intents i ON i.chat_id=b.chat_id AND i.day_key=b.day_key ' +
     'AND i.asset_key=b.asset_key AND i.bundle_index=b.bundle_index ' +
     "WHERE b.chat_id=? AND b.status='preview_only' AND a.eligibility='approved' " +
-    'AND c.paused=0 AND i.intent_key IS NULL ' +
+    'AND c.paused=0 AND i.intent_key IS NULL AND NOT EXISTS (' +
+    'SELECT 1 FROM tag_run_member_blocks mb WHERE mb.chat_id=b.chat_id ' +
+    'AND mb.telegram_id=b.telegram_id AND mb.blocked=1) ' +
     'ORDER BY b.day_key,b.asset_key,b.bundle_index LIMIT 1'
   ).bind(chatId).first();
   if (!bundle) return { status: 'idle' };
@@ -533,7 +537,9 @@ async function closeFinishedCap(env) {
     'LEFT JOIN tag_run_v2_payout_intents i ON i.chat_id=b.chat_id ' +
     'AND i.day_key=b.day_key AND i.asset_key=b.asset_key ' +
     'AND i.bundle_index=b.bundle_index WHERE b.chat_id=c.chat_id ' +
-    'AND b.day_key=c.day_key AND b.asset_key=c.asset_key AND i.intent_key IS NULL) ' +
+    'AND b.day_key=c.day_key AND b.asset_key=c.asset_key AND i.intent_key IS NULL ' +
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks mb ' +
+    'WHERE mb.chat_id=b.chat_id AND mb.telegram_id=b.telegram_id AND mb.blocked=1)) ' +
     'ORDER BY c.day_key,c.asset_key LIMIT 1'
   ).bind(chatId).first();
   if (!cap) return { status: 'idle' };

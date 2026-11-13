@@ -16,6 +16,15 @@ import {
 const SCHEMA = readFileSync(
   new URL('../workers/moonboys-api/migrations/103_tag_run_street_cred_rewards.sql', import.meta.url), 'utf8'
 );
+const MEMBER_BLOCKS = [
+  '104_tag_run_v2_community_token_pot.sql',
+  '105_tag_run_v2_payout_execution.sql',
+  '106_tag_run_v2_one_percent_policy.sql',
+  '107_tag_run_v2_persisted_draws.sql',
+  '110_tag_run_admin_member_blocks.sql'
+].map(name => readFileSync(
+  new URL('../workers/moonboys-api/migrations/' + name, import.meta.url), 'utf8'
+)).join('\n');
 const GROUP = '-1001234567890';
 const ADMIN = '9000001';
 const MEMBER = '9000002';
@@ -23,7 +32,17 @@ const MONDAY = Date.parse('2026-11-02T10:00:00.000Z');
 
 function fixture(t, opts = {}) {
   const sqlite = new DatabaseSync(':memory:');
+  sqlite.exec(`CREATE TABLE telegram_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_id TEXT UNIQUE NOT NULL,
+    username TEXT,
+    first_name TEXT,
+    last_name TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );`);
   sqlite.exec(SCHEMA);
+  sqlite.exec(MEMBER_BLOCKS);
   const sent = [];
   const pending = [];
   class Statement {
@@ -104,14 +123,17 @@ function fixture(t, opts = {}) {
   };
   let updateNumber = 0;
   const message = (text, { user = MEMBER, nowMs = MONDAY, chat = 'group',
-    replyTo = null, isBot = false, messageId = null, ...extra } = {}) => ({
+    replyTo = null, isBot = false, messageId = null, username = null, ...extra } = {}) => ({
     message: {
       message_id: messageId ?? ++updateNumber,
       date: Math.floor(nowMs / 1000),
       chat: chat === 'private'
         ? { id: Number(user), type: 'private' } :
           { id: Number(GROUP), type: 'supergroup' },
-      from: { id: Number(user), first_name: user === ADMIN ? 'Admin' : 'Tagger', is_bot: isBot },
+      from: { id: Number(user), first_name: user === ADMIN ? 'Admin' : 'Tagger',
+        username: username || (user === ADMIN ? 'admin_owner' :
+          user === MEMBER ? 'target_user' : 'member_' + String(user).slice(-20)),
+        is_bot: isBot },
       text,
       ...(replyTo ? { reply_to_message: { from: { id: Number(replyTo) } } } : {}),
       ...extra
@@ -129,6 +151,52 @@ function fixture(t, opts = {}) {
   t.after(() => sqlite.close());
   return { sqlite, DB, env, sent, pending, fetchImpl, message, command, score };
 }
+
+
+test('private admins block and unblock a username without deleting audit history', async t => {
+  const f = fixture(t);
+  assert.equal(await f.score(f.message(
+    'This first meaningful graffiti message records the member identity'
+  )), true);
+  assert.equal(f.sqlite.prepare(
+    'SELECT username FROM telegram_users WHERE telegram_id=?'
+  ).get(MEMBER).username, 'target_user');
+
+  const blocked = await f.command('/block @TARGET_USER', { user: ADMIN });
+  assert.match(blocked.answer, /TAG RUN MEMBER BLOCKED/);
+  assert.equal(f.sqlite.prepare(
+    'SELECT blocked FROM tag_run_member_blocks WHERE chat_id=? AND telegram_id=?'
+  ).get(GROUP,MEMBER).blocked, 1);
+
+  const whileBlocked = MONDAY + 60000;
+  assert.equal(await f.score(f.message(
+    'This valid message must earn nothing while the member is blocked',
+    { nowMs: whileBlocked }
+  ), whileBlocked), false);
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
+  ).get(MEMBER).n, 1, 'historical receipt remains but no new score is written');
+  assert.doesNotMatch((await f.command('/top')).answer, /Tagger/);
+
+  assert.match((await f.command('/block @target_user')).answer,
+    /authorised admins/, 'members cannot change block state');
+  assert.match((await f.command('/block @target_user',
+    { user: ADMIN, chat: 'group' })).answer, /authorised admins/,
+    'admin controls stay private');
+  assert.match((await f.command('/block @unknown_user',
+    { user: ADMIN })).answer, /must have been seen|not.*known/i);
+
+  const unblocked = await f.command('/unblock @target_user', { user: ADMIN });
+  assert.match(unblocked.answer, /TAG RUN MEMBER UNBLOCKED/);
+  const afterUnblock = MONDAY + 120000;
+  assert.equal(await f.score(f.message(
+    'Future Street Cred returns after the private admin unblocks the member',
+    { nowMs: afterUnblock }
+  ), afterUnblock), true);
+  assert.equal(f.sqlite.prepare(
+    'SELECT COUNT(*) AS n FROM tag_run_messages WHERE telegram_id=?'
+  ).get(MEMBER).n, 2);
+});
 
 
 test('deployment is fail-closed and webhook secret validation precedes TAG RUN ingress', async t => {
@@ -237,6 +305,11 @@ test('signed Telegram webhook returns retryable 503 on D1 scoring write failure'
     DB: {
       prepare(sql) {
         dbQueries.push(sql);
+        if (sql.includes('INSERT INTO telegram_users')) {
+          return { bind() { return { async run() {
+            return { success:true, meta:{ changes:1 } };
+          } }; } };
+        }
         if (!sql.includes('INSERT OR IGNORE INTO tag_run_messages')) {
           throw Error('unrelated database route executed after failed scoring');
         }

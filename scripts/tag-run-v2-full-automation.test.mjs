@@ -72,6 +72,9 @@ test('automatic queue stages are isolated and rotate blocked obligations', () =>
   const runner = automation.slice(
     automation.indexOf('export async function runAutomaticCommunityPot')
   );
+  assert.match(automation, /tag_run_member_blocks/,
+    'blocked members must be excluded before cap opening and reservation');
+  assert.match(automation, /mb\.telegram_id=b\.telegram_id AND mb\.blocked=1/);
   assert.ok(runner.indexOf("'reconcile'") < runner.indexOf("'daily_setup'"));
   for (const step of [
     'reconcile', 'close_finished_cap', 'daily_setup', 'advance_draw',
