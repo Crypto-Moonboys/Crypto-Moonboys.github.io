@@ -367,17 +367,33 @@ if (!GROUPS[group]) {
   process.exit(1);
 }
 
+// Diagnostic full-suite runs must expose *all* failing commands in one pass.
+// Default and targeted CI remain fail-fast. A non-zero result can never turn
+// green under collection mode; independent commands still execute afterward.
+const collectFailures = process.env.CI_COLLECT_ALL_FAILURES === '1';
+const failures = [];
+let completed = 0;
 for (const command of GROUPS[group]) {
   const [rawBin, ...args] = command;
-  console.log(`\n[ci:${group}] ${[rawBin, ...args].join(' ')}`);
+  const name = [rawBin, ...args].join(' ');
+  console.log(`\n[ci:${group}] ${name}`);
   const result = process.platform === 'win32' && rawBin === 'npm'
-    ? spawnSync('cmd.exe', ['/d', '/s', '/c', [rawBin, ...args].join(' ')], { stdio: 'inherit' })
+    ? spawnSync('cmd.exe', ['/d', '/s', '/c', name], { stdio: 'inherit' })
     : spawnSync(rawBin, args, { stdio: 'inherit' });
+  completed++;
   if (result.error) {
     console.error(`[ci:${group}] failed to start ${rawBin}: ${result.error.message}`);
-    process.exit(1);
+    failures.push({ command: name, status: 1 });
+    if (!collectFailures) process.exit(1);
+    continue;
   }
   if (result.status !== 0) {
-    process.exit(result.status || 1);
+    failures.push({ command: name, status: result.status || 1 });
+    if (!collectFailures) process.exit(result.status || 1);
   }
+}
+console.log(`\n[ci:${group}] Completed ${completed}/${GROUPS[group].length} commands; failures: ${failures.length}`);
+if (failures.length) {
+  for (const failure of failures) console.error(`[ci:${group}] FAILED (exit ${failure.status}): ${failure.command}`);
+  process.exit(1);
 }
