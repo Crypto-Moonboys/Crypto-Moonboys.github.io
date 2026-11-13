@@ -674,7 +674,7 @@ test('private admin can approve an observed token identity for all wallet fundin
   assert.equal(count(f,'tag_run_v2_deposits'),0);
 });
 
-test('approval is private-admin only, paused-only and fails closed on chain mismatch',async t=>{
+test('approval is private-admin only, rejects unsupported pool states and fails closed on chain mismatch',async t=>{
   const f=fixture(t),observe=rpc();
   await command(f,'poolobserve',{fetchImpl:observe.fetchImpl});
   for(const access of [
@@ -687,11 +687,13 @@ test('approval is private-admin only, paused-only and fails closed on chain mism
     assert.match(result.messages[0],/authorised bot DMs/);
     assert.equal(network.calls.length,0);
   }
-  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='review_only'");
+  // review_only is a valid production policy state; read_only is not.
+  // The refusal must occur before any WAX network request.
+  f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='read_only'");
   const paused=rpc();
   const blocked=await adminCommand(f,'poolapprove',
     'kingsofgraff LFGK 4 review-1697',{fetchImpl:paused.fetchImpl});
-  assert.match(blocked.messages[0],/must be paused|APPROVED FOR COMMUNITY POT/);
+  assert.match(blocked.messages[0],/must be paused/);
   assert.equal(paused.calls.length,0);
   f.sqlite.exec("UPDATE tag_run_v2_pool_config SET status='paused'");
   const wrong=rpc(undefined,{wrongChain:true});
