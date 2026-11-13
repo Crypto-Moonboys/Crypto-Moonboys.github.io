@@ -3,13 +3,14 @@ import {
   eligibleTagComment, isValidWaxAccount, isValidTokenContract,
   parseTokenUnits, formatTokenUnits, adminTelegramIds, authenticatedGroupId
 } from './core.js';
+import { personalTagRun } from './engagement.js';
 import { leaderboardPeriods } from './v2-leaderboard.js';
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
 import { checkWaxDestination } from './wallet-destination.js';
 import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../telegram/moonboy-message-gateway.js';
 
 const TAG_COMMANDS = new Set([
-  'profile', 'tagprofile', 'top', 'tagdaily', 'tagweekly', 'tagmonthly', 'tagseason',
+  'mytagrun', 'profile', 'tagprofile', 'top', 'tagdaily', 'tagweekly', 'tagmonthly', 'tagseason',
   'rewards', 'ranks', 'help', 'taghelp', 'rain', 'rainstatus',
   'block', 'unblock',
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
@@ -170,6 +171,8 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     '\n/ranks — all 29 ranks\n/pool — live Community Pot status' +
     '\n/myrewards — your reward participation status' +
     '\n/rainstatus — check your registered WAX account privately' +
+    '\n/mytagrun — private daily mission, progress and reward dashboard' +
+    '\nDaily recaps, confirmed token drops, rollover highlights and weekly titles are posted automatically.' +
     '\n/taghelp — full guide';
   const sent = await messageReply(env, chatId, message, options.fetchImpl || fetch, true, {
     chatKind: 'group', messageKind: 'tag-bulletin',
@@ -233,6 +236,7 @@ function helpMessage() {
     '+5 for the first eligible message after an active previous day.\n' +
     '/profile — existing bot profile plus TAG RUN stats\n' +
     '/tagprofile — TAG RUN points, rank and streak only\n' +
+    '/mytagrun — private daily mission and personal reward dashboard\n' +
     '/top — weekly leaderboard; use /top daily, monthly, season or all\n' +
     '/tagdaily /tagweekly /tagmonthly /tagseason — direct leaderboard shortcuts\n' +
     '/ranks — complete TAG RUN rank ladder\n' +
@@ -428,6 +432,12 @@ export async function handleTagRunCommand(update, env, options = {}) {
   try {
     if (ADMIN_COMMANDS.has(name) && (!isAdmin || !isPrivate)) {
       await send('TAG RUN admin settings are available only to authorised admins in a private bot chat.');
+      return true;
+    }
+    if (name === 'mytagrun') {
+      await send(isPrivate ? await personalTagRun(env,telegramId,nowMs) :
+        'DM @'+String(env.TELEGRAM_BOT_USERNAME || 'WIKICOMSBOT').replace(/^@/,'')+
+        ' with /mytagrun for your private mission, reward eligibility and WAX destination.');
       return true;
     }
     if (V2_COMMANDS.has(name)) {
@@ -977,30 +987,37 @@ export async function recordTagRunMessage(update, env, options = {}) {
   const replyId = String(message.reply_to_message?.from?.id || '');
   const replyBonus = isTelegramId(replyId) && replyId !== telegramId &&
     !message.reply_to_message?.from?.is_bot ? REPLY_BONUS : 0;
+  const engagement = env.TAG_RUN_ENGAGEMENT_ENABLED === 'true';
+  const replyTarget = replyBonus ? replyId : null;
   // One atomic statement owns idempotency, daily caps, cooldown, repeat-content
   // filtering and streak bonus. Replaying an update never awards points twice.
   const query = [
     'INSERT OR IGNORE INTO tag_run_messages',
     '(chat_id,telegram_id,message_id,day_key,week_key,content_hash,points,' +
-    'message_unix,processed_unix,display_name)',
+    'message_unix,processed_unix,display_name' + (engagement ? ',reply_to_id)' : ')'),
     'SELECT ?,?,?,?,?,?,',
-    '  ' + BASE_POINTS + ' + ? + CASE WHEN',
+    '  ' + BASE_POINTS + (engagement
+      ? ' + CASE WHEN (SELECT COUNT(*) FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=? AND reply_to_id=?)>=2 THEN 0 ELSE ? END + CASE WHEN'
+      : ' + ? + CASE WHEN'),
     '  EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?)',
     '  AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?)',
-    '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?, ?',
+    '  THEN ' + STREAK_BONUS + ' ELSE 0 END, ?, ?, ?' + (engagement ? ', ?' : ''),
     'WHERE (SELECT COUNT(*) FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key=?) < ' + DAILY_LIMIT,
     'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND day_key>=? AND processed_unix>?)',
-    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? AND telegram_id=? AND content_hash=? AND processed_unix>?)'
+    'AND NOT EXISTS (SELECT 1 FROM tag_run_messages WHERE chat_id=? ' +
+      (engagement ? '' : 'AND telegram_id=? ') + 'AND content_hash=? AND processed_unix>?)'
   ].join(' ');
   const result = await env.DB.prepare(query).bind(
-    chatId,telegramId,message.message_id,day,week,hash,replyBonus,
+    chatId,telegramId,message.message_id,day,week,hash,
+    ...(engagement ? [chatId,telegramId,day,replyTarget] : []),replyBonus,
     chatId,telegramId,previous, chatId,telegramId,day,
     // Reward exclusions follow Telegram's authenticated send time; cooldown
     // and duplicate-content gates use the separate Worker processing clock.
     sentSec,nowSeconds,cleanName(message.from),
+    ...(engagement ? [replyTarget] : []),
     chatId,telegramId,day,
     chatId,telegramId,previous,nowSeconds - COOLDOWN_SECONDS,
-    chatId,telegramId,hash,nowSeconds - 86400
+    chatId,...(engagement ? [] : [telegramId]),hash,nowSeconds - 86400
   ).run();
   // A successful INSERT OR IGNORE may change zero rows for spam/replays. A
   // missing result or failed DB write is NOT equivalent to a rejected post:

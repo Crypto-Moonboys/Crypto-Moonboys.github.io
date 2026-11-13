@@ -132,7 +132,7 @@ test('migration pins contracts and freezes one signed transaction before push', 
   const signer = read(
     'workers/moonboys-api/tag-run/v2-active-key-signer.js'
   );
-  assert.match(signer, /TAG RUN V2/);
+  assert.match(signer, /assertRequest\(structuredClone\(request\)\)/);
   assert.doesNotMatch(signer, /console\.(?:log|warn|error)\s*\(/);
   const automation = read(
     'workers/moonboys-api/tag-run/v2-automation.js'

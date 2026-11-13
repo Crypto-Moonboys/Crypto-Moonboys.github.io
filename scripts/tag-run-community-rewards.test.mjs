@@ -1114,3 +1114,43 @@ test('daily weekly monthly and seasonal leaderboard commands expose the live cha
   assert.match((await f.command('/top yearly', { nowMs: MONDAY })).answer,
     /Usage: \/top daily\|weekly\|monthly\|season\|all/);
 });
+
+function engagementFixture(t) {
+  const f=fixture(t);
+  f.sqlite.exec(readFileSync(new URL('../workers/moonboys-api/migrations/112_tag_run_engagement.sql',import.meta.url),'utf8'));
+  f.env.TAG_RUN_ENGAGEMENT_ENABLED='true';
+  return f;
+}
+test('engagement rejects coordinated copy-paste without awarding a second account',async t=>{
+  const f=engagementFixture(t);
+  const text='Original thoughtful discussion of the community mural';
+  assert.equal(await f.score(f.message(text,{nowMs:MONDAY}),MONDAY),true);
+  assert.equal(await f.score(f.message(text,{user:'700002',nowMs:MONDAY+60000}),MONDAY+60000),false);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) n FROM tag_run_messages').get().n,1);
+});
+test('engagement caps same-target reply bonuses and retains distinct reply evidence',async t=>{
+  const f=engagementFixture(t);
+  for(let i=0;i<3;i++) {
+    const time=MONDAY+i*60000;
+    assert.equal(await f.score(f.message('Thoughtful original street art conversation '+i,
+      {nowMs:time,replyTo:ADMIN}),time),true);
+  }
+  const rows=f.sqlite.prepare('SELECT points,reply_to_id FROM tag_run_messages ORDER BY message_id').all();
+  assert.deepEqual(rows.map(r=>r.points),[12,12,10]);
+  assert(rows.every(r=>r.reply_to_id===ADMIN));
+  const duplicate=f.message('Thoughtful original street art conversation 2',
+    {nowMs:MONDAY+180000,replyTo:ADMIN});
+  assert.equal(await f.score(duplicate,MONDAY+180000),false);
+  assert.equal(await f.score(f.message('/mytagrun',{nowMs:MONDAY}),MONDAY),false);
+});
+test('personal dashboard stays private and derives mission progress from accepted receipts',async t=>{
+  const f=engagementFixture(t);
+  const privateReply=await f.command('/mytagrun',{nowMs:MONDAY});
+  assert.match(privateReply.answer,/YOUR DAILY WALL/);
+  assert.match(privateReply.answer,/DAILY MISSION/);
+  assert.match(privateReply.answer,/Daily capacity remaining: 30/);
+  assert.match(privateReply.answer,/cosmetic/);
+  const group=await f.command('/mytagrun',{chat:'group',nowMs:MONDAY});
+  assert.match(group.answer,/DM @WIKICOMSBOT/);
+  assert.doesNotMatch(group.answer,/WAX destination:/);
+});

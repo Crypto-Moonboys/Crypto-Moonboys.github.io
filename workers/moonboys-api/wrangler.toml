@@ -23,6 +23,8 @@ TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notificati
 # TAG RUN launch is deliberately fail-closed pending D1 migration 103 and an
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"
+# Requires migration 112 before deployment.
+TAG_RUN_ENGAGEMENT_ENABLED = "true"
 TAG_RUN_WEEKLY_REWARDS_ENABLED = "false"
 # Owner-approved automatic 1% Community Pot release. This remains fail-closed
 # unless migration 109 is applied and BOTH encrypted Worker secrets exist.
