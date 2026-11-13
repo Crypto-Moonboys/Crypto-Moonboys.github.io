@@ -491,7 +491,11 @@ export async function handleTagRunCommand(update, env, options = {}) {
         name,args,chatId,telegramId,send
       });
     }
-    if (name === 'tipbot') {\n      await send(tipbotMessage());\n      return true;\n    }\n    if (name === 'help' || name === 'taghelp') {
+    if (name === 'tipbot') {
+      await send(tipbotMessage());
+      return true;
+    }
+    if (name === 'help' || name === 'taghelp') {
       await send(helpMessage());
       return true;
     }
