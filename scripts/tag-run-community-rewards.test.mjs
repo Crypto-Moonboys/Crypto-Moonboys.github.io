@@ -1048,18 +1048,18 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert.equal(String(bulletin.chat_id), GROUP);
   assert.equal(bulletin.message_thread_id, 23456,
     'scheduled bulletin must target the configured announcement topic');
-  assert.match(bulletin.text, /TAG RUN \\| CHAT • EARN • WIN/);
+  assert.match(bulletin.text, /TAG RUN \| CHAT • EARN • WIN/);
   assert.match(bulletin.text, /THIS WEEK.S TOP 10/);
-  assert.match(bulletin.text, /1\\. Tagger — 10 pts/);
+  assert.match(bulletin.text, /1\. Tagger — 10 pts/);
   assert.match(bulletin.text, /COMMUNITY POT/);
   assert.match(bulletin.text, /Daily random rewards from approved WAX tokens/);
-  assert.match(bulletin.text, /\\/tagprofile/);
-  assert.match(bulletin.text, /\\/top/);
-  assert.match(bulletin.text, /\\/pool/);
-  assert.match(bulletin.text, /\\/tipbot — Full rules, rewards & commands/);
-  assert.match(bulletin.text, /\\n\\nHOW IT WORKS\\n/);
-  assert.match(bulletin.text, /\\n\\nTHIS WEEK.S TOP 10 \\(UTC\\)\\n/);
-  assert(!bulletin.text.includes('\\\\n'), 'Bulletin must use real newlines, not escaped text');
+  assert.match(bulletin.text, /\/tagprofile/);
+  assert.match(bulletin.text, /\/top/);
+  assert.match(bulletin.text, /\/pool/);
+  assert.match(bulletin.text, /\/tipbot — Full rules, rewards & commands/);
+  assert.match(bulletin.text, /\n\nHOW IT WORKS\n/);
+  assert.match(bulletin.text, /\n\nTHIS WEEK.S TOP 10 \(UTC\)\n/);
+  assert(!bulletin.text.includes('\\n'), 'Bulletin must use real newlines, not escaped text');
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
   assert.match(wrangler, /"3 \*\/4 \* \* \*"/);
