@@ -24,7 +24,7 @@ const contentTypes = new Map([
 const server = http.createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
-    const relative = pathname === '/' ? 'avatar-builder-test.html' : pathname.replace(/^\/+/, '');
+    const relative = pathname === '/' ? 'moonboy-builder.html' : pathname.replace(/^\/+/, '');
     const filePath = path.resolve(ROOT, relative);
     if (!filePath.startsWith(`${ROOT}${path.sep}`)) throw new Error('Invalid path');
     const metadata = await stat(filePath);
@@ -42,7 +42,7 @@ const server = http.createServer(async (request, response) => {
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const { port } = server.address();
 const origin = `http://127.0.0.1:${port}`;
-const standaloneUrl = `${origin}/avatar-builder-test.html`;
+const standaloneUrl = `${origin}/moonboy-builder.html`;
 const homepageUrl = `${origin}/index.html`;
 const installedBrowser = process.platform === 'win32'
   ? [
@@ -400,7 +400,7 @@ try {
 
   const liveBuilderSources = await Promise.all([
     readFile(path.join(ROOT, 'index.html'), 'utf8'),
-    readFile(path.join(ROOT, 'avatar-builder-test.html'), 'utf8'),
+    readFile(path.join(ROOT, 'moonboy-builder.html'), 'utf8'),
     readFile(path.join(ROOT, 'css', 'avatar-builder-test.css'), 'utf8'),
     readFile(path.join(ROOT, 'js', 'avatar-builder-test.js'), 'utf8'),
     readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'),
@@ -409,6 +409,12 @@ try {
   const sharedBuilderSource = liveBuilderSources[3];
   assert(!sharedBuilderSource.includes(OLD_DOWNLOAD_HELPER), 'Shared builder source must not contain the old download helper copy');
   assert(sharedBuilderSource.includes(DOWNLOAD_DISCLAIMER), 'Shared builder source must contain the approved download disclaimer');
+
+  const legacyBuilder = await browser.newPage();
+  await legacyBuilder.goto(`${origin}/avatar-builder-test.html`, { waitUntil: 'networkidle' });
+  assert.equal(new URL(legacyBuilder.url()).pathname, '/moonboy-builder.html');
+  await legacyBuilder.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  await legacyBuilder.close();
 
   const desktop = await openAt({ width: 1440, height: 900 });
   const desktopBoxes = await Promise.all(['.category-panel', '.preview-panel', '.selection-panel'].map((selector) => desktop.locator(selector).boundingBox()));
@@ -425,9 +431,21 @@ try {
   await assertHiddenVerticalScroller(desktop, '.trait-grid', 'Trait grid');
   await assertHiddenVerticalScroller(desktop, '.selected-list', 'Selected traits');
 
-  await desktop.locator('#randomize').click();
-  await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
-  assert.equal(await renderedStackSize(desktop), 9, 'Randomize must render a complete stack');
+  const nextStandalonePreset = createHomepagePresetCycle(manifest);
+  for (let click = 0; click < 9; click++) {
+    const expected = nextStandalonePreset();
+    await desktop.locator('#randomize').click();
+    await desktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
+    assert.equal(await renderedStackSize(desktop), Object.values(expected).filter(Boolean).length);
+    assert.deepEqual(await desktop.locator('.selected-copy > strong').allTextContents(),
+      manifest.categories.map(category => manifest.traits.find(trait =>
+        trait.id === expected[category.id])?.name || 'None selected'),
+      'Standalone must show the same presets as the homepage, then wrap');
+    if (click === 1) {
+      assert.equal(await desktop.locator('.animated-background-canvas').getAttribute('data-renderer'),
+        'bitcoin-code-rain');
+    }
+  }
   assert.equal(await desktop.locator('#reset').count(), 0, 'Standalone builder must not include a Reset button');
   assert.deepEqual(await desktop.locator('.main-actions .action').evaluateAll((buttons) => buttons.map((button) => button.id)), ['randomize', 'download-png', 'clear-all'], 'Standalone actions must use the simplified order');
   const actionMetrics = await desktop.locator('.main-actions').evaluate((container) => ({

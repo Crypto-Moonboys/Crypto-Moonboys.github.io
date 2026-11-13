@@ -105,6 +105,7 @@ const SITEMAP_ROOT_PAGE_DEFAULTS = {
   '/sam.html': { changefreq: 'weekly', priority: '0.8' },
 };
 const SITEMAP_ONLY_ROOT_PAGES = [
+  { path: '/moonboy-builder.html', changefreq: 'monthly', priority: '0.6' },
   { path: '/search.html', changefreq: 'weekly', priority: '1.0' },
   { path: '/block-topia.html', changefreq: 'daily', priority: '0.9' },
 ];

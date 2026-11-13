@@ -1,5 +1,5 @@
-// GK's eight curated homepage Moonboys, in click order.
-// The standalone builder continues to use randomStack.
+// GK's curated Moonboys, shared by the homepage and permanent standalone builder.
+// Add presets here once to update the click cycle in both places.
 const PRESETS = Object.freeze([
   {
     "background": "background-mb-bg-2",

@@ -1,4 +1,4 @@
-import { clearOptionalStack, defaultStack, indexManifest, randomStack } from './avatar-builder-core.mjs';
+import { clearOptionalStack, defaultStack, indexManifest } from './avatar-builder-core.mjs';
 import { createHomepagePresetCycle } from './avatar-builder-homepage-presets.mjs';
 import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgrounds/registry.js';
 
@@ -47,13 +47,13 @@ host.innerHTML = `
         <button class="action action-danger" type="button" id="clear-all">Clear All</button>
       </div>
       <p class="download-helper">A download is not ownership of a Moonboy. For fun only.</p>
-      <a class="back-link" href="${isHomepage ? '/avatar-builder-test.html' : '/'}">${isHomepage ? 'Open standalone builder' : 'Back to Crypto Moonboys'}</a>
+      <a class="back-link" href="${isHomepage ? '/moonboy-builder.html' : '/'}">${isHomepage ? 'Open standalone builder' : 'Back to Crypto Moonboys'}</a>
     </aside>
   </div>
   <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>`;
 
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
-let nextHomepagePreset = null;
+let nextPreset = null;
 let layerRenderGeneration = 0;
 let exportInProgress = false;
 let backgroundLoadGeneration = 0;
@@ -385,11 +385,11 @@ elements.selectedList.addEventListener('click', (event) => {
 });
 
 elements.randomize.addEventListener('click', () => {
-  if (!state.manifest || (isHomepage && !nextHomepagePreset)) return;
+  if (!state.manifest || !nextPreset) return;
   dismissHomepageIntro();
-  state.selected = isHomepage ? nextHomepagePreset() : randomStack(state.manifest);
+  state.selected = nextPreset();
   renderAll();
-  announce(isHomepage ? 'A preset Moonboy is ready.' : 'A complete random avatar stack is ready.');
+  announce('A preset Moonboy is ready.');
 });
 
 elements.clearAll.addEventListener('click', () => {
@@ -407,7 +407,7 @@ async function initialize() {
     if (!response.ok) throw new Error(`Manifest request failed (${response.status})`);
     state.manifest = await response.json();
     ({ traitsById: state.traitsById, traitsByCategory: state.traitsByCategory } = indexManifest(state.manifest));
-    nextHomepagePreset = isHomepage ? createHomepagePresetCycle(state.manifest) : null;
+    nextPreset = createHomepagePresetCycle(state.manifest);
     state.activeCategory = state.manifest.categoryOrder[0];
     const initialStack = defaultStack(state.manifest);
     state.selected = isHomepage ? clearOptionalStack(state.manifest, initialStack) : initialStack;

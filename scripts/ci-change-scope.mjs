@@ -58,6 +58,7 @@ const SCOPES = {
     'js/arcade-*.js',
     'battle-chamber/**',
     'avatar-builder-test.html',
+    'moonboy-builder.html',
     'moonpet-game.html',
     'crypto-moonboy-pets-leaderboard.html',
     'how-to-play*.html',
