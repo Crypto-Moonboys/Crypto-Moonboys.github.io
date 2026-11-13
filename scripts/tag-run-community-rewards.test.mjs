@@ -862,7 +862,7 @@ test('weekly /top and reward draft use the same deterministic member-id tie-brea
     'max_weekly_units,enabled) VALUES (?,?,?,?,?,?,1)')
     .run(GROUP, 'LFGK', 'kingsofgraff', 4, 100000, 10000000);
   const morePostsId = '8000009'; // Larger ID deliberately sorts last on ID alone.
-  const fewerPostsId = '7000001';
+  const fewerPostsId = '900001'; // Shorter numeric ID must sort first.
   for (let i = 0; i < 6; i++) {
     const nowMs = MONDAY + (i * 60000);
     const update = f.message('Six unique original comments about street art number ' + i,
@@ -879,6 +879,8 @@ test('weekly /top and reward draft use the same deterministic member-id tie-brea
   }
   const board = await f.command('/top', { nowMs: MONDAY + 700000 });
   assert(board.answer.indexOf('1. FewerPosts') < board.answer.indexOf('2. MorePosts'));
+  const allTime = await f.command('/top all', { nowMs: MONDAY + 700000 });
+  assert(allTime.answer.indexOf('1. FewerPosts') < allTime.answer.indexOf('2. MorePosts'));
   // The rank shown beside weekly points must come from lifetime Street Cred.
   f.sqlite.prepare('UPDATE tag_run_member_totals SET score=95000 WHERE telegram_id=?')
     .run(morePostsId);
