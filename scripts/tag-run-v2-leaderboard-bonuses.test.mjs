@@ -7,7 +7,8 @@ import {
 } from '../workers/moonboys-api/tag-run/v2-leaderboard.js';
 import { MAX_POINTS_PER_DAY, previewCommunityDraw, assetKey } from
   '../workers/moonboys-api/tag-run/v2-core.js';
-import { LEGACY_DRAW_RULES, replayDraw } from './tag-run-v2-draw-workflow.mjs';
+import { DRAW_RULES, LEGACY_DRAW_RULES, drawRulesDigest, replayDraw } from
+  './tag-run-v2-draw-workflow.mjs';
 
 const row = (day, id, points, blocked = 0) => ({
   day_key: day, telegram_id: String(id), earned_weight: points,
@@ -97,7 +98,8 @@ test('leaderboard weights never change the fixed one-percent token debit', async
 test('legacy v1 committed draws remain replayable after leaderboard rules activate', async () => {
   const key=assetKey('kingsofgraff','LFGK',4);
   const result=await replayDraw({
-    domain:LEGACY_DRAW_RULES.domain,day:'2026-11-12',
+    domain:LEGACY_DRAW_RULES.domain,rulesDigest:await drawRulesDigest(LEGACY_DRAW_RULES),
+    day:'2026-11-12',
     participation:[row('2026-11-12','7',50)],
     snapshots:[{asset_key:key,token_contract:'kingsofgraff',token_symbol:'LFGK',
       token_precision:4,onchain_units:'1000000',allocated_unpaid_units:'0',
@@ -105,4 +107,10 @@ test('legacy v1 committed draws remain replayable after leaderboard rules activa
   },'2'.repeat(64),'3'.repeat(64));
   assert.equal(result.bundles.length,20);
   assert(result.bundles.every(bundle=>bundle.telegramId==='7'));
+});
+
+test('new rules retain the deployed v1 input domain and version through the digest', async () => {
+  assert.equal(DRAW_RULES.domain,LEGACY_DRAW_RULES.domain);
+  assert.equal(DRAW_RULES.rulesVersion,2);
+  assert.notEqual(await drawRulesDigest(DRAW_RULES),await drawRulesDigest(LEGACY_DRAW_RULES));
 });
