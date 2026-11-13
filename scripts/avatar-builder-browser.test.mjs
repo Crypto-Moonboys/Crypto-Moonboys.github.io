@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
+import { createHomepagePresetCycle } from '../js/avatar-builder-homepage-presets.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE_SIZE = 24;
@@ -343,9 +344,23 @@ try {
   assert(homepageThumbnailRequests.length <= PAGE_SIZE, `Homepage initial load must request at most one visible page of lazy thumbnails: ${homepageThumbnailRequests.length}`);
   assert(!homepageDesktop.requestedUrls.some((requestUrl) => requestUrl.includes('/img/CRYPTO-MOONBOYS-OG-TRAITS/')), 'Homepage must not request original 4000x4000 trait sources');
 
-  await homepageDesktop.locator('#randomize').click();
-  await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
-  assert.equal(await renderedStackSize(homepageDesktop), 9, 'Homepage Randomize must render a complete stack');
+  const nextHomepagePreset = createHomepagePresetCycle(manifest);
+  for (let click = 0; click < 9; click++) {
+    const expected = nextHomepagePreset();
+    await homepageDesktop.locator('#randomize').click();
+    await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
+    assert.equal(await renderedStackSize(homepageDesktop), Object.values(expected).filter(Boolean).length,
+      'Homepage preset must render its selected layers, including the optional empty Clothes slot');
+    const names = await homepageDesktop.locator('.selected-copy > strong').allTextContents();
+    assert.deepEqual(names, manifest.categories.map(category =>
+      manifest.traits.find(trait => trait.id === expected[category.id])?.name || 'None selected'),
+      'Homepage clicks must use the curated preset order and wrap after eight');
+    if (click === 1) {
+      assert.equal(await homepageDesktop.locator('.animated-background-canvas').getAttribute('data-renderer'),
+        'bitcoin-code-rain', 'Preset two must use the animated Bitcoin Code Rain renderer');
+    }
+    assert.equal(await homepageDesktop.locator('#download-png').isEnabled(), true);
+  }
   await homepageDesktop.locator('#clear-all').click();
   await homepageDesktop.locator('#avatar-frame[aria-busy="false"]').waitFor();
   assert.equal(await renderedStackSize(homepageDesktop), 2, 'Homepage Clear All must preserve required layers for static or animated backgrounds');
