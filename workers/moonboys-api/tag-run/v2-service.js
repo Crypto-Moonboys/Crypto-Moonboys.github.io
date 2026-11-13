@@ -662,8 +662,11 @@ export async function saveYesterdayParticipation(env, options = {}) {
   let lastCompleted = checkpoint?.last_completed_day_key || null;
   while (day <= yesterday && processedDays < maxDays) {
     const result = await env.DB.prepare(
-      'SELECT telegram_id,message_id,points FROM tag_run_messages ' +
-      'WHERE chat_id=? AND day_key=? ORDER BY telegram_id,message_id LIMIT 30001'
+      'SELECT m.telegram_id,m.message_id,m.points FROM tag_run_messages m ' +
+      'WHERE m.chat_id=? AND m.day_key=? AND NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
+      'AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
+      'ORDER BY m.telegram_id,m.message_id LIMIT 30001'
     ).bind(chatId, day).all();
     if (result?.success === false || !Array.isArray(result?.results)) {
       throw new Error('participation_receipts_unavailable');
@@ -697,8 +700,11 @@ export async function saveYesterdayParticipation(env, options = {}) {
     const write = await env.DB.prepare(
       'INSERT OR IGNORE INTO tag_run_v2_participation ' +
       '(chat_id,day_key,telegram_id,earned_weight,source_receipts_digest) ' +
-      'SELECT chat_id,day_key,telegram_id,SUM(points),? FROM tag_run_messages ' +
-      'WHERE chat_id=? AND day_key=? GROUP BY chat_id,day_key,telegram_id'
+      'SELECT m.chat_id,m.day_key,m.telegram_id,SUM(m.points),? FROM tag_run_messages m ' +
+      'WHERE m.chat_id=? AND m.day_key=? AND NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
+      'AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
+      'GROUP BY m.chat_id,m.day_key,m.telegram_id'
     ).bind(digest,chatId,day).run();
     if (write?.success === false ||
         !Number.isSafeInteger(write?.meta?.changes) ||
@@ -706,7 +712,9 @@ export async function saveYesterdayParticipation(env, options = {}) {
     const audit = await env.DB.prepare(
       'SELECT COUNT(*) AS recorded, ' +
       'SUM(CASE WHEN source_receipts_digest<>? THEN 1 ELSE 0 END) AS bad_digest ' +
-      'FROM tag_run_v2_participation WHERE chat_id=? AND day_key=?'
+      'FROM tag_run_v2_participation p WHERE p.chat_id=? AND p.day_key=? ' +
+      'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
+      'WHERE b.chat_id=p.chat_id AND b.telegram_id=p.telegram_id AND b.blocked=1)'
     ).bind(digest,chatId,day).first();
     if (!audit || Number(audit.recorded) !== members.size ||
         Number(audit.bad_digest || 0) !== 0) {
@@ -734,8 +742,10 @@ export async function saveYesterdayParticipation(env, options = {}) {
 }
 async function pendingWeight(db, chatId, telegramId) {
   const query = await db.prepare(
-    'SELECT earned_weight,spent_historical_weight FROM tag_run_v2_participation ' +
-    'WHERE chat_id=? AND telegram_id=?'
+    'SELECT p.earned_weight,p.spent_historical_weight FROM tag_run_v2_participation p ' +
+    'WHERE p.chat_id=? AND p.telegram_id=? AND NOT EXISTS (' +
+    'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=p.chat_id ' +
+    'AND b.telegram_id=p.telegram_id AND b.blocked=1)'
   ).bind(chatId,telegramId).all();
   if (query?.success !== true || !Array.isArray(query?.results) ||
       query.results.length > 3660) throw new Error('pending_participation_unavailable');
@@ -756,12 +766,17 @@ async function drawInput(db, chatId, day) {
       'ON s.asset_key=a.asset_key WHERE s.chat_id=? AND s.day_key=? ' +
       "AND s.status='verified' AND a.eligibility='approved' LIMIT 101")
       .bind(chatId,day).all(),
-    db.prepare('SELECT telegram_id,SUM(points) AS points FROM tag_run_messages ' +
-      'WHERE chat_id=? AND day_key=? GROUP BY telegram_id ORDER BY telegram_id LIMIT 2001')
+    db.prepare('SELECT m.telegram_id,SUM(m.points) AS points FROM tag_run_messages m ' +
+      'WHERE m.chat_id=? AND m.day_key=? AND NOT EXISTS (' +
+      'SELECT 1 FROM tag_run_member_blocks b WHERE b.chat_id=m.chat_id ' +
+      'AND b.telegram_id=m.telegram_id AND b.blocked=1) ' +
+      'GROUP BY m.telegram_id ORDER BY m.telegram_id LIMIT 2001')
       .bind(chatId,day).all(),
-    db.prepare('SELECT telegram_id, SUM(earned_weight-spent_historical_weight) AS points ' +
-      'FROM tag_run_v2_participation WHERE chat_id=? AND day_key<? ' +
-      'GROUP BY telegram_id HAVING points>0 ORDER BY telegram_id LIMIT 2001')
+    db.prepare('SELECT p.telegram_id, SUM(p.earned_weight-p.spent_historical_weight) AS points ' +
+      'FROM tag_run_v2_participation p WHERE p.chat_id=? AND p.day_key<? ' +
+      'AND NOT EXISTS (SELECT 1 FROM tag_run_member_blocks b ' +
+      'WHERE b.chat_id=p.chat_id AND b.telegram_id=p.telegram_id AND b.blocked=1) ' +
+      'GROUP BY p.telegram_id HAVING points>0 ORDER BY p.telegram_id LIMIT 2001')
       .bind(chatId,day).all()
   ]);
   if ([snapshots,recent,backlog].some(r => r?.success === false ||
