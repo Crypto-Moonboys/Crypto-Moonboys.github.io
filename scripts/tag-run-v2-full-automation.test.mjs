@@ -81,6 +81,9 @@ test('automatic queue stages are isolated and rotate blocked obligations', () =>
   assert.match(automation, /s\.status='verified'/);
   assert.match(automation, /a\.eligibility='approved'/);
   assert.match(automation, /length\(a\.approved_code_hash\)=64/);
+  assert.match(automation, /JOIN tag_run_wallets w ON w\.telegram_id=b\.telegram_id/);
+  assert.match(automation, /b\.status='preview_only'/);
+  assert.match(automation, /bi\.intent_key IS NULL/);
   assert.match(automation, /other\.paused=0 OR EXISTS/);
   assert.match(automation, /oi\.status IN \('reserved','broadcast_unknown','reconciliation_review'\)/);
 
