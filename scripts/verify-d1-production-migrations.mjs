@@ -77,6 +77,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '108_tag_run_v2_allowlist_funding.sql',
   '109_tag_run_v2_full_automation.sql',
   '110_tag_run_admin_member_blocks.sql',
+  '111_tag_run_reward_only_blocks.sql',
 ]);
 
 function readJson(filePath, label) {
