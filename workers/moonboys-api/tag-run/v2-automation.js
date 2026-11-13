@@ -30,6 +30,47 @@ import {
 const HEX = /^[0-9a-f]{64}$/;
 const fail = reason => { throw new Error('v2_automation_' + reason); };
 
+function safeFailureReason(error) {
+  const message = String(error?.message || '');
+  return /^v2_[a-z0-9_]+$/.test(message) ? message : 'v2_automation_unexpected_error';
+}
+
+async function runIsolatedStep(result, step, action) {
+  try {
+    const value = await action();
+    result.steps.push(Object.freeze({ step, ...(value || { status: 'idle' }) }));
+    return true;
+  } catch (error) {
+    result.steps.push(Object.freeze({
+      step, status: 'blocked', reason: safeFailureReason(error)
+    }));
+    return false;
+  }
+}
+
+function preparedTransactionExpired(signedTransactionJson, nowMs) {
+  try {
+    const raw = String(JSON.parse(signedTransactionJson)?.expiration || '');
+    const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(raw)
+      ? raw + 'Z' : raw;
+    const expirationMs = Date.parse(normalized);
+    return !Number.isFinite(expirationMs) || expirationMs <= nowMs;
+  } catch (_) {
+    return true;
+  }
+}
+
+async function moveToReconciliationOnly(env, intent) {
+  const result = await env.DB.prepare(
+    "UPDATE tag_run_v2_payout_intents SET status='reconciliation_review'," +
+    "updated_at=CURRENT_TIMESTAMP WHERE intent_key=? " +
+    "AND status='broadcast_unknown' AND submission_tx_id=?"
+  ).bind(intent.intent_key, intent.submission_tx_id).run();
+  if (result?.success !== true || result.meta?.changes !== 1) {
+    fail('reconciliation_review_conflict');
+  }
+}
+
 function assertMode(env) {
   if (!env?.DB ||
       env.TAG_RUN_ENABLED !== 'true' ||
@@ -202,12 +243,30 @@ async function createOrOpenCap(env) {
     'SELECT c.day_key,c.asset_key FROM tag_run_v2_payout_caps c ' +
     'JOIN tag_run_v2_draws d ON d.chat_id=c.chat_id AND d.day_key=c.day_key ' +
     "WHERE c.chat_id=? AND c.paused=1 AND c.committed_units='0' " +
-    "AND d.status='reviewed' ORDER BY c.day_key,c.asset_key LIMIT 1"
+    "AND d.status='reviewed' AND NOT EXISTS (" +
+    "SELECT 1 FROM tag_run_v2_payout_caps other " +
+    "WHERE other.asset_key=c.asset_key " +
+    "AND (other.chat_id!=c.chat_id OR other.day_key!=c.day_key) " +
+    "AND (other.paused=0 OR EXISTS (" +
+    "SELECT 1 FROM tag_run_v2_payout_intents oi " +
+    "WHERE oi.chat_id=other.chat_id AND oi.day_key=other.day_key " +
+    "AND oi.asset_key=other.asset_key " +
+    "AND oi.status IN ('reserved','broadcast_unknown','reconciliation_review')))) " +
+    "ORDER BY c.day_key,c.asset_key LIMIT 1"
   ).bind(chatId).first();
   if (paused) {
-    await openReviewedDailyCap(env, {
-      chatId, day: paused.day_key, assetKey: paused.asset_key
-    });
+    try {
+      await openReviewedDailyCap(env, {
+        chatId, day: paused.day_key, assetKey: paused.asset_key
+      });
+    } catch (error) {
+      if (String(error?.message || '').includes(
+        'v2_payout_asset_obligations_unresolved'
+      )) {
+        return { status: 'waiting_for_prior_asset_obligations', ...paused };
+      }
+      throw error;
+    }
     return { status: 'cap_opened', ...paused };
   }
   return missing ? { status: 'cap_created', ...missing } : { status: 'idle' };
@@ -258,71 +317,124 @@ async function beforeBroadcast(env, intent, fetchImpl) {
   });
 }
 
-async function broadcastOne(env, fetchImpl) {
-  let intent = await env.DB.prepare(
-    "SELECT * FROM tag_run_v2_payout_intents WHERE status='broadcast_unknown' " +
-    'AND submission_tx_id IS NOT NULL AND signed_transaction_json IS NOT NULL ' +
-    'ORDER BY updated_at LIMIT 1'
+async function broadcastOne(env, fetchImpl, nowMs) {
+  const outcomes = [];
+  const retry = await env.DB.prepare(
+    "SELECT i.* FROM tag_run_v2_payout_intents i " +
+    "JOIN tag_run_v2_assets a ON a.asset_key=i.asset_key " +
+    "JOIN tag_run_v2_payout_caps c ON c.chat_id=i.chat_id " +
+    "AND c.day_key=i.day_key AND c.asset_key=i.asset_key " +
+    "WHERE i.status='broadcast_unknown' AND i.submission_tx_id IS NOT NULL " +
+    "AND i.signed_transaction_json IS NOT NULL AND a.eligibility='approved' " +
+    "AND c.paused=0 AND i.updated_at<=datetime('now','-4 minutes') " +
+    'ORDER BY i.updated_at,i.intent_key LIMIT 1'
   ).first();
-  if (intent) {
-    const prepared = await loadPreparedAutomaticPayout(env, {
-      intentKey: intent.intent_key
+  if (retry) {
+    if (preparedTransactionExpired(retry.signed_transaction_json, nowMs)) {
+      await moveToReconciliationOnly(env, retry);
+      outcomes.push({
+        status: 'expired_reconciliation_only', intentKey: retry.intent_key
+      });
+    } else {
+      const prepared = await loadPreparedAutomaticPayout(env, {
+        intentKey: retry.intent_key
+      });
+      try {
+        await broadcastPreparedTransaction({
+          transactionId: prepared.submissionTxId,
+          signedTransactionJson: prepared.signedTransactionJson,
+          beforeBroadcast: () => beforeBroadcast(env, retry, fetchImpl),
+          fetchImpl
+        });
+        await env.DB.prepare(
+          "UPDATE tag_run_v2_payout_intents SET updated_at=CURRENT_TIMESTAMP " +
+          "WHERE intent_key=? AND status='broadcast_unknown'"
+        ).bind(retry.intent_key).run();
+        outcomes.push({
+          status: 'same_transaction_rebroadcast', intentKey: retry.intent_key
+        });
+      } catch (error) {
+        const reason = String(error?.message || '');
+        if (!reason.includes('broadcast_unconfirmed') &&
+            !reason.includes('wax_rpc_unavailable')) {
+          await moveToReconciliationOnly(env, retry);
+        } else {
+          await env.DB.prepare(
+            "UPDATE tag_run_v2_payout_intents SET updated_at=CURRENT_TIMESTAMP " +
+            "WHERE intent_key=? AND status='broadcast_unknown'"
+          ).bind(retry.intent_key).run();
+        }
+        outcomes.push({
+          status: 'retry_unconfirmed', intentKey: retry.intent_key,
+          reason: safeFailureReason(error)
+        });
+      }
+    }
+  }
+
+  const intent = await env.DB.prepare(
+    "SELECT i.* FROM tag_run_v2_payout_intents i " +
+    "JOIN tag_run_v2_assets a ON a.asset_key=i.asset_key " +
+    "JOIN tag_run_v2_payout_caps c ON c.chat_id=i.chat_id " +
+    "AND c.day_key=i.day_key AND c.asset_key=i.asset_key " +
+    "WHERE i.status='reserved' AND a.eligibility='approved' AND c.paused=0 " +
+    'ORDER BY i.updated_at,i.intent_key LIMIT 1'
+  ).first();
+  if (!intent) {
+    return outcomes.length
+      ? { status: 'queue_serviced', outcomes }
+      : { status: 'idle' };
+  }
+  try {
+    const pin = await pinForAsset(env, intent.asset_key);
+    await verifyPinned(env, {
+      assetKey: pin.asset_key, contract: pin.token_contract,
+      symbol: pin.token_symbol, precision: pin.token_precision,
+      expectedCodeHash: pin.approved_code_hash,
+      expectedAbiHash: pin.approved_abi_hash, fetchImpl
+    });
+    const request = buildReviewedWaxTransfer(intent, { permission: 'active' });
+    const prepared = await prepareActiveKeyTransaction({
+      request, privateKey: env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY, fetchImpl
+    });
+    await stagePreparedAutomaticPayout(env, {
+      intentKey: intent.intent_key,
+      transactionId: prepared.transactionId,
+      signedTransactionJson: prepared.signedTransactionJson,
+      verifyPinnedContract: async options => verifyPinned(env, {
+        ...options, assetKey: intent.asset_key, fetchImpl
+      }),
+      fetchImpl
     });
     try {
       await broadcastPreparedTransaction({
-        transactionId: prepared.submissionTxId,
-        signedTransactionJson: prepared.signedTransactionJson,
+        ...prepared,
         beforeBroadcast: () => beforeBroadcast(env, intent, fetchImpl),
         fetchImpl
       });
     } catch (_) {
-      // Submission may already have succeeded. Never create a new transaction;
-      // irreversible reconciliation below owns the result.
+      // Frozen transaction remains available for same-ID retry/reconciliation.
     }
-    return { status: 'broadcast_unknown', intentKey: intent.intent_key };
-  }
-  intent = await env.DB.prepare(
-    "SELECT * FROM tag_run_v2_payout_intents WHERE status='reserved' " +
-    'ORDER BY created_at LIMIT 1'
-  ).first();
-  if (!intent) return { status: 'idle' };
-  const pin = await pinForAsset(env, intent.asset_key);
-  await verifyPinned(env, {
-    assetKey: pin.asset_key, contract: pin.token_contract,
-    symbol: pin.token_symbol, precision: pin.token_precision,
-    expectedCodeHash: pin.approved_code_hash,
-    expectedAbiHash: pin.approved_abi_hash, fetchImpl
-  });
-  const request = buildReviewedWaxTransfer(intent, { permission: 'active' });
-  const prepared = await prepareActiveKeyTransaction({
-    request, privateKey: env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY, fetchImpl
-  });
-  await stagePreparedAutomaticPayout(env, {
-    intentKey: intent.intent_key,
-    transactionId: prepared.transactionId,
-    signedTransactionJson: prepared.signedTransactionJson,
-    verifyPinnedContract: async options => verifyPinned(env, {
-      ...options, assetKey: intent.asset_key, fetchImpl
-    }),
-    fetchImpl
-  });
-  try {
-    await broadcastPreparedTransaction({
-      ...prepared,
-      beforeBroadcast: () => beforeBroadcast(env, intent, fetchImpl),
-      fetchImpl
+    outcomes.push({
+      status: 'broadcast_unknown', intentKey: intent.intent_key
     });
-  } catch (_) {
-    // Frozen transaction remains available for same-ID retry/reconciliation.
+  } catch (error) {
+    await env.DB.prepare(
+      "UPDATE tag_run_v2_payout_intents SET updated_at=CURRENT_TIMESTAMP " +
+      "WHERE intent_key=? AND status='reserved'"
+    ).bind(intent.intent_key).run();
+    throw error;
   }
-  return { status: 'broadcast_unknown', intentKey: intent.intent_key };
+  return { status: 'queue_serviced', outcomes };
 }
 
 async function reconcileOne(env, fetchImpl) {
   const intent = await env.DB.prepare(
     "SELECT intent_key,submission_tx_id FROM tag_run_v2_payout_intents " +
     "WHERE status IN ('broadcast_unknown','reconciliation_review') " +
-    'AND submission_tx_id IS NOT NULL ORDER BY updated_at LIMIT 1'
+    "AND submission_tx_id IS NOT NULL " +
+    "AND updated_at<=datetime('now','-4 minutes') " +
+    'ORDER BY updated_at,intent_key LIMIT 1'
   ).first();
   if (!intent) return { status: 'idle' };
   let proof;
@@ -331,6 +443,13 @@ async function reconcileOne(env, fetchImpl) {
       transactionId: intent.submission_tx_id, fetchImpl
     });
   } catch (_) {
+    const rotated = await env.DB.prepare(
+      "UPDATE tag_run_v2_payout_intents SET updated_at=CURRENT_TIMESTAMP " +
+      "WHERE intent_key=? AND status IN ('broadcast_unknown','reconciliation_review')"
+    ).bind(intent.intent_key).run();
+    if (rotated?.success !== true || rotated.meta?.changes !== 1) {
+      fail('reconciliation_retry_conflict');
+    }
     return { status: 'waiting_for_irreversible_confirmation',
       intentKey: intent.intent_key };
   }
@@ -375,21 +494,33 @@ export async function runAutomaticCommunityPot(env, {
 } = {}) {
   assertMode(env);
   const result = { mode: 'automatic', dailyStart, steps: [] };
-  const targetDay = previousDay(nowMs);
-  const existingDaily = await env.DB.prepare(
-    'SELECT 1 AS present FROM tag_run_v2_draw_workflows WHERE chat_id=? AND day_key=?'
-  ).bind(String(env.TELEGRAM_GROUP_CHAT_ID), targetDay).first();
-  // A transient midnight RPC/D1 failure must not skip the day forever. The
-  // five-minute tick retries the same deterministic snapshot/commit until its
-  // persisted workflow exists; once present this path becomes a single read.
-  if (dailyStart || !existingDaily) {
-    result.steps.push(await startDaily(env, { nowMs, fetchImpl, cryptoImpl }));
-  }
-  result.steps.push(await advanceDraw(env, { nowMs, fetchImpl }));
-  result.steps.push(await reconcileOne(env, fetchImpl));
-  result.steps.push(await closeFinishedCap(env));
-  result.steps.push(await createOrOpenCap(env));
-  result.steps.push(await reserveOne(env));
-  result.steps.push(await broadcastOne(env, fetchImpl));
+
+  // Existing submissions and caps are serviced before attempting any new-day
+  // work. Every stage is isolated: an empty day, unavailable beacon, blocked
+  // cap or quarantined asset cannot freeze unrelated liabilities or assets.
+  await runIsolatedStep(result, 'reconcile', () =>
+    reconcileOne(env, fetchImpl));
+  await runIsolatedStep(result, 'close_finished_cap', () =>
+    closeFinishedCap(env));
+
+  await runIsolatedStep(result, 'daily_setup', async () => {
+    const targetDay = previousDay(nowMs);
+    const existingDaily = await env.DB.prepare(
+      'SELECT 1 AS present FROM tag_run_v2_draw_workflows ' +
+      'WHERE chat_id=? AND day_key=?'
+    ).bind(String(env.TELEGRAM_GROUP_CHAT_ID), targetDay).first();
+    // A transient midnight RPC/D1 failure must not skip the day forever.
+    if (dailyStart || !existingDaily) {
+      return startDaily(env, { nowMs, fetchImpl, cryptoImpl });
+    }
+    return { status: 'already_started', day: targetDay };
+  });
+  await runIsolatedStep(result, 'advance_draw', () =>
+    advanceDraw(env, { nowMs, fetchImpl }));
+  await runIsolatedStep(result, 'create_or_open_cap', () =>
+    createOrOpenCap(env));
+  await runIsolatedStep(result, 'reserve', () => reserveOne(env));
+  await runIsolatedStep(result, 'broadcast', () =>
+    broadcastOne(env, fetchImpl, nowMs));
   return Object.freeze(result);
 }
