@@ -23,7 +23,8 @@ const V1 = read('workers/moonboys-api/migrations/103_tag_run_street_cred_rewards
 const V2 = read('workers/moonboys-api/migrations/104_tag_run_v2_community_token_pot.sql');
 const V3 = read('workers/moonboys-api/migrations/105_tag_run_v2_payout_execution.sql');
 const V4 = read('workers/moonboys-api/migrations/106_tag_run_v2_one_percent_policy.sql');
-const V5 = read('workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql');
+const V5 = read('workers/moonboys-api/migrations/107_tag_run_v2_persisted_draws.sql');
+const V6 = read('workers/moonboys-api/migrations/110_tag_run_admin_member_blocks.sql');
 const GROUP = '-1001234567890';
 const ASSET = (contract='kingsofgraff',symbol='LFGK',precision=4) => ({
   contract,symbol,precision,key:assetKey(contract,symbol,precision),
@@ -231,6 +232,7 @@ function fixture(t){
   sqlite.exec(V3);
   sqlite.exec(V4);
   sqlite.exec(V5);
+  sqlite.exec(V6);
   const DB={prepare(query){return {
     bind(...args){return {
       async all(){return {success:true,results:sqlite.prepare(query).all(...args)};},
