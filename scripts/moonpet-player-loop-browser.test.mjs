@@ -754,6 +754,13 @@ try {
     assert.ok(artRequests >= 2, 'Refresh recovers a previously rejected art registry without reloading the game');
     await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
     for (const action of ['feed', 'play']) {
+      // The previous iteration may still display its unconfirmed-response
+      // warning while a recovery render is settling. Prove the new round
+      // starts from the *confirmed* refreshed UI, not an old warning/lock.
+      await page.waitForFunction(() =>
+        document.querySelector('#terminal-output')?.textContent.includes('LIVE SAVE REFRESHED.') &&
+        document.querySelector('[data-panel="care"] [data-action="train"]')?.disabled === false
+      );
       await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
       // Capture pre-action XP before the simulated response loss. An accepted
       // receipt can finish synchronising its instance XP while the next state
@@ -781,7 +788,14 @@ try {
       assert.ok(Number.isSafeInteger(faultResult.pet_xp_awarded) && faultResult.pet_xp_awarded > 0,
         'this accepted care action has a concrete XP award');
       const expectedXP = beforeXP + faultResult.pet_xp_awarded;
-      await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
+      // A lost network response is not enough: the browser must first
+      // process it and render a fresh fail-closed lock. Waiting for just the
+      // warning text could match the previous feed iteration while play is
+      // still finishing, making the following train probe race the lock.
+      await page.waitForFunction(() =>
+        document.querySelector('#terminal-output')?.textContent.includes('ACTION RESPONSE UNCONFIRMED') &&
+        document.querySelector('[data-panel="care"] [data-action="train"]')?.disabled === true
+      );
       // Preserve the accepted receipt count. Do not use a second post-action
       // state read as the expected XP: it may observe a partially reconciled
       // snapshot and mistakenly fail on the legitimate award (+20 for play).
