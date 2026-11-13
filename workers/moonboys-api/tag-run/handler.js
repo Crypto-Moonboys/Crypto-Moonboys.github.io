@@ -114,7 +114,7 @@ async function periodTop(db, chatId, startDay, endDay) {
     'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
     'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
     'WHERE m.chat_id=? AND m.day_key>=? AND m.day_key<=? ' +
-    'GROUP BY m.telegram_id ORDER BY score DESC, posts DESC, m.telegram_id ASC LIMIT 10'
+    'GROUP BY m.telegram_id ORDER BY score DESC, length(m.telegram_id) ASC, m.telegram_id ASC LIMIT 10'
   ).bind(chatId, startDay, endDay).all();
   return rows.results || [];
 }
@@ -126,7 +126,7 @@ async function weeklyTop(db, chatId, weekKey) {
     'FROM tag_run_messages m LEFT JOIN tag_run_member_totals t ' +
     'ON t.chat_id=m.chat_id AND t.telegram_id=m.telegram_id ' +
     'WHERE m.chat_id=? AND m.week_key=? ' +
-    'GROUP BY m.telegram_id ORDER BY score DESC, posts DESC, m.telegram_id ASC LIMIT 10'
+    'GROUP BY m.telegram_id ORDER BY score DESC, length(m.telegram_id) ASC, m.telegram_id ASC LIMIT 10'
   ).bind(chatId, weekKey).all();
   return rows.results || [];
 }
@@ -168,7 +168,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
 async function allTimeTop(db, chatId) {
   const rows = await db.prepare(
     'SELECT telegram_id,display_name,score,posts FROM tag_run_member_totals ' +
-    'WHERE chat_id=? ORDER BY score DESC,posts DESC,telegram_id ASC LIMIT 10'
+    'WHERE chat_id=? ORDER BY score DESC,telegram_id ASC LIMIT 10'
   ).bind(chatId).all();
   return rows.results || [];
 }
@@ -1038,7 +1038,7 @@ export async function draftTagRunWeeklyRewards(env, options = {}) {
     ' GROUP BY m.telegram_id',
     '), ranked AS (',
     ' SELECT telegram_id,score,posts,ROW_NUMBER() OVER',
-    ' (ORDER BY score DESC, posts DESC, telegram_id ASC) AS position',
+    ' (ORDER BY score DESC, length(telegram_id) ASC, telegram_id ASC) AS position',
     ' FROM scores',
     '), census AS (',
     ' SELECT COUNT(*) AS recipient_count,',
