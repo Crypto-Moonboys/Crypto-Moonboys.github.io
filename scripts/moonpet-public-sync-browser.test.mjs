@@ -91,7 +91,15 @@ try {
     assert.ok(!(await page.locator('[data-crypto-pets-missions]').textContent()).includes('No pet missions available'), 'mission outage must not look like an empty checklist');
     personalOffline=false;
     await page.locator('[data-crypto-pets-missions] [data-crypto-pets-personal-retry]').click();
-    await page.waitForFunction(()=>document.querySelector('[data-crypto-pets-missions]')?.textContent.includes('Feed your Moonpet'));
+    // Failed refreshes intentionally retain the last successful checklist.
+    // Checking only the text races the in-flight retry: stale text already
+    // satisfies the assertion before the warning is removed and the pending
+    // refresh settles, so the next focus event can be ignored.
+    await page.waitForFunction(() => {
+      const missions = document.querySelector('[data-crypto-pets-missions]');
+      return missions?.textContent.includes('Feed your Moonpet') &&
+        !missions.querySelector('.pets-personal-sync-warning');
+    });
     personalOffline=true;
     await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
     await page.waitForSelector('[data-crypto-pets-missions] .pets-personal-sync-warning');
