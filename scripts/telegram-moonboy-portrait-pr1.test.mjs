@@ -5,6 +5,7 @@ import { webcrypto } from 'node:crypto';
 import {
   PORTRAIT_LAYER_ORDER, PORTRAIT_MAX_BYTES, PORTRAIT_SIZE,
   PORTRAIT_ASSET_ORIGIN, PORTRAIT_MANIFEST_URL,
+  TELEGRAM_FEMALE_ONLY_TRAITS,
   chooseTelegramMoonboyTraits, loadHomepageMoonboyManifest,
   composeTelegramMoonboy
 } from '../workers/moonboys-api/telegram/moonboy-portrait.js';
@@ -94,6 +95,74 @@ test('stable seed picks exactly one static, real builder image in original z-ord
   const other = await chooseTelegramMoonboyTraits(original,
     'bulletin:-1001234567890:2026-11-10:20', webcrypto);
   assert.notDeepEqual(first.layers.map(l => l.id), other.layers.map(l => l.id));
+});
+
+test('supplied 67 female-only asset IDs resolve in the homepage manifest', () => {
+  const counts = { clothes: 18, face: 12, hat: 32, 'left-arm': 1, 'right-arm': 4 };
+  assert.deepEqual(Object.fromEntries(Object.entries(TELEGRAM_FEMALE_ONLY_TRAITS)
+    .map(([category, ids]) => [category, ids.length])), counts);
+  for (const [category, ids] of Object.entries(TELEGRAM_FEMALE_ONLY_TRAITS)) {
+    for (const id of ids) {
+      const trait = original.traits.find(trait => trait.id === id);
+      assert.ok(trait, id + ' must exist in homepage catalogue');
+      assert.equal(trait.category, category);
+      assert.equal(trait.kind === 'animated', false);
+    }
+  }
+});
+
+test('gender choice is deterministic, roughly 50/50, and independent of trait counts', async () => {
+  const genderCounts = { male: 0, female: 0 };
+  for (let n = 0; n < 400; n++) {
+    const currentSeed = 'tag-command:100:2026-11-13:' + n;
+    const plan = await chooseTelegramMoonboyTraits(original, currentSeed, webcrypto);
+    assert.ok(Object.isFrozen(plan.layers));
+    assert.ok(['male', 'female'].includes(plan.avatarType));
+    genderCounts[plan.avatarType]++;
+    if (n < 8) {
+      const repeated = await chooseTelegramMoonboyTraits(original, currentSeed, webcrypto);
+      assert.deepEqual(repeated, plan);
+    }
+  }
+  assert.ok(genderCounts.female >= 160 && genderCounts.female <= 240,
+    'hash partition should remain balanced regardless of catalogue sizes');
+});
+
+test('female-only faces and hats never mix, and male PFPs exclude female-only variants', async () => {
+  const femaleIds = Object.fromEntries(Object.entries(TELEGRAM_FEMALE_ONLY_TRAITS)
+    .map(([category, ids]) => [category, new Set(ids)]));
+  let seenMale = false;
+  let seenFemale = false;
+  for (let n = 0; n < 150; n++) {
+    const plan = await chooseTelegramMoonboyTraits(original, 'group:42:pfp:' + n, webcrypto);
+    const selected = Object.fromEntries(plan.layers.map(layer => [layer.category, layer.id]));
+    if (plan.avatarType === 'female') {
+      seenFemale = true;
+      assert.ok(femaleIds.face.has(selected.face), 'female face must be in supplied female pool');
+      assert.ok(femaleIds.hat.has(selected.hat), 'female hat must be in supplied female pool');
+    } else {
+      seenMale = true;
+      for (const [category, ids] of Object.entries(femaleIds)) {
+        assert.equal(ids.has(selected[category]), false, category + ' leaked female-only trait');
+      }
+    }
+  }
+  assert.ok(seenMale && seenFemale);
+});
+
+test('missing female face/hat pools fail closed, never silently use male versions', async () => {
+  const changed = clone();
+  const femaleFaces = new Set(TELEGRAM_FEMALE_ONLY_TRAITS.face);
+  changed.traits = changed.traits.filter(trait => !femaleFaces.has(trait.id));
+  let femaleSeed;
+  for (let n = 0; n < 20; n++) {
+    const candidate = 'missing:faces:' + n;
+    const plan = await chooseTelegramMoonboyTraits(original, candidate, webcrypto);
+    if (plan.avatarType === 'female') { femaleSeed = candidate; break; }
+  }
+  assert.ok(femaleSeed);
+  await assert.rejects(chooseTelegramMoonboyTraits(changed, femaleSeed, webcrypto),
+    /telegram_moonboy_missing_female_category_face/);
 });
 
 test('random selection never uses browser-canvas animated backgrounds', async () => {
