@@ -242,8 +242,18 @@ async function createOrOpenCap(env) {
   const paused = await env.DB.prepare(
     'SELECT c.day_key,c.asset_key FROM tag_run_v2_payout_caps c ' +
     'JOIN tag_run_v2_draws d ON d.chat_id=c.chat_id AND d.day_key=c.day_key ' +
+    'JOIN tag_run_v2_snapshots s ON s.chat_id=c.chat_id ' +
+    'AND s.day_key=c.day_key AND s.asset_key=c.asset_key ' +
+    'JOIN tag_run_v2_assets a ON a.asset_key=c.asset_key ' +
     "WHERE c.chat_id=? AND c.paused=1 AND c.committed_units='0' " +
-    "AND d.status='reviewed' AND NOT EXISTS (" +
+    "AND d.status='reviewed' AND s.status='verified' " +
+    "AND s.reward_policy_bps=100 AND s.snapshot_digest=c.snapshot_digest " +
+    "AND a.eligibility='approved' AND length(a.approved_code_hash)=64 " +
+    "AND length(a.approved_abi_hash)=64 AND EXISTS (" +
+    "SELECT 1 FROM tag_run_v2_pool_config p WHERE p.config_id=1 " +
+    "AND p.status='review_only' AND p.wallet_account='isthatajoint' " +
+    "AND p.active_daily_bps=100 AND p.active_policy_version=2) " +
+    "AND NOT EXISTS (" +
     "SELECT 1 FROM tag_run_v2_payout_caps other " +
     "WHERE other.asset_key=c.asset_key " +
     "AND (other.chat_id!=c.chat_id OR other.day_key!=c.day_key) " +
