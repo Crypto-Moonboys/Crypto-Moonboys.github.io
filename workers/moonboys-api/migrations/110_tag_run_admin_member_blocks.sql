@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS tag_run_member_blocks (
   PRIMARY KEY(chat_id,telegram_id)
 ) WITHOUT ROWID;
 
-CREATE INDEX IF NOT EXISTS telegram_users_username_nocase
-  ON telegram_users(username COLLATE NOCASE);
 CREATE INDEX IF NOT EXISTS tag_run_member_blocks_username
   ON tag_run_member_blocks(chat_id,username COLLATE NOCASE);
 CREATE INDEX IF NOT EXISTS tag_run_member_blocks_active
