@@ -171,13 +171,8 @@ async function startDaily(env, { nowMs, fetchImpl, cryptoImpl }) {
   });
 }
 
-async function advanceDraw(env, { nowMs, fetchImpl }) {
+async function advanceOneDraw(env, row, { nowMs, fetchImpl }) {
   const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
-  const row = await env.DB.prepare(
-    "SELECT * FROM tag_run_v2_draw_workflows WHERE chat_id=? " +
-    "AND state IN ('committed','revealed') ORDER BY day_key LIMIT 1"
-  ).bind(chatId).first();
-  if (!row) return { status: 'idle' };
   if (row.state === 'committed') {
     const seed = await dailySeed(env, row.day_key);
     try {
@@ -190,7 +185,9 @@ async function advanceDraw(env, { nowMs, fetchImpl }) {
     } catch (error) {
       if (String(error?.message || '').includes('entropy_unavailable') ||
           String(error?.message || '').includes('beacon_not_irreversible')) {
-        return { status: 'waiting_for_irreversible_beacon', day: row.day_key };
+        return {
+          status: 'waiting_for_irreversible_beacon', day: row.day_key
+        };
       }
       throw error;
     }
@@ -207,6 +204,45 @@ async function advanceDraw(env, { nowMs, fetchImpl }) {
     });
   }
   return { status: 'reviewed', day: row.day_key };
+}
+
+async function advanceDraw(env, { nowMs, fetchImpl }) {
+  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const queue = await rows(env.DB,
+    "SELECT day_key,state FROM tag_run_v2_draw_workflows WHERE chat_id=? " +
+    "AND state IN ('committed','revealed') ORDER BY day_key LIMIT 366",
+    chatId);
+  if (!queue.length) return { status: 'idle' };
+
+  const blocked = [];
+  for (const row of queue) {
+    try {
+      const outcome = await advanceOneDraw(env, row, { nowMs, fetchImpl });
+      if (outcome.status === 'reviewed') {
+        return {
+          ...outcome,
+          skippedBlockedDraws: blocked.length
+        };
+      }
+      blocked.push({
+        day: row.day_key,
+        status: outcome.status
+      });
+    } catch (error) {
+      // Never weaken the immutable draw or its funding checks. Record this
+      // candidate as blocked for the current tick and try a later day.
+      blocked.push({
+        day: row.day_key,
+        status: 'blocked',
+        reason: safeFailureReason(error)
+      });
+    }
+  }
+  return {
+    status: 'draw_queue_waiting',
+    blockedCount: blocked.length,
+    blocked: blocked.slice(0, 20)
+  };
 }
 
 async function createOrOpenCap(env) {
