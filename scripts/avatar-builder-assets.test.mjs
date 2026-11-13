@@ -88,7 +88,7 @@ async function verifyDimensions(files, expectedSize, label) {
 await verifyDimensions(layerFiles, 1000, 'Layer');
 await verifyDimensions(thumbnailFiles, 240, 'Thumbnail');
 
-for (const relativePath of ['avatar-builder-test.html', 'css/avatar-builder-test.css', 'js/avatar-builder-test.js', 'js/avatar-builder-core.mjs']) {
+for (const relativePath of ['moonboy-builder.html', 'avatar-builder-test.html', 'css/avatar-builder-test.css', 'js/avatar-builder-test.js', 'js/avatar-builder-core.mjs']) {
   const content = await readFile(path.join(ROOT, relativePath), 'utf8');
   assert(!content.includes('CRYPTO-MOONBOYS-OG-TRAITS'), `Live file references source assets: ${relativePath}`);
 }
