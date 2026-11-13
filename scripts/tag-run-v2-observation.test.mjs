@@ -411,9 +411,11 @@ test('pilot fail-closed when pool config is no longer paused',async t=>{
   assert.equal(count(f,'tag_run_v2_capture_cursors'),0);
 });
 
-test('all production observation paths are free of WAX transfers and token settlement',()=>{
+test('legacy observation module is free of WAX transfers and token settlement',()=>{
   const wrangler=read('workers/moonboys-api/wrangler.toml');
-  assert.match(wrangler,/TAG_RUN_V2_OBSERVATION_ENABLED = "true"/);
+  // Production observation is off; the isolated paused fixture exercises the
+  // pilot safety gate separately from the live Worker configuration.
+  assert.match(wrangler,/TAG_RUN_V2_OBSERVATION_ENABLED = "false"/);
   const source=read('workers/moonboys-api/tag-run/v2-pilot.js');
   assert.doesNotMatch(source,/push_transaction|signTransaction|signing_key|private_key|transfer\(/i);
   assert.match(source,/tag_run_v2_assets/);
