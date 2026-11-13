@@ -438,12 +438,17 @@ async function reconcileOne(env, fetchImpl) {
     'updated_at,intent_key LIMIT 1'
   ).first();
   if (!intent) return { status: 'idle' };
-  let proof;
   try {
-    proof = await discoverAndVerifyIrreversibleWaxPayout({
+    const proof = await discoverAndVerifyIrreversibleWaxPayout({
       transactionId: intent.submission_tx_id, fetchImpl
     });
-  } catch (_) {
+    await markIrreversiblyConfirmed(env, {
+      intentKey: intent.intent_key,
+      transactionId: intent.submission_tx_id,
+      verifyIrreversibleAction: async () => proof
+    });
+    return { status: 'confirmed', intentKey: intent.intent_key };
+  } catch (error) {
     const rotated = await env.DB.prepare(
       "UPDATE tag_run_v2_payout_intents " +
       "SET reconcile_after=datetime('now','+4 minutes') " +
@@ -453,15 +458,12 @@ async function reconcileOne(env, fetchImpl) {
     if (rotated?.success !== true || rotated.meta?.changes !== 1) {
       fail('reconciliation_retry_conflict');
     }
-    return { status: 'waiting_for_irreversible_confirmation',
-      intentKey: intent.intent_key };
+    return {
+      status: 'waiting_for_irreversible_confirmation',
+      intentKey: intent.intent_key,
+      reason: safeFailureReason(error)
+    };
   }
-  await markIrreversiblyConfirmed(env, {
-    intentKey: intent.intent_key,
-    transactionId: intent.submission_tx_id,
-    verifyIrreversibleAction: async () => proof
-  });
-  return { status: 'confirmed', intentKey: intent.intent_key };
 }
 
 async function closeFinishedCap(env) {
