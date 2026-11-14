@@ -92,7 +92,13 @@ try {
           unloadedPlayers: [...document.querySelectorAll('iframe[data-src]')].length === 6 &&
             [...document.querySelectorAll('iframe[data-src]')].every(f => f.hidden && !f.hasAttribute('src')),
           nativeMp4Unloaded: document.querySelector('video.history-video[hidden] source[data-src]') !== null &&
-            document.querySelector('video.history-video source').getAttribute('src') === null,
+            document.querySelector('video.history-video source').getAttribute('src') === null &&
+            getComputedStyle(document.querySelector('video.history-video')).display === 'none',
+          videoPlaceholderVisible: (() => {
+            const placeholder = document.querySelector('.history-video-wrap button[data-video-activate]');
+            return placeholder && getComputedStyle(placeholder).display !== 'none' &&
+              placeholder.getBoundingClientRect().width > 0;
+          })(),
           builderFollowsMissionText: duplicate.nextElementSibling === gallery && gallery.nextElementSibling === builder,
           galleryLoop: gallerySets.length === 2 && gallerySets[1].getAttribute('aria-hidden') === 'true' &&
             gallerySets.every(set => set.querySelectorAll('img').length === 9) &&
@@ -120,7 +126,7 @@ try {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
         secondaryHeading: text(homepageContract.top_secondary_heading_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'directHomepage', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight', 'videoUnloaded', 'unloadedPlayers', 'nativeMp4Unloaded']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'directHomepage', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight', 'videoUnloaded', 'unloadedPlayers', 'nativeMp4Unloaded', 'videoPlaceholderVisible']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
