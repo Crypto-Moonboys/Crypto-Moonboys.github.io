@@ -7,6 +7,7 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
+import { handleTelegramConnectivity } from './telegram-connectivity.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
 import { phase5CronTasks } from './scheduled/phase5-cron-plan.js';
@@ -378,6 +379,9 @@ export default {
       } });
     }
     const isTelegramWebhook = path === '/telegram/webhook' && request.method === 'POST';
+    // Fixed public connectivity check; no secrets, D1 or Telegram auth used.
+    const connectivityResponse = await handleTelegramConnectivity(request);
+    if (connectivityResponse) return connectivityResponse;
     const groupMembershipResponse = await handleTelegramGroupMembership(request, env);
     if (groupMembershipResponse) return groupMembershipResponse;
     // This wrapper reads gear and repairs rewards around the base handler.
