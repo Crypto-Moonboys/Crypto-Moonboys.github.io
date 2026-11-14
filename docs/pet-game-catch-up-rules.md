@@ -1,3 +1,5 @@
+> **Historical / superseded permanent-evolution guidance (14 November 2026):** This document preserves historical / proposed season 1 catch-up design and 90-day pacing references. Its references to 90-day permanent completion, 60 Growth Marks, 10 Weekly Crests and days 78–90 Legendary are **not current permanent Moonpet progression requirements**. The live evolution configuration `workers/moonboys-api/pets/content/evolutions.json` requires **365 minimum ownership days, 240 distinct-day Growth Marks and 44 distinct-week Crests** for Legendary, plus level, bosses, relics and materials. Quarterly competition periods and archived historical results remain separate and valid. Read [the current 365-day audit](moonpet-365day-care-neglect-audit-2026-11-14.md) and [Moonpet Source of Truth](moonpet-source-of-truth.md) before designing care penalties.
+
 # Moonpet Catch-up and Anti-runaway Rules
 
 **Status: FUTURE.** This is the approved design boundary for later implementation. It does not add Rested XP, pace bonuses, recovery gameplay, or new reward calculations today.
