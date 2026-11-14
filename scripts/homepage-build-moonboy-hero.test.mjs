@@ -65,7 +65,7 @@ const homeWidgets = fs.readFileSync(homeWidgetsPath, 'utf8');
 const legacyEntry = fs.readFileSync(legacyEntryPath, 'utf8');
 const myMoonboy = fs.readFileSync(myMoonboyPath, 'utf8');
 
-const galleryStart = myMoonboy.indexOf('<section id="bad-days-artwork" class="mm-bad-days-gallery"');
+const badDaysGalleryStart = myMoonboy.indexOf('<section id="bad-days-artwork" class="mm-bad-days-gallery"');
 const heroPositions = heroImages.map(({ publicPath }) => myMoonboy.indexOf('src="' + publicPath + '"'));
 const builderStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhomepage-avatar-builder\b)[^>]*>/);
 const introStart = html.search(/<section\b(?=[^>]*\bid="how-it-works")[^>]*>/);
@@ -78,13 +78,13 @@ check(
   html.includes('<h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>\n      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>\n      <h2 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h2>'),
   'Homepage opening copy preserves the approved headline, pulse, headline order'
 );
-check(heroPositions.every(position => position > galleryStart), 'Five Bad Days images are present at the bottom of My Moonboy');
+check(heroPositions.every(position => position > badDaysGalleryStart), 'Five Bad Days images are present at the bottom of My Moonboy');
 check(heroImages.every(({ repoPath }) => fs.existsSync(repoPath)), 'All five Bad Days artwork files exist');
 check(heroImages.every(({ publicPath }) => !html.includes(publicPath) && !legacyEntry.includes(publicPath)),
   'Bad Days images have been removed from the homepage and retired splash route');
 check(heroPositions.every((position, i) => i === 0 || position > heroPositions[i - 1]),
   'Five panels remain in the approved V1 through V5 order');
-check(galleryStart > myMoonboy.indexOf('id="mm-economy"') && galleryStart < myMoonboy.lastIndexOf('</main>'),
+check(badDaysGalleryStart > myMoonboy.indexOf('id="mm-economy"') && badDaysGalleryStart < myMoonboy.lastIndexOf('</main>'),
   'Full artwork follows My Moonboy mission and economy content');
 check(/\.mm-bad-days-gallery img\s*\{[^}]*display:block;[^}]*width:100%;[^}]*height:auto/.test(myMoonboy) &&
   myMoonboy.includes('width:calc(100% + 2 * var(--shell-gutter))'),
