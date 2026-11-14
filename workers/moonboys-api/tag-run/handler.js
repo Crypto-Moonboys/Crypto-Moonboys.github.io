@@ -12,7 +12,7 @@ import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../te
 
 const TAG_COMMANDS = new Set([
   'mytagrun', 'profile', 'tagprofile', 'top', 'tagdaily', 'tagweekly', 'tagmonthly', 'tagseason',
-  'rewards', 'ranks', 'help', 'taghelp', 'tipbot', 'rain', 'rainstatus',
+  'rewards', 'rank', 'ranks', 'help', 'taghelp', 'tipbot', 'rain', 'rainstatus',
   'block', 'unblock',
   'tagtoken', 'tagamount', 'tagbonus', 'tagstatus', 'tagplan', 'tagalerts', 'tagenable', 'tagdisable',
   ...V2_COMMANDS
@@ -77,7 +77,7 @@ async function messageReply(env, chatId, message, fetchImpl = fetch, useGroupTop
   }
   const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload), signal: AbortSignal.timeout(8000)
   });
   return response.ok;
 }
@@ -227,7 +227,7 @@ function helpMessage() {
     'messages daily (45-second cooldown). +2 for replying to another member. ' +
     '+5 for the first eligible message after an active previous day.\n' +
     '/profile — existing bot profile plus TAG RUN stats\n' +
-    '/tagprofile — TAG RUN points, rank and streak only\n' +
+    '/rank or /tagprofile — TAG RUN points, rank and streak only\n' +
     '/mytagrun — private daily mission and personal reward dashboard\n' +
     '/top — weekly leaderboard; use /top daily, monthly, season or all\n' +
     '/tagdaily /tagweekly /tagmonthly /tagseason — direct leaderboard shortcuts\n' +
@@ -475,13 +475,13 @@ export async function handleTagRunCommand(update, env, options = {}) {
   const { name, args } = parseTagCommand(message.text, env.TELEGRAM_BOT_USERNAME);
   const nowMs = options.nowMs ?? Date.now();
   const fetchImpl = options.fetchImpl || fetch;
-  let replySequence = 0;
-  const send = text => messageReply(env, message.chat.id, text, fetchImpl, false, {
-    chatKind: isPrivate ? 'private' : 'group',
-    messageKind: 'tag-command',
-    seed: moonboyTelegramMessageSeed('tag-command', message.chat.id,
-      message.message_id ?? 0, replySequence++)
-  });
+  let replyAttempted = false;
+  const send = text => {
+    replyAttempted = true;
+    // Interactive commands should not wait for layered image composition.
+    // Rank celebrations and scheduled bulletins keep their existing media.
+    return messageReply(env, message.chat.id, text, fetchImpl);
+  };
   const isAdmin = adminTelegramIds(env).has(telegramId);
   try {
     if (ADMIN_COMMANDS.has(name) && (!isAdmin || !isPrivate)) {
@@ -616,7 +616,7 @@ export async function handleTagRunCommand(update, env, options = {}) {
         '\nCurrent status: FUNDED PAYOUTS DISABLED.');
       return true;
     }
-    if (name === 'profile' || name === 'tagprofile') {
+    if (name === 'profile' || name === 'tagprofile' || name === 'rank') {
       const [total, weekly, streak, wallet] = await Promise.all([
         memberScore(env.DB, chatId, telegramId),
         weeklyScore(env.DB, chatId, telegramId, weekOf(nowMs)),
@@ -885,7 +885,11 @@ export async function handleTagRunCommand(update, env, options = {}) {
     return false;
   } catch (error) {
     console.warn('[TAG RUN] command failed', { command: name, reason: String(error?.message || error) });
-    try { await send('TAG RUN is temporarily unavailable; no token transfers were attempted.'); } catch (_) {}
+    // A thrown fetch can follow successful Telegram delivery. Do not turn it
+    // into a second post. A pre-send query failure can still return one error.
+    if (!replyAttempted) {
+      try { await send('TAG RUN is temporarily unavailable; no token transfers were attempted.'); } catch (_) {}
+    }
     return true;
   }
 }

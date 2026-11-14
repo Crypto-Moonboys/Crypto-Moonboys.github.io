@@ -214,31 +214,22 @@ test('real TAG RUN /taghelp replies remain text-only when feature OFF', async ()
   assert.match(JSON.parse(h.calls[0].init.body).text, /TAG RUN/);
 });
 
-test('real TAG RUN /taghelp replies get Moonboy JPEG only in private canary', async () => {
-  const h = harness();
-  const result = await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
-  assert.equal(result, true);
-  assert.equal(callsOf(h, '/sendPhoto').length, 1);
-  assert.equal(callsOf(h, '/sendMessage').length, 0);
-  assert.equal(callsOf(h, '/img/avatar-builder/layers/').length, 9);
-  assert.match(callsOf(h, '/sendPhoto')[0].init.body.get('caption'), /TAG RUN/);
-});
-
-test('post-photo transport exception cannot produce a second /taghelp reply', async () => {
-  const h = harness({ malformedPhotoAck: true });
-  const result = await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
-  assert.equal(result, true);
-  assert.equal(callsOf(h, '/sendPhoto').length, 1,
-    'Telegram may have accepted this photo already');
-  assert.equal(callsOf(h, '/sendMessage').length, 0,
-    'command handler must not emit its temporary-error text after upload');
-});
-
-test('private canary image composition failure preserves original text-only TAG RUN reply', async () => {
+test('interactive TAG RUN commands bypass image work even when media is enabled', async () => {
   const h = harness({ failManifest: true });
-  await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
-  assert.equal(callsOf(h, '/sendPhoto').length, 0);
+  assert.equal(await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl }), true);
+  assert.equal(h.calls.length, 1);
   assert.equal(callsOf(h, '/sendMessage').length, 1);
+  assert.equal(callsOf(h, '/sendPhoto').length, 0);
+  assert.ok(h.calls[0].init.signal instanceof AbortSignal);
+});
+
+test('uncertain text submission never produces a second error reply', async () => {
+  let attempts = 0;
+  await handleTagRunCommand(update(), enabled(), { fetchImpl: async () => {
+    attempts++;
+    throw new Error('ack lost after Telegram accepted the message');
+  } });
+  assert.equal(attempts, 1);
 });
 
 test('four-hour TAG RUN bulletin keeps text delivery OFF and topic routing when group media OFF', async () => {
@@ -361,7 +352,7 @@ test('approved Images binding and group release defaults are present', () => {
   const handler = readFileSync(new URL(
     '../workers/moonboys-api/tag-run/handler.js', import.meta.url), 'utf8');
   assert.match(handler, /sendControlledMoonboyTelegram/);
-  assert.match(handler, /messageKind: 'tag-command'/);
+  assert.match(handler, /Interactive commands should not wait/);
   assert.match(handler, /messageKind: 'tag-bulletin'/);
   assert.match(handler, /messageKind: 'tag-rank'/);
 });
