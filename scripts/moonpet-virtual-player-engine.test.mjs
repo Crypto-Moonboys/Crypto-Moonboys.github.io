@@ -283,3 +283,58 @@ test('shadow-only 8x neglect simulation consumes REAL seven-day accepted Worker 
     console.log('Moonpet REAL-receipt shadow neglect results (not live scoring):',JSON.stringify(results));
   }finally{f.close();t.mock.timers.reset();}
 });
+
+
+test('time-budgeted real Worker action scheduling: 15/30/60/180 minute candidates',async t=>{
+  // Candidate policy, not a proven global XP optimum. All awards and gates are
+  // evaluated by the real Worker at each virtual time. No XP is injected.
+  // Human interaction spacing is 60 seconds, exceeding the 45-second normal
+  // care cooldown. A blocked action consumes its allocated interaction slot.
+  t.mock.timers.enable({apis:['Date'],now:UTC_BASE});
+  const f=makeFixture(()=>Date.now());
+  const budgets=[15,30,60,180];
+  const actionPlan=[
+    {action:'feed'}, {action:'play'}, {action:'clean'},
+    {action:'train'}, {action:'daily_chest'},
+    {action:'work',job_key:'street_artist'},
+  ];
+  try{
+    const output=[];
+    for(const minutes of budgets){
+      const owner='virtual-budget-'+minutes;
+      const pet=f.createPlayer(owner);
+      let attempted=0,acceptedCount=0,rejected=0;
+      const rejectionReasons={};
+      const before=Number(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).pet_xp);
+      for(let minute=0;minute<minutes;minute++){
+        t.mock.timers.setTime(UTC_BASE+minute*60_000);
+        const candidate=actionPlan[minute % actionPlan.length];
+        attempted++;
+        const result=await f.action(owner,candidate.action,{
+          ...('job_key' in candidate ? {job_key:candidate.job_key} : {}),
+          request_id:'budget-'+minutes+'-minute-'+minute,
+        });
+        if(result.accepted && !result.duplicate)acceptedCount++;
+        else{
+          rejected++;
+          const reason=String(result.reason||'unknown');
+          rejectionReasons[reason]=(rejectionReasons[reason]||0)+1;
+        }
+      }
+      const after=Number(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).pet_xp);
+      const actual=f.accepted(owner);
+      const earned=after-before;
+      assert.equal(attempted,acceptedCount+rejected);
+      assert.ok(earned>=0,'actual saved Worker XP must never go negative');
+      assert.ok(actual.length>0,'at least one real accepted action required');
+      const receipts=actual.reduce((sum,event)=>sum+Number(event.pet_xp_awarded||0),0);
+      // Some gameplay progression grants can have their own reward receipts:
+      // report receipt and balance deltas separately rather than inventing parity.
+      output.push({minutes,attempted,accepted:acceptedCount,rejected,rejectionReasons,
+        earnedPetXp:earned,acceptedEventPetXp:receipts,finalPetXp:after});
+    }
+    assert.deepEqual(output.map(row=>row.minutes),budgets);
+    assert.ok(output.every(row=>row.accepted>0));
+    console.log('Moonpet REAL Worker time-budgeted candidate profiles (not XP maximum):',JSON.stringify(output));
+  }finally{f.close();t.mock.timers.reset();}
+});
