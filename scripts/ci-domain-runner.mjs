@@ -40,6 +40,7 @@ const GROUPS = {
     ['node', 'scripts/sync-moonpet-guide.mjs', '--check'],
     ['npm', 'run', 'test:wiki-structure'],
     ['node', 'scripts/wiki-index-drift-regression.test.mjs'],
+    ['node', 'scripts/seo-metadata-regression.test.mjs'],
     ['node', 'scripts/first-witness-publishing-search.test.mjs'],
     ['node', 'scripts/first-witness-query-ranking.test.mjs'],
     ['node', 'scripts/audit-published-vs-index.js'],
