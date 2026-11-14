@@ -67,7 +67,7 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function resolveShellMode(pathname) {
     const p = normalizePathname(pathname);
-    if (p === '/index.html') return 'home';
+    if (p === '/index.html' || p === '/join-us-on-the-wax-blockchain.html') return 'home';
     if (p === '/search.html' || p.startsWith('/wiki/') || p.startsWith('/categories/')) return 'wiki';
     if (p.startsWith('/games/')) return 'games';
     if (p.startsWith('/battle-chamber/') || p === '/community.html') return 'battle';

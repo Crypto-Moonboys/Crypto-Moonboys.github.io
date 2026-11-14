@@ -80,8 +80,16 @@ test('a conflicting page blocks the full artifact operation before any writes', 
   }
 });
 
-test('homepage has a single visible H1 and keeps all three supplementary slogans', () => {
+test('lightweight homepage has one H1 and links to the moved WAX experience', () => {
   const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  assert.equal([...html.matchAll(/<h1\b/gi)].length, 1);
+  assert.match(html, /<h1\b[^>]*>THE WORLD IS[\s\S]*YOUR CANVAS/);
+  assert.match(html, /href="\/join-us-on-the-wax-blockchain\.html"/);
+  assert.doesNotMatch(html, /<iframe\b|<video\b|id="build-moonboy"|home-art-strip/);
+});
+
+test('moved WAX experience keeps one H1 and all three original supporting slogans', () => {
+  const html = readFileSync(path.join(ROOT, 'join-us-on-the-wax-blockchain.html'), 'utf8');
   assert.equal([...html.matchAll(/<h1\b/gi)].length, 1);
   assert.match(html, /<h1>🛑 STOP SWIPING N LIKING/);
   assert.match(html, /<h2 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN/);

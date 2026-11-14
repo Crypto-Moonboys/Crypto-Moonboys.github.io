@@ -29,7 +29,7 @@ try {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     // Keep real local scripts, CSS and artwork; avoid third-party video/API traffic.
     await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
-    await page.goto(origin + '/index.html', { waitUntil: 'domcontentloaded' });
+    await page.goto(origin + '/join-us-on-the-wax-blockchain.html', { waitUntil: 'domcontentloaded' });
     await page.locator('#build-moonboy').waitFor();
     await page.evaluate(() => document.fonts.ready);
     // The featured video is now first; the cityscape hero image was removed.
@@ -152,6 +152,13 @@ try {
   await visitor.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   await visitor.goto(origin + '/', { waitUntil: 'domcontentloaded' });
   assert.equal(visitor.url(), origin + '/', 'First-time visitor arrives at homepage');
+  assert.equal(await visitor.locator('#build-moonboy').count(), 0, 'Lightweight homepage does not mount the heavy avatar builder');
+  assert.equal(await visitor.locator('iframe,video,.home-art-strip').count(), 0, 'Lightweight homepage does not load embeds, video or gallery');
+  assert.equal(await visitor.locator('a[href="/join-us-on-the-wax-blockchain.html"]').count(), 1, 'Homepage has one clear WAX entry link');
+  await visitor.locator('a[href="/join-us-on-the-wax-blockchain.html"]').click();
+  await visitor.waitForURL(origin + '/join-us-on-the-wax-blockchain.html');
+  assert.equal(await visitor.locator('#build-moonboy').count(), 1, 'WAX experience retains the original builder');
+  await visitor.goto(origin + '/', { waitUntil: 'domcontentloaded' });
   assert.equal(await visitor.locator('#cm-bad-days-intro').count(), 0, 'No automatic splash overlay');
   await visitor.reload({ waitUntil: 'domcontentloaded' });
   assert.equal(await visitor.locator('#cm-bad-days-intro').count(), 0, 'Returning visitor still sees homepage');

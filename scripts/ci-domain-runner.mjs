@@ -322,6 +322,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/homepage-route-split.test.mjs'],
     ['node', 'scripts/homepage-hero-parity.test.mjs'],
     ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
     ['node', 'scripts/arcade-graph-source-parity.test.mjs'],
