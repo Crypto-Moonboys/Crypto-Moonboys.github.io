@@ -299,13 +299,17 @@ try {
   const homepageDesktop = await openAt({ width: 1440, height: 900 }, homepageUrl);
   assert.equal(await homepageDesktop.locator('.homepage-build-cta').count(), 0, 'Removed promotional CTA must not be recreated');
   assert.equal(await homepageDesktop.locator('#how-it-works > .simple-wrap > h1').count(), 0, 'Removed promotional heading must not remain in the later mission');
+  // The semantic homepage has one primary h1 and a supporting h2.
+  // Check each heading's exact approved copy without forcing both to be h1.
   assert.deepEqual(
     await homepageDesktop.locator('#home-top-message > .simple-wrap:first-child > h1').allTextContents(),
-    [
-      '🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.',
-      '🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.'
-    ],
-    'Both approved top-introduction headings remain in place'
+    ['🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.'],
+    'The approved primary introduction remains the only h1'
+  );
+  assert.deepEqual(
+    await homepageDesktop.locator('#home-top-message > .simple-wrap:first-child > h2.hero-secondary-heading').allTextContents(),
+    ['🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.'],
+    'The approved supporting introduction remains an h2'
   );
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
     const intro = document.getElementById('home-top-message');
