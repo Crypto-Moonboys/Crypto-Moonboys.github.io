@@ -132,7 +132,7 @@ async function weeklyTop(db, chatId, weekKey) {
   ).bind(chatId, weekKey).all();
   return rows.results || [];
 }
-// Four-hour group bulletin. The schedule is separate from the 5-minute
+// Daily 18:00 UTC group bulletin. The schedule is separate from the 5-minute
 // maintenance tick, and never posts for groups other than the configured one.
 export async function postTagRunGroupBulletin(env, options = {}) {
   if (!ACTIVE(env)) return { status: 'disabled' };
@@ -171,7 +171,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     'CHAT MORE. RANK UP. GET IN THE DRAW.'
   ].join('\n');
   const delivery = await sendTagRunBulletin(env, message, options.fetchImpl || fetch);
-  if (delivery.status !== 'sent') console.warn('[TAG RUN] four-hour bulletin delivery unconfirmed', {
+  if (delivery.status !== 'sent') console.warn('[TAG RUN] daily 18:00 UTC bulletin delivery unconfirmed', {
     photoStatus: delivery.photoStatus, textStatus: delivery.textStatus
   });
   return { ...delivery, count: rows.length };

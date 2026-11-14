@@ -1027,7 +1027,7 @@ test('reward plans fail closed if the weekly token budget cannot cover every act
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) n FROM tag_run_weekly_allocations').get().n, 0);
 });
 
-test('four-hour bulletin publishes weekly top 10 and a bot introduction', async t => {
+test('daily 18:00 UTC bulletin publishes weekly top 10 and a bot introduction', async t => {
   const f = fixture(t);
   f.env.TELEGRAM_GROUP_THREAD_ID = '23456';
   // An actual accepted message populates both the weekly and all-time tables.
@@ -1064,18 +1064,18 @@ test('four-hour bulletin publishes weekly top 10 and a bot introduction', async 
   assert(!bulletin.text.includes('\\n'), 'Bulletin must use real newlines, not escaped text');
   const wrangler = readFileSync(new URL('../workers/moonboys-api/wrangler.toml',
     import.meta.url), 'utf8');
-  assert.match(wrangler, /"3 \*\/4 \* \* \*"/);
+  assert.match(wrangler, /"0 18 \* \* \*"/);
   const wrapper = readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js',
     import.meta.url), 'utf8');
   const plan = readFileSync(new URL('../workers/moonboys-api/scheduled/phase5-cron-plan.js',
     import.meta.url), 'utf8');
-  assert.match(plan, /bulletin: '3 \*\/4 \* \* \*'/);
+  assert.match(plan, /bulletin: '0 18 \* \* \*'/);
   assert.match(plan, /cron === MOONBOYS_CRON\.bulletin && env\.TAG_RUN_ENABLED === 'true'/);
   assert.match(wrapper, /if \(tasks\.bulletin\)[\s\S]*?postTagRunGroupBulletin\(env\)/);
   assert.match(wrapper, /phase5CronTasks\(event, env\)/);
 });
 
-test('four-hour bulletin never posts when scoring is disabled', async t => {
+test('daily 18:00 UTC bulletin never posts when scoring is disabled', async t => {
   const f = fixture(t, { enabled: false });
   assert.equal((await postTagRunGroupBulletin(f.env, {
     nowMs: MONDAY, fetchImpl: f.fetchImpl
@@ -1083,7 +1083,7 @@ test('four-hour bulletin never posts when scoring is disabled', async t => {
   assert.equal(f.sent.length, 0);
 });
 
-test('four-hour bulletin omits unset or invalid Telegram topic IDs', async t => {
+test('daily 18:00 UTC bulletin omits unset or invalid Telegram topic IDs', async t => {
   const f = fixture(t);
   const nowMs = MONDAY;
   for (const threadId of [undefined, '', '0', '-1', 'not-a-topic', '12345678901234']) {
