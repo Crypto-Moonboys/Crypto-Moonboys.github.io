@@ -255,13 +255,14 @@ test('GET readiness categorizes Telegram rejected group and invalid bot token wi
     method: 'GET', headers: { Origin: SITE },
   }), env(), fetchImpl);
   assert.equal(response.status, 503);
-  assert.deepEqual(await response.json(), {
+  const diagnosticBody = await response.json();
+  assert.deepEqual(diagnosticBody, {
     ok: false, error: 'telegram_group_membership_unavailable', bot_username: null,
     diagnostic: { membership: 'group_lookup_rejected', bot_identity: 'bot_token_rejected' }
   });
-  const body = await response.text();
-  assert.ok(!body.includes(secretPhrase));
-  assert.ok(!body.includes(TOKEN) && !body.includes(GROUP));
+  const serialized = JSON.stringify(diagnosticBody);
+  assert.ok(!serialized.includes(secretPhrase));
+  assert.ok(!serialized.includes(TOKEN) && !serialized.includes(GROUP));
 });
 
 test('GET readiness distinguishes Telegram transport timeouts from unavailable network', async () => {
