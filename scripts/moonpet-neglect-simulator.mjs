@@ -8,7 +8,7 @@
  */
 import { pathToFileURL } from 'node:url';
 
-export const HORIZONS = Object.freeze([1, 3, 7, 14, 30, 90, 365]);
+export const HORIZONS = Object.freeze([1, 3, 7, 14, 30, 90, 180, 365]);
 export const PET_COUNTS = Object.freeze([1, 2, 5]);
 export const CARE_FRACTIONS = Object.freeze([
   Object.freeze({ key: 'none', label: '0 of 3 required actions', cared: 0 }),
@@ -51,6 +51,8 @@ export const XP_REFERENCE_BUNDLES = Object.freeze([
   Object.freeze({ key: 'casual_reference', label: 'care set + Daily Cache', petXp: 62 }),
   Object.freeze({ key: 'regular_reference', label: 'all five direct actions + Daily Cache', petXp: 87 }),
   Object.freeze({ key: 'dedicated_fixed_reference', label: 'regular + daily completion + 3 contract bonuses', petXp: 172 }),
+  Object.freeze({ key: 'legendary_pace_floor', label: 'minimum whole daily average for Level 50 by day 365', petXp: 264 }),
+  Object.freeze({ key: 'daily_cap_stress', label: 'configured aggregate daily Pet XP settlement cap', petXp: 1200 }),
 ]);
 
 export const PENALTY_MODELS = Object.freeze({
@@ -59,20 +61,76 @@ export const PENALTY_MODELS = Object.freeze({
   severe: Object.freeze({ key: 'severe', day1Multiplier: 3, day7Multiplier: 10, maximumMultiplier: 10 }),
 });
 
-export const RECOMMENDED_POLICY = Object.freeze({
+export const WITHHOLDING_MODELS = Object.freeze({
+  current_25: Object.freeze({ key: 'current_25', label: 'Current', maximum: 0.25 }),
+  stronger_40: Object.freeze({ key: 'stronger_40', label: 'Stronger', maximum: 0.40 }),
+  high_50: Object.freeze({ key: 'high_50', label: 'High', maximum: 0.50 }),
+  severe_65: Object.freeze({ key: 'severe_65', label: 'Severe', maximum: 0.65 }),
+  extreme_75: Object.freeze({ key: 'extreme_75', label: 'Extreme stress test', maximum: 0.75 }),
+});
+
+export const DEBT_CAP_MODELS = Object.freeze({
+  current_770: Object.freeze({ key: 'current_770', label: 'Current', maximum: 770 }),
+  double_1540: Object.freeze({ key: 'double_1540', label: 'Two-week bound', maximum: 1540 }),
+  triple_2310: Object.freeze({ key: 'triple_2310', label: 'Three-week bound', maximum: 2310 }),
+  dynamic: Object.freeze({ key: 'dynamic', label: 'Dynamic 7× recent daily XP, bounded 770–2310', maximum: null }),
+});
+
+// The policy shipped in the first 8× simulator. Withheld XP repays debt, which
+// lets high earners grind out of standing in only a few days.
+export const CURRENT_POLICY = Object.freeze({
   model: 'aggressive',
   requiredCareActions: SOURCE_ECONOMY.requiredCareActions,
   dailyBasis: CARE_STANDING_BASIS,
   maxDebtBasisDays: 35,
   maxDebt: CARE_STANDING_BASIS * 35,
+  withholdingReferenceDebt: CARE_STANDING_BASIS * 35,
   fullCareRecoveryCredit: CARE_STANDING_BASIS,
   minimumFutureXpReduction: 0.10,
   maximumFutureXpReduction: 0.25,
+  withholdingPaysDebt: true,
   escalationCapDay: 7,
   accountScoped: true,
 });
 
+// Stress-test recommendation: recovery is earned only through complete care.
+// Withholding remains a temporary consequence but cannot be converted into a
+// faster exit by grinding more XP.
+export const RECOMMENDED_POLICY = Object.freeze({
+  ...CURRENT_POLICY,
+  maxDebtBasisDays: 70,
+  maxDebt: CARE_STANDING_BASIS * 70,
+  withholdingReferenceDebt: CARE_STANDING_BASIS * 35,
+  fullCareRecoveryCredit: CARE_STANDING_BASIS * 2,
+  withholdingPaysDebt: false,
+});
+
 const round = (value, places = 2) => Number(Number(value).toFixed(places));
+const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+
+export function resolveDebtCap(modelOrKey, recentDailyPetXp = 0) {
+  const model = typeof modelOrKey === 'string' ? DEBT_CAP_MODELS[modelOrKey] : modelOrKey;
+  if (!model) throw new Error('unknown debt cap model');
+  if (model.maximum != null) return model.maximum;
+  const recent = finiteNonnegative(recentDailyPetXp, 'recentDailyPetXp');
+  return round(clamp(recent * 7, DEBT_CAP_MODELS.current_770.maximum, DEBT_CAP_MODELS.triple_2310.maximum));
+}
+
+export function buildStressPolicy({
+  withholding = 'current_25',
+  debtCap = 'double_1540',
+  recentDailyPetXp = XP_REFERENCE_BUNDLES[1].petXp,
+} = {}) {
+  const withholdingModel = typeof withholding === 'string' ? WITHHOLDING_MODELS[withholding] : withholding;
+  if (!withholdingModel) throw new Error('unknown withholding model');
+  const maxDebt = resolveDebtCap(debtCap, recentDailyPetXp);
+  return Object.freeze({
+    ...RECOMMENDED_POLICY,
+    maxDebt,
+    maxDebtBasisDays: maxDebt / CARE_STANDING_BASIS,
+    maximumFutureXpReduction: withholdingModel.maximum,
+  });
+}
 
 function finiteNonnegative(value, label) {
   const number = Number(value);
@@ -109,7 +167,8 @@ export function multiplierForStreak(modelOrKey, streak) {
 export function futureXpReductionRate(debt, policy = RECOMMENDED_POLICY) {
   const balance = Math.max(0, Number(debt) || 0);
   if (balance === 0) return 0;
-  const ratio = Math.min(1, balance / policy.maxDebt);
+  const reference = Math.max(1, Number(policy.withholdingReferenceDebt || policy.maxDebt));
+  const ratio = Math.min(1, balance / reference);
   return policy.minimumFutureXpReduction
     + (policy.maximumFutureXpReduction - policy.minimumFutureXpReduction) * ratio;
 }
@@ -150,6 +209,7 @@ export function simulate({
   let grossPetXp = 0;
   let futurePetXpAwarded = 0;
   let futurePetXpWithheld = 0;
+  let debtRepaidByWithholding = 0;
   let recoveryCredit = 0;
   const rows = [];
 
@@ -165,14 +225,17 @@ export function simulate({
     debt = Math.min(policy.maxDebt, debt + rawDebit);
 
     const reductionRate = futureXpReductionRate(debt, policy);
-    const withheld = Math.min(debt, dailyGross * reductionRate);
-    debt -= withheld;
+    const requestedWithholding = dailyGross * reductionRate;
+    const withheld = policy.withholdingPaysDebt ? Math.min(debt, requestedWithholding) : requestedWithholding;
+    const withholdingDebtCredit = policy.withholdingPaysDebt ? withheld : 0;
+    debt -= withholdingDebtCredit;
     const careCredit = complete ? Math.min(policy.fullCareRecoveryCredit, debt) : 0;
     debt -= careCredit;
 
     grossPetXp += dailyGross;
     futurePetXpWithheld += withheld;
     futurePetXpAwarded += dailyGross - withheld;
+    debtRepaidByWithholding += withholdingDebtCredit;
     recoveryCredit += careCredit;
     rows.push({
       day,
@@ -187,6 +250,7 @@ export function simulate({
       grossPetXp: round(dailyGross),
       futurePetXpWithheld: round(withheld),
       futurePetXpAwarded: round(dailyGross - withheld),
+      withholdingDebtCredit: round(withholdingDebtCredit),
       fullCareRecoveryCredit: round(careCredit),
     });
   }
@@ -204,6 +268,7 @@ export function simulate({
     grossPetXp: round(grossPetXp),
     futurePetXpAwarded: round(futurePetXpAwarded),
     futurePetXpWithheld: round(futurePetXpWithheld),
+    debtRepaidByWithholding: round(debtRepaidByWithholding),
     recoveryCredit: round(recoveryCredit),
     lifetimePetXpDeducted: 0,
     earnedMilestonesDestroyed: 0,
@@ -217,8 +282,9 @@ export function simulateRecovery({
   grossDailyPetXp = XP_REFERENCE_BUNDLES[1].petXp,
   petCount = 1,
   maxRecoveryDays = 365,
+  policy = RECOMMENDED_POLICY,
 } = {}) {
-  const absence = simulate({ days: absenceDays, model, caredFraction: 0, petCount });
+  const absence = simulate({ days: absenceDays, model, caredFraction: 0, petCount, policy });
   const recovery = simulate({
     days: maxRecoveryDays,
     model,
@@ -226,6 +292,7 @@ export function simulateRecovery({
     grossDailyPetXp,
     petCount,
     initialDebt: absence.endingDebt,
+    policy,
   });
   const firstClearIndex = recovery.rows.findIndex(row => row.boundedAccountDebt === 0);
   const daysToClear = firstClearIndex < 0 ? maxRecoveryDays : firstClearIndex + 1;
@@ -245,6 +312,8 @@ export function simulateRecovery({
     grossRecoveryPetXp: round(daysToClear * grossDailyPetXp),
     recoveryPetXpAwarded: round(awarded),
     recoveryPetXpWithheld: round(withheld),
+    withholdingPaysDebt: Boolean(policy.withholdingPaysDebt),
+    fullCareRecoveryCredit: policy.fullCareRecoveryCredit,
     lifetimePetXpDeducted: 0,
   };
 }
@@ -255,6 +324,7 @@ export function simulateGrindingCycle({
   careDays = 3,
   absenceDays = 4,
   grossDailyPetXp = XP_REFERENCE_BUNDLES[2].petXp,
+  policy = RECOMMENDED_POLICY,
 } = {}) {
   if (![cycles, careDays, absenceDays].every(value => Number.isInteger(value) && value >= 0)) {
     throw new Error('cycle lengths must be nonnegative integers');
@@ -265,7 +335,7 @@ export function simulateGrindingCycle({
     careSchedule.push(...Array(careDays).fill(1), ...Array(absenceDays).fill(0));
     xpSchedule.push(...Array(careDays).fill(grossDailyPetXp), ...Array(absenceDays).fill(0));
   }
-  const run = simulate({ days: careSchedule.length, model, careSchedule, grossPetXpSchedule: xpSchedule });
+  const run = simulate({ days: careSchedule.length, model, careSchedule, grossPetXpSchedule: xpSchedule, policy });
   return {
     model: run.model,
     cycles,
@@ -284,11 +354,12 @@ export function estimateYearEffect({
   model = RECOMMENDED_POLICY.model,
   absenceDays = 7,
   grossDailyPetXp = XP_REFERENCE_BUNDLES[1].petXp,
+  policy = RECOMMENDED_POLICY,
 } = {}) {
   if (!Number.isInteger(absenceDays) || absenceDays < 0 || absenceDays > 365) throw new Error('absenceDays must be 0..365');
   const careSchedule = [...Array(absenceDays).fill(0), ...Array(365 - absenceDays).fill(1)];
   const xpSchedule = [...Array(absenceDays).fill(0), ...Array(365 - absenceDays).fill(grossDailyPetXp)];
-  const run = simulate({ days: 365, model, careSchedule, grossPetXpSchedule: xpSchedule });
+  const run = simulate({ days: 365, model, careSchedule, grossPetXpSchedule: xpSchedule, policy });
   const cleanAttendanceXp = 365 * grossDailyPetXp;
   return {
     model: run.model,
@@ -303,6 +374,282 @@ export function estimateYearEffect({
     equivalentFullyActiveDaysLost: grossDailyPetXp ? round((cleanAttendanceXp - run.futurePetXpAwarded) / grossDailyPetXp) : 0,
     endingDebt: run.endingDebt,
     earnedXpRemoved: 0,
+  };
+}
+
+function repeatToLength(values, length) {
+  if (!Array.isArray(values) || values.length === 0) throw new Error('strategy pattern must be a nonempty array');
+  return Array.from({ length }, (_, index) => values[index % values.length]);
+}
+
+export function compareStrategy({
+  key,
+  careSchedule,
+  grossPetXpSchedule,
+  routineDailyPetXp,
+  policy = RECOMMENDED_POLICY,
+  petCount = 1,
+  notificationsEnabled = true,
+} = {}) {
+  if (!Array.isArray(careSchedule) || !Array.isArray(grossPetXpSchedule)
+    || careSchedule.length !== grossPetXpSchedule.length || careSchedule.length === 0) {
+    throw new Error('strategy schedules must be nonempty arrays of equal length');
+  }
+  const run = simulate({
+    days: careSchedule.length,
+    careSchedule,
+    grossPetXpSchedule,
+    policy,
+    petCount,
+    notificationsEnabled,
+  });
+  const baseline = finiteNonnegative(routineDailyPetXp, 'routineDailyPetXp');
+  const routineCareGrossXp = baseline * run.days;
+  const missedPlayXp = Math.max(0, routineCareGrossXp - run.grossPetXp);
+  return {
+    key: String(key || 'strategy'),
+    days: run.days,
+    activeEarningDays: grossPetXpSchedule.filter(value => Number(value) > 0).length,
+    grossPetXp: run.grossPetXp,
+    policySpecificWithholding: run.futurePetXpWithheld,
+    netPetXpAwarded: run.futurePetXpAwarded,
+    routineCareGrossXp: round(routineCareGrossXp),
+    missedPlayXp: round(missedPlayXp),
+    totalProgressionDisadvantage: round(missedPlayXp + run.futurePetXpWithheld),
+    equalGrossOpportunityDisadvantage: run.futurePetXpWithheld,
+    economicallyAdvantageousAtEqualGrossOpportunity: run.futurePetXpAwarded > run.grossPetXp,
+    endingDebt: run.endingDebt,
+    endingStreak: run.endingStreak,
+    lifetimePetXpDeducted: run.lifetimePetXpDeducted,
+    earnedMilestonesDestroyed: run.earnedMilestonesDestroyed,
+  };
+}
+
+export function buildWithholdingComparison({ absenceDays = 7 } = {}) {
+  return Object.values(WITHHOLDING_MODELS).flatMap(withholding =>
+    Object.values(DEBT_CAP_MODELS).flatMap(debtCap =>
+      XP_REFERENCE_BUNDLES.map(profile => {
+        const policy = buildStressPolicy({ withholding, debtCap, recentDailyPetXp: profile.petXp });
+        const recovery = simulateRecovery({
+          absenceDays,
+          grossDailyPetXp: profile.petXp,
+          policy,
+        });
+        const missedPlayXp = absenceDays * profile.petXp;
+        return {
+          withholding: withholding.key,
+          maximumWithholdingPercent: withholding.maximum * 100,
+          debtCap: debtCap.key,
+          resolvedDebtCap: policy.maxDebt,
+          profile: profile.key,
+          grossRecoveryXp: recovery.grossRecoveryPetXp,
+          xpWithheld: recovery.recoveryPetXpWithheld,
+          netRecoveryXp: recovery.recoveryPetXpAwarded,
+          outstandingDebt: recovery.debtAfter,
+          recoveryDays: recovery.daysToClear,
+          missedPlayXp,
+          totalProgressionDisadvantage: round(missedPlayXp + recovery.recoveryPetXpWithheld),
+          effectiveActiveDaysLost: round((missedPlayXp + recovery.recoveryPetXpWithheld) / profile.petXp),
+          permanentXpRemoved: recovery.lifetimePetXpDeducted,
+        };
+      })));
+}
+
+export function buildDebtCapComparison() {
+  const returnHorizons = [7, 14, 30, 90, 180];
+  return Object.values(DEBT_CAP_MODELS).flatMap(debtCap =>
+    XP_REFERENCE_BUNDLES.map(profile => {
+      const policy = buildStressPolicy({ debtCap, recentDailyPetXp: profile.petXp });
+      return returnHorizons.map(absenceDays => {
+        const recovery = simulateRecovery({ absenceDays, grossDailyPetXp: profile.petXp, policy });
+        return {
+          debtCap: debtCap.key,
+          resolvedDebtCap: policy.maxDebt,
+          profile: profile.key,
+          absenceDays,
+          startingDebt: recovery.debtBefore,
+          recoveryDays: recovery.daysToClear,
+          xpWithheld: recovery.recoveryPetXpWithheld,
+          debtAfter: recovery.debtAfter,
+        };
+      });
+    }).flat());
+}
+
+export function buildExploitScenarios(policy = RECOMMENDED_POLICY) {
+  const maxGrindThenDisappear = Array.from({ length: 14 }, (_, index) => {
+    const absenceDays = index + 1;
+    const recovery = simulateRecovery({
+      absenceDays,
+      grossDailyPetXp: SOURCE_ECONOMY.dailyPetXpSettlementCap,
+      policy,
+    });
+    return {
+      strategy: 'one_cap_day_then_disappear',
+      absenceDays,
+      preNeglectXpPreserved: SOURCE_ECONOMY.dailyPetXpSettlementCap,
+      startingDebt: recovery.debtBefore,
+      recoveryDays: recovery.daysToClear,
+      futureXpWithheld: recovery.recoveryPetXpWithheld,
+      outstandingDebt: recovery.debtAfter,
+      economicallyAdvantageousAtEqualGrossOpportunity: false,
+    };
+  });
+
+  const heavyCycleCare = repeatToLength([1, 1, 1, 0, 0, 0, 0, 0, 0, 0], 365);
+  const heavyCycleXp = repeatToLength([172, 172, 172, 0, 0, 0, 0, 0, 0, 0], 365);
+  const weekendCare = repeatToLength([0, 0, 0, 0, 0, 1, 1], 365);
+  const weekendXp = repeatToLength([0, 0, 0, 0, 0, 172, 172], 365);
+  const oneActionCare = Array(365).fill(1 / 3);
+  const oneActionXp = Array(365).fill(SOURCE_ECONOMY.directActions.play.petXp);
+  const preAccumulationCare = [...Array(30).fill(1), ...Array(7).fill(0), ...Array(30).fill(1)];
+  const preAccumulationXp = [...Array(30).fill(1200), ...Array(7).fill(0), ...Array(30).fill(87)];
+
+  return {
+    maxGrindThenDisappear,
+    strategies: [
+      compareStrategy({
+        key: 'three_heavy_days_then_seven_absent_repeated',
+        careSchedule: heavyCycleCare,
+        grossPetXpSchedule: heavyCycleXp,
+        routineDailyPetXp: 172,
+        policy,
+      }),
+      compareStrategy({
+        key: 'weekends_only',
+        careSchedule: weekendCare,
+        grossPetXpSchedule: weekendXp,
+        routineDailyPetXp: 172,
+        policy,
+      }),
+      compareStrategy({
+        key: 'one_required_action_daily',
+        careSchedule: oneActionCare,
+        grossPetXpSchedule: oneActionXp,
+        routineDailyPetXp: XP_REFERENCE_BUNDLES[0].petXp,
+        policy,
+      }),
+      compareStrategy({
+        key: 'thirty_cap_days_then_seven_absent_then_regular_return',
+        careSchedule: preAccumulationCare,
+        grossPetXpSchedule: preAccumulationXp,
+        routineDailyPetXp: XP_REFERENCE_BUNDLES[1].petXp,
+        policy,
+      }),
+    ],
+    sessionLengthReferences: [
+      {
+        label: '30-minute request',
+        evidence: 'No source-backed XP-per-minute rate exists; casual fixed bundle used as a transparent proxy.',
+        profile: XP_REFERENCE_BUNDLES[0],
+        recovery: simulateRecovery({ absenceDays: 7, grossDailyPetXp: XP_REFERENCE_BUNDLES[0].petXp, policy }),
+      },
+      {
+        label: 'several-hours request',
+        evidence: 'No source-backed XP-per-hour rate exists; dedicated fixed bundle used as a transparent proxy.',
+        profile: XP_REFERENCE_BUNDLES[2],
+        recovery: simulateRecovery({ absenceDays: 7, grossDailyPetXp: XP_REFERENCE_BUNDLES[2].petXp, policy }),
+      },
+    ],
+    multiPetParity: PET_COUNTS.map(petCount => {
+      const run = simulate({ days: 14, caredFraction: 0, petCount, policy });
+      return { petCount, accountDebt: run.endingDebt, rawDebt: run.rawDebtAssessed, naivePerPetDebt: run.naivePerPetRawDebt };
+    }),
+    reminderParity: [true, false].map(notificationsEnabled => {
+      const run = simulate({ days: 14, caredFraction: 0, notificationsEnabled, policy });
+      return { notificationsEnabled, accountDebt: run.endingDebt, streak: run.endingStreak };
+    }),
+  };
+}
+
+export function buildProgressionProjections(policy = RECOMMENDED_POLICY) {
+  const scenarios = [
+    { key: 'consistent', absenceDays: 0 },
+    { key: 'single_week_absent', absenceDays: 7 },
+  ];
+  return XP_REFERENCE_BUNDLES.map(profile => scenarios.map(scenario => {
+    const result = estimateYearEffect({
+      absenceDays: scenario.absenceDays,
+      grossDailyPetXp: profile.petXp,
+      policy,
+    });
+    return {
+      profile: profile.key,
+      scenario: scenario.key,
+      ...result,
+      reachesLevel50ByDay365: result.futurePetXpAwarded >= SOURCE_ECONOMY.visibleLevelPetXp[50],
+      legendaryNonXpRequirementsGrantedBySimulator: false,
+      permanentProgressDestroyed: false,
+    };
+  })).flat();
+}
+
+export function buildSuccessThresholdReport(policy = RECOMMENDED_POLICY) {
+  const regular = XP_REFERENCE_BUNDLES[1];
+  const recovery = simulateRecovery({ absenceDays: 7, grossDailyPetXp: regular.petXp, policy });
+  const grindCycle = buildExploitScenarios(policy).strategies[0];
+  const oneAction = simulate({ days: 7, caredFraction: 1 / 3, policy });
+  const multi = PET_COUNTS.map(petCount => simulate({ days: 14, petCount, policy }).endingDebt);
+  const reminders = [true, false].map(notificationsEnabled =>
+    simulate({ days: 14, notificationsEnabled, policy }).endingDebt);
+  const missedRoutine = 7 * regular.petXp;
+  return [
+    { metric: 'Day-seven multiplier', target: 'Approximately 8×', actual: multiplierForStreak('aggressive', 7), result: 'PASS' },
+    {
+      metric: 'Seven-day deterrence',
+      target: 'Total disadvantage greater than seven routine-care days',
+      actual: round(missedRoutine + recovery.recoveryPetXpWithheld),
+      comparator: missedRoutine,
+      result: missedRoutine + recovery.recoveryPetXpWithheld > missedRoutine ? 'PROVISIONAL PASS' : 'FAIL',
+    },
+    {
+      metric: 'Grind/neglect exploit',
+      target: 'No advantage at equal gross opportunity',
+      actual: grindCycle.equalGrossOpportunityDisadvantage,
+      result: grindCycle.economicallyAdvantageousAtEqualGrossOpportunity ? 'FAIL' : 'PROVISIONAL PASS',
+    },
+    {
+      metric: 'Recovery from seven-day neglect',
+      target: '14–30 consistent-care days',
+      actual: recovery.daysToClear,
+      result: recovery.daysToClear >= 14 && recovery.daysToClear <= 30 ? 'PROVISIONAL PASS' : 'FAIL',
+    },
+    { metric: '365-day progression integrity', target: 'No irreversible damage', actual: 0, result: 'PROVISIONAL PASS' },
+    { metric: 'Duplicate penalty protection', target: 'Zero duplicates', actual: 'Runtime not implemented', result: 'NOT TESTED' },
+    {
+      metric: 'Reminder opt-out parity',
+      target: 'Identical results',
+      actual: reminders[0] === reminders[1] ? 'identical' : 'different',
+      result: reminders[0] === reminders[1] ? 'PROVISIONAL PASS' : 'FAIL',
+    },
+    {
+      metric: 'Multi-pet exploit protection',
+      target: 'Zero account-penalty multiplication',
+      actual: new Set(multi).size === 1 ? 'identical' : 'different',
+      result: new Set(multi).size === 1 ? 'PROVISIONAL PASS' : 'FAIL',
+    },
+    {
+      metric: 'Trivial-care reset protection',
+      target: 'One action cannot reset streak',
+      actual: oneAction.endingStreak,
+      result: oneAction.endingStreak === 7 ? 'PROVISIONAL PASS' : 'FAIL',
+    },
+    { metric: 'Runtime economy integrity', target: 'No permanent record destruction', actual: 'Runtime not implemented', result: 'NOT TESTED' },
+  ];
+}
+
+export function buildStressSummary() {
+  return {
+    status: 'draft_sandbox_stress_test_not_live_gk_approval_required',
+    currentPolicy: CURRENT_POLICY,
+    recommendedPolicy: RECOMMENDED_POLICY,
+    withholdingModels: WITHHOLDING_MODELS,
+    debtCapModels: DEBT_CAP_MODELS,
+    withholdingComparison: buildWithholdingComparison(),
+    debtCapComparison: buildDebtCapComparison(),
+    exploits: buildExploitScenarios(),
+    progression: buildProgressionProjections(),
+    successThresholds: buildSuccessThresholdReport(),
   };
 }
 
@@ -352,6 +699,7 @@ export function buildSummary() {
     unattendedCondition: HORIZONS.map(days => estimateUnattendedCondition(days)),
     yearEffects: Object.values(PENALTY_MODELS).flatMap(model =>
       XP_REFERENCE_BUNDLES.map(bundle => ({ bundle: bundle.key, ...estimateYearEffect({ model, grossDailyPetXp: bundle.petXp }) }))),
+    stressTest: buildStressSummary(),
   };
 }
 

@@ -1,9 +1,11 @@
 # Moonpet neglect model comparison: 8× target
 **14 November 2026 · Draft policy research only · GK approval required · No live penalties**
 
-## Decision summary
+> **Superseded candidate:** the follow-up [economic stress test](moonpet-neglect-economy-stress-test-2026-11-14.md) found that allowing withheld XP to repay Care Standing lets a 1,200-XP player clear seven-day debt in four days. The tables below preserve the first 8× experiment; they are not the final recommendation. The revised candidate decouples debt recovery from XP grinding, uses a 1,540-unit cap, and requires genuine full-care days.
 
-Recommend the **Aggressive** curve for a future shadow-mode trial:
+## Decision summary — first experiment, superseded
+
+The first experiment recommended the **Aggressive** curve for a future shadow-mode trial:
 
 **daily debit = 22 Care Standing units × missed required-care fraction × min(8, 2 + consecutive incomplete days - 1)**
 
@@ -146,7 +148,7 @@ The current Next Best Action prioritizes saved-state recovery, active runs, urge
 
 When debt exists, the guidance order should be: recover an interrupted authoritative state; address critical vitals; complete the missing required care action; then show debt/reward-reduction status and ordinary missions. This avoids suggesting blocked actions and makes recovery understandable without turning Telegram into a requirement.
 
-## Approval boundary
+## Historical approval boundary — superseded
 
 GK approval is required for the 22-unit basis, Aggressive curve, 770 cap, 10–25% future-XP reduction, 22-unit full-care credit, eligibility/exemption rules, source-pet attribution, UI copy, shadow duration and rollback criteria. Before approval, query anonymized accepted-receipt cohorts and simulate real zero-inclusive distributions.
 
