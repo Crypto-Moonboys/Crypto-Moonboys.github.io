@@ -121,7 +121,7 @@ test('new base Worker kinds require an explicit staged allowlist', () => {
 test('legacy TAG RUN kinds retain PR3 opt-in behavior without the new list', () => {
   const env = branchEnv({ TELEGRAM_MOONBOY_MESSAGE_KINDS: '' });
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), true);
 });
 
@@ -279,6 +279,6 @@ test('production defaults preserve approved group artwork classes', () => {
     new URL('../workers/moonboys-api/wrangler.toml', import.meta.url), 'utf8');
   assert.match(wrangler, /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "true"/);
   assert.match(wrangler, /TELEGRAM_MOONBOY_MEDIA_MODE = "group"/);
-  assert.match(wrangler, /TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification,core-command"/);
+  assert.match(wrangler, /TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification"/);
   assert.match(wrangler, /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/);
 });

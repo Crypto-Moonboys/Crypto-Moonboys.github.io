@@ -3,7 +3,8 @@
 // The Worker has a large command surface whose helpers already accept the bot
 // token.  This wrapper preserves that interface (and stringifies to the real
 // token for non-message Telegram methods) while carrying stable, per-update
-// media identity into the single sendTelegramMessage gateway.  It is never
+// request identity for existing helpers. Generated artwork is no longer
+// attached to command replies; sendTelegramMessage unwraps the token. It is never
 // stored globally, so concurrent Worker requests cannot leak or share state.
 
 const CONTEXT = Symbol('telegram-command-media-context');
