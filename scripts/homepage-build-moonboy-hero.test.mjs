@@ -5,7 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const homepagePath = path.join(ROOT, 'index.html');
+const homepagePath = path.join(ROOT, 'join-us-on-the-wax-blockchain.html');
+const landingPath = path.join(ROOT, 'index.html');
 const homeWidgetsPath = path.join(ROOT, 'js', 'home-widgets.js');
 const legacyEntryPath = path.join(ROOT, 'enter.html');
 const myMoonboyPath = path.join(ROOT, 'my-moonboy.html');
@@ -61,6 +62,7 @@ function check(condition, message) {
 }
 
 const html = fs.readFileSync(homepagePath, 'utf8');
+const landing = fs.readFileSync(landingPath, 'utf8');
 const homeWidgets = fs.readFileSync(homeWidgetsPath, 'utf8');
 const legacyEntry = fs.readFileSync(legacyEntryPath, 'utf8');
 const myMoonboy = fs.readFileSync(myMoonboyPath, 'utf8');
@@ -74,8 +76,17 @@ const introMarkup = introStart !== -1 && introEnd !== -1
   ? html.slice(introStart, introEnd + '</section>'.length)
   : '';
 
+// Check the exact approved copy, element types, classes and order without
+// depending on Git's LF/CRLF checkout policy on Windows.
+const openingMarkup = html.match(/<section\b[^>]*\bid="home-top-message"[^>]*>\s*<div class="simple-wrap">([\s\S]*?)<\/div>/)?.[1] || '';
+const openingElements = [...openingMarkup.matchAll(/<(h1|p|h2)(?:\s+class="([^"]+)")?>([^<]*)<\/\1>/g)]
+  .map(([, tag, className, text]) => ({ tag, className: className || '', text }));
 check(
-  html.includes('<h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>\n      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>\n      <h2 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h2>'),
+  JSON.stringify(openingElements) === JSON.stringify([
+    { tag: 'h1', className: '', text: '🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.' },
+    { tag: 'p', className: 'hero-pulse-line', text: 'Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄' },
+    { tag: 'h2', className: 'hero-secondary-heading', text: '🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.' },
+  ]),
   'Homepage opening copy preserves the approved headline, pulse, headline order'
 );
 check(heroPositions.every(position => position > badDaysGalleryStart), 'Five Bad Days images are present at the bottom of My Moonboy');
@@ -145,8 +156,14 @@ check(!html.includes('/js/first-visit-intro.js') && !html.includes('cm-bad-days-
 check(legacyEntry.includes('http-equiv="refresh" content="0;url=/"') &&
   legacyEntry.includes('content="noindex, follow"') &&
   !legacyEntry.includes('build-moonboy-hero'), 'Legacy splash URL redirects to home and cannot compete in search');
-check(html.includes('rel="canonical" href="https://cryptomoonboys.com/"'),
-  'Homepage canonical stays unchanged');
+check(html.includes('rel="canonical" href="https://cryptomoonboys.com/join-us-on-the-wax-blockchain.html"'),
+  'Moved full experience publishes its own canonical URL');
+check(landing.includes('rel="canonical" href="https://cryptomoonboys.com/"'),
+  'Short homepage preserves the root canonical URL');
+check(landing.includes('href="/join-us-on-the-wax-blockchain.html"') &&
+  !landing.includes('id="build-moonboy"') && !landing.includes('<iframe') && !landing.includes('<video') &&
+  !landing.includes('home-art-strip') && !landing.includes('src="/js/avatar-builder-test.js"'),
+  'Short homepage links to the full experience without heavy builder, media or gallery');
 check(!html.includes('class="build-moonboy-hero"'),
   'Bad Days art never returns to the homepage');
 
