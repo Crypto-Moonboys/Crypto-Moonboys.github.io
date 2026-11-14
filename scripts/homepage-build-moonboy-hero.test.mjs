@@ -76,8 +76,17 @@ const introMarkup = introStart !== -1 && introEnd !== -1
   ? html.slice(introStart, introEnd + '</section>'.length)
   : '';
 
+// Check the exact approved copy, element types, classes and order without
+// depending on Git's LF/CRLF checkout policy on Windows.
+const openingMarkup = html.match(/<section\b[^>]*\bid="home-top-message"[^>]*>\s*<div class="simple-wrap">([\s\S]*?)<\/div>/)?.[1] || '';
+const openingElements = [...openingMarkup.matchAll(/<(h1|p|h2)(?:\s+class="([^"]+)")?>([^<]*)<\/\1>/g)]
+  .map(([, tag, className, text]) => ({ tag, className: className || '', text }));
 check(
-  html.includes('<h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>\n      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>\n      <h2 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h2>'),
+  JSON.stringify(openingElements) === JSON.stringify([
+    { tag: 'h1', className: '', text: '🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.' },
+    { tag: 'p', className: 'hero-pulse-line', text: 'Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄' },
+    { tag: 'h2', className: 'hero-secondary-heading', text: '🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.' },
+  ]),
   'Homepage opening copy preserves the approved headline, pulse, headline order'
 );
 check(heroPositions.every(position => position > badDaysGalleryStart), 'Five Bad Days images are present at the bottom of My Moonboy');
