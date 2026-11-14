@@ -494,6 +494,41 @@ test('real Daily Run failure schedules next-day Worker eligibility without award
       const nextSaved=f.sql.prepare("SELECT run_id,pet_id,telegram_id,status FROM telegram_pet_runs WHERE telegram_id=? AND run_id<>? ORDER BY rowid DESC LIMIT 1").get(pet.owner,original.run_id);
       assert.ok(nextSaved && nextSaved.run_id!==original.run_id,'next-day run gets its own persisted identity');
       assert.equal(nextSaved.pet_id,pet.petId);
+      // Play the new official run using only server-advertised choices. A
+      // failed room is final: never reroll, rewrite, or force a winning step.
+      const steps=[];
+      for(let attempt=0;attempt<10;attempt++){
+        const active=f.sql.prepare('SELECT run_id,status,current_room,depth,score FROM telegram_pet_runs WHERE run_id=?').get(nextSaved.run_id);
+        if(!['active','extractable'].includes(active.status))break;
+        const live=await hooks.buildPetMiniAppState(f.db,pet.owner,'fixture-token');
+        const available=Array.isArray(live.run?.choices)?live.run.choices:[];
+        assert.ok(available.length>0,'active official run must advertise a real choice');
+        const best=[...available].sort((a,b)=>Number(b.success_chance_bps||0)-Number(a.success_chance_bps||0))[0];
+        const choiceKey=best.key||best.choice_id;
+        assert.ok(choiceKey,'chosen option must have an authoritative key');
+        const outcome=await f.action(pet.owner,'run_step',{
+          run_id:nextSaved.run_id,choice_key:choiceKey,
+          expected_step_index:Number(active.current_room),
+          request_id:'daily-recovery-play-'+attempt,
+        });
+        assert.equal(outcome.accepted,true,JSON.stringify({attempt,choiceKey,outcome}));
+        steps.push({step:attempt+1,choice:choiceKey,reason:outcome.reason});
+        if(outcome.reason==='daily_room_failed')break;
+      }
+      const finished=f.sql.prepare('SELECT run_id,status,depth,score FROM telegram_pet_runs WHERE run_id=?').get(nextSaved.run_id);
+      assert.ok(['completed','extracted','failed','active','extractable'].includes(finished.status));
+      if(finished.status==='active'||finished.status==='extractable'){
+        assert.equal(steps.length,10,'do not silently treat an unfinished short run as complete');
+      }
+      const priorAfter=f.sql.prepare('SELECT run_id,pet_id,telegram_id,status,depth,score FROM telegram_pet_runs WHERE run_id=?').get(original.run_id);
+      assert.deepEqual(priorAfter,terminal,'subsequent gameplay never overwrites prior failed run');
+      const marksAfter=f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks WHERE pet_id=?').get(pet.petId).n;
+      const crestsAfter=f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(pet.petId).n;
+      assert.ok(marksAfter<=1&&crestsAfter<=1,'new-day run cannot manufacture repeated daily/weekly evidence');
+      console.log('Moonpet next-day real Worker run progression:',JSON.stringify({
+        status:finished.status,depth:finished.depth,score:finished.score,steps,
+        growthMarks:marksAfter,weeklyCrests:crestsAfter,
+      }));
     }
     console.log('Moonpet real Worker failed-run next-day attempt:',JSON.stringify({
       first:{runId:terminal.run_id,status:terminal.status,depth:terminal.depth,score:terminal.score},
