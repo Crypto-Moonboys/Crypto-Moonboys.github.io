@@ -69,6 +69,120 @@ export function canonicalizePublishedHtml(html, expectedUrl, label = expectedUrl
   };
 }
 
+
+/**
+ * A different AtomicAssets template can legitimately reuse another NFT's
+ * visible character name. Give *only duplicate* NFT metadata a stable template
+ * identifier in the COPIED artifact. Preserve H1, artwork and original source.
+ * Do not rewrite ordinary articles with coincidentally matching titles.
+ */
+function headTitle(html) {
+  return (html.match(/<head\b[^>]*>[\s\S]*?<\/head\s*>/i)?.[0] || '')
+    .match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+    ?.replace(/\s+/g, ' ').trim() || '';
+}
+
+function nftTemplateIdentity(html, url) {
+  const article = [...html.matchAll(/<article\b[^>]*>/gi)]
+    .map(match => match[0])
+    .find(markup => attribute(markup, 'data-page-type') === 'nft_template');
+  if (!article) return null;
+  const collection = attribute(article, 'data-collection');
+  const templateId = attribute(article, 'data-template-id');
+  const pathname = new URL(url).pathname;
+  if (!/^[a-z][a-z0-9]{2,30}$/.test(collection) ||
+      !/^[1-9][0-9]{1,13}$/.test(templateId) ||
+      !pathname.startsWith('/wiki/' + collection + '-') ||
+      !pathname.endsWith('-' + templateId + '.html')) {
+    throw new Error(url + ': malformed or mismatched WAX NFT template identity');
+  }
+  return { collection, templateId };
+}
+
+function replaceHeadMeta(html, kind, key, value) {
+  const headMatch = /<head\b[^>]*>[\s\S]*?<\/head\s*>/i.exec(html);
+  if (!headMatch) throw new Error('NFT metadata update needs an HTML head');
+  let head = headMatch[0];
+  const matching = tags(head, 'meta').filter(markup =>
+    attribute(markup, kind).toLowerCase() === key.toLowerCase());
+  if (matching.length > 1) throw new Error('Duplicate metadata tag: ' + key);
+  if (matching.length) {
+    const original = matching[0];
+    const next = original.replace(/(\bcontent\s*=\s*)(["'])(.*?)\2/i,
+      (_all, prefix, quote) => prefix + quote + value + quote);
+    if (next === original && attribute(original, 'content') !== value) {
+      throw new Error('Uneditable metadata tag: ' + key);
+    }
+    head = head.replace(original, next);
+  } else {
+    head = head.replace(/<\/head\s*>/i, '  <meta ' + kind + '="' + key +
+      '" content="' + value + '">\n</head>');
+  }
+  return html.slice(0, headMatch.index) + head +
+    html.slice(headMatch.index + headMatch[0].length);
+}
+
+export function disambiguatePublishedNftTitles(records) {
+  const byTitle = new Map();
+  for (const record of records) {
+    const title = headTitle(record.html);
+    if (!title) continue;
+    const list = byTitle.get(title) || [];
+    list.push(record);
+    byTitle.set(title, list);
+  }
+
+  const updates = new Map();
+  const warnings = [];
+  for (const [oldTitle, group] of byTitle) {
+    if (group.length < 2) continue;
+    for (const record of group) {
+      const nft = nftTemplateIdentity(record.html, record.url);
+      if (!nft) {
+        warnings.push({ url: record.url, issues: ['Duplicate non-NFT page title; editorial review required'] });
+        continue;
+      }
+      // The original title remains recognizable, but its exact WAX template
+      // record becomes discoverable separately from same-name variations.
+      const suffix = ' · ' + nft.collection + ' NFT #' + nft.templateId;
+      const brandSuffix = /(?:\s*[-—–]\s*Crypto Moonboys Wiki)$/i;
+      const newTitle = brandSuffix.test(oldTitle)
+        ? oldTitle.replace(brandSuffix, suffix + ' - Crypto Moonboys Wiki')
+        : oldTitle + suffix;
+
+      const titleTag = /<title\b[^>]*>[\s\S]*?<\/title>/i;
+      let html = record.html.replace(titleTag, '<title>' + newTitle + '</title>');
+      html = replaceHeadMeta(html, 'property', 'og:title', newTitle);
+
+      // A factual template identifier also makes otherwise identical
+      // descriptions specific without inventing sales, price or rarity data.
+      const head = html.match(/<head\b[^>]*>[\s\S]*?<\/head\s*>/i)?.[0] || '';
+      const descriptionTag = tags(head, 'meta')
+        .find(tag => attribute(tag, 'name').toLowerCase() === 'description');
+      if (descriptionTag) {
+        const originalDescription = attribute(descriptionTag, 'content').trim();
+        if (originalDescription && !new RegExp('(?:template(?: ID)?|#)\\s*#?' + nft.templateId + '\\b', 'i').test(originalDescription)) {
+          const newDescription = originalDescription.replace(/\.\s*$/, '') +
+            '. WAX template ID ' + nft.templateId + '.';
+          html = replaceHeadMeta(html, 'name', 'description', newDescription);
+          html = replaceHeadMeta(html, 'property', 'og:description', newDescription);
+        }
+      }
+      updates.set(record.url, html);
+    }
+  }
+  const final = new Map();
+  for (const record of records) {
+    const title = headTitle(updates.get(record.url) || record.html);
+    const first = final.get(title);
+    if (title && first && (updates.has(first) || updates.has(record.url))) {
+      throw new Error('NFT title remains duplicate after disambiguation: ' + record.url + ' and ' + first);
+    }
+    if (title && !first) final.set(title, record.url);
+  }
+  return { updates, changed: updates.size, warnings };
+}
+
 export function sitemapTargets(xml, siteRoot) {
   const urls = [...xml.matchAll(/<loc>\s*([^<]*?)\s*<\/loc>/gi)].map(match => match[1]);
   if (!urls.length) throw new Error('sitemap.xml has no locations');
@@ -105,21 +219,26 @@ export async function ensurePublishedCanonicals(siteDirectory) {
   const targets = sitemapTargets(xml, siteRoot);
   // Verify the entire sitemap before mutating any file. No partial output on
   // a malformed indexed page, a redirect, a noindex or a canonical conflict.
-  const updates = [];
+  const records = [];
   for (const { url, filename } of targets) {
     let html;
     try { html = await readFile(filename, 'utf8'); }
     catch { throw new Error('Sitemap lists an unreadable/missing published HTML page: ' + url); }
     const result = canonicalizePublishedHtml(html, url, url);
-    if (result.inserted) updates.push({ filename, html: result.html });
+    records.push({ url, filename, original: html, html: result.html });
+    if (result.inserted) added++;
     else present++;
     if (result.warnings.length) warnings.push({ url, issues: result.warnings });
   }
-  for (const update of updates) {
-    await writeFile(update.filename, update.html, 'utf8');
-    added++;
+  const nft = disambiguatePublishedNftTitles(records);
+  warnings.push(...nft.warnings);
+  // Both the canonical check and duplicate-title evaluation finish before
+  // any write, retaining the existing fail-closed Pages deployment policy.
+  for (const record of records) {
+    const output = nft.updates.get(record.url) || record.html;
+    if (output !== record.original) await writeFile(record.filename, output, 'utf8');
   }
-  return { checked: targets.length, added, present, warnings };
+  return { checked: targets.length, added, present, nftTitlesUpdated: nft.changed, warnings };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -127,7 +246,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const siteRoot = process.argv[2] || 'public-site';
     const result = await ensurePublishedCanonicals(siteRoot);
     console.log('Pages SEO canonical verification: ' + result.checked + ' URLs; ' +
-      result.added + ' missing links injected; ' + result.present + ' already canonical.');
+      result.added + ' missing links injected; ' + result.present + ' already canonical; ' +
+      result.nftTitlesUpdated + ' repeated NFT titles disambiguated.');
     if (result.warnings.length) {
       console.warn('Nonblocking editorial metadata warnings on ' + result.warnings.length + ' pages:');
       result.warnings.slice(0, 12).forEach(x => console.warn(x.url + ': ' + x.issues.join('; ')));
