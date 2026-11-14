@@ -43,7 +43,6 @@
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/avatar-builder-test.css">
   <link rel="icon" type="image/png" href="/favicon.png">
-  <script data-cfasync="false" defer src="/js/first-visit-intro.js"></script>
   <style>
     :root {
       --gold:#f3bd25; --cyan:#38d8e8; --ink:#050607; --muted:#aebbc4;
@@ -133,13 +132,6 @@
     .home-art-strip-track { animation-play-state:running; }
     @keyframes homeArtStripScroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
     @media (max-width:700px) { .home-art-strip img { height:clamp(280px,70vw,460px); } }
-    /* Dialog overlays the homepage only on first visit; homepage markup stays indexable. */
-    dialog#cm-bad-days-intro { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; border-radius:0; background:#000; overflow:hidden; }
-    dialog#cm-bad-days-intro::backdrop { background:#000; }
-    #cm-bad-days-intro iframe { display:block; width:100%; height:100%; border:0; background:#000; }
-    .intro-replay { padding:18px 16px 32px; text-align:center; background:#050607; }
-    .intro-replay a { color:#f3bd25; font-size:.9rem; font-weight:800; text-decoration:underline; text-underline-offset:4px; }
-    .intro-replay a:focus-visible { outline:2px solid #fff; outline-offset:5px; }
     @media (max-width:800px) {
       .simple-routes,.simple-steps { grid-template-columns:1fr; }
       .simple-section { padding:54px 0; }
@@ -275,8 +267,6 @@
     <p><a href="https://graffitikings.com/" target="_blank" rel="noopener noreferrer">Graffiti Kings wiki</a> · <a href="https://graffitikings.com/pages/darren-cullen-ser-history.html" target="_blank" rel="noopener noreferrer">Darren Cullen / SER</a> · <a href="https://graffitikings.com/pages/charlie-buster-grime-art-history.html" target="_blank" rel="noopener noreferrer">Charlie Buster / Grime Art</a> · <a href="https://graffitikings.com/pages/graffiti-kings-web-network.html" target="_blank" rel="noopener noreferrer">Press and source archive</a></p>
   </section>
   <!-- GK_COMPANION_LINKS:END -->
-
-  <nav class="intro-replay" aria-label="Replay the Crypto Moonboys Bad Days introduction"><a href="/enter.html">REPLAY THE BAD DAYS INTRO</a></nav>
 
   <div class="home-hidden-stats" aria-hidden="true"><div class="stat-num stat-total-articles" data-stat="article-count"></div><div class="stat-label">Wiki Pages</div><div class="stat-num stat-total-categories" data-stat="category-count"></div><div class="stat-num stat-last-updated" data-stat="last_updated"></div></div>
 </main>

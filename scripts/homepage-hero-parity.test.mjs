@@ -92,8 +92,10 @@ try {
             JSON.stringify([...gallerySets[0].querySelectorAll('img')].map(img => img.getAttribute('src'))) ===
               JSON.stringify([...gallerySets[1].querySelectorAll('img')].map(img => img.getAttribute('src'))),
           builderBeforeAcademy: builder?.nextElementSibling === mission,
-          badDaysMovedToSplash: !document.querySelector('.build-moonboy-hero') &&
-            !!document.querySelector('a[href="/enter.html"]'),
+          directHomepage: !document.querySelector('.build-moonboy-hero') &&
+            !document.querySelector('a[href="/enter.html"]') &&
+            !document.querySelector('#cm-bad-days-intro') &&
+            !document.querySelector('script[src*="first-visit-intro"]'),
           noObsoleteCta: !document.querySelector('.homepage-build-cta'),
           noRemovedCopy: !document.body.textContent.includes('GET READY #PLAYERONE') &&
             !document.body.textContent.includes('We Collaborate We Create We Inspire'),
@@ -111,7 +113,7 @@ try {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
         secondaryHeading: text(homepageContract.top_secondary_heading_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'badDaysMovedToSplash', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'directHomepage', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
@@ -143,27 +145,40 @@ try {
     }
     await page.close();
   }
-  // First visit: show the five-panel splash without navigating away from /.
-  // Enter/Skip must mark it seen; subsequent visits go straight to the homepage.
+  // First and returning visitors land on the homepage directly. The old
+  // splash URL is a noindex redirect, not a separate artwork experience.
   const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const visitor = await visitorContext.newPage();
   await visitor.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   await visitor.goto(origin + '/', { waitUntil: 'domcontentloaded' });
-  const introDialog = visitor.locator('dialog#cm-bad-days-intro');
-  await introDialog.waitFor({ state: 'visible' });
-  assert.equal(visitor.url(), origin + '/', 'First-visit splash must not redirect the real homepage');
-  const introFrame = visitor.frameLocator('#cm-bad-days-intro iframe');
-  await introFrame.locator('.build-moonboy-hero img').first().waitFor({ state: 'attached' });
-  assert.equal(await introFrame.locator('.build-moonboy-hero img').count(), 5, 'Intro frame contains all five panels');
-  await introFrame.locator('.skip-button').click();
-  await introDialog.waitFor({ state: 'detached' });
-  assert.equal(await visitor.evaluate(() => localStorage.getItem('cm-bad-days-intro-seen-v1')), '1');
+  assert.equal(visitor.url(), origin + '/', 'First-time visitor arrives at homepage');
+  assert.equal(await visitor.locator('#cm-bad-days-intro').count(), 0, 'No automatic splash overlay');
   await visitor.reload({ waitUntil: 'domcontentloaded' });
-  assert.equal(await visitor.locator('#cm-bad-days-intro').count(), 0, 'Returning visitors bypass the splash');
+  assert.equal(await visitor.locator('#cm-bad-days-intro').count(), 0, 'Returning visitor still sees homepage');
   await visitor.goto(origin + '/enter.html', { waitUntil: 'domcontentloaded' });
-  assert.equal(await visitor.locator('.build-moonboy-hero img').count(), 5, 'Standalone replay retains the complete image run');
+  await visitor.waitForURL(origin + '/');
+  assert.equal(await visitor.locator('.build-moonboy-hero').count(), 0, 'Legacy splash never renders artwork');
+  await visitor.goto(origin + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
+  const badDaysPanels = visitor.locator('#bad-days-artwork img');
+  assert.equal(await badDaysPanels.count(), 5, 'Five panels now live on My Moonboy');
+  // Images are intentionally lazy below the mission ledger. Their intrinsic
+  // height is unknown until loaded, so scroll and decode each before measuring
+  // rather than sampling offscreen placeholders after DOMContentLoaded.
+  for (const panel of await badDaysPanels.all()) {
+    await panel.scrollIntoViewIfNeeded();
+    await panel.evaluate(image => image.decode());
+  }
+  const panels = await badDaysPanels.evaluateAll(images => images.map(image => {
+    const rect = image.getBoundingClientRect();
+    return { width: rect.width, height: rect.height, alt: image.alt, source: image.getAttribute('src') };
+  }));
+  assert.ok(panels.every((panel, index) =>
+    Math.abs(panel.width - 390) <= 1 && panel.height > 0 &&
+    panel.alt.includes((index + 1) + ' of 5') &&
+    panel.source.endsWith('V' + (index + 1) + '.jpg')
+  ), 'Five panels retain order, accessibility labels and full 390px viewport width');
   await visitorContext.close();
-  console.log('First-visit modal, skip, repeat visit and standalone replay checks passed');
+  console.log('First visit, return visit, legacy redirect and moved artwork checks passed');
   console.log('Screenshots: ' + output);
 } finally {
   await browser?.close();
