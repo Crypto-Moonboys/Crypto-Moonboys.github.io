@@ -13,7 +13,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const rootIndex = process.argv.indexOf('--root');
+if (rootIndex !== -1 && (!process.argv[rootIndex + 1] || process.argv[rootIndex + 1].startsWith('--'))) {
+  throw new Error('Pass a published directory after --root, e.g. --root public-site');
+}
+const ROOT = rootIndex === -1 ? REPO_ROOT : path.resolve(REPO_ROOT, process.argv[rootIndex + 1]);
 const SITE = 'https://cryptomoonboys.com';
 const strict = process.argv.includes('--strict');
 const json = process.argv.includes('--json');
@@ -81,6 +86,8 @@ for (const loc of locs) {
   else stats.other++;
   const html = fs.readFileSync(filename, 'utf8');
   const data = headData(html);
+  if (!/<head\\b/i.test(html) || !/<\\/head>/i.test(html)) add('error', loc, 'missing HTML head');
+  if (!html.trim()) add('error', loc, 'empty HTML document');
   if (/noindex/i.test(data.robots)) add('error', loc, 'sitemap page is marked noindex');
   if (/http-equiv\s*=\s*["']refresh["']/i.test(data.head)) add('error', loc, 'sitemap points to a meta-refresh redirect');
   if (!data.title) add('warning', loc, 'missing HTML title');
@@ -109,6 +116,8 @@ else {
     console.log('[' + problem.severity.toUpperCase() + '] ' + problem.url + ' — ' + problem.reason);
   }
   if (problems.length > 50) console.log('... ' + (problems.length - 50) + ' further findings (use --json for all).');
-  console.log('Repository metadata only: verify production HTTP, GSC indexing, Core Web Vitals and rich results separately.');
+  console.log(rootIndex === -1
+    ? 'Repository source metadata (some wiki canonicals are injected into the Pages artifact).'
+    : 'Published artifact metadata; verify production HTTP, GSC indexing, Core Web Vitals and rich results separately.');
 }
 if (strict && problems.length) process.exitCode = 1;
