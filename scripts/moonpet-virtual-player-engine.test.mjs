@@ -15,6 +15,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import { simulate as simulateNeglect } from './moonpet-neglect-simulator.mjs';
+import { nextFailedRunOpportunity } from './moonpet-failed-run-recovery.js';
 
 const UTC_BASE = Date.parse('2026-11-01T08:00:00.000Z');
 const DAY_MS = 86_400_000;
@@ -440,5 +441,64 @@ test('365-day clock alone cannot fabricate Legendary, Growth Marks or Weekly Cre
     assert.equal(first,0,'age must not create any qualifying Growth Marks');
     assert.equal(weekly,0,'age must not create any qualifying Weekly Crests');
     assert.equal(legendary,0,'Legendary cannot be created merely by advancing the clock');
+  }finally{f.close();t.mock.timers.reset();}
+});
+
+
+test('real Daily Run failure schedules next-day Worker eligibility without awarding fabricated progression',async t=>{
+  // Deterministic outcome reproduces the existing daily-outcome-integrity
+  // regression's 2026-10-02 under-rested combat scenario.
+  const startAt=Date.parse('2026-10-02T12:00:00.000Z');
+  t.mock.timers.enable({apis:['Date'],now:startAt});
+  const f=makeFixture(()=>Date.now());
+  try{
+    const pet=f.createPlayer('virtual-failed-run');
+    const start=await f.action(pet.owner,'daily_run_start',{request_id:'daily-failure-start'});
+    assert.equal(start.accepted,true,JSON.stringify(start));
+    const original=f.sql.prepare('SELECT run_id,pet_id,telegram_id,status,depth,score FROM telegram_pet_runs WHERE telegram_id=? ORDER BY rowid DESC LIMIT 1').get(pet.owner);
+    assert.ok(original && original.pet_id===pet.petId);
+    f.sql.prepare('UPDATE telegram_pet_instances SET last_decay_at=? WHERE pet_id=?')
+      .run(new Date(startAt-48*3600_000).toISOString(),pet.petId);
+    const shown=await hooks.buildPetMiniAppState(f.db,pet.owner,'fixture-token');
+    const combat=shown.run?.choices?.find(choice=>choice.key==='fight');
+    assert.ok(combat,'real Worker must expose a fight choice for this seeded daily room');
+    const resolution=await f.action(pet.owner,'run_step',{
+      run_id:original.run_id,choice_key:'fight',expected_step_index:0,request_id:'daily-failure-fight',
+    });
+    const terminal=f.sql.prepare('SELECT run_id,pet_id,telegram_id,status,depth,score FROM telegram_pet_runs WHERE run_id=?').get(original.run_id);
+    assert.equal(resolution.reason,'daily_room_failed',JSON.stringify(resolution));
+    assert.equal(terminal.status,'failed','original failed run must remain persisted');
+    const evidenceBefore={
+      marks:f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks WHERE pet_id=?').get(pet.petId).n,
+      crests:f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(pet.petId).n,
+    };
+    const scheduled=nextFailedRunOpportunity({
+      run:terminal,dayKey:'2026-10-02',now:new Date(startAt),
+      choiceKeys:shown.run?.choices?.map(choice=>choice.key)||[],lastChoiceKey:'fight',
+    });
+    assert.equal(scheduled.mayAttemptNewDay,false);
+    t.mock.timers.setTime(Date.parse('2026-10-03T12:00:00.000Z'));
+    const eligible=nextFailedRunOpportunity({
+      run:terminal,dayKey:'2026-10-02',now:new Date(),
+      choiceKeys:shown.run?.choices?.map(choice=>choice.key)||[],lastChoiceKey:'fight',
+    });
+    assert.equal(eligible.mayAttemptNewDay,true);
+    const next=await f.action(pet.owner,'daily_run_start',{request_id:'daily-recovery-next-day'});
+    const saved=f.sql.prepare('SELECT run_id,pet_id,telegram_id,status,depth,score FROM telegram_pet_runs WHERE run_id=?').get(original.run_id);
+    assert.deepEqual(saved,terminal,'Worker may not rewrite a failed historical Daily Run');
+    assert.deepEqual({
+      marks:f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks WHERE pet_id=?').get(pet.petId).n,
+      crests:f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(pet.petId).n,
+    },evidenceBefore,'scheduling or beginning a fresh attempt cannot mint progression awards');
+    if(next.accepted){
+      const nextSaved=f.sql.prepare("SELECT run_id,pet_id,telegram_id,status FROM telegram_pet_runs WHERE telegram_id=? AND run_id<>? ORDER BY rowid DESC LIMIT 1").get(pet.owner,original.run_id);
+      assert.ok(nextSaved && nextSaved.run_id!==original.run_id,'next-day run gets its own persisted identity');
+      assert.equal(nextSaved.pet_id,pet.petId);
+    }
+    console.log('Moonpet real Worker failed-run next-day attempt:',JSON.stringify({
+      first:{runId:terminal.run_id,status:terminal.status,depth:terminal.depth,score:terminal.score},
+      next:{accepted:next.accepted,reason:next.reason||null,eligibleByCalendar:eligible.mayAttemptNewDay},
+      marks:evidenceBefore.marks,crests:evidenceBefore.crests,
+    }));
   }finally{f.close();t.mock.timers.reset();}
 });
