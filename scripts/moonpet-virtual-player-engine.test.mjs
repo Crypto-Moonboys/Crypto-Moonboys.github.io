@@ -564,7 +564,7 @@ test('three-day real Worker Weekly Journey evidence: care training check-ins wit
         const record={day,action,reason:result.reason||null,energyBefore:before?.energy,energyAfter:after?.energy};
         (result.accepted?accepted:rejected).push(record);
       }
-      if(day<2){
+      {
         t.mock.timers.setTime(epoch+day*DAY_MS+7*60_000);
         const result=await fixture.action(player.owner,'daily_chest',{request_id:'weekly-'+day+'-cache'});
         (result.accepted?accepted:rejected).push({day,action:'daily_chest',reason:result.reason||null});
@@ -574,11 +574,13 @@ test('three-day real Worker Weekly Journey evidence: care training check-ins wit
     const count=type=>events.filter(event=>event.event_type===type).length;
     const training=count('train');
     const caches=count('daily_chest');
-    const checkInDays=new Set(events.filter(event=>event.event_type==='daily_chest').map(event=>event.created_at.slice(0,10))).size;
+    const checkInSources=new Set(['daily_chest','check_in','daily_check_in','weekly_check_in']);
+    const checkInReceipts=events.filter(event=>checkInSources.has(event.event_type));
+    const checkInDays=new Set(checkInReceipts.map(event=>event.created_at.slice(0,10))).size;
     const care=count('feed')+count('play')+count('clean');
     // Only genuinely accepted receipts can qualify. This diagnostic reports
     // an unmet goal instead of pretending that rejected Train earned credit.
-    assert.ok(training<=3 && caches<=2 && care<=9);
+    assert.ok(training<=3 && caches<=3 && care<=9);
     const rows=fixture.sql.prepare('SELECT * FROM telegram_pet_weekly_journey_objectives WHERE pet_id=?').all(player.petId);
     const crest=fixture.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(player.petId).n;
     assert.equal(crest,0,'a partial Weekly Journey must not invent a Crest');
@@ -588,6 +590,8 @@ test('three-day real Worker Weekly Journey evidence: care training check-ins wit
       accepted:accepted.length,rejected,events:events.length,
       care,training,checkInDays,trainingTarget:3,trainingDeficit:Math.max(0,3-training),
       cacheTarget:2,cacheDeficit:Math.max(0,2-checkInDays),
+      checkInReceipts:checkInReceipts.map(event=>({type:event.event_type,at:event.created_at})),
+      dailyChestAttempts:accepted.concat(rejected).filter(row=>row.action==='daily_chest'),
       weeklyObjectiveRows:rows.length,byObjective,crests:crest,
       qualificationVerified:false,blocker:training<3?'training_receipts_missing':'run_and_boss_not_tested',
     }));
