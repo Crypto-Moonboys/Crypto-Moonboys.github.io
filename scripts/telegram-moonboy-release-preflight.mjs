@@ -10,9 +10,9 @@ const wrangler = readFileSync(new URL(
 const checks = [
   ['production group photos ON', /TELEGRAM_MOONBOY_PHOTOS_ENABLED = "true"/.test(wrangler)],
   ['production mode group', /TELEGRAM_MOONBOY_MEDIA_MODE = "group"/.test(wrangler)],
-  ['production approved message kinds', /TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification,core-command"/.test(wrangler)],
+  ['production approved message kinds', /TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification"/.test(wrangler)],
   ['Images binding provisioned', /\[images\][\s\S]*?binding\s*=\s*"IMAGES"/.test(wrangler)],
-  ['core command kind approved', /'games-pin', 'core-command'/.test(gateway)],
+  ['command kinds excluded from artwork', !/'tag-command'|'core-command'|'games-pin'/.test(gateway)],
   ['pet notification kind approved', /'pet-notification'/.test(gateway)],
   ['request-scoped command routing present', /createTelegramCommandMediaContext\(env, update\)/.test(worker)],
   ['Games pin remains confirmed text infrastructure', /ensureTelegramGamesPinned\(unwrapTelegramBotToken\(botToken\)/.test(worker)],

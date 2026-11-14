@@ -13,11 +13,10 @@ import {
 
 const ID = /^-?[0-9]{1,20}$/;
 const SEED = /^[A-Za-z0-9_.:|/-]{1,200}$/;
-const LEGACY_DEFAULT_KIND = new Set(['tag-command', 'tag-bulletin', 'tag-rank']);
+const LEGACY_DEFAULT_KIND = new Set(['tag-bulletin', 'tag-rank']);
 const APPROVED_KIND = new Set([
   ...LEGACY_DEFAULT_KIND,
-  'daily-digest', 'group-announcement', 'pet-notification',
-  'games-pin', 'core-command'
+  'daily-digest', 'group-announcement', 'pet-notification'
 ]);
 
 function messageKindEnabled(env, messageKind) {

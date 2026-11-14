@@ -16,7 +16,7 @@ import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
-import { createTelegramCommandMediaContext, readTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
+import { createTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { projectCommittedPetResult } from './pets/committed-result.js';
@@ -734,15 +734,9 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
     console.log('TG send skipped', JSON.stringify({ hasBotToken: !!botToken, hasChatId: !!chatId }));
     return { ok: false, status: 0, error: 'missing_chat_or_token' };
   }
-  const commandContext = readTelegramCommandMediaContext(botToken);
-  if (commandContext) {
-    return sendBaseWorkerMoonboyMessage(commandContext.env, chatId, text, extra, {
-      chatKind: commandContext.chatKind,
-      messageKind: 'core-command',
-      logicalId: commandContext.logicalId,
-      sequence: commandContext.nextSequence(),
-    });
-  }
+  // Generated Moonboy artwork belongs to updates/announcements, never
+  // interactive command or callback replies. Preserve formatting/keyboards.
+  botToken = unwrapTelegramBotToken(botToken);
   try {
     const response = await fetch(
       `https://api.telegram.org/bot${botToken}/sendMessage`,
@@ -16530,6 +16524,7 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  sendTelegramMessage,
   cmdPetRename,
   cmdPetNotify,
   getPetNotificationPreference,

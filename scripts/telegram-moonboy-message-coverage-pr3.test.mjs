@@ -101,27 +101,27 @@ function update(command = '/taghelp', messageId = 88) {
 test('media feature defaults OFF even with a valid binding and Telegram token', () => {
   const env = enabled({ TELEGRAM_MOONBOY_PHOTOS_ENABLED: 'false' });
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), false);
   assert.equal(isMoonboyTelegramMediaEnabled(enabled({
     TELEGRAM_MOONBOY_MEDIA_MODE: 'off'
-  }), { chatId: privateChat, chatKind: 'private', messageKind: 'tag-command' }), false);
+  }), { chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank' }), false);
   assert.equal(isMoonboyTelegramMediaEnabled(enabled({ IMAGES: null }), {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), false);
 });
 
 test('private canary is exact-id and private-only; no unrelated chat gets images', () => {
   const env = enabled();
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), true);
   for (const context of [
     { chatId: groupChat, chatKind: 'group', messageKind: 'tag-bulletin' },
-    { chatId: '123456788', chatKind: 'private', messageKind: 'tag-command' },
-    { chatId: privateChat, chatKind: 'group', messageKind: 'tag-command' },
+    { chatId: '123456788', chatKind: 'private', messageKind: 'tag-rank' },
+    { chatId: privateChat, chatKind: 'group', messageKind: 'tag-rank' },
     { chatId: privateChat, chatKind: 'private', messageKind: 'daily-digest' },
-    { chatId: 'not-an-id', chatKind: 'private', messageKind: 'tag-command' }
+    { chatId: 'not-an-id', chatKind: 'private', messageKind: 'tag-rank' }
   ]) {
     assert.equal(isMoonboyTelegramMediaEnabled(env, context), false,
       JSON.stringify(context));
@@ -137,16 +137,16 @@ test('group mode requires the official configured group; no arbitrary group', ()
     chatId: '-100987654321', chatKind: 'group', messageKind: 'tag-bulletin'
   }), false);
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), false);
 });
 
 test('stable numeric public message seed never includes Telegram text or wallet details', () => {
-  const seed = moonboyTelegramMessageSeed('tag-command', privateChat, 88, 0);
-  assert.equal(seed, 'tag-command:123456789:88:0');
-  assert.equal(seed, moonboyTelegramMessageSeed('tag-command', privateChat, 88, 0));
-  assert.notEqual(seed, moonboyTelegramMessageSeed('tag-command', privateChat, 89, 0));
-  assert.throws(() => moonboyTelegramMessageSeed('tag-command', 'owner@example.com', 88),
+  const seed = moonboyTelegramMessageSeed('tag-rank', privateChat, 88, 0);
+  assert.equal(seed, 'tag-rank:123456789:88:0');
+  assert.equal(seed, moonboyTelegramMessageSeed('tag-rank', privateChat, 88, 0));
+  assert.notEqual(seed, moonboyTelegramMessageSeed('tag-rank', privateChat, 89, 0));
+  assert.throws(() => moonboyTelegramMessageSeed('tag-rank', 'owner@example.com', 88),
     /telegram_media_invalid_seed/);
 });
 
@@ -154,8 +154,8 @@ test('disabled integration never fetches images or reaches Telegram', async () =
   const h = harness();
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled({ TELEGRAM_MOONBOY_PHOTOS_ENABLED: 'false' }),
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command',
-    seed: 'tag-command:123456789:88:0', text: 'message', fetchImpl: h.fetchImpl
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank',
+    seed: 'tag-rank:123456789:88:0', text: 'message', fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'disabled');
   assert.equal(h.calls.length, 0);
@@ -165,7 +165,7 @@ test('enabled private canary composes actual nine homepage layers and sends one 
   const h = harness();
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled(), chatId: privateChat, chatKind: 'private',
-    messageKind: 'tag-command', seed: 'tag-command:123456789:88:0',
+    messageKind: 'tag-rank', seed: 'tag-rank:123456789:88:0',
     text: 'TAG RUN · rank profile', fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'sent');
@@ -182,7 +182,7 @@ test('missing manifest fails BEFORE Telegram photo request so legacy path can se
   const h = harness({ failManifest: true });
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled(), chatId: privateChat, chatKind: 'private',
-    messageKind: 'tag-command', seed: 'tag-command:123456789:88:0',
+    messageKind: 'tag-rank', seed: 'tag-rank:123456789:88:0',
     text: 'TAG RUN', fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'composition_failed');
@@ -194,7 +194,7 @@ test('long Telegram text skips the paid render and leaves existing text path int
   const h = harness();
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled(), chatId: privateChat, chatKind: 'private',
-    messageKind: 'tag-command', seed: 'tag-command:123456789:88:0',
+    messageKind: 'tag-rank', seed: 'tag-rank:123456789:88:0',
     text: 'x'.repeat(1025), fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'disabled');
