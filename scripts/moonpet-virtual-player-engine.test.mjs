@@ -338,3 +338,65 @@ test('time-budgeted real Worker action scheduling: 15/30/60/180 minute candidate
     console.log('Moonpet REAL Worker time-budgeted candidate profiles (not XP maximum):',JSON.stringify(output));
   }finally{f.close();t.mock.timers.reset();}
 });
+
+
+test('guidance-aware candidate scheduler avoids spent cache and tired training over real Worker sessions',async t=>{
+  // This is a bounded strategy improvement, not an optimal or exhaustive
+  // gameplay solver. The authority remains the Worker and committed receipts.
+  t.mock.timers.enable({apis:['Date'],now:UTC_BASE});
+  const fixture=makeFixture(()=>Date.now());
+  try{
+    const budgets=[15,30,60,180],results=[];
+    for(const minutes of budgets){
+      const owner='virtual-adaptive-'+minutes;
+      const {petId}=fixture.createPlayer(owner);
+      let attempted=0,accepted=0,blocked=0,preventedCache=0,preventedTired=0;
+      const rejectedReasons={},successfulEvents=[];
+      const actions=['feed','play','clean','train','work'];
+      let cacheConsumed=false;
+      for(let minute=0;minute<minutes;minute++){
+        t.mock.timers.setTime(UTC_BASE+minute*60_000);
+        // Daily Cache is once per UTC day. Once accepted (or already claimed)
+        // it is no longer a candidate for the remaining session.
+        const canTryCache=!cacheConsumed && minute===4;
+        let kind=canTryCache?'daily_chest':actions[minute%actions.length];
+        const payload={request_id:'adaptive-'+minutes+'-'+minute};
+        if(kind==='work')payload.job_key='street_artist';
+        if(kind==='train'){
+          const saved=fixture.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(petId);
+          if(Number(saved.energy)<18){
+            kind='play';
+            preventedTired++;
+          }
+        }
+        if(cacheConsumed && minute>=5) preventedCache++;
+        const answer=await fixture.action(owner,kind,payload);
+        attempted++;
+        if(answer.accepted && !answer.duplicate){
+          accepted++;
+          successfulEvents.push(kind);
+        } else {
+          blocked++;
+          const reason=String(answer.reason||'unknown');
+          rejectedReasons[reason]=(rejectedReasons[reason]||0)+1;
+        }
+        if(kind==='daily_chest' && (answer.accepted || answer.reason==='daily_claimed')) cacheConsumed=true;
+      }
+      const eventRows=fixture.accepted(owner);
+      const balance=fixture.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(petId);
+      const cacheRows=eventRows.filter(event=>event.event_type==='daily_chest');
+      assert.equal(cacheRows.length,1,'exactly one actual Daily Cache receipt per daily session');
+      assert.equal(rejectedReasons.daily_claimed||0,0,'adaptive plan must not retry a claimed cache');
+      assert.ok(accepted>0);
+      assert.equal(attempted,accepted+blocked);
+      assert.ok(eventRows.length>=accepted-1,'all recorded successes must have real Worker evidence');
+      results.push({
+        minutes,attempted,accepted,blocked,preventedCache,preventedTired,
+        rejectionReasons:rejectedReasons,earnedPetXp:Number(balance.pet_xp)-200,
+        savedEventPetXp:eventRows.reduce((sum,event)=>sum+Number(event.pet_xp_awarded||0),0),
+      });
+    }
+    assert.deepEqual(results.map(result=>result.minutes),budgets);
+    console.log('Moonpet adaptive Worker candidate scheduler (not a global maximum):',JSON.stringify(results));
+  }finally{fixture.close();t.mock.timers.reset();}
+});
