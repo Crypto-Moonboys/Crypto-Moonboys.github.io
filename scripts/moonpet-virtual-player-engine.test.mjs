@@ -125,3 +125,54 @@ test('virtual absence never invents accepted care',async t=>{
     // no runtime neglect ledger or midnight settlement exists in this PR.
   } finally {f.close();t.mock.timers.reset();}
 });
+
+
+test('optional accelerated real-engine cohort: attendance and genuine persisted XP across configurable days', async t => {
+  // Opt-in heavy scenario: MOONPET_VIRTUAL_DAYS=365 node --test scripts/moonpet-virtual-player-engine.test.mjs
+  // Each player performs only real dispatches; no source-synthetic XP credits.
+  const days=Number(process.env.MOONPET_VIRTUAL_DAYS || 0);
+  if (!days) return t.skip('set MOONPET_VIRTUAL_DAYS=365 to run long-lived, real-action cohort');
+  assert.ok(Number.isInteger(days) && days>=1 && days<=365);
+  t.mock.timers.enable({apis:['Date'],now:UTC_BASE});
+  const profiles=[
+    {key:'complete',shouldCare:()=>true,actions:DAY},
+    {key:'weekend',shouldCare:day=>[0,6].includes(new Date(UTC_BASE+day*DAY_MS).getUTCDay()),actions:DAY},
+    {key:'minimal',shouldCare:()=>true,actions:['feed']},
+    {key:'absent',shouldCare:()=>false,actions:[]},
+  ];
+  // Separate accounts in one isolated SQLite database; no real Telegram or D1.
+  const f=makeFixture(()=>Date.now());
+  try{
+    for(const profile of profiles) f.createPlayer('virtual-'+profile.key);
+    const results={};
+    for(const profile of profiles)results[profile.key]={attempted:0,accepted:0,rejected:0,activeDays:0};
+    for(let day=0;day<days;day++){
+      for(const profile of profiles){
+        if(!profile.shouldCare(day))continue;
+        const player='virtual-'+profile.key;
+        results[profile.key].activeDays++;
+        for(let i=0;i<profile.actions.length;i++){
+          // Ten-second human interaction/transition delay; own cooldown enforcement
+          // remains controlled by the real Worker, never by this loop.
+          t.mock.timers.setTime(UTC_BASE+day*DAY_MS+i*10_000);
+          results[profile.key].attempted++;
+          const receipt=await f.action(player,profile.actions[i]);
+          if(receipt.accepted)results[profile.key].accepted++;
+          else results[profile.key].rejected++;
+        }
+      }
+    }
+    for(const profile of profiles){
+      const player='virtual-'+profile.key;
+      const accepted=f.accepted(player).filter(row=>DAY.includes(row.event_type));
+      assert.equal(accepted.length,results[profile.key].accepted,'accepted action totals derive from real saved receipts');
+      const saved=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(player);
+      assert.ok(saved && Number(saved.pet_xp)>=200);
+      results[profile.key].petXp=Number(saved.pet_xp);
+    }
+    assert.equal(results.absent.accepted,0);
+    assert.ok(results.complete.accepted>=results.minimal.accepted);
+    assert.ok(results.complete.accepted>=results.weekend.accepted);
+    console.log('Moonpet real-engine virtual cohort (not a complete gameplay optimizer):',JSON.stringify({days,results}));
+  }finally{f.close();t.mock.timers.reset();}
+});
