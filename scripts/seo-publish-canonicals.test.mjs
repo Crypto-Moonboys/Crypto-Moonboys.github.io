@@ -203,3 +203,13 @@ test('Moonboy Builder and NBG collection publish complete self-consistent sharin
       file + ': OG image must be an actual repository asset');
   }
 });
+
+
+test('NoBallGames rarity generator preserves the same published social head on future refreshes', () => {
+  const generator = readFileSync(path.join(ROOT, 'scripts/noballgamess-tracker-lib.mjs'), 'utf8');
+  const published = readFileSync(path.join(ROOT, 'wiki/noballgamess-nft-collection.html'), 'utf8');
+  const generatedHead = generator.match(/return \x60<!doctype html>[\s\S]*?(<head\b[^>]*>[\s\S]*?<\/head>)/i)?.[1];
+  const publishedHead = published.match(/<head\b[^>]*>[\s\S]*?<\/head>/i)?.[0];
+  assert.ok(generatedHead, 'the rarity renderer must define a complete HTML head');
+  assert.equal(generatedHead, publishedHead, 'a future rarity refresh must not erase the SEO/OG tags');
+});
