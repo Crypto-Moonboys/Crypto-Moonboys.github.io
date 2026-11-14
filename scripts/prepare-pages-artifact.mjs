@@ -2,6 +2,7 @@
 import { cp, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { isEditorialOnlyPath, checkPublicDisclosure } from './public-canon-disclosure.mjs';
+import { ensurePublishedCanonicals } from './seo-publish-canonicals.mjs';
 
 const artifactDir = process.argv[2] || 'public-site';
 const repoRoot = path.resolve('.');
@@ -170,6 +171,16 @@ async function main() {
     }
   }
 
+  // Repair sitemap-listed pages only in the deploy artifact. Do not mutate
+  // protected wiki source files or conceal conflicting canonical/noindex rules.
+  const seo = await ensurePublishedCanonicals(resolvedArtifactDir);
+  console.log(`Pages SEO: ${seo.checked} sitemap URLs checked; ${seo.added} missing canonicals added; ${seo.present} already matched.`);
+  if (seo.warnings.length) {
+    console.warn(`Pages SEO: ${seo.warnings.length} pages need editorial metadata review (nonblocking).`);
+    for (const warning of seo.warnings.slice(0, 10)) {
+      console.warn(warning.url + ': ' + warning.issues.join('; '));
+    }
+  }
   await verifyPublicDisclosure(resolvedArtifactDir);
   console.log(`Prepared GitHub Pages artifact: ${path.relative(repoRoot, resolvedArtifactDir)}`);
 }
