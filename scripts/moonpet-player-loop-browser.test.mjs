@@ -762,10 +762,18 @@ try {
         document.querySelector('[data-panel="care"] [data-action="train"]')?.disabled === false
       );
       await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
-      // Capture pre-action XP before the simulated response loss. An accepted
-      // receipt can finish synchronising its instance XP while the next state
-      // read is in flight, so a post-action snapshot is not a stable baseline.
-      const beforeXP = (await hooks.buildPetMiniAppState(db, id, token)).pet.pet_xp;
+      // Snapshot the committed XP authority *in the database*, not a
+      // separately assembled state projection. Core/full state hydration can
+      // overlap and return a previous projection while the active instance
+      // already contains a settled reward. That is not a new care payout.
+      // A genuine duplicate award must still fail the exact delta check.
+      const activeInstance = () => sqlite.prepare(
+        'SELECT pet_id, pet_xp FROM telegram_pet_instances WHERE telegram_id=? AND pet_id=(SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?)'
+      ).get(id, id);
+      const beforeInstance = activeInstance();
+      assert.ok(beforeInstance && Number.isSafeInteger(beforeInstance.pet_xp),
+        'active instance XP baseline must exist before the care request');
+      const beforeXP = beforeInstance.pet_xp;
       faultAction = action;
       faultResult = undefined;
       // The previous care failure deliberately leaves its terminal message
@@ -788,6 +796,19 @@ try {
       assert.ok(Number.isSafeInteger(faultResult.pet_xp_awarded) && faultResult.pet_xp_awarded > 0,
         'this accepted care action has a concrete XP award');
       const expectedXP = beforeXP + faultResult.pet_xp_awarded;
+      const committedInstance = activeInstance();
+      const receiptRows = sqlite.prepare(
+        "SELECT pet_id, pet_xp_awarded, event_key FROM telegram_pet_events WHERE telegram_id=? AND event_type=? AND status='accepted'"
+      ).all(id, action);
+      assert.equal(committedInstance.pet_id, beforeInstance.pet_id,
+        'the care action cannot redirect XP to another pet');
+      assert.equal(receiptRows.length, 1, 'one accepted care receipt was committed');
+      assert.equal(receiptRows[0].pet_id, beforeInstance.pet_id,
+        'care receipt belongs to the active pet');
+      assert.equal(receiptRows[0].pet_xp_awarded, faultResult.pet_xp_awarded,
+        'the durable receipt matches the exact accepted action award');
+      assert.equal(committedInstance.pet_xp, expectedXP,
+        'the committed active pet gained exactly this one care receipt, not a duplicate');
       // A lost network response is not enough: the browser must first
       // process it and render a fresh fail-closed lock. Waiting for just the
       // warning text could match the previous feed iteration while play is
@@ -796,9 +817,9 @@ try {
         document.querySelector('#terminal-output')?.textContent.includes('ACTION RESPONSE UNCONFIRMED') &&
         document.querySelector('[data-panel="care"] [data-action="train"]')?.disabled === true
       );
-      // Preserve the accepted receipt count. Do not use a second post-action
-      // state read as the expected XP: it may observe a partially reconciled
-      // snapshot and mistakenly fail on the legitimate award (+20 for play).
+      // Preserve the accepted receipt count. A reconstructed state snapshot
+      // must not become the expected XP baseline; the committed instance and
+      // its accepted receipt above are the authoritative ledger evidence.
       const careReceiptCount = () => sqlite.prepare(
         "SELECT COUNT(*) AS n FROM telegram_pet_events WHERE telegram_id=? AND event_type=? AND status='accepted'"
       ).get(id, action).n;
@@ -826,9 +847,8 @@ try {
       assert.equal(actions.length, sent, 'Refresh only reads state');
       assert.equal((await hooks.buildPetMiniAppState(db, id, token)).pet.pet_xp, expectedXP,
         'Refresh cannot repay the uncertain care action');
-      assert.equal(sqlite.prepare(
-        'SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?'
-      ).get(id)?.pet_xp, expectedXP, 'recovered instance XP contains exactly one care award');
+      assert.equal(activeInstance().pet_xp, expectedXP,
+        'Refresh cannot modify the committed instance XP');
       assert.equal(careReceiptCount(), receiptsBeforeRefresh,
         'Refresh cannot create another accepted care receipt');
       assert.equal(await page.locator('[data-panel="care"] [data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
