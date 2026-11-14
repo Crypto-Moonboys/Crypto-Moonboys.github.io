@@ -171,6 +171,22 @@ test('optional accelerated real-engine cohort: attendance and genuine persisted 
       const saved=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(player);
       assert.ok(saved && Number(saved.pet_xp)>=200);
       results[profile.key].petXp=Number(saved.pet_xp);
+      // Read *actual* permanent progression awards from Worker-backed D1
+      // writes. This is a diagnostic, not a fake 240/44 milestone grant.
+      const marks=f.sql.prepare('SELECT earned_day,earned_at FROM telegram_pet_growth_marks WHERE pet_id=?').all('virtual-'+player);
+      const crests=f.sql.prepare('SELECT crest_id,earned_at FROM telegram_pet_weekly_crests WHERE pet_id=?').all('virtual-'+player);
+      results[profile.key].growthMarks=marks.length;
+      results[profile.key].weeklyCrests=crests.length;
+      results[profile.key].uniqueMarkDays=new Set(marks.map(row=>row.earned_day || String(row.earned_at).slice(0,10))).size;
+      results[profile.key].missingToLegendaryMarks=Math.max(0,240-marks.length);
+      results[profile.key].missingToLegendaryCrests=Math.max(0,44-crests.length);
+      assert.ok(marks.length<=days,'one daily Growth Mark maximum');
+      assert.ok(crests.length<=Math.ceil(days/7)+1,'weekly Crests cannot exceed elapsed calendar weeks');
+      assert.ok(results[profile.key].uniqueMarkDays<=marks.length);
+      if(profile.key==='absent'){
+        assert.equal(marks.length,0,'no fabricated Growth Marks for absent players');
+        assert.equal(crests.length,0,'no fabricated Crests for absent players');
+      }
     }
     assert.equal(results.absent.accepted,0);
     assert.ok(results.complete.accepted>=results.minimal.accepted);
