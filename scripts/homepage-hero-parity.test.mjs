@@ -159,8 +159,16 @@ try {
   await visitor.waitForURL(origin + '/');
   assert.equal(await visitor.locator('.build-moonboy-hero').count(), 0, 'Legacy splash never renders artwork');
   await visitor.goto(origin + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
-  assert.equal(await visitor.locator('#bad-days-artwork img').count(), 5, 'Five panels now live on My Moonboy');
-  const panels = await visitor.locator('#bad-days-artwork img').evaluateAll(images => images.map(image => {
+  const badDaysPanels = visitor.locator('#bad-days-artwork img');
+  assert.equal(await badDaysPanels.count(), 5, 'Five panels now live on My Moonboy');
+  // Images are intentionally lazy below the mission ledger. Their intrinsic
+  // height is unknown until loaded, so scroll and decode each before measuring
+  // rather than sampling offscreen placeholders after DOMContentLoaded.
+  for (const panel of await badDaysPanels.all()) {
+    await panel.scrollIntoViewIfNeeded();
+    await panel.evaluate(image => image.decode());
+  }
+  const panels = await badDaysPanels.evaluateAll(images => images.map(image => {
     const rect = image.getBoundingClientRect();
     return { width: rect.width, height: rect.height, alt: image.alt, source: image.getAttribute('src') };
   }));
