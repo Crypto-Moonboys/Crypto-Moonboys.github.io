@@ -213,3 +213,32 @@ test('NoBallGames rarity generator preserves the same published social head on f
   assert.ok(generatedHead, 'the rarity renderer must define a complete HTML head');
   assert.equal(generatedHead, publishedHead, 'a future rarity refresh must not erase the SEO/OG tags');
 });
+
+
+test('XRPL and TAGZcoin articles publish consistent Open Graph and Twitter cards', () => {
+  const pages = ['wiki/589-xrpl.html', 'wiki/666-xrpl.html', 'wiki/bear-xrpl.html', 'wiki/tagzcoin.html'];
+  for (const page of pages) {
+    const html = readFileSync(path.join(ROOT, page), 'utf8');
+    const head = html.split(/<\/head>/i)[0];
+    const title = head.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+    const description = head.match(/<meta\b[^>]*name="description"[^>]*content="([^"]+)"/i)?.[1];
+    const url = SITE_ORIGIN + '/' + page;
+    assert.ok(title && description, page + ' must have a source title and description');
+    assert.ok(head.includes('<meta property="og:title" content="' + title + '">'));
+    assert.ok(head.includes('<meta property="og:description" content="' + description + '">'));
+    assert.ok(head.includes('<meta property="og:url" content="' + url + '">'));
+    assert.ok(head.includes('<meta property="og:type" content="article">'));
+    assert.ok(head.includes('<meta name="twitter:title" content="' + title + '">'));
+    assert.ok(head.includes('<meta name="twitter:description" content="' + description + '">'));
+    assert.ok(head.includes('<meta name="twitter:card" content="summary_large_image">'));
+    const image = head.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+    assert.equal(image, SITE_ORIGIN + '/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png');
+    assert.ok(head.includes('<meta name="twitter:image" content="' + image + '">'));
+    assert.equal((head.match(/property="og:title"/g) || []).length, 1);
+    assert.equal((head.match(/property="og:description"/g) || []).length, 1);
+    const result = canonicalizePublishedHtml(html, url);
+    assert.ok(result.inserted || result.html.includes('<link rel="canonical" href="' + url + '">'));
+    assert.equal(result.html.split(/<\/head>/i)[1], html.split(/<\/head>/i)[1]);
+    assert.equal(result.warnings.length, 0);
+  }
+});
