@@ -85,7 +85,14 @@ try {
           first: document.querySelector('main').firstElementChild === video,
           followsVideo: duplicate.previousElementSibling === video,
           videoFullWidth: videoRect.width === innerWidth && Math.abs(videoRect.height - videoRect.width * 9 / 16) < 1,
-          videoSource: video.querySelector('iframe').getAttribute('src'),
+          videoSource: video.querySelector('iframe').getAttribute('data-src'),
+          videoUnloaded: video.querySelector('iframe').hidden &&
+            !video.querySelector('iframe').hasAttribute('src') &&
+            video.querySelector('button[data-media-activate]') !== null,
+          unloadedPlayers: [...document.querySelectorAll('iframe[data-src]')].length === 6 &&
+            [...document.querySelectorAll('iframe[data-src]')].every(f => f.hidden && !f.hasAttribute('src')),
+          nativeMp4Unloaded: document.querySelector('video.history-video[hidden] source[data-src]') !== null &&
+            document.querySelector('video.history-video source').getAttribute('src') === null,
           builderFollowsMissionText: duplicate.nextElementSibling === gallery && gallery.nextElementSibling === builder,
           galleryLoop: gallerySets.length === 2 && gallerySets[1].getAttribute('aria-hidden') === 'true' &&
             gallerySets.every(set => set.querySelectorAll('img').length === 9) &&
@@ -113,7 +120,7 @@ try {
         topHeading: text(homepageContract.top_heading_html), topPulse: text(homepageContract.top_pulse_html),
         secondaryHeading: text(homepageContract.top_secondary_heading_html),
       }, width + 'px distinct approved messages');
-      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'directHomepage', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight']) assert.equal(result[key], true, width + 'px ' + key);
+      for (const key of ['first', 'followsVideo', 'videoFullWidth', 'builderFollowsMissionText', 'builderBeforeAcademy', 'directHomepage', 'noObsoleteCta', 'noRemovedCopy', 'noOverflow', 'galleryLoop', 'artworkNaturalHeight', 'videoUnloaded', 'unloadedPlayers', 'nativeMp4Unloaded']) assert.equal(result[key], true, width + 'px ' + key);
       assert.equal(result.videoSource, 'https://www.youtube.com/embed/pyvZa_USoNc?rel=0');
       assert.deepEqual(result.artworkSources, ['/art/WAXP%20Pop%20Culture%20vs%20Meme%20Mayhem.jpg', '/img/BUILD%20A%20CRYPTO%20MOONBOY%20ONLINE.jpg']);
       assert.equal(result.inlineStyles, 0);
@@ -143,6 +150,18 @@ try {
       }
       console.log(width + 'px / ' + reducedMotion + ': style, text, placement, visibility, overflow and image checks passed');
     }
+
+    // Explicit activation is the only path that sets a network video src.
+    const player = page.locator('main > .home-video').first();
+    assert.equal(await player.locator('iframe').getAttribute('src'), null, 'No YouTube player request before Play');
+    await player.locator('button[data-media-activate]').click();
+    await page.waitForFunction(() => {
+      const frame = document.querySelector('main > .home-video iframe');
+      return frame && frame.src.includes('autoplay=1') && frame.hidden === false;
+    });
+    assert.equal(await player.locator('button[data-media-activate]').isHidden(), true);
+    const otherFrames = await page.locator('iframe[data-src]').evaluateAll(frames => frames.slice(1).every(frame => frame.hidden && !frame.hasAttribute('src')));
+    assert.equal(otherFrames, true, 'Only the clicked video loads; other players remain deferred');
     await page.close();
   }
   // First and returning visitors land on the homepage directly. The old
