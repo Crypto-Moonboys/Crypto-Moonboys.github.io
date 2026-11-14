@@ -43,7 +43,7 @@ await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const { port } = server.address();
 const origin = `http://127.0.0.1:${port}`;
 const standaloneUrl = `${origin}/moonboy-builder.html`;
-const homepageUrl = `${origin}/index.html`;
+const homepageUrl = `${origin}/join-us-on-the-wax-blockchain.html`;
 const installedBrowser = process.platform === 'win32'
   ? [
       'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
