@@ -539,3 +539,45 @@ test('real Daily Run failure schedules next-day Worker eligibility without award
     }));
   }finally{f.close();t.mock.timers.reset();}
 });
+
+
+test('three-day real Worker Weekly Journey evidence: care training check-ins without inventing a Crest',async t=>{
+  // This exercises only THREE of the five weekly objectives. Official
+  // completed runs and boss attempts are deliberately NOT simulated here.
+  const epoch=Date.parse('2026-11-02T08:00:00.000Z');
+  t.mock.timers.enable({apis:['Date'],now:epoch});
+  const fixture=makeFixture(()=>Date.now());
+  try{
+    const player=fixture.createPlayer('weekly-source-evidence');
+    const accepted=[],rejected=[];
+    for(let day=0;day<3;day++){
+      for(const [index,action] of ['feed','play','clean','train'].entries()){
+        t.mock.timers.setTime(epoch+day*DAY_MS+index*60_000);
+        const result=await fixture.action(player.owner,action,{request_id:'weekly-'+day+'-'+action});
+        const record={day,action,reason:result.reason||null};
+        (result.accepted?accepted:rejected).push(record);
+      }
+      if(day<2){
+        t.mock.timers.setTime(epoch+day*DAY_MS+5*60_000);
+        const result=await fixture.action(player.owner,'daily_chest',{request_id:'weekly-'+day+'-cache'});
+        (result.accepted?accepted:rejected).push({day,action:'daily_chest',reason:result.reason||null});
+      }
+    }
+    const events=fixture.accepted(player.owner);
+    const count=type=>events.filter(event=>event.event_type===type).length;
+    assert.equal(count('train'),3,'three accepted training receipts must exist');
+    assert.equal(count('daily_chest'),2,'two distinct-day Daily Cache receipts must exist');
+    assert.equal(new Set(events.filter(event=>event.event_type==='daily_chest').map(event=>event.created_at.slice(0,10))).size,2);
+    assert.ok(count('feed')+count('play')+count('clean')>=5,'at least five authentic care receipts');
+    const rows=fixture.sql.prepare('SELECT objective_id,progress_value,status FROM telegram_pet_weekly_journey_objectives WHERE pet_id=?').all(player.petId);
+    const crest=fixture.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(player.petId).n;
+    assert.equal(crest,0,'a partial Weekly Journey must not invent a Crest');
+    const byObjective=Object.fromEntries(rows.filter(row=>row.status==='accepted').map(row=>[row.objective_id,Math.max(0,Number(row.progress_value))]));
+    console.log('Moonpet partial Weekly Journey REAL Worker evidence (run and boss NOT VERIFIED):',JSON.stringify({
+      accepted:accepted.length,rejected,events:events.length,
+      care:count('feed')+count('play')+count('clean'),
+      training:count('train'),distinctCheckInDays:2,
+      weeklyObjectiveRows:rows.length,byObjective,crests:crest,
+    }));
+  }finally{fixture.close();t.mock.timers.reset();}
+});
