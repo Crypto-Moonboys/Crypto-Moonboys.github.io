@@ -551,14 +551,21 @@ test('three-day real Worker Weekly Journey evidence: care training check-ins wit
     const player=fixture.createPlayer('weekly-source-evidence');
     const accepted=[],rejected=[];
     for(let day=0;day<3;day++){
+      // Training spends energy. Sleep is an actual Worker action, not a
+      // direct pet-stat update. Allow recovery time before the day's care.
+      t.mock.timers.setTime(epoch+day*DAY_MS);
+      const rest=await fixture.action(player.owner,'sleep',{request_id:'weekly-'+day+'-sleep'});
+      (rest.accepted?accepted:rejected).push({day,action:'sleep',reason:rest.reason||null});
       for(const [index,action] of ['feed','play','clean','train'].entries()){
-        t.mock.timers.setTime(epoch+day*DAY_MS+index*60_000);
+        t.mock.timers.setTime(epoch+day*DAY_MS+(index+2)*60_000);
+        const before=fixture.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(player.petId);
         const result=await fixture.action(player.owner,action,{request_id:'weekly-'+day+'-'+action});
-        const record={day,action,reason:result.reason||null};
+        const after=fixture.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(player.petId);
+        const record={day,action,reason:result.reason||null,energyBefore:before?.energy,energyAfter:after?.energy};
         (result.accepted?accepted:rejected).push(record);
       }
       if(day<2){
-        t.mock.timers.setTime(epoch+day*DAY_MS+5*60_000);
+        t.mock.timers.setTime(epoch+day*DAY_MS+7*60_000);
         const result=await fixture.action(player.owner,'daily_chest',{request_id:'weekly-'+day+'-cache'});
         (result.accepted?accepted:rejected).push({day,action:'daily_chest',reason:result.reason||null});
       }
