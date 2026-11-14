@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const homepagePath = path.join(ROOT, 'index.html');
 const homeWidgetsPath = path.join(ROOT, 'js', 'home-widgets.js');
-const splashPath = path.join(ROOT, 'enter.html');
-const introScriptPath = path.join(ROOT, 'js', 'first-visit-intro.js');
+const legacyEntryPath = path.join(ROOT, 'enter.html');
+const myMoonboyPath = path.join(ROOT, 'my-moonboy.html');
 const heroImages = [
   {
     sectionLabel: 'Crypto Moonboys Bad Days 1',
@@ -62,17 +62,11 @@ function check(condition, message) {
 
 const html = fs.readFileSync(homepagePath, 'utf8');
 const homeWidgets = fs.readFileSync(homeWidgetsPath, 'utf8');
-const splash = fs.readFileSync(splashPath, 'utf8');
-const introScript = fs.readFileSync(introScriptPath, 'utf8');
+const legacyEntry = fs.readFileSync(legacyEntryPath, 'utf8');
+const myMoonboy = fs.readFileSync(myMoonboyPath, 'utf8');
 
-const heroPositions = heroImages.map(({ sectionLabel, publicPath }) => ({
-  sectionLabel,
-  publicPath,
-  start: splash.indexOf(`<section class="build-moonboy-hero" aria-label="${sectionLabel}"`),
-}));
-const lastHeroEnd = heroPositions.length
-  ? splash.indexOf('</section>', heroPositions[heroPositions.length - 1].start)
-  : -1;
+const galleryStart = myMoonboy.indexOf('<section id="bad-days-artwork" class="mm-bad-days-gallery"');
+const heroPositions = heroImages.map(({ publicPath }) => myMoonboy.indexOf('src="' + publicPath + '"'));
 const builderStart = html.search(/<section\b(?=[^>]*\bclass="[^"]*\bhomepage-avatar-builder\b)[^>]*>/);
 const introStart = html.search(/<section\b(?=[^>]*\bid="how-it-works")[^>]*>/);
 const introEnd = html.indexOf('</section>', introStart);
@@ -81,22 +75,20 @@ const introMarkup = introStart !== -1 && introEnd !== -1
   : '';
 
 check(
-  html.includes('<h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>\n      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>\n      <h1 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h1>'),
+  html.includes('<h1>🛑 STOP SWIPING N LIKING 👍 LET US HELP YOU BUILD SOMETHING PEOPLE REMEMBER.</h1>\n      <p class="hero-pulse-line">Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄</p>\n      <h2 class="hero-secondary-heading">🤘 JOIN US ON THE WAX BLOCKCHAIN & HELP DESTROY THE MEME$ 🐸 TAKING OVER OUR WORLD.</h2>'),
   'Homepage opening copy preserves the approved headline, pulse, headline order'
 );
-check(heroPositions.every(({ start }) => start !== -1), 'Splash page contains all five Bad Days artwork sections');
-check(
-  heroImages.every(({ repoPath }) => fs.existsSync(repoPath)),
-  'All Bad Days hero images exist in the repository'
-);
-check(
-  heroPositions.every(({ publicPath }) => splash.includes(publicPath) && !html.includes(publicPath)),
-  'All five approved full-width images appear only on the splash page'
-);
-check(
-  heroPositions.every((hero, index) => index === 0 || hero.start > heroPositions[index - 1].start),
-  'Splash art remains in order V1 through V5'
-);
+check(heroPositions.every(position => position > galleryStart), 'Five Bad Days images are present at the bottom of My Moonboy');
+check(heroImages.every(({ repoPath }) => fs.existsSync(repoPath)), 'All five Bad Days artwork files exist');
+check(heroImages.every(({ publicPath }) => !html.includes(publicPath) && !legacyEntry.includes(publicPath)),
+  'Bad Days images have been removed from the homepage and retired splash route');
+check(heroPositions.every((position, i) => i === 0 || position > heroPositions[i - 1]),
+  'Five panels remain in the approved V1 through V5 order');
+check(galleryStart > myMoonboy.indexOf('id="mm-economy"') && galleryStart < myMoonboy.lastIndexOf('</main>'),
+  'Full artwork follows My Moonboy mission and economy content');
+check(/\.mm-bad-days-gallery img\s*\{[^}]*display:block;[^}]*width:100%;[^}]*height:auto/.test(myMoonboy) &&
+  myMoonboy.includes('width:calc(100% + 2 * var(--shell-gutter))'),
+  'Artwork uses full-width, uncropped and responsive images beyond shell gutters');
 check(
   !html.includes('/img/homepage/BUILD%20A%20CRYPTO%20MOONBOY%20HERO%20PIC.jpg'),
   'Removed Build a Crypto Moonboy hero image is absent from the homepage'
@@ -106,11 +98,8 @@ check(
     !html.includes('CRYPTO%20MOONBOYS%20AND%20SWARMSY%20SIDE%20one.jpg'),
   'Old stitched homepage hero images are absent'
 );
-check(
-  lastHeroEnd !== -1 && builderStart > html.indexOf('</section>', html.indexOf('id="home-top-message"')) &&
-    builderStart < introStart && heroPositions.every(({ start }) => start >= 0),
-  'Builder remains under the mission text; Bad Days artwork is now on splash page'
-);
+check(builderStart > html.indexOf('</section>', html.indexOf('id="home-top-message"')) && builderStart < introStart,
+  'Builder remains under the mission text; five Bad Days panels moved to My Moonboy');
 check(
   introMarkup.includes('id="open-creative-academy"') &&
     !introMarkup.includes('GET READY #PLAYERONE') &&
@@ -151,56 +140,15 @@ check(
   forbiddenInWidgets.length === 0,
   `Runtime home-widgets.js has no forbidden Moonboy/Crypto Moonboy builder CTA wording${forbiddenInWidgets.length ? ` — found: ${forbiddenInWidgets.map((p) => JSON.stringify(p)).join(', ')}` : ''}`
 );
-check(
-  /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(splash),
-  'Splash art section is full width'
-);
-check(
-  /\.build-moonboy-hero img\s*\{[^}]*display\s*:\s*block[^}]*width\s*:\s*100%[^}]*height\s*:\s*auto/is.test(splash),
-  'Splash art preserves natural aspect ratio'
-);
-check(
-  !/class=["'][^"']*home-hero-left/.test(html) &&
-    !/class=["'][^"']*home-hero-right/.test(html),
-  'Homepage no longer uses the old split hero structure'
-);
-
-
-check(
-  html.includes('/js/first-visit-intro.js') &&
-    html.includes('dialog#cm-bad-days-intro') &&
-    introScript.includes('dialog.showModal()') &&
-    !introScript.includes('window.location.replace('),
-  'First visit opens a modal and does not redirect the homepage'
-);
-check(
-  introScript.includes("window.location.pathname !== '/'") &&
-    introScript.includes("window.localStorage.getItem(KEY) === '1'") &&
-    introScript.includes("window.localStorage.setItem(KEY, '1')") &&
-    introScript.includes('event.origin !== window.location.origin') &&
-    introScript.includes('event.source !== frame.contentWindow'),
-  'First-visit state and same-origin frame messages are guarded'
-);
-check(
-  splash.includes('content="noindex, follow"') &&
-    html.includes('rel="canonical" href="https://cryptomoonboys.com/"'),
-  'Splash is noindex; homepage canonical remains unchanged'
-);
-check(
-  (splash.match(/data-enter-site/g) || []).length >= 3 &&
-    splash.includes('PRESS START — ENTER THE WORLD') &&
-    splash.includes('SKIP INTRO') &&
-    splash.includes("window.parent.postMessage('cm:bad-days-intro:enter', window.location.origin)") &&
-    html.includes('href="/enter.html">REPLAY THE BAD DAYS INTRO</a>'),
-  'Enter, skip, embedded dismissal and replay are all available'
-);
-check(
-  !html.includes('class="build-moonboy-hero"') &&
-    !/object-fit:\s*cover/.test(splash) &&
-    splash.indexOf('Bad Days 1') < splash.indexOf('Bad Days 5'),
-  'Seamless Bad Days art is off homepage and never cropped'
-);
-
+check(!html.includes('/js/first-visit-intro.js') && !html.includes('cm-bad-days-intro') &&
+  !html.includes('href="/enter.html"'), 'Homepage loads directly with no first-visit dialog or replay link');
+check(legacyEntry.includes('http-equiv="refresh" content="0;url=/"') &&
+  legacyEntry.includes('content="noindex, follow"') &&
+  !legacyEntry.includes('build-moonboy-hero'), 'Legacy splash URL redirects to home and cannot compete in search');
+check(html.includes('rel="canonical" href="https://cryptomoonboys.com/"'),
+  'Homepage canonical stays unchanged');
+check(!html.includes('class="build-moonboy-hero"'),
+  'Bad Days art never returns to the homepage');
 
 // Keep homepage typography on its shared responsive hierarchy.
 const homeTypeTokens = [
