@@ -16,6 +16,7 @@ import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js'
 import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import { simulate as simulateNeglect } from './moonpet-neglect-simulator.mjs';
 import { nextFailedRunOpportunity } from './moonpet-failed-run-recovery.js';
+import { selectConservativeDailyChoice } from './moonpet-run-risk-policy.mjs';
 
 const UTC_BASE = Date.parse('2026-11-01T08:00:00.000Z');
 const DAY_MS = 86_400_000;
@@ -503,9 +504,10 @@ test('real Daily Run failure schedules next-day Worker eligibility without award
         const live=await hooks.buildPetMiniAppState(f.db,pet.owner,'fixture-token');
         const available=Array.isArray(live.run?.choices)?live.run.choices:[];
         assert.ok(available.length>0,'active official run must advertise a real choice');
-        const best=[...available].sort((a,b)=>Number(b.success_chance_bps||0)-Number(a.success_chance_bps||0))[0];
-        const choiceKey=best.key||best.choice_id;
-        assert.ok(choiceKey,'chosen option must have an authoritative key');
+        const selection=selectConservativeDailyChoice(available);
+        assert.ok(selection?.key,'chosen option must have an authoritative legal key');
+        const choiceKey=selection.key;
+        assert.equal(selection.guaranteedSuccess,false,'even the safest advertised option cannot force victory');
         const outcome=await f.action(pet.owner,'run_step',{
           run_id:nextSaved.run_id,choice_key:choiceKey,
           expected_step_index:Number(active.current_room),
