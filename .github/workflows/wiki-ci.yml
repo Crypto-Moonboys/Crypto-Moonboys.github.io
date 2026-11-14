@@ -26,6 +26,9 @@ jobs:
       - name: Run Wiki Structure Validator
         run: npm run test:wiki-structure
 
+      - name: Validate Graffiti Kings companion source links
+        run: node scripts/check-graffiti-kings-reciprocal-links.mjs
+
       - name: Block merge if invalid
         if: failure()
         run: |
