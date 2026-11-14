@@ -9,6 +9,10 @@ const ORIGINS = new Set([
 ]);
 const TARGETS = Object.freeze([
   ['telegram_public', 'https://api.telegram.org/'],
+  // Intentionally invalid, hard-coded diagnostic token. This is NOT a secret
+  // or the bot configured for this Worker. Never read TELEGRAM_BOT_TOKEN here.
+  // A prompt HTTP 4xx means the Bot API path is reachable, not authorized.
+  ['telegram_invalid_bot_getme', 'https://api.telegram.org/bot000000000:INVALID_DIAGNOSTIC_TOKEN/getMe'],
   ['external_control', 'https://example.com/'],
 ]);
 
@@ -16,7 +20,9 @@ export async function probePublicEgress(fetchImpl = fetch, options = {}) {
   const timeoutMs = options.timeoutMs ?? 6500;
   const now = options.now ?? (() => Date.now());
   const results = {};
-  for (const [name, target] of TARGETS) {
+  // Run probes concurrently: adding a third target must not triple the
+  // time the diagnostic endpoint may occupy a Worker request.
+  const outcomes = await Promise.all(TARGETS.map(async ([name, target]) => {
     const started = now();
     let outcome = 'network_error';
     let statusClass = null;
@@ -26,8 +32,8 @@ export async function probePublicEgress(fetchImpl = fetch, options = {}) {
         redirect: 'manual',
         signal: AbortSignal.timeout(timeoutMs),
       });
-      // HTTP 301/403/404 are successful *transport* evidence, not Bot API
-      // authorization or Telegram service health.
+      // Any HTTP response (even 401/404) proves transport only, never that
+      // a Telegram bot token works or that group membership is verified.
       outcome = 'http_response';
       statusClass = Math.floor(Number(response.status) / 100) + 'xx';
       try { await response.body?.cancel(); } catch { /* no response data needed */ }
@@ -35,12 +41,13 @@ export async function probePublicEgress(fetchImpl = fetch, options = {}) {
       outcome = ['TimeoutError', 'AbortError'].includes(String(error?.name || ''))
         ? 'timeout' : 'network_error';
     }
-    results[name] = {
+    return [name, {
       outcome,
       ...(statusClass ? { status_class: statusClass } : {}),
       duration_ms: Math.min(30000, Math.max(0, Math.round(now() - started))),
-    };
-  }
+    }];
+  }));
+  for (const [name, result] of outcomes) results[name] = result;
   return results;
 }
 
