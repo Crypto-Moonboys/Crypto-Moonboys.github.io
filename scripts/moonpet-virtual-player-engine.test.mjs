@@ -178,6 +178,14 @@ test('optional accelerated real-engine cohort: attendance and genuine persisted 
       results[profile.key].growthMarks=marks.length;
       results[profile.key].weeklyCrests=crests.length;
       results[profile.key].uniqueMarkDays=new Set(marks.map(row=>row.earned_day || String(row.earned_at).slice(0,10))).size;
+      const crestWeeks=f.sql.prepare('SELECT qualification_week FROM telegram_pet_weekly_crests WHERE pet_id=?').all('virtual-'+player);
+      results[profile.key].distinctCrestWeeks=new Set(crestWeeks.map(row=>String(row.qualification_week))).size;
+      assert.equal(results[profile.key].uniqueMarkDays,marks.length,'a pet cannot farm multiple Growth Marks on the same day');
+      assert.equal(results[profile.key].distinctCrestWeeks,crests.length,'a pet cannot farm multiple Crests in the same qualification week');
+      if(marks.length<240 || crests.length<44){
+        const legendary=f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='legendary_moon_guardian'").get('virtual-'+player).n;
+        assert.equal(legendary,0,'insufficient genuinely awarded evidence must never unlock Legendary');
+      }
       results[profile.key].missingToLegendaryMarks=Math.max(0,240-marks.length);
       results[profile.key].missingToLegendaryCrests=Math.max(0,44-crests.length);
       assert.ok(marks.length<=days,'one daily Growth Mark maximum');
