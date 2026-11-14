@@ -400,3 +400,21 @@ test('guidance-aware candidate scheduler avoids spent cache and tired training o
     console.log('Moonpet adaptive Worker candidate scheduler (not a global maximum):',JSON.stringify(results));
   }finally{fixture.close();t.mock.timers.reset();}
 });
+
+
+test('365-day clock alone cannot fabricate Legendary, Growth Marks or Weekly Crests',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:UTC_BASE});
+  const f=makeFixture(()=>Date.now());
+  try{
+    const pet=f.createPlayer('virtual-age-only');
+    // The clock crossing the age threshold is not accepted progression
+    // evidence. Do not seed fake Marks, Crests or evolution receipts.
+    t.mock.timers.setTime(UTC_BASE+365*DAY_MS);
+    const first=f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks WHERE pet_id=?').get(pet.petId).n;
+    const weekly=f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(pet.petId).n;
+    const legendary=f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='legendary_moon_guardian'").get(pet.petId).n;
+    assert.equal(first,0,'age must not create any qualifying Growth Marks');
+    assert.equal(weekly,0,'age must not create any qualifying Weekly Crests');
+    assert.equal(legendary,0,'Legendary cannot be created merely by advancing the clock');
+  }finally{f.close();t.mock.timers.reset();}
+});
