@@ -78,7 +78,7 @@ step/extraction award plans, including their equipment action classification.
 | Districts / story chains | District mastery boss checkpoints; authored story final choices and completed cycles | Existing material/reward settlement and repeat cycles, with daily gates |
 | Seasonal raid | Boss phases and accumulated damage, with tactical energy choices | Existing per-pet defeated-boss reward and pending-claim recovery |
 | Season XP tiers | Each configured XP tier unlocks its own claim | Central reward claims establish collected state; ready claims remain linked from Play Now |
-| Pet season completion | Final evolution plus 60 Growth Marks and 10 Weekly Crests under current configuration | Existing completion marker. There is no newly invented season-final boss or unlimited reward source |
+| Pet season completion | Historical audited-build marker: final evolution plus 60 Growth Marks and 10 Weekly Crests (superseded for permanent completion by 365 days, 240 Marks and 44 Crests) | Historical completion marker only. There is no newly invented season-final boss or unlimited reward source |
 
 Live choices remain enabled according to their actual energy, cooldown, wallet,
 level and ownership rules. Breeding, post-season Traits, Sanctuary, Lineage,
