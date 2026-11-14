@@ -261,6 +261,11 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
 
   const membership = await checkTelegramGroupMember(env, verified.telegramId, fetchImpl);
   if (!membership.ok) {
+    // Authenticated game callers retain the old generic 503 and receive no
+    // diagnostic details. A bounded category in Worker logs is sufficient.
+    console.warn('telegram_group_membership_lookup_failed', {
+      diagnostic: membership.diagnostic || 'unknown',
+    });
     return json(headers, { ok: false, error: membership.error }, membership.status || 503);
   }
 
