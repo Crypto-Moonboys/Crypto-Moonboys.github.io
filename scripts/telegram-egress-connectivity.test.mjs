@@ -15,9 +15,14 @@ test('fixed-target egress probe requests only tokenless public URLs', async () =
     assert.ok(opts.signal);
     return new Response(null, { status: url.includes('telegram') ? 404 : 200 });
   }, { now: () => 1234 });
-  assert.deepEqual(urls, ['https://api.telegram.org/', 'https://example.com/']);
+  assert.deepEqual(urls, [
+    'https://api.telegram.org/',
+    'https://api.telegram.org/bot000000000:INVALID_DIAGNOSTIC_TOKEN/getMe',
+    'https://example.com/',
+  ]);
   assert.deepEqual(results, {
     telegram_public: { outcome: 'http_response', status_class: '4xx', duration_ms: 0 },
+    telegram_invalid_bot_getme: { outcome: 'http_response', status_class: '4xx', duration_ms: 0 },
     external_control: { outcome: 'http_response', status_class: '2xx', duration_ms: 0 },
   });
   assert.doesNotMatch(JSON.stringify(results), /bot\d+:|chat_id|token|secret/i);
@@ -32,6 +37,7 @@ test('network and timeout categories do not leak raw upstream errors', async () 
     throw error;
   }, { now: () => 100 });
   assert.equal(results.telegram_public.outcome, 'timeout');
+  assert.equal(results.telegram_invalid_bot_getme.outcome, 'network_error');
   assert.equal(results.external_control.outcome, 'network_error');
   assert.doesNotMatch(JSON.stringify(results), /123:secret|Sensitive fixture/);
 });
@@ -46,7 +52,8 @@ test('diagnostic route never claims membership is verified', async () => {
   assert.equal(data.ok, true);
   assert.equal(data.diagnostic_only, true);
   assert.equal(data.membership_verified, false);
-  assert.equal(Object.keys(data.targets).length, 2);
+  assert.equal(Object.keys(data.targets).length, 3);
+  assert.equal(data.targets.telegram_invalid_bot_getme.outcome, 'http_response');
 });
 
 test('wrong origin or method cannot trigger outbound probes', async () => {
@@ -62,4 +69,35 @@ test('wrong origin or method cannot trigger outbound probes', async () => {
   }), probe);
   assert.equal(unrelated, null);
   assert.equal(calls, 0);
+});
+
+
+test('invalid Bot API target is synthetic and remains independent of production secrets', async () => {
+  const urls = [];
+  const response = await handleTelegramConnectivity(request(), async url => {
+    urls.push(url);
+    return new Response(null, { status: url.includes('INVALID_DIAGNOSTIC_TOKEN') ? 401 : 200 });
+  }, { now: () => 100 });
+  const body = await response.json();
+  assert.deepEqual(body.targets.telegram_invalid_bot_getme, {
+    outcome: 'http_response', status_class: '4xx', duration_ms: 0,
+  });
+  assert.equal(body.membership_verified, false);
+  assert.ok(urls[1].endsWith('/bot000000000:INVALID_DIAGNOSTIC_TOKEN/getMe'));
+  assert.ok(urls.every(url => !url.includes('REAL_BOT_SECRET') && !url.includes('groupId')));
+  assert.doesNotMatch(JSON.stringify(body), /INVALID_DIAGNOSTIC_TOKEN|bot000000000:|getMe|secret/i);
+});
+
+test('all three outbound checks start without waiting for another check timeout', async () => {
+  const started = [];
+  const pending = [];
+  const promise = probePublicEgress(url => {
+    started.push(url);
+    return new Promise(resolve => pending.push(resolve));
+  }, { now: () => 100 });
+  // No timer required: async map launches all three fetches immediately.
+  assert.equal(started.length, 3);
+  for (const resolve of pending) resolve(new Response(null, { status: 404 }));
+  const results = await promise;
+  assert.equal(Object.keys(results).length, 3);
 });
