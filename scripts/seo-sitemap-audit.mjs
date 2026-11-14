@@ -86,7 +86,7 @@ for (const loc of locs) {
   else stats.other++;
   const html = fs.readFileSync(filename, 'utf8');
   const data = headData(html);
-  if (!/<head\\b/i.test(html) || !/<\\/head>/i.test(html)) add('error', loc, 'missing HTML head');
+  if (!/<head\b/i.test(html) || !/<\/head>/i.test(html)) add('error', loc, 'missing HTML head');
   if (!html.trim()) add('error', loc, 'empty HTML document');
   if (/noindex/i.test(data.robots)) add('error', loc, 'sitemap page is marked noindex');
   if (/http-equiv\s*=\s*["']refresh["']/i.test(data.head)) add('error', loc, 'sitemap points to a meta-refresh redirect');
