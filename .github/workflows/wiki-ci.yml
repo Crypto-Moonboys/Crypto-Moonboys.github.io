@@ -3,57 +3,11 @@ name: Wiki Structure Enforcement
 # Routine checks are opt-in. See AGENTS.md and docs/ci-workflow-policy.md.
 on:
   workflow_dispatch:
-    inputs:
-      refresh_content_inventory:
-        description: 'On a non-main branch, regenerate and commit the two wiki ownership audit artifacts'
-        type: boolean
-        required: false
-        default: false
 
 permissions:
   contents: read
 
 jobs:
-  refresh-content-inventory:
-    # Opt-in only, and never write directly to sacred main. Normal Wiki CI
-    # remains read-only. Generated canon inventories must be paired.
-    if: ${{ inputs.refresh_content_inventory && github.ref_name != 'main' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout selected feature branch
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: true
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Regenerate deterministic ownership audit outputs
-        run: |
-          node scripts/generate-wiki-content-state.mjs
-          node scripts/generate-wiki-content-state.mjs --check
-      - name: Commit only the two generated audit artifacts
-        shell: bash
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-        run: |
-          test "$BRANCH_NAME" != 'main'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- brand-canon/wiki-content-state.json brand-canon/wiki-rewrite-audit.md
-          if git diff --cached --quiet; then
-            echo 'Wiki ownership inventory is already current.'
-          else
-            git diff --cached --name-only
-            git commit -m 'chore: regenerate paired wiki ownership audit artifacts'
-            git push origin "HEAD:refs/heads/$BRANCH_NAME"
-          fi
-
   validate-wiki:
     runs-on: ubuntu-latest
 
