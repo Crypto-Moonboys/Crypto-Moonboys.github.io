@@ -160,6 +160,15 @@ try {
   assert.equal(await visitor.locator('.build-moonboy-hero').count(), 0, 'Legacy splash never renders artwork');
   await visitor.goto(origin + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
   assert.equal(await visitor.locator('#bad-days-artwork img').count(), 5, 'Five panels now live on My Moonboy');
+  const panels = await visitor.locator('#bad-days-artwork img').evaluateAll(images => images.map(image => {
+    const rect = image.getBoundingClientRect();
+    return { width: rect.width, height: rect.height, alt: image.alt, source: image.getAttribute('src') };
+  }));
+  assert.ok(panels.every((panel, index) =>
+    Math.abs(panel.width - 390) <= 1 && panel.height > 0 &&
+    panel.alt.includes((index + 1) + ' of 5') &&
+    panel.source.endsWith('V' + (index + 1) + '.jpg')
+  ), 'Five panels retain order, accessibility labels and full 390px viewport width');
   await visitorContext.close();
   console.log('First visit, return visit, legacy redirect and moved artwork checks passed');
   console.log('Screenshots: ' + output);
