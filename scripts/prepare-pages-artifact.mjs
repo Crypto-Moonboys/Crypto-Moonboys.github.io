@@ -174,7 +174,7 @@ async function main() {
   // Repair sitemap-listed pages only in the deploy artifact. Do not mutate
   // protected wiki source files or conceal conflicting canonical/noindex rules.
   const seo = await ensurePublishedCanonicals(resolvedArtifactDir);
-  console.log(`Pages SEO: ${seo.checked} sitemap URLs checked; ${seo.added} missing canonicals added; ${seo.present} already matched.`);
+  console.log(`Pages SEO: ${seo.checked} sitemap URLs checked; ${seo.added} missing canonicals added; ${seo.present} already matched; ${seo.nftTitlesUpdated} duplicate NFT titles disambiguated.`);
   if (seo.warnings.length) {
     console.warn(`Pages SEO: ${seo.warnings.length} pages need editorial metadata review (nonblocking).`);
     for (const warning of seo.warnings.slice(0, 10)) {
