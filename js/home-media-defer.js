@@ -25,4 +25,26 @@
       button.hidden = true;
     }, { once: true });
   }
+
+  // Native MP4 source is also absent from initial markup. GitHub Pages may
+  // ignore byte-range metadata requests; no src means no accidental 21 MB
+  // download until the visitor actually selects this video.
+  for (const button of document.querySelectorAll('button[data-video-activate]')) {
+    button.addEventListener('click', () => {
+      const video = button.previousElementSibling;
+      const source = video?.querySelector('source[data-src]');
+      if (!video || video.tagName !== 'VIDEO' || !video.hidden || !source) return;
+      const raw = source.dataset.src || '';
+      if (!raw.startsWith('/img/homepage/') || !raw.endsWith('.mp4')) return;
+      source.src = raw;
+      video.hidden = false;
+      button.hidden = true;
+      video.load();
+      const started = video.play();
+      if (started && typeof started.catch === 'function') {
+        // If the browser blocks autoplay, native video controls remain visible.
+        started.catch(() => {});
+      }
+    }, { once: true });
+  }
 })();
