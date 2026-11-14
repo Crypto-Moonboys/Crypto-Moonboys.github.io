@@ -17,7 +17,15 @@ test('WAX page keeps six player URLs but does not load any player or MP4 at star
   assert.ok(frames.every(frame => !/\ssrc="/i.test(frame)), 'data-src is inert until Play');
   assert.equal((markup.match(/<button\b[^>]*data-media-activate/g)||[]).length, 6);
   assert.equal((markup.match(/<button\b[^>]*data-video-activate/g)||[]).length, 1);
-  assert.equal((markup.match(/i\.ytimg\.com\/vi\//g)||[]).length, 5, 'Lightweight YouTube artwork thumbnails, not full players');
+  assert.equal((markup.match(/i\.ytimg\.com\/vi\//g)||[]).length, 0, 'No low-resolution YouTube thumbnails');
+  const posters = [...markup.matchAll(/<button\b[^>]*data-media-activate[^>]*><img src="([^"]+)" width="([0-9]+)" height="([0-9]+)"/g)];
+  assert.equal(posters.length, 6, 'All six embeds have local, high-resolution poster artwork');
+  for (const poster of posters) {
+    assert.ok(poster[1].startsWith('/img/homepage/'));
+    assert.ok(Number(poster[2]) >= 1600 && Number(poster[3]) >= 1000);
+  }
+  assert.match(markup, /\.simple-home \.hero-intro h2,[\s\S]*?background:transparent !important/,
+    'Hero headings must not regain dark rounded cards');
   assert.match(markup, /<video\b[^>]*controls[^>]*preload="none"[^>]*hidden>/);
   assert.match(markup, /<source data-src="\/img\/homepage\/Marilyn%20Monroe%20Graffiti-HD%20\(1\)\.mp4"/);
   assert.doesNotMatch(markup, /<source\s+src="[^"]*\.mp4"/);
