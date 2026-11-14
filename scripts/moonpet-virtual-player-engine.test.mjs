@@ -76,7 +76,7 @@ function makeFixture(now) {
     return {owner,petId};
   }
   const accepted = owner => sql.prepare("SELECT event_type, created_at, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id=? AND status='accepted' ORDER BY created_at,id").all(owner);
-  const action = (owner,kind) => dispatchRenderedPetAction(db,owner,{id:owner},{action:kind},'fixture-token');
+  const action = (owner,kind,payload={}) => dispatchRenderedPetAction(db,owner,{id:owner},{action:kind,...payload},'fixture-token');
   return {sql,db,storage,createPlayer,accepted,action,close:()=>storage.close()};
 }
 
@@ -175,5 +175,53 @@ test('optional accelerated real-engine cohort: attendance and genuine persisted 
     assert.ok(results.complete.accepted>=results.minimal.accepted);
     assert.ok(results.complete.accepted>=results.weekend.accepted);
     console.log('Moonpet real-engine virtual cohort (not a complete gameplay optimizer):',JSON.stringify({days,results}));
+  }finally{f.close();t.mock.timers.reset();}
+});
+
+
+test('expanded virtual workload: real care, training, cache, job, timed work and run start',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:UTC_BASE});
+  const f=makeFixture(()=>Date.now());
+  try {
+    const worker=f.createPlayer('virtual-workload'),runner=f.createPlayer('virtual-runner');
+    const before=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(worker.petId).pet_xp;
+    const attempts=[];
+    async function dispatch(owner,kind,payload={}){
+      const result=await f.action(owner,kind,{request_id:'virtual-'+owner+'-'+kind+'-'+attempts.length,...payload});
+      attempts.push({owner,kind,accepted:result.accepted,reason:result.reason||null,petXpAwarded:result.pet_xp_awarded??null});
+      return result;
+    }
+    for(const care of ['feed','play','clean','train']){
+      const accepted=await dispatch(worker.owner,care);
+      assert.equal(accepted.accepted,true,JSON.stringify({care,accepted}));
+    }
+    const cache=await dispatch(worker.owner,'daily_chest');
+    assert.equal(cache.accepted,true,JSON.stringify(cache));
+    const replay=await dispatch(worker.owner,'daily_chest');
+    assert.ok(replay.duplicate || !replay.accepted,'Daily Cache cannot pay twice');
+    const job=await dispatch(worker.owner,'work',{job_key:'street_artist'});
+    assert.ok(typeof job.accepted==='boolean','job must return an authoritative acceptance decision');
+    const background=await dispatch(worker.owner,'activity_start',{activity_type:'work'});
+    assert.equal(background.accepted,true,JSON.stringify(background));
+    t.mock.timers.setTime(UTC_BASE+6*60_000);
+    const claim=await dispatch(worker.owner,'activity_claim');
+    assert.ok(typeof claim.accepted==='boolean','timed Work claim must return a real Worker result');
+    const run=await dispatch(runner.owner,'run_start');
+    assert.ok(typeof run.accepted==='boolean','Run start must use the live Worker gate');
+    const after=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(worker.petId).pet_xp;
+    assert.ok(after>before,'real accepted actions produce persisted Pet XP');
+    const acceptedEvents=f.accepted(worker.owner);
+    for(const action of ['feed','play','clean','train','daily_chest']){
+      assert.ok(acceptedEvents.some(event=>event.event_type===action),action+' must have an accepted server receipt');
+    }
+    const duplicateCaches=acceptedEvents.filter(event=>event.event_type==='daily_chest');
+    assert.equal(duplicateCaches.length,1,'repeating cache may not create duplicate accepted receipts');
+    assert.ok(acceptedEvents.reduce((total,event)=>total+Number(event.pet_xp_awarded||0),0)>0);
+    console.log('Moonpet multi-system Worker trace (not a complete journey):',JSON.stringify({
+      petXpBefore:before,petXpAfter:after,acceptedEvents:acceptedEvents.length,
+      job:{accepted:job.accepted,reason:job.reason},
+      timedWork:{startAccepted:background.accepted,claimAccepted:claim.accepted,claimReason:claim.reason},
+      run:{accepted:run.accepted,reason:run.reason},attempts,
+    }));
   }finally{f.close();t.mock.timers.reset();}
 });
