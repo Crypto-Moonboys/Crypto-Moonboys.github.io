@@ -117,7 +117,7 @@ else {
   }
   if (problems.length > 50) console.log('... ' + (problems.length - 50) + ' further findings (use --json for all).');
   console.log(rootIndex === -1
-    ? 'Repository source metadata (some wiki canonicals are injected into the Pages artifact).'
+    ? 'Repository source metadata (wiki canonicals and duplicate NFT titles are repaired in the Pages artifact).'
     : 'Published artifact metadata; verify production HTTP, GSC indexing, Core Web Vitals and rich results separately.');
 }
 if (strict && problems.length) process.exitCode = 1;

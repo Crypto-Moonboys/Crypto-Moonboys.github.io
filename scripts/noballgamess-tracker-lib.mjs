@@ -834,6 +834,19 @@ function renderPage(root, data, supplemental = {}) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki</title>
   <meta name="description" content="NoBallGames / NoBallGamess AtomicAssets NFT rarity, live supply, and surviving mint rank tracker.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/noballgamess-nft-collection.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Crypto Moonboys">
+  <meta property="og:url" content="https://cryptomoonboys.com/wiki/noballgamess-nft-collection.html">
+  <meta property="og:title" content="NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki">
+  <meta property="og:description" content="NoBallGames / NoBallGamess AtomicAssets NFT rarity, live supply, and surviving mint rank tracker.">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image:alt" content="Crypto Moonboys logo">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki">
+  <meta name="twitter:description" content="NoBallGames / NoBallGamess AtomicAssets NFT rarity, live supply, and surviving mint rank tracker.">
+  <meta name="twitter:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="stylesheet" href="/css/wiki.css">
 </head>
