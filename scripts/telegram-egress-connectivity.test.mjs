@@ -85,7 +85,10 @@ test('invalid Bot API target is synthetic and remains independent of production 
   assert.equal(body.membership_verified, false);
   assert.ok(urls[1].endsWith('/bot000000000:INVALID_DIAGNOSTIC_TOKEN/getMe'));
   assert.ok(urls.every(url => !url.includes('REAL_BOT_SECRET') && !url.includes('groupId')));
-  assert.doesNotMatch(JSON.stringify(body), /INVALID_DIAGNOSTIC_TOKEN|bot000000000:|getMe|secret/i);
+  // The published, non-sensitive field name telegram_invalid_bot_getme is
+  // intentional; reject only actual token/URL payloads, never that field.
+  assert.doesNotMatch(JSON.stringify(body),
+    /INVALID_DIAGNOSTIC_TOKEN|bot000000000:|REAL_BOT_SECRET|api\.telegram\.org\/bot/i);
 });
 
 test('all three outbound checks start without waiting for another check timeout', async () => {
