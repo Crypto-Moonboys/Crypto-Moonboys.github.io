@@ -13,6 +13,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 
 const UTC_BASE = Date.parse('2026-11-01T08:00:00.000Z');
 const DAY_MS = 86_400_000;
@@ -75,7 +76,7 @@ function makeFixture(now) {
     return {owner,petId};
   }
   const accepted = owner => sql.prepare("SELECT event_type, created_at, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id=? AND status='accepted' ORDER BY created_at,id").all(owner);
-  const action = (owner,kind) => hooks.processPetMiniAppAction(db,owner,{id:owner},{action:kind},'fixture-token');
+  const action = (owner,kind) => dispatchRenderedPetAction(db,owner,{id:owner},{action:kind},'fixture-token');
   return {sql,db,storage,createPlayer,accepted,action,close:()=>storage.close()};
 }
 
