@@ -23,7 +23,7 @@ test('WAX page keeps six player URLs but does not load any player or MP4 at star
   assert.doesNotMatch(markup, /<source\s+src="[^"]*\.mp4"/);
   assert.match(markup, /<script defer src="\/js\/home-media-defer\.js"><\/script>/);
   assert.match(markup, /\.media-activate\s*\{/);
-  assert.match(markup, /iframe\[hidden\], button\[hidden\] \{ display:none !important; \}/);
+  assert.match(markup, /iframe\[hidden\], video\[hidden\], button\[hidden\] \{ display:none !important; \}/);
 });
 
 test('Play activates only selected YouTube; unrelated players remain inert', () => {
