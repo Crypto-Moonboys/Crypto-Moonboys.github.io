@@ -64,18 +64,15 @@ Guidance remains advisory: viewing an action plan, opening a notification, ackno
 
 ## Neglect model — illustrative only
 
-The standalone simulator is explicitly **not connected to live gameplay**. It should be read as a risk demonstration and candidate-policy comparison, not as a source of XP values or evidence of player behavior.
+The standalone simulator is explicitly **not connected to live gameplay**. Its expanded 8× research, economy evidence, complete 1/3/7/14/30/90/365-day tables, recovery calculations and anti-exploit analysis are in [Moonpet neglect model comparison: 8× target](moonpet-neglect-8x-model-comparison-2026-11-14.md).
 
-A straight indefinite daily 8× penalty would create an unrecoverable backlog: at the default illustrative 100-unit budget, 365 days of continuous total neglect implies far more than a realistic re-engagement process can repay. **Therefore no indefinite negative-XP or accumulated 365-day debt is proposed for implementation.**
+The recommended review candidate now uses the Aggressive 2×→8× seven-day curve. One daily basis is 22 Care Standing units, anchored to the configured Feed/Play/Clean base rewards rather than a fabricated typical yield. Full abandonment assesses 44 units on day 1 and reaches the hard 770-unit account cap on day 7. Partial care is proportional, but only all three distinct accepted actions reset the streak.
 
-The expanded simulator separately shows:
-- 7/30/90/365-day horizons, with casual/regular/dedicated and partial-care *hypothetical* attendance patterns;
-- per-day streak escalation, bounded debt, and recovery after renewed eligible care;
-- accounts with 1, 2 and 5 pets to reveal multiplication hazards.
+Debt is separate from permanent Pet XP. While debt exists, a future shadow proposal would temporarily reduce future server-authoritative Pet XP awards by 10–25%, using the withheld amount to pay down Care Standing. A complete daily care set also pays down 22 units. At maximum debt, the audited 62/87/172-XP source bundles clear in 24/21/15 full-care days; care with no other reward clears in at most 35 days. Earned XP, levels, Growth Marks, Weekly Crests, boss wins, relics, achievements and historical competition results are never removed.
 
-A proposed future Care Standing should be account-scoped (or explicitly guarded against duplicate per-pet charging), reversible, capped, decaying on genuine care and bounded to a recovery period reviewed against real attendance. The bounded candidate used for review is: normalized daily debit `missed eligible fraction × min(2, 1 + 0.25 × (consecutive missed days - 1))`, a hard cap of seven normalized daily budgets, and repayment of half a daily budget for each fully attended day (at most 14 full-care days from the cap). Partial care reduces that day's debit but does not reset the streak. A completely attended day resets the streak and repays standing. This is meaningful after repeated absence while still recoverable and never multiplying by pet count.
+Day 8+ remains capped at 8× and cannot create unbounded debt. Existing authoritative condition decay supplies the extended-neglect consequence; no permanent injury or second stat-loss system is proposed. The account-scoped balance is identical for 1, 2 or 5 owned pets, and Telegram opt-out has no effect on attendance or debt.
 
-Those values **remain unapproved and shadow-only**; they must be compared with real attendance before any pilot. Never substitute normalized simulator units for Pet XP, never create a negative XP balance, and never withhold an already-earned milestone or settled reward.
+These values **remain unapproved, documentation-only and shadow-only**. GK must approve all policy and eligibility values after zero-inclusive cohort analysis. No live withholding, standing ledger, migration or settlement job exists in this PR.
 
 ## Staged implementation — subject to explicit approval
 
