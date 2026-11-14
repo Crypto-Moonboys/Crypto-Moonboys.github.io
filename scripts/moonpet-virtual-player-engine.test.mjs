@@ -217,7 +217,17 @@ test('expanded virtual workload: real care, training, cache, job, timed work and
     const duplicateCaches=acceptedEvents.filter(event=>event.event_type==='daily_chest');
     assert.equal(duplicateCaches.length,1,'repeating cache may not create duplicate accepted receipts');
     assert.ok(acceptedEvents.reduce((total,event)=>total+Number(event.pet_xp_awarded||0),0)>0);
+    const readCount = table => f.sql.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE telegram_id=?`).get(worker.owner).n;
+    const progressEvidence = {
+      growthMarks: readCount('telegram_pet_growth_marks'),
+      weeklyCrests: readCount('telegram_pet_weekly_crests'),
+      dailyJourneyObjectives: readCount('telegram_pet_daily_journey_objectives'),
+      dailyJourneyReceipts: readCount('telegram_pet_daily_journey_receipts'),
+      completedChecklistDays: readCount('telegram_pet_daily_completion'),
+    };
+    assert.ok(Object.values(progressEvidence).every(n=>Number.isInteger(n)&&n>=0), 'progression uses real persisted server evidence');
     console.log('Moonpet multi-system Worker trace (not a complete journey):',JSON.stringify({
+      progressEvidence,
       petXpBefore:before,petXpAfter:after,acceptedEvents:acceptedEvents.length,
       job:{accepted:job.accepted,reason:job.reason},
       timedWork:{startAccepted:background.accepted,claimAccepted:claim.accepted,claimReason:claim.reason},
