@@ -111,6 +111,7 @@ function assertScriptOrder(html, rel, orderedScripts) {
 
 const SHELL_PAGES = [
   'index.html',
+  'join-us-on-the-wax-blockchain.html',
   'graph.html',
   'games/index.html',
   'games/leaderboard.html',
