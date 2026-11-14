@@ -52,7 +52,7 @@ players. It does not claim that every production account has been inspected.
 | Daily Journey | Three of five qualifying objectives; Growth Mark receipt | Mark/evolution progress is distinct from Pet XP; qualifying source actions contribute only their actual XP |
 | Weekly Journey | All five objectives; Crest and historical threshold-crossing date | Crest and season-completion progress are distinct from XP. Recovered evidence does not pay source rewards again |
 | Weekly Boss and seasonal raid | Defeat records and recoverable reward claims | Applied rewards flow through existing ledgers; recovery does not duplicate a victory or payout |
-| Season XP tiers and pet completion | Tier claims; final evolution plus 60 Marks and 10 Crests | Account season XP ranks and per-pet completion remain separate. Recovery retains the original pet/season |
+| Season XP tiers and pet completion | Historical audited-build marker: tier claims and final evolution plus 60 Marks and 10 Crests (superseded for permanent completion by 365 days, 240 Marks and 44 Crests) | Account season XP ranks and permanent pet completion remain separate. Recovery retains the original pet/season |
 
 Daily and weekly Pet scores use accepted events in their recorded UTC settlement
 window. Seasonal scores use `telegram_pet_season_state` for the source season.

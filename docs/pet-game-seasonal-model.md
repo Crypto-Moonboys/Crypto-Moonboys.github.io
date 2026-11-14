@@ -1,3 +1,5 @@
+> **Historical / superseded permanent-evolution guidance (14 November 2026):** This document preserves historical season 1 model and its distinct quarterly competition rules. Its references to 90-day permanent completion, 60 Growth Marks, 10 Weekly Crests and days 78–90 Legendary are **not current permanent Moonpet progression requirements**. The live evolution configuration `workers/moonboys-api/pets/content/evolutions.json` requires **365 minimum ownership days, 240 distinct-day Growth Marks and 44 distinct-week Crests** for Legendary, plus level, bosses, relics and materials. Quarterly competition periods and archived historical results remain separate and valid. Read [the current 365-day audit](moonpet-365day-care-neglect-audit-2026-11-14.md) and [Moonpet Source of Truth](moonpet-source-of-truth.md) before designing care penalties.
+
 # Moonpet Season 1 Seasonal Model
 
 **Status:** Season 1 product rules, reconciled with the current build on 2026-09-29. Live behavior is cross-referenced in [Moonpet Source of Truth](moonpet-source-of-truth.md); dated audits describe the build they tested, not every later release.
