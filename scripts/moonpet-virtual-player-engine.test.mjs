@@ -14,6 +14,7 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
+import { simulate as simulateNeglect } from './moonpet-neglect-simulator.mjs';
 
 const UTC_BASE = Date.parse('2026-11-01T08:00:00.000Z');
 const DAY_MS = 86_400_000;
@@ -233,5 +234,52 @@ test('expanded virtual workload: real care, training, cache, job, timed work and
       timedWork:{startAccepted:background.accepted,claimAccepted:claim.accepted,claimReason:claim.reason},
       run:{accepted:run.accepted,reason:run.reason},attempts,
     }));
+  }finally{f.close();t.mock.timers.reset();}
+});
+
+
+test('shadow-only 8x neglect simulation consumes REAL seven-day accepted Worker receipt histories',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:UTC_BASE});
+  const f=makeFixture(()=>Date.now());
+  const behaviours=[
+    {key:'consistent',shouldCare:()=>true,actions:DAY},
+    {key:'weekend',shouldCare:day=>[0,6].includes(new Date(UTC_BASE+day*DAY_MS).getUTCDay()),actions:DAY},
+    {key:'minimal',shouldCare:()=>true,actions:['feed']},
+    {key:'absent',shouldCare:()=>false,actions:[]},
+  ];
+  try{
+    for(const behaviour of behaviours)f.createPlayer('shadow-'+behaviour.key);
+    for(let day=0;day<7;day++){
+      for(const behaviour of behaviours){
+        if(!behaviour.shouldCare(day))continue;
+        for(let i=0;i<behaviour.actions.length;i++){
+          t.mock.timers.setTime(UTC_BASE+day*DAY_MS+i*10_000);
+          const result=await f.action('shadow-'+behaviour.key,behaviour.actions[i]);
+          assert.equal(result.accepted,true,JSON.stringify({day,key:behaviour.key,result}));
+        }
+      }
+    }
+    const results={};
+    for(const behaviour of behaviours){
+      const owner='shadow-'+behaviour.key;
+      const accepted=f.accepted(owner);
+      const careSchedule=[],xpSchedule=[];
+      for(let day=0;day<7;day++){
+        const key=new Date(UTC_BASE+day*DAY_MS).toISOString().slice(0,10);
+        const dayEvents=accepted.filter(event=>event.created_at.slice(0,10)===key);
+        careSchedule.push(new Set(dayEvents.filter(event=>DAY.includes(event.event_type)).map(event=>event.event_type)).size / DAY.length);
+        xpSchedule.push(dayEvents.reduce((sum,event)=>sum+Number(event.pet_xp_awarded||0),0));
+      }
+      const simulated=simulateNeglect({days:7,careSchedule,grossPetXpSchedule:xpSchedule});
+      results[behaviour.key]={careSchedule,xpSchedule,standingDebt:simulated.endingDebt,policyWithheldXp:simulated.futurePetXpWithheld};
+    }
+    assert.equal(results.consistent.standingDebt,0);
+    assert.equal(results.absent.standingDebt,770);
+    assert.ok(results.minimal.standingDebt>0);
+    assert.ok(results.weekend.standingDebt>0);
+    assert.ok(results.minimal.careSchedule.every(fraction=>fraction===1/3));
+    assert.ok(results.consistent.xpSchedule.every(xp=>xp>0));
+    assert.ok(results.absent.xpSchedule.every(xp=>xp===0));
+    console.log('Moonpet REAL-receipt shadow neglect results (not live scoring):',JSON.stringify(results));
   }finally{f.close();t.mock.timers.reset();}
 });
