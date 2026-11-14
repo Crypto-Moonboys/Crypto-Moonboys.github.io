@@ -242,3 +242,89 @@ test('direct checker rejects unsafe Telegram numeric ids', async () => {
   assert.equal(result.ok, false);
   assert.equal(result.status, 401);
 });
+
+
+test('GET readiness categorizes Telegram rejected group and invalid bot token without secrets', async () => {
+  const secretPhrase = 'synthetic-sensitive-description';
+  const fetchImpl = async url => new Response(JSON.stringify(
+    /\/getMe$/.test(url)
+      ? { ok: false, error_code: 401, description: 'Unauthorized ' + secretPhrase }
+      : { ok: false, error_code: 400, description: 'Bad Request: chat not found ' + secretPhrase }
+  ), { status: /\/getMe$/.test(url) ? 401 : 400, headers: { 'Content-Type': 'application/json' } });
+  const response = await handleTelegramGroupMembership(new Request(API, {
+    method: 'GET', headers: { Origin: SITE },
+  }), env(), fetchImpl);
+  assert.equal(response.status, 503);
+  const diagnosticBody = await response.json();
+  assert.deepEqual(diagnosticBody, {
+    ok: false, error: 'telegram_group_membership_unavailable', bot_username: null,
+    diagnostic: { membership: 'group_lookup_rejected', bot_identity: 'bot_token_rejected' }
+  });
+  const serialized = JSON.stringify(diagnosticBody);
+  assert.ok(!serialized.includes(secretPhrase));
+  assert.ok(!serialized.includes(TOKEN) && !serialized.includes(GROUP));
+});
+
+test('GET readiness distinguishes Telegram transport timeouts from unavailable network', async () => {
+  for (const [name, expected] of [['TimeoutError', 'transport_timeout'],
+      ['AbortError', 'transport_timeout'], ['TypeError', 'transport_unavailable']]) {
+    const fetchImpl = async () => {
+      const error = new Error('do-not-log-bot-token:' + TOKEN);
+      error.name = name;
+      throw error;
+    };
+    const response = await handleTelegramGroupMembership(new Request(API, {
+      method: 'GET', headers: { Origin: SITE },
+    }), env(), fetchImpl);
+    assert.equal(response.status, 503);
+    const body = await response.json();
+    assert.equal(body.diagnostic.membership, expected);
+    assert.equal(body.diagnostic.bot_identity, expected);
+    assert.equal(body.error, 'telegram_group_membership_unavailable');
+    assert.ok(!JSON.stringify(body).includes(TOKEN));
+  }
+});
+
+test('GET readiness identifies rate limits, Telegram server failures and malformed responses', async () => {
+  for (const [status, telegramBody, category] of [
+    [429, { ok: false, error_code: 429, description: 'Too Many Requests' }, 'telegram_rate_limited'],
+    [502, { ok: false, description: 'Bad Gateway' }, 'telegram_service_unavailable'],
+    [403, { ok: false, description: 'Forbidden' }, 'telegram_forbidden'],
+    [200, { ok: false, result: null }, 'telegram_response_invalid'],
+  ]) {
+    const fetchImpl = async url => new Response(JSON.stringify(
+      /\/getMe$/.test(url)
+        ? { ok: true, result: { id: 123456, username: 'WIKICOMSBOT' } }
+        : telegramBody
+    ), { status: /\/getMe$/.test(url) ? 200 : status });
+    const response = await handleTelegramGroupMembership(new Request(API, {
+      method: 'GET', headers: { Origin: SITE },
+    }), env(), fetchImpl);
+    assert.equal(response.status, 503);
+    const body = await response.json();
+    assert.deepEqual(body.diagnostic, { membership: category, bot_identity: 'ok' });
+  }
+});
+
+test('POST still denies failed membership without exposing any upstream diagnostics', async () => {
+  const upstream = async () => new Response(JSON.stringify({
+    ok: false, error_code: 401, description: 'Unauthorized ' + TOKEN,
+  }), { status: 401 });
+  const response = await handleTelegramGroupMembership(request(), env(), upstream);
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), {
+    ok: false, error: 'telegram_group_membership_unavailable'
+  });
+});
+
+test('GET readiness rejects missing configuration before attempting any Telegram requests', async () => {
+  let contacted = false;
+  const response = await handleTelegramGroupMembership(new Request(API, {
+    method: 'GET', headers: { Origin: SITE },
+  }), env({ TELEGRAM_GROUP_CHAT_ID: '' }), async () => {
+    contacted = true; throw Error('must not fetch');
+  });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error, 'telegram_group_membership_not_configured');
+  assert.equal(contacted, false);
+});

@@ -63,21 +63,56 @@ function isActiveMember(member) {
   return member.status === 'restricted' && member.is_member === true;
 }
 
+// Diagnostic categories are deliberately bounded. Never return a Telegram API
+// URL (it embeds the bot token), raw exception or Telegram description to a
+// caller, dashboard log or GitHub Actions output.
+function telegramFailureCategory({ response, body, error } = {}) {
+  if (error) {
+    const name = String(error?.name || '');
+    return name === 'TimeoutError' || name === 'AbortError'
+      ? 'transport_timeout' : 'transport_unavailable';
+  }
+  const status = Number(response?.status || 0);
+  if (status === 401) return 'bot_token_rejected';
+  if (status === 403) return 'telegram_forbidden';
+  if (status === 429) return 'telegram_rate_limited';
+  if (status >= 500) return 'telegram_service_unavailable';
+  if (status === 400) {
+    // Telegram's description is used only for an allowlisted classification.
+    // Never include the raw text, chat identifier or user identifier in output.
+    const description = String(body?.description || '').toLowerCase();
+    if (/chat not found|chat_id is empty|chat_id_invalid|invalid chat id|group chat was upgraded/.test(description))
+      return 'group_lookup_rejected';
+    if (/user not found|user_id_invalid|user_id is empty/.test(description))
+      return 'member_lookup_rejected';
+    return 'telegram_bad_request';
+  }
+  if (status < 200 || status >= 300) return 'telegram_http_failure';
+  if (!body || body?.ok !== true) return 'telegram_response_invalid';
+  return 'telegram_result_missing';
+}
+
 async function readTelegramBotIdentity(token, fetchImpl = fetch) {
+  let response;
   try {
-    const response = await fetchImpl('https://api.telegram.org/bot' + token + '/getMe', {
+    response = await fetchImpl('https://api.telegram.org/bot' + token + '/getMe', {
       method: 'GET',
       signal: AbortSignal.timeout(5000),
     });
-    const body = await response.json().catch(() => null);
-    if (!response.ok || body?.ok !== true || !body.result) return null;
-    return {
+  } catch (error) {
+    return { identity: null, diagnostic: telegramFailureCategory({ error }) };
+  }
+  const body = await response.json().catch(() => null);
+  if (!response.ok || body?.ok !== true || !body.result) {
+    return { identity: null, diagnostic: telegramFailureCategory({ response, body }) };
+  }
+  return {
+    identity: {
       id: String(body.result.id || ''),
       username: String(body.result.username || ''),
-    };
-  } catch {
-    return null;
-  }
+    },
+    diagnostic: 'ok',
+  };
 }
 
 export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetch) {
@@ -102,13 +137,15 @@ export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetc
       body: JSON.stringify({ chat_id: groupId, user_id: userId }),
       signal: AbortSignal.timeout(5000),
     });
-  } catch {
-    return { ok: false, error: 'telegram_group_membership_unavailable', status: 503 };
+  } catch (error) {
+    return { ok: false, error: 'telegram_group_membership_unavailable', status: 503,
+      diagnostic: telegramFailureCategory({ error }) };
   }
 
   const body = await response.json().catch(() => null);
   if (!response.ok || body?.ok !== true || !body.result) {
-    return { ok: false, error: 'telegram_group_membership_unavailable', status: 503 };
+    return { ok: false, error: 'telegram_group_membership_unavailable', status: 503,
+      diagnostic: telegramFailureCategory({ response, body }) };
   }
   return {
     ok: true,
@@ -156,15 +193,24 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
     if (!env?.DB || !token || !groupId || !botId) {
       return json(headers, { ok: false, error: 'telegram_group_membership_not_configured' }, 503);
     }
-    const [botStatus, botIdentity] = await Promise.all([
+    const [botStatus, botIdentityCheck] = await Promise.all([
       checkTelegramGroupMember(env, botId, fetchImpl),
       readTelegramBotIdentity(token, fetchImpl),
     ]);
+    const botIdentity = botIdentityCheck.identity;
     if (!botStatus.ok) {
+      // Readiness is still a strict 503; categories only explain *why*.
+      // They contain no raw upstream payload, credential, chat/user ID or URL.
+      const diagnostic = {
+        membership: botStatus.diagnostic || 'unknown',
+        bot_identity: botIdentityCheck.diagnostic,
+      };
+      console.warn('telegram_group_gate_readiness_failed', diagnostic);
       return json(headers, {
         ok: false,
         error: botStatus.error,
         bot_username: botIdentity?.username || null,
+        diagnostic,
       }, botStatus.status || 503);
     }
     if (!['creator', 'administrator'].includes(botStatus.chat_member_status)) {
@@ -215,6 +261,11 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
 
   const membership = await checkTelegramGroupMember(env, verified.telegramId, fetchImpl);
   if (!membership.ok) {
+    // Authenticated game callers retain the old generic 503 and receive no
+    // diagnostic details. A bounded category in Worker logs is sufficient.
+    console.warn('telegram_group_membership_lookup_failed', {
+      diagnostic: membership.diagnostic || 'unknown',
+    });
     return json(headers, { ok: false, error: membership.error }, membership.status || 503);
   }
 
