@@ -69,3 +69,32 @@ test('emit possible outcomes, not fabricated earned relics',()=>{
   }));
   assert.equal(result.uniqueRelics.length,5);
 });
+
+
+test('hypothetical post-hash mixing can reach all ten relic IDs without increasing drop frequency',()=>{
+  // A prototype only. DO NOT use this as the live payout algorithm without
+  // explicit approval and security/replay review.
+  const boss=bossById.alley_king;
+  const start=Date.parse('2026-11-01T00:00:00Z');
+  for(const owner of ['virtual-relic-audit','year-player','123456']){
+    let existingDrops=0,mixedDrops=0;
+    const currentIds=new Set(),mixedIds=new Set();
+    for(let d=0;d<365;d++){
+      const day=new Date(start+d*DAY).toISOString().slice(0,10);
+      const runId=`daily:${day}:${owner}`;
+      const rollKey=`${runId}:${runId}:10:${boss.boss_id}`;
+      if(stableContentRoll(`${rollKey}:chance`) % 10000 >= boss.relic_chance_bps)continue;
+      existingDrops++;
+      const raw=stableContentRoll(`${rollKey}:relic`);
+      currentIds.add(boss.relic_pool[raw % boss.relic_pool.length]);
+      // Candidate finalizer decorrelates the least significant bits used
+      // for selection from the common salted hash suffix.
+      const mixed=(raw ^ (raw >>> 16)) >>> 0;
+      mixedIds.add(boss.relic_pool[mixed % boss.relic_pool.length]);
+      mixedDrops++;
+    }
+    assert.equal(existingDrops,mixedDrops);
+    assert.equal(currentIds.size,5);
+    assert.equal(mixedIds.size,10);
+  }
+});
