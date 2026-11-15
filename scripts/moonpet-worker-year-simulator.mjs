@@ -97,14 +97,16 @@ function status(f,pet,days){
  * global Date to the requested epoch; makeFixture wraps CURRENT_TIMESTAMP too.
  */
 export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
-  owner='worker-year-player',setTime,onCheckpoint=()=>{},maxRunSteps=10}={}){
+  owner='worker-year-player',setTime,onCheckpoint=()=>{},maxRunSteps=10,runExitPolicy='boss'}={}){
   if(!Number.isInteger(days)||days<1||days>365)throw new RangeError('days must be 1..365');
+  if(!['boss','extract_at_depth7'].includes(runExitPolicy))
+    throw new RangeError('runExitPolicy must be boss or extract_at_depth7');
   if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
   setTime(startAt);
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
   const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
-  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
+  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
   const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
@@ -242,6 +244,18 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
           for(let step=0;step<maxRunSteps;step++){
             const liveRow=f.sql.prepare('SELECT status,current_room FROM telegram_pet_runs WHERE run_id=?').get(row.run_id);
             if(!liveRow||!['active','extractable'].includes(liveRow.status))break;
+            // Optional legitimate early extraction: after clearing room 7
+            // the player has genuine explorer and care objective evidence.
+            // A successful Worker extraction supplies a third objective
+            // without forcing a boss victory. This trades away boss drops
+            // and relic opportunity; default full-boss policy is unchanged.
+            if(runExitPolicy==='extract_at_depth7' && n(liveRow.current_room)>=7){
+              dailyRuns.extractAttempts++;
+              const extraction=await safeAction(day,51+step,'run_extract',{run_id:row.run_id});
+              if(extraction.accepted&&!extraction.duplicate)dailyRuns.extractions++;
+              else dailyRuns.extractionRejected++;
+              break;
+            }
             setTime(startAt+day*WORKER_YEAR_DAY_MS+(51+step)*60_000);
             // This official V2 tactic is offered only at genuine saved
             // run checkpoints 3 and 6. It improves future odds, but cannot
@@ -324,7 +338,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
       final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
       final.relics>=targets.relics;
-    return {days,startAt:new Date(startAt).toISOString(),owner,actions,dailyRuns,weeklyBoss,checkpoints,final,targets,
+    return {days,startAt:new Date(startAt).toISOString(),owner,runExitPolicy,actions,dailyRuns,weeklyBoss,checkpoints,final,targets,
       legendaryVerified:qualified,
       blockers:Object.entries({
         age:ageReached,marks:final.growthMarks>=targets.marks,crests:final.weeklyCrests>=targets.crests,
