@@ -68,6 +68,21 @@ node scripts\run-moonpet-worker-year-simulation.mjs --days=7
 ```
 If the regression fails, its message includes Worker preview snapshots and weekly source rows; do not report a pass or fabricate a Crest. In a qualified week, all five real objectives must have actual accepted source receipts and a persisted Crest. If 14 days passes, run 30 and 90 days and compare all five objectives week-by-week before claiming the strategy is viable.
 
+## Alternative extraction strategy (experimental, no production changes)
+
+The 30-day full-boss strategy yielded 16 authentic Growth Marks and 3 Crests, with 15 full-run wins, two distinct relic IDs, and zero rejected actions. Daily Journey needs **three** completed source-backed objectives. Care and Explorer have qualifying receipts, but Boss is tied to finishing the 10-room Daily Run; Combat requires three genuine enemy defeats in one run. An official **run_extract** after seven cleared rooms may provide a third Daily Journey objective earlier, but gives up the final boss, materials and relic-drop opportunity.
+
+The simulator now supports two strategies, each calling the real Worker and preserving genuine failures:
+
+```bat
+node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=boss
+node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=extract
+```
+
+The default is `boss`, unchanged. `extract` is an alternate test-only strategy and calls `run_extract` *only* if the persisted official run has cleared room seven and is still active. It records attempts, accepted/rejected extraction results and genuine `daily_extraction` objective receipts. It does not award a mark from a simulated guess or inject rewards into SQLite. The opt-in extraction regression is in `moonpet-worker-year-simulator.test.mjs`.
+
+Compare genuine **Growth Marks**, **Weekly Crests**, **boss victories**, **distinct relics**, **materials**, and official run statuses. Higher Daily Mark accrual alone is not a Legendary win if relic acquisition or boss victories fail. Do not merge or deploy this annual simulator without complete tests.
+
 ## Outstanding verification
 
 1. Establish clean Node 24 2-day Worker smoke and week-14 genuine source-evidence PASS.
