@@ -101,6 +101,39 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     }
     return response;
   };
+  // Weekly boss attempts qualify only when actually accepted by the
+  // production Worker. Preview before the energy-draining Daily Run, then
+  // inspect again after it only if an earlier attempt was never dispatched.
+  const tryWeeklyBoss=async(day,minute,phase)=>{
+    setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+    const state=await hooks.buildPetMiniAppState(f.db,owner,'fixture-token');
+    const boss=state.guidance?.weekly_boss;
+    const saved=f.sql.prepare('SELECT pet_xp,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+    weeklyBoss.previews++;
+    const snapshot={day,phase,available:Boolean(boss?.available),
+      level:getPetVisibleLevel(n(saved?.pet_xp)),energy:n(saved?.energy),health:n(saved?.health),
+      choices:Array.isArray(boss?.choices)?boss.choices.map(choice=>choice.key):[],
+      reason:boss?.reason||boss?.unavailable_reason||boss?.locked_reason||null};
+    if(weeklyBoss.samplePreviews.length<15 && (day<5 || day%7===0 || boss?.available))
+      weeklyBoss.samplePreviews.push(snapshot);
+    if(!boss?.available){
+      const reason=snapshot.reason||(!boss?'guidance_missing':'boss_not_available');
+      weeklyBoss.unavailableByReason[reason]=(weeklyBoss.unavailableByReason[reason]||0)+1;
+      return {attempted:false,accepted:false};
+    }
+    weeklyBoss.offered++;
+    const choices=Array.isArray(boss.choices)?boss.choices.filter(choice=>choice?.key && choice.available!==false):[];
+    const move=choices.find(choice=>choice.key==='strike')||choices[0];
+    if(!move){
+      weeklyBoss.unavailableByReason.no_legal_move=(weeklyBoss.unavailableByReason.no_legal_move||0)+1;
+      return {attempted:false,accepted:false};
+    }
+    const result=await safeAction(day,minute,'weekly_boss',{move:move.key,pet_id:pet.petId});
+    weeklyBoss.attempts++;
+    if(result.accepted&&!result.duplicate)weeklyBoss.accepted++;
+    else weeklyBoss.rejected++;
+    return {attempted:true,accepted:Boolean(result.accepted&&!result.duplicate)};
+  };
   try {
     for(let day=0;day<days;day++){
       // Six ordinary, legal Worker care/economy actions in staggered time.
@@ -110,6 +143,9 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         [8,'train',{}],[10,'daily_chest',{}],[12,'work',{job_key:'street_artist'}],
       ])await safeAction(day,minute,action,payload);
 
+      // Boss before run prevents high damage/low energy from suppressing
+      // genuine weekly attempt evidence. The Worker chooses availability.
+      const preRunBoss=await tryWeeklyBoss(day,16,'before_run');
       // Exactly one official Daily Moon Run attempt per UTC day. Read all
       // available choices from the Worker. Failed rooms terminate; no rerolls.
       const started=await safeAction(day,20,'daily_run_start');
@@ -138,16 +174,9 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
           else dailyRuns.other++;
         }
       }
-      // One actual weekly boss attempt if the Worker says it is available.
-      // Never force the damage or choose an unadvertised attack.
-      setTime(startAt+day*WORKER_YEAR_DAY_MS+36*60_000);
-      const state=await hooks.buildPetMiniAppState(f.db,owner,'fixture-token');
-      const boss=state.guidance?.weekly_boss;
-      if(boss?.available){
-        const choices=Array.isArray(boss.choices)?boss.choices:[];
-        const move=choices.find(choice=>choice.key==='strike')||choices[0];
-        if(move?.key)await safeAction(day,36,'weekly_boss',{move:move.key,pet_id:pet.petId});
-      }
+      // A previously level-locked pet may unlock the boss during this run.
+      // Retry preview but do not send a second boss action in the same day.
+      if(!preRunBoss.attempted)await tryWeeklyBoss(day,36,'after_run');
       // Only evolve when server-side eligibility is satisfied; the Worker
       // performs all required material debits and persists stages 1..5.
       // Stage zero is a fixture starting condition, not an earned reward.
