@@ -62,6 +62,8 @@ async function openAt(viewport, url = standaloneUrl) {
     return route.continue();
   });
   await page.goto(url, { waitUntil: url === homepageUrl ? 'domcontentloaded' : 'networkidle' });
+  // The WAX page initializes its builder only as the section approaches view.
+  if (url === homepageUrl) await page.locator('#build-moonboy').scrollIntoViewIfNeeded();
   await page.locator('#avatar-frame[aria-busy="false"]').waitFor();
   return page;
 }
@@ -106,6 +108,8 @@ async function openExportPage(url = standaloneUrl) {
     return route.continue();
   });
   await page.goto(url, { waitUntil: url === homepageUrl ? 'domcontentloaded' : 'networkidle' });
+  // Export coverage must enter the deferred builder before awaiting its frame.
+  if (url === homepageUrl) await page.locator('#build-moonboy').scrollIntoViewIfNeeded();
   await page.locator('#avatar-frame[aria-busy="false"]').waitFor();
   return page;
 }
