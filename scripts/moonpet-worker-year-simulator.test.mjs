@@ -78,6 +78,30 @@ test('short real Worker calendar runs and never fabricates Legendary',async t=>{
   }finally{t.mock.timers.reset();}
 });
 
+test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evidence',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({days:14,startAt:WORKER_YEAR_START,
+      owner:'virtual-two-week-weekly-boss',
+      setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.ok(result.weeklyBoss.previews>=14,'every simulated UTC day checks boss eligibility');
+    const weeks=Object.values(result.final.weeklyByWeek);
+    const bossEvidence=weeks.reduce((sum,week)=>sum+(week.weekly_boss_attempt?.progress||0),0);
+    const checkIns=weeks.reduce((sum,week)=>sum+(week.weekly_check_in?.progress||0),0);
+    const training=weeks.reduce((sum,week)=>sum+(week.weekly_training?.progress||0),0);
+    assert.ok(training>=3 && checkIns>=2,'care and check-in source receipts must survive within their ownership week');
+    assert.ok(result.weeklyBoss.accepted>=1,
+      'at least one legal Weekly Boss action must be accepted after reaching level five: '+JSON.stringify(result.weeklyBoss));
+    assert.ok(bossEvidence>=1,
+      'accepted Weekly Boss action must yield genuine source-backed Weekly Journey evidence: '+JSON.stringify({boss:result.weeklyBoss,weeks:result.final.weeklyByWeek}));
+    console.log('MOONPET_TWO_WEEK_WEEKLY_OBJECTIVE_EVIDENCE',JSON.stringify({
+      boss:result.weeklyBoss,weeks:result.final.weeklyByWeek,crests:result.final.weeklyCrests,
+      runs:result.dailyRuns,marks:result.final.growthMarks,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
 test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
   const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
   if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
