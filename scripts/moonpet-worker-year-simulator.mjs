@@ -104,7 +104,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
   const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
-  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0};
+  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
   const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
@@ -181,6 +181,40 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     if(getPetVisibleLevel(n(saved?.pet_xp))<5 || Math.round(n(saved?.energy))>=12)return null;
     return safeAction(day,minute,'energy_drink');
   };
+  // A ten-room run is very sensitive to Health/Energy/Happiness/Cleanliness.
+  // The first policy let all four bars collapse to near zero after daily decay.
+  // Prepare using actual cooldown-enforced care actions, with a bounded
+  // schedule and a fresh authoritative snapshot on each step. Never mutate
+  // care columns directly or assume the actions succeeded.
+  const prepareForRun=async day=>{
+    const plan=[
+      [18,'feed','hunger',55,true],[19,'clean','cleanliness',60,false],
+      [20,'play','happiness',60,false],[21,'sleep','energy',65,false],
+      [23,'feed','hunger',45,true],[24,'clean','cleanliness',70,false],
+      [25,'play','happiness',70,false],[26,'sleep','energy',75,false],
+      [28,'feed','hunger',35,true],[29,'clean','cleanliness',80,false],
+      [30,'play','happiness',80,false],[31,'sleep','energy',85,false],
+      [33,'feed','hunger',25,true],[34,'clean','cleanliness',85,false],
+      [35,'play','happiness',85,false],[36,'sleep','energy',90,false],
+      [40,'energy_drink','energy',85,false],
+    ];
+    let accepted=0;
+    for(const [minute,kind,column,threshold,invert] of plan){
+      setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+      const before=f.sql.prepare('SELECT hunger,happiness,cleanliness,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+      const value=n(before?.[column]);
+      if(invert?value<=threshold:value>=threshold)continue;
+      const response=await safeAction(day,minute,kind);
+      dailyRuns.preparation.attempts++;
+      dailyRuns.preparation.byAction[kind]=(dailyRuns.preparation.byAction[kind]||0)+Number(Boolean(response.accepted&&!response.duplicate));
+      if(response.accepted&&!response.duplicate){dailyRuns.preparation.accepted++;accepted++;}
+      else dailyRuns.preparation.blocked++;
+    }
+    const after=f.sql.prepare('SELECT hunger,happiness,cleanliness,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+    if(dailyRuns.preparation.snapshots.length<16 || day%7===0)
+      dailyRuns.preparation.snapshots.push({day,accepted,beforeRun:after});
+    return after;
+  };
   try {
     for(let day=0;day<days;day++){
       // The daily decay spends roughly 53 Energy over 24h. The prior
@@ -197,7 +231,8 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       ])await safeAction(day,minute,action,payload);
       // Exactly one official Daily Moon Run attempt per UTC day. Read all
       // available choices from the Worker. Failed rooms terminate; no rerolls.
-      const started=await safeAction(day,20,'daily_run_start');
+      await prepareForRun(day);
+      const started=await safeAction(day,50,'daily_run_start');
       if(started.accepted&&!started.duplicate){
         dailyRuns.started++;
         const row=f.sql.prepare(`SELECT run_id,pet_id,status,current_room FROM telegram_pet_runs
@@ -207,7 +242,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
           for(let step=0;step<maxRunSteps;step++){
             const liveRow=f.sql.prepare('SELECT status,current_room FROM telegram_pet_runs WHERE run_id=?').get(row.run_id);
             if(!liveRow||!['active','extractable'].includes(liveRow.status))break;
-            setTime(startAt+day*WORKER_YEAR_DAY_MS+(21+step)*60_000);
+            setTime(startAt+day*WORKER_YEAR_DAY_MS+(51+step)*60_000);
             // This official V2 tactic is offered only at genuine saved
             // run checkpoints 3 and 6. It improves future odds, but cannot
             // override a failed roll or create an unearned completion.
@@ -215,7 +250,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
               WHERE run_id=? AND telegram_id=? ORDER BY modifier_id`).all(row.run_id,owner);
             const board=dailyTacticalBoard({status:liveRow.status,current_room:n(liveRow.current_room)},modifiers);
             if(board.offers.some(offer=>offer.key==='guardian')){
-              const tactic=await safeAction(day,21+step,'daily_run_tactic',{
+              const tactic=await safeAction(day,51+step,'daily_run_tactic',{
                 run_id:row.run_id,checkpoint:n(liveRow.current_room),tactic_id:'guardian',
               });
               if(tactic.accepted&&!tactic.duplicate)dailyRuns.tactics++;
@@ -223,7 +258,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
             const live=await hooks.buildPetMiniAppState(f.db,owner,'fixture-token');
             const choice=selectConservativeDailyChoice(live.run?.choices||[]);
             if(!choice?.key)break;
-            const result=await safeAction(day,21+step,'run_step',{
+            const result=await safeAction(day,51+step,'run_step',{
               run_id:row.run_id,choice_key:choice.key,expected_step_index:n(liveRow.current_room),
             });
             dailyRuns.steps++;
@@ -239,18 +274,18 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       // too tired for the boss. Recharge with a genuine, cooldown-spaced
       // Sleep before checking the Worker again. No manual stat writes.
       if(!preRunBoss.attempted && !preRunBoss.alreadyCredited){
-        await safeAction(day,35,'sleep');
-        await recoverBossEnergy(day,36);
-        await tryWeeklyBoss(day,37,'after_run_recovery');
+        await safeAction(day,65,'sleep');
+        await recoverBossEnergy(day,66);
+        await tryWeeklyBoss(day,67,'after_run_recovery');
       }
       // Only evolve when server-side eligibility is satisfied; the Worker
       // performs all required material debits and persists stages 1..5.
       // Stage zero is a fixture starting condition, not an earned reward.
-      setTime(startAt+day*WORKER_YEAR_DAY_MS+40*60_000);
+      setTime(startAt+day*WORKER_YEAR_DAY_MS+70*60_000);
       const seasonKey=f.sql.prepare('SELECT season_key FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).season_key;
       const evolution=await buildPetLifecycleProgress(f.db,pet.petId,seasonKey,new Date(),{telegram_id:owner});
       if(evolution?.evolution_ready && evolution.next_evolution?.evolution_id){
-        await safeAction(day,40,'evolve',{pet_id:pet.petId,evolution_id:evolution.next_evolution.evolution_id});
+        await safeAction(day,70,'evolve',{pet_id:pet.petId,evolution_id:evolution.next_evolution.evolution_id});
       }
       if(CHECKPOINT_DAYS.has(day+1)||day+1===days){
         // An adoption at day 0 is 365 full days old at day 365, not at
