@@ -110,7 +110,7 @@ test('page keeps eager hero, stable image ratios, no-JS artwork and click-only v
     assert.match(tag, /src="data:image\/svg\+xml,/);
     assert.ok(fallbackImages.some(match => match[1].includes('src="' + url + '"')));
   }
-  assert.match(active, /<img\b[^>]*src="\/img\/homepage\/CRYPYO%20MOONBOYS%20AND%20CRYPTO%20MOONGIRLS\.jpg"[^>]*loading="eager"/);
+  assert.match(active, /<img\b[^>]*src="\/img\/homepage\/Crypto%20Moonboys%20WAXP%20Neon%20Cityscape222\.jpg"[^>]*loading="eager"/);
   assert.doesNotMatch(active, /<script\b[^>]*\ssrc="\/js\/avatar-builder-test\.js"/);
   assert.match(active, /data-builder-module="\/js\/avatar-builder-test\.js"/);
   assert.match(active, /href="\/moonboy-builder\.html"/);
