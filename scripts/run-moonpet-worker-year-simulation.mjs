@@ -4,6 +4,7 @@
  *
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=365
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=90
+ * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=extract
  *
  * `legendaryVerified:false` is a valid diagnostic and never treated as PASS.
  */
@@ -12,7 +13,12 @@ import { simulateWorkerCampaign,WORKER_YEAR_START } from './moonpet-worker-year-
 
 const args=process.argv.slice(2);
 const arg=args.find(entry=>entry.startsWith('--days='));
-if(args.some(entry=>!entry.startsWith('--days='))||args.filter(entry=>entry.startsWith('--days=')).length>1){
+const strategyArg=args.find(entry=>entry.startsWith('--strategy='));
+const strategy=strategyArg?.slice('--strategy='.length)==='extract'?'extract_at_depth7':'boss';
+if(args.some(entry=>!entry.startsWith('--days=')&&!entry.startsWith('--strategy='))
+  ||args.filter(entry=>entry.startsWith('--days=')).length>1
+  ||args.filter(entry=>entry.startsWith('--strategy=')).length>1
+  ||(strategyArg&&!['extract','boss'].includes(strategyArg.slice('--strategy='.length)))){
   throw new Error('usage: node scripts/run-moonpet-worker-year-simulation.mjs --days=365');
 }
 const days=arg?Number(arg.slice('--days='.length)):7;
@@ -20,7 +26,7 @@ if(!Number.isInteger(days)||days<1||days>365)throw new Error('days must be an in
 mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
 try{
   const result=await simulateWorkerCampaign({
-    days,startAt:WORKER_YEAR_START,owner:'moonpet-isolated-year-audit',
+    days,startAt:WORKER_YEAR_START,owner:'moonpet-isolated-year-audit',runExitPolicy:strategy,
     setTime:at=>mock.timers.setTime(at),
     onCheckpoint:point=>console.log('MOONPET_WORKER_CHECKPOINT',JSON.stringify(point)),
   });
