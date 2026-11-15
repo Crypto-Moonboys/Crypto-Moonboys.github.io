@@ -56,6 +56,11 @@ function status(f,pet,days){
   const dailyObjectives=sql.prepare(`SELECT challenge_id,COUNT(DISTINCT utc_day) AS days,COUNT(*) AS receipts
     FROM telegram_pet_daily_journey_objectives WHERE pet_id=? AND status='accepted'
     GROUP BY challenge_id ORDER BY challenge_id`).all(pet.petId);
+  const qualifyingWeeks=Object.entries(weeklyByWeek).filter(([,objectives])=>
+    Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES).every(([key,definition])=>
+      n(objectives[key]?.progress)>=definition.target)).map(([week])=>n(week));
+  const savedCrestWeeks=new Set(crestRows.map(row=>n(row.qualification_week)));
+  const fullyQualifiedButUnsettledWeeks=qualifyingWeeks.filter(week=>!savedCrestWeeks.has(week));
   const distinctMarks=new Set(marks.map(row=>row.earned_day)).size;
   const distinctCrests=new Set(crestRows.map(row=>row.qualification_week)).size;
   const distinctRelics=new Set(relicRows.map(row=>row.relic_id)).size;
@@ -66,7 +71,7 @@ function status(f,pet,days){
     weeklyCrests:crestRows.length,distinctQualificationWeeks:distinctCrests,
     relics:relicRows.length,distinctRelics,
     alleyKingWins:n(bossWins),materials:{scrapMetal:n(material.scrap_metal),evolutionFragments:n(material.evolution_fragment)},
-    runStatus,evolutions,weeklyByWeek,dailyObjectives,
+    runStatus,evolutions,weeklyByWeek,dailyObjectives,qualifyingWeeks,fullyQualifiedButUnsettledWeeks,
     verifiedFromWorkerPersistedRows:true,
   };
 }
