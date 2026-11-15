@@ -114,6 +114,32 @@ test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evid
   }finally{t.mock.timers.reset();}
 });
 
+test('opt-in extraction policy settles only legal Worker exits and real daily Growth Marks',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({days:14,startAt:WORKER_YEAR_START,
+      owner:'virtual-extract-policy',runExitPolicy:'extract_at_depth7',
+      setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(result.runExitPolicy,'extract_at_depth7');
+    assert.ok(result.dailyRuns.extractAttempts>0,
+      'some genuinely cleared seven-room runs should offer legitimate extraction');
+    assert.equal(result.dailyRuns.extractAttempts,result.dailyRuns.extractions+result.dailyRuns.extractionRejected);
+    assert.ok(result.dailyRuns.extractions>0,
+      'an accepted real Worker extraction must be observed, never manufactured');
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    assert.equal(result.final.relics,result.final.distinctRelics);
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[]);
+    const extraction=result.final.dailyObjectives.find(row=>row.challenge_id==='daily_extraction');
+    assert.ok(extraction?.days>0,'only a real saved Daily Journey extraction objective may count');
+    console.log('MOONPET_AUTHENTIC_EXTRACTION_POLICY',JSON.stringify({
+      days:result.days,runExitPolicy:result.runExitPolicy,runResults:result.dailyRuns,
+      marks:result.final.growthMarks,crests:result.final.weeklyCrests,
+      relics:result.final.relics,extractionEvidence:extraction,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
 test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
   const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
   if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
