@@ -6,6 +6,7 @@ Status: **SOURCE-VERIFIED AUDIT; NOT A COMPLETE PLAYER ECONOMY SIMULATION**. No 
 
 - Permanent Legendary evolution requires `relics_owned: 10`, 365 days, 240 distinct-day Growth Marks, 44 weekly Crests, Level 50, boss victories and materials (`workers/moonboys-api/pets/content/evolutions.json`).
 - `alley_king` defines `relic_chance_bps: 2500` and ten possible IDs (`workers/moonboys-api/pets/content/bosses.json`).
+- The currently defined Moon Alley region has `max_rooms: 10` and `boss_pool: ["alley_king"]`; the regions catalog currently contains only Moon Alley (`workers/moonboys-api/pets/content/regions.json`). Alternate boss catalogs do not themselves demonstrate alternate playable regions.
 - Current `buildPetBossRewards` derives **both** drop and relic identity from the same `rollKey`, using FNV-1a-style `stableContentRoll(`${rollKey}:chance`)` and `stableContentRoll(`${rollKey}:relic`)` modulo 10.
 - The two salted hashes are correlated: for the current Alley King boss key and 10-item pool, the relic hash chooses **only even indexes**. Thus Alley King rewards cannot yield the five odd-index IDs under the current algorithm. This is independent of repeated attempts; simply raising the drop chance does not fix pool coverage.
 
