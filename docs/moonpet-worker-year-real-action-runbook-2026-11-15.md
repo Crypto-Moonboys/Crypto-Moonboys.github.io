@@ -83,6 +83,38 @@ The default is `boss`, unchanged. `extract` is an alternate test-only strategy a
 
 Compare genuine **Growth Marks**, **Weekly Crests**, **boss victories**, **distinct relics**, **materials**, and official run statuses. Higher Daily Mark accrual alone is not a Legendary win if relic acquisition or boss victories fail. Do not merge or deploy this annual simulator without complete tests.
 
+## Hybrid 30-day comparison (2026-11-15)
+
+Locally observed 30-day results from the same real-Worker candidate:
+
+| Strategy | Growth Marks | Weekly Crests | Alley King wins | Distinct relic IDs | Official exits/wins |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Boss every day | 16 | 3 | 15 | 2 | 15 completed |
+| Extract after seven rooms | 25 | 4 | 0 | 0 | 25 extracted |
+
+The extraction player completes more Daily Journey marks but cannot farm boss wins or relics. The full-boss player earns boss inventory but not enough Marks under the measured 30-day pace.
+
+Two new **test-only deterministic policies**, both preserving the actual Worker rules:
+
+- `--strategy=hybrid3`: 3 official full-boss attempts then 4 depth-seven extraction attempts in each successive seven-day *ownership-relative* block. Targets Daily Growth Mark frequency while retaining some boss drops.
+- `--strategy=hybrid4`: 4 full-boss attempts then 3 extraction attempts per block. Prioritises more boss and relic opportunities, potentially at the expense of daily Marks.
+
+These policies do not change probabilities, force successes, grant missing resources or preselect hidden roll outcomes. Actual winning/extracting depends on server run resolution. A scheduling decision only chooses a legal player goal; if the run fails before room seven it does not count as an extraction.
+
+To test, run all newly committed regressions first:
+```bat
+git pull --ff-only
+node --test scripts\moonpet-worker-year-simulator.test.mjs
+```
+
+Then compare **the same 30-day window**:
+```bat
+node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3
+node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid4
+```
+
+Compare `growthMarks`, `weeklyCrests`, `alleyKingWins`, `distinctRelics`, `officialRunsByWeek` and `dailyRuns.exitPoliciesByWeek`. No hybrid 365-day result has been run or proven yet.
+
 ## Outstanding verification
 
 1. Establish clean Node 24 2-day Worker smoke and week-14 genuine source-evidence PASS.
