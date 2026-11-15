@@ -1,3 +1,5 @@
+> **HISTORICAL PRE-FIX AUDIT.** The V2 selector was approved and merged via PR #1795 on 2026-11-15. Its all-ten-relic selection is now imported into the #1783 sandbox Worker. The five-relic algorithm and options below describe the original defect, not the current merged reward behaviour. See `scripts/moonpet-relic-selection-v2.test.mjs` for the corrected selection test. No changes to drop chance or Legendary requirements.
+
 # Moonpet 365-day relic-source bottleneck — 2026-11-15
 
 Status: **SOURCE-VERIFIED AUDIT; NOT A COMPLETE PLAYER ECONOMY SIMULATION**. No production reward/evolution changes.
