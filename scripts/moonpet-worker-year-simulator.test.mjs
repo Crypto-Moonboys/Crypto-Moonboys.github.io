@@ -85,6 +85,12 @@ test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evid
       owner:'virtual-two-week-weekly-boss',
       setTime:at=>t.mock.timers.setTime(at)});
     assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.ok(result.dailyRuns.preparation.accepted>0,
+      'an active campaign must use only genuinely accepted Worker care to restore degraded conditions');
+    assert.equal(result.dailyRuns.preparation.attempts,
+      result.dailyRuns.preparation.accepted+result.dailyRuns.preparation.blocked);
+    assert.ok(result.dailyRuns.preparation.snapshots.length>=14,
+      'each UTC day must have an inspectable source-pet care snapshot before the Moon Run');
     assert.ok(result.weeklyBoss.previews>=14,'every simulated UTC day checks boss eligibility');
     const weeks=Object.values(result.final.weeklyByWeek);
     const bossEvidence=weeks.reduce((sum,week)=>sum+(week.weekly_boss_attempt?.progress||0),0);
@@ -103,7 +109,7 @@ test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evid
       }));
     console.log('MOONPET_TWO_WEEK_WEEKLY_OBJECTIVE_EVIDENCE',JSON.stringify({
       boss:result.weeklyBoss,weeks:result.final.weeklyByWeek,crests:result.final.weeklyCrests,
-      runs:result.dailyRuns,marks:result.final.growthMarks,
+      runs:result.dailyRuns,officialRunsByWeek:result.final.officialRunsByWeek,marks:result.final.growthMarks,
     }));
   }finally{t.mock.timers.reset();}
 });
