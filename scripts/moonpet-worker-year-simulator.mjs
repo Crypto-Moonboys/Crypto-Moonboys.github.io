@@ -159,6 +159,18 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
             const liveRow=f.sql.prepare('SELECT status,current_room FROM telegram_pet_runs WHERE run_id=?').get(row.run_id);
             if(!liveRow||!['active','extractable'].includes(liveRow.status))break;
             setTime(startAt+day*WORKER_YEAR_DAY_MS+(21+step)*60_000);
+            // This official V2 tactic is offered only at genuine saved
+            // run checkpoints 3 and 6. It improves future odds, but cannot
+            // override a failed roll or create an unearned completion.
+            const modifiers=f.sql.prepare(`SELECT modifier_id,effects_json FROM telegram_pet_run_modifiers
+              WHERE run_id=? AND telegram_id=? ORDER BY modifier_id`).all(row.run_id,owner);
+            const board=dailyTacticalBoard({status:liveRow.status,current_room:n(liveRow.current_room)},modifiers);
+            if(board.available && board.offers.some(offer=>offer.key==='guardian')){
+              const tactic=await safeAction(day,21+step,'daily_run_tactic',{
+                run_id:row.run_id,checkpoint:n(liveRow.current_room),tactic_id:'guardian',
+              });
+              if(tactic.accepted&&!tactic.duplicate)dailyRuns.tactics++;
+            }
             const live=await hooks.buildPetMiniAppState(f.db,owner,'fixture-token');
             const choice=selectConservativeDailyChoice(live.run?.choices||[]);
             if(!choice?.key)break;
