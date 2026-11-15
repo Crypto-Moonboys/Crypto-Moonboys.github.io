@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import bosses from '../workers/moonboys-api/pets/content/bosses.json' with { type: 'json' };
+import regions from '../workers/moonboys-api/pets/content/regions.json' with { type: 'json' };
 
 const source = readFileSync(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
 const lifecycleSource = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
@@ -109,4 +110,13 @@ test('Legendary relic threshold counts unique account-owned IDs, not repeated dr
   // relic types because collection storage is keyed by (account, relic ID).
   const observed=['bitcoin_heart','hacker_lens','hacker_lens','moon_battery','bitcoin_heart'];
   assert.equal(new Set(observed).size,3);
+});
+
+
+test('current official Moon Alley route has ten rooms and only Alley King in its boss pool',()=>{
+  const moonAlley=regions.find(region=>region.region_id==='moon_alley');
+  assert.ok(moonAlley);
+  assert.equal(moonAlley.max_rooms,10);
+  assert.deepEqual(moonAlley.boss_pool,['alley_king']);
+  assert.equal(regions.length,1,'audit route authority if new regions are introduced');
 });
