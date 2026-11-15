@@ -141,16 +141,17 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   };
   try {
     for(let day=0;day<days;day++){
-      // Six ordinary, legal Worker care/economy actions in staggered time.
-      // Sleep before Train avoids the known `pet_tired` failure after decay.
+      // The daily decay spends roughly 53 Energy over 24h. The prior
+      // strategy attempted the boss AFTER Train and Work, leaving only 5
+      // Energy even at level five. Recover via genuine Sleep, then preview
+      // the boss BEFORE those activities spend Energy. The same real Worker
+      // enforces the level-five gate and 12-Energy attack cost.
+      await safeAction(day,0,'sleep');
+      const preRunBoss=await tryWeeklyBoss(day,1,'after_sleep');
       for(const [minute,action,payload] of [
-        [0,'sleep',{}],[2,'feed',{}],[4,'play',{}],[6,'clean',{}],
+        [2,'feed',{}],[4,'play',{}],[6,'clean',{}],
         [8,'train',{}],[10,'daily_chest',{}],[12,'work',{job_key:'street_artist'}],
       ])await safeAction(day,minute,action,payload);
-
-      // Boss before run prevents high damage/low energy from suppressing
-      // genuine weekly attempt evidence. The Worker chooses availability.
-      const preRunBoss=await tryWeeklyBoss(day,16,'before_run');
       // Exactly one official Daily Moon Run attempt per UTC day. Read all
       // available choices from the Worker. Failed rooms terminate; no rerolls.
       const started=await safeAction(day,20,'daily_run_start');
@@ -191,9 +192,13 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
           else dailyRuns.other++;
         }
       }
-      // A previously level-locked pet may unlock the boss during this run.
-      // Retry preview but do not send a second boss action in the same day.
-      if(!preRunBoss.attempted)await tryWeeklyBoss(day,36,'after_run');
+      // Run XP may unlock Level 5 today, but run combat can leave the pet
+      // too tired for the boss. Recharge with a genuine, cooldown-spaced
+      // Sleep before checking the Worker again. No manual stat writes.
+      if(!preRunBoss.attempted){
+        await safeAction(day,35,'sleep');
+        await tryWeeklyBoss(day,36,'after_run_recovery');
+      }
       // Only evolve when server-side eligibility is satisfied; the Worker
       // performs all required material debits and persists stages 1..5.
       // Stage zero is a fixture starting condition, not an earned reward.
