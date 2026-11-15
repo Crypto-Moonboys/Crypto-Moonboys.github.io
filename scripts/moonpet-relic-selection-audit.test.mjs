@@ -10,8 +10,9 @@ const schemaSource = readFileSync(new URL('../workers/moonboys-api/schema.sql', 
 const bossById = Object.fromEntries(bosses.map(boss => [boss.boss_id, boss]));
 const DAY = 86400000;
 
-// Mirrors only the production deterministic relic selection; source guards
-// below deliberately fail if production's formula changes.
+// Historical V1 hash reproduction, retained to demonstrate the original
+// five-of-ten bug. The actual production selector is V2 and is tested in
+// moonpet-relic-selection-v2.test.mjs. No historical drop counts are current.
 function stableContentRoll(value) {
   let hash = 2166136261;
   for (const char of String(value || '')) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
@@ -36,7 +37,7 @@ function simulateDailyIds({owner='virtual-relic-audit',days=365,startDay='2026-1
   return {days,drops:drops.length,uniqueRelics:[...new Set(drops)].sort()};
 }
 
-test('source-locked production relic hash and Alley King pool',()=>{
+test('historical FNV relic selector parity and unchanged boss drop configuration',()=>{
   assert.match(source,/function stableContentRoll\(value\) \{[\s\S]*?2166136261[\s\S]*?Math\.imul\(hash \^ char\.charCodeAt\(0\), 16777619\)/);
   assert.match(source,/const rollKey = `\$\{run\.run_id\}:\$\{room\.room_id\}:\$\{boss\.boss_id\}`/);
   assert.match(source,/stableContentRoll\(`\$\{rollKey\}:chance`\) % 10000/);
@@ -45,7 +46,7 @@ test('source-locked production relic hash and Alley King pool',()=>{
   assert.equal(bossById.alley_king.relic_pool.length,10);
 });
 
-test('365 hypothetical Alley King boss victories select just five relic IDs',()=>{
+test('legacy V1 365-day Alley King rewards selected only five relic IDs',()=>{
   for(const owner of ['virtual-relic-audit','virtual-test','123456','year-player']) {
     const result=simulateDailyIds({owner});
     assert.ok(result.drops>0);
@@ -54,16 +55,16 @@ test('365 hypothetical Alley King boss victories select just five relic IDs',()=
   }
 });
 
-test('different boss hash keys exhibit different parity; access must be independently proven',()=>{
+test('legacy V1 boss selection showed different hash parity',()=>{
   const neon=simulateDailyIds({bossId:'neon_warden'});
   const chrome=simulateDailyIds({bossId:'chrome_jackal'});
   assert.ok(neon.uniqueRelics.every(id=>bossById.neon_warden.relic_pool.indexOf(id)%2===1));
   assert.ok(chrome.uniqueRelics.every(id=>bossById.chrome_jackal.relic_pool.indexOf(id)%2===0));
 });
 
-test('emit possible outcomes, not fabricated earned relics',()=>{
+test('emit historical pre-fix outcomes, not fabricated earned relics',()=>{
   const result=simulateDailyIds();
-  console.log('MOONPET_RELIC_DIAGNOSTIC',JSON.stringify({
+  console.log('MOONPET_HISTORICAL_V1_RELIC_DIAGNOSTIC',JSON.stringify({
     boss:'alley_king',days:result.days,assumesEveryDailyBossWasDefeated:true,
     hypotheticalDrops:result.drops,distinctRelicIds:result.uniqueRelics.length,
     reachable:result.uniqueRelics,
