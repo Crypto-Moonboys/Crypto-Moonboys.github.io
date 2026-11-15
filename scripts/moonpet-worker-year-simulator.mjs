@@ -10,6 +10,8 @@ import { selectConservativeDailyChoice } from './moonpet-run-risk-policy.mjs';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { getPetVisibleLevel } from '../workers/moonboys-api/pets/progression-phase-2.js';
 import { buildPetLifecycleProgress } from '../workers/moonboys-api/pets/season-completion.js';
+import { dailyTacticalBoard } from '../workers/moonboys-api/pets/daily-run-tactics.js';
+import { PET_WEEKLY_JOURNEY_OBJECTIVES } from '../workers/moonboys-api/pets/weekly-journey.js';
 
 export const WORKER_YEAR_DAY_MS=86_400_000;
 export const WORKER_YEAR_START=Date.parse('2026-11-02T08:00:00.000Z');
@@ -34,6 +36,26 @@ function status(f,pet,days){
   const evolutions=sql.prepare('SELECT evolution_id,stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? ORDER BY stage').all(pet.petId);
   const runRows=sql.prepare('SELECT status,COUNT(*) AS count FROM telegram_pet_runs WHERE pet_id=? GROUP BY status').all(pet.petId);
   const runStatus=Object.fromEntries(runRows.map(row=>[row.status,n(row.count)]));
+  // Match weekly objective rows to accepted Worker receipts, never to raw
+  // button attempts. Distinct check-in days are counted separately.
+  const weeklyEvidence=sql.prepare(`SELECT o.qualification_week AS week,o.objective_id,
+      COUNT(*) AS receipts,COUNT(DISTINCT e.day_key) AS distinct_days,SUM(o.progress_value) AS units
+    FROM telegram_pet_weekly_journey_objectives o JOIN telegram_pet_events e
+      ON e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id AND e.season_key=o.season_key
+        AND e.event_key=o.source_event_key AND e.event_type=o.source_event_type AND e.status='accepted'
+    WHERE o.pet_id=? AND o.status='accepted'
+    GROUP BY o.qualification_week,o.objective_id ORDER BY o.qualification_week,o.objective_id`).all(pet.petId);
+  const weeklyByWeek={};
+  for(const row of weeklyEvidence){
+    const week=String(row.week),definition=PET_WEEKLY_JOURNEY_OBJECTIVES[row.objective_id];
+    const progress=row.objective_id==='weekly_check_in'?n(row.distinct_days):
+      definition?.progress_mode==='max'?Math.min(1,n(row.units)):n(row.units);
+    (weeklyByWeek[week]??={})[row.objective_id]={progress,target:definition?.target??null,
+      sourceReceipts:n(row.receipts),distinctDays:n(row.distinct_days)};
+  }
+  const dailyObjectives=sql.prepare(`SELECT challenge_id,COUNT(DISTINCT utc_day) AS days,COUNT(*) AS receipts
+    FROM telegram_pet_daily_journey_objectives WHERE pet_id=? AND status='accepted'
+    GROUP BY challenge_id ORDER BY challenge_id`).all(pet.petId);
   const distinctMarks=new Set(marks.map(row=>row.earned_day)).size;
   const distinctCrests=new Set(crestRows.map(row=>row.qualification_week)).size;
   const distinctRelics=new Set(relicRows.map(row=>row.relic_id)).size;
@@ -44,7 +66,7 @@ function status(f,pet,days){
     weeklyCrests:crestRows.length,distinctQualificationWeeks:distinctCrests,
     relics:relicRows.length,distinctRelics,
     alleyKingWins:n(bossWins),materials:{scrapMetal:n(material.scrap_metal),evolutionFragments:n(material.evolution_fragment)},
-    runStatus,evolutions,
+    runStatus,evolutions,weeklyByWeek,dailyObjectives,
     verifiedFromWorkerPersistedRows:true,
   };
 }
@@ -61,7 +83,8 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
   const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
-  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0};
+  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0};
+  const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,unavailableByReason:{},samplePreviews:[]};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
     setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
@@ -171,7 +194,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
       final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
       final.relics>=targets.relics;
-    return {days,startAt:new Date(startAt).toISOString(),owner,actions,dailyRuns,checkpoints,final,targets,
+    return {days,startAt:new Date(startAt).toISOString(),owner,actions,dailyRuns,weeklyBoss,checkpoints,final,targets,
       legendaryVerified:qualified,
       blockers:Object.entries({
         age:ageReached,marks:final.growthMarks>=targets.marks,crests:final.weeklyCrests>=targets.crests,
