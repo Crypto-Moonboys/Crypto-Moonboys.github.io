@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { makeFixture } from './moonpet-worker-virtual-player.mjs';
 import { getPetOwnershipPeriod, getPetJourneyWeek } from '../workers/moonboys-api/pets/ownership-period.js';
-import { simulateWorkerCampaign,WORKER_YEAR_START,WORKER_YEAR_DAY_MS,WORKER_YEAR_TARGETS } from './moonpet-worker-year-simulator.mjs';
+import { simulateWorkerCampaign,resolveWorkerRunDayPolicy,WORKER_YEAR_START,WORKER_YEAR_DAY_MS,WORKER_YEAR_TARGETS } from './moonpet-worker-year-simulator.mjs';
 
 test('week 14: real Worker care event persists a permanent-pet qualification week beyond legacy limit',async t=>{
   t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
@@ -110,6 +110,47 @@ test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evid
     console.log('MOONPET_TWO_WEEK_WEEKLY_OBJECTIVE_EVIDENCE',JSON.stringify({
       boss:result.weeklyBoss,weeks:result.final.weeklyByWeek,crests:result.final.weeklyCrests,
       runs:result.dailyRuns,officialRunsByWeek:result.final.officialRunsByWeek,marks:result.final.growthMarks,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('hybrid policies allocate exact legal boss/extraction days per ownership week',()=>{
+  assert.deepEqual(Array.from({length:14},(_,d)=>resolveWorkerRunDayPolicy('hybrid3',d)),[
+    ...Array(3).fill('boss'),...Array(4).fill('extract_at_depth7'),
+    ...Array(3).fill('boss'),...Array(4).fill('extract_at_depth7'),
+  ]);
+  assert.deepEqual(Array.from({length:7},(_,d)=>resolveWorkerRunDayPolicy('hybrid4',d)),[
+    ...Array(4).fill('boss'),...Array(3).fill('extract_at_depth7'),
+  ]);
+  assert.equal(resolveWorkerRunDayPolicy('boss',13),'boss');
+  assert.equal(resolveWorkerRunDayPolicy('extract_at_depth7',13),'extract_at_depth7');
+  assert.throws(()=>resolveWorkerRunDayPolicy('fake',0),/unknown runExitPolicy/);
+  assert.throws(()=>resolveWorkerRunDayPolicy('hybrid3',-1),/invalid simulation day/);
+});
+
+test('hybrid 14-day Worker campaign retains genuine boss wins and extraction receipts',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days:14,startAt:WORKER_YEAR_START,owner:'virtual-hybrid3-player',
+      runExitPolicy:'hybrid3',setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(result.runExitPolicy,'hybrid3');
+    assert.equal(result.dailyRuns.scheduledBossDays,6);
+    assert.equal(result.dailyRuns.scheduledExtractionDays,8);
+    assert.deepEqual(result.dailyRuns.exitPoliciesByWeek,{'1':{boss:3,extract:4},'2':{boss:3,extract:4}});
+    assert.ok(result.dailyRuns.started>0);
+    assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    assert.equal(result.final.relics,result.final.distinctRelics);
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[],
+      'a five-of-five genuine qualifying week must not be missing its real Crest');
+    console.log('MOONPET_WORKER_HYBRID3_14_DAY_RESULT',JSON.stringify({
+      actions:result.actions.attempts,runs:result.dailyRuns,
+      marks:result.final.growthMarks,crests:result.final.weeklyCrests,
+      bosses:result.final.alleyKingWins,relics:result.final.relics,
+      runWeeks:result.final.officialRunsByWeek,
     }));
   }finally{t.mock.timers.reset();}
 });
