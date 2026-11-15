@@ -21,7 +21,7 @@ The same source-derived diagnostic suggests `neon_warden` selects odd indexes an
 
 Codex's earlier *uncommitted and unpushed* 365-day report showed Level 51 and 365 Growth Marks but just five of ten relics. Its corrected week-14+ Crest run was interrupted. Those numbers are reported findings only, **not results verified against this PR**. The source issue above independently explains why farming Alley King alone cannot satisfy a ten-distinct-relic requirement.
 
-This is a mathematical source constraint, not evidence that Legendary is universally impossible through every allowed acquisition route.
+The permanent evolution query counts `SELECT COUNT(*) FROM telegram_pet_relics WHERE telegram_id=?`. The table's primary key is `(telegram_id, relic_id)`, so repeated drops of the same relic **cannot increase the owned-ID count**. Relic inventory is account-scoped, although run payouts are source-pet scoped. Confirm alternate acquisition paths before assuming an individual pet can complete Legendary.\n\nThis is a mathematical source constraint, not evidence that Legendary is universally impossible through every allowed acquisition route.
 
 ## Decisions for GK approval — neither implemented
 
