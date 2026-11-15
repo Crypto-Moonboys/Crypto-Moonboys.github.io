@@ -95,6 +95,10 @@ test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evid
       'at least one legal Weekly Boss action must be accepted after reaching level five: '+JSON.stringify(result.weeklyBoss));
     assert.ok(bossEvidence>=1,
       'accepted Weekly Boss action must yield genuine source-backed Weekly Journey evidence: '+JSON.stringify({boss:result.weeklyBoss,weeks:result.final.weeklyByWeek}));
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[],
+      'Worker must persist one Crest for every genuinely 5/5 qualified week: '+JSON.stringify({
+        qualified:result.final.qualifyingWeeks,sourceEvidence:result.final.weeklyByWeek,
+      }));
     console.log('MOONPET_TWO_WEEK_WEEKLY_OBJECTIVE_EVIDENCE',JSON.stringify({
       boss:result.weeklyBoss,weeks:result.final.weeklyByWeek,crests:result.final.weeklyCrests,
       runs:result.dailyRuns,marks:result.final.growthMarks,
