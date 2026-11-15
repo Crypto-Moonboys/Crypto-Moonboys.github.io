@@ -20,6 +20,18 @@ export const WORKER_YEAR_TARGETS=Object.freeze({
   days:365,marks:240,crests:44,level:50,bossVictories:15,relics:10,scrapMetal:60,evolutionFragments:40,
 });
 const CHECKPOINT_DAYS=new Set([7,30,90,365]);
+// Weekly balance is explicit and deterministic, not an attempt to predict
+// hidden RNG. The two hybrid schedules model a player choosing whether to
+// pursue boss/relic inventory or safer Daily Journey Growth Marks.
+export const WORKER_RUN_EXIT_POLICIES=Object.freeze(['boss','extract_at_depth7','hybrid3','hybrid4']);
+export function resolveWorkerRunDayPolicy(runExitPolicy,day){
+  if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
+    throw new RangeError('unknown runExitPolicy');
+  if(!Number.isSafeInteger(day)||day<0)throw new RangeError('invalid simulation day');
+  if(runExitPolicy==='boss'||runExitPolicy==='extract_at_depth7')return runExitPolicy;
+  const bossDays=runExitPolicy==='hybrid3'?3:4;
+  return day%7<bossDays?'boss':'extract_at_depth7';
+}
 
 function n(value){return Number(value||0);}
 function status(f,pet,days){
@@ -99,14 +111,16 @@ function status(f,pet,days){
 export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   owner='worker-year-player',setTime,onCheckpoint=()=>{},maxRunSteps=10,runExitPolicy='boss'}={}){
   if(!Number.isInteger(days)||days<1||days>365)throw new RangeError('days must be 1..365');
-  if(!['boss','extract_at_depth7'].includes(runExitPolicy))
-    throw new RangeError('runExitPolicy must be boss or extract_at_depth7');
+  if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
+    throw new RangeError('runExitPolicy must be boss, extract_at_depth7, hybrid3 or hybrid4');
   if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
   setTime(startAt);
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
   const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
-  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
+  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,
+    scheduledBossDays:0,scheduledExtractionDays:0,exitPoliciesByWeek:{},
+    extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
   const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
@@ -219,6 +233,11 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   };
   try {
     for(let day=0;day<days;day++){
+      const dayExitPolicy=resolveWorkerRunDayPolicy(runExitPolicy,day);
+      const week=String(Math.floor(day/7)+1);
+      const schedule=dailyRuns.exitPoliciesByWeek[week]??={boss:0,extract:0};
+      if(dayExitPolicy==='boss'){dailyRuns.scheduledBossDays++;schedule.boss++;}
+      else {dailyRuns.scheduledExtractionDays++;schedule.extract++;}
       // The daily decay spends roughly 53 Energy over 24h. The prior
       // strategy attempted the boss AFTER Train and Work, leaving only 5
       // Energy even at level five. Recover via genuine Sleep, then preview
@@ -249,7 +268,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
             // A successful Worker extraction supplies a third objective
             // without forcing a boss victory. This trades away boss drops
             // and relic opportunity; default full-boss policy is unchanged.
-            if(runExitPolicy==='extract_at_depth7' && n(liveRow.current_room)>=7){
+            if(dayExitPolicy==='extract_at_depth7' && n(liveRow.current_room)>=7){
               dailyRuns.extractAttempts++;
               const extraction=await safeAction(day,51+step,'run_extract',{run_id:row.run_id});
               if(extraction.accepted&&!extraction.duplicate)dailyRuns.extractions++;
