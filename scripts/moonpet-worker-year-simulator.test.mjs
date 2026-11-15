@@ -23,7 +23,7 @@ test('week 14: real Worker care event persists a permanent-pet qualification wee
     const rows=f.sql.prepare(`SELECT qualification_week,objective_id,status FROM telegram_pet_weekly_journey_objectives
       WHERE pet_id=? ORDER BY qualification_week DESC`).all(p.petId);
     assert.ok(rows.some(row=>row.qualification_week===14 && row.objective_id==='weekly_care' && row.status==='accepted'),
-      'permanent pet must accept genuine Worker evidence in week 14');
+      'permanent pet must accept genuine Worker evidence in week 14: '+JSON.stringify({ownership,week14At:new Date(week14At).toISOString(),source,rows}));
     const tableNames=['telegram_pet_weekly_journey_objectives','telegram_pet_weekly_journey_receipts','telegram_pet_weekly_crests'];
     for(const table of tableNames){
       const ddl=f.sql.prepare('SELECT sql FROM sqlite_master WHERE type=? AND name=?').get('table',table)?.sql;
@@ -56,7 +56,7 @@ test('legacy-quarter pet preserves the real quarter boundary for week 14 after m
     assert.equal(result.accepted,true,JSON.stringify(result));
     const rows=f.sql.prepare("SELECT qualification_week FROM telegram_pet_weekly_journey_objectives WHERE pet_id=? AND objective_id='weekly_care' AND status='accepted'").all(pet.petId);
     assert.ok(rows.some(row=>row.qualification_week===14),
-      'legacy-quarter pet must earn authentic week-14 source evidence after migration 085');
+      'legacy-quarter pet must earn authentic week-14 source evidence after migration 085: '+JSON.stringify({slot,quarterEnd:new Date(quarterEnd).toISOString(),rows}));
   }finally{f.close();t.mock.timers.reset();}
 });
 
