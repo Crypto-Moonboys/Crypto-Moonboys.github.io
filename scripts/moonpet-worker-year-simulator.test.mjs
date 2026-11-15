@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { makeFixture } from './moonpet-worker-virtual-player.mjs';
+import { getPetOwnershipPeriod, getPetJourneyWeek } from '../workers/moonboys-api/pets/ownership-period.js';
 import { simulateWorkerCampaign,WORKER_YEAR_START,WORKER_YEAR_DAY_MS,WORKER_YEAR_TARGETS } from './moonpet-worker-year-simulator.mjs';
 
 test('week 14: real Worker care event persists a permanent-pet qualification week beyond legacy limit',async t=>{
@@ -8,9 +9,17 @@ test('week 14: real Worker care event persists a permanent-pet qualification wee
   const f=makeFixture(()=>Date.now());
   try{
     const p=f.createPlayer('virtual-permanent-week14');
-    t.mock.timers.setTime(WORKER_YEAR_START+13*7*WORKER_YEAR_DAY_MS+60_000);
+    const ownership=f.sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=?').get(p.petId);
+    assert.equal(ownership.journey_clock,'created_at','a newly adopted pet must use its own saved creation date, not legacy quarter weeks');
+    const period=getPetOwnershipPeriod(ownership.season_key,ownership.created_at,ownership.journey_clock);
+    const week14At=WORKER_YEAR_START+13*7*WORKER_YEAR_DAY_MS+60_000;
+    assert.equal(getPetJourneyWeek(period,new Date(week14At)),14,'week 14 must follow exactly 13 full ownership weeks');
+    t.mock.timers.setTime(week14At);
     const result=await f.action(p.owner,'feed',{request_id:'year-week14-source-feed'});
     assert.equal(result.accepted,true,JSON.stringify(result));
+    const source=f.sql.prepare("SELECT event_type,day_key,pet_id FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted' ORDER BY rowid DESC LIMIT 1").get(p.owner);
+    assert.equal(source?.day_key,new Date(week14At).toISOString().slice(0,10),'real Worker must save the source action on the simulated UTC day');
+    assert.equal(source?.pet_id,p.petId);
     const rows=f.sql.prepare(`SELECT qualification_week,objective_id,status FROM telegram_pet_weekly_journey_objectives
       WHERE pet_id=? ORDER BY qualification_week DESC`).all(p.petId);
     assert.ok(rows.some(row=>row.qualification_week===14 && row.objective_id==='weekly_care' && row.status==='accepted'),
@@ -24,6 +33,30 @@ test('week 14: real Worker care event persists a permanent-pet qualification wee
     }
     assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(p.petId).n,0,
       'one care action alone must not award a Crest');
+  }finally{f.close();t.mock.timers.reset();}
+});
+
+
+test('legacy-quarter pet preserves the real quarter boundary for week 14 after migration 085',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  const f=makeFixture(()=>Date.now());
+  try{
+    const pet=f.createPlayer('virtual-legacy-quarter-week14');
+    // Explicit fixture-only legacy pet, as opposed to newly adopted pets.
+    // No XP, Crest, event, or timestamp is pre-awarded.
+    f.sql.prepare("UPDATE telegram_pet_season_slots SET journey_clock='legacy_quarter' WHERE pet_id=?").run(pet.petId);
+    const slot=f.sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=?').get(pet.petId);
+    const period=getPetOwnershipPeriod(slot.season_key,slot.created_at,slot.journey_clock);
+    const quarterEnd=Date.parse(period.legacy_end_at);
+    assert.ok(Number.isFinite(quarterEnd),'legacy quarter must have saved season end');
+    const boundary=quarterEnd+60_000;
+    assert.equal(getPetJourneyWeek(period,new Date(boundary)),14);
+    t.mock.timers.setTime(boundary);
+    const result=await f.action(pet.owner,'feed',{request_id:'legacy-week14-worker-care'});
+    assert.equal(result.accepted,true,JSON.stringify(result));
+    const rows=f.sql.prepare("SELECT qualification_week FROM telegram_pet_weekly_journey_objectives WHERE pet_id=? AND objective_id='weekly_care' AND status='accepted'").all(pet.petId);
+    assert.ok(rows.some(row=>row.qualification_week===14),
+      'legacy-quarter pet must earn authentic week-14 source evidence after migration 085');
   }finally{f.close();t.mock.timers.reset();}
 });
 
