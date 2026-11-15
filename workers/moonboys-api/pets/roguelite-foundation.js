@@ -10,6 +10,7 @@ import {
   validatePetRunModifierContent,
 } from './content/index.js';
 import { SELECTED_RUN_PET_SQL, requireRunMutationResults, recoverDeletedPetRunStarts, isDeletedRunPet } from './run-ownership.js';
+import { selectBossRelicId } from './relic-selection.js';
 import { PET_CARE_SNAPSHOT_COLUMNS } from './care-decay.js';
 import { communitySeasonSql, communityReceiptTimestampSql } from '../community-season-authority.js';
 import { getPetSeasonRewardTier } from './player-expansion.js';
@@ -656,7 +657,7 @@ function buildPetBossRewards(boss, run, room) {
   const rollKey = `${run.run_id}:${room.room_id}:${boss.boss_id}`;
   const chanceRoll = stableContentRoll(`${rollKey}:chance`) % 10000;
   if (chanceRoll >= positiveInteger(boss.relic_chance_bps, 10000)) return rewards;
-  const relicId = pickContentId(boss.relic_pool, stableContentRoll(`${rollKey}:relic`));
+  const relicId = selectBossRelicId(boss.relic_pool, stableContentRoll(`${rollKey}:relic`));
   const relic = PET_ROGUELITE_RELICS[relicId];
   if (!relic) return rewards;
   return { ...rewards, relics: { [relicId]: { rarity: relic.rarity, effects: relic.effects } } };
