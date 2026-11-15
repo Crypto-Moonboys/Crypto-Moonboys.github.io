@@ -122,3 +122,95 @@ Compare `growthMarks`, `weeklyCrests`, `alleyKingWins`, `distinctRelics`, `offic
 3. Run 7/30/90/365 checkpoints and determine whether any legal daily/weekly/boss strategy reaches all gates.
 4. Review evolution action readiness, legacy migrations and XP caps across the full 365-day result.
 5. Resolve any GitHub CI and PR review failures before release. **Do not merge or deploy the annual simulator as proof until these pass.**
+
+
+---
+
+## VERIFIED HANDOVER CHECKPOINT — 2026-11-15, 15:17 UK (before 365-day run)
+
+**READ THIS FIRST IN A NEW CHAT OR SESSION.** This checkpoint is based on the user's actual Windows CMD output from running the current PR branch, not on a hypothetical, an interrupted Codex workspace, or an extrapolated win. All observed results below use real Moonpet Worker action routes backed by isolated SQLite. These measurements are NOT production gameplay results. Keep the existing PR #1783 branch `sandbox/moonpet-365day-care-audit-20261114`; do not create another PR or restart the project.
+
+### Immutable task and release constraints
+
+- Purpose: establish whether the SAME permanent Moonpet can actually reach Legendary after 365 elapsed days without fabricated rewards, edited event rows, overridden rolls, XP injections, or bypassing cooldowns. Source-pet ownership must remain authoritative.
+- Legendary gates: **365 elapsed age days, 240 distinct-day Growth Marks, 44 distinct-week Weekly Crests, level 50 (96,040 Pet XP), at least 15 Alley King victories, 10 distinct account-owned relic IDs, 60 Scrap Metal, 40 Evolution Fragments**, and server-authorized sequential evolutions through stage five.
+- PR #1795 was **merged separately** to `main` and corrected the deterministic relic selection parity problem; 25% Alley King drop frequency unchanged. The fix was explicitly integrated into #1783's Worker implementation. Historical five-relic bug audit remains labelled pre-fix.
+- Fixture has migration `085_permanent_pet_weekly_evidence.sql`, new-pet `journey_clock='created_at'`, real stage-zero initial pet, real Worker action dispatch, and true current-date/SQLite simulation. The genuine post-week-13 regression passed for both creation-clock and legacy-quarter pets. Weekly objective requirements remain 5 care, 3 training, 3 completed/extracted official runs, 1 weekly boss attempt, and 2 distinct-day check-ins.
+- **No merge, production deploy, live D1 migration, Telegram/wallet action, XP rate change, penalty activation or evolution threshold alteration is authorized by this audit.** Keep PR in DRAFT until verified.
+
+### Working files already ON GitHub
+
+`scripts/moonpet-worker-virtual-player.mjs` (shared Worker/SQLite fixture); `scripts/moonpet-worker-year-simulator.mjs` (same-pet simulation, 7/30/90/365 checkpoint evidence); `scripts/moonpet-worker-year-simulator.test.mjs` (Week 14, two-day and 14-day Weeklies, hybrid and extraction regressions); `scripts/run-moonpet-worker-year-simulation.mjs` (standalone command); `scripts/moonpet-virtual-player-engine.test.mjs` (earlier tests); `scripts/moonpet-relic-selection-v2.test.mjs` and `workers/moonboys-api/pets/relic-selection.js` (merged fix mirrored into sandbox); this runbook.
+
+### Passed real-Worker regression command
+
+`node --test scripts\moonpet-worker-year-simulator.test.mjs`: **8 tests total, 7 passed, 0 failed, 1 skipped** (the expensive opt-in full-year test was deliberately skipped). Verified after hybrid schedule was added. The 14-day `hybrid3` Worker test showed 10 distinct-day Growth Marks, 2 genuine Weekly Crests, two Alley King boss victories, 0 fabricated relics, and seven legal extractions; no rejected extraction. The two real-Worker Week 14 proof tests passed. A skipped test is NOT a tested 365-day outcome.
+
+### Executed 30-day strategy comparison (actual persisted outcomes)
+
+| Policy | Growth Marks | Weekly Crests | Alley King victories | Distinct relics | Successful official exits | Failed runs |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `boss` every day | 16 | 3 | 15 | 2 | 15 boss completions | 15 |
+| `extract` after depth 7 | 25 | 4 | 0 | 0 | 25 extractions | 5 |
+| `hybrid3` (3 boss days, 4 extraction days/week) | 21 | 4 | 7 | 2 | 20 (7 boss + 13 extracted) | 10 |
+| `hybrid4` (4 boss days, 3 extraction days/week) | 19 | 4 | 7 | 2 | 18 (7 boss + 11 extracted) | 12 |
+
+All figures derive from CMD log output. The two hybrid policies retained all 4 qualification-week Crests and 0 fully qualified but unsettled weeks. `hybrid3` is the leading measured balanced policy; `extract` improves Marks but earns no boss victories/relics. No claim of optimality.
+
+### EXECUTED 90-day `hybrid3` campaign — PRIMARY LATEST RESULT
+
+Command:
+```bat
+node scripts\run-moonpet-worker-year-simulation.mjs --days=90 --strategy=hybrid3
+```
+
+**The command returned to the Windows prompt normally**, after reaching Day 7, 30 and 90 checkpoints. The Day 90 `MOONPET_WORKER_CHECKPOINT` / `MOONPET_WORKER_YEAR_FINAL` reported:
+
+| Metric | Day 90 |
+| --- | ---: |
+| Real Worker actions accepted | **2,408** |
+| Rejected actions | **0** |
+| Pet XP | **14,290** |
+| Visible pet level | **19** |
+| Growth Marks, distinct accepted UTC days | **69** |
+| Weekly Crests, distinct qualification weeks | **13** |
+| Fully qualified but unsettled weeks | **0** |
+| Alley King victories (authority table) | **24** |
+| Distinct owned relic IDs | **4** |
+| Official Daily Moon Runs completed through boss | **24** |
+| Official Daily Moon Runs extracted | **44** |
+| Failed official runs | **22** |
+| Scrap Metal remaining | **120** |
+| Evolution Fragments remaining | **24** |
+| Highest persisted evolution | **Stage 1 — street_moonpet** |
+| Final Legendary settlement | **FALSE (correct for Day 90)** |
+
+All thirteen ownership weeks earned a genuine Crest; weeks one through thirteen showed five-of-five objectives and no unsettled qualification. The Age/Marks/Crests/XP/relic/evolution gates remain outstanding because the pet was only 90 days old.
+
+**Do not substitute 90-day linear projections for authentic 365-day receipts.** Indicative `69/90*365 ≈ 280` Marks and `13/90*365 ≈ 52.7` Crests show favorable pace, but **Level 19 with 14,290 XP is the major risk**. The visible Level 50 threshold is **96,040 XP**: simple `14,290/90*365 ≈ 57,951` XP at the same pace, substantially below the required threshold. Also, four unique relics at Day 90 do not prove ten unique IDs will be obtained despite the parity fix. Do not confuse accumulated drops with distinct relic IDs. Sequential evolution may require additional attention to stage unlocks and material spending; currently only Stage 1 has been persisted.
+
+### 90-day runtime/performance fact
+
+The Windows CMD output appeared to stop at Day 30 because checkpoint logs exist only at Days 7, 30, 90 and 365. Task Manager showed **Node.js still consuming ~4% CPU and ~168 MB memory**, so it was active, not demonstrably hung. The actual 90-day run subsequently completed. No stable runtime duration was captured. **Do NOT promise that a 365-day run will finish quickly**; SQL/Worker recovery work may become slower with accumulated rows. Improvement before the year run: add concise progress logging every ~7 virtual days (day, elapsed monotonic wall duration, active/in-flight phase, marks/crests/XP/relics, accepted/rejected counts) while keeping detailed checkpoint summaries at 7/30/90/365. Avoid printing massive full snapshots on every day; do not change results to achieve faster runtime.
+
+### NEXT ACTIONS, in priority order
+
+1. **Preserve this PR checkpoint and do not lose it.** This handover is committed to the branch and a PR comment should link to it.
+2. Add low-volume weekly progress/performance diagnostics to the standalone runner or simulator without modifying Worker payout or the deterministic gameplay policy.
+3. Audit **legitimate XP sources** and their actual time/cooldown/caps. Add an opt-in XP-efficient but legal action strategy that improves beyond the demonstrated 14,290/90-day pace. Do not inflate XP or change production reward formulas just to pass Legendary.
+4. Examine relic collection and stage progression at longer horizons (unique IDs, legitimate 25% boss drops, stage 2–5 unlock and material debits). Never pre-grant inventory.
+5. Execute **365-day `hybrid3`** only after the progress output and budget strategy are prepared:
+   ```bat
+   cd /d D:\GITHUB\Crypto-Moonboys.github.io
+   git fetch origin
+   git switch sandbox/moonpet-365day-care-audit-20261114
+   git pull --ff-only origin sandbox/moonpet-365day-care-audit-20261114
+   node --test scripts\moonpet-worker-year-simulator.test.mjs
+   node scripts\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3
+   ```
+6. Report actual 365-day persisted results for **every** Legendary gate; if any gate fails, return exact blocker and observed source evidence, NOT a fabricated victory or optimistic projection.
+7. Before any merge, check current GitHub CI, remote branch mergeability, base drift and all repo review comments. **Do not merge/deploy** without separate user approval.
+
+### New-session handoff sentence
+
+> Continue Moonpet 365-day audit **PR #1783** on `sandbox/moonpet-365day-care-audit-20261114`, using the **2026-11-15 verified handover section** of `docs/moonpet-worker-year-real-action-runbook-2026-11-15.md`. The 90-day real Worker `hybrid3` run PASSED (69 Marks, 13 Crests, 14,290 XP/Level 19, 24 Alley King wins, 4 distinct relics, Stage 1, 0 rejected actions). Add weekly performance checkpoints, audit legal XP optimization and relic/evolution blockers, then execute 365 days. No Codex recovery, no new PR, no production changes.
