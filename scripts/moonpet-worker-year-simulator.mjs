@@ -139,6 +139,16 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     else weeklyBoss.rejected++;
     return {attempted:true,accepted:Boolean(result.accepted&&!result.duplicate)};
   };
+  // The ordinary Energy Drink is a real cooldown/limit-enforced Care
+  // action (+28 Energy, 10-minute cooldown, 3 per day, no XP). Use it only
+  // when the level-eligible pet is below the 12-Energy boss gate; never
+  // seed stats or override Worker eligibility.
+  const recoverBossEnergy=async(day,minute)=>{
+    setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+    const saved=f.sql.prepare('SELECT pet_xp,energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+    if(getPetVisibleLevel(n(saved?.pet_xp))<5 || Math.round(n(saved?.energy))>=12)return null;
+    return safeAction(day,minute,'energy_drink');
+  };
   try {
     for(let day=0;day<days;day++){
       // The daily decay spends roughly 53 Energy over 24h. The prior
@@ -147,7 +157,8 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       // the boss BEFORE those activities spend Energy. The same real Worker
       // enforces the level-five gate and 12-Energy attack cost.
       await safeAction(day,0,'sleep');
-      const preRunBoss=await tryWeeklyBoss(day,1,'after_sleep');
+      await recoverBossEnergy(day,1);
+      const preRunBoss=await tryWeeklyBoss(day,2,'after_sleep_and_energy_check');
       for(const [minute,action,payload] of [
         [2,'feed',{}],[4,'play',{}],[6,'clean',{}],
         [8,'train',{}],[10,'daily_chest',{}],[12,'work',{job_key:'street_artist'}],
@@ -197,7 +208,8 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       // Sleep before checking the Worker again. No manual stat writes.
       if(!preRunBoss.attempted){
         await safeAction(day,35,'sleep');
-        await tryWeeklyBoss(day,36,'after_run_recovery');
+        await recoverBossEnergy(day,36);
+        await tryWeeklyBoss(day,37,'after_run_recovery');
       }
       // Only evolve when server-side eligibility is satisfied; the Worker
       // performs all required material debits and persists stages 1..5.
