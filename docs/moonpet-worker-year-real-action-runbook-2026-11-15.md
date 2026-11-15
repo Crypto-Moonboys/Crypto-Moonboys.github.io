@@ -49,6 +49,25 @@ At 365 elapsed days, the runner performs a final authorized evolution eligibilit
 - PR #1783 is behind main and should undergo an ordinary merge-base/conflict review after tests; merging PR #1795 did not automatically rebase #1783.
 - All changes remain on the PR branch. No production D1 migration, site deploy, Telegram call, wallet transaction, live care penalty or merge.
 
+## 30-day baseline and revised legal strategy (2026-11-15)
+
+Original locally executed 30-day candidate earned five completed official Moon Runs, five distinct-day Growth Marks and **zero** Weekly Crests. Its action breakdown had **no weekly_boss dispatches**. This is a simulator strategy deficit, not evidence that Weekly Crests cannot be earned under the game rules.
+
+The revised Worker-backed strategy now:
+1. Checks the actual Weekly Boss preview **before** the Daily Run consumes energy, and dispatches only an advertised legal move when available.
+2. If no attempt was dispatched, checks again after the day's run to detect newly unlocked eligibility; it never retries an already dispatched attack.
+3. Uses the existing production V2 **Guardian** tactic only when the persisted Daily Run tactical board offers it at checkpoints three or six, preserving genuine random outcomes.
+4. Exposes source-linked `weeklyByWeek` progress for all five Weekly Journey objectives, distinct-day check-ins, `weeklyBoss` preview/attempt/rejection evidence and `dailyRuns.tactics` at checkpoints.
+5. Exposes `qualifyingWeeks` and `fullyQualifiedButUnsettledWeeks` to distinguish legitimate missed qualification from a genuine Worker settlement defect.
+
+Run the focused **14-day** boss-evidence regression first:
+```bat
+git pull --ff-only origin sandbox/moonpet-365day-care-audit-20261114
+node --test scripts\moonpet-worker-year-simulator.test.mjs
+node scripts\run-moonpet-worker-year-simulation.mjs --days=7
+```
+If the regression fails, its message includes Worker preview snapshots and weekly source rows; do not report a pass or fabricate a Crest. In a qualified week, all five real objectives must have actual accepted source receipts and a persisted Crest. If 14 days passes, run 30 and 90 days and compare all five objectives week-by-week before claiming the strategy is viable.
+
 ## Outstanding verification
 
 1. Establish clean Node 24 2-day Worker smoke and week-14 genuine source-evidence PASS.
