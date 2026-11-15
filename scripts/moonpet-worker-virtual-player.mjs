@@ -56,7 +56,10 @@ export function makeFixture(now,{startingEggEvolution=false}={}) {
     sql.prepare('INSERT INTO telegram_pet_profiles(telegram_id,pet_xp,energy) VALUES (?,200,100)').run(owner);
     sql.prepare("INSERT OR IGNORE INTO telegram_seasons(name,start_date,end_date) VALUES ('Community','2000-01-01','2999-01-01')").run();
     const season=hooks.getPetSeasonInfo(new Date(now())).key,petId='virtual-'+owner;
-    sql.prepare("INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES (?,?,?,1,'free')").run(petId,owner,season);
+    // This fixture creates a NEW permanent pet. Production adoption uses the
+    // creation-day Journey clock; schema's legacy_quarter default is retained
+    // only to preserve older accounts created before that migration.
+    sql.prepare("INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,acquisition_type,journey_clock) VALUES (?,?,?,1,'free','created_at')").run(petId,owner,season);
     sql.prepare("INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_xp,energy,source_profile_updated_at) VALUES (?,?,?,1,200,100,'0001-01-01 00:00:00')").run(petId,owner,season);
     sql.prepare("INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,identity_seed,phase,species_id,incubation_json,innate_traits_json) VALUES (?,?,?,'young','vinyl_crab','{}','[]')").run(petId,owner,petId);
     if(startingEggEvolution){
