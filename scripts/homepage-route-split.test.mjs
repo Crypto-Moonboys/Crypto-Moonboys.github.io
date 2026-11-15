@@ -35,7 +35,7 @@ assert.match(experienceMain, /id="graffiti-kings-archive"/);
 assert.match(experienceMain, /home-art-strip-track/);
 assert.match(experienceMain, /Marilyn%20Monroe%20Graffiti-HD/);
 assert.match(experienceMain, /<iframe\b/);
-assert.match(experience, /src="\/js\/avatar-builder-test\.js"/);
+assert.match(experience, /data-builder-module="\/js\/avatar-builder-test\.js"/);
 for (const [html, head, url] of [
   [landing, landingHead, origin + '/'],
   [experience, experienceHead, origin + target],

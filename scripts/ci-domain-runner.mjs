@@ -326,6 +326,7 @@ const GROUPS = {
   visual: [
     ['node', 'scripts/homepage-route-split.test.mjs'],
     ['node', '--test', 'scripts/wax-video-performance.test.mjs'],
+    ['node', '--test', 'scripts/wax-progressive-loading.test.mjs'],
     ['node', 'scripts/homepage-hero-parity.test.mjs'],
     ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
     ['node', 'scripts/arcade-graph-source-parity.test.mjs'],
