@@ -125,6 +125,10 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         if(move?.key)await safeAction(day,36,'weekly_boss',{move:move.key,pet_id:pet.petId});
       }
       if(CHECKPOINT_DAYS.has(day+1)||day+1===days){
+        // An adoption at day 0 is 365 full days old at day 365, not at
+        // the start of day 364. Advance to the next day's 08:00 boundary
+        // before reporting elapsed-age checkpoint evidence.
+        setTime(startAt+(day+1)*WORKER_YEAR_DAY_MS);
         const point=status(f,pet,day+1);
         if(point.growthMarks!==point.distinctGrowthDays)throw new Error('duplicate Growth Mark day');
         if(point.weeklyCrests!==point.distinctQualificationWeeks)throw new Error('duplicate weekly Crest qualification');
@@ -135,7 +139,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     }
     const final=checkpoints[checkpoints.length-1]??status(f,pet,days);
     const targets=WORKER_YEAR_TARGETS;
-    const ageReached=days>=targets.days;
+    const ageReached=Date.now()-startAt>=targets.days*WORKER_YEAR_DAY_MS;
     const qualified=ageReached &&
       final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
       final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
