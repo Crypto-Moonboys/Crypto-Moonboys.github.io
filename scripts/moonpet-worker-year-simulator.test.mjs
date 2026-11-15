@@ -93,6 +93,8 @@ test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evid
     assert.ok(training>=3 && checkIns>=2,'care and check-in source receipts must survive within their ownership week');
     assert.ok(result.weeklyBoss.accepted>=1,
       'at least one legal Weekly Boss action must be accepted after reaching level five: '+JSON.stringify(result.weeklyBoss));
+    assert.ok(result.weeklyBoss.accepted<=2,
+      'one accepted boss source per pet ownership week; no unnecessary daily boss farming: '+JSON.stringify(result.weeklyBoss));
     assert.ok(bossEvidence>=1,
       'accepted Weekly Boss action must yield genuine source-backed Weekly Journey evidence: '+JSON.stringify({boss:result.weeklyBoss,weeks:result.final.weeklyByWeek}));
     assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[],
