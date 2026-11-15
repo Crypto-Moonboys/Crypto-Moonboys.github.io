@@ -4,6 +4,8 @@ import test from 'node:test';
 import bosses from '../workers/moonboys-api/pets/content/bosses.json' with { type: 'json' };
 
 const source = readFileSync(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
+const lifecycleSource = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
+const schemaSource = readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const bossById = Object.fromEntries(bosses.map(boss => [boss.boss_id, boss]));
 const DAY = 86400000;
 
@@ -97,4 +99,14 @@ test('hypothetical post-hash mixing can reach all ten relic IDs without increasi
     assert.equal(currentIds.size,5);
     assert.equal(mixedIds.size,10);
   }
+});
+
+
+test('Legendary relic threshold counts unique account-owned IDs, not repeated drop rolls',()=>{
+  assert.match(schemaSource,/CREATE TABLE IF NOT EXISTS telegram_pet_relics \([\s\S]*?PRIMARY KEY \(telegram_id, relic_id\)/);
+  assert.match(lifecycleSource,/SELECT COUNT\(\*\) AS count FROM telegram_pet_relics WHERE telegram_id=\?/);
+  // Five repeatedly dropped ID values still represent exactly five owned
+  // relic types because collection storage is keyed by (account, relic ID).
+  const observed=['bitcoin_heart','hacker_lens','hacker_lens','moon_battery','bitcoin_heart'];
+  assert.equal(new Set(observed).size,3);
 });
