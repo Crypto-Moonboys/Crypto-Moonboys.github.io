@@ -544,7 +544,7 @@ export default {
     }
     if (tasks.bulletin) {
       ctx.waitUntil(postTagRunGroupBulletin(env).catch((error) => {
-        console.warn('[TAG RUN] four-hour bulletin unavailable',
+        console.warn('[TAG RUN] daily 18:00 UTC bulletin unavailable',
           String(error?.message || error));
       }));
     }

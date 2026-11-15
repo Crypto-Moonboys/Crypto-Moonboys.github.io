@@ -1,4 +1,4 @@
-// Every four-hour bulletin uses GK's fixed launch artwork.
+// Every daily 18:00 UTC bulletin uses GK's fixed launch artwork.
 // Its full body is a separate message: Telegram photo captions are limited to 1024 characters.
 import { authenticatedGroupId } from './core.js';
 

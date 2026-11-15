@@ -20,7 +20,7 @@ test('configured and wrapper-owned cron strings stay in parity',()=>{
     assert(cfg.includes(JSON.stringify(c)),c);
   }
   assert.deepEqual(Object.values(MOONBOYS_CRON),[
-    '*/5 * * * *','*/30 * * * *','0 9 * * *','3 */4 * * *','12 0 * * *'
+    '*/5 * * * *','*/30 * * * *','0 9 * * *','0 18 * * *','12 0 * * *'
   ]);
   assert(!cfg.includes('"0 */4 * * *"'));
   assert(!cfg.includes('"10 0 * * *"'));
@@ -54,11 +54,26 @@ test('30-minute Community Pot progression is isolated from base maintenance',()=
   ).automationTick,false);
 });
 
-test('four-hour bulletin is isolated from timed maintenance and rank queue',()=>{
-  const due=phase5CronTasks(event(MOONBOYS_CRON.bulletin,'2026-11-03T04:03:00Z'),enabled);
+test('daily 18:00 UTC bulletin is isolated from timed maintenance and rank queue',()=>{
+  const due=phase5CronTasks(event(MOONBOYS_CRON.bulletin,'2026-11-03T18:00:00Z'),enabled);
   only(due,'bulletin');
-  const shifted=phase5CronTasks(event(MOONBOYS_CRON.timed,'2026-11-03T04:05:00Z'),enabled);
+  const shifted=phase5CronTasks(event(MOONBOYS_CRON.timed,'2026-11-03T18:00:00Z'),enabled);
   assert.equal(shifted.bulletin,false);
+});
+
+test('retired four-hour trigger never posts; bulletin stays at 18:00 UTC through UK summer time',()=>{
+  for (const date of ['2026-11-14', '2027-07-14']) {
+    only(phase5CronTasks(event(MOONBOYS_CRON.bulletin,date+'T18:00:00Z'),enabled),'bulletin');
+    for (let hour=0;hour<24;hour+=4) {
+      const time=date+'T'+String(hour).padStart(2,'0')+':03:00Z';
+      assert.equal(phase5CronTasks(event('3 */4 * * *',time),enabled).bulletin,false);
+    }
+    for (const cron of [MOONBOYS_CRON.timed, MOONBOYS_CRON.automation, MOONBOYS_CRON.digest]) {
+      assert.equal(phase5CronTasks(event(cron,date+'T18:00:00Z'),enabled).bulletin,false);
+    }
+  }
+  assert(!cfg.includes('"3 */4 * * *"'));
+  assert.equal(MOONBOYS_CRON.bulletin,'0 18 * * *');
 });
 
 test('UTC participation capture moves only two minutes, keeps calendar authority and payout gates',()=>{
@@ -79,7 +94,7 @@ test('disabled flags block outbound TAG RUN and V2 work without affecting cleanu
   const off={...enabled,TAG_RUN_ENABLED:'false',TAG_RUN_V2_OBSERVATION_ENABLED:'false'};
   const at10=phase5CronTasks(event(MOONBOYS_CRON.timed,'2026-11-03T00:10:00Z'),off);
   only(at10,'maintenance');
-  only(phase5CronTasks(event(MOONBOYS_CRON.bulletin,'2026-11-03T04:03:00Z'),off),'nothing');
+  only(phase5CronTasks(event(MOONBOYS_CRON.bulletin,'2026-11-03T18:00:00Z'),off),'nothing');
   only(phase5CronTasks(event(MOONBOYS_CRON.participation,'2026-11-04T00:12:00Z'),off),'nothing');
 });
 
