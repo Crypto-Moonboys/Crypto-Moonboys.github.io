@@ -9,6 +9,7 @@ import { makeFixture } from './moonpet-worker-virtual-player.mjs';
 import { selectConservativeDailyChoice } from './moonpet-run-risk-policy.mjs';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { getPetVisibleLevel } from '../workers/moonboys-api/pets/progression-phase-2.js';
+import { buildPetLifecycleProgress } from '../workers/moonboys-api/pets/season-completion.js';
 
 export const WORKER_YEAR_DAY_MS=86_400_000;
 export const WORKER_YEAR_START=Date.parse('2026-11-02T08:00:00.000Z');
@@ -26,10 +27,10 @@ function status(f,pet,days){
   const relicRows=sql.prepare('SELECT relic_id FROM telegram_pet_relics WHERE telegram_id=?').all(pet.owner);
   const materials=sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=?').all(pet.owner);
   const material=Object.fromEntries(materials.map(row=>[row.material_key,n(row.quantity)]));
-  const bossWins=sql.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_analytics
-    WHERE pet_id=? AND event_type='boss_fought'
-      AND json_extract(event_data,'$.outcome')='win'
-      AND json_extract(event_data,'$.boss_id')='alley_king'`).get(pet.petId).count;
+  // Evolution authority reads the per-pet boss-victory ledger, not the
+  // analytics stream, so the annual audit uses the same authoritative source.
+  const bossWins=sql.prepare(`SELECT victories AS count FROM telegram_pet_boss_victories
+    WHERE pet_id=? AND boss_id='alley_king'`).get(pet.petId)?.count||0;
   const evolutions=sql.prepare('SELECT evolution_id,stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? ORDER BY stage').all(pet.petId);
   const runRows=sql.prepare('SELECT status,COUNT(*) AS count FROM telegram_pet_runs WHERE pet_id=? GROUP BY status').all(pet.petId);
   const runStatus=Object.fromEntries(runRows.map(row=>[row.status,n(row.count)]));
@@ -57,7 +58,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   if(!Number.isInteger(days)||days<1||days>365)throw new RangeError('days must be 1..365');
   if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
   setTime(startAt);
-  const f=makeFixture(()=>Date.now());
+  const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
   const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
   const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0};
@@ -124,6 +125,15 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         const move=choices.find(choice=>choice.key==='strike')||choices[0];
         if(move?.key)await safeAction(day,36,'weekly_boss',{move:move.key,pet_id:pet.petId});
       }
+      // Only evolve when server-side eligibility is satisfied; the Worker
+      // performs all required material debits and persists stages 1..5.
+      // Stage zero is a fixture starting condition, not an earned reward.
+      setTime(startAt+day*WORKER_YEAR_DAY_MS+40*60_000);
+      const seasonKey=f.sql.prepare('SELECT season_key FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).season_key;
+      const evolution=await buildPetLifecycleProgress(f.db,pet.petId,seasonKey,new Date(),{telegram_id:owner});
+      if(evolution?.evolution_ready && evolution.next_evolution?.evolution_id){
+        await safeAction(day,40,'evolve',{pet_id:pet.petId,evolution_id:evolution.next_evolution.evolution_id});
+      }
       if(CHECKPOINT_DAYS.has(day+1)||day+1===days){
         // An adoption at day 0 is 365 full days old at day 365, not at
         // the start of day 364. Advance to the next day's 08:00 boundary
@@ -140,20 +150,25 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     const final=checkpoints[checkpoints.length-1]??status(f,pet,days);
     const targets=WORKER_YEAR_TARGETS;
     const ageReached=Date.now()-startAt>=targets.days*WORKER_YEAR_DAY_MS;
-    const qualified=ageReached &&
+    const legendaryPersisted=final.evolutions.some(e=>e.evolution_id==='legendary_moon_guardian');
+    // Materials may have been spent by legitimate evolution settlement.
+    // The authoritative persisted Legendary row verifies their sufficiency.
+    const qualified=ageReached && legendaryPersisted &&
       final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
       final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
-      final.relics>=targets.relics && final.materials.scrapMetal>=targets.scrapMetal &&
-      final.materials.evolutionFragments>=targets.evolutionFragments &&
-      final.evolutions.some(e=>e.evolution_id==='legendary_moon_guardian');
+      final.relics>=targets.relics;
     return {days,startAt:new Date(startAt).toISOString(),owner,actions,dailyRuns,checkpoints,final,targets,
       legendaryVerified:qualified,
       blockers:Object.entries({
         age:ageReached,marks:final.growthMarks>=targets.marks,crests:final.weeklyCrests>=targets.crests,
         level:final.level>=targets.level,bosses:final.alleyKingWins>=targets.bossVictories,
-        relics:final.relics>=targets.relics,scrap:final.materials.scrapMetal>=targets.scrapMetal,
-        fragments:final.materials.evolutionFragments>=targets.evolutionFragments,
-        evolution:final.evolutions.some(e=>e.evolution_id==='legendary_moon_guardian'),
+        relics:final.relics>=targets.relics,
+        // After evolution the inventory is legitimately debited: report
+        // remaining quantities in checkpoints, do not mislabel spending as
+        // failure once stage-five settlement has been recorded.
+        scrap:legendaryPersisted||final.materials.scrapMetal>=targets.scrapMetal,
+        fragments:legendaryPersisted||final.materials.evolutionFragments>=targets.evolutionFragments,
+        evolution:legendaryPersisted,
       }).filter(([,ok])=>!ok).map(([name])=>name)};
   }finally{f.close();}
 }
