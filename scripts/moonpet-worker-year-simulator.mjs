@@ -37,6 +37,21 @@ function status(f,pet,days){
   const evolutions=sql.prepare('SELECT evolution_id,stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? ORDER BY stage').all(pet.petId);
   const runRows=sql.prepare('SELECT status,COUNT(*) AS count FROM telegram_pet_runs WHERE pet_id=? GROUP BY status').all(pet.petId);
   const runStatus=Object.fromEntries(runRows.map(row=>[row.status,n(row.count)]));
+  // Attribution: count official run results by the pet's ownership week.
+  // A completed run in a different week cannot satisfy this week's 3-run
+  // objective even if the total calendar run count looks sufficient.
+  const slot=sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=?').get(pet.petId);
+  const ownershipPeriod=getPetOwnershipPeriod(slot.season_key,slot.created_at,slot.journey_clock);
+  const officialRuns=sql.prepare(`SELECT utc_day,status FROM telegram_pet_daily_runs
+    WHERE telegram_id=? AND pet_id=? ORDER BY utc_day`).all(pet.owner,pet.petId);
+  const officialRunsByWeek={};
+  for(const run of officialRuns){
+    const week=getPetJourneyWeek(ownershipPeriod,new Date(run.utc_day+'T00:00:00.000Z'));
+    const perWeek=officialRunsByWeek[String(week)]??={completed:0,failed:0,other:0};
+    if(['completed','extracted'].includes(run.status))perWeek.completed++;
+    else if(run.status==='failed')perWeek.failed++;
+    else perWeek.other++;
+  }
   // Match weekly objective rows to accepted Worker receipts, never to raw
   // button attempts. Distinct check-in days are counted separately.
   const weeklyEvidence=sql.prepare(`SELECT o.qualification_week AS week,o.objective_id,
@@ -72,7 +87,7 @@ function status(f,pet,days){
     weeklyCrests:crestRows.length,distinctQualificationWeeks:distinctCrests,
     relics:relicRows.length,distinctRelics,
     alleyKingWins:n(bossWins),materials:{scrapMetal:n(material.scrap_metal),evolutionFragments:n(material.evolution_fragment)},
-    runStatus,evolutions,weeklyByWeek,dailyObjectives,qualifyingWeeks,fullyQualifiedButUnsettledWeeks,
+    runStatus,officialRunsByWeek,evolutions,weeklyByWeek,dailyObjectives,qualifyingWeeks,fullyQualifiedButUnsettledWeeks,
     verifiedFromWorkerPersistedRows:true,
   };
 }
