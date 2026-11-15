@@ -12,6 +12,7 @@ import { getPetVisibleLevel } from '../workers/moonboys-api/pets/progression-pha
 import { buildPetLifecycleProgress } from '../workers/moonboys-api/pets/season-completion.js';
 import { dailyTacticalBoard } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 import { PET_WEEKLY_JOURNEY_OBJECTIVES } from '../workers/moonboys-api/pets/weekly-journey.js';
+import { getPetOwnershipPeriod, getPetJourneyWeek, getPetJourneyWeekBounds } from '../workers/moonboys-api/pets/ownership-period.js';
 
 export const WORKER_YEAR_DAY_MS=86_400_000;
 export const WORKER_YEAR_START=Date.parse('2026-11-02T08:00:00.000Z');
@@ -89,7 +90,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   const pet=f.createPlayer(owner);
   const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
   const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0};
-  const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,unavailableByReason:{},samplePreviews:[]};
+  const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
     setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
@@ -115,6 +116,22 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     const boss=state.guidance?.weekly_boss;
     const saved=f.sql.prepare('SELECT pet_xp,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
     weeklyBoss.previews++;
+    // Weekly Journey needs ONE accepted source-boss attempt in each pet
+    // ownership week, not an attack every UTC day. Repeating this expensive
+    // challenge drained Energy/Health and reduced legitimate run success.
+    // Check only genuine persisted accepted source events for this pet/week.
+    const slot=f.sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=? AND telegram_id=?').get(pet.petId,owner);
+    const period=getPetOwnershipPeriod(slot.season_key,slot.created_at,slot.journey_clock);
+    const week=getPetJourneyWeek(period,new Date());
+    const bounds=getPetJourneyWeekBounds(period,week);
+    const prior=f.sql.prepare(`SELECT event_key FROM telegram_pet_events
+      WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='accepted'
+      AND event_type IN ('weekly_boss','boss_fought') AND day_key>=? AND day_key<?
+      LIMIT 1`).get(owner,pet.petId,slot.season_key,bounds.start_at.slice(0,10),bounds.end_at.slice(0,10));
+    if(prior){
+      weeklyBoss.skippedAfterWeeklyCredit++;
+      return {attempted:false,accepted:false,alreadyCredited:true};
+    }
     const snapshot={day,phase,available:Boolean(boss?.available),
       level:getPetVisibleLevel(n(saved?.pet_xp)),energy:n(saved?.energy),health:n(saved?.health),
       choices:Array.isArray(boss?.choices)?boss.choices.map(choice=>choice.key):[],
@@ -206,7 +223,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       // Run XP may unlock Level 5 today, but run combat can leave the pet
       // too tired for the boss. Recharge with a genuine, cooldown-spaced
       // Sleep before checking the Worker again. No manual stat writes.
-      if(!preRunBoss.attempted){
+      if(!preRunBoss.attempted && !preRunBoss.alreadyCredited){
         await safeAction(day,35,'sleep');
         await recoverBossEnergy(day,36);
         await tryWeeklyBoss(day,37,'after_run_recovery');
