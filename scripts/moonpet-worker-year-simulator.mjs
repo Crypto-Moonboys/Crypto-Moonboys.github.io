@@ -170,7 +170,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
             const modifiers=f.sql.prepare(`SELECT modifier_id,effects_json FROM telegram_pet_run_modifiers
               WHERE run_id=? AND telegram_id=? ORDER BY modifier_id`).all(row.run_id,owner);
             const board=dailyTacticalBoard({status:liveRow.status,current_room:n(liveRow.current_room)},modifiers);
-            if(board.available && board.offers.some(offer=>offer.key==='guardian')){
+            if(board.offers.some(offer=>offer.key==='guardian')){
               const tactic=await safeAction(day,21+step,'daily_run_tactic',{
                 run_id:row.run_id,checkpoint:n(liveRow.current_room),tactic_id:'guardian',
               });
