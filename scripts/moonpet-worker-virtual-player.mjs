@@ -12,7 +12,7 @@ const SQL_FILES = [
   'migrations/085_permanent_pet_weekly_evidence.sql',
 ];
 
-export function makeFixture(now) {
+export function makeFixture(now,{startingEggEvolution=false}={}) {
   const storage = new DatabaseSync(':memory:');
   const timestamp = () => new Date(now()).toISOString().replace('T',' ').slice(0,19);
   const clockSql = sql => sql
@@ -59,6 +59,13 @@ export function makeFixture(now) {
     sql.prepare("INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES (?,?,?,1,'free')").run(petId,owner,season);
     sql.prepare("INSERT INTO telegram_pet_instances(pet_id,telegram_id,season_key,slot_number,pet_xp,energy,source_profile_updated_at) VALUES (?,?,?,1,200,100,'0001-01-01 00:00:00')").run(petId,owner,season);
     sql.prepare("INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,identity_seed,phase,species_id,incubation_json,innate_traits_json) VALUES (?,?,?,'young','vinyl_crab','{}','[]')").run(petId,owner,petId);
+    if(startingEggEvolution){
+      // Fixture represents an already-hatched, owned stage-zero pet.
+      // This baseline grants no XP, Marks, Crests, items or stages 1..5.
+      // Future evolutions must use the real Worker 'evolve' action.
+      sql.prepare("INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'moon_egg',0,?)")
+        .run(petId,owner,'fixture-initial-egg:'+petId);
+    }
     sql.prepare("INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key) VALUES (?,?,?)").run(owner,petId,season);
     return {owner,petId};
   }
