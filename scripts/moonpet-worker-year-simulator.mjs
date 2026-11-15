@@ -147,6 +147,20 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         await onCheckpoint(point);
       }
     }
+    // Legendary is age-gated at *365 elapsed days*, after the day-364
+    // actions. Attempt its real Worker evolution at the anniversary; do
+    // not misreport an eligible-but-unclaimed evolution as impossible.
+    if(days===365){
+      setTime(startAt+365*WORKER_YEAR_DAY_MS+60_000);
+      const seasonKey=f.sql.prepare('SELECT season_key FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).season_key;
+      const anniversary=await buildPetLifecycleProgress(f.db,pet.petId,seasonKey,new Date(),{telegram_id:owner});
+      if(anniversary?.evolution_ready && anniversary.next_evolution?.evolution_id){
+        await safeAction(365,1,'evolve',{pet_id:pet.petId,evolution_id:anniversary.next_evolution.evolution_id});
+      }
+      const last=status(f,pet,days);
+      checkpoints[checkpoints.length-1]=last;
+      await onCheckpoint(last);
+    }
     const final=checkpoints[checkpoints.length-1]??status(f,pet,days);
     const targets=WORKER_YEAR_TARGETS;
     const ageReached=Date.now()-startAt>=targets.days*WORKER_YEAR_DAY_MS;
