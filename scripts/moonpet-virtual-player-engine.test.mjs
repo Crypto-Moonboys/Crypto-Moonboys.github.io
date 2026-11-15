@@ -26,6 +26,9 @@ const SQL_FILES = [
   'migrations/048_telegram_pet_player_expansion.sql',
   'migrations/058_telegram_pet_season_completion.sql',
   'migrations/061_moonpet_season_economy_calibration.sql',
+  // 085 lifts the historical 13-week CHECK constraints for permanent pets.
+  // Omitting it makes a legitimate week-14 Crest mathematically impossible.
+  'migrations/085_permanent_pet_weekly_evidence.sql',
 ];
 
 function makeFixture(now) {
