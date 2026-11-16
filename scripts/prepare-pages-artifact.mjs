@@ -104,6 +104,9 @@ async function exists(filePath) {
 
 function shouldCopyIntoArtifact(sourcePath) {
   const relativeSourcePath = path.relative(repoRoot, sourcePath);
+  // This is the authoring scaffold used by the importer, not a public article.
+  // Keep its indexable robots default in source for generated real pages.
+  if (relativeSourcePath === '_article-template.html') return false;
   if (isEditorialOnlyPath(relativeSourcePath)) return false;
   if (relativeSourcePath.startsWith('..') || path.isAbsolute(relativeSourcePath)) {
     return false;

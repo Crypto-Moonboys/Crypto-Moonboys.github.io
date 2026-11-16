@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://cryptomoonboys.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://cryptomoonboys.com/gpt-users.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://cryptomoonboys.com/join-us-on-the-wax-blockchain.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://cryptomoonboys.com/moonboy-builder.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://cryptomoonboys.com/swarmsy.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cryptomoonboys.com/gkniftyheads-incubator.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://cryptomoonboys.com/community.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://cryptomoonboys.com/how-to-play.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://cryptomoonboys.com/how-to-play-crypto-moonboy-pets.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://cryptomoonboys.com/paths.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://cryptomoonboys.com/timeline.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://cryptomoonboys.com/about.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://cryptomoonboys.com/graffiti-kings-creative-guide.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://cryptomoonboys.com/hubs.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -459,5 +468,4 @@
   <url><loc>https://cryptomoonboys.com/wiki/wuffi.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://cryptomoonboys.com/wiki/xrp-kids.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://cryptomoonboys.com/wiki/xrp-ledger.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://cryptomoonboys.com/moonboy-builder.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>
