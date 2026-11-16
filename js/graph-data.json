@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-16T08:29:18.810Z",
-  "verified_at": "2026-11-16T08:29:18.810Z",
+  "generated_at": "2026-11-16T08:43:55.385Z",
+  "verified_at": "2026-11-16T08:43:55.385Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -895,7 +895,7 @@
       "title": "The HODL Doctrine",
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "core",
-      "rank_score": 349,
+      "rank_score": 350,
       "authority_score": 22
     },
     {
@@ -2558,8 +2558,8 @@
       "id": "/wiki/hodl-warriors.html",
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
-      "category": "characters",
-      "rank_score": 331,
+      "category": "core",
+      "rank_score": 341,
       "authority_score": 28
     },
     {
@@ -3710,12 +3710,6 @@
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 72,
       "weight": 0.72
@@ -3725,6 +3719,12 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 71,
       "weight": 0.71
+    },
+    {
+      "source": "/wiki/aleema-child-of-the-shard.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -4076,15 +4076,15 @@
     },
     {
       "source": "/wiki/bit-cap-5000.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 85,
       "weight": 0.85
+    },
+    {
+      "source": "/wiki/bit-cap-5000.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -4106,13 +4106,13 @@
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/first-witness-forty-paths.html",
-      "score": 102,
+      "target": "/wiki/hodl-warriors.html",
+      "score": 105,
       "weight": 1
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/gkniftyheads.html",
+      "target": "/wiki/first-witness-forty-paths.html",
       "score": 102,
       "weight": 1
     },
@@ -4130,12 +4130,6 @@
     },
     {
       "source": "/wiki/bitcoin-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 105,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/block-topia.html",
       "score": 96,
       "weight": 0.96
@@ -4145,6 +4139,12 @@
       "target": "/wiki/hodl-x-warriors.html",
       "score": 95,
       "weight": 0.95
+    },
+    {
+      "source": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -4160,12 +4160,6 @@
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 108,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/block-topia.html",
       "score": 99,
       "weight": 0.99
@@ -4175,6 +4169,12 @@
       "target": "/wiki/hodl-x-warriors.html",
       "score": 98,
       "weight": 0.98
+    },
+    {
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4244,12 +4244,6 @@
     },
     {
       "source": "/wiki/block-topia.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 105,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/block-topia.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 97,
       "weight": 0.97
@@ -4265,6 +4259,12 @@
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 91,
       "weight": 0.91
+    },
+    {
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/blockchain.html",
@@ -4352,9 +4352,9 @@
     },
     {
       "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/canvas-clash.html",
@@ -4436,15 +4436,15 @@
     },
     {
       "source": "/wiki/create-your-moonboy.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/create-your-moonboy.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 69,
       "weight": 0.69
+    },
+    {
+      "source": "/wiki/create-your-moonboy.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
@@ -4514,12 +4514,6 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 105,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 99,
       "weight": 0.99
@@ -4535,6 +4529,12 @@
       "target": "/wiki/hodl-x-warriors.html",
       "score": 95,
       "weight": 0.95
+    },
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4748,12 +4748,6 @@
     },
     {
       "source": "/wiki/elder-codex-7.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 78,
       "weight": 0.78
@@ -4763,6 +4757,12 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 77,
       "weight": 0.77
+    },
+    {
+      "source": "/wiki/elder-codex-7.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
@@ -7604,13 +7604,13 @@
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/block-topia.html",
+      "target": "/wiki/hodl-x-warriors.html",
       "score": 80,
       "weight": 0.8
     },
@@ -12050,9 +12050,9 @@
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 82,
-      "weight": 0.82
+      "target": "/wiki/hodl-warriors.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -12446,32 +12446,38 @@
     },
     {
       "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/hodl-x-warriors.html",
-      "score": 127,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 124,
+      "score": 164,
       "weight": 1
     },
     {
       "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 119,
+      "target": "/wiki/the-first-witness.html",
+      "score": 125,
       "weight": 1
     },
     {
       "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/block-topia.html",
-      "score": 112,
+      "target": "/wiki/hard-fork-games.html",
+      "score": 110,
       "weight": 1
     },
     {
       "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 109,
+      "target": "/wiki/first-witness-forty-paths.html",
+      "score": 105,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 105,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 156,
       "weight": 1
     },
     {
@@ -12499,18 +12505,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 116,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 130,
-      "weight": 1
-    },
-    {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 112,
@@ -12533,6 +12527,12 @@
       "target": "/wiki/block-topia.html",
       "score": 96,
       "weight": 0.96
+    },
+    {
+      "source": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/hodlmoonboys-nft-collection.html",
@@ -12644,15 +12644,15 @@
     },
     {
       "source": "/wiki/iris-7.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/iris-7.html",
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 85,
       "weight": 0.85
+    },
+    {
+      "source": "/wiki/iris-7.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -12764,15 +12764,15 @@
     },
     {
       "source": "/wiki/kael-voss.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/kael-voss.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 71,
       "weight": 0.71
+    },
+    {
+      "source": "/wiki/kael-voss.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -12788,12 +12788,6 @@
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/lady-ink.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 83,
       "weight": 0.83
@@ -12803,6 +12797,12 @@
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 82,
       "weight": 0.82
+    },
+    {
+      "source": "/wiki/lady-ink.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/lfgk.html",
@@ -13130,9 +13130,9 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/jodie-zoom-2000.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -13388,12 +13388,6 @@
     },
     {
       "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 83,
       "weight": 0.83
@@ -13403,6 +13397,12 @@
       "target": "/wiki/hodl-x-warriors.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/null-the-prophet.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -13670,7 +13670,7 @@
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/hodl-warriors.html",
+      "target": "/wiki/hodl-x-warriors.html",
       "score": 70,
       "weight": 0.7
     },
@@ -13934,15 +13934,15 @@
     },
     {
       "source": "/wiki/samaelexe.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/samaelexe.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/samaelexe.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/satorebel.html",
@@ -14030,9 +14030,9 @@
     },
     {
       "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/block-node-defenders.html",
-      "score": 87,
-      "weight": 0.87
+      "target": "/wiki/hodl-warriors.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -14300,7 +14300,7 @@
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/hodl-warriors.html",
+      "target": "/wiki/the-princess.html",
       "score": 64,
       "weight": 0.64
     },
@@ -14450,9 +14450,9 @@
     },
     {
       "source": "/wiki/sylas-the-unbroken.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/tacoswap.html",
@@ -14630,9 +14630,9 @@
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/first-witness-forty-paths.html",
-      "score": 95,
-      "weight": 0.95
+      "target": "/wiki/hodl-warriors.html",
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
@@ -15620,9 +15620,9 @@
     },
     {
       "source": "/wiki/veyra-nyx.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/wagmi-prophecy.html",

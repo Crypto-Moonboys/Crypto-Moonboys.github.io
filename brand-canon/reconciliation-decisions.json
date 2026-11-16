@@ -4581,7 +4581,8 @@
         "GK direct user instruction, 16 November 2026 (exact quote in approval receipt)",
         "GK follow-up, 16 November 2026: THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION, THEY ARE ARMY FOR THE CRYPTO MARKET",
         "https://graffpunks.substack.com/p/the-hard-fork-rise-of-the-hodl-warriors",
-        "brand-canon/wiki-rewrites/war-spine-20261004.md#source-inspection"
+        "brand-canon/wiki-rewrites/war-spine-20261004.md#source-inspection",
+        "GK follow-up: HODL WARRIORS ARE NOT A FACTION THEY ARE UNDERWORLD ARMY OF ALL FACTIONS MEMBERS"
       ],
       "old": "The brand overview underplayed the character cast; the Army was treated as a street faction in the comparative Forty register; HODL and HODL X relationship was left wholly open.",
       "new": {
@@ -4595,7 +4596,8 @@
         "city_army": "Crypto Moongirls",
         "bitcoin_x_kid_escape_destination": "Bitcoin Kid Army",
         "approval_decision": "GK-20261116-MARKET-FACTIONS-COMMAND",
-        "army_identity": "Army for the crypto market; not a GK street faction"
+        "army_identity": "Army for the crypto market; not a GK street faction",
+        "hodl_warriors_identity": "Underworld army formed from members of all GK factions; not a faction"
       },
       "reason": "Implement GK\u2019s explicit revised cast, market, command and aspiration canon. Retain existing adult scenes, cultural names, chronology, source artifacts, distinct populations and public suspense. Comparative readings do not allocate political seats.",
       "approval": {
@@ -4604,7 +4606,8 @@
         "source_type": "direct-user-instruction",
         "source_note": "Exact instruction in the current Codex conversation; URL identifies the implementing public section, not a fabricated public approval comment.",
         "quote": "THE CRYPTO MOONBOYS ARE NOT ONLY THE NAME OF A BRAND BIT ARE CHARACTERS IN FANTASY WORLD WHERE REAL PEOPLE PLAY AS LIKE MOVIE STARS, ALL BASED AROUND 2 MAIN FACTIONS THE ALL CITY BULLS AND NOMAD BARES, THEM 2 FACTIONS ARE 247 SHADOWED BY THE BITCOIN KID ARMY/UNDER COVER GUARDS THAT ARE NEVER TO FAR AWAY FROM ANY MEMBER OF EACH FACTION AS THEY ARE THE MARKET, THEY ARE THE BEARS AND BULLS AND CRYPTO RULES THE WORLD. THE BITCOIN KID WHO IS LEADER OF THE BITCOIN KID ARMY ONLY LISTENS/TAKE ORDERS FROM THE GKNIFTYHEADS FACTION, THE UNDERWORLD GOOD GUYS THAT ARE ALSO ABOVE/CONTROL THE REMAINING 37 GK FACTIONS THAT RUN THEIR CITY, IF A NEED FOR A BIGGER ARMY ALL FACTIONS JOIN AS ONE CALLED THE HODL WARRIORS. THEY ARE NOT THE HODL X WARRIORS FROM BLOCK TOPIA CITY, ALL HODL WARRIORS WISH TO BECOME A HODL X WARRIOR, RULED BY QUEEN SARAH PFLY AND HER CRYPTO MOONGIRLS ARMY, THAT HAVE BITCOIN X KIDS THAT ESCAPE TO JOIN BITCOIN KID ARMY, THEY ARE WAR AND ALL TRY DEFEAT NULL THE PHOPHET AND MANY OTHER THINGS, READ LORE",
-        "follow_up_quote": "THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION, THEY ARE ARMY FOR THE CRYPTO MARKET"
+        "follow_up_quote": "THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION, THEY ARE ARMY FOR THE CRYPTO MARKET",
+        "hodl_follow_up_quote": "HODL WARRIORS ARE NOT A FACTION THEY ARE UNDERWORLD ARMY OF ALL FACTIONS MEMBERS"
       },
       "affected_paths": [
         "wiki/alfie-bitcoin-kid-blaze.html",
@@ -4754,7 +4757,7 @@
         {
           "path": "wiki/the-first-witness.html",
           "old_sha256": "sha256:d5000f5d3053a24ce6b24cae019261290b6697c480bc9cf35f98527b6b602bcd",
-          "new_sha256": "sha256:4b402fb45b9b3e885af74d78457927f7bdb4883c1c4ba73fcf92a69bf0a495ec",
+          "new_sha256": "sha256:1369fc42aff9c100888f82e43d3eb717ff5c5efc227b5cfb4af83a04be3f406a",
           "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
         },
         {

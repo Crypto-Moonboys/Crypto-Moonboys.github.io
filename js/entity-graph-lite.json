@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-16T08:29:18.810Z",
-  "verified_at": "2026-11-16T08:29:18.810Z",
+  "generated_at": "2026-11-16T08:43:55.385Z",
+  "verified_at": "2026-11-16T08:43:55.385Z",
   "lite": true,
   "nodes": [
     {
@@ -116,20 +116,20 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/first-witness-hodl-doctrine.html",
+      "title": "The HODL Doctrine",
+      "url": "/wiki/first-witness-hodl-doctrine.html",
+      "category": "core",
+      "rank_score": 350,
+      "authority_score": 22
+    },
+    {
       "id": "/wiki/triple-fork-event.html",
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
       "category": "core",
       "rank_score": 350,
       "authority_score": 24
-    },
-    {
-      "id": "/wiki/first-witness-hodl-doctrine.html",
-      "title": "The HODL Doctrine",
-      "url": "/wiki/first-witness-hodl-doctrine.html",
-      "category": "core",
-      "rank_score": 349,
-      "authority_score": 22
     },
     {
       "id": "/wiki/hodl-wars.html",
@@ -170,6 +170,14 @@
       "category": "core",
       "rank_score": 341,
       "authority_score": 14
+    },
+    {
+      "id": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors",
+      "url": "/wiki/hodl-warriors.html",
+      "category": "core",
+      "rank_score": 341,
+      "authority_score": 28
     },
     {
       "id": "/wiki/crypto-moonboys.html",
@@ -282,14 +290,6 @@
       "category": "characters",
       "rank_score": 333,
       "authority_score": 24
-    },
-    {
-      "id": "/wiki/hodl-warriors.html",
-      "title": "HODL Warriors",
-      "url": "/wiki/hodl-warriors.html",
-      "category": "characters",
-      "rank_score": 331,
-      "authority_score": 28
     },
     {
       "id": "/wiki/the-nice-easy-bois.html",
@@ -744,6 +744,18 @@
       "weight": 1
     },
     {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 164,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 156,
+      "weight": 1
+    },
+    {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 137,
@@ -762,27 +774,9 @@
       "weight": 1
     },
     {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 130,
-      "weight": 1
-    },
-    {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/the-bitcoin-kid-army.html",
       "score": 128,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/hodl-x-warriors.html",
-      "score": 127,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 124,
       "weight": 1
     },
     {
@@ -807,12 +801,6 @@
       "source": "/wiki/triple-fork-event.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 119,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/gkniftyheads.html",
-      "score": 118,
       "weight": 1
     },
     {
@@ -852,6 +840,12 @@
       "weight": 1
     },
     {
+      "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 110,
+      "weight": 1
+    },
+    {
       "source": "/wiki/the-crypto-moongirls.html",
       "target": "/wiki/the-allcity-bulls.html",
       "score": 105,
@@ -870,16 +864,22 @@
       "weight": 1
     },
     {
+      "source": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 102,
+      "weight": 1
+    },
+    {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 102,
       "weight": 1
     },
     {
-      "source": "/wiki/gkniftyheads.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 101,
-      "weight": 1
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 99,
+      "weight": 0.99
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -894,7 +894,7 @@
       "weight": 0.97
     },
     {
-      "source": "/wiki/bitcoin-kids.html",
+      "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/block-topia.html",
       "score": 96,
       "weight": 0.96
@@ -907,15 +907,15 @@
     },
     {
       "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 91,
-      "weight": 0.91
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/sacred-chain.html",
       "score": 90,
       "weight": 0.9
+    },
+    {
+      "source": "/wiki/block-node-defenders.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/the-finance-guild.html",
@@ -932,12 +932,6 @@
     {
       "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/seeding-rights.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/block-node-defenders.html",
       "score": 87,
       "weight": 0.87
     },

@@ -8,7 +8,7 @@ GK’s direct instruction establishes the following fictional canon. It suppleme
 - All City Bulls (AllCity Bulls) and Nomad Bears (also written Nomad Bares in the brief) are the two main factions: the market’s bulls and bears in a world ruled by crypto.
 - The Bitcoin Kid Army is the army for the crypto market. It shadows members of both factions 24/7 as undercover guards; it is not a GK street faction.
 - Alfie “The Bitcoin KiD” Blaze leads the Army and takes orders only from GKniftyHEADS, the underworld good guys above the two main factions and the remaining 37 GK factions. The political count is 1 + 2 + 37 = 40; neither the Army nor a temporary HODL muster adds a seat.
-- All GK factions unite as HODL Warriors when a larger army is needed. Every HODL Warrior aspires to become a HODL X Warrior; the aspiration does not confer the title.
+- HODL Warriors are the underworld army formed from members of all GK factions, not a faction themselves. Members unite when a larger army is needed while retaining their own faction identities. Every HODL Warrior aspires to become a HODL X Warrior; the aspiration does not confer the title.
 - HODL X Warriors belong to Block Topia under Queen Sarah P-fly and her Crypto Moongirls army. Bitcoin X Kids are the inside engineered generation; some escape and join Alfie’s Army. Inside birth, outside community and Army enlistment remain distinct.
 - These forces try to defeat NULL THE PROPHET while other conflicts persist. No completed Final Fork outcome is disclosed in the public Year 3008 story.
 

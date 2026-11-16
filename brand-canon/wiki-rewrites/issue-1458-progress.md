@@ -1479,3 +1479,5 @@ Validation actually completed:
 
 No tests, validation triggers or approval safeguards were weakened. No merge,
 production deployment, payout, migration or issue closure was performed.
+
+GK follow-up, 16 November 2026: HODL Warriors are explicitly the underworld army formed from members of all GK factions, not a faction. Updated the shared explanations, seven bible overrides, command record and authored core-lore search classification. Faction membership remains distinct from collective Army service.
