@@ -1,36 +1,1711 @@
 {
-  "generated_at": "2026-04-09T01:21:39.184Z",
+  "generated_at": "2026-11-16T12:27:32.994Z",
   "summary": {
-    "total_actions": 36,
-    "strengthen_existing_page": 14,
-    "create_bridge_page": 13,
-    "create_topic_page": 5,
-    "expand_cluster_support": 4
+    "total_actions": 53,
+    "strengthen_existing_page": 0,
+    "create_bridge_page": 9,
+    "create_topic_page": 38,
+    "expand_cluster_support": 6
   },
   "actions": [
     {
-      "action_type": "expand_cluster_support",
-      "priority_score": 564,
-      "target_topic": "Metaverse battles",
-      "target_url_slug": "metaverse-battles",
+      "action_type": "create_topic_page",
+      "priority_score": 3696,
+      "target_topic": "Year 3008",
+      "target_url_slug": "year-3008",
       "reasons": [
-        "over_saturated_injection_target:29",
-        "under_covered_strong_adjacents:93",
+        "dedicated_strong_pages:0",
+        "tag_page_count:84",
+        "topic_score:3680"
+      ],
+      "source_signals": [
+        "avg_rank_score:311",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1664",
+        "tag_page_count:84",
+        "total_injection_hits:20"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "Year 3008"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3688,
+      "target_topic": "Block Topia",
+      "target_url_slug": "block-topia",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:84",
+        "topic_score:3672"
+      ],
+      "source_signals": [
+        "avg_rank_score:310",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1663",
+        "tag_page_count:84",
+        "total_injection_hits:7"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "Block Topia"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "2030 Concord",
+      "target_url_slug": "2030-concord",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "2030 Concord"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "40 GK factions",
+      "target_url_slug": "40-gk-factions",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "40 GK factions"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "aether-chain",
+      "target_url_slug": "aether-chain",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "aether-chain"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "belief system",
+      "target_url_slug": "belief-system",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "belief system"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "bitcoin provenance",
+      "target_url_slug": "bitcoin-provenance",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin provenance"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "crypto moonboys bible",
+      "target_url_slug": "crypto-moonboys-bible",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "crypto moonboys bible"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "Crypto Moonboys lore",
+      "target_url_slug": "crypto-moonboys-lore",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "Crypto Moonboys lore"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "ethics",
+      "target_url_slug": "ethics",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "ethics"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "faith tradition",
+      "target_url_slug": "faith-tradition",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "faith tradition"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "first witness bible",
+      "target_url_slug": "first-witness-bible",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "first witness bible"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "GK bible",
+      "target_url_slug": "gk-bible",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "GK bible"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "graffiti kings bible",
+      "target_url_slug": "graffiti-kings-bible",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "graffiti kings bible"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "Graffiti Kings lore",
+      "target_url_slug": "graffiti-kings-lore",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "Graffiti Kings lore"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "HODL WARS",
+      "target_url_slug": "hodl-wars",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "HODL WARS"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "moral philosophy",
+      "target_url_slug": "moral-philosophy",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "moral philosophy"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "no single keeper",
+      "target_url_slug": "no-single-keeper",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "no single keeper"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "philosophy",
+      "target_url_slug": "philosophy",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "philosophy"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "religion",
+      "target_url_slug": "religion",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "religion"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "religious philosophy",
+      "target_url_slug": "religious-philosophy",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "religious philosophy"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "sacred chain",
+      "target_url_slug": "sacred-chain",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "sacred chain"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "sacred text",
+      "target_url_slug": "sacred-text",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "sacred text"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "scripture",
+      "target_url_slug": "scripture",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "scripture"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 3629,
+      "target_topic": "spirituality",
+      "target_url_slug": "spirituality",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:82",
+        "topic_score:3614"
+      ],
+      "source_signals": [
+        "avg_rank_score:309",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:1640",
+        "tag_page_count:82",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-first-witness.html",
+        "/wiki/first-witness-faction-commentaries.html",
+        "/wiki/first-witness-forty-paths.html",
+        "/wiki/first-witness-life-readings.html",
+        "/wiki/first-witness-master-chronology.html"
+      ],
+      "supporting_clusters": [
+        "spirituality"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 faction interpretations",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 1474,
+      "target_topic": "quot",
+      "target_url_slug": "quot",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:36",
+        "topic_score:1464"
+      ],
+      "source_signals": [
+        "avg_rank_score:208",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:658",
+        "tag_page_count:36",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+        "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+        "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
+        "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+        "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html"
+      ],
+      "supporting_clusters": [
+        "quot"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "advocate",
+        "alessandro",
+        "amato",
+        "angelis",
+        "anonymity",
+        "connoisseur",
+        "cryptocurrency",
+        "de"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 554,
+      "target_topic": "digital",
+      "target_url_slug": "digital",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:23",
+        "topic_score:541"
+      ],
+      "source_signals": [
+        "avg_rank_score:268",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:222",
+        "tag_page_count:23",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-nice-and-easy-bois-the-digital.html",
+        "/wiki/the-null-protocol-collapse-of-digital.html",
+        "/wiki/the-graffpunks-digital-renegades.html",
+        "/wiki/the-information-mercenaries-the-digital.html",
+        "/wiki/the-rugpull-miners-digital-parasites.html"
+      ],
+      "supporting_clusters": [
+        "digital"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "amp",
+        "authority",
+        "bois",
+        "brokers",
+        "collapse",
+        "data",
+        "digital",
+        "easy"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 379,
+      "target_topic": "cheo",
+      "target_url_slug": "cheo",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:13",
+        "topic_score:368"
+      ],
+      "source_signals": [
+        "avg_rank_score:224",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:156",
+        "tag_page_count:13",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+        "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+        "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+        "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
+        "/wiki/gkniftyheads-mr-cheo-bristol-776109.html"
+      ],
+      "supporting_clusters": [
+        "cheo"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "boom",
+        "bristol",
+        "cheo",
+        "head",
+        "lap",
+        "mr",
+        "pains",
+        "pill"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 379,
+      "target_topic": "mr",
+      "target_url_slug": "mr",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:13",
+        "topic_score:368"
+      ],
+      "source_signals": [
+        "avg_rank_score:224",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:156",
+        "tag_page_count:13",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+        "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+        "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+        "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
+        "/wiki/gkniftyheads-mr-cheo-bristol-776109.html"
+      ],
+      "supporting_clusters": [
+        "mr"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "boom",
+        "bristol",
+        "cheo",
+        "head",
+        "lap",
+        "mr",
+        "pains",
+        "pill"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 373,
+      "target_topic": "Crypto Moonboys — The Story, Realms and Timeline",
+      "target_url_slug": "crypto-moonboys",
+      "reasons": [
+        "over_saturated_injection_target:89",
+        "under_covered_strong_adjacents:14",
         "reinforcement_concentration_signal"
       ],
       "source_signals": [
-        "gap_score:477",
-        "rank_score:205",
-        "injection_plan_hits:29",
-        "strong_related_count:99",
+        "gap_score:106",
+        "rank_score:340",
+        "injection_plan_hits:89",
+        "strong_related_count:20",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/the-first-witness.html",
+        "/wiki/bit-cap-5000.html",
+        "/wiki/iris-7.html"
+      ],
+      "supporting_clusters": [],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "2030 concord",
+        "40 gk factions",
+        "5000",
+        "aether-chain",
+        "belief system",
+        "bit",
+        "bitcoin",
+        "bitcoin provenance"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 274,
+      "target_topic": "bitcoin-infinite",
+      "target_url_slug": "bitcoin-infinite",
+      "reasons": [
+        "cross_tag_cluster_edges:127",
+        "cluster_a_pages:23",
+        "cluster_b_pages:10",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:274",
+        "cross_cluster_edge_count:127",
+        "cluster_a:bitcoin",
+        "cluster_b:infinite",
+        "suggested_page_topic:bitcoin + infinite (via kid)"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/first-witness-bitcoin-witness.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin",
+        "infinite"
+      ],
+      "recommended_sections": [
+        "Bridge overview: bitcoin and infinite",
+        "bitcoin context",
+        "infinite context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "2030 concord",
+        "40 gk factions",
+        "aether-chain",
+        "alfie",
+        "army",
+        "belief system",
+        "bitcoin",
+        "bitcoin bible"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 259,
+      "target_topic": "Block Topia",
+      "target_url_slug": "block-topia",
+      "reasons": [
+        "over_saturated_injection_target:54",
+        "under_covered_strong_adjacents:15",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:97",
+        "rank_score:335",
+        "injection_plan_hits:54",
+        "strong_related_count:20",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/iris-7.html",
+        "/wiki/bit-cap-5000.html",
+        "/wiki/jodie-zoom-2000.html"
+      ],
+      "supporting_clusters": [
+        "block",
+        "topia"
+      ],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "2000",
+        "5000",
+        "bit",
+        "bitcoin",
+        "block",
+        "cap",
+        "hodl",
+        "iris"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 233,
+      "target_topic": "infinite",
+      "target_url_slug": "infinite",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:10",
+        "topic_score:222"
+      ],
+      "source_signals": [
+        "avg_rank_score:215",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:89",
+        "tag_page_count:10",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+        "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+        "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+        "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+        "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html"
+      ],
+      "supporting_clusters": [
+        "infinite"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "bitcoin",
+        "blockchain",
+        "furie",
+        "infinite",
+        "kid",
+        "pfly",
+        "sarah"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 231,
+      "target_topic": "GraffPUNKS",
+      "target_url_slug": "graffpunks",
+      "reasons": [
+        "over_saturated_injection_target:46",
+        "under_covered_strong_adjacents:15",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:93",
+        "rank_score:342",
+        "injection_plan_hits:46",
+        "strong_related_count:20",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/the-first-witness.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/first-witness-concordance.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks"
+      ],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "2030 concord",
+        "24",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance",
+        "bitcoin witness",
+        "block topia"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 231,
+      "target_topic": "infinite-kid",
+      "target_url_slug": "infinite-kid",
+      "reasons": [
+        "cross_tag_cluster_edges:106",
+        "cluster_a_pages:10",
+        "cluster_b_pages:19",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:231",
+        "cross_cluster_edge_count:106",
+        "cluster_a:infinite",
+        "cluster_b:kid",
+        "suggested_page_topic:infinite + kid (via bitcoin)"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/the-bitcoin-kid-army-the-1-rebels.html"
+      ],
+      "supporting_clusters": [
+        "infinite",
+        "kid"
+      ],
+      "recommended_sections": [
+        "Bridge overview: infinite and kid",
+        "infinite context",
+        "kid context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "army",
+        "billy",
+        "bitcoin",
+        "blaze",
+        "chaos",
+        "goat",
+        "guardians"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 228,
+      "target_topic": "quot-token",
+      "target_url_slug": "quot-token",
+      "reasons": [
+        "cross_tag_cluster_edges:102",
+        "cluster_a_pages:36",
+        "cluster_b_pages:11",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:228",
+        "cross_cluster_edge_count:102",
+        "cluster_a:quot",
+        "cluster_b:token",
+        "suggested_page_topic:quot + token (via alessandro)"
+      ],
+      "related_pages": [
+        "/wiki/punk-token.html",
+        "/wiki/nbg-token.html",
+        "/wiki/punk-is-the-utility-token-behind.html",
+        "/wiki/nbgx-token.html",
+        "/wiki/fgl-token.html"
+      ],
+      "supporting_clusters": [
+        "quot",
+        "token"
+      ],
+      "recommended_sections": [
+        "Bridge overview: quot and token",
+        "quot context",
+        "token context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "culture",
+        "fgl",
+        "nbg",
+        "nbgx",
+        "proposal",
+        "punk",
+        "radio",
+        "token"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 214,
+      "target_topic": "quot-satoshi",
+      "target_url_slug": "quot-satoshi",
+      "reasons": [
+        "cross_tag_cluster_edges:96",
+        "cluster_a_pages:36",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:214",
+        "cross_cluster_edge_count:96",
+        "cluster_a:quot",
+        "cluster_b:satoshi",
+        "suggested_page_topic:quot + satoshi (via alessandro)"
+      ],
+      "related_pages": [
+        "/wiki/satoshi-scroll.html",
+        "/wiki/the-chronicle-of-the-cipher-lord-a-satoshi-testament.html",
+        "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+        "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+        "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html"
+      ],
+      "supporting_clusters": [
+        "quot",
+        "satoshi"
+      ],
+      "recommended_sections": [
+        "Bridge overview: quot and satoshi",
+        "quot context",
+        "satoshi context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "advocate",
+        "alessandro",
+        "amato",
+        "angelis",
+        "anonymity",
+        "chronicle",
+        "cipher",
+        "connoisseur"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 209,
+      "target_topic": "Metaverse Battles",
+      "target_url_slug": "metaverse-battles",
+      "reasons": [
+        "over_saturated_injection_target:32",
+        "under_covered_strong_adjacents:20",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:113",
+        "rank_score:284",
+        "injection_plan_hits:32",
+        "strong_related_count:20",
         "under_covered_adjacents:5"
       ],
       "related_pages": [
         "/wiki/2025-metaverse-launch-party.html",
-        "/wiki/genesis-spray.html",
-        "/wiki/rave-relics.html",
-        "/wiki/midevilpunks.html",
-        "/wiki/gk.html"
+        "/wiki/pmsl.html",
+        "/wiki/street-kingdoms.html",
+        "/wiki/battlemech-blast.html",
+        "/wiki/forkborn-collective.html"
       ],
       "supporting_clusters": [
         "metaverse",
@@ -44,82 +1719,406 @@
       ],
       "recommended_keywords": [
         "2025",
+        "battlemech",
         "battles",
-        "genesis",
-        "gk",
-        "launch",
-        "metaverse",
-        "midevilpunks",
-        "party"
+        "blast",
+        "collective",
+        "forkborn",
+        "kingdoms",
+        "launch"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 184,
+      "target_topic": "cheo-head",
+      "target_url_slug": "cheo-head",
+      "reasons": [
+        "cross_tag_cluster_edges:84",
+        "cluster_a_pages:13",
+        "cluster_b_pages:8",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:184",
+        "cross_cluster_edge_count:84",
+        "cluster_a:cheo",
+        "cluster_b:head",
+        "suggested_page_topic:cheo + head (via mr)"
+      ],
+      "related_pages": [
+        "/wiki/head-tags.html",
+        "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+        "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+        "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+        "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html"
+      ],
+      "supporting_clusters": [
+        "cheo",
+        "head"
+      ],
+      "recommended_sections": [
+        "Bridge overview: cheo and head",
+        "cheo context",
+        "head context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "boom",
+        "cheo",
+        "head",
+        "lap",
+        "mr",
+        "pains",
+        "pill",
+        "purple"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 184,
+      "target_topic": "head-mr",
+      "target_url_slug": "head-mr",
+      "reasons": [
+        "cross_tag_cluster_edges:84",
+        "cluster_a_pages:8",
+        "cluster_b_pages:13",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:184",
+        "cross_cluster_edge_count:84",
+        "cluster_a:head",
+        "cluster_b:mr",
+        "suggested_page_topic:head + mr (via cheo)"
+      ],
+      "related_pages": [
+        "/wiki/head-tags.html",
+        "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+        "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+        "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+        "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html"
+      ],
+      "supporting_clusters": [
+        "head",
+        "mr"
+      ],
+      "recommended_sections": [
+        "Bridge overview: head and mr",
+        "head context",
+        "mr context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "boom",
+        "cheo",
+        "head",
+        "lap",
+        "mr",
+        "pains",
+        "pill",
+        "purple"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 182,
+      "target_topic": "nft",
+      "target_url_slug": "nft",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:7",
+        "topic_score:169"
+      ],
+      "source_signals": [
+        "avg_rank_score:250",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:67",
+        "tag_page_count:7",
+        "total_injection_hits:3"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-nft-collection.html",
+        "/wiki/nft-blends-portal.html",
+        "/wiki/playable-nft-murals.html",
+        "/wiki/hodlmoonboys-nft-collection.html",
+        "/wiki/noballgamess-nft-collection.html"
+      ],
+      "supporting_clusters": [
+        "nft"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "art",
+        "blends",
+        "collection",
+        "gkniftyheads",
+        "hodl",
+        "murals",
+        "nft",
+        "noballgames"
       ],
       "confidence": "high"
     },
     {
-      "action_type": "expand_cluster_support",
-      "priority_score": 544,
-      "target_topic": "crypto moonboys",
-      "target_url_slug": "crypto-moonboys",
+      "action_type": "create_bridge_page",
+      "priority_score": 179,
+      "target_topic": "nft-quot",
+      "target_url_slug": "nft-quot",
       "reasons": [
-        "over_saturated_injection_target:104",
-        "under_covered_strong_adjacents:38",
-        "reinforcement_concentration_signal"
+        "cross_tag_cluster_edges:78",
+        "cluster_a_pages:7",
+        "cluster_b_pages:36",
+        "existing_bridge_pages:0"
       ],
       "source_signals": [
-        "gap_score:232",
-        "rank_score:274",
-        "injection_plan_hits:104",
-        "strong_related_count:38",
-        "under_covered_adjacents:5"
+        "bridge_score:179",
+        "cross_cluster_edge_count:78",
+        "cluster_a:nft",
+        "cluster_b:quot",
+        "suggested_page_topic:nft + quot (via alessandro)"
       ],
       "related_pages": [
-        "/wiki/diamond-hands.html",
-        "/wiki/hodl-warriors.html",
-        "/wiki/hodl-wars-game.html",
-        "/wiki/hex-tagger-prime.html",
-        "/wiki/iris-7.html"
+        "/wiki/gkniftyheads-nft-collection.html",
+        "/wiki/playable-nft-murals.html",
+        "/wiki/nft-blends-portal.html",
+        "/wiki/hodlmoonboys-nft-collection.html",
+        "/wiki/noballgamess-nft-collection.html"
       ],
-      "supporting_clusters": [],
+      "supporting_clusters": [
+        "nft",
+        "quot"
+      ],
       "recommended_sections": [
-        "Cluster overview",
-        "Under-covered adjacent pages",
-        "Strong adjacents to strengthen",
-        "Key connections to develop"
+        "Bridge overview: nft and quot",
+        "nft context",
+        "quot context",
+        "Key cross-cluster entities",
+        "Related topics"
       ],
       "recommended_keywords": [
-        "diamond",
-        "game",
-        "hands",
-        "hex",
+        "art",
+        "blends",
+        "collection",
+        "gkniftyheads",
         "hodl",
-        "iris",
-        "prime",
-        "tagger"
+        "murals",
+        "nft",
+        "noballgames"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 172,
+      "target_topic": "Year 3008-grid",
+      "target_url_slug": "year-3008-grid",
+      "reasons": [
+        "cross_tag_cluster_edges:66",
+        "cluster_a_pages:84",
+        "cluster_b_pages:16",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:172",
+        "cross_cluster_edge_count:66",
+        "cluster_a:Year 3008",
+        "cluster_b:grid",
+        "suggested_page_topic:Year 3008 + grid (via digital)"
+      ],
+      "related_pages": [
+        "/wiki/the-great-reset-and-the-global-grid.html",
+        "/wiki/the-gk-grid-warfare-protocols-a-gkniftyheads.html",
+        "/wiki/the-nice-and-easy-bois-the-digital.html",
+        "/wiki/the-graffpunks-digital-renegades.html",
+        "/wiki/the-rugpull-miners-digital-parasites.html"
+      ],
+      "supporting_clusters": [
+        "Year 3008",
+        "grid"
+      ],
+      "recommended_sections": [
+        "Bridge overview: Year 3008 and grid",
+        "Year 3008 context",
+        "grid context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "amp",
+        "bois",
+        "digital",
+        "easy",
+        "gk",
+        "global",
+        "graffpunks",
+        "great"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 157,
+      "target_topic": "vandals",
+      "target_url_slug": "vandals",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:8",
+        "topic_score:146"
+      ],
+      "source_signals": [
+        "avg_rank_score:210",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:55",
+        "tag_page_count:8",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+        "/wiki/gkniftyheads-we-are-vandals-776146.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html"
+      ],
+      "supporting_clusters": [
+        "vandals"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "not",
+        "vandals",
+        "vanduls",
+        "we"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 157,
+      "target_topic": "we",
+      "target_url_slug": "we",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:8",
+        "topic_score:146"
+      ],
+      "source_signals": [
+        "avg_rank_score:210",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:55",
+        "tag_page_count:8",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+        "/wiki/gkniftyheads-we-are-vandals-776146.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html"
+      ],
+      "supporting_clusters": [
+        "we"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "not",
+        "vandals",
+        "vanduls",
+        "we"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 154,
+      "target_topic": "bitcoin-quot",
+      "target_url_slug": "bitcoin-quot",
+      "reasons": [
+        "cross_tag_cluster_edges:63",
+        "cluster_a_pages:23",
+        "cluster_b_pages:36",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:154",
+        "cross_cluster_edge_count:63",
+        "cluster_a:bitcoin",
+        "cluster_b:quot",
+        "suggested_page_topic:bitcoin + quot (via kid)"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/first-witness-bitcoin-witness.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin",
+        "quot"
+      ],
+      "recommended_sections": [
+        "Bridge overview: bitcoin and quot",
+        "bitcoin context",
+        "quot context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "2030 concord",
+        "40 gk factions",
+        "aether-chain",
+        "alfie",
+        "army",
+        "belief system",
+        "bitcoin",
+        "bitcoin bible"
       ],
       "confidence": "medium"
     },
     {
       "action_type": "expand_cluster_support",
-      "priority_score": 523,
+      "priority_score": 143,
       "target_topic": "Graffiti Kings",
       "target_url_slug": "graffiti-kings",
       "reasons": [
-        "over_saturated_injection_target:17",
-        "under_covered_strong_adjacents:93",
+        "over_saturated_injection_target:20",
+        "under_covered_strong_adjacents:15",
         "reinforcement_concentration_signal"
       ],
       "source_signals": [
-        "gap_score:472",
-        "rank_score:193",
-        "injection_plan_hits:17",
-        "strong_related_count:99",
+        "gap_score:83",
+        "rank_score:321",
+        "injection_plan_hits:20",
+        "strong_related_count:20",
         "under_covered_adjacents:5"
       ],
       "related_pages": [
-        "/wiki/graffiti-queens-in-decentraland.html",
-        "/wiki/graffiti-queens-exhibition.html",
-        "/wiki/genesis-spray.html",
-        "/wiki/rave-relics.html",
-        "/wiki/midevilpunks.html"
+        "/wiki/the-first-witness.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/first-witness-concordance.html",
+        "/wiki/first-witness-master-chronology.html",
+        "/wiki/block-node-defenders.html"
       ],
       "supporting_clusters": [
         "graffiti",
@@ -132,1355 +2131,45 @@
         "Key connections to develop"
       ],
       "recommended_keywords": [
-        "decentraland",
-        "exhibition",
-        "genesis",
-        "graffiti",
-        "kings",
-        "midevilpunks",
-        "queens",
-        "rave"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 385,
-      "target_topic": "graffpunks-nfts",
-      "target_url_slug": "graffpunks-nfts",
-      "reasons": [
-        "cross_tag_cluster_edges:184",
-        "cluster_a_pages:15",
-        "cluster_b_pages:9",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:385",
-        "cross_cluster_edge_count:184",
-        "cluster_a:graffpunks",
-        "cluster_b:nfts",
-        "suggested_page_topic:graffpunks + nfts (via free)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html",
-        "/wiki/graffpunks-24-7-radio.html",
-        "/wiki/nfts.html"
-      ],
-      "supporting_clusters": [
-        "graffpunks",
-        "nfts"
-      ],
-      "recommended_sections": [
-        "Bridge overview: graffpunks and nfts",
-        "graffpunks context",
-        "nfts context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "fungible",
-        "graffpunks",
-        "nfts",
-        "non",
-        "radio",
-        "tokens"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 280,
-      "target_topic": "games-graffpunks",
-      "target_url_slug": "games-graffpunks",
-      "reasons": [
-        "cross_tag_cluster_edges:132",
-        "cluster_a_pages:6",
-        "cluster_b_pages:15",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:280",
-        "cross_cluster_edge_count:132",
-        "cluster_a:games",
-        "cluster_b:graffpunks",
-        "suggested_page_topic:games + graffpunks (via collection)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html",
-        "/wiki/hard-fork-games.html",
-        "/wiki/graffpunks-24-7-radio.html"
-      ],
-      "supporting_clusters": [
-        "games",
-        "graffpunks"
-      ],
-      "recommended_sections": [
-        "Bridge overview: games and graffpunks",
-        "games context",
-        "graffpunks context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "fork",
-        "games",
-        "graffpunks",
-        "hard",
-        "radio"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 273,
-      "target_topic": "bitcoin-graffpunks",
-      "target_url_slug": "bitcoin-graffpunks",
-      "reasons": [
-        "cross_tag_cluster_edges:128",
-        "cluster_a_pages:8",
-        "cluster_b_pages:15",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:273",
-        "cross_cluster_edge_count:128",
-        "cluster_a:bitcoin",
-        "cluster_b:graffpunks",
-        "suggested_page_topic:bitcoin + graffpunks (via kid)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html"
-      ],
-      "supporting_clusters": [
-        "bitcoin",
-        "graffpunks"
-      ],
-      "recommended_sections": [
-        "Bridge overview: bitcoin and graffpunks",
-        "bitcoin context",
-        "graffpunks context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "bitcoin",
-        "btc",
-        "graffpunks",
-        "kids",
-        "radio"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 252,
-      "target_topic": "graffpunks-token",
-      "target_url_slug": "graffpunks-token",
-      "reasons": [
-        "cross_tag_cluster_edges:118",
-        "cluster_a_pages:15",
-        "cluster_b_pages:6",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:252",
-        "cross_cluster_edge_count:118",
-        "cluster_a:graffpunks",
-        "cluster_b:token",
-        "suggested_page_topic:graffpunks + token (via radio)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/punk-token.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/nbg-token.html",
-        "/wiki/graffpunks-247-radio.html"
-      ],
-      "supporting_clusters": [
-        "graffpunks",
-        "token"
-      ],
-      "recommended_sections": [
-        "Bridge overview: graffpunks and token",
-        "graffpunks context",
-        "token context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "graffpunks",
-        "nbg",
-        "punk",
-        "radio",
-        "token"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 236,
-      "target_topic": "fork-graffpunks",
-      "target_url_slug": "fork-graffpunks",
-      "reasons": [
-        "cross_tag_cluster_edges:110",
-        "cluster_a_pages:5",
-        "cluster_b_pages:15",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:236",
-        "cross_cluster_edge_count:110",
-        "cluster_a:fork",
-        "cluster_b:graffpunks",
-        "suggested_page_topic:fork + graffpunks (via hard)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html",
-        "/wiki/hard-fork-games.html",
-        "/wiki/graffpunks-24-7-radio.html"
-      ],
-      "supporting_clusters": [
-        "fork",
-        "graffpunks"
-      ],
-      "recommended_sections": [
-        "Bridge overview: fork and graffpunks",
-        "fork context",
-        "graffpunks context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "fork",
-        "games",
-        "graffpunks",
-        "hard",
-        "radio"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 236,
-      "target_topic": "gk-graffpunks",
-      "target_url_slug": "gk-graffpunks",
-      "reasons": [
-        "cross_tag_cluster_edges:110",
-        "cluster_a_pages:5",
-        "cluster_b_pages:15",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:236",
-        "cross_cluster_edge_count:110",
-        "cluster_a:gk",
-        "cluster_b:graffpunks",
-        "suggested_page_topic:gk + graffpunks (via radio)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html",
-        "/wiki/graffpunks-24-7-radio.html",
-        "/wiki/gk.html"
-      ],
-      "supporting_clusters": [
-        "gk",
-        "graffpunks"
-      ],
-      "recommended_sections": [
-        "Bridge overview: gk and graffpunks",
-        "gk context",
-        "graffpunks context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "gk",
-        "graffpunks",
-        "radio"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 232,
-      "target_topic": "graffpunks-kid",
-      "target_url_slug": "graffpunks-kid",
-      "reasons": [
-        "cross_tag_cluster_edges:108",
-        "cluster_a_pages:15",
-        "cluster_b_pages:5",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:232",
-        "cross_cluster_edge_count:108",
-        "cluster_a:graffpunks",
-        "cluster_b:kid",
-        "suggested_page_topic:graffpunks + kid (via bitcoin)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html",
-        "/wiki/graffpunks-24-7-radio.html",
-        "/wiki/the-bitcoin-kid-army.html"
-      ],
-      "supporting_clusters": [
-        "graffpunks",
-        "kid"
-      ],
-      "recommended_sections": [
-        "Bridge overview: graffpunks and kid",
-        "graffpunks context",
-        "kid context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "army",
-        "bitcoin",
-        "graffpunks",
-        "kid",
-        "radio"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 220,
-      "target_topic": "graffpunks-hodl",
-      "target_url_slug": "graffpunks-hodl",
-      "reasons": [
-        "cross_tag_cluster_edges:102",
-        "cluster_a_pages:15",
-        "cluster_b_pages:6",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:220",
-        "cross_cluster_edge_count:102",
-        "cluster_a:graffpunks",
-        "cluster_b:hodl",
-        "suggested_page_topic:graffpunks + hodl (via radio)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/hodl-wars.html",
-        "/wiki/hodl-warriors.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html"
-      ],
-      "supporting_clusters": [
-        "graffpunks",
-        "hodl"
-      ],
-      "recommended_sections": [
-        "Bridge overview: graffpunks and hodl",
-        "graffpunks context",
-        "hodl context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "graffpunks",
-        "hodl",
-        "radio",
-        "warriors",
-        "wars"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 208,
-      "target_topic": "graffpunks-nbg",
-      "target_url_slug": "graffpunks-nbg",
-      "reasons": [
-        "cross_tag_cluster_edges:96",
-        "cluster_a_pages:15",
-        "cluster_b_pages:5",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:208",
-        "cross_cluster_edge_count:96",
-        "cluster_a:graffpunks",
-        "cluster_b:nbg",
-        "suggested_page_topic:graffpunks + nbg (via radio)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/nbg.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/nbg-token.html",
-        "/wiki/graffpunks-247-radio.html"
-      ],
-      "supporting_clusters": [
-        "graffpunks",
-        "nbg"
-      ],
-      "recommended_sections": [
-        "Bridge overview: graffpunks and nbg",
-        "graffpunks context",
-        "nbg context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "graffpunks",
-        "nbg",
-        "radio",
-        "token"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 200,
-      "target_topic": "blockchain-graffpunks",
-      "target_url_slug": "blockchain-graffpunks",
-      "reasons": [
-        "cross_tag_cluster_edges:92",
-        "cluster_a_pages:5",
-        "cluster_b_pages:15",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:200",
-        "cross_cluster_edge_count:92",
-        "cluster_a:blockchain",
-        "cluster_b:graffpunks",
-        "suggested_page_topic:blockchain + graffpunks (via radio)"
-      ],
-      "related_pages": [
-        "/wiki/graffpunks.html",
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247-radio.html",
-        "/wiki/graffpunks-24-7-radio.html",
-        "/wiki/blockchain.html"
-      ],
-      "supporting_clusters": [
-        "blockchain",
-        "graffpunks"
-      ],
-      "recommended_sections": [
-        "Bridge overview: blockchain and graffpunks",
-        "blockchain context",
-        "graffpunks context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "24",
-        "247",
-        "blockchain",
-        "graffpunks",
-        "radio",
-        "technology"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_topic_page",
-      "priority_score": 193,
-      "target_topic": "nfts",
-      "target_url_slug": "nfts",
-      "reasons": [
-        "dedicated_strong_pages:0",
-        "tag_page_count:9",
-        "topic_score:185"
-      ],
-      "source_signals": [
-        "avg_rank_score:160",
-        "dedicated_strong_pages:0",
-        "entity_graph_co_citations:72",
-        "tag_page_count:9",
-        "total_injection_hits:4"
-      ],
-      "related_pages": [
-        "/wiki/nfts.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/xrp-kids-genesis-nfts.html"
-      ],
-      "supporting_clusters": [
-        "nfts"
-      ],
-      "recommended_sections": [
-        "Topic overview",
-        "Key pages in this topic",
-        "Related entities",
-        "Cross-topic connections"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "drop",
-        "free",
-        "fungible",
-        "genesis",
-        "kids",
-        "nfts",
-        "non"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 175,
-      "target_topic": "bitcoin-nfts",
-      "target_url_slug": "bitcoin-nfts",
-      "reasons": [
-        "cross_tag_cluster_edges:80",
-        "cluster_a_pages:8",
-        "cluster_b_pages:9",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:175",
-        "cross_cluster_edge_count:80",
-        "cluster_a:bitcoin",
-        "cluster_b:nfts",
-        "suggested_page_topic:bitcoin + nfts (via free)"
-      ],
-      "related_pages": [
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html",
-        "/wiki/bitcoin-x-kids.html",
-        "/wiki/nfts.html",
-        "/wiki/the-bitcoin-kid-army.html"
-      ],
-      "supporting_clusters": [
-        "bitcoin",
-        "nfts"
-      ],
-      "recommended_sections": [
-        "Bridge overview: bitcoin and nfts",
-        "bitcoin context",
-        "nfts context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "army",
-        "bitcoin",
-        "btc",
-        "fungible",
-        "kid",
-        "kids",
-        "nfts",
-        "non"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 156,
-      "target_topic": "queen sarah pfly",
-      "target_url_slug": "queen-sarah-p-fly",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:123",
-        "rank_score:657",
-        "inbound_links:0",
-        "injection_plan_hits:0"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html"
-      ],
-      "supporting_clusters": [
-        "queen",
-        "sarah",
-        "pfly"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "atomichub",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "collection",
-        "graffpunks",
-        "kids"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 152,
-      "target_topic": "punk token",
-      "target_url_slug": "punk-token",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:2",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:119",
-        "rank_score:659",
-        "inbound_links:0",
-        "injection_plan_hits:2"
-      ],
-      "related_pages": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html"
-      ],
-      "supporting_clusters": [
-        "punk",
-        "token"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "alfie",
-        "atomichub",
-        "blaze",
-        "collection",
-        "free",
-        "graffpunks",
-        "nfts"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 151,
-      "target_topic": "games-nfts",
-      "target_url_slug": "games-nfts",
-      "reasons": [
-        "cross_tag_cluster_edges:68",
-        "cluster_a_pages:6",
-        "cluster_b_pages:9",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:151",
-        "cross_cluster_edge_count:68",
-        "cluster_a:games",
-        "cluster_b:nfts",
-        "suggested_page_topic:games + nfts (via free)"
-      ],
-      "related_pages": [
-        "/wiki/hard-fork-games.html",
-        "/wiki/nfts.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-program.html"
-      ],
-      "supporting_clusters": [
-        "games",
-        "nfts"
-      ],
-      "recommended_sections": [
-        "Bridge overview: games and nfts",
-        "games context",
-        "nfts context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "drop",
-        "fork",
-        "free",
-        "fungible",
-        "games",
-        "hard",
-        "nfts"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 150,
-      "target_topic": "bitcoin kids",
-      "target_url_slug": "bitcoin-kids",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:4",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:116",
-        "rank_score:683",
-        "inbound_links:0",
-        "injection_plan_hits:4"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kid-army.html"
-      ],
-      "supporting_clusters": [
-        "bitcoin",
-        "kids"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "army",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "kid",
-        "kids"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_bridge_page",
-      "priority_score": 150,
-      "target_topic": "bitcoin-tokens",
-      "target_url_slug": "bitcoin-tokens",
-      "reasons": [
-        "cross_tag_cluster_edges:68",
-        "cluster_a_pages:8",
-        "cluster_b_pages:6",
-        "existing_bridge_pages:0"
-      ],
-      "source_signals": [
-        "bridge_score:150",
-        "cross_cluster_edge_count:68",
-        "cluster_a:bitcoin",
-        "cluster_b:tokens",
-        "suggested_page_topic:bitcoin + tokens (via kid)"
-      ],
-      "related_pages": [
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html",
-        "/wiki/bitcoin-x-kids.html",
-        "/wiki/nfts.html",
-        "/wiki/the-bitcoin-kid-army.html"
-      ],
-      "supporting_clusters": [
-        "bitcoin",
-        "tokens"
-      ],
-      "recommended_sections": [
-        "Bridge overview: bitcoin and tokens",
-        "bitcoin context",
-        "tokens context",
-        "Key cross-cluster entities",
-        "Related topics"
-      ],
-      "recommended_keywords": [
-        "army",
-        "bitcoin",
-        "btc",
-        "fungible",
-        "kid",
-        "kids",
-        "nfts",
-        "non"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 150,
-      "target_topic": "charlie buster",
-      "target_url_slug": "charlie-buster",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:2",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:118",
-        "rank_score:630",
-        "inbound_links:0",
-        "injection_plan_hits:2"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html"
-      ],
-      "supporting_clusters": [
-        "charlie",
-        "buster"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "atomichub",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "buster",
-        "charlie",
-        "collection"
-      ],
-      "confidence": "high"
-    },
-    {
-      "action_type": "create_topic_page",
-      "priority_score": 149,
-      "target_topic": "tokens",
-      "target_url_slug": "tokens",
-      "reasons": [
-        "dedicated_strong_pages:0",
-        "tag_page_count:6",
-        "topic_score:142"
-      ],
-      "source_signals": [
-        "avg_rank_score:143",
-        "dedicated_strong_pages:0",
-        "entity_graph_co_citations:57",
-        "tag_page_count:6",
-        "total_injection_hits:2"
-      ],
-      "related_pages": [
-        "/wiki/nfts.html",
-        "/wiki/gk-tokens.html",
-        "/wiki/stake-for-gk-tokens.html",
-        "/wiki/staking-for-gk-tokens.html",
-        "/wiki/nfts-non-fungible-tokens.html"
-      ],
-      "supporting_clusters": [
-        "tokens"
-      ],
-      "recommended_sections": [
-        "Topic overview",
-        "Key pages in this topic",
-        "Related entities",
-        "Cross-topic connections"
-      ],
-      "recommended_keywords": [
-        "fungible",
-        "gk",
-        "nfts",
-        "non",
-        "stake",
-        "staking",
-        "tokens"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 148,
-      "target_topic": "burn to earn",
-      "target_url_slug": "burn-to-earn",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:119",
-        "rank_score:572",
-        "inbound_links:0",
-        "injection_plan_hits:0"
-      ],
-      "related_pages": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html"
-      ],
-      "supporting_clusters": [
-        "burn",
-        "earn"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "alfie",
-        "blaze",
-        "burn",
-        "drop",
-        "earn",
-        "free",
-        "nfts"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 146,
-      "target_topic": "nbgx",
-      "target_url_slug": "nbgx",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:118",
-        "rank_score:561",
-        "inbound_links:0",
-        "injection_plan_hits:0"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html",
-        "/wiki/block-topia.html"
-      ],
-      "supporting_clusters": [
-        "nbgx"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "bitcoin",
-        "blaze",
-        "block",
-        "btc",
-        "kids",
-        "nbgx",
-        "topia"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 146,
-      "target_topic": "pmsl",
-      "target_url_slug": "pmsl",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:118",
-        "rank_score:555",
-        "inbound_links:0",
-        "injection_plan_hits:0"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html"
-      ],
-      "supporting_clusters": [
-        "pmsl"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "atomichub",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "collection",
-        "graffpunks",
-        "kids"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 144,
-      "target_topic": "alfie blaze",
-      "target_url_slug": "alfie-bitcoin-kid-blaze",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:2",
-        "high_authority_underserved:18"
-      ],
-      "source_signals": [
-        "gap_score:115",
-        "rank_score:589",
-        "inbound_links:0",
-        "injection_plan_hits:2"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin-x-kids.html"
-      ],
-      "supporting_clusters": [
-        "alfie",
-        "blaze"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "kid",
-        "kids"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 144,
-      "target_topic": "nbg",
-      "target_url_slug": "nbg",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:117",
-        "rank_score:543",
-        "inbound_links:0",
-        "injection_plan_hits:0"
-      ],
-      "related_pages": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/altcoins.html"
-      ],
-      "supporting_clusters": [
-        "nbg"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "alfie",
-        "altcoins",
-        "blaze",
-        "free",
-        "nbg",
-        "nfts",
-        "program"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 136,
-      "target_topic": "graffpunks 24 7",
-      "target_url_slug": "graffpunks-24-7",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:0",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:113",
-        "rank_score:458",
-        "inbound_links:0",
-        "injection_plan_hits:0"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/bitcoin.html"
-      ],
-      "supporting_clusters": [
-        "graffpunks",
-        "24"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "24",
-        "alfie",
-        "atomichub",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "collection",
-        "graffpunks"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 130,
-      "target_topic": "genesis spray",
-      "target_url_slug": "genesis-spray",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:1",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:109",
-        "rank_score:416",
-        "inbound_links:0",
-        "injection_plan_hits:1"
-      ],
-      "related_pages": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html"
-      ],
-      "supporting_clusters": [
-        "genesis",
-        "spray"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "alfie",
-        "atomichub",
-        "blaze",
-        "collection",
-        "free",
-        "genesis",
-        "graffpunks"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 130,
-      "target_topic": "nbg token",
-      "target_url_slug": "nbg-token",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:1",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:109",
-        "rank_score:413",
-        "inbound_links:0",
-        "injection_plan_hits:1"
-      ],
-      "related_pages": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/bitcoin-btc.html"
-      ],
-      "supporting_clusters": [
-        "nbg",
-        "token"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "alfie",
-        "bitcoin",
-        "blaze",
-        "btc",
-        "free",
-        "nbg",
-        "nfts"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 130,
-      "target_topic": "rave relics",
-      "target_url_slug": "rave-relics",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:2",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:108",
-        "rank_score:449",
-        "inbound_links:0",
-        "injection_plan_hits:2"
-      ],
-      "related_pages": [
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html",
-        "/wiki/bitcoin-btc.html",
-        "/wiki/bitcoin-kids.html",
-        "/wiki/block-topia.html"
-      ],
-      "supporting_clusters": [
-        "rave",
-        "relics"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "atomichub",
-        "bitcoin",
-        "blaze",
-        "block",
-        "btc",
-        "collection",
-        "graffpunks"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "strengthen_existing_page",
-      "priority_score": 124,
-      "target_topic": "gkniftyheads",
-      "target_url_slug": "gkniftyheads",
-      "reasons": [
-        "low_inbound_links:0",
-        "low_injection_plan_coverage:4",
-        "high_authority_underserved:22"
-      ],
-      "source_signals": [
-        "gap_score:103",
-        "rank_score:414",
-        "inbound_links:0",
-        "injection_plan_hits:4"
-      ],
-      "related_pages": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/atomichub-graffpunks-collection.html"
-      ],
-      "supporting_clusters": [
-        "gkniftyheads"
-      ],
-      "recommended_sections": [
-        "Key related pages to link",
-        "Cross-cluster connections",
-        "Authority-building context"
-      ],
-      "recommended_keywords": [
-        "1m",
-        "alfie",
-        "atomichub",
-        "blaze",
-        "collection",
-        "free",
-        "gkniftyheads",
-        "graffpunks"
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance",
+        "bitcoin witness",
+        "block"
       ],
       "confidence": "medium"
     },
     {
       "action_type": "expand_cluster_support",
-      "priority_score": 122,
-      "target_topic": "hard fork games",
+      "priority_score": 134,
+      "target_topic": "Hard Fork Games",
       "target_url_slug": "hard-fork-games",
       "reasons": [
-        "over_saturated_injection_target:27",
-        "under_covered_strong_adjacents:6",
+        "over_saturated_injection_target:16",
+        "under_covered_strong_adjacents:16",
         "reinforcement_concentration_signal"
       ],
       "source_signals": [
-        "gap_score:41",
-        "rank_score:375",
-        "injection_plan_hits:27",
-        "strong_related_count:8",
+        "gap_score:86",
+        "rank_score:368",
+        "injection_plan_hits:16",
+        "strong_related_count:20",
         "under_covered_adjacents:5"
       ],
       "related_pages": [
-        "/wiki/hard-fork-games-event.html",
-        "/wiki/hard-fork-games-game.html",
-        "/wiki/the-hard-fork-rockers.html",
-        "/wiki/nbg.html",
-        "/wiki/nbg.html"
+        "/wiki/first-witness-concordance.html",
+        "/wiki/first-witness-master-chronology.html",
+        "/wiki/the-first-witness.html",
+        "/wiki/sacred-chain.html",
+        "/wiki/first-witness-forty-paths.html"
       ],
       "supporting_clusters": [
-        "hard",
-        "fork",
-        "games"
+        "Hard Fork Games",
+        "Hardfork Games",
+        "Feast Week"
       ],
       "recommended_sections": [
         "Cluster overview",
@@ -1489,129 +2178,43 @@
         "Key connections to develop"
       ],
       "recommended_keywords": [
-        "ball",
-        "collection",
-        "event",
-        "fork",
-        "game",
-        "games",
-        "hard",
-        "nbg"
+        "2030 2880 2930 3008",
+        "2030 concord",
+        "40 factions",
+        "40 gk factions",
+        "aether-chain",
+        "belief system",
+        "bitcoin provenance",
+        "bitcoin witness"
       ],
       "confidence": "medium"
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 75,
-      "target_topic": "kid",
-      "target_url_slug": "kid",
+      "priority_score": 133,
+      "target_topic": "head",
+      "target_url_slug": "head",
       "reasons": [
         "dedicated_strong_pages:0",
-        "tag_page_count:5",
-        "topic_score:65"
+        "tag_page_count:8",
+        "topic_score:121"
       ],
       "source_signals": [
-        "avg_rank_score:196",
+        "avg_rank_score:232",
         "dedicated_strong_pages:0",
-        "entity_graph_co_citations:20",
-        "tag_page_count:5",
-        "total_injection_hits:3"
-      ],
-      "related_pages": [
-        "/wiki/the-bitcoin-kid-army.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/billy-the-goat-kid.html",
-        "/wiki/bitcoin-kid-army.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html"
-      ],
-      "supporting_clusters": [
-        "kid"
-      ],
-      "recommended_sections": [
-        "Topic overview",
-        "Key pages in this topic",
-        "Related entities",
-        "Cross-topic connections"
-      ],
-      "recommended_keywords": [
-        "alfie",
-        "army",
-        "billy",
-        "bitcoin",
-        "blaze",
-        "goat",
-        "kid"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_topic_page",
-      "priority_score": 73,
-      "target_topic": "gk",
-      "target_url_slug": "gk",
-      "reasons": [
-        "dedicated_strong_pages:0",
-        "tag_page_count:5",
-        "topic_score:65"
-      ],
-      "source_signals": [
-        "avg_rank_score:154",
-        "dedicated_strong_pages:0",
-        "entity_graph_co_citations:20",
-        "tag_page_count:5",
-        "total_injection_hits:3"
-      ],
-      "related_pages": [
-        "/wiki/gk.html",
-        "/wiki/gk-tokens.html",
-        "/wiki/gk-token.html",
-        "/wiki/stake-for-gk-tokens.html",
-        "/wiki/staking-for-gk-tokens.html"
-      ],
-      "supporting_clusters": [
-        "gk"
-      ],
-      "recommended_sections": [
-        "Topic overview",
-        "Key pages in this topic",
-        "Related entities",
-        "Cross-topic connections"
-      ],
-      "recommended_keywords": [
-        "gk",
-        "stake",
-        "staking",
-        "token",
-        "tokens"
-      ],
-      "confidence": "medium"
-    },
-    {
-      "action_type": "create_topic_page",
-      "priority_score": 71,
-      "target_topic": "blockchain",
-      "target_url_slug": "blockchain",
-      "reasons": [
-        "dedicated_strong_pages:0",
-        "tag_page_count:5",
-        "topic_score:63"
-      ],
-      "source_signals": [
-        "avg_rank_score:169",
-        "dedicated_strong_pages:0",
-        "entity_graph_co_citations:20",
-        "tag_page_count:5",
+        "entity_graph_co_citations:42",
+        "tag_page_count:8",
         "total_injection_hits:0"
       ],
       "related_pages": [
-        "/wiki/blockchain.html",
-        "/wiki/the-blockchain-furies.html",
-        "/wiki/graffpunks-247-blockchain-radio-station.html",
-        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-        "/wiki/blockchain-technology.html"
+        "/wiki/head-tags.html",
+        "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+        "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+        "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+        "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html"
       ],
       "supporting_clusters": [
-        "blockchain"
+        "head"
       ],
       "recommended_sections": [
         "Topic overview",
@@ -1620,13 +2223,186 @@
         "Cross-topic connections"
       ],
       "recommended_keywords": [
-        "24",
-        "blockchain",
-        "furies",
-        "graffpunks",
-        "radio",
-        "station",
-        "technology"
+        "boom",
+        "cheo",
+        "head",
+        "lap",
+        "mr",
+        "pill",
+        "spit",
+        "tags"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 126,
+      "target_topic": "not",
+      "target_url_slug": "not",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:7",
+        "topic_score:116"
+      ],
+      "source_signals": [
+        "avg_rank_score:209",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:42",
+        "tag_page_count:7",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html"
+      ],
+      "supporting_clusters": [
+        "not"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "not",
+        "vandals",
+        "vanduls",
+        "we"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 126,
+      "target_topic": "vanduls",
+      "target_url_slug": "vanduls",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:7",
+        "topic_score:116"
+      ],
+      "source_signals": [
+        "avg_rank_score:209",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:42",
+        "tag_page_count:7",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
+        "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html"
+      ],
+      "supporting_clusters": [
+        "vanduls"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "not",
+        "vandals",
+        "vanduls",
+        "we"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 100,
+      "target_topic": "protocol",
+      "target_url_slug": "protocol",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:8",
+        "topic_score:86"
+      ],
+      "source_signals": [
+        "avg_rank_score:286",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:24",
+        "tag_page_count:8",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/the-master-codex-the-triple-tier.html",
+        "/wiki/the-28th-century-began-with-godlike.html",
+        "/wiki/the-null-protocol-collapse-of-digital.html",
+        "/wiki/the-crypto-protocol-the-gkniftyheads-chronicle.html",
+        "/wiki/the-gk-protocol-the-eastern-hemisphere-is-kool.html"
+      ],
+      "supporting_clusters": [
+        "protocol"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "authority",
+        "chronicle",
+        "codex",
+        "collapse",
+        "crimson",
+        "digital",
+        "eastern",
+        "eternal"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 98,
+      "target_topic": "waxp",
+      "target_url_slug": "waxp",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:8",
+        "topic_score:88"
+      ],
+      "source_signals": [
+        "avg_rank_score:207",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:26",
+        "tag_page_count:8",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/waxp.html",
+        "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
+        "/wiki/waxp-exchange.html",
+        "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
+        "/wiki/gkniftyheads-waxp-joke-ter-784344.html"
+      ],
+      "supporting_clusters": [
+        "waxp"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "bobby",
+        "exchange",
+        "joke",
+        "savior",
+        "sentinel",
+        "solar",
+        "ter",
+        "torm"
       ],
       "confidence": "medium"
     }
