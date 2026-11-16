@@ -213,6 +213,29 @@ test('real Worker two-hour training sessions settle source-pet XP exactly once',
   }finally{t.mock.timers.reset();}
 });
 
+test('real Worker chooses only server-eligible higher-XP jobs, not locked future roles',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days:7,startAt:WORKER_YEAR_START,owner:'virtual-best-job-policy',
+      xpPolicy:'best_job',setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(result.xpPolicy,'best_job');
+    assert.equal(result.jobXp.upgradedAttempts,7);
+    assert.equal(result.jobXp.accepted,7,JSON.stringify(result.jobXp));
+    assert.equal(result.jobXp.rejected,0);
+    assert.equal(result.actions.rejected,0);
+    assert.ok(result.jobXp.awardedPetXp>=7*18,
+      'server-advertised better job must be no worse than legal Street Artist');
+    assert.equal(Object.values(result.jobXp.byJob).reduce((a,b)=>a+b,0),7);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[]);
+    console.log('MOONPET_ELIGIBLE_BEST_JOB_XP',JSON.stringify({
+      jobs:result.jobXp,level:result.final.level,petXp:result.final.petXp,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
 test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
   const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
   if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
