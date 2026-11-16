@@ -4591,3 +4591,9 @@ body.page-wiki article[data-entity-slug="crypto-moonboys"] :is(
 body.page-wiki article[data-entity-slug="crypto-moonboys"] :is(p, .cm-lead) {
   max-width: none;
 }
+
+/* Align the story and its reading paths with the centred content cards above. */
+body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) #content > .cm-page {
+  max-width: 1480px !important;
+  margin-inline: auto;
+}
