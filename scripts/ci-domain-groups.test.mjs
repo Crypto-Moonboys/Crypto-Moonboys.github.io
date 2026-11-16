@@ -116,8 +116,11 @@ for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
 assert.ok(
   runner.includes("process.env.CI_COMMAND_TIMEOUT_MS") &&
     runner.includes("group === 'visual' ? 12 * 60 * 1000 : 0") &&
-    runner.includes("result.error.code === 'ETIMEDOUT'"),
-  'visual CI commands must have a bounded default and report command timeouts explicitly',
+    runner.includes("result.error.code === 'ETIMEDOUT'") &&
+    runner.includes("spawnSync('timeout'") &&
+    runner.includes("'--kill-after=15s'") &&
+    runner.includes("result.status === 124"),
+  'visual CI commands must have a bounded default, terminate Linux process trees and report timeouts explicitly',
 );
 
 assert.match(
