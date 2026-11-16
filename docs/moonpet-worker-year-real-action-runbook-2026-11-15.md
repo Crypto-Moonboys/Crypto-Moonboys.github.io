@@ -1,5 +1,9 @@
 # VERIFIED 365-DAY RESULT — 2026-11-16 (LATEST, READ FIRST)
 
+> **LATEST VALIDATION — 2026-11-16 08:43 UK:** All active Worker-backed XP regression tests **PASS (11 passed, 0 failed, 1 optional 365-day test skipped)**. The 30-day `hybrid3 + timed_explore_best_job` campaign now produces **9,650 Pet XP / Level 16, 30 Growth Marks, 4 Crests, 8 boss victories, 2 unique relics, 914 accepted actions, 0 rejected**. All 30 Explore claims and 30 eligible jobs settled legitimately. The four historical `pet_tired` rejections are resolved. See [legal XP source audit](moonpet-365-day-legal-xp-source-audit-2026-11-16.md). **NEXT: actual 365-day test using `--xp=timed_explore_best_job`; its Legendary outcome is still unverified.** The old 365-day 57,438-XP baseline below is retained as historical evidence, not current policy performance.
+
+
+
 > **XP strategy update 2026-11-16:** New test-only `xpPolicy` options now include genuine 2-hour Train (source max 86 Pet XP), genuine 8-hour Explore (source max 132 Pet XP), and the highest *Worker-advertised eligible* job. This is not yet a passing full-year outcome. Read [legal XP source audit](moonpet-365-day-legal-xp-source-audit-2026-11-16.md) and run the new local Node tests before longer campaigns. The verified 365-day baseline below remains **57,438 XP, Level 38, `legendaryVerified:false`**. CLI output is now concise with weekly progress; add `--verbose` for full JSON.
 
 
