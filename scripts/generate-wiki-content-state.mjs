@@ -1406,7 +1406,7 @@ function conciseGeneratedValue(value) {
   return rendered.length <= 240 ? rendered : `${rendered.slice(0, 237)}...`;
 }
 
-function firstGeneratedJsonDifference(actual, expected, pointer = '
+export function firstGeneratedJsonDifference(actual, expected, pointer = '
 
 function atomicWriteAnchoredGeneratedFile(anchor, fileName, content) {
   const targetPath = path.join(anchor.anchorPath, fileName);
