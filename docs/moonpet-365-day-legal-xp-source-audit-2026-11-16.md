@@ -73,3 +73,22 @@ Fastest focused recheck:
 node --test --test-name-pattern="real Worker two-hour training sessions" scripts\moonpet-worker-year-simulator.test.mjs
 ```
 Then run the full year-simulator regression suite. Only if it passes, start the separate 30-day `--xp=timed_explore_best_job` comparison; never run another costly 365-day campaign on an untested patch.
+
+
+## Confirmed Windows regression and 30-day XP result — 2026-11-16 08:17 UTC
+
+**Source:** user's Windows CMD `Pasted text(20261116-081719).txt`, last test block and lines beginning `MOONPET_WEEKLY_PROGRESS` / `MOONPET_WORKER_YEAR_FINAL`. Earlier error blocks in that same pasted log belong to older commits, not the current run.
+
+- Targeted two-hour Training test **PASS**: genuine source-pet 7-day baseline 1,281 XP versus timed-training candidate 1,906 XP, including 602 real timed-training XP. Corrected Worker Sleep energy recovery removed prior `pet_tired` rejection in that test.
+- Entire `scripts/moonpet-worker-year-simulator.test.mjs`: **11 tests, 10 passed, 0 failed, 1 opt-in full-year skipped**.
+- Actual `--days=30 --strategy=hybrid3 --xp=timed_explore_best_job` completed normally, with **9,600 XP, Level 16, 30 distinct-day Growth Marks, 4 Weekly Crests, 8 Alley King wins, 2 unique relic IDs, Stage 1, 40 Scrap Metal, 8 Evolution Fragments**; **913 accepted actions, 4 rejected**. Real Worker timed activities: 30 started / 30 claimed / 0 timed claim rejected, 3,960 XP credited. Real eligible Vault Guard jobs: 30 accepted / 0 rejected, 1,080 XP credited. 8 full boss completions, 13 legal extracts, 9 failed runs. No fully qualified but unsettled weeks.
+- Matched existing 30-day `hybrid3` baseline was 4,880 XP, Level 12, 21 Growth Marks, 4 Crests, 7 boss wins, 2 relics. Improved candidate **+4,720 XP in 30 days**, without weakening the authority gates. A linear 365-day extrapolation is NOT a verified Level 50 finish.
+- **Open diagnostic:** four rejected actions were present outside the separately counted activity claims/jobs. The compact runner previously hid their actual source reasons, so guessing `pet_tired` would be unsupported. Follow-up commits added bounded `actions.rejectedSamples` with `day,minute,action,reason,retryAfterSeconds`, and concise runner fields `rejectedByReason` and `rejectedSamples`. These are *diagnostic only*, do not change Worker gameplay or payouts. Re-run 30 days to obtain exact failure identities before deciding whether further energy/cooldown fixes are needed.
+
+**Next command after pulling new PR branch:**
+```bat
+git pull --ff-only
+node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_explore_best_job
+```
+
+Do NOT rewrite live cooldowns, lower XP gates, hide action rejections, or assume the four failed actions are harmless. Evaluate the new `rejectedSamples` before a new year campaign. PR stays draft; no deploy or production migrations.
