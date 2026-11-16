@@ -110,3 +110,27 @@ node --test scripts\moonpet-worker-year-simulator.test.mjs
 node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_explore_best_job
 ```
 The 30-day final `rejectedActions` must be **0**, and Marks/Crests, boss victories, distinct relics and actual Pet XP must be compared rather than assumed. Only then consider another 365-day campaign. No production XP/cooldown/level/migration/deploy changes.
+
+
+## VERIFIED: 2026-11-16 08:43 UK — zero-rejection XP campaign
+
+**Source:** User-supplied Windows CMD log `Pasted text(20261116-084349).txt` (last completed runs; do not confuse with earlier 30-day log). Pulled GitHub branch commit `9583b8055`. Node 24 Worker-backed simulator tests:
+
+- Focused 16-day Explore + highest eligible job regression: **PASS**. 487 accepted actions, 0 rejected, 16/16 ordinary Train actions accepted, 16/16 timed Explore claims, 16/16 eligible jobs, genuine 5,222 Pet XP, 16 distinct-day Marks and 2 Crests.
+- Complete suite: **12 tests total, 11 passed, 0 failed, 1 optional 365-day test skipped**.
+- Completed `node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_explore_best_job` returned to CMD with:
+  - **9,650 XP / Level 16**, 30/30 Growth Marks, 4 distinct-week Crests, 8 Alley King wins, 2 unique relic IDs, stage 1 Street Moonpet.
+  - 914 Worker actions accepted, **0 rejected**; `rejectedByReason:{}`, `rejectedSamples:[]`.
+  - 30 genuine eight-hour Explore claims earned 3,960 XP; 30 legitimate Vault Guard jobs earned 1,080 XP; neither had blocked or duplicate claims.
+  - 30 official Daily Runs started, 21 successful exits (8 boss wins and 13 extractions), 9 failed; no qualified-but-unsettled weeks.
+  - 39 Scrap Metal and 8 Evolution Fragments (current remaining balance; randomized quantities may vary across runs).
+- Directly measured old `hybrid3` 30-day baseline: 4,880 Pet XP / Level 12 / 21 Marks / 4 Crests / 7 Alley King wins / 2 unique relics. Optimised strategy has **+4,770 Pet XP** while retaining genuine progression evidence and eliminating all four `pet_tired` rejections on days 8/15/22/29.
+
+**Verdict:** the formerly failed energy-recovery action schedule is now **runtime-verified**, not just syntax checked. All short real-Worker test gates have passed. The source-proven eight-hour Explore + unlocked-job XP policy is now ready for an opt-in **full 365-day simulation**, with compact seven-day progress logs. This is NOT proof that Level 50 or Stage 5 will be reached; the long simulation must verify all gates using actual stored Worker receipts. Avoid extrapolating 9,650/30 linearly as a guarantee.
+
+**Next command (Windows CMD, Node 24):**
+```bat
+git pull --ff-only
+node scripts\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3 --xp=timed_explore_best_job
+```
+Leave the simulation running through 7/30/90/365 checkpoints; weekly progress lines confirm activity. Preserve all printed final output and verify `legendaryVerified` and `blockers`. The full results will determine whether the 365-day Level 50 and sequential evolution requirements are achievable with this legal activity schedule. **No merge, production deploy, D1 migration, XP cap/level/rate change, wallet or Telegram operations.**
