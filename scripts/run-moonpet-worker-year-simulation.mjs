@@ -53,6 +53,8 @@ try{
   console.log('MOONPET_WORKER_YEAR_FINAL',JSON.stringify(verbose?result:{
     days:result.days,xpPolicy:result.xpPolicy,runExitPolicy:result.runExitPolicy,
     acceptedActions:result.actions.accepted,rejectedActions:result.actions.rejected,
+    rejectedByReason:result.actions.byReason,
+    rejectedSamples:result.actions.rejectedSamples,
     timedXp:result.timedXp,jobXp:result.jobXp,
     dailyRuns:{started:result.dailyRuns.started,completed:result.dailyRuns.completed,
       failed:result.dailyRuns.failed,extractions:result.dailyRuns.extractions},
