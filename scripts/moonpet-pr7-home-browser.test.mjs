@@ -159,21 +159,18 @@ try {
     const hiddenAuth=await setup({viewport});
     try{
       await hiddenAuth.open();await hiddenAuth.started;await pause(100);
-      let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);
-      await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{enter();await gate;await route.fallback();});
-      // Start a known refresh instead of relying on a visibility event that can
-      // be suppressed by the just-completed focus-refresh cooldown.
-      // Dispatch in-page so Playwright does not wait for the deliberately
-      // intercepted fetch to finish before the test can release its route gate.
-      await hiddenAuth.page.evaluate(() => document.querySelector('[data-utility="sync"]').click());
-      await within(entered,'hidden-auth refresh request');
+      // Hide first, then request the invalid-auth response directly. Holding a
+      // Playwright route while the page click waits for that fetch deadlocks.
       await hiddenAuth.page.evaluate(()=>{
         window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
         window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
         Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
       });
-      hiddenAuth.invalid();const expiredResponse=hiddenAuth.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.status()===401);release();
-      await(await expiredResponse).finished();await pause(60);
+      hiddenAuth.invalid();
+      const expiredResponse=hiddenAuth.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.status()===401);
+      await hiddenAuth.page.evaluate(() => document.querySelector('[data-utility="sync"]').click());
+      const response=await within(expiredResponse,'hidden-auth 401 response');
+      await response.finished();await pause(60);
       assert.equal(await hiddenAuth.page.evaluate(()=>window.hiddenAuthMutations),0,'hidden 401 preserves authentication invalidation without rendering');
       const requestCount=hiddenAuth.requests.length;
       await hiddenAuth.page.evaluate(()=>{window.hiddenAuthObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
