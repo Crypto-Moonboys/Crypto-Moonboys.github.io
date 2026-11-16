@@ -1,3 +1,34 @@
+# VERIFIED 365-DAY RESULT — 2026-11-16 (LATEST, READ FIRST)
+
+**Source:** User-uploaded Windows CMD log `Pasted text(20261116-053910).txt`, last lines `MOONPET_WORKER_CHECKPOINT`, `MOONPET_WORKER_YEAR_FINAL`, `MOONPET_LEGENDARY_NOT_VERIFIED`. The actual 365-day process completed and returned to `D:\GITHUB\Crypto-Moonboys.github.io>`. Earlier 2/7/30/90-day runs in that log are historical and are not the annual verdict.
+
+**Command executed:** `node scripts\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3`.
+
+| Legendary gate | Persisted Day 365 | Required | Verdict |
+| --- | ---: | ---: | --- |
+| Elapsed pet age | 365 days | 365 | PASS |
+| Distinct-day Growth Marks | **305** | 240 | PASS |
+| Distinct-week Weekly Crests | **52** | 44 | PASS |
+| Pet XP | **57,438** | 96,040 for level 50 | INSUFFICIENT |
+| Visible level | **38** | 50 | **FAIL** |
+| Alley King victories | **113** | 15 | PASS |
+| Unique account-owned relic IDs | **10** | 10 | PASS |
+| Scrap Metal (remaining) | **528** | 60 | PASS |
+| Evolution Fragments (remaining) | **102** | 40 | PASS |
+| Persisted evolution | **Stage 3, Elite Moonpet** | Final Legendary | **FAIL** |
+
+**Final authoritative simulator output:** `legendaryVerified:false`; `blockers:["level","evolution"]`. XP deficit to the declared level-50 threshold is **38,602 XP**. This is the actual tested hybrid3 same-pet trajectory, not proof that all legally possible XP strategies must fail.
+
+**Other 365-day receipts:** 9,857 accepted Worker actions, 0 rejected; 365 official Daily Runs started, 113 boss completions, 191 extracts, 61 failed runs, 53 accepted Weekly Boss actions, 52 fully qualified weekly Crest settlements, 0 qualified-but-unsettled weeks, 3 actual paid evolution actions leading to Stage 3. Inventory and progress counts come from the isolated test database, not production D1. The 53rd partial week is not a failed completed week.
+
+**What is conclusively solved:** 365-day ownership clock, migration 085 past week 13, 305 distinct-day Marks, 52 unique-week Crests, all ten distinct relic IDs after merged #1795 relic-selection fix, boss victories and material sufficiency in this strategy. **Do not revisit or weaken those mechanisms simply to make Legendary pass.**
+
+**Next engineering priority:** Inspect legitimate Pet XP sources with full cooldown/daily cap constraints and add alternative fully Worker-authorized XP-efficient action schedules, keeping a hard 365-day boundary. Identify exactly why Level 50 was not reached and whether any realistic schedule earns the extra 38,602 XP. Audit progression/evolution sequencing after XP gain. Do NOT directly grant XP, invent rewards, edit accepted rows, lower the Level 50 threshold, or change production XP rates without express approval. Run tests, report reproducible receipt-based outcome. Add low-noise progress logging before another expensive year run.
+
+**Project state:** Existing **draft PR #1783**, branch `sandbox/moonpet-365day-care-audit-20261114`. NO merge, deploy, migration, Telegram or live neglect penalties. No Codex recovery or new PR.
+
+---
+
 # Moonpet permanent-pet 365-day real Worker audit — direct GitHub continuation
 
 This work replaces unrecoverable Codex-only files with **hosted commits** on PR #1783. It is a sandbox test harness, **not** permission to deploy or merge.
