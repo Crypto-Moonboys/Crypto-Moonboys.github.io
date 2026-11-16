@@ -120,7 +120,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   setTime(startAt);
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
-  const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{}};
+  const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{},rejectedSamples:[]};
   const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,
     scheduledBossDays:0,scheduledExtractionDays:0,exitPoliciesByWeek:{},
     extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
@@ -140,6 +140,11 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     if(key==='rejected') {
       const reason=String(response.reason|| (response.duplicate?'duplicate':'unknown'));
       actions.byReason[reason]=(actions.byReason[reason]||0)+1;
+      // Diagnostics for LEGAL action failures: never reclassify a rejected
+      // response as accepted or silently ignore blocked gameplay.
+      if(actions.rejectedSamples.length<40)
+        actions.rejectedSamples.push({day:day+1,minute,action,reason,
+          retryAfterSeconds:n(response.retry_after_seconds)});
     }
     return response;
   };
