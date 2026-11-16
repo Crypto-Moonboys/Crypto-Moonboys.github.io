@@ -23,6 +23,7 @@ import {
   countCanonicalContentBlocks,
   countWords,
   extractArticleHtml,
+  firstGeneratedJsonDifference,
   hasLegacyUnmarkedArticleContent,
   hasRootWikiStubMarker,
   htmlToVisibleText,
@@ -39,6 +40,22 @@ import {
 import { readHtmlAttribute, tokenizeActiveHtml } from './wiki-html-structure.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+
+test('generated-state diagnostics report the first nested mismatch', () => {
+  assert.deepEqual(
+    firstGeneratedJsonDifference(
+      { pages: [{ slug: 'alpha', current_word_count: 10 }] },
+      { pages: [{ slug: 'alpha', current_word_count: 11 }] }
+    ),
+    { pointer: '$.pages[0].current_word_count', actual: 10, expected: 11 }
+  );
+  assert.deepEqual(
+    firstGeneratedJsonDifference({ pages: [] }, { pages: [{}] }),
+    { pointer: '$.pages.length', actual: 0, expected: 1 }
+  );
+  assert.equal(firstGeneratedJsonDifference({ stable: true }, { stable: true }), null);
+});
 
 test('retired W81 evidence remains traceable without a live ZIP or public download link', () => {
   const ledgerPath = 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md';
