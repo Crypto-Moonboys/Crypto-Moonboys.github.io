@@ -7,7 +7,7 @@
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=extract
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid4
- * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_train
+ * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_train_best_job
  *
  * `legendaryVerified:false` is a valid diagnostic and never treated as PASS.
  */
@@ -25,9 +25,9 @@ if(args.some(entry=>!entry.startsWith('--days=')&&!entry.startsWith('--strategy=
   ||args.filter(entry=>entry.startsWith('--days=')).length>1
   ||args.filter(entry=>entry.startsWith('--strategy=')).length>1
   ||args.filter(entry=>entry.startsWith('--xp=')).length>1
-  ||!['baseline','timed_train'].includes(xpPolicy)
+  ||!['baseline','timed_train','best_job','timed_train_best_job'].includes(xpPolicy)
   ||(strategyArg&&!['extract','boss','hybrid3','hybrid4'].includes(strategyArg.slice('--strategy='.length)))){
-  throw new Error('usage: node scripts/run-moonpet-worker-year-simulation.mjs --days=365 [--strategy=boss|extract|hybrid3|hybrid4] [--xp=baseline|timed_train]');
+  throw new Error('usage: node scripts/run-moonpet-worker-year-simulation.mjs --days=365 [--strategy=boss|extract|hybrid3|hybrid4] [--xp=baseline|timed_train|best_job|timed_train_best_job]');
 }
 const days=arg?Number(arg.slice('--days='.length)):7;
 if(!Number.isInteger(days)||days<1||days>365)throw new Error('days must be an integer between 1 and 365');
