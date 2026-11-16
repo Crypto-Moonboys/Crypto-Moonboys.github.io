@@ -1,5 +1,22 @@
 # W81 / RAW CANON — continuity companion (8 October 2026)
 
+## Current cast and command — 16 November 2026
+
+GK’s direct instruction establishes the following fictional canon. It supplements the creator brand; real people play characters as performers play roles in a film. It does not assert private facts about those performers.
+
+- Crypto Moonboys names the brand and the characters in its shared fantasy world.
+- All City Bulls (AllCity Bulls) and Nomad Bears (also written Nomad Bares in the brief) are the two main factions: the market’s bulls and bears in a world ruled by crypto.
+- The Bitcoin Kid Army is the army for the crypto market. It shadows members of both factions 24/7 as undercover guards; it is not a GK street faction.
+- Alfie “The Bitcoin KiD” Blaze leads the Army and takes orders only from GKniftyHEADS, the underworld good guys above the two main factions and the remaining 37 GK factions. The political count is 1 + 2 + 37 = 40; neither the Army nor a temporary HODL muster adds a seat.
+- HODL Warriors are the underworld army formed from members of all GK factions, not a faction themselves. Members unite when a larger army is needed while retaining their own faction identities. Every HODL Warrior aspires to become a HODL X Warrior; the aspiration does not confer the title.
+- HODL X Warriors belong to Block Topia under Queen Sarah P-fly and her Crypto Moongirls army. Bitcoin X Kids are the inside engineered generation; some escape and join Alfie’s Army. Inside birth, outside community and Army enlistment remain distinct.
+- These forces try to defeat NULL THE PROPHET while other conflicts persist. No completed Final Fork outcome is disclosed in the public Year 3008 story.
+
+The inherited forty-reading commentary remains a cultural comparison, including Army service and royal Moongirl life. It is not an exact one-to-one GK political roll. Keep all existing named cultures and adult histories; do not invent replacement faction names or promote service units to make a list add up. GKniftyHEADS’ political authority does not make it sole interpreter of the First Witness. Do not write the later names into the nine 2030 Books. Older claims that the HODL relationship is wholly unknown or that the Army is a street faction are superseded.
+
+Owning public account: [Crypto Moonboys](../../wiki/crypto-moonboys.html#market-factions-and-command), with linked dedicated references. The [Hard Fork / Rise source](https://graffpunks.substack.com/p/the-hard-fork-rise-of-the-hodl-warriors) supports the city, programme, royal and engineered-generation context; its damaged dates and outcomes remain subject to the current chronology.
+
+
 > **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
 
 **Current status (9 October 2026):** all 94 comparisons complete; five GK decisions approved for coordinated implementation. Editorial only: this companion preserves historical comparison notes below, not a new research backlog. [Approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).
@@ -54,9 +71,9 @@ For **real project statements**, use `README.md`, `Crypto_Moonboys_Master_Source
 - **HODL X Warriors:** a separate champion/service tradition related to the Games and its duties. Do not relabel every HODL X champion as a current 1/1 creator-holder or merge them into the emergency muster.
 - **HODL Warriors, Year 3008:** an extraordinary **collective defence protocol** when the Forty face an existential threat to memory and survival; not an ordinary selectable slot in the Forty.
 - **HODL Warriors, current public brand:** the active creator-builders holding qualifying 1/1s under current published eligibility and IP terms; not the fictional defence protocol.
-- **The Forty Paths:** forty is the civilisation model, **not proof of forty individually reconciled named rosters**. The authoritative reading register presently has **34 named cultures/readings and six unassigned positions**. This is a deliberate open register rather than six missing names to guess.
+- **The Forty Paths:** forty is the civilisation model, **not proof of forty individually reconciled named rosters**. The inherited comparison now has forty named readings, including Army and royal traditions. It is not an exact political roll: GKniftyHEADS + two market factions + 37 other GK factions is the street structure, and the Army holds no street seat.
 
-The six later **source-named** readings added to the existing 28 were JPEG Bloodline, Whale Lords, XRP Kids, PU55IES, Slam GiRL$ and Creepto Gals. The factual support is for the names and source relationships; their recent cultural practices were authorised **new fiction**, not rediscovered quotations from 2030 scripture. Candidates such as NoBallGames Legion, Burn Crews, Stencil Witches, Tag Lords and $DUST Protocol are **not** automatic remaining numbered positions. Nor are the Street Kingdoms, the GK Grid, the HODL emergency protocol, or the two distinct HODL title traditions fillers for roster arithmetic.
+The six later **source-named** readings added to the existing 28 were JPEG Bloodline, Whale Lords, XRP Kids, PU55IES, Slam GiRL$ and Creepto Gals. The factual support is for the names and source relationships; their recent cultural practices were authorised **new fiction**, not rediscovered quotations from 2030 scripture. NoBallGames Legion, Wildstyle Collective, Fractal Taggers, Porch Poets, Resin Relic Keepers and Bone Idol Ink Ritualists have approved distinct membership institutions. Burn Crews, Stencil Witches, Tag Lords and $DUST Protocol are not automatic additional street seats. Nor are the Street Kingdoms, the GK Grid, the HODL emergency protocol, or the two distinct HODL title traditions fillers for roster arithmetic.
 
 ## Source-specific detailed strands not fully present in the digest
 

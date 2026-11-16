@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 425 top-level `wiki/*.html` pages.
+- Scope: all 471 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,7 +21,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 425 |
+| Total pages audited | 471 |
 | Absent stub authorizations | 0 |
 | KEEP | 180 |
 | REWRITE_FULL | 0 |
@@ -29,8 +29,8 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | DEDUPE | 0 |
 | EXPAND | 0 |
 | ARCHIVE_STYLE | 0 |
-| GENERATED | 4 |
-| NFT_SPECIALIST | 159 |
+| GENERATED | 44 |
+| NFT_SPECIALIST | 165 |
 | FIRST_WITNESS_LOCKED | 82 |
 | NEEDS_HUMAN_REVIEW | 0 |
 | Pages with multiple SAM blocks | 0 |
@@ -46,7 +46,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | Policy | Pages | Meaning |
 |---|---:|---|
 | canon-locked | 255 | Automated article-body writes are rejected. |
-| metadata-only | 169 | Search, relationship, and metadata maintenance only; article prose is preserved. |
+| metadata-only | 215 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
 
@@ -56,7 +56,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Page | Status | Duplication | Canon conflict | Action | Priority | Likely source family |
 |---|---|---|---|---|---|---|
-| [CRYPTO MOONBOYS Build an identity. Bring your own. Make something people remember.](../wiki/crypto-moonboys.html) (`crypto-moonboys`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | wiki/first-witness-concordance.html; wiki/first-witness-master-chronology.html; wiki/first-witness-glossary.html; Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources); Specialist archive: crypto-moonboys |
+| [CRYPTO MOONBOYS The world is your canvas. Somebody else wants to own the wall.](../wiki/crypto-moonboys.html) (`crypto-moonboys`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | wiki/first-witness-concordance.html; wiki/first-witness-master-chronology.html; wiki/first-witness-glossary.html; Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (major lore/cosmology files; historical W81 sources); Specialist archive: crypto-moonboys |
 | [Addiction, Intoxication and Compulsion](../wiki/first-witness-addiction-intoxication-compulsion.html) (`first-witness-addiction-intoxication-compulsion`) | FIRST_WITNESS_LOCKED | NONE | NONE | Keep locked unless a later explicit canon PR changes it. | LOCKED | First Witness convergence canon |
 | [Ageing, Retirement and Elderhood](../wiki/first-witness-ageing-retirement-elderhood.html) (`first-witness-ageing-retirement-elderhood`) | FIRST_WITNESS_LOCKED | NONE | NONE | Keep locked unless a later explicit canon PR changes it. | LOCKED | First Witness convergence canon |
 | [Technology, AI and Synthetic Minds](../wiki/first-witness-ai-synthetic-minds.html) (`first-witness-ai-synthetic-minds`) | FIRST_WITNESS_LOCKED | NONE | NONE | Keep locked unless a later explicit canon PR changes it. | LOCKED | First Witness convergence canon |
@@ -320,7 +320,10 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Page | Status | Duplication | Canon conflict | Action | Priority | Likely source family |
 |---|---|---|---|---|---|---|
+| [Page moved — Crypto Moonboys](../wiki/1m-free-nfts.html) (`1m-free-nfts`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
+| [Page moved — Crypto Moonboys](../wiki/1m-free-nfts-drop.html) (`1m-free-nfts-drop`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [1m_free_nfts_program](../wiki/1m-free-nfts-program.html) (`1m-free-nfts-program`) | NFT_SPECIALIST | MEDIUM | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
+| [1m Free Nfts Programme moved](../wiki/1m-free-nfts-programme.html) (`1m-free-nfts-programme`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [AtomicAssets](../wiki/atomicassets.html) (`atomicassets`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [AtomicHub](../wiki/atomichub.html) (`atomichub`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [AtomicHub Graffpunks Collection](../wiki/atomichub-graffpunks-collection.html) (`atomichub-graffpunks-collection`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
@@ -470,13 +473,16 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️](../wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html) (`gkniftyheads-we-are-vandals-not-vanduls-776066`) | NFT_SPECIALIST | MEDIUM | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖](../wiki/gkniftyheads-zenith-zephyr-zealot-783759.html) (`gkniftyheads-zenith-zephyr-zealot-783759`) | NFT_SPECIALIST | MEDIUM | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [GraffPUNKS Collection](../wiki/graffpunks-collection.html) (`graffpunks-collection`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
+| [Page moved — Crypto Moonboys](../wiki/graffpunks-nfts.html) (`graffpunks-nfts`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [Hodl Moonboys NFT Collection](../wiki/hodlmoonboys-nft-collection.html) (`hodlmoonboys-nft-collection`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [NeftyBlocks](../wiki/neftyblocks.html) (`neftyblocks`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [NFTHive](../wiki/nfthive.html) (`nfthive`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [NFTs (Non-Fungible Tokens)](../wiki/nfts.html) (`nfts`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
+| [Page moved — Crypto Moonboys](../wiki/nfts-non-fungible-tokens.html) (`nfts-non-fungible-tokens`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [nifty_crowns](../wiki/nifty-crowns.html) (`nifty-crowns`) | NFT_SPECIALIST | HIGH | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P1 | Structured NFT/template metadata |
 | [Nifty Wizards](../wiki/nifty-wizards.html) (`nifty-wizards`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [NoBallGames / NoBallGamess NFT Collection](../wiki/noballgamess-nft-collection.html) (`noballgamess-nft-collection`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
+| [One Million Free Nfts moved](../wiki/one-million-free-nfts.html) (`one-million-free-nfts`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 | [Playable NFT Murals](../wiki/playable-nft-murals.html) (`playable-nft-murals`) | NFT_SPECIALIST | HIGH | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P1 | Structured NFT/template metadata |
 | [WAX NFT Marketplaces](../wiki/wax-nft-marketplaces.html) (`wax-nft-marketplaces`) | NFT_SPECIALIST | NONE | NOT_APPLICABLE | Route structured NFT/template maintenance to the NFT specialist workflow. | P4 | Structured NFT/template metadata |
 
@@ -488,6 +494,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [666 on XRPL](../wiki/666-xrpl.html) (`666-xrpl`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Alcor Exchange](../wiki/alcor-exchange.html) (`alcor-exchange`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Alfie Blaze moved](../wiki/alfie-blaze.html) (`alfie-blaze`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/alfie-the-bitcoin-kid-blaze.html) (`alfie-the-bitcoin-kid-blaze`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Alien Worlds / TLM](../wiki/alien-worlds-tlm.html) (`alien-worlds-tlm`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Altcoins](../wiki/altcoins.html) (`altcoins`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [BEAR on XRPL](../wiki/bear-xrpl.html) (`bear-xrpl`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
@@ -495,37 +502,76 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Bitcoin reference](../wiki/bitcoin-btc.html) (`bitcoin-btc`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Bitcoin reference](../wiki/bitcoin-tokens.html) (`bitcoin-tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Blockchain Technology](../wiki/blockchain.html) (`blockchain`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/blockchain-technology.html) (`blockchain-technology`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Create Your Moonboy](../wiki/create-your-moonboy.html) (`create-your-moonboy`) | KEEP | NONE | NOT_APPLICABLE | Preserve article prose; allow metadata-only maintenance. | P4 | moonboy-ai-canon-guide.txt (public creator instructions); moonboy-canon-index.json (curated public source directory) |
+| [Page moved — Crypto Moonboys](../wiki/crypto-exchanges.html) (`crypto-exchanges`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Crypto Moonboy Pets](../wiki/crypto-moonboy-pets.html) (`crypto-moonboy-pets`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/crypto-wallets.html) (`crypto-wallets`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/darren-cullen-ser.html) (`darren-cullen-ser`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/darren-cullen-ser-real.html) (`darren-cullen-ser-real`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [DeFi (Decentralised Finance)](../wiki/defi.html) (`defi`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/defi-decentralised-finance.html) (`defi-decentralised-finance`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [DeFi Mining](../wiki/defi-mining.html) (`defi-mining`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Dream Sovereign](../wiki/dream-sovereign.html) (`dream-sovereign`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Ethereum (ETH)](../wiki/ethereum.html) (`ethereum`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Ethereum (ETH) Ecosystem](../wiki/ethereum-ecosystem.html) (`ethereum-ecosystem`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Crypto Exchanges](../wiki/exchanges.html) (`exchanges`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [FGL Token](../wiki/fgl-token.html) (`fgl-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/games4punks-telegram-games.html) (`games4punks-telegram-games`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [$GK](../wiki/gk.html) (`gk`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: gk |
+| [Page moved — Crypto Moonboys](../wiki/gk-token.html) (`gk-token`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/gk-tokens.html) (`gk-tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/graffiti-queens-exhibition.html) (`graffiti-queens-exhibition`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/graffitikings.html) (`graffitikings`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Graffpunks 24 7 moved](../wiki/graffpunks-24-7.html) (`graffpunks-24-7`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/graffpunks-24-7-blockchain-radio-station.html) (`graffpunks-24-7-blockchain-radio-station`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Graffpunks 247 moved](../wiki/graffpunks-247.html) (`graffpunks-247`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Graffpunks 247 Blockchain Radio Station moved](../wiki/graffpunks-247-blockchain-radio-station.html) (`graffpunks-247-blockchain-radio-station`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Graffpunks 247 Radio moved](../wiki/graffpunks-247-radio.html) (`graffpunks-247-radio`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/graffpunks-network.html) (`graffpunks-network`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/hard-fork-games-game.html) (`hard-fork-games-game`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/hodl-warriors-army.html) (`hodl-warriors-army`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Hodl Wars Game moved](../wiki/hodl-wars-game.html) (`hodl-wars-game`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [$LFGK](../wiki/lfgk.html) (`lfgk`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: lfgk |
+| [Page moved — Crypto Moonboys](../wiki/lfgk-token.html) (`lfgk-token`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Guide moved — Crypto Moonboys](../wiki/liquidity-pools.html) (`liquidity-pools`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/meme-coins.html) (`meme-coins`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Meme Coins](../wiki/memecoins.html) (`memecoins`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Metaverse Battles](../wiki/metaverse-battles.html) (`metaverse-battles`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: metaverse-battles |
 | [$NBG The NoBallGames token built around Charlie Buster's art, graffiti mythology and connected Web3 projects](../wiki/nbg.html) (`nbg`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Specialist archive: nbg |
 | [nbg_token](../wiki/nbg-token.html) (`nbg-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [NBGX moved](../wiki/nbgx.html) (`nbgx`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [NBGX Token](../wiki/nbgx-token.html) (`nbgx-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: nbgx-token |
+| [Page moved — Crypto Moonboys](../wiki/no-ball-games-nbg.html) (`no-ball-games-nbg`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Phygital Prints](../wiki/phygital-prints.html) (`phygital-prints`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: phygital-prints |
 | [Pixil Mini](../wiki/pixil-mini.html) (`pixil-mini`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [pmsl](../wiki/pmsl.html) (`pmsl`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: pmsl |
 | [PMSL Token](../wiki/pmsl-token.html) (`pmsl-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/punk.html) (`punk`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/punk-coin.html) (`punk-coin`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/queen-sarah-pfly.html) (`queen-sarah-pfly`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Seeding Rights](../wiki/seeding-rights.html) (`seeding-rights`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: seeding-rights |
 | [SNEAKAR](../wiki/sneakar.html) (`sneakar`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Solana (SOL)](../wiki/solana.html) (`solana`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/solana-sol.html) (`solana-sol`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/spraycode-writcode.html) (`spraycode-writcode`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Spraycode & Writcode Mechanics](../wiki/spraycode-writcode-mechanics.html) (`spraycode-writcode-mechanics`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: spraycode-writcode-mechanics |
 | [CRYPTO STAKING How tokens help secure networks, earn protocol rewards and create new risks](../wiki/staking.html) (`staking`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [swap.nefty](../wiki/swap-nefty.html) (`swap-nefty`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [TacoSwap](../wiki/tacoswap.html) (`tacoswap`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [TAGZcoin](../wiki/tagzcoin.html) (`tagzcoin`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/the-bear-market-siege.html) (`the-bear-market-siege`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [The CleanupCentr](../wiki/the-cleanupcentr.html) (`the-cleanupcentr`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/the-fomo-plague.html) (`the-fomo-plague`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/the-gkniftyheads.html) (`the-gkniftyheads`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [The Graffpunks moved](../wiki/the-graffpunks.html) (`the-graffpunks`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/the-hodl-warriors.html) (`the-hodl-warriors`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/the-sacred-chain.html) (`the-sacred-chain`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/the-satoshi-scroll.html) (`the-satoshi-scroll`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/the-wagmi-prophecy.html) (`the-wagmi-prophecy`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/the-whale-lords.html) (`the-whale-lords`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Tokenomics](../wiki/tokenomics.html) (`tokenomics`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Guide moved — Crypto Moonboys](../wiki/tokens.html) (`tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Crypto Wallets](../wiki/wallets.html) (`wallets`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [WAX Blockchain](../wiki/wax-blockchain.html) (`wax-blockchain`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [WAX DEXs & DeFi](../wiki/wax-dexs-defi.html) (`wax-dexs-defi`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
