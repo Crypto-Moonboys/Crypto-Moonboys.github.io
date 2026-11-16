@@ -16,11 +16,14 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', route => route.abort());
     await page.setContent(html);
+    const reference = page.locator('#creator-reference');
+    assert.equal(await reference.getAttribute('open'), null, `${width}: creator reference is folded by default`);
+    await reference.locator(':scope > summary').click();
     const before = await page.locator('article[data-entity-slug="crypto-moonboys"]').innerHTML();
     await page.addScriptTag({ content: loader });
     await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
-    const panel = page.locator('article[data-entity-slug="crypto-moonboys"] > #swarmsy-current');
-    assert.equal(await panel.count(), 1, `${width}: clarification is inserted inside the real article`);
+    const panel = page.locator('article[data-entity-slug="crypto-moonboys"] #creator-reference #swarmsy-current');
+    assert.equal(await panel.count(), 1, `${width}: clarification stays inside the optional creator reference`);
     assert.ok(await panel.isVisible(), `${width}: clarification is visible`);
     assert.match(await panel.textContent(), /optional locally run PC beta/);
     assert.match(await panel.textContent(), /not a hosted SWARMSY chat/);

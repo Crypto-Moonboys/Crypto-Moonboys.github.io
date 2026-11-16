@@ -5080,6 +5080,34 @@
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html"
       ]
+    },
+    {
+      "id": "GK-20261116-STORY-ENTRANCE",
+      "status": "implemented",
+      "sources": [
+        "GK direct instruction, 16 November 2026: main lore page is the heart of the story; back book cover opening, broader mythology, many realms and timeline",
+        "brand-canon/wiki-rewrites/story-entrance-audit-20261116.md",
+        "wiki/first-witness-master-chronology.html",
+        "wiki/first-witness-concordance.html",
+        "decision:GK-20261116-MARKET-FACTIONS-COMMAND"
+      ],
+      "old": "The main Crypto Moonboys page leads with creator-product reference sections and leaves most story connections below them.",
+      "new": "A roughly 5,600-word continuous story entrance, with an extended back-cover opening and six broad movements through the world, history, cast, realms, war and timeline. All earlier narrative paragraphs and IDs remain in an optional folded creator/reference disclosure.",
+      "reason": "GK expressly requested a substantial story-led main page that draws the wiki together. This is a sourced narrative synthesis, not a new cosmology, faction assignment, historical date or final outcome.",
+      "affected_paths": [
+        "wiki/crypto-moonboys.html",
+        "scripts/generate-related-wiki-paths.mjs",
+        "scripts/bible-loader-swarmsy-browser.test.mjs",
+        "brand-canon/wiki-rewrites/story-entrance-audit-20261116.md",
+        "brand-canon/wiki-rewrites/issue-1458-progress.md"
+      ],
+      "approval": {
+        "date": "2026-11-16",
+        "url": "https://cryptomoonboys.com/wiki/crypto-moonboys.html",
+        "source_type": "direct-user-instruction",
+        "source_note": "The current conversation supplies the instruction; URL is the implementing page, not a public approval comment.",
+        "quote": "THIS PAGE IS MAIN LORE, THE HEART OF THE STORY AND ALL KEYS PARTS NEED TO BE LIKE A BACK BOOK COVER WITH GOOD CHUNK OF WHO WHY WHEN THEN A BIGGER PIECE WITH BROADER WIDE WORLD VIEW MYTHOLOGY OF MANY REALMS... TIME LINE. SO AUDIT MANY OR ALL PAGES TO MAGE MAIN WEBPAGE PULL THE WHOLE WIKI TOGETHER, DONT TREAT THIS PAGE LIKE A WIKI PAGE IN MANY SECTIONS BUT LIKE A BIG BACK BOOK X10 - ALMOST A BOOK."
+      }
     }
   ],
   "updated": "2026-11-16"

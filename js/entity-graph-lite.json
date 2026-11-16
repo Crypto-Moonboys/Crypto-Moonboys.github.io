@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-16T08:43:55.385Z",
-  "verified_at": "2026-11-16T08:43:55.385Z",
+  "generated_at": "2026-11-16T09:05:03.529Z",
+  "verified_at": "2026-11-16T09:05:03.529Z",
   "lite": true,
   "nodes": [
     {
@@ -172,6 +172,14 @@
       "authority_score": 14
     },
     {
+      "id": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel",
+      "url": "/wiki/genesis-kernel.html",
+      "category": "core",
+      "rank_score": 341,
+      "authority_score": 24
+    },
+    {
       "id": "/wiki/hodl-warriors.html",
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
@@ -181,10 +189,10 @@
     },
     {
       "id": "/wiki/crypto-moonboys.html",
-      "title": "Crypto Moonboys — Graffiti Kings Creator Umbrella",
+      "title": "Crypto Moonboys — The Story, Realms and Timeline",
       "url": "/wiki/crypto-moonboys.html",
       "category": "characters",
-      "rank_score": 339,
+      "rank_score": 340,
       "authority_score": 30
     },
     {
@@ -194,14 +202,6 @@
       "category": "core",
       "rank_score": 339,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/genesis-kernel.html",
-      "title": "Genesis Kernel",
-      "url": "/wiki/genesis-kernel.html",
-      "category": "core",
-      "rank_score": 339,
-      "authority_score": 24
     },
     {
       "id": "/wiki/first-witness-prisons-punishment-return.html",
@@ -780,6 +780,24 @@
       "weight": 1
     },
     {
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 126,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 126,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 123,
+      "weight": 1
+    },
+    {
       "source": "/wiki/sacred-chain.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 122,
@@ -822,24 +840,6 @@
       "weight": 1
     },
     {
-      "source": "/wiki/bitcoin-x-kids.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 112,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/block-topia.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 112,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 112,
-      "weight": 1
-    },
-    {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 110,
@@ -860,12 +860,6 @@
     {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 102,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/hodl-x-warriors.html",
-      "target": "/wiki/bitcoin-kids.html",
       "score": 102,
       "weight": 1
     },
@@ -904,6 +898,12 @@
       "target": "/wiki/queen-sarah-p-fly.html",
       "score": 94,
       "weight": 0.94
+    },
+    {
+      "source": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -990,12 +990,6 @@
       "weight": 0.81
     },
     {
-      "source": "/wiki/punk-token.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/stikfamwars.html",
       "score": 78,
@@ -1006,6 +1000,12 @@
       "target": "/wiki/midevilpunks.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 70,
+      "weight": 0.7
     }
   ]
 }

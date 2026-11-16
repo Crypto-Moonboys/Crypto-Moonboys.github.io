@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-16T08:43:55.385Z",
-  "verified_at": "2026-11-16T08:43:55.385Z",
+  "generated_at": "2026-11-16T09:05:03.529Z",
+  "verified_at": "2026-11-16T09:05:03.529Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -207,7 +207,7 @@
       "title": "Agent SAM",
       "url": "/wiki/agent-sam.html",
       "category": "factions",
-      "rank_score": 267,
+      "rank_score": 269,
       "authority_score": 30
     },
     {
@@ -223,7 +223,7 @@
       "title": "Aleema (Child of the Shard)",
       "url": "/wiki/aleema-child-of-the-shard.html",
       "category": "characters",
-      "rank_score": 285,
+      "rank_score": 287,
       "authority_score": 28
     },
     {
@@ -436,10 +436,10 @@
     },
     {
       "id": "/wiki/crypto-moonboys.html",
-      "title": "Crypto Moonboys — Graffiti Kings Creator Umbrella",
+      "title": "Crypto Moonboys — The Story, Realms and Timeline",
       "url": "/wiki/crypto-moonboys.html",
       "category": "characters",
-      "rank_score": 339,
+      "rank_score": 340,
       "authority_score": 30
     },
     {
@@ -495,7 +495,7 @@
       "title": "Dream Sovereign",
       "url": "/wiki/dream-sovereign.html",
       "category": "concepts",
-      "rank_score": 242,
+      "rank_score": 244,
       "authority_score": 20
     },
     {
@@ -1207,7 +1207,7 @@
       "title": "Forkborn Collective",
       "url": "/wiki/forkborn-collective.html",
       "category": "factions",
-      "rank_score": 286,
+      "rank_score": 288,
       "authority_score": 24
     },
     {
@@ -1255,7 +1255,7 @@
       "title": "Genesis Kernel",
       "url": "/wiki/genesis-kernel.html",
       "category": "core",
-      "rank_score": 339,
+      "rank_score": 341,
       "authority_score": 24
     },
     {
@@ -2503,7 +2503,7 @@
       "title": "The Great Consensus",
       "url": "/wiki/great-consensus.html",
       "category": "factions",
-      "rank_score": 255,
+      "rank_score": 257,
       "authority_score": 20
     },
     {
@@ -2511,7 +2511,7 @@
       "title": "GRIT",
       "url": "/wiki/grit.html",
       "category": "characters",
-      "rank_score": 289,
+      "rank_score": 291,
       "authority_score": 24
     },
     {
@@ -2591,7 +2591,7 @@
       "title": "House of Rackinsats",
       "url": "/wiki/house-of-rackinsats.html",
       "category": "factions",
-      "rank_score": 276,
+      "rank_score": 278,
       "authority_score": 27
     },
     {
@@ -2607,7 +2607,7 @@
       "title": "Iris-7",
       "url": "/wiki/iris-7.html",
       "category": "characters",
-      "rank_score": 298,
+      "rank_score": 300,
       "authority_score": 28
     },
     {
@@ -2623,7 +2623,7 @@
       "title": "Jodie ZOOM 2000",
       "url": "/wiki/jodie-zoom-2000.html",
       "category": "characters",
-      "rank_score": 303,
+      "rank_score": 305,
       "authority_score": 28
     },
     {
@@ -2639,7 +2639,7 @@
       "title": "Kael Voss",
       "url": "/wiki/kael-voss.html",
       "category": "characters",
-      "rank_score": 252,
+      "rank_score": 254,
       "authority_score": 17
     },
     {
@@ -2647,7 +2647,7 @@
       "title": "Lady-INK",
       "url": "/wiki/lady-ink.html",
       "category": "characters",
-      "rank_score": 289,
+      "rank_score": 291,
       "authority_score": 24
     },
     {
@@ -2663,7 +2663,7 @@
       "title": "Loopfiend",
       "url": "/wiki/loopfiend.html",
       "category": "characters",
-      "rank_score": 273,
+      "rank_score": 275,
       "authority_score": 24
     },
     {
@@ -2887,7 +2887,7 @@
       "title": "PYRALITH",
       "url": "/wiki/pyralith.html",
       "category": "characters",
-      "rank_score": 282,
+      "rank_score": 284,
       "authority_score": 24
     },
     {
@@ -2951,7 +2951,7 @@
       "title": "Samael.exe",
       "url": "/wiki/samaelexe.html",
       "category": "characters",
-      "rank_score": 289,
+      "rank_score": 291,
       "authority_score": 24
     },
     {
@@ -3087,7 +3087,7 @@
       "title": "Sylas the Unbroken",
       "url": "/wiki/sylas-the-unbroken.html",
       "category": "characters",
-      "rank_score": 235,
+      "rank_score": 237,
       "authority_score": 18
     },
     {
@@ -3335,7 +3335,7 @@
       "title": "The Squeaky Pinks",
       "url": "/wiki/the-squeaky-pinks.html",
       "category": "factions",
-      "rank_score": 287,
+      "rank_score": 289,
       "authority_score": 28
     },
     {
@@ -3359,7 +3359,7 @@
       "title": "Thera-9",
       "url": "/wiki/thera-9.html",
       "category": "characters",
-      "rank_score": 301,
+      "rank_score": 303,
       "authority_score": 28
     },
     {
@@ -3399,7 +3399,7 @@
       "title": "Veyra Nyx",
       "url": "/wiki/veyra-nyx.html",
       "category": "characters",
-      "rank_score": 235,
+      "rank_score": 237,
       "authority_score": 14
     },
     {
@@ -3479,7 +3479,7 @@
       "title": "The Whale Lords",
       "url": "/wiki/whale-lords.html",
       "category": "factions",
-      "rank_score": 299,
+      "rank_score": 301,
       "authority_score": 26
     },
     {
@@ -3487,7 +3487,7 @@
       "title": "The Whisper Codex",
       "url": "/wiki/whisper-codex.html",
       "category": "factions",
-      "rank_score": 233,
+      "rank_score": 235,
       "authority_score": 16
     },
     {
@@ -3699,8 +3699,8 @@
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
@@ -3746,20 +3746,20 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/the-first-witness.html",
       "score": 77,
       "weight": 0.77
     },
     {
-      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/bitcoin-kid-army.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 100,
+      "score": 101,
       "weight": 1
     },
     {
@@ -3776,15 +3776,15 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/altcoins.html",
@@ -3819,8 +3819,8 @@
     {
       "source": "/wiki/atomicassets.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/atomicassets.html",
@@ -3836,15 +3836,15 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
@@ -3909,8 +3909,8 @@
     {
       "source": "/wiki/ava-chen.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/ava-chen.html",
@@ -3926,15 +3926,15 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/dragan-volkov.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -3969,8 +3969,8 @@
     {
       "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/bear-market-siege.html",
@@ -4029,8 +4029,8 @@
     {
       "source": "/wiki/billy-the-goat-kid.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
@@ -4059,7 +4059,7 @@
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 106,
+      "score": 113,
       "weight": 1
     },
     {
@@ -4125,7 +4125,7 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 109,
+      "score": 123,
       "weight": 1
     },
     {
@@ -4155,7 +4155,7 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 112,
+      "score": 126,
       "weight": 1
     },
     {
@@ -4191,8 +4191,8 @@
     {
       "source": "/wiki/bitcoin.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 55,
-      "weight": 0.55
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -4239,7 +4239,7 @@
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 112,
+      "score": 126,
       "weight": 1
     },
     {
@@ -4329,8 +4329,8 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -4419,8 +4419,8 @@
     {
       "source": "/wiki/create-your-moonboy.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/create-your-moonboy.html",
@@ -4509,32 +4509,32 @@
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/block-topia.html",
-      "score": 105,
+      "score": 118,
       "weight": 1
     },
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 112,
+      "weight": 1
     },
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 97,
-      "weight": 0.97
-    },
-    {
-      "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/hodl-x-warriors.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 110,
+      "weight": 1
     },
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/null-the-prophet.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 106,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "score": 105,
+      "weight": 1
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4550,15 +4550,15 @@
     },
     {
       "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/jillian-godsil.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 52,
       "weight": 0.52
     },
     {
       "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 51,
-      "weight": 0.51
+      "target": "/wiki/jillian-godsil.html",
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -4659,8 +4659,8 @@
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -4682,15 +4682,15 @@
     },
     {
       "source": "/wiki/diamond-hands.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/thera-9.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4701,8 +4701,8 @@
     {
       "source": "/wiki/dragan-volkov.html",
       "target": "/wiki/thera-9.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/dragan-volkov.html",
@@ -4737,8 +4737,8 @@
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 104,
+      "weight": 1
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -7407,14 +7407,20 @@
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/forklord-you.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 84,
       "weight": 0.84
+    },
+    {
+      "source": "/wiki/forklord-you.html",
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -7429,15 +7435,9 @@
       "weight": 0.8
     },
     {
-      "source": "/wiki/forklord-you.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
       "source": "/wiki/forksplit.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 100,
+      "score": 101,
       "weight": 1
     },
     {
@@ -7484,15 +7484,15 @@
     },
     {
       "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 43,
-      "weight": 0.43
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 46,
+      "weight": 0.46
     },
     {
       "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 42,
-      "weight": 0.42
+      "target": "/wiki/graffpunks.html",
+      "score": 43,
+      "weight": 0.43
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
@@ -7526,6 +7526,12 @@
     },
     {
       "source": "/wiki/gang-signs.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 62,
+      "weight": 0.62
+    },
+    {
+      "source": "/wiki/gang-signs.html",
       "target": "/wiki/games4punks-telegram.html",
       "score": 59,
       "weight": 0.59
@@ -7535,12 +7541,6 @@
       "target": "/wiki/head-tags.html",
       "score": 56,
       "weight": 0.56
-    },
-    {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 55,
-      "weight": 0.55
     },
     {
       "source": "/wiki/gang-signs.html",
@@ -7587,8 +7587,8 @@
     {
       "source": "/wiki/genesis-spray-drop.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
@@ -12267,8 +12267,8 @@
     {
       "source": "/wiki/grit.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/grit.html",
@@ -12297,8 +12297,8 @@
     {
       "source": "/wiki/grit42.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/grit42.html",
@@ -12411,14 +12411,14 @@
     {
       "source": "/wiki/head-tags.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 48,
-      "weight": 0.48
+      "score": 49,
+      "weight": 0.49
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -12440,9 +12440,9 @@
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/thera-9.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/hodl-warriors.html",
@@ -12507,7 +12507,7 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 112,
+      "score": 123,
       "weight": 1
     },
     {
@@ -12597,8 +12597,8 @@
     {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -12620,15 +12620,15 @@
     },
     {
       "source": "/wiki/ian-harrison.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/thera-9.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/iris-7.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 113,
+      "weight": 1
     },
     {
       "source": "/wiki/iris-7.html",
@@ -12687,14 +12687,14 @@
     {
       "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/thera-9.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
@@ -12747,8 +12747,8 @@
     {
       "source": "/wiki/kael-voss.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/kael-voss.html",
@@ -12777,8 +12777,8 @@
     {
       "source": "/wiki/lady-ink.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 104,
+      "weight": 1
     },
     {
       "source": "/wiki/lady-ink.html",
@@ -12837,8 +12837,8 @@
     {
       "source": "/wiki/loopfiend.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/loopfiend.html",
@@ -12849,8 +12849,8 @@
     {
       "source": "/wiki/loopfiend.html",
       "target": "/wiki/thera-9.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/loopfiend.html",
@@ -12867,8 +12867,8 @@
     {
       "source": "/wiki/m1ntr-k1ll.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
@@ -12884,15 +12884,15 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/thera-9.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -13107,8 +13107,8 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/nbg.html",
@@ -13227,8 +13227,8 @@
     {
       "source": "/wiki/nfts.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/nfts.html",
@@ -13377,8 +13377,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 113,
+      "weight": 1
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -13437,14 +13437,20 @@
     {
       "source": "/wiki/patchwork.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 104,
+      "weight": 1
     },
     {
       "source": "/wiki/patchwork.html",
       "target": "/wiki/satorebel.html",
       "score": 88,
       "weight": 0.88
+    },
+    {
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/thera-9.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/patchwork.html",
@@ -13455,12 +13461,6 @@
     {
       "source": "/wiki/patchwork.html",
       "target": "/wiki/sister-halcyon.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/thera-9.html",
       "score": 85,
       "weight": 0.85
     },
@@ -13527,8 +13527,8 @@
     {
       "source": "/wiki/pixil-mini.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/pixil-mini.html",
@@ -13544,15 +13544,15 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -13647,8 +13647,8 @@
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/punk-token.html",
@@ -13677,8 +13677,8 @@
     {
       "source": "/wiki/pyralith.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/pyralith.html",
@@ -13694,15 +13694,15 @@
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
@@ -13737,8 +13737,8 @@
     {
       "source": "/wiki/quell.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/quell.html",
@@ -13754,15 +13754,15 @@
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/m1ntr-k1ll.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/block-topia.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -13827,8 +13827,8 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -13850,9 +13850,9 @@
     },
     {
       "source": "/wiki/rune-tag.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/thera-9.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/rust2riches.html",
@@ -13917,8 +13917,8 @@
     {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/samaelexe.html",
@@ -13947,14 +13947,20 @@
     {
       "source": "/wiki/satorebel.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/satorebel.html",
       "target": "/wiki/patchwork.html",
       "score": 88,
       "weight": 0.88
+    },
+    {
+      "source": "/wiki/satorebel.html",
+      "target": "/wiki/thera-9.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/satorebel.html",
@@ -13965,12 +13971,6 @@
     {
       "source": "/wiki/satorebel.html",
       "target": "/wiki/sister-halcyon.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/satorebel.html",
-      "target": "/wiki/thera-9.html",
       "score": 85,
       "weight": 0.85
     },
@@ -14037,8 +14037,14 @@
     {
       "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 101,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/sister-halcyon.html",
+      "target": "/wiki/thera-9.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -14055,12 +14061,6 @@
     {
       "source": "/wiki/sister-halcyon.html",
       "target": "/wiki/satorebel.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/thera-9.html",
       "score": 85,
       "weight": 0.85
     },
@@ -14127,18 +14127,18 @@
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
-    },
-    {
-      "source": "/wiki/snipey-d-man-sirus.html",
-      "target": "/wiki/jodie-zoom-2000.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 104,
+      "weight": 1
     },
     {
       "source": "/wiki/snipey-d-man-sirus.html",
       "target": "/wiki/thera-9.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/jodie-zoom-2000.html",
       "score": 85,
       "weight": 0.85
     },
@@ -14277,8 +14277,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/staking.html",
@@ -14427,8 +14427,8 @@
     {
       "source": "/wiki/sylas-the-unbroken.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/sylas-the-unbroken.html",
@@ -14805,14 +14805,14 @@
     {
       "source": "/wiki/the-crypto-moongirls.html",
       "target": "/wiki/whale-lords.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
@@ -15200,7 +15200,7 @@
     },
     {
       "source": "/wiki/the-nomad-bears.html",
-      "target": "/wiki/the-first-witness.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 90,
       "weight": 0.9
     },
@@ -15236,15 +15236,15 @@
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/the-whitewasher.html",
-      "score": 85,
-      "weight": 0.85
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-princess.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/the-whitewasher.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-princess.html",
@@ -15369,8 +15369,8 @@
     {
       "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/whale-lords.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
@@ -15416,6 +15416,12 @@
     },
     {
       "source": "/wiki/the-whitewasher.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/the-princess.html",
       "score": 86,
       "weight": 0.86
@@ -15425,12 +15431,6 @@
       "target": "/wiki/thorne-the-architect.html",
       "score": 84,
       "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-whitewasher.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 81,
-      "weight": 0.81
     },
     {
       "source": "/wiki/the-whitewasher.html",
@@ -15447,8 +15447,8 @@
     {
       "source": "/wiki/thera-9.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 104,
+      "weight": 1
     },
     {
       "source": "/wiki/thera-9.html",
@@ -15482,15 +15482,15 @@
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/the-whitewasher.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/thorne-the-architect.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-whitewasher.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/thorne-the-architect.html",
@@ -15596,15 +15596,15 @@
     },
     {
       "source": "/wiki/veyra-nyx.html",
-      "target": "/wiki/block-topia.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/veyra-nyx.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/block-topia.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/veyra-nyx.html",
@@ -15627,8 +15627,8 @@
     {
       "source": "/wiki/wagmi-prophecy.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 87,
-      "weight": 0.87
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
@@ -15657,8 +15657,8 @@
     {
       "source": "/wiki/wallets.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 97,
-      "weight": 0.97
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/wallets.html",
@@ -16010,7 +16010,7 @@
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 59,
       "weight": 0.59
     },

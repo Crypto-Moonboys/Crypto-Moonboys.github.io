@@ -666,11 +666,11 @@ function knownPage(context, url, title, description = '') {
 
 function cryptoMoonboysGroups(context, currentUrl) {
   const majorPages = [
-    knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'Parent brand and faction hub connected to the project.'),
+    knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'The underworld good guys above the GK street factions.'),
     knownPage(context, GKNIFTY_COLLECTION_URL, 'GKniftyHEADS NFT Collection', 'Generated collection index for WAX AtomicAssets template pages.'),
     knownPage(context, '/wiki/graffpunks.html', 'GraffPUNKS', 'Related street-art and faction context.'),
-    knownPage(context, '/wiki/hodl-wars.html', 'HODL WARS', 'Game and lore context connected to the project.'),
-    knownPage(context, '/wiki/hodl-warriors.html', 'HODL Warriors', 'Related character and faction page.'),
+    knownPage(context, '/wiki/hodl-wars.html', 'HODL WARS', 'The Year 3008 war across the city, streets and threatened memory.'),
+    knownPage(context, '/wiki/hodl-warriors.html', 'HODL Warriors', 'The underworld army formed from members of all GK factions; not a faction.'),
     knownPage(context, '/wiki/block-topia.html', 'Block Topia', 'Connected game/world page where present in the wiki.'),
     knownPage(context, '/wiki/crypto-moongirls.html', 'Crypto Moongirls', ''),
   ];

@@ -1481,3 +1481,60 @@ No tests, validation triggers or approval safeguards were weakened. No merge,
 production deployment, payout, migration or issue closure was performed.
 
 GK follow-up, 16 November 2026: HODL Warriors are explicitly the underworld army formed from members of all GK factions, not a faction. Updated the shared explanations, seven bible overrides, command record and authored core-lore search classification. Faction membership remains distinct from collective Army service.
+
+## Main story entrance — 16 November 2026
+
+GK explicitly identifies `/wiki/crypto-moonboys.html` as the heart of the lore
+and requests an extended back-cover treatment, wider realms/mythology and a
+timeline. Backup: `backup/lore-entrance-before-narrative-20261116`, from PR1800
+head `cafe03f4e1119c9de5272526c5c1a41814bd12f8`. Continues that PR; no merge.
+
+Catalogue audit covers all 471 routes (421 non-redirects; 179 broad lore/context
+candidates). Selected owning passages inform the synthesis; this is not a new
+claim of full paragraph-by-paragraph reconciliation of the entire wiki.
+The detailed reading/claim map is in `story-entrance-audit-20261116.md`.
+
+The main page now opens with an extended narrative pitch and continues through
+six broad movements: streets/city; inherited history; cast and crossings;
+realms; war and consequences; timeline. The story is 5,629 measured words
+including headings and opening, with 48 distinct validated story links.
+Firetrain, Gallery That Sleeps, Infinite Alley 9x, Dreamchain Root Node,
+StikFAM dimensions, the Deep Chain, Lattice, Violet Void and the Whisper
+Codex horizon retain their own narrative/source contexts. No universal
+simulation, completed Final Fork, new historical date or faction seat is added.
+
+All earlier narrative paragraphs and IDs are retained in a native folded
+creator/reference disclosure. Comments, citation components, head dependencies
+and site shell are preserved. Current-tool runtime code is unchanged; its
+existing browser test now opens and checks the optional reference disclosure.
+Main metadata and search terms lead with the story. Three related-card source
+descriptions are corrected, including HODL Warriors' army identity.
+
+Executed validation:
+
+- `npm run ci:wiki` with the exact main base and explicit prose-authorisation
+  environment: canon suite passed (94 identities, four Python tests, twenty
+  JavaScript cases, guard with 97 decisions); native contents, related paths,
+  hub/NFT preservation, content inventory/ownership, publisher tests, payload
+  schema tests and wiki search passed. The run then stopped at the engagement
+  layer check because `workers/moonboys-api/worker.js` is absent from this
+  sparse checkout. Full wiki CI is not green.
+- Focused story check: 5,629 words, six broad movements, 48 internal story links
+  and fragments resolve; old IDs remain; creator reference starts closed.
+- Direct comparison to the pre-rewrite PR page: every previous narrative
+  paragraph survives; functional shell and navigation preservation passed.
+- Graph publishing integrity passed; HTML hygiene passed for all 418 indexable
+  pages; syntax checks passed for the two touched scripts; whitespace passed.
+- The optional onboarding check encountered a pre-existing expectation that
+  the inline Moonboy builder is still on `index.html`; that unchanged homepage
+  now routes to its separate builder/entry pages. No root homepage change is
+  included here.
+- The updated browser check was attempted with installed system Chromium, but
+  launch failed because process-socket creation is denied. Desktop/mobile
+  visual and runtime-panel rendering are not verified in this environment.
+  Native HTML remains present without JavaScript, but this is not reported as
+  a successful no-JavaScript browser render.
+
+Publishing/search graphs and ownership were regenerated. No test trigger,
+prose gate, Worker runtime, reward, ownership term or original scripture changed.
+The story is reviewable in PR1800; production still awaits GK merge approval.

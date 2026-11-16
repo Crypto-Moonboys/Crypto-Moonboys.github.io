@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:0e57eeb14909a1e9e8712e830af3ecac0cdaac31fad654675d32197d0cadec76",
+  "source_tree_hash": "sha256:a37cb241d1f210afa9ffb2c61fe1d3f41b818ca645688928ab511463dd230248",
   "hash_algorithm": "sha256",
   "page_count": 471,
   "manifest_entry_count": 471,
@@ -1942,10 +1942,10 @@
     {
       "path": "wiki/crypto-moonboys.html",
       "slug": "crypto-moonboys",
-      "title": "CRYPTO MOONBOYS Build an identity. Bring your own. Make something people remember.",
+      "title": "CRYPTO MOONBOYS The world is your canvas. Somebody else wants to own the wall.",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 3778,
+      "current_word_count": 9407,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -1954,10 +1954,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:e233e8053465ac2c3a47beebb4cac927a7163eedb8ed12378978df6958f98b95",
-      "article_content_hash": "sha256:336a39bc9ba26e829062c4545bbb2702a50fa58170c0f0db93ab2d6a9481d792",
-      "article_markup_hash": "sha256:5fa324d3d46dde1a4d548bd9b52ffabaf55c25d50233034173bd1ba01748ca56",
-      "git_blob_oid": "0d4fe9269608ffacc86b0ea718cd77ebbe9ac152",
+      "content_hash": "sha256:8ae772f733e71979af55e2e06e3f9d19ed84d7840f884ba82177bcdd23a7a736",
+      "article_content_hash": "sha256:65ad4f23061f42607dc91a3de22e1fd2ce0d6d3d2f77e173c8a915da028e0dca",
+      "article_markup_hash": "sha256:d95fffc21a9ea4b6236a730c069e6be64eca642c32ddcdcbd7f775899e6994f3",
+      "git_blob_oid": "3db6abe22d5cad2f6a66c47ace3508b2d13b40a2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -1979,11 +1979,11 @@
         "wiki/bibles/crypto-moonboys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Canon revision 4 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 5 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "Specialist archive record found at wiki/bibles/crypto-moonboys.json; it is not automatically the unavailable Tier 4 modern bible."
       ],
       "content_owner": "canon",
-      "canon_revision": 4,
+      "canon_revision": 5,
       "canon_source_tier": "first-witness+w81"
     },
     {
