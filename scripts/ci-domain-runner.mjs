@@ -385,7 +385,7 @@ const commandTimeoutMs = Number.isFinite(configuredTimeout) && configuredTimeout
 // On Linux, GNU timeout owns a separate process group and terminates the
 // complete browser-test tree. spawnSync's timeout only signals the immediate
 // child; Playwright descendants can keep inherited pipes open indefinitely.
-const useProcessTreeTimeout = commandTimeoutMs > 0 && process.platform !== 'win32';
+const useProcessTreeTimeout = commandTimeoutMs > 0 && process.platform === 'linux';
 const spawnOptions = commandTimeoutMs > 0 && !useProcessTreeTimeout
   ? { stdio: 'inherit', timeout: commandTimeoutMs, killSignal: 'SIGTERM' }
   : { stdio: 'inherit' };
