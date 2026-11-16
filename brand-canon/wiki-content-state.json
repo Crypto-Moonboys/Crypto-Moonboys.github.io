@@ -55,7 +55,7 @@
       "rank": 3,
       "label": "W81 condensed canon digest",
       "path": "about/w81-condensed-canon-digest.md",
-      "content_hash": "sha256:1cab3599f66a9d54da62c5725b8183cf96d10c58c0e23e27d571cfa3e904753c"
+      "content_hash": "sha256:8ebbd9d9d641a9eed017e7bae8af7c5f951802042675fa8a2729a5b3020002a5"
     },
     {
       "rank": 4,
@@ -84,7 +84,7 @@
       "label": "Existing specialist bible JSON",
       "path": "wiki/bibles/*.json",
       "file_count": 115,
-      "content_hash": "sha256:9b257d09cd8db9efe18fae60452ce9661548b6a4a00d2238b9ef8cf12cd8c320",
+      "content_hash": "sha256:6b587dfcc7fc98c09d5d8a92f457e95c438496eb8e53b03da73e3f337937d7a9",
       "treatment": "SAM-generated/legacy-migration specialist public archive; not automatically current Tier 4 canon"
     }
   ],

@@ -1,5 +1,13 @@
 # GK canon policy — Issue #1458
 
+## Current canon entry point — 16 November 2026
+
+Read [the official canon index](README.md) before lore or canon work. Crypto Moonboys is both creator brand and fantasy cast played/created by real people. GK’s implemented `GK-20261116-MARKET-FACTIONS-COMMAND` decision controls current command over incompatible older descriptions: Bulls and Bears are the market factions; Alfie’s Bitcoin Kid Army is their protection army under orders only from GKniftyHEADS; HODL Warriors unite all GK factions’ members and are not a faction; every member aspires to the distinct HODL X order of Queen Sarah’s Block Topia. Preserve the 1 + 2 + 37 political count, distinct Bitcoin X Kids and the unresolved public Final Fork.
+
+The main `/wiki/crypto-moonboys.html` page is the story-led heart of the lore, including wider realms, mythology and timeline. Product onboarding remains in the current brand/product guides and retained creator reference. Real-world 1/1 builder eligibility is separate from fictional military service. This clarification implements existing GK direction and changes no live faction options, licences or gameplay.
+
+W81 remains foundational source evidence. “Foundational” does not overrule a later explicit GK decision recorded with its approval receipt. This November clarification supplements the October policy below; it does not reopen the completed 94-source comparison or change the publication boundary.
+
 Effective 8 October 2026. Implements GK's latest directive in Issue #1458 and
 the complete reconciliation task. This policy supersedes older editorial
 language treating W81 as disposable inspiration, forbidding all retcons, or

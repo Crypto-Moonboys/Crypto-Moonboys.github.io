@@ -1,5 +1,11 @@
 # Crypto Moonboys — Master Source of Truth
 
+## Current canon entry point — 16 November 2026
+
+Read [the official canon index](brand-canon/README.md) before lore or canon work. Crypto Moonboys is both creator brand and fantasy cast played/created by real people. GK’s implemented `GK-20261116-MARKET-FACTIONS-COMMAND` decision controls current command over incompatible older descriptions: Bulls and Bears are the market factions; Alfie’s Bitcoin Kid Army is their protection army under orders only from GKniftyHEADS; HODL Warriors unite all GK factions’ members and are not a faction; every member aspires to the distinct HODL X order of Queen Sarah’s Block Topia. Preserve the 1 + 2 + 37 political count, distinct Bitcoin X Kids and the unresolved public Final Fork.
+
+The main `/wiki/crypto-moonboys.html` page is the story-led heart of the lore, including wider realms, mythology and timeline. Product onboarding remains in the current brand/product guides and retained creator reference. Real-world 1/1 builder eligibility is separate from fictional military service. This clarification implements existing GK direction and changes no live faction options, licences or gameplay.
+
 ## Current mission — 24 October 2026
 
 **One universe. Your IP or ours. Build connected worlds together.**
@@ -10,8 +16,8 @@ The existing-IP route joins the same universe; it is not a separate route for un
 
 Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
 
-Version: 2.1
-Updated: 24 October 2026
+Version: 2.2
+Updated: 16 November 2026 (current cast/command and main-story role; product mission retained)
 
 Legacy filename retained for compatibility with existing agents and links.
 
@@ -204,7 +210,7 @@ Agents must not invent broader legal ownership language beyond the published ter
 
 ## HODL Warriors
 
-Every 1/1 Moonboy holder is a HODL Warrior.
+In current real-world creator terminology, every 1/1 Moonboy holder is a HODL Warrior.
 
 HODL Warriors are not passive holders and must not be described as a normal collector group.
 
@@ -377,20 +383,11 @@ The static fallback, reduced-motion version, metadata and accessible labels must
 
 # 9. Main Crypto Moonboys Wiki Page
 
-`wiki/crypto-moonboys.html` is the main public explanation of the umbrella.
+`wiki/crypto-moonboys.html` is the heart of the public lore: a substantial, continuous story entrance with a back-cover opening and a broader account of the worlds, cast, mythology and timeline.
 
-Its job is to explain:
+Its first job is to bring the reader into the Year 3008 story: the two market factions, undercover Bitcoin Kid Army, GKniftyHEADS command, all-faction HODL Warriors, distinct HODL X order, Queen Sarah’s Block Topia, escaped Bitcoin X Kids and NULL. Keep the public ending unresolved and link the owning character, faction, history and First Witness accounts.
 
-- what Crypto Moonboys is
-- the Graffiti Kings cultural succession
-- the two onboarding paths
-- how the Moonboy progression works
-- what a 1/1 means
-- HODL Warriors as the creator army
-- Own-IP worldbuilding within the shared universe, with SWARMSY helping develop story connections
-- how games, XP, NFTs, wiki, Battle Chamber and Block Topia fit underneath the umbrella
-
-The page must not read like everyone must earn NFTs to participate.
+The brand and real performers remain visible, while creator onboarding, both IP routes, qualifying 1/1 terms and actual feature availability have their own product guides. Retain the page’s secondary creator reference and correct links; do not turn the main narrative back into many product/wiki cards or imply that everybody must earn NFTs to participate.
 
 ---
 

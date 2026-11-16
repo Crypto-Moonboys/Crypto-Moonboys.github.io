@@ -69,7 +69,7 @@ For **real project statements**, use `README.md`, `Crypto_Moonboys_Master_Source
 - **Bitcoin Kids / the Bitcoin KiD Army:** Alfie Blaze and the outside/escaped rebellion. They are not the engineered Bitcoin X Kids.
 - **Bitcoin X Kids:** the inside-city generation under Block Topia, with a distinct Hard Fork and champion hierarchy.
 - **HODL X Warriors:** a separate champion/service tradition related to the Games and its duties. Do not relabel every HODL X champion as a current 1/1 creator-holder or merge them into the emergency muster.
-- **HODL Warriors, Year 3008:** an extraordinary **collective defence protocol** when the Forty face an existential threat to memory and survival; not an ordinary selectable slot in the Forty.
+- **HODL Warriors, Year 3008:** the underworld army formed from members of all GK factions, who retain their faction identities. It is not a faction or an extra political seat. Every member aspires to Block Topia’s distinct HODL X order; the earlier collective-defence-protocol description is part of this army’s service tradition.
 - **HODL Warriors, current public brand:** the active creator-builders holding qualifying 1/1s under current published eligibility and IP terms; not the fictional defence protocol.
 - **The Forty Paths:** forty is the civilisation model, **not proof of forty individually reconciled named rosters**. The inherited comparison now has forty named readings, including Army and royal traditions. It is not an exact political roll: GKniftyHEADS + two market factions + 37 other GK factions is the street structure, and the Army holds no street seat.
 

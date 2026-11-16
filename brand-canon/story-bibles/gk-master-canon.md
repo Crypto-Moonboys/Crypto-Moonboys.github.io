@@ -278,10 +278,7 @@ worker's fate. This addition preserves the Elder's earlier private history.
 concealed assessment, programme service, return and exploitation. Preserve its
 modern candidates, kitchen labour and failed placements. Bitcoin Kids are the
 outside/escaped culture; Bitcoin X Kids the inside engineered generation.
-Bitcoin Kid Army is an organised force inside a broader culture. HODL X Warriors
-are a distinct champion/service tradition. HODL Warriors in 3008 are existential
-collective defence; today's qualifying 1/1 creator-builder role is separately
-controlled by current terms. [HODL WARS](../../wiki/hodl-wars.html) retains its
+Bitcoin Kid Army is the crypto market’s organised protection army within a broader outside community, not a GK street faction; Alfie takes orders only from GKniftyHEADS. HODL Warriors are the underworld army formed from all GK factions’ members, who retain their identities. Every HODL Warrior aspires to the distinct HODL X champion/service order under Queen Sarah P-fly and her Crypto Moongirls army in Block Topia. Today’s qualifying 1/1 creator-builder use of the name is separately controlled by current terms. [HODL WARS](../../wiki/hodl-wars.html) retains its
 modern coalition costs and competing future broadsheets.
 
 W72 Calling missions, W73 hundred-scroll codex and w67 BLOCKFRONT/DREAMWARS/

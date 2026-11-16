@@ -1538,3 +1538,56 @@ Executed validation:
 Publishing/search graphs and ownership were regenerated. No test trigger,
 prose gate, Worker runtime, reward, ownership term or original scripture changed.
 The story is reviewable in PR1800; production still awaits GK merge approval.
+
+## 16 November 2026 — repository canon entry-point and README audit
+
+GK asked whether the Crypto Moonboys repository still has official canon,
+whether it contains the latest corrections, and whether the README and needed
+files are current. Audit base: `26c333107d22328fa050a42b73fa5bfca8302f4f`.
+
+Confirmed already present: the 16 November cast/command overlay in the latest
+vision, master bible and continuity companion; the implemented command and
+political-count decisions; machine-readable locks; seven affected character/
+faction/Army bible overrides; the main story entrance and its owning articles;
+and the original-source provenance registers. These records are retained.
+
+Corrected gaps: the root README and product master still instructed writers to
+make the main lore page primarily a product explanation. The agent entry points
+lacked the current cast/command direction. One lore-rule example still called
+HODL Warriors a faction. Older HODL protocol wording in continuity summaries
+needed the explicit all-faction Army and HODL X aspiration. The main
+`wiki/bibles/crypto-moonboys.json` retained only March legacy facts marked
+VERIFIED; it now has the same `current_canon` precedence shape used by the
+seven existing overrides, with the approved brand/cast and command facts.
+Historical facts and their migration timestamps remain as historical evidence.
+
+Added `brand-canon/README.md` as the repository navigation index. It identifies
+authorities, owning public pages, structured summaries, historical sources,
+product terms, editorial records and publication boundaries. The real-world
+qualifying-1/1 builder use of HODL Warrior stays separate from fictional Army
+membership. No new fiction, faction assignment, chronology, licence, runtime
+feature or automatic anti-drift gate is introduced. Keep older sources;
+they explain earlier witnesses rather than governing every current statement.
+
+Regenerated content state with the existing generator. Only the digest and
+bible-family evidence hashes changed; public article inventory, narrative
+hashes, discovery and runtime files are unchanged. The generated audit text is
+identical. No broad publishing/discovery regeneration is needed for this batch.
+
+Executed verification:
+
+- `npm run test:canon` passed: recovered and verified all 94 source files,
+  Python corruption regressions, 20 JavaScript cases and the canon guard over
+  471 top-level wiki pages / 97 traceable decisions.
+- `node --test scripts/generate-wiki-content-state.test.mjs` passed all 20 cases.
+- Local documentation targets checked against tracked repository paths;
+  affected JSON parsed; `git diff --check` passed.
+- Initial sparse-checkout attempts lacked CSS, game-index and radio-route
+  fixtures. They were restored from the exact base before the successful run;
+  no test was removed or weakened.
+
+These are focused repository checks. No browser, Worker, payout, game-domain or
+full Linux suite was run for this documentation/metadata batch. No automatic
+Actions triggers, production merge or deployment are authorised by this receipt.
+Checks validate provenance and consistency, not every possible scene-level
+semantic interpretation. Keep the existing publication boundary and GK review.
