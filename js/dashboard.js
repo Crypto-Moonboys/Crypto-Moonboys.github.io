@@ -9,6 +9,7 @@
 
   const DATA = {
     siteStats:              '/js/site-stats.json',
+    blogEditions:           '/js/blog-editions.json',
     contentGaps:            '/js/content-gaps.json',
     expansionPlan:          '/js/expansion-plan.json',
     growthPriority:         '/js/growth-priority.json',
@@ -47,6 +48,7 @@
   // ── Top-level render ─────────────────────────────────────────────────────
   function render(d) {
     renderSummaryMetrics(d.siteStats, d.contentGaps, d.authorityDrift);
+    renderBlogEditions(d.blogEditions);
     renderClusterHealth(d.clusterHealth);
     renderContentGaps(d.contentGaps);
     renderAuthorityDrift(d.authorityDrift);
@@ -59,6 +61,23 @@
     renderPredictiveGrowth(d.predictiveGrowth);
     renderGovernanceSignals(d.governanceSignals);
     renderPublishingReadiness(d.publishingReadiness);
+  }
+
+  function renderBlogEditions(data) {
+    const container = qs('#dash-blog-editions');
+    if (!container) return;
+    if (!data || !Array.isArray(data.editions)) {
+      container.textContent = 'Reading-library data is unavailable.';
+      return;
+    }
+    const pages = new Set(data.editions.map(entry => entry.url));
+    const categories = new Set(data.editions.map(entry => entry.category));
+    const duplicates = data.editions.filter(entry => entry.duplicate_of).length;
+    const paragraph = document.createElement('p');
+    paragraph.textContent = data.editions.length + ' source posts → ' + pages.size +
+      ' reading editions across ' + categories.size + ' categories. ' + duplicates +
+      ' exact duplicate shares its reading destination.';
+    container.replaceChildren(paragraph);
   }
 
   // ── Summary Metrics ──────────────────────────────────────────────────────

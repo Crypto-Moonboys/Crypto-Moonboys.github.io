@@ -1,0 +1,24 @@
+/* Long-form reading editions: continuous prose, native headings, no text cards. */
+body.page-blog-article #content {padding-inline:clamp(18px,4vw,64px)}
+.page-blog-article .wiki-flagship-page{width:100%;max-width:1280px;margin-inline:auto}
+body.page-wiki.page-blog-article .wiki-content{max-width:none;width:100%;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+.page-blog-article .wiki-content .wiki-hero{padding:0;margin-block:2rem}
+.page-blog-article :is(.wiki-hero,.wiki-flagship-section,.blog-context,h2,h3){background:transparent!important;box-shadow:none!important;border-radius:0;border:0;padding-inline:0}
+.page-blog-article .wiki-content p,.page-blog-article .wiki-content li{line-height:1.85;font-size:clamp(1.05rem,1.1vw,1.2rem);overflow-wrap:anywhere}
+.page-blog-article .wiki-content p{margin-block:1.1rem}
+.page-blog-article .wiki-flagship-title{font-size:clamp(2.1rem,4.5vw,4rem);line-height:1.12}
+.page-blog-article .blog-context{margin-block:2.5rem}
+.page-blog-article .blog-source-story{margin-top:3rem}
+.page-blog-article .blog-source-story h2{margin-top:3.5rem;scroll-margin-top:8rem}
+.page-blog-article .blog-source-story h3{margin-top:2rem;scroll-margin-top:8rem}
+.page-blog-article blockquote{margin:1.4rem 0;padding:0 0 0 1.25rem;border-left:2px solid var(--color-accent)}
+.page-blog-article .blog-edition-note{color:var(--color-text-muted);font-size:.95rem}
+.blog-library-list{padding-left:1.25rem}.blog-library-list li{margin:1.1rem 0;line-height:1.65}.blog-library-list small{display:block;color:var(--color-text-muted)}
+
+/* The shared wiki shell applies full-width template overrides after load. */
+body.page-wiki.page-blog-article #content {padding-inline:clamp(18px,4vw,64px)!important}
+body.page-wiki.page-blog-article #content .wiki-flagship-page {max-width:1480px!important;margin-inline:auto!important}
+body.page-wiki.page-blog-article #content .wiki-hero {border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+body.page-wiki.page-blog-article #content .wiki-hero::before {content:none!important}
+body.page-wiki.page-blog-article #content .wiki-content :is(h2,h3) {font-size:clamp(1.4rem,2.3vw,2.1rem);line-height:1.3}
+body.page-wiki.page-blog-article #content .wiki-content :is(p,li) {max-width:none;line-height:1.85;font-size:clamp(1.05rem,1.1vw,1.2rem)}
