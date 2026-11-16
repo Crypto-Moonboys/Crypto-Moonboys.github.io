@@ -181,6 +181,38 @@ test('opt-in extraction policy settles only legal Worker exits and real daily Gr
   }finally{t.mock.timers.reset();}
 });
 
+test('real Worker two-hour training sessions settle source-pet XP exactly once',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const baseline=await simulateWorkerCampaign({days:7,startAt:WORKER_YEAR_START,
+      owner:'virtual-timed-xp-baseline',
+      setTime:at=>t.mock.timers.setTime(at)});
+    const enhanced=await simulateWorkerCampaign({days:7,startAt:WORKER_YEAR_START,
+      owner:'virtual-timed-xp-baseline',xpPolicy:'timed_train',
+      setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(baseline.xpPolicy,'baseline');
+    assert.equal(baseline.timedXp.claims,0);
+    assert.equal(enhanced.xpPolicy,'timed_train');
+    assert.equal(enhanced.timedXp.starts,7,'every day starts a new genuine timed session');
+    assert.equal(enhanced.timedXp.claims,7,'every timed session must settle a real Worker claim');
+    assert.equal(enhanced.timedXp.rejected,0,JSON.stringify(enhanced.timedXp));
+    assert.equal(enhanced.actions.rejected,0,JSON.stringify(enhanced.actions.byReason));
+    assert.ok(enhanced.timedXp.awardedPetXp>0,'XP must be earned from persisted Worker receipts');
+    assert.equal(enhanced.actions.byAction.activity_claim.accepted,7);
+    assert.ok(enhanced.final.petXp>baseline.final.petXp,
+      'legal activity must improve the actual pet XP trajectory');
+    assert.equal(enhanced.final.growthMarks,enhanced.final.distinctGrowthDays);
+    assert.equal(enhanced.final.weeklyCrests,enhanced.final.distinctQualificationWeeks);
+    assert.deepEqual(enhanced.final.fullyQualifiedButUnsettledWeeks,[]);
+    console.log('MOONPET_TIMED_TRAIN_XP_COMPARISON',JSON.stringify({
+      baselineXp:baseline.final.petXp,enhancedXp:enhanced.final.petXp,
+      realTimedXpAwarded:enhanced.timedXp.awardedPetXp,
+      marks:enhanced.final.growthMarks,crests:enhanced.final.weeklyCrests,
+      sourcePet:enhanced.final.petId,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
 test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
   const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
   if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
