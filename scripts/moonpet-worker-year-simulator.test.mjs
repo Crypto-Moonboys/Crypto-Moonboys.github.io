@@ -263,6 +263,36 @@ test('real Worker eight-hour Explore and best-eligible job earn source-pet XP',a
   }finally{t.mock.timers.reset();}
 });
 
+test('Explore XP strategy recovers ordinary Train Energy on ownership-week boundaries',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const campaign=await simulateWorkerCampaign({
+      days:16,startAt:WORKER_YEAR_START,owner:'virtual-explore-week-boundary-energy',
+      runExitPolicy:'hybrid3',xpPolicy:'timed_explore_best_job',
+      setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(campaign.actions.rejected,0,
+      JSON.stringify({reasons:campaign.actions.byReason,samples:campaign.actions.rejectedSamples}));
+    assert.equal(campaign.actions.byAction.train.accepted,16,
+      'ordinary Train must be accepted on days 8 and 15 after real Sleep recovery');
+    assert.equal(campaign.timedXp.starts,16);
+    assert.equal(campaign.timedXp.claims,16);
+    assert.equal(campaign.timedXp.rejected,0);
+    assert.equal(campaign.jobXp.accepted,16);
+    assert.equal(campaign.jobXp.rejected,0);
+    assert.equal(campaign.final.growthMarks,campaign.final.distinctGrowthDays);
+    assert.deepEqual(campaign.final.fullyQualifiedButUnsettledWeeks,[]);
+    console.log('MOONPET_EXPLORE_WEEK_BOUNDARY_ENERGY',JSON.stringify({
+      actionsAccepted:campaign.actions.accepted,rejected:campaign.actions.rejected,
+      trainActions:campaign.actions.byAction.train,
+      timedClaims:campaign.timedXp.claims,
+      jobs:campaign.jobXp.accepted,
+      petXp:campaign.final.petXp,marks:campaign.final.growthMarks,
+      crests:campaign.final.weeklyCrests,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
 test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
   const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
   if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
