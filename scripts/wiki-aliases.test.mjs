@@ -148,6 +148,16 @@ for (const [aliasSlug, canonicalSlug] of Object.entries(ALIAS_TO_CANONICAL)) {
   const aliasUrl = `/wiki/${aliasSlug}.html`;
   const canonicalUrl = `/wiki/${canonicalSlug}.html`;
 
+  // Discovery canonicalization also needs a real route for old inbound URLs.
+  const aliasHtml = fs.readFileSync(path.join(ROOT, aliasUrl), 'utf8');
+  const targetHtml = fs.readFileSync(path.join(ROOT, canonicalUrl), 'utf8');
+  assert.match(aliasHtml, /data-wiki-stub="true"/);
+  assert.ok(aliasHtml.includes(`content="0; url=${canonicalUrl}"`), `${aliasUrl}: immediate refresh`);
+  assert.ok(aliasHtml.includes(`href="https://cryptomoonboys.com${canonicalUrl}"`), `${aliasUrl}: canonical`);
+  assert.ok(aliasHtml.includes(`<a href="${canonicalUrl}">`), `${aliasUrl}: no-JavaScript fallback`);
+  assert.doesNotMatch(targetHtml, /http-equiv=["']refresh["']/i, `${canonicalUrl}: no redirect chain`);
+  assert.ok(!fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8').includes(`<loc>https://cryptomoonboys.com${aliasUrl}</loc>`), `${aliasUrl}: excluded from sitemap`);
+
   assert.equal(canonicalizeWikiUrl(aliasUrl), canonicalUrl);
 
   const canonicalMatches = wikiIndex.filter(entry => entry.url === canonicalUrl).length;
