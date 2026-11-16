@@ -260,19 +260,18 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         [2,'feed',{}],[4,'play',{}],[6,'clean',{}],
         [8,'train',{}],[10,'daily_chest',{}],
       ]){
-        // A legitimate two-hour Training activity costs up to 48 Energy
-        // after the previous day's other care. On rare following days the
-        // regular Train action can find <18 Energy despite morning Sleep.
-        // Recover through the ordinary Worker Sleep action, never by
-        // directly editing a pet stat or suppressing a rejection. Do not
-        // change the proven baseline/non-timed policy's action sequence.
-        if(action==='train' && ['timed_train','timed_train_best_job'].includes(xpPolicy)){
+        // The previous day's legitimate timed Training or Explore claim
+        // can reduce Energy enough that today's ordinary Train action fails.
+        // Check the source pet just before the 18-Energy gate and use a real
+        // cooldown-spaced Worker Sleep when required. Preserve the tested
+        // baseline/non-timed action sequence; never write pet stats directly.
+        if(action==='train' && ['timed_train','timed_train_best_job','timed_explore','timed_explore_best_job'].includes(xpPolicy)){
           setTime(startAt+day*WORKER_YEAR_DAY_MS+7*60_000);
           const petStats=f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
           if(n(petStats?.energy)<19){
             const recovery=await safeAction(day,7,'sleep');
             if(!recovery.accepted || recovery.duplicate)
-              throw new Error('timed_train_energy_recovery_rejected:'+String(recovery.reason));
+              throw new Error('timed_activity_energy_recovery_rejected:'+String(recovery.reason));
           }
         }
         await safeAction(day,minute,action,payload);
