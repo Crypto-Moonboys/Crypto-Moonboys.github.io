@@ -236,6 +236,33 @@ test('real Worker chooses only server-eligible higher-XP jobs, not locked future
   }finally{t.mock.timers.reset();}
 });
 
+test('real Worker eight-hour Explore and best-eligible job earn source-pet XP',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days:3,startAt:WORKER_YEAR_START,owner:'virtual-legal-explore-job',
+      xpPolicy:'timed_explore_best_job',runExitPolicy:'hybrid3',
+      setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(result.timedXp.starts,3);
+    assert.equal(result.timedXp.claims,3,
+      'three legal eight-hour Explore sessions must be claimable from their actual Worker receipts');
+    assert.equal(result.timedXp.rejected,0,JSON.stringify(result.timedXp));
+    assert.equal(result.jobXp.accepted,3,JSON.stringify(result.jobXp));
+    assert.equal(result.jobXp.rejected,0,JSON.stringify(result.jobXp));
+    assert.equal(result.actions.rejected,0,JSON.stringify(result.actions.byReason));
+    assert.ok(result.timedXp.awardedPetXp>=3*100,
+      'uncapped eight-hour Explore must produce more XP than the two-hour Training alternative');
+    assert.ok(result.jobXp.awardedPetXp>=3*18);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    console.log('MOONPET_LEGAL_EXPLORE_JOB_XP',JSON.stringify({
+      timedXp:result.timedXp,jobXp:result.jobXp,finalPetXp:result.final.petXp,
+      level:result.final.level,marks:result.final.growthMarks,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
 test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
   const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
   if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
