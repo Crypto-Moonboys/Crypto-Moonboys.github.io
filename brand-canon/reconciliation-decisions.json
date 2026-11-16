@@ -4499,11 +4499,11 @@
       "status": "implemented",
       "sources": [
         "GK direct instruction, 24 October 2026: use GK IP to build Moonboy sub-worlds, or bring own IP into the Moonboy universe with unique lore; SWARMSY ties worlds together.",
-        "README.md: Current mission — 24 October 2026"
+        "README.md: Current mission \u2014 24 October 2026"
       ],
       "old": "The existing-identity route could read as using SWARMSY for unrelated standalone projects.",
       "new": "Both routes build connected worlds within one universe using GK IP or creator-owned IP; SWARMSY assists storytelling connections under creator approval.",
-      "reason": "Persist GK’s explicit revised product mission; no fictional chronology, faction roster, ownership terms or runtime changes.",
+      "reason": "Persist GK\u2019s explicit revised product mission; no fictional chronology, faction roster, ownership terms or runtime changes.",
       "affected_paths": [
         "wiki/crypto-moonboys.html",
         "wiki/gkniftyheads.html",
@@ -4573,7 +4573,511 @@
           "reason": "GK directed both IP routes into the shared universe on 24 October 2026; revise real-world mission copy while preserving fictional scenes, chronology and rights."
         }
       ]
+    },
+    {
+      "id": "GK-20261116-MARKET-FACTIONS-COMMAND",
+      "status": "implemented",
+      "sources": [
+        "GK direct user instruction, 16 November 2026 (exact quote in approval receipt)",
+        "GK follow-up, 16 November 2026: THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION, THEY ARE ARMY FOR THE CRYPTO MARKET",
+        "https://graffpunks.substack.com/p/the-hard-fork-rise-of-the-hodl-warriors",
+        "brand-canon/wiki-rewrites/war-spine-20261004.md#source-inspection"
+      ],
+      "old": "The brand overview underplayed the character cast; the Army was treated as a street faction in the comparative Forty register; HODL and HODL X relationship was left wholly open.",
+      "new": {
+        "army_leader": "Alfie The Bitcoin KiD Blaze",
+        "army_orders_only_from": "GKniftyHEADS",
+        "army_mission": "24/7 undercover protection of All City Bulls and Nomad Bears",
+        "united_gk_army": "HODL Warriors",
+        "aspirational_order": "HODL X Warriors",
+        "city": "Block Topia",
+        "city_ruler": "Queen Sarah P-fly",
+        "city_army": "Crypto Moongirls",
+        "bitcoin_x_kid_escape_destination": "Bitcoin Kid Army",
+        "approval_decision": "GK-20261116-MARKET-FACTIONS-COMMAND",
+        "army_identity": "Army for the crypto market; not a GK street faction"
+      },
+      "reason": "Implement GK\u2019s explicit revised cast, market, command and aspiration canon. Retain existing adult scenes, cultural names, chronology, source artifacts, distinct populations and public suspense. Comparative readings do not allocate political seats.",
+      "approval": {
+        "date": "2026-11-16",
+        "url": "https://cryptomoonboys.com/wiki/crypto-moonboys.html#market-factions-and-command",
+        "source_type": "direct-user-instruction",
+        "source_note": "Exact instruction in the current Codex conversation; URL identifies the implementing public section, not a fabricated public approval comment.",
+        "quote": "THE CRYPTO MOONBOYS ARE NOT ONLY THE NAME OF A BRAND BIT ARE CHARACTERS IN FANTASY WORLD WHERE REAL PEOPLE PLAY AS LIKE MOVIE STARS, ALL BASED AROUND 2 MAIN FACTIONS THE ALL CITY BULLS AND NOMAD BARES, THEM 2 FACTIONS ARE 247 SHADOWED BY THE BITCOIN KID ARMY/UNDER COVER GUARDS THAT ARE NEVER TO FAR AWAY FROM ANY MEMBER OF EACH FACTION AS THEY ARE THE MARKET, THEY ARE THE BEARS AND BULLS AND CRYPTO RULES THE WORLD. THE BITCOIN KID WHO IS LEADER OF THE BITCOIN KID ARMY ONLY LISTENS/TAKE ORDERS FROM THE GKNIFTYHEADS FACTION, THE UNDERWORLD GOOD GUYS THAT ARE ALSO ABOVE/CONTROL THE REMAINING 37 GK FACTIONS THAT RUN THEIR CITY, IF A NEED FOR A BIGGER ARMY ALL FACTIONS JOIN AS ONE CALLED THE HODL WARRIORS. THEY ARE NOT THE HODL X WARRIORS FROM BLOCK TOPIA CITY, ALL HODL WARRIORS WISH TO BECOME A HODL X WARRIOR, RULED BY QUEEN SARAH PFLY AND HER CRYPTO MOONGIRLS ARMY, THAT HAVE BITCOIN X KIDS THAT ESCAPE TO JOIN BITCOIN KID ARMY, THEY ARE WAR AND ALL TRY DEFEAT NULL THE PHOPHET AND MANY OTHER THINGS, READ LORE",
+        "follow_up_quote": "THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION, THEY ARE ARMY FOR THE CRYPTO MARKET"
+      },
+      "affected_paths": [
+        "wiki/alfie-bitcoin-kid-blaze.html",
+        "wiki/bitcoin-kid-army.html",
+        "wiki/bitcoin-kids.html",
+        "wiki/bitcoin-x-kids.html",
+        "wiki/block-topia.html",
+        "wiki/crypto-moonboys.html",
+        "wiki/first-witness-concordance.html",
+        "wiki/first-witness-faction-commentaries.html",
+        "wiki/first-witness-faction-ritual-variations.html",
+        "wiki/first-witness-forty-paths.html",
+        "wiki/first-witness-hodl-doctrine.html",
+        "wiki/first-witness-master-chronology.html",
+        "wiki/first-witness-source-register.html",
+        "wiki/gkniftyheads.html",
+        "wiki/hard-fork-games.html",
+        "wiki/hodl-warriors.html",
+        "wiki/hodl-wars.html",
+        "wiki/hodl-x-warriors.html",
+        "wiki/queen-sarah-p-fly.html",
+        "wiki/the-allcity-bulls.html",
+        "wiki/the-bitcoin-kid-army.html",
+        "wiki/the-crypto-moongirls.html",
+        "wiki/the-first-witness.html",
+        "wiki/the-nomad-bears.html",
+        "about/latest-canon-and-brand-vision.md",
+        "brand-canon/canon-locks.json",
+        "brand-canon/story-bibles/gk-master-canon.md",
+        "brand-canon/story-bibles/w81-continuity-companion-20261008.md"
+      ],
+      "paragraph_changes": [
+        {
+          "path": "wiki/bitcoin-kid-army.html",
+          "old_sha256": "sha256:32abf1d0b41d3ca1c33bf02129add9f49133a1a120dbb6916a3a0abdcc41695c",
+          "new_sha256": "sha256:7e95e5fb6728f96f83a56d834add2ccad428834dd6c2ec5886a3b79820817544",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:605a131f4b1f0a7fd1653bbb09de1394431cb12857b54e788e551657ad4e0262",
+          "new_sha256": "sha256:085d663b8d6110ed3705f4ed0302f3bd993e41e9850aa5ccf8082f7631b740ce",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:9c17f07c5eba8803f1d28e2216f84420b87808ee95ed1dd093c370b43419b994",
+          "new_sha256": "sha256:e7f7d2cab421c79b063fdbb44dea66f63901eb9e67635061f3f8d0f909cf51f3",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/crypto-moonboys.html",
+          "old_sha256": "sha256:81df73e47ad44ed266be09ef313205a5f8a90196f45f0f96581fb6ed8637f201",
+          "new_sha256": "sha256:2cb8bd9d1c5683ec1767aa38cd412f012afe65304bfbaa3aeacdfb01ec68f829",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:10447f6ac31915348f1f73b08c53eb17ec7dcb2f305f1a02fc5d106c1f80af2b",
+          "new_sha256": "sha256:1f6acd1f9f275a5a5942251c060597b6e11296827ad4ca7e627fb2051aaac246",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:6edb48f6dc4bfe5c957e1e7d88313378d319c2d22efbb6e8179763f2c8dc1c2d",
+          "new_sha256": "sha256:9acf9a28925c40c50b6722249935d5f1f95535acd15acce2cb3f14a6a845bf05",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:b291bd1cf9108d9227de2740d4e71c00b5440f08510aec702a57eea3762a454e",
+          "new_sha256": "sha256:aef714f0ae36356e8a4b492a9415e4190df23b96e74df60d0d23c8a7a81207ea",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:d7c358dd9e3dbae0a5b27ab90fe0e3f6c89de0f1b7de7f098ffa4cd53d296a6f",
+          "new_sha256": "sha256:88b2b6d7b04723fd59afc8838ab9b5c2e7aa9adb0a494668ab0573bcdc7e4132",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:790aa3b29d95fb32044b44a5a9a0cbc3fc07d3072a5e4dd4a6056d771f4c62d7",
+          "new_sha256": "sha256:710bf2d55698bab7fd2b7702539f6f2578d3674cef91058538b7db31cc5d8e7d",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:a7a1c83a8edb2b7dd87214f8513b8afa15609f069a05964d7395ac37c2eb011c",
+          "new_sha256": "sha256:b24a75f3f0743a75e0a79e9012b5ae0d93cebf4c68a9301f73312a33482dfba6",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:aec9c9e007b34b0399b97c83c917a7a07197ea1c88049ecb99d1c4e34b8de795",
+          "new_sha256": "sha256:c0f2df464d990edbdc52b6f64be01168cfde6bfe4fed3eef5fccd98bce907f9d",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:966b3469cf67ec6a2ceb30ddf032996a48ce681acefbfb437fd6c25bf17656ca",
+          "new_sha256": "sha256:af38c2e046625f0f32ffe2e6263300239dfa57fe93816394e479578ffd1b4c94",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:65fa73506206c542ea4ab5d115abe94e55b20ff0e9baea76fb5ffd49741534f5",
+          "new_sha256": "sha256:6b42cb70efc6f2e83c507e1f212c59bff942cb634eb716f89ab9a1bb29e0f516",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-hodl-doctrine.html",
+          "old_sha256": "sha256:441dec92f3893a39907dd252f714eccfc44e1f91d1068c187a0ddb5701916f7c",
+          "new_sha256": "sha256:7795a21949d25410aa80945940a4b0281566846486d3245db5d36fa3f3781265",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-hodl-doctrine.html",
+          "old_sha256": "sha256:5706c9d01566718acdfb95eee1f9d276f7308e78fb98a4b9894d2b798b4ca83e",
+          "new_sha256": "sha256:63e4d79bbaada173e8a1f89591d823b2103c69047d824667dd79df04d6d35695",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/hard-fork-games.html",
+          "old_sha256": "sha256:daf7735734de18b56675aaec5a0b850bb2e114c02d89398f8609c4a41949e34a",
+          "new_sha256": "sha256:78e62c440dbe7653bd1ca1966a72fec8c36118101f0f79b27eb7dd9ae146929e",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/hodl-x-warriors.html",
+          "old_sha256": "sha256:75c34b2053d99610a985e9c5c95c594bbf7013894679a060b7b703c0aab9ec59",
+          "new_sha256": "sha256:d1f595bf4e0de54e52c5abfaaba500174fb577dc7ec98f1b10c85000bd57145c",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/hodl-x-warriors.html",
+          "old_sha256": "sha256:a8ef6fbef4c24234a5e6745ae97ecc54ea40acf48a343da67620ce0a00489c49",
+          "new_sha256": "sha256:2b949404027c9a9204563a100995b3c0cce41ca60a7fd261672ffd4e7e7ef9bc",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/hodl-x-warriors.html",
+          "old_sha256": "sha256:3764ff1788bc304d87c18c87dec82afec9e7a57694a070751978dc466027842d",
+          "new_sha256": "sha256:9fad9155cfe3a6a14c91abc2b03ed4b32380f6dde79561a5013048054e1858da",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/the-first-witness.html",
+          "old_sha256": "sha256:d5000f5d3053a24ce6b24cae019261290b6697c480bc9cf35f98527b6b602bcd",
+          "new_sha256": "sha256:4b402fb45b9b3e885af74d78457927f7bdb4883c1c4ba73fcf92a69bf0a495ec",
+          "reason": "GK\u2019s 16 November 2026 direct instruction revises this exposition of the cast, political classification, Army command or HODL aspiration. Preserve the existing cultural lives and narrative consequences."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:92e46747225c03f39d4d60d1051a1a66c97ac6bcc4426702d8e245d49e06b270",
+          "new_sha256": "sha256:1f6acd1f9f275a5a5942251c060597b6e11296827ad4ca7e627fb2051aaac246",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:3332f3fe4d0d3df2d3f46faf09645aaff179febd5724a93bfc93fc9b2b60e659",
+          "new_sha256": "sha256:9acf9a28925c40c50b6722249935d5f1f95535acd15acce2cb3f14a6a845bf05",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:7d4e31d96a1c7206e11e46a719dc448a7c6f4386693c215513923d6ec2f097a9",
+          "new_sha256": "sha256:aef714f0ae36356e8a4b492a9415e4190df23b96e74df60d0d23c8a7a81207ea",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        },
+        {
+          "path": "wiki/first-witness-faction-commentaries.html",
+          "old_sha256": "sha256:7142f7163ca7d2f3341101d83673db8c4dc3ee21a1ecc2e68482333daaa34d61",
+          "new_sha256": "sha256:88b2b6d7b04723fd59afc8838ab9b5c2e7aa9adb0a494668ab0573bcdc7e4132",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:ccfe12903d72cbb37befdd606c26093183d47e122025c37da9ddec35f97daa36",
+          "new_sha256": "sha256:710bf2d55698bab7fd2b7702539f6f2578d3674cef91058538b7db31cc5d8e7d",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:70c0e4009d548b17381826d7f81c044f5a4eadebd21f6192f2683ca0d308c716",
+          "new_sha256": "sha256:c0f2df464d990edbdc52b6f64be01168cfde6bfe4fed3eef5fccd98bce907f9d",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        },
+        {
+          "path": "wiki/first-witness-forty-paths.html",
+          "old_sha256": "sha256:1bd16f95972a1413a2e2a9aa84f647f799e8a63d9d948ed6c1e711386309ed15",
+          "new_sha256": "sha256:af38c2e046625f0f32ffe2e6263300239dfa57fe93816394e479578ffd1b4c94",
+          "reason": "Carry the earlier sourced revision GK-1458-FORTY forward to GK\u2019s 16 November 2026 clarification of the same paragraph."
+        }
+      ]
+    },
+    {
+      "id": "GK-20261116-MARKET-FACTIONS-COMMAND-FORTY-LOCK",
+      "status": "approved",
+      "lock_field": "forty",
+      "sources": [
+        "GK direct user instruction, 16 November 2026",
+        "decision:GK-20261116-MARKET-FACTIONS-COMMAND"
+      ],
+      "old": {
+        "named_readings": [
+          "Bitcoin Kid Army",
+          "GKniftyHEADS",
+          "Nomad Bears",
+          "AllCity Bulls",
+          "GraffPUNKS",
+          "Bally Boys",
+          "Crypto Moongirls",
+          "Ducky Boys",
+          "Nice & Easy Bois",
+          "Squeaky Pinks",
+          "High Hats",
+          "Hard Fork Rockers",
+          "Blockstars",
+          "Blockchain Furies",
+          "Rugpull Miners",
+          "Aztec Raiders",
+          "Tuskon OGs",
+          "Crypto Stoned Boys",
+          "Code Alchemists",
+          "Finance Guild",
+          "Information Mercenaries",
+          "Salvagers",
+          "Moonlords",
+          "Shard Mothers of Manhattan",
+          "Chain Scribes",
+          "EVM Punks",
+          "OG Pixel Saints",
+          "Gasless Ghosts",
+          "JPEG Bloodline",
+          "Whale Lords",
+          "XRP Kids",
+          "PU55IES",
+          "Slam GiRL$",
+          "Creepto Gals",
+          "NoBallGames Legion",
+          "Wildstyle Collective",
+          "Fractal Taggers",
+          "Porch Poets",
+          "Resin Relic Keepers",
+          "Bone Idol Ink Ritualists"
+        ],
+        "unassigned": 0,
+        "runtime_roster_size": 9,
+        "source": "wiki/first-witness-faction-commentaries.html",
+        "membership_institutions": [
+          {
+            "name": "NoBallGames Legion",
+            "id": "noballgames-legion",
+            "institution": "clubhouse membership",
+            "belonging": "Clubhouse households, players, groundsworkers and retired members keep shared pitches and duties beyond any match.",
+            "distinct_from": [
+              "XRP Kids",
+              "temporary Legion arena teams"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#noballgames-legion"
+          },
+          {
+            "name": "Wildstyle Collective",
+            "id": "wildstyle-collective",
+            "institution": "voluntary material commons",
+            "belonging": "Voluntary material commons and chosen gatherings support temporary painting; creators retain the right to remove their work.",
+            "distinct_from": [
+              "GraffPUNKS",
+              "Burn Crews",
+              "Stencil Witches",
+              "Tag Lords"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#wildstyle-collective"
+          },
+          {
+            "name": "Fractal Taggers",
+            "id": "fractal-taggers",
+            "institution": "chosen workroom community",
+            "belonging": "Defectors, later adherents and their households maintain shared workrooms and teach craft without royal certification.",
+            "distinct_from": [
+              "Crypto Moongirls",
+              "Thera-9",
+              "all defectors"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#fractal-taggers"
+          },
+          {
+            "name": "Porch Poets",
+            "id": "porch-poets",
+            "institution": "mobile teaching circles",
+            "belonging": "Mobile teaching circles, chosen learner-heirs and households sustain a living spoken repertoire and share hosting resources.",
+            "distinct_from": [
+              "Chain Scribes",
+              "House of Rackinsats",
+              "biological descendants"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#porch-poets"
+          },
+          {
+            "name": "Resin Relic Keepers",
+            "id": "resin-relic-keepers",
+            "institution": "keeper and apprentice lineage",
+            "belonging": "Keeper-apprentice lineages maintain shared storage, material histories and exchanges beyond any one commission.",
+            "distinct_from": [
+              "Salvagers",
+              "real Peter Clark",
+              "token owners"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#resin-relic-keepers"
+          },
+          {
+            "name": "Bone Idol Ink Ritualists",
+            "id": "bone-idol-ink-ritualists",
+            "institution": "consenting adult practice",
+            "belonging": "Self-governing consenting adult practitioners, recipients and apprentices share practice; refusal, removal and leaving remain possible.",
+            "distinct_from": [
+              "real Bone Idol Ink",
+              "all tattoo wearers",
+              "Resin Relic Keepers"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#bone-idol-ink-ritualists"
+          }
+        ]
+      },
+      "new": {
+        "named_readings": [
+          "Bitcoin Kid Army",
+          "GKniftyHEADS",
+          "Nomad Bears",
+          "AllCity Bulls",
+          "GraffPUNKS",
+          "Bally Boys",
+          "Crypto Moongirls",
+          "Ducky Boys",
+          "Nice & Easy Bois",
+          "Squeaky Pinks",
+          "High Hats",
+          "Hard Fork Rockers",
+          "Blockstars",
+          "Blockchain Furies",
+          "Rugpull Miners",
+          "Aztec Raiders",
+          "Tuskon OGs",
+          "Crypto Stoned Boys",
+          "Code Alchemists",
+          "Finance Guild",
+          "Information Mercenaries",
+          "Salvagers",
+          "Moonlords",
+          "Shard Mothers of Manhattan",
+          "Chain Scribes",
+          "EVM Punks",
+          "OG Pixel Saints",
+          "Gasless Ghosts",
+          "JPEG Bloodline",
+          "Whale Lords",
+          "XRP Kids",
+          "PU55IES",
+          "Slam GiRL$",
+          "Creepto Gals",
+          "NoBallGames Legion",
+          "Wildstyle Collective",
+          "Fractal Taggers",
+          "Porch Poets",
+          "Resin Relic Keepers",
+          "Bone Idol Ink Ritualists"
+        ],
+        "unassigned": 0,
+        "runtime_roster_size": 9,
+        "source": "wiki/first-witness-faction-commentaries.html",
+        "membership_institutions": [
+          {
+            "name": "NoBallGames Legion",
+            "id": "noballgames-legion",
+            "institution": "clubhouse membership",
+            "belonging": "Clubhouse households, players, groundsworkers and retired members keep shared pitches and duties beyond any match.",
+            "distinct_from": [
+              "XRP Kids",
+              "temporary Legion arena teams"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#noballgames-legion"
+          },
+          {
+            "name": "Wildstyle Collective",
+            "id": "wildstyle-collective",
+            "institution": "voluntary material commons",
+            "belonging": "Voluntary material commons and chosen gatherings support temporary painting; creators retain the right to remove their work.",
+            "distinct_from": [
+              "GraffPUNKS",
+              "Burn Crews",
+              "Stencil Witches",
+              "Tag Lords"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#wildstyle-collective"
+          },
+          {
+            "name": "Fractal Taggers",
+            "id": "fractal-taggers",
+            "institution": "chosen workroom community",
+            "belonging": "Defectors, later adherents and their households maintain shared workrooms and teach craft without royal certification.",
+            "distinct_from": [
+              "Crypto Moongirls",
+              "Thera-9",
+              "all defectors"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#fractal-taggers"
+          },
+          {
+            "name": "Porch Poets",
+            "id": "porch-poets",
+            "institution": "mobile teaching circles",
+            "belonging": "Mobile teaching circles, chosen learner-heirs and households sustain a living spoken repertoire and share hosting resources.",
+            "distinct_from": [
+              "Chain Scribes",
+              "House of Rackinsats",
+              "biological descendants"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#porch-poets"
+          },
+          {
+            "name": "Resin Relic Keepers",
+            "id": "resin-relic-keepers",
+            "institution": "keeper and apprentice lineage",
+            "belonging": "Keeper-apprentice lineages maintain shared storage, material histories and exchanges beyond any one commission.",
+            "distinct_from": [
+              "Salvagers",
+              "real Peter Clark",
+              "token owners"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#resin-relic-keepers"
+          },
+          {
+            "name": "Bone Idol Ink Ritualists",
+            "id": "bone-idol-ink-ritualists",
+            "institution": "consenting adult practice",
+            "belonging": "Self-governing consenting adult practitioners, recipients and apprentices share practice; refusal, removal and leaving remain possible.",
+            "distinct_from": [
+              "real Bone Idol Ink",
+              "all tattoo wearers",
+              "Resin Relic Keepers"
+            ],
+            "owner": "wiki/first-witness-faction-commentaries.html#bone-idol-ink-ritualists"
+          }
+        ],
+        "reading_scope": "Forty inherited comparative readings, including Army service and royal culture; not an exact GK street-faction roster.",
+        "political_structure": {
+          "total": 40,
+          "command_faction": "GKniftyHEADS",
+          "main_market_factions": [
+            "AllCity Bulls",
+            "Nomad Bears"
+          ],
+          "other_faction_count": 37,
+          "bitcoin_kid_army_is_street_faction": false,
+          "roster_allocation": "Do not infer a complete one-to-one political roll from the comparative readings or invent replacement names.",
+          "approval_decision": "GK-20261116-MARKET-FACTIONS-COMMAND"
+        }
+      },
+      "reason": "Retain the forty cultural readings while separating GK\u2019s explicit 1+2+37 political structure and excluding the Army from street-faction membership. No invented replacement names or change to nine live Battle Chamber options.",
+      "approval": {
+        "date": "2026-11-16",
+        "url": "https://cryptomoonboys.com/wiki/crypto-moonboys.html#market-factions-and-command",
+        "source_type": "direct-user-instruction",
+        "source_note": "Exact instruction in the current Codex conversation; URL identifies the implementing public section, not a fabricated public approval comment.",
+        "quote": "THE CRYPTO MOONBOYS ARE NOT ONLY THE NAME OF A BRAND BIT ARE CHARACTERS IN FANTASY WORLD WHERE REAL PEOPLE PLAY AS LIKE MOVIE STARS, ALL BASED AROUND 2 MAIN FACTIONS THE ALL CITY BULLS AND NOMAD BARES, THEM 2 FACTIONS ARE 247 SHADOWED BY THE BITCOIN KID ARMY/UNDER COVER GUARDS THAT ARE NEVER TO FAR AWAY FROM ANY MEMBER OF EACH FACTION AS THEY ARE THE MARKET, THEY ARE THE BEARS AND BULLS AND CRYPTO RULES THE WORLD. THE BITCOIN KID WHO IS LEADER OF THE BITCOIN KID ARMY ONLY LISTENS/TAKE ORDERS FROM THE GKNIFTYHEADS FACTION, THE UNDERWORLD GOOD GUYS THAT ARE ALSO ABOVE/CONTROL THE REMAINING 37 GK FACTIONS THAT RUN THEIR CITY, IF A NEED FOR A BIGGER ARMY ALL FACTIONS JOIN AS ONE CALLED THE HODL WARRIORS. THEY ARE NOT THE HODL X WARRIORS FROM BLOCK TOPIA CITY, ALL HODL WARRIORS WISH TO BECOME A HODL X WARRIOR, RULED BY QUEEN SARAH PFLY AND HER CRYPTO MOONGIRLS ARMY, THAT HAVE BITCOIN X KIDS THAT ESCAPE TO JOIN BITCOIN KID ARMY, THEY ARE WAR AND ALL TRY DEFEAT NULL THE PHOPHET AND MANY OTHER THINGS, READ LORE"
+      },
+      "affected_paths": [
+        "brand-canon/canon-locks.json",
+        "wiki/first-witness-forty-paths.html",
+        "wiki/first-witness-faction-commentaries.html"
+      ]
     }
   ],
-  "updated": "2026-10-09"
+  "updated": "2026-11-16"
 }

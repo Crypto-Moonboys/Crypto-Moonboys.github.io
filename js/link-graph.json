@@ -1,7 +1,18 @@
 {
+  "/wiki/1m-free-nfts-drop.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/1m-free-nfts-program.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/1m-free-nfts-program.html": {
     "outbound_count": 20,
-    "inbound_count": 1,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
@@ -27,8 +38,32 @@
       "/wiki/trevor-fung.html"
     ],
     "inbound_from": [
-      "/wiki/nfts.html"
+      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-programme.html",
+      "/wiki/1m-free-nfts.html",
+      "/wiki/nfts.html",
+      "/wiki/one-million-free-nfts.html"
     ]
+  },
+  "/wiki/1m-free-nfts-programme.html": {
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/1m-free-nfts-program.html"
+    ],
+    "suggested_outbound": [],
+    "inbound_from": []
+  },
+  "/wiki/1m-free-nfts.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/1m-free-nfts-program.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/2025-metaverse-launch-party.html": {
     "outbound_count": 19,
@@ -236,23 +271,29 @@
     ]
   },
   "/wiki/alfie-bitcoin-kid-blaze.html": {
-    "outbound_count": 73,
-    "inbound_count": 9,
+    "outbound_count": 74,
+    "inbound_count": 24,
     "existing_outbound": [
       "/wiki/billy-the-goat-kid.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
+      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/kael-voss.html",
       "/wiki/sylas-the-unbroken.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/veyra-nyx.html"
     ],
     "suggested_outbound": [
@@ -260,7 +301,6 @@
       "/wiki/atomicassets.html",
       "/wiki/bear-market-siege.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -292,12 +332,9 @@
       "/wiki/gkniftyheads-rebel-riff-783269.html",
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hex-tagger-prime.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/jodie-zoom-2000.html",
@@ -309,7 +346,6 @@
       "/wiki/the-chain-scribes.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-salvagers.html",
       "/wiki/the-shard-mothers-of-manhattan.html",
       "/wiki/thera-9.html",
@@ -317,14 +353,29 @@
     ],
     "inbound_from": [
       "/wiki/alfie-blaze.html",
+      "/wiki/alfie-the-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/iris-7.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html"
     ]
   },
   "/wiki/alfie-blaze.html": {
@@ -338,6 +389,17 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html"
     ]
+  },
+  "/wiki/alfie-the-bitcoin-kid-blaze.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/alien-worlds-tlm.html": {
     "outbound_count": 23,
@@ -596,7 +658,7 @@
   },
   "/wiki/bear-market-siege.html": {
     "outbound_count": 29,
-    "inbound_count": 2,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-7-the-hold.html",
@@ -632,6 +694,7 @@
     ],
     "inbound_from": [
       "/wiki/bear-xrpl.html",
+      "/wiki/the-bear-market-siege.html",
       "/wiki/the-great-dip.html"
     ]
   },
@@ -671,7 +734,7 @@
   },
   "/wiki/billy-the-goat-kid.html": {
     "outbound_count": 33,
-    "inbound_count": 2,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -711,7 +774,8 @@
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/bitcoin-kid-army.html"
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/the-bitcoin-kid-army.html"
     ]
   },
   "/wiki/bit-cap-5000.html": {
@@ -791,8 +855,8 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-kid-army.html": {
-    "outbound_count": 45,
-    "inbound_count": 10,
+    "outbound_count": 52,
+    "inbound_count": 20,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/billy-the-goat-kid.html",
@@ -800,26 +864,30 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-concordance.html",
-      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
-      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-nomad-bears.html"
     ],
     "suggested_outbound": [
       "/wiki/atomicassets.html",
+      "/wiki/bear-market-siege.html",
       "/wiki/block-topia.html",
-      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-music-dance-performance.html",
       "/wiki/first-witness-prisons-punishment-return.html",
-      "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -828,58 +896,76 @@
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
       "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads-raze-rebel-783250.html",
       "/wiki/gkniftyheads-rebel-riff-783269.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/street-kingdoms.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-rugpull-miners.html"
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/satoshi-scroll.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nice-easy-bois.html"
+      "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-nomad-bears.html"
     ]
   },
   "/wiki/bitcoin-kids.html": {
-    "outbound_count": 47,
-    "inbound_count": 61,
+    "outbound_count": 50,
+    "inbound_count": 70,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
-      "/wiki/block-topia.html",
+      "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
-      "/wiki/hodl-wars.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-bitcoin-kid-army.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp-kids.html"
     ],
     "suggested_outbound": [
-      "/wiki/bitcoin.html",
-      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/atomicassets.html",
+      "/wiki/block-topia.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
@@ -896,18 +982,16 @@
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
       "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
-      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/gkniftyheads-paint-patriot-783295.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-chain-scribes.html",
-      "/wiki/the-nomad-bears.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/the-nomad-bears.html"
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -920,8 +1004,14 @@
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/forklord-you.html",
       "/wiki/forksplit.html",
       "/wiki/gang-signs.html",
@@ -930,6 +1020,7 @@
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/head-tags.html",
       "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
@@ -944,6 +1035,7 @@
       "/wiki/patchwork.html",
       "/wiki/pixil-mini.html",
       "/wiki/pyralith.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/quell.html",
       "/wiki/rune-tag.html",
       "/wiki/satorebel.html",
@@ -962,6 +1054,7 @@
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-information-mercenaries.html",
@@ -994,13 +1087,17 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-x-kids.html": {
-    "outbound_count": 47,
-    "inbound_count": 34,
+    "outbound_count": 49,
+    "inbound_count": 44,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/alfie-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
@@ -1008,16 +1105,16 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp-kids.html"
     ],
     "suggested_outbound": [
       "/wiki/alcor-exchange.html",
-      "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/elder-codex-7.html",
-      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-education-schools-apprenticeship.html",
@@ -1040,12 +1137,10 @@
       "/wiki/iris-7.html",
       "/wiki/seeding-rights.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-rugpull-miners.html",
-      "/wiki/waxp-exchange.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/waxp-exchange.html"
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -1054,14 +1149,23 @@
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/head-tags.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/iris-7.html",
       "/wiki/lady-ink.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/seeding-rights.html",
       "/wiki/the-allcity-bulls.html",
@@ -1074,6 +1178,7 @@
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-information-mercenaries.html",
@@ -1086,7 +1191,7 @@
   },
   "/wiki/bitcoin.html": {
     "outbound_count": 34,
-    "inbound_count": 16,
+    "inbound_count": 18,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
@@ -1134,7 +1239,9 @@
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-graffpunks.html",
       "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-tokens.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/blockchain.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/exchanges.html",
@@ -1146,7 +1253,7 @@
   },
   "/wiki/block-node-defenders.html": {
     "outbound_count": 34,
-    "inbound_count": 3,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -1187,31 +1294,40 @@
     ],
     "inbound_from": [
       "/wiki/bit-cap-5000.html",
+      "/wiki/block-topia.html",
       "/wiki/seeding-rights.html",
       "/wiki/thera-9.html"
     ]
   },
   "/wiki/block-topia.html": {
-    "outbound_count": 38,
-    "inbound_count": 76,
+    "outbound_count": 46,
+    "inbound_count": 84,
     "existing_outbound": [
-      "/wiki/hodl-wars.html",
-      "/wiki/kael-voss.html",
-      "/wiki/queen-sarah-p-fly.html",
-      "/wiki/sylas-the-unbroken.html",
-      "/wiki/the-crypto-moongirls.html",
-      "/wiki/veyra-nyx.html"
-    ],
-    "suggested_outbound": [
-      "/wiki/alcor-exchange.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/kael-voss.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/sylas-the-unbroken.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-princess.html",
+      "/wiki/veyra-nyx.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/alcor-exchange.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
@@ -1223,13 +1339,13 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hex-tagger-prime.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/triple-fork-event.html",
@@ -1238,11 +1354,11 @@
     ],
     "inbound_from": [
       "/wiki/2025-metaverse-launch-party.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/alien-worlds-tlm.html",
       "/wiki/atomicassets.html",
       "/wiki/ava-chen.html",
       "/wiki/bit-cap-5000.html",
-      "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
       "/wiki/burn-to-earn.html",
@@ -1253,6 +1369,11 @@
       "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
       "/wiki/elder-codex-7.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/forklord-you.html",
       "/wiki/forksplit.html",
@@ -1260,6 +1381,7 @@
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/genesis-spray.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-collection.html",
@@ -1302,12 +1424,14 @@
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-blockstars.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-moonlords.html",
       "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/thera-9.html",
       "/wiki/triple-fork-event.html",
       "/wiki/veyra-nyx.html",
@@ -1315,9 +1439,22 @@
       "/wiki/xrp-kids.html"
     ]
   },
+  "/wiki/blockchain-technology.html": {
+    "outbound_count": 2,
+    "inbound_count": 1,
+    "existing_outbound": [
+      "/wiki/blockchain.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": [
+      "/wiki/graffpunks-collection.html"
+    ]
+  },
   "/wiki/blockchain.html": {
     "outbound_count": 26,
-    "inbound_count": 10,
+    "inbound_count": 11,
     "existing_outbound": [
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
@@ -1350,6 +1487,7 @@
     ],
     "inbound_from": [
       "/wiki/bitcoin.html",
+      "/wiki/blockchain-technology.html",
       "/wiki/defi.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
@@ -1491,7 +1629,7 @@
     "inbound_from": []
   },
   "/wiki/charlie-buster.html": {
-    "outbound_count": 32,
+    "outbound_count": 33,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -1523,6 +1661,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/nbg.html",
       "/wiki/phygital-prints.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
@@ -1616,6 +1755,17 @@
       "/wiki/house-of-rackinsats.html"
     ]
   },
+  "/wiki/crypto-exchanges.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/exchanges.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/crypto-moonboy-pets.html": {
     "outbound_count": 14,
     "inbound_count": 0,
@@ -1640,12 +1790,23 @@
     "inbound_from": []
   },
   "/wiki/crypto-moonboys.html": {
-    "outbound_count": 51,
-    "inbound_count": 334,
+    "outbound_count": 86,
+    "inbound_count": 341,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/gang-signs-card-game.html",
       "/wiki/gkniftyheads-binary-blitzer-784277.html",
       "/wiki/gkniftyheads-bit-skull-784280.html",
+      "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "/wiki/gkniftyheads-bitman-784220.html",
+      "/wiki/gkniftyheads-bitman-784229.html",
+      "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-24-7-radio.html",
@@ -1654,12 +1815,23 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/metaverse-battles.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/punk-token.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/wax-blockchain.html",
+      "/wiki/waxp.html",
+      "/wiki/xrp-ledger.html"
     ],
     "suggested_outbound": [
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
+      "/wiki/atomicassets.html",
+      "/wiki/bitcoin.html",
+      "/wiki/bone-idol-ink.html",
       "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/first-witness-bitcoin-witness.html",
@@ -1670,11 +1842,11 @@
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-dual-use-tools-weapons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-mediation-witness-circles.html",
@@ -1683,17 +1855,30 @@
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-world-chain-error.html",
+      "/wiki/gang-signs.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/great-consensus.html",
-      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
-      "/wiki/the-squeaky-pinks.html",
       "/wiki/triple-fork-event.html",
       "/wiki/web3.html"
     ],
@@ -1722,6 +1907,7 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
       "/wiki/blockchain.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/burn-to-earn.html",
@@ -1742,8 +1928,13 @@
       "/wiki/exchanges.html",
       "/wiki/exyboy.html",
       "/wiki/fgl-token.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/fomo-plague.html",
       "/wiki/forkborn-collective.html",
       "/wiki/forklord-you.html",
@@ -1996,6 +2187,7 @@
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -2034,9 +2226,42 @@
       "/wiki/xrp-ledger.html"
     ]
   },
+  "/wiki/crypto-wallets.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/wallets.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/darren-cullen-ser-real.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/darren-cullen.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/darren-cullen-ser.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/darren-cullen.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/darren-cullen.html": {
     "outbound_count": 34,
-    "inbound_count": 3,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -2077,9 +2302,22 @@
     ],
     "inbound_from": [
       "/wiki/charlie-buster.html",
+      "/wiki/darren-cullen-ser-real.html",
+      "/wiki/darren-cullen-ser.html",
       "/wiki/delicious-again-pete.html",
       "/wiki/trevor-fung.html"
     ]
+  },
+  "/wiki/defi-decentralised-finance.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/defi.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/defi-mining.html": {
     "outbound_count": 25,
@@ -2122,7 +2360,7 @@
   },
   "/wiki/defi.html": {
     "outbound_count": 27,
-    "inbound_count": 14,
+    "inbound_count": 15,
     "existing_outbound": [
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
@@ -2158,6 +2396,7 @@
       "/wiki/altcoins.html",
       "/wiki/bitcoin.html",
       "/wiki/blockchain.html",
+      "/wiki/defi-decentralised-finance.html",
       "/wiki/defi-mining.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
@@ -2497,7 +2736,7 @@
   },
   "/wiki/exchanges.html": {
     "outbound_count": 20,
-    "inbound_count": 8,
+    "inbound_count": 9,
     "existing_outbound": [
       "/wiki/altcoins.html",
       "/wiki/bitcoin.html",
@@ -2525,6 +2764,7 @@
     "inbound_from": [
       "/wiki/altcoins.html",
       "/wiki/bitcoin.html",
+      "/wiki/crypto-exchanges.html",
       "/wiki/defi.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
@@ -3149,7 +3389,7 @@
   },
   "/wiki/first-witness-bitcoin-witness.html": {
     "outbound_count": 61,
-    "inbound_count": 4,
+    "inbound_count": 8,
     "existing_outbound": [
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-great-concord-2030.html",
@@ -3217,14 +3457,18 @@
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-block-topia-reading.html": {
     "outbound_count": 72,
-    "inbound_count": 12,
+    "inbound_count": 18,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
@@ -3303,15 +3547,21 @@
     ],
     "inbound_from": [
       "/wiki/aleema-child-of-the-shard.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/iris-7.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/whale-lords.html"
     ]
@@ -4013,7 +4263,7 @@
   },
   "/wiki/first-witness-book-9-the-unwritten-block.html": {
     "outbound_count": 66,
-    "inbound_count": 5,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
@@ -4085,6 +4335,7 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/block-topia.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
@@ -4560,28 +4811,37 @@
     ]
   },
   "/wiki/first-witness-concordance.html": {
-    "outbound_count": 73,
-    "inbound_count": 81,
+    "outbound_count": 76,
+    "inbound_count": 82,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-bitcoin-witness.html",
-      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -4592,9 +4852,7 @@
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
-      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
@@ -4627,13 +4885,9 @@
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/great-consensus.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
-      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -4665,6 +4919,7 @@
       "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-land-water-stewardship.html",
       "/wiki/first-witness-leadership-councils-succession.html",
@@ -5415,9 +5670,11 @@
     ]
   },
   "/wiki/first-witness-faction-commentaries.html": {
-    "outbound_count": 90,
-    "inbound_count": 36,
+    "outbound_count": 94,
+    "inbound_count": 41,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
@@ -5429,27 +5686,27 @@
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-salvagers.html",
       "/wiki/thera-9.html",
       "/wiki/triple-fork-event.html",
       "/wiki/xrp-kids.html"
     ],
     "suggested_outbound": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
@@ -5460,7 +5717,6 @@
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "/wiki/first-witness-daily-practices-rituals.html",
       "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-glossary.html",
@@ -5472,10 +5728,12 @@
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/forkborn-collective.html",
@@ -5494,7 +5752,6 @@
       "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/gkniftyheads-raze-rebel-783250.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
@@ -5504,8 +5761,10 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/nbg.html",
       "/wiki/noballgamess-nft-collection.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sister-halcyon.html",
+      "/wiki/street-kingdoms.html",
       "/wiki/sylas-the-unbroken.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-moonlords.html",
@@ -5517,10 +5776,15 @@
       "/wiki/charlie-buster.html",
       "/wiki/create-your-moonboy.html",
       "/wiki/delicious-again-pete.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/sacred-chain.html",
@@ -5551,23 +5815,31 @@
     ]
   },
   "/wiki/first-witness-faction-ritual-variations.html": {
-    "outbound_count": 63,
-    "inbound_count": 4,
+    "outbound_count": 67,
+    "inbound_count": 6,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html"
     ],
     "suggested_outbound": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5578,14 +5850,12 @@
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-daily-practices-rituals.html",
-      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-mediation-witness-circles.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-parables.html",
@@ -5611,9 +5881,7 @@
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
@@ -5621,8 +5889,10 @@
       "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/whale-lords.html"
     ]
@@ -5779,9 +6049,14 @@
     ]
   },
   "/wiki/first-witness-forty-paths.html": {
-    "outbound_count": 80,
-    "inbound_count": 29,
+    "outbound_count": 86,
+    "inbound_count": 35,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
       "/wiki/bone-idol-ink.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
@@ -5794,22 +6069,22 @@
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -5827,10 +6102,12 @@
       "/wiki/first-witness-mediation-witness-circles.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/forkborn-collective.html",
@@ -5847,17 +6124,16 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/nbg.html",
       "/wiki/noballgamess-nft-collection.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
+      "/wiki/street-kingdoms.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
@@ -5872,21 +6148,27 @@
       "/wiki/create-your-moonboy.html",
       "/wiki/delicious-again-pete.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-land-water-stewardship.html",
       "/wiki/first-witness-leadership-councils-succession.html",
       "/wiki/first-witness-marriage-partnership-adoption.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
@@ -6218,25 +6500,35 @@
     ]
   },
   "/wiki/first-witness-hodl-doctrine.html": {
-    "outbound_count": 70,
-    "inbound_count": 11,
+    "outbound_count": 76,
+    "inbound_count": 10,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -6253,13 +6545,11 @@
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-faction-ritual-variations.html",
-      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-mediation-witness-circles.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-parables.html",
@@ -6286,9 +6576,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -6296,7 +6584,6 @@
     ],
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
@@ -6462,7 +6749,7 @@
   },
   "/wiki/first-witness-justice-mercy-restitution.html": {
     "outbound_count": 63,
-    "inbound_count": 16,
+    "inbound_count": 22,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
@@ -6534,15 +6821,21 @@
       "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "/wiki/first-witness-censorship-offence-public-marks.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-dreams-omens-coincidence.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-mediation-witness-circles.html",
       "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
       "/wiki/first-witness-silence-solitude-attention.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hex-tagger-prime.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -6849,7 +7142,7 @@
   },
   "/wiki/first-witness-life-readings.html": {
     "outbound_count": 71,
-    "inbound_count": 87,
+    "inbound_count": 89,
     "existing_outbound": [
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -7007,17 +7300,19 @@
       "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/first-witness-world-chain-error.html",
-      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/whale-lords.html"
     ]
   },
   "/wiki/first-witness-long-transmission.html": {
     "outbound_count": 65,
-    "inbound_count": 7,
+    "inbound_count": 9,
     "existing_outbound": [
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
@@ -7091,8 +7386,10 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-world-chain-error.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/whale-lords.html"
     ]
@@ -7173,27 +7470,36 @@
     ]
   },
   "/wiki/first-witness-master-chronology.html": {
-    "outbound_count": 67,
-    "inbound_count": 59,
+    "outbound_count": 71,
+    "inbound_count": 61,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
-      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -7204,9 +7510,7 @@
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
-      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
@@ -7236,10 +7540,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
@@ -7261,8 +7562,10 @@
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/forkborn-collective.html",
       "/wiki/forklord-you.html",
@@ -8697,27 +9000,35 @@
     ]
   },
   "/wiki/first-witness-source-register.html": {
-    "outbound_count": 63,
+    "outbound_count": 68,
     "inbound_count": 30,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
       "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8727,9 +9038,7 @@
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
-      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
@@ -8758,9 +9067,8 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/hard-fork-games.html",
+      "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -9365,7 +9673,7 @@
   },
   "/wiki/fomo-plague.html": {
     "outbound_count": 29,
-    "inbound_count": 11,
+    "inbound_count": 12,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
@@ -9409,6 +9717,7 @@
       "/wiki/paper-hands.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/solana.html",
+      "/wiki/the-fomo-plague.html",
       "/wiki/the-great-dip.html",
       "/wiki/whale-lords.html"
     ]
@@ -9550,9 +9859,20 @@
     ],
     "inbound_from": []
   },
+  "/wiki/games4punks-telegram-games.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/games4punks-telegram.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/games4punks-telegram.html": {
     "outbound_count": 33,
-    "inbound_count": 45,
+    "inbound_count": 46,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -9603,6 +9923,7 @@
       "/wiki/exchanges.html",
       "/wiki/exyboy.html",
       "/wiki/forkborn-collective.html",
+      "/wiki/games4punks-telegram-games.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/gk.html",
       "/wiki/graffpunks-ecosystem.html",
@@ -9640,7 +9961,7 @@
   },
   "/wiki/gang-signs-card-game.html": {
     "outbound_count": 14,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bone-idol-ink.html",
       "/wiki/crypto-moonboys.html",
@@ -9660,6 +9981,7 @@
       "/wiki/graffpunks.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gang-signs.html"
     ]
   },
@@ -9886,9 +10208,33 @@
       "/wiki/genesis-spray-drop.html"
     ]
   },
+  "/wiki/gk-token.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/gk.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/gk-tokens.html": {
+    "outbound_count": 2,
+    "inbound_count": 1,
+    "existing_outbound": [
+      "/wiki/gk.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": [
+      "/wiki/playable-nft-murals.html"
+    ]
+  },
   "/wiki/gk.html": {
     "outbound_count": 35,
-    "inbound_count": 0,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -9928,7 +10274,10 @@
       "/wiki/punk-token.html",
       "/wiki/the-first-witness.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/gk-token.html",
+      "/wiki/gk-tokens.html"
+    ]
   },
   "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html": {
     "outbound_count": 48,
@@ -10609,7 +10958,7 @@
   },
   "/wiki/gkniftyheads-bitcoin-barbarian-784284.html": {
     "outbound_count": 38,
-    "inbound_count": 6,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bit-skull-784280.html",
@@ -10653,6 +11002,7 @@
       "/wiki/the-bitcoin-kid-army.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bit-skull-784280.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-bitman-784229.html",
@@ -11037,7 +11387,7 @@
   },
   "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html": {
     "outbound_count": 36,
-    "inbound_count": 19,
+    "inbound_count": 21,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
@@ -11081,6 +11431,7 @@
     "inbound_from": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
@@ -11097,11 +11448,12 @@
       "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
       "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
       "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
-      "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html"
+      "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+      "/wiki/the-bitcoin-kid-army.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html": {
-    "outbound_count": 40,
+    "outbound_count": 38,
     "inbound_count": 9,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -11115,9 +11467,7 @@
       "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks.html",
-      "/wiki/sarah-p2fly.html",
-      "/wiki/sarah-pfly.html"
+      "/wiki/graffpunks.html"
     ],
     "suggested_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -11148,7 +11498,6 @@
       "/wiki/the-bitcoin-kid-army.html"
     ],
     "inbound_from": [
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -11156,12 +11505,13 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
       "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/queen-sarah-p-fly.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html": {
     "outbound_count": 32,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -11199,12 +11549,13 @@
       "/wiki/the-bitcoin-kid-army.html"
     ],
     "inbound_from": [
-      "/wiki/gkniftyheads-nft-collection.html"
+      "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/hodl-x-warriors.html"
     ]
   },
   "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html": {
     "outbound_count": 40,
-    "inbound_count": 14,
+    "inbound_count": 15,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -11250,6 +11601,7 @@
       "/wiki/the-bitcoin-kid-army.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-binary-blitzer-784277.html",
       "/wiki/gkniftyheads-bit-skull-784280.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -11268,7 +11620,7 @@
   },
   "/wiki/gkniftyheads-bitman-784220.html": {
     "outbound_count": 54,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
@@ -11328,12 +11680,13 @@
       "/wiki/web3.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitman-784229.html": {
     "outbound_count": 21,
-    "inbound_count": 5,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -11360,6 +11713,7 @@
       "/wiki/noballgamess-nft-collection.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-cryptofrank-784266.html",
@@ -11979,7 +12333,7 @@
   },
   "/wiki/gkniftyheads-cryptofrank-784266.html": {
     "outbound_count": 21,
-    "inbound_count": 6,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -12006,6 +12360,7 @@
       "/wiki/noballgamess-nft-collection.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-bitman-784229.html",
@@ -12016,7 +12371,7 @@
   },
   "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html": {
     "outbound_count": 21,
-    "inbound_count": 8,
+    "inbound_count": 9,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
@@ -12043,6 +12398,7 @@
       "/wiki/noballgamess-nft-collection.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
       "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
       "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
@@ -15644,7 +16000,7 @@
     ]
   },
   "/wiki/gkniftyheads-sarah-p2fly-784350.html": {
-    "outbound_count": 24,
+    "outbound_count": 22,
     "inbound_count": 15,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -15658,9 +16014,7 @@
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks.html",
-      "/wiki/sarah-p2fly.html",
-      "/wiki/sarah-pfly.html"
+      "/wiki/graffpunks.html"
     ],
     "suggested_outbound": [
       "/wiki/atomicassets.html",
@@ -15693,7 +16047,7 @@
     ]
   },
   "/wiki/gkniftyheads-sarah-pfly-784349.html": {
-    "outbound_count": 24,
+    "outbound_count": 22,
     "inbound_count": 15,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -15707,9 +16061,7 @@
       "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
       "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks.html",
-      "/wiki/sarah-p2fly.html",
-      "/wiki/sarah-pfly.html"
+      "/wiki/graffpunks.html"
     ],
     "suggested_outbound": [
       "/wiki/atomicassets.html",
@@ -17418,15 +17770,17 @@
     ]
   },
   "/wiki/gkniftyheads.html": {
-    "outbound_count": 61,
-    "inbound_count": 164,
+    "outbound_count": 65,
+    "inbound_count": 181,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
-      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
@@ -17434,6 +17788,8 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-nomad-bears.html"
     ],
@@ -17441,7 +17797,6 @@
       "/wiki/atomicassets.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kids.html",
-      "/wiki/block-topia.html",
       "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/elder-codex-7.html",
@@ -17455,6 +17810,7 @@
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-source-register.html",
@@ -17473,13 +17829,13 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/hard-fork-games.html",
       "/wiki/head-tags.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/noballgamess-nft-collection.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/seeding-rights.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/triple-fork-event.html",
@@ -17487,13 +17843,24 @@
     ],
     "inbound_from": [
       "/wiki/2025-metaverse-launch-party.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/block-topia.html",
       "/wiki/blockchain.html",
       "/wiki/burn-to-earn.html",
       "/wiki/canvas-clash.html",
       "/wiki/create-your-moonboy.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray.html",
       "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -17645,16 +18012,22 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/head-tags.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/lfgk.html",
       "/wiki/midevilpunks.html",
       "/wiki/nbg.html",
       "/wiki/rave-relics.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-gkniftyheads.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/wax-blockchain.html"
     ]
   },
   "/wiki/graffiti-kings.html": {
     "outbound_count": 36,
-    "inbound_count": 5,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -17698,6 +18071,7 @@
     "inbound_from": [
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-queens-in-decentraland.html",
+      "/wiki/graffitikings.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html"
@@ -17801,9 +18175,20 @@
       "/wiki/triple-fork-event.html"
     ]
   },
+  "/wiki/graffiti-queens-exhibition.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffiti-queens-in-decentraland.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/graffiti-queens-in-decentraland.html": {
     "outbound_count": 24,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
@@ -17833,12 +18218,36 @@
       "/wiki/whale-lords.html"
     ],
     "inbound_from": [
-      "/wiki/graffiti-kings.html"
+      "/wiki/graffiti-kings.html",
+      "/wiki/graffiti-queens-exhibition.html"
     ]
+  },
+  "/wiki/graffitikings.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffiti-kings.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/graffpunks-24-7-blockchain-radio-station.html": {
+    "outbound_count": 3,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-24-7-radio.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/graffpunks-24-7-radio.html": {
     "outbound_count": 60,
-    "inbound_count": 16,
+    "inbound_count": 21,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -17911,6 +18320,11 @@
       "/wiki/elder-codex-7.html",
       "/wiki/games-graffpunks.html",
       "/wiki/genesis-spray.html",
+      "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "/wiki/graffpunks-24-7.html",
+      "/wiki/graffpunks-247-blockchain-radio-station.html",
+      "/wiki/graffpunks-247-radio.html",
+      "/wiki/graffpunks-247.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
@@ -17922,9 +18336,53 @@
       "/wiki/trevor-fung.html"
     ]
   },
+  "/wiki/graffpunks-24-7.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-24-7-radio.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/graffpunks-247-blockchain-radio-station.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-24-7-radio.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/graffpunks-247-radio.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-24-7-radio.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/graffpunks-247.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-24-7-radio.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/graffpunks-collection.html": {
     "outbound_count": 25,
-    "inbound_count": 3,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-x-kids.html",
@@ -17957,6 +18415,7 @@
     "inbound_from": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/graffpunks-nfts.html",
       "/wiki/graffpunks.html"
     ]
   },
@@ -18017,9 +18476,32 @@
       "/wiki/punk-token.html"
     ]
   },
+  "/wiki/graffpunks-network.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/graffpunks-nfts.html": {
+    "outbound_count": 3,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-collection.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/graffpunks.html": {
     "outbound_count": 58,
-    "inbound_count": 210,
+    "inbound_count": 211,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kid-army.html",
@@ -18254,11 +18736,11 @@
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/graffpunks-network.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
       "/wiki/head-tags.html",
       "/wiki/hex-tagger-prime.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/ian-harrison.html",
       "/wiki/jodie-zoom-2000.html",
@@ -18284,6 +18766,7 @@
       "/wiki/stikfamwars.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-gasless-ghosts.html",
+      "/wiki/the-graffpunks.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
@@ -18399,19 +18882,40 @@
       "/wiki/grit.html"
     ]
   },
-  "/wiki/hard-fork-games.html": {
-    "outbound_count": 71,
-    "inbound_count": 85,
+  "/wiki/hard-fork-games-game.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
     "existing_outbound": [
+      "/wiki/hard-fork-games.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/hard-fork-games.html": {
+    "outbound_count": 75,
+    "inbound_count": 92,
+    "existing_outbound": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
     ],
@@ -18419,8 +18923,6 @@
       "/wiki/aleema-child-of-the-shard.html",
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/bone-idol-ink.html",
@@ -18429,13 +18931,10 @@
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-bitcoin-witness.html",
-      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
-      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-healing-illness-disability-care.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-null-erasure.html",
@@ -18464,7 +18963,6 @@
       "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
       "/wiki/hodl-wars.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/nifty-crowns.html",
@@ -18494,8 +18992,13 @@
       "/wiki/ethereum.html",
       "/wiki/exchanges.html",
       "/wiki/exyboy.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/forkborn-collective.html",
       "/wiki/games-graffpunks.html",
       "/wiki/games4punks-telegram.html",
@@ -18508,6 +19011,7 @@
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games-game.html",
       "/wiki/harrison-rift.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
@@ -18553,6 +19057,7 @@
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nomad-bears.html",
@@ -18674,12 +19179,25 @@
     ],
     "inbound_from": []
   },
-  "/wiki/hodl-warriors.html": {
-    "outbound_count": 46,
-    "inbound_count": 35,
+  "/wiki/hodl-warriors-army.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
     "existing_outbound": [
+      "/wiki/hodl-warriors.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/hodl-warriors.html": {
+    "outbound_count": 51,
+    "inbound_count": 48,
+    "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
@@ -18688,12 +19206,15 @@
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-princess.html",
       "/wiki/veyra-nyx.html"
     ],
     "suggested_outbound": [
@@ -18715,8 +19236,8 @@
       "/wiki/first-witness-source-register.html",
       "/wiki/forkborn-collective.html",
       "/wiki/graffiti-kings.html",
+      "/wiki/graffpunks.html",
       "/wiki/hex-tagger-prime.html",
-      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/kael-voss.html",
       "/wiki/moon-mission.html",
       "/wiki/sylas-the-unbroken.html",
@@ -18728,6 +19249,7 @@
       "/wiki/whale-lords.html"
     ],
     "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bear-market-siege.html",
       "/wiki/bit-cap-5000.html",
       "/wiki/bitcoin-graffpunks.html",
@@ -18736,8 +19258,14 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/elder-codex-7.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/forksplit.html",
       "/wiki/games-graffpunks.html",
@@ -18745,6 +19273,7 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors-army.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/iris-7.html",
@@ -18752,12 +19281,17 @@
       "/wiki/midevilpunks.html",
       "/wiki/moon-mission.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/seeding-rights.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-hodl-warriors.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-tuskon-ogs.html",
       "/wiki/veyra-nyx.html",
       "/wiki/wagmi-prophecy.html",
@@ -18765,11 +19299,21 @@
       "/wiki/whale-lords.html"
     ]
   },
+  "/wiki/hodl-wars-game.html": {
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/hodl-wars.html"
+    ],
+    "suggested_outbound": [],
+    "inbound_from": []
+  },
   "/wiki/hodl-wars.html": {
-    "outbound_count": 79,
-    "inbound_count": 79,
+    "outbound_count": 83,
+    "inbound_count": 81,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
@@ -18780,21 +19324,25 @@
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html"
     ],
     "suggested_outbound": [
       "/wiki/agent-sam.html",
       "/wiki/alcor-exchange.html",
       "/wiki/bear-market-siege.html",
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/blockchain.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -18826,7 +19374,6 @@
       "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
       "/wiki/gkniftyheads-satoshi-knight-784264.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/great-consensus.html",
       "/wiki/grit.html",
@@ -18859,7 +19406,6 @@
       "/wiki/atomichub.html",
       "/wiki/battlemech-blast.html",
       "/wiki/bear-market-siege.html",
-      "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
@@ -18888,6 +19434,7 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/harrison-rift.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars-game.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/jillian-godsil.html",
       "/wiki/lfgk.html",
@@ -18922,6 +19469,8 @@
       "/wiki/street-kingdoms.html",
       "/wiki/tacoswap.html",
       "/wiki/tagzcoin.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/tokenomics.html",
@@ -18934,9 +19483,10 @@
     ]
   },
   "/wiki/hodl-x-warriors.html": {
-    "outbound_count": 39,
-    "inbound_count": 13,
+    "outbound_count": 45,
+    "inbound_count": 26,
     "existing_outbound": [
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -18944,17 +19494,24 @@
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/null-the-prophet.html"
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-crypto-moongirls.html"
     ],
     "suggested_outbound": [
+      "/wiki/atomicassets.html",
       "/wiki/atomichub-graffpunks-collection.html",
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/first-witness-beauty-luxury-modesty-status.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -18965,39 +19522,50 @@
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-money-debt-honest-scales.html",
-      "/wiki/first-witness-sacred-fork.html",
-      "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-collection.html",
-      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/iris-7.html",
       "/wiki/noballgamess-nft-collection.html",
       "/wiki/seeding-rights.html",
-      "/wiki/the-bitcoin-kid-army.html",
-      "/wiki/the-hard-fork-rockers.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/the-bitcoin-kid-army.html"
     ],
     "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bear-market-siege.html",
       "/wiki/bit-cap-5000.html",
       "/wiki/bitcoin-graffpunks.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/games-graffpunks.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/seeding-rights.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html"
     ]
   },
   "/wiki/hodlmoonboys-nft-collection.html": {
     "outbound_count": 15,
-    "inbound_count": 3,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/noballgamess-nft-collection.html"
@@ -19020,7 +19588,9 @@
     "inbound_from": [
       "/wiki/charlie-buster.html",
       "/wiki/delicious-again-pete.html",
-      "/wiki/hodl-wars.html"
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html"
     ]
   },
   "/wiki/house-of-rackinsats.html": {
@@ -19373,9 +19943,20 @@
       "/wiki/bone-idol-ink.html"
     ]
   },
+  "/wiki/lfgk-token.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/lfgk.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/lfgk.html": {
     "outbound_count": 25,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
@@ -19405,7 +19986,20 @@
       "/wiki/punk-token.html",
       "/wiki/sacred-chain.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/lfgk-token.html"
+    ]
+  },
+  "/wiki/liquidity-pools.html": {
+    "outbound_count": 1,
+    "inbound_count": 1,
+    "existing_outbound": [],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": [
+      "/wiki/staking.html"
+    ]
   },
   "/wiki/loopfiend.html": {
     "outbound_count": 31,
@@ -19527,9 +20121,20 @@
     ],
     "inbound_from": []
   },
+  "/wiki/meme-coins.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/memecoins.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/memecoins.html": {
     "outbound_count": 29,
-    "inbound_count": 5,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/altcoins.html",
       "/wiki/crypto-moonboys.html",
@@ -19567,13 +20172,14 @@
       "/wiki/altcoins.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/exchanges.html",
+      "/wiki/meme-coins.html",
       "/wiki/solana.html",
       "/wiki/tokenomics.html"
     ]
   },
   "/wiki/metaverse-battles.html": {
     "outbound_count": 37,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/2025-metaverse-launch-party.html",
       "/wiki/crypto-moonboys.html",
@@ -19616,7 +20222,8 @@
       "/wiki/the-first-witness.html"
     ],
     "inbound_from": [
-      "/wiki/2025-metaverse-launch-party.html"
+      "/wiki/2025-metaverse-launch-party.html",
+      "/wiki/crypto-moonboys.html"
     ]
   },
   "/wiki/metropolis.html": {
@@ -19868,8 +20475,8 @@
     ]
   },
   "/wiki/nbg.html": {
-    "outbound_count": 27,
-    "inbound_count": 4,
+    "outbound_count": 28,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/burn-to-earn.html",
       "/wiki/crypto-moonboys.html",
@@ -19899,12 +20506,14 @@
       "/wiki/punk-token.html",
       "/wiki/tokenomics.html",
       "/wiki/wax-blockchain.html",
-      "/wiki/web3.html"
+      "/wiki/web3.html",
+      "/wiki/xrp-kids.html"
     ],
     "inbound_from": [
       "/wiki/lfgk.html",
       "/wiki/nbg-token.html",
       "/wiki/nbgx-token.html",
+      "/wiki/no-ball-games-nbg.html",
       "/wiki/pmsl.html"
     ]
   },
@@ -20039,9 +20648,20 @@
       "/wiki/wax-nft-marketplaces.html"
     ]
   },
+  "/wiki/nfts-non-fungible-tokens.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/nfts.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/nfts.html": {
-    "outbound_count": 32,
-    "inbound_count": 5,
+    "outbound_count": 31,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/1m-free-nfts-program.html",
       "/wiki/bitcoin-kids.html",
@@ -20057,7 +20677,6 @@
       "/wiki/ngmi-chronicles.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/web3.html"
     ],
@@ -20082,6 +20701,7 @@
       "/wiki/1m-free-nfts-program.html",
       "/wiki/blockchain.html",
       "/wiki/ethereum.html",
+      "/wiki/nfts-non-fungible-tokens.html",
       "/wiki/solana.html",
       "/wiki/web3.html"
     ]
@@ -20196,6 +20816,17 @@
       "/wiki/nifty-crowns.html"
     ]
   },
+  "/wiki/no-ball-games-nbg.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/nbg.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/noballgamess-nft-collection.html": {
     "outbound_count": 12,
     "inbound_count": 1,
@@ -20221,7 +20852,7 @@
   },
   "/wiki/null-the-prophet.html": {
     "outbound_count": 52,
-    "inbound_count": 80,
+    "inbound_count": 81,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
@@ -20287,6 +20918,8 @@
       "/wiki/bit-cap-5000.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
       "/wiki/elder-codex-7.html",
@@ -20328,12 +20961,12 @@
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-cleanupcentr.html",
       "/wiki/the-code-alchemists.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
@@ -20346,7 +20979,6 @@
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
       "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -20360,6 +20992,15 @@
       "/wiki/wallets.html",
       "/wiki/xrp-kids.html"
     ]
+  },
+  "/wiki/one-million-free-nfts.html": {
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/1m-free-nfts-program.html"
+    ],
+    "suggested_outbound": [],
+    "inbound_from": []
   },
   "/wiki/paper-hands.html": {
     "outbound_count": 21,
@@ -20716,9 +21357,20 @@
       "/wiki/xrp-ledger.html"
     ]
   },
+  "/wiki/punk-coin.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/punk-token.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/punk-token.html": {
     "outbound_count": 25,
-    "inbound_count": 39,
+    "inbound_count": 42,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -20754,6 +21406,7 @@
       "/wiki/ava-chen.html",
       "/wiki/bit-cap-5000.html",
       "/wiki/burn-to-earn.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
       "/wiki/fgl-token.html",
@@ -20777,6 +21430,8 @@
       "/wiki/patchwork.html",
       "/wiki/pixil-mini.html",
       "/wiki/pmsl-token.html",
+      "/wiki/punk-coin.html",
+      "/wiki/punk.html",
       "/wiki/pyralith.html",
       "/wiki/quell.html",
       "/wiki/rave-relics.html",
@@ -20789,6 +21444,17 @@
       "/wiki/wallets.html",
       "/wiki/xrp-kids.html"
     ]
+  },
+  "/wiki/punk.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/punk-token.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/pyralith.html": {
     "outbound_count": 31,
@@ -20833,9 +21499,11 @@
     ]
   },
   "/wiki/queen-sarah-p-fly.html": {
-    "outbound_count": 54,
-    "inbound_count": 7,
+    "outbound_count": 56,
+    "inbound_count": 21,
     "existing_outbound": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -20845,9 +21513,12 @@
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/kael-voss.html",
       "/wiki/midevilpunks.html",
       "/wiki/the-chain-scribes.html",
+      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html"
@@ -20856,8 +21527,7 @@
       "/wiki/agent-sam.html",
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/atomicassets.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/block-node-defenders.html",
       "/wiki/charlie-buster.html",
       "/wiki/dream-sovereign.html",
@@ -20875,16 +21545,14 @@
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
       "/wiki/hex-tagger-prime.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
       "/wiki/satorebel.html",
       "/wiki/street-kingdoms.html",
       "/wiki/sylas-the-unbroken.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-code-alchemists.html",
-      "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-nomad-bears.html",
@@ -20894,14 +21562,39 @@
       "/wiki/veyra-nyx.html"
     ],
     "inbound_from": [
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks-ecosystem.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/kael-voss.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-pfly.html",
       "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-nice-easy-bois.html"
     ]
+  },
+  "/wiki/queen-sarah-pfly.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/queen-sarah-p-fly.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/quell.html": {
     "outbound_count": 39,
@@ -21147,7 +21840,7 @@
   },
   "/wiki/sacred-chain.html": {
     "outbound_count": 80,
-    "inbound_count": 45,
+    "inbound_count": 48,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -21269,12 +21962,15 @@
       "/wiki/hodl-wars.html",
       "/wiki/m1ntr-k1ll.html",
       "/wiki/samaelexe.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/the-sacred-chain.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/triple-fork-event.html",
       "/wiki/whale-lords.html"
@@ -21377,7 +22073,7 @@
   },
   "/wiki/satoshi-scroll.html": {
     "outbound_count": 49,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -21435,6 +22131,7 @@
       "/wiki/bitcoin.html",
       "/wiki/moon-mission.html",
       "/wiki/rug-pull-wars.html",
+      "/wiki/the-satoshi-scroll.html",
       "/wiki/wagmi-prophecy.html"
     ]
   },
@@ -21642,9 +22339,20 @@
     ],
     "inbound_from": []
   },
+  "/wiki/solana-sol.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/solana.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/solana.html": {
     "outbound_count": 20,
-    "inbound_count": 2,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
@@ -21671,7 +22379,8 @@
     ],
     "inbound_from": [
       "/wiki/altcoins.html",
-      "/wiki/ethereum-ecosystem.html"
+      "/wiki/ethereum-ecosystem.html",
+      "/wiki/solana-sol.html"
     ]
   },
   "/wiki/spirit-borns.html": {
@@ -21705,7 +22414,7 @@
   },
   "/wiki/spraycode-writcode-mechanics.html": {
     "outbound_count": 34,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-master-chronology.html",
@@ -21748,8 +22457,20 @@
       "/wiki/canvas-clash.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/metaverse-battles.html",
+      "/wiki/spraycode-writcode.html",
       "/wiki/wax-dexs-defi.html"
     ]
+  },
+  "/wiki/spraycode-writcode.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/spraycode-writcode-mechanics.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/squeaky-pinks-enforcers.html": {
     "outbound_count": 39,
@@ -21957,7 +22678,7 @@
   },
   "/wiki/street-kingdoms.html": {
     "outbound_count": 34,
-    "inbound_count": 19,
+    "inbound_count": 18,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -22012,7 +22733,6 @@
       "/wiki/sacred-chain.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-ducky-boys.html",
-      "/wiki/the-first-witness.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/the-salvagers.html",
       "/wiki/triple-fork-event.html"
@@ -22165,43 +22885,59 @@
     "inbound_from": []
   },
   "/wiki/the-allcity-bulls.html": {
-    "outbound_count": 28,
-    "inbound_count": 3,
+    "outbound_count": 34,
+    "inbound_count": 13,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/sacred-chain.html",
       "/wiki/the-blockchain-furies.html",
-      "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
-      "/wiki/the-high-hats.html",
-      "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-princess.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-rugpull-miners.html",
-      "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
       "/wiki/first-witness-censorship-offence-public-marks.html",
-      "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-prisons-punishment-return.html",
       "/wiki/genesis-kernel.html",
-      "/wiki/graffpunks.html",
       "/wiki/storm-struggle.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-nomad-bears.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-nice-easy-bois.html",
       "/wiki/thera-9.html"
     ],
     "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-high-hats.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-rugpull-miners.html"
     ]
   },
@@ -22297,34 +23033,46 @@
       "/wiki/the-tuskon-ogs.html"
     ]
   },
-  "/wiki/the-bitcoin-kid-army.html": {
-    "outbound_count": 57,
-    "inbound_count": 7,
+  "/wiki/the-bear-market-siege.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
     "existing_outbound": [
+      "/wiki/bear-market-siege.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/the-bitcoin-kid-army.html": {
+    "outbound_count": 55,
+    "inbound_count": 8,
+    "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/billy-the-goat-kid.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-finance-guild.html",
-      "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-princess.html",
-      "/wiki/the-whitewasher.html"
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-nomad-bears.html"
     ],
     "suggested_outbound": [
       "/wiki/aleema-child-of-the-shard.html",
-      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/atomicassets.html",
       "/wiki/battlemech-blast.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
-      "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-chain-archaeology-forensics.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -22339,7 +23087,6 @@
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
       "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
-      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
@@ -22348,9 +23095,7 @@
       "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
       "/wiki/gkniftyheads-raze-rebel-783250.html",
       "/wiki/gkniftyheads-rebel-riff-783269.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/iris-7.html",
@@ -22365,6 +23110,7 @@
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
@@ -22497,7 +23243,7 @@
   },
   "/wiki/the-chain-scribes.html": {
     "outbound_count": 49,
-    "inbound_count": 37,
+    "inbound_count": 34,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
@@ -22563,7 +23309,6 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/satoshi-scroll.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-blockchain-furies.html",
@@ -22573,13 +23318,11 @@
       "/wiki/the-crypto-stoned-boys.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-evm-punks.html",
-      "/wiki/the-first-witness.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -22669,11 +23412,12 @@
     ]
   },
   "/wiki/the-crypto-moongirls.html": {
-    "outbound_count": 38,
-    "inbound_count": 3,
+    "outbound_count": 42,
+    "inbound_count": 18,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
@@ -22683,16 +23427,19 @@
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/jodie-zoom-2000.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/thera-9.html"
     ],
     "suggested_outbound": [
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/block-topia.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-questions-for-the-living.html",
       "/wiki/first-witness-sacred-fork.html",
@@ -22707,16 +23454,31 @@
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/hodl-warriors.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/triple-fork-event.html",
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
-      "/wiki/first-witness-forty-paths.html"
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/the-crypto-stoned-boys.html": {
@@ -22854,7 +23616,7 @@
   },
   "/wiki/the-finance-guild.html": {
     "outbound_count": 22,
-    "inbound_count": 37,
+    "inbound_count": 35,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -22894,7 +23656,6 @@
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
@@ -22909,7 +23670,6 @@
       "/wiki/the-high-hats.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -22922,12 +23682,16 @@
     ]
   },
   "/wiki/the-first-witness.html": {
-    "outbound_count": 118,
-    "inbound_count": 100,
+    "outbound_count": 122,
+    "inbound_count": 102,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-addiction-intoxication-compulsion.html",
       "/wiki/first-witness-ageing-retirement-elderhood.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
@@ -23009,20 +23773,21 @@
       "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/first-witness-world-chain-error.html",
+      "/wiki/gkniftyheads.html",
+      "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
-      "/wiki/street-kingdoms.html",
-      "/wiki/the-chain-scribes.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/triple-fork-event.html"
     ],
     "suggested_outbound": [
-      "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -23039,12 +23804,11 @@
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/hodl-wars.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-chain-scribes.html"
     ],
     "inbound_from": [
       "/wiki/aleema-child-of-the-shard.html",
@@ -23142,12 +23906,25 @@
       "/wiki/harrison-rift.html",
       "/wiki/hodl-wars.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-nomad-bears.html",
       "/wiki/the-princess.html",
       "/wiki/the-squeaky-pinks.html",
       "/wiki/triple-fork-event.html",
       "/wiki/whale-lords.html"
     ]
+  },
+  "/wiki/the-fomo-plague.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/fomo-plague.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/the-gasless-ghosts.html": {
     "outbound_count": 35,
@@ -23194,6 +23971,26 @@
     "inbound_from": [
       "/wiki/the-information-mercenaries.html"
     ]
+  },
+  "/wiki/the-gkniftyheads.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/gkniftyheads.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/the-graffpunks.html": {
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks.html"
+    ],
+    "suggested_outbound": [],
+    "inbound_from": []
   },
   "/wiki/the-great-dip.html": {
     "outbound_count": 31,
@@ -23292,7 +24089,7 @@
   },
   "/wiki/the-high-hats.html": {
     "outbound_count": 31,
-    "inbound_count": 34,
+    "inbound_count": 32,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -23337,7 +24134,6 @@
       "/wiki/maidstone-base.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/satoshi-scroll.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-blockstars.html",
@@ -23353,7 +24149,6 @@
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
       "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -23364,6 +24159,17 @@
       "/wiki/thorne-the-architect.html",
       "/wiki/wagmi-prophecy.html"
     ]
+  },
+  "/wiki/the-hodl-warriors.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/hodl-warriors.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/the-information-mercenaries.html": {
     "outbound_count": 37,
@@ -23471,7 +24277,7 @@
   },
   "/wiki/the-nice-easy-bois.html": {
     "outbound_count": 30,
-    "inbound_count": 40,
+    "inbound_count": 37,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -23518,10 +24324,8 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/spraycode-writcode-mechanics.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
@@ -23536,7 +24340,6 @@
       "/wiki/the-high-hats.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -23550,32 +24353,36 @@
     ]
   },
   "/wiki/the-nomad-bears.html": {
-    "outbound_count": 35,
-    "inbound_count": 3,
+    "outbound_count": 39,
+    "inbound_count": 12,
     "existing_outbound": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
+      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/genesis-kernel.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/null-the-prophet.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-chain-scribes.html",
-      "/wiki/the-finance-guild.html",
-      "/wiki/the-high-hats.html",
-      "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-princess.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-rugpull-miners.html",
-      "/wiki/the-salvagers.html",
-      "/wiki/the-whitewasher.html",
-      "/wiki/thorne-the-architect.html"
+      "/wiki/the-salvagers.html"
     ],
     "suggested_outbound": [
-      "/wiki/block-topia.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-death-grief-remembrance.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -23585,14 +24392,23 @@
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-squeaky-pinks.html"
     ],
     "inbound_from": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-salvagers.html"
     ]
@@ -23637,7 +24453,7 @@
   },
   "/wiki/the-princess.html": {
     "outbound_count": 34,
-    "inbound_count": 35,
+    "inbound_count": 34,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-great-concord-2030.html",
@@ -23680,16 +24496,16 @@
       "/wiki/agent-sam.html",
       "/wiki/bear-market-siege.html",
       "/wiki/billy-the-goat-kid.html",
+      "/wiki/block-topia.html",
       "/wiki/elder-codex-7.html",
       "/wiki/fomo-plague.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/iris-7.html",
       "/wiki/lady-ink.html",
       "/wiki/satoshi-scroll.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
@@ -23703,7 +24519,6 @@
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-rugpull-miners.html",
       "/wiki/the-salvagers.html",
@@ -23763,6 +24578,17 @@
       "/wiki/the-salvagers.html"
     ]
   },
+  "/wiki/the-sacred-chain.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/sacred-chain.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/the-salvagers.html": {
     "outbound_count": 40,
     "inbound_count": 8,
@@ -23820,6 +24646,17 @@
       "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html"
     ]
+  },
+  "/wiki/the-satoshi-scroll.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/satoshi-scroll.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/the-shard-mothers-of-manhattan.html": {
     "outbound_count": 31,
@@ -23974,9 +24811,31 @@
       "/wiki/the-aztec-raiders.html"
     ]
   },
+  "/wiki/the-wagmi-prophecy.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/wagmi-prophecy.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/the-whale-lords.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/whale-lords.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/the-whitewasher.html": {
     "outbound_count": 36,
-    "inbound_count": 34,
+    "inbound_count": 31,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/m1ntr-k1ll.html",
@@ -24026,10 +24885,8 @@
       "/wiki/null-the-prophet.html",
       "/wiki/samaelexe.html",
       "/wiki/satoshi-scroll.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
@@ -24043,7 +24900,6 @@
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -24108,7 +24964,7 @@
   },
   "/wiki/thorne-the-architect.html": {
     "outbound_count": 18,
-    "inbound_count": 29,
+    "inbound_count": 27,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/null-the-prophet.html",
@@ -24136,7 +24992,6 @@
       "/wiki/billy-the-goat-kid.html",
       "/wiki/fomo-plague.html",
       "/wiki/satoshi-scroll.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-aztec-raiders.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-blockchain-furies.html",
@@ -24152,7 +25007,6 @@
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-moonlords.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-og-pixel-saints.html",
       "/wiki/the-princess.html",
       "/wiki/the-rugpull-miners.html",
@@ -24207,6 +25061,22 @@
       "/wiki/ethereum.html",
       "/wiki/memecoins.html",
       "/wiki/staking.html"
+    ]
+  },
+  "/wiki/tokens.html": {
+    "outbound_count": 1,
+    "inbound_count": 6,
+    "existing_outbound": [],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": [
+      "/wiki/altcoins.html",
+      "/wiki/defi.html",
+      "/wiki/exchanges.html",
+      "/wiki/memecoins.html",
+      "/wiki/tokenomics.html",
+      "/wiki/web3.html"
     ]
   },
   "/wiki/trevor-fung.html": {
@@ -24362,7 +25232,7 @@
   },
   "/wiki/wagmi-prophecy.html": {
     "outbound_count": 29,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
@@ -24399,13 +25269,14 @@
     "inbound_from": [
       "/wiki/moon-mission.html",
       "/wiki/satoshi-scroll.html",
+      "/wiki/the-wagmi-prophecy.html",
       "/wiki/web3.html",
       "/wiki/whale-lords.html"
     ]
   },
   "/wiki/wallets.html": {
     "outbound_count": 36,
-    "inbound_count": 7,
+    "inbound_count": 8,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
@@ -24449,6 +25320,7 @@
     "inbound_from": [
       "/wiki/bitcoin.html",
       "/wiki/blockchain.html",
+      "/wiki/crypto-wallets.html",
       "/wiki/defi.html",
       "/wiki/ethereum.html",
       "/wiki/exchanges.html",
@@ -24458,7 +25330,7 @@
   },
   "/wiki/wax-blockchain.html": {
     "outbound_count": 34,
-    "inbound_count": 12,
+    "inbound_count": 13,
     "existing_outbound": [
       "/wiki/alien-worlds-tlm.html",
       "/wiki/blockchain.html",
@@ -24502,6 +25374,7 @@
       "/wiki/alien-worlds-tlm.html",
       "/wiki/atomichub.html",
       "/wiki/blockchain.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/punk-token.html",
       "/wiki/staking.html",
       "/wiki/swap-nefty.html",
@@ -24675,8 +25548,8 @@
     ]
   },
   "/wiki/waxp.html": {
-    "outbound_count": 37,
-    "inbound_count": 5,
+    "outbound_count": 39,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/alien-worlds-tlm.html",
       "/wiki/crypto-moonboys.html",
@@ -24695,6 +25568,7 @@
     "suggested_outbound": [
       "/wiki/atomicassets.html",
       "/wiki/blockchain.html",
+      "/wiki/charlie-buster.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/fgl-token.html",
       "/wiki/first-witness-source-register.html",
@@ -24709,6 +25583,7 @@
       "/wiki/gkniftyheads-token-temptress-783401.html",
       "/wiki/gkniftyheads-token-tycooness-783405.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/memecoins.html",
       "/wiki/nbg-token.html",
@@ -24720,6 +25595,7 @@
     ],
     "inbound_from": [
       "/wiki/alien-worlds-tlm.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/wax-blockchain.html",
       "/wiki/wax-dexs-defi.html",
       "/wiki/waxp-exchange.html",
@@ -24784,7 +25660,7 @@
   },
   "/wiki/whale-lords.html": {
     "outbound_count": 35,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -24828,6 +25704,7 @@
       "/wiki/defi.html",
       "/wiki/exchanges.html",
       "/wiki/six-pillars.html",
+      "/wiki/the-whale-lords.html",
       "/wiki/tokenomics.html"
     ]
   },
@@ -24887,7 +25764,7 @@
   },
   "/wiki/xrp-kids.html": {
     "outbound_count": 45,
-    "inbound_count": 5,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -24939,6 +25816,8 @@
     ],
     "inbound_from": [
       "/wiki/bitcoin-graffpunks.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/charlie-buster.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/graffpunks-ecosystem.html",
@@ -24947,7 +25826,7 @@
   },
   "/wiki/xrp-ledger.html": {
     "outbound_count": 27,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -24980,6 +25859,7 @@
       "/wiki/the-bitcoin-kid-army.html"
     ],
     "inbound_from": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/pmsl-token.html",
       "/wiki/pmsl.html",
       "/wiki/tagzcoin.html",

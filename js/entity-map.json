@@ -18,7 +18,9 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/1m-free-nfts-program.html"
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/1m-free-nfts-programme.html",
+      "/wiki/one-million-free-nfts.html"
     ],
     "brand": {
       "brand_family": "one-million-free-nfts",
@@ -417,7 +419,7 @@
     "entity_id": "bitcoin_kid_army",
     "canonical_title": "Bitcoin Kid Army",
     "canonical_url": "/wiki/bitcoin-kid-army.html",
-    "category": "factions",
+    "category": "core",
     "aliases": [],
     "tags": [
       "bitcoin",
@@ -8470,7 +8472,8 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/graffpunks.html"
+      "/wiki/graffpunks.html",
+      "/wiki/the-graffpunks.html"
     ],
     "brand": {
       "brand_family": "graffpunks",
@@ -8500,7 +8503,11 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/graffpunks-24-7-radio.html"
+      "/wiki/graffpunks-24-7-radio.html",
+      "/wiki/graffpunks-24-7.html",
+      "/wiki/graffpunks-247-blockchain-radio-station.html",
+      "/wiki/graffpunks-247-radio.html",
+      "/wiki/graffpunks-247.html"
     ],
     "brand": {
       "brand_family": "graffpunks",
@@ -8754,6 +8761,7 @@
       "wiki"
     ],
     "source_urls": [
+      "/wiki/hodl-wars-game.html",
       "/wiki/hodl-wars.html"
     ],
     "brand": {

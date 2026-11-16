@@ -137,5 +137,18 @@
   ],
   "relationships": [],
   "timeline": [],
-  "cross_links": []
+  "cross_links": [],
+  "current_canon": {
+    "decision": "decision:GK-20261116-MARKET-FACTIONS-COMMAND",
+    "approved_by": "GK direct instruction, 16 November 2026",
+    "as_of": "2026-11-16",
+    "authority": "Supersedes conflicting legacy_migration facts below; those records are retained as attributed history.",
+    "reference": "/wiki/crypto-moonboys.html#market-factions-and-command",
+    "facts": [
+      "The story revolves around two main factions: the All City Bulls and the Nomad Bears, also styled AllCity Bulls and, in GK\u2019s latest brief, Nomad Bares. They embody the bulls and bears of the market in a world where crypto rules everyday life. The Bitcoin Kid Army shadows members of both factions 24/7 as undercover guards, never far away even when its protection cannot be seen.",
+      "Alfie \u201cThe Bitcoin KiD\u201d Blaze leads the Bitcoin Kid Army and takes orders only from the GKniftyHEADS faction. GKniftyHEADS are the underworld good guys: the authority above the Bulls, the Bears and the remaining 37 GK factions that run their city. The Bitcoin Kid Army is the army for the crypto market, not a GK street faction or an extra place in the Forty. The structure is GKniftyHEADS + two main market factions + 37 other GK factions.",
+      "When a larger army is needed, all GK factions unite as the HODL Warriors. This collective wartime army is distinct from the HODL X Warriors of Block Topia. Every HODL Warrior aspires to become a HODL X Warrior; aspiration does not itself award the title, erase faction identity or complete the Hard Fork trials.",
+      "Queen Sarah P-fly rules Block Topia with her Crypto Moongirls army and the HODL X Warriors within its order. The Bitcoin X Kids are the city\u2019s engineered generation. Some escape and join Alfie\u2019s Bitcoin Kid Army outside; the inside-born generation, the wider outside Bitcoin Kids community and enlisted Army service remain different categories."
+    ]
+  }
 }

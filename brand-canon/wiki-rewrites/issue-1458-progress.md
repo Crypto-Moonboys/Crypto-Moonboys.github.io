@@ -1414,3 +1414,68 @@ no deployment. Original register identity/size/hash/disposition fields remain
 unchanged. Complete final-head Actions results will be posted to PR1460 after
 push; historical3150 evidence above is not presented as the final head.
 Five major decisions remain proposed; no merge or issue closure.
+
+## GK cast and market-army correction — 16 November 2026
+
+Base: `1144a1883c8f9e37f4c72cfc30f51f67330c6108`. Backup:
+`backup/lore-command-structure-20261116`. Working branch:
+`sandbox/lore-command-structure-20261116`.
+
+GK directly requested the brand-and-character definition and the linked command
+structure, then reiterated: **“THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION,
+THEY ARE ARMY FOR THE CRYPTO MARKET.”** The decision receipt retains both the
+full instruction and that follow-up. This is approval of the stated canon,
+not a merge or deployment approval.
+
+Implemented across 24 connected public articles: the Crypto Moonboys and First
+Witness entry points; Bulls, Bears, GKniftyHEADS, Alfie and the two Army
+references; Kids/X Kids; HODL/HODL X; the Queen, Moongirls, Block Topia, Games and
+war; and the relevant commentary, roster, doctrine, source, chronology,
+concordance and ritual comparisons. Seven legacy bible files carry explicit
+current-canon overrides. Current authoring guidance, locks and exact paragraph
+replacement receipts are updated together.
+
+The Army is the crypto market's army, providing 24/7 undercover protection to
+Bulls and Bears, led by Alfie and taking orders only from GKniftyHEADS. The
+political count is GKniftyHEADS + two main factions + 37 others. The inherited
+forty cultural readings retain their names and adult histories without being
+misrepresented as an exact political roll. No replacement faction names are
+invented. HODL Warriors unite the GK factions; all aspire to Block Topia's
+separate HODL X status under Sarah and the Crypto Moongirls. X Kids can escape
+and join the Army. The nine original Books, accepted dates, runtime choices,
+creator rights, source bytes and public Final Fork suspense remain intact.
+
+Publishing/search/entity graphs and content ownership are regenerated. The
+Army's authored search classification is core lore, not a faction. The stale
+publish audit is refreshed by its existing read-only scanner (471 pages,
+zero blocked/review entries); no purge is run.
+
+Validation actually completed:
+
+- `npm run test:canon`, including 94 original archive identities, four Python
+  corruption tests, 20 JavaScript cases and the canon guard: passed as the
+  opening part of the wiki run.
+- Article functional preservation: all 24 changed pages passed against the
+  exact base. Ownership inventory, native contents rendering and related-path
+  audits passed. Search/entity graph integrity passed.
+- 198 internal links in the newly added canon sections resolved. Five queries
+  were exercised through the actual search matcher, including crypto-market
+  Army, undercover Bulls/Bears, Nomad Bares, HODL X and GKniftyHEADS; all returned
+  the relevant references. The Army category is `core`.
+- HTML hygiene: all 418 indexable articles passed, with 53 redirects/noindex
+  pages skipped by the existing checker. SEO publish-canonical tests: 14/14
+  passed. Payload schema tests passed after restoring the two existing fixtures
+  omitted by the sparse checkout. Diff whitespace check passed.
+- `npm run ci:wiki` was attempted. After a stale generated audit was refreshed,
+  its remaining 25 commands were also run individually. Three Worker-dependent
+  checks could not run: engagement layer, engagement API and Moonpet guide;
+  the sparse checkout lacks `workers/moonboys-api/worker.js`. The initial
+  fixture, image and description-length failures were resolved and rerun.
+  Do not describe the complete wiki suite as green.
+- Desktop/mobile browser verification was attempted but is incomplete: local
+  Chromium could not create its process socket, and the shared browser could
+  not reach the local preview. Static contents/link/HTML checks passed, but
+  they do not replace a visual check. No live service transaction was made.
+
+No tests, validation triggers or approval safeguards were weakened. No merge,
+production deployment, payout, migration or issue closure was performed.

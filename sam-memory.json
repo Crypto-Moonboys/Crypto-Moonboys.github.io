@@ -10,7 +10,9 @@
       "canonical_url": "/wiki/1m-free-nfts-program.html",
       "category": "factions",
       "source_urls": [
-        "/wiki/1m-free-nfts-program.html"
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/one-million-free-nfts.html"
       ],
       "status": "canonical",
       "tags": [
@@ -409,7 +411,7 @@
       "aliases": [],
       "canonical_title": "Bitcoin Kid Army",
       "canonical_url": "/wiki/bitcoin-kid-army.html",
-      "category": "factions",
+      "category": "core",
       "source_urls": [
         "/wiki/bitcoin-kid-army.html"
       ],
@@ -8450,7 +8452,8 @@
       "canonical_url": "/wiki/graffpunks.html",
       "category": "core",
       "source_urls": [
-        "/wiki/graffpunks.html"
+        "/wiki/graffpunks.html",
+        "/wiki/the-graffpunks.html"
       ],
       "status": "canonical",
       "tags": [
@@ -8474,7 +8477,11 @@
       "canonical_url": "/wiki/graffpunks-24-7-radio.html",
       "category": "core",
       "source_urls": [
-        "/wiki/graffpunks-24-7-radio.html"
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html"
       ],
       "status": "canonical",
       "tags": [
@@ -8701,6 +8708,7 @@
       "canonical_url": "/wiki/hodl-wars.html",
       "category": "core",
       "source_urls": [
+        "/wiki/hodl-wars-game.html",
         "/wiki/hodl-wars.html"
       ],
       "status": "canonical",
@@ -11197,5 +11205,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-10T11:14:01Z"
+  "updated_at": "2026-11-16T08:29:17Z"
 }
