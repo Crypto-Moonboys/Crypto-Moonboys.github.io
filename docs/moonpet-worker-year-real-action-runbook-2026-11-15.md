@@ -1,5 +1,9 @@
 # VERIFIED 365-DAY RESULT — 2026-11-16 (LATEST, READ FIRST)
 
+> **XP strategy update 2026-11-16:** New test-only `xpPolicy` options now include genuine 2-hour Train (source max 86 Pet XP), genuine 8-hour Explore (source max 132 Pet XP), and the highest *Worker-advertised eligible* job. This is not yet a passing full-year outcome. Read [legal XP source audit](moonpet-365-day-legal-xp-source-audit-2026-11-16.md) and run the new local Node tests before longer campaigns. The verified 365-day baseline below remains **57,438 XP, Level 38, `legendaryVerified:false`**. CLI output is now concise with weekly progress; add `--verbose` for full JSON.
+
+
+
 **Source:** User-uploaded Windows CMD log `Pasted text(20261116-053910).txt`, last lines `MOONPET_WORKER_CHECKPOINT`, `MOONPET_WORKER_YEAR_FINAL`, `MOONPET_LEGENDARY_NOT_VERIFIED`. The actual 365-day process completed and returned to `D:\GITHUB\Crypto-Moonboys.github.io>`. Earlier 2/7/30/90-day runs in that log are historical and are not the annual verdict.
 
 **Command executed:** `node scripts\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3`.
