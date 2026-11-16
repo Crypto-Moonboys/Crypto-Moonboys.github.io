@@ -261,7 +261,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         // Recover through the ordinary Worker Sleep action, never by
         // directly editing a pet stat or suppressing a rejection. Do not
         // change the proven baseline/non-timed policy's action sequence.
-        if(action==='train' && xpPolicy==='timed_train'){
+        if(action==='train' && ['timed_train','timed_train_best_job'].includes(xpPolicy)){
           setTime(startAt+day*WORKER_YEAR_DAY_MS+7*60_000);
           const petStats=f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
           if(n(petStats?.energy)<18){
