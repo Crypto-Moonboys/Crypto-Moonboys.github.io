@@ -8,6 +8,7 @@
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid4
  * node scripts/run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_explore_best_job
+ * Append --verbose to print the full historical JSON payloads.
  *
  * `legendaryVerified:false` is a valid diagnostic and never treated as PASS.
  */
@@ -19,27 +20,45 @@ const arg=args.find(entry=>entry.startsWith('--days='));
 const strategyArg=args.find(entry=>entry.startsWith('--strategy='));
 const xpArg=args.find(entry=>entry.startsWith('--xp='));
 const xpPolicy=xpArg?.slice('--xp='.length)||'baseline';
+const verbose=args.includes('--verbose');
 const strategyName=strategyArg?.slice('--strategy='.length)||'boss';
 const strategy=strategyName==='extract'?'extract_at_depth7':strategyName;
-if(args.some(entry=>!entry.startsWith('--days=')&&!entry.startsWith('--strategy=')&&!entry.startsWith('--xp='))
+if(args.some(entry=>!entry.startsWith('--days=')&&!entry.startsWith('--strategy=')&&!entry.startsWith('--xp=')&&entry!=='--verbose')
   ||args.filter(entry=>entry.startsWith('--days=')).length>1
   ||args.filter(entry=>entry.startsWith('--strategy=')).length>1
   ||args.filter(entry=>entry.startsWith('--xp=')).length>1
+  ||args.filter(entry=>entry==='--verbose').length>1
   ||!['baseline','timed_train','timed_explore','best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)
   ||(strategyArg&&!['extract','boss','hybrid3','hybrid4'].includes(strategyArg.slice('--strategy='.length)))){
   throw new Error('usage: node scripts/run-moonpet-worker-year-simulation.mjs --days=365 [--strategy=boss|extract|hybrid3|hybrid4] [--xp=baseline|timed_train|timed_explore|best_job|timed_train_best_job|timed_explore_best_job]');
 }
 const days=arg?Number(arg.slice('--days='.length)):7;
 if(!Number.isInteger(days)||days<1||days>365)throw new Error('days must be an integer between 1 and 365');
+const compactPoint=point=>({
+  days:point.days,petXp:point.petXp,level:point.level,
+  growthMarks:point.growthMarks,weeklyCrests:point.weeklyCrests,
+  distinctRelics:point.distinctRelics,alleyKingWins:point.alleyKingWins,
+  materials:point.materials,evolutions:point.evolutions,
+  runStatus:point.runStatus,qualifyingWeeks:point.qualifyingWeeks.length,
+  fullyQualifiedButUnsettledWeeks:point.fullyQualifiedButUnsettledWeeks,
+});
 mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
 try{
   const result=await simulateWorkerCampaign({
     days,startAt:WORKER_YEAR_START,owner:'moonpet-isolated-year-audit',runExitPolicy:strategy,xpPolicy,
     setTime:at=>mock.timers.setTime(at),
-    onCheckpoint:point=>console.log('MOONPET_WORKER_CHECKPOINT',JSON.stringify(point)),
+    onCheckpoint:point=>console.log('MOONPET_WORKER_CHECKPOINT',JSON.stringify(verbose?point:compactPoint(point))),
     onWeeklyProgress:point=>console.log('MOONPET_WEEKLY_PROGRESS',JSON.stringify(point)),
   });
-  console.log('MOONPET_WORKER_YEAR_FINAL',JSON.stringify(result));
+  console.log('MOONPET_WORKER_YEAR_FINAL',JSON.stringify(verbose?result:{
+    days:result.days,xpPolicy:result.xpPolicy,runExitPolicy:result.runExitPolicy,
+    acceptedActions:result.actions.accepted,rejectedActions:result.actions.rejected,
+    timedXp:result.timedXp,jobXp:result.jobXp,
+    dailyRuns:{started:result.dailyRuns.started,completed:result.dailyRuns.completed,
+      failed:result.dailyRuns.failed,extractions:result.dailyRuns.extractions},
+    final:compactPoint(result.final),targets:result.targets,
+    legendaryVerified:result.legendaryVerified,blockers:result.blockers,
+  }));
   if(days===365&&!result.legendaryVerified){
     console.log('MOONPET_LEGENDARY_NOT_VERIFIED',JSON.stringify({blockers:result.blockers}));
   }
