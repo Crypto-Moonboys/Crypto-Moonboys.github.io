@@ -115,8 +115,8 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
     throw new RangeError('runExitPolicy must be boss, extract_at_depth7, hybrid3 or hybrid4');
   if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
-  if(!['baseline','timed_train'].includes(xpPolicy))
-    throw new RangeError('xpPolicy must be baseline or timed_train');
+  if(!['baseline','timed_train','best_job','timed_train_best_job'].includes(xpPolicy))
+    throw new RangeError('xpPolicy must be baseline, timed_train, best_job, or timed_train_best_job');
   setTime(startAt);
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
@@ -126,6 +126,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
   const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
   const timedXp={policy:xpPolicy,starts:0,claims:0,rejected:0,awardedPetXp:0,byReason:{}};
+  const jobXp={upgradedAttempts:0,accepted:0,rejected:0,awardedPetXp:0,byJob:{},byReason:{}};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
     setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
@@ -252,8 +253,38 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       const preRunBoss=await tryWeeklyBoss(day,2,'after_sleep_and_energy_check');
       for(const [minute,action,payload] of [
         [2,'feed',{}],[4,'play',{}],[6,'clean',{}],
-        [8,'train',{}],[10,'daily_chest',{}],[12,'work',{job_key:'street_artist'}],
+        [8,'train',{}],[10,'daily_chest',{}],
       ])await safeAction(day,minute,action,payload);
+      // Choose jobs from server-advertised eligibility, not from hardcoded
+      // future unlocks or inferred player level. A job can become available
+      // only after its real XP, evolution and specialist requirements pass.
+      let jobKey='street_artist';
+      if(['best_job','timed_train_best_job'].includes(xpPolicy)){
+        setTime(startAt+day*WORKER_YEAR_DAY_MS+12*60_000);
+        const guidance=await hooks.buildPetGuidanceState(f.db,owner);
+        const eligible=(guidance?.jobs||[])
+          .filter(job=>job.available===true && typeof job.key==='string' &&
+            Number.isFinite(Number(job.pet_xp)) && Number(job.pet_xp)>0)
+          .sort((a,b)=>Number(b.pet_xp)-Number(a.pet_xp));
+        jobKey=eligible[0]?.key||jobKey;
+        jobXp.upgradedAttempts++;
+      }
+      const xpBeforeJob=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+      const job=await safeAction(day,12,'work',{job_key:jobKey});
+      if(job.accepted&&!job.duplicate){
+        if(['best_job','timed_train_best_job'].includes(xpPolicy)){
+          jobXp.accepted++;
+          const xpAfterJob=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+          const gain=Math.max(0,xpAfterJob-xpBeforeJob);
+          if(gain!==n(job.pet_xp_awarded))throw new Error('job_pet_xp_receipt_mismatch');
+          jobXp.awardedPetXp+=gain;
+          jobXp.byJob[jobKey]=(jobXp.byJob[jobKey]||0)+1;
+        }
+      }else if(['best_job','timed_train_best_job'].includes(xpPolicy)){
+        jobXp.rejected++;
+        const reason=String(job.reason||'unknown_job');
+        jobXp.byReason[reason]=(jobXp.byReason[reason]||0)+1;
+      }
       // Exactly one official Daily Moon Run attempt per UTC day. Read all
       // available choices from the Worker. Failed rooms terminate; no rerolls.
       await prepareForRun(day);
@@ -330,7 +361,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       // Train are blocked while this session is active, so it starts AFTER
       // all other daily activities and is claimed before the next UTC day.
       // Do not edit session timestamps or directly credit XP.
-      if(xpPolicy==='timed_train'){
+      if(['timed_train','timed_train_best_job'].includes(xpPolicy)){
         const startedActivity=await safeAction(day,80,'activity_start',{activity_type:'train'});
         if(startedActivity.accepted&&!startedActivity.duplicate){
           timedXp.starts++;
@@ -405,7 +436,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
       final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
       final.relics>=targets.relics;
-    return {days,startAt:new Date(startAt).toISOString(),owner,runExitPolicy,xpPolicy,actions,dailyRuns,weeklyBoss,timedXp,checkpoints,final,targets,
+    return {days,startAt:new Date(startAt).toISOString(),owner,runExitPolicy,xpPolicy,actions,dailyRuns,weeklyBoss,timedXp,jobXp,checkpoints,final,targets,
       legendaryVerified:qualified,
       blockers:Object.entries({
         age:ageReached,marks:final.growthMarks>=targets.marks,crests:final.weeklyCrests>=targets.crests,
