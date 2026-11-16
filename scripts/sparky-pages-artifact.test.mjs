@@ -60,9 +60,12 @@ test('real Pages artifact publishes every SPARKY guide and canon handoff URL', (
 
 test('deployed discovery finds Moonboy creator route and restricted sources stay private', () => {
   const search = JSON.parse(requirePublic('js/wiki-index.json'));
+  assert.ok(search.some(entry=>entry.url==='/gpt-users.html'), 'Creator Studio missing from deployed search');
+  assert.equal(existsSync(artifactFile('_article-template.html')), false, 'Raw authoring scaffold must not be published');
   const found = search.some(entry=>entry.url==='/wiki/create-your-moonboy.html');
   assert.ok(found,'Creator page not in deployed wiki search index');
   const sitemap = requirePublic('sitemap.xml');
+  assert.ok(sitemap.includes('https://cryptomoonboys.com/gpt-users.html'), 'Creator Studio missing from deployed sitemap');
   assert.ok(search.some(entry=>entry.url==='/graffiti-kings-creative-guide.html'), 'Creative guide missing from deployed search');
   assert.ok(sitemap.includes('https://cryptomoonboys.com/graffiti-kings-creative-guide.html'));
   assert.ok(sitemap.includes('https://cryptomoonboys.com/wiki/create-your-moonboy.html'));

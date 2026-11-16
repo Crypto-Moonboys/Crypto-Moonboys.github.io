@@ -1,6 +1,6 @@
 # Search Console 404 disposition — 16 November 2026
 
-The export contains 95 historic examples. Validation started today; that status does not mean the routes have been repaired or recrawled. PR #1796 restored eight registered aliases. This follow-up restores 36 further subject-equivalent wiki URLs without changing their destination articles. One listed URL already exists as a public article. Fifty routes remain unresolved or unsuitable for public HTML indexing.
+The export contains 95 historic examples. Validation started today; that status does not mean the routes have been repaired or recrawled. PR #1796 restored eight registered aliases. This follow-up restores 36 further subject-equivalent wiki URLs without changing their destination articles. One listed URL already exists as a public article. The later discovery repair also restores `wiki/tokens.html` to the current cryptocurrency/token directory. Forty-nine routes remain unresolved or unsuitable for public HTML indexing (47 unverified replacements and two non-public/API-like paths).
 
 ## Routes restored by this change
 
@@ -75,7 +75,7 @@ The export contains 95 historic examples. Validation started today; that status 
 | `wiki/medium-articles-by-graffpunks.html` | No verified same-subject destination established. Retain 404 pending evidence; research or restore original content before changing. |
 | `wiki/the-graffpunks.html` | Previously restored alias (PR #1796); wait for Google to recrawl. |
 | `wiki/graffpunks-24-7.html` | Previously restored alias (PR #1796); wait for Google to recrawl. |
-| `wiki/tokens.html` | No verified same-subject destination established. Retain 404 pending evidence; research or restore original content before changing. |
+| `wiki/tokens.html` | Restored by the later discovery repair: redirect to `/categories/cryptocurrencies.html`, the current cryptocurrency/token directory. |
 | `wiki/lfgk-rewards.html` | No verified same-subject destination established. Retain 404 pending evidence; research or restore original content before changing. |
 | `wiki/tabby.html` | No verified same-subject destination established. Retain 404 pending evidence; research or restore original content before changing. |
 | `wiki/medium-articles-by-hodlwarriors.html` | No verified same-subject destination established. Retain 404 pending evidence; research or restore original content before changing. |

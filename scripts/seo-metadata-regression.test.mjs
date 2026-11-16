@@ -52,3 +52,44 @@ assert.match(builderRedirect, /<meta\b(?=[^>]*name=["']robots["'])(?=[^>]*conten
   'legacy Moonboy Builder redirect must be noindex');
 
 console.log('SEO landing-page metadata regression PASSED — ' + checked + ' sitemap URLs checked');
+
+// Public entry routes must survive both sitemap and search-index regeneration.
+const publicEntries = [
+  '/gpt-users.html', '/join-us-on-the-wax-blockchain.html', '/moonboy-builder.html',
+  '/swarmsy.html', '/gkniftyheads-incubator.html', '/community.html',
+  '/how-to-play.html', '/how-to-play-crypto-moonboy-pets.html', '/paths.html', '/timeline.html',
+];
+const searchIndex = JSON.parse(fs.readFileSync(path.join(ROOT, 'js/wiki-index.json'), 'utf8'));
+for (const route of publicEntries) {
+  assert.ok(urls.includes(BASE + route), route + ' missing from sitemap');
+  assert.equal(searchIndex.filter(entry => entry.url === route).length, 1, route + ' missing or duplicated in search');
+}
+const home = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+const searchPage = fs.readFileSync(path.join(ROOT, 'search.html'), 'utf8');
+for (const route of ['/gpt-users.html', '/wiki/crypto-moonboys.html', '/wiki/waxp.html', '/wiki/graffiti-kings.html', '/wiki/darren-cullen.html', '/wiki/charlie-buster.html', '/wiki/gkniftyheads-nft-collection.html']) {
+  for (const [name, source] of [['homepage', home], ['article hub', searchPage]]) {
+    const main = source.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || '';
+    assert.ok(main.includes('href="' + route + '"'), name + ' needs a visible direct link to ' + route);
+  }
+}
+for (const file of ['paths.html', 'hubs.html']) {
+  const blocks = [...fs.readFileSync(path.join(ROOT, file), 'utf8').matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)]
+    .map(match => JSON.stringify(JSON.parse(match[1])));
+  assert.equal(blocks.length, 1, file + ' should describe its WebPage once');
+}
+assert.match(fs.readFileSync(path.join(ROOT, 'dashboard.html'), 'utf8'), /name="robots" content="noindex, follow"/);
+for (const [oldRoute, destination, canonicalRoute] of [
+  ['/wiki/tokens.html', '/categories/cryptocurrencies.html', '/categories/cryptocurrencies.html'],
+  ['/wiki/liquidity-pools.html', '/wiki/defi.html#amm', '/wiki/defi.html'],
+]) {
+  const source = fs.readFileSync(path.join(ROOT, oldRoute), 'utf8');
+  assert.ok(source.includes('content="0; url=' + destination + '"'), oldRoute + ' must resolve the old guide');
+  assert.ok(source.includes('href="' + BASE + canonicalRoute + '"'), 'canonicals must not include section fragments');
+  assert.ok(source.includes('<a href="' + destination + '">'), 'readers need a fallback link');
+  assert.ok(!urls.includes(BASE + oldRoute), 'aliases must not enter the sitemap');
+}
+const currencyHub = fs.readFileSync(path.join(ROOT, 'categories/cryptocurrencies.html'), 'utf8');
+for (const [, route] of currencyHub.matchAll(/href="(\/wiki\/[^"#?]+\.html)"/g)) {
+  assert.ok(fs.existsSync(path.join(ROOT, route)), 'Currency hub links to a missing article: ' + route);
+}
+console.log('SEO discovery regression PASSED — ten public entry routes, static project links and unique navigation schema');

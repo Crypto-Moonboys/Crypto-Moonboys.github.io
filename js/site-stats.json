@@ -1,5 +1,5 @@
 {
-  "total_wiki_pages": 425,
+  "total_wiki_pages": 471,
   "total_articles": 273,
   "nft_template_pages": 143,
   "nft_collection_pages": 2,
@@ -8,8 +8,8 @@
   "graph_nodes": 418,
   "sitemap_wiki_urls": 418,
   "total_categories": 19,
-  "article_count": 425,
-  "totalArticles": 425,
+  "article_count": 471,
+  "totalArticles": 471,
   "entity_count": 418,
   "totalEntities": 418,
   "category_count": 19,
@@ -19,5 +19,5 @@
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-10-10T11:09:31.076Z"
+  "last_updated": "2026-11-16T04:35:01.739Z"
 }
