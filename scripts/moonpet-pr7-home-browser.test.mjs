@@ -159,14 +159,18 @@ try {
     const hiddenAuth=await setup({viewport});
     try{
       await hiddenAuth.open();await hiddenAuth.started;await pause(100);
-      // Hide first, then request the invalid-auth response directly. Holding a
-      // Playwright route while the page click waits for that fetch deadlocks.
-      await hiddenAuth.page.evaluate(()=>{
-        window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
-        window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
-        Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
+      // Start Sync while visible. Its route handler hides the page immediately
+      // before the fixture returns 401, so the response reaches the real hidden
+      // UI path without a held request or a hidden-page refresh suppression.
+      await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{
+        await hiddenAuth.page.evaluate(()=>{
+          window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
+          window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
+          Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
+        });
+        hiddenAuth.invalid();
+        await route.fallback();
       });
-      hiddenAuth.invalid();
       const expiredResponse=hiddenAuth.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.status()===401);
       await hiddenAuth.page.evaluate(() => document.querySelector('[data-utility="sync"]').click());
       const response=await within(expiredResponse,'hidden-auth 401 response');
