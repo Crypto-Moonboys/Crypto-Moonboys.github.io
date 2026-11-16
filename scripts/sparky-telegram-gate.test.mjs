@@ -23,12 +23,9 @@ test("site entry points open ChatGPT instead of claiming a hosted SWARMSY assist
   const shell = read("js/site-shell.js");
   const swarmsy = read("swarmsy.html");
   const readme = read("README.md");
-  assert.match(home, /href="\/gpt-users\.html"/);
-  // The homepage was intentionally redesigned: the public Creator Studio
-  // is now linked in the mission copy, not by the retired BRING YOUR OWN IP CTA.
-  assert.match(home, /<a\b[^>]*href="\/gpt-users\.html"[^>]*>ChatGPT Creator Studio<\/a>/);
-  assert.match(home, /<a\b[^>]*href="\/swarmsy\.html"[^>]*>[^<]*SWARMSY[^<]*PC beta<\/a>/);
-  assert.match(home, /optional/);
+  // The redesigned homepage exposes Creator Studio as a structured card.
+  assert.match(home, /<a\b[^>]*href="\/gpt-users\.html"[^>]*>\s*<strong>ChatGPT Creator Studio<\/strong>/);
+  assert.match(home, /No Moonboy or SWARMSY installation required/);
   assert.doesNotMatch(home, /SWARMSY Ai WILL BLOW YOU UP|SWARMSY helps you name it, shape it, create it and keep YOU moving 24\/7/);
   assert.match(shell, /sparkyAgent\.href = '\/gpt-users\.html'/);
   assert.match(shell, /Start creating with ChatGPT via the SPARKY Creator Studio/);

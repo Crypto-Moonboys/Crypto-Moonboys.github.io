@@ -4,6 +4,15 @@ import {createMoonpetBrowserHarness} from './moonpet-browser-fixture.mjs';
 const clientRoot=process.env.MOONPET_PR7_CLIENT_ROOT || process.cwd();
 const benchmark=process.argv.includes('--benchmark');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const within=async(promise,label,ms=10000)=>{
+  let timer;
+  try{
+    return await Promise.race([
+      promise,
+      new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after '+ms+'ms')),ms);}),
+    ]);
+  }finally{clearTimeout(timer);}
+};
 const harness=await createMoonpetBrowserHarness({clientRoot,benchmark});
 const {setup,origin}=harness,results=[];
 
@@ -152,8 +161,10 @@ try {
       await hiddenAuth.open();await hiddenAuth.started;await pause(100);
       let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);
       await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{enter();await gate;await route.fallback();});
-      await hiddenAuth.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
-      await entered;
+      // Start a known refresh instead of relying on a visibility event that can
+      // be suppressed by the just-completed focus-refresh cooldown.
+      await hiddenAuth.page.locator('[data-utility="sync"]').click();
+      await within(entered,'hidden-auth refresh request');
       await hiddenAuth.page.evaluate(()=>{
         window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
         window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
