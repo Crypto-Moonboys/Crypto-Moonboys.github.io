@@ -61,3 +61,15 @@ The standalone CLI now emits **compact weekly progress** (`MOONPET_WEEKLY_PROGRE
 ## Safety
 
 PR #1783 stays draft. No deployed Worker changes, no production D1 migrations, no Telegram/wallet work, no XP multiplier/rate/cap/level-threshold changes, no live care/neglect penalties. The existing relic selection fix was independently merged in PR #1795. No additional Codex task or new PR.
+
+## November 16 morning local test result and correction
+
+User's Windows Node 24 run after commit `2fe6848e` returned **11 tests: 9 passed, 1 failed, 1 opt-in 365-day test skipped**. The new three-day genuine `timed_explore_best_job` Worker test **PASSED**: 3 accepted eight-hour Explore claims yielded **396 total persisted Pet XP (132 each)**, three legal Vault Guard jobs yielded **108 additional XP (36 each)**, with 0 rejected actions. The seven-day `best_job` test also passed (7 accepted Vault Guard jobs yielded 252 Pet XP). The two-hour `timed_train` test verified 7 genuine activity claims but failed an all-actions-accepted assertion because **one ordinary Train action returned `pet_tired`** after prior timed-training energy expenditure; the activity payouts themselves were not rejected.
+
+Follow-up commits `cbfa6695` and `cbdb2ff7` add a genuine Worker Sleep recovery before the ordinary Train action, *only when the actual source pet has less than 18 Energy*, for the timed Training policies. The normal `baseline` and `timed_explore_best_job` play sequences remain untouched. **The corrective targeted test is NOT YET RE-RUN.** Do not claim full-suite pass without evidence.
+
+Fastest focused recheck:
+```bat
+node --test --test-name-pattern="real Worker two-hour training sessions" scripts\moonpet-worker-year-simulator.test.mjs
+```
+Then run the full year-simulator regression suite. Only if it passes, start the separate 30-day `--xp=timed_explore_best_job` comparison; never run another costly 365-day campaign on an untested patch.
