@@ -115,8 +115,8 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
   if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
     throw new RangeError('runExitPolicy must be boss, extract_at_depth7, hybrid3 or hybrid4');
   if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
-  if(!['baseline','timed_train','best_job','timed_train_best_job'].includes(xpPolicy))
-    throw new RangeError('xpPolicy must be baseline, timed_train, best_job, or timed_train_best_job');
+  if(!['baseline','timed_train','timed_explore','best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy))
+    throw new RangeError('xpPolicy must be baseline, timed_train, timed_explore, best_job, timed_train_best_job, or timed_explore_best_job');
   setTime(startAt);
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
@@ -259,7 +259,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       // future unlocks or inferred player level. A job can become available
       // only after its real XP, evolution and specialist requirements pass.
       let jobKey='street_artist';
-      if(['best_job','timed_train_best_job'].includes(xpPolicy)){
+      if(['best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
         setTime(startAt+day*WORKER_YEAR_DAY_MS+12*60_000);
         const guidance=await hooks.buildPetGuidanceState(f.db,owner);
         const eligible=(guidance?.jobs||[])
@@ -272,7 +272,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       const xpBeforeJob=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
       const job=await safeAction(day,12,'work',{job_key:jobKey});
       if(job.accepted&&!job.duplicate){
-        if(['best_job','timed_train_best_job'].includes(xpPolicy)){
+        if(['best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
           jobXp.accepted++;
           const xpAfterJob=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
           const gain=Math.max(0,xpAfterJob-xpBeforeJob);
@@ -280,7 +280,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
           jobXp.awardedPetXp+=gain;
           jobXp.byJob[jobKey]=(jobXp.byJob[jobKey]||0)+1;
         }
-      }else if(['best_job','timed_train_best_job'].includes(xpPolicy)){
+      }else if(['best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
         jobXp.rejected++;
         const reason=String(job.reason||'unknown_job');
         jobXp.byReason[reason]=(jobXp.byReason[reason]||0)+1;
@@ -355,20 +355,22 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       if(evolution?.evolution_ready && evolution.next_evolution?.evolution_id){
         await safeAction(day,70,'evolve',{pet_id:pet.petId,evolution_id:evolution.next_evolution.evolution_id});
       }
-      // Optional, truly elapsed 2-hour Training Session after the daily
+      // Optional, truly elapsed 2-hour Training or 8-hour Explore Session after the daily
       // care, Moon Run and evolution actions. The Worker caps the claim at
-      // two hours and the ordinary 1,200 XP/day cap still applies. Sleep and
+      // configured activity duration and the ordinary 1,200 XP/day cap applies. Sleep and
       // Train are blocked while this session is active, so it starts AFTER
       // all other daily activities and is claimed before the next UTC day.
       // Do not edit session timestamps or directly credit XP.
-      if(['timed_train','timed_train_best_job'].includes(xpPolicy)){
-        const startedActivity=await safeAction(day,80,'activity_start',{activity_type:'train'});
+      if(['timed_train','timed_explore','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
+        const activityType=xpPolicy.includes('explore')?'explore':'train';
+        const claimMinute=activityType==='explore'?561:201;
+        const startedActivity=await safeAction(day,80,'activity_start',{activity_type:activityType});
         if(startedActivity.accepted&&!startedActivity.duplicate){
           timedXp.starts++;
           const sessionId=startedActivity.session?.id;
           if(!sessionId)throw new Error('timed_train_start_missing_session_id');
           const beforeXp=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
-          const claim=await safeAction(day,201,'activity_claim',{session_id:sessionId});
+          const claim=await safeAction(day,claimMinute,'activity_claim',{session_id:sessionId});
           if(claim.accepted&&!claim.duplicate){
             timedXp.claims++;
             const afterXp=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
