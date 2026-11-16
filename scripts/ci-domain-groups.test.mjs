@@ -113,6 +113,13 @@ for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
   assert.ok(keyPattern.test(runner), `ci-domain-runner must define ${group} group`);
 }
 
+assert.ok(
+  runner.includes("process.env.CI_COMMAND_TIMEOUT_MS") &&
+    runner.includes("group === 'visual' ? 12 * 60 * 1000 : 0") &&
+    runner.includes("result.error.code === 'ETIMEDOUT'"),
+  'visual CI commands must have a bounded default and report command timeouts explicitly',
+);
+
 assert.match(
   runner,
   /wiki:\s*\[\s*\['npm', 'run', 'test:canon'\]/u,
