@@ -2,6 +2,24 @@
 
 > **Agent and GitHub Actions policy (27 October 2026):** Read [AGENTS.md](AGENTS.md) and [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before work. Routine validation workflows are manual-only; small image/page edits should not queue broad checks. GitHub Pages deployment and its Worker compatibility safety gate remain separate.
 
+## Current fictional canon — GK direction, 16 November 2026
+
+Crypto Moonboys is both the Graffiti Kings creator brand and the cast of a shared fantasy world. Real people can create and play characters as performers play roles in a film; fictional acts and family histories do not establish real biography.
+
+- **Two main market factions:** All City Bulls (AllCity Bulls) and Nomad Bears (also written Nomad Bares). Crypto rules their world.
+- **Market protection:** the Bitcoin Kid Army shadows members of both factions 24/7 as undercover guards. It is an army for the crypto market, not a GK street faction.
+- **Command:** Alfie “The Bitcoin KiD” Blaze leads that Army and takes orders only from GKniftyHEADS, the underworld good guys above the two market factions and the remaining 37 GK factions. The political structure is **1 + 2 + 37 = 40**.
+- **United underworld army:** HODL Warriors are formed from members of all GK factions when a larger army is needed. They are not a faction; members retain their faction identities.
+- **Distinct city order:** every HODL Warrior aspires to become a HODL X Warrior of Block Topia, under Queen Sarah P-fly and her Crypto Moongirls army. Aspiration does not award the title or complete the Games.
+- **Distinct generations and service:** Bitcoin X Kids are the engineered generation inside the city. Some escape and join Alfie’s outside Army; birth, community and enlistment remain different relationships.
+- **Open conflict:** the forces face NULL THE PROPHET alongside other threats. The public Year 3008 Final Fork remains unresolved.
+
+The inherited forty-reading cultural register includes Army and royal traditions; it is not an exact political seat list. Keep existing named cultures and approved histories without inventing replacements or counting service units as factions. The nine First Witness Books remain intact.
+
+**Start with [the canon index](brand-canon/README.md).** It maps the policy, master bible, approval ledger, machine-readable locks, source evidence and owning public pages. The detailed decision is `GK-20261116-MARKET-FACTIONS-COMMAND` in `brand-canon/reconciliation-decisions.json`.
+
+The real-world qualifying-1/1 creator-builder use of “HODL Warrior” remains governed by published terms. It is distinct from fictional military membership; this canon update grants no new ownership, licence, runtime entitlement or automatic canon approval.
+
 ## Current mission — 24 October 2026
 
 **One universe. Your IP or ours. Build connected worlds together.**
@@ -24,7 +42,7 @@ Telegram website login uses verified OIDC identity and revocable sessions to res
 
 ## Read This First
 
-This README is the top-level repository truth for the public Crypto Moonboys website and its relationship with the optional SWARMSY PC application.
+This README is the top-level repository guide for current product/brand truth and the public website’s relationship with the optional SWARMSY PC application. Fiction follows GK’s explicit approved decisions and the separate canon policy/index above; a product rule must not erase the fictional cast.
 
 ### Public AI versus the SWARMSY PC application (current delivery)
 
@@ -384,7 +402,7 @@ Use these terms consistently:
 
 A rejected lore submission does not remove ownership of the character or the creator’s underlying work. It only means that submission is not accepted into the shared official universe.
 
-HODL Warriors is the collective creator-builder role for qualifying 1/1 holders. It is not one of the current selectable Battle Chamber factions.
+In current real-world creator terminology, hODL Warriors is the collective creator-builder role for qualifying 1/1 holders. It is not one of the current selectable Battle Chamber factions.
 
 HODL Warriors are not passive holders. They are the creator army inside the umbrella.
 
@@ -560,7 +578,7 @@ This repository includes:
 Important repository references:
 
 - [`docs/nft-rarity-methodology.md`](docs/nft-rarity-methodology.md) — GKniftyHEADS and NoBallGames NFT rarity tracker methodology.
-- `wiki/crypto-moonboys.html` — main public explanation of the umbrella; must cover both paths, Graffiti Kings succession, Moonboy progression, 1/1 meaning, HODL Warriors and where games/XP/NFTs/wiki/Battle Chamber/Block Topia fit; must not read as if everyone must earn NFTs to participate.
+- `wiki/crypto-moonboys.html` — heart of the public lore: a substantial story-led entrance covering the cast, market factions, command, wider realms, mythology and timeline. Keep the prose open and continuous rather than converting it into a product directory. Its retained creator reference links to the two entry paths, rights and live features without making NFT progression mandatory. Use `about/` and `gpt-users.html` for creator onboarding.
 - `Crypto_Moonboys_Master_Source_of_Truth_v1.md` — detailed mission and agent truth despite the legacy filename.
 - `AGENT_EDITING_RULES.md` — editing and runtime safety rules.
 - `.copilot-instructions.md` — repository agent instructions.
