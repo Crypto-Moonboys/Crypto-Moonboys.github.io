@@ -1400,10 +1400,322 @@ function readAnchoredGeneratedFile(anchor, fileName) {
   }
 }
 
+function conciseGeneratedValue(value) {
+  const rendered = JSON.stringify(value);
+  if (rendered === undefined) return String(value);
+  return rendered.length <= 240 ? rendered : `${rendered.slice(0, 237)}...`;
+}
+
+function firstGeneratedJsonDifference(actual, expected, pointer = '
+
+function atomicWriteAnchoredGeneratedFile(anchor, fileName, content) {
+  const targetPath = path.join(anchor.anchorPath, fileName);
+  const existing = lstatIfPresent(targetPath);
+  if (existing?.isSymbolicLink() || (existing && !existing.isFile())) {
+    throw new Error(`generated artifact target must be a regular file, not a symlink: ${fileName}`);
+  }
+
+  generatedWriteSequence += 1;
+  const temporaryPath = path.join(
+    anchor.anchorPath,
+    `.${fileName}.generate-${process.pid}-${generatedWriteSequence}.tmp`
+  );
+  const noFollow = fs.constants.O_NOFOLLOW || 0;
+  let descriptor;
+  let temporaryExists = false;
+  try {
+    descriptor = fs.openSync(
+      temporaryPath,
+      fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | noFollow,
+      existing ? existing.mode & 0o777 : 0o644
+    );
+    temporaryExists = true;
+    fs.fchmodSync(descriptor, existing ? existing.mode & 0o777 : 0o644);
+    fs.writeFileSync(descriptor, content);
+    fs.fsyncSync(descriptor);
+    fs.closeSync(descriptor);
+    descriptor = undefined;
+    fs.renameSync(temporaryPath, targetPath);
+    temporaryExists = false;
+  } finally {
+    if (descriptor !== undefined) fs.closeSync(descriptor);
+    if (temporaryExists) {
+      try {
+        fs.unlinkSync(temporaryPath);
+      } catch (error) {
+        if (error?.code !== 'ENOENT') throw error;
+      }
+    }
+  }
+}
+
+function writeExclusiveGeneratedArtifacts(anchor, generated) {
+  const entries = [
+    [path.basename(MANIFEST_PATH), generated.json],
+    [path.basename(REPORT_PATH), generated.markdown],
+  ];
+  const noFollow = fs.constants.O_NOFOLLOW || 0;
+  const opened = [];
+  let completed = false;
+  try {
+    for (const [fileName] of entries) {
+      const filePath = path.join(anchor.anchorPath, fileName);
+      const descriptor = fs.openSync(
+        filePath,
+        fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | noFollow,
+        0o600
+      );
+      opened.push({ descriptor, filePath });
+    }
+    for (let index = 0; index < entries.length; index += 1) {
+      fs.writeFileSync(opened[index].descriptor, entries[index][1]);
+      fs.fsyncSync(opened[index].descriptor);
+    }
+    for (const output of opened) {
+      fs.closeSync(output.descriptor);
+      output.descriptor = undefined;
+    }
+    completed = true;
+  } finally {
+    for (const output of opened) {
+      if (output.descriptor !== undefined) {
+        try {
+          fs.closeSync(output.descriptor);
+        } catch {
+          // The staging directory is disposable; cleanup below remains best-effort.
+        }
+      }
+      if (!completed) {
+        try {
+          fs.unlinkSync(output.filePath);
+        } catch (error) {
+          if (error?.code !== 'ENOENT') {
+            // Preserve the original write/open error when cleanup also fails.
+          }
+        }
+      }
+    }
+  }
+}
+
+export function writeGeneratedArtifactsToDirectory(outputDir, generated, { exclusive = false } = {}) {
+  const anchor = openOutputDirectoryPath(outputDir, 'generated output directory');
+  try {
+    if (exclusive) {
+      writeExclusiveGeneratedArtifacts(anchor, generated);
+    } else {
+      atomicWriteAnchoredGeneratedFile(anchor, path.basename(MANIFEST_PATH), generated.json);
+      atomicWriteAnchoredGeneratedFile(anchor, path.basename(REPORT_PATH), generated.markdown);
+    }
+  } finally {
+    fs.closeSync(anchor.descriptor);
+  }
+}
+
+export function runCli(args = process.argv.slice(2)) {
+  const modeArgs = [];
+  const unknown = [];
+  let outputDir = null;
+  let outputFd = null;
+
+  const usage = 'Usage: node scripts/generate-wiki-content-state.mjs [--write|--check] [--output-dir <absolute-dir>|--output-fd <fd>]';
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--check' || arg === '--write') {
+      modeArgs.push(arg);
+      continue;
+    }
+    if (arg === '--output-dir') {
+      const value = args[index + 1];
+      if (!value || value.startsWith('--')) {
+        console.error('--output-dir requires a directory path.');
+        console.error(usage);
+        return 2;
+      }
+      if (outputDir !== null) {
+        console.error('--output-dir may only be specified once.');
+        return 2;
+      }
+      outputDir = value;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--output-dir=')) {
+      const value = arg.slice('--output-dir='.length);
+      if (!value) {
+        console.error('--output-dir requires a directory path.');
+        console.error(usage);
+        return 2;
+      }
+      if (outputDir !== null) {
+        console.error('--output-dir may only be specified once.');
+        return 2;
+      }
+      outputDir = value;
+      continue;
+    }
+    if (arg === '--output-fd') {
+      const value = args[index + 1];
+      if (!value || value.startsWith('--')) {
+        console.error('--output-fd requires a descriptor number.');
+        console.error(usage);
+        return 2;
+      }
+      if (outputFd !== null) {
+        console.error('--output-fd may only be specified once.');
+        return 2;
+      }
+      outputFd = value;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--output-fd=')) {
+      const value = arg.slice('--output-fd='.length);
+      if (!value) {
+        console.error('--output-fd requires a descriptor number.');
+        console.error(usage);
+        return 2;
+      }
+      if (outputFd !== null) {
+        console.error('--output-fd may only be specified once.');
+        return 2;
+      }
+      outputFd = value;
+      continue;
+    }
+    unknown.push(arg);
+  }
+
+  if (unknown.length) {
+    console.error(`Unknown argument(s): ${unknown.join(', ')}`);
+    console.error(usage);
+    return 2;
+  }
+  if (args.includes('--check') && args.includes('--write')) {
+    console.error('Choose either --check or --write, not both.');
+    return 2;
+  }
+  if (outputDir !== null && outputFd !== null) {
+    console.error('Choose either --output-dir or --output-fd, not both.');
+    return 2;
+  }
+  if (outputDir !== null && !path.isAbsolute(outputDir)) {
+    console.error('--output-dir requires an absolute directory path.');
+    return 2;
+  }
+  if (outputFd !== null && (!/^[0-9]+$/.test(String(outputFd)) || Number(outputFd) < 3)) {
+    console.error('--output-fd requires an inherited directory descriptor of 3 or greater.');
+    return 2;
+  }
+  if (modeArgs.includes('--check') && (outputDir !== null || outputFd !== null)) {
+    console.error('--output-dir and --output-fd are write-mode staging options.');
+    return 2;
+  }
+
+  const generated = outputs();
+  if (modeArgs.includes('--check')) {
+    const anchor = openOutputDirectoryPath(path.dirname(MANIFEST_PATH), 'brand-canon output directory');
+    try {
+      const failures = [
+        checkGeneratedFile(anchor, path.basename(MANIFEST_PATH), MANIFEST_PATH, generated.json),
+        checkGeneratedFile(anchor, path.basename(REPORT_PATH), REPORT_PATH, generated.markdown),
+      ].filter(Boolean);
+      if (failures.length) {
+        for (const failure of failures) console.error(failure);
+        console.error('Run `node scripts/generate-wiki-content-state.mjs` and commit both generated artifacts.');
+        return 1;
+      }
+      console.log(`Wiki content-state artifacts are current for ${generated.manifest.summary.total_pages_audited} pages.`);
+      return 0;
+    } finally {
+      fs.closeSync(anchor.descriptor);
+    }
+  }
+
+  if (outputDir !== null || outputFd !== null) {
+    const anchor = outputFd !== null
+      ? openInheritedOutputDirectory(outputFd)
+      : openOutputDirectoryPath(outputDir, '--output-dir');
+    try {
+      writeExclusiveGeneratedArtifacts(anchor, generated);
+    } finally {
+      if (anchor.closeDescriptor) fs.closeSync(anchor.descriptor);
+    }
+    const displayRoot = outputDir || `fd ${outputFd}`;
+    console.log(`Audited ${generated.manifest.summary.total_pages_audited} wiki pages.`);
+    console.log(`Wrote ${path.join(displayRoot, path.basename(MANIFEST_PATH))}.`);
+    console.log(`Wrote ${path.join(displayRoot, path.basename(REPORT_PATH))}.`);
+    return 0;
+  }
+
+  writeGeneratedArtifactsToDirectory(path.dirname(MANIFEST_PATH), generated);
+  console.log(`Audited ${generated.manifest.summary.total_pages_audited} wiki pages.`);
+  console.log(`Wrote ${path.relative(ROOT, MANIFEST_PATH)}.`);
+  console.log(`Wrote ${path.relative(ROOT, REPORT_PATH)}.`);
+  return 0;
+}
+
+const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
+if (invokedPath === fileURLToPath(import.meta.url)) process.exitCode = runCli();
+) {
+  if (Object.is(actual, expected)) return null;
+  if (typeof actual !== typeof expected || actual === null || expected === null) {
+    return { pointer, actual, expected };
+  }
+  if (Array.isArray(actual) || Array.isArray(expected)) {
+    if (!Array.isArray(actual) || !Array.isArray(expected)) return { pointer, actual, expected };
+    if (actual.length !== expected.length) {
+      return { pointer: `${pointer}.length`, actual: actual.length, expected: expected.length };
+    }
+    for (let index = 0; index < actual.length; index += 1) {
+      const difference = firstGeneratedJsonDifference(actual[index], expected[index], `${pointer}[${index}]`);
+      if (difference) return difference;
+    }
+    return null;
+  }
+  if (typeof actual === 'object') {
+    const keys = [...new Set([...Object.keys(actual), ...Object.keys(expected)])].sort(compareStrings);
+    for (const key of keys) {
+      if (!Object.hasOwn(actual, key) || !Object.hasOwn(expected, key)) {
+        return { pointer: `${pointer}.${key}`, actual: actual[key], expected: expected[key] };
+      }
+      const difference = firstGeneratedJsonDifference(actual[key], expected[key], `${pointer}.${key}`);
+      if (difference) return difference;
+    }
+    return null;
+  }
+  return { pointer, actual, expected };
+}
+
+function generatedMismatchDetail(fileName, actual, expected) {
+  if (fileName.endsWith('.json')) {
+    try {
+      const difference = firstGeneratedJsonDifference(JSON.parse(actual), JSON.parse(expected));
+      if (difference) {
+        return `\n  first mismatch ${difference.pointer}: committed=${conciseGeneratedValue(difference.actual)} generated=${conciseGeneratedValue(difference.expected)}`;
+      }
+    } catch {
+      // Fall through to the line-oriented diagnostic for malformed JSON.
+    }
+  }
+  const actualLines = actual.split('\n');
+  const expectedLines = expected.split('\n');
+  const limit = Math.max(actualLines.length, expectedLines.length);
+  for (let index = 0; index < limit; index += 1) {
+    if (actualLines[index] !== expectedLines[index]) {
+      return `\n  first mismatch line ${index + 1}: committed=${conciseGeneratedValue(actualLines[index])} generated=${conciseGeneratedValue(expectedLines[index])}`;
+    }
+  }
+  return '';
+}
+
 function checkGeneratedFile(anchor, fileName, displayPath, expected) {
   const actual = readAnchoredGeneratedFile(anchor, fileName);
   if (actual === null) return `${path.relative(ROOT, displayPath)} is missing`;
-  return actual === expected ? null : `${path.relative(ROOT, displayPath)} is stale`;
+  return actual === expected
+    ? null
+    : `${path.relative(ROOT, displayPath)} is stale${generatedMismatchDetail(fileName, actual, expected)}`;
 }
 
 function atomicWriteAnchoredGeneratedFile(anchor, fileName, content) {
