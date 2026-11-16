@@ -264,7 +264,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
         if(action==='train' && ['timed_train','timed_train_best_job'].includes(xpPolicy)){
           setTime(startAt+day*WORKER_YEAR_DAY_MS+7*60_000);
           const petStats=f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
-          if(n(petStats?.energy)<18){
+          if(n(petStats?.energy)<19){
             const recovery=await safeAction(day,7,'sleep');
             if(!recovery.accepted || recovery.duplicate)
               throw new Error('timed_train_energy_recovery_rejected:'+String(recovery.reason));
