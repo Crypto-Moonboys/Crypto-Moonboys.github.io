@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:5f4b102b6ba4c774bb484a8e9da2c7d8b00b7585d403671363bf771d0aa5beef",
+  "source_tree_hash": "sha256:cff894420e53a3595baf0ad12a18f252253a0140922252a53e6ca25291a31da7",
   "hash_algorithm": "sha256",
   "page_count": 565,
   "manifest_entry_count": 565,
@@ -2254,7 +2254,7 @@
       "content_hash": "sha256:846d1bf02355ceedce262ba62e8096f0e860a54ff0cfb6f4c867486de282bcea",
       "article_content_hash": "sha256:f787d06c18bb4d04bc5e1fa39eef46cc568e111f7fd8c194a3cb7d5015911864",
       "article_markup_hash": "sha256:e5a926a36cd2ff3a3c1146102014bfdc8975ffa772513cdad529cbbc6554b0c6",
-      "git_blob_oid": "6ef4d7b8794c1235e0a201fc51c26c1d1d387335",
+      "git_blob_oid": "45643cd389228f308733f7703a70746faa5555a6",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
