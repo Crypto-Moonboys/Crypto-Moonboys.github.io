@@ -382,7 +382,11 @@ const configuredTimeout = Number.parseInt(process.env.CI_COMMAND_TIMEOUT_MS || '
 const commandTimeoutMs = Number.isFinite(configuredTimeout) && configuredTimeout > 0
   ? configuredTimeout
   : (group === 'visual' ? 12 * 60 * 1000 : 0);
-const spawnOptions = commandTimeoutMs > 0
+// On Linux, GNU timeout owns a separate process group and terminates the
+// complete browser-test tree. spawnSync's timeout only signals the immediate
+// child; Playwright descendants can keep inherited pipes open indefinitely.
+const useProcessTreeTimeout = commandTimeoutMs > 0 && process.platform !== 'win32';
+const spawnOptions = commandTimeoutMs > 0 && !useProcessTreeTimeout
   ? { stdio: 'inherit', timeout: commandTimeoutMs, killSignal: 'SIGTERM' }
   : { stdio: 'inherit' };
 const failures = [];
@@ -391,9 +395,12 @@ for (const command of GROUPS[group]) {
   const [rawBin, ...args] = command;
   const name = [rawBin, ...args].join(' ');
   console.log(`\n[ci:${group}] ${name}`);
-  const result = process.platform === 'win32' && rawBin === 'npm'
-    ? spawnSync('cmd.exe', ['/d', '/s', '/c', name], spawnOptions)
-    : spawnSync(rawBin, args, spawnOptions);
+  const timeoutSeconds = Math.max(1, Math.ceil(commandTimeoutMs / 1000));
+  const result = useProcessTreeTimeout
+    ? spawnSync('timeout', ['--signal=TERM', '--kill-after=15s', `${timeoutSeconds}s`, rawBin, ...args], spawnOptions)
+    : (process.platform === 'win32' && rawBin === 'npm'
+        ? spawnSync('cmd.exe', ['/d', '/s', '/c', name], spawnOptions)
+        : spawnSync(rawBin, args, spawnOptions));
   completed++;
   if (result.error) {
     const timedOut = result.error.code === 'ETIMEDOUT';
@@ -403,6 +410,10 @@ for (const command of GROUPS[group]) {
     failures.push({ command: name, status: 1 });
     if (!collectFailures) process.exit(1);
     continue;
+  }
+  const processTreeTimedOut = useProcessTreeTimeout && result.status === 124;
+  if (processTreeTimedOut) {
+    console.error(`[ci:${group}] timed out after ${commandTimeoutMs}ms and terminated process tree: ${name}`);
   }
   if (result.status !== 0) {
     failures.push({ command: name, status: result.status || 1 });
