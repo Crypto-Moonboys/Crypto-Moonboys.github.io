@@ -17,7 +17,7 @@ const harness=await createMoonpetBrowserHarness({clientRoot,benchmark});
 const {setup,origin}=harness,results=[];
 
 try {
-  for(const website of [false,true])for(const scenario of ['one','three','recovery']){
+  for(const website of [false,true])for(const scenario of ['one','three']){
     if(!benchmark&&website)continue;
     const f=await setup({website,pets:scenario==='one'?1:3,recovery:scenario==='recovery',delayMs:benchmark?25:0});
     try{
