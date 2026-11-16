@@ -109,11 +109,14 @@ function status(f,pet,days){
  * global Date to the requested epoch; makeFixture wraps CURRENT_TIMESTAMP too.
  */
 export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
-  owner='worker-year-player',setTime,onCheckpoint=()=>{},maxRunSteps=10,runExitPolicy='boss'}={}){
+  owner='worker-year-player',setTime,onCheckpoint=()=>{},onWeeklyProgress=()=>{},
+  maxRunSteps=10,runExitPolicy='boss',xpPolicy='baseline'}={}){
   if(!Number.isInteger(days)||days<1||days>365)throw new RangeError('days must be 1..365');
   if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
     throw new RangeError('runExitPolicy must be boss, extract_at_depth7, hybrid3 or hybrid4');
   if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
+  if(!['baseline','timed_train'].includes(xpPolicy))
+    throw new RangeError('xpPolicy must be baseline or timed_train');
   setTime(startAt);
   const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
   const pet=f.createPlayer(owner);
@@ -122,6 +125,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
     scheduledBossDays:0,scheduledExtractionDays:0,exitPoliciesByWeek:{},
     extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
   const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
+  const timedXp={policy:xpPolicy,starts:0,claims:0,rejected:0,awardedPetXp:0,byReason:{}};
   const checkpoints=[];
   const safeAction=async(day,minute,action,payload={})=>{
     setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
@@ -320,6 +324,50 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       if(evolution?.evolution_ready && evolution.next_evolution?.evolution_id){
         await safeAction(day,70,'evolve',{pet_id:pet.petId,evolution_id:evolution.next_evolution.evolution_id});
       }
+      // Optional, truly elapsed 2-hour Training Session after the daily
+      // care, Moon Run and evolution actions. The Worker caps the claim at
+      // two hours and the ordinary 1,200 XP/day cap still applies. Sleep and
+      // Train are blocked while this session is active, so it starts AFTER
+      // all other daily activities and is claimed before the next UTC day.
+      // Do not edit session timestamps or directly credit XP.
+      if(xpPolicy==='timed_train'){
+        const startedActivity=await safeAction(day,80,'activity_start',{activity_type:'train'});
+        if(startedActivity.accepted&&!startedActivity.duplicate){
+          timedXp.starts++;
+          const sessionId=startedActivity.session?.id;
+          if(!sessionId)throw new Error('timed_train_start_missing_session_id');
+          const beforeXp=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+          const claim=await safeAction(day,201,'activity_claim',{session_id:sessionId});
+          if(claim.accepted&&!claim.duplicate){
+            timedXp.claims++;
+            const afterXp=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+            const gain=Math.max(0,afterXp-beforeXp);
+            if(gain!==n(claim.pet_xp_awarded))
+              throw new Error('timed_train_reward_receipt_mismatch');
+            timedXp.awardedPetXp+=gain;
+          }else{
+            timedXp.rejected++;
+            const reason=String(claim.reason||'unknown_claim');
+            timedXp.byReason[reason]=(timedXp.byReason[reason]||0)+1;
+          }
+        }else{
+          timedXp.rejected++;
+          const reason=String(startedActivity.reason||'unknown_start');
+          timedXp.byReason[reason]=(timedXp.byReason[reason]||0)+1;
+        }
+      }
+      if((day+1)%7===0){
+        setTime(startAt+(day+1)*WORKER_YEAR_DAY_MS);
+        const weekProgress={
+          day:day+1,petXp:n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp),
+          growthMarks:n(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks WHERE pet_id=?').get(pet.petId)?.n),
+          weeklyCrests:n(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(pet.petId)?.n),
+          uniqueRelics:n(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_relics WHERE telegram_id=?').get(owner)?.n),
+          acceptedActions:actions.accepted,rejectedActions:actions.rejected,
+          timedXpClaimed:timedXp.claims,
+        };
+        await onWeeklyProgress(weekProgress);
+      }
       if(CHECKPOINT_DAYS.has(day+1)||day+1===days){
         // An adoption at day 0 is 365 full days old at day 365, not at
         // the start of day 364. Advance to the next day's 08:00 boundary
@@ -357,7 +405,7 @@ export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
       final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
       final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
       final.relics>=targets.relics;
-    return {days,startAt:new Date(startAt).toISOString(),owner,runExitPolicy,actions,dailyRuns,weeklyBoss,checkpoints,final,targets,
+    return {days,startAt:new Date(startAt).toISOString(),owner,runExitPolicy,xpPolicy,actions,dailyRuns,weeklyBoss,timedXp,checkpoints,final,targets,
       legendaryVerified:qualified,
       blockers:Object.entries({
         age:ageReached,marks:final.growthMarks>=targets.marks,crests:final.weeklyCrests>=targets.crests,
