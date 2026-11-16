@@ -163,7 +163,9 @@ try {
       await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{enter();await gate;await route.fallback();});
       // Start a known refresh instead of relying on a visibility event that can
       // be suppressed by the just-completed focus-refresh cooldown.
-      await hiddenAuth.page.locator('[data-utility="sync"]').click();
+      // Dispatch in-page so Playwright does not wait for the deliberately
+      // intercepted fetch to finish before the test can release its route gate.
+      await hiddenAuth.page.evaluate(() => document.querySelector('[data-utility="sync"]').click());
       await within(entered,'hidden-auth refresh request');
       await hiddenAuth.page.evaluate(()=>{
         window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
