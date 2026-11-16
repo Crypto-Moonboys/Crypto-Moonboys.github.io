@@ -117,6 +117,7 @@ assert.ok(
   runner.includes("process.env.CI_COMMAND_TIMEOUT_MS") &&
     runner.includes("group === 'visual' ? 12 * 60 * 1000 : 0") &&
     runner.includes("result.error.code === 'ETIMEDOUT'") &&
+    runner.includes("process.platform === 'linux'") &&
     runner.includes("spawnSync('timeout'") &&
     runner.includes("'--kill-after=15s'") &&
     runner.includes("result.status === 124"),
