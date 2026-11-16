@@ -92,3 +92,21 @@ node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3
 ```
 
 Do NOT rewrite live cooldowns, lower XP gates, hide action rejections, or assume the four failed actions are harmless. Evaluate the new `rejectedSamples` before a new year campaign. PR stays draft; no deploy or production migrations.
+
+
+## November 16 — exact 30-day rejection diagnosis and new correction
+
+The user re-ran `--days=30 --strategy=hybrid3 --xp=timed_explore_best_job` with diagnostics. The final 30-day result remained **9,600 XP / Level 16, 30 Marks, 4 Crests, 8 boss victories, 2 distinct relics**. All **30/30 timed Explore claims** awarded 3,960 source Pet XP; all **30/30 available Vault Guard jobs** awarded 1,080 source Pet XP. The 913 accepted actions remained unchanged.
+
+All **four rejected actions** were conclusively identified as ordinary care `train` returning `pet_tired` at **day 8, 15, 22 and 29**, minute 8; none was an Explore claim or Work rejection. Their seven-day cadence followed energy loss from the genuine timed activity after the previous day's gameplay. This is a player-energy scheduling issue, not a reason to weaken rewards or remove the 18-Energy Worker gate.
+
+New simulator-only patch expands conditional genuine Worker Sleep recovery at minute 7 to `timed_explore` and `timed_explore_best_job`, as well as the previously verified `timed_train` policies. It checks the persisted source pet's Energy immediately before the ordinary minute-8 Train action and uses real `sleep` only if Energy <19, preserving baseline policy and all production rules. A new 16-day **real Worker regression** covers both historically failing days 8 and 15, asserting 0 rejected actions, 16 accepted ordinary Train actions, 16 accepted Explore claims and jobs, and authentic journey records. **Patch not yet runtime-tested.**
+
+Next Windows CMD commands after pulling the PR branch:
+```bat
+git pull --ff-only
+node --test --test-name-pattern="Explore XP strategy recovers ordinary Train Energy" scripts\moonpet-worker-year-simulator.test.mjs
+node --test scripts\moonpet-worker-year-simulator.test.mjs
+node scripts\run-moonpet-worker-year-simulation.mjs --days=30 --strategy=hybrid3 --xp=timed_explore_best_job
+```
+The 30-day final `rejectedActions` must be **0**, and Marks/Crests, boss victories, distinct relics and actual Pet XP must be compared rather than assumed. Only then consider another 365-day campaign. No production XP/cooldown/level/migration/deploy changes.
