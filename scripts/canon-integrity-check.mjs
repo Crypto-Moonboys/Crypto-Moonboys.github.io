@@ -44,6 +44,28 @@ export function legacyReviewedStoryPages(treeOutput) {
     .filter(filename => /^wiki\/[a-z0-9][a-z0-9-]*\.html$/u.test(filename));
 }
 
+export function reviewedStoryPullRequest(source = '') {
+  return /\bPR\s*#?(\d+)\b/iu.exec(source)?.[1] || null;
+}
+
+function resolveReviewedStoryBaseline(root, receipt) {
+  try {
+    execFileSync('git', ['cat-file', '-e', `${receipt.commit}^{commit}`], { cwd: root, stdio: 'ignore' });
+    return receipt.commit;
+  } catch {
+    const pullRequest = reviewedStoryPullRequest(receipt.source);
+    if (!pullRequest) return receipt.commit;
+    try {
+      const merged = execFileSync('git',
+        ['log', '--all', '--format=%H', '--fixed-strings', `--grep=(#${pullRequest})`, '-1'],
+        { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+      return merged || receipt.commit;
+    } catch {
+      return receipt.commit;
+    }
+  }
+}
+
 // A prose-approval label alone cannot authorise silently losing a scene or its
 // consequence. Revisions must identify the exact old and replacement evidence.
 export function checkNarrativePreservation(beforeHtml, afterHtml, decisions, filename) {
@@ -231,8 +253,12 @@ export function run(root = ROOT) {
     'sitemap.xml', 'sam-memory.json', 'about/w81-condensed-canon-digest.md', 'about/latest-canon-and-brand-vision.md']) {
     failures.push(...checkPublicDisclosure(fs.readFileSync(path.join(root, filename), 'utf8'), filename));
   }
-  const baselines = new Set([base, ...(locks.reviewed_story_baselines || []).map(b => b.commit)].filter(Boolean));
-  for (const baseline of baselines) {
+  const baselineReceipts = [...(base ? [{ commit: base }] : []), ...(locks.reviewed_story_baselines || [])];
+  const resolvedBaselines = new Set();
+  for (const receipt of baselineReceipts) {
+    const baseline = resolveReviewedStoryBaseline(root, receipt);
+    if (resolvedBaselines.has(baseline)) continue;
+    resolvedBaselines.add(baseline);
     let pages, legacyBaseline = false, rawManifest;
     try {
       rawManifest = execFileSync('git', ['show', `${baseline}:brand-canon/wiki-content-state.json`],
