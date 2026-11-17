@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { checkPage, checkRegister, checkLockChanges, narrativeParagraphs, checkNarrativePreservation, legacyReviewedStoryPages } from './canon-integrity-check.mjs';
+import { checkPage, checkRegister, checkLockChanges, narrativeParagraphs, checkNarrativePreservation, legacyReviewedStoryPages, reviewedStoryPullRequest } from './canon-integrity-check.mjs';
 
 const locks = JSON.parse(fs.readFileSync(new URL('../brand-canon/canon-locks.json', import.meta.url)));
 const decisions = JSON.parse(fs.readFileSync(new URL('../brand-canon/reconciliation-decisions.json', import.meta.url)));
@@ -113,4 +113,10 @@ test('legacy reviewed-story baselines enumerate only safe wiki HTML paths', () =
     'wiki/agent-sam.html',
     'wiki/queen-sarah-p-fly.html'
   ]);
+});
+
+test('reviewed-story receipts identify their durable squash-merge PR', () => {
+  assert.equal(reviewedStoryPullRequest('GK continuation directive for PR1459, 8 October2026'), '1459');
+  assert.equal(reviewedStoryPullRequest('Reviewed in PR #1459'), '1459');
+  assert.equal(reviewedStoryPullRequest('No pull request receipt'), null);
 });
