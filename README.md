@@ -1,6 +1,6 @@
 # Crypto Moonboys
 
-> **Agent and GitHub Actions policy (27 October 2026):** Read [AGENTS.md](AGENTS.md) and [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before work. Routine validation workflows are manual-only; small image/page edits should not queue broad checks. GitHub Pages deployment and its Worker compatibility safety gate remain separate.
+> **Agent and protected-area policy:** Before work, read [AGENTS.md](AGENTS.md), [the protected areas compliance checklist](docs/protected-areas-checklist.md), and [the CI workflow policy](docs/ci-workflow-policy.md). Routine validation workflows are manual-only, but protected contracts and their focused checks remain mandatory. Every PR must report what ran, what did not run, and why. GitHub Pages deployment and its Worker compatibility safety gate remain separate.
 
 ## Current fictional canon — GK direction, 16 November 2026
 

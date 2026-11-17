@@ -4,6 +4,10 @@
 
 **Decision (27 October 2026):** eliminate routine automatic GitHub Actions checks so a small image/page/text change does not queue long, unrelated suites. Agents remain responsible for checking their own work and disclosing risks. This change controls triggers, **not** whether a feature is tested when material.
 
+## Mandatory protected-area contract
+
+The path-to-check mapping is maintained in [the protected areas compliance checklist](protected-areas-checklist.md). It applies even when GitHub Actions are disabled, manual, unavailable, or intentionally not dispatched. Agents must run the focused checks for every matching protected area and disclose omissions and remaining risk in the PR. Manual-only means **no automatic queue**, not **no testing**.
+
 ## What runs automatically
 
 - `.github/workflows/pages.yml` still publishes merged `main` to GitHub Pages (or may be run manually). It **must** retain the NBG course-to-Worker compatibility check before publishing. A failed gate means the new client is not live. Deploy a version-compatible leaderboard Worker first, then rerun Pages.
