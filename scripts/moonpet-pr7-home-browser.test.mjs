@@ -38,7 +38,7 @@ try {
   if(!benchmark)for(const viewport of [{width:360,height:640},{width:1280,height:900}]){
     const f=await setup({pets:3,viewport});
     try{
-      f.block();await f.open({waitForArt:false});await f.started;
+      f.block();await f.open();await within(f.started,'f full-state request start',20000);
       const before=f.f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles').get();
       await f.care('feed');await f.care('clean');
       const saved=f.f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles').get();
@@ -54,7 +54,7 @@ try {
     }finally{await f.close();}
     const switched=await setup({pets:3,viewport});
     try{
-      switched.block();await switched.open({waitForArt:false});await switched.started;
+      switched.block();await switched.open();await within(switched.started,'switched full-state request start',20000);
       const response=switched.page.waitForResponse(r=>r.url().endsWith('/app/action')&&r.request().postDataJSON().action==='switch_pet_slot');
       await switched.page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
       const data=await(await response).json();assert.equal(data.result.accepted,true);
@@ -65,7 +65,7 @@ try {
     }finally{await switched.close();}
     const hidden=await setup({viewport});
     try{
-      hidden.block();await hidden.open({waitForArt:false});await hidden.started;
+      hidden.block();await hidden.open();await within(hidden.started,'hidden full-state request start',20000);
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
       hidden.release();await pause(60);
       const resumed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
@@ -77,7 +77,7 @@ try {
     }finally{await hidden.close();}
     const hiddenModule=await setup({viewport,blockAllFull:true});
     try{
-      hiddenModule.block();await hiddenModule.open({waitForArt:false});await hiddenModule.started;
+      hiddenModule.block();await hiddenModule.open();await within(hiddenModule.started,'hiddenModule full-state request start',20000);
       const deferredNotice=hiddenModule.full().state.notices[0];
       assert.ok(deferredNotice, 'signed fixture must contain a genuinely pending notice');
       assert.equal(hiddenModule.f.sql.prepare('SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key=?').get(hiddenModule.f.owner,deferredNotice.key).shown_at,null);
@@ -115,7 +115,7 @@ try {
     }finally{await delayedTelegram.close();}
     const changedOwner=await setup({website:true,viewport});
     try{
-      changedOwner.block();await changedOwner.open({waitForArt:false});await changedOwner.started;
+      changedOwner.block();await changedOwner.open();await within(changedOwner.started,'changedOwner full-state request start',20000);
       await changedOwner.switchOwner();
       // Account changes invalidate both the loaded save and its membership
       // approval. Refresh must require a reload before sending another actor's
@@ -139,7 +139,7 @@ try {
     if(viewport.width===360){
       const timed=await setup({viewport,clock:true});
       try{
-        timed.block();await timed.open({waitForArt:false});await timed.started;
+        timed.block();await timed.open();await within(timed.started,'timed full-state request start',20000);
         await timed.page.clock.fastForward(20050);await pause(50);
         assert.equal(timed.requests.filter(r=>r.path.endsWith('/state')&&!r.body.mode).length,1,'timed-out warmup has no automatic retry storm');
         await timed.care('clean');timed.release();await pause(100);
