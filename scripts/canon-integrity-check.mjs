@@ -233,12 +233,10 @@ export function run(root = ROOT) {
   }
   const baselines = new Set([base, ...(locks.reviewed_story_baselines || []).map(b => b.commit)].filter(Boolean));
   for (const baseline of baselines) {
-    let pages, legacyBaseline = false;
+    let pages, legacyBaseline = false, rawManifest;
     try {
-      const rawManifest = execFileSync('git', ['show', `${baseline}:brand-canon/wiki-content-state.json`],
+      rawManifest = execFileSync('git', ['show', `${baseline}:brand-canon/wiki-content-state.json`],
         { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
-      pages = JSON.parse(rawManifest).pages;
-      if (!Array.isArray(pages)) throw new Error('baseline manifest pages are unavailable');
     } catch (manifestError) {
       try {
         const tree = execFileSync('git', ['ls-tree', '-r', '--name-only', baseline, '--', 'wiki'],
@@ -247,6 +245,15 @@ export function run(root = ROOT) {
         legacyBaseline = true;
       } catch (treeError) {
         failures.push(`Reviewed-story baseline unavailable or invalid: ${baseline}: ${manifestError.message}; ${treeError.message}`);
+        continue;
+      }
+    }
+    if (!legacyBaseline) {
+      try {
+        pages = JSON.parse(rawManifest).pages;
+        if (!Array.isArray(pages)) throw new Error('baseline manifest pages are unavailable');
+      } catch (error) {
+        failures.push(`Reviewed-story baseline manifest is invalid: ${baseline}: ${error.message}`);
         continue;
       }
     }
