@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { checkPage, checkRegister, checkLockChanges, narrativeParagraphs, checkNarrativePreservation } from './canon-integrity-check.mjs';
+import { checkPage, checkRegister, checkLockChanges, narrativeParagraphs, checkNarrativePreservation, legacyReviewedStoryPages } from './canon-integrity-check.mjs';
 
 const locks = JSON.parse(fs.readFileSync(new URL('../brand-canon/canon-locks.json', import.meta.url)));
 const decisions = JSON.parse(fs.readFileSync(new URL('../brand-canon/reconciliation-decisions.json', import.meta.url)));
@@ -97,4 +97,20 @@ test('markup and additions preserve a scene; a sourced exact replacement remains
   assert.equal(checkNarrativePreservation(wrap(old), wrap(next), receipt, 'wiki/house-of-rackinsats.html').length, 1);
   receipt.decisions[0].paragraph_changes[0].new_sha256 = 'sha256:invented';
   assert.equal(checkNarrativePreservation(wrap(old), wrap(next), receipt, 'wiki/agent-sam.html').length, 1);
+});
+
+test('legacy reviewed-story baselines enumerate only safe wiki HTML paths', () => {
+  const tree = [
+    'wiki/agent-sam.html',
+    'wiki/queen-sarah-p-fly.html',
+    'wiki/not-html.txt',
+    'wiki/subdirectory/hidden.html',
+    '../outside.html',
+    'wiki/UPPERCASE.html',
+    ''
+  ].join('\n');
+  assert.deepEqual(legacyReviewedStoryPages(tree), [
+    'wiki/agent-sam.html',
+    'wiki/queen-sarah-p-fly.html'
+  ]);
 });
