@@ -176,7 +176,11 @@ try {
   if(!benchmark){
     const idle=await setup({clock:true});
     try{
-      await idle.open();await idle.started;await pause(100);
+      await idle.open();
+      // This scenario also owns a frozen Playwright clock, so release the
+      // 250ms background-hydration scheduler before awaiting the request.
+      await idle.page.clock.fastForward(250);await pause(50);
+      await within(idle.started,'idle full-state request start',20000);await pause(100);
       const before=idle.requests.length;
       const saved=idle.f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
       await idle.page.evaluate(()=>{
