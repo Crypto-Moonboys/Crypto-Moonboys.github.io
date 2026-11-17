@@ -139,7 +139,12 @@ try {
     if(viewport.width===360){
       const timed=await setup({viewport,clock:true});
       try{
-        timed.block();await timed.open();await within(timed.started,'timed full-state request start',20000);
+        timed.block();await timed.open();
+        // The installed Playwright clock freezes the 250ms background-hydration
+        // scheduler. Advance that scheduler before waiting for the blocked full
+        // request, then advance through its separate 20s abort deadline.
+        await timed.page.clock.fastForward(250);await pause(50);
+        await within(timed.started,'timed full-state request start',20000);
         await timed.page.clock.fastForward(20050);await pause(50);
         assert.equal(timed.requests.filter(r=>r.path.endsWith('/state')&&!r.body.mode).length,1,'timed-out warmup has no automatic retry storm');
         await timed.care('clean');timed.release();await pause(100);
