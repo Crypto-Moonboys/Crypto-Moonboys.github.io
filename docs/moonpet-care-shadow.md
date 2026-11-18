@@ -21,3 +21,9 @@ GROUP BY day_key, outcome ORDER BY day_key, outcome;
 ```
 
 Local replay and rollback test: `node --test scripts/moonpet-care-shadow.test.mjs`.
+
+## Whole-XP reward rehearsal
+
+Run the read-only query in `scripts/report-moonpet-care-shadow-xp.sql` against wikicoms for a daily comparison with actual awards. Empty results mean there are no settled days. The report models one possible live timing rule: at UTC midnight, fix the day's rate using the latest standing settled strictly before midnight. A settlement during the day first affects the next UTC day. The existing fractional simulator assesses the care day retrospectively and can therefore give a different estimate.
+
+The replay starts from actual post-cap gross XP. At positive standing, the rate is 10% plus up to 15% as standing reaches 770 units. For each account it carries fractional deductions forward in exact parts of 15,400 XP; a full point is counted only when earned awards accumulate enough parts. Exempt days and days starting at zero standing withhold zero. Splitting an award into small receipts has the same daily total. The report aggregates across owners and includes zero-earning days. It does not authorize a live rate, settle a reward or update the XP cap.
