@@ -1,3 +1,34 @@
+# VERIFIED LEGENDARY 365-DAY RESULT — 2026-11-18 (CURRENT AUTHORITATIVE VERDICT)
+
+**Source:** user-executed Windows Node 24 run on branch `sandbox/moonpet-365day-care-audit-20261114`, command `node scripts\\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3 --xp=timed_explore_best_job`. The process completed normally and returned to the Windows prompt. This supersedes the earlier 2026-11-16 Level-38 baseline as the current optimized-strategy verdict; that earlier result remains below as historical evidence.
+
+**FINAL RESULT: `legendaryVerified:true`; `blockers:[]`.**
+
+| Legendary gate | Persisted Day 365 | Required | Verdict |
+| --- | ---: | ---: | --- |
+| Elapsed age | **365 days** | 365 | PASS |
+| Growth Marks | **365** distinct days | 240 | PASS |
+| Weekly Crests | **52** qualification weeks | 44 | PASS |
+| Pet XP | **121,454** | 96,040 Level-50 threshold | PASS |
+| Visible level | **56** | 50 | PASS |
+| Alley King victories | **122** | 15 | PASS |
+| Distinct owned relic IDs | **10** | 10 | PASS |
+| Scrap Metal before final evolution | **520** | 60 | PASS |
+| Evolution Fragments before final evolution | **91** | 40 | PASS |
+| Final evolution | **Stage 5 Legendary Moon Guardian** | Stage 5 | PASS |
+
+**Final evolution settlement is directly visible in the two Day-365 checkpoints:** immediately before Stage 5, the pet was Stage 4 Moon Guardian with 520 Scrap / 91 Fragments; after the legitimate final evolution action it was Stage 5 `legendary_moon_guardian` with 460 Scrap / 51 Fragments. The exact **60 Scrap + 40 Fragment** debit therefore persisted rather than being fabricated.
+
+**Worker/action evidence:** 11,316 accepted actions, **0 rejected**; 365 timed Explore sessions started and 365 claimed, **0 rejected**, awarding **48,180 Pet XP**; 365 server-eligible jobs accepted, **0 rejected**, awarding **18,994 Pet XP**. Job mix: Vault Guard 46, Signal Hacker 9, Drone Mechanic 28, Vault Security 208, Guardian Patrol 74. Daily Runs: 365 started; **122 boss completions + 192 extractions + 51 failures = 365**. No fully qualified but unsettled Weekly Journey weeks.
+
+**Evolution chain persisted in order:** Moon Egg (0) → Street Moonpet (1) → Cyber Moonpet (2) → Elite Moonpet (3) → Moon Guardian (4) → **Legendary Moon Guardian (5)**.
+
+**Conclusion:** under the tested existing Worker rules, the same permanent pet can satisfy every declared Legendary gate within exactly 365 elapsed days using the `hybrid3 + timed_explore_best_job` legal schedule. No XP injection, direct stat edits, reward-rate changes, lowered thresholds, fabricated relics or bypassed evolution costs were required.
+
+**Release boundary remains unchanged:** this is isolated Worker/SQLite proof, not a production deployment. Before merge/deploy, run current branch tests/CI, review PR drift against main and review comments, and separately approve any production migration/deployment. Do not rewrite the already-passing Legendary requirements simply because this simulation succeeded.
+
+---
+
 # VERIFIED 365-DAY RESULT — 2026-11-16 (LATEST, READ FIRST)
 
 > **LATEST VALIDATION — 2026-11-16 08:43 UK:** All active Worker-backed XP regression tests **PASS (11 passed, 0 failed, 1 optional 365-day test skipped)**. The 30-day `hybrid3 + timed_explore_best_job` campaign now produces **9,650 Pet XP / Level 16, 30 Growth Marks, 4 Crests, 8 boss victories, 2 unique relics, 914 accepted actions, 0 rejected**. All 30 Explore claims and 30 eligible jobs settled legitimately. The four historical `pet_tired` rejections are resolved. See [legal XP source audit](moonpet-365-day-legal-xp-source-audit-2026-11-16.md). **NEXT: actual 365-day test using `--xp=timed_explore_best_job`; its Legendary outcome is still unverified.** The old 365-day 57,438-XP baseline below is retained as historical evidence, not current policy performance.
