@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T12:27:32.809Z",
+  "generated_at": "2026-11-18T20:33:39.737Z",
   "summary": {
     "total_pages": 533,
     "underlinked_targets": 134,
@@ -468,7 +468,7 @@
     {
       "url": "/wiki/the-first-witness.html",
       "score": 52,
-      "rank_score": 437,
+      "rank_score": 443,
       "inbound_links": 103,
       "injection_plan_hits": 0,
       "reasons": [
@@ -1456,7 +1456,7 @@
     {
       "url": "/categories/index.html",
       "score": 71,
-      "rank_score": 131,
+      "rank_score": 132,
       "strong_peers": 0,
       "inbound_links": 0,
       "outbound_links": 0,
@@ -1469,7 +1469,7 @@
     {
       "url": "/categories/tools.html",
       "score": 71,
-      "rank_score": 102,
+      "rank_score": 132,
       "strong_peers": 0,
       "inbound_links": 0,
       "outbound_links": 0,
@@ -8677,7 +8677,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8697,7 +8697,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8717,7 +8717,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8737,7 +8737,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8757,7 +8757,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8777,7 +8777,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 1,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8797,7 +8797,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 1,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8817,7 +8817,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8837,7 +8837,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8857,7 +8857,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8877,7 +8877,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8897,7 +8897,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8917,7 +8917,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 1,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8937,7 +8937,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8957,7 +8957,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8977,7 +8977,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -8997,7 +8997,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9017,7 +9017,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9037,7 +9037,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9057,7 +9057,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9077,7 +9077,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9097,7 +9097,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9117,7 +9117,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9137,7 +9137,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9157,7 +9157,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9177,7 +9177,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 0,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -9197,7 +9197,7 @@
       "tag_page_count": 82,
       "dedicated_strong_pages": 1,
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T12:27:34.287Z",
+  "generated_at": "2026-11-18T20:33:41.587Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
@@ -4709,6 +4709,15 @@
       "recommendation": "hold"
     },
     {
+      "url": "/categories/tools.html",
+      "title": "Tools &amp; Platforms",
+      "momentum_score": 31,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 29,
+      "recommendation": "hold"
+    },
+    {
       "url": "/community.html",
       "title": "Battle Chamber | Factions &amp; Missions | Crypto Moonboys",
       "momentum_score": 31,
@@ -4787,15 +4796,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 39,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/categories/tools.html",
-      "title": "Tools &amp; Platforms",
-      "momentum_score": 30,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 44,
       "recommendation": "hold"
     },
     {

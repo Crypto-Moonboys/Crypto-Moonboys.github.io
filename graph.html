@@ -276,10 +276,20 @@
     }
 
     @media (max-width: 640px) {
-      .graph-info-panel { display: none; }
-      .graph-main,
+      .graph-main {
+        flex-direction: column;
+      }
+      .graph-info-panel {
+        order: -1;
+        width: auto;
+        padding: 8px 0;
+        overflow: visible;
+      }
+      .graph-legend { display: none; }
       .graph-canvas-wrap {
-        min-height: 52vh;
+        flex: none;
+        height: max(280px, 52vh);
+        min-height: 0;
       }
     }
   </style>
@@ -289,7 +299,7 @@
 <main id="content" role="main">
     <div class="graph-page-header">
       <h1>🌐 Entity Relationship Graph</h1>
-      <p>Interactive visualisation of knowledge connections across all wiki entities. Click a node to explore its relationships.</p>
+      <p>Explore wiki relationships and links from the published site pages. Select a node to open its page.</p>
     </div>
 
     <div class="graph-toolbar">

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T12:27:33.202Z",
+  "generated_at": "2026-11-18T20:33:40.611Z",
   "phase": "phase_24",
   "summary": {
     "total_targets": 777,
@@ -263,7 +263,7 @@
         "topic:2030 Concord"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -288,7 +288,7 @@
         "topic:40 GK factions"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -313,7 +313,7 @@
         "topic:aether-chain"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -338,7 +338,7 @@
         "topic:belief system"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -363,7 +363,7 @@
         "topic:bitcoin provenance"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -388,7 +388,7 @@
         "topic:bitcoin witness"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -413,7 +413,7 @@
         "topic:covenant"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -438,7 +438,7 @@
         "topic:crypto moonboys bible"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -463,7 +463,7 @@
         "topic:Crypto Moonboys lore"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -488,7 +488,7 @@
         "topic:ethics"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -513,7 +513,7 @@
         "topic:faith tradition"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -538,7 +538,7 @@
         "topic:first witness bible"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -563,7 +563,7 @@
         "topic:forty paths"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -588,7 +588,7 @@
         "topic:GK bible"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -613,7 +613,7 @@
         "topic:graffiti kings bible"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -638,7 +638,7 @@
         "topic:Graffiti Kings lore"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -663,7 +663,7 @@
         "topic:moral philosophy"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -688,7 +688,7 @@
         "topic:no single keeper"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -713,7 +713,7 @@
         "topic:philosophy"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -738,7 +738,7 @@
         "topic:religion"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -763,7 +763,7 @@
         "topic:religious philosophy"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -788,7 +788,7 @@
         "topic:sacred text"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -813,7 +813,7 @@
         "topic:scripture"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -838,7 +838,7 @@
         "topic:spirituality"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -867,7 +867,7 @@
       ],
       "supporting_signals": [
         "gap_score:52",
-        "rank_score:437",
+        "rank_score:443",
         "inbound_links:103",
         "link_demand:30",
         "cluster_size_bonus:20",
@@ -893,7 +893,7 @@
         "topic:theology"
       ],
       "supporting_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:1",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -7577,7 +7577,7 @@
       ],
       "supporting_signals": [
         "gap_score:71",
-        "rank_score:131",
+        "rank_score:132",
         "inbound_links:0",
         "strong_peers:0"
       ],
@@ -7623,24 +7623,6 @@
         "strong_peers:0"
       ],
       "cluster_context": "sam",
-      "recommended_source_pages": []
-    },
-    {
-      "target_url": "/categories/tools.html",
-      "target_slug": "tools",
-      "action_type": "strengthen_cluster_member",
-      "priority_score": 44,
-      "reasons": [
-        "isolated_page",
-        "needs_cluster_integration"
-      ],
-      "supporting_signals": [
-        "gap_score:71",
-        "rank_score:102",
-        "inbound_links:0",
-        "strong_peers:0"
-      ],
-      "cluster_context": "tools",
       "recommended_source_pages": []
     },
     {
@@ -8903,6 +8885,24 @@
         "strong_peers:0"
       ],
       "cluster_context": "join-us-on-the-wax-blockchain",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/categories/tools.html",
+      "target_slug": "tools",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 29,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:71",
+        "rank_score:132",
+        "inbound_links:0",
+        "strong_peers:0"
+      ],
+      "cluster_context": "tools",
       "recommended_source_pages": []
     },
     {

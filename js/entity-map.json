@@ -11774,7 +11774,9 @@
       "First Witness Philosophy",
       "Crypto Moonboys Religion",
       "Graffiti Kings Religion",
-      "GK Religion"
+      "GK Religion",
+      "First Witness: The GK Bible",
+      "the first witness"
     ],
     "tags": [
       "first",
@@ -11818,11 +11820,7 @@
     "source_urls": [
       "/wiki/the-first-witness.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "First Witness: The GK Bible",
-      "the first witness"
-    ]
+    "brand": null
   },
   {
     "entity_id": "the_flesh_fade_autopsy_of_the_zero",

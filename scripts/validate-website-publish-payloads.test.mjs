@@ -4455,12 +4455,20 @@ const stagedFeedOutsideIndex = path.join(stagedFeedOutsideDir, 'wiki-index.json'
 const stagedFeedOutsideBytes = Buffer.from('OUTSIDE FEED MUST NOT CHANGE\n', 'utf8');
 fs.writeFileSync(stagedFeedOutsideIndex, stagedFeedOutsideBytes);
 fs.symlinkSync(stagedFeedOutsideDir, path.join(stagedFeedRoot, 'js'), 'dir');
+const stagedCategories = path.join(stagedFeedDirectory, 'categories');
+fs.mkdirSync(stagedCategories);
+fs.writeFileSync(path.join(stagedCategories, 'new-hub.html'), '<main>Fresh links</main>');
 const stagedFeedGenerator = path.join(stagedFeedScriptsDir, 'fake-generator.cjs');
 fs.writeFileSync(
   stagedFeedGenerator,
   `'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const categoryDirectory = path.join(process.env.TEST_WIKI_ROOT, 'categories');
+const categoryFiles = fs.readdirSync(categoryDirectory);
+if (categoryFiles.join() !== 'new-hub.html' || !fs.readFileSync(path.join(categoryDirectory, categoryFiles[0]), 'utf8').includes('Fresh links')) {
+  throw new Error('graph generators must discover and read the staged category');
+}
 const target = path.join(process.env.TEST_WIKI_ROOT, 'js', 'wiki-index.json');
 fs.writeFileSync(target, '[{"url":"/wiki/staged-child.html"}]\\n', 'utf8');
 if (!fs.readFileSync(target, 'utf8').includes('staged-child')) process.exitCode = 9;
@@ -4483,7 +4491,7 @@ const stagedFeedResult = spawnSync(
       TEST_WIKI_ROOT: stagedFeedRoot,
       WIKI_PUBLISH_ROOT: stagedFeedRoot,
       WIKI_PUBLISH_STAGE_FD: '3',
-      WIKI_PUBLISH_STAGED_OUTPUTS: JSON.stringify(['js/wiki-index.json']),
+      WIKI_PUBLISH_STAGED_OUTPUTS: JSON.stringify(['js/wiki-index.json', 'categories/new-hub.html']),
     },
   }
 );
@@ -5368,6 +5376,11 @@ ${MANUAL_CONTENT_BEGIN}
 ${MANUAL_CONTENT_END}
 </article><div class="category-tags"><a href="/categories/lore.html">Lore</a></div></main></body></html>`, 'utf8');
 authorizePayloadDirectory(manualOnlyRoot, manualOnlyPayloadDir);
+fs.writeFileSync(path.join(manualOnlyRoot, 'index.html'), '<title>Portable home</title>');
+writeJson(path.join(manualOnlyRoot, 'js', 'wiki-index.json'), [
+  { url: '/index.html', title: 'Old homepage title' },
+  { url: '/about.html', title: 'About', category: 'site' },
+]);
 
 runImport({
   payloadDir: manualOnlyPayloadDir,
@@ -5381,7 +5394,18 @@ const manualOnlyWikiIndex = JSON.parse(fs.readFileSync(path.join(manualOnlyRoot,
 const manualOnlyUrls = new Set(manualOnlyWikiIndex.map((entry) => entry.url));
 assert.ok(manualOnlyUrls.has('/wiki/manual-only-page.html'), 'manual-only page must be included in portable search index');
 assert.match(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'timeline-data.json'), 'utf8'), /manual-only-page/);
-assert.match(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'graph-data.json'), 'utf8'), /manual-only-page/);
+const portableGraph = JSON.parse(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'graph-data.json'), 'utf8'));
+const portableStats = JSON.parse(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'site-stats.json'), 'utf8'));
+const portableSitemap = fs.readFileSync(path.join(manualOnlyRoot, 'sitemap.xml'), 'utf8');
+const portableRoutes = [...portableSitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]).pathname);
+assert.deepEqual(portableGraph.nodes.map(node => node.url).sort(), portableRoutes.sort());
+assert.equal(portableRoutes.length, new Set(portableRoutes).size);
+assert.equal(portableGraph.nodes.find(node => node.url === '/')?.title, 'Portable home');
+assert.ok(!portableRoutes.includes('/index.html'));
+assert.ok(portableRoutes.includes('/about.html'));
+assert.ok(portableRoutes.includes('/wiki/manual-only-page.html'));
+assert.equal(portableStats.published_pages, portableRoutes.length);
+assert.equal(portableStats.indexed_pages, 1);
 assert.match(fs.readFileSync(path.join(manualOnlyRoot, 'categories', 'lore.html'), 'utf8'), /\/wiki\/manual-only-page\.html/);
 console.log('PASS manual-only pages remain in search, timeline, graph, and category sync');
 

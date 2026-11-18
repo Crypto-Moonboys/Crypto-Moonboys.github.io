@@ -50,6 +50,7 @@ const original = {
   existsSync: fs.existsSync.bind(fs),
   lstatSync: fs.lstatSync.bind(fs),
   mkdirSync: fs.mkdirSync.bind(fs),
+  readdirSync: fs.readdirSync.bind(fs),
   readFileSync: fs.readFileSync.bind(fs),
   statSync: fs.statSync.bind(fs),
   writeFileSync: fs.writeFileSync.bind(fs),
@@ -64,6 +65,16 @@ function stagedReadPath(filePath) {
   const stagedPath = mappedOutput(filePath);
   return stagedPath && original.existsSync(stagedPath) ? stagedPath : filePath;
 }
+
+// The importer stages a complete copy of the public category HTML. Directory
+// scans must see new hub filenames as well as the updated bytes of existing hubs.
+const categoryDir = path.join(repositoryRoot, 'categories');
+const stagedCategoryDir = path.join(stageRoot, 'categories');
+fs.readdirSync = function stagedReaddirSync(filePath, ...args) {
+  const isCategoryDir = typeof filePath === 'string' && path.resolve(filePath) === categoryDir;
+  const source = isCategoryDir && original.existsSync(stagedCategoryDir) ? stagedCategoryDir : filePath;
+  return original.readdirSync(source, ...args);
+};
 
 fs.existsSync = function stagedExistsSync(filePath) {
   const stagedPath = mappedOutput(filePath);

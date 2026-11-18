@@ -86,74 +86,80 @@ function wikiPageFiles() {
     .sort();
 }
 
-const entries = [];
-const seenLocs = new Set();
-
-function addEntry(loc, changefreq, priority) {
-  if (seenLocs.has(loc)) return;
-  seenLocs.add(loc);
-  entries.push(url(loc, changefreq, priority));
-}
-
-/* 1. Homepage */
-addEntry(`${BASE_URL}/`, 'weekly', '1.0');
-
-/* 2. Approved root/tool pages */
-const SITEMAP_ROOT_PAGE_DEFAULTS = {
-  '/about.html': { changefreq: 'weekly', priority: '0.9' },
-  '/hubs.html': { changefreq: 'weekly', priority: '0.8' },
-  '/sam.html': { changefreq: 'weekly', priority: '0.8' },
-};
-const SITEMAP_ONLY_ROOT_PAGES = [
-  { path: '/moonboy-builder.html', changefreq: 'monthly', priority: '0.6' },
-  { path: '/search.html', changefreq: 'weekly', priority: '1.0' },
-  { path: '/block-topia.html', changefreq: 'daily', priority: '0.9' },
-];
-
-for (const page of APPROVED_ROOT_PAGES) {
-  const urlPath = normalizeUrlPath(page.path);
-  if (urlPath.startsWith('/categories/')) continue;
-  const defaults = SITEMAP_ROOT_PAGE_DEFAULTS[urlPath] || {};
-  if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
-    addEntry(
-      `${BASE_URL}${urlPath}`,
-      page.changefreq || defaults.changefreq || 'monthly',
-      page.priority || defaults.priority || '0.6',
-    );
+// Shared with the visual graph so public hubs follow the same discovery policy.
+function publicSitePages() {
+  const pages = new Map();
+  function addEntry(route, changefreq, priority) {
+    if (!pages.has(route)) pages.set(route, { route, changefreq, priority });
   }
-}
 
-for (const page of SITEMAP_ONLY_ROOT_PAGES) {
-  const urlPath = normalizeUrlPath(page.path);
-  if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
-    addEntry(`${BASE_URL}${urlPath}`, page.changefreq, page.priority);
+  /* 1. Homepage */
+  addEntry('/', 'weekly', '1.0');
+
+  /* 2. Approved root/tool pages */
+  const SITEMAP_ROOT_PAGE_DEFAULTS = {
+    '/about.html': { changefreq: 'weekly', priority: '0.9' },
+    '/hubs.html': { changefreq: 'weekly', priority: '0.8' },
+    '/sam.html': { changefreq: 'weekly', priority: '0.8' },
+  };
+  const SITEMAP_ONLY_ROOT_PAGES = [
+    { path: '/moonboy-builder.html', changefreq: 'monthly', priority: '0.6' },
+    { path: '/search.html', changefreq: 'weekly', priority: '1.0' },
+    { path: '/block-topia.html', changefreq: 'daily', priority: '0.9' },
+  ];
+
+  for (const page of APPROVED_ROOT_PAGES) {
+    const urlPath = normalizeUrlPath(page.path);
+    if (urlPath.startsWith('/categories/')) continue;
+    const defaults = SITEMAP_ROOT_PAGE_DEFAULTS[urlPath] || {};
+    if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
+      addEntry(
+        urlPath,
+        page.changefreq || defaults.changefreq || 'monthly',
+        page.priority || defaults.priority || '0.6',
+      );
+    }
   }
+
+  for (const page of SITEMAP_ONLY_ROOT_PAGES) {
+    const urlPath = normalizeUrlPath(page.path);
+    if (fs.existsSync(path.join(ROOT, urlPath.slice(1)))) {
+      addEntry(urlPath, page.changefreq, page.priority);
+    }
+  }
+
+  /* 3. /about/*.html */
+  // about/index.html is a noindex redirect to /about.html - excluded from sitemap
+  for (const file of htmlFiles(path.join(ROOT, 'about')).filter(f => f !== 'index.html')) {
+    addEntry(`/about/${file}`, 'monthly', '0.6');
+  }
+
+  /* 4. /categories/*.html */
+  for (const file of htmlFiles(path.join(ROOT, 'categories'))) {
+    const priority = file === 'index.html' ? '1.0' : '0.9';
+    addEntry(`/categories/${file}`, 'weekly', priority);
+  }
+
+  return [...pages.values()];
 }
 
-/* 3. /about/*.html */
-// about/index.html is a noindex redirect to /about.html - excluded from sitemap
-for (const file of htmlFiles(path.join(ROOT, 'about')).filter(f => f !== 'index.html')) {
-  addEntry(`${BASE_URL}/about/${file}`, 'monthly', '0.6');
+function writeSitemap() {
+  const entries = publicSitePages().map(({ route, changefreq, priority }) =>
+    url(BASE_URL + route, changefreq, priority));
+  for (const file of wikiPageFiles()) {
+    entries.push(url(`${BASE_URL}/wiki/${file}`, 'weekly', '0.7'));
+  }
+
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...entries,
+    '</urlset>',
+  ].join('\n') + '\n';
+
+  fs.writeFileSync(OUTPUT, xml, 'utf8');
+  console.log(`sitemap.xml written - ${entries.length} URLs (lastmod omitted: no reliable per-page dates)`);
 }
 
-/* 4. /categories/*.html */
-for (const file of htmlFiles(path.join(ROOT, 'categories'))) {
-  const priority = file === 'index.html' ? '1.0' : '0.9';
-  addEntry(`${BASE_URL}/categories/${file}`, 'weekly', priority);
-}
-
-/* 5. /wiki/*.html */
-for (const file of wikiPageFiles()) {
-  addEntry(`${BASE_URL}/wiki/${file}`, 'weekly', '0.7');
-}
-
-/* Write output */
-const xml = [
-  '<?xml version="1.0" encoding="UTF-8"?>',
-  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...entries,
-  '</urlset>',
-].join('\n') + '\n';
-
-fs.writeFileSync(OUTPUT, xml, 'utf8');
-console.log(`sitemap.xml written - ${entries.length} URLs (lastmod omitted: no reliable per-page dates)`);
+if (require.main === module) writeSitemap();
+module.exports = { publicSitePages, BASE_URL };

@@ -2,7 +2,7 @@
 /**
  * scripts/generate-graph-data.js
  *
- * Derives js/graph-data.json from entity-graph.json and wiki-index.json.
+ * Combines wiki relationships with links between canonical sitemap pages.
  * Produces a deterministic nodes + edges structure suitable for graph
  * visualisation without any external API dependencies.
  *
@@ -32,6 +32,9 @@
 
 const fs   = require('fs');
 const path = require('path');
+
+const { publicSitePages, BASE_URL } = require('./generate-sitemap.js');
+const { tokenizeActiveHtml, readHtmlAttribute, decodeHtmlAttributeValue } = require('./wiki-html-structure.mjs');
 
 const ROOT              = path.resolve(__dirname, '..');
 const WIKI_INDEX_PATH   = path.join(ROOT, 'js', 'wiki-index.json');
@@ -96,24 +99,43 @@ function main() {
   const wikiIndex   = readJson(WIKI_INDEX_PATH);
   const entityGraph = readJson(ENTITY_GRAPH_PATH);
 
-  // Build a lookup: url -> index entry
-  const indexByUrl = new Map();
-  for (const entry of wikiIndex) {
-    indexByUrl.set(entry.url, entry);
-  }
-
   // --- Nodes ---
-  // One node per canonical wiki-index entry (deterministic: sorted by url)
+  // Preserve search metadata for indexed pages. Other sitemap pages have no editorial scores.
   const nodes = wikiIndex
     .map(entry => ({
       id:              entry.url,
-      title:           entry.title || '',
+      title:           decodeHtmlAttributeValue(entry.title || ''),
       url:             entry.url,
-      category:        (entry.rank_signals && entry.rank_signals.category) || 'unknown',
+      category:        entry.url.startsWith('/categories/') ? 'categories' : entry.rank_signals?.category || 'unknown',
       rank_score:      entry.rank_score || 0,
       authority_score: (entry.rank_signals && entry.rank_signals.authority_score) || 0,
-    }))
-    .sort((a, b) => compareStrings(a.id, b.id));
+    }));
+  const indexedUrls = new Set(nodes.map(node => node.id));
+  const siteLinks = new Map();
+  for (const { route } of publicSitePages()) {
+    const html = fs.readFileSync(path.join(ROOT, route === '/' ? 'index.html' : route.slice(1)), 'utf8');
+    if (!indexedUrls.has(route)) {
+      const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim();
+      if (!title) throw new Error(`Missing page title: ${route}`);
+      const category = route.split('/')[1];
+      nodes.push({ id: route, url: route, title: decodeHtmlAttributeValue(title),
+        category: category === 'categories' || category === 'about' ? category : 'site' });
+    }
+    const targets = new Set();
+    let inMain = false;
+    for (const tag of tokenizeActiveHtml(html)) {
+      if (tag.type !== 'tag' || tag.foreignContent || tag.shadowContent) continue;
+      if (tag.name === 'main') inMain = !tag.closing;
+      if (!inMain || tag.closing || tag.name !== 'a') continue;
+      const href = readHtmlAttribute(tag.raw, 'href').value;
+      if (!href || !URL.canParse(href, BASE_URL + route)) continue;
+      const target = new URL(href, BASE_URL + route);
+      const targetPath = target.pathname === '/index.html' ? '/' : target.pathname;
+      if (target.origin === BASE_URL && targetPath !== route) targets.add(targetPath);
+    }
+    siteLinks.set(route, targets);
+  }
+  nodes.sort((a, b) => compareStrings(a.id, b.id));
 
   // Set of known node ids for fast lookup
   const nodeIds = new Set(nodes.map(n => n.id));
@@ -153,9 +175,16 @@ function main() {
     }
   }
 
+  // A public page link is an observed connection, independent of the wiki similarity scores.
+  for (const [source, targets] of siteLinks) {
+    for (const target of targets) {
+      if (nodeIds.has(target)) edges.push({ source, target, kind: 'page-link', weight: 0.5 });
+    }
+  }
+
   // Sort edges deterministically: source asc, then score desc
   edges.sort((a, b) =>
-    compareStrings(a.source, b.source) || b.score - a.score || compareStrings(a.target, b.target)
+    compareStrings(a.source, b.source) || (b.score || 0) - (a.score || 0) || compareStrings(a.target, b.target)
   );
 
   const { generated_at, verified_at } = preserveTimestampsIfStable(nodes, edges);

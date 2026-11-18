@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T12:27:34.379Z",
+  "generated_at": "2026-11-18T20:33:41.286Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
@@ -5228,6 +5228,16 @@
       "governance_action": "defer"
     },
     {
+      "url": "/categories/tools.html",
+      "title": "Tools &amp; Platforms",
+      "governance_priority_score": 15,
+      "trust_band": "low",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "defer"
+    },
+    {
       "url": "/community.html",
       "title": "Battle Chamber | Factions &amp; Missions | Crypto Moonboys",
       "governance_priority_score": 15,
@@ -5251,16 +5261,6 @@
       "url": "/paths.html",
       "title": "📖 Reading Paths — The Crypto Moonboys GK Wiki",
       "governance_priority_score": 15,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/categories/tools.html",
-      "title": "Tools &amp; Platforms",
-      "governance_priority_score": 14,
       "trust_band": "low",
       "authority_band": "weak",
       "narrative_importance": 0,
