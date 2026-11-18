@@ -50,7 +50,7 @@ No reward amount, daily cap, cooldown, boss difficulty or quest target changed.
 | Contracts and Practice | Saved six/ten-room routes, choices and boss endings; first three qualifying daily Contract bonuses remain bounded; Practice remains repeatable and local |
 | Districts and stories | Authored decisions, saved outcomes, mastery/boss checkpoints and repeatable story cycles; existing daily limits remain |
 | Weekly Boss and seasonal raids | Attempts, defeat and recoverable rewards; saved raids remain reachable after switching pets or seasons |
-| Season tiers and completion | Tier claims and final evolution plus 60 qualified Marks / 10 Crests; no separate season-completion boss exists |
+| Season tiers and completion | Historical audited-build marker: tier claims and final evolution plus 60 qualified Marks / 10 Crests (superseded for permanent completion by 365 days / 240 Marks / 44 Crests); no separate season-completion boss exists |
 | Shop, market, crafting, gear and cosmetics | Existing costs, unlocks, capacity, item use, goals and retry protections remain covered |
 | Arena and Kaiju | Existing capability/level/hatched-pet gates, matchmaking and settlement suites; no combat access change |
 

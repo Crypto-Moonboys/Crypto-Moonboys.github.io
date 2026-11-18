@@ -81,7 +81,7 @@ Standard run without canonical boss evidence.
 | Official Daily Run | Account/day reservation, ten rooms, tactics, Alley King, extraction, terminal records and safe retries |
 | Contracts and Practice | Saved six-/ten-room Contract goals, drafts and final boss; repeatable rank and capped bonus. Practice stays local with no official XP |
 | Districts, stories, seasonal raids | Saved choices, daily limits, checkpoint/boss endings and original-pet reward recovery |
-| Season tiers and Signal Sovereign | Tier claims; final evolution plus 60 Marks/10 Crests; three finale builds, failure/retry, saved victory and one payout |
+| Season tiers and Signal Sovereign | Historical audited-build marker: tier claims and final evolution plus 60 Marks/10 Crests (superseded for permanent completion by 365 days/240 Marks/44 Crests); three finale builds, failure/retry, saved victory and one payout |
 | Jobs, activities, expeditions, trade, shop, crafting and gear | Costs, capacity, source receipts, equipment use, mastery and interrupted claims |
 | Arena and Kaiju | Existing combat eligibility, battle ownership and settlement regression suites |
 | Pet leaderboards and activity | Daily/weekly/seasonal/all-time projections, accepted XP and original-pet attribution; paid identity repair adds no XP |

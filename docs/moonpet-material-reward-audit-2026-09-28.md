@@ -68,7 +68,7 @@ later by spending inventory.
 | Standard Run | 100-room ending; choice-specific gear mastery, banked rewards and final-step recovery |
 | Contracts / Practice | Six-/ten-room saved Contracts with rank and bounded daily XP; unlimited local Practice without official rewards |
 | Weekly Boss / raids / districts / stories | Existing authored choices, endings, source-backed reward claims and recovery |
-| Season | Tier claims and final evolution plus 60 Marks / 10 Crests; no separate season-final boss |
+| Season | Historical audited-build marker: tier claims and final evolution plus 60 Marks / 10 Crests (superseded for permanent completion by 365 days / 240 Marks / 44 Crests); no separate season-final boss |
 | Equipment / crafting / Style Lab | Shared inventory, paid upgrade effects, material use/caps, single settlement and completed public activity |
 | Public rankings | Daily/weekly accepted Pet XP, seasonal XP, all-time owned-pet XP and separate Community XP; materials and collection actions do not inflate scores |
 

@@ -48,7 +48,7 @@ remain unchanged. Contracts still provide no Journey credit or extra currency.
 | Daily Journey | Three of five qualifying objectives earn the existing Growth Mark; source evidence and recovery remain server-owned |
 | Weekly Journey | All five objectives earn the existing Crest, including the required cache days; historical recovery keeps threshold-crossing dates |
 | Weekly Boss and seasonal raid | Existing fights, victory rewards and saved reward recovery; no new attack is required to recover an earned reward |
-| Season tiers and pet completion | Existing XP tier claims; pet completion requires final evolution, 60 Growth Marks and 10 Weekly Crests |
+| Season tiers and pet completion | Historical audited-build marker: existing XP tier claims; completion then used final evolution, 60 Growth Marks and 10 Weekly Crests (superseded for permanent completion by 365 days, 240 Marks and 44 Crests) |
 
 The seven daily missions have no separate all-seven completion payout, and pet
 season completion has no additional final boss. Breeding, post-season Traits,

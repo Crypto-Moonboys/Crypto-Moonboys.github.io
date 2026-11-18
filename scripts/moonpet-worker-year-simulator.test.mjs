@@ -1,0 +1,321 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { makeFixture } from './moonpet-worker-virtual-player.mjs';
+import { getPetOwnershipPeriod, getPetJourneyWeek } from '../workers/moonboys-api/pets/ownership-period.js';
+import { simulateWorkerCampaign,resolveWorkerRunDayPolicy,WORKER_YEAR_START,WORKER_YEAR_DAY_MS,WORKER_YEAR_TARGETS } from './moonpet-worker-year-simulator.mjs';
+
+test('week 14: real Worker care event persists a permanent-pet qualification week beyond legacy limit',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  const f=makeFixture(()=>Date.now());
+  try{
+    const p=f.createPlayer('virtual-permanent-week14');
+    const ownership=f.sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=?').get(p.petId);
+    assert.equal(ownership.journey_clock,'created_at','a newly adopted pet must use its own saved creation date, not legacy quarter weeks');
+    const period=getPetOwnershipPeriod(ownership.season_key,ownership.created_at,ownership.journey_clock);
+    const week14At=WORKER_YEAR_START+13*7*WORKER_YEAR_DAY_MS+60_000;
+    assert.equal(getPetJourneyWeek(period,new Date(week14At)),14,'week 14 must follow exactly 13 full ownership weeks');
+    t.mock.timers.setTime(week14At);
+    const result=await f.action(p.owner,'feed',{request_id:'year-week14-source-feed'});
+    assert.equal(result.accepted,true,JSON.stringify(result));
+    const source=f.sql.prepare("SELECT event_type,day_key,pet_id FROM telegram_pet_events WHERE telegram_id=? AND event_type='feed' AND status='accepted' ORDER BY rowid DESC LIMIT 1").get(p.owner);
+    assert.equal(source?.day_key,new Date(week14At).toISOString().slice(0,10),'real Worker must save the source action on the simulated UTC day');
+    assert.equal(source?.pet_id,p.petId);
+    const rows=f.sql.prepare(`SELECT qualification_week,objective_id,status FROM telegram_pet_weekly_journey_objectives
+      WHERE pet_id=? ORDER BY qualification_week DESC`).all(p.petId);
+    assert.ok(rows.some(row=>row.qualification_week===14 && row.objective_id==='weekly_care' && row.status==='accepted'),
+      'permanent pet must accept genuine Worker evidence in week 14: '+JSON.stringify({ownership,week14At:new Date(week14At).toISOString(),source,rows}));
+    const tableNames=['telegram_pet_weekly_journey_objectives','telegram_pet_weekly_journey_receipts','telegram_pet_weekly_crests'];
+    for(const table of tableNames){
+      const ddl=f.sql.prepare('SELECT sql FROM sqlite_master WHERE type=? AND name=?').get('table',table)?.sql;
+      assert.ok(ddl,'missing migrated table '+table);
+      assert.doesNotMatch(ddl,/qualification_week\s+INTEGER[^,]*BETWEEN\s+1\s+AND\s+13/i,
+        'legacy 13-week schema cap must be lifted: '+table);
+    }
+    assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(p.petId).n,0,
+      'one care action alone must not award a Crest');
+  }finally{f.close();t.mock.timers.reset();}
+});
+
+
+test('legacy-quarter pet preserves the real quarter boundary for week 14 after migration 085',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  const f=makeFixture(()=>Date.now());
+  try{
+    const pet=f.createPlayer('virtual-legacy-quarter-week14');
+    // Explicit fixture-only legacy pet, as opposed to newly adopted pets.
+    // No XP, Crest, event, or timestamp is pre-awarded.
+    f.sql.prepare("UPDATE telegram_pet_season_slots SET journey_clock='legacy_quarter' WHERE pet_id=?").run(pet.petId);
+    const slot=f.sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=?').get(pet.petId);
+    const period=getPetOwnershipPeriod(slot.season_key,slot.created_at,slot.journey_clock);
+    const quarterEnd=Date.parse(period.legacy_end_at);
+    assert.ok(Number.isFinite(quarterEnd),'legacy quarter must have saved season end');
+    const boundary=quarterEnd+60_000;
+    assert.equal(getPetJourneyWeek(period,new Date(boundary)),14);
+    t.mock.timers.setTime(boundary);
+    const result=await f.action(pet.owner,'feed',{request_id:'legacy-week14-worker-care'});
+    assert.equal(result.accepted,true,JSON.stringify(result));
+    const rows=f.sql.prepare("SELECT qualification_week FROM telegram_pet_weekly_journey_objectives WHERE pet_id=? AND objective_id='weekly_care' AND status='accepted'").all(pet.petId);
+    assert.ok(rows.some(row=>row.qualification_week===14),
+      'legacy-quarter pet must earn authentic week-14 source evidence after migration 085: '+JSON.stringify({slot,quarterEnd:new Date(quarterEnd).toISOString(),rows}));
+  }finally{f.close();t.mock.timers.reset();}
+});
+
+test('short real Worker calendar runs and never fabricates Legendary',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({days:2,startAt:WORKER_YEAR_START,
+      owner:'virtual-two-day-real-worker',setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(result.days,2);
+    assert.equal(result.final.verifiedFromWorkerPersistedRows,true);
+    assert.equal(result.legendaryVerified,false);
+    assert.ok(result.actions.accepted>0);
+    assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.equal(result.dailyRuns.started<=2,true);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    assert.equal(result.final.relics,result.final.distinctRelics);
+    console.log('MOONPET_TWO_DAY_WORKER_TRACE',JSON.stringify(result));
+  }finally{t.mock.timers.reset();}
+});
+
+test('14-day real Worker weekly boss attempt reaches genuine Weekly Journey evidence',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({days:14,startAt:WORKER_YEAR_START,
+      owner:'virtual-two-week-weekly-boss',
+      setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.ok(result.dailyRuns.preparation.accepted>0,
+      'an active campaign must use only genuinely accepted Worker care to restore degraded conditions');
+    assert.equal(result.dailyRuns.preparation.attempts,
+      result.dailyRuns.preparation.accepted+result.dailyRuns.preparation.blocked);
+    assert.ok(result.dailyRuns.preparation.snapshots.length>=14,
+      'each UTC day must have an inspectable source-pet care snapshot before the Moon Run');
+    assert.ok(result.weeklyBoss.previews>=14,'every simulated UTC day checks boss eligibility');
+    const weeks=Object.values(result.final.weeklyByWeek);
+    const bossEvidence=weeks.reduce((sum,week)=>sum+(week.weekly_boss_attempt?.progress||0),0);
+    const checkIns=weeks.reduce((sum,week)=>sum+(week.weekly_check_in?.progress||0),0);
+    const training=weeks.reduce((sum,week)=>sum+(week.weekly_training?.progress||0),0);
+    assert.ok(training>=3 && checkIns>=2,'care and check-in source receipts must survive within their ownership week');
+    assert.ok(result.weeklyBoss.accepted>=1,
+      'at least one legal Weekly Boss action must be accepted after reaching level five: '+JSON.stringify(result.weeklyBoss));
+    assert.ok(result.weeklyBoss.accepted<=2,
+      'one accepted boss source per pet ownership week; no unnecessary daily boss farming: '+JSON.stringify(result.weeklyBoss));
+    assert.ok(bossEvidence>=1,
+      'accepted Weekly Boss action must yield genuine source-backed Weekly Journey evidence: '+JSON.stringify({boss:result.weeklyBoss,weeks:result.final.weeklyByWeek}));
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[],
+      'Worker must persist one Crest for every genuinely 5/5 qualified week: '+JSON.stringify({
+        qualified:result.final.qualifyingWeeks,sourceEvidence:result.final.weeklyByWeek,
+      }));
+    console.log('MOONPET_TWO_WEEK_WEEKLY_OBJECTIVE_EVIDENCE',JSON.stringify({
+      boss:result.weeklyBoss,weeks:result.final.weeklyByWeek,crests:result.final.weeklyCrests,
+      runs:result.dailyRuns,officialRunsByWeek:result.final.officialRunsByWeek,marks:result.final.growthMarks,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('hybrid policies allocate exact legal boss/extraction days per ownership week',()=>{
+  assert.deepEqual(Array.from({length:14},(_,d)=>resolveWorkerRunDayPolicy('hybrid3',d)),[
+    ...Array(3).fill('boss'),...Array(4).fill('extract_at_depth7'),
+    ...Array(3).fill('boss'),...Array(4).fill('extract_at_depth7'),
+  ]);
+  assert.deepEqual(Array.from({length:7},(_,d)=>resolveWorkerRunDayPolicy('hybrid4',d)),[
+    ...Array(4).fill('boss'),...Array(3).fill('extract_at_depth7'),
+  ]);
+  assert.equal(resolveWorkerRunDayPolicy('boss',13),'boss');
+  assert.equal(resolveWorkerRunDayPolicy('extract_at_depth7',13),'extract_at_depth7');
+  assert.throws(()=>resolveWorkerRunDayPolicy('fake',0),/unknown runExitPolicy/);
+  assert.throws(()=>resolveWorkerRunDayPolicy('hybrid3',-1),/invalid simulation day/);
+});
+
+test('hybrid 14-day Worker campaign retains genuine boss wins and extraction receipts',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days:14,startAt:WORKER_YEAR_START,owner:'virtual-hybrid3-player',
+      runExitPolicy:'hybrid3',setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(result.runExitPolicy,'hybrid3');
+    assert.equal(result.dailyRuns.scheduledBossDays,6);
+    assert.equal(result.dailyRuns.scheduledExtractionDays,8);
+    assert.deepEqual(result.dailyRuns.exitPoliciesByWeek,{'1':{boss:3,extract:4},'2':{boss:3,extract:4}});
+    assert.ok(result.dailyRuns.started>0);
+    assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    assert.equal(result.final.relics,result.final.distinctRelics);
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[],
+      'a five-of-five genuine qualifying week must not be missing its real Crest');
+    console.log('MOONPET_WORKER_HYBRID3_14_DAY_RESULT',JSON.stringify({
+      actions:result.actions.attempts,runs:result.dailyRuns,
+      marks:result.final.growthMarks,crests:result.final.weeklyCrests,
+      bosses:result.final.alleyKingWins,relics:result.final.relics,
+      runWeeks:result.final.officialRunsByWeek,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('opt-in extraction policy settles only legal Worker exits and real daily Growth Marks',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({days:14,startAt:WORKER_YEAR_START,
+      owner:'virtual-extract-policy',runExitPolicy:'extract_at_depth7',
+      setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(result.runExitPolicy,'extract_at_depth7');
+    assert.ok(result.dailyRuns.extractAttempts>0,
+      'some genuinely cleared seven-room runs should offer legitimate extraction');
+    assert.equal(result.dailyRuns.extractAttempts,result.dailyRuns.extractions+result.dailyRuns.extractionRejected);
+    assert.ok(result.dailyRuns.extractions>0,
+      'an accepted real Worker extraction must be observed, never manufactured');
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    assert.equal(result.final.relics,result.final.distinctRelics);
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[]);
+    const extraction=result.final.dailyObjectives.find(row=>row.challenge_id==='daily_extraction');
+    assert.ok(extraction?.days>0,'only a real saved Daily Journey extraction objective may count');
+    console.log('MOONPET_AUTHENTIC_EXTRACTION_POLICY',JSON.stringify({
+      days:result.days,runExitPolicy:result.runExitPolicy,runResults:result.dailyRuns,
+      marks:result.final.growthMarks,crests:result.final.weeklyCrests,
+      relics:result.final.relics,extractionEvidence:extraction,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('real Worker two-hour training sessions settle source-pet XP exactly once',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const baseline=await simulateWorkerCampaign({days:7,startAt:WORKER_YEAR_START,
+      owner:'virtual-timed-xp-baseline',
+      setTime:at=>t.mock.timers.setTime(at)});
+    const enhanced=await simulateWorkerCampaign({days:7,startAt:WORKER_YEAR_START,
+      owner:'virtual-timed-xp-baseline',xpPolicy:'timed_train',
+      setTime:at=>t.mock.timers.setTime(at)});
+    assert.equal(baseline.xpPolicy,'baseline');
+    assert.equal(baseline.timedXp.claims,0);
+    assert.equal(enhanced.xpPolicy,'timed_train');
+    assert.equal(enhanced.timedXp.starts,7,'every day starts a new genuine timed session');
+    assert.equal(enhanced.timedXp.claims,7,'every timed session must settle a real Worker claim');
+    assert.equal(enhanced.timedXp.rejected,0,JSON.stringify(enhanced.timedXp));
+    assert.equal(enhanced.actions.rejected,0,JSON.stringify(enhanced.actions.byReason));
+    assert.ok(enhanced.timedXp.awardedPetXp>0,'XP must be earned from persisted Worker receipts');
+    assert.equal(enhanced.actions.byAction.activity_claim.accepted,7);
+    assert.ok(enhanced.final.petXp>baseline.final.petXp,
+      'legal activity must improve the actual pet XP trajectory');
+    assert.equal(enhanced.final.growthMarks,enhanced.final.distinctGrowthDays);
+    assert.equal(enhanced.final.weeklyCrests,enhanced.final.distinctQualificationWeeks);
+    assert.deepEqual(enhanced.final.fullyQualifiedButUnsettledWeeks,[]);
+    console.log('MOONPET_TIMED_TRAIN_XP_COMPARISON',JSON.stringify({
+      baselineXp:baseline.final.petXp,enhancedXp:enhanced.final.petXp,
+      realTimedXpAwarded:enhanced.timedXp.awardedPetXp,
+      marks:enhanced.final.growthMarks,crests:enhanced.final.weeklyCrests,
+      sourcePet:enhanced.final.petId,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('real Worker chooses only server-eligible higher-XP jobs, not locked future roles',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days:7,startAt:WORKER_YEAR_START,owner:'virtual-best-job-policy',
+      xpPolicy:'best_job',setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(result.xpPolicy,'best_job');
+    assert.equal(result.jobXp.upgradedAttempts,7);
+    assert.equal(result.jobXp.accepted,7,JSON.stringify(result.jobXp));
+    assert.equal(result.jobXp.rejected,0);
+    assert.equal(result.actions.rejected,0);
+    assert.ok(result.jobXp.awardedPetXp>=7*18,
+      'server-advertised better job must be no worse than legal Street Artist');
+    assert.equal(Object.values(result.jobXp.byJob).reduce((a,b)=>a+b,0),7);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.deepEqual(result.final.fullyQualifiedButUnsettledWeeks,[]);
+    console.log('MOONPET_ELIGIBLE_BEST_JOB_XP',JSON.stringify({
+      jobs:result.jobXp,level:result.final.level,petXp:result.final.petXp,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('real Worker eight-hour Explore and best-eligible job earn source-pet XP',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days:3,startAt:WORKER_YEAR_START,owner:'virtual-legal-explore-job',
+      xpPolicy:'timed_explore_best_job',runExitPolicy:'hybrid3',
+      setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(result.timedXp.starts,3);
+    assert.equal(result.timedXp.claims,3,
+      'three legal eight-hour Explore sessions must be claimable from their actual Worker receipts');
+    assert.equal(result.timedXp.rejected,0,JSON.stringify(result.timedXp));
+    assert.equal(result.jobXp.accepted,3,JSON.stringify(result.jobXp));
+    assert.equal(result.jobXp.rejected,0,JSON.stringify(result.jobXp));
+    assert.equal(result.actions.rejected,0,JSON.stringify(result.actions.byReason));
+    assert.ok(result.timedXp.awardedPetXp>=3*100,
+      'uncapped eight-hour Explore must produce more XP than the two-hour Training alternative');
+    assert.ok(result.jobXp.awardedPetXp>=3*18);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    console.log('MOONPET_LEGAL_EXPLORE_JOB_XP',JSON.stringify({
+      timedXp:result.timedXp,jobXp:result.jobXp,finalPetXp:result.final.petXp,
+      level:result.final.level,marks:result.final.growthMarks,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('Explore XP strategy recovers ordinary Train Energy on ownership-week boundaries',async t=>{
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const campaign=await simulateWorkerCampaign({
+      days:16,startAt:WORKER_YEAR_START,owner:'virtual-explore-week-boundary-energy',
+      runExitPolicy:'hybrid3',xpPolicy:'timed_explore_best_job',
+      setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.equal(campaign.actions.rejected,0,
+      JSON.stringify({reasons:campaign.actions.byReason,samples:campaign.actions.rejectedSamples}));
+    assert.equal(campaign.actions.byAction.train.accepted,16,
+      'ordinary Train must be accepted on days 8 and 15 after real Sleep recovery');
+    assert.equal(campaign.timedXp.starts,16);
+    assert.equal(campaign.timedXp.claims,16);
+    assert.equal(campaign.timedXp.rejected,0);
+    assert.equal(campaign.jobXp.accepted,16);
+    assert.equal(campaign.jobXp.rejected,0);
+    assert.equal(campaign.final.growthMarks,campaign.final.distinctGrowthDays);
+    assert.deepEqual(campaign.final.fullyQualifiedButUnsettledWeeks,[]);
+    console.log('MOONPET_EXPLORE_WEEK_BOUNDARY_ENERGY',JSON.stringify({
+      actionsAccepted:campaign.actions.accepted,rejected:campaign.actions.rejected,
+      trainActions:campaign.actions.byAction.train,
+      timedClaims:campaign.timedXp.claims,
+      jobs:campaign.jobXp.accepted,
+      petXp:campaign.final.petXp,marks:campaign.final.growthMarks,
+      crests:campaign.final.weeklyCrests,
+    }));
+  }finally{t.mock.timers.reset();}
+});
+
+test('opt-in real Worker 7/30/90/365-day same-pet campaign; no fabricated progression',async t=>{
+  const days=Number(process.env.MOONPET_WORKER_YEAR_DAYS||0);
+  if(!days) return t.skip('set MOONPET_WORKER_YEAR_DAYS=365 to run full real-Worker gameplay');
+  assert.ok(Number.isInteger(days)&&days>=7&&days<=365);
+  t.mock.timers.enable({apis:['Date'],now:WORKER_YEAR_START});
+  try{
+    const result=await simulateWorkerCampaign({
+      days,startAt:WORKER_YEAR_START,owner:'year-simulation-player',
+      setTime:at=>t.mock.timers.setTime(at),
+    });
+    assert.ok(result.actions.accepted>0);
+    assert.equal(result.actions.attempts,result.actions.accepted+result.actions.rejected);
+    assert.equal(result.final.growthMarks,result.final.distinctGrowthDays);
+    assert.equal(result.final.weeklyCrests,result.final.distinctQualificationWeeks);
+    assert.equal(result.final.relics,result.final.distinctRelics);
+    assert.ok(result.final.growthMarks<=days);
+    assert.ok(result.final.weeklyCrests<=Math.ceil(days/7)+1);
+    if(days<365)assert.equal(result.legendaryVerified,false);
+    if(days===365) {
+      assert.equal(result.targets.marks,WORKER_YEAR_TARGETS.marks);
+      assert.equal(result.targets.crests,WORKER_YEAR_TARGETS.crests);
+      assert.equal(result.targets.relics,WORKER_YEAR_TARGETS.relics);
+      console.log('MOONPET_365_DAY_REAL_WORKER_RESULT',JSON.stringify(result));
+    }else console.log('MOONPET_WORKER_CAMPAIGN_RESULT',JSON.stringify(result));
+  }finally{t.mock.timers.reset();}
+});

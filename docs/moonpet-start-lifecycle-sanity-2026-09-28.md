@@ -82,7 +82,7 @@ not proof of correct execution. The full regression matrix includes:
 | Standard Run and official Daily Run | Standard extraction/100-room end; Daily ten-room route, tactics, Alley King, source-pet settlement and terminal records |
 | Continuing Contracts and Practice | Saved Contract choices, six-/ten-room goals, drafts/final boss, rank/capped bonuses; Practice remains local |
 | Districts, story chains and raids | Saved choices, checkpoint bosses, final cycles, limits and recoverable source-pet rewards |
-| Season tiers and Signal Sovereign | Tier claims, final evolution/60 Marks/10 Crests; three finale builds, saved turns, retries and one payout/pet/season |
+| Season tiers and Signal Sovereign | Historical audited-build marker: tier claims and final evolution/60 Marks/10 Crests (superseded for permanent completion by 365 days/240 Marks/44 Crests); three finale builds, saved turns, retries and one payout/pet/season |
 | Jobs, activities and expeditions | Costs, saved choices/claims, original-pet rewards and duplicate protection |
 | Shop, trade, crafting, upgrades, cosmetics and Relic Vault | Wallet/stock/capacity, ownership, equipment use and interrupted claims |
 | Arena and Kaiju | Existing combat eligibility, ownership, battle and settlement suites |

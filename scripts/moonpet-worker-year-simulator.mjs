@@ -1,0 +1,476 @@
+/**
+ * REAL Worker-backed same-pet virtual calendar campaign.
+ *
+ * All progression is earned via dispatchRenderedPetAction -> production Worker.
+ * No manual XP, Marks, Crests, inventory, wins, or evolution writes.
+ * Returned metrics are evidence, not a claim that Legendary is achievable.
+ */
+import { makeFixture } from './moonpet-worker-virtual-player.mjs';
+import { selectConservativeDailyChoice } from './moonpet-run-risk-policy.mjs';
+import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { getPetVisibleLevel } from '../workers/moonboys-api/pets/progression-phase-2.js';
+import { buildPetLifecycleProgress } from '../workers/moonboys-api/pets/season-completion.js';
+import { dailyTacticalBoard } from '../workers/moonboys-api/pets/daily-run-tactics.js';
+import { PET_WEEKLY_JOURNEY_OBJECTIVES } from '../workers/moonboys-api/pets/weekly-journey.js';
+import { getPetOwnershipPeriod, getPetJourneyWeek, getPetJourneyWeekBounds } from '../workers/moonboys-api/pets/ownership-period.js';
+
+export const WORKER_YEAR_DAY_MS=86_400_000;
+export const WORKER_YEAR_START=Date.parse('2026-11-02T08:00:00.000Z');
+export const WORKER_YEAR_TARGETS=Object.freeze({
+  days:365,marks:240,crests:44,level:50,bossVictories:15,relics:10,scrapMetal:60,evolutionFragments:40,
+});
+const CHECKPOINT_DAYS=new Set([7,30,90,365]);
+// Weekly balance is explicit and deterministic, not an attempt to predict
+// hidden RNG. The two hybrid schedules model a player choosing whether to
+// pursue boss/relic inventory or safer Daily Journey Growth Marks.
+export const WORKER_RUN_EXIT_POLICIES=Object.freeze(['boss','extract_at_depth7','hybrid3','hybrid4']);
+export function resolveWorkerRunDayPolicy(runExitPolicy,day){
+  if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
+    throw new RangeError('unknown runExitPolicy');
+  if(!Number.isSafeInteger(day)||day<0)throw new RangeError('invalid simulation day');
+  if(runExitPolicy==='boss'||runExitPolicy==='extract_at_depth7')return runExitPolicy;
+  const bossDays=runExitPolicy==='hybrid3'?3:4;
+  return day%7<bossDays?'boss':'extract_at_depth7';
+}
+
+function n(value){return Number(value||0);}
+function status(f,pet,days){
+  const {sql}=f;
+  const xp=n(sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+  const marks=sql.prepare('SELECT earned_day FROM telegram_pet_growth_marks WHERE pet_id=?').all(pet.petId);
+  const crestRows=sql.prepare('SELECT qualification_week FROM telegram_pet_weekly_crests WHERE pet_id=?').all(pet.petId);
+  const relicRows=sql.prepare('SELECT relic_id FROM telegram_pet_relics WHERE telegram_id=?').all(pet.owner);
+  const materials=sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=?').all(pet.owner);
+  const material=Object.fromEntries(materials.map(row=>[row.material_key,n(row.quantity)]));
+  // Evolution authority reads the per-pet boss-victory ledger, not the
+  // analytics stream, so the annual audit uses the same authoritative source.
+  const bossWins=sql.prepare(`SELECT victories AS count FROM telegram_pet_boss_victories
+    WHERE pet_id=? AND boss_id='alley_king'`).get(pet.petId)?.count||0;
+  const evolutions=sql.prepare('SELECT evolution_id,stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? ORDER BY stage').all(pet.petId);
+  const runRows=sql.prepare('SELECT status,COUNT(*) AS count FROM telegram_pet_runs WHERE pet_id=? GROUP BY status').all(pet.petId);
+  const runStatus=Object.fromEntries(runRows.map(row=>[row.status,n(row.count)]));
+  // Attribution: count official run results by the pet's ownership week.
+  // A completed run in a different week cannot satisfy this week's 3-run
+  // objective even if the total calendar run count looks sufficient.
+  const slot=sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=?').get(pet.petId);
+  const ownershipPeriod=getPetOwnershipPeriod(slot.season_key,slot.created_at,slot.journey_clock);
+  const officialRuns=sql.prepare(`SELECT utc_day,status FROM telegram_pet_daily_runs
+    WHERE telegram_id=? AND pet_id=? ORDER BY utc_day`).all(pet.owner,pet.petId);
+  const officialRunsByWeek={};
+  for(const run of officialRuns){
+    const week=getPetJourneyWeek(ownershipPeriod,new Date(run.utc_day+'T00:00:00.000Z'));
+    const perWeek=officialRunsByWeek[String(week)]??={completed:0,failed:0,other:0};
+    if(['completed','extracted'].includes(run.status))perWeek.completed++;
+    else if(run.status==='failed')perWeek.failed++;
+    else perWeek.other++;
+  }
+  // Match weekly objective rows to accepted Worker receipts, never to raw
+  // button attempts. Distinct check-in days are counted separately.
+  const weeklyEvidence=sql.prepare(`SELECT o.qualification_week AS week,o.objective_id,
+      COUNT(*) AS receipts,COUNT(DISTINCT e.day_key) AS distinct_days,SUM(o.progress_value) AS units
+    FROM telegram_pet_weekly_journey_objectives o JOIN telegram_pet_events e
+      ON e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id AND e.season_key=o.season_key
+        AND e.event_key=o.source_event_key AND e.event_type=o.source_event_type AND e.status='accepted'
+    WHERE o.pet_id=? AND o.status='accepted'
+    GROUP BY o.qualification_week,o.objective_id ORDER BY o.qualification_week,o.objective_id`).all(pet.petId);
+  const weeklyByWeek={};
+  for(const row of weeklyEvidence){
+    const week=String(row.week),definition=PET_WEEKLY_JOURNEY_OBJECTIVES[row.objective_id];
+    const progress=row.objective_id==='weekly_check_in'?n(row.distinct_days):
+      definition?.progress_mode==='max'?Math.min(1,n(row.units)):n(row.units);
+    (weeklyByWeek[week]??={})[row.objective_id]={progress,target:definition?.target??null,
+      sourceReceipts:n(row.receipts),distinctDays:n(row.distinct_days)};
+  }
+  const dailyObjectives=sql.prepare(`SELECT challenge_id,COUNT(DISTINCT utc_day) AS days,COUNT(*) AS receipts
+    FROM telegram_pet_daily_journey_objectives WHERE pet_id=? AND status='accepted'
+    GROUP BY challenge_id ORDER BY challenge_id`).all(pet.petId);
+  const qualifyingWeeks=Object.entries(weeklyByWeek).filter(([,objectives])=>
+    Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES).every(([key,definition])=>
+      n(objectives[key]?.progress)>=definition.target)).map(([week])=>n(week));
+  const savedCrestWeeks=new Set(crestRows.map(row=>n(row.qualification_week)));
+  const fullyQualifiedButUnsettledWeeks=qualifyingWeeks.filter(week=>!savedCrestWeeks.has(week));
+  const distinctMarks=new Set(marks.map(row=>row.earned_day)).size;
+  const distinctCrests=new Set(crestRows.map(row=>row.qualification_week)).size;
+  const distinctRelics=new Set(relicRows.map(row=>row.relic_id)).size;
+  const level=getPetVisibleLevel(xp);
+  return {
+    days,petId:pet.petId,petXp:xp,level,
+    growthMarks:marks.length,distinctGrowthDays:distinctMarks,
+    weeklyCrests:crestRows.length,distinctQualificationWeeks:distinctCrests,
+    relics:relicRows.length,distinctRelics,
+    alleyKingWins:n(bossWins),materials:{scrapMetal:n(material.scrap_metal),evolutionFragments:n(material.evolution_fragment)},
+    runStatus,officialRunsByWeek,evolutions,weeklyByWeek,dailyObjectives,qualifyingWeeks,fullyQualifiedButUnsettledWeeks,
+    verifiedFromWorkerPersistedRows:true,
+  };
+}
+
+/**
+ * Call with an isolated, controllable mock clock. `setTime` must advance
+ * global Date to the requested epoch; makeFixture wraps CURRENT_TIMESTAMP too.
+ */
+export async function simulateWorkerCampaign({days=7,startAt=WORKER_YEAR_START,
+  owner='worker-year-player',setTime,onCheckpoint=()=>{},onWeeklyProgress=()=>{},
+  maxRunSteps=10,runExitPolicy='boss',xpPolicy='baseline'}={}){
+  if(!Number.isInteger(days)||days<1||days>365)throw new RangeError('days must be 1..365');
+  if(!WORKER_RUN_EXIT_POLICIES.includes(runExitPolicy))
+    throw new RangeError('runExitPolicy must be boss, extract_at_depth7, hybrid3 or hybrid4');
+  if(!Number.isFinite(startAt)||typeof setTime!=='function')throw new TypeError('controlled UTC clock required');
+  if(!['baseline','timed_train','timed_explore','best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy))
+    throw new RangeError('xpPolicy must be baseline, timed_train, timed_explore, best_job, timed_train_best_job, or timed_explore_best_job');
+  setTime(startAt);
+  const f=makeFixture(()=>Date.now(),{startingEggEvolution:true});
+  const pet=f.createPlayer(owner);
+  const actions={attempts:0,accepted:0,rejected:0,byReason:{},byAction:{},rejectedSamples:[]};
+  const dailyRuns={started:0,completed:0,failed:0,other:0,steps:0,tactics:0,
+    scheduledBossDays:0,scheduledExtractionDays:0,exitPoliciesByWeek:{},
+    extractAttempts:0,extractions:0,extractionRejected:0,preparation:{attempts:0,accepted:0,blocked:0,byAction:{},snapshots:[]}};
+  const weeklyBoss={previews:0,offered:0,attempts:0,accepted:0,rejected:0,skippedAfterWeeklyCredit:0,unavailableByReason:{},samplePreviews:[]};
+  const timedXp={policy:xpPolicy,starts:0,claims:0,rejected:0,awardedPetXp:0,byReason:{}};
+  const jobXp={upgradedAttempts:0,accepted:0,rejected:0,awardedPetXp:0,byJob:{},byReason:{}};
+  const checkpoints=[];
+  const safeAction=async(day,minute,action,payload={})=>{
+    setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+    const response=await f.action(owner,action,{request_id:`year:${day}:${minute}:${action}`,...payload});
+    actions.attempts++;
+    const key=response.accepted&&!response.duplicate?'accepted':'rejected';
+    actions[key]++;
+    const entry=actions.byAction[action]??{accepted:0,rejected:0};
+    entry[key]++;
+    actions.byAction[action]=entry;
+    if(key==='rejected') {
+      const reason=String(response.reason|| (response.duplicate?'duplicate':'unknown'));
+      actions.byReason[reason]=(actions.byReason[reason]||0)+1;
+      // Diagnostics for LEGAL action failures: never reclassify a rejected
+      // response as accepted or silently ignore blocked gameplay.
+      if(actions.rejectedSamples.length<40)
+        actions.rejectedSamples.push({day:day+1,minute,action,reason,
+          retryAfterSeconds:n(response.retry_after_seconds)});
+    }
+    return response;
+  };
+  // Weekly boss attempts qualify only when actually accepted by the
+  // production Worker. Preview before the energy-draining Daily Run, then
+  // inspect again after it only if an earlier attempt was never dispatched.
+  const tryWeeklyBoss=async(day,minute,phase)=>{
+    setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+    const state=await hooks.buildPetMiniAppState(f.db,owner,'fixture-token');
+    const boss=state.guidance?.weekly_boss;
+    const saved=f.sql.prepare('SELECT pet_xp,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+    weeklyBoss.previews++;
+    // Weekly Journey needs ONE accepted source-boss attempt in each pet
+    // ownership week, not an attack every UTC day. Repeating this expensive
+    // challenge drained Energy/Health and reduced legitimate run success.
+    // Check only genuine persisted accepted source events for this pet/week.
+    const slot=f.sql.prepare('SELECT season_key,created_at,journey_clock FROM telegram_pet_season_slots WHERE pet_id=? AND telegram_id=?').get(pet.petId,owner);
+    const period=getPetOwnershipPeriod(slot.season_key,slot.created_at,slot.journey_clock);
+    const week=getPetJourneyWeek(period,new Date());
+    const bounds=getPetJourneyWeekBounds(period,week);
+    const prior=f.sql.prepare(`SELECT event_key FROM telegram_pet_events
+      WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='accepted'
+      AND event_type IN ('weekly_boss','boss_fought') AND day_key>=? AND day_key<?
+      LIMIT 1`).get(owner,pet.petId,slot.season_key,bounds.start_at.slice(0,10),bounds.end_at.slice(0,10));
+    if(prior){
+      weeklyBoss.skippedAfterWeeklyCredit++;
+      return {attempted:false,accepted:false,alreadyCredited:true};
+    }
+    const snapshot={day,phase,available:Boolean(boss?.available),
+      level:getPetVisibleLevel(n(saved?.pet_xp)),energy:n(saved?.energy),health:n(saved?.health),
+      choices:Array.isArray(boss?.choices)?boss.choices.map(choice=>choice.key):[],
+      reason:boss?.reason||boss?.unavailable_reason||boss?.locked_reason||null};
+    if(weeklyBoss.samplePreviews.length<15 && (day<5 || day%7===0 || boss?.available))
+      weeklyBoss.samplePreviews.push(snapshot);
+    if(!boss?.available){
+      const reason=snapshot.reason||(!boss?'guidance_missing':'boss_not_available');
+      weeklyBoss.unavailableByReason[reason]=(weeklyBoss.unavailableByReason[reason]||0)+1;
+      return {attempted:false,accepted:false};
+    }
+    weeklyBoss.offered++;
+    const choices=Array.isArray(boss.choices)?boss.choices.filter(choice=>choice?.key && choice.available!==false):[];
+    const move=choices.find(choice=>choice.key==='strike')||choices[0];
+    if(!move){
+      weeklyBoss.unavailableByReason.no_legal_move=(weeklyBoss.unavailableByReason.no_legal_move||0)+1;
+      return {attempted:false,accepted:false};
+    }
+    const result=await safeAction(day,minute,'weekly_boss',{move:move.key,pet_id:pet.petId});
+    weeklyBoss.attempts++;
+    if(result.accepted&&!result.duplicate)weeklyBoss.accepted++;
+    else weeklyBoss.rejected++;
+    return {attempted:true,accepted:Boolean(result.accepted&&!result.duplicate)};
+  };
+  // The ordinary Energy Drink is a real cooldown/limit-enforced Care
+  // action (+28 Energy, 10-minute cooldown, 3 per day, no XP). Use it only
+  // when the level-eligible pet is below the 12-Energy boss gate; never
+  // seed stats or override Worker eligibility.
+  const recoverBossEnergy=async(day,minute)=>{
+    setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+    const saved=f.sql.prepare('SELECT pet_xp,energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+    if(getPetVisibleLevel(n(saved?.pet_xp))<5 || Math.round(n(saved?.energy))>=12)return null;
+    return safeAction(day,minute,'energy_drink');
+  };
+  // A ten-room run is very sensitive to Health/Energy/Happiness/Cleanliness.
+  // The first policy let all four bars collapse to near zero after daily decay.
+  // Prepare using actual cooldown-enforced care actions, with a bounded
+  // schedule and a fresh authoritative snapshot on each step. Never mutate
+  // care columns directly or assume the actions succeeded.
+  const prepareForRun=async day=>{
+    const plan=[
+      [18,'feed','hunger',55,true],[19,'clean','cleanliness',60,false],
+      [20,'play','happiness',60,false],[21,'sleep','energy',65,false],
+      [23,'feed','hunger',45,true],[24,'clean','cleanliness',70,false],
+      [25,'play','happiness',70,false],[26,'sleep','energy',75,false],
+      [28,'feed','hunger',35,true],[29,'clean','cleanliness',80,false],
+      [30,'play','happiness',80,false],[31,'sleep','energy',85,false],
+      [33,'feed','hunger',25,true],[34,'clean','cleanliness',85,false],
+      [35,'play','happiness',85,false],[36,'sleep','energy',90,false],
+      [40,'energy_drink','energy',85,false],
+    ];
+    let accepted=0;
+    for(const [minute,kind,column,threshold,invert] of plan){
+      setTime(startAt+day*WORKER_YEAR_DAY_MS+minute*60_000);
+      const before=f.sql.prepare('SELECT hunger,happiness,cleanliness,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+      const value=n(before?.[column]);
+      if(invert?value<=threshold:value>=threshold)continue;
+      const response=await safeAction(day,minute,kind);
+      dailyRuns.preparation.attempts++;
+      dailyRuns.preparation.byAction[kind]=(dailyRuns.preparation.byAction[kind]||0)+Number(Boolean(response.accepted&&!response.duplicate));
+      if(response.accepted&&!response.duplicate){dailyRuns.preparation.accepted++;accepted++;}
+      else dailyRuns.preparation.blocked++;
+    }
+    const after=f.sql.prepare('SELECT hunger,happiness,cleanliness,energy,health FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+    if(dailyRuns.preparation.snapshots.length<16 || day%7===0)
+      dailyRuns.preparation.snapshots.push({day,accepted,beforeRun:after});
+    return after;
+  };
+  try {
+    for(let day=0;day<days;day++){
+      const dayExitPolicy=resolveWorkerRunDayPolicy(runExitPolicy,day);
+      const week=String(Math.floor(day/7)+1);
+      const schedule=dailyRuns.exitPoliciesByWeek[week]??={boss:0,extract:0};
+      if(dayExitPolicy==='boss'){dailyRuns.scheduledBossDays++;schedule.boss++;}
+      else {dailyRuns.scheduledExtractionDays++;schedule.extract++;}
+      // The daily decay spends roughly 53 Energy over 24h. The prior
+      // strategy attempted the boss AFTER Train and Work, leaving only 5
+      // Energy even at level five. Recover via genuine Sleep, then preview
+      // the boss BEFORE those activities spend Energy. The same real Worker
+      // enforces the level-five gate and 12-Energy attack cost.
+      await safeAction(day,0,'sleep');
+      await recoverBossEnergy(day,1);
+      const preRunBoss=await tryWeeklyBoss(day,2,'after_sleep_and_energy_check');
+      for(const [minute,action,payload] of [
+        [2,'feed',{}],[4,'play',{}],[6,'clean',{}],
+        [8,'train',{}],[10,'daily_chest',{}],
+      ]){
+        // The previous day's legitimate timed Training or Explore claim
+        // can reduce Energy enough that today's ordinary Train action fails.
+        // Check the source pet just before the 18-Energy gate and use a real
+        // cooldown-spaced Worker Sleep when required. Preserve the tested
+        // baseline/non-timed action sequence; never write pet stats directly.
+        if(action==='train' && ['timed_train','timed_train_best_job','timed_explore','timed_explore_best_job'].includes(xpPolicy)){
+          setTime(startAt+day*WORKER_YEAR_DAY_MS+7*60_000);
+          const petStats=f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId);
+          if(n(petStats?.energy)<19){
+            const recovery=await safeAction(day,7,'sleep');
+            if(!recovery.accepted || recovery.duplicate)
+              throw new Error('timed_activity_energy_recovery_rejected:'+String(recovery.reason));
+          }
+        }
+        await safeAction(day,minute,action,payload);
+      }
+      // Choose jobs from server-advertised eligibility, not from hardcoded
+      // future unlocks or inferred player level. A job can become available
+      // only after its real XP, evolution and specialist requirements pass.
+      let jobKey='street_artist';
+      if(['best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
+        setTime(startAt+day*WORKER_YEAR_DAY_MS+12*60_000);
+        const guidance=await hooks.buildPetGuidanceState(f.db,owner);
+        const eligible=(guidance?.jobs||[])
+          .filter(job=>job.available===true && typeof job.key==='string' &&
+            Number.isFinite(Number(job.pet_xp)) && Number(job.pet_xp)>0)
+          .sort((a,b)=>Number(b.pet_xp)-Number(a.pet_xp));
+        jobKey=eligible[0]?.key||jobKey;
+        jobXp.upgradedAttempts++;
+      }
+      const xpBeforeJob=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+      const job=await safeAction(day,12,'work',{job_key:jobKey});
+      if(job.accepted&&!job.duplicate){
+        if(['best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
+          jobXp.accepted++;
+          const xpAfterJob=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+          const gain=Math.max(0,xpAfterJob-xpBeforeJob);
+          if(gain!==n(job.pet_xp_awarded))throw new Error('job_pet_xp_receipt_mismatch');
+          jobXp.awardedPetXp+=gain;
+          jobXp.byJob[jobKey]=(jobXp.byJob[jobKey]||0)+1;
+        }
+      }else if(['best_job','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
+        jobXp.rejected++;
+        const reason=String(job.reason||'unknown_job');
+        jobXp.byReason[reason]=(jobXp.byReason[reason]||0)+1;
+      }
+      // Exactly one official Daily Moon Run attempt per UTC day. Read all
+      // available choices from the Worker. Failed rooms terminate; no rerolls.
+      await prepareForRun(day);
+      const started=await safeAction(day,50,'daily_run_start');
+      if(started.accepted&&!started.duplicate){
+        dailyRuns.started++;
+        const row=f.sql.prepare(`SELECT run_id,pet_id,status,current_room FROM telegram_pet_runs
+          WHERE telegram_id=? ORDER BY rowid DESC LIMIT 1`).get(owner);
+        if(row?.pet_id!==pet.petId)throw new Error('run pet attribution mismatch');
+        if(row?.run_id) {
+          for(let step=0;step<maxRunSteps;step++){
+            const liveRow=f.sql.prepare('SELECT status,current_room FROM telegram_pet_runs WHERE run_id=?').get(row.run_id);
+            if(!liveRow||!['active','extractable'].includes(liveRow.status))break;
+            // Optional legitimate early extraction: after clearing room 7
+            // the player has genuine explorer and care objective evidence.
+            // A successful Worker extraction supplies a third objective
+            // without forcing a boss victory. This trades away boss drops
+            // and relic opportunity; default full-boss policy is unchanged.
+            if(dayExitPolicy==='extract_at_depth7' && n(liveRow.current_room)>=7){
+              dailyRuns.extractAttempts++;
+              const extraction=await safeAction(day,51+step,'run_extract',{run_id:row.run_id});
+              if(extraction.accepted&&!extraction.duplicate)dailyRuns.extractions++;
+              else dailyRuns.extractionRejected++;
+              break;
+            }
+            setTime(startAt+day*WORKER_YEAR_DAY_MS+(51+step)*60_000);
+            // This official V2 tactic is offered only at genuine saved
+            // run checkpoints 3 and 6. It improves future odds, but cannot
+            // override a failed roll or create an unearned completion.
+            const modifiers=f.sql.prepare(`SELECT modifier_id,effects_json FROM telegram_pet_run_modifiers
+              WHERE run_id=? AND telegram_id=? ORDER BY modifier_id`).all(row.run_id,owner);
+            const board=dailyTacticalBoard({status:liveRow.status,current_room:n(liveRow.current_room)},modifiers);
+            if(board.offers.some(offer=>offer.key==='guardian')){
+              const tactic=await safeAction(day,51+step,'daily_run_tactic',{
+                run_id:row.run_id,checkpoint:n(liveRow.current_room),tactic_id:'guardian',
+              });
+              if(tactic.accepted&&!tactic.duplicate)dailyRuns.tactics++;
+            }
+            const live=await hooks.buildPetMiniAppState(f.db,owner,'fixture-token');
+            const choice=selectConservativeDailyChoice(live.run?.choices||[]);
+            if(!choice?.key)break;
+            const result=await safeAction(day,51+step,'run_step',{
+              run_id:row.run_id,choice_key:choice.key,expected_step_index:n(liveRow.current_room),
+            });
+            dailyRuns.steps++;
+            if(!result.accepted||result.reason==='daily_room_failed')break;
+          }
+          const terminal=f.sql.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(row.run_id)?.status;
+          if(terminal==='completed'||terminal==='extracted')dailyRuns.completed++;
+          else if(terminal==='failed')dailyRuns.failed++;
+          else dailyRuns.other++;
+        }
+      }
+      // Run XP may unlock Level 5 today, but run combat can leave the pet
+      // too tired for the boss. Recharge with a genuine, cooldown-spaced
+      // Sleep before checking the Worker again. No manual stat writes.
+      if(!preRunBoss.attempted && !preRunBoss.alreadyCredited){
+        await safeAction(day,65,'sleep');
+        await recoverBossEnergy(day,66);
+        await tryWeeklyBoss(day,67,'after_run_recovery');
+      }
+      // Only evolve when server-side eligibility is satisfied; the Worker
+      // performs all required material debits and persists stages 1..5.
+      // Stage zero is a fixture starting condition, not an earned reward.
+      setTime(startAt+day*WORKER_YEAR_DAY_MS+70*60_000);
+      const seasonKey=f.sql.prepare('SELECT season_key FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).season_key;
+      const evolution=await buildPetLifecycleProgress(f.db,pet.petId,seasonKey,new Date(),{telegram_id:owner});
+      if(evolution?.evolution_ready && evolution.next_evolution?.evolution_id){
+        await safeAction(day,70,'evolve',{pet_id:pet.petId,evolution_id:evolution.next_evolution.evolution_id});
+      }
+      // Optional, truly elapsed 2-hour Training or 8-hour Explore Session after the daily
+      // care, Moon Run and evolution actions. The Worker caps the claim at
+      // configured activity duration and the ordinary 1,200 XP/day cap applies. Sleep and
+      // Train are blocked while this session is active, so it starts AFTER
+      // all other daily activities and is claimed before the next UTC day.
+      // Do not edit session timestamps or directly credit XP.
+      if(['timed_train','timed_explore','timed_train_best_job','timed_explore_best_job'].includes(xpPolicy)){
+        const activityType=xpPolicy.includes('explore')?'explore':'train';
+        const claimMinute=activityType==='explore'?561:201;
+        const startedActivity=await safeAction(day,80,'activity_start',{activity_type:activityType});
+        if(startedActivity.accepted&&!startedActivity.duplicate){
+          timedXp.starts++;
+          const sessionId=startedActivity.session?.id;
+          if(!sessionId)throw new Error('timed_train_start_missing_session_id');
+          const beforeXp=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+          const claim=await safeAction(day,claimMinute,'activity_claim',{session_id:sessionId});
+          if(claim.accepted&&!claim.duplicate){
+            timedXp.claims++;
+            const afterXp=n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp);
+            const gain=Math.max(0,afterXp-beforeXp);
+            if(gain!==n(claim.pet_xp_awarded))
+              throw new Error('timed_train_reward_receipt_mismatch');
+            timedXp.awardedPetXp+=gain;
+          }else{
+            timedXp.rejected++;
+            const reason=String(claim.reason||'unknown_claim');
+            timedXp.byReason[reason]=(timedXp.byReason[reason]||0)+1;
+          }
+        }else{
+          timedXp.rejected++;
+          const reason=String(startedActivity.reason||'unknown_start');
+          timedXp.byReason[reason]=(timedXp.byReason[reason]||0)+1;
+        }
+      }
+      if((day+1)%7===0){
+        setTime(startAt+(day+1)*WORKER_YEAR_DAY_MS);
+        const weekProgress={
+          day:day+1,petXp:n(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId)?.pet_xp),
+          growthMarks:n(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks WHERE pet_id=?').get(pet.petId)?.n),
+          weeklyCrests:n(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(pet.petId)?.n),
+          uniqueRelics:n(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_relics WHERE telegram_id=?').get(owner)?.n),
+          acceptedActions:actions.accepted,rejectedActions:actions.rejected,
+          timedXpClaimed:timedXp.claims,
+        };
+        await onWeeklyProgress(weekProgress);
+      }
+      if(CHECKPOINT_DAYS.has(day+1)||day+1===days){
+        // An adoption at day 0 is 365 full days old at day 365, not at
+        // the start of day 364. Advance to the next day's 08:00 boundary
+        // before reporting elapsed-age checkpoint evidence.
+        setTime(startAt+(day+1)*WORKER_YEAR_DAY_MS);
+        const point=status(f,pet,day+1);
+        if(point.growthMarks!==point.distinctGrowthDays)throw new Error('duplicate Growth Mark day');
+        if(point.weeklyCrests!==point.distinctQualificationWeeks)throw new Error('duplicate weekly Crest qualification');
+        if(point.relics!==point.distinctRelics)throw new Error('relic inventory contains duplicate IDs');
+        checkpoints.push(point);
+        await onCheckpoint(point);
+      }
+    }
+    // Legendary is age-gated at *365 elapsed days*, after the day-364
+    // actions. Attempt its real Worker evolution at the anniversary; do
+    // not misreport an eligible-but-unclaimed evolution as impossible.
+    if(days===365){
+      setTime(startAt+365*WORKER_YEAR_DAY_MS+60_000);
+      const seasonKey=f.sql.prepare('SELECT season_key FROM telegram_pet_instances WHERE pet_id=?').get(pet.petId).season_key;
+      const anniversary=await buildPetLifecycleProgress(f.db,pet.petId,seasonKey,new Date(),{telegram_id:owner});
+      if(anniversary?.evolution_ready && anniversary.next_evolution?.evolution_id){
+        await safeAction(365,1,'evolve',{pet_id:pet.petId,evolution_id:anniversary.next_evolution.evolution_id});
+      }
+      const last=status(f,pet,days);
+      checkpoints[checkpoints.length-1]=last;
+      await onCheckpoint(last);
+    }
+    const final=checkpoints[checkpoints.length-1]??status(f,pet,days);
+    const targets=WORKER_YEAR_TARGETS;
+    const ageReached=Date.now()-startAt>=targets.days*WORKER_YEAR_DAY_MS;
+    const legendaryPersisted=final.evolutions.some(e=>e.evolution_id==='legendary_moon_guardian');
+    // Materials may have been spent by legitimate evolution settlement.
+    // The authoritative persisted Legendary row verifies their sufficiency.
+    const qualified=ageReached && legendaryPersisted &&
+      final.growthMarks>=targets.marks && final.weeklyCrests>=targets.crests &&
+      final.level>=targets.level && final.alleyKingWins>=targets.bossVictories &&
+      final.relics>=targets.relics;
+    return {days,startAt:new Date(startAt).toISOString(),owner,runExitPolicy,xpPolicy,actions,dailyRuns,weeklyBoss,timedXp,jobXp,checkpoints,final,targets,
+      legendaryVerified:qualified,
+      blockers:Object.entries({
+        age:ageReached,marks:final.growthMarks>=targets.marks,crests:final.weeklyCrests>=targets.crests,
+        level:final.level>=targets.level,bosses:final.alleyKingWins>=targets.bossVictories,
+        relics:final.relics>=targets.relics,
+        // After evolution the inventory is legitimately debited: report
+        // remaining quantities in checkpoints, do not mislabel spending as
+        // failure once stage-five settlement has been recorded.
+        scrap:legendaryPersisted||final.materials.scrapMetal>=targets.scrapMetal,
+        fragments:legendaryPersisted||final.materials.evolutionFragments>=targets.evolutionFragments,
+        evolution:legendaryPersisted,
+      }).filter(([,ok])=>!ok).map(([name])=>name)};
+  }finally{f.close();}
+}

@@ -41,7 +41,7 @@ XP does not add another primary event or increase public Pet/Community XP again.
 | Standard Run / Contracts / Practice | Standard extraction and 100-room ending; six/ten-room Contracts, choices and boss rewards; repeatable local Practice |
 | Districts / stories / raids | Saved choices, mastery, recurring stories, raid victory claims, eligibility and daily limits |
 | Weekly Boss | Attempts, main reward, victory memory, specialist XP, achievements, Crest and retry/refresh completion |
-| Season | Tier claims; final evolution plus 60 qualified Marks and 10 Crests; there is no separate season-final boss |
+| Season | Historical audited-build marker: tier claims and final evolution plus 60 qualified Marks and 10 Crests (superseded for permanent completion by 365 days, 240 Marks and 44 Crests); there is no separate season-final boss |
 | Gear / economy / combat | Existing shop, trade, crafting, inventory, Arena and Kaiju authority and settlement suites |
 | Public ranks / activity | Daily, weekly, seasonal and all-time Pet ranks, source-pet display, Community XP separation, refresh and outage behavior |
 
