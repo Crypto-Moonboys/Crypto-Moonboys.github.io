@@ -71,11 +71,15 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) for (const target o
   });
 }
 
-test('remaining on Missions keeps its lightweight projection without a full read', async () => {
+test('remaining on Missions recovers full roadmap data after a partial refresh', async () => {
   const f = clientContext(); f.ctx.state = partial();
   const read = f.ctx.syncState();
   f.requests[0].resolve({ state: partial() }); await read; await f.tick(0);
-  assert.equal(f.requests.length, 1);
+  assert.match(f.ctx.screen.innerHTML, /LOADING/);
+  assert.equal(f.requests.length, 2);
+  assert.ok(f.requests.every(request => request.path === '/telegram-pets/app/state' && request.body.mode === undefined));
+  const hydration = f.ctx.fullStateHydrationPromise;
+  f.requests[1].resolve({ state: full() }); await hydration;
   assert.equal(f.timers.size, 0);
   assert.match(f.ctx.screen.innerHTML, /READY/);
 });

@@ -2258,12 +2258,12 @@
     if (screenKey === 'profile' && hydration.mode === 'full')
       return !(hydration.modules || []).includes('profile');
     if (!stateNeedsFullHydration(snapshot)) return false;
-    return !(hydration.modules || []).includes(screenKey);
+    // Missions also displays the roadmap, which needs inventory and evolution.
+    return screenKey === 'missions' || !(hydration.modules || []).includes(screenKey);
   }
 
   function stateRefreshPayload(snapshot, screenKey) {
     if (screenKey === 'profile') return { mode: 'profile' };
-    if (screenKey === 'missions' && stateNeedsFullHydration(snapshot)) return { mode: 'missions' };
     if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
@@ -2329,7 +2329,7 @@
           scheduleFastActionStateRefresh(0);
           return null;
         }
-        if (!data.state || background && stateNeedsFullHydration(data.state)) throw new Error('MODULE STATE UNAVAILABLE');
+        if (!data.state || (background || reason === 'missions') && stateNeedsFullHydration(data.state)) throw new Error('MODULE STATE UNAVAILABLE');
         if (background && !sameHydrationSource(source, data.state)) {
           // Cross-device selection/quarter changes need a fresh core read.
           // Never splice a different pet or period into the displayed Home.
@@ -3004,7 +3004,7 @@
       ? window.MoonpetPlayOptions.legendaryRoadmap(state) : null;
     if (!roadmap || !roadmap.available) {
       return panel('ROAD TO LEGENDARY // SYNCING',
-        '<div class="line muted">Open Missions after the full pet state loads to see lifetime progression and the next real routes.</div>',
+        '<div class="line muted">Saved progression is unavailable. Tap Refresh to try again.</div>',
         'legendary-roadmap');
     }
     var growth = roadmap.growthMarks || {}, crests = roadmap.weeklyCrests || {};
@@ -3030,7 +3030,7 @@
         '<div><span>PET XP</span><strong>' + number(roadmap.petXp) + '</strong></div>' +
         '<div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
         '<div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div>' +
-        '<div><span>UNIQUE RELICS</span><strong>' + number(roadmap.relics) + '</strong></div>' +
+        '<div><span>UNIQUE RELICS</span><strong>' + (roadmap.relics === null ? 'UNAVAILABLE' : number(roadmap.relics)) + '</strong></div>' +
         '<div><span>SCRAP METAL</span><strong>' + number(materials.scrapMetal) + '</strong></div>' +
         '<div><span>EVOLUTION FRAGMENTS</span><strong>' + number(materials.evolutionFragments) + '</strong></div>' +
       '</div>' +
@@ -4461,7 +4461,6 @@
       }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
       else if (activeScreen === 'profile') requestPayload.state_mode = 'profile';
-      else if (activeScreen === 'missions' && stateNeedsFullHydration(stateBeforeAction)) requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);

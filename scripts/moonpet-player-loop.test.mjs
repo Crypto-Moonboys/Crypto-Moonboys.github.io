@@ -666,13 +666,14 @@ const hydrationSource = client.split('// TEST-EXPORT: coreStateHydration:start')
 const renderSource = 'var authenticationFailure = false;\n' + client.slice(client.indexOf('  function render(options)'), client.indexOf('  // TEST-EXPORT: actionResultFeedback:start'));
 const refreshPayloadContext = vm.createContext({});
 vm.runInContext(hydrationSource, refreshPayloadContext);
-for (const moduleScreen of ['profile', 'economy', 'explore', 'work']) {
+for (const moduleScreen of ['profile', 'economy', 'explore', 'work', 'missions']) {
   const payload = refreshPayloadContext.stateRefreshPayload({ hydration: { full: false, modules: ['home'] } }, moduleScreen);
   assert.equal(payload.mode, moduleScreen === 'profile' ? 'profile' : undefined,
     'Profile refresh requests its house projection; other full-state modules keep the existing projection');
 }
 assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'home').mode, 'core');
-assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'missions').mode, 'missions');
+assert.equal(refreshPayloadContext.stateNeedsScreenHydration(partialMissions, 'missions'), true,
+  'a Missions-only snapshot still lacks roadmap data');
 for (const moduleScreen of ['missions', 'profile']) {
   const calls = [], timers = [];
   let failModule = true;
@@ -700,7 +701,10 @@ for (const moduleScreen of ['missions', 'profile']) {
     escapeHtml: value => String(value),
     async post(path, payload) {
       calls.push({ path, payload });
-      if (failModule) throw Error('mini_app_state_failed');
+      if (failModule) {
+        if (moduleScreen === 'missions') return { state: partialMissions };
+        throw Error('mini_app_state_failed');
+      }
       return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' },
         hydration: { mode: 'full', full: true, modules: ['home', moduleScreen] } } };
     },

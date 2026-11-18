@@ -10,7 +10,7 @@ const fn=(start,end)=>client.slice(client.indexOf('  function '+start),client.in
 const marker=name=>client.slice(client.indexOf('// TEST-EXPORT: '+name+':start'),client.indexOf('// TEST-EXPORT: '+name+':end'));
 const context=extra=>vm.createContext({state:null,number:Number,words:String,escapeHtml:String,window:{},petActionRefreshRequired:false,
  panel:(_title,body)=>body,objectiveRouteButton:()=>'',activePetProgression:()=>({}),weeklyJourneyMarkup:()=>'',dailyJourneyMarkup:()=>'',
- activePetSummary:()=>'',renderPlayNow:()=>'',renderContracts:()=>'',renderDailyCompletion:()=>'',renderSeasonFinales:()=>'',dailyObjectiveMarkup:()=>'',meter:()=>'',...extra});
+ activePetSummary:()=>'',renderLegendaryRoadmap:()=>'',renderPlayNow:()=>'',renderContracts:()=>'',renderDailyCompletion:()=>'',renderSeasonFinales:()=>'',dailyObjectiveMarkup:()=>'',meter:()=>'',...extra});
 
 test('signed saved mission evidence produces completion labels without changing balances or flags',async()=>{
  const f=await performanceFixture();

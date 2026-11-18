@@ -551,17 +551,17 @@ try {
     console.log(`All-menu saved inbox, free review, responsive dock and real claim clearing passed at ${viewport.width}x${viewport.height}`);
     await context.close();
   }
-  // Exercise the partial response with the real renderer, including a delayed
-  // Missions deep link and subsequent navigation to a full-state screen.
+  // Delay full reads to exercise deep links, interrupted Home warmup and navigation.
   {
     const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const modes = [], errors = [];
-    let holdFullResponse = false, releaseFullResponse, fullRequestStarted;
-    let fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
-    let fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
-    let releaseMissions;
-    let missionsGate = new Promise(resolve => { releaseMissions = resolve; });
+    let nextFullGate;
+    function holdNextFullResponse() {
+      let release;
+      nextFullGate = new Promise(resolve => { release = resolve; });
+      return release;
+    }
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
     await page.route('**/*', async route => {
@@ -571,57 +571,63 @@ try {
       if (url.pathname.endsWith('/telegram-pets/app/state')) {
         const body = route.request().postDataJSON();
         modes.push(body.mode || 'full');
-        if (body.mode === 'missions') await missionsGate;
+        if (!body.mode && nextFullGate) {
+          const gate = nextFullGate;
+          nextFullGate = null;
+          await gate;
+        }
         const state = body.mode === 'core'
           ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
           : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, 'browser-missions') : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.state_mode || body.mode });
-        if (!body.mode && holdFullResponse) {
-          holdFullResponse = false;
-          fullRequestStarted();
-          await fullResponseGate;
-        }
         return route.fulfill({ json: { ok: true, state } });
       }
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.hostname === '127.0.0.1') return route.continue();
       return route.abort();
     });
+    let releaseFullResponse = holdNextFullResponse();
     await page.goto(`http://127.0.0.1:${server.address().port}/moonpet-game.html?screen=missions&focus=contracts`);
     await page.waitForSelector('[data-panel="module-loading"]');
-    releaseMissions();
+    releaseFullResponse();
     await page.waitForSelector('[data-panel="contracts"][open]');
-    assert.deepEqual(modes, ['core', 'missions'], 'Missions deep link does not request full state');
+    assert.deepEqual(modes, ['core', 'full'], 'Missions deep link loads full roadmap data');
+    const roadmapRoutes = page.locator('[data-panel="legendary-roadmap"] [data-jump]');
+    assert.equal(await roadmapRoutes.count(), 7);
     for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','season-finale','achievements']) {
-      assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders from Missions-only data`);
+      assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders alongside the roadmap`);
     }
-    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-missions-partial.png') });
+    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-missions-roadmap.png') });
     await page.locator('[data-screen="home"]').click();
     await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="missions"]').click();
-    assert.deepEqual(modes, ['core', 'missions'], 'reopening Missions reuses its ready projection');
-    holdFullResponse = true;
-    await page.locator('[data-screen="explore"]').click();
-    await fullRequestGate;
+    assert.deepEqual(modes, ['core', 'full'], 'reopening Missions reuses its ready projection');
+    modes.length = 0;
+    releaseFullResponse = holdNextFullResponse();
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=explore`);
     await page.waitForSelector('[data-panel="module-loading"]');
     await page.locator('[data-utility="sync"]').click();
     await page.waitForSelector('[data-panel="moon-run"]');
-    assert.deepEqual(modes, ['core', 'missions', 'full', 'full'], 'Refresh while Explore is loading requests its full projection, not another core snapshot');
+    assert.deepEqual(modes, ['core', 'full', 'full'], 'Refresh while Explore is loading requests its full projection, not another core snapshot');
+    releaseFullResponse();
+    // Missions must finish even while the original Home warmup is still held.
+    modes.length = 0;
+    releaseFullResponse = holdNextFullResponse();
+    const warmup = page.waitForRequest(request => request.url().endsWith('/telegram-pets/app/state') && !request.postDataJSON()?.mode);
+    await page.goto(`${fixtureOrigin}/moonpet-game.html`);
+    await warmup;
+    await page.locator('[data-screen="missions"]').click();
+    await roadmapRoutes.first().waitFor({ state: 'attached' });
+    assert.equal(await roadmapRoutes.count(), 7);
+    assert.deepEqual(modes, ['core', 'full', 'full']);
     releaseFullResponse();
     // A shared request for a different module must not consume the new route's
     // panel focus before its own module exists.
     for (const leaveWhileLoading of [false, true]) {
-      missionsGate = new Promise(resolve => { releaseMissions = resolve; });
-      fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
-      fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
-      holdFullResponse = true;
-      await page.goto(`${fixtureOrigin}/moonpet-game.html`);
-      await page.waitForSelector('[data-panel="care"]');
-      await page.locator('[data-panel="recommended"] [data-jump="missions"]').click();
+      releaseFullResponse = holdNextFullResponse();
+      await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions`);
       await page.waitForSelector('[data-panel="module-loading"]');
       await page.locator('[data-screen="home"]').click();
       await page.locator('[data-panel="recommended"] [data-jump="explore"]').click();
-      releaseMissions();
-      await fullRequestGate;
       await page.waitForSelector('[data-panel="module-loading"]');
       if (leaveWhileLoading) await page.locator('[data-screen="home"]').click();
       const hydrated = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && !response.request().postDataJSON().mode);

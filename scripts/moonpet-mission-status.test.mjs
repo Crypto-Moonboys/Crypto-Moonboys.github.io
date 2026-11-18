@@ -76,6 +76,32 @@ test('Road to Legendary fails closed on missing identity or partial hydration', 
   assert.equal(legendaryRoadmap({ adopted: true, pet: { pet_id: 'p' }, hydration: { full: false } }).status, 'SYNCING');
 });
 
+test('the roadmap distinguishes missing Worker data from saved zero counts', () => {
+  const state = { ...snapshot(), hydration: { full: true }, relics: [], relics_available: true };
+  const pet = {};
+  state.season_slots = { slots: [{ active: true, pet }] };
+  const saved = {
+    lifecycle: { current_stage: 1, total_stages: 6 },
+    growth_marks: { earned: 0, required: 240 },
+    weekly_crests: { earned: 0, required: 44 },
+  };
+  for (const missing of [null, {}, { ...saved, lifecycle: null }, { ...saved, growth_marks: { required: 240 } },
+    { ...saved, weekly_crests: { earned: 0, required: null } }]) {
+    pet.progression = missing;
+    assert.deepEqual(legendaryRoadmap(state), { available: false, status: 'SYNCING', routes: [] });
+  }
+  pet.progression = saved;
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const renderer = client.slice(client.indexOf('  function renderLegendaryRoadmap()'), client.indexOf('  function renderMissions()'));
+  const context = vm.createContext({ state, window: { MoonpetPlayOptions: { legendaryRoadmap } },
+    panel: (_, body) => body, routeButton: route => route, escapeHtml: String, number: String });
+  vm.runInContext(renderer, context);
+  assert.match(context.renderLegendaryRoadmap(), /UNIQUE RELICS<\/span><strong>0<\/strong>/);
+  state.relics_available = false;
+  assert.match(context.renderLegendaryRoadmap(), /UNIQUE RELICS<\/span><strong>UNAVAILABLE<\/strong>/);
+  assert.match(context.renderLegendaryRoadmap(), /GROWTH MARKS<\/span><strong>0\/240<\/strong>/);
+});
+
 test('legacy season_complete alone cannot label Road to Legendary complete', () => {
   const state = snapshot();
   state.pet = { pet_id: 'selected-pet', level: 20, pet_xp: 10000 };

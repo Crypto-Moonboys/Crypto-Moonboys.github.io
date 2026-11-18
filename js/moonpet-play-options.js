@@ -492,7 +492,11 @@
     var lifecycle = progression.lifecycle || {};
     var growth = progression.growth_marks || {};
     var crests = progression.weekly_crests || {};
-    var relicIds = new Set((s.relics || []).map(function (entry) { return String(entry && entry.relic_id || ''); }).filter(Boolean));
+    if (![lifecycle.current_stage, lifecycle.total_stages, growth.earned, growth.required, crests.earned, crests.required].every(Number.isFinite)) {
+      return { available: false, status: 'SYNCING', routes: [] };
+    }
+    var relicCount = s.relics_available === false || !Array.isArray(s.relics) ? null
+      : new Set(s.relics.map(function (entry) { return String(entry && entry.relic_id || ''); }).filter(Boolean)).size;
     var materialMap = {};
     (s.materials || []).forEach(function (entry) {
       var key = String(entry && (entry.key || entry.material_key) || '');
@@ -514,7 +518,7 @@
       petXp: Math.max(0, Number(pet.pet_xp) || 0),
       growthMarks: { earned: Math.max(0, Number(growth.earned) || 0), required: Math.max(0, Number(growth.required) || 0) },
       weeklyCrests: { earned: Math.max(0, Number(crests.earned) || 0), required: Math.max(0, Number(crests.required) || 0) },
-      relics: relicIds.size,
+      relics: relicCount,
       materials: {
         scrapMetal: Math.max(0, Number(materialMap.scrap_metal) || 0),
         evolutionFragments: Math.max(0, Number(materialMap.evolution_fragment) || 0),

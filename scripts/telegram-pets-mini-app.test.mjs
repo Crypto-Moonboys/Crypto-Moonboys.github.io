@@ -181,13 +181,14 @@ function extractModuleSource() {
   return client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
 }
 await moduleRuntime.hydrateFullState('missions');
-assert.deepEqual(moduleRuntime.requests, [{ mode: 'missions' }], 'Missions requests only its own projection');
+assert.deepEqual(moduleRuntime.requests, [{}], 'Missions requests full roadmap data from core Home');
 assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'missions'), false);
-assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'explore'), true);
-assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'missions'), { mode: 'missions' });
-assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'home'), { mode: 'core' });
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'explore'), false);
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'missions'), {});
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'home'), {});
 await moduleRuntime.hydrateFullState('missions');
-assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions does not fetch the full game');
+assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions reuses the full state');
+moduleRuntime.reset();
 moduleRuntime.screen('explore');
 await moduleRuntime.hydrateFullState('explore');
 assert.deepEqual(moduleRuntime.requests[1], {}, 'Explore still requests complete authority after Missions');
