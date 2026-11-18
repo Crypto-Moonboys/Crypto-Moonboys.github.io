@@ -3238,7 +3238,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
         WHERE source_pet.pet_id=? AND source_pet.telegram_id=? AND source_pet.season_key=?
           AND ${PET_INSTANCE_STATE_COLUMNS.map(column => `source_pet.${column} IS ?`).join(' AND ')})
       AND ${PET_EQUIPMENT_SNAPSHOT_MATCH_SQL}
-      AND (? IS NULL OR (SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events
+      AND (? IS NULL OR (SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld),0) FROM telegram_pet_events
         WHERE telegram_id=? AND day_key=? AND status='accepted')=?)
   `).bind(
     stepId,
@@ -3302,7 +3302,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
     let consolationXp = Math.max(1, Math.min(12, 4 + Math.floor(Number(run.depth || 0) * 2)));
     if (petXpToday >= PETS_DAILY_PET_XP_CAP) consolationXp = 0;
     else if (petXpToday + consolationXp > PETS_DAILY_PET_XP_CAP) consolationXp = Math.max(0, PETS_DAILY_PET_XP_CAP - petXpToday);
-    pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + consolationXp));
+    const netRunXp = "pet_xp+(SELECT pet_xp_awarded FROM telegram_pet_events WHERE id=?1)";
     updatePetStreakForAction(pet, dayKey);
     const runFailEventId = crypto.randomUUID();
     const terminalStatements = [stepInsertStatement, accountWalletDeltaStatement(db, telegramId, walletCostDeltas,
@@ -3326,8 +3326,8 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
       [stepId, telegramId, run.run_id, stepIndex]),
     db.prepare(`
       INSERT INTO telegram_pet_events
-        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-      SELECT ?, ?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?
+        (care_policy,id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT 1,?, ?, ?, 'run_fail', ?, 0, ?, ?, ?, ?, 'accepted', 'run_failed', ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)
         AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ? AND status = 'failed')
         AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND pet_xp = ?)
@@ -3348,10 +3348,15 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
       telegramId,
       pet.pet_xp,
     ),
+    db.prepare(`UPDATE telegram_pet_instances SET pet_xp=${netRunXp},
+      level=${getPetVisibleLevelSql(netRunXp)},stage=CASE
+      ${PET_GROWTH_STAGE_THRESHOLDS.slice().reverse().map(s => `WHEN ${netRunXp}>=${s.min_xp} THEN '${s.stage}'`).join(' ')} END
+      WHERE pet_id=?2 AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=?1)
+      RETURNING (SELECT pet_xp_awarded FROM telegram_pet_events WHERE id=?1) AS net_xp`).bind(runFailEventId,run.pet_id),
     db.prepare(`
       INSERT INTO telegram_pet_season_state
         (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
-      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')
+      SELECT ?, ?, pet_xp_awarded,pet_xp_awarded,pet_xp_awarded,?,? FROM telegram_pet_events WHERE id=? AND status='accepted'
       ON CONFLICT(telegram_id, season_key) DO UPDATE SET
         season_xp = season_xp + excluded.season_xp,
         weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
@@ -3359,7 +3364,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
         daily_key = excluded.daily_key,
         weekly_key = excluded.weekly_key,
         updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, getPetSeasonInfo(`${dayKey}T00:00:00.000Z`).key, consolationXp, consolationXp, consolationXp, dayKey, weekKey, runFailEventId),
+    `).bind(telegramId, getPetSeasonInfo(`${dayKey}T00:00:00.000Z`).key, dayKey, weekKey, runFailEventId),
     ...consumedItemStatements];
     const terminalResults = requireRunMutationResults(await db.batch(terminalStatements), terminalStatements.length);
     if (!terminalResults?.[2]?.results?.[0] || Number(terminalResults?.[3]?.meta?.changes || 0) !== 1 || Number(terminalResults?.[4]?.meta?.changes || 0) !== 1) {
@@ -3369,12 +3374,12 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
         result_copy: stateChanged ? 'Your pet or run changed. Refresh and choose again.' : undefined,
         xp_awarded: 0, pet_xp_awarded: 0 };
     }
-    const committed = { accepted: true, reason: 'run_failed', choice, outcome, xp_awarded: 0, pet_xp_awarded: consolationXp };
+    const committed = { accepted: true, reason: 'run_failed', choice, outcome, xp_awarded: 0, pet_xp_awarded: terminalResults[5].results[0].net_xp };
     return preserveCommittedPetActionResult(committed, async () => {
       const failedRun = await getPetRunById(db, telegramId, run.run_id);
       const persistedPet = await getPetInstanceWithAtomicDecay(db, run.pet_id).catch(() => null);
       if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
-      return { accepted: true, reason: 'run_failed', run: failedRun, choice, outcome, pet: persistedPet || pet, xp_awarded: 0, pet_xp_awarded: consolationXp };
+      return { accepted: true, reason: 'run_failed', run: failedRun, choice, outcome, pet: persistedPet || pet, xp_awarded: 0, pet_xp_awarded: terminalResults[5].results[0].net_xp };
     });
   }
 
@@ -3564,9 +3569,9 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const requestedRewards = JSON.stringify({ pet_xp: petXp, community_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: walletRewards.style_tokens, materials: {}, items: {}, relics: {} });
   const consumeResultsStatements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
-      (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
-      SELECT ?, ?, ?, 'use_item', ?, 0,
-        MIN(?,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
+      (care_policy,id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
+      SELECT 1,?, ?, ?, 'use_item', ?, 0,
+        MIN(?,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
         ?, ?, ?, 'pending', 'item_use_pending', ?, ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0)
@@ -3781,8 +3786,8 @@ async function processPetDailyChest(db, telegramId, options = {}) {
   const nextStage = `CASE ${PET_GROWTH_STAGE_THRESHOLDS.slice().reverse().map((stage) => `WHEN ${nextXp} >= ${stage.min_xp} THEN '${stage.stage}'`).join(' ')} END`;
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
-      (id,pet_id,telegram_id,event_type,event_key,xp_awarded,pet_xp_awarded,season_key,day_key,week_key,status,reason,metadata)
-      SELECT ?,?,?,'daily_chest',?,0,MIN(40,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events
+      (care_policy,id,pet_id,telegram_id,event_type,event_key,xp_awarded,pet_xp_awarded,season_key,day_key,week_key,status,reason,metadata)
+      SELECT 1,?,?,?,'daily_chest',?,0,MIN(40,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld),0) FROM telegram_pet_events
         WHERE telegram_id=? AND day_key=? AND status='accepted'))),?,?,?,'pending','daily_chest_pending',?
       WHERE NOT EXISTS (SELECT 1 FROM telegram_pet_events WHERE telegram_id=? AND event_type='daily_chest' AND day_key=? AND status='accepted')
         AND ${accountWalletRecoveryResolvedSql('?')}
@@ -5515,7 +5520,7 @@ async function savePetProfile(db, pet) {
 async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
   const day = await db.prepare(`
     SELECT COALESCE(SUM(xp_awarded), 0) AS community_xp,
-           COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+           COALESCE(SUM(pet_xp_awarded+pet_xp_withheld), 0) AS pet_xp, COALESCE(SUM(pet_xp_withheld),0) AS withheld_today
     FROM telegram_pet_events
     WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
   `).bind(telegramId, dayKey).first().then(requirePetFirstReadResult);
@@ -5526,13 +5531,13 @@ async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
     WHERE telegram_id = ? AND week_key = ? AND status = 'accepted'
   `).bind(telegramId, weekKey).first().then(requirePetFirstReadResult);
   return {
-    day: { community_xp: Number(day?.community_xp || 0), pet_xp: Number(day?.pet_xp || 0) },
+    day: { community_xp: Number(day?.community_xp || 0), pet_xp: Number(day?.pet_xp || 0), withheld_today: Number(day?.withheld_today || 0) },
     week: { community_xp: Number(week?.community_xp || 0), pet_xp: Number(week?.pet_xp || 0) },
   };
 }
 
 async function getPetDayXpTotal(db, telegramId, dayKey) {
-  const row = await db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+  const row = await db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld), 0) AS pet_xp
     FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'`)
     .bind(String(telegramId || '').trim(), dayKey).first().then(requirePetFirstReadResult);
   return Math.max(0, Math.floor(Number(row?.pet_xp) || 0));
@@ -7347,10 +7352,10 @@ async function processPetAction(db, telegramId, action, options = {}) {
   const actionResultsStatements = [
     db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_events
-        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
-      SELECT ?, ?, ?, ?, ?,
+        (care_policy,id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
+      SELECT 1,?, ?, ?, ?, ?,
         MIN(?,MAX(0,?-(SELECT COALESCE(SUM(xp_awarded),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
-        MIN(?,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
+        MIN(?,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
         ?, ?, ?, 'pending', 'pet_action_pending', ?, ?
       WHERE ${actionHasWalletReward ? accountWalletRecoveryResolvedSql('?') : '1 = 1'}
         AND (? = 0 OR (SELECT COUNT(*) FROM telegram_pet_events
@@ -7405,8 +7410,8 @@ async function processPetAction(db, telegramId, action, options = {}) {
     ...petCareCommunityStatements(db, eventId),
     db.prepare(`UPDATE telegram_pet_events SET status='accepted', reason=CASE
         WHEN xp_awarded<? THEN CASE WHEN xp_awarded=0 THEN 'community_daily_cap_reached' ELSE 'community_daily_cap_clamped' END
-        WHEN pet_xp_awarded<? THEN CASE WHEN pet_xp_awarded=0 THEN 'pet_daily_cap_reached' ELSE 'pet_daily_cap_clamped' END
-        ELSE 'accepted' END
+        WHEN pet_xp_awarded+pet_xp_withheld<? THEN CASE WHEN pet_xp_awarded+pet_xp_withheld=0 THEN 'pet_daily_cap_reached' ELSE 'pet_daily_cap_clamped' END
+        WHEN pet_xp_withheld>0 THEN 'care_standing' ELSE 'accepted' END
       WHERE id=? AND status='pending' RETURNING id,xp_awarded,pet_xp_awarded,reason,metadata`)
       .bind(communityXp, petXp, eventId),
   ];
@@ -7717,8 +7722,8 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   const tradeResultsStatements = [
     db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_events
-        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
-      SELECT ?, ?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'pending', 'trade_pending', ?
+        (care_policy,id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT 1,?, ?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'pending', 'trade_pending', ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles
         WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}
           AND moon_gold >= ? AND pet_xp = ?)
@@ -7728,7 +7733,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
           WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted')
             AND julianday(created_at) > julianday(?))
-        AND (?=0 OR ? + (SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events
+        AND (?=0 OR ? + (SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld),0) FROM telegram_pet_events
           WHERE telegram_id=? AND day_key=? AND status='accepted') <= ?)
       RETURNING id
     `).bind(eventId, sourceAuthority.pet_id, telegramId, eventKey, petXp, sourceAuthority.season_key, dayKey, weekKey, metadata, telegramId,
@@ -7761,7 +7766,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     db.prepare(`
       INSERT INTO telegram_pet_season_state
         (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
-      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+      SELECT ?, ?, pet_xp_awarded,pet_xp_awarded,pet_xp_awarded,?,? FROM telegram_pet_events WHERE id=? AND status='pending'
       ON CONFLICT(telegram_id, season_key) DO UPDATE SET
         season_xp = season_xp + excluded.season_xp,
         weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
@@ -7769,12 +7774,12 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
         daily_key = excluded.daily_key,
         weekly_key = excluded.weekly_key,
         updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, getPetSeasonInfo(now).key, petXp, petXp, petXp, dayKey, weekKey, eventId),
+    `).bind(telegramId, getPetSeasonInfo(now).key, dayKey, weekKey, eventId),
     db.prepare(`
       UPDATE telegram_pet_events
       SET status = 'accepted', reason = ?
       WHERE id = ? AND status = 'pending'
-      RETURNING id,metadata
+      RETURNING id,metadata,pet_xp_awarded
     `).bind(won ? 'trade_won' : 'trade_lost', eventId),
   ];
   const tradeResults = await atomicPetBatch(db, tradeResultsStatements, corePetMutationRules(eventId, tradeResultsStatements.length, null));
@@ -7791,7 +7796,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   const appliedWallet = safeJsonParse(tradeReceipt.metadata, {}).applied_rewards;
   const committedResult = { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won,
     gold_delta: appliedWallet.moon_gold, crystal_delta: appliedWallet.moon_crystals,
-    rewards: appliedWallet, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+    rewards: appliedWallet, xp_awarded: 0, pet_xp_awarded: tradeReceipt.pet_xp_awarded, pet };
   return preserveCommittedPetActionResult(committedResult, async () => {
     const persistedPet = await getPetProfile(db, telegramId);
     if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
@@ -10677,7 +10682,7 @@ async function projectPetMiniAppCoreState(db, telegramId, options, now, timings)
         AND (event_type IN ('feed','play','clean','sleep','train') OR ${PET_MEAL_USE_EVENT_SQL})
     ) WHERE event_rank=1`).bind(String(telegramId)).all().then(requirePetReadResult),
     readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
-    db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+    db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld), 0) AS pet_xp, COALESCE(SUM(pet_xp_withheld),0) AS withheld_today
       FROM telegram_pet_events
       WHERE telegram_id=? AND day_key=? AND status='accepted'`)
       .bind(String(telegramId), dayKey).first().then(requirePetFirstReadResult),
@@ -10729,6 +10734,7 @@ async function projectPetMiniAppCoreState(db, telegramId, options, now, timings)
       claimed: Boolean(dailyCache),
       syncing: false,
       rewards: { pet_xp: 40, moon_gold: 40, style_tokens: 2 },
+      ...(dailyPetXpRow?.withheld_today > 0 ? { withheld_today: Number(dailyPetXpRow.withheld_today) } : {}),
       available_pet_xp: Math.min(40, Math.max(0, PETS_DAILY_PET_XP_CAP - Math.max(0, Number(dailyPetXpRow?.pet_xp || 0)))),
       receipt: dailyCache ? {
         pet_id: dailyCache.pet_id,
@@ -18038,6 +18044,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}
     daily_cache: {
       available: !dailyCache && Boolean(identity?.lifecycle && identity.lifecycle.phase !== 'egg'), claimed: Boolean(dailyCache),
       rewards: { pet_xp: 40, moon_gold: 40, style_tokens: 2 },
+      ...(dailyTotals.day.withheld_today > 0 ? { withheld_today: dailyTotals.day.withheld_today } : {}),
       available_pet_xp: Math.min(40, Math.max(0, PETS_DAILY_PET_XP_CAP - dailyTotals.day.pet_xp)),
       receipt: dailyCache ? { pet_id: dailyCache.pet_id, event_key: dailyCache.event_key, pet_xp_awarded: dailyCache.pet_xp_awarded } : null,
       cooldown: normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now),

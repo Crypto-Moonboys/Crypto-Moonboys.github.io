@@ -406,3 +406,38 @@ for (const entry of factionActions) test(`${entry.action} allows a successful mi
   assert.equal(result.accepted, true, JSON.stringify(result));
   assert.equal(result.faction_bonus, null);
 });
+
+test('public care withholds future Pet XP once, including split rewards at the gross cap', async () => {
+  const f = fixture('83099');
+  f.sql.exec("UPDATE telegram_pet_lifecycle_by_pet SET hatched_at='2020-01-01'");
+  f.sql.prepare(`INSERT INTO moonpet_care_shadow_days(telegram_id,day_key,settled_at,debt_thirds)
+    VALUES (?,'2020-01-02','2020-01-04',2310)`).run(f.owner);
+  cap(f,1184,0);
+  const feed = await care(f,'feed','first');
+  const play = await care(f,'play','second');
+  assert.equal(feed.pet_xp_awarded,5);
+  assert.equal(play.pet_xp_awarded,7);
+  assert.equal((await care(f,'clean','third')).pet_xp_awarded,0);
+  assert.equal((await care(f,'feed','first')).duplicate,true);
+  assert.equal(xp(f),212);
+  assert.equal(f.sql.prepare('SELECT sum(pet_xp_withheld) n FROM telegram_pet_events').get().n,4);
+  assert.equal(f.sql.prepare('SELECT count(*) n FROM moonpet_care_xp_charges').get().n,2);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state').get().season_xp,12);
+});
+
+test('a public job pays the net receipt once across retries', async () => {
+  const f = factionFixture('work');
+  f.sql.exec("UPDATE telegram_pet_lifecycle_by_pet SET hatched_at='2020-01-01'");
+  f.sql.prepare(`INSERT INTO moonpet_care_shadow_days(telegram_id,day_key,settled_at,debt_thirds)
+    VALUES (?,'2020-01-02','2020-01-04',2310)`).run(f.owner);
+  const body = { action:'work', job_key:'courier', request_id:'public-job' };
+  const result = await f.act(body);
+  assert.equal(result.accepted,true);
+  const receipt = f.sql.prepare("SELECT requested_rewards,applied_rewards FROM telegram_pet_reward_claims WHERE source='pet_job'").get();
+  const gross = JSON.parse(receipt.requested_rewards).pet_xp;
+  const net = gross-Math.floor(gross/4);
+  assert.equal(JSON.parse(receipt.applied_rewards).pet_xp,net);
+  assert.equal(xp(f),200+net);
+  assert.equal((await f.act(body)).duplicate,true);
+  assert.equal(xp(f),200+net);
+});

@@ -34,7 +34,7 @@ test('whole-XP replay uses only standing known at day open, and keeps fractions 
     assert.equal(rows[4].exempt_account_days,2);
     assert.equal(rows[5].eligible_zero_xp_days,2);
     assert.ok(rows.every(row => row.settled_account_days===2 &&
-      row.projected_net_pet_xp+row.projected_withheld_xp===row.actual_pet_xp));
+      row.projected_net_pet_xp+row.projected_withheld_xp===row.gross_pet_xp));
   } finally { db.close(); }
 });
 
