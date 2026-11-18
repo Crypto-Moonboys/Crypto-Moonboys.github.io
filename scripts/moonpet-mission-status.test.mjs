@@ -153,6 +153,13 @@ test('the roadmap follows saved Worker stages, incubation and per-evolution Jour
         assert.match(daily.detail, /repeatable Moon Run banks its XP bag/);
       } else {
         assert.equal(road.nextEvolution, null);
+        const profile = road.routes.find(route => route.focus === 'evolution');
+        const collection = road.routes.find(route => route.focus === 'relics');
+        assert.equal(profile.title, 'LIFETIME PROGRESS');
+        assert.match(profile.detail, /Final evolution is complete/);
+        assert.doesNotMatch(profile.detail, /next saved evolution/i);
+        assert.match(collection.detail, /permanent relic and material collection/);
+        assert.doesNotMatch(collection.detail, /later evolutions/i);
       }
     }
   } finally { fixture.close(); }

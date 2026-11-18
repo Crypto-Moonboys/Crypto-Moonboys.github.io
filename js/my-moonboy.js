@@ -289,6 +289,7 @@
     const missions = all.find(task => task && task.source_key === missionsKey &&
       task.owner_scope === 'account' && task.progress?.unit === 'source_flags');
     const egg = (selected.lifecycle_phase || selected.life_stage) === 'egg';
+    const finalEvolution = Number(selected.evolution_stage) >= 5;
     const dailyProgress = egg ? 'Hatch required' : progressForPet('moonpet.daily-journey');
     const weeklyProgress = egg ? 'Hatch required' : progressForPet('moonpet.weekly-journey');
     const today = 'Journey ' + dailyProgress + ' · Missions ' + journeyProgress(missionsKey, missions);
@@ -302,7 +303,9 @@
         current ? claimSummary : 'Current claim readiness is hidden'],
       ['TODAY', today, current ? 'Daily progress comes from accepted server evidence' : 'Last-confirmed progress only'],
       ['THIS WEEK', weeklyProgress, current ? 'This pet’s own Journey week' : 'Last-confirmed progress only'],
-      ['NEXT EVOLUTION', progressForPet('moonpet.evolution'), current ? 'Open the game for exact blockers and material requirements' : 'Refresh before relying on blockers'],
+      [finalEvolution ? 'FINAL EVOLUTION' : 'NEXT EVOLUTION', progressForPet('moonpet.evolution'), current
+        ? finalEvolution ? 'Final evolution complete; lifetime progression continues' : 'Open the game for exact blockers and material requirements'
+        : finalEvolution ? 'Last-confirmed final evolution state' : 'Refresh before relying on blockers'],
       ['LIFETIME', 'Level ' + niceCount(selected.level) + ' · ' + niceCount(selected.pet_xp) + ' Pet XP', current ? 'Permanent progress continues across competition periods' : 'Last-confirmed progress only'],
     ];
     container.innerHTML = rows.map(row => '<div class="mm-journey-row"><strong>' + esc(row[0]) + '</strong><span>' +

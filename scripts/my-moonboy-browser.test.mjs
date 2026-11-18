@@ -800,6 +800,28 @@ test('Journey summary separates paginated progress from failed and missing reads
   } finally { await f.browser.close(); }
 });
 
+test('Journey summary ends evolution guidance when the selected MoonPet reaches final form', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const payload = plan(owner, cursor);
+    if (cursor) return payload;
+    payload.owner.pets[0].evolution_stage = 5;
+    payload.source_status['moonpet.evolution'] = {state:'live'};
+    payload.tasks.push({ ...payload.tasks[0], source_key:'moonpet.evolution',
+      task_id:'moonpet.evolution:final-form', status:'complete', source_health:'live',
+      progress:{current:5,target:5,unit:'evolution_stage'} });
+    return payload;
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    const summary = f.page.locator('#mm-journey');
+    await summary.getByText('FINAL EVOLUTION', {exact:true}).waitFor();
+    assert.match(await summary.innerText(), /FINAL EVOLUTION[\s\S]*5\/5 evolution stage[\s\S]*Final evolution complete; lifetime progression continues/);
+    assert.doesNotMatch(await summary.innerText(), /NEXT EVOLUTION|exact blockers/);
+    assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
 test('PR3 unavailable roster retains saved original-pet claims without asserting archival', async () => {
   const f = await setup({width:390,height:844}, true);
   f.setPlanFactory((owner,cursor) => {

@@ -391,6 +391,10 @@ const html = read('moonpet-game.html');
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
 const roadmapAssetVersion = 'v=20261118-journey-dashboard-v1';
 assert.ok(html.includes('/js/moonpet-play-options.js?' + roadmapAssetVersion));
+assert.match(client, /roadmap\.finalForm[\s\S]*FINAL EVOLUTION COMPLETE/,
+  'final-form dashboard must replace next-evolution instructions with lifetime play');
+assert.match(client, /roadmap\.finalForm \? 'FINAL EVOLUTION' : 'NEXT EVOLUTION'/,
+  'final-form dashboard must label the completed final evolution truthfully');
 assert.ok(html.includes('/js/moonpet-mini-app.js?' + roadmapAssetVersion));
 
 // Execute the shipped fast-path handler with the refresh response held open.

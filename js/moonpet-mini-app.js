@@ -3051,7 +3051,9 @@
     }).join('');
     var routine = incubating
       ? '<div class="line muted">AFTER HATCHING // Daily Journey, Weekly Journey, jobs, timed activities and the official Daily Run.</div>'
-      : '<div class="line muted">Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use timed activities and unlocked jobs, and collect the relics and materials for your next evolution.</div>';
+      : roadmap.finalForm
+        ? '<div class="line muted">FINAL EVOLUTION COMPLETE // Keep Daily Journey and Weekly Journey moving, play runs and bosses, use activities and jobs, and continue the permanent relic and material collection.</div>'
+        : '<div class="line muted">Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use timed activities and unlocked jobs, and collect the relics and materials for your next evolution.</div>';
     var todaySummary = today.available
       ? 'DAILY JOURNEY ' + number(today.journeyCurrent) + '/' + number(today.journeyTarget) + (today.markAwarded ? ' // MARK EARNED' : '')
       : 'DAILY JOURNEY // ' + (incubating ? 'HATCH REQUIRED' : 'SYNCING');
@@ -3070,7 +3072,7 @@
           '<small>' + claimCount + ' confirmed claim' + (singularClaim ? '' : 's') + ' ready across Moonpet.</small></div></section>' +
         '<section class="journey-band"><span>TODAY</span><div><strong>' + escapeHtml(todaySummary) + '</strong><small>Only server-accepted progress counts.</small></div></section>' +
         '<section class="journey-band"><span>THIS WEEK</span><div><strong>' + escapeHtml(weekSummary) + '</strong><small>This pet’s Journey week can differ from Monday competition resets.</small></div></section>' +
-        '<section class="journey-band journey-band-wide"><span>NEXT EVOLUTION</span><div>' +
+        '<section class="journey-band journey-band-wide"><span>' + (roadmap.finalForm ? 'FINAL EVOLUTION' : 'NEXT EVOLUTION') + '</span><div>' +
           (next ? '<strong>' + escapeHtml(next.name) + '</strong>' : '') + missing + '</div></section>' +
         '<section class="journey-band journey-band-wide"><span>LIFETIME</span><div>' +
           '<div class="line ' + (roadmap.status === 'LEGENDARY COMPLETE' ? 'complete' : 'signal') + '">STATUS // ' + escapeHtml(roadmap.status) + '</div>' +
