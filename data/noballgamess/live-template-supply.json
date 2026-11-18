@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-11-17T11:59:58.598Z",
+  "generated_at": "2026-11-18T11:52:31.229Z",
   "supplies": [
     {
       "template_id": 401767,
@@ -9,7 +9,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:56.587Z",
+      "last_checked_at": "2026-11-18T11:52:26.953Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=401767",
       "error": null
     },
@@ -20,7 +20,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:56.699Z",
+      "last_checked_at": "2026-11-18T11:52:27.152Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=401779",
       "error": null
     },
@@ -31,7 +31,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:56.791Z",
+      "last_checked_at": "2026-11-18T11:52:27.315Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=401786",
       "error": null
     },
@@ -42,7 +42,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:56.891Z",
+      "last_checked_at": "2026-11-18T11:52:27.589Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=401809",
       "error": null
     },
@@ -53,7 +53,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:56.985Z",
+      "last_checked_at": "2026-11-18T11:52:27.810Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=401910",
       "error": null
     },
@@ -64,7 +64,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.088Z",
+      "last_checked_at": "2026-11-18T11:52:28.139Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=401911",
       "error": null
     },
@@ -75,7 +75,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.184Z",
+      "last_checked_at": "2026-11-18T11:52:28.372Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=412225",
       "error": null
     },
@@ -86,7 +86,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.286Z",
+      "last_checked_at": "2026-11-18T11:52:28.574Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=412229",
       "error": null
     },
@@ -97,7 +97,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.384Z",
+      "last_checked_at": "2026-11-18T11:52:28.792Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=417407",
       "error": null
     },
@@ -108,7 +108,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.484Z",
+      "last_checked_at": "2026-11-18T11:52:28.986Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=431133",
       "error": null
     },
@@ -119,7 +119,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.592Z",
+      "last_checked_at": "2026-11-18T11:52:29.142Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=435457",
       "error": null
     },
@@ -130,7 +130,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.683Z",
+      "last_checked_at": "2026-11-18T11:52:29.292Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=438902",
       "error": null
     },
@@ -141,7 +141,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.793Z",
+      "last_checked_at": "2026-11-18T11:52:29.486Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=438904",
       "error": null
     },
@@ -152,7 +152,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.889Z",
+      "last_checked_at": "2026-11-18T11:52:29.721Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=441676",
       "error": null
     },
@@ -163,7 +163,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:57.990Z",
+      "last_checked_at": "2026-11-18T11:52:29.978Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=441677",
       "error": null
     },
@@ -174,7 +174,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:58.096Z",
+      "last_checked_at": "2026-11-18T11:52:30.204Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=445272",
       "error": null
     },
@@ -185,7 +185,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:58.196Z",
+      "last_checked_at": "2026-11-18T11:52:30.501Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=449935",
       "error": null
     },
@@ -196,7 +196,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:58.286Z",
+      "last_checked_at": "2026-11-18T11:52:30.681Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=453934",
       "error": null
     },
@@ -207,7 +207,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:58.380Z",
+      "last_checked_at": "2026-11-18T11:52:30.866Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=458168",
       "error": null
     },
@@ -218,7 +218,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:58.486Z",
+      "last_checked_at": "2026-11-18T11:52:31.049Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=474614",
       "error": null
     },
@@ -229,7 +229,7 @@
       "listed_supply": null,
       "pre_baseline_missing_or_burned": 0,
       "live_supply_status": "ok",
-      "last_checked_at": "2026-11-17T11:59:58.596Z",
+      "last_checked_at": "2026-11-18T11:52:31.228Z",
       "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=noballgamess&template_id=597818",
       "error": null
     }
