@@ -725,6 +725,9 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 1/);
     assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 2/);
     assert.match(await f.page.locator('#mm-pets').innerText(), /Lifecycle phase: adult/);
+    const roadmapLink = f.page.getByRole('link', {name:'Open Road to Legendary'});
+    assert.equal(await roadmapLink.isVisible(), true);
+    assert.equal(await roadmapLink.getAttribute('href'), '/moonpet-game.html?screen=missions&focus=legendary-roadmap');
     assert.doesNotMatch(await f.page.locator('#my-moonboy').getAttribute('data-pet-ref') || '', /pap_/);
     assert.doesNotMatch(await f.page.locator('#my-moonboy').evaluate(node => node.innerHTML), /pap_[a-f0-9]{24}/);
 
