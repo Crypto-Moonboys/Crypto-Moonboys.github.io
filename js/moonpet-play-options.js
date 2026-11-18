@@ -499,9 +499,12 @@
       if (key) materialMap[key] = Math.max(0, Number(entry.quantity) || 0);
     });
     var evolution = g.evolution || null;
+    var bestJob = (g.jobs || []).filter(function (job) { return job && job.available === true; })
+      .sort(function (left, right) { return Number(right.pet_xp || 0) - Number(left.pet_xp || 0); })[0] || null;
+    var exploreActivity = (g.activity_options || []).find(function (offer) { return offer && offer.key === 'explore'; }) || null;
     return {
       available: true,
-      status: progression.lifetime_complete || progression.season_complete ? 'LEGENDARY COMPLETE'
+      status: progression.lifetime_complete === true ? 'LEGENDARY COMPLETE'
         : evolution && evolution.ready ? 'EVOLUTION READY' : 'IN PROGRESS',
       stage: {
         current: Math.max(0, Number(lifecycle.current_stage) || 0),
@@ -528,12 +531,14 @@
           };
         }),
       } : null,
+      bestJob: bestJob ? { key: bestJob.key, title: bestJob.title, basePetXp: Math.max(0, Number(bestJob.pet_xp) || 0) } : null,
+      exploreActivityAvailable: Boolean(exploreActivity),
       routes: [
         { title: 'DAILY JOURNEY', screen: 'missions', focus: 'daily-journey', detail: 'Complete genuine Daily Journey objectives and earn the pet’s Growth Mark.' },
         { title: 'WEEKLY JOURNEY', screen: 'missions', focus: 'weekly-journey', detail: 'Complete the five weekly objectives for this pet’s Crest.' },
         { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Play the official Daily Run, bank safe exits and keep working toward Alley King victories and relic drops.' },
-        { title: 'TIMED ACTIVITY', screen: 'work', focus: 'timed-activity', detail: 'Use legitimate timed activities when your energy and schedule allow.' },
-        { title: 'BEST UNLOCKED JOB', screen: 'work', focus: 'jobs', detail: 'Compare the server-unlocked jobs and choose from what your pet actually qualifies for.' },
+        { title: exploreActivity ? 'TIMED EXPLORE' : 'TIMED ACTIVITY', screen: 'work', focus: 'timed-activity', detail: exploreActivity ? 'Explore is currently offered by the server as a legitimate timed activity. Review its duration and energy cost before starting.' : 'Review the timed activities the server currently offers and use one when your energy and schedule allow.' },
+        { title: bestJob ? 'BEST UNLOCKED JOB // ' + bestJob.title : 'JOBS // CHECK UNLOCKS', screen: 'work', focus: 'jobs', detail: bestJob ? 'Highest base Pet XP among jobs the server marks available in this snapshot: ' + String(Math.max(0, Number(bestJob.pet_xp) || 0)) + '. Review cooldowns and current caps before choosing it.' : 'No eligible job is advertised in this snapshot. Review the server job board for current unlock requirements.' },
         { title: 'RELICS + MATERIALS', screen: 'economy', focus: 'relics', detail: 'Review collected relics and the material sources needed for later evolutions.' },
         { title: 'EVOLUTION', screen: 'profile', focus: 'evolution', detail: 'Review the next saved evolution gate and evolve only when the Worker says it is ready.' },
       ],
