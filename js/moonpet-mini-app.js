@@ -3097,6 +3097,9 @@
   }
 
   function renderMissions() {
+    if (!state.lifecycle || state.lifecycle.phase === 'egg') {
+      return activePetSummary() + renderContracts() + renderDailyCompletion() + renderSeasonFinales();
+    }
     var guidance = state.guidance || {};
     var missions = state.guidance && Array.isArray(state.guidance.missions) ? state.guidance.missions.filter(function (mission) { return mission && typeof mission === 'object'; }) : [];
     var completedMissions = missions.filter(function (mission) { return (mission.completed === true || mission.completed === 1); }).length;
@@ -3107,10 +3110,10 @@
       var current = summary && summary.next && summary.next.key === mission.key;
       return '<div class="mission-row' + (current ? ' mission-row-current' : '') + '"' + (current ? ' data-current-mission="' + escapeHtml(mission.key) + '"' : '') + '><div class="line ' + ((mission.completed === true || mission.completed === 1) ? 'complete' : '') + '">' + ((mission.completed === true || mission.completed === 1) ? '✅ Completed // ' : current ? '[CURRENT] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + steps + '</div>' : '') + ((mission.completed === true || mission.completed === 1) ? '' : objectiveRouteButton(mission.key)) + '</div>';
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
-    var achievements = state.guidance && Array.isArray(state.guidance.achievements) ? state.guidance.achievements.filter(function (entry) { return entry && typeof entry === 'object'; }) : [];
-    var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
+    var achievements = state.guidance && Array.isArray(state.guidance.achievements) ? state.guidance.achievements.filter(function (entry) { return entry && typeof entry === 'object' && entry.unlocked_at; }) : [];
+    var unlockedCount = achievements.length;
     var achievementRows = achievements.map(function (entry) {
-      return '<div class="line ' + (entry.unlocked_at ? 'complete' : '') + '">' + (entry.unlocked_at ? '✅ Completed // [UNLOCKED] ' : '[LOCKED] ') + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
+      return '<div class="line complete">✅ Completed // [UNLOCKED] ' + escapeHtml(entry.title) + ' ' + number(Math.min(entry.progress, entry.target)) + '/' + number(entry.target) + '</div><div class="line muted">' + escapeHtml(entry.description || '') + '</div>';
     }).join('');
     var progression = activePetProgression();
     var growth = progression.growth_marks || {};
@@ -3138,7 +3141,7 @@
       renderDailyCompletion() +
       panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions', summary && summary.next ? 'Current goal: ' + summary.next.title : summary && summary.available ? summary.status : 'Today’s missions, progress and qualifying routes.') +
       renderSeasonFinales() +
-      panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
+      (achievements.length ? panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount), achievementRows, 'achievements') : '');
   }
 
   // TEST-EXPORT: kaijuGuidance:start
@@ -3170,6 +3173,7 @@
   // TEST-EXPORT: kaijuGuidance:end
 
   function renderExplore() {
+    var hatched = Boolean(state.lifecycle && state.lifecycle.phase && state.lifecycle.phase !== 'egg');
     var savedEvents = (state.pending_street_events || []).map(function (entry) {
       return entry.recoverable ? button('RECOVER SAVED EVENT', 'event_recover', { event_id: entry.event_id }, { detail: 'Recovers the original outcome for the pet that started it.' })
         : '<div class="line muted">SAVED EVENT NEEDS REVIEW // Its original outcome could not be verified. Your saved history is preserved.</div>'
@@ -3294,7 +3298,9 @@
           : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR SOLO CRT BATTLES.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
     }
     kaijuBody = renderKaijuHowTo(kaiju) + kaijuBody;
-    var regions = (state.regions || []).map(function (region) {
+    var regions = (state.regions || []).filter(function (region) {
+      return hatched ? region.requirements_met === true || region.pending_choice_key || region.settling : region.pending_choice_key || region.settling;
+    }).map(function (region) {
       var mission = region.mission || {};
       var opponent = mission.opponent || {};
       var decisions = (mission.choices || []).map(function (choice) {
@@ -3310,7 +3316,7 @@
       return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + brief + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : region.used_today ? '<div class="line complete">DISTRICT PLAY COMPLETE TODAY // RESET ' + countdownMarkup(region.cooldown, 'in ') + '</div>' : '<div class="button-grid district-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var live = state.live_systems || {};
-    var chains = (live.chains || []).map(function (chain) {
+    var chains = (live.chains || []).filter(function (chain) { return hatched || chain.pending_choice_key || chain.settling; }).map(function (chain) {
       var scene = chain.scene || {};
       var decisions = (scene.choices || []).map(function (choice) {
         var bonus = valueText(choice.reward_bonus);
@@ -3356,17 +3362,37 @@
       (boss.defeated ? '<div class="line">' + (boss.reward_claimed ? 'VICTORY REWARD COLLECTED.' : 'VICTORY RECORDED. CHECK SAVED REWARDS.') + '</div>' : '') +
       (boss.rotation_cooldown ? '<div class="line muted">NEXT WEEKLY BOSS ' + countdownMarkup(boss.rotation_cooldown, 'in ') + '</div>' : '') +
       '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
-    return renderPlayNow() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
-      panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div>' + renderChoiceResult('adventure') + '<div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
-      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div>' + renderChoiceResult('street-event') + '<div class="button-grid">' + eventButtons + '</div><div class="button-grid one">' + savedEvents + '</div>', 'street-event') +
-      panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
-      panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>', 'story-chains') + panel('SEASONAL RAID', seasonalBody, 'seasonal-boss') +
-      panel('PET ARENA', arenaBody, 'arena') + panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
+    var weeklyCapability = state.capabilities && state.capabilities.weekly_boss || {};
+    var weeklyUnlocked = weeklyCapability.state === 'AVAILABLE' && weeklyCapability.unlocked === true;
+    var weeklySaved = Boolean((boss.pending_rewards || []).length);
+    var seasonalUnlocked = Number(state.pet && state.pet.level) >= Number(seasonal.min_level || Infinity);
+    var seasonalSaved = Boolean((seasonal.pending_rewards || []).length || seasonal.pending_move || seasonal.settling);
+    var arenaVisible = hasSystemUnlocked('arena') || Boolean(arena || arenaQueue);
+    var kaijuVisible = hasSystemUnlocked('kaiju') || Boolean(kaijuMatch || kaijuQueue);
+    var panels = [];
+    if (regions) panels.push(panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts'));
+    if (hatched || run) panels.push(panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run'));
+    if (hatched && adventure) panels.push(panel(adventure.title, '<div class="line">' + escapeHtml(adventure.intro) + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div>' + renderChoiceResult('adventure') + '<div class="button-grid">' + adventureButtons + '</div>', 'adventure'));
+    if ((hatched && encounter) || savedEvents) panels.push(panel(encounter ? encounter.title : 'SAVED STREET EVENTS', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'RECOVER OR REVIEW THE SAVED EVENT BELOW.') + '</div>' + (encounter ? '<div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div>' + renderChoiceResult('street-event') + '<div class="button-grid">' + eventButtons + '</div>' : '') + '<div class="button-grid one">' + savedEvents + '</div>', 'street-event'));
+    if (weeklyUnlocked || weeklySaved) panels.push(panel('WEEKLY BOSS // ' + (boss.title || 'SAVED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss'));
+    if (chains) panels.push(panel('STREET STORY CHAINS', chains, 'story-chains'));
+    if (seasonalUnlocked || seasonalSaved) panels.push(panel('SEASONAL RAID', seasonalBody, 'seasonal-boss'));
+    if (arenaVisible) panels.push(panel('PET ARENA', arenaBody, 'arena'));
+    if (kaijuVisible) panels.push(panel('KAIJU CODE CARDS', kaijuBody, 'kaiju'));
+    return (hatched ? renderPlayNow() : '') + panels.join('');
   }
 
   function renderWork() {
     var guidance = state.guidance || {};
-    var jobs = guidance.jobs || state.jobs || [];
+    var hatched = Boolean(state.lifecycle && state.lifecycle.phase && state.lifecycle.phase !== 'egg');
+    var petLevel = Number(state.pet && state.pet.level) || 0;
+    var petStage = Number(state.lifecycle && state.lifecycle.evolution_stage != null ? state.lifecycle.evolution_stage : state.pet && state.pet.evolution_stage) || 0;
+    var jobs = (guidance.jobs || state.jobs || []).filter(function (job) {
+      var levelUnlocked = petLevel >= Number(job.min_level || 1);
+      var stageUnlocked = petStage >= Number(job.min_evolution_stage || 0);
+      var specialistUnlocked = !job.required_track || Number(job.current_xp || 0) >= Number(job.required_xp || 0);
+      return levelUnlocked && stageUnlocked && specialistUnlocked;
+    });
     var jobsHtml = jobs.map(function (job) {
       var specialistGate = job.required_track ? ' // ' + words(job.required_track).toUpperCase() + ' ' + number(job.current_xp) + '/' + number(job.required_xp) : '';
         return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, cooldown: job.cooldown, reward: { pet_xp: job.pet_xp, moon_gold: job.moon_gold, moon_crystals: job.moon_crystals, style_tokens: job.style_tokens }, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // ' + (job.lore || '') });
@@ -3390,8 +3416,8 @@
           '<div class="button-grid one">' + button('START ' + words(offer.key), 'activity_start', { activity_type: offer.key }) + '</div>';
       }).join('') : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
     }
-    if (state.contracts && state.contracts.available) activityHtml += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'No pet energy cost or cooldown. The activity keeps accumulating.') + '</div>';
-    return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
+    if (hatched && state.contracts && state.contracts.available) activityHtml += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'No pet energy cost or cooldown. The activity keeps accumulating.') + '</div>';
+    return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + (hatched && jobsHtml ? panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs') : '');
   }
 
   function activityPreviewText(preview) {
@@ -3434,6 +3460,7 @@
   function renderEconomy() {
     var guidance = state.guidance || {};
     var economy = guidance.economy || {};
+    var egg = !state.lifecycle || state.lifecycle.phase === 'egg';
     function renderBounty(bounty,weekly) {
       var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
@@ -3441,17 +3468,21 @@
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }
-    var bounties = (economy.bounties || []).map(function (bounty) { return renderBounty(bounty, false); }).join('');
-    var bonusBounties = (economy.bonus_bounties || []).map(function (bounty) { return renderBounty(bounty, false); }).join('');
-    var weeklyBounties = (economy.weekly_bounties || []).map(function (bounty) { return renderBounty(bounty, true); }).join('');
+    function visibleBounty(bounty) { return !egg || bounty.complete === true && !bounty.claimed; }
+    var bounties = (economy.bounties || []).filter(visibleBounty).map(function (bounty) { return renderBounty(bounty, false); }).join('');
+    var bonusBounties = (economy.bonus_bounties || []).filter(visibleBounty).map(function (bounty) { return renderBounty(bounty, false); }).join('');
+    var weeklyBounties = (economy.weekly_bounties || []).filter(visibleBounty).map(function (bounty) { return renderBounty(bounty, true); }).join('');
+    if (egg) return (bounties ? panel('SAVED DAILY BOUNTIES', bounties, 'bounties') : '') +
+      (bonusBounties ? panel('SAVED EXTRA CHALLENGES', bonusBounties, 'bonus-bounties') : '') +
+      (weeklyBounties ? panel('SAVED WEEKLY BOUNTIES', weeklyBounties, 'weekly-bounties') : '');
     function renderMarketOffer(offer) {
       var full = offer.capacity && !offer.capacity.available;
       var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
       return button(offer.title, 'market_buy', { offer_key: offer.key, day_key: economy.day_key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, cost: offer.cost, reward: offer.reward, rewardLabel: 'GIVES', missing: !offer.affordable && !offer.purchased ? missingCostText(offer.cost) : '', detail: 'UNLOCK LEVEL ' + number(offer.min_level) + ' // ' + (offer.detail || '') + capacityDetail });
     }
-    var offers = (economy.market_offers || []).map(renderMarketOffer).join('');
-    var foodOffers = (economy.food_offers || []).map(renderMarketOffer).join('');
-    var shop = (guidance.shop_items || []).map(function (item) {
+    var offers = (economy.market_offers || []).filter(function (offer) { return offer.unlocked; }).map(renderMarketOffer).join('');
+    var foodOffers = (economy.food_offers || []).filter(function (offer) { return offer.unlocked; }).map(renderMarketOffer).join('');
+    var shop = (guidance.shop_items || []).filter(function (item) { return item.unlocked; }).map(function (item) {
       return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : !item.unlocked ? 'LEVEL ' + number(item.min_level) + ' REQUIRED' : item.owned ? 'OWNED' : item.affordable ? 'CAN BUY NOW' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, cost: item.owned ? {} : item.cost, missing: !item.owned && !item.affordable ? missingCostText(item.cost) : '', detail: 'UNLOCK LEVEL ' + number(item.min_level) + ' // YOUR LEVEL ' + number(state.pet.level) + ' // ' + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // Buy once; permanent gear survives resets.') });
     }).join('');
     var mealCooldown = (state && state.cooldowns && state.cooldowns.entries || []).find(function (entry) {
@@ -3474,7 +3505,7 @@
       expeditionBody = '<div class="line">' + number(economy.expedition_attempts_left) + '/3 SHARED ATTEMPTS LEFT TODAY</div>' +
         '<div class="line muted">Choose any unlocked destination. Earlier routes stay open as you level up. Each costs one account-wide attempt and its listed energy. Each awards up to 12 Pet XP under the existing cap; finds vary by destination.</div>' +
         (economy.expedition_cooldown ? '<div class="line">ATTEMPTS RESET ' + countdownMarkup(economy.expedition_cooldown, 'in ') + '</div>' : '') +
-        expeditionOptions.map(function (entry) {
+        expeditionOptions.filter(function (entry) { return entry.unlocked; }).map(function (entry) {
           return '<div class="line"><strong>' + escapeHtml(entry.title) + '</strong> // LEVEL ' + number(entry.min_level) + ' // ' + number(entry.energy) + ' ENERGY</div>' +
             '<div class="line muted">POSSIBLE FINDS // ' + escapeHtml((entry.rewards || []).map(valueText).join(' / ')) + '</div>' +
             '<div class="button-grid one">' + button('EXPLORE ' + entry.title, 'expedition', { expedition_key: entry.key, pet_id: state.pet.pet_id, day_key: economy.day_key }, {
@@ -3490,24 +3521,26 @@
     expeditionBody += '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
     var live = state.live_systems || {};
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
-    var gear = (state.gear || []).map(function (item) {
+    var unlockedGearKeys = new Set((guidance.shop_items || []).filter(function (item) { return item.unlocked; }).map(function (item) { return item.key; }));
+    var gear = (state.gear || []).filter(function (item) { return unlockedGearKeys.has(item.item_key); }).map(function (item) {
       var upgrade = upgrades.get(item.item_key) || {};
       var catalogItem = (guidance.shop_items || []).find(function (entry) { return entry.key === item.item_key; });
       var equip = catalogItem ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: !catalogItem.unlocked || catalogItem.equipped, detail: catalogItem.unlocked ? 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' : 'REQUIRES LEVEL ' + number(catalogItem.min_level) }) + '</div>' : '';
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
         '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' + equip +
-        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key, target_level: upgrade.target_level, quote_version: upgrade.quote_version }, { disabled: !upgrade.unlocked || !upgrade.affordable || !upgrade.quote_version, resourceRequired: upgrade.unlocked && !upgrade.affordable, cost: upgrade.cost, missing: !upgrade.affordable ? missingCostText(upgrade.cost) : '', detail: 'UNLOCK LEVEL ' + number(upgrade.required_level) + ' // YOUR LEVEL ' + number(state.pet.level) + (upgrade.quote_version ? '' : ' // REFRESH REQUIRED: upgrade quote unavailable.') }) + '</div>');
+        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : upgrade.unlocked ? '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key, target_level: upgrade.target_level, quote_version: upgrade.quote_version }, { disabled: !upgrade.affordable || !upgrade.quote_version, resourceRequired: !upgrade.affordable, cost: upgrade.cost, missing: !upgrade.affordable ? missingCostText(upgrade.cost) : '', detail: 'UNLOCK LEVEL ' + number(upgrade.required_level) + ' // YOUR LEVEL ' + number(state.pet.level) + (upgrade.quote_version ? '' : ' // REFRESH REQUIRED: upgrade quote unavailable.') }) + '</div>' : '');
     }).join('');
     var materials = (state.materials || []).map(function (item) {
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
     }).join('');
-    var crafting = (live.crafting || []).map(function (recipe) {
+    var craftingRecipes = (live.crafting || []).filter(function (recipe) { return recipe.unlocked; });
+    var crafting = craftingRecipes.map(function (recipe) {
       var plan = window.MoonpetPlayOptions && window.MoonpetPlayOptions.craftingGoal && window.MoonpetPlayOptions.craftingGoal(state, recipe.key);
       var full = plan && plan.output_full;
       return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: recipe.unlocked && !recipe.affordable, cost: recipe.cost, missing: !recipe.affordable ? missingCostText(recipe.cost) : '', detail: 'UNLOCK LEVEL ' + number(recipe.min_level) + ' // ' + (recipe.detail || '') + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div><div class="line muted">' + escapeHtml(item.route_effect || 'Collection requirement.') + '</div>'; }).join('');
-    var equipmentSets = (live.equipment_sets || []).map(function (set) {
+    var equipmentSets = (live.equipment_sets || []).filter(function (set) { return (set.owned || []).some(function (itemKey) { return unlockedGearKeys.has(itemKey); }); }).map(function (set) {
       var bonuses = (set.active_bonuses || []).map(function (bonus) { return number(bonus.required) + ' PIECE // ' + valueText(bonus.effects); }).join(' / ');
       return '<div class="line ' + (set.pieces >= 2 ? 'complete' : '') + '">' + escapeHtml(words(set.key)) + ' // EQUIPPED ' + number(set.pieces) + '/' + number(set.total_pieces) + ' // OWNED ' + number(set.owned_pieces) + '</div>' +
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
@@ -3520,18 +3553,20 @@
         ? button(equipped ? 'UNEQUIP FREE' : 'EQUIP FREE', 'style_equip', { pet_id: state.pet.pet_id, cosmetic_key: item.key, enabled: !equipped }, { disabled: loadout.available !== true, detail: loadout.available ? 'Owned. No currency cost.' : 'Style state unavailable. Refresh before switching.' })
         : button('UNLOCK ' + words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable, resourceRequired: !item.affordable, cost: item.cost, missing: !item.affordable ? missingCostText(item.cost) : '' }));
     }).join('');
-    return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
-      panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
-      panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
-      panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') +
+    var callsignRevealStage = typeof MOONPET_IDENTITY_REVEAL_STAGE === 'number' ? MOONPET_IDENTITY_REVEAL_STAGE : 3;
+    var callsignAvailable = Number(state.lifecycle && state.lifecycle.evolution_stage != null ? state.lifecycle.evolution_stage : state.pet && state.pet.evolution_stage) >= callsignRevealStage;
+    return (gear ? panel('EQUIPMENT PROGRESSION', gear, 'equipment') : '') +
+      (equipmentSets ? panel('LOADOUT SYNERGIES', equipmentSets, 'equipment-sets') : '') +
+      (materials ? panel('CRAFTING MATERIALS', materials, 'materials') : '') +
+      (craftingRecipes.length ? panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') : '') +
       panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('EXTRA DAILY CHALLENGES // EASY TO HARD', '<div class="line muted">Three bonus targets each UTC day, additional to the four original Bounties and seven Daily Missions. Accepted actions only; a completed target may be claimed once. These do not replace the Daily Journey or Weekly Crest.</div>' + (bonusBounties || '<div class="line muted">BONUS BOARD SYNCING.</div>'), 'bonus-bounties') +
       panel('WEEKLY BOUNTY BLOCKS', '<div class="line muted">Three bonus account targets per UTC Monday–Sunday week. Separate from the pet’s creation-based Weekly Journey and existing Boss rotation. Accepted actions count once, and completed Blocks claim one currency reward each. Unclaimed targets expire at the next UTC Monday.</div>' + (weeklyBounties || '<div class="line muted">WEEKLY BOARD SYNCING.</div>'), 'weekly-bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
-      panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
-      panel('FOOD SHOP // DAILY STOCK', '<div class="line muted">Five cooked-meal bundles, each available once per UTC day. Buy the complete bundle with its listed resources, then eat it from your saved Bag or Home Food Counter. These are consumables, not extra Care Feed attempts.</div><div class="button-grid one">' + (foodOffers || '<div class="line muted">FOOD OFFERS SYNCING.</div>') + '</div>', 'food-shop') +
-      panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
+      panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + (craftingRecipes.length ? routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) : '') + '</div>', 'market') +
+      (foodOffers ? panel('FOOD SHOP // DAILY STOCK', '<div class="line muted">Five cooked-meal bundles, each available once per UTC day. Buy the complete bundle with its listed resources, then eat it from your saved Bag or Home Food Counter. These are consumables, not extra Care Feed attempts.</div><div class="button-grid one">' + foodOffers + '</div>', 'food-shop') : '') +
+      panel('PERMANENT SHOP', '<div class="line muted">Buy when this pet meets the listed level and you have every listed resource. Owned gear switches free once its level gate is met. Equipped gear is already in use; purchases and upgrades persist across resets.</div><div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately.</div>' + (callsignAvailable ? '<div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div>' : '') + '<div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
   }
@@ -3708,7 +3743,7 @@
       ? '<div class="line complete">CURRENT PERK // ' + escapeHtml(currentPerk.perk || 'Memories and traits are active.') + '</div><div class="line">NEXT: ' + escapeHtml(evolution.name) + '</div><div class="line muted">NEXT PERK // ' + escapeHtml(evolution.perk || '') + '</div>' + (evolution.missing || []).map(function (entry) { return '<div class="line muted">' + escapeHtml(entry.label) + ' ' + number(entry.current) + '/' + number(entry.required) + ' // ' + escapeHtml(entry.source || '') + '</div>'; }).join('') + '<div class="button-grid one">' + button('EVOLVE', 'evolve', { evolution_id: evolution.evolution_id }, { disabled: !evolution.ready }) + '</div>'
       : '<div class="line complete">FINAL EVOLUTION ONLINE.</div><div class="line muted">' + escapeHtml(currentPerk.perk || '') + '</div>';
     var season = guidance.season || {};
-    var tiers = (season.tiers || []).map(function (tier) {
+    var tiers = (season.tiers || []).filter(function (tier) { return tier.unlocked || tier.claimed_at; }).map(function (tier) {
       return '<div class="line ' + (tier.claimed_at ? 'complete' : tier.unlocked ? '' : 'locked') + '">' + escapeHtml(tier.title) + ' // ' + number(tier.required_xp) + ' XP // ' + escapeHtml(tier.season_key || season.key) + ' // ' + (tier.claimed_at ? '✅ Completed // CLAIMED' : tier.unlocked ? 'CLAIM READY' : 'LOCKED') + '</div>' +
         '<div class="line muted">REWARD ' + escapeHtml(valueText(tier.reward)) + ' // +' + number(season.evolution_bonus_style) + ' EVOLUTION STYLE</div>' +
         (tier.unlocked && !tier.claimed_at ? '<div class="button-grid one">' + button('CLAIM ' + tier.title, 'season_claim', { tier_id: tier.tier_id, season_key: tier.season_key || season.key }) + '</div>' : '');
@@ -3748,34 +3783,66 @@
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
     var featureRows = (guidance.features || []).filter(function (feature) {
-      return ['care_console','daily_missions','timed_activities','moon_runs','street_events','kaiju_cards','weekly_boss','pet_arena','moon_economy','equipment_upgrades'].includes(feature.key);
+      return feature.available === true && ['care_console','daily_missions','timed_activities','moon_runs','street_events','kaiju_cards','weekly_boss','pet_arena','moon_economy','equipment_upgrades'].includes(feature.key);
     }).map(function (feature) {
-      var available = feature.available === true;
       var detail = feature.detail || '';
-      return '<div class="line ' + (available ? 'complete' : 'locked') + '">' + (available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
+      return '<div class="line complete">[ONLINE] ' + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
     }).join('');
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
     var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
     var callsignUnlocked = Number(lifecycle.evolution_stage || state.pet.evolution_stage || identity.current_stage && identity.current_stage.stage || 0) >= MOONPET_IDENTITY_REVEAL_STAGE;
-    var callsignPanel = callsignUnlocked
-      ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
-      : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
+    var callsignPanel = '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>';
+    var hatched = Boolean(lifecycle.phase && lifecycle.phase !== 'egg');
+    var rareVisible = hatched && (rare.ready || rare.name || Number(rare.progress) > 0);
     return activePetSummary() + helpPanel + renderSeasonSlots() + renderPetHouse() + renderFurnitureShop() +
-      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
-      panel('APTITUDES', aptitudeRows) +
-      panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
-      panel('CALLSIGN', callsignPanel, 'callsign') +
-      panel('SEASON FINALE', '<div class="button-grid one">' + routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Check your unlocks, resume a saved fight or collect a victory reward.') + '</div>', 'finale-link') +
-      panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD<span class="button-purpose">Compare competition scores. Viewing ranks does not change your pet.</span></button></div>', 'leaderboard');
+      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + (rareVisible ? panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') : '') +
+      (hatched ? panel('APTITUDES', aptitudeRows) : '') +
+      (hatched ? panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') : '') +
+      (callsignUnlocked ? panel('CALLSIGN', callsignPanel, 'callsign') : '') +
+      (hatched ? panel('SEASON FINALE', '<div class="button-grid one">' + routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Check your unlocks, resume a saved fight or collect a victory reward.') + '</div>', 'finale-link') : '') +
+      (hatched ? panel('EVOLUTION', evoHtml, 'evolution') : '') + (hatched && faction.bonus ? panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key)) + '</div><div class="line muted">' + escapeHtml(words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect)) + '</div>', 'faction') : '') +
+      (hatched ? panel('SPECIALIST TRACKS', tracks, 'tracks') : '') + (hatched && featureRows ? panel('GAMEPLAY ONLINE', featureRows, 'features') : '') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + (tiers || '<div class="line muted">No season reward is unlocked yet.</div>'), 'season') + (hatched ? panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD<span class="button-purpose">Compare competition scores. Viewing ranks does not change your pet.</span></button></div>', 'leaderboard') : '');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
   var navItems = [
     ['home', '⌂', 'HOME', 'Care'], ['missions', '☷', 'MISSIONS', 'Goals'], ['explore', '⚔', 'EXPLORE', 'Runs'], ['work', '⚒', 'WORK', 'Timers'], ['economy', '◇', 'ECONOMY', 'Gear'], ['profile', '★', 'PROFILE', 'Pets'],
   ];
+
+  // TEST-EXPORT: progressiveVisibility:start
+  function moonpetSectionVisibility(snapshot) {
+    var visible = { home: true, missions: false, explore: false, work: false, economy: false, profile: true };
+    if (!snapshot || !snapshot.adopted || !snapshot.pet) return visible;
+    var egg = !snapshot.lifecycle || snapshot.lifecycle.phase === 'egg';
+    if (!egg) {
+      ['missions', 'explore', 'work', 'economy'].forEach(function (screenName) { visible[screenName] = true; });
+      return visible;
+    }
+    var statuses = window.MoonpetPlayOptions && window.MoonpetPlayOptions.menuStatuses
+      ? window.MoonpetPlayOptions.menuStatuses(snapshot) : {};
+    var retainedKinds = ['claim', 'ready', 'recovery', 'review', 'resume', 'waiting'];
+    ['missions', 'explore', 'work', 'economy'].forEach(function (screenName) {
+      var menu = statuses[screenName];
+      visible[screenName] = Boolean(menu && menu.loaded && menu.entries.some(function (entry) {
+        return retainedKinds.includes(entry.kind);
+      }));
+    });
+    return visible;
+  }
+
+  function screenIsVisible(screenName, snapshot) {
+    return moonpetSectionVisibility(snapshot || state)[screenName] === true;
+  }
+
+  function ensureActiveScreenVisible() {
+    if (!state || state.hydration && state.hydration.full === false || screenIsVisible(activeScreen, state)) return;
+    activeScreen = 'home';
+    requestedFocus = '';
+    requestedFocusScreen = 'home';
+  }
+  // TEST-EXPORT: progressiveVisibility:end
 
   // TEST-EXPORT: menuStatus:start
   function renderMenuStatus() {
@@ -3813,7 +3880,14 @@
 
   function renderNav() {
     var statuses = !authenticationFailure && !petActionRefreshRequired && window.MoonpetPlayOptions && window.MoonpetPlayOptions.menuStatuses ? window.MoonpetPlayOptions.menuStatuses(state) : {};
-    nav.innerHTML = navItems.map(function (item) {
+    var visible = moonpetSectionVisibility(state);
+    var items = navItems.filter(function (item) { return visible[item[0]]; });
+    if (state && state.hydration && state.hydration.full === false && SCREEN_ORDER.includes(activeScreen) && !items.some(function (item) { return item[0] === activeScreen; })) {
+      items.push(navItems.find(function (item) { return item[0] === activeScreen; }));
+      items.sort(function (left, right) { return SCREEN_ORDER.indexOf(left[0]) - SCREEN_ORDER.indexOf(right[0]); });
+    }
+    if (nav.style && nav.style.setProperty) nav.style.setProperty('--moonpet-nav-count', String(items.length));
+    nav.innerHTML = items.map(function (item) {
       var badge = statuses[item[0]] ? window.MoonpetPlayOptions.menuBadge(statuses[item[0]]) : { count: 0 };
       var count = badge.count, lower = badge.countLowerBound;
       var countText = count + (lower ? '+' : '');
@@ -3874,6 +3948,7 @@
   // TEST-EXPORT: rewardLifecycle:end
 
   function render(options) {
+    ensureActiveScreenVisible();
     var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
     rememberPanels();
     var routeDraft = {};
@@ -4644,7 +4719,7 @@
   }
 
   function switchScreen(nextScreen) {
-    if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
+    if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen || !screenIsVisible(nextScreen, state)) return false;
     if (requestedFocusScreen !== nextScreen) requestedFocus = '';
     activeScreen = nextScreen;
     render();

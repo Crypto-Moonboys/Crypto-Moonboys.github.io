@@ -399,13 +399,13 @@ test('real Shop renderer explains each gate and keeps owned free switches availa
     { key: 'equipped', title: 'Equipped Item', min_level: 1, unlocked: true, owned: true, equipped: true },
   ];
   const html = ctx.renderEconomy();
-  const card = title => html.match(new RegExp('<button[^>]*aria-label="[^"\\n]*' + title + '[^"\\n]*"[^>]*>[\\s\\S]*?<\\/button>'))[0];
-  assert.match(card('Locked Item'), / disabled.*LEVEL 8 REQUIRED/);
+  const card = title => html.match(new RegExp('<button[^>]*aria-label="[^"\\n]*' + title + '[^"\\n]*"[^>]*>[\\s\\S]*?<\\/button>'))?.[0];
+  assert.equal(card('Locked Item'), undefined, 'future level items stay hidden');
   assert.match(card('Poor Item'), / disabled.*STILL NEED<\/b> 7 moon gold/);
   assert.doesNotMatch(card('Ready Item'), / disabled/); assert.match(card('Ready Item'), /CAN BUY NOW/);
   assert.doesNotMatch(card('Owned Item'), / disabled/); assert.match(card('Owned Item'), /COST<\/b> FREE/);
   assert.match(card('Equipped Item'), / disabled.*EQUIPPED/);
-  assert.match(html, /UNLOCK LEVEL 8 \/\/ YOUR LEVEL 1/);
+  assert.doesNotMatch(html, /UNLOCK LEVEL 8 \/\/ YOUR LEVEL 1/);
 });
 
 test('real Market renderer discloses every cost and granted item/material/currency in all twelve templates', () => {

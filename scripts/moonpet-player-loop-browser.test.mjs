@@ -347,15 +347,12 @@ try {
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
     await page.goto(url + '?screen=missions&focus=legendary-roadmap');
-    const lockedRoadmap = page.locator('[data-panel="legendary-roadmap"][open]');
-    await lockedRoadmap.waitFor();
-    assert.match(await lockedRoadmap.innerText(), /LOCKED.*Initialise your first Secret Bot/s);
-    assert.equal(await lockedRoadmap.locator('[data-action]').count(), 0, 'the roadmap action only opens Home');
+    await page.waitForSelector('[data-panel="entry"]');
+    assert.equal(await page.locator('#nav [data-screen="missions"]').count(), 0, 'unavailable Missions is hidden before adoption');
+    assert.equal(await page.locator('[data-panel="legendary-roadmap"]').count(), 0, 'locked roadmap is not shown before adoption');
     await page.locator('[data-utility="sync"]').click();
     await page.waitForFunction(() => document.querySelector('#terminal-output').innerText === 'LIVE SAVE REFRESHED.');
-    assert.match(await lockedRoadmap.innerText(), /LOCKED.*Initialise your first Secret Bot/s);
-    await lockedRoadmap.locator('[data-jump="home"][data-focus="entry"]').click();
-    await page.waitForSelector('[data-panel="entry"][open]');
+    await page.waitForSelector('[data-panel="entry"]');
     const initialise = page.locator('[data-panel="entry"] [data-action="adopt"]');
     await initialise.waitFor();
     assert.equal(await initialise.isDisabled(), true);
@@ -1047,7 +1044,7 @@ try {
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor.mode), 'concrete', 'egg keeps its saved default Home floor');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.filter(action=>action !== 'guidance_ack').length;
-    for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+    for (const section of ['home', 'profile']) {
       await page.locator(`[data-screen="${section}"]`).click();
       if(section === 'profile') await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
       const panels = page.locator('#screen > details.panel');
@@ -1065,7 +1062,7 @@ try {
       })));
       assert.ok(controlGuidance.every(item => item.purpose && item.purpose.length > 30 && item.badge && item.label && item.description && item.descriptionRefsValid && item.requirementsDescribed), `${section} real action buttons explain purpose and consequence`);
       assert.ok(await page.locator('#screen [data-jump]').evaluateAll(nodes => nodes.every(node => node.textContent.includes('NO COST') && node.querySelector('.button-purpose'))), `${section} menu routes say they only navigate`);
-      assert.equal(await page.locator('#nav small').count(), 6, 'all dock tabs have a visible purpose label');
+      assert.equal(await page.locator('#nav small').count(), 2, 'an egg only shows the Home and Profile sections it can use');
       const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
       const openPanels = await page.locator('#screen > details[open]').evaluateAll(nodes=>nodes.map(node=>node.dataset.panel).sort());
       assert.deepEqual(openPanels,expectedOpenPanels,'pet selection is visible while unrelated detail panels start collapsed');
@@ -1095,7 +1092,7 @@ try {
     await page.waitForFunction(node => !node.isConnected, oldCare);
     assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), true, 'refresh preserves expansion');
     await page.locator('[data-panel="care"] > summary').click();
-    await page.locator('[data-screen="missions"]').click();
+    await page.locator('[data-screen="profile"]').click();
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), false, 'navigation preserves explicit collapse');
     await page.locator('[data-panel="recommended"] [data-jump]').first().click();
@@ -1174,7 +1171,7 @@ try {
     assert.equal(actions.length, helpActionsBefore, 'opening and dismissing help spends and writes nothing');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-canvas-tools-${viewport.width}.png`) });
     await page.locator('[data-screen="home"]').click();
-    assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
+    assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 2 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'the two egg navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
     const dancesBefore = actions.filter(action => action === 'dance').length;
     const radioAttemptsBefore=await page.evaluate(()=>window.radioTapChecks.length);
@@ -1186,10 +1183,8 @@ try {
     assert.equal(actions.filter(action => action === 'dance').length, dancesBefore + 1, 'Dance submits its gameplay mutation once');
     assert.equal(await page.evaluate(()=>window.radioTapChecks.length),radioAttemptsBefore,'rendered Dance button does not call media play');
     assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off', 'completed Dance keeps manual radio Off');
-    for (const screen of ['work', 'economy']) {
-      await page.locator(`[data-screen="${screen}"]`).click();
-      assert.equal(await page.locator('#screen [data-action]:not([disabled])').count(), 0, 'egg must not advertise actions that require hatching: ' + screen);
-      assert.ok((await page.locator('#screen').textContent()).includes('HATCH REQUIRED'));
+    for (const screen of ['missions', 'explore', 'work', 'economy']) {
+      assert.equal(await page.locator(`[data-screen="${screen}"]`).count(), 0, 'egg must hide sections that require hatching: ' + screen);
     }
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-panel="practice"], [data-focus="practice"], [data-practice-action]').count(), 0);

@@ -222,6 +222,33 @@ test('Missions renders Road to Legendary through navigation buttons only', () =>
   assert.doesNotMatch(body, /data-action=/, 'Road to Legendary must not submit an action directly');
 });
 
+test('progressive section visibility follows lifecycle unlocks without treating low resources as locks', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const source = client.slice(client.indexOf('  // TEST-EXPORT: progressiveVisibility:start'), client.indexOf('  // TEST-EXPORT: progressiveVisibility:end'));
+  const context = vm.createContext({ window: { MoonpetPlayOptions: { menuStatuses } } });
+  vm.runInContext(source, context);
+
+  const hatched = snapshot();
+  Object.assign(hatched.pet, { level: 1, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0, energy: 0 });
+  assert.deepEqual({ ...context.moonpetSectionVisibility(hatched) }, {
+    home: true, missions: true, explore: true, work: true, economy: true, profile: true,
+  }, 'zero resources must not hide sections that the pet has already unlocked');
+
+  const egg = snapshot();
+  egg.lifecycle = { phase: 'egg', incubation: { ready: false } };
+  assert.deepEqual({ ...context.moonpetSectionVisibility(egg) }, {
+    home: true, missions: false, explore: false, work: false, economy: false, profile: true,
+  });
+
+  egg.guidance.daily_completion.pending = [{ utc_day: 'saved-day', pet_id: 'earlier-pet' }];
+  egg.guidance.weekly_boss = { pending_rewards: [{ pet_id: 'earlier-pet', boss_id: 'boss', week_key: 'week' }] };
+  egg.guidance.activity = { activity_type: 'work', ready: false };
+  egg.guidance.economy = { bounties: [{ key: 'saved-bounty', complete: true, claimed: false }] };
+  assert.deepEqual({ ...context.moonpetSectionVisibility(egg) }, {
+    home: true, missions: true, explore: true, work: true, economy: true, profile: true,
+  }, 'saved claims and active sessions must remain reachable through an otherwise hidden section');
+});
+
 test('daily mission completion and bonus payment are distinct authoritative states', () => {
   const state = snapshot(3);
   assert.equal(missionStatus(state).completed, 3);
