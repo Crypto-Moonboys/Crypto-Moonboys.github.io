@@ -82,6 +82,7 @@ function pageHtml({ slug, title, description, intro, sections }) {
   <meta property="og:url" content="https://cryptomoonboys.com/categories/${escapeHtml(slug)}.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://cryptomoonboys.com/categories/${escapeHtml(slug)}.html">
   <title>${escapeHtml(title)} - Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -146,6 +147,17 @@ const graffpunks = entry('/wiki/graffpunks.html', 'GraffPUNKS', 'Related faction
 const graffitiKings = entry('/wiki/graffiti-kings.html', 'Graffiti Kings', 'Street art context connected to the GKniftyHEADS universe.', 'Lore');
 const hodlWars = entry('/wiki/hodl-wars.html', 'HODL WARS', 'Game and lore context referenced by GKniftyHEADS pages.', 'Lore');
 
+const createYourMoonboy = entry('/wiki/create-your-moonboy.html', 'Create Your Moonboy', 'Start a verified character bio, new lore, art and a personal wiki with ChatGPT.', 'Guide');
+const waxCollections = [
+  collection,
+  entry('/wiki/hodlmoonboys-nft-collection.html', 'Hodl Moonboys', 'Explore WAX templates, rarity and surviving supply.'),
+  entry('/wiki/noballgamess-nft-collection.html', 'NoBallGames', 'Browse the collection and look up surviving mint ranks.'),
+  entry('/wiki/atomichub-graffpunks-collection.html', 'GraffPUNKS on AtomicHub', 'Find the GraffPUNKS collection on WAX.'),
+  entry('/wiki/nifty-wizards.html', 'Nifty Wizards', 'Read the WAX collection profile.'),
+];
+const xrpKids = entry('/wiki/xrp-kids.html', 'XRP Kids', 'Charlie Buster’s Genesis collection on the XRP Ledger.');
+const niftyCrowns = entry('/wiki/nifty-crowns.html', 'Nifty Crowns', 'The GKniftyHEADS collectible crowns.');
+
 const pages = [
   {
     slug: 'nfts',
@@ -154,7 +166,7 @@ const pages = [
     intro: 'NFT category buttons route here as a hub, not a complete template dump. The full GKniftyHEADS template index remains on the collection page.',
     sections: [
       section('Main Hubs', 'Start with the primary NFT and GKniftyHEADS navigation points.', [collection, gkniftyHub, waxCategory, gkniftyCategory, nftDigitalArt]),
-      section('Collections', 'Collection-level pages belong here; full template lists stay on collection pages.', [collection]),
+      section('Collections', 'Browse the WAX collections and Charlie Buster’s XRP Ledger collection.', [...waxCollections, xrpKids, niftyCrowns]),
       section('Featured Templates', `A capped sample of ${FEATURED_TEMPLATE_LIMIT} GKniftyHEADS NFT template pages.`, featuredTemplates),
       section('Explore More', 'Open the complete generated collection index when you need every template.', [collection]),
       section('Related Lore / Factions', 'Context pages that explain the culture around the collection.', [graffpunks, graffitiKings, hodlWars]),
@@ -167,7 +179,7 @@ const pages = [
     intro: 'WAX NFT category buttons route here for AtomicAssets context, collection navigation, and a capped featured-template preview.',
     sections: [
       section('Main Hubs', 'Start with the WAX NFT collection, parent hub, and AtomicAssets context.', [collection, gkniftyHub, atomicAssets, nftsCategory]),
-      section('Collections', 'Collection pages carry the full generated WAX template index.', [collection]),
+      section('Collections', 'Browse collection indexes and profiles on WAX.', waxCollections),
       section('Featured Templates', `A capped sample of ${FEATURED_TEMPLATE_LIMIT} WAX NFT template pages.`, featuredTemplates),
       section('Explore More', 'Use the collection index for the full 143-template list.', [collection]),
     ],
@@ -178,8 +190,8 @@ const pages = [
     description: 'Compact GKniftyHEADS parent hub for the brand page, collection index, featured templates, and related context.',
     intro: 'This parent category connects the GKniftyHEADS hub, the generated WAX AtomicAssets collection index, and a small featured set of child template pages.',
     sections: [
-      section('Main Hubs', 'The parent brand hub and generated collection index are the main routes.', [gkniftyHub, collection]),
-      section('Collections', 'Collection-level entry for the complete WAX AtomicAssets template index.', [collection]),
+      section('Main Hubs', 'Explore the project, browse the collection or build a Moonboy identity.', [gkniftyHub, collection, createYourMoonboy]),
+      section('Collections', 'Explore the full template index and the collectible crowns.', [collection, niftyCrowns]),
       section('Featured Templates', `A capped sample of ${FEATURED_TEMPLATE_LIMIT} GKniftyHEADS NFT template pages.`, featuredTemplates),
       section('Explore More', 'Open the complete collection page for the full template list.', [collection]),
       section('Related Lore / Factions', 'Related context for GraffPUNKS, Graffiti Kings, and HODL WARS.', [graffpunks, graffitiKings, hodlWars]),

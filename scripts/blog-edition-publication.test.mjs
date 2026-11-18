@@ -84,9 +84,19 @@ test('search exposes its input, all category cards and then article results in d
   const positions = ['id="search-page-input"', 'class="search-category-browser"', 'id="search-heading"', 'id="search-results-page"'].map(value => search.indexOf(value));
   assert.ok(positions.every(position => position >= 0));
   assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
-  const categoryRoutes = [...read('categories/index.html').matchAll(/<a href="(\/categories\/[^"#]+\.html)" class="category-card"/g)].map(match => match[1]);
-  assert.equal(categoryRoutes.length, 18);
-  for (const route of categoryRoutes) assert.ok(search.includes('href="' + route + '"'), route);
+  const expectedRoutes = fs.readdirSync(path.join(ROOT, 'categories'))
+    .filter(name => name.endsWith('.html') && name !== 'index.html')
+    .map(name => '/categories/' + name)
+    .sort();
+  const categoryCards = html => [...html.matchAll(/<a href="(\/categories\/[^"#]+\.html)" class="category-card"/g)]
+    .map(match => match[1]).sort();
+  assert.deepEqual(categoryCards(read('categories/index.html')), expectedRoutes);
+  assert.deepEqual(categoryCards(search.slice(positions[1], positions[2])), expectedRoutes);
+  for (const route of expectedRoutes) {
+    const page = read(route.slice(1));
+    assert.doesNotMatch(page, /No articles in this category yet/i, route);
+    assert.match(page, /<a [^>]*href="\/wiki\//, route);
+  }
   assert.ok(search.includes('href="' + library + '"'));
 });
 
