@@ -98,6 +98,27 @@
 .page-my-moonboy .mm-pet h3 { color: var(--mm-ink); font-size: 1rem; margin: 0 0 8px; }
 .page-my-moonboy .mm-pet p, .page-my-moonboy .mm-pet li { font-size: .82rem; line-height: 1.5; color: var(--mm-muted); }
 .page-my-moonboy .mm-pet ul { padding-left: 18px; margin: 7px 0; }
+.page-my-moonboy .mm-journey-summary {
+  display: grid; gap: 6px; margin: 12px 0;
+  border: 1px solid var(--mm-line); border-radius: 9px; overflow: hidden;
+}
+.page-my-moonboy .mm-journey-row {
+  display: grid; grid-template-columns: minmax(88px, .32fr) minmax(0, 1fr);
+  gap: 10px; padding: 9px 11px; background: rgba(255,255,255,.02);
+  border-bottom: 1px solid var(--mm-line);
+}
+.page-my-moonboy .mm-journey-row:last-child { border-bottom: 0; }
+.page-my-moonboy .mm-journey-row > strong {
+  color: var(--mm-accent); font: 800 .7rem/1.45 system-ui,sans-serif;
+  letter-spacing: .08em;
+}
+.page-my-moonboy .mm-journey-row > span {
+  min-width: 0; color: var(--mm-ink); font: 700 .82rem/1.4 system-ui,sans-serif;
+  overflow-wrap: anywhere;
+}
+.page-my-moonboy .mm-journey-row small {
+  display: block; margin-top: 2px; color: var(--mm-muted); font-weight: 400;
+}
 .page-my-moonboy .mm-tabs {
   display: flex; gap: 5px; overflow-x: auto; overscroll-behavior-x: contain;
   padding-bottom: 8px; margin: 10px 0; scrollbar-width: thin;

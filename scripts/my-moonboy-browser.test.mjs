@@ -714,7 +714,15 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     });
     const second = { ...payload.tasks[0],
       task_id: 'moonpet.jobs:another-immutable-session', source_pet_ref: secondRef };
-    payload.tasks.push(second);
+    const journeyTasks = [
+      ['moonpet.daily-journey', 2, 3, 'objectives'],
+      ['moonpet.daily-seven-missions', 4, 7, 'missions'],
+      ['moonpet.weekly-journey', 3, 5, 'objectives'],
+      ['moonpet.evolution', 1, 5, 'evolution_stage'],
+    ].map(([source_key,current,target,unit]) => ({ ...payload.tasks[0], source_key,
+      task_id: source_key + ':journey-summary', status: 'in_progress',
+      progress: { current, target, unit } }));
+    payload.tasks.push(second, ...journeyTasks);
     payload.top_actions.push(second);
     return payload;
   });
@@ -725,9 +733,15 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 1/);
     assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 2/);
     assert.match(await f.page.locator('#mm-pets').innerText(), /Lifecycle phase: adult/);
-    const roadmapLink = f.page.getByRole('link', {name:'Open Road to Legendary'});
+    const roadmapLink = f.page.getByRole('link', {name:'Open the full Journey Dashboard'});
     assert.equal(await roadmapLink.isVisible(), true);
     assert.equal(await roadmapLink.getAttribute('href'), '/moonpet-game.html?screen=missions&focus=legendary-roadmap');
+    const journey = await f.page.locator('#mm-journey').innerText();
+    assert.match(journey, /NOW[\s\S]*Alpha saved job claim/);
+    assert.match(journey, /TODAY[\s\S]*Journey 2\/3 objectives[\s\S]*Missions 4\/7 missions/);
+    assert.match(journey, /THIS WEEK[\s\S]*3\/5 objectives/);
+    assert.match(journey, /NEXT EVOLUTION[\s\S]*1\/5 evolution stage/);
+    assert.match(journey, /LIFETIME[\s\S]*Level 2 · 25 Pet XP/);
     assert.doesNotMatch(await f.page.locator('#my-moonboy').getAttribute('data-pet-ref') || '', /pap_/);
     assert.doesNotMatch(await f.page.locator('#my-moonboy').evaluate(node => node.innerHTML), /pap_[a-f0-9]{24}/);
 
@@ -741,7 +755,7 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
       '/moonpet-game.html', 'no raw pet selectors in gameplay links');
     await f.page.locator('#mm-clear-pet-filter').click();
     assert.equal(await f.page.locator('#mm-pet-filter').isHidden(), true);
-    assert.equal(await f.page.locator('#mm-results .mm-task').count(),2);
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),6);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   } finally { await f.browser.close(); }
 });
@@ -1153,7 +1167,7 @@ test('PR5 My Moonboy shell loads the global action sync before private dashboard
   assert.match(shell,/\/js\/player-action-sync\.js/u);
   assert.match(shell,/data-player-action-sync/u);
   assert.match(html,/src="\/js\/site-shell\.js"/u);
-  assert.ok(html.indexOf('src="/js/site-shell.js"')<html.indexOf('src="/js/my-moonboy.js"'));
+  assert.ok(html.indexOf('src="/js/site-shell.js"')<html.indexOf('/js/my-moonboy.js'));
   assert.match(moonpet,/src="\/js\/player-action-sync\.js"/u,
     'standalone Moonpet page cannot rely on site-shell loader');
   assert.ok(moonpet.indexOf('src="/js/player-action-sync.js"')<

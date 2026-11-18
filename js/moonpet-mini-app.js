@@ -3032,6 +3032,8 @@
     var growth = roadmap.growthMarks || {}, crests = roadmap.weeklyCrests || {};
     var materials = roadmap.materials || {};
     var next = roadmap.nextEvolution;
+    var journey = roadmap.journey || {}, today = journey.today || {}, week = journey.week || {};
+    var now = journey.now;
     var missing = next && (next.missing || []).length
       ? (next.missing || []).map(function (entry) {
           return '<div class="line ' + (Number(entry.current) >= Number(entry.required) ? 'complete' : 'muted') + '">' +
@@ -3048,24 +3050,42 @@
     var routine = roadmap.status === 'INCUBATING'
       ? '<div class="line muted">AFTER HATCHING // Daily Journey, Weekly Journey, jobs, timed activities and the official Daily Run.</div>'
       : '<div class="line muted">Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use timed activities and unlocked jobs, and collect the relics and materials for your next evolution.</div>';
+    var todaySummary = today.journeyTarget
+      ? 'DAILY JOURNEY ' + number(today.journeyCurrent) + '/' + number(today.journeyTarget) + (today.markAwarded ? ' // MARK EARNED' : '')
+      : 'DAILY JOURNEY // SYNCING';
+    if (today.missionsTarget !== null && today.missionsTarget !== undefined) {
+      todaySummary += ' // MISSIONS ' + number(today.missionsCurrent) + '/' + number(today.missionsTarget);
+    }
+    var weekSummary = week.available
+      ? number(week.current) + '/' + number(week.target) + ' OBJECTIVES' + (week.crestAwarded ? ' // CREST EARNED' : '')
+      : 'WEEKLY JOURNEY // SYNCING';
     var body =
-      '<div class="season-status-grid">' +
-        '<div><span>STAGE</span><strong>' + number(roadmap.stage) + '</strong></div>' +
-        '<div><span>LEVEL</span><strong>' + number(roadmap.level) + '</strong></div>' +
-        '<div><span>PET XP</span><strong>' + number(roadmap.petXp) + '</strong></div>' +
-        '<div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
-        '<div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div>' +
-        '<div><span>UNIQUE RELICS</span><strong>' + (roadmap.relics === null ? 'UNAVAILABLE' : number(roadmap.relics)) + '</strong></div>' +
-        '<div><span>SCRAP METAL</span><strong>' + number(materials.scrapMetal) + '</strong></div>' +
-        '<div><span>EVOLUTION FRAGMENTS</span><strong>' + number(materials.evolutionFragments) + '</strong></div>' +
+      '<div class="journey-overview" aria-label="Moonpet journey dashboard">' +
+        '<section class="journey-band"><span>NOW</span><div><strong>' + escapeHtml(now ? now.title : 'CHECK SAVED STATUS') + '</strong>' +
+          '<small>' + number(journey.claimsReady) + ' confirmed claim' + (Number(journey.claimsReady) === 1 ? '' : 's') + ' ready across Moonpet.</small></div></section>' +
+        '<section class="journey-band"><span>TODAY</span><div><strong>' + escapeHtml(todaySummary) + '</strong><small>Only server-accepted progress counts.</small></div></section>' +
+        '<section class="journey-band"><span>THIS WEEK</span><div><strong>' + escapeHtml(weekSummary) + '</strong><small>This pet’s Journey week can differ from Monday competition resets.</small></div></section>' +
+        '<section class="journey-band journey-band-wide"><span>NEXT EVOLUTION</span><div>' +
+          (next ? '<strong>' + escapeHtml(next.name) + '</strong>' : '<strong>FINAL EVOLUTION ONLINE</strong>') + missing + '</div></section>' +
+        '<section class="journey-band journey-band-wide"><span>LIFETIME</span><div>' +
+          '<div class="line ' + (roadmap.status === 'LEGENDARY COMPLETE' ? 'complete' : 'signal') + '">STATUS // ' + escapeHtml(roadmap.status) + '</div>' +
+          '<div class="season-status-grid">' +
+            '<div><span>STAGE</span><strong>' + number(roadmap.stage) + '</strong></div>' +
+            '<div><span>LEVEL</span><strong>' + number(roadmap.level) + '</strong></div>' +
+            '<div><span>PET XP</span><strong>' + number(roadmap.petXp) + '</strong></div>' +
+            '<div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
+            '<div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div>' +
+            '<div><span>UNIQUE RELICS</span><strong>' + (roadmap.relics === null ? 'UNAVAILABLE' : number(roadmap.relics)) + '</strong></div>' +
+            '<div><span>SCRAP METAL</span><strong>' + number(materials.scrapMetal) + '</strong></div>' +
+            '<div><span>EVOLUTION FRAGMENTS</span><strong>' + number(materials.evolutionFragments) + '</strong></div>' +
+          '</div></div></section>' +
       '</div>' +
-      '<div class="line ' + (roadmap.status === 'LEGENDARY COMPLETE' ? 'complete' : 'signal') + '">STATUS // ' + escapeHtml(roadmap.status) + '</div>' +
-      (next ? '<div class="line"><strong>NEXT EVOLUTION // ' + escapeHtml(next.name) + '</strong></div>' : '') +
-      missing + routine +
-      '<div class="button-grid">' + routes + '</div>' +
+      (now ? '<div class="button-grid one">' + routeButton('DO NEXT // ' + now.title, now, now.detail) + '</div>' : '') +
+      routine +
+      '<details class="journey-routes"><summary>MORE GAMEPLAY ROUTES (' + number((roadmap.routes || []).length) + ')</summary><div class="button-grid">' + routes + '</div></details>' +
       '<div class="line muted">This panel never plays for you. It only reads saved Worker state and opens the real game panels where you choose what to do.</div>';
-    return panel('ROAD TO LEGENDARY', body, 'legendary-roadmap',
-      'Lifetime progress, current evolution blockers and navigation to the real qualifying routes.');
+    return panel('YOUR JOURNEY // ROAD TO LEGENDARY', body, 'legendary-roadmap',
+      'Now, today, this week, next evolution and lifetime progress from saved Worker state.');
   }
 
   function renderMissions() {

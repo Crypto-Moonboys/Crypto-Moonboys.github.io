@@ -50,6 +50,9 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
       { key: 'weekly_crests', label: 'Weekly Crests', current: 13, required: 16, source: 'Weekly Journey' },
     ],
   };
+  state.daily_journey = { completed_objectives: 2, required_objectives: 3, growth_mark_awarded: false };
+  state.weekly_journey = { completed_objectives: 4, required_objectives: 5, weekly_crest_awarded: false, authority_available: true };
+  state.guidance.daily_completion.pending = [{ utc_day: '2026-11-18', pet_id: 'selected-pet' }];
   const road = legendaryRoadmap(state);
   assert.equal(road.available, true);
   assert.equal(road.status, 'IN PROGRESS');
@@ -65,6 +68,13 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
   assert.equal(road.routes[3].title, 'TIMED EXPLORE');
   assert.equal(road.routes[4].title, 'BEST UNLOCKED JOB // Vault Guard');
   assert.equal(road.nextEvolution.missing.length, 2);
+  assert.equal(road.journey.claimsReady, 1);
+  assert.deepEqual(road.journey.today, {
+    journeyCurrent: 2, journeyTarget: 3, markAwarded: false,
+    missionsCurrent: 4, missionsTarget: 7,
+  });
+  assert.deepEqual(road.journey.week, { current: 4, target: 5, crestAwarded: false, available: true });
+  assert.match(road.journey.now.title, /DAILY 7\/7 BONUS|DAILY/);
   assert.deepEqual(road.routes.map(route => route.screen + ':' + route.focus), [
     'missions:daily-journey', 'missions:weekly-journey', 'explore:moon-run',
     'work:timed-activity', 'work:jobs', 'economy:relics', 'profile:evolution'
@@ -185,7 +195,7 @@ test('legacy season_complete alone cannot label Road to Legendary complete', () 
 
 test('Missions renders Road to Legendary through navigation buttons only', () => {
   const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
-  assert.match(client, /panel\('ROAD TO LEGENDARY'/);
+  assert.match(client, /panel\('YOUR JOURNEY \/\/ ROAD TO LEGENDARY'/);
   const start = client.indexOf('function renderLegendaryRoadmap()');
   const end = client.indexOf('function renderMissions()', start);
   assert.ok(start >= 0 && end > start);

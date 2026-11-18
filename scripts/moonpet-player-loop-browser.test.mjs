@@ -619,7 +619,11 @@ try {
     await page.waitForSelector('[data-panel="contracts"][open]');
     assert.deepEqual(modes, ['core', 'full'], 'Missions deep link loads full roadmap data');
     const roadmapRoutes = page.locator('[data-panel="legendary-roadmap"] [data-jump]');
-    assert.equal(await roadmapRoutes.count(), 7);
+    assert.equal(await roadmapRoutes.count(), 8);
+    const journeyText = await page.locator('[data-panel="legendary-roadmap"]').textContent();
+    for (const band of ['NOW', 'TODAY', 'THIS WEEK', 'NEXT EVOLUTION', 'LIFETIME']) assert.match(journeyText, new RegExp(band));
+    assert.equal(await page.locator('[data-panel="legendary-roadmap"] .journey-routes').getAttribute('open'), null,
+      'secondary gameplay routes stay collapsed to avoid dashboard bloat');
     for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','season-finale','achievements']) {
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders alongside the roadmap`);
     }
@@ -644,7 +648,7 @@ try {
     await warmup;
     await page.locator('[data-screen="missions"]').click();
     await roadmapRoutes.first().waitFor({ state: 'attached' });
-    assert.equal(await roadmapRoutes.count(), 7);
+    assert.equal(await roadmapRoutes.count(), 8);
     assert.deepEqual(modes, ['core', 'full', 'full']);
     releaseFullResponse();
     // A shared request for a different module must not consume the new route's
@@ -684,7 +688,7 @@ try {
     failLeaderboard = false;
     await page.locator('[data-utility="sync"]').click();
     await roadmapRoutes.first().waitFor({ state: 'attached' });
-    assert.equal(await roadmapRoutes.count(), 7);
+    assert.equal(await roadmapRoutes.count(), 8);
 
     // Simulate an older cached helper that still supports run controls.
     staleHelper = await fs.readFile(path.join(root, 'js/moonpet-play-options.js'), 'utf8') +
@@ -696,9 +700,9 @@ try {
     assert.equal(await page.evaluate(() => typeof window.MoonpetPlayOptions.runAvailability), 'function');
     await page.locator('[data-utility="sync"]').click();
     await roadmapRoutes.first().waitFor();
-    assert.equal(await roadmapRoutes.count(), 7);
+    assert.equal(await roadmapRoutes.count(), 8);
     assert.equal(helperRetries.length, 1);
-    assert.equal(helperRetries[0].searchParams.get('v'), '20261118-road-to-legendary-v1');
+    assert.equal(helperRetries[0].searchParams.get('v'), '20261118-journey-dashboard-v1');
     assert.deepEqual(errors, [], 'Missions remains usable after state and script recovery');
     await context.close();
   }
