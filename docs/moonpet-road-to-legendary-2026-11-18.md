@@ -137,14 +137,16 @@ It is read-only and fail-closed. It reads only current saved state:
 - Evolution Fragments
 - current server-projected next evolution
 - current server-projected missing evolution requirements
+- highest-base-Pet-XP job that the server marks `available:true` in the current snapshot
+- whether the server currently offers timed `explore`
 
 It returns navigation destinations only:
 
 1. Daily Journey
 2. Weekly Journey
 3. official Daily Run / bosses
-4. timed activity
-5. jobs
+4. timed Explore when the server offers it, otherwise the timed-activity board
+5. the current highest-base-XP **eligible** job, otherwise the jobs/unlock board
 6. relics/materials
 7. evolution
 
@@ -175,6 +177,9 @@ Direct current-branch evaluation:
   - 112 Scrap Metal / 22 Evolution Fragments
   - exactly seven expected navigation destinations
   - no route has an `action` property
+- eligible-job selection uses only server `available:true` rows and ranks their published base `pet_xp`
+- timed Explore is labelled only when `guidance.activity_options` actually advertises `explore`
+- legacy `season_complete` alone cannot produce `LEGENDARY COMPLETE`; permanent `lifetime_complete` is required
 - `js/moonpet-mini-app.js` JavaScript parse: **PASS**
 - ad-hoc non-module parse of `scripts/moonpet-mission-status.test.mjs`: **not valid as a verification method** because the test legitimately uses ESM `import.meta`; this was not treated as a product failure or a pass.
 
