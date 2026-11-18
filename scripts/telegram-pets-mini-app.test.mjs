@@ -863,18 +863,7 @@ const unadoptedExploreMarkup = nextGuidanceRuntime({
   pet: null,
   weekly_journey: { objectives: [] },
 }).firstSessionExploreMarkup();
-assert.match(unadoptedExploreMarkup, /Initialise a Secret Bot before district routes, bosses, Arena, Kaiju, or pet work open/,
-  'unadopted Explore guidance must explain initialisation before active pet work');
-assert.doesNotMatch(unadoptedExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
-  'unadopted Explore guidance must not recommend Moon Run, energy restore, boss, Arena, Kaiju, or active pet work');
-assert.doesNotMatch(unadoptedExploreMarkup, /FIND PLAYER BATTLE|ENTER SOLO ARENA|FIND KAIJU PLAYER|START SOLO KAIJU/,
-  'unadopted first-session Explore guidance must not expose Arena or Kaiju entry actions');
-assert.doesNotMatch(unadoptedExploreMarkup, /Growth Mark|Weekly Crest|Daily Journey:|Weekly Journey:|0\/[35] OBJECTIVES/,
-  'unadopted first-session Explore guidance must not fake Daily or Weekly progress');
-['districts', 'moon-run', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju'].forEach((panelId) => {
-  assert.match(unadoptedExploreMarkup, new RegExp(`data-panel="${panelId}"`),
-    `unadopted first-session Explore markup must preserve ${panelId} jump target`);
-});
+assert.equal(unadoptedExploreMarkup, '', 'unadopted players have no Explore panels');
 const unavailableSlotGuidance = nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Luna' },
@@ -921,18 +910,7 @@ const eggExploreRuntime = nextGuidanceRuntime({
 assert.equal(eggExploreRuntime.exploreNextLine(), 'Care for or HATCH BOT before Explore actions open. Identity reveals at Stage 3.',
   'egg Explore NEXT guidance must prefer hatch/incubation over combat or Moon Run');
 const eggExploreMarkup = eggExploreRuntime.firstSessionExploreMarkup();
-assert.match(eggExploreMarkup, /Journey progress starts after hatching, when server authority can bind objectives to the active pet/,
-  'Stage 0 Explore guidance must explain Journey progress starts after hatching');
-assert.doesNotMatch(eggExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
-  'egg Explore guidance must not recommend Moon Run, boss, or energy actions');
-assert.doesNotMatch(eggExploreMarkup, /FIND PLAYER BATTLE|ENTER SOLO ARENA|FIND KAIJU PLAYER|START SOLO KAIJU/,
-  'egg first-session Explore guidance must not expose Arena or Kaiju entry actions');
-assert.doesNotMatch(eggExploreMarkup, /Growth Mark|Weekly Crest|Daily Journey:|Weekly Journey:|0\/[35] OBJECTIVES/,
-  'egg first-session Explore guidance must not fake Daily or Weekly progress');
-['districts', 'moon-run', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju'].forEach((panelId) => {
-  assert.match(eggExploreMarkup, new RegExp(`data-panel="${panelId}"`),
-    `egg first-session Explore markup must preserve ${panelId} jump target`);
-});
+assert.equal(eggExploreMarkup, '', 'egg Explore has no panels without saved work');
 assert.match(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', energy: 12 },
@@ -1406,7 +1384,7 @@ assert.match(renderExploreSource, /if \(!hasSystemUnlocked\('kaiju'\)\) \{[\s\S]
   'Kaiju queue, match, result, and entry controls must be behind Kaiju capability gating while stale solo cleanup remains available');
 assert.match(client, /Requires current beta combat authority\./, 'current combat lock copy must remain explicit');
 assert.doesNotMatch(client, /futureSystemTitles|futureSystemRows|futureSystemPanelCopy|PRESTIGE \/\/ FUTURE SEASON|MOONPET SANCTUARY|ROADMAP \/\/ FUTURE SEASONS/, 'the Mini App must omit unwired Profile sections');
-assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.filter[\s\S]*var available = feature\.available === true/, 'playable feature availability remains worker-authoritative');
+assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.filter\(function \(feature\) \{\s*return feature\.available === true/, 'playable feature availability remains worker-authoritative');
 assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App feature directory must not re-derive future-system lock state in the frontend');
 assert.doesNotMatch(client, /state\.player_capabilities|state\.has_completed_season_pet|state\.combat_unlocked|state\.combat_eligibility|state\.future_systems/, 'Mini App client must consume the single worker capabilities object');
 assert.doesNotMatch(client, /state\.sanctuary|sanctuaryRows/, 'Mini App client must not render inactive Sanctuary state as live gameplay');
@@ -1626,11 +1604,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261118-journey-dashboard-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261118-progressive-unlocks-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-journey-dashboard-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-progressive-unlocks-v2/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1775,7 +1753,7 @@ assert.match(client, /window\.AudioContext \|\| window\.webkitAudioContext/);
 assert.match(client, /moonpet-audio/);
 assert.match(client, /if \(utility\.dataset\.utility === 'audio'\) toggleAudio\(\)/);
 assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'mobile utility controls must wrap into readable rows');
-assert.match(css, /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/, 'wide utility controls must fit the live wearable entry');
+assert.match(css, /grid-template-columns: repeat\(var\(--moonpet-nav-count, 6\), minmax\(0, 1fr\)\)/, 'the dock must fit the currently visible progression sections');
 assert.match(client, /RETRY CONNECTION/);
 assert.match(client, /OPEN MOONPET OS IN TELEGRAM/);
 assert.match(client, /https:\/\/t\.me\/WIKICOMSBOT\?start=moonpet/);
@@ -1937,13 +1915,13 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 4, 'Membership is verified before the three read-only state attempts');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-journey-dashboard-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-progressive-unlocks-v2/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
-assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
+assert.match(client, /function render\(options\) \{\s*ensureActiveScreenVisible\(\);\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must redirect hidden sections and preserve only drafts that were not explicitly discarded');
 assert.match(client, /render\(\{ discardCallsignDraft: action === 'rename' && Boolean\(data\.result && data\.result\.accepted\) \}\)/, 'an accepted rename must discard the old draft so the server-normalized callsign wins');
 assert.match(client, /var callsignUnlocked = Number\(lifecycle\.evolution_stage \|\| state\.pet\.evolution_stage \|\| identity\.current_stage && identity\.current_stage\.stage \|\| 0\) >= MOONPET_IDENTITY_REVEAL_STAGE;/, 'callsign UI must stay locked until Stage 3');
-assert.match(client, /CALLSIGN LOCKED UNTIL STAGE 3\./, 'pre-reveal callsign panel must explain the Stage-3 lock');
+assert.match(client, /\(callsignUnlocked \? panel\('CALLSIGN', callsignPanel, 'callsign'\) : ''\)/, 'pre-reveal callsign panel must stay hidden until Stage 3');
 assert.match(client, /value="' \+ escapeHtml\(state\.pet\.callsign \|\| ''\) \+ '"/, 'post-reveal callsign editor must use the separate callsign field instead of player-facing name fields');
 assert.match(callsignDraftSource, /petId: renderedPetId[\s\S]*dirty: input\.value !== renderedPetName/, 'draft capture ownership must come from the snapshot that rendered the existing DOM');
 const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  function resultRewardMap'));
@@ -2545,6 +2523,7 @@ const eggSavedBossMarkup = nextGuidanceRuntime({ adopted: true, pet: {}, lifecyc
 assert.match(eggSavedBossMarkup, /data-action="weekly_boss_claim"/);
 assert.match(eggSavedBossMarkup, /data-action="seasonal_boss_claim"/);
 assert.doesNotMatch(eggSavedBossMarkup, /data-action="(?:weekly_boss|seasonal_boss)"/);
+assert.deepEqual(Array.from(eggSavedBossMarkup.matchAll(/data-panel="([^"]+)"/g), match => match[1]), ['weekly-boss', 'seasonal-boss']);
 
 assert.doesNotMatch(worker, /buildPetMiniAppFutureSystemState|future_systems:|processPetPrestige|path === '\/telegram-pets\/app\/sanctuary'/, "retired runtime and routes are removed");
 assert.doesNotMatch(client, /COMING_SOON|PLANNED EXPANSION|Season Journey/, "client guidance has no dormant roadmap or reset-era copy");

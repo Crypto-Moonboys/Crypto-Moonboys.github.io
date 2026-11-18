@@ -153,8 +153,14 @@ try {
     }
     const failed=await setup({viewport});
     try{
-      failed.fail(true);await failed.open();await pause(350);
+      failed.fail(true);
+      const warmup=failed.page.waitForResponse(r=>r.url().endsWith('/app/state')&&!r.request().postDataJSON().mode&&r.status()===503);
+      await failed.open();await (await warmup).finished();
+      // Let the successful Home care action reconcile on its core projection
+      // before measuring Explore's independent full-state retry budget.
+      const careSync=failed.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
       await failed.care('clean');
+      await (await careSync).finished();
       await failed.page.locator('[data-screen="explore"]').click();
       await failed.page.locator('[data-utility="module-retry"]').waitFor();
       assert.equal(failed.requests.filter(r=>r.path.endsWith('/state')&&!r.body.mode).length,7,'one speculative attempt plus two bounded foreground attempts of three reads');

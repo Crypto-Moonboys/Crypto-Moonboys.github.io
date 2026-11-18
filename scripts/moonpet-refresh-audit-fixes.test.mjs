@@ -5,7 +5,7 @@ import test from 'node:test';
 const source = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const between = (start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
 const block = name => between('// TEST-EXPORT: ' + name + ':start', '// TEST-EXPORT: ' + name + ':end');
-const full = () => ({ adopted: true, pet: { pet_id: 'pet-a', season_key: 'lifetime-a', callsign: 'A' }, hydration: { mode: 'full', full: true, modules: ['profile'] }, cooldowns: { entries: [] } });
+const full = () => ({ adopted: true, pet: { pet_id: 'pet-a', season_key: 'lifetime-a', callsign: 'A' }, lifecycle: { phase: 'young' }, hydration: { mode: 'full', full: true, modules: ['profile'] }, cooldowns: { entries: [] } });
 const partial = () => ({ ...full(), hydration: { full: false, mode: 'missions', modules: ['missions'] } });
 function clientContext() {
   let now = 10000, sequence = 0;
@@ -37,6 +37,7 @@ function clientContext() {
   vm.runInContext(between('  function beginStateRequest()', '  // TEST-EXPORT: coreStateHydration:start'), ctx);
   vm.runInContext(block('coreStateHydration') + block('cooldownRefresh') + block('fastActionResponse'), ctx);
   vm.runInContext(between('  function setStateSnapshot(', '  // TEST-EXPORT: cooldownRefresh:start'), ctx);
+  vm.runInContext(block('progressiveVisibility'), ctx);
   vm.runInContext(between('  function render(options)', '  // TEST-EXPORT: actionResultFeedback:start'), ctx);
   vm.runInContext(between('  async function syncState()', '  function applyRequestedFocus()'), ctx);
   vm.runInContext(between('  async function runAction(', '  screen.addEventListener('), ctx);

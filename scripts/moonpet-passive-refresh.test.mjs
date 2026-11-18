@@ -482,7 +482,7 @@ test('a rapid replay from another device recovers the previous match before publ
 
 test('an egg selected after another pet can still recover or close its saved Street Events', () => {
   const ctx = { state: { adopted: true, lifecycle: { phase: 'egg' }, pending_street_events: [{ event_id: 'original-one', recoverable: true }, { event_id: 'original-two', close_available: true }] },
-    firstSessionExploreMarkup: () => '<egg-guide>', renderPlayNow: () => '<play>',
+    firstSessionPhase: () => 'egg', firstSessionExploreMarkup: () => '',
     petActionRefreshRequired: false, cooldownRemainingSeconds: () => 0,
     escapeHtml: value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;'),
     panel: (title, body) => title + body };
@@ -491,7 +491,7 @@ test('an egg selected after another pet can still recover or close its saved Str
   vm.runInContext(client.slice(client.indexOf('  function button('), client.indexOf('  var panelOpenState')), ctx);
   vm.runInContext(client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()')), ctx);
   const markup = ctx.renderExplore();
-  assert.match(markup, /egg-guide/);
+  assert.match(markup, /SAVED STREET EVENTS/);
   assert.match(markup, /data-action="event_recover" data-payload="\{&quot;event_id&quot;:&quot;original-one&quot;\}"/);
   assert.match(markup, /data-action="event_close" data-payload="\{&quot;event_id&quot;:&quot;original-two&quot;\}"/);
   assert.doesNotMatch(markup, / disabled|HATCH REQUIRED/);

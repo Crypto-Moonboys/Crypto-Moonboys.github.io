@@ -44,6 +44,7 @@ function context(full = false) {
     renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', applyRequestedFocus() {},
     screens: { home: ctx.renderHome, profile: ctx.renderProfile },
   });
+  vm.runInContext(block('progressiveVisibility'), ctx);
   vm.runInContext(between('  function render(options)', '  // TEST-EXPORT: actionResultFeedback:start'), ctx);
   return ctx;
 }

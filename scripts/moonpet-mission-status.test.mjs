@@ -222,6 +222,72 @@ test('Missions renders Road to Legendary through navigation buttons only', () =>
   assert.doesNotMatch(body, /data-action=/, 'Road to Legendary must not submit an action directly');
 });
 
+test('progressive section visibility follows lifecycle unlocks without treating low resources as locks', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const source = client.slice(client.indexOf('  // TEST-EXPORT: progressiveVisibility:start'), client.indexOf('  // TEST-EXPORT: progressiveVisibility:end'));
+  const context = vm.createContext({ window: { MoonpetPlayOptions: { menuStatuses } } });
+  vm.runInContext(source, context);
+
+  const hatched = snapshot();
+  Object.assign(hatched.pet, { level: 1, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0, energy: 0 });
+  assert.deepEqual({ ...context.moonpetSectionVisibility(hatched) }, {
+    home: true, missions: true, explore: true, work: true, economy: true, profile: true,
+  }, 'zero resources must not hide sections that the pet has already unlocked');
+
+  const egg = snapshot();
+  egg.lifecycle = { phase: 'egg', incubation: { ready: false } };
+  assert.deepEqual({ ...context.moonpetSectionVisibility(egg) }, {
+    home: true, missions: false, explore: false, work: false, economy: false, profile: true,
+  });
+
+  const finale = { pet_id: 'older-pet', competition_season_key: 'prior-quarter', status: 'not_started', playable: true, eligible: false };
+  egg.season_finales = { available: true, pets: [finale] };
+  assert.equal(context.moonpetSectionVisibility(egg).missions, false);
+  for (const status of ['not_started', 'active', 'failed', 'won']) {
+    Object.assign(finale, { status, eligible: status === 'not_started', playable: status !== 'won', claimed: false });
+    assert.equal(context.visibleFinalePets(egg).length, 1, status);
+    assert.equal(context.moonpetSectionVisibility(egg).missions, true, status);
+  }
+  finale.claimed = true;
+  assert.equal(context.visibleFinalePets(egg).length, 1, 'paid wins from archived pets remain visible in history');
+  assert.equal(context.visibleFinalePets(egg, true).length, 0);
+  assert.equal(context.moonpetSectionVisibility(egg).missions, false, 'a settled prize alone does not reopen Missions for an egg');
+  finale.status = 'failed';
+  assert.equal(context.visibleFinalePets(egg).length, 0, 'a retired pet cannot retry its battle');
+  egg.season_finales = { available: true, pets: [{ ...finale, playable: true }, finale] };
+  assert.equal(context.visibleFinalePets(egg).length, 1, 'only the usable slot is rendered on a mixed board');
+  delete egg.season_finales;
+
+  egg.guidance.daily_completion.pending = [{ utc_day: 'saved-day', pet_id: 'earlier-pet' }];
+  egg.guidance.weekly_boss = { pending_rewards: [{ pet_id: 'earlier-pet', boss_id: 'boss', week_key: 'week' }] };
+  egg.guidance.activity = { activity_type: 'work', ready: false };
+  egg.guidance.economy = { bounties: [{ key: 'saved-bounty', complete: true, claimed: false }] };
+  assert.deepEqual({ ...context.moonpetSectionVisibility(egg) }, {
+    home: true, missions: true, explore: true, work: true, economy: true, profile: true,
+  }, 'saved claims and active sessions must remain reachable through an otherwise hidden section');
+});
+
+test('objective links match unlocked panels even with zero resources or a used weekly attack', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const gates = client.split('// TEST-EXPORT: objectivePanelGates:start')[1].split('// TEST-EXPORT: objectivePanelGates:end')[0];
+  const state = snapshot();
+  Object.assign(state.pet, { level: 1, energy: 0, moon_gold: 0, moon_crystals: 0 });
+  state.capabilities = { weekly_boss: { state: 'LOCKED', unlocked: false, message: 'Requires Level 5.' } };
+  state.live_systems = { seasonal_boss: { min_level: 8 } };
+  const ctx = vm.createContext({ state, escapeHtml: String, routeButton: (_,route) => '<button>' + route.focus + '</button>' });
+  vm.runInContext(gates,ctx);
+  const render = (...keys) => ctx.goalRouteMarkup(keys.map(focus => ({focus})),true);
+  assert.match(render('weekly-boss'), /Requires Level 5/);
+  assert.doesNotMatch(render('weekly-boss','seasonal-boss','equipment'), /<button>/);
+  assert.match(render('equipment','shop'), /<button>shop<\/button>/);
+  state.pet.level = 8;
+  state.capabilities.weekly_boss = { state: 'AVAILABLE', unlocked: true };
+  state.guidance.weekly_boss = { available: false, attempt_used: true };
+  state.gear = [{ item_key: 'lamp' }];
+  state.guidance.shop_items = [{ key: 'lamp', unlocked: true }];
+  for (const target of ['weekly-boss','seasonal-boss','equipment']) assert.match(render(target), /<button>/);
+});
+
 test('daily mission completion and bonus payment are distinct authoritative states', () => {
   const state = snapshot(3);
   assert.equal(missionStatus(state).completed, 3);

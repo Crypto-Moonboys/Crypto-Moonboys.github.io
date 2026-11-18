@@ -114,5 +114,5 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
       await page.evaluate(v=>{window.fixtureAuth=v;},proof);
     },close:async()=>{releaseFull();await context.close();await Promise.allSettled([...inFlight]);f.close();}};
 }
-return {setup,origin,browser,blockedWorkerRequests,async close(){try{await browser.close();await new Promise(resolve=>server.close(resolve));}finally{globalThis.fetch=originalFetch;}}};
+return {setup,origin,browser,blockedWorkerRequests,async close(){try{await browser.close();await new Promise(resolve=>{server.close(resolve);server.closeAllConnections();});}finally{globalThis.fetch=originalFetch;}}};
 }

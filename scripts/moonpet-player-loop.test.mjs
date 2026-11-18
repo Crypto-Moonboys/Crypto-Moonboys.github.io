@@ -395,7 +395,7 @@ assert.match(client, /roadmap\.finalForm[\s\S]*FINAL EVOLUTION COMPLETE/,
   'final-form dashboard must replace next-evolution instructions with lifetime play');
 assert.match(client, /roadmap\.finalForm \? 'FINAL EVOLUTION' : 'NEXT EVOLUTION'/,
   'final-form dashboard must label the completed final evolution truthfully');
-assert.ok(html.includes('/js/moonpet-mini-app.js?' + roadmapAssetVersion));
+assert.ok(html.includes('/js/moonpet-mini-app.js?v=20261118-progressive-unlocks-v2'));
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
@@ -660,7 +660,7 @@ const readyBountyButtons = eggEconomy.match(/<button\b[^>]*data-action="bounty_c
 assert.equal(readyBountyButtons.length, 1);
 assert.match(readyBountyButtons[0], /triple_care/);
 assert.doesNotMatch(readyBountyButtons[0], /\bdisabled\b/, 'already-earned currencies can be claimed by an egg account');
-assert.match(eggEconomy, /HATCH TO WORK ON BOUNTIES/, 'unfinished targets retain their hatch route');
+assert.doesNotMatch(eggEconomy, /Clock In|HATCH TO WORK ON BOUNTIES/, 'unfinished targets stay hidden until the egg hatches');
 assert.match(bountyContext.button('FEED', 'feed'), /\bdisabled\b/, 'allowing saved bounty claims does not unlock egg gameplay');
 bountyContext.petActionRefreshRequired = true;
 assert.match(bountyContext.renderEconomy().match(/<button\b[^>]*data-action="bounty_claim"[^>]*>/)[0], /\bdisabled\b/,
@@ -698,7 +698,7 @@ for (const moduleScreen of ['missions', 'profile']) {
     words: value => value, tell: () => {}, beginStateRequest: () => calls.length,
     stateRequestGate: { isCurrent: () => true }, readSleepLatch: () => false,
     hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
-    renderHud: () => {}, renderNav: () => {}, syncViewportHeight: () => {}, renderCanvasTools: () => {},
+    renderHud: () => {}, renderNav: () => {}, ensureActiveScreenVisible: () => {}, syncViewportHeight: () => {}, renderCanvasTools: () => {},
     captureEditableState: () => null, rememberPanels: () => {}, restoreEditableState: () => {},
     panel: (_, body) => body, routeButton: () => '<button data-jump="home">RETURN HOME</button>', renderMenuStatus: () => '', renderRewardLifecycle: () => '', renderRecommended: () => '', renderPetSpaces: () => '',
     showPendingNotices: async () => {}, applyRequestedFocus: () => {},

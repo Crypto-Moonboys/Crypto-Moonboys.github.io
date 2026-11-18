@@ -693,7 +693,7 @@ button, input, select, textarea {
   display: grid;
   align-items: center;
   gap: 4px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--moonpet-nav-count, 6), minmax(0, 1fr));
   position: relative;
   z-index: 60;
   width: 100%;

@@ -703,8 +703,8 @@ assert.match(workerSource, /\['feed', 'play', 'clean', 'sleep', 'train'\]\.inclu
 const informationSurfaces = [
   'RECOMMENDED NEXT', 'VITAL SYSTEMS', 'COMPANION DETAILS', 'DAILY MISSION BUFFER',
   'ACHIEVEMENT ARCHIVE', 'MEMORY ARCHIVE', 'APTITUDES', 'EVOLUTION', 'CURRENT PERK',
-  'UNLOCK DIRECTORY', 'SPECIALIST TRACKS', 'SEASON //', 'TOP MOONPETS', 'WEEKLY BOSS', 'MOON RUN',
-  'PET ADVENTURE', 'STREET EVENT', 'PET ARENA', 'KAIJU CODE CARDS', 'TIMED ACTIVITY', 'JOB TERMINAL',
+  'GAMEPLAY ONLINE', 'SPECIALIST TRACKS', 'SEASON //', 'TOP MOONPETS', 'WEEKLY BOSS', 'MOON RUN',
+  'STREET EVENT', 'PET ARENA', 'KAIJU CODE CARDS', 'TIMED ACTIVITY', 'JOB TERMINAL',
   'DAILY BOUNTIES', 'CRYSTAL EXPEDITION', 'MOON MARKET', 'PERMANENT SHOP', 'INVENTORY',
   'MOON GOLD TRADE', 'EQUIPMENT PROGRESSION', 'CRAFTING MATERIALS', 'RELIC VAULT',
 ];
@@ -712,6 +712,7 @@ for (const surface of informationSurfaces) {
   assert.ok(clientSource.includes(surface), `Mini App must render ${surface}`);
 }
 
+assert.match(clientSource, /panel\(adventure\.title,.*'adventure'\)/, 'the unlocked Adventure panel uses the encounter title');
 assert.match(clientSource, /valueText\(bounty\.reward\)/, 'bounties must disclose their complete reward');
 // Market reward disclosure is executed against all twelve templates by the
 // real-renderer case in moonpet-option-guidance.test.mjs; avoid pinning its
