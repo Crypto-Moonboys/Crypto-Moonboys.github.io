@@ -1382,7 +1382,7 @@ assert.match(renderExploreSource, /kaijuMatch && !kaijuSoloCleanup[\s\S]*MULTIPL
   'locked Kaiju UI must explain multiplayer cleanup instead of showing blind cancellation');
 assert.match(renderExploreSource, /if \(!hasSystemUnlocked\('kaiju'\)\) \{[\s\S]*var kaijuLock = combatLockCopy\(systemCapability\(state, 'kaiju'\)\.reason\)[\s\S]*var kaijuEntryOptions = combatLockedButtonOptions\(kaijuLock\.entryDetail\)[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*kaijuEntryOptions[\s\S]*kaiju_start'[\s\S]*kaijuEntryOptions[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
   'Kaiju queue, match, result, and entry controls must be behind Kaiju capability gating while stale solo cleanup remains available');
-assert.match(client, /Requires current beta combat authority\./, 'current combat lock copy must remain explicit');
+assert.match(client, /Requires combat access\./, 'current combat lock copy must remain explicit');
 assert.doesNotMatch(client, /futureSystemTitles|futureSystemRows|futureSystemPanelCopy|PRESTIGE \/\/ FUTURE SEASON|MOONPET SANCTUARY|ROADMAP \/\/ FUTURE SEASONS/, 'the Mini App must omit unwired Profile sections');
 assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.filter\(function \(feature\) \{\s*return feature\.available === true/, 'playable feature availability remains worker-authoritative');
 assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App feature directory must not re-derive future-system lock state in the frontend');

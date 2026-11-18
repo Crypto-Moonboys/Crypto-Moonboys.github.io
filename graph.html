@@ -276,10 +276,20 @@
     }
 
     @media (max-width: 640px) {
-      .graph-info-panel { display: none; }
-      .graph-main,
+      .graph-main {
+        flex-direction: column;
+      }
+      .graph-info-panel {
+        order: -1;
+        width: auto;
+        padding: 8px 0;
+        overflow: visible;
+      }
+      .graph-legend { display: none; }
       .graph-canvas-wrap {
-        min-height: 52vh;
+        flex: none;
+        height: max(280px, 52vh);
+        min-height: 0;
       }
     }
   </style>

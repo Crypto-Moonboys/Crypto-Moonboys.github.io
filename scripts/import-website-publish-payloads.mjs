@@ -3442,9 +3442,15 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
 
   const entityGraph = Object.fromEntries(wikiIndex.map((entry) => [entry.url, { related_pages: [] }]));
   writeJson(path.join(jsDir, 'entity-graph.json'), entityGraph);
+  const homeHtml = readWorkspaceFileNoFollow(rootDir, 'index.html')?.toString('utf8') || '';
+  const indexedHome = wikiIndex.find(entry => entry.url === '/' || entry.url === '/index.html');
+  const publishedPages = [
+    { ...indexedHome, url: '/', title: titleFromHtml(homeHtml, indexedHome?.title || 'Home'), category: 'site' },
+    ...wikiIndex.filter(entry => entry.url !== '/' && entry.url !== '/index.html'),
+  ];
   writeJson(path.join(jsDir, 'graph-data.json'), {
     generated_at: new Date().toISOString(),
-    nodes: wikiIndex.map((entry) => ({
+    nodes: publishedPages.map((entry) => ({
       id: entry.url,
       title: entry.title,
       url: entry.url,
@@ -3490,6 +3496,8 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
   });
 
   writeJson(path.join(jsDir, 'site-stats.json'), {
+    published_pages: publishedPages.length,
+    indexed_pages: wikiIndex.filter(entry => entry.url.startsWith('/wiki/') && entry.url !== '/wiki/index.html').length,
     article_count: wikiIndex.length,
     entity_count: entityMap.length,
     category_count: new Set(wikiIndex.map((entry) => entry.category)).size,
@@ -3510,7 +3518,7 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
     entries: wikiIndex.map((entry) => ({ url: entry.url, readable_title: cleanTitle(entry.title), readiness_score: 0 })),
   });
 
-  const sitemapUrls = ['https://cryptomoonboys.com/', ...wikiIndex.map((entry) => `https://cryptomoonboys.com${entry.url}`)];
+  const sitemapUrls = publishedPages.map(entry => `https://cryptomoonboys.com${entry.url}`);
   atomicWriteFilePathSync(path.join(rootDir, 'sitemap.xml'), [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',

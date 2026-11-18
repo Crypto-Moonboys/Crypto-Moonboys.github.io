@@ -458,8 +458,8 @@ export async function awardPetReward(db, request = {}) {
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
       .bind(petId || null, petId, eventId, telegramId, claimId),
     db.prepare(`UPDATE telegram_pet_events
-      SET pet_xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(pet_xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
-          xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
+      SET pet_xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
+          care_policy=1, xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
           status = 'accepted', reason = ?, metadata = ?
       WHERE id = ? AND status = 'pending'
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')
@@ -622,9 +622,9 @@ export async function awardPetReward(db, request = {}) {
     accepted: true,
     duplicate: false,
     claim_id: claimId,
-    pet_xp_awarded: positiveInteger(awarded.pet_xp_awarded),
+    pet_xp_awarded: appliedRewards.pet_xp,
     xp_awarded: positiveInteger(awarded.xp_awarded),
-    rewards: { ...appliedRewards, pet_xp: positiveInteger(awarded.pet_xp_awarded), community_xp: positiveInteger(awarded.xp_awarded) },
+    rewards: { ...appliedRewards, pet_xp: appliedRewards.pet_xp, community_xp: positiveInteger(awarded.xp_awarded) },
     profile_deltas: profileDeltas,
     currency_costs: currencyCosts,
     pet: null,

@@ -2,6 +2,7 @@ import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 
 const PATH = '/telegram/group-membership';
+const READINESS_TIMEOUT_MS = 15000;
 const ALLOWED_ORIGINS = new Set([
   'https://cryptomoonboys.com',
   'https://www.cryptomoonboys.com',
@@ -97,7 +98,7 @@ async function readTelegramBotIdentity(token, fetchImpl = fetch) {
   try {
     response = await fetchImpl('https://api.telegram.org/bot' + token + '/getMe', {
       method: 'GET',
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(READINESS_TIMEOUT_MS),
     });
   } catch (error) {
     return { identity: null, diagnostic: telegramFailureCategory({ error }) };
@@ -115,7 +116,7 @@ async function readTelegramBotIdentity(token, fetchImpl = fetch) {
   };
 }
 
-export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetch) {
+export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetch, timeoutMs = 5000) {
   const groupId = String(env?.TELEGRAM_GROUP_CHAT_ID || '').trim();
   const token = String(env?.TELEGRAM_BOT_TOKEN || '').trim();
   if (!token || !groupId) {
@@ -135,7 +136,7 @@ export async function checkTelegramGroupMember(env, telegramId, fetchImpl = fetc
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: groupId, user_id: userId }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
     return { ok: false, error: 'telegram_group_membership_unavailable', status: 503,
@@ -194,7 +195,7 @@ export async function handleTelegramGroupMembership(request, env, fetchImpl = fe
       return json(headers, { ok: false, error: 'telegram_group_membership_not_configured' }, 503);
     }
     const [botStatus, botIdentityCheck] = await Promise.all([
-      checkTelegramGroupMember(env, botId, fetchImpl),
+      checkTelegramGroupMember(env, botId, fetchImpl, READINESS_TIMEOUT_MS),
       readTelegramBotIdentity(token, fetchImpl),
     ]);
     const botIdentity = botIdentityCheck.identity;

@@ -47,7 +47,7 @@ export async function verifyNbgGroupGate(fetchImpl = fetch) {
     method: 'GET',
     headers: { Origin: SITE_ORIGIN, Accept: 'application/json' },
     cache: 'no-store',
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(25000),
   });
   const body = await response.json().catch(() => null);
   if (!acceptsNbgGroupGateProbe(response.status, body)) {

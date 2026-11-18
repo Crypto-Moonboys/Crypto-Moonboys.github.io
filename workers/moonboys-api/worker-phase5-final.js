@@ -525,7 +525,7 @@ export default {
 
   async scheduled(event, env, ctx) {
     const tasks = phase5CronTasks(event, env);
-    if (event?.cron === "*/30 * * * *" && env.MOONPET_CARE_SHADOW_ENABLED === "true") {
+    if (event?.cron === "*/30 * * * *") {
       ctx.waitUntil(runCareShadowTick(event, env));
     }
     // Do not run cleanup on every unrelated cron. The 5-minute base tick

@@ -12,12 +12,9 @@ const dayMs = 86_400_000;
 const start = Date.UTC(2026, 10, 1);
 const day = n => new Date(start + n * dayMs).toISOString().slice(0, 10);
 
-test('disabled, unrelated and delayed ticks perform no database access', async () => {
-  const active = { MOONPET_CARE_SHADOW_ENABLED: 'true', MOONPET_CARE_SHADOW_OWNERS: '1' };
-  await runCareShadowTick({ cron, scheduledTime: start }, {}, start);
-  await runCareShadowTick({ cron: '*/5 * * * *', scheduledTime: start }, active, start);
-  await runCareShadowTick({ cron, scheduledTime: start }, active, start + 1800000);
-  await assert.rejects(runCareShadowTick({ cron }, { ...active, MOONPET_CARE_SHADOW_OWNERS: 'invalid' }));
+test('unrelated and delayed ticks perform no database access', async () => {
+  await runCareShadowTick({ cron: '*/5 * * * *', scheduledTime: start }, {}, start);
+  await runCareShadowTick({ cron, scheduledTime: start }, {}, start + 1800000);
 });
 
 test('local D1 settles closed days exactly once from the original pet and preserves awards', { timeout: 60_000 }, async () => {
@@ -25,7 +22,7 @@ test('local D1 settles closed days exactly once from the original pet and preser
     script: 'export default {fetch(){return new Response()}}', d1Databases: { DB: 'care-shadow-test' } }));
   try {
     const DB = await mf.getD1Database('DB');
-    const env = { DB, PET_MINI_APP_ENABLED: 'true', MOONPET_CARE_SHADOW_ENABLED: 'true', MOONPET_CARE_SHADOW_OWNERS: '1,1' };
+    const env = { DB, PET_MINI_APP_ENABLED: 'true' };
     const sql = (query, ...args) => DB.prepare(query).bind(...args);
     const tick = (n, slot = 0) => {
       const time = start + n * dayMs + slot * 1800000;
@@ -33,7 +30,7 @@ test('local D1 settles closed days exactly once from the original pet and preser
     };
     const row = n => sql('SELECT * FROM moonpet_care_shadow_days WHERE telegram_id=? AND day_key=?', '1', day(n)).first();
     const names = ['telegram_users','telegram_pet_profiles','telegram_pet_season_slots','telegram_pet_active_slots',
-      'telegram_pet_instances','telegram_pet_lifecycle_by_pet','telegram_pet_events','telegram_pet_reward_claims','telegram_pet_daily_completion'];
+      'telegram_pet_instances','telegram_pet_lifecycle_by_pet','telegram_pet_events','telegram_pet_reward_claims','telegram_pet_daily_completion','moonpet_care_shadow_days','moonpet_care_shadow_exclusions','moonpet_care_xp_charges','moonpet_care_award_rates'];
     const bootstrap = new DatabaseSync(':memory:');
     bootstrap.exec(schema);
     const objects = bootstrap.prepare('SELECT sql,tbl_name FROM sqlite_master WHERE sql IS NOT NULL ORDER BY rowid').all();
@@ -51,6 +48,13 @@ test('local D1 settles closed days exactly once from the original pet and preser
       ]),
       sql("INSERT INTO telegram_pet_active_slots(telegram_id,pet_id,season_key,updated_at) VALUES('1','p','s','2026-01-01')"),
     ]);
+    // Even inactive owners beyond the former pilot size enter automatically.
+    await DB.batch(Array.from({ length: 22 }, (_, i) => String(i+20)).flatMap(owner => [
+      sql("INSERT INTO telegram_users(telegram_id,first_name) VALUES(?,'Test')",owner),
+      sql("INSERT INTO telegram_pet_profiles(telegram_id) VALUES(?)",owner),
+    ]));
+    await tick(0);
+    assert.equal((await sql('SELECT count(*) AS n FROM moonpet_care_shadow_days WHERE day_key=?',day(0)).first()).n,23);
     const receipt = (n, pet, action, xp, status = 'accepted') => {
       const id = crypto.randomUUID();
       return sql(`INSERT INTO telegram_pet_events(id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,status)

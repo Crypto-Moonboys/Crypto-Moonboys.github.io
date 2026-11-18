@@ -179,7 +179,7 @@ for (const [label, method, match] of [
   ['season reward claims','beforeAll',q=>q.startsWith('SELECT idempotency_key, COALESCE(awarded_at,created_at) AS claimed_at')],
   ['economy objectives','beforeAll',q=>q.startsWith('SELECT event_type, COUNT(*) AS total FROM telegram_pet_events')],
   ['bounty and expedition receipts','beforeAll',q=>q.startsWith('SELECT source, idempotency_key, pet_id, metadata, applied_rewards')],
-  ['daily and weekly XP totals','beforeFirst',q=>q.includes('SUM(xp_awarded)') && q.includes('AS community_xp') && q.includes('SUM(pet_xp_awarded)')],
+  ['daily and weekly XP totals','beforeFirst',q=>q.includes('SUM(xp_awarded)') && q.includes('AS community_xp') && q.includes('SUM(pet_xp_awarded+pet_xp_withheld)')],
   ['specialist progress','beforeFirst',q=>q.startsWith('SELECT * FROM telegram_pet_specialist_progression')],
   ['daily mission sources','beforeAll',q=>q.includes('SELECT event_type, COUNT(*) AS count') && q.includes('FROM telegram_pet_events')],
   ['active run','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_runs') && q.includes("status IN ('active', 'extractable')")],
