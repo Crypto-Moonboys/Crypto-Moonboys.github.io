@@ -134,3 +134,27 @@ git pull --ff-only
 node scripts\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3 --xp=timed_explore_best_job
 ```
 Leave the simulation running through 7/30/90/365 checkpoints; weekly progress lines confirm activity. Preserve all printed final output and verify `legendaryVerified` and `blockers`. The full results will determine whether the 365-day Level 50 and sequential evolution requirements are achievable with this legal activity schedule. **No merge, production deploy, D1 migration, XP cap/level/rate change, wallet or Telegram operations.**
+
+
+## VERIFIED FINAL — 2026-11-18: optimized 365-day strategy reaches Legendary
+
+The user executed the full Windows Node 24 campaign on the current PR branch:
+```bat
+node scripts\run-moonpet-worker-year-simulation.mjs --days=365 --strategy=hybrid3 --xp=timed_explore_best_job
+```
+The command completed normally. Final persisted output: **`legendaryVerified:true`, `blockers:[]`**.
+
+- 365 elapsed days; **121,454 Pet XP / Level 56**.
+- **365 distinct-day Growth Marks**, 52 Weekly Crests, 10 distinct relic IDs, 122 Alley King victories.
+- 11,316 accepted Worker actions, **0 rejected**; no rejection reasons/samples.
+- 365/365 timed Explore claims, **48,180 Pet XP**, zero rejected.
+- 365/365 server-eligible jobs, **18,994 Pet XP**, zero rejected. Job progression: Vault Guard 46; Signal Hacker 9; Drone Mechanic 28; Vault Security 208; Guardian Patrol 74.
+- Daily Runs: 122 full boss completions + 192 extractions + 51 failures = all 365 attempts.
+- All 52 completed qualification weeks settled; no fully-qualified-but-unsettled week.
+- Sequential evolutions persisted through Moon Egg → Street → Cyber → Elite → Moon Guardian → **Legendary Moon Guardian**.
+- Immediately before final evolution the Day-365 checkpoint held **520 Scrap Metal / 91 Evolution Fragments** at Stage 4; immediately after Stage 5 it held **460 / 51**, proving the expected **60 Scrap + 40 Fragment** final evolution cost was actually debited.
+- The earlier 365-day `hybrid3` baseline without optimized legal XP finished at 57,438 XP / Level 38 / Stage 3. That remains useful historical comparison, but it is no longer the current verdict.
+
+**Audit conclusion:** the declared Legendary path is achievable in the isolated real-Worker simulator at the 365-day boundary without changing production XP rates, Level-50 threshold, relic requirements, Growth/Crest requirements or evolution material costs. This result proves the tested strategy and fixtures; it is not itself evidence of a production deployment or live-player completion.
+
+**Next release work is verification, not more progression tuning:** run the complete current branch test suites and CI against current `main`, resolve any PR review/base drift, inspect migration/deployment requirements, and only then consider merge/deploy under separate approval.
