@@ -395,7 +395,7 @@ assert.match(client, /roadmap\.finalForm[\s\S]*FINAL EVOLUTION COMPLETE/,
   'final-form dashboard must replace next-evolution instructions with lifetime play');
 assert.match(client, /roadmap\.finalForm \? 'FINAL EVOLUTION' : 'NEXT EVOLUTION'/,
   'final-form dashboard must label the completed final evolution truthfully');
-assert.ok(html.includes('/js/moonpet-mini-app.js?v=20261118-progressive-unlocks-v1'));
+assert.ok(html.includes('/js/moonpet-mini-app.js?v=20261118-progressive-unlocks-v2'));
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.

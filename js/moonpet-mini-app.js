@@ -1973,14 +1973,13 @@
   }
 
   function firstSessionExploreMarkup() {
-    var phase = firstSessionPhase();
-    if (!phase) return '';
-    var nextLine = exploreNextLine();
-    var weeklyClaims = savedWeeklyBossButtons(state && state.guidance && state.guidance.weekly_boss || {});
-    var raidClaims = savedRaidButtons(state && state.live_systems && state.live_systems.seasonal_boss || {});
-    var arena = state && state.arena;
-    var arenaQueue = state && state.arena_queue;
-    var kaiju = state && state.kaiju || {};
+    if (firstSessionPhase() !== 'egg') return '';
+    var live = state.live_systems || {};
+    var weeklyClaims = savedWeeklyBossButtons(state.guidance && state.guidance.weekly_boss || {});
+    var raidClaims = savedRaidButtons(live.seasonal_boss || {});
+    var arena = state.arena;
+    var arenaQueue = state.arena_queue;
+    var kaiju = state.kaiju || {};
     var kaijuMatch = kaiju.match;
     var kaijuQueue = kaiju.queue;
     var arenaCleanup = arena
@@ -1990,33 +1989,27 @@
     var kaijuCleanup = kaijuSoloCleanup
       ? button('CANCEL MATCH', 'kaiju_match_cancel', { match_id: kaijuMatch.match_id }, { danger: true })
       : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
-    var copy = phase === 'unadopted'
-      ? {
-        district: 'Initialise a Secret Bot before district routes, bosses, Arena, Kaiju, or pet work open.',
-        run: 'Moon Run opens after you have a hatched active Moonpet.',
-        journey: 'Journey progress starts after you have a hatched active Moonpet.',
-      }
-      : {
-        district: 'Your Secret Bot is still forming. Care for it before district routes, bosses, Arena, Kaiju, or pet work open.',
-        run: 'Moon Run opens after HATCH BOT creates an active companion.',
-        journey: 'Journey progress starts after hatching, when server authority can bind objectives to the active pet.',
-      };
-    var arenaBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
-      (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + arenaCleanup + '</div>' : '');
-    var kaijuBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
-      (kaijuCleanup ? '<div class="line muted">STALE KAIJU STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + kaijuCleanup + '</div>' : '') +
-      (kaijuMatch && !kaijuSoloCleanup ? '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>' : '');
-    return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.district) + '</div>', 'districts') +
-      panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.run) + '</div>', 'moon-run') +
-      panel('PET ADVENTURE', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'adventure') +
-      panel('STREET EVENT', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'street-event') +
-      panel(weeklyClaims ? 'SAVED WEEKLY BOSS REWARDS' : 'WEEKLY BOSS // LOCKED', '<div class="line muted">' + escapeHtml(copy.journey) + '</div><div class="button-grid one">' + weeklyClaims + '</div>', 'weekly-boss') +
-      panel('STREET STORY CHAINS', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'story-chains') +
-      panel('SEASONAL RAID', '<div class="line muted">' + escapeHtml(copy.journey) + '</div><div class="button-grid one">' + raidClaims + '</div>', 'seasonal-boss') +
-      panel('PET ARENA', arenaBody, 'arena') +
-      panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
+    var controls = [];
+    if (weeklyClaims) controls.push(panel('SAVED WEEKLY BOSS REWARDS', '<div class="button-grid one">' + weeklyClaims + '</div>', 'weekly-boss'));
+    if (raidClaims) controls.push(panel('SAVED RAID REWARDS', '<div class="button-grid one">' + raidClaims + '</div>', 'seasonal-boss'));
+    if (arenaCleanup) controls.push(panel('SAVED ARENA SESSION', '<div class="button-grid one">' + arenaCleanup + '</div>', 'arena'));
+    if (kaijuCleanup || kaijuMatch) controls.push(panel('SAVED KAIJU SESSION', kaijuCleanup
+      ? '<div class="button-grid one">' + kaijuCleanup + '</div>'
+      : '<div class="line muted">MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY / FORFEIT RESOLUTION.</div>', 'kaiju'));
+    if (state.run) controls.push(panel('SAVED MOON RUN', '<div class="line muted">This run stays saved for its original pet. Review it after hatching.</div>', 'moon-run'));
+    if ((state.regions || []).some(function (region) { return region.pending_choice_key || region.settling; })) controls.push(panel('SAVED DISTRICT CHOICE', '<div class="line muted">Select the hatched Moonpet that started this choice to review it.</div>', 'districts'));
+    if ((live.chains || []).some(function (chain) { return chain.pending_choice_key || chain.settling; })) controls.push(panel('SAVED STORY CHOICE', '<div class="line muted">Select a hatched Moonpet to finish the saved story choice.</div>', 'story-chains'));
+    return controls.join('');
   }
   // TEST-EXPORT: nextGuidance:end
+
+  // TEST-EXPORT: unlockedCraftingRecipes:start
+  function unlockedCraftingRecipes(snapshot) {
+    var phase = snapshot && snapshot.lifecycle && snapshot.lifecycle.phase;
+    if (!phase || phase === 'egg') return [];
+    return (snapshot.live_systems && snapshot.live_systems.crafting || []).filter(function (recipe) { return recipe.unlocked === true; });
+  }
+  // TEST-EXPORT: unlockedCraftingRecipes:end
 
   // These use the existing signed inventory/crafting handlers. Bag food is
   // not a Care Feed action and cannot multiply the seven-mission credit.
@@ -2038,10 +2031,13 @@
           detail: item.description
         });
     }).join('');
-    var empty = stateNeedsFullHydration(state) ? 'BAG IS LOADING. OPEN ECONOMY TO LOAD MEALS.' : 'NO COOKED MEALS IN THE BAG.';
+    var empty = stateNeedsFullHydration(state) ? 'BAG IS LOADING.' : 'NO COOKED MEALS IN THE BAG.';
+    var canCook = unlockedCraftingRecipes(state).some(function (recipe) {
+      return recipe.output && foodKeys.includes(recipe.output.item_key);
+    });
     return panel('FOOD COUNTER // CHOOSE A MEAL', '<div class="line muted">Pizza, burgers and veggie boxes have different hunger, energy and happiness effects. Cooked meals share a 45-second account cooldown with Care Feed. Using a meal consumes one saved bag item, but does not count as another Feed action.</div>' +
       (controls ? '<div class="button-grid one">' + controls + '</div>' : '<div class="line muted">' + empty + '</div>') +
-      '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Craft food using existing materials and unlock levels.') + '</div>', 'food-counter');
+      (canCook ? '<div class="button-grid one">' + routeButton('COOK MORE MEALS', { screen: 'economy', focus: 'crafting' }, 'Compare recipes and their material costs.') + '</div>' : ''), 'food-counter');
   }
 
 
@@ -2812,10 +2808,11 @@
 
   function renderRecommended() {
     if (stateNeedsFullHydration(state)) {
+      var firstSession = firstSessionPhase();
       var coreRoutes = [
-        { title: 'MISSIONS', screen: 'missions', focus: 'missions', detail: 'Work on goals, play saved Contracts and collect earned mission rewards.' },
-        { title: 'EXPLORE', screen: 'explore', focus: 'moon-run', detail: 'Choose runs, district routes, boss fights or player battles.' },
-        { title: 'WORK', screen: 'work', focus: 'timed-activity', detail: 'Compare jobs or start, review and claim background activities.' },
+        { title: 'MISSIONS', screen: 'missions', focus: firstSession ? '' : 'missions', detail: 'Work on goals, play saved Contracts and collect earned mission rewards.' },
+        { title: 'EXPLORE', screen: 'explore', focus: firstSession ? '' : 'moon-run', detail: 'Choose runs, district routes, boss fights or player battles.' },
+        { title: 'WORK', screen: 'work', focus: firstSession ? '' : 'timed-activity', detail: 'Compare jobs or start, review and claim background activities.' },
       ];
       return panel('RECOMMENDED NEXT', '<div class="line muted">Choose a route below. Home care is ready while the other menus prepare.</div><div class="button-grid one">' + coreRoutes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>', 'recommended');
     }
@@ -2832,11 +2829,12 @@
 
   function renderPlayNow() {
     if (stateNeedsFullHydration(state)) {
+      var firstSession = firstSessionPhase();
       var routes = [
-        { title: 'MISSIONS', screen: 'missions', focus: 'missions' },
-        { title: 'EXPLORE', screen: 'explore', focus: 'moon-run' },
-        { title: 'WORK', screen: 'work', focus: 'timed-activity' },
-        { title: 'ECONOMY', screen: 'economy', focus: 'shop' },
+        { title: 'MISSIONS', screen: 'missions', focus: firstSession ? '' : 'missions' },
+        { title: 'EXPLORE', screen: 'explore', focus: firstSession ? '' : 'moon-run' },
+        { title: 'WORK', screen: 'work', focus: firstSession ? '' : 'timed-activity' },
+        { title: 'ECONOMY', screen: 'economy', focus: firstSession ? '' : 'shop' },
         { title: 'PROFILE', screen: 'profile', focus: 'pet-spaces' },
       ];
       return panel('PLAY NOW // CHOOSE A MENU', '<div class="line muted">Choose what you want to do next. Opening a menu spends nothing; review its actions before starting.</div><div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route); }).join('') + '</div>', 'play-now');
@@ -2857,20 +2855,19 @@
       catch (_) { craftingGoalStorageAvailable = false; craftingGoalMemory[petId] = ''; }
     }
     var selected = craftingGoalMemory[petId];
-    return (state.live_systems && state.live_systems.crafting || []).some(function (recipe) { return recipe.key === selected; }) ? selected : '';
+    return unlockedCraftingRecipes(state).some(function (recipe) { return recipe.key === selected; }) ? selected : '';
   }
 
-  function craftingGoalMarkup() {
+  function craftingGoalMarkup(recipes) {
     if (!window.MoonpetPlayOptions || !window.MoonpetPlayOptions.craftingGoal) return '';
     var selected = selectedCraftingGoal();
-    var recipes = state.live_systems && state.live_systems.crafting || [];
     var body = '<label class="line" for="crafting-goal">CHOOSE A CRAFTING GOAL</label><select id="crafting-goal"><option value="">NO TRACKED GOAL</option>' + recipes.map(function (recipe) {
       return '<option value="' + escapeHtml(recipe.key) + '"' + (recipe.key === selected ? ' selected' : '') + '>' + escapeHtml(recipe.title) + ' // LEVEL ' + number(recipe.min_level) + '</option>';
     }).join('') + '</select><div class="line muted">Track supplies for this pet on this device. Change or clear the goal any time. Choosing a goal spends nothing and adds no quest reward.</div>';
     if (!craftingGoalStorageAvailable) body += '<div class="line muted">Device storage unavailable; this goal is kept for this session only.</div>';
     var plan = window.MoonpetPlayOptions.craftingGoal(state, selected);
     if (!plan) return body;
-    body += '<div class="line signal">' + escapeHtml(plan.recipe.title) + ' // ' + (plan.ready ? 'READY TO CRAFT' : plan.output_full ? 'OUTPUT STACK FULL' : !plan.recipe.unlocked ? 'REQUIRES LEVEL ' + number(plan.recipe.min_level) : 'GATHER SUPPLIES') + '</div>';
+    body += '<div class="line signal">' + escapeHtml(plan.recipe.title) + ' // ' + (plan.ready ? 'READY TO CRAFT' : plan.output_full ? 'OUTPUT STACK FULL' : 'GATHER SUPPLIES') + '</div>';
     body += plan.ingredients.map(function (material) {
       return '<div class="line ' + (material.missing ? '' : 'complete') + '">' + escapeHtml(material.title) + ' // HAVE ' + number(material.owned) + ' / NEED ' + number(material.required) + (material.missing ? ' // MISSING ' + number(material.missing) : ' // READY') + '</div>';
     }).join('');
@@ -3180,8 +3177,7 @@
           + (entry.close_available ? button('CLOSE OLD EVENT', 'event_close', { event_id: entry.event_id }, { danger: true,
             detail: 'Closes this unverified event without claiming a reward. History, balances and the old reward slot are kept.' }) : '');
     }).join('');
-    var firstSessionExplore = firstSessionExploreMarkup();
-    if (firstSessionExplore) return renderPlayNow() + firstSessionExplore
+    if (firstSessionPhase()) return firstSessionExploreMarkup()
       + (savedEvents ? panel('SAVED STREET EVENTS', savedEvents, 'saved-street-events') : '');
     var guidance = state.guidance || {};
     var encounter = state.encounter;
@@ -3522,10 +3518,11 @@
     var live = state.live_systems || {};
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var unlockedGearKeys = new Set((guidance.shop_items || []).filter(function (item) { return item.unlocked; }).map(function (item) { return item.key; }));
-    var gear = (state.gear || []).filter(function (item) { return unlockedGearKeys.has(item.item_key); }).map(function (item) {
+    var gear = (state.gear || []).map(function (item) {
       var upgrade = upgrades.get(item.item_key) || {};
+      if (!unlockedGearKeys.has(item.item_key) && !upgrade.unlocked) return '';
       var catalogItem = (guidance.shop_items || []).find(function (entry) { return entry.key === item.item_key; });
-      var equip = catalogItem ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: !catalogItem.unlocked || catalogItem.equipped, detail: catalogItem.unlocked ? 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' : 'REQUIRES LEVEL ' + number(catalogItem.min_level) }) + '</div>' : '';
+      var equip = catalogItem && catalogItem.unlocked ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: catalogItem.equipped, detail: 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' }) + '</div>' : '';
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
         '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' + equip +
         (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : upgrade.unlocked ? '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key, target_level: upgrade.target_level, quote_version: upgrade.quote_version }, { disabled: !upgrade.affordable || !upgrade.quote_version, resourceRequired: !upgrade.affordable, cost: upgrade.cost, missing: !upgrade.affordable ? missingCostText(upgrade.cost) : '', detail: 'UNLOCK LEVEL ' + number(upgrade.required_level) + ' // YOUR LEVEL ' + number(state.pet.level) + (upgrade.quote_version ? '' : ' // REFRESH REQUIRED: upgrade quote unavailable.') }) + '</div>' : '');
@@ -3533,11 +3530,11 @@
     var materials = (state.materials || []).map(function (item) {
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
     }).join('');
-    var craftingRecipes = (live.crafting || []).filter(function (recipe) { return recipe.unlocked; });
+    var craftingRecipes = unlockedCraftingRecipes(state);
     var crafting = craftingRecipes.map(function (recipe) {
       var plan = window.MoonpetPlayOptions && window.MoonpetPlayOptions.craftingGoal && window.MoonpetPlayOptions.craftingGoal(state, recipe.key);
       var full = plan && plan.output_full;
-      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: recipe.unlocked && !recipe.affordable, cost: recipe.cost, missing: !recipe.affordable ? missingCostText(recipe.cost) : '', detail: 'UNLOCK LEVEL ' + number(recipe.min_level) + ' // ' + (recipe.detail || '') + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
+      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: !recipe.affordable, cost: recipe.cost, missing: !recipe.affordable ? missingCostText(recipe.cost) : '', detail: 'UNLOCK LEVEL ' + number(recipe.min_level) + ' // ' + (recipe.detail || '') + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div><div class="line muted">' + escapeHtml(item.route_effect || 'Collection requirement.') + '</div>'; }).join('');
     var equipmentSets = (live.equipment_sets || []).filter(function (set) { return (set.owned || []).some(function (itemKey) { return unlockedGearKeys.has(itemKey); }); }).map(function (set) {
@@ -3558,7 +3555,7 @@
     return (gear ? panel('EQUIPMENT PROGRESSION', gear, 'equipment') : '') +
       (equipmentSets ? panel('LOADOUT SYNERGIES', equipmentSets, 'equipment-sets') : '') +
       (materials ? panel('CRAFTING MATERIALS', materials, 'materials') : '') +
-      (craftingRecipes.length ? panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') : '') +
+      (craftingRecipes.length ? panel('CRAFTING WORKSHOP', craftingGoalMarkup(craftingRecipes) + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') : '') +
       panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. Claim completed bounties before 00:00 UTC; unclaimed bounty targets expire when the board changes. Already paid rewards stay paid. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('EXTRA DAILY CHALLENGES // EASY TO HARD', '<div class="line muted">Three bonus targets each UTC day, additional to the four original Bounties and seven Daily Missions. Accepted actions only; a completed target may be claimed once. These do not replace the Daily Journey or Weekly Crest.</div>' + (bonusBounties || '<div class="line muted">BONUS BOARD SYNCING.</div>'), 'bonus-bounties') +
@@ -3837,9 +3834,13 @@
   }
 
   function ensureActiveScreenVisible() {
-    if (!state || state.hydration && state.hydration.full === false || screenIsVisible(activeScreen, state)) return;
+    if (!state || stateNeedsFullHydration(state)) return;
+    var firstSession = !state.adopted || !state.pet ? 'entry'
+      : !state.lifecycle || state.lifecycle.phase === 'egg' ? 'incubation' : '';
+    var roadmapBeforeHatch = firstSession && activeScreen === 'missions' && requestedFocus === 'legendary-roadmap';
+    if (!roadmapBeforeHatch && screenIsVisible(activeScreen, state)) return;
     activeScreen = 'home';
-    requestedFocus = '';
+    requestedFocus = roadmapBeforeHatch ? firstSession : '';
     requestedFocusScreen = 'home';
   }
   // TEST-EXPORT: progressiveVisibility:end
@@ -4719,7 +4720,8 @@
   }
 
   function switchScreen(nextScreen) {
-    if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen || !screenIsVisible(nextScreen, state)) return false;
+    if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
+    if (!stateNeedsFullHydration(state) && !screenIsVisible(nextScreen, state)) return false;
     if (requestedFocusScreen !== nextScreen) requestedFocus = '';
     activeScreen = nextScreen;
     render();
@@ -4731,7 +4733,7 @@
   screen.addEventListener('change', function (event) {
     if (event.target.id !== 'crafting-goal' || !state || !state.pet || busy) return;
     var selected = event.target.value;
-    if (selected && !(state.live_systems && state.live_systems.crafting || []).some(function (recipe) { return recipe.key === selected; })) return;
+    if (selected && !unlockedCraftingRecipes(state).some(function (recipe) { return recipe.key === selected; })) return;
     craftingGoalMemory[state.pet.pet_id] = selected;
     try { window.localStorage.setItem('moonpet-crafting-goal:' + state.pet.pet_id, selected); }
     catch (_) { craftingGoalStorageAvailable = false; }

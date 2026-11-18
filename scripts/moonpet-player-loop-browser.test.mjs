@@ -347,7 +347,7 @@ try {
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
     await page.goto(url + '?screen=missions&focus=legendary-roadmap');
-    await page.waitForSelector('[data-panel="entry"]');
+    await page.waitForSelector('[data-panel="entry"][data-route-selected]');
     assert.equal(await page.locator('#nav [data-screen="missions"]').count(), 0, 'unavailable Missions is hidden before adoption');
     assert.equal(await page.locator('[data-panel="legendary-roadmap"]').count(), 0, 'locked roadmap is not shown before adoption');
     await page.locator('[data-utility="sync"]').click();
@@ -415,7 +415,7 @@ try {
     assert.equal(await page.locator('.mission-status [data-current-mission]').count(), 1);
     assert.equal(await page.locator('[data-panel="missions"] .mission-row-current').count(), 1);
     assert.equal(await page.locator('#screen').evaluate(node => node.scrollWidth <= node.clientWidth), true, 'mission status fits narrow Telegram controls');
-    for (const [tab, panel] of [['work','timed-activity'],['economy','equipment'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
+    for (const [tab, panel] of [['work','timed-activity'],['economy','shop'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
       await page.locator(`[data-screen="${tab}"]`).click();
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${tab} renders immediately from the shared projection`);
       if(tab === 'profile') await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
@@ -431,7 +431,8 @@ try {
     await page.waitForFunction(node => !node.isConnected, renderedContracts, { timeout: 10000 });
     assert.deepEqual(modes, ['core','full','profile','full'], 'Missions Refresh retains full state instead of discarding other tabs');
     await page.locator('[data-screen="economy"]').click();
-    assert.equal(await page.locator('[data-panel="equipment"]').count(), 1);
+    assert.equal(await page.locator('[data-panel="shop"]').count(), 1);
+    assert.equal(await page.locator('[data-panel="equipment"]').count(), 0, 'the empty Equipment panel stays hidden');
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
     assert.deepEqual(modes, ['core','full','profile','full']); assert.deepEqual(errors, []);
     console.log(`Background tab readiness and Missions refresh browser flow passed at ${viewport.width}x${viewport.height}`);

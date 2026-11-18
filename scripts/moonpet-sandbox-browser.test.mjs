@@ -3,9 +3,38 @@ import fs from 'node:fs/promises';
 import http from 'node:http';
 import {createMoonpetBrowserHarness} from './moonpet-browser-fixture.mjs';
 import {sandboxPlayers} from './moonpet-sandbox-players.mjs';
+import {getActiveSeasonalBoss} from '../workers/moonboys-api/pets/live-systems.js';
 const harness=await createMoonpetBrowserHarness();
 const results=[];
 try{
+ const savedRaid=await harness.setup({prepare:f=>{
+  const pet=f.sql.prepare('SELECT pet_id,season_key FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner);
+  const boss=getActiveSeasonalBoss(new Date(Date.now()-8*86400000));
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE pet_id=?").run(pet.pet_id);
+  f.sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
+    (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at)
+    VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)`).run(pet.pet_id,f.owner,pet.season_key,boss.season_instance,boss.key,boss.hp);
+ }});
+ try{
+  savedRaid.block();
+  await savedRaid.open({waitForArt:false});
+  await savedRaid.started;
+  const play=savedRaid.page.locator('[data-panel="play-now"]');
+  await play.locator('summary').click();
+  await play.locator('[data-jump="explore"]').click();
+  const claim=savedRaid.page.locator('[data-action="seasonal_boss_claim"]');
+  await claim.waitFor({state:'attached'});
+  assert.equal(await claim.isEnabled(),true);
+  assert.equal(await savedRaid.page.locator('[data-screen="explore"]').getAttribute('aria-current'),'page');
+  const savedPanels=await savedRaid.page.locator('#screen [data-panel]').evaluateAll(items=>items.map(item=>item.dataset.panel)
+    .filter(panel=>!['recommended','reward-lifecycle','seasonal-boss'].includes(panel)));
+  assert.deepEqual(savedPanels,[]);
+  savedRaid.release();
+  await savedRaid.page.goto(harness.origin+'/moonpet-game.html?screen=missions&focus=legendary-roadmap');
+  await savedRaid.page.locator('[data-panel="incubation"][data-route-selected]').waitFor();
+  assert.deepEqual(savedRaid.errors,[]);
+  console.log('SANDBOX_BROWSER saved raid startup and egg Road to Legendary redirect passed');
+ }finally{await savedRaid.close();}
  for(const viewport of [{width:360,height:640},{width:390,height:844},{width:1280,height:900}]){
   for(const [name,player] of Object.entries(sandboxPlayers)){
    const f=await harness.setup({...player,viewport});
@@ -13,7 +42,9 @@ try{
     const started=performance.now();await f.open();
     const homeMs=Math.round(performance.now()-started),screens=[];
     if(name.startsWith('stage-')){await f.started;assert.equal(f.full().state.lifecycle.evolution_stage,Number(name.slice(6)));}
-    for(const section of ['home','missions','explore','work','economy','profile']){
+    const sections=name==='new'||name==='stage-0'?['home','profile']:['home','missions','explore','work','economy','profile'];
+    assert.deepEqual(await f.page.locator('#nav [data-screen]').evaluateAll(items=>items.map(item=>item.dataset.screen)),sections);
+    for(const section of sections){
      await f.page.locator('[data-screen="'+section+'"]').click();
      await f.page.locator('[data-panel="module-loading"]').waitFor({state:'hidden'});
      assert.equal(await f.page.locator('[data-screen="'+section+'"]').getAttribute('aria-current'),'page');
@@ -37,7 +68,7 @@ try{
     const counts=f.f.sql.prepare('SELECT status,COUNT(*) AS n FROM telegram_pet_instances GROUP BY status').all();
     assert.equal(counts.reduce((sum,row)=>sum+row.n,0),name==='new'?0:player.pets);
     results.push({player:name,viewport,home_ms:homeMs,screens,navigationStress,permanent_pet_counts:counts});
-    console.log('SANDBOX_BROWSER '+name+' '+viewport.width+' six screens passed');
+    console.log('SANDBOX_BROWSER '+name+' '+viewport.width+' '+screens.length+' screens passed');
    }finally{await f.close();}
   }
  }
