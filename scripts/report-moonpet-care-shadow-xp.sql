@@ -28,6 +28,6 @@ WITH opening AS (
 SELECT day_key, count(*) AS settled_account_days,
   sum(exempt_reason IS NOT NULL) AS exempt_account_days,
   sum(exempt_reason IS NULL AND gross_pet_xp=0) AS eligible_zero_xp_days,
-  sum(gross_pet_xp) AS actual_pet_xp, sum(withheld) AS projected_withheld_xp,
+  sum(gross_pet_xp) AS gross_pet_xp, sum(withheld) AS projected_withheld_xp,
   sum(gross_pet_xp-withheld) AS projected_net_pet_xp
 FROM projected GROUP BY day_key ORDER BY day_key;

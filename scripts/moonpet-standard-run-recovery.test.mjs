@@ -470,7 +470,7 @@ for(const [label,method,match] of [
   ['source pet','beforeFirst',q=>q==='SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1'],
   ['wallet','beforeFirst',q=>q==='SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?'],
   ['inventory','beforeAll',q=>q.includes('FROM telegram_pet_inventory') && q.includes('quantity > 0')],
-  ['daily XP cap','beforeFirst',q=>q.includes('SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp') && q.includes('WHERE telegram_id = ?')],
+  ['daily XP cap','beforeFirst',q=>q.includes('SELECT COALESCE(SUM(pet_xp_awarded+pet_xp_withheld), 0) AS pet_xp') && q.includes('WHERE telegram_id = ?')],
 ]) test(`account audit: Standard Run ${label} outage cannot resolve against missing evidence`,async()=>{
   const f=fixture('run-read-'+label.replaceAll(' ','-')); await f.state(); f.run('read-run',{depth:0});
   f.sql.exec('UPDATE telegram_pet_profiles SET moon_gold=1000');
@@ -582,4 +582,25 @@ test('account audit: unrelated inventory and another owner equipment do not bloc
   assert.equal(triggered,true);
   const saved=JSON.parse(f.sql.prepare('SELECT metadata FROM telegram_pet_run_steps').get().metadata).equipment_snapshot;
   assert.deepEqual(Object.keys(saved),['hoverboard']);assert.equal(saved.hoverboard.item_level,1);
+});
+
+test('a failed run credits the net consolation to the original pet, receipt, and season', async () => {
+  const f = fixture('public-run-care');
+  await f.state();
+  f.run('care-run',{depth:0});
+  f.sql.exec("UPDATE telegram_pet_lifecycle_by_pet SET phase='adult',hatched_at='2020-01-01'");
+  f.sql.prepare(`INSERT INTO moonpet_care_shadow_days(telegram_id,day_key,settled_at,debt_thirds)
+    VALUES (?,'2020-01-02','2020-01-04',2310)`).run(f.owner);
+  const petXp = () => f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner).pet_xp;
+  const before = petXp();
+  const choice = hooks.buildPetRunChoiceReplyMarkup({run_id:'care-run',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  const random = Math.random;
+  try {
+    Math.random = () => 0;
+    const result = await hooks.processPetRunStep(f.db,f.owner,'care-run',choice,{event_key:'public-miss'});
+    assert.equal(result.reason,'run_failed');
+    assert.equal(result.pet_xp_awarded,3);
+    assert.equal(petXp(),before+3);
+    assert.equal(f.sql.prepare("SELECT pet_xp_withheld FROM telegram_pet_events WHERE event_type='run_fail'").get().pet_xp_withheld,1);
+  } finally { Math.random = random; }
 });

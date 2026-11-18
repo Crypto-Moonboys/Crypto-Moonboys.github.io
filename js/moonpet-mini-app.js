@@ -1673,7 +1673,7 @@
     }
     return {
       title: 'COMBAT LOCKED.',
-      detail: 'Requires current beta combat authority.',
+      detail: 'Requires combat access.',
       entryDetail: 'REQUIRES CURRENT COMBAT AUTHORITY',
     };
   }
@@ -2201,7 +2201,7 @@
       renderFoodCounter() + renderHomeStations() + renderPetEmotes() + renderRadioRequestPanel() +
       '<div class="button-grid one">' + routeButton('CUSTOMIZE HOME', { screen:'profile', focus:'pet-house' }, 'Edit the Home shown behind this pet. No cost.') + '</div>' +
       panel('VITAL SYSTEMS', '<div class="line muted">Higher is better on every meter. Fullness is the opposite of hunger: Feed raises fullness.</div>' + meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('FULLNESS', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
-      panel('CARE CONSOLE', '<div class="button-grid">' +
+      panel('CARE CONSOLE', (dailyCache.withheld_today > 0 ? '<div class="line">Care Standing reduced today’s awards by ' + number(dailyCache.withheld_today) + ' Pet XP. Complete Feed, Play and Clean on the same pet to recover.</div>' : '') + '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
         button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
         button('DAILY CACHE', 'daily_chest', {}, { disabled: dailyCache.available !== true, statusLabel: dailyCache.claimed ? '✅ Completed // CLAIMED TODAY' : dailyCache.available ? '' : 'SYNCING', cooldown: dailyCache.claimed ? dailyCache.cooldown : null,
