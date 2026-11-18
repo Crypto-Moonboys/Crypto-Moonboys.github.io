@@ -346,15 +346,23 @@ try {
       return route.abort();
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
-    await page.goto(url);
-    await page.waitForSelector('[data-panel="entry"]');
+    await page.goto(url + '?screen=missions&focus=legendary-roadmap');
+    const lockedRoadmap = page.locator('[data-panel="legendary-roadmap"][open]');
+    await lockedRoadmap.waitFor();
+    assert.match(await lockedRoadmap.innerText(), /LOCKED.*Initialise your first Secret Bot/s);
+    assert.equal(await lockedRoadmap.locator('[data-action]').count(), 0, 'the roadmap action only opens Home');
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(() => document.querySelector('#terminal-output').innerText === 'LIVE SAVE REFRESHED.');
+    assert.match(await lockedRoadmap.innerText(), /LOCKED.*Initialise your first Secret Bot/s);
+    await lockedRoadmap.locator('[data-jump="home"][data-focus="entry"]').click();
+    await page.waitForSelector('[data-panel="entry"][open]');
     const initialise = page.locator('[data-panel="entry"] [data-action="adopt"]');
     await initialise.waitFor();
     assert.equal(await initialise.isDisabled(), true);
     assert.match(await page.locator('#screen').innerText(), /999 \/ 1,000 LIFETIME ARCADE XP/);
     assert.equal(await page.locator('a:has-text("PLAY WEBSITE ARCADE")').getAttribute('href'), '/games/');
     sqlite.prepare('UPDATE arcade_progression_state SET arcade_xp_total=1000 WHERE telegram_id=?').run(id);
-    await page.reload();
+    await page.goto(url);
     await page.waitForSelector('[data-panel="entry"]');
     await page.waitForSelector('[data-panel="entry"] [data-action="adopt"]:enabled');
     await initialise.click();
@@ -557,6 +565,8 @@ try {
     const page = await context.newPage();
     const modes = [], errors = [];
     let nextFullGate;
+    let staleHelper;
+    const helperRetries = [];
     let failLeaderboard = false, leaderboardFailures = 0;
     const missionDb = { ...db, prepare(sql) {
       if (failLeaderboard && sql.includes('FROM ranked r JOIN telegram_pet_profiles')) {
@@ -576,6 +586,10 @@ try {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
       if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
+      if (staleHelper && url.pathname === '/js/moonpet-play-options.js') {
+        if (!url.searchParams.has('moonpet_retry')) return route.fulfill({ contentType: 'text/javascript', body: staleHelper });
+        helperRetries.push(url);
+      }
       if (url.pathname.endsWith('/telegram-pets/app/state')) {
         const body = route.request().postDataJSON();
         modes.push(body.mode || 'full');
@@ -671,7 +685,21 @@ try {
     await page.locator('[data-utility="sync"]').click();
     await roadmapRoutes.first().waitFor({ state: 'attached' });
     assert.equal(await roadmapRoutes.count(), 7);
-    assert.deepEqual(errors, [], 'partial-state navigation has no runtime exceptions');
+
+    // Simulate an older cached helper that still supports run controls.
+    staleHelper = await fs.readFile(path.join(root, 'js/moonpet-play-options.js'), 'utf8') +
+      '\ndelete window.MoonpetPlayOptions.legendaryRoadmap;';
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions&focus=legendary-roadmap`);
+    const roadmap = page.locator('[data-panel="legendary-roadmap"][open]');
+    await roadmap.waitFor();
+    assert.match(await roadmap.innerText(), /SYNCING/);
+    assert.equal(await page.evaluate(() => typeof window.MoonpetPlayOptions.runAvailability), 'function');
+    await page.locator('[data-utility="sync"]').click();
+    await roadmapRoutes.first().waitFor();
+    assert.equal(await roadmapRoutes.count(), 7);
+    assert.equal(helperRetries.length, 1);
+    assert.equal(helperRetries[0].searchParams.get('v'), '20261118-road-to-legendary-v1');
+    assert.deepEqual(errors, [], 'Missions remains usable after state and script recovery');
     await context.close();
   }
   // A locked PvP move is immutable while waiting for the opponent. Reloading

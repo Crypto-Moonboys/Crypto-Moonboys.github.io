@@ -914,12 +914,14 @@
   // TEST-EXPORT: actionAvailability:end
 
   // TEST-EXPORT: playOptionsRecovery:start
-  function playOptionsReady() {
-    return Boolean(window.MoonpetPlayOptions && typeof window.MoonpetPlayOptions.runAvailability === 'function');
+  function playOptionsReady(requireRoadmap) {
+    var options = window.MoonpetPlayOptions;
+    return Boolean(options && typeof options.runAvailability === 'function' &&
+      (!requireRoadmap || typeof options.legendaryRoadmap === 'function'));
   }
 
   function reloadPlayOptions() {
-    if (playOptionsReady()) return Promise.resolve();
+    if (playOptionsReady(true)) return Promise.resolve();
     if (playOptionsLoadPromise) return playOptionsLoadPromise;
     playOptionsLoadPromise = new Promise(function (resolve, reject) {
       var original = document.querySelector('script[src*="/js/moonpet-play-options.js"]');
@@ -929,7 +931,7 @@
       function finish(loaded) {
         window.clearTimeout(timeout);
         script.onload = script.onerror = null;
-        if (!loaded || !playOptionsReady()) {
+        if (!loaded || !playOptionsReady(true)) {
           script.remove();
           reject(new Error('RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.'));
         } else resolve();
@@ -1498,7 +1500,7 @@
     try {
       // Retry the required asset without replaying a saved gameplay action.
       var dependencyError = null;
-      if (!playOptionsReady()) {
+      if (!playOptionsReady(true)) {
         try { await reloadPlayOptions(); } catch (error) { dependencyError = error; }
       }
       var requestGeneration = beginStateRequest();
@@ -1506,7 +1508,12 @@
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       render();
-      tell(dependencyError ? 'LIVE SAVE REFRESHED. RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.' : 'LIVE SAVE REFRESHED.', dependencyError ? 'danger' : '');
+      var refreshMessage = 'LIVE SAVE REFRESHED.';
+      if (dependencyError) {
+        refreshMessage += playOptionsReady() ? ' ROAD TO LEGENDARY UNAVAILABLE.' : ' RUN CONTROLS UNAVAILABLE.';
+        refreshMessage += ' TAP REFRESH TO RETRY.';
+      }
+      tell(refreshMessage, dependencyError ? 'danger' : '');
       haptic('success');
     } catch (error) {
       tell(error.message || 'REFRESH FAILED', 'danger');
@@ -3008,7 +3015,14 @@
   // Read-only lifetime guidance. Every button below is a navigation jump;
   // none submits a gameplay action or awards progression.
   function renderLegendaryRoadmap() {
-    var roadmap = window.MoonpetPlayOptions && window.MoonpetPlayOptions.legendaryRoadmap
+    if (state && state.adopted === false) {
+      return panel('ROAD TO LEGENDARY // LOCKED',
+        '<div class="line muted">Initialise your first Secret Bot to begin lifetime progression.</div>' +
+        '<div class="button-grid one">' + routeButton('OPEN HOME', { screen: 'home', focus: 'entry' },
+          'Check the Arcade XP entry requirement and initialise your Secret Bot when eligible.') + '</div>',
+        'legendary-roadmap');
+    }
+    var roadmap = window.MoonpetPlayOptions && typeof window.MoonpetPlayOptions.legendaryRoadmap === 'function'
       ? window.MoonpetPlayOptions.legendaryRoadmap(state) : null;
     if (!roadmap || !roadmap.available) {
       return panel('ROAD TO LEGENDARY // SYNCING',
