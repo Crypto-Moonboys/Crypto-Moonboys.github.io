@@ -191,6 +191,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-weekly-authority-regressions.test.mjs'],
     ['node', 'scripts/moonpet-action-sync.test.mjs'],
     ['node', 'scripts/moonpet-care-integrity.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-care-shadow.test.mjs'],
     ['node', 'scripts/moonpet-projection-periods.test.mjs'],
     ['node', 'scripts/moonpet-care-frequency.test.mjs'],
     ['node', 'scripts/moonpet-weekly-payout-period.test.mjs'],
