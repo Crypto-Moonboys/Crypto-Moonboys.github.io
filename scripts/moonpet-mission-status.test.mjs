@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
 
-const { missionStatus, missionClaims, menuStatuses, menuBadge } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+const { missionStatus, missionClaims, menuStatuses, menuBadge, legendaryRoadmap } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
 const keys = ['pet-daily-feed', 'pet-daily-train', 'pet-daily-care', 'pet-daily-trade', 'pet-daily-shop', 'pet-daily-adventure', 'pet-daily-bank'];
 function snapshot(completed = 0) {
   return { adopted: true, pet: { pet_id: 'selected-pet' }, lifecycle: { phase: 'young' },
@@ -20,6 +20,63 @@ test('missing and deferred mission authority never renders a completed checklist
   }
   const missions = { ...snapshot(7), hydration: { full: false, modules: ['missions'] } };
   assert.equal(missionStatus(missions).status, 'COMPLETE');
+});
+
+test('Road to Legendary reads authoritative lifetime state and exposes navigation only', () => {
+  const state = snapshot(4);
+  state.pet = { pet_id: 'selected-pet', level: 27, pet_xp: 28942 };
+  state.season_slots = { slots: [{ active: true, pet: { progression: {
+    lifecycle: { current_stage: 2, total_stages: 6 },
+    growth_marks: { earned: 90, required: 240 },
+    weekly_crests: { earned: 13, required: 44 },
+  } } }] };
+  state.relics = [{ relic_id: 'one' }, { relic_id: 'two' }, { relic_id: 'two' }];
+  state.materials = [
+    { key: 'scrap_metal', quantity: 112 },
+    { key: 'evolution_fragment', quantity: 22 },
+  ];
+  state.guidance.evolution = {
+    name: 'Elite Moonpet', ready: false,
+    missing: [
+      { key: 'growth_marks', label: 'Growth Marks', current: 90, required: 120, source: 'Daily Journey' },
+      { key: 'weekly_crests', label: 'Weekly Crests', current: 13, required: 16, source: 'Weekly Journey' },
+    ],
+  };
+  const road = legendaryRoadmap(state);
+  assert.equal(road.available, true);
+  assert.equal(road.status, 'IN PROGRESS');
+  assert.deepEqual(road.stage, { current: 2, total: 6 });
+  assert.equal(road.level, 27);
+  assert.equal(road.petXp, 28942);
+  assert.deepEqual(road.growthMarks, { earned: 90, required: 240 });
+  assert.deepEqual(road.weeklyCrests, { earned: 13, required: 44 });
+  assert.equal(road.relics, 2, 'duplicate relic IDs count once');
+  assert.deepEqual(road.materials, { scrapMetal: 112, evolutionFragments: 22 });
+  assert.equal(road.nextEvolution.missing.length, 2);
+  assert.deepEqual(road.routes.map(route => route.screen + ':' + route.focus), [
+    'missions:daily-journey', 'missions:weekly-journey', 'explore:moon-run',
+    'work:timed-activity', 'work:jobs', 'economy:relics', 'profile:evolution'
+  ]);
+  assert.ok(road.routes.every(route => !Object.prototype.hasOwnProperty.call(route, 'action')),
+    'roadmap routes must navigate only and never submit gameplay');
+});
+
+test('Road to Legendary fails closed on missing identity or partial hydration', () => {
+  assert.equal(legendaryRoadmap({}).available, false);
+  assert.equal(legendaryRoadmap({ adopted: true, pet: { pet_id: 'p' }, hydration: { full: false } }).status, 'SYNCING');
+});
+
+test('Missions renders Road to Legendary through navigation buttons only', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  assert.match(client, /panel\('ROAD TO LEGENDARY'/);
+  const start = client.indexOf('function renderLegendaryRoadmap()');
+  const end = client.indexOf('function renderMissions()', start);
+  assert.ok(start >= 0 && end > start);
+  const body = client.slice(start, end);
+  assert.match(body, /legendaryRoadmap\(state\)/);
+  assert.match(body, /routeButton\(target\.title, target, target\.detail\)/);
+  assert.doesNotMatch(body, /\bbutton\(/, 'Road to Legendary must never emit an action button');
+  assert.doesNotMatch(body, /data-action=/, 'Road to Legendary must not submit an action directly');
 });
 
 test('daily mission completion and bonus payment are distinct authoritative states', () => {
