@@ -71,13 +71,34 @@ for (const path of ['manual', 'care', 'cooldown', 'action']) for (const target o
   });
 }
 
-test('remaining on Missions keeps its lightweight projection without a full read', async () => {
+test('remaining on Missions recovers full roadmap data after a partial refresh', async () => {
   const f = clientContext(); f.ctx.state = partial();
   const read = f.ctx.syncState();
   f.requests[0].resolve({ state: partial() }); await read; await f.tick(0);
-  assert.equal(f.requests.length, 1);
+  assert.match(f.ctx.screen.innerHTML, /LOADING/);
+  assert.equal(f.requests.length, 2);
+  assert.ok(f.requests.every(request => request.path === '/telegram-pets/app/state' && request.body.mode === undefined));
+  const hydration = f.ctx.fullStateHydrationPromise;
+  f.requests[1].resolve({ state: full() }); await hydration;
   assert.equal(f.timers.size, 0);
   assert.match(f.ctx.screen.innerHTML, /READY/);
+});
+
+test('a Missions fallback keeps Contract actions usable and Refresh restores the roadmap', async () => {
+  const f = clientContext();
+  f.ctx.setStateSnapshot(partial(), f.ctx.beginStateRequest(), { missionsFallback: true });
+  const action = f.ctx.runAction('contract_start', {});
+  assert.equal(f.requests[0].body.state_mode, 'missions');
+  f.requests[0].resolve({ state: partial(), result: { accepted: true } }); await action;
+  assert.equal(f.ctx.stateNeedsScreenHydration(f.ctx.state, 'missions'), false);
+  assert.equal(f.ctx.stateNeedsScreenHydration(f.ctx.state, 'explore'), true);
+  assert.equal(f.requests.length, 1);
+  const refresh = f.ctx.syncState();
+  assert.equal(f.requests[1].path, '/telegram-pets/app/state');
+  assert.equal(f.requests[1].body.mode, undefined);
+  f.requests[1].resolve({ state: full() }); await refresh;
+  assert.equal(f.ctx.state.hydration.full, true);
+  assert.equal(f.timers.size, 0);
 });
 
 test('stale partial snapshots cannot replace a full save or schedule hydration', () => {

@@ -914,12 +914,14 @@
   // TEST-EXPORT: actionAvailability:end
 
   // TEST-EXPORT: playOptionsRecovery:start
-  function playOptionsReady() {
-    return Boolean(window.MoonpetPlayOptions && typeof window.MoonpetPlayOptions.runAvailability === 'function');
+  function playOptionsReady(requireRoadmap) {
+    var options = window.MoonpetPlayOptions;
+    return Boolean(options && typeof options.runAvailability === 'function' &&
+      (!requireRoadmap || typeof options.legendaryRoadmap === 'function'));
   }
 
   function reloadPlayOptions() {
-    if (playOptionsReady()) return Promise.resolve();
+    if (playOptionsReady(true)) return Promise.resolve();
     if (playOptionsLoadPromise) return playOptionsLoadPromise;
     playOptionsLoadPromise = new Promise(function (resolve, reject) {
       var original = document.querySelector('script[src*="/js/moonpet-play-options.js"]');
@@ -929,7 +931,7 @@
       function finish(loaded) {
         window.clearTimeout(timeout);
         script.onload = script.onerror = null;
-        if (!loaded || !playOptionsReady()) {
+        if (!loaded || !playOptionsReady(true)) {
           script.remove();
           reject(new Error('RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.'));
         } else resolve();
@@ -1312,6 +1314,7 @@
     recommended: ['✦', 'Your next three routes, ranked from the current save.'],
     'play-now': ['▶', 'Browse more activities, goals and ways to play.'],
     'active-pet': ['◉', 'Your active companion, stage and growth progress.'],
+    'legendary-roadmap': ['✦', 'Track lifetime Legendary progress and jump to the real routes that advance it.'],
     incubation: ['◉', 'Build your egg’s signal for breakout. Identity reveals at Stage 3.'],
     vitals: ['♥', 'Check health, energy, fullness, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
@@ -1497,7 +1500,7 @@
     try {
       // Retry the required asset without replaying a saved gameplay action.
       var dependencyError = null;
-      if (!playOptionsReady()) {
+      if (!playOptionsReady(true)) {
         try { await reloadPlayOptions(); } catch (error) { dependencyError = error; }
       }
       var requestGeneration = beginStateRequest();
@@ -1505,7 +1508,12 @@
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       render();
-      tell(dependencyError ? 'LIVE SAVE REFRESHED. RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.' : 'LIVE SAVE REFRESHED.', dependencyError ? 'danger' : '');
+      var refreshMessage = 'LIVE SAVE REFRESHED.';
+      if (dependencyError) {
+        refreshMessage += playOptionsReady() ? ' ROAD TO LEGENDARY UNAVAILABLE.' : ' RUN CONTROLS UNAVAILABLE.';
+        refreshMessage += ' TAP REFRESH TO RETRY.';
+      }
+      tell(refreshMessage, dependencyError ? 'danger' : '');
       haptic('success');
     } catch (error) {
       tell(error.message || 'REFRESH FAILED', 'danger');
@@ -2257,12 +2265,12 @@
     if (screenKey === 'profile' && hydration.mode === 'full')
       return !(hydration.modules || []).includes('profile');
     if (!stateNeedsFullHydration(snapshot)) return false;
-    return !(hydration.modules || []).includes(screenKey);
+    // Only a deliberately requested Missions fallback may defer the roadmap.
+    return !(hydration.modules || []).includes(screenKey) || (screenKey === 'missions' && !hydration.roadmapDeferred);
   }
 
   function stateRefreshPayload(snapshot, screenKey) {
     if (screenKey === 'profile') return { mode: 'profile' };
-    if (screenKey === 'missions' && stateNeedsFullHydration(snapshot)) return { mode: 'missions' };
     if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
@@ -2313,13 +2321,16 @@
     }
     var source = state;
     var owner = hydrationOwnerKey();
+    var missionsFallback = !background && reason === 'missions' && fullStateHydrationFailures > 0;
     var hydrationPromise = (async function () {
       if (!background) tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
       var requestGeneration = beginStateRequest();
       var warmupController = background ? new AbortController() : null;
       if (warmupController) stateRequestGate.setBackgroundRequest(warmupController);
       try {
-        var data = await post('/telegram-pets/app/state', background ? {} : stateRefreshPayload(state, reason || activeScreen),
+        var payload = background ? {} : stateRefreshPayload(state, reason || activeScreen);
+        if (missionsFallback) payload.mode = 'missions';
+        var data = await post('/telegram-pets/app/state', payload,
           warmupController ? { signal: warmupController.signal, background: true, passive: true } : { passive: !manualRetry });
         if (!stateRequestGate.isCurrent(requestGeneration)) return null;
         if (document.hidden) { seasonRefreshPending = true; return null; }
@@ -2328,7 +2339,9 @@
           scheduleFastActionStateRefresh(0);
           return null;
         }
-        if (!data.state || background && stateNeedsFullHydration(data.state)) throw new Error('MODULE STATE UNAVAILABLE');
+        var hydration = data.state && data.state.hydration;
+        var missionsLoaded = missionsFallback && hydration && hydration.mode === 'missions' && (hydration.modules || []).includes('missions');
+        if (!data.state || ((background || reason === 'missions') && stateNeedsFullHydration(data.state) && !missionsLoaded)) throw new Error('MODULE STATE UNAVAILABLE');
         if (background && !sameHydrationSource(source, data.state)) {
           // Cross-device selection/quarter changes need a fresh core read.
           // Never splice a different pet or period into the displayed Home.
@@ -2336,7 +2349,7 @@
           scheduleFastActionStateRefresh(0);
           return null;
         }
-        if (!setStateSnapshot(data.state, requestGeneration)) return null;
+        if (!setStateSnapshot(data.state, requestGeneration, { missionsFallback: missionsLoaded })) return null;
         fastActionStateDirty = false;
         fullStateHydrationFailures = 0;
         fullStateHydrationRetryDelayMs = 0;
@@ -2379,6 +2392,9 @@
 
   function setStateSnapshot(nextState, requestGeneration, options) {
     if (authenticationFailure || !nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
+    if (options && options.missionsFallback && nextState.hydration && nextState.hydration.mode === 'missions') {
+      nextState = Object.assign({}, nextState, { hydration: Object.assign({}, nextState.hydration, { roadmapDeferred: true }) });
+    }
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     // Missions defers cosmetic reads; retain only the same pet's confirmed Home.
@@ -2996,6 +3012,62 @@
     return panel('SEASON FINALE // ' + board.title, body, 'season-finale');
   }
 
+  // Read-only lifetime guidance. Every button below is a navigation jump;
+  // none submits a gameplay action or awards progression.
+  function renderLegendaryRoadmap() {
+    if (state && state.adopted === false) {
+      return panel('ROAD TO LEGENDARY // LOCKED',
+        '<div class="line muted">Initialise your first Secret Bot to begin lifetime progression.</div>' +
+        '<div class="button-grid one">' + routeButton('OPEN HOME', { screen: 'home', focus: 'entry' },
+          'Check the Arcade XP entry requirement and initialise your Secret Bot when eligible.') + '</div>',
+        'legendary-roadmap');
+    }
+    var roadmap = window.MoonpetPlayOptions && typeof window.MoonpetPlayOptions.legendaryRoadmap === 'function'
+      ? window.MoonpetPlayOptions.legendaryRoadmap(state) : null;
+    if (!roadmap || !roadmap.available) {
+      return panel('ROAD TO LEGENDARY // SYNCING',
+        '<div class="line muted">Saved progression is unavailable. Tap Refresh to try again.</div>',
+        'legendary-roadmap');
+    }
+    var growth = roadmap.growthMarks || {}, crests = roadmap.weeklyCrests || {};
+    var materials = roadmap.materials || {};
+    var next = roadmap.nextEvolution;
+    var missing = next && (next.missing || []).length
+      ? (next.missing || []).map(function (entry) {
+          return '<div class="line ' + (Number(entry.current) >= Number(entry.required) ? 'complete' : 'muted') + '">' +
+            escapeHtml(entry.label || entry.key || 'Requirement') + ' // ' + number(entry.current) + '/' + number(entry.required) +
+            (entry.source ? ' // ' + escapeHtml(entry.source) : '') + '</div>';
+        }).join('')
+      : next && next.ready
+        ? '<div class="line complete">ALL CURRENT EVOLUTION REQUIREMENTS SATISFIED.</div>'
+        : roadmap.finalForm ? '<div class="line complete">FINAL EVOLUTION ONLINE.</div>'
+        : '<div class="line muted">Evolution requirements unavailable. Tap Refresh to try again.</div>';
+    var routes = (roadmap.routes || []).map(function (target) {
+      return routeButton(target.title, target, target.detail);
+    }).join('');
+    var routine = roadmap.status === 'INCUBATING'
+      ? '<div class="line muted">AFTER HATCHING // Daily Journey, Weekly Journey, jobs, timed activities and the official Daily Run.</div>'
+      : '<div class="line muted">Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use timed activities and unlocked jobs, and collect the relics and materials for your next evolution.</div>';
+    var body =
+      '<div class="season-status-grid">' +
+        '<div><span>STAGE</span><strong>' + number(roadmap.stage) + '</strong></div>' +
+        '<div><span>LEVEL</span><strong>' + number(roadmap.level) + '</strong></div>' +
+        '<div><span>PET XP</span><strong>' + number(roadmap.petXp) + '</strong></div>' +
+        '<div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
+        '<div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div>' +
+        '<div><span>UNIQUE RELICS</span><strong>' + (roadmap.relics === null ? 'UNAVAILABLE' : number(roadmap.relics)) + '</strong></div>' +
+        '<div><span>SCRAP METAL</span><strong>' + number(materials.scrapMetal) + '</strong></div>' +
+        '<div><span>EVOLUTION FRAGMENTS</span><strong>' + number(materials.evolutionFragments) + '</strong></div>' +
+      '</div>' +
+      '<div class="line ' + (roadmap.status === 'LEGENDARY COMPLETE' ? 'complete' : 'signal') + '">STATUS // ' + escapeHtml(roadmap.status) + '</div>' +
+      (next ? '<div class="line"><strong>NEXT EVOLUTION // ' + escapeHtml(next.name) + '</strong></div>' : '') +
+      missing + routine +
+      '<div class="button-grid">' + routes + '</div>' +
+      '<div class="line muted">This panel never plays for you. It only reads saved Worker state and opens the real game panels where you choose what to do.</div>';
+    return panel('ROAD TO LEGENDARY', body, 'legendary-roadmap',
+      'Lifetime progress, current evolution blockers and navigation to the real qualifying routes.');
+  }
+
   function renderMissions() {
     var guidance = state.guidance || {};
     var missions = state.guidance && Array.isArray(state.guidance.missions) ? state.guidance.missions.filter(function (mission) { return mission && typeof mission === 'object'; }) : [];
@@ -3031,6 +3103,7 @@
       (summary && summary.available ? renderMissionStatus(summary) : '') +
       renderPlayNow() +
       renderContracts() +
+      renderLegendaryRoadmap() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel('OFFICIAL DAILY OBJECTIVES', dailyObjectiveMarkup(), 'daily-objectives') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
@@ -4413,7 +4486,7 @@
       }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
       else if (activeScreen === 'profile') requestPayload.state_mode = 'profile';
-      else if (activeScreen === 'missions' && stateNeedsFullHydration(stateBeforeAction)) requestPayload.state_mode = 'missions';
+      else if (activeScreen === 'missions' && stateBeforeAction && stateBeforeAction.hydration && stateBeforeAction.hydration.roadmapDeferred) requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
@@ -4495,7 +4568,7 @@
         && stateBeforeAction.pet && responseState.pet && stateBeforeAction.pet.pet_id === responseState.pet.pet_id
         && actionAnimationFamily(action, payload) === 'hatch';
       var hatchDuration = isHatchReveal ? hatchAnimationDuration() : 0;
-      if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal })) return;
+      if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal, missionsFallback: requestPayload.state_mode === 'missions' })) return;
       if (isHatchReveal) {
         animateAction(action, true, hatchDuration + 250, payload);
         animationUntil = Number.POSITIVE_INFINITY;

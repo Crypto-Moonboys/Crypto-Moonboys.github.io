@@ -389,7 +389,9 @@ const eggHome = client.slice(client.indexOf("if (lifecycle.phase === 'egg') {", 
 for (const action of ['energy_drink', 'dance', 'cuddles']) assert.ok(eggHome.includes("'" + action + "'"));
 const html = read('moonpet-game.html');
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
-assert.ok(html.includes('/js/moonpet-play-options.js?v=20261015-home-guidance-v1'), 'the bounty recommendation fix reaches players with a fresh asset URL');
+const roadmapAssetVersion = 'v=20261118-road-to-legendary-v1';
+assert.ok(html.includes('/js/moonpet-play-options.js?' + roadmapAssetVersion));
+assert.ok(html.includes('/js/moonpet-mini-app.js?' + roadmapAssetVersion));
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
@@ -666,13 +668,14 @@ const hydrationSource = client.split('// TEST-EXPORT: coreStateHydration:start')
 const renderSource = 'var authenticationFailure = false;\n' + client.slice(client.indexOf('  function render(options)'), client.indexOf('  // TEST-EXPORT: actionResultFeedback:start'));
 const refreshPayloadContext = vm.createContext({});
 vm.runInContext(hydrationSource, refreshPayloadContext);
-for (const moduleScreen of ['profile', 'economy', 'explore', 'work']) {
+for (const moduleScreen of ['profile', 'economy', 'explore', 'work', 'missions']) {
   const payload = refreshPayloadContext.stateRefreshPayload({ hydration: { full: false, modules: ['home'] } }, moduleScreen);
   assert.equal(payload.mode, moduleScreen === 'profile' ? 'profile' : undefined,
     'Profile refresh requests its house projection; other full-state modules keep the existing projection');
 }
 assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'home').mode, 'core');
-assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'missions').mode, 'missions');
+assert.equal(refreshPayloadContext.stateNeedsScreenHydration(partialMissions, 'missions'), true,
+  'a Missions-only snapshot still lacks roadmap data');
 for (const moduleScreen of ['missions', 'profile']) {
   const calls = [], timers = [];
   let failModule = true;
@@ -700,7 +703,10 @@ for (const moduleScreen of ['missions', 'profile']) {
     escapeHtml: value => String(value),
     async post(path, payload) {
       calls.push({ path, payload });
-      if (failModule) throw Error('mini_app_state_failed');
+      if (failModule) {
+        if (moduleScreen === 'missions' && !payload.mode) return { state: partialMissions };
+        throw Error('mini_app_state_failed');
+      }
       return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' },
         hydration: { mode: 'full', full: true, modules: ['home', moduleScreen] } } };
     },

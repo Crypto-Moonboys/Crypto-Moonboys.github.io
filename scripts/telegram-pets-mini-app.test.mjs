@@ -181,13 +181,14 @@ function extractModuleSource() {
   return client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
 }
 await moduleRuntime.hydrateFullState('missions');
-assert.deepEqual(moduleRuntime.requests, [{ mode: 'missions' }], 'Missions requests only its own projection');
+assert.deepEqual(moduleRuntime.requests, [{}], 'Missions requests full roadmap data from core Home');
 assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'missions'), false);
-assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'explore'), true);
-assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'missions'), { mode: 'missions' });
-assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'home'), { mode: 'core' });
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'explore'), false);
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'missions'), {});
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'home'), {});
 await moduleRuntime.hydrateFullState('missions');
-assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions does not fetch the full game');
+assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions reuses the full state');
+moduleRuntime.reset();
 moduleRuntime.screen('explore');
 await moduleRuntime.hydrateFullState('explore');
 assert.deepEqual(moduleRuntime.requests[1], {}, 'Explore still requests complete authority after Missions');
@@ -1629,7 +1630,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261013-profile-rooms-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261031-cooldown-pr4-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-road-to-legendary-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1936,7 +1937,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 4, 'Membership is verified before the three read-only state attempts');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261031-cooldown-pr4-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-road-to-legendary-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
