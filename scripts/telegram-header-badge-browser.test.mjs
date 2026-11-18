@@ -97,7 +97,12 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
 
       // 1. Guests see My Moonboy's central login and account controls.
       await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
-      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForFunction(async () => {
+        const identity = window.MOONBOYS_IDENTITY;
+        if (!identity) return false;
+        await identity.ready;
+        return identity.getIdentityTier() === 'guest';
+      }, undefined, { timeout: 10000 });
       await expectBadge(page, 'Log in with Telegram');
       await badge(page).screenshot({ path: path.join(screenshots, name + '-guest.png') });
       await page.locator('#site-header').screenshot({ path: path.join(screenshots, name + '-header.png') });
