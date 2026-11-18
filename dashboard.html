@@ -84,6 +84,9 @@
     }
     .dash-section-note .badge { margin-right: 6px; }
 
+    #dash-page-directory summary { cursor: pointer; }
+    #dash-page-links ul { max-height: 24rem; overflow-y: auto; }
+
     /* ── Tables ──────────────────────────────────────────────────────────── */
     .dash-table {
       width: 100%;
@@ -184,8 +187,7 @@
         <div class="swarmsy-kicker wiki-alive-kicker">SYSTEM HUB / EDITORIAL INTELLIGENCE</div>
         <h1 id="dashboard-title" class="swarmsy-title wiki-living-title">TRACK<br><span>WIKI SIGNAL</span><br>HEALTH</h1>
         <p class="swarmsy-lead">
-          Real-time metrics for ecosystem health, content gaps, authority distribution, and strategic growth priorities.
-          All data is derived from local metadata with no external API calls.
+          Browse every published page below. The editorial reports track pages in the search index.
         </p>
       </div>
     </section>
@@ -198,7 +200,11 @@
       <section class="dash-section" aria-labelledby="blog-library-heading">
         <h2 class="dash-section-heading" id="blog-library-heading">Stories and information library</h2>
         <div id="dash-blog-editions" aria-live="polite"><p>Loading reading-library coverage…</p></div>
-        <p><a href="/wiki/graffpunks-reading-library.html">Read the library</a> · <a href="/search.html#search-categories-title">Browse categories</a> · <a href="/graph.html?mode=hero">Explore the graph</a></p>
+        <p><a href="/wiki/graffpunks-reading-library.html">Read the library</a> · <a href="/search.html#search-categories-title">Browse categories</a> · <a href="/graph.html?mode=full">Explore the full graph</a></p>
+        <details id="dash-page-directory">
+          <summary>Browse all published pages</summary>
+          <div id="dash-page-links" aria-live="polite"></div>
+        </details>
       </section>
 
       <!-- Cluster Health -->

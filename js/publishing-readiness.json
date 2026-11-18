@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T12:27:34.504Z",
+  "generated_at": "2026-11-18T20:33:41.463Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
@@ -4666,7 +4666,7 @@
       "url": "/wiki/crypto-moonboy-pets.html",
       "readable_title": "Crypto Moonboy Pets",
       "readiness_score": 43,
-      "summary_quality": 81,
+      "summary_quality": 82,
       "authority_score": 29,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -7858,6 +7858,21 @@
       }
     },
     {
+      "url": "/categories/tools.html",
+      "readable_title": "Tools &amp; Platforms",
+      "readiness_score": 21,
+      "summary_quality": 36,
+      "authority_score": 13,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/gkniftyheads-incubator.html",
       "readable_title": "GKniftyHEADS Community | Crypto Moonboys",
       "readiness_score": 20,
@@ -7968,21 +7983,6 @@
       "readiness_score": 19,
       "summary_quality": 31,
       "authority_score": 12,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/categories/tools.html",
-      "readable_title": "Tools &amp; Platforms",
-      "readiness_score": 18,
-      "summary_quality": 28,
-      "authority_score": 10,
       "trust_score": 32,
       "narrative_strength": 0,
       "platform_readiness": {

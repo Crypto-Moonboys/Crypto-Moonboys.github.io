@@ -9,9 +9,7 @@
   'use strict';
 
   // ── Configuration ────────────────────────────────────────────────────────
-  const GRAPH_DATA_URL = window.innerWidth < 768
-    ? '/js/entity-graph-lite.json'
-    : '/js/graph-data.json';
+  const GRAPH_DATA_URL = '/js/graph-data.json';
 
   const MODE_HERO = 'hero';
   const MODE_FULL = 'full';
@@ -127,7 +125,6 @@
   let isPanning = false;
   let panStartX = 0;
   let panStartY = 0;
-  let filterCategory = 'all';
   let canvas;
   let ctx;
   let infoPanel;
@@ -183,8 +180,8 @@
 
     // UI controls
     if (resetBtn) resetBtn.addEventListener('click', resetView);
-    if (filterSelect) filterSelect.addEventListener('change', onFilterChange);
-    if (searchBox) searchBox.addEventListener('input', onSearch);
+    if (filterSelect) filterSelect.addEventListener('change', applyFilters);
+    if (searchBox) searchBox.addEventListener('input', applyFilters);
     if (modeHeroBtn) modeHeroBtn.addEventListener('click', () => setMode(MODE_HERO, { pushHistory: true, syncUrl: true }));
     if (modeFullBtn) modeFullBtn.addEventListener('click', () => setMode(MODE_FULL, { pushHistory: true, syncUrl: true }));
 
@@ -332,12 +329,15 @@
   // ── Full mode loading ────────────────────────────────────────────────────
   function activateFullMode(generation) {
     setStatus('Loading graph data…');
+    canvas.parentElement.classList.remove('is-ready');
+    if (filterSelect) filterSelect.value = 'all';
+    if (searchBox) searchBox.value = '';
+    nodePositions = [];
+    edgeList = [];
+    if (infoPanel) infoPanel.textContent = 'Choose a node to see its details.';
 
     if (fullGraphLoaded && graphData) {
       buildGraph(graphData.nodes, graphData.edges);
-      if (filterSelect) filterSelect.value = 'all';
-      if (searchBox) searchBox.value = '';
-      filterCategory = 'all';
       runLayout(generation);
       return;
     }
@@ -356,9 +356,7 @@
           filterOptionsBuilt = true;
         }
         buildGraph(data.nodes, data.edges);
-        if (filterSelect) filterSelect.value = 'all';
-        if (searchBox) searchBox.value = '';
-        filterCategory = 'all';
+        applyFilters();
         runLayout(generation);
       })
       .catch((err) => {
@@ -383,6 +381,7 @@
     const W = canvas.width;
     const H = canvas.height;
 
+    const maxRank = Math.max(1, ...nodes.map(node => node.rank_score || 0));
     nodePositions = nodes.map((node, i) => {
       const angle = (2 * Math.PI * i) / Math.max(nodes.length, 1);
       const r = Math.min(W, H) * 0.38;
@@ -395,7 +394,7 @@
         vx: 0,
         vy: 0,
         node,
-        radius: nodeRadius(node),
+        radius: nodeRadius(node, maxRank),
         color: nodeColor(node),
         visible: true,
       };
@@ -410,10 +409,7 @@
     }
   }
 
-  function nodeRadius(node) {
-    const max = graphData
-      ? Math.max(...graphData.nodes.map((n) => n.rank_score || 0)) || 1
-      : 1000;
+  function nodeRadius(node, max) {
     const ratio = (node.rank_score || 0) / max;
     return NODE_MIN_RADIUS + ratio * (NODE_MAX_RADIUS - NODE_MIN_RADIUS);
   }
@@ -428,7 +424,7 @@
     layoutDone = false;
     if (animFrame) cancelAnimationFrame(animFrame);
     let step = 0;
-    const iterationsPerFrame = 24;
+    const frameBudgetMs = 8;
     setStatus('Computing layout… 0%');
 
     function tick() {
@@ -436,11 +432,11 @@
         return;
       }
 
-      const end = Math.min(step + iterationsPerFrame, ITERATIONS);
-      for (; step < end; step += 1) {
-        const cool = 1 - step / ITERATIONS;
-        simulateStep(cool);
-      }
+      const deadline = performance.now() + frameBudgetMs;
+      do {
+        simulateStep(1 - step / ITERATIONS);
+        step += 1;
+      } while (step < ITERATIONS && performance.now() < deadline);
 
       const progress = Math.round((step / ITERATIONS) * 100);
       setStatus(`Computing layout… ${progress}%`);
@@ -842,14 +838,13 @@
   function showInfo(node) {
     if (!infoPanel || !node) return;
     const neighbours = getNeighbours(node);
-    const title = shortTitle(node.title || node.id || 'Entity');
     const cat = node.category || 'unknown';
     const colour = CATEGORY_COLORS[String(cat).toLowerCase()] || CATEGORY_COLORS.unknown;
 
     infoPanel.innerHTML = `
       <div class="ginfo-title">
         <span class="ginfo-dot" style="background:${colour}"></span>
-        <a href="${node.url || '#'}">${title}</a>
+        <a class="ginfo-page-title" href="${node.url || '#'}"></a>
       </div>
       <div class="ginfo-meta">
         <span class="ginfo-cat">${cat}</span>
@@ -857,8 +852,9 @@
         <span class="ginfo-auth">Authority: ${node.authority_score ?? '—'}</span>
       </div>
       <div class="ginfo-connections">${neighbours.size} connection${neighbours.size !== 1 ? 's' : ''}</div>
-      <a class="ginfo-link btn-small" href="${node.url || '#'}">Open article →</a>
+      <a class="ginfo-link btn-small" href="${node.url || '#'}">Open page →</a>
     `;
+    infoPanel.querySelector('.ginfo-page-title').textContent = node.title || node.id;
   }
 
   // ── Controls ─────────────────────────────────────────────────────────────
@@ -869,38 +865,23 @@
     draw();
   }
 
-  function onFilterChange(e) {
+  function applyFilters() {
     if (currentMode !== MODE_FULL) return;
-    filterCategory = e.target.value || 'all';
-    for (const p of nodePositions) {
-      p.visible = (filterCategory === 'all') || ((p.node.category || 'unknown').toLowerCase() === filterCategory);
+    const category = filterSelect?.value || 'all';
+    const query = searchBox?.value.trim().toLowerCase() || '';
+    for (const entry of nodePositions) {
+      const node = entry.node;
+      const matchesCategory = category === 'all' || (node.category || 'unknown').toLowerCase() === category;
+      entry.visible = matchesCategory && (node.title.toLowerCase().includes(query) || node.url.toLowerCase().includes(query));
     }
-    fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
-    draw();
-  }
-
-  function onSearch(e) {
-    if (currentMode !== MODE_FULL) return;
-    const q = e.target.value.trim().toLowerCase();
-    if (!q) {
-      for (const p of nodePositions) p.visible = true;
-      hoveredNode = null;
-      fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
-      draw();
-      return;
-    }
-
-    for (const p of nodePositions) {
-      p.visible = shortTitle(p.node.title).toLowerCase().includes(q);
-    }
-
-    const match = nodePositions.find((p) => p.visible);
-    if (match) {
-      hoveredNode = match.node;
-      showInfo(match.node);
-    }
-
-    fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
+    const match = query && (nodePositions.find(p => p.visible && p.node.url.toLowerCase() === query) ||
+      nodePositions.find(p => p.visible && p.node.title.toLowerCase() === query) ||
+      nodePositions.find(p => p.visible));
+    selectedNode = null;
+    hoveredNode = match ? match.node : null;
+    if (match) showInfo(match.node);
+    else if (infoPanel) infoPanel.textContent = query ? 'No matching pages.' : 'Choose a node to see its details.';
+    if (layoutDone) fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
     draw();
   }
 

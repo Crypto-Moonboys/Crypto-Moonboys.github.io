@@ -1,7 +1,13 @@
 {
-  "generated_at": "2026-11-16T12:27:16.343Z",
-  "verified_at": "2026-11-16T12:27:16.343Z",
+  "generated_at": "2026-11-18T20:32:10.032Z",
+  "verified_at": "2026-11-18T20:32:10.032Z",
   "nodes": [
+    {
+      "id": "/",
+      "url": "/",
+      "title": "Crypto Moonboys | The World Is Your Canvas",
+      "category": "site"
+    },
     {
       "id": "/about.html",
       "title": "About Crypto Moonboys | Creator Identity Movement",
@@ -11,32 +17,194 @@
       "authority_score": 10
     },
     {
+      "id": "/about/graffiti-kings.html",
+      "url": "/about/graffiti-kings.html",
+      "title": "👑 The Graffiti Kings — THE GKniftyHEADS — Crypto Moonboys Wiki",
+      "category": "about"
+    },
+    {
+      "id": "/about/graffpunks-radio.html",
+      "url": "/about/graffpunks-radio.html",
+      "title": "📻 GraffPUNKS Network Radio ⚡️ — Crypto Moonboys Wiki",
+      "category": "about"
+    },
+    {
+      "id": "/about/hodl-warriors.html",
+      "url": "/about/hodl-warriors.html",
+      "title": "HODL Warriors | Qualifying 1/1 Holder Role",
+      "category": "about"
+    },
+    {
+      "id": "/about/hodl-wars-universe.html",
+      "url": "/about/hodl-wars-universe.html",
+      "title": "🏛️ The HODL Wars Universe — Crypto Moonboys Wiki",
+      "category": "about"
+    },
+    {
+      "id": "/about/join-community.html",
+      "url": "/about/join-community.html",
+      "title": "Join the Community | Two Routes into Crypto Moonboys",
+      "category": "about"
+    },
+    {
+      "id": "/about/multi-chain-multiverse.html",
+      "url": "/about/multi-chain-multiverse.html",
+      "title": "🌐 The Multi-Chain Multi-Verse ⚡️ — Crypto Moonboys Wiki",
+      "category": "about"
+    },
+    {
+      "id": "/about/our-mission.html",
+      "url": "/about/our-mission.html",
+      "title": "Our Mission | Crypto Moonboys",
+      "category": "about"
+    },
+    {
+      "id": "/about/rackin-sats.html",
+      "url": "/about/rackin-sats.html",
+      "title": "₿ The House of #RackinSATS ⚡️ — Crypto Moonboys Wiki",
+      "category": "about"
+    },
+    {
+      "id": "/about/what-is-crypto-moonboys.html",
+      "url": "/about/what-is-crypto-moonboys.html",
+      "title": "What Is Crypto Moonboys? | Creator Umbrella and Public Knowledge Layer",
+      "category": "about"
+    },
+    {
+      "id": "/block-topia.html",
+      "url": "/block-topia.html",
+      "title": "⚙️ Block Topia Intelligence — Crypto Moonboys",
+      "category": "site"
+    },
+    {
+      "id": "/categories/activism-counter-culture.html",
+      "url": "/categories/activism-counter-culture.html",
+      "title": "Activism & Counter-Culture — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/art-creativity.html",
+      "url": "/categories/art-creativity.html",
+      "title": "Art & Creativity — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/community-people.html",
+      "url": "/categories/community-people.html",
+      "title": "Community & People — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/concepts.html",
+      "url": "/categories/concepts.html",
+      "title": "Concepts — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/cryptocurrencies.html",
+      "url": "/categories/cryptocurrencies.html",
+      "title": "Cryptocurrencies — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/designer-toys.html",
+      "url": "/categories/designer-toys.html",
+      "title": "Crypto Designer Toys — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/gaming.html",
+      "url": "/categories/gaming.html",
+      "title": "Gaming — Crypto Moonboys",
+      "category": "categories"
+    },
+    {
       "id": "/categories/gkniftyheads.html",
       "title": "GKniftyHEADS",
       "url": "/categories/gkniftyheads.html",
-      "category": "characters",
+      "category": "categories",
       "rank_score": 182,
       "authority_score": 20
+    },
+    {
+      "id": "/categories/graffiti-street-art.html",
+      "url": "/categories/graffiti-street-art.html",
+      "title": "Graffiti & Street Art — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/guerilla-marketing.html",
+      "url": "/categories/guerilla-marketing.html",
+      "title": "Guerilla Marketing — Crypto Moonboys Wiki",
+      "category": "categories"
     },
     {
       "id": "/categories/index.html",
       "title": "All Categories — The Crypto Moonboys GK Wiki ⚡️⚡️⚡️",
       "url": "/categories/index.html",
-      "category": "characters",
-      "rank_score": 131,
+      "category": "categories",
+      "rank_score": 132,
       "authority_score": 4
+    },
+    {
+      "id": "/categories/lore.html",
+      "url": "/categories/lore.html",
+      "title": "Lore — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/media-publishing.html",
+      "url": "/categories/media-publishing.html",
+      "title": "Media & Publishing — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/music.html",
+      "url": "/categories/music.html",
+      "title": "Music — Crypto Moonboys",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/nfts-digital-art.html",
+      "url": "/categories/nfts-digital-art.html",
+      "title": "NFTs & Digital Art — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/nfts.html",
+      "url": "/categories/nfts.html",
+      "title": "NFTs - Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/punk-culture.html",
+      "url": "/categories/punk-culture.html",
+      "title": "Punk Culture — Crypto Moonboys Wiki",
+      "category": "categories"
+    },
+    {
+      "id": "/categories/technology.html",
+      "url": "/categories/technology.html",
+      "title": "Technology — Crypto Moonboys Wiki",
+      "category": "categories"
     },
     {
       "id": "/categories/tools.html",
-      "title": "Tools &amp; Platforms",
+      "title": "Tools & Platforms",
       "url": "/categories/tools.html",
-      "category": "factions",
-      "rank_score": 102,
-      "authority_score": 4
+      "category": "categories",
+      "rank_score": 132,
+      "authority_score": 12
+    },
+    {
+      "id": "/categories/wax-nfts.html",
+      "url": "/categories/wax-nfts.html",
+      "title": "WAX NFTs - Crypto Moonboys Wiki",
+      "category": "categories"
     },
     {
       "id": "/community.html",
-      "title": "Battle Chamber | Factions &amp; Missions | Crypto Moonboys",
+      "title": "Battle Chamber | Factions & Missions | Crypto Moonboys",
       "url": "/community.html",
       "category": "factions",
       "rank_score": 132,
@@ -153,6 +321,12 @@
       "category": "factions",
       "rank_score": 115,
       "authority_score": 4
+    },
+    {
+      "id": "/search.html",
+      "url": "/search.html",
+      "title": "Search / All Articles — Crypto Moonboys Wiki",
+      "category": "site"
     },
     {
       "id": "/swarmsy.html",
@@ -1364,7 +1538,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
-      "title": "🤘 Alessandro &quot;Anonymity Advocate&quot; Amato 👑",
+      "title": "🤘 Alessandro \"Anonymity Advocate\" Amato 👑",
       "url": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
       "category": "nfts-digital-art",
       "rank_score": 231,
@@ -1372,7 +1546,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
-      "title": "🤘 Alessandro &quot;Satoshi Samurai&quot; Ferrari 👑",
+      "title": "🤘 Alessandro \"Satoshi Samurai\" Ferrari 👑",
       "url": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
       "category": "nfts-digital-art",
       "rank_score": 231,
@@ -1380,7 +1554,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
-      "title": "🤘 Alessandro &quot;Token Titan&quot; Marini 👑",
+      "title": "🤘 Alessandro \"Token Titan\" Marini 👑",
       "url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "category": "nfts-digital-art",
       "rank_score": 231,
@@ -1396,7 +1570,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "title": "🤘 Andrea &quot;Blockchain Buccaneer&quot; Moretti 👑",
+      "title": "🤘 Andrea \"Blockchain Buccaneer\" Moretti 👑",
       "url": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "category": "nfts-digital-art",
       "rank_score": 193,
@@ -1404,7 +1578,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
-      "title": "🤘 Antonio &quot;Ether Emperor&quot; Costa 👑",
+      "title": "🤘 Antonio \"Ether Emperor\" Costa 👑",
       "url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
       "category": "nfts-digital-art",
       "rank_score": 231,
@@ -1604,7 +1778,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
-      "title": "👑 Carmine &quot;The Conductor&quot; Cimino⚡️⚡️⚡️",
+      "title": "👑 Carmine \"The Conductor\" Cimino⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
       "category": "nfts-digital-art",
       "rank_score": 187,
@@ -1716,7 +1890,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
-      "title": "🤘 Davide &quot;Altcoin Alchemist&quot; Marino 👑",
+      "title": "🤘 Davide \"Altcoin Alchemist\" Marino 👑",
       "url": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
       "category": "nfts-digital-art",
       "rank_score": 217,
@@ -1812,7 +1986,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
-      "title": "🌈 Frankie &quot;The Phoenix&quot; Piccioli ⚡️⚡️⚡️",
+      "title": "🌈 Frankie \"The Phoenix\" Piccioli ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
       "category": "nfts-digital-art",
       "rank_score": 223,
@@ -1844,7 +2018,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
-      "title": "🤘 Giorgio &quot;CryptoChieftain&quot; Bianco 👑",
+      "title": "🤘 Giorgio \"CryptoChieftain\" Bianco 👑",
       "url": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
       "category": "nfts-digital-art",
       "rank_score": 191,
@@ -1852,7 +2026,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
-      "title": "🤘 Giovanni &quot;CryptoCartel&quot; Ricci 👑",
+      "title": "🤘 Giovanni \"CryptoCartel\" Ricci 👑",
       "url": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
       "category": "nfts-digital-art",
       "rank_score": 195,
@@ -1860,7 +2034,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
-      "title": "🤘 Giovanni &quot;Gas Guzzler&quot; Giordano 👑",
+      "title": "🤘 Giovanni \"Gas Guzzler\" Giordano 👑",
       "url": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
       "category": "nfts-digital-art",
       "rank_score": 211,
@@ -1868,7 +2042,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
-      "title": "🤘 Giulia &quot;Satoshi Sorceress&quot; Espositooo 👑",
+      "title": "🤘 Giulia \"Satoshi Sorceress\" Espositooo 👑",
       "url": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
       "category": "nfts-digital-art",
       "rank_score": 203,
@@ -1900,7 +2074,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
-      "title": "💋 Joey &quot;The Juggernaut&quot; Jablonski ⚡️⚡️⚡️",
+      "title": "💋 Joey \"The Juggernaut\" Jablonski ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
       "category": "nfts-digital-art",
       "rank_score": 191,
@@ -1908,7 +2082,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
-      "title": "👉 Joey &quot;The Oracle&quot; Olivieri ⚡️⚡️⚡️",
+      "title": "👉 Joey \"The Oracle\" Olivieri ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
       "category": "nfts-digital-art",
       "rank_score": 205,
@@ -1916,7 +2090,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
-      "title": "🌈 Johnny &quot;The Jetstream&quot; Jankovic ⚡️⚡️⚡️",
+      "title": "🌈 Johnny \"The Jetstream\" Jankovic ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
       "category": "nfts-digital-art",
       "rank_score": 217,
@@ -1924,7 +2098,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
-      "title": "⚡️⚡️⚡️ Lotus Luminary &quot;CHARLIE BUSTER&quot; Lancer 🤖",
+      "title": "⚡️⚡️⚡️ Lotus Luminary \"CHARLIE BUSTER\" Lancer 🤖",
       "url": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
       "category": "nfts-digital-art",
       "rank_score": 213,
@@ -1932,7 +2106,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
-      "title": "👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️",
+      "title": "👉 Louie \"HAY YOU GUYS\" Lupo ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
       "category": "nfts-digital-art",
       "rank_score": 233,
@@ -1940,7 +2114,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
-      "title": "🤘 Luca &quot;Altcoin Assassin&quot; Bianchi 👑",
+      "title": "🤘 Luca \"Altcoin Assassin\" Bianchi 👑",
       "url": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
       "category": "nfts-digital-art",
       "rank_score": 193,
@@ -1948,7 +2122,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
-      "title": "🤘 Marco &quot;Coin Conqueror&quot; Moretti 👑",
+      "title": "🤘 Marco \"Coin Conqueror\" Moretti 👑",
       "url": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
       "category": "nfts-digital-art",
       "rank_score": 197,
@@ -1956,7 +2130,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
-      "title": "🤘 Marco &quot;Crypto Maestro&quot; Rossi 👑",
+      "title": "🤘 Marco \"Crypto Maestro\" Rossi 👑",
       "url": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
       "category": "nfts-digital-art",
       "rank_score": 199,
@@ -1964,7 +2138,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
-      "title": "🍄 Marco &quot;The Maestro&quot; Mancini ⚡️⚡️⚡️",
+      "title": "🍄 Marco \"The Maestro\" Mancini ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
       "category": "nfts-digital-art",
       "rank_score": 223,
@@ -1980,7 +2154,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
-      "title": "🤘 Martina &quot;Cryptocurrency Crusader&quot; Lombardi 👑",
+      "title": "🤘 Martina \"Cryptocurrency Crusader\" Lombardi 👑",
       "url": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
       "category": "nfts-digital-art",
       "rank_score": 195,
@@ -1988,7 +2162,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "title": "🤘 Matteo &quot;Bitcoin Bandit&quot; Gallo 👑",
+      "title": "🤘 Matteo \"Bitcoin Bandit\" Gallo 👑",
       "url": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "category": "nfts-digital-art",
       "rank_score": 201,
@@ -1996,7 +2170,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
-      "title": "🤘 Matteo &quot;Cryptocurrency Connoisseur&quot; De Angelis 👑",
+      "title": "🤘 Matteo \"Cryptocurrency Connoisseur\" De Angelis 👑",
       "url": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
       "category": "nfts-digital-art",
       "rank_score": 234,
@@ -2004,7 +2178,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
-      "title": "🤘 Matteo &quot;Token Tactician&quot; Romano 👑",
+      "title": "🤘 Matteo \"Token Tactician\" Romano 👑",
       "url": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
       "category": "nfts-digital-art",
       "rank_score": 213,
@@ -2140,7 +2314,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
-      "title": "👉 Nicky &quot;The Ninja&quot; Napolitano ⚡️⚡️⚡️",
+      "title": "👉 Nicky \"The Ninja\" Napolitano ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
       "category": "nfts-digital-art",
       "rank_score": 191,
@@ -2188,7 +2362,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
-      "title": "🌈 Richie &quot;The Ricochet&quot; Ricci⚡️⚡️⚡️",
+      "title": "🌈 Richie \"The Ricochet\" Ricci⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
       "category": "nfts-digital-art",
       "rank_score": 219,
@@ -2204,7 +2378,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
-      "title": "🌈 Rocco &quot;The Rocket&quot; Radic 👀",
+      "title": "🌈 Rocco \"The Rocket\" Radic 👀",
       "url": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
       "category": "nfts-digital-art",
       "rank_score": 217,
@@ -2300,7 +2474,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
-      "title": "Tommy &quot;The Titan&quot; Tucci ⚡️⚡️⚡️",
+      "title": "Tommy \"The Titan\" Tucci ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
       "category": "nfts-digital-art",
       "rank_score": 193,
@@ -2308,7 +2482,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
-      "title": "Tommy &quot;The Titan&quot; Tucci ⚡️⚡️⚡️",
+      "title": "Tommy \"The Titan\" Tucci ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
       "category": "nfts-digital-art",
       "rank_score": 197,
@@ -2316,7 +2490,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
-      "title": "🐸 Tony &quot;The Technician&quot; Toscano⚡️⚡️⚡️",
+      "title": "🐸 Tony \"The Technician\" Toscano⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
       "category": "nfts-digital-art",
       "rank_score": 209,
@@ -2348,7 +2522,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
-      "title": "🤘 VGiovanni &quot;NFT Ninja&quot; Rossi👑",
+      "title": "🤘 VGiovanni \"NFT Ninja\" Rossi👑",
       "url": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
       "category": "nfts-digital-art",
       "rank_score": 216,
@@ -2356,7 +2530,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
-      "title": "Vin &quot;The Vanguard&quot; Ventura⚡️⚡️⚡️",
+      "title": "Vin \"The Vanguard\" Ventura⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
       "category": "nfts-digital-art",
       "rank_score": 193,
@@ -2364,7 +2538,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
-      "title": "Vin &quot;The Vanguard&quot; Ventura ⚡️⚡️⚡️",
+      "title": "Vin \"The Vanguard\" Ventura ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
       "category": "nfts-digital-art",
       "rank_score": 193,
@@ -2372,7 +2546,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
-      "title": "🤘 Vincenzo &quot;Il Criptografo&quot; Russo 👑",
+      "title": "🤘 Vincenzo \"Il Criptografo\" Russo 👑",
       "url": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
       "category": "nfts-digital-art",
       "rank_score": 193,
@@ -2380,7 +2554,7 @@
     },
     {
       "id": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
-      "title": "🎯 Vinny &quot;The Visionary&quot; Valenti ⚡️⚡️⚡️",
+      "title": "🎯 Vinny \"The Visionary\" Valenti ⚡️⚡️⚡️",
       "url": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
       "category": "nfts-digital-art",
       "rank_score": 217,
@@ -2764,7 +2938,7 @@
     },
     {
       "id": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "title": "Jonny &amp; Laurence Nelson (TAG Records)",
+      "title": "Jonny & Laurence Nelson (TAG Records)",
       "url": "/wiki/jonny-laurence-nelson-tag-records.html",
       "category": "factions",
       "rank_score": 289,
@@ -3268,7 +3442,7 @@
     },
     {
       "id": "/wiki/spraycode-writcode-mechanics.html",
-      "title": "Spraycode &amp; Writcode Mechanics",
+      "title": "Spraycode & Writcode Mechanics",
       "url": "/wiki/spraycode-writcode-mechanics.html",
       "category": "factions",
       "rank_score": 299,
@@ -3679,7 +3853,7 @@
       "title": "The First Witness: The GK Bible",
       "url": "/wiki/the-first-witness.html",
       "category": "core",
-      "rank_score": 437,
+      "rank_score": 443,
       "authority_score": 28
     },
     {
@@ -3876,7 +4050,7 @@
     },
     {
       "id": "/wiki/the-nice-and-easy-bois-the-digital.html",
-      "title": "The NICE &amp; EASY BOIS (The Digital Peacemakers of the Grid) | Crypto Moonboys",
+      "title": "The NICE & EASY BOIS (The Digital Peacemakers of the Grid) | Crypto Moonboys",
       "url": "/wiki/the-nice-and-easy-bois-the-digital.html",
       "category": "core",
       "rank_score": 288,
@@ -3884,7 +4058,7 @@
     },
     {
       "id": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS",
+      "title": "The NICE & EASY BOIS",
       "url": "/wiki/the-nice-easy-bois.html",
       "category": "factions",
       "rank_score": 331,
@@ -4060,7 +4234,7 @@
     },
     {
       "id": "/wiki/the-whisper-codex-tales-of-the-darkside.html",
-      "title": "THE WHISPER CODEX: TALES OF THE DARKSIDE &amp; THE CONFORMAL PLAN | Crypto Moonboys",
+      "title": "THE WHISPER CODEX: TALES OF THE DARKSIDE & THE CONFORMAL PLAN | Crypto Moonboys",
       "url": "/wiki/the-whisper-codex-tales-of-the-darkside.html",
       "category": "core",
       "rank_score": 291,
@@ -4268,6 +4442,5406 @@
     }
   ],
   "edges": [
+    {
+      "source": "/",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/gkniftyheads-incubator.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/join-us-on-the-wax-blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/moonboy-builder.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/search.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/wiki/charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/wiki/darren-cullen.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/",
+      "target": "/wiki/waxp.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about.html",
+      "target": "/community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/about/graffpunks-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/about/what-is-crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/wiki/hodl-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/wiki/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffiti-kings.html",
+      "target": "/wiki/web3.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/about/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/wiki/defi.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/wiki/hodl-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/wiki/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/graffpunks-radio.html",
+      "target": "/wiki/web3.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-warriors.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-warriors.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/categories/lore.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/bear-market-siege.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/diamond-hands.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/fomo-plague.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/hodl-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/hodl-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/moon-mission.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/ngmi-chronicles.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/paper-hands.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/rug-pull-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/satoshi-scroll.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/the-great-dip.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/wagmi-prophecy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/hodl-wars-universe.html",
+      "target": "/wiki/whale-lords.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/join-community.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/join-community.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/join-community.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/join-community.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/about/rackin-sats.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/bitcoin.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/defi.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/ethereum.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/solana.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/multi-chain-multiverse.html",
+      "target": "/wiki/web3.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/our-mission.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/our-mission.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/our-mission.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/our-mission.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/about.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/wiki/bitcoin.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/wiki/blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/wiki/diamond-hands.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/wiki/exchanges.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/wiki/hodl-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/rackin-sats.html",
+      "target": "/wiki/wallets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/what-is-crypto-moonboys.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/about/what-is-crypto-moonboys.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/block-topia.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/block-topia.html",
+      "target": "/community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/canvas-clash.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/first-witness-censorship-offence-public-marks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/street-swarm-the-offline-first-tactical.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/the-case-for-digital-id-and-cbdcs-security-and-expansion.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/activism-counter-culture.html",
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/graffiti-kings-creative-guide.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/moonboy-builder.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/block-topia.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/bone-idol-ink.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/create-your-moonboy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/gkniftyheads-present-world-war-3-the-blockchain-uprising-this-isnt-a-drill.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/graffiti-queens-in-decentraland.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/head-tags.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/it-was-about-becoming-something-more.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/phygital-prints.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/playable-nft-murals.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/sneakar.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/the-gkniftyheads-manifesto-this-is-your-early-warning.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/art-creativity.html",
+      "target": "/wiki/yo-listen-up-this-is-just-phase-one.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/about/join-community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/2025-metaverse-launch-party.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/bone-idol-ink.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/darren-cullen.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/graffiti-queens-in-decentraland.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/ian-harrison.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/jillian-godsil.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/maidstone-base.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/sneakar.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/street-artist-buster-aka-charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/community-people.html",
+      "target": "/wiki/trevor-fung.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/burn-to-earn.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/crypto-moonboys-is-deliberately-a.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/crypto-moonboys-universe-comprehensive.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/defi.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/ethereum-ecosystem.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/graffiti-themed-substack-publication.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/head-tags.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/phygital-prints.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/sacred-chain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/seeding-rights.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/spraycode-writcode-mechanics.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/staking.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/tokenomics.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/web3.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/concepts.html",
+      "target": "/wiki/why-this-matters-now-ai-is-restructuring.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/589-xrpl.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/666-xrpl.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/alcor-exchange.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/alien-worlds-tlm.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/altcoins.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/bear-xrpl.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/bitcoin.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/defi-mining.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/ethereum-ecosystem.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/ethereum.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/exyboy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/fgl-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/gk.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/lfgk-token-is-a-100-circulating-non.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/lfgk.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/memecoins.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/nbg-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/nbg.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/nbgx-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/pixel-journey.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/pmsl-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/pmsl.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/punk-is-the-utility-token-behind.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/punk-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/rust2riches.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/solana.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/stake-is-a-community-powered-web3.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/staking.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/swap-nefty.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/tacoswap.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/tagzcoin.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/the-cleanupcentr.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/wax-blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/wax-dexs-defi.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/wax-pepe.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/waxp-exchange.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/waxp.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/wuffi.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/cryptocurrencies.html",
+      "target": "/wiki/xrp-ledger.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/wiki/bone-idol-ink.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/wiki/collect-free-nft-crypto-coin-phigital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/wiki/crypto-moonboys-is-deliberately-a.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/designer-toys.html",
+      "target": "/wiki/delicious-again-pete.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/how-to-play-crypto-moonboy-pets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/alien-worlds-tlm.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/battlemech-blast.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/defi-mining.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/fgl-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/gang-signs-card-game.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/gang-signs.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/hard-fork-games.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/hodl-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/in-the-year-3008-truth-became-encrypted.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/lorewars-white-paper-the-signal-is.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/metaverse-battles.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/midevilpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/nifty-wizards.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/pixel-journey.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/pixil-mini.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/potential-crypto-moonboys-game-trilogy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/rust2riches.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/storm-struggle.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gaming.html",
+      "target": "/wiki/the-cleanupcentr.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/create-your-moonboy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-binary-blitzer-784277.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-bit-skull-784280.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-bitman-784229.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/hodl-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/gkniftyheads.html",
+      "target": "/wiki/nifty-crowns.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/graffiti-kings-creative-guide.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/canvas-clash.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/croydon-tower-blocks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/darren-cullen.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/genesis-spray.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/graffiti-nexus.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/graffiti-queens-in-decentraland.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/playable-nft-murals.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/graffiti-street-art.html",
+      "target": "/wiki/street-artist-buster-aka-charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/guerilla-marketing.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/guerilla-marketing.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/guerilla-marketing.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/guerilla-marketing.html",
+      "target": "/wiki/graffiti-themed-substack-publication.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/guerilla-marketing.html",
+      "target": "/wiki/street-swarm-the-offline-first-tactical.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/guerilla-marketing.html",
+      "target": "/wiki/yo-listen-up-this-is-just-phase-one.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/activism-counter-culture.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/art-creativity.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/community-people.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/concepts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/cryptocurrencies.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/designer-toys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/gaming.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/graffiti-street-art.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/guerilla-marketing.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/lore.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/media-publishing.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/music.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/nfts-digital-art.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/punk-culture.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/technology.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/tools.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/index.html",
+      "target": "/categories/wax-nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/agent-sam.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/aleema-child-of-the-shard.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/alfie-the-bitcoin-kid-blaze-reading.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/algorithmic-sanitation-inside-the.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/ava-chen.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/bear-market-siege.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/billy-the-goat-kid.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/bit-cap-5000.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/bitcoin-kid-army.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/block-node-defenders.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/block-topia.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/canvas-clash.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/cryptographic-tactical-incident-report.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/diamond-hands.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/dragan-volkov.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/dream-sovereign.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/elder-codex-7.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-addiction-intoxication-compulsion.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-ageing-retirement-elderhood.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-ai-synthetic-minds.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-beauty-luxury-modesty-status.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-birth-naming-coming-of-age.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-bitcoin-witness.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-block-topia-reading.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-8-the-fire.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-calendar-feasts-remembrance.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-censorship-offence-public-marks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-chain-archaeology-forensics.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-charity-mutual-aid-dependence.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-child-of-fire.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-children-first-lessons.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-confession-apology-reconciliation.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-daily-practices-rituals.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-death-grief-remembrance.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-digital-inheritance-after-death.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-disaster-famine-mutual-aid.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-dreams-omens-coincidence.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-dual-use-tools-weapons.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-education-schools-apprenticeship.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-faction-ritual-variations.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-family-children-elders.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-food-hospitality-common-table.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-forty-paths.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-glossary.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-great-concord-2030.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-healing-illness-disability-care.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-heresies-corruptions-abuses.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-hodl-doctrine.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-humour-satire-sacred-mockery.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-intimacy-sexuality-privacy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-justice-mercy-restitution.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-land-water-stewardship.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-language-translation-sacred-words.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-leadership-councils-succession.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-long-transmission.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-marriage-partnership-adoption.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-mediation-witness-circles.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-migration-refuge-exile-borders.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-money-debt-honest-scales.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-music-dance-performance.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-null-erasure.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-oaths-promises-vows.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-parables.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-pride-temptation-false-idols.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-prisons-punishment-return.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-proverbs-street-sayings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-questions-for-the-living.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-sacred-fork.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-sects-schools-schisms.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-silence-solitude-attention.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-songs-chants-responses.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-source-register.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-street-kingdoms-reading.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-triple-fork-chainfire.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-war-defence-peacekeeping.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-work-craft-service.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/first-witness-world-chain-error.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/fomo-plague.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/forkborn-collective.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/forklord-you.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/forksplit.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/frequency-of-the-fallen.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/genesis-kernel.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/genesis-spray-drop.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/genesis-spray.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/gk-factions-to-collect-and-hodl.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/graffiti-nexus.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/graffpunks-ecosystem.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/great-consensus.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/grit.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/grit42.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hard-fork-games.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/harrison-rift.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/head-tags.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hex-tagger-prime.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hodl-warriors-the-calling.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hodl-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hodl-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hodl-x-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/house-of-rackinsats.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/iris-7.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/jodie-zoom-2000.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/journal-entry-jodie-zoom-2000-the-games.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/kael-voss.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/lady-ink.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/loopfiend.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/m1ntr-k1ll.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/metropolis.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/moon-mission.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/moonboy-bible-entry-agent-sam.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/moonboy-bible-entry-denise-aethelgard.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/ngmi-chronicles.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/null-the-prophet.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/paper-hands.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/patchwork.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/pyralith.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/quell.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/rug-pull-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/rune-tag.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/sacred-chain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/samaelexe.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/satorebel.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/satoshi-scroll.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/seeding-rights.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/sister-halcyon.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/six-pillars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/spirit-borns.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/spraycode-writcode-mechanics.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/squeaky-pinks-enforcers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/stikfamwars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/street-kingdoms.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/sylas-the-unbroken.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-28th-century-began-with-godlike.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-allcity-bulls-the-hyper-competitive.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-allcity-bulls.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-artists-awakening-the-call-from.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-aztec-raiders-the-digital-conquerors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-aztec-raiders.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-bally-boys-digital-entrepreneurs.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-bally-boys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-bitcoin-kid-army-the-1-rebels.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-bitcoin-kid-army.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-blockchain-furies-digital-vigilantes.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-blockchain-furies.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-blockstars-digital-celebrities.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-blockstars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-chain-scribes-the-stoic-archivists.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-chronicle-of-the-cipher-lord-a-satoshi-testament.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-chronicles-of-the-whale-lords.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-citadel-of-optimization-a-deep.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-code-alchemists-the-technical.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-code-alchemists.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-crypto-moonboy-bible-the-eternal.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-crypto-moongirls-cosmic-dreamers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-crypto-moongirls.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-crypto-protocol-the-gkniftyheads-chronicle.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-crypto-stoned-boys-digital-philosophers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-crypto-stoned-boys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-ducky-boys-the-digital-fixers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-ducky-boys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-eternal-pulse-the-war-that-forged.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-evm-punks-aggressive-digital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-finance-guild-the-digital-ledger.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-finance-guild.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-first-witness.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-gasless-ghosts-spies-and-assassins.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-gasless-ghosts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-gk-grid-warfare-protocols-a-gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-gk-protocol-the-eastern-hemisphere-is-kool.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-gkniftyheads-the-immortal-architects.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-graffpunks-digital-renegades.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-graffpunks-rise.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-great-dip.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-great-reset-and-the-global-grid.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-hard-fork-rockers-digital-revolutionaries.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-high-hats-the-digital-aristocrats.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-high-hats.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-hodl-warriors-the-protocol-of.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-infiltration-of-block-topia-part.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-information-mercenaries-the-digital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-information-mercenaries.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-master-codex-the-triple-tier.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-moonlords-the-corruptors-the.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-moonlords.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-nice-and-easy-bois-the-digital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-nomad-bears-solitude-in-the-digital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-null-protocol-collapse-of-digital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-og-pixel-saints-warriors-of-light.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-og-pixel-saints.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-princess.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-protocol-of-ascension-why-the.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-rugpull-miners-digital-parasites.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-rugpull-miners.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-sacred-chain-ontology-non-euclidean.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-sacred-expansion-the-great-consensus.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-salvagers-the-digital-logisticians.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-salvagers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-shard-mothers-of-manhattan-the.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-shard-mothers-of-manhattan.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-signal-from-3008.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-squeaky-pinks-the-digital-enforcers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-tuskon-ogs-the-digital-loyalists.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-tuskon-ogs.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-whisper-codex-tales-of-the-darkside.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/the-whitewasher.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/thera-9.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/thorne-the-architect.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/triple-fork-event.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/veyra-nyx.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/wagmi-prophecy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/whale-lords-moonboys-war-arc.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/whale-lords.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/whisper-codex.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/about/graffpunks-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/graffiti-themed-substack-publication.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/ian-harrison.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/jillian-godsil.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/the-crypto-moonboys-wiki-system.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/media-publishing.html",
+      "target": "/wiki/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/about/graffpunks-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/punk-is-the-utility-token-behind.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/punk-token.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/rave-relics.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/music.html",
+      "target": "/wiki/trevor-fung.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/1m-free-nfts-program.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/atomicassets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/atomichub-graffpunks-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/atomichub.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/collect-free-nft-crypto-coin-phigital.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/genesis-spray-drop.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-binary-blitzer-784277.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bit-boss-783395.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bit-skull-784280.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-bitman-784229.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-brick-burner-783282.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-chroma-kid-783237.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-chroma-kid-783247.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-chromatic-crusader-783301.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-cipherella-783408.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-coin-conqueress-783412.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-crypto-charmcaster-783411.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-daring-doodle-783300.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-defi-dame-783400.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-defi-dame-788015.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-deko-904071.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-digital-diva-783394.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-dizzy-drip-783255.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-drift-doodle-783252.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-forever-darren-cullen-776124.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-fume-fury-783298.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-graphite-ghost-783307.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-inked-fury-783258.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-marker-maven-783253.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-pinky-stains-776119.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-myerscoin13-784272.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-paint-patriot-783295.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-rebel-riff-783269.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-satoshi-knight-784264.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-scribe-serpent-783260.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-shadow-streak-783245.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-slickshot-783235.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-stencil-siren-783296.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-stencil-storm-783291.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-tagger-tempest-783263.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-token-temptress-783401.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-tsunami-btc-titan-783760.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-urban-oracle-783306.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-vandal-776147.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-virtual-vixen-783398.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-waxp-banshee-783409.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-waxp-banshee-783410.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-776146.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/graffiti-queens-in-decentraland.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/graffpunks-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/head-tags.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/legacy-over-hype-gk-turned-the-waxp.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/neftyblocks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/nft-blends-portal.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/nfthive.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/nifty-crowns.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/nifty-wizards.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/noballgamess-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/phygital-prints.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/pixel-journey.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/pixil-mini.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/playable-nft-murals.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/sneakar.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/the-cleanupcentr.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/wax-nft-marketplaces.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts-digital-art.html",
+      "target": "/wiki/xrp-kids.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/categories/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/categories/nfts-digital-art.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/categories/wax-nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/atomichub-graffpunks-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-binary-blitzer-784277.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-bit-skull-784280.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-bitman-784229.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/hodl-wars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/nifty-crowns.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/nifty-wizards.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/noballgamess-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/nfts.html",
+      "target": "/wiki/xrp-kids.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/midevilpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/the-evm-punks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/punk-culture.html",
+      "target": "/wiki/the-squeaky-pinks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/atomicassets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/ethereum-ecosystem.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/ethereum.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/massive-lore-discovered-this-changes.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/mega-white-paper-the-gk-brain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/playable-nft-murals.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/street-swarm-the-offline-first-tactical.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/the-crypto-moonboys-wiki-system.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/wax-blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/web3.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/technology.html",
+      "target": "/wiki/xrp-ledger.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/moonboy-builder.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/alcor-exchange.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/atomicassets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/atomichub.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/exchanges.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/neftyblocks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/nfthive.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/swap-nefty.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/tacoswap.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/wallets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/wax-nft-marketplaces.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/tools.html",
+      "target": "/wiki/waxp-exchange.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/categories/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/atomicassets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/atomichub-graffpunks-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-binary-blitzer-784277.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-bit-skull-784280.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-bitman-784229.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/nifty-wizards.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/wax-nfts.html",
+      "target": "/wiki/noballgamess-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/gkniftyheads-incubator.html",
+      "target": "/community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/gkniftyheads-incubator.html",
+      "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/gpt-users.html",
+      "target": "/graffiti-kings-creative-guide.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/gpt-users.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/gpt-users.html",
+      "target": "/wiki/create-your-moonboy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/graffiti-kings-creative-guide.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/graffiti-kings-creative-guide.html",
+      "target": "/wiki/create-your-moonboy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/graffiti-kings-creative-guide.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/graffiti-kings-creative-guide.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/how-to-play-crypto-moonboy-pets.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/how-to-play-crypto-moonboy-pets.html",
+      "target": "/community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/how-to-play-crypto-moonboy-pets.html",
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/how-to-play.html",
+      "target": "/how-to-play-crypto-moonboy-pets.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/hubs.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/hubs.html",
+      "target": "/gkniftyheads-incubator.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/join-us-on-the-wax-blockchain.html",
+      "target": "/gkniftyheads-incubator.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/join-us-on-the-wax-blockchain.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/join-us-on-the-wax-blockchain.html",
+      "target": "/moonboy-builder.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/join-us-on-the-wax-blockchain.html",
+      "target": "/swarmsy.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/crypto-token-page.html",
+      "target": "/og-templates/nft-collection-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/crypto-token-page.html",
+      "target": "/og-templates/nft-template-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/crypto-token-page.html",
+      "target": "/og-templates/wiki-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/nft-collection-page.html",
+      "target": "/og-templates/crypto-token-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/nft-collection-page.html",
+      "target": "/og-templates/nft-template-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/nft-collection-page.html",
+      "target": "/og-templates/wiki-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/nft-template-page.html",
+      "target": "/og-templates/crypto-token-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/nft-template-page.html",
+      "target": "/og-templates/nft-collection-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/nft-template-page.html",
+      "target": "/og-templates/wiki-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/wiki-page.html",
+      "target": "/og-templates/crypto-token-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/wiki-page.html",
+      "target": "/og-templates/nft-collection-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/wiki-page.html",
+      "target": "/og-templates/nft-template-page.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/wiki-page.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/og-templates/wiki-page.html",
+      "target": "/wiki/midevilpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/paths.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/sam.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/activism-counter-culture.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/art-creativity.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/community-people.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/concepts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/cryptocurrencies.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/designer-toys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/gaming.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/graffiti-street-art.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/guerilla-marketing.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/index.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/lore.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/media-publishing.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/music.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/nfts-digital-art.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/punk-culture.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/technology.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/tools.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/categories/wax-nfts.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/join-us-on-the-wax-blockchain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/charlie-buster.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/darren-cullen.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/graffiti-kings.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/graffiti-queens-in-decentraland.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/graffpunks-24-7-radio.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/graffpunks.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
+      "target": "/wiki/waxp.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/swarmsy.html",
+      "target": "/community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/swarmsy.html",
+      "target": "/gpt-users.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/swarmsy.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/timeline.html",
+      "target": "/",
+      "kind": "page-link",
+      "weight": 0.5
+    },
     {
       "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/street-kingdoms.html",

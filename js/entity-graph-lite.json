@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-16T12:27:16.343Z",
-  "verified_at": "2026-11-16T12:27:16.343Z",
+  "generated_at": "2026-11-18T20:32:10.032Z",
+  "verified_at": "2026-11-18T20:32:10.032Z",
   "lite": true,
   "nodes": [
     {
@@ -8,7 +8,7 @@
       "title": "The First Witness: The GK Bible",
       "url": "/wiki/the-first-witness.html",
       "category": "core",
-      "rank_score": 437,
+      "rank_score": 443,
       "authority_score": 28
     },
     {
@@ -301,7 +301,7 @@
     },
     {
       "id": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS",
+      "title": "The NICE & EASY BOIS",
       "url": "/wiki/the-nice-easy-bois.html",
       "category": "factions",
       "rank_score": 331,

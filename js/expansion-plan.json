@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T12:27:32.994Z",
+  "generated_at": "2026-11-18T20:33:40.223Z",
   "summary": {
     "total_actions": 53,
     "strengthen_existing_page": 0,
@@ -100,7 +100,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "2030 Concord",
       "target_url_slug": "2030-concord",
       "reasons": [
@@ -109,7 +109,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -145,7 +145,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "40 GK factions",
       "target_url_slug": "40-gk-factions",
       "reasons": [
@@ -154,7 +154,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -190,7 +190,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "aether-chain",
       "target_url_slug": "aether-chain",
       "reasons": [
@@ -199,7 +199,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -235,7 +235,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "belief system",
       "target_url_slug": "belief-system",
       "reasons": [
@@ -244,7 +244,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -280,7 +280,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "bitcoin provenance",
       "target_url_slug": "bitcoin-provenance",
       "reasons": [
@@ -289,7 +289,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -325,7 +325,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "crypto moonboys bible",
       "target_url_slug": "crypto-moonboys-bible",
       "reasons": [
@@ -334,7 +334,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -370,7 +370,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "Crypto Moonboys lore",
       "target_url_slug": "crypto-moonboys-lore",
       "reasons": [
@@ -379,7 +379,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -415,7 +415,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "ethics",
       "target_url_slug": "ethics",
       "reasons": [
@@ -424,7 +424,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -460,7 +460,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "faith tradition",
       "target_url_slug": "faith-tradition",
       "reasons": [
@@ -469,7 +469,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -505,7 +505,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "first witness bible",
       "target_url_slug": "first-witness-bible",
       "reasons": [
@@ -514,7 +514,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -550,7 +550,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "GK bible",
       "target_url_slug": "gk-bible",
       "reasons": [
@@ -559,7 +559,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -595,7 +595,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "graffiti kings bible",
       "target_url_slug": "graffiti-kings-bible",
       "reasons": [
@@ -604,7 +604,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -640,7 +640,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "Graffiti Kings lore",
       "target_url_slug": "graffiti-kings-lore",
       "reasons": [
@@ -649,7 +649,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -685,7 +685,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "HODL WARS",
       "target_url_slug": "hodl-wars",
       "reasons": [
@@ -694,7 +694,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -730,7 +730,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "moral philosophy",
       "target_url_slug": "moral-philosophy",
       "reasons": [
@@ -739,7 +739,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -775,7 +775,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "no single keeper",
       "target_url_slug": "no-single-keeper",
       "reasons": [
@@ -784,7 +784,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -820,7 +820,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "philosophy",
       "target_url_slug": "philosophy",
       "reasons": [
@@ -829,7 +829,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -865,7 +865,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "religion",
       "target_url_slug": "religion",
       "reasons": [
@@ -874,7 +874,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -910,7 +910,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "religious philosophy",
       "target_url_slug": "religious-philosophy",
       "reasons": [
@@ -919,7 +919,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -955,7 +955,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "sacred chain",
       "target_url_slug": "sacred-chain",
       "reasons": [
@@ -964,7 +964,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1000,7 +1000,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "sacred text",
       "target_url_slug": "sacred-text",
       "reasons": [
@@ -1009,7 +1009,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1045,7 +1045,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "scripture",
       "target_url_slug": "scripture",
       "reasons": [
@@ -1054,7 +1054,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1090,7 +1090,7 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3629,
+      "priority_score": 3630,
       "target_topic": "spirituality",
       "target_url_slug": "spirituality",
       "reasons": [
@@ -1099,7 +1099,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:309",
+        "avg_rank_score:310",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",

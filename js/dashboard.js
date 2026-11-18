@@ -85,8 +85,8 @@
     const container = qs('#dash-summary');
     if (!container) return;
 
-    const totalEntities    = (stats && (stats.totalEntities || stats.entity_count))      || '—';
-    const totalWikiPages   = (stats && (stats.total_wiki_pages || stats.totalArticles || stats.article_count)) || '—';
+    const publishedPages   = stats?.published_pages ?? '—';
+    const indexedWikiPages = stats?.indexed_pages ?? '—';
     const totalArticles    = (stats && stats.total_articles) || '—';
     const nftTemplates     = (stats && stats.nft_template_pages) || 0;
     const totalCategories  = (stats && (stats.totalCategories || stats.category_count))   || '—';
@@ -96,12 +96,12 @@
 
     container.innerHTML = `
       <div class="dash-metric">
-        <span class="dash-metric-value">${totalEntities}</span>
-        <span class="dash-metric-label">Total Entities</span>
+        <span class="dash-metric-value">${publishedPages}</span>
+        <span class="dash-metric-label">Published Pages</span>
       </div>
       <div class="dash-metric">
-        <span class="dash-metric-value">${totalWikiPages}</span>
-        <span class="dash-metric-label">Wiki Pages</span>
+        <span class="dash-metric-value">${indexedWikiPages}</span>
+        <span class="dash-metric-label">Indexed Wiki Pages</span>
       </div>
       <div class="dash-metric">
         <span class="dash-metric-value">${totalArticles}</span>
@@ -870,7 +870,36 @@
   function noData(msg) { return `<p style="color:var(--color-text-muted)">${msg}</p>`; }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
-  function initAll() { init(); }
+  function initAll() {
+    init();
+    const directory = qs('#dash-page-directory');
+    if (!directory) return;
+    const container = qs('#dash-page-links');
+    let requested = false;
+    directory.addEventListener('toggle', async () => {
+      if (!directory.open || requested) return;
+      requested = true;
+      container.textContent = 'Loading pages…';
+      try {
+        const response = await fetch('/js/graph-data.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const { nodes } = await response.json();
+        const list = document.createElement('ul');
+        for (const node of nodes.sort((a, b) => a.title.localeCompare(b.title) || a.url.localeCompare(b.url))) {
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = node.url;
+          link.textContent = node.title;
+          item.appendChild(link);
+          list.appendChild(item);
+        }
+        container.replaceChildren(list);
+      } catch {
+        requested = false;
+        container.textContent = 'Could not load the directory. Close and reopen it to try again.';
+      }
+    });
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);

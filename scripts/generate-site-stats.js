@@ -144,11 +144,11 @@ function countGraphNodes() {
   }
 }
 
-function countSitemapWikiUrls() {
-  if (!fs.existsSync(SITEMAP)) return 0;
+function sitemapCounts() {
+  if (!fs.existsSync(SITEMAP)) return { published: 0, wiki: 0 };
   const xml = fs.readFileSync(SITEMAP, 'utf8');
-  const matches = xml.match(/https:\/\/cryptomoonboys\.com\/wiki\/[^<]+\.html/g) || [];
-  return matches.filter(isWikiUrl).length;
+  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+  return { published: urls.length, wiki: urls.filter(isWikiUrl).length };
 }
 
 function countCategories() {
@@ -178,6 +178,7 @@ function preserveTimestampIfStable(stats) {
       'entity_count',
       'graph_nodes',
       'sitemap_wiki_urls',
+      'published_pages',
       'category_count',
     ];
 
@@ -202,7 +203,7 @@ const indexedArticles = countIndexedArticles(wikiIndexEntries);
 const entityCount = countCanonicalEntities();
 const categoryCount = countCategories();
 const graphNodes = countGraphNodes();
-const sitemapWikiUrls = countSitemapWikiUrls();
+const sitemap = sitemapCounts();
 
 const stats = {
   total_wiki_pages: wikiFileCounts.totalWikiPages,
@@ -212,7 +213,8 @@ const stats = {
   indexed_pages: indexedPages,
   search_index_pages: indexedPages,
   graph_nodes: graphNodes,
-  sitemap_wiki_urls: sitemapWikiUrls,
+  sitemap_wiki_urls: sitemap.wiki,
+  published_pages: sitemap.published,
   total_categories: categoryCount,
 
   // Backward-compatible fields. These represent all public wiki pages because
