@@ -477,6 +477,69 @@
     return { available: Boolean(missions.length), completed: completed, total: missions.length, next: next, status: status, claims: missionClaims(s) };
   }
 
+  // Lifetime Road to Legendary projection. This is navigation-only guidance:
+  // it reads already-authoritative pet state and never submits an action,
+  // awards XP, settles a Journey receipt or guesses a missing requirement.
+  function legendaryRoadmap(snapshot) {
+    var s = snapshot || {}, g = s.guidance || {}, pet = s.pet || {};
+    if (!s.adopted || !pet.pet_id) return { available: false, status: 'LOCKED', routes: [] };
+    if (s.hydration && s.hydration.full === false) {
+      return { available: false, status: 'SYNCING', routes: [] };
+    }
+    var slots = s.season_slots && Array.isArray(s.season_slots.slots) ? s.season_slots.slots : [];
+    var active = slots.find(function (slot) { return slot && slot.active; }) || {};
+    var progression = active.pet && active.pet.progression || {};
+    var lifecycle = progression.lifecycle || {};
+    var growth = progression.growth_marks || {};
+    var crests = progression.weekly_crests || {};
+    var relicIds = new Set((s.relics || []).map(function (entry) { return String(entry && entry.relic_id || ''); }).filter(Boolean));
+    var materialMap = {};
+    (s.materials || []).forEach(function (entry) {
+      var key = String(entry && (entry.key || entry.material_key) || '');
+      if (key) materialMap[key] = Math.max(0, Number(entry.quantity) || 0);
+    });
+    var evolution = g.evolution || null;
+    return {
+      available: true,
+      status: progression.lifetime_complete || progression.season_complete ? 'LEGENDARY COMPLETE'
+        : evolution && evolution.ready ? 'EVOLUTION READY' : 'IN PROGRESS',
+      stage: {
+        current: Math.max(0, Number(lifecycle.current_stage) || 0),
+        total: Math.max(0, Number(lifecycle.total_stages) || 0),
+      },
+      level: Math.max(0, Number(pet.level) || 0),
+      petXp: Math.max(0, Number(pet.pet_xp) || 0),
+      growthMarks: { earned: Math.max(0, Number(growth.earned) || 0), required: Math.max(0, Number(growth.required) || 0) },
+      weeklyCrests: { earned: Math.max(0, Number(crests.earned) || 0), required: Math.max(0, Number(crests.required) || 0) },
+      relics: relicIds.size,
+      materials: {
+        scrapMetal: Math.max(0, Number(materialMap.scrap_metal) || 0),
+        evolutionFragments: Math.max(0, Number(materialMap.evolution_fragment) || 0),
+      },
+      nextEvolution: evolution ? {
+        name: evolution.name || 'NEXT EVOLUTION',
+        ready: evolution.ready === true,
+        missing: (evolution.missing || []).map(function (entry) {
+          return {
+            label: entry.label || entry.key || 'Requirement',
+            current: Math.max(0, Number(entry.current) || 0),
+            required: Math.max(0, Number(entry.required) || 0),
+            source: entry.source || '',
+          };
+        }),
+      } : null,
+      routes: [
+        { title: 'DAILY JOURNEY', screen: 'missions', focus: 'daily-journey', detail: 'Complete genuine Daily Journey objectives and earn the pet’s Growth Mark.' },
+        { title: 'WEEKLY JOURNEY', screen: 'missions', focus: 'weekly-journey', detail: 'Complete the five weekly objectives for this pet’s Crest.' },
+        { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Play the official Daily Run, bank safe exits and keep working toward Alley King victories and relic drops.' },
+        { title: 'TIMED ACTIVITY', screen: 'work', focus: 'timed-activity', detail: 'Use legitimate timed activities when your energy and schedule allow.' },
+        { title: 'BEST UNLOCKED JOB', screen: 'work', focus: 'jobs', detail: 'Compare the server-unlocked jobs and choose from what your pet actually qualifies for.' },
+        { title: 'RELICS + MATERIALS', screen: 'economy', focus: 'relics', detail: 'Review collected relics and the material sources needed for later evolutions.' },
+        { title: 'EVOLUTION', screen: 'profile', focus: 'evolution', detail: 'Review the next saved evolution gate and evolve only when the Worker says it is ready.' },
+      ],
+    };
+  }
+
   // Read-only menu inbox. Ready claims, saved sessions and completed goals have
   // different meanings; a timer reaching zero locally is never claim authority.
   function menuStatuses(snapshot) {
@@ -603,7 +666,7 @@
     return { count: count, countLowerBound: shown.some(function (entry) { return entry.countLowerBound; }), kind: kind, activeCount: active.reduce(function (sum, entry) { return sum + entry.count; }, 0) };
   }
 
-  var api = { menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
+  var api = { menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, legendaryRoadmap: legendaryRoadmap, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);
