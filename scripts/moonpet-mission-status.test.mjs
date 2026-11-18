@@ -35,6 +35,12 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
     { key: 'scrap_metal', quantity: 112 },
     { key: 'evolution_fragment', quantity: 22 },
   ];
+  state.guidance.jobs = [
+    { key: 'vault_guard', title: 'Vault Guard', pet_xp: 36, available: true },
+    { key: 'signal_hacker', title: 'Signal Hacker', pet_xp: 38, available: false },
+    { key: 'crystal_miner', title: 'Crystal Miner', pet_xp: 30, available: true },
+  ];
+  state.guidance.activity_options = [{ key: 'explore', cap_seconds: 28800 }];
   state.guidance.evolution = {
     name: 'Elite Moonpet', ready: false,
     missing: [
@@ -52,6 +58,10 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
   assert.deepEqual(road.weeklyCrests, { earned: 13, required: 44 });
   assert.equal(road.relics, 2, 'duplicate relic IDs count once');
   assert.deepEqual(road.materials, { scrapMetal: 112, evolutionFragments: 22 });
+  assert.deepEqual(road.bestJob, { key: 'vault_guard', title: 'Vault Guard', basePetXp: 36 });
+  assert.equal(road.exploreActivityAvailable, true);
+  assert.equal(road.routes[3].title, 'TIMED EXPLORE');
+  assert.equal(road.routes[4].title, 'BEST UNLOCKED JOB // Vault Guard');
   assert.equal(road.nextEvolution.missing.length, 2);
   assert.deepEqual(road.routes.map(route => route.screen + ':' + route.focus), [
     'missions:daily-journey', 'missions:weekly-journey', 'explore:moon-run',
@@ -64,6 +74,18 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
 test('Road to Legendary fails closed on missing identity or partial hydration', () => {
   assert.equal(legendaryRoadmap({}).available, false);
   assert.equal(legendaryRoadmap({ adopted: true, pet: { pet_id: 'p' }, hydration: { full: false } }).status, 'SYNCING');
+});
+
+test('legacy season_complete alone cannot label Road to Legendary complete', () => {
+  const state = snapshot();
+  state.pet = { pet_id: 'selected-pet', level: 20, pet_xp: 10000 };
+  state.season_slots = { slots: [{ active: true, pet: { progression: {
+    season_complete: true, lifetime_complete: false,
+    lifecycle: { current_stage: 3, total_stages: 6 },
+    growth_marks: { earned: 100, required: 240 },
+    weekly_crests: { earned: 14, required: 44 },
+  } } }] };
+  assert.equal(legendaryRoadmap(state).status, 'IN PROGRESS');
 });
 
 test('Missions renders Road to Legendary through navigation buttons only', () => {
