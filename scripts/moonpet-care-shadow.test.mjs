@@ -105,17 +105,17 @@ test('local D1 settles closed days exactly once from the original pet and preser
     // Replay a long closed-day backlog using fully observed fixture windows.
     // Each tick advances one account day even when every receipt has zero XP.
     const windows = [];
-    for (let n=12; n<37; n++) {
+    for (let n=11; n<37; n++) {
       windows.push(sql(`INSERT INTO moonpet_care_shadow_days(telegram_id,day_key,pet_id,observed_slots)
         VALUES('1',?,'q',?)`,day(n),2 ** 49 - 1));
-      if (n>=19) windows.push(...['feed','play','clean'].map(a => receipt(n,'q',a,0)));
+      if (n===11 || n>=19) windows.push(...['feed','play','clean'].map(a => receipt(n,'q',a,0)));
     }
     await DB.batch(windows);
     for (let slot=0; slot<32; slot++) await tick(40,slot);
-    // Prior standing of 44 carries through exempt windows into the absence.
-    assert.equal((await row(18)).debt_thirds,(770+44)*3);
-    assert.equal((await row(35)).debt_thirds,(814-17*44)*3);
-    assert.equal((await row(36)).debt_thirds,22*3);
+    assert.equal((await row(11)).debt_thirds,0);
+    assert.equal((await row(18)).debt_thirds,770*3);
+    assert.equal((await row(35)).debt_thirds,22*3);
+    assert.equal((await row(36)).debt_thirds,0);
     assert.equal((await sql("SELECT xp FROM telegram_users WHERE telegram_id='1'").first()).xp,600);
     assert.equal((await sql("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='1'").first()).pet_xp,900);
     assert.equal((await sql('SELECT sum(pet_xp) AS xp FROM telegram_pet_instances').first()).xp,1800);

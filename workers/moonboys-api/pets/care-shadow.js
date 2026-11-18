@@ -85,7 +85,8 @@ export async function runCareShadowTick(event, env, nowMs = Date.now()) {
   if (!owners.length) return;
   const time = event.scheduledTime;
   // A delayed delivery cannot attest to historical availability.
-  if (!Number.isSafeInteger(time) || time % HALF_HOUR || nowMs < time || nowMs-time >= HALF_HOUR) return;
+  if (!Number.isSafeInteger(time) || nowMs < time || nowMs - time >= HALF_HOUR) return;
+  if (Math.floor(time / HALF_HOUR) !== Math.floor(nowMs / HALF_HOUR)) return;
   const now = new Date(nowMs).toISOString();
   const day = new Date(time).toISOString().slice(0,10);
   const slot = Math.floor(time / HALF_HOUR) % 48;
