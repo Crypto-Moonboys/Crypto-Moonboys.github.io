@@ -2522,9 +2522,10 @@ try {
     assert.equal(shopProjection.length, 17);
     for (const item of shopProjection) {
       const card = page.locator('[data-panel="shop"] [data-action]').filter({ hasText: item.title });
-      assert.equal(await card.count(), 1);
+      assert.equal(await card.count(), item.unlocked ? 1 : 0, item.title + ' follows its shop unlock');
+      if (!item.unlocked) continue;
       assert.ok((await card.textContent()).includes('UNLOCK LEVEL ' + item.min_level));
-      assert.equal(await card.isDisabled(), !item.unlocked || (!item.owned && !item.affordable) || item.equipped);
+      assert.equal(await card.isDisabled(), (!item.owned && !item.affordable) || item.equipped);
       assert.equal(await card.locator('.fact-cost').count() >= 1, true);
     }
     const shoppingFacts = await page.locator('[data-panel="shop"] .action-facts').evaluateAll(nodes => nodes.every(node => node.clientWidth > 0 && node.scrollWidth <= node.clientWidth));
