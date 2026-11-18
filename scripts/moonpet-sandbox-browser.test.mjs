@@ -98,7 +98,13 @@ try{
    }
    assert.equal(escaped,0,'popup initial navigation must never leave the sandbox context');
    assert.equal(isolation.blockedBrowserRequests.filter(url=>url===target).length,2);
-  }finally{await new Promise(resolve=>sink.close(resolve));}
+  }finally{
+  await new Promise(resolve=>{
+   sink.close(resolve);
+   // Chromium can preconnect without reaching the HTTP request handler.
+   sink.closeAllConnections();
+  });
+ }
 
  }finally{await isolation.close();}
  assert.deepEqual(harness.blockedWorkerRequests,[],'these read-only journeys require no outbound Worker requests');
