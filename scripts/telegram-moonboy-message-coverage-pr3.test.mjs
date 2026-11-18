@@ -101,27 +101,27 @@ function update(command = '/taghelp', messageId = 88) {
 test('media feature defaults OFF even with a valid binding and Telegram token', () => {
   const env = enabled({ TELEGRAM_MOONBOY_PHOTOS_ENABLED: 'false' });
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), false);
   assert.equal(isMoonboyTelegramMediaEnabled(enabled({
     TELEGRAM_MOONBOY_MEDIA_MODE: 'off'
-  }), { chatId: privateChat, chatKind: 'private', messageKind: 'tag-command' }), false);
+  }), { chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank' }), false);
   assert.equal(isMoonboyTelegramMediaEnabled(enabled({ IMAGES: null }), {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), false);
 });
 
 test('private canary is exact-id and private-only; no unrelated chat gets images', () => {
   const env = enabled();
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), true);
   for (const context of [
     { chatId: groupChat, chatKind: 'group', messageKind: 'tag-bulletin' },
-    { chatId: '123456788', chatKind: 'private', messageKind: 'tag-command' },
-    { chatId: privateChat, chatKind: 'group', messageKind: 'tag-command' },
+    { chatId: '123456788', chatKind: 'private', messageKind: 'tag-rank' },
+    { chatId: privateChat, chatKind: 'group', messageKind: 'tag-rank' },
     { chatId: privateChat, chatKind: 'private', messageKind: 'daily-digest' },
-    { chatId: 'not-an-id', chatKind: 'private', messageKind: 'tag-command' }
+    { chatId: 'not-an-id', chatKind: 'private', messageKind: 'tag-rank' }
   ]) {
     assert.equal(isMoonboyTelegramMediaEnabled(env, context), false,
       JSON.stringify(context));
@@ -137,16 +137,16 @@ test('group mode requires the official configured group; no arbitrary group', ()
     chatId: '-100987654321', chatKind: 'group', messageKind: 'tag-bulletin'
   }), false);
   assert.equal(isMoonboyTelegramMediaEnabled(env, {
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command'
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank'
   }), false);
 });
 
 test('stable numeric public message seed never includes Telegram text or wallet details', () => {
-  const seed = moonboyTelegramMessageSeed('tag-command', privateChat, 88, 0);
-  assert.equal(seed, 'tag-command:123456789:88:0');
-  assert.equal(seed, moonboyTelegramMessageSeed('tag-command', privateChat, 88, 0));
-  assert.notEqual(seed, moonboyTelegramMessageSeed('tag-command', privateChat, 89, 0));
-  assert.throws(() => moonboyTelegramMessageSeed('tag-command', 'owner@example.com', 88),
+  const seed = moonboyTelegramMessageSeed('tag-rank', privateChat, 88, 0);
+  assert.equal(seed, 'tag-rank:123456789:88:0');
+  assert.equal(seed, moonboyTelegramMessageSeed('tag-rank', privateChat, 88, 0));
+  assert.notEqual(seed, moonboyTelegramMessageSeed('tag-rank', privateChat, 89, 0));
+  assert.throws(() => moonboyTelegramMessageSeed('tag-rank', 'owner@example.com', 88),
     /telegram_media_invalid_seed/);
 });
 
@@ -154,8 +154,8 @@ test('disabled integration never fetches images or reaches Telegram', async () =
   const h = harness();
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled({ TELEGRAM_MOONBOY_PHOTOS_ENABLED: 'false' }),
-    chatId: privateChat, chatKind: 'private', messageKind: 'tag-command',
-    seed: 'tag-command:123456789:88:0', text: 'message', fetchImpl: h.fetchImpl
+    chatId: privateChat, chatKind: 'private', messageKind: 'tag-rank',
+    seed: 'tag-rank:123456789:88:0', text: 'message', fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'disabled');
   assert.equal(h.calls.length, 0);
@@ -165,7 +165,7 @@ test('enabled private canary composes actual nine homepage layers and sends one 
   const h = harness();
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled(), chatId: privateChat, chatKind: 'private',
-    messageKind: 'tag-command', seed: 'tag-command:123456789:88:0',
+    messageKind: 'tag-rank', seed: 'tag-rank:123456789:88:0',
     text: 'TAG RUN · rank profile', fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'sent');
@@ -182,7 +182,7 @@ test('missing manifest fails BEFORE Telegram photo request so legacy path can se
   const h = harness({ failManifest: true });
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled(), chatId: privateChat, chatKind: 'private',
-    messageKind: 'tag-command', seed: 'tag-command:123456789:88:0',
+    messageKind: 'tag-rank', seed: 'tag-rank:123456789:88:0',
     text: 'TAG RUN', fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'composition_failed');
@@ -194,7 +194,7 @@ test('long Telegram text skips the paid render and leaves existing text path int
   const h = harness();
   const outcome = await sendControlledMoonboyTelegram({
     env: enabled(), chatId: privateChat, chatKind: 'private',
-    messageKind: 'tag-command', seed: 'tag-command:123456789:88:0',
+    messageKind: 'tag-rank', seed: 'tag-rank:123456789:88:0',
     text: 'x'.repeat(1025), fetchImpl: h.fetchImpl
   });
   assert.equal(outcome.status, 'disabled');
@@ -214,31 +214,22 @@ test('real TAG RUN /taghelp replies remain text-only when feature OFF', async ()
   assert.match(JSON.parse(h.calls[0].init.body).text, /TAG RUN/);
 });
 
-test('real TAG RUN /taghelp replies get Moonboy JPEG only in private canary', async () => {
-  const h = harness();
-  const result = await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
-  assert.equal(result, true);
-  assert.equal(callsOf(h, '/sendPhoto').length, 1);
-  assert.equal(callsOf(h, '/sendMessage').length, 0);
-  assert.equal(callsOf(h, '/img/avatar-builder/layers/').length, 9);
-  assert.match(callsOf(h, '/sendPhoto')[0].init.body.get('caption'), /TAG RUN/);
-});
-
-test('post-photo transport exception cannot produce a second /taghelp reply', async () => {
-  const h = harness({ malformedPhotoAck: true });
-  const result = await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
-  assert.equal(result, true);
-  assert.equal(callsOf(h, '/sendPhoto').length, 1,
-    'Telegram may have accepted this photo already');
-  assert.equal(callsOf(h, '/sendMessage').length, 0,
-    'command handler must not emit its temporary-error text after upload');
-});
-
-test('private canary image composition failure preserves original text-only TAG RUN reply', async () => {
+test('interactive TAG RUN commands bypass image work even when media is enabled', async () => {
   const h = harness({ failManifest: true });
-  await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl });
-  assert.equal(callsOf(h, '/sendPhoto').length, 0);
+  assert.equal(await handleTagRunCommand(update(), enabled(), { fetchImpl: h.fetchImpl }), true);
+  assert.equal(h.calls.length, 1);
   assert.equal(callsOf(h, '/sendMessage').length, 1);
+  assert.equal(callsOf(h, '/sendPhoto').length, 0);
+  assert.ok(h.calls[0].init.signal instanceof AbortSignal);
+});
+
+test('uncertain text submission never produces a second error reply', async () => {
+  let attempts = 0;
+  await handleTagRunCommand(update(), enabled(), { fetchImpl: async () => {
+    attempts++;
+    throw new Error('ack lost after Telegram accepted the message');
+  } });
+  assert.equal(attempts, 1);
 });
 
 test('four-hour TAG RUN bulletin keeps text delivery OFF and topic routing when group media OFF', async () => {
@@ -361,7 +352,7 @@ test('approved Images binding and group release defaults are present', () => {
   const handler = readFileSync(new URL(
     '../workers/moonboys-api/tag-run/handler.js', import.meta.url), 'utf8');
   assert.match(handler, /sendControlledMoonboyTelegram/);
-  assert.match(handler, /messageKind: 'tag-command'/);
+  assert.match(handler, /Interactive commands should not wait/);
   assert.match(handler, /messageKind: 'tag-bulletin'/);
   assert.match(handler, /messageKind: 'tag-rank'/);
 });

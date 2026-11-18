@@ -36,6 +36,7 @@
       if (!video || video.tagName !== 'VIDEO' || !video.hidden || !source) return;
       const raw = source.dataset.src || '';
       if (!raw.startsWith('/img/homepage/') || !raw.endsWith('.mp4')) return;
+      if (video.dataset?.poster) video.poster = video.dataset.poster;
       source.src = raw;
       video.hidden = false;
       button.hidden = true;

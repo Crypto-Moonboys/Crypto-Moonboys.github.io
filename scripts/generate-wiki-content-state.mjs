@@ -1400,10 +1400,75 @@ function readAnchoredGeneratedFile(anchor, fileName) {
   }
 }
 
+function conciseGeneratedValue(value) {
+  const rendered = JSON.stringify(value);
+  if (rendered === undefined) return String(value);
+  return rendered.length <= 240 ? rendered : `${rendered.slice(0, 237)}...`;
+}
+
+export function firstGeneratedJsonDifference(actual, expected, pointer = '$') {
+  if (Object.is(actual, expected)) return null;
+
+  const actualIsArray = Array.isArray(actual);
+  const expectedIsArray = Array.isArray(expected);
+  if (actualIsArray || expectedIsArray) {
+    if (!actualIsArray || !expectedIsArray) return { pointer, actual, expected };
+    const sharedLength = Math.min(actual.length, expected.length);
+    for (let index = 0; index < sharedLength; index += 1) {
+      const difference = firstGeneratedJsonDifference(actual[index], expected[index], `${pointer}[${index}]`);
+      if (difference) return difference;
+    }
+    return actual.length === expected.length
+      ? null
+      : { pointer: `${pointer}.length`, actual: actual.length, expected: expected.length };
+  }
+
+  const actualIsObject = actual !== null && typeof actual === 'object';
+  const expectedIsObject = expected !== null && typeof expected === 'object';
+  if (actualIsObject || expectedIsObject) {
+    if (!actualIsObject || !expectedIsObject) return { pointer, actual, expected };
+    const keys = [...new Set([...Object.keys(actual), ...Object.keys(expected)])].sort();
+    for (const key of keys) {
+      const childPointer = /^[A-Za-z_$][\w$]*$/.test(key)
+        ? `${pointer}.${key}`
+        : `${pointer}[${JSON.stringify(key)}]`;
+      if (!Object.hasOwn(actual, key) || !Object.hasOwn(expected, key)) {
+        return { pointer: childPointer, actual: actual[key], expected: expected[key] };
+      }
+      const difference = firstGeneratedJsonDifference(actual[key], expected[key], childPointer);
+      if (difference) return difference;
+    }
+    return null;
+  }
+
+  return { pointer, actual, expected };
+}
+
+function generatedMismatchDetail(actual, expected) {
+  try {
+    const difference = firstGeneratedJsonDifference(JSON.parse(actual), JSON.parse(expected));
+    if (difference) {
+      return ` at ${difference.pointer} (committed ${conciseGeneratedValue(difference.actual)}; generated ${conciseGeneratedValue(difference.expected)})`;
+    }
+  } catch {
+    const actualLines = actual.split('\n');
+    const expectedLines = expected.split('\n');
+    const lineCount = Math.max(actualLines.length, expectedLines.length);
+    for (let index = 0; index < lineCount; index += 1) {
+      if (actualLines[index] !== expectedLines[index]) {
+        return ` at line ${index + 1} (committed ${conciseGeneratedValue(actualLines[index])}; generated ${conciseGeneratedValue(expectedLines[index])})`;
+      }
+    }
+  }
+  return '';
+}
+
 function checkGeneratedFile(anchor, fileName, displayPath, expected) {
   const actual = readAnchoredGeneratedFile(anchor, fileName);
   if (actual === null) return `${path.relative(ROOT, displayPath)} is missing`;
-  return actual === expected ? null : `${path.relative(ROOT, displayPath)} is stale`;
+  return actual === expected
+    ? null
+    : `${path.relative(ROOT, displayPath)} is stale${generatedMismatchDetail(actual, expected)}`;
 }
 
 function atomicWriteAnchoredGeneratedFile(anchor, fileName, content) {

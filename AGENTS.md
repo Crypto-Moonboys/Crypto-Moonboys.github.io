@@ -1,5 +1,11 @@
 # Agent entry point
 
+## Current canon entry point — 16 November 2026
+
+Read [the official canon index](brand-canon/README.md) before lore or canon work. Crypto Moonboys is both creator brand and fantasy cast played/created by real people. GK’s implemented `GK-20261116-MARKET-FACTIONS-COMMAND` decision controls current command over incompatible older descriptions: Bulls and Bears are the market factions; Alfie’s Bitcoin Kid Army is their protection army under orders only from GKniftyHEADS; HODL Warriors unite all GK factions’ members and are not a faction; every member aspires to the distinct HODL X order of Queen Sarah’s Block Topia. Preserve the 1 + 2 + 37 political count, distinct Bitcoin X Kids and the unresolved public Final Fork.
+
+The main `/wiki/crypto-moonboys.html` page is the story-led heart of the lore, including wider realms, mythology and timeline. Product onboarding remains in the current brand/product guides and retained creator reference. Real-world 1/1 builder eligibility is separate from fictional military service. This clarification implements existing GK direction and changes no live faction options, licences or gameplay.
+
 ## GK workflow policy — routine checks are manual (27 October 2026)
 
 **Project phase: build complete; debugging and final verification before live launch.** No new features, speculative rewrites, or automated anti-drift gates unless GK explicitly authorises them. **Do not turn on automatic broad CI or scheduled health-probe jobs.** Read [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before editing workflows, adding an image, changing a page, or asking for release approval.
@@ -12,6 +18,12 @@
 - If GitHub rules require old status checks, tell GK which settings to change; do not fabricate passing statuses.
 - Retain branch/PR review and GK sign-off. No merge, production deployment, D1 migration, payout or irreversible action without explicit GK approval.
 
+
+## Protected areas remain enforced when Actions are manual
+
+Before changing any protected area, read and follow [the protected areas compliance checklist](docs/protected-areas-checklist.md). Disabling or not triggering a workflow disables automation only; it does not disable the underlying contract or the agent's duty to validate affected behavior.
+
+Every agent must map all changed paths to the checklist, run the union of applicable focused checks, and state exactly what ran, what did not run, and why. Never weaken a guard to make a branch pass. Cross-domain, release, auth, security, scoring, reward, payout, migration, deployment-gate, or CI-harness changes require the manual Full Linux suite when the checklist says so.
 
 Read `AGENT_EDITING_RULES.md` for branch, product and release rules. For any lore,
 wiki, scripture, canon generator or source-research work, also read

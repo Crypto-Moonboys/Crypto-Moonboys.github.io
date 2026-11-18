@@ -17,7 +17,17 @@ test('WAX page keeps six player URLs but does not load any player or MP4 at star
   assert.ok(frames.every(frame => !/\ssrc="/i.test(frame)), 'data-src is inert until Play');
   assert.equal((markup.match(/<button\b[^>]*data-media-activate/g)||[]).length, 6);
   assert.equal((markup.match(/<button\b[^>]*data-video-activate/g)||[]).length, 1);
-  assert.equal((markup.match(/i\.ytimg\.com\/vi\//g)||[]).length, 5, 'Lightweight YouTube artwork thumbnails, not full players');
+  assert.equal((markup.match(/i\.ytimg\.com\/vi\//g)||[]).length, 0, 'No low-resolution YouTube thumbnails');
+  const activeMarkup = markup.replace(/<noscript>[\s\S]*?<\/noscript>/g, '');
+  const posters = [...activeMarkup.matchAll(/<button\b[^>]*data-media-activate[^>]*><img src="[^"]+"(?: data-section-src="([^"]+)")? width="([0-9]+)" height="([0-9]+)"/g)];
+  assert.equal(posters.length, 6, 'All six embeds have local, high-resolution poster artwork');
+  for (const poster of posters) {
+    const image = poster[1] || /<img src="([^"]+)"/.exec(poster[0])[1];
+    assert.ok(image.startsWith('/img/homepage/'));
+    assert.ok(Number(poster[2]) >= 1600 && Number(poster[3]) >= 1000);
+  }
+  assert.match(markup, /\.simple-home \.hero-intro h2,[\s\S]*?background:transparent !important/,
+    'Hero headings must not regain dark rounded cards');
   assert.match(markup, /<video\b[^>]*controls[^>]*preload="none"[^>]*hidden>/);
   assert.match(markup, /<source data-src="\/img\/homepage\/Marilyn%20Monroe%20Graffiti-HD%20\(1\)\.mp4"/);
   assert.doesNotMatch(markup, /<source\s+src="[^"]*\.mp4"/);
@@ -69,7 +79,7 @@ test('native Marilyn MP4 does not get a src until clicked, then uses controls', 
   let loads = 0, plays = 0;
   const source = {dataset:{src:'/img/homepage/Marilyn%20Monroe%20Graffiti-HD%20(1).mp4'}};
   const video = {
-    tagName:'VIDEO',hidden:true,
+    tagName:'VIDEO',hidden:true,dataset:{poster:'/img/homepage/video-poster.jpg'},
     querySelector:selector => selector==='source[data-src]'? source:null,
     load(){loads++;}, play(){plays++;return Promise.resolve()}
   };
@@ -80,8 +90,10 @@ test('native Marilyn MP4 does not get a src until clicked, then uses controls', 
   const doc = {querySelectorAll:s=>s==='button[data-media-activate]'?[]:s==='button[data-video-activate]'?[button]:[]};
   vm.runInNewContext(script,{document:doc, window:{location:{href:'https://cryptomoonboys.com/'}},URL});
   assert.equal(source.src,undefined);
+  assert.equal(video.poster,undefined);
   callbacks.get('click')();
   assert.equal(source.src,source.dataset.src);
+  assert.equal(video.poster,video.dataset.poster);
   assert.equal(video.hidden,false);
   assert.equal(button.hidden,true);
   assert.equal(loads,1);

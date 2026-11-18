@@ -1,5 +1,22 @@
 # GK master canon bible — working reconciliation edition
 
+## Current cast and command — 16 November 2026
+
+GK’s direct instruction establishes the following fictional canon. It supplements the creator brand; real people play characters as performers play roles in a film. It does not assert private facts about those performers.
+
+- Crypto Moonboys names the brand and the characters in its shared fantasy world.
+- All City Bulls (AllCity Bulls) and Nomad Bears (also written Nomad Bares in the brief) are the two main factions: the market’s bulls and bears in a world ruled by crypto.
+- The Bitcoin Kid Army is the army for the crypto market. It shadows members of both factions 24/7 as undercover guards; it is not a GK street faction.
+- Alfie “The Bitcoin KiD” Blaze leads the Army and takes orders only from GKniftyHEADS, the underworld good guys above the two main factions and the remaining 37 GK factions. The political count is 1 + 2 + 37 = 40; neither the Army nor a temporary HODL muster adds a seat.
+- HODL Warriors are the underworld army formed from members of all GK factions, not a faction themselves. Members unite when a larger army is needed while retaining their own faction identities. Every HODL Warrior aspires to become a HODL X Warrior; the aspiration does not confer the title.
+- HODL X Warriors belong to Block Topia under Queen Sarah P-fly and her Crypto Moongirls army. Bitcoin X Kids are the inside engineered generation; some escape and join Alfie’s Army. Inside birth, outside community and Army enlistment remain distinct.
+- These forces try to defeat NULL THE PROPHET while other conflicts persist. No completed Final Fork outcome is disclosed in the public Year 3008 story.
+
+The inherited forty-reading commentary remains a cultural comparison, including Army service and royal Moongirl life. It is not an exact one-to-one GK political roll. Keep all existing named cultures and adult histories; do not invent replacement faction names or promote service units to make a list add up. GKniftyHEADS’ political authority does not make it sole interpreter of the First Witness. Do not write the later names into the nine 2030 Books. Older claims that the HODL relationship is wholly unknown or that the Army is a street faction are superseded.
+
+Owning public account: [Crypto Moonboys](../../wiki/crypto-moonboys.html#market-factions-and-command), with linked dedicated references. The [Hard Fork / Rise source](https://graffpunks.substack.com/p/the-hard-fork-rise-of-the-hodl-warriors) supports the city, programme, royal and engineered-generation context; its damaged dates and outcomes remain subject to the current chronology.
+
+
 9 October 2026, Issue #1458. **Editorial canon — excluded from the website artifact and public discovery. W81 is foundational truth.** All 94 original comparisons are accepted as complete. GK has approved the five decisions below. [Approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666), [policy](../CANON_POLICY.md), [locks](../canon-locks.json), [decisions](../reconciliation-decisions.json) and [implementation progress](../wiki-rewrites/issue-1458-progress.md) govern the coordinated change. Historical continuation receipts below remain dated evidence, not outstanding research. The public Year 3008 storyline must preserve suspense. These records are editorial, not confidential storage: the GitHub repository itself is public.
 
 ## 1. Origin in 2030
@@ -65,7 +82,7 @@ scarcity and the people who must receive anyone using an escape route.
 
 ## 7. Forty cultures, membership and alliances
 
-Forty named enduring cultures are approved: the earlier thirty-four and the six completed institutions below. The nine live Battle Chamber options remain separate and unchanged. These are later interpretations and institutions, not added 2030 scripture. A service, role or temporary formation does not acquire a faction slot.
+Forty inherited cultural readings are retained: the earlier accounts and six completed institutions below. The Army’s military tradition and the Moongirls’ royal life are part of this comparison, not proof of street-faction seats. The nine live Battle Chamber options remain separate and unchanged. These are later interpretations and institutions, not added 2030 scripture. A service, role or temporary formation does not acquire a faction slot.
 
 | Current named reading | Existing characteristic reading / tension |
 | --- | --- |
@@ -261,10 +278,7 @@ worker's fate. This addition preserves the Elder's earlier private history.
 concealed assessment, programme service, return and exploitation. Preserve its
 modern candidates, kitchen labour and failed placements. Bitcoin Kids are the
 outside/escaped culture; Bitcoin X Kids the inside engineered generation.
-Bitcoin Kid Army is an organised force inside a broader culture. HODL X Warriors
-are a distinct champion/service tradition. HODL Warriors in 3008 are existential
-collective defence; today's qualifying 1/1 creator-builder role is separately
-controlled by current terms. [HODL WARS](../../wiki/hodl-wars.html) retains its
+Bitcoin Kid Army is the crypto market’s organised protection army within a broader outside community, not a GK street faction; Alfie takes orders only from GKniftyHEADS. HODL Warriors are the underworld army formed from all GK factions’ members, who retain their identities. Every HODL Warrior aspires to the distinct HODL X champion/service order under Queen Sarah P-fly and her Crypto Moongirls army in Block Topia. Today’s qualifying 1/1 creator-builder use of the name is separately controlled by current terms. [HODL WARS](../../wiki/hodl-wars.html) retains its
 modern coalition costs and competing future broadsheets.
 
 W72 Calling missions, W73 hundred-scroll codex and w67 BLOCKFRONT/DREAMWARS/

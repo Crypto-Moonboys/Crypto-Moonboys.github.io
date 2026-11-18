@@ -21,7 +21,7 @@
       "examples": [
         "GraffPUNKS faction != GraffPUNKS radio != GraffPUNKS NFT collection != MidevilPunks game",
         "NBG brand != NBG Token != NBGX",
-        "HODL Warriors faction != HODL Wars game"
+        "HODL Warriors underworld army != HODL X Warriors city order != HODL Wars game"
       ],
       "action": "BLOCK",
       "reason": "Cross-concept pages conflate distinct brand identities."

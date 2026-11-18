@@ -5,7 +5,7 @@ export const MOONBOYS_CRON = Object.freeze({
   timed: '*/5 * * * *',
   automation: '*/30 * * * *',
   digest: '0 9 * * *',
-  bulletin: '3 */4 * * *',
+  bulletin: '0 18 * * *',
   participation: '12 0 * * *',
 });
 

@@ -1414,3 +1414,180 @@ no deployment. Original register identity/size/hash/disposition fields remain
 unchanged. Complete final-head Actions results will be posted to PR1460 after
 push; historical3150 evidence above is not presented as the final head.
 Five major decisions remain proposed; no merge or issue closure.
+
+## GK cast and market-army correction — 16 November 2026
+
+Base: `1144a1883c8f9e37f4c72cfc30f51f67330c6108`. Backup:
+`backup/lore-command-structure-20261116`. Working branch:
+`sandbox/lore-command-structure-20261116`.
+
+GK directly requested the brand-and-character definition and the linked command
+structure, then reiterated: **“THE BITCOIN KID ARMY ARE NOT A GK STREET FACTION,
+THEY ARE ARMY FOR THE CRYPTO MARKET.”** The decision receipt retains both the
+full instruction and that follow-up. This is approval of the stated canon,
+not a merge or deployment approval.
+
+Implemented across 24 connected public articles: the Crypto Moonboys and First
+Witness entry points; Bulls, Bears, GKniftyHEADS, Alfie and the two Army
+references; Kids/X Kids; HODL/HODL X; the Queen, Moongirls, Block Topia, Games and
+war; and the relevant commentary, roster, doctrine, source, chronology,
+concordance and ritual comparisons. Seven legacy bible files carry explicit
+current-canon overrides. Current authoring guidance, locks and exact paragraph
+replacement receipts are updated together.
+
+The Army is the crypto market's army, providing 24/7 undercover protection to
+Bulls and Bears, led by Alfie and taking orders only from GKniftyHEADS. The
+political count is GKniftyHEADS + two main factions + 37 others. The inherited
+forty cultural readings retain their names and adult histories without being
+misrepresented as an exact political roll. No replacement faction names are
+invented. HODL Warriors unite the GK factions; all aspire to Block Topia's
+separate HODL X status under Sarah and the Crypto Moongirls. X Kids can escape
+and join the Army. The nine original Books, accepted dates, runtime choices,
+creator rights, source bytes and public Final Fork suspense remain intact.
+
+Publishing/search/entity graphs and content ownership are regenerated. The
+Army's authored search classification is core lore, not a faction. The stale
+publish audit is refreshed by its existing read-only scanner (471 pages,
+zero blocked/review entries); no purge is run.
+
+Validation actually completed:
+
+- `npm run test:canon`, including 94 original archive identities, four Python
+  corruption tests, 20 JavaScript cases and the canon guard: passed as the
+  opening part of the wiki run.
+- Article functional preservation: all 24 changed pages passed against the
+  exact base. Ownership inventory, native contents rendering and related-path
+  audits passed. Search/entity graph integrity passed.
+- 198 internal links in the newly added canon sections resolved. Five queries
+  were exercised through the actual search matcher, including crypto-market
+  Army, undercover Bulls/Bears, Nomad Bares, HODL X and GKniftyHEADS; all returned
+  the relevant references. The Army category is `core`.
+- HTML hygiene: all 418 indexable articles passed, with 53 redirects/noindex
+  pages skipped by the existing checker. SEO publish-canonical tests: 14/14
+  passed. Payload schema tests passed after restoring the two existing fixtures
+  omitted by the sparse checkout. Diff whitespace check passed.
+- `npm run ci:wiki` was attempted. After a stale generated audit was refreshed,
+  its remaining 25 commands were also run individually. Three Worker-dependent
+  checks could not run: engagement layer, engagement API and Moonpet guide;
+  the sparse checkout lacks `workers/moonboys-api/worker.js`. The initial
+  fixture, image and description-length failures were resolved and rerun.
+  Do not describe the complete wiki suite as green.
+- Desktop/mobile browser verification was attempted but is incomplete: local
+  Chromium could not create its process socket, and the shared browser could
+  not reach the local preview. Static contents/link/HTML checks passed, but
+  they do not replace a visual check. No live service transaction was made.
+
+No tests, validation triggers or approval safeguards were weakened. No merge,
+production deployment, payout, migration or issue closure was performed.
+
+GK follow-up, 16 November 2026: HODL Warriors are explicitly the underworld army formed from members of all GK factions, not a faction. Updated the shared explanations, seven bible overrides, command record and authored core-lore search classification. Faction membership remains distinct from collective Army service.
+
+## Main story entrance — 16 November 2026
+
+GK explicitly identifies `/wiki/crypto-moonboys.html` as the heart of the lore
+and requests an extended back-cover treatment, wider realms/mythology and a
+timeline. Backup: `backup/lore-entrance-before-narrative-20261116`, from PR1800
+head `cafe03f4e1119c9de5272526c5c1a41814bd12f8`. Continues that PR; no merge.
+
+Catalogue audit covers all 471 routes (421 non-redirects; 179 broad lore/context
+candidates). Selected owning passages inform the synthesis; this is not a new
+claim of full paragraph-by-paragraph reconciliation of the entire wiki.
+The detailed reading/claim map is in `story-entrance-audit-20261116.md`.
+
+The main page now opens with an extended narrative pitch and continues through
+six broad movements: streets/city; inherited history; cast and crossings;
+realms; war and consequences; timeline. The story is 5,629 measured words
+including headings and opening, with 48 distinct validated story links.
+Firetrain, Gallery That Sleeps, Infinite Alley 9x, Dreamchain Root Node,
+StikFAM dimensions, the Deep Chain, Lattice, Violet Void and the Whisper
+Codex horizon retain their own narrative/source contexts. No universal
+simulation, completed Final Fork, new historical date or faction seat is added.
+
+All earlier narrative paragraphs and IDs are retained in a native folded
+creator/reference disclosure. Comments, citation components, head dependencies
+and site shell are preserved. Current-tool runtime code is unchanged; its
+existing browser test now opens and checks the optional reference disclosure.
+Main metadata and search terms lead with the story. Three related-card source
+descriptions are corrected, including HODL Warriors' army identity.
+
+Executed validation:
+
+- `npm run ci:wiki` with the exact main base and explicit prose-authorisation
+  environment: canon suite passed (94 identities, four Python tests, twenty
+  JavaScript cases, guard with 97 decisions); native contents, related paths,
+  hub/NFT preservation, content inventory/ownership, publisher tests, payload
+  schema tests and wiki search passed. The run then stopped at the engagement
+  layer check because `workers/moonboys-api/worker.js` is absent from this
+  sparse checkout. Full wiki CI is not green.
+- Focused story check: 5,629 words, six broad movements, 48 internal story links
+  and fragments resolve; old IDs remain; creator reference starts closed.
+- Direct comparison to the pre-rewrite PR page: every previous narrative
+  paragraph survives; functional shell and navigation preservation passed.
+- Graph publishing integrity passed; HTML hygiene passed for all 418 indexable
+  pages; syntax checks passed for the two touched scripts; whitespace passed.
+- The optional onboarding check encountered a pre-existing expectation that
+  the inline Moonboy builder is still on `index.html`; that unchanged homepage
+  now routes to its separate builder/entry pages. No root homepage change is
+  included here.
+- The updated browser check was attempted with installed system Chromium, but
+  launch failed because process-socket creation is denied. Desktop/mobile
+  visual and runtime-panel rendering are not verified in this environment.
+  Native HTML remains present without JavaScript, but this is not reported as
+  a successful no-JavaScript browser render.
+
+Publishing/search graphs and ownership were regenerated. No test trigger,
+prose gate, Worker runtime, reward, ownership term or original scripture changed.
+The story is reviewable in PR1800; production still awaits GK merge approval.
+
+## 16 November 2026 — repository canon entry-point and README audit
+
+GK asked whether the Crypto Moonboys repository still has official canon,
+whether it contains the latest corrections, and whether the README and needed
+files are current. Audit base: `26c333107d22328fa050a42b73fa5bfca8302f4f`.
+
+Confirmed already present: the 16 November cast/command overlay in the latest
+vision, master bible and continuity companion; the implemented command and
+political-count decisions; machine-readable locks; seven affected character/
+faction/Army bible overrides; the main story entrance and its owning articles;
+and the original-source provenance registers. These records are retained.
+
+Corrected gaps: the root README and product master still instructed writers to
+make the main lore page primarily a product explanation. The agent entry points
+lacked the current cast/command direction. One lore-rule example still called
+HODL Warriors a faction. Older HODL protocol wording in continuity summaries
+needed the explicit all-faction Army and HODL X aspiration. The main
+`wiki/bibles/crypto-moonboys.json` retained only March legacy facts marked
+VERIFIED; it now has the same `current_canon` precedence shape used by the
+seven existing overrides, with the approved brand/cast and command facts.
+Historical facts and their migration timestamps remain as historical evidence.
+
+Added `brand-canon/README.md` as the repository navigation index. It identifies
+authorities, owning public pages, structured summaries, historical sources,
+product terms, editorial records and publication boundaries. The real-world
+qualifying-1/1 builder use of HODL Warrior stays separate from fictional Army
+membership. No new fiction, faction assignment, chronology, licence, runtime
+feature or automatic anti-drift gate is introduced. Keep older sources;
+they explain earlier witnesses rather than governing every current statement.
+
+Regenerated content state with the existing generator. Only the digest and
+bible-family evidence hashes changed; public article inventory, narrative
+hashes, discovery and runtime files are unchanged. The generated audit text is
+identical. No broad publishing/discovery regeneration is needed for this batch.
+
+Executed verification:
+
+- `npm run test:canon` passed: recovered and verified all 94 source files,
+  Python corruption regressions, 20 JavaScript cases and the canon guard over
+  471 top-level wiki pages / 97 traceable decisions.
+- `node --test scripts/generate-wiki-content-state.test.mjs` passed all 20 cases.
+- Local documentation targets checked against tracked repository paths;
+  affected JSON parsed; `git diff --check` passed.
+- Initial sparse-checkout attempts lacked CSS, game-index and radio-route
+  fixtures. They were restored from the exact base before the successful run;
+  no test was removed or weakened.
+
+These are focused repository checks. No browser, Worker, payout, game-domain or
+full Linux suite was run for this documentation/metadata batch. No automatic
+Actions triggers, production merge or deployment are authorised by this receipt.
+Checks validate provenance and consistency, not every possible scene-level
+semantic interpretation. Keep the existing publication boundary and GK review.

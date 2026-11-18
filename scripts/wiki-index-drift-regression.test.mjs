@@ -33,6 +33,16 @@ const APPROVED_CATEGORIES = new Set(Object.keys(RANKING_CONFIG.CATEGORY_PRIORITY
 // A regression test below (verifyRootPagesMatch) ensures this list stays in sync with
 // scripts/root-pages-config.js by comparing the extracted paths.
 const REQUIRED_ROOT_PAGES = [
+  '/gpt-users.html',
+  '/join-us-on-the-wax-blockchain.html',
+  '/moonboy-builder.html',
+  '/swarmsy.html',
+  '/gkniftyheads-incubator.html',
+  '/community.html',
+  '/how-to-play.html',
+  '/how-to-play-crypto-moonboy-pets.html',
+  '/paths.html',
+  '/timeline.html',
   '/about.html',
   '/graffiti-kings-creative-guide.html',
   '/categories/index.html',

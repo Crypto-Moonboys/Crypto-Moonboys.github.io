@@ -407,7 +407,12 @@ function selectSearchMatches(query, options) {
     }
   }
 
-  scored.sort(compareScoredResults);
+  // In fallback mode, a long query may contain ordinary words that cannot
+  // match every metadata field. Prefer coverage of its meaningful subjects
+  // before substring points from short words such as "a", "an" and "in".
+  scored.sort((a, b) => (usedPartialFallback && meaningfulQueryTokenCount >= 3
+    ? b.meaningfulMatchedTokenCount - a.meaningfulMatchedTokenCount : 0)
+    || compareScoredResults(a, b));
   if (Number.isFinite(limit)) scored = scored.slice(0, limit);
 
   return { scored, usedPartialFallback };

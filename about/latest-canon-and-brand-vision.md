@@ -1,5 +1,22 @@
 # Crypto Moonboys Latest Canon And Brand Vision
 
+## Current cast and command — 16 November 2026
+
+GK’s direct instruction establishes the following fictional canon. It supplements the creator brand; real people play characters as performers play roles in a film. It does not assert private facts about those performers.
+
+- Crypto Moonboys names the brand and the characters in its shared fantasy world.
+- All City Bulls (AllCity Bulls) and Nomad Bears (also written Nomad Bares in the brief) are the two main factions: the market’s bulls and bears in a world ruled by crypto.
+- The Bitcoin Kid Army is the army for the crypto market. It shadows members of both factions 24/7 as undercover guards; it is not a GK street faction.
+- Alfie “The Bitcoin KiD” Blaze leads the Army and takes orders only from GKniftyHEADS, the underworld good guys above the two main factions and the remaining 37 GK factions. The political count is 1 + 2 + 37 = 40; neither the Army nor a temporary HODL muster adds a seat.
+- HODL Warriors are the underworld army formed from members of all GK factions, not a faction themselves. Members unite when a larger army is needed while retaining their own faction identities. Every HODL Warrior aspires to become a HODL X Warrior; the aspiration does not confer the title.
+- HODL X Warriors belong to Block Topia under Queen Sarah P-fly and her Crypto Moongirls army. Bitcoin X Kids are the inside engineered generation; some escape and join Alfie’s Army. Inside birth, outside community and Army enlistment remain distinct.
+- These forces try to defeat NULL THE PROPHET while other conflicts persist. No completed Final Fork outcome is disclosed in the public Year 3008 story.
+
+The inherited forty-reading commentary remains a cultural comparison, including Army service and royal Moongirl life. It is not an exact one-to-one GK political roll. Keep all existing named cultures and adult histories; do not invent replacement faction names or promote service units to make a list add up. GKniftyHEADS’ political authority does not make it sole interpreter of the First Witness. Do not write the later names into the nine 2030 Books. Older claims that the HODL relationship is wholly unknown or that the Army is a street faction are superseded.
+
+Owning public account: [Crypto Moonboys](../wiki/crypto-moonboys.html#market-factions-and-command), with linked dedicated references. The [Hard Fork / Rise source](https://graffpunks.substack.com/p/the-hard-fork-rise-of-the-hodl-warriors) supports the city, programme, royal and engineered-generation context; its damaged dates and outcomes remain subject to the current chronology.
+
+
 ## Current mission — 24 October 2026
 
 **One universe. Your IP or ours. Build connected worlds together.**
@@ -12,7 +29,7 @@ Creators retain their own IP and the rights they bring; GK character use follows
 
 Status: working public canon and brand vision brief
 
-Updated: 2026-10-24 (both IP routes build connected worlds within the same universe; delivery and rights preserved)
+Updated: 2026-11-16 (cast, market factions and command clarified; creator delivery and rights preserved)
 
 Sources: current repository README, Master Source of Truth, current SWARMSY positioning, protected First Witness corpus and historical W81 source provenance
 

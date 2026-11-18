@@ -66,6 +66,17 @@
     }
     .wax-entry-button:hover { background:#fff; border-color:#fff; color:#050607; }
     .wax-entry-button:focus-visible { outline:3px solid #fff; outline-offset:5px; }
+    .home-explore { max-width:1080px; margin:0 auto; padding:32px 20px 56px; line-height:1.6; }
+    .home-explore h2 { color:var(--wax-gold); font-size:clamp(1.5rem,3vw,2rem); }
+    .home-explore p { color:#d2dce0; }
+    .home-explore-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)); gap:16px; }
+    .home-explore-card { display:block; padding:20px; border:1px solid #52616a; border-radius:8px; color:#fff; text-decoration:none; }
+    .home-explore-card strong,.home-explore-card span { display:block; }
+    .home-explore-card strong { color:var(--wax-gold); margin-bottom:8px; }
+    .home-explore-card:hover { border-color:var(--wax-gold); }
+    .home-explore a:focus-visible { outline:3px solid #fff; outline-offset:4px; }
+    .home-explore-links { display:flex; flex-wrap:wrap; gap:12px 24px; padding:0; list-style:none; }
+    .home-explore-links a { color:var(--wax-gold); text-underline-offset:3px; }
     @media (max-width:600px) { .wax-entry { min-height:65svh; padding:48px 18px 68px; } .wax-entry-button { width:100%; } }
   </style>
 </head>
@@ -78,6 +89,28 @@
       <p class="wax-entry-description">Street culture meets the WAX blockchain. Build a GK Moonboy or Flygirl, bring your own IP and create connected worlds with Graffiti Kings and SWARMSY Ai.</p>
       <a class="wax-entry-button" href="/join-us-on-the-wax-blockchain.html">JOIN US ON THE WAX BLOCKCHAIN</a>
     </div>
+  </section>
+  <section class="home-explore" aria-labelledby="home-explore-title">
+    <h2 id="home-explore-title">Start creating. Find your people.</h2>
+    <p>Build a world around a GK Moonboy or Flygirl, or bring your own art, brand or character into the shared universe.</p>
+    <div class="home-explore-grid">
+      <a class="home-explore-card" href="/gpt-users.html"><strong>ChatGPT Creator Studio</strong><span>Start an artwork, story, website or creative project. No Moonboy or SWARMSY installation required.</span></a>
+      <a class="home-explore-card" href="/moonboy-builder.html"><strong>Moonboy Builder</strong><span>Explore the artwork and build your Moonboy or Flygirl identity.</span></a>
+      <a class="home-explore-card" href="/about.html"><strong>About Crypto Moonboys</strong><span>Understand the creator umbrella, your rights and how the connected worlds fit together.</span></a>
+    </div>
+    <h3>Explore the culture and the project</h3>
+    <nav aria-label="Project and artist guides">
+      <ul class="home-explore-links">
+        <li><a href="/wiki/crypto-moonboys.html">Crypto Moonboys project guide</a></li>
+        <li><a href="/wiki/waxp.html">WAXP and the WAX blockchain</a></li>
+        <li><a href="/wiki/graffiti-kings.html">Graffiti Kings</a></li>
+        <li><a href="/wiki/darren-cullen.html">Darren Cullen / SER</a></li>
+        <li><a href="/wiki/charlie-buster.html">Charlie Buster</a></li>
+        <li><a href="/wiki/gkniftyheads-nft-collection.html">GKniftyHEADS collection</a></li>
+        <li><a href="/gkniftyheads-incubator.html">GKniftyHEADS community</a></li>
+        <li><a href="/search.html">Explore all articles</a></li>
+      </ul>
+    </nav>
   </section>
 </main>
 <script>

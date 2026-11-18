@@ -196,9 +196,37 @@ try {
   // Images are intentionally lazy below the mission ledger. Their intrinsic
   // height is unknown until loaded, so scroll and decode each before measuring
   // rather than sampling offscreen placeholders after DOMContentLoaded.
-  for (const panel of await badDaysPanels.all()) {
+  for (const [index, panel] of (await badDaysPanels.all()).entries()) {
+    // Lazy images may be cancelled and restarted while scrolling to the next
+    // panel. Wait for a completed, decoded image instead of immediately
+    // calling decode() during an in-flight lazy request.
     await panel.scrollIntoViewIfNeeded();
-    await panel.evaluate(image => image.decode());
+    await panel.evaluate(image => { image.loading = 'eager'; });
+    try {
+      await panel.evaluate(async image => {
+        if (!image.complete) {
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('image load timeout')), 15000);
+            const finish = () => { clearTimeout(timeout); resolve(); };
+            const fail = () => { clearTimeout(timeout); reject(new Error('image load failed')); };
+            image.addEventListener('load', finish, { once: true });
+            image.addEventListener('error', fail, { once: true });
+            if (image.complete) finish();
+          });
+        }
+        if (!image.naturalWidth || !image.naturalHeight) {
+          throw new Error('image completed without valid intrinsic dimensions');
+        }
+        await image.decode();
+      });
+    } catch (error) {
+      const details = await panel.evaluate(image => ({
+        src: image.currentSrc || image.src, complete: image.complete,
+        naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight
+      }));
+      throw new Error('Bad Days panel ' + (index + 1) +
+        ' failed to load/decode: ' + JSON.stringify(details), { cause: error });
+    }
   }
   const panels = await badDaysPanels.evaluateAll(images => images.map(image => {
     const rect = image.getBoundingClientRect();

@@ -59,6 +59,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-completed-labels.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth.test.mjs'],
     ['node', '--test', 'scripts/nbg-telegram-group-membership.test.mjs'],
+    ['node', '--test', 'scripts/telegram-egress-connectivity.test.mjs'],
     ['node', 'scripts/moonpet-miniapp-cors-regression.test.mjs'],
     ['node', '--test', 'scripts/telegram-mini-app-website-session.test.mjs'],
     ['node', '--test', 'scripts/telegram-website-auth-diagnostics.test.mjs'],
@@ -147,6 +148,7 @@ const GROUPS = {
     ['node', 'scripts/community-xp-sync.test.mjs'],
     ['node', 'scripts/community-xp-awards.test.mjs'],
     ['node', '--test', 'scripts/tag-run-community-rewards.test.mjs'],
+    ['node', '--test', 'scripts/tag-run-command-delivery.test.mjs'],
     ['node', '--test', 'scripts/tag-run-bulletin-transport.test.mjs'],
     ['node', '--test', 'scripts/tag-run-engagement.test.mjs'],
     ['node', '--test', 'scripts/tag-run-v2-community-pot.test.mjs'],
@@ -324,6 +326,7 @@ const GROUPS = {
   visual: [
     ['node', 'scripts/homepage-route-split.test.mjs'],
     ['node', '--test', 'scripts/wax-video-performance.test.mjs'],
+    ['node', '--test', 'scripts/wax-progressive-loading.test.mjs'],
     ['node', 'scripts/homepage-hero-parity.test.mjs'],
     ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
     ['node', 'scripts/arcade-graph-source-parity.test.mjs'],
@@ -375,21 +378,42 @@ if (!GROUPS[group]) {
 // Default and targeted CI remain fail-fast. A non-zero result can never turn
 // green under collection mode; independent commands still execute afterward.
 const collectFailures = process.env.CI_COLLECT_ALL_FAILURES === '1';
+const configuredTimeout = Number.parseInt(process.env.CI_COMMAND_TIMEOUT_MS || '', 10);
+const commandTimeoutMs = Number.isFinite(configuredTimeout) && configuredTimeout > 0
+  ? configuredTimeout
+  : (group === 'visual' ? 12 * 60 * 1000 : 0);
+// On Linux, GNU timeout owns a separate process group and terminates the
+// complete browser-test tree. spawnSync's timeout only signals the immediate
+// child; Playwright descendants can keep inherited pipes open indefinitely.
+const useProcessTreeTimeout = commandTimeoutMs > 0 && process.platform === 'linux';
+const spawnOptions = commandTimeoutMs > 0 && !useProcessTreeTimeout
+  ? { stdio: 'inherit', timeout: commandTimeoutMs, killSignal: 'SIGTERM' }
+  : { stdio: 'inherit' };
 const failures = [];
 let completed = 0;
 for (const command of GROUPS[group]) {
   const [rawBin, ...args] = command;
   const name = [rawBin, ...args].join(' ');
   console.log(`\n[ci:${group}] ${name}`);
-  const result = process.platform === 'win32' && rawBin === 'npm'
-    ? spawnSync('cmd.exe', ['/d', '/s', '/c', name], { stdio: 'inherit' })
-    : spawnSync(rawBin, args, { stdio: 'inherit' });
+  const timeoutSeconds = Math.max(1, Math.ceil(commandTimeoutMs / 1000));
+  const result = useProcessTreeTimeout
+    ? spawnSync('timeout', ['--signal=TERM', '--kill-after=15s', `${timeoutSeconds}s`, rawBin, ...args], spawnOptions)
+    : (process.platform === 'win32' && rawBin === 'npm'
+        ? spawnSync('cmd.exe', ['/d', '/s', '/c', name], spawnOptions)
+        : spawnSync(rawBin, args, spawnOptions));
   completed++;
   if (result.error) {
-    console.error(`[ci:${group}] failed to start ${rawBin}: ${result.error.message}`);
+    const timedOut = result.error.code === 'ETIMEDOUT';
+    console.error(timedOut
+      ? `[ci:${group}] timed out after ${commandTimeoutMs}ms: ${name}`
+      : `[ci:${group}] failed to start ${rawBin}: ${result.error.message}`);
     failures.push({ command: name, status: 1 });
     if (!collectFailures) process.exit(1);
     continue;
+  }
+  const processTreeTimedOut = useProcessTreeTimeout && result.status === 124;
+  if (processTreeTimedOut) {
+    console.error(`[ci:${group}] timed out after ${commandTimeoutMs}ms and terminated process tree: ${name}`);
   }
   if (result.status !== 0) {
     failures.push({ command: name, status: result.status || 1 });

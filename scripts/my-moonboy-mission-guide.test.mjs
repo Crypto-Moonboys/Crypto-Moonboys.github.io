@@ -146,7 +146,7 @@ test('public resource guide and private checklist are isolated, with logout purg
   assert.match(client, /renderChecklist\(byId\('mm-checklist'\), state\.tasks/u);
   assert.ok(read('scripts/ci-domain-runner.mjs').includes(
     "['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs']"));
-  for (const page of ['index.html','community.html','games/index.html',
+  for (const page of ['join-us-on-the-wax-blockchain.html','community.html','games/index.html',
     'gkniftyheads-incubator.html','how-to-play.html']) {
     assert.match(read(page), /href="\/my-moonboy\.html"/u,
       page + ' must make the signed mission checklist discoverable');

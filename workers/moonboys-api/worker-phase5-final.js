@@ -7,10 +7,12 @@ import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { handleTelegramGroupMembership } from './telegram-group-membership.js';
+import { handleTelegramConnectivity } from './telegram-connectivity.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
 import { phase5CronTasks } from './scheduled/phase5-cron-plan.js';
 import { runAutomaticCommunityPot } from './tag-run/v2-automation.js';
+import { claimTagRunCommand, runClaimedTagRunCommand } from './tag-run/command-delivery.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -378,6 +380,9 @@ export default {
       } });
     }
     const isTelegramWebhook = path === '/telegram/webhook' && request.method === 'POST';
+    // Fixed public connectivity check; no secrets, D1 or Telegram auth used.
+    const connectivityResponse = await handleTelegramConnectivity(request);
+    if (connectivityResponse) return connectivityResponse;
     const groupMembershipResponse = await handleTelegramGroupMembership(request, env);
     if (groupMembershipResponse) return groupMembershipResponse;
     // This wrapper reads gear and repairs rewards around the base handler.
@@ -423,15 +428,31 @@ export default {
     // Its own commands are intentionally isolated from MoonPet /daily and the
     // existing website login. All unrelated updates retain the base handler.
     if (isTelegramWebhook && body && isTagRunCommand(body, env)) {
-      const sharedLegacyProfile = isSharedLegacyProfile(body, env);
-      await handleTagRunCommand(body, env);
-      if (!sharedLegacyProfile) {
-        return new Response(JSON.stringify({ ok: true }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
+      let claimed;
+      try {
+        claimed = await claimTagRunCommand(body, env);
+      } catch {
+        // No command or send starts without a confirmed durable claim.
+        const retry = jsonError(request, 'tag_run_command_claim_unavailable', 503, env);
+        retry.headers.set('Retry-After', '5');
+        return retry;
       }
-      // /profile remains owned by the original bot too. The base handler
-      // sends its established XP/level/faction/quest profile response.
+      if (claimed) {
+        const work = runClaimedTagRunCommand(body, env, async () => {
+          await handleTagRunCommand(body, env);
+          // /profile intentionally has two established profile responses.
+          // Both are covered by the same claim; unrelated commands never
+          // fall through to the base handler.
+          if (isSharedLegacyProfile(body, env)) {
+            await baseWorker.fetch(request, env, ctx);
+          }
+        });
+        if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(work);
+        else await work;
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
     // Persist authenticated group scoring BEFORE acknowledging Telegram.
     // A transient DB failure returns non-2xx so Telegram retries this update;
@@ -523,7 +544,7 @@ export default {
     }
     if (tasks.bulletin) {
       ctx.waitUntil(postTagRunGroupBulletin(env).catch((error) => {
-        console.warn('[TAG RUN] four-hour bulletin unavailable',
+        console.warn('[TAG RUN] daily 18:00 UTC bulletin unavailable',
           String(error?.message || error));
       }));
     }

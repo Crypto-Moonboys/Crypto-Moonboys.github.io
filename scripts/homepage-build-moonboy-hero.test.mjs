@@ -188,7 +188,8 @@ check(
 const galleryStart = html.indexOf('<section class="home-art-strip"');
 const galleryEnd = html.indexOf('</section>', galleryStart);
 const galleryHtml = galleryStart >= 0 && galleryEnd > galleryStart
-  ? html.slice(galleryStart, galleryEnd + '</section>'.length) : '';
+  ? html.slice(galleryStart, galleryEnd + '</section>'.length)
+    .replace(/<noscript>[\s\S]*?<\/noscript>/g, '') : '';
 const galleryImagePaths = [
   "/img/homepage/Gritty%20New%20York%20Night%20Billboard%20Scene.jpg",
   "/img/homepage/Moonboys%20Neon%20Graffiti%20Still%20Life.jpg",

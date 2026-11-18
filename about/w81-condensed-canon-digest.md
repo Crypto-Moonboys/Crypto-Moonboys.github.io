@@ -1,5 +1,12 @@
 # W81 Condensed Canon Digest
 
+## Current cast/command overlay — 16 November 2026
+
+Use [the canon index](../brand-canon/README.md) and the implemented `GK-20261116-MARKET-FACTIONS-COMMAND` decision for current narration. The historical summaries below retain source-era wording. They do not override the current Army identities, GKniftyHEADS command, HODL X aspiration or the distinction between cultural readings and political seats.
+
+The Bitcoin Kid Army protects Bulls and Bears 24/7 and is not a street faction. HODL Warriors are the underworld army of members from all GK factions, retaining their identities; every HODL Warrior aspires to Block Topia’s distinct HODL X order. Current qualifying-1/1 builder terms remain a separate real-world use of the name.
+
+
 > **Current authority, Issue #1458 (8 October 2026): W81 is foundational truth.** Older language below freezing convergence or treating raw canon as secondary is retained as dated audit evidence and is superseded by `brand-canon/CANON_POLICY.md`. Retcons and Forty-slot proposals must be researched and traced; significant changes require specific GK approval. See `brand-canon/story-bibles/gk-master-canon.md` and `brand-canon/wiki-rewrites/issue-1458-progress.md`.
 
 Status: condensed source digest
@@ -15,7 +22,7 @@ Use the current [progress ledger](../brand-canon/wiki-rewrites/issue-1458-progre
 and [source audit](../brand-canon/wiki-rewrites/issue-1458-audit.json) for exact
 scopes; the older orientation and first-tranche descriptions below are historical.
 
-Updated: 2026-10-10 (current AI delivery clarified; historical source summaries retained)
+Updated: 2026-11-16 (current cast/command overlay added; historical source summaries retained)
 
 Source archive: the historical W81 set of 94 source files; the uploaded `RAW CANNON.zip` repackages the same 94 uncompressed source bytes
 

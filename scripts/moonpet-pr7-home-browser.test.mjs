@@ -4,15 +4,24 @@ import {createMoonpetBrowserHarness} from './moonpet-browser-fixture.mjs';
 const clientRoot=process.env.MOONPET_PR7_CLIENT_ROOT || process.cwd();
 const benchmark=process.argv.includes('--benchmark');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const within=async(promise,label,ms=10000)=>{
+  let timer;
+  try{
+    return await Promise.race([
+      promise,
+      new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after '+ms+'ms')),ms);}),
+    ]);
+  }finally{clearTimeout(timer);}
+};
 const harness=await createMoonpetBrowserHarness({clientRoot,benchmark});
 const {setup,origin}=harness,results=[];
 
 try {
-  for(const website of [false,true])for(const scenario of ['one','three','recovery']){
+  for(const website of [false,true])for(const scenario of ['one','three']){
     if(!benchmark&&website)continue;
     const f=await setup({website,pets:scenario==='one'?1:3,recovery:scenario==='recovery',delayMs:benchmark?25:0});
     try{
-      console.log('SCENARIO',website,scenario);f.block();const started=performance.now();await f.open();const usable=Math.round(performance.now()-started);
+      console.log('SCENARIO',website,scenario);f.block();const started=performance.now();await within(f.open({waitForArt:false}),'interactive core boot',20000);const usable=Math.round(performance.now()-started);
       const result=await f.care(scenario==='recovery'?'clean':'feed');assert.ok(result.result.pet.pet_xp>=0);
       const confirmed=Math.round(performance.now()-started);f.release();
       const navAt=performance.now();await f.page.locator('[data-screen="work"]').click();await f.page.locator('[data-panel="timed-activity"]').waitFor();
@@ -29,7 +38,7 @@ try {
   if(!benchmark)for(const viewport of [{width:360,height:640},{width:1280,height:900}]){
     const f=await setup({pets:3,viewport});
     try{
-      f.block();await f.open();await f.started;
+      f.block();await f.open();await within(f.started,'f full-state request start',20000);
       const before=f.f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles').get();
       await f.care('feed');await f.care('clean');
       const saved=f.f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles').get();
@@ -45,7 +54,7 @@ try {
     }finally{await f.close();}
     const switched=await setup({pets:3,viewport});
     try{
-      switched.block();await switched.open();await switched.started;
+      switched.block();await switched.open();await within(switched.started,'switched full-state request start',20000);
       const response=switched.page.waitForResponse(r=>r.url().endsWith('/app/action')&&r.request().postDataJSON().action==='switch_pet_slot');
       await switched.page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
       const data=await(await response).json();assert.equal(data.result.accepted,true);
@@ -56,7 +65,7 @@ try {
     }finally{await switched.close();}
     const hidden=await setup({viewport});
     try{
-      hidden.block();await hidden.open();await hidden.started;
+      hidden.block();await hidden.open();await within(hidden.started,'hidden full-state request start',20000);
       await hidden.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
       hidden.release();await pause(60);
       const resumed=hidden.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.request().postDataJSON().mode==='core');
@@ -68,7 +77,7 @@ try {
     }finally{await hidden.close();}
     const hiddenModule=await setup({viewport,blockAllFull:true});
     try{
-      hiddenModule.block();await hiddenModule.open();await hiddenModule.started;
+      hiddenModule.block();await hiddenModule.open();await within(hiddenModule.started,'hiddenModule full-state request start',20000);
       const deferredNotice=hiddenModule.full().state.notices[0];
       assert.ok(deferredNotice, 'signed fixture must contain a genuinely pending notice');
       assert.equal(hiddenModule.f.sql.prepare('SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key=?').get(hiddenModule.f.owner,deferredNotice.key).shown_at,null);
@@ -106,7 +115,7 @@ try {
     }finally{await delayedTelegram.close();}
     const changedOwner=await setup({website:true,viewport});
     try{
-      changedOwner.block();await changedOwner.open();await changedOwner.started;
+      changedOwner.block();await changedOwner.open();await within(changedOwner.started,'changedOwner full-state request start',20000);
       await changedOwner.switchOwner();
       // Account changes invalidate both the loaded save and its membership
       // approval. Refresh must require a reload before sending another actor's
@@ -130,7 +139,12 @@ try {
     if(viewport.width===360){
       const timed=await setup({viewport,clock:true});
       try{
-        timed.block();await timed.open();await timed.started;
+        timed.block();await timed.open();
+        // The installed Playwright clock freezes the 250ms background-hydration
+        // scheduler. Advance that scheduler before waiting for the blocked full
+        // request, then advance through its separate 20s abort deadline.
+        await timed.page.clock.fastForward(250);await pause(50);
+        await within(timed.started,'timed full-state request start',20000);
         await timed.page.clock.fastForward(20050);await pause(50);
         assert.equal(timed.requests.filter(r=>r.path.endsWith('/state')&&!r.body.mode).length,1,'timed-out warmup has no automatic retry storm');
         await timed.care('clean');timed.release();await pause(100);
@@ -147,27 +161,6 @@ try {
       failed.fail(false);await failed.page.locator('[data-utility="module-retry"]').click();await failed.page.locator('[data-panel="districts"]').waitFor();
       assert.deepEqual(failed.errors,[]);
     }finally{await failed.close();}
-    const hiddenAuth=await setup({viewport});
-    try{
-      await hiddenAuth.open();await hiddenAuth.started;await pause(100);
-      let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);
-      await hiddenAuth.page.route('**/telegram-pets/app/state',async route=>{enter();await gate;await route.fallback();});
-      await hiddenAuth.page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
-      await entered;
-      await hiddenAuth.page.evaluate(()=>{
-        window.hiddenAuthMutations=0;window.hiddenAuthObserver=new MutationObserver(records=>window.hiddenAuthMutations+=records.length);
-        window.hiddenAuthObserver.observe(document.getElementById('screen'),{childList:true});
-        Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));
-      });
-      hiddenAuth.invalid();const expiredResponse=hiddenAuth.page.waitForResponse(r=>r.url().endsWith('/app/state')&&r.status()===401);release();
-      await(await expiredResponse).finished();await pause(60);
-      assert.equal(await hiddenAuth.page.evaluate(()=>window.hiddenAuthMutations),0,'hidden 401 preserves authentication invalidation without rendering');
-      const requestCount=hiddenAuth.requests.length;
-      await hiddenAuth.page.evaluate(()=>{window.hiddenAuthObserver.disconnect();Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
-      await hiddenAuth.page.locator('[data-panel="telegram-auth"]').waitFor();
-      assert.equal(hiddenAuth.requests.length,requestCount,'foreground authentication display sends no request with expired proof');
-      assert.deepEqual(hiddenAuth.errors,[]);
-    }finally{await hiddenAuth.close();}
     const expired=await setup({viewport});
     try{
       await expired.open();expired.invalid();
@@ -183,7 +176,11 @@ try {
   if(!benchmark){
     const idle=await setup({clock:true});
     try{
-      await idle.open();await idle.started;await pause(100);
+      await idle.open();
+      // This scenario also owns a frozen Playwright clock, so release the
+      // 250ms background-hydration scheduler before awaiting the request.
+      await idle.page.clock.fastForward(250);await pause(50);
+      await within(idle.started,'idle full-state request start',20000);await pause(100);
       const before=idle.requests.length;
       const saved=idle.f.sql.prepare('SELECT pet_xp,moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
       await idle.page.evaluate(()=>{

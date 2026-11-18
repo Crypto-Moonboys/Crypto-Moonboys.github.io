@@ -6,9 +6,9 @@ preview_urls = true
 
 [triggers]
 # Existing 5-minute timed events and 09:00 Telegram digest stay unchanged.
-# Offset TAG RUN bulletin and V2 participation capture from the 5-minute tick.
-# These offsets do not change UTC day/week eligibility, award policy or resets.
-crons = ["*/5 * * * *", "*/30 * * * *", "0 9 * * *", "3 */4 * * *", "12 0 * * *"]
+# TAG RUN bulletin runs once daily at 18:00 UTC; participation captures at 00:12 UTC.
+# These schedules do not change UTC day/week eligibility, award policy or resets.
+crons = ["*/5 * * * *", "*/30 * * * *", "0 9 * * *", "0 18 * * *", "12 0 * * *"]
 
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.
@@ -19,7 +19,8 @@ TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 # Delivery remains restricted to the configured official Telegram group.
 TELEGRAM_MOONBOY_PHOTOS_ENABLED = "true"
 TELEGRAM_MOONBOY_MEDIA_MODE = "group"
-TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification,core-command"
+# Generated artwork is reserved for updates/announcements, never command replies.
+TELEGRAM_MOONBOY_MESSAGE_KINDS = "daily-digest,group-announcement,pet-notification"
 # TAG RUN launch is deliberately fail-closed pending D1 migration 103 and an
 # explicit community release decision. Weekly rewards only draft unpaid ledgers.
 TAG_RUN_ENABLED = "true"

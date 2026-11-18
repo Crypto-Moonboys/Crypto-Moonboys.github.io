@@ -4560,3 +4560,40 @@ body.page-wiki[data-entity-hash="a4b462cb5857"] #content > .cm-page::before {
   border-radius: 0;
   box-shadow: none;
 }
+
+
+/* Crypto Moonboys story: open page width, with no panels behind the prose. */
+body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) #content {
+  width: 100%;
+  max-width: none;
+  padding-inline: clamp(18px, 3vw, 56px);
+}
+body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) .cm-page,
+body.page-wiki article[data-entity-slug="crypto-moonboys"],
+body.page-wiki article[data-entity-slug="crypto-moonboys"] [data-story-narrative] {
+  width: 100%;
+  max-width: none !important;
+  margin-inline: 0;
+}
+body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) .cm-page {
+  padding-inline: 0;
+}
+body.page-wiki article[data-entity-slug="crypto-moonboys"] :is(
+  .cm-hero, .cm-section, .wiki-section, .character-contents,
+  .cm-card, .cm-role-card, h2, h3
+) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  padding-inline: 0;
+}
+body.page-wiki article[data-entity-slug="crypto-moonboys"] :is(p, .cm-lead) {
+  max-width: none;
+}
+
+/* Align the story and its reading paths with the centred content cards above. */
+body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) #content > .cm-page {
+  max-width: 1480px !important;
+  margin-inline: auto;
+}

@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import {
   acceptsNbgGroupGateProbe,
+  groupGateDiagnosticSummary,
   verifyNbgGroupGate,
 } from './verify-nbg-group-gate-worker.mjs';
 
@@ -72,4 +73,38 @@ test('readiness CLI runs from a native filesystem path and imports without argv[
     if (direct) assert.match(child.stdout, /Verified live moonboys-api/);
     else assert.equal(child.stdout, '');
   }
+});
+
+
+test('CI prints only recognized readiness categories; never raw upstream messages', () => {
+  assert.equal(groupGateDiagnosticSummary(503, {
+    error:'telegram_group_membership_unavailable',
+    diagnostic: { membership:'transport_timeout', bot_identity:'transport_unavailable' },
+  }), 'HTTP 503; gate=telegram_group_membership_unavailable; membership=transport_timeout; bot_identity=transport_unavailable');
+
+  const hostile = 'bad-value\n::error::DO-NOT-PRINT-TOKEN';
+  const sanitized = groupGateDiagnosticSummary(503, {
+    error: hostile,
+    diagnostic: { membership:hostile, bot_identity:hostile },
+  });
+  assert.equal(sanitized, 'HTTP 503; gate=unknown; membership=unknown; bot_identity=unknown');
+  assert.ok(!sanitized.includes('TOKEN') && !sanitized.includes('::error'));
+});
+
+test('readiness verifier remains blocked on HTTP 503 and reports non-secret categories', async () => {
+  const fakeResponse = async () => new Response(JSON.stringify({
+    ok:false, error:'telegram_group_membership_unavailable',
+    bot_username:null,
+    diagnostic:{membership:'bot_token_rejected',bot_identity:'bot_token_rejected'},
+  }), {status:503,headers:{'content-type':'application/json'}});
+  await assert.rejects(
+    () => verifyNbgGroupGate(fakeResponse),
+    error => {
+      assert.match(error.message,/live moonboys-api must support/);
+      assert.match(error.message,/Readiness diagnosis: HTTP 503/);
+      assert.match(error.message,/membership=bot_token_rejected/);
+      assert.match(error.message,/bot_identity=bot_token_rejected/);
+      return true;
+    },
+  );
 });

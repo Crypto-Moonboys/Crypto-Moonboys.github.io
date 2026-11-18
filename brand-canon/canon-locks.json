@@ -136,7 +136,20 @@
         ],
         "owner": "wiki/first-witness-faction-commentaries.html#bone-idol-ink-ritualists"
       }
-    ]
+    ],
+    "reading_scope": "Forty inherited comparative readings, including Army service and royal culture; not an exact GK street-faction roster.",
+    "political_structure": {
+      "total": 40,
+      "command_faction": "GKniftyHEADS",
+      "main_market_factions": [
+        "AllCity Bulls",
+        "Nomad Bears"
+      ],
+      "other_faction_count": 37,
+      "bitcoin_kid_army_is_street_faction": false,
+      "roster_allocation": "Do not infer a complete one-to-one political roll from the comparative readings or invent replacement names.",
+      "approval_decision": "GK-20261116-MARKET-FACTIONS-COMMAND"
+    }
   },
   "identity_boundaries": [
     [
@@ -420,5 +433,19 @@
     ],
     "public_final_fork_status": "future/unresolved",
     "source_futures": "locally attributed; not the approved intended ending"
+  },
+  "command_structure": {
+    "army_leader": "Alfie The Bitcoin KiD Blaze",
+    "army_orders_only_from": "GKniftyHEADS",
+    "army_mission": "24/7 undercover protection of All City Bulls and Nomad Bears",
+    "united_gk_army": "HODL Warriors",
+    "aspirational_order": "HODL X Warriors",
+    "city": "Block Topia",
+    "city_ruler": "Queen Sarah P-fly",
+    "city_army": "Crypto Moongirls",
+    "bitcoin_x_kid_escape_destination": "Bitcoin Kid Army",
+    "approval_decision": "GK-20261116-MARKET-FACTIONS-COMMAND",
+    "army_identity": "Army for the crypto market; not a GK street faction",
+    "hodl_warriors_identity": "Underworld army formed from members of all GK factions; not a faction"
   }
 }

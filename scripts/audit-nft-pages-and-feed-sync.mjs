@@ -206,7 +206,10 @@ for (const url of nonArticleRegressionUrls) {
 const indexHtml = read('index.html');
 const dashboardJs = read('js/dashboard.js');
 const samJs = read('js/sam-dashboard.js');
-check(indexHtml.includes('<div class="stat-label">Wiki Pages</div>'), 'homepage inclusive count label must be Wiki Pages');
+const homepageHasStatBlock = indexHtml.includes('class="stat-number"') || indexHtml.includes('class="stat-label"');
+if (homepageHasStatBlock) {
+  check(indexHtml.includes('<div class="stat-label">Wiki Pages</div>'), 'homepage inclusive count label must be Wiki Pages');
+}
 check(!indexHtml.includes('<div class="stat-label">Articles</div>'), 'homepage must not label inclusive page count as Articles');
 check(dashboardJs.includes('Wiki Pages'), 'dashboard must label inclusive count as Wiki Pages');
 check(dashboardJs.includes('Articles excluding NFT templates'), 'dashboard must expose article count meaning');

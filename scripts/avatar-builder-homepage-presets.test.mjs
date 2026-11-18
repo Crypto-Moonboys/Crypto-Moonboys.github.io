@@ -90,21 +90,153 @@ const expectedNames = [
     "Hat 5",
     "Left 59",
     "Right 43"
+  ],
+  [
+    "Bg 23",
+    "Body 1",
+    "Tattoo 3",
+    null,
+    "Chain 111",
+    "Face 3",
+    "Hat 13",
+    "Left 29",
+    "Right 42"
+  ],
+  [
+    "Bg 34",
+    "Body 1",
+    "Tattoo 4",
+    null,
+    "Chain 115",
+    "Face 12",
+    "Hat 17",
+    "Left 35",
+    "Right 44"
+  ],
+  [
+    "Bg 1A",
+    "Body 1",
+    "Tattoo 6",
+    "Clothes 118",
+    null,
+    "Face 82",
+    "Hat 35",
+    "Left 11",
+    "Right 20"
+  ],
+  [
+    "Pixel Fire",
+    "Body 1",
+    "Tattoo 10",
+    "Clothes 70",
+    "Chain 112",
+    "Face 33",
+    "Hat 28",
+    "Left 56",
+    "Right 22"
+  ],
+  [
+    "Bg 46",
+    "Body 1",
+    "Tattoo 8",
+    "Clothes 96",
+    "Chain 174",
+    "Face 64",
+    "Hat 195",
+    "Left 39",
+    "Right 104"
+  ],
+  [
+    "Bg 40",
+    "Body 1",
+    null,
+    "Clothes 129",
+    "Chain 98",
+    "Face 13",
+    "Hat 43",
+    "Left 21",
+    "Right 18"
+  ],
+  [
+    "Bg 8",
+    "Body 1",
+    null,
+    "Clothes 85",
+    "Chain 112",
+    "Face 44",
+    "Hat 62",
+    "Left 9",
+    "Right 54"
+  ],
+  [
+    "Matrix Rain",
+    "Body 1",
+    null,
+    "Clothes 11",
+    "Chain 97",
+    null,
+    "Hat 49",
+    "Left 34",
+    "Right 19"
+  ],
+  [
+    "Bg 26",
+    "Body 1",
+    null,
+    "Clothes 25",
+    "Chain 90",
+    "Face 27",
+    "Hat 87",
+    "Left 6",
+    "Right 52"
+  ],
+  [
+    "Bg 31",
+    "Body 1",
+    null,
+    "Clothes 28",
+    "Chain 99",
+    "Face 34",
+    "Hat 91",
+    "Left 13",
+    "Right 67"
+  ],
+  [
+    "Bg 38",
+    "Body 1",
+    null,
+    "Clothes 130",
+    "Chain 175",
+    "Face 63",
+    "Hat 108",
+    "Left 42",
+    "Right 31"
+  ],
+  [
+    "Bg 1",
+    "Body 1",
+    null,
+    "Clothes 27",
+    "Chain 113",
+    "Face 91",
+    "Hat 138",
+    "Left 8",
+    "Right 53"
   ]
 ];
 const byId = new Map(manifest.traits.map(trait => [trait.id, trait]));
 const next = createHomepagePresetCycle(manifest);
-for (let click = 0; click < 24; click++) {
+for (let click = 0; click < expectedNames.length * 3; click++) {
   const stack = next();
   assert.deepEqual(manifest.categoryOrder.map(category =>
     stack[category] === null ? null : byId.get(stack[category])?.name),
-    expectedNames[click % 8], 'Exact trait names for click ' + (click + 1));
+    expectedNames[click % expectedNames.length], 'Exact trait names for click ' + (click + 1));
 }
 // Caller edits must not mutate future presets; new sessions start at #1.
 const fresh = createHomepagePresetCycle(manifest);
 const edited = fresh();
 edited.background = 'changed';
-for (let n = 0; n < 7; n++) fresh();
+for (let n = 0; n < expectedNames.length - 1; n++) fresh();
 assert.equal(fresh().background, 'background-mb-bg-2');
 assert.equal(createHomepagePresetCycle(manifest)().clothes, null);
 assert.throws(() => createHomepagePresetCycle({
@@ -113,4 +245,4 @@ assert.throws(() => createHomepagePresetCycle({
 assert.throws(() => createHomepagePresetCycle({
   ...manifest, traits: manifest.traits.map(trait => trait.id === 'hat-mb-hat-22' ? {...trait, category:'face'} : trait)
 }), /unavailable/);
-console.log('Homepage presets passed: 24 ordered clicks, optional clothing, isolated cycles, mutation safety and missing/wrong-category traits.');
+console.log('Homepage presets passed: 60 ordered clicks across 20 presets, optional traits, isolated cycles, mutation safety and missing/wrong-category traits.');

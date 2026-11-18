@@ -18,6 +18,16 @@
  */
 
 const APPROVED_ROOT_PAGES = [
+  { path: '/gpt-users.html', title: 'SPARKY Creator Studio', changefreq: 'weekly', priority: '0.9' },
+  { path: '/join-us-on-the-wax-blockchain.html', title: 'Join us on the WAX blockchain', changefreq: 'weekly', priority: '0.9' },
+  { path: '/moonboy-builder.html', title: 'Moonboy Builder', changefreq: 'monthly', priority: '0.8' },
+  { path: '/swarmsy.html', title: 'SWARMSY PC Beta', changefreq: 'monthly', priority: '0.7' },
+  { path: '/gkniftyheads-incubator.html', title: 'GKniftyHEADS Community', changefreq: 'weekly', priority: '0.8' },
+  { path: '/community.html', title: 'Battle Chamber', changefreq: 'weekly', priority: '0.7' },
+  { path: '/how-to-play.html', title: 'Arcade How to Play', changefreq: 'monthly', priority: '0.6' },
+  { path: '/how-to-play-crypto-moonboy-pets.html', title: 'How to Play Crypto Moonboy Pets', changefreq: 'monthly', priority: '0.6' },
+  { path: '/paths.html', title: 'Reading Paths', changefreq: 'monthly', priority: '0.6' },
+  { path: '/timeline.html', title: 'Universe Timeline', changefreq: 'monthly', priority: '0.6' },
   { path: '/about.html', title: 'About Crypto Moonboys' },
   { path: '/graffiti-kings-creative-guide.html', title: 'Graffiti Kings Creative Guide' },
   { path: '/categories/index.html', title: 'Categories' },
