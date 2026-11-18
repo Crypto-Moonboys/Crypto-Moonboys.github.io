@@ -4455,12 +4455,20 @@ const stagedFeedOutsideIndex = path.join(stagedFeedOutsideDir, 'wiki-index.json'
 const stagedFeedOutsideBytes = Buffer.from('OUTSIDE FEED MUST NOT CHANGE\n', 'utf8');
 fs.writeFileSync(stagedFeedOutsideIndex, stagedFeedOutsideBytes);
 fs.symlinkSync(stagedFeedOutsideDir, path.join(stagedFeedRoot, 'js'), 'dir');
+const stagedCategories = path.join(stagedFeedDirectory, 'categories');
+fs.mkdirSync(stagedCategories);
+fs.writeFileSync(path.join(stagedCategories, 'new-hub.html'), '<main>Fresh links</main>');
 const stagedFeedGenerator = path.join(stagedFeedScriptsDir, 'fake-generator.cjs');
 fs.writeFileSync(
   stagedFeedGenerator,
   `'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const categoryDirectory = path.join(process.env.TEST_WIKI_ROOT, 'categories');
+const categoryFiles = fs.readdirSync(categoryDirectory);
+if (categoryFiles.join() !== 'new-hub.html' || !fs.readFileSync(path.join(categoryDirectory, categoryFiles[0]), 'utf8').includes('Fresh links')) {
+  throw new Error('graph generators must discover and read the staged category');
+}
 const target = path.join(process.env.TEST_WIKI_ROOT, 'js', 'wiki-index.json');
 fs.writeFileSync(target, '[{"url":"/wiki/staged-child.html"}]\\n', 'utf8');
 if (!fs.readFileSync(target, 'utf8').includes('staged-child')) process.exitCode = 9;
@@ -4483,7 +4491,7 @@ const stagedFeedResult = spawnSync(
       TEST_WIKI_ROOT: stagedFeedRoot,
       WIKI_PUBLISH_ROOT: stagedFeedRoot,
       WIKI_PUBLISH_STAGE_FD: '3',
-      WIKI_PUBLISH_STAGED_OUTPUTS: JSON.stringify(['js/wiki-index.json']),
+      WIKI_PUBLISH_STAGED_OUTPUTS: JSON.stringify(['js/wiki-index.json', 'categories/new-hub.html']),
     },
   }
 );
