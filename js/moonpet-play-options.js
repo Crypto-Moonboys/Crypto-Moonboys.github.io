@@ -526,6 +526,7 @@
     });
     var evolution = g.evolution || null;
     var egg = s.lifecycle && s.lifecycle.phase === 'egg';
+    var finalForm = lifecycle.current_stage === lifecycle.total_stages;
     var incubation = egg && s.next && s.next.key === 'incubate' ? s.next : {};
     var blockers = evolution ? roadmapEvolutionBlockers(evolution, lifecycle) : [];
     var evolutionReady = Boolean(evolution && evolution.ready === true && !blockers.length);
@@ -546,12 +547,41 @@
       activityRoute.title = 'TIMED EXPLORE';
       activityRoute.detail = 'Compare Explore durations, rewards and energy costs in Work.';
     }
+    var routes = egg ? [
+      { title: incubation.title || 'OPEN INCUBATION', screen: 'home', focus: 'incubation', detail: incubation.detail || 'Review this Secret Bot’s signal and hatch progress.' },
+    ] : [
+      { title: 'DAILY JOURNEY', screen: 'missions', focus: 'daily-journey', detail: 'Complete genuine Daily Journey objectives and earn the pet’s Growth Mark.' },
+      { title: 'WEEKLY JOURNEY', screen: 'missions', focus: 'weekly-journey', detail: 'Complete the five weekly objectives for this pet’s Crest.' },
+      { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Extracting ends your one official Daily Run attempt for the UTC day. Only the repeatable Moon Run banks its XP bag on extraction. Boss rewards settle separately.' },
+      activityRoute,
+      { title: bestJob ? 'BEST UNLOCKED JOB // ' + bestJob.title : 'JOBS // CHECK UNLOCKS', screen: 'work', focus: 'jobs', detail: bestJob ? 'Highest base Pet XP among jobs the server marks available in this snapshot: ' + String(Math.max(0, Number(bestJob.pet_xp) || 0)) + '. Review cooldowns and current caps before choosing it.' : 'No eligible job is advertised in this snapshot. Review the server job board for current unlock requirements.' },
+      { title: 'RELICS + MATERIALS', screen: 'economy', focus: 'relics', detail: finalForm
+        ? 'Review the permanent relic and material collection earned across this Moonpet’s lifetime.'
+        : 'Review collected relics and the material sources needed for later evolutions.' },
+      finalForm
+        ? { title: 'LIFETIME PROGRESS', screen: 'profile', focus: 'evolution', detail: 'Final evolution is complete. Review this Moonpet’s permanent identity and lifetime progression.' }
+        : { title: 'EVOLUTION', screen: 'profile', focus: 'evolution', detail: 'Review the next saved evolution gate and evolve only when the Worker says it is ready.' },
+    ];
+    var mission = missionStatus(s);
+    var daily = s.daily_journey || {};
+    var weekly = s.weekly_journey || {};
+    var statuses = menuStatuses(s);
+    var claimsReady = 0;
+    var claimsLowerBound = false;
+    Object.keys(statuses).forEach(function (screen) {
+      statuses[screen].entries.forEach(function (entry) {
+        if (entry.kind !== 'claim') return;
+        claimsReady += entry.count;
+        if (entry.countLowerBound) claimsLowerBound = true;
+      });
+    });
+    var nextAction = recommendations(s)[0] || routes[0] || null;
     return {
       available: true,
       status: progression.lifetime_complete === true ? 'LEGENDARY COMPLETE'
         : egg ? 'INCUBATING' : evolutionReady ? 'EVOLUTION READY' : 'IN PROGRESS',
       stage: s.lifecycle && Number.isInteger(s.lifecycle.evolution_stage) ? s.lifecycle.evolution_stage : lifecycle.current_stage - 1,
-      finalForm: lifecycle.current_stage === lifecycle.total_stages,
+      finalForm: finalForm,
       level: Math.max(0, Number(pet.level) || 0),
       petXp: Math.max(0, Number(pet.pet_xp) || 0),
       growthMarks: { earned: Math.max(0, Number(growth.earned) || 0), required: Math.max(0, Number(growth.required) || 0) },
@@ -568,17 +598,28 @@
       } : null,
       bestJob: bestJob ? { key: bestJob.key, title: bestJob.title, basePetXp: Math.max(0, Number(bestJob.pet_xp) || 0) } : null,
       exploreActivityAvailable: exploreActivityAvailable,
-      routes: egg ? [
-        { title: incubation.title || 'OPEN INCUBATION', screen: 'home', focus: 'incubation', detail: incubation.detail || 'Review this Secret Bot’s signal and hatch progress.' },
-      ] : [
-        { title: 'DAILY JOURNEY', screen: 'missions', focus: 'daily-journey', detail: 'Complete genuine Daily Journey objectives and earn the pet’s Growth Mark.' },
-        { title: 'WEEKLY JOURNEY', screen: 'missions', focus: 'weekly-journey', detail: 'Complete the five weekly objectives for this pet’s Crest.' },
-        { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Extracting ends your one official Daily Run attempt for the UTC day. Only the repeatable Moon Run banks its XP bag on extraction. Boss rewards settle separately.' },
-        activityRoute,
-        { title: bestJob ? 'BEST UNLOCKED JOB // ' + bestJob.title : 'JOBS // CHECK UNLOCKS', screen: 'work', focus: 'jobs', detail: bestJob ? 'Highest base Pet XP among jobs the server marks available in this snapshot: ' + String(Math.max(0, Number(bestJob.pet_xp) || 0)) + '. Review cooldowns and current caps before choosing it.' : 'No eligible job is advertised in this snapshot. Review the server job board for current unlock requirements.' },
-        { title: 'RELICS + MATERIALS', screen: 'economy', focus: 'relics', detail: 'Review collected relics and the material sources needed for later evolutions.' },
-        { title: 'EVOLUTION', screen: 'profile', focus: 'evolution', detail: 'Review the next saved evolution gate and evolve only when the Worker says it is ready.' },
-      ],
+      journey: {
+        now: nextAction ? { title: nextAction.title, detail: nextAction.detail || '', screen: nextAction.screen, focus: nextAction.focus } : null,
+        claimsReady: claimsReady,
+        claimsLowerBound: claimsLowerBound,
+        today: {
+          available: !egg && daily.authority_available !== false && daily.reason !== 'active_pet_required' &&
+            Number(daily.required_objectives) > 0,
+          journeyCurrent: Math.max(0, Number(daily.completed_objectives) || 0),
+          journeyTarget: Math.max(0, Number(daily.required_objectives) || 0),
+          markAwarded: Boolean(daily.growth_mark_awarded),
+          missionsCurrent: mission.available ? mission.completed : null,
+          missionsTarget: mission.available ? mission.total : null,
+        },
+        week: {
+          current: Math.max(0, Number(weekly.completed_objectives) || 0),
+          target: Math.max(0, Number(weekly.required_objectives) || 0),
+          crestAwarded: Boolean(weekly.weekly_crest_awarded),
+          available: !egg && weekly.state === 'AVAILABLE' && weekly.authority_available !== false &&
+            Number(weekly.required_objectives) > 0,
+        },
+      },
+      routes: routes,
     };
   }
 
@@ -708,7 +749,7 @@
     return { count: count, countLowerBound: shown.some(function (entry) { return entry.countLowerBound; }), kind: kind, activeCount: active.reduce(function (sum, entry) { return sum + entry.count; }, 0) };
   }
 
-  var api = { menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, legendaryRoadmap: legendaryRoadmap, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
+  var api = { journeyDashboardVersion: 1, menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, legendaryRoadmap: legendaryRoadmap, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

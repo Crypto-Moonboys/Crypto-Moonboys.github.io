@@ -252,6 +252,66 @@
     return category + ': ' + (entry ? entry.label : 'source attribution unavailable');
   }
 
+  function journeyProgress(sourceKey, task) {
+    const health = state.plan.source_status[sourceKey]?.state;
+    if (FAILURE.has(health) || health === 'preview' || FAILURE.has(task?.source_health) ||
+      task?.source_health === 'preview' || task?.status === 'sync_unavailable' || task?.status === 'preview')
+      return 'Progress unavailable';
+    if (!task) return state.nextCursor ? 'Load more verified tasks to check progress' : 'Progress unavailable';
+    const progress = task.progress || {};
+    const { current, target } = progress;
+    if (current == null && Number.isFinite(target)) return 'Progress unavailable';
+    if (Number.isFinite(current) && Number.isFinite(target) && target > 0) {
+      const unit = progress.unit === 'source_flags' ? 'completion conditions' : formatName(progress.unit || 'objectives');
+      return niceCount(current) + '/' + niceCount(target) + ' ' + unit;
+    }
+    return formatName(task.status || 'sync unavailable');
+  }
+
+  function renderJourneySummary(directory) {
+    const container = byId('mm-journey');
+    const roster = state.plan && state.plan.owner && state.plan.owner.pets;
+    const selected = Array.isArray(roster) ? roster.find(pet => pet && pet.selected) : null;
+    const ref = String(selected && selected.pet_ref || '');
+    if (!selected || !directory.has(ref)) {
+      container.innerHTML = '<p class="mm-empty">Selected MoonPet journey unavailable. Open MoonPet to select or restore a pet.</p>';
+      return;
+    }
+    const all = state.tasks.concat(Array.isArray(state.plan.top_actions) ? state.plan.top_actions : []);
+    const own = all.filter(task => task && task.source_pet_ref === ref);
+    const progressForPet = key => journeyProgress(key, own.find(task => task.source_key === key));
+    const next = state.stale || state.offline ? null : (state.plan.top_actions || []).find(task =>
+      task && task.source_pet_ref === ref && String(task.source_key || '').startsWith('moonpet.') && taskActionable(task));
+    const claims = state.stale || state.offline ? 0 : state.tasks.filter(task =>
+      task && String(task.source_key || '').startsWith('moonpet.') &&
+      task.status === 'claim_ready' && taskActionable(task)).length;
+    const missionsKey = 'moonpet.daily-seven-missions';
+    const missions = all.find(task => task && task.source_key === missionsKey &&
+      task.owner_scope === 'account' && task.progress?.unit === 'source_flags');
+    const egg = (selected.lifecycle_phase || selected.life_stage) === 'egg';
+    const finalEvolution = Number(selected.evolution_stage) >= 5;
+    const dailyProgress = egg ? 'Hatch required' : progressForPet('moonpet.daily-journey');
+    const weeklyProgress = egg ? 'Hatch required' : progressForPet('moonpet.weekly-journey');
+    const today = 'Journey ' + dailyProgress + ' · Missions ' + journeyProgress(missionsKey, missions);
+    const claimsBounded = state.nextCursor || Object.entries(state.plan.source_status).some(([key, source]) =>
+      key.startsWith('moonpet.') && source?.partial === true);
+    const claimSummary = claims + ' verified MoonPet claim' + (claims === 1 ? '' : 's') + ' ready' +
+      (claimsBounded ? ' in loaded results' : '');
+    const current = !state.stale && !state.offline;
+    const rows = [
+      ['NOW', !current ? 'Refresh required before trusting readiness' : next ? next.title : 'No selected-pet action currently prioritised',
+        current ? claimSummary : 'Current claim readiness is hidden'],
+      ['TODAY', today, current ? 'Daily progress comes from accepted server evidence' : 'Last-confirmed progress only'],
+      ['THIS WEEK', weeklyProgress, current ? 'This pet’s own Journey week' : 'Last-confirmed progress only'],
+      [finalEvolution ? 'FINAL EVOLUTION' : 'NEXT EVOLUTION', progressForPet('moonpet.evolution'), current
+        ? finalEvolution ? 'Final evolution complete; lifetime progression continues' : 'Open the game for exact blockers and material requirements'
+        : finalEvolution ? 'Last-confirmed final evolution state' : 'Refresh before relying on blockers'],
+      ['LIFETIME', 'Level ' + niceCount(selected.level) + ' · ' + niceCount(selected.pet_xp) + ' Pet XP', current ? 'Permanent progress continues across competition periods' : 'Last-confirmed progress only'],
+    ];
+    container.innerHTML = rows.map(row => '<div class="mm-journey-row"><strong>' + esc(row[0]) + '</strong><span>' +
+      esc(row[1]) + '<small>' + esc(row[2]) + '</small></span></div>').join('');
+  }
+
   function taskMarkup(task, compact, directory = petDirectory()) {
     const action = safeDestination(task);
     const status = String(task.status || 'sync_unavailable');
@@ -350,6 +410,7 @@
     byId('mm-next').replaceChildren();
     byId('mm-results').replaceChildren();
     byId('mm-pets').replaceChildren();
+    byId('mm-journey').replaceChildren();
     // Checklist includes private task titles and status: purge with the other
     // owner-specific DOM synchronously on logout or identity transition.
     byId('mm-checklist').replaceChildren();
@@ -876,6 +937,7 @@
       : '<p class="mm-empty">' + (state.stale
         ? 'Top recommendations temporarily unavailable; refresh verified evidence.'
         : 'No immediately eligible verified actions. Check Today, Claims or source availability.') + '</p>';
+    renderJourneySummary(directory);
     renderPets(directory);
     // The immutable guide is public; only this private controller supplies
     // verified owner task rows. Never cache them in a public global or storage.
