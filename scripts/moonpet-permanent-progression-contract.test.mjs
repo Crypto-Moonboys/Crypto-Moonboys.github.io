@@ -66,11 +66,21 @@ test('365-day clock provides adequate distinct days and weeks but not awarded ev
 });
 
 test('real virtual-player harness contains no direct insert of accepted XP, Marks or Crests',()=>{
-  const source=read('scripts/moonpet-virtual-player-engine.test.mjs');
-  assert.match(source,/dispatchRenderedPetAction/);
-  assert.doesNotMatch(source,/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_growth_marks/i);
-  assert.doesNotMatch(source,/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_weekly_crests/i);
-  assert.doesNotMatch(source,/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_events/i);
+  const engine=read('scripts/moonpet-virtual-player-engine.test.mjs');
+  const fixture=read('scripts/moonpet-worker-virtual-player.mjs');
+  // The engine deliberately goes through makeFixture(). The fixture is the
+  // single adapter that delegates every simulated player action to the real
+  // rendered-pet action dispatcher. Keep both links explicit so a future
+  // refactor cannot silently replace Worker authority with synthetic credits.
+  assert.match(engine,/import\s+\{\s*makeFixture\s*\}\s+from\s+['"]\.\/moonpet-worker-virtual-player\.mjs['"]/);
+  assert.match(engine,/await\s+f\.action\(/);
+  assert.match(fixture,/import\s+\{\s*dispatchRenderedPetAction\s*\}\s+from\s+['"]\.\/moonpet-mini-app-action-fixture\.mjs['"]/);
+  assert.match(fixture,/dispatchRenderedPetAction\(db,owner,\{id:owner\},\{action:kind,\.\.\.payload\},['"]fixture-token['"]\)/);
+  for(const source of [engine,fixture]){
+    assert.doesNotMatch(source,/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_growth_marks/i);
+    assert.doesNotMatch(source,/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_weekly_crests/i);
+    assert.doesNotMatch(source,/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+telegram_pet_events/i);
+  }
 });
 
 test('permanent progress receipts must remain source-pet bound',()=>{
