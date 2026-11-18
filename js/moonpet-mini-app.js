@@ -917,7 +917,8 @@
   function playOptionsReady(requireRoadmap) {
     var options = window.MoonpetPlayOptions;
     return Boolean(options && typeof options.runAvailability === 'function' &&
-      (!requireRoadmap || typeof options.legendaryRoadmap === 'function'));
+      (!requireRoadmap || options.journeyDashboardVersion === 1 &&
+        typeof options.legendaryRoadmap === 'function'));
   }
 
   function reloadPlayOptions() {
@@ -3022,7 +3023,7 @@
           'Check the Arcade XP entry requirement and initialise your Secret Bot when eligible.') + '</div>',
         'legendary-roadmap');
     }
-    var roadmap = window.MoonpetPlayOptions && typeof window.MoonpetPlayOptions.legendaryRoadmap === 'function'
+    var roadmap = playOptionsReady(true)
       ? window.MoonpetPlayOptions.legendaryRoadmap(state) : null;
     if (!roadmap || !roadmap.available) {
       return panel('ROAD TO LEGENDARY // SYNCING',
@@ -3032,8 +3033,9 @@
     var growth = roadmap.growthMarks || {}, crests = roadmap.weeklyCrests || {};
     var materials = roadmap.materials || {};
     var next = roadmap.nextEvolution;
-    var journey = roadmap.journey || {}, today = journey.today || {}, week = journey.week || {};
+    var journey = roadmap.journey, today = journey.today, week = journey.week;
     var now = journey.now;
+    var incubating = roadmap.status === 'INCUBATING';
     var missing = next && (next.missing || []).length
       ? (next.missing || []).map(function (entry) {
           return '<div class="line ' + (Number(entry.current) >= Number(entry.required) ? 'complete' : 'muted') + '">' +
@@ -3047,26 +3049,29 @@
     var routes = (roadmap.routes || []).map(function (target) {
       return routeButton(target.title, target, target.detail);
     }).join('');
-    var routine = roadmap.status === 'INCUBATING'
+    var routine = incubating
       ? '<div class="line muted">AFTER HATCHING // Daily Journey, Weekly Journey, jobs, timed activities and the official Daily Run.</div>'
       : '<div class="line muted">Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use timed activities and unlocked jobs, and collect the relics and materials for your next evolution.</div>';
-    var todaySummary = today.journeyTarget
+    var todaySummary = today.available
       ? 'DAILY JOURNEY ' + number(today.journeyCurrent) + '/' + number(today.journeyTarget) + (today.markAwarded ? ' // MARK EARNED' : '')
-      : 'DAILY JOURNEY // SYNCING';
+      : 'DAILY JOURNEY // ' + (incubating ? 'HATCH REQUIRED' : 'SYNCING');
     if (today.missionsTarget !== null && today.missionsTarget !== undefined) {
       todaySummary += ' // MISSIONS ' + number(today.missionsCurrent) + '/' + number(today.missionsTarget);
     }
     var weekSummary = week.available
       ? number(week.current) + '/' + number(week.target) + ' OBJECTIVES' + (week.crestAwarded ? ' // CREST EARNED' : '')
-      : 'WEEKLY JOURNEY // SYNCING';
+      : 'WEEKLY JOURNEY // ' + (incubating ? 'HATCH REQUIRED' : 'SYNCING');
+    var routesKey = [state.pet.pet_id, 'missions', 'journey-routes'].join(':');
+    var claimCount = number(journey.claimsReady) + (journey.claimsLowerBound ? '+' : '');
+    var singularClaim = journey.claimsReady === 1 && !journey.claimsLowerBound;
     var body =
       '<div class="journey-overview" aria-label="Moonpet journey dashboard">' +
         '<section class="journey-band"><span>NOW</span><div><strong>' + escapeHtml(now ? now.title : 'CHECK SAVED STATUS') + '</strong>' +
-          '<small>' + number(journey.claimsReady) + ' confirmed claim' + (Number(journey.claimsReady) === 1 ? '' : 's') + ' ready across Moonpet.</small></div></section>' +
+          '<small>' + claimCount + ' confirmed claim' + (singularClaim ? '' : 's') + ' ready across Moonpet.</small></div></section>' +
         '<section class="journey-band"><span>TODAY</span><div><strong>' + escapeHtml(todaySummary) + '</strong><small>Only server-accepted progress counts.</small></div></section>' +
         '<section class="journey-band"><span>THIS WEEK</span><div><strong>' + escapeHtml(weekSummary) + '</strong><small>This pet’s Journey week can differ from Monday competition resets.</small></div></section>' +
         '<section class="journey-band journey-band-wide"><span>NEXT EVOLUTION</span><div>' +
-          (next ? '<strong>' + escapeHtml(next.name) + '</strong>' : '<strong>FINAL EVOLUTION ONLINE</strong>') + missing + '</div></section>' +
+          (next ? '<strong>' + escapeHtml(next.name) + '</strong>' : '') + missing + '</div></section>' +
         '<section class="journey-band journey-band-wide"><span>LIFETIME</span><div>' +
           '<div class="line ' + (roadmap.status === 'LEGENDARY COMPLETE' ? 'complete' : 'signal') + '">STATUS // ' + escapeHtml(roadmap.status) + '</div>' +
           '<div class="season-status-grid">' +
@@ -3082,7 +3087,8 @@
       '</div>' +
       (now ? '<div class="button-grid one">' + routeButton('DO NEXT // ' + now.title, now, now.detail) + '</div>' : '') +
       routine +
-      '<details class="journey-routes"><summary>MORE GAMEPLAY ROUTES (' + number((roadmap.routes || []).length) + ')</summary><div class="button-grid">' + routes + '</div></details>' +
+      '<details class="journey-routes" data-panel-key="' + escapeHtml(routesKey) + '"' + (panelOpenState[routesKey] ? ' open' : '') +
+        '><summary>MORE GAMEPLAY ROUTES (' + number(roadmap.routes.length) + ')</summary><div class="button-grid">' + routes + '</div></details>' +
       '<div class="line muted">This panel never plays for you. It only reads saved Worker state and opens the real game panels where you choose what to do.</div>';
     return panel('YOUR JOURNEY // ROAD TO LEGENDARY', body, 'legendary-roadmap',
       'Now, today, this week, next evolution and lifetime progress from saved Worker state.');

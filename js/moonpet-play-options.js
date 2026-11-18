@@ -562,9 +562,13 @@
     var weekly = s.weekly_journey || {};
     var statuses = menuStatuses(s);
     var claimsReady = 0;
+    var claimsLowerBound = false;
     Object.keys(statuses).forEach(function (screen) {
-      claimsReady += (statuses[screen].entries || []).filter(function (entry) { return entry.kind === 'claim'; })
-        .reduce(function (sum, entry) { return sum + Math.max(1, Number(entry.count) || 1); }, 0);
+      statuses[screen].entries.forEach(function (entry) {
+        if (entry.kind !== 'claim') return;
+        claimsReady += entry.count;
+        if (entry.countLowerBound) claimsLowerBound = true;
+      });
     });
     var nextAction = recommendations(s)[0] || routes[0] || null;
     return {
@@ -592,7 +596,10 @@
       journey: {
         now: nextAction ? { title: nextAction.title, detail: nextAction.detail || '', screen: nextAction.screen, focus: nextAction.focus } : null,
         claimsReady: claimsReady,
+        claimsLowerBound: claimsLowerBound,
         today: {
+          available: !egg && daily.authority_available !== false && daily.reason !== 'active_pet_required' &&
+            Number(daily.required_objectives) > 0,
           journeyCurrent: Math.max(0, Number(daily.completed_objectives) || 0),
           journeyTarget: Math.max(0, Number(daily.required_objectives) || 0),
           markAwarded: Boolean(daily.growth_mark_awarded),
@@ -603,7 +610,8 @@
           current: Math.max(0, Number(weekly.completed_objectives) || 0),
           target: Math.max(0, Number(weekly.required_objectives) || 0),
           crestAwarded: Boolean(weekly.weekly_crest_awarded),
-          available: weekly.authority_available !== false && Number(weekly.required_objectives) > 0,
+          available: !egg && weekly.state === 'AVAILABLE' && weekly.authority_available !== false &&
+            Number(weekly.required_objectives) > 0,
         },
       },
       routes: routes,
@@ -736,7 +744,7 @@
     return { count: count, countLowerBound: shown.some(function (entry) { return entry.countLowerBound; }), kind: kind, activeCount: active.reduce(function (sum, entry) { return sum + entry.count; }, 0) };
   }
 
-  var api = { menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, legendaryRoadmap: legendaryRoadmap, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
+  var api = { journeyDashboardVersion: 1, menuStatuses: menuStatuses, menuBadge: menuBadge, missionStatus: missionStatus, missionClaims: missionClaims, legendaryRoadmap: legendaryRoadmap, recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

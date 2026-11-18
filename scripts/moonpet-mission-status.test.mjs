@@ -51,7 +51,8 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
     ],
   };
   state.daily_journey = { completed_objectives: 2, required_objectives: 3, growth_mark_awarded: false };
-  state.weekly_journey = { completed_objectives: 4, required_objectives: 5, weekly_crest_awarded: false, authority_available: true };
+  state.weekly_journey = { state: 'AVAILABLE', completed_objectives: 4, required_objectives: 5,
+    weekly_crest_awarded: false, authority_available: true };
   state.guidance.daily_completion.pending = [{ utc_day: '2026-11-18', pet_id: 'selected-pet' }];
   const road = legendaryRoadmap(state);
   assert.equal(road.available, true);
@@ -69,8 +70,9 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
   assert.equal(road.routes[4].title, 'BEST UNLOCKED JOB // Vault Guard');
   assert.equal(road.nextEvolution.missing.length, 2);
   assert.equal(road.journey.claimsReady, 1);
+  assert.equal(road.journey.claimsLowerBound, false);
   assert.deepEqual(road.journey.today, {
-    journeyCurrent: 2, journeyTarget: 3, markAwarded: false,
+    available: true, journeyCurrent: 2, journeyTarget: 3, markAwarded: false,
     missionsCurrent: 4, missionsTarget: 7,
   });
   assert.deepEqual(road.journey.week, { current: 4, target: 5, crestAwarded: false, available: true });
@@ -81,6 +83,10 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
   ]);
   assert.ok(road.routes.every(route => !Object.prototype.hasOwnProperty.call(route, 'action')),
     'roadmap routes must navigate only and never submit gameplay');
+  state.guidance.weekly_boss = { pending_rewards: [{ week_key: '2026-W45', boss_id: 'weekly-boss', pet_id: 'selected-pet' }] };
+  const boundedClaims = legendaryRoadmap(state).journey;
+  assert.equal(boundedClaims.claimsReady, 2);
+  assert.equal(boundedClaims.claimsLowerBound, true);
 });
 
 test('the roadmap routes to the saved timed session before offering another activity', () => {
@@ -130,6 +136,8 @@ test('the roadmap follows saved Worker stages, incubation and per-evolution Jour
       if (stage === 0) {
         assert.equal(road.petXp, 0);
         assert.equal(road.status, 'INCUBATING');
+        assert.equal(road.journey.today.available, false);
+        assert.equal(road.journey.week.available, false);
         assert.deepEqual(road.routes, [{ screen: 'home', focus: 'incubation', title: state.next.title, detail: state.next.detail }]);
       } else if (!road.finalForm) {
         const req = state.season_slots.slots.find(slot => slot.active).pet.progression.lifecycle.requirements;
@@ -173,6 +181,7 @@ test('the roadmap distinguishes missing Worker data from saved zero counts', () 
   const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
   const renderer = client.slice(client.indexOf('  function renderLegendaryRoadmap()'), client.indexOf('  function renderMissions()'));
   const context = vm.createContext({ state, window: { MoonpetPlayOptions: { legendaryRoadmap } },
+    playOptionsReady: () => true, panelOpenState: {},
     panel: (_, body) => body, routeButton: route => route, escapeHtml: String, number: String });
   vm.runInContext(renderer, context);
   assert.match(context.renderLegendaryRoadmap(), /UNIQUE RELICS<\/span><strong>0<\/strong>/);

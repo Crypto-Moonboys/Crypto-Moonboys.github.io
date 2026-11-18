@@ -568,11 +568,14 @@ try {
     let staleHelper;
     const helperRetries = [];
     let failLeaderboard = false, leaderboardFailures = 0;
+    let failWeeklyJourney = false;
     const missionDb = { ...db, prepare(sql) {
       if (failLeaderboard && sql.includes('FROM ranked r JOIN telegram_pet_profiles')) {
         leaderboardFailures++;
         throw Error('leaderboard unavailable');
       }
+      if (failWeeklyJourney && sql.includes('FROM telegram_pet_weekly_journey_objectives o') &&
+          sql.includes('GROUP BY o.objective_id')) throw Error('weekly objectives unavailable');
       return db.prepare(sql);
     } };
     function holdNextFullResponse() {
@@ -690,19 +693,31 @@ try {
     await roadmapRoutes.first().waitFor({ state: 'attached' });
     assert.equal(await roadmapRoutes.count(), 8);
 
-    // Simulate an older cached helper that still supports run controls.
+    // Simulate the cached helper from before the compact journey fields existed.
     staleHelper = await fs.readFile(path.join(root, 'js/moonpet-play-options.js'), 'utf8') +
-      '\ndelete window.MoonpetPlayOptions.legendaryRoadmap;';
+      '\ndelete window.MoonpetPlayOptions.journeyDashboardVersion;' +
+      '\nconst oldRoadmap = window.MoonpetPlayOptions.legendaryRoadmap;' +
+      '\nwindow.MoonpetPlayOptions.legendaryRoadmap = state => { const road = oldRoadmap(state); delete road.journey; return road; };';
     await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions&focus=legendary-roadmap`);
     const roadmap = page.locator('[data-panel="legendary-roadmap"][open]');
     await roadmap.waitFor();
     assert.match(await roadmap.innerText(), /SYNCING/);
     assert.equal(await page.evaluate(() => typeof window.MoonpetPlayOptions.runAvailability), 'function');
+    assert.equal(await page.evaluate(() => typeof window.MoonpetPlayOptions.legendaryRoadmap), 'function');
     await page.locator('[data-utility="sync"]').click();
     await roadmapRoutes.first().waitFor();
     assert.equal(await roadmapRoutes.count(), 8);
     assert.equal(helperRetries.length, 1);
     assert.equal(helperRetries[0].searchParams.get('v'), '20261118-journey-dashboard-v1');
+
+    const routes = roadmap.locator('.journey-routes');
+    await routes.locator('summary').click();
+    await routes.locator('[data-jump]').first().waitFor();
+    failWeeklyJourney = true;
+    await page.locator('[data-utility="sync"]').click();
+    await roadmap.getByText('WEEKLY JOURNEY // SYNCING', { exact: true }).waitFor();
+    assert.equal(await routes.getAttribute('open'), '', 'refresh preserves the open routes disclosure');
+    assert.equal(await roadmap.getByText('0/5 OBJECTIVES', { exact: true }).count(), 0);
     assert.deepEqual(errors, [], 'Missions remains usable after state and script recovery');
     await context.close();
   }

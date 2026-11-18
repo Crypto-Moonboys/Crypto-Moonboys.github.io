@@ -714,15 +714,20 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     });
     const second = { ...payload.tasks[0],
       task_id: 'moonpet.jobs:another-immutable-session', source_pet_ref: secondRef };
+    const accountMission = { ...payload.tasks[0], source_key: 'moonpet.daily-seven-missions',
+      owner_scope: 'account', source_pet_ref: null, status: 'in_progress' };
     const journeyTasks = [
       ['moonpet.daily-journey', 2, 3, 'objectives'],
-      ['moonpet.daily-seven-missions', 4, 7, 'missions'],
       ['moonpet.weekly-journey', 3, 5, 'objectives'],
       ['moonpet.evolution', 1, 5, 'evolution_stage'],
     ].map(([source_key,current,target,unit]) => ({ ...payload.tasks[0], source_key,
       task_id: source_key + ':journey-summary', status: 'in_progress',
       progress: { current, target, unit } }));
-    payload.tasks.push(second, ...journeyTasks);
+    payload.tasks.push(second, ...journeyTasks,
+      { ...accountMission, task_id: 'moonpet.daily-seven-missions:flag-1',
+        progress: { current: 1, target: 1, unit: 'accepted_source_flag' } },
+      { ...accountMission, task_id: 'moonpet.daily-seven-missions:current',
+        progress: { current: 5, target: 8, unit: 'source_flags' } });
     payload.top_actions.push(second);
     return payload;
   });
@@ -738,7 +743,7 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     assert.equal(await roadmapLink.getAttribute('href'), '/moonpet-game.html?screen=missions&focus=legendary-roadmap');
     const journey = await f.page.locator('#mm-journey').innerText();
     assert.match(journey, /NOW[\s\S]*Alpha saved job claim/);
-    assert.match(journey, /TODAY[\s\S]*Journey 2\/3 objectives[\s\S]*Missions 4\/7 missions/);
+    assert.match(journey, /TODAY[\s\S]*Journey 2\/3 objectives[\s\S]*Missions 5\/8 completion conditions/);
     assert.match(journey, /THIS WEEK[\s\S]*3\/5 objectives/);
     assert.match(journey, /NEXT EVOLUTION[\s\S]*1\/5 evolution stage/);
     assert.match(journey, /LIFETIME[\s\S]*Level 2 · 25 Pet XP/);
@@ -755,8 +760,43 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
       '/moonpet-game.html', 'no raw pet selectors in gameplay links');
     await f.page.locator('#mm-clear-pet-filter').click();
     assert.equal(await f.page.locator('#mm-pet-filter').isHidden(), true);
-    assert.equal(await f.page.locator('#mm-results .mm-task').count(),6);
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),7);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('Journey summary separates paginated progress from failed and missing reads', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const payload = plan(owner, cursor);
+    const task = payload.top_actions[0];
+    const journeyTask = (source_key, progress, extra) => ({ ...task, source_key,
+      task_id: source_key + ':current', status: 'in_progress', progress, ...extra });
+    payload.source_status['moonpet.weekly-journey'] = {state:'query_failed'};
+    if (cursor) {
+      payload.tasks.push(journeyTask('moonpet.daily-journey', {current:0,target:3,unit:'objectives'}));
+    } else {
+      payload.tasks.push(
+        journeyTask('moonpet.weekly-journey', {current:0,target:5,unit:'objectives'},
+          {status:'sync_unavailable',source_health:'query_failed'}),
+        journeyTask('moonpet.evolution', {current:null,target:5,unit:'evolution_stage'}),
+      );
+    }
+    return payload;
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    const summary = f.page.locator('#mm-journey .mm-journey-row');
+    await summary.first().waitFor();
+    assert.match(await summary.nth(0).innerText(), /1 verified MoonPet claim ready in loaded results/);
+    assert.match(await summary.nth(1).innerText(), /Journey Load more verified tasks to check progress/);
+    assert.match(await summary.nth(2).innerText(), /Progress unavailable/);
+    assert.match(await summary.nth(3).innerText(), /Progress unavailable/);
+    assert.doesNotMatch(await f.page.locator('#mm-journey').innerText(), /0\/5/);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.locator('#mm-journey').getByText(/Journey 0\/3 objectives/).waitFor();
+    assert.match(await summary.nth(2).innerText(), /Progress unavailable/);
+    assert.deepEqual(f.errors, []);
   } finally { await f.browser.close(); }
 });
 
