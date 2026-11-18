@@ -1312,6 +1312,7 @@
     recommended: ['✦', 'Your next three routes, ranked from the current save.'],
     'play-now': ['▶', 'Browse more activities, goals and ways to play.'],
     'active-pet': ['◉', 'Your active companion, stage and growth progress.'],
+    'legendary-roadmap': ['✦', 'Track lifetime Legendary progress and jump to the real routes that advance it.'],
     incubation: ['◉', 'Build your egg’s signal for breakout. Identity reveals at Stage 3.'],
     vitals: ['♥', 'Check health, energy, fullness, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
@@ -2996,6 +2997,52 @@
     return panel('SEASON FINALE // ' + board.title, body, 'season-finale');
   }
 
+  // Read-only lifetime guidance. Every button below is a navigation jump;
+  // none submits a gameplay action or awards progression.
+  function renderLegendaryRoadmap() {
+    var roadmap = window.MoonpetPlayOptions && window.MoonpetPlayOptions.legendaryRoadmap
+      ? window.MoonpetPlayOptions.legendaryRoadmap(state) : null;
+    if (!roadmap || !roadmap.available) {
+      return panel('ROAD TO LEGENDARY // SYNCING',
+        '<div class="line muted">Open Missions after the full pet state loads to see lifetime progression and the next real routes.</div>',
+        'legendary-roadmap');
+    }
+    var growth = roadmap.growthMarks || {}, crests = roadmap.weeklyCrests || {};
+    var stage = roadmap.stage || {}, materials = roadmap.materials || {};
+    var next = roadmap.nextEvolution;
+    var missing = next && (next.missing || []).length
+      ? (next.missing || []).map(function (entry) {
+          return '<div class="line ' + (Number(entry.current) >= Number(entry.required) ? 'complete' : 'muted') + '">' +
+            escapeHtml(entry.label) + ' // ' + number(entry.current) + '/' + number(entry.required) +
+            (entry.source ? ' // ' + escapeHtml(entry.source) : '') + '</div>';
+        }).join('')
+      : next
+        ? '<div class="line complete">ALL CURRENT EVOLUTION REQUIREMENTS SATISFIED.</div>'
+        : '<div class="line complete">FINAL EVOLUTION ONLINE.</div>';
+    var routes = (roadmap.routes || []).map(function (target) {
+      return routeButton(target.title, target, target.detail);
+    }).join('');
+    var routine = '<div class="line muted">PROVEN ROUTINE // Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use legitimate timed activity and the best job you have actually unlocked, collect relics/materials, then evolve only when the server says READY.</div>';
+    var body =
+      '<div class="season-status-grid">' +
+        '<div><span>STAGE</span><strong>' + number(stage.current) + (stage.total ? '/' + number(stage.total) : '') + '</strong></div>' +
+        '<div><span>LEVEL</span><strong>' + number(roadmap.level) + '</strong></div>' +
+        '<div><span>PET XP</span><strong>' + number(roadmap.petXp) + '</strong></div>' +
+        '<div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
+        '<div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div>' +
+        '<div><span>UNIQUE RELICS</span><strong>' + number(roadmap.relics) + '</strong></div>' +
+        '<div><span>SCRAP METAL</span><strong>' + number(materials.scrapMetal) + '</strong></div>' +
+        '<div><span>EVOLUTION FRAGMENTS</span><strong>' + number(materials.evolutionFragments) + '</strong></div>' +
+      '</div>' +
+      '<div class="line ' + (roadmap.status === 'LEGENDARY COMPLETE' ? 'complete' : 'signal') + '">STATUS // ' + escapeHtml(roadmap.status) + '</div>' +
+      (next ? '<div class="line"><strong>NEXT EVOLUTION // ' + escapeHtml(next.name) + '</strong></div>' : '') +
+      missing + routine +
+      '<div class="button-grid">' + routes + '</div>' +
+      '<div class="line muted">This panel never plays for you. It only reads saved Worker state and opens the real game panels where you choose what to do.</div>';
+    return panel('ROAD TO LEGENDARY', body, 'legendary-roadmap',
+      'Lifetime progress, current evolution blockers and navigation to the real qualifying routes.');
+  }
+
   function renderMissions() {
     var guidance = state.guidance || {};
     var missions = state.guidance && Array.isArray(state.guidance.missions) ? state.guidance.missions.filter(function (mission) { return mission && typeof mission === 'object'; }) : [];
@@ -3031,6 +3078,7 @@
       (summary && summary.available ? renderMissionStatus(summary) : '') +
       renderPlayNow() +
       renderContracts() +
+      renderLegendaryRoadmap() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel('OFFICIAL DAILY OBJECTIVES', dailyObjectiveMarkup(), 'daily-objectives') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
