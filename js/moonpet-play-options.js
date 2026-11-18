@@ -531,7 +531,21 @@
     var evolutionReady = Boolean(evolution && evolution.ready === true && !blockers.length);
     var bestJob = (g.jobs || []).filter(function (job) { return job && job.available === true; })
       .sort(function (left, right) { return Number(right.pet_xp || 0) - Number(left.pet_xp || 0); })[0] || null;
-    var exploreActivity = (g.activity_options || []).find(function (offer) { return offer && offer.key === 'explore'; }) || null;
+    var activity = g.activity;
+    var exploreActivityAvailable = !activity && (g.activity_options || []).some(function (offer) { return offer && offer.key === 'explore'; });
+    var activityRoute = { title: 'TIMED ACTIVITY', screen: 'work', focus: 'timed-activity',
+      detail: 'Review the timed activities the server currently offers.' };
+    if (activity) {
+      activityRoute.title = 'REVIEW CURRENT ACTIVITY';
+      activityRoute.detail = 'Open Work to check the saved session before starting another activity.';
+      if (!activity.unavailable && (activity.ready === true || activity.recovery_pending === true)) {
+        activityRoute.title = 'REVIEW ACTIVITY REWARD';
+        activityRoute.detail = 'Open Work to review and collect the saved reward before starting another activity.';
+      }
+    } else if (exploreActivityAvailable) {
+      activityRoute.title = 'TIMED EXPLORE';
+      activityRoute.detail = 'Compare Explore durations, rewards and energy costs in Work.';
+    }
     return {
       available: true,
       status: progression.lifetime_complete === true ? 'LEGENDARY COMPLETE'
@@ -553,14 +567,14 @@
         missing: blockers,
       } : null,
       bestJob: bestJob ? { key: bestJob.key, title: bestJob.title, basePetXp: Math.max(0, Number(bestJob.pet_xp) || 0) } : null,
-      exploreActivityAvailable: Boolean(exploreActivity),
+      exploreActivityAvailable: exploreActivityAvailable,
       routes: egg ? [
         { title: incubation.title || 'OPEN INCUBATION', screen: 'home', focus: 'incubation', detail: incubation.detail || 'Review this Secret Bot’s signal and hatch progress.' },
       ] : [
         { title: 'DAILY JOURNEY', screen: 'missions', focus: 'daily-journey', detail: 'Complete genuine Daily Journey objectives and earn the pet’s Growth Mark.' },
         { title: 'WEEKLY JOURNEY', screen: 'missions', focus: 'weekly-journey', detail: 'Complete the five weekly objectives for this pet’s Crest.' },
         { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Extracting ends your one official Daily Run attempt for the UTC day. Only the repeatable Moon Run banks its XP bag on extraction. Boss rewards settle separately.' },
-        { title: exploreActivity ? 'TIMED EXPLORE' : 'TIMED ACTIVITY', screen: 'work', focus: 'timed-activity', detail: exploreActivity ? 'Explore is currently offered by the server as a legitimate timed activity. Review its duration and energy cost before starting.' : 'Review the timed activities the server currently offers and use one when your energy and schedule allow.' },
+        activityRoute,
         { title: bestJob ? 'BEST UNLOCKED JOB // ' + bestJob.title : 'JOBS // CHECK UNLOCKS', screen: 'work', focus: 'jobs', detail: bestJob ? 'Highest base Pet XP among jobs the server marks available in this snapshot: ' + String(Math.max(0, Number(bestJob.pet_xp) || 0)) + '. Review cooldowns and current caps before choosing it.' : 'No eligible job is advertised in this snapshot. Review the server job board for current unlock requirements.' },
         { title: 'RELICS + MATERIALS', screen: 'economy', focus: 'relics', detail: 'Review collected relics and the material sources needed for later evolutions.' },
         { title: 'EVOLUTION', screen: 'profile', focus: 'evolution', detail: 'Review the next saved evolution gate and evolve only when the Worker says it is ready.' },

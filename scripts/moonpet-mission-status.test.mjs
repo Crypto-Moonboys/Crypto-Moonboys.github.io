@@ -73,6 +73,37 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
     'roadmap routes must navigate only and never submit gameplay');
 });
 
+test('the roadmap routes to the saved timed session before offering another activity', () => {
+  const state = snapshot();
+  state.season_slots = { slots: [{ active: true, pet: { progression: {
+    lifecycle: { current_stage: 2, total_stages: 6 },
+    growth_marks: { earned: 0, required: 240 },
+    weekly_crests: { earned: 0, required: 44 },
+  } } }] };
+  state.guidance.activity_options = [{ key: 'explore' }];
+
+  for (const [activity, title] of [
+    [{ activity_type: 'sleep', ready: false }, 'REVIEW CURRENT ACTIVITY'],
+    [{ activity_type: 'sleep', ready: true }, 'REVIEW ACTIVITY REWARD'],
+    [{ activity_type: 'explore', recovery_pending: true }, 'REVIEW ACTIVITY REWARD'],
+    [{ activity_type: 'explore', unavailable: true, ready: false }, 'REVIEW CURRENT ACTIVITY'],
+  ]) {
+    state.guidance.activity = activity;
+    const road = legendaryRoadmap(state);
+    const route = road.routes.find(route => route.focus === 'timed-activity');
+    assert.equal(road.exploreActivityAvailable, false);
+    assert.equal(route.title, title);
+    assert.equal(route.screen, 'work');
+    assert.equal(Object.hasOwn(route, 'action'), false);
+  }
+
+  state.guidance.activity = null;
+  assert.equal(legendaryRoadmap(state).exploreActivityAvailable, true);
+  assert.equal(legendaryRoadmap(state).routes.find(route => route.focus === 'timed-activity').title, 'TIMED EXPLORE');
+  state.guidance.activity_options = [{ key: 'sleep' }];
+  assert.equal(legendaryRoadmap(state).routes.find(route => route.focus === 'timed-activity').title, 'TIMED ACTIVITY');
+});
+
 test('the roadmap follows saved Worker stages, incubation and per-evolution Journey requirements', async () => {
   const fixture = await performanceFixture();
   try {
