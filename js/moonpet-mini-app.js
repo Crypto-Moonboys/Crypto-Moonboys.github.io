@@ -1505,7 +1505,7 @@
         try { await reloadPlayOptions(); } catch (error) { dependencyError = error; }
       }
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen, true));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       render();
@@ -2266,9 +2266,11 @@
     return !(hydration.modules || []).includes(screenKey) || (screenKey === 'missions' && !hydration.roadmapDeferred);
   }
 
-  function stateRefreshPayload(snapshot, screenKey) {
+  function stateRefreshPayload(snapshot, screenKey, manual) {
     if (screenKey === 'profile') return { mode: 'profile' };
     if (screenKey && screenKey !== 'home') return {};
+    // An explicit refresh must discover saved cross-pet actions after a failed warmup.
+    if (manual && snapshot && snapshot.adopted) return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
 
@@ -2792,12 +2794,63 @@
     return '<button class="terminal-button route-button" type="button" data-jump="' + escapeHtml(route.screen) + '" data-focus="' + escapeHtml(route.focus) + '" aria-label="' + escapeHtml(label) + '" aria-description="Opens a menu without spending resources. ' + escapeHtml(purpose) + '">' + escapeHtml(label) + '<span class="button-state">OPEN ' + escapeHtml(String(route.screen || 'MENU').toUpperCase()) + ' // NO COST</span><span class="button-purpose">' + escapeHtml(purpose) + '</span></button>';
   }
 
+  // TEST-EXPORT: objectivePanelGates:start
+  function weeklyBossUnlocked(snapshot) {
+    var capability = snapshot.capabilities && snapshot.capabilities.weekly_boss;
+    return Boolean(capability && capability.state === 'AVAILABLE' && capability.unlocked === true);
+  }
+
+  function raidUnlocked(snapshot, raid) {
+    return Number(snapshot.pet && snapshot.pet.level) >= Number(raid && raid.min_level || Infinity);
+  }
+
+  function visibleGear(snapshot) {
+    var catalog = snapshot.guidance && snapshot.guidance.shop_items || [];
+    var upgrades = snapshot.live_systems && snapshot.live_systems.upgrades || [];
+    var unlocked = new Set(catalog.filter(function (item) { return item.unlocked; }).map(function (item) { return item.key; }));
+    upgrades.forEach(function (item) { if (item.unlocked) unlocked.add(item.item_key); });
+    return (snapshot.gear || []).filter(function (item) { return unlocked.has(item.item_key); });
+  }
+
+  function goalRouteRequirement(focus, snapshot) {
+    var capability = snapshot.capabilities || {}, live = snapshot.live_systems || {};
+    if (focus === 'weekly-boss' && !weeklyBossUnlocked(snapshot))
+      return capability.weekly_boss && capability.weekly_boss.message || 'Weekly Boss requirements are loading.';
+    if (focus === 'equipment' && !visibleGear(snapshot).length)
+      return 'Own level-eligible gear to open Equipment.';
+    if (focus === 'seasonal-boss' && !raidUnlocked(snapshot, live.seasonal_boss))
+      return live.seasonal_boss && live.seasonal_boss.min_level ? 'Seasonal Raid unlocks at Level ' + live.seasonal_boss.min_level + '.' : 'Seasonal Raid details are loading.';
+    if (focus === 'kaiju' && !hasSystemUnlocked('kaiju', snapshot))
+      return capability.systems && capability.systems.kaiju && capability.systems.kaiju.message || 'Kaiju unlocks as your pet progresses.';
+    if (focus === 'districts' && !(snapshot.regions || []).some(function (region) { return region.requirements_met || region.pending_choice_key || region.settling; }))
+      return 'District missions require an unlocked district.';
+    if (focus === 'story-chains' && !(live.chains || []).length) return 'No story choices are available yet.';
+    if (focus === 'adventure' && !snapshot.adventure) return 'Adventure details are loading.';
+    if (focus === 'street-event' && !snapshot.encounter && !(snapshot.pending_street_events || []).length) return 'No street event is available yet.';
+    return '';
+  }
+
+  function goalRouteMarkup(routes, groupAlternatives) {
+    var hints = [], controls = [];
+    routes.forEach(function (route) {
+      var hint = goalRouteRequirement(route.focus, state);
+      if (hint) hints.push('<div class="line muted">' + escapeHtml(hint) + '</div>');
+      else controls.push(routeButton(route.title, route, route.detail));
+    });
+    var body = '';
+    if (controls.length) {
+      body = '<div class="button-grid' + (groupAlternatives ? ' one' : '') + '">' + (groupAlternatives ? controls[0] : controls.join('')) + '</div>';
+      if (groupAlternatives && controls.length > 1) body += '<details><summary class="line">OTHER QUALIFYING ROUTES</summary><div class="button-grid">' + controls.slice(1).join('') + '</div></details>';
+    }
+    return body + hints.join('');
+  }
+  // TEST-EXPORT: objectivePanelGates:end
+
   function objectiveRouteButton(key) {
     if (!window.MoonpetPlayOptions) return '';
     var routes = window.MoonpetPlayOptions.objectiveRoutes(key, state);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'OPEN INCUBATION', screen: 'home', focus: 'incubation' }];
-    var controls = routes.map(function (route) { return routeButton(route.title, route, route.detail); });
-    return '<div class="button-grid one">' + controls[0] + '</div>' + (controls.length > 1 ? '<details><summary class="line">OTHER QUALIFYING ROUTES</summary><div class="button-grid">' + controls.slice(1).join('') + '</div></details>' : '');
+    return goalRouteMarkup(routes, true);
   }
 
   function dailyObjectiveMarkup() {
@@ -2876,8 +2929,11 @@
     body += '<div class="line muted">BAG // ' + number(plan.output_count) + ' ' + escapeHtml(words(plan.recipe.output.item_key)) + '. Crafting makes ' + number(plan.recipe.output.quantity) + '.</div>';
     if (plan.output_count) body += '<div class="button-grid one">' + routeButton('REVIEW ITEMS IN BAG', { screen: 'economy', focus: 'inventory' }, 'Review the item before choosing whether to use it.') + '</div>';
     if (plan.routes.length) body += '<div class="button-grid">' + plan.routes.map(function (target) { return routeButton(target.title, target, target.detail); }).join('') + '</div>';
-    else if (plan.missing.length) body += '<div class="line muted">No matching district, expedition or affordable market option is available in this snapshot. Check the material sources below or continue a Contract while routes reset.</div>';
-    body += '<div class="button-grid">' + routeButton('CHECK MATERIAL SOURCES', { screen: 'economy', focus: 'materials' }) + (state.contracts && state.contracts.available ? routeButton('CONTINUE CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns. Contracts do not award crafting materials.') : '') + '</div>';
+    else if (plan.missing.length) body += '<div class="line muted">No matching district, expedition or affordable market option is available in this snapshot. Check the listed ingredient sources as routes reset.</div>';
+    var links = [];
+    if ((state.materials || []).length) links.push(routeButton('CHECK MATERIAL SOURCES', { screen: 'economy', focus: 'materials' }));
+    if (state.contracts && state.contracts.available) links.push(routeButton('CONTINUE CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns. Contracts do not award crafting materials.'));
+    if (links.length) body += '<div class="button-grid">' + links.join('') + '</div>';
     return body;
   }
 
@@ -2995,8 +3051,7 @@
     var board = state.season_finales;
     var pets = visibleFinalePets(state);
     if (!pets.length) return '';
-    var body = '<div class="line muted">Saved battle. Free retries. Battle HP and kits are separate from pet resources.</div>';
-    body += pets.map(function (pet) {
+    var body = pets.map(function (pet) {
       var payload = { pet_id: pet.pet_id, season_key: pet.season_key, competition_season_key: pet.competition_season_key, revision: pet.revision };
       var section = '<div class="line signal">' + escapeHtml(pet.competition_season_key) + ' // SLOT ' + number(pet.slot_number) + (state.pet.pet_id === pet.pet_id ? ' // SELECTED PET' : ' // SAVED PET') + '</div>';
       if (pet.state) section += '<div class="line">ATTEMPT ' + number(pet.attempt) + ' // ROUND ' + number(pet.state.round) + ' // ' + escapeHtml(words(pet.state.build)) + '</div>' +
@@ -3012,6 +3067,9 @@
         return button((pet.status === 'failed' ? 'RETRY // ' : 'START // ') + build.title, pet.status === 'failed' ? 'finale_retry' : 'finale_start', Object.assign({}, payload, { build: build.key }), { detail: build.detail + ' No pet energy cost.' });
       }).join('') + '</div>';
     }).join('');
+    if (pets.every(function (pet) { return pet.status === 'won' && pet.claimed; }))
+      return panel('FINALE VICTORY HISTORY', body, 'season-finale', 'Completed battles and paid rewards.');
+    body = '<div class="line muted">Saved battle. Free retries. Battle HP and kits are separate from pet resources.</div>' + body;
     body += '<div class="line muted">First victory: Finale Victor achievement, up to ' + number(board.reward.pet_xp) + ' Pet XP, ' + number(board.reward.moon_gold) + ' Gold and ' + number(board.reward.style_tokens) + ' Style. One reward per pet / competition quarter; normal daily XP cap. Earlier saved battles and unclaimed victories stay recoverable. This additional challenge preserves existing season-completion status. Completed owned pets can also enter.</div>';
     if (state.contracts && state.contracts.available) body += '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Repeatable routes with rank and limited daily Pet XP bonuses.') + '</div>';
     return panel('SEASON FINALE // ' + board.title, body, 'season-finale');
@@ -3365,10 +3423,7 @@
       (boss.defeated ? '<div class="line">' + (boss.reward_claimed ? 'VICTORY REWARD COLLECTED.' : 'VICTORY RECORDED. CHECK SAVED REWARDS.') + '</div>' : '') +
       (boss.rotation_cooldown ? '<div class="line muted">NEXT WEEKLY BOSS ' + countdownMarkup(boss.rotation_cooldown, 'in ') + '</div>' : '') +
       '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
-    var weeklyCapability = state.capabilities && state.capabilities.weekly_boss || {};
-    var weeklyUnlocked = weeklyCapability.state === 'AVAILABLE' && weeklyCapability.unlocked === true;
     var weeklySaved = Boolean((boss.pending_rewards || []).length);
-    var seasonalUnlocked = Number(state.pet && state.pet.level) >= Number(seasonal.min_level || Infinity);
     var seasonalSaved = Boolean((seasonal.pending_rewards || []).length || seasonal.pending_move || seasonal.settling);
     var arenaVisible = hasSystemUnlocked('arena') || Boolean(arena || arenaQueue);
     var kaijuVisible = hasSystemUnlocked('kaiju') || Boolean(kaijuMatch || kaijuQueue);
@@ -3377,9 +3432,9 @@
     if (hatched || run) panels.push(panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run'));
     if (hatched && adventure) panels.push(panel(adventure.title, '<div class="line">' + escapeHtml(adventure.intro) + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div>' + renderChoiceResult('adventure') + '<div class="button-grid">' + adventureButtons + '</div>', 'adventure'));
     if ((hatched && encounter) || savedEvents) panels.push(panel(encounter ? encounter.title : 'SAVED STREET EVENTS', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'RECOVER OR REVIEW THE SAVED EVENT BELOW.') + '</div>' + (encounter ? '<div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div>' + renderChoiceResult('street-event') + '<div class="button-grid">' + eventButtons + '</div>' : '') + '<div class="button-grid one">' + savedEvents + '</div>', 'street-event'));
-    if (weeklyUnlocked || weeklySaved) panels.push(panel('WEEKLY BOSS // ' + (boss.title || 'SAVED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss'));
+    if (weeklyBossUnlocked(state) || weeklySaved) panels.push(panel('WEEKLY BOSS // ' + (boss.title || 'SAVED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss'));
     if (chains) panels.push(panel('STREET STORY CHAINS', chains, 'story-chains'));
-    if (seasonalUnlocked || seasonalSaved) panels.push(panel('SEASONAL RAID', seasonalBody, 'seasonal-boss'));
+    if (raidUnlocked(state, seasonal) || seasonalSaved) panels.push(panel('SEASONAL RAID', seasonalBody, 'seasonal-boss'));
     if (arenaVisible) panels.push(panel('PET ARENA', arenaBody, 'arena'));
     if (kaijuVisible) panels.push(panel('KAIJU CODE CARDS', kaijuBody, 'kaiju'));
     return (hatched ? renderPlayNow() : '') + panels.join('');
@@ -3469,7 +3524,7 @@
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
       return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + (bounty.difficulty ? escapeHtml(bounty.difficulty) + ' // ' : '') + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // ✅ Completed // CLAIMED' : bounty.complete ? ' // ✅ Completed // READY TO CLAIM' : ' // IN PROGRESS') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
-        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
+        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, weekly ? 'weekly_bounty_claim' : 'bounty_claim', weekly ? { bounty_key: bounty.key, week_key: economy.week_key } : { bounty_key: bounty.key, day_key: economy.day_key }) + '</div>' : !bounty.claimed && !bounty.complete ? goalRouteMarkup(routes, false) : '');
     }
     function visibleBounty(bounty) { return !egg || bounty.complete === true && !bounty.claimed; }
     var bounties = (economy.bounties || []).filter(visibleBounty).map(function (bounty) { return renderBounty(bounty, false); }).join('');
@@ -3525,9 +3580,8 @@
     var live = state.live_systems || {};
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var unlockedGearKeys = new Set((guidance.shop_items || []).filter(function (item) { return item.unlocked; }).map(function (item) { return item.key; }));
-    var gear = (state.gear || []).map(function (item) {
+    var gear = visibleGear(state).map(function (item) {
       var upgrade = upgrades.get(item.item_key) || {};
-      if (!unlockedGearKeys.has(item.item_key) && !upgrade.unlocked) return '';
       var catalogItem = (guidance.shop_items || []).find(function (entry) { return entry.key === item.item_key; });
       var equip = catalogItem && catalogItem.unlocked ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: catalogItem.equipped, detail: 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' }) + '</div>' : '';
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
@@ -3800,12 +3854,19 @@
     var callsignPanel = '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>';
     var hatched = Boolean(lifecycle.phase && lifecycle.phase !== 'egg');
     var rareVisible = hatched && (rare.ready || rare.name || Number(rare.progress) > 0);
+    var finalePanel = '';
+    var finales = visibleFinalePets(state);
+    if (finales.length) {
+      var historyOnly = finales.every(function (pet) { return pet.status === 'won' && pet.claimed; });
+      finalePanel = historyOnly ? renderSeasonFinales() : panel('SEASON FINALE', '<div class="button-grid one">' +
+        routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Start or resume a battle, or collect a victory reward.') + '</div>', 'finale-link');
+    }
     return activePetSummary() + helpPanel + renderSeasonSlots() + renderPetHouse() + renderFurnitureShop() +
       panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + (rareVisible ? panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') : '') +
       (hatched ? panel('APTITUDES', aptitudeRows) : '') +
       (hatched ? panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') : '') +
       (callsignUnlocked ? panel('CALLSIGN', callsignPanel, 'callsign') : '') +
-      (visibleFinalePets(state).length ? panel('SEASON FINALE', '<div class="button-grid one">' + routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Check your unlocks, resume a saved fight or collect a victory reward.') + '</div>', 'finale-link') : '') +
+      finalePanel +
       (hatched ? panel('EVOLUTION', evoHtml, 'evolution') : '') + (hatched && faction.bonus ? panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key)) + '</div><div class="line muted">' + escapeHtml(words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect)) + '</div>', 'faction') : '') +
       (hatched ? panel('SPECIALIST TRACKS', tracks, 'tracks') : '') + (hatched && featureRows ? panel('GAMEPLAY ONLINE', featureRows, 'features') : '') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + (tiers || '<div class="line muted">No season reward is unlocked yet.</div>'), 'season') + (hatched ? panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD<span class="button-purpose">Compare competition scores. Viewing ranks does not change your pet.</span></button></div>', 'leaderboard') : '');
   }
@@ -3816,13 +3877,12 @@
   ];
 
   // TEST-EXPORT: progressiveVisibility:start
-  function visibleFinalePets(snapshot) {
+  function visibleFinalePets(snapshot, actionableOnly) {
     var board = snapshot && snapshot.season_finales;
     if (!board || board.available === false || !Array.isArray(board.pets)) return [];
-    var hatched = snapshot.lifecycle && snapshot.lifecycle.phase && snapshot.lifecycle.phase !== 'egg';
     return board.pets.filter(function (pet) {
       if (!pet || !pet.pet_id || !pet.competition_season_key) return false;
-      if (pet.status === 'won') return !pet.claimed || hatched && pet.pet_id === snapshot.pet.pet_id;
+      if (pet.status === 'won') return !pet.claimed || !actionableOnly;
       return pet.playable !== false && (pet.status === 'active' || pet.status === 'failed' ||
         pet.status === 'not_started' && pet.eligible === true);
     });
@@ -3845,7 +3905,7 @@
         return retainedKinds.includes(entry.kind);
       }));
     });
-    if (statuses.missions && statuses.missions.loaded && visibleFinalePets(snapshot).length) visible.missions = true;
+    if (statuses.missions && statuses.missions.loaded && visibleFinalePets(snapshot, true).length) visible.missions = true;
     return visible;
   }
 
