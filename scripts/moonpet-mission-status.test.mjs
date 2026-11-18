@@ -3,6 +3,8 @@ import test from 'node:test';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
+import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
+import { sandboxPlayers } from './moonpet-sandbox-players.mjs';
 
 const { missionStatus, missionClaims, menuStatuses, menuBadge, legendaryRoadmap } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
 const keys = ['pet-daily-feed', 'pet-daily-train', 'pet-daily-care', 'pet-daily-trade', 'pet-daily-shop', 'pet-daily-adventure', 'pet-daily-bank'];
@@ -51,7 +53,7 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
   const road = legendaryRoadmap(state);
   assert.equal(road.available, true);
   assert.equal(road.status, 'IN PROGRESS');
-  assert.deepEqual(road.stage, { current: 2, total: 6 });
+  assert.equal(road.stage, 1, 'older snapshots identify Stage 1 as the second form');
   assert.equal(road.level, 27);
   assert.equal(road.petXp, 28942);
   assert.deepEqual(road.growthMarks, { earned: 90, required: 240 });
@@ -69,6 +71,42 @@ test('Road to Legendary reads authoritative lifetime state and exposes navigatio
   ]);
   assert.ok(road.routes.every(route => !Object.prototype.hasOwnProperty.call(route, 'action')),
     'roadmap routes must navigate only and never submit gameplay');
+});
+
+test('the roadmap follows saved Worker stages, incubation and per-evolution Journey requirements', async () => {
+  const fixture = await performanceFixture();
+  try {
+    for (const stage of [0, 3, 4, 5]) {
+      await sandboxPlayers['stage-' + stage].prepare(fixture);
+      if (stage === 0) {
+        fixture.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=0, level=1 WHERE telegram_id=?').run(fixture.owner);
+        fixture.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=0, level=1 WHERE telegram_id=?').run(fixture.owner);
+      }
+      const { state } = await fixture.measureHttp();
+      const road = legendaryRoadmap(state);
+      assert.equal(road.stage, stage);
+      assert.equal(road.finalForm, stage === 5);
+      if (stage === 0) {
+        assert.equal(road.petXp, 0);
+        assert.equal(road.status, 'INCUBATING');
+        assert.deepEqual(road.routes, [{ screen: 'home', focus: 'incubation', title: state.next.title, detail: state.next.detail }]);
+      } else if (!road.finalForm) {
+        const req = state.season_slots.slots.find(slot => slot.active).pet.progression.lifecycle.requirements;
+        if (stage === 3) assert.ok(req.growth_marks.required < road.growthMarks.required);
+        for (const [key, label] of [['min_age_days', 'Pet age (days)'], ['growth_marks', 'Growth Marks'], ['weekly_crests', 'Weekly Crests']]) {
+          assert.equal(req[key].complete, false);
+          const rows = road.nextEvolution.missing.filter(row => row.label === label);
+          assert.deepEqual(rows.map(row => [row.current, row.required]), [[req[key].current, req[key].required]]);
+        }
+        assert.ok(state.guidance.evolution.missing.every(row => road.nextEvolution.missing.some(entry => entry.label === row.label)));
+        const daily = road.routes.find(route => route.focus === 'moon-run');
+        assert.match(daily.detail, /ends your one official Daily Run attempt for the UTC day/);
+        assert.match(daily.detail, /repeatable Moon Run banks its XP bag/);
+      } else {
+        assert.equal(road.nextEvolution, null);
+      }
+    }
+  } finally { fixture.close(); }
 });
 
 test('Road to Legendary fails closed on missing identity or partial hydration', () => {

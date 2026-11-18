@@ -127,7 +127,7 @@ Adds `legendaryRoadmap(snapshot)`.
 
 It is read-only and fail-closed. It reads only current saved state:
 
-- current / total stage
+- saved evolution stage (0 for the Secret Bot through 5 for the Legendary Moon Guardian)
 - level
 - Pet XP
 - Growth Marks earned / required
@@ -136,15 +136,15 @@ It is read-only and fail-closed. It reads only current saved state:
 - Scrap Metal
 - Evolution Fragments
 - current server-projected next evolution
-- current server-projected missing evolution requirements
+- missing evolution requirements, including the pet age, Growth Marks and Weekly Crests required for its next form
 - highest-base-Pet-XP job that the server marks `available:true` in the current snapshot
 - whether the server currently offers timed `explore`
 
-It returns navigation destinations only:
+For an egg, the roadmap opens the Worker’s recommended incubation or hatch step in Home. After hatching it offers seven destinations:
 
 1. Daily Journey
 2. Weekly Journey
-3. official Daily Run / bosses
+3. official Daily Run / bosses. Extracting ends the account’s attempt for that UTC day. The repeatable Moon Run banks its XP bag on extraction.
 4. timed Explore when the server offers it, otherwise the timed-activity board
 5. the current highest-base-XP **eligible** job, otherwise the jobs/unlock board
 6. relics/materials
@@ -156,7 +156,7 @@ No returned route contains a gameplay `action`.
 
 Missions now includes a **ROAD TO LEGENDARY** panel.
 
-It shows the saved lifetime progression, current evolution blockers and route buttons to the real game panels.
+It shows the saved lifetime progression, current evolution blockers and route buttons to the real game panels. If the full read fails, Missions can still load Daily Journey and Contracts through its lightweight read. Refresh retries the full roadmap.
 
 The panel explicitly states that it does not play for the user. It never calls an action endpoint, awards XP, invents a Mark/Crest, chooses a boss result or evolves a pet.
 
@@ -168,7 +168,7 @@ Direct current-branch evaluation:
 
 - `js/moonpet-play-options.js` parses and executes as CommonJS: **PASS**
 - `legendaryRoadmap()` projection fixture: **PASS**
-  - stage 2/6
+  - the second of six forms (Stage 1)
   - Level 27
   - 28,942 Pet XP
   - 90/240 Growth Marks

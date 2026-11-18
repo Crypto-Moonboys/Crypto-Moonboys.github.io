@@ -557,6 +557,14 @@ try {
     const page = await context.newPage();
     const modes = [], errors = [];
     let nextFullGate;
+    let failLeaderboard = false, leaderboardFailures = 0;
+    const missionDb = { ...db, prepare(sql) {
+      if (failLeaderboard && sql.includes('FROM ranked r JOIN telegram_pet_profiles')) {
+        leaderboardFailures++;
+        throw Error('leaderboard unavailable');
+      }
+      return db.prepare(sql);
+    } };
     function holdNextFullResponse() {
       let release;
       nextFullGate = new Promise(resolve => { release = resolve; });
@@ -576,10 +584,15 @@ try {
           nextFullGate = null;
           await gate;
         }
-        const state = body.mode === 'core'
-          ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
-          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, 'browser-missions') : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.state_mode || body.mode });
-        return route.fulfill({ json: { ok: true, state } });
+        try {
+          const state = body.mode === 'core'
+            ? await hooks.buildPetMiniAppCoreState(missionDb, 'browser-missions')
+            : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(missionDb, 'browser-missions') : await hooks.buildPetMiniAppState(missionDb, 'browser-missions', token, { mode: body.state_mode || body.mode });
+          return route.fulfill({ json: { ok: true, state } });
+        } catch (error) {
+          if (!failLeaderboard) throw error;
+          return route.fulfill({ status: 503, json: { error: 'mini_app_state_failed' } });
+        }
       }
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -643,6 +656,21 @@ try {
         await page.waitForSelector('[data-panel="moon-run"][open]', { timeout: 2000 });
       }
     }
+    modes.length = 0;
+    failLeaderboard = true;
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions&focus=daily-journey`);
+    await page.waitForSelector('[data-panel="daily-journey"][open]');
+    assert.ok(leaderboardFailures > 0);
+    assert.equal(modes.at(-1), 'missions');
+    assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
+    await page.locator('[data-panel="contracts"] > summary').click();
+    assert.equal(await page.locator('[data-panel="contracts"][open]').count(), 1);
+    assert.match(await page.locator('[data-panel="legendary-roadmap"]').textContent(), /SYNCING/);
+    assert.equal(await roadmapRoutes.count(), 0);
+    failLeaderboard = false;
+    await page.locator('[data-utility="sync"]').click();
+    await roadmapRoutes.first().waitFor({ state: 'attached' });
+    assert.equal(await roadmapRoutes.count(), 7);
     assert.deepEqual(errors, [], 'partial-state navigation has no runtime exceptions');
     await context.close();
   }

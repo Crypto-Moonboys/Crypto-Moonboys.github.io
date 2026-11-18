@@ -477,6 +477,28 @@
     return { available: Boolean(missions.length), completed: completed, total: missions.length, next: next, status: status, claims: missionClaims(s) };
   }
 
+  function roadmapEvolutionBlockers(evolution, lifecycle) {
+    var requirements = lifecycle.requirements || {};
+    var journeyKeys = [
+      ['min_age_days', 'Pet age (days)', 'Age of this pet'],
+      ['growth_marks', 'Growth Marks', 'Daily Journey'],
+      ['weekly_crests', 'Weekly Crests', 'Weekly Journey'],
+    ];
+    var journey = [];
+    var known = new Set();
+    journeyKeys.forEach(function (field) {
+      var progress = requirements[field[0]];
+      if (!progress || !Number.isFinite(progress.current) || !Number.isFinite(progress.required)) return;
+      known.add(field[0]);
+      if (progress.current < progress.required) {
+        journey.push({ label: field[1], current: progress.current, required: progress.required, source: field[2] });
+      }
+    });
+    return (evolution.missing || []).filter(function (entry) {
+      return !known.has(entry.key) && !(journey.length && entry.key === 'authority:requirements_not_met');
+    }).concat(journey);
+  }
+
   // Lifetime Road to Legendary projection. This is navigation-only guidance:
   // it reads already-authoritative pet state and never submits an action,
   // awards XP, settles a Journey receipt or guesses a missing requirement.
@@ -503,17 +525,19 @@
       if (key) materialMap[key] = Math.max(0, Number(entry.quantity) || 0);
     });
     var evolution = g.evolution || null;
+    var egg = s.lifecycle && s.lifecycle.phase === 'egg';
+    var incubation = egg && s.next && s.next.key === 'incubate' ? s.next : {};
+    var blockers = evolution ? roadmapEvolutionBlockers(evolution, lifecycle) : [];
+    var evolutionReady = Boolean(evolution && evolution.ready === true && !blockers.length);
     var bestJob = (g.jobs || []).filter(function (job) { return job && job.available === true; })
       .sort(function (left, right) { return Number(right.pet_xp || 0) - Number(left.pet_xp || 0); })[0] || null;
     var exploreActivity = (g.activity_options || []).find(function (offer) { return offer && offer.key === 'explore'; }) || null;
     return {
       available: true,
       status: progression.lifetime_complete === true ? 'LEGENDARY COMPLETE'
-        : evolution && evolution.ready ? 'EVOLUTION READY' : 'IN PROGRESS',
-      stage: {
-        current: Math.max(0, Number(lifecycle.current_stage) || 0),
-        total: Math.max(0, Number(lifecycle.total_stages) || 0),
-      },
+        : egg ? 'INCUBATING' : evolutionReady ? 'EVOLUTION READY' : 'IN PROGRESS',
+      stage: s.lifecycle && Number.isInteger(s.lifecycle.evolution_stage) ? s.lifecycle.evolution_stage : lifecycle.current_stage - 1,
+      finalForm: lifecycle.current_stage === lifecycle.total_stages,
       level: Math.max(0, Number(pet.level) || 0),
       petXp: Math.max(0, Number(pet.pet_xp) || 0),
       growthMarks: { earned: Math.max(0, Number(growth.earned) || 0), required: Math.max(0, Number(growth.required) || 0) },
@@ -525,22 +549,17 @@
       },
       nextEvolution: evolution ? {
         name: evolution.name || 'NEXT EVOLUTION',
-        ready: evolution.ready === true,
-        missing: (evolution.missing || []).map(function (entry) {
-          return {
-            label: entry.label || entry.key || 'Requirement',
-            current: Math.max(0, Number(entry.current) || 0),
-            required: Math.max(0, Number(entry.required) || 0),
-            source: entry.source || '',
-          };
-        }),
+        ready: evolutionReady,
+        missing: blockers,
       } : null,
       bestJob: bestJob ? { key: bestJob.key, title: bestJob.title, basePetXp: Math.max(0, Number(bestJob.pet_xp) || 0) } : null,
       exploreActivityAvailable: Boolean(exploreActivity),
-      routes: [
+      routes: egg ? [
+        { title: incubation.title || 'OPEN INCUBATION', screen: 'home', focus: 'incubation', detail: incubation.detail || 'Review this Secret Bot’s signal and hatch progress.' },
+      ] : [
         { title: 'DAILY JOURNEY', screen: 'missions', focus: 'daily-journey', detail: 'Complete genuine Daily Journey objectives and earn the pet’s Growth Mark.' },
         { title: 'WEEKLY JOURNEY', screen: 'missions', focus: 'weekly-journey', detail: 'Complete the five weekly objectives for this pet’s Crest.' },
-        { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Play the official Daily Run, bank safe exits and keep working toward Alley King victories and relic drops.' },
+        { title: 'DAILY RUN + BOSSES', screen: 'explore', focus: 'moon-run', detail: 'Extracting ends your one official Daily Run attempt for the UTC day. Only the repeatable Moon Run banks its XP bag on extraction. Boss rewards settle separately.' },
         { title: exploreActivity ? 'TIMED EXPLORE' : 'TIMED ACTIVITY', screen: 'work', focus: 'timed-activity', detail: exploreActivity ? 'Explore is currently offered by the server as a legitimate timed activity. Review its duration and energy cost before starting.' : 'Review the timed activities the server currently offers and use one when your energy and schedule allow.' },
         { title: bestJob ? 'BEST UNLOCKED JOB // ' + bestJob.title : 'JOBS // CHECK UNLOCKS', screen: 'work', focus: 'jobs', detail: bestJob ? 'Highest base Pet XP among jobs the server marks available in this snapshot: ' + String(Math.max(0, Number(bestJob.pet_xp) || 0)) + '. Review cooldowns and current caps before choosing it.' : 'No eligible job is advertised in this snapshot. Review the server job board for current unlock requirements.' },
         { title: 'RELICS + MATERIALS', screen: 'economy', focus: 'relics', detail: 'Review collected relics and the material sources needed for later evolutions.' },

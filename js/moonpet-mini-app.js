@@ -2258,8 +2258,8 @@
     if (screenKey === 'profile' && hydration.mode === 'full')
       return !(hydration.modules || []).includes('profile');
     if (!stateNeedsFullHydration(snapshot)) return false;
-    // Missions also displays the roadmap, which needs inventory and evolution.
-    return screenKey === 'missions' || !(hydration.modules || []).includes(screenKey);
+    // Only a deliberately requested Missions fallback may defer the roadmap.
+    return !(hydration.modules || []).includes(screenKey) || (screenKey === 'missions' && !hydration.roadmapDeferred);
   }
 
   function stateRefreshPayload(snapshot, screenKey) {
@@ -2314,13 +2314,16 @@
     }
     var source = state;
     var owner = hydrationOwnerKey();
+    var missionsFallback = !background && reason === 'missions' && fullStateHydrationFailures > 0;
     var hydrationPromise = (async function () {
       if (!background) tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
       var requestGeneration = beginStateRequest();
       var warmupController = background ? new AbortController() : null;
       if (warmupController) stateRequestGate.setBackgroundRequest(warmupController);
       try {
-        var data = await post('/telegram-pets/app/state', background ? {} : stateRefreshPayload(state, reason || activeScreen),
+        var payload = background ? {} : stateRefreshPayload(state, reason || activeScreen);
+        if (missionsFallback) payload.mode = 'missions';
+        var data = await post('/telegram-pets/app/state', payload,
           warmupController ? { signal: warmupController.signal, background: true, passive: true } : { passive: !manualRetry });
         if (!stateRequestGate.isCurrent(requestGeneration)) return null;
         if (document.hidden) { seasonRefreshPending = true; return null; }
@@ -2329,7 +2332,9 @@
           scheduleFastActionStateRefresh(0);
           return null;
         }
-        if (!data.state || (background || reason === 'missions') && stateNeedsFullHydration(data.state)) throw new Error('MODULE STATE UNAVAILABLE');
+        var hydration = data.state && data.state.hydration;
+        var missionsLoaded = missionsFallback && hydration && hydration.mode === 'missions' && (hydration.modules || []).includes('missions');
+        if (!data.state || ((background || reason === 'missions') && stateNeedsFullHydration(data.state) && !missionsLoaded)) throw new Error('MODULE STATE UNAVAILABLE');
         if (background && !sameHydrationSource(source, data.state)) {
           // Cross-device selection/quarter changes need a fresh core read.
           // Never splice a different pet or period into the displayed Home.
@@ -2337,7 +2342,7 @@
           scheduleFastActionStateRefresh(0);
           return null;
         }
-        if (!setStateSnapshot(data.state, requestGeneration)) return null;
+        if (!setStateSnapshot(data.state, requestGeneration, { missionsFallback: missionsLoaded })) return null;
         fastActionStateDirty = false;
         fullStateHydrationFailures = 0;
         fullStateHydrationRetryDelayMs = 0;
@@ -2380,6 +2385,9 @@
 
   function setStateSnapshot(nextState, requestGeneration, options) {
     if (authenticationFailure || !nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
+    if (options && options.missionsFallback && nextState.hydration && nextState.hydration.mode === 'missions') {
+      nextState = Object.assign({}, nextState, { hydration: Object.assign({}, nextState.hydration, { roadmapDeferred: true }) });
+    }
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     // Missions defers cosmetic reads; retain only the same pet's confirmed Home.
@@ -3008,24 +3016,27 @@
         'legendary-roadmap');
     }
     var growth = roadmap.growthMarks || {}, crests = roadmap.weeklyCrests || {};
-    var stage = roadmap.stage || {}, materials = roadmap.materials || {};
+    var materials = roadmap.materials || {};
     var next = roadmap.nextEvolution;
     var missing = next && (next.missing || []).length
       ? (next.missing || []).map(function (entry) {
           return '<div class="line ' + (Number(entry.current) >= Number(entry.required) ? 'complete' : 'muted') + '">' +
-            escapeHtml(entry.label) + ' // ' + number(entry.current) + '/' + number(entry.required) +
+            escapeHtml(entry.label || entry.key || 'Requirement') + ' // ' + number(entry.current) + '/' + number(entry.required) +
             (entry.source ? ' // ' + escapeHtml(entry.source) : '') + '</div>';
         }).join('')
-      : next
+      : next && next.ready
         ? '<div class="line complete">ALL CURRENT EVOLUTION REQUIREMENTS SATISFIED.</div>'
-        : '<div class="line complete">FINAL EVOLUTION ONLINE.</div>';
+        : roadmap.finalForm ? '<div class="line complete">FINAL EVOLUTION ONLINE.</div>'
+        : '<div class="line muted">Evolution requirements unavailable. Tap Refresh to try again.</div>';
     var routes = (roadmap.routes || []).map(function (target) {
       return routeButton(target.title, target, target.detail);
     }).join('');
-    var routine = '<div class="line muted">PROVEN ROUTINE // Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use legitimate timed activity and the best job you have actually unlocked, collect relics/materials, then evolve only when the server says READY.</div>';
+    var routine = roadmap.status === 'INCUBATING'
+      ? '<div class="line muted">AFTER HATCHING // Daily Journey, Weekly Journey, jobs, timed activities and the official Daily Run.</div>'
+      : '<div class="line muted">Keep Daily Journey and Weekly Journey moving, play the official Daily Run and bosses, use timed activities and unlocked jobs, and collect the relics and materials for your next evolution.</div>';
     var body =
       '<div class="season-status-grid">' +
-        '<div><span>STAGE</span><strong>' + number(stage.current) + (stage.total ? '/' + number(stage.total) : '') + '</strong></div>' +
+        '<div><span>STAGE</span><strong>' + number(roadmap.stage) + '</strong></div>' +
         '<div><span>LEVEL</span><strong>' + number(roadmap.level) + '</strong></div>' +
         '<div><span>PET XP</span><strong>' + number(roadmap.petXp) + '</strong></div>' +
         '<div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
@@ -4461,6 +4472,7 @@
       }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
       else if (activeScreen === 'profile') requestPayload.state_mode = 'profile';
+      else if (activeScreen === 'missions' && stateBeforeAction && stateBeforeAction.hydration && stateBeforeAction.hydration.roadmapDeferred) requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
@@ -4542,7 +4554,7 @@
         && stateBeforeAction.pet && responseState.pet && stateBeforeAction.pet.pet_id === responseState.pet.pet_id
         && actionAnimationFamily(action, payload) === 'hatch';
       var hatchDuration = isHatchReveal ? hatchAnimationDuration() : 0;
-      if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal })) return;
+      if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal, missionsFallback: requestPayload.state_mode === 'missions' })) return;
       if (isHatchReveal) {
         animateAction(action, true, hatchDuration + 250, payload);
         animationUntil = Number.POSITIVE_INFINITY;

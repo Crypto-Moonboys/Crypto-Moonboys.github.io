@@ -702,7 +702,7 @@ for (const moduleScreen of ['missions', 'profile']) {
     async post(path, payload) {
       calls.push({ path, payload });
       if (failModule) {
-        if (moduleScreen === 'missions') return { state: partialMissions };
+        if (moduleScreen === 'missions' && !payload.mode) return { state: partialMissions };
         throw Error('mini_app_state_failed');
       }
       return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' },
