@@ -240,6 +240,22 @@ test('progressive section visibility follows lifecycle unlocks without treating 
     home: true, missions: false, explore: false, work: false, economy: false, profile: true,
   });
 
+  const finale = { pet_id: 'older-pet', competition_season_key: 'prior-quarter', status: 'not_started', playable: true, eligible: false };
+  egg.season_finales = { available: true, pets: [finale] };
+  assert.equal(context.moonpetSectionVisibility(egg).missions, false);
+  for (const status of ['not_started', 'active', 'failed', 'won']) {
+    Object.assign(finale, { status, eligible: status === 'not_started', playable: status !== 'won', claimed: false });
+    assert.equal(context.visibleFinalePets(egg).length, 1, status);
+    assert.equal(context.moonpetSectionVisibility(egg).missions, true, status);
+  }
+  finale.claimed = true;
+  assert.equal(context.moonpetSectionVisibility(egg).missions, false, 'a settled prize alone does not reopen Missions for an egg');
+  finale.status = 'failed';
+  assert.equal(context.visibleFinalePets(egg).length, 0, 'a retired pet cannot retry its battle');
+  egg.season_finales = { available: true, pets: [{ ...finale, playable: true }, finale] };
+  assert.equal(context.visibleFinalePets(egg).length, 1, 'only the usable slot is rendered on a mixed board');
+  delete egg.season_finales;
+
   egg.guidance.daily_completion.pending = [{ utc_day: 'saved-day', pet_id: 'earlier-pet' }];
   egg.guidance.weekly_boss = { pending_rewards: [{ pet_id: 'earlier-pet', boss_id: 'boss', week_key: 'week' }] };
   egg.guidance.activity = { activity_type: 'work', ready: false };

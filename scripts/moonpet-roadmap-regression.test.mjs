@@ -21,13 +21,14 @@ const renderProfile = new Function('state', 'panel', `
   function valueText() { return ''; }
   function resolveMoonpetDisplayName() { return 'BOTTY'; }
   function moonpetStageLabel() { return 'Stage 3'; }
+  ${client.split('// TEST-EXPORT: progressiveVisibility:start')[1].split('// TEST-EXPORT: progressiveVisibility:end')[0]}
   ${notificationControlsSource}
   ${profileSource}
   return renderProfile();
 `);
 const state = {
   pet: { callsign: 'Saved callsign', evolution_stage: 3 },
-  lifecycle: { evolution_stage: 3 },
+  lifecycle: { phase: 'young', evolution_stage: 3 },
   guidance: {
     features: [
       ...retiredFeatures.map(key => ({ key, title: 'Retired ' + key, available: false })),
@@ -40,7 +41,7 @@ renderProfile(state, (title, body, key) => { panels.set(key || title, { title, b
 for (const key of ['prestige', 'sanctuary', 'future-systems']) assert.equal(panels.has(key), false);
 for (const key of ['evolution', 'season', 'tracks', 'callsign', 'alerts', 'leaderboard']) assert.ok(panels.has(key), key + ' remains playable');
 assert.match(panels.get('callsign').body, /Saved callsign|SAVE CALLSIGN/, 'Profile keeps callsign editing');
-assert.match(panels.get('features').body, /\[LOCKED\] Pet Arena[\s\S]*Requires Level 10/, 'playable level gates remain visible');
+assert.doesNotMatch(panels.get('features').body, /Pet Arena/, 'locked arena stays hidden');
 assert.match(panels.get('features').body, /\[ONLINE\] Daily Missions/);
 assert.doesNotMatch(panels.get('features').body, /Retired /, 'no unwired entries survive the feature directory');
 assert.match(client, /Personality develops through play/);

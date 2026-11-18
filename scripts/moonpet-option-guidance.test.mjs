@@ -489,7 +489,7 @@ test('food shortcut and workshop goals only surface unlocked recipes', () => {
     { key: 'burgers', title: 'Burgers', unlocked: false, output: { item_key: 'moon_burger', quantity: 2 } },
   ] };
   vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderFoodCounter()', '  function renderPetEmotes()') +
-    between('  var craftingGoalMemory', '  function renderContracts()') +
+    between('  var craftingGoalMemory', '  function renderContracts(') +
     between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
   assert.doesNotMatch(ctx.renderFoodCounter(), /COOK MORE MEALS/);
   assert.doesNotMatch(ctx.renderEconomy(), /data-panel="crafting"/);

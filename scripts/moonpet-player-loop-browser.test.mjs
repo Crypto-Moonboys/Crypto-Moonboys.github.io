@@ -625,7 +625,7 @@ try {
     for (const band of ['NOW', 'TODAY', 'THIS WEEK', 'NEXT EVOLUTION', 'LIFETIME']) assert.match(journeyText, new RegExp(band));
     assert.equal(await page.locator('[data-panel="legendary-roadmap"] .journey-routes').getAttribute('open'), null,
       'secondary gameplay routes stay collapsed to avoid dashboard bloat');
-    for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','season-finale','achievements']) {
+    for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','achievements']) {
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders alongside the roadmap`);
     }
     await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-missions-roadmap.png') });
@@ -1870,7 +1870,8 @@ try {
     const savedPayload = JSON.parse(await savedButton.getAttribute('data-payload'));
     assert.equal(savedPayload.pet_id,sourcePetId); assert.equal(savedPayload.contract_id,savedContract.contract_id);
     assert.equal(await page.locator('[data-action="contract_start"]').count(),0);
-    assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('Hatch your Secret Bot to start new contracts'));
+    assert.doesNotMatch(await page.locator('[data-panel="contracts"]').textContent(), /Hatch your Secret Bot to start new contracts/);
+    assert.equal(await page.locator('[data-panel="daily-completion"], [data-panel="season-finale"]').count(),0);
     assert.ok(await savedButton.evaluate((button) => button.getBoundingClientRect().right <= innerWidth));
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png',`-contract-recovery-${viewport.width}.png`)});
     const [savedResponse] = await Promise.all([
@@ -2718,7 +2719,10 @@ try {
     assert.equal(await page.locator('[data-action="daily_completion_claim"]').count(),0);
     assert.match(await page.locator('.mission-status-heading').textContent(), /7\/7 \/\/ BONUS CLAIMED/);
     assert.equal(await missionNav.locator('.dock-claim-badge').count(), 0);
-    assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/LOCKED/);
+    assert.equal(await page.locator('[data-panel="season-finale"]').count(),0);
+    await page.locator('#nav [data-screen="profile"]').click();
+    await page.waitForSelector('[data-panel="how-to-play"]',{state:'attached'});
+    assert.equal(await page.locator('[data-panel="finale-link"]').count(),0);
     sqlite.prepare(`INSERT INTO telegram_pet_season_completions
       (pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned)
       VALUES (?,?,?,'legendary_moon_guardian',60,10)`).run(finalePet.pet_id,currentUser,finalePet.season_key);

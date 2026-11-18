@@ -7,8 +7,12 @@ import {getActiveSeasonalBoss} from '../workers/moonboys-api/pets/live-systems.j
 const harness=await createMoonpetBrowserHarness();
 const results=[];
 try{
- const savedRaid=await harness.setup({prepare:f=>{
+ const savedRaid=await harness.setup({pets:2,prepare:f=>{
   const pet=f.sql.prepare('SELECT pet_id,season_key FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner);
+  const olderPet=f.sql.prepare('SELECT pet_id,season_key FROM telegram_pet_instances WHERE telegram_id=? AND pet_id<>?').get(f.owner,pet.pet_id);
+  f.sql.prepare(`INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits,pet_id,season_key)
+    VALUES (?,'2026-01-01',255,?,?)`).run(f.owner,olderPet.pet_id,olderPet.season_key);
+  f.sql.prepare("INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits) VALUES (?,'2026-01-02',255)").run(f.owner);
   const boss=getActiveSeasonalBoss(new Date(Date.now()-8*86400000));
   f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE pet_id=?").run(pet.pet_id);
   f.sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
@@ -19,9 +23,10 @@ try{
   savedRaid.block();
   await savedRaid.open({waitForArt:false});
   await savedRaid.started;
-  const play=savedRaid.page.locator('[data-panel="play-now"]');
-  await play.locator('summary').click();
-  await play.locator('[data-jump="explore"]').click();
+  assert.deepEqual(await savedRaid.page.locator('#nav [data-screen]').evaluateAll(items=>items.map(item=>item.dataset.screen)),['home','profile']);
+  assert.equal(await savedRaid.page.locator('#screen [data-jump="missions"], #screen [data-jump="explore"], #screen [data-jump="work"], #screen [data-jump="economy"]').count(),0);
+  savedRaid.release();
+  await savedRaid.page.locator('#nav [data-screen="explore"]').click();
   const claim=savedRaid.page.locator('[data-action="seasonal_boss_claim"]');
   await claim.waitFor({state:'attached'});
   assert.equal(await claim.isEnabled(),true);
@@ -29,12 +34,22 @@ try{
   const savedPanels=await savedRaid.page.locator('#screen [data-panel]').evaluateAll(items=>items.map(item=>item.dataset.panel)
     .filter(panel=>!['recommended','reward-lifecycle','seasonal-boss'].includes(panel)));
   assert.deepEqual(savedPanels,[]);
-  savedRaid.release();
+  await savedRaid.page.locator('#nav [data-screen="missions"]').click();
+  const daily=savedRaid.page.locator('[data-panel="daily-completion"]');
+  await daily.locator('summary').click();
+  const receipt=daily.locator('[data-action="daily_completion_claim"]');
+  assert.equal(await receipt.count(),1);
+  assert.equal(await receipt.isEnabled(),true);
+  const payload=JSON.parse(await receipt.getAttribute('data-payload'));
+  assert.equal(payload.utc_day,'2026-01-01');
+  assert.equal(payload.pet_id,savedRaid.f.sql.prepare('SELECT pet_id FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').get(savedRaid.f.owner,payload.utc_day).pet_id);
+  assert.equal(await savedRaid.page.locator('[data-panel="contracts"], [data-panel="season-finale"], [data-panel="missions"]').count(),0);
+  assert.doesNotMatch(await daily.textContent(),/FINISH THE CHECKLIST|HATCH REQUIRED/);
   await savedRaid.page.goto(harness.origin+'/moonpet-game.html?screen=missions&focus=legendary-roadmap');
   await savedRaid.page.locator('[data-panel="incubation"][data-route-selected]').waitFor();
   assert.deepEqual(savedRaid.errors,[]);
   console.log('SANDBOX_BROWSER saved raid startup and egg Road to Legendary redirect passed');
- }finally{await savedRaid.close();}
+ }finally{savedRaid.release();await savedRaid.close();}
  for(const viewport of [{width:360,height:640},{width:390,height:844},{width:1280,height:900}]){
   for(const [name,player] of Object.entries(sandboxPlayers)){
    const f=await harness.setup({...player,viewport});
