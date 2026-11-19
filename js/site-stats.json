@@ -7,7 +7,7 @@
   "search_index_pages": 512,
   "graph_nodes": 512,
   "sitemap_wiki_urls": 512,
-  "published_pages": 562,
+  "published_pages": 563,
   "total_categories": 19,
   "article_count": 565,
   "totalArticles": 565,
@@ -20,5 +20,5 @@
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-11-18T20:26:53.074Z"
+  "last_updated": "2026-11-19T17:24:21.410Z"
 }

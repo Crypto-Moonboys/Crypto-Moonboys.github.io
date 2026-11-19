@@ -226,13 +226,12 @@
     ]
   },
   "/wiki/589-xrpl.html": {
-    "outbound_count": 19,
+    "outbound_count": 18,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/666-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-xrpl.html",
-      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -258,13 +257,12 @@
     ]
   },
   "/wiki/666-xrpl.html": {
-    "outbound_count": 19,
+    "outbound_count": 18,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-xrpl.html",
-      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -574,15 +572,12 @@
   },
   "/wiki/alfie-blaze.html": {
     "outbound_count": 1,
-    "inbound_count": 2,
+    "inbound_count": 0,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html"
     ],
     "suggested_outbound": [],
-    "inbound_from": [
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/alfie-the-bitcoin-kid-blaze-reading.html": {
     "outbound_count": 56,
@@ -741,13 +736,12 @@
     ]
   },
   "/wiki/altcoins.html": {
-    "outbound_count": 41,
+    "outbound_count": 39,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",
-      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
@@ -758,8 +752,7 @@
       "/wiki/ngmi-chronicles.html",
       "/wiki/paper-hands.html",
       "/wiki/solana.html",
-      "/wiki/tokenomics.html",
-      "/wiki/tokens.html"
+      "/wiki/tokenomics.html"
     ],
     "suggested_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -1055,14 +1048,13 @@
     ]
   },
   "/wiki/bear-xrpl.html": {
-    "outbound_count": 22,
+    "outbound_count": 21,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-market-siege.html",
-      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -1180,19 +1172,14 @@
   },
   "/wiki/bitcoin-btc.html": {
     "outbound_count": 2,
-    "inbound_count": 4,
+    "inbound_count": 0,
     "existing_outbound": [
       "/wiki/bitcoin.html"
     ],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/589-xrpl.html",
-      "/wiki/666-xrpl.html",
-      "/wiki/altcoins.html",
-      "/wiki/bear-xrpl.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/bitcoin-graffpunks.html": {
     "outbound_count": 13,
@@ -1201,6 +1188,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/graffpunks-24-7-radio.html",
@@ -1211,8 +1199,7 @@
       "/wiki/xrp-kids.html"
     ],
     "suggested_outbound": [
-      "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html"
+      "/wiki/block-topia.html"
     ],
     "inbound_from": []
   },
@@ -1326,11 +1313,10 @@
     ]
   },
   "/wiki/bitcoin-kids.html": {
-    "outbound_count": 61,
+    "outbound_count": 60,
     "inbound_count": 77,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
@@ -1476,10 +1462,10 @@
   "/wiki/bitcoin-nfts.html": {
     "outbound_count": 1,
     "inbound_count": 0,
-    "existing_outbound": [],
-    "suggested_outbound": [
+    "existing_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
+    "suggested_outbound": [],
     "inbound_from": []
   },
   "/wiki/bitcoin-tokens.html": {
@@ -1494,11 +1480,10 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-x-kids.html": {
-    "outbound_count": 63,
+    "outbound_count": 62,
     "inbound_count": 54,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
@@ -1920,20 +1905,18 @@
   },
   "/wiki/blockchain-technology.html": {
     "outbound_count": 2,
-    "inbound_count": 1,
+    "inbound_count": 0,
     "existing_outbound": [
       "/wiki/blockchain.html"
     ],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/graffpunks-collection.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/blockchain.html": {
     "outbound_count": 29,
-    "inbound_count": 11,
+    "inbound_count": 12,
     "existing_outbound": [
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
@@ -1973,6 +1956,7 @@
       "/wiki/defi.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
+      "/wiki/graffpunks-collection.html",
       "/wiki/nfts.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/solana.html",
@@ -2280,6 +2264,7 @@
     "outbound_count": 31,
     "inbound_count": 0,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
@@ -2293,7 +2278,6 @@
       "/wiki/block-topia.html",
       "/wiki/collect-free-nft-crypto-coin-phigital.html",
       "/wiki/crypto-moonboy-pets.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/gk-factions-to-collect-and-hodl.html",
@@ -2569,7 +2553,7 @@
   },
   "/wiki/crypto-moonboys.html": {
     "outbound_count": 153,
-    "inbound_count": 435,
+    "inbound_count": 514,
     "existing_outbound": [
       "/wiki/agent-sam.html",
       "/wiki/aleema-child-of-the-shard.html",
@@ -2750,8 +2734,10 @@
       "/wiki/bear-xrpl.html",
       "/wiki/billy-the-goat-kid.html",
       "/wiki/bit-cap-5000.html",
+      "/wiki/bitcoin-graffpunks.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-nfts.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
@@ -2762,6 +2748,7 @@
       "/wiki/canvas-clash.html",
       "/wiki/charlie-buster.html",
       "/wiki/collect-free-nft-crypto-coin-phigital.html",
+      "/wiki/create-your-moonboy.html",
       "/wiki/croydon-tower-blocks.html",
       "/wiki/crypto-moonboy-pets.html",
       "/wiki/crypto-moonboys-is-deliberately-a.html",
@@ -2781,18 +2768,93 @@
       "/wiki/exchanges.html",
       "/wiki/exyboy.html",
       "/wiki/fgl-token.html",
+      "/wiki/first-witness-addiction-intoxication-compulsion.html",
+      "/wiki/first-witness-ageing-retirement-elderhood.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
+      "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-beauty-luxury-modesty-status.html",
+      "/wiki/first-witness-birth-naming-coming-of-age.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-calendar-feasts-remembrance.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-charity-mutual-aid-dependence.html",
+      "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-confession-apology-reconciliation.html",
+      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-daily-practices-rituals.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-disaster-famine-mutual-aid.html",
+      "/wiki/first-witness-dreams-omens-coincidence.html",
+      "/wiki/first-witness-dual-use-tools-weapons.html",
+      "/wiki/first-witness-education-schools-apprenticeship.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-healing-illness-disability-care.html",
+      "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-humour-satire-sacred-mockery.html",
+      "/wiki/first-witness-intimacy-sexuality-privacy.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-land-water-stewardship.html",
+      "/wiki/first-witness-language-translation-sacred-words.html",
+      "/wiki/first-witness-leadership-councils-succession.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-marriage-partnership-adoption.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-mediation-witness-circles.html",
+      "/wiki/first-witness-migration-refuge-exile-borders.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/first-witness-music-dance-performance.html",
+      "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-oaths-promises-vows.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-pride-temptation-false-idols.html",
+      "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
+      "/wiki/first-witness-questions-for-the-living.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
+      "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-sects-schools-schisms.html",
+      "/wiki/first-witness-silence-solitude-attention.html",
+      "/wiki/first-witness-songs-chants-responses.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/first-witness-war-defence-peacekeeping.html",
+      "/wiki/first-witness-work-craft-service.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/fomo-plague.html",
       "/wiki/forkborn-collective.html",
       "/wiki/forklord-you.html",
       "/wiki/forksplit.html",
       "/wiki/frequency-of-the-fallen.html",
+      "/wiki/games-graffpunks.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/gang-signs.html",
@@ -2968,6 +3030,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/house-of-rackinsats.html",
       "/wiki/ian-harrison.html",
       "/wiki/in-the-year-3008-truth-became-encrypted.html",
@@ -3380,7 +3443,7 @@
     ]
   },
   "/wiki/defi.html": {
-    "outbound_count": 30,
+    "outbound_count": 29,
     "inbound_count": 15,
     "existing_outbound": [
       "/wiki/blockchain.html",
@@ -3396,7 +3459,6 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/the-finance-guild.html",
       "/wiki/tokenomics.html",
-      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/wax-dexs-defi.html",
       "/wiki/web3.html",
@@ -3836,7 +3898,7 @@
     ]
   },
   "/wiki/exchanges.html": {
-    "outbound_count": 21,
+    "outbound_count": 20,
     "inbound_count": 9,
     "existing_outbound": [
       "/wiki/altcoins.html",
@@ -3854,7 +3916,6 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
-      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/whale-lords.html"
     ],
@@ -3970,6 +4031,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -3985,7 +4047,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4064,6 +4125,7 @@
     "outbound_count": 85,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -4079,7 +4141,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/elder-codex-7.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -4161,6 +4222,7 @@
     "outbound_count": 90,
     "inbound_count": 6,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -4178,7 +4240,6 @@
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4267,6 +4328,7 @@
     "outbound_count": 85,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -4283,7 +4345,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-is-deliberately-a.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4364,6 +4425,7 @@
     "outbound_count": 86,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -4379,7 +4441,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4462,6 +4523,7 @@
     "outbound_count": 82,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -4477,7 +4539,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4555,6 +4616,7 @@
     "outbound_count": 85,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -4570,7 +4632,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -4652,6 +4713,7 @@
     "outbound_count": 81,
     "inbound_count": 9,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-life-readings.html",
@@ -4669,7 +4731,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -4752,6 +4813,7 @@
     "outbound_count": 97,
     "inbound_count": 19,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
@@ -4770,7 +4832,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -4878,6 +4939,7 @@
     "outbound_count": 91,
     "inbound_count": 8,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-life-readings.html",
@@ -4896,7 +4958,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-4-the-wall.html",
@@ -4987,6 +5048,7 @@
     "outbound_count": 89,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-life-readings.html",
@@ -5004,7 +5066,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -5089,6 +5150,7 @@
     "outbound_count": 87,
     "inbound_count": 15,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-life-readings.html",
@@ -5106,7 +5168,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5201,6 +5262,7 @@
     "outbound_count": 94,
     "inbound_count": 6,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -5219,7 +5281,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5311,6 +5372,7 @@
     "outbound_count": 91,
     "inbound_count": 13,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-life-readings.html",
@@ -5329,7 +5391,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -5425,6 +5486,7 @@
     "outbound_count": 91,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-life-readings.html",
@@ -5442,7 +5504,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5530,6 +5591,7 @@
     "outbound_count": 86,
     "inbound_count": 11,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
@@ -5547,7 +5609,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5637,6 +5698,7 @@
     "outbound_count": 95,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-life-readings.html",
@@ -5655,7 +5717,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5746,6 +5807,7 @@
     "outbound_count": 86,
     "inbound_count": 6,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
@@ -5763,7 +5825,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -5848,6 +5909,7 @@
     "outbound_count": 86,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -5863,7 +5925,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -5946,6 +6007,7 @@
     "outbound_count": 84,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -5962,7 +6024,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -6043,6 +6104,7 @@
     "outbound_count": 85,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -6058,7 +6120,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -6140,6 +6201,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -6155,7 +6217,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -6234,6 +6295,7 @@
     "outbound_count": 91,
     "inbound_count": 7,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
@@ -6252,7 +6314,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -6342,6 +6403,7 @@
     "outbound_count": 85,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -6357,7 +6419,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -6725,6 +6786,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -6740,7 +6802,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -6819,6 +6880,7 @@
     "outbound_count": 87,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -6834,7 +6896,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -6920,6 +6981,7 @@
     "outbound_count": 84,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -6935,7 +6997,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -7015,6 +7076,7 @@
     "outbound_count": 88,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -7031,7 +7093,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -7115,6 +7176,7 @@
     "outbound_count": 109,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -7131,7 +7193,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -7236,6 +7297,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -7251,7 +7313,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -7330,6 +7391,7 @@
     "outbound_count": 88,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -7345,7 +7407,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -7431,6 +7492,7 @@
     "outbound_count": 85,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -7447,7 +7509,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -7527,6 +7588,7 @@
     "outbound_count": 85,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -7542,7 +7604,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -7905,6 +7966,7 @@
     "outbound_count": 83,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -7920,7 +7982,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8001,6 +8062,7 @@
     "outbound_count": 85,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -8016,7 +8078,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8262,6 +8323,7 @@
     "outbound_count": 85,
     "inbound_count": 7,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
@@ -8279,7 +8341,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8364,6 +8425,7 @@
     "outbound_count": 84,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
@@ -8380,7 +8442,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -8463,6 +8524,7 @@
     "outbound_count": 83,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -8478,7 +8540,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8558,6 +8619,7 @@
     "outbound_count": 89,
     "inbound_count": 9,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -8573,7 +8635,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8784,6 +8845,7 @@
     "outbound_count": 85,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -8799,7 +8861,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8883,6 +8944,7 @@
     "outbound_count": 83,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -8898,7 +8960,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -8978,6 +9039,7 @@
     "outbound_count": 83,
     "inbound_count": 23,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -8993,7 +9055,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -9094,6 +9155,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -9109,7 +9171,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -9188,6 +9249,7 @@
     "outbound_count": 81,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -9203,7 +9265,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -9282,6 +9343,7 @@
     "outbound_count": 84,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -9297,7 +9359,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -9377,6 +9438,7 @@
     "outbound_count": 86,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -9393,7 +9455,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -9476,6 +9537,7 @@
     "outbound_count": 92,
     "inbound_count": 90,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
@@ -9494,7 +9556,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -9668,6 +9729,7 @@
     "outbound_count": 88,
     "inbound_count": 10,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-world-chain-error.html",
@@ -9686,7 +9748,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -9776,6 +9837,7 @@
     "outbound_count": 84,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -9791,7 +9853,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10132,6 +10193,7 @@
     "outbound_count": 82,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -10147,7 +10209,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10226,6 +10287,7 @@
     "outbound_count": 86,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -10241,7 +10303,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10323,6 +10384,7 @@
     "outbound_count": 85,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -10339,7 +10401,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10423,6 +10484,7 @@
     "outbound_count": 88,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-life-readings.html",
@@ -10439,7 +10501,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10523,6 +10584,7 @@
     "outbound_count": 89,
     "inbound_count": 6,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-life-readings.html",
@@ -10540,7 +10602,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10628,6 +10689,7 @@
     "outbound_count": 84,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -10644,7 +10706,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10723,6 +10784,7 @@
     "outbound_count": 87,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -10739,7 +10801,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -10822,6 +10883,7 @@
     "outbound_count": 86,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -10837,7 +10899,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -10920,6 +10981,7 @@
     "outbound_count": 84,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-questions-for-the-living.html",
@@ -10935,7 +10997,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11017,6 +11078,7 @@
     "outbound_count": 89,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11032,7 +11094,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11117,6 +11178,7 @@
     "outbound_count": 84,
     "inbound_count": 9,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11132,7 +11194,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11220,6 +11281,7 @@
     "outbound_count": 107,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11235,7 +11297,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -11341,6 +11402,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11356,7 +11418,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11435,6 +11496,7 @@
     "outbound_count": 88,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
@@ -11452,7 +11514,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11538,6 +11599,7 @@
     "outbound_count": 83,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11553,7 +11615,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11632,6 +11693,7 @@
     "outbound_count": 87,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11647,7 +11709,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11731,6 +11792,7 @@
     "outbound_count": 84,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11746,7 +11808,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -11827,6 +11888,7 @@
     "outbound_count": 85,
     "inbound_count": 1,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -11842,7 +11904,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -12052,6 +12113,7 @@
     "outbound_count": 106,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
@@ -12071,7 +12133,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -12173,6 +12234,7 @@
     "outbound_count": 83,
     "inbound_count": 8,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -12188,7 +12250,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -12274,6 +12335,7 @@
     "outbound_count": 95,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-world-chain-error.html",
@@ -12291,7 +12353,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -12383,6 +12444,7 @@
     "outbound_count": 85,
     "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-justice-mercy-restitution.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -12398,7 +12460,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -12480,6 +12541,7 @@
     "outbound_count": 83,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-life-readings.html",
@@ -12495,7 +12557,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -12578,6 +12639,7 @@
     "outbound_count": 83,
     "inbound_count": 4,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-source-register.html",
@@ -12593,7 +12655,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-beauty-luxury-modesty-status.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
@@ -12675,6 +12736,7 @@
     "outbound_count": 86,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
@@ -12692,7 +12754,6 @@
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -13023,6 +13084,7 @@
     "outbound_count": 13,
     "inbound_count": 0,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/graffpunks-24-7-radio.html",
@@ -13034,7 +13096,6 @@
     ],
     "suggested_outbound": [
       "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/thera-9.html"
@@ -13555,20 +13616,18 @@
   },
   "/wiki/gk-tokens.html": {
     "outbound_count": 2,
-    "inbound_count": 1,
+    "inbound_count": 0,
     "existing_outbound": [
       "/wiki/gk.html"
     ],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/playable-nft-murals.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/gk.html": {
     "outbound_count": 38,
-    "inbound_count": 2,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -13613,7 +13672,8 @@
     ],
     "inbound_from": [
       "/wiki/gk-token.html",
-      "/wiki/gk-tokens.html"
+      "/wiki/gk-tokens.html",
+      "/wiki/playable-nft-murals.html"
     ]
   },
   "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html": {
@@ -22858,13 +22918,13 @@
     "inbound_from": []
   },
   "/wiki/graffpunks-collection.html": {
-    "outbound_count": 34,
+    "outbound_count": 33,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
-      "/wiki/blockchain-technology.html",
+      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/graffiti-kings.html",
@@ -22878,7 +22938,6 @@
     "suggested_outbound": [
       "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
@@ -24615,6 +24674,7 @@
     "outbound_count": 19,
     "inbound_count": 5,
     "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/noballgamess-nft-collection.html"
     ],
@@ -24622,7 +24682,6 @@
       "/wiki/atomicassets.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/atomichub.html",
-      "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/gk-factions-to-collect-and-hodl.html",
@@ -25510,14 +25569,12 @@
   },
   "/wiki/liquidity-pools.html": {
     "outbound_count": 1,
-    "inbound_count": 1,
+    "inbound_count": 0,
     "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/staking.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/loopfiend.html": {
     "outbound_count": 31,
@@ -25838,7 +25895,7 @@
     "inbound_from": []
   },
   "/wiki/memecoins.html": {
-    "outbound_count": 32,
+    "outbound_count": 31,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/altcoins.html",
@@ -25856,8 +25913,7 @@
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/stikfamwars.html",
-      "/wiki/tokenomics.html",
-      "/wiki/tokens.html"
+      "/wiki/tokenomics.html"
     ],
     "suggested_outbound": [
       "/wiki/bear-market-siege.html",
@@ -27206,13 +27262,13 @@
     "inbound_from": []
   },
   "/wiki/playable-nft-murals.html": {
-    "outbound_count": 44,
+    "outbound_count": 43,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/gk-tokens.html",
+      "/wiki/gk.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
       "/wiki/hard-fork-games.html",
@@ -27228,7 +27284,6 @@
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
-      "/wiki/gk.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -29001,12 +29056,11 @@
     ]
   },
   "/wiki/staking.html": {
-    "outbound_count": 12,
+    "outbound_count": 11,
     "inbound_count": 29,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
-      "/wiki/liquidity-pools.html",
       "/wiki/nbg-token.html",
       "/wiki/punk-token.html",
       "/wiki/tokenomics.html",
@@ -35609,7 +35663,7 @@
     ]
   },
   "/wiki/tokenomics.html": {
-    "outbound_count": 40,
+    "outbound_count": 39,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/altcoins.html",
@@ -35629,7 +35683,6 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/staking.html",
       "/wiki/stikfamwars.html",
-      "/wiki/tokens.html",
       "/wiki/whale-lords.html"
     ],
     "suggested_outbound": [
@@ -35666,19 +35719,12 @@
   },
   "/wiki/tokens.html": {
     "outbound_count": 1,
-    "inbound_count": 6,
+    "inbound_count": 0,
     "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/altcoins.html",
-      "/wiki/defi.html",
-      "/wiki/exchanges.html",
-      "/wiki/memecoins.html",
-      "/wiki/tokenomics.html",
-      "/wiki/web3.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/trevor-fung.html": {
     "outbound_count": 24,
@@ -36270,7 +36316,7 @@
     ]
   },
   "/wiki/web3.html": {
-    "outbound_count": 47,
+    "outbound_count": 46,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/blockchain.html",
@@ -36287,7 +36333,6 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
-      "/wiki/tokens.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/wallets.html"
     ],

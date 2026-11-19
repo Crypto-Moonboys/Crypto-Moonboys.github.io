@@ -1132,6 +1132,7 @@
         '<div class="tg-sync-gate-actions">' +
           '<button type="button" class="tg-sync-gate-btn" id="arcade-member-login">Log in with Telegram</button>' +
           '<a class="tg-sync-gate-btn" id="arcade-member-group" href="' + TELEGRAM_GROUP_URL + '" target="_blank" rel="noopener noreferrer">Join Telegram group</a>' +
+          '<a class="tg-sync-gate-btn" href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a>' +
           '<button type="button" class="tg-sync-gate-btn" id="arcade-member-recheck">Check access</button>' +
         '</div>' +
       '</div>';
