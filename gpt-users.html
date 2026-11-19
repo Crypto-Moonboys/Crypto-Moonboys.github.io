@@ -1,178 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Create art, stickers, fictional worlds, complete websites, lore wikis, music, products and campaigns with ChatGPT. Choose a project and get beginner-friendly steps.">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Build a creator campaign with SPARKY in ChatGPT: one shock message, one mascot, lawful street presence, online proof and a world that grows with you.">
 <meta name="robots" content="index, follow">
-<meta property="og:title" content="SPARKY Creator Studio | Start With ChatGPT"><meta property="og:description" content="Pick what to make. ChatGPT helps you build it, one step at a time. No SWARMSY installation.">
+<meta property="og:title" content="Build Your Creator World | SPARKY">
+<meta property="og:description" content="One message. One mascot. Real-world proof. A digital echo. Build it with ChatGPT.">
 <meta property="og:type" content="website"><meta property="og:url" content="https://cryptomoonboys.com/gpt-users.html">
 <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-<link rel="canonical" href="https://cryptomoonboys.com/gpt-users.html">
-<title>SPARKY Creator Studio | Start With ChatGPT</title><link rel="stylesheet" href="/css/wiki.css"><link rel="icon" type="image/png" href="/favicon.png">
-<style>
-body.page-gpt-users #content,body.page-gpt-users .swarmsy-page{padding-top:0}
-.gpt-studio{--gpt-gold:#f7c948;--gpt-line:rgba(247,201,72,.28);max-width:1080px;margin:0 auto;padding:0 12px 22px;color:#e6f0f5}
-.gpt-studio .gpt-hero{margin-top:14px;padding:clamp(20px,3.5vw,42px);border:1px solid var(--gpt-line);border-radius:12px;background:linear-gradient(135deg,#101b22,#090f16 70%,#201907)}
-.gpt-kicker{color:var(--gpt-gold);text-transform:uppercase;font-weight:800;letter-spacing:.12em;font-size:.8rem}
-.gpt-studio h1{font-size:clamp(2rem,4.5vw,3.3rem);line-height:1.12;margin:8px 0 14px}.gpt-studio h1 span{color:var(--gpt-gold)}
-.gpt-lead{font-size:1.17rem;max-width:760px;line-height:1.6}
-.gpt-studio .gpt-section{border:1px solid rgba(170,190,200,.22);background:rgba(10,16,24,.78);border-radius:10px;margin-top:16px;padding:clamp(15px,2vw,24px)}
-.gpt-studio .gpt-section h2{font-size:clamp(1.22rem,2.4vw,1.65rem);margin:0 0 8px}
-.gpt-small{color:#b9ced8;font-size:.96rem;line-height:1.5}.gpt-studio p{margin:6px 0 13px}
-.gpt-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px}
-.gpt-feature{border:1px solid #536574;color:#f0f7fb;background:rgba(255,255,255,.035);border-radius:8px;min-height:58px;text-align:left;padding:9px 12px;font-weight:800;cursor:pointer}
-.gpt-feature:disabled{opacity:.6;cursor:wait}
-.gpt-feature:hover,.gpt-feature:focus-visible{border-color:var(--gpt-gold);background:rgba(247,201,72,.11)}
-.gpt-search-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
-.gpt-search-row label{font-weight:750}.gpt-studio #gpt-search{border:1px solid #778d99;border-radius:8px;background:#09131c;color:#fff;min-width:min(100%,260px);padding:10px 12px;flex:1}
-.gpt-groups{display:grid;gap:9px}
-.gpt-group{border:1px solid rgba(177,198,215,.24);border-radius:8px;background:rgba(255,255,255,.02)}
-.gpt-group-title{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:13px 16px;list-style:revert}
-.gpt-group-title strong{font-size:1.07rem}.gpt-group-count{color:#bdd0db;font-size:.89rem;white-space:nowrap}
-.gpt-route-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 12px 12px}
-.gpt-route{appearance:none;border:1px solid #4a5c68;border-radius:8px;background:rgba(255,255,255,.035);color:#ecf7ff;text-align:left;display:flex;flex-direction:column;gap:5px;padding:12px;cursor:pointer;min-height:97px}
-.gpt-route strong{font-size:1.02rem}.gpt-route span{font-size:.88rem;line-height:1.35;color:#b7c9d5}
-.gpt-route:hover,.gpt-route:focus-visible,.gpt-route[aria-pressed=true]{border-color:var(--gpt-gold);background:rgba(247,201,72,.12)}
-.gpt-route[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--gpt-gold)}
-.gpt-studio button:focus-visible,.gpt-studio a:focus-visible,.gpt-studio summary:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.gpt-launch{border-color:var(--gpt-line)!important;background:linear-gradient(135deg,rgba(247,201,72,.09),rgba(10,16,24,.94))!important;scroll-margin-top:110px}
-.gpt-status{font-weight:800;color:#ffe38e}.gpt-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 0}
-.gpt-button{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--gpt-gold);border-radius:8px;min-height:50px;padding:11px 16px;color:var(--gpt-gold);background:transparent;font-weight:800;cursor:pointer;text-decoration:none;text-align:center}
-.gpt-button--primary,.gpt-button--primary:hover{background:var(--gpt-gold);color:#131313}
-.gpt-button:hover,.gpt-button:focus-visible{border-color:#ffeaa1}
-.gpt-studio details.gpt-prompt-details{border:1px solid #475562;border-radius:8px;padding:10px 12px;margin-top:16px}
-.gpt-prompt-details summary{font-weight:750;cursor:pointer}
-.gpt-studio textarea{display:block;background:#06111a;border:1px solid #536979;color:#f2faff;border-radius:7px;padding:12px;width:100%;min-height:185px;resize:vertical;margin:10px 0 5px;font-size:.91rem;line-height:1.45}
-.gpt-tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.gpt-tip{padding:11px 13px;border-left:3px solid var(--gpt-gold);background:rgba(255,255,255,.03)}.gpt-tip strong{display:block}
-@media(max-width:650px){.gpt-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gpt-route-grid{grid-template-columns:1fr}.gpt-tips{grid-template-columns:1fr}.gpt-actions{flex-direction:column;align-items:stretch}.gpt-button{width:100%}}
-
-.gpt-memory .memory-form,.gpt-memory .memory-add-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
-.gpt-memory label{display:flex;flex-direction:column;gap:6px;font-size:.93rem;font-weight:700;color:#d7e9f1}
-.gpt-memory label.memory-wide{grid-column:1/-1}
-.gpt-memory input:not([type=file]),.gpt-memory select,.gpt-memory textarea{box-sizing:border-box;width:100%;margin:0;min-height:42px;padding:9px 11px;border:1px solid #647c89;border-radius:6px;color:#eff9ff;background:#06111a;font:inherit;font-weight:400}
-.gpt-memory textarea{min-height:75px!important}
-.gpt-memory .memory-add-grid button,.gpt-memory .memory-entry button{border:1px solid #f7c948;background:#171b20;color:#f7c948;border-radius:6px;min-height:34px;font-weight:700;cursor:pointer}
-.gpt-memory .memory-add-grid .memory-add-item{display:flex;flex-direction:column;gap:6px;min-width:0}
-.gpt-memory .memory-entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.gpt-memory .memory-entries>div{border:1px solid #445561;border-radius:7px;padding:11px;min-width:0}
-.gpt-memory .memory-entries strong,.gpt-memory .memory-entries small{display:block}
-.gpt-memory .memory-entries small{color:#b9ced8;font-size:.82rem;margin:4px 0 10px}
-.gpt-memory .memory-entry{display:flex;align-items:start;gap:7px;justify-content:space-between;margin-top:7px;padding-top:7px;border-top:1px solid #344957}
-.gpt-memory .memory-entry span{overflow-wrap:anywhere;font-size:.85rem;line-height:1.3}
-.gpt-memory .memory-entry button{flex-shrink:0;padding:3px 7px}
-.gpt-memory #memory-status[data-error=true]{color:#ffadad}
-@media(max-width:650px){.gpt-memory .memory-form,.gpt-memory .memory-add-grid,.gpt-memory .memory-entries{grid-template-columns:1fr}}
-
-</style>
-  <link rel="stylesheet" href="/css/page-hero-art.css">
-
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SPARKY Creator Studio | Start With ChatGPT">
-<meta name="twitter:description" content="Create art, stickers, fictional worlds, complete websites, lore wikis, music, products and campaigns with ChatGPT. Choose a project and get beginner-friendly steps.">
-<meta name="twitter:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+<link rel="canonical" href="https://cryptomoonboys.com/gpt-users.html">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/css/wiki.css"><link rel="stylesheet" href="/css/page-hero-art.css">
+<title>Build Your Creator World | SPARKY</title>
+<style>
+body.page-gpt-users #content{padding-top:0}
+.sparky-start{max-width:1020px;margin:0 auto;padding:clamp(22px,4vw,56px) clamp(18px,4vw,46px) 64px;color:#f1f5f6;background:linear-gradient(135deg,#14212a,#090e14 72%,#241e0b);border:1px solid rgba(247,201,72,.32);border-radius:14px}
+.sparky-start .kicker{font-size:.9rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#f7c948}
+.sparky-start h1{font-size:clamp(2.4rem,7vw,5.5rem);line-height:1.01;max-width:850px;margin:12px 0 22px;text-transform:uppercase}
+.sparky-start h1 span{color:#f7c948}
+.sparky-start p{font-size:clamp(1.04rem,2vw,1.22rem);line-height:1.6;max-width:780px;margin:0 0 18px}
+.sparky-start .routes{border-left:4px solid #f7c948;padding-left:18px;margin:24px 0 30px}
+.sparky-start .routes p{margin-bottom:9px}
+.sparky-start .launch{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:13px 24px;border-radius:8px;background:#f7c948;color:#141414;text-decoration:none;font-weight:900;font-size:1.08rem}
+.sparky-start .launch:hover{background:#ffe19b}
+.sparky-start a:focus-visible{outline:3px solid white;outline-offset:4px}
+.sparky-start .fine{font-size:.94rem;line-height:1.5;color:#c9d8dc;margin-top:18px}
+.sparky-start .fine a{color:#f7c948}
+@media(max-width:640px){.sparky-start{border-radius:0}.sparky-start .launch{display:flex;width:100%}}
+</style>
 </head>
 <body class="page-swarmsy page-gpt-users page-standard-shell">
 <main id="content" role="main">
-  <img class="page-hero-art" src="/art/Swarmsy%E2%80%99s%20Neon%20London%20Creator%20Arcade.jpg" alt="ChatGPT creator studio artwork" decoding="async" fetchpriority="high" width="1672" height="941">
-<div class="swarmsy-page gpt-studio">
-<section class="gpt-hero" aria-labelledby="gpt-users-title">
-<p class="gpt-kicker">SPARKY / YOUR CHATGPT CREATOR STUDIO</p>
-<h1 id="gpt-users-title">MAKE SOMETHING. <span>BUILD THE REST.</span></h1>
-<p class="gpt-lead">Stickers, posters, characters, fictional worlds, full websites, searchable wikis, music, merch or a creative business. You do not need coding skills, expensive software or an existing plan. Build a sub-world around a GK Moonboy or Flygirl, or bring your own IP and unique lore into the Crypto Moonboys universe. SWARMSY provides the creator and storyteller direction connecting these worlds; this public Studio uses ChatGPT to help you take the first step. You direct and approve your work, and community review governs official shared lore.</p>
-<p class="gpt-small">This website opens ChatGPT, not a hosted SWARMSY server. No SWARMSY installation or Telegram gate is needed. No compulsory Moonboy or NFT. You stay in control of your project and anything published in your name.</p>
-</section>
-<section class="gpt-section" aria-labelledby="gpt-popular">
-<h2 id="gpt-popular">Start with a goal</h2>
-<p class="gpt-small">Common first choices. Select one, or browse the full directory below.</p>
-<div class="gpt-feature-grid"><button type="button" class="gpt-feature" disabled data-feature="website">Build a website</button>
-<button type="button" class="gpt-feature" disabled data-feature="wiki">Create a lore wiki</button>
-<button type="button" class="gpt-feature" disabled data-feature="moonboy">Create a Moonboy</button>
-<button type="button" class="gpt-feature" disabled data-feature="stickers">Make stickers</button>
-<button type="button" class="gpt-feature" disabled data-feature="world">Build a world</button>
-<button type="button" class="gpt-feature" disabled data-feature="do-it">You choose</button></div>
-</section>
-<section class="gpt-section" aria-labelledby="gpt-choose-title">
-<h2 id="gpt-choose-title">1. Choose a creative activity</h2>
-<div class="gpt-search-row"><label for="gpt-search">Find an activity</label><input id="gpt-search" type="search" disabled placeholder="Try website, character, music, zine…" autocomplete="off"></div>
-<p class="gpt-small" id="gpt-search-count" role="status" aria-live="polite">Loading creative activities…</p>
-<div class="gpt-groups" id="gpt-activity-groups"></div>
-<noscript><p>To select a specific activity, enable JavaScript. Without it, <a href="https://chatgpt.com/?q=I'm%20starting%20from%20zero.%0A%0AI%20have%20no%20idea%20yet.%20Choose%20one%20simple%20creative%20activity%20using%20ordinary%20materials%20and%20make%20me%20a%20first%20concept%20to%20react%20to.%0A%0AI'm%20a%20beginner.%20Use%20plain%20language%2C%20make%20a%20useful%20first%20draft%2C%20and%20give%20me%20one%20practical%20next%20step.%20Ask%20one%20essential%20question%20if%20you%20need%20it%3B%20otherwise%20choose%20sensible%20defaults%20and%20start.%0A%0ABefore%20creating%2C%20browse%20https%3A%2F%2Fcryptomoonboys.com%2Fgraffiti-kings-creative-guide.html%20for%20this%20project's%20Graffiti%20Kings%20culture%2C%20voice%20and%20creative%20direction.%20Apply%20it%20to%20my%20chosen%20task%20while%20respecting%20my%20own%20identity%20and%20preferences.%20If%20you%20cannot%20read%20it%2C%20say%20so%20and%20ask%20me%20to%20paste%20the%20page%20text.">start a beginner-friendly ChatGPT conversation</a>.</p></noscript>
-</section>
-<section class="gpt-section gpt-launch" id="gpt-launch" aria-labelledby="gpt-launch-title">
-<h2 id="gpt-launch-title" tabindex="-1">2. Open ChatGPT — your message is prepared</h2>
-<p class="gpt-status" id="gpt-choice" aria-live="polite">Selected: I'm starting from zero</p>
-<p id="gpt-what">Choose an activity. ChatGPT will suggest a first draft and one practical step.</p>
-<div class="gpt-actions"><a class="gpt-button gpt-button--primary" id="gpt-open-link" href="https://chatgpt.com/?q=I'm%20starting%20from%20zero.%0A%0AI%20have%20no%20idea%20yet.%20Choose%20one%20simple%20creative%20activity%20using%20ordinary%20materials%20and%20make%20me%20a%20first%20concept%20to%20react%20to.%0A%0AI'm%20a%20beginner.%20Use%20plain%20language%2C%20make%20a%20useful%20first%20draft%2C%20and%20give%20me%20one%20practical%20next%20step.%20Ask%20one%20essential%20question%20if%20you%20need%20it%3B%20otherwise%20choose%20sensible%20defaults%20and%20start.%0A%0ABefore%20creating%2C%20browse%20https%3A%2F%2Fcryptomoonboys.com%2Fgraffiti-kings-creative-guide.html%20for%20this%20project's%20Graffiti%20Kings%20culture%2C%20voice%20and%20creative%20direction.%20Apply%20it%20to%20my%20chosen%20task%20while%20respecting%20my%20own%20identity%20and%20preferences.%20If%20you%20cannot%20read%20it%2C%20say%20so%20and%20ask%20me%20to%20paste%20the%20page%20text." rel="noopener noreferrer" target="_blank">Open ChatGPT with my starter message ↗</a><button type="button" class="gpt-button" id="gpt-copy-prompt" disabled>Copy starter message</button></div>
-<p class="gpt-small">The ChatGPT page may open with the message waiting to send. Press <strong>Send</strong>. If the input is empty or does not appear, use <strong>Copy starter message</strong>, paste into a new chat and send. ChatGPT features and tool access vary by account.</p>
-<p class="gpt-small">Every starter asks ChatGPT to read our <a id="gpt-context-link" href="/graffiti-kings-creative-guide.html">Graffiti Kings creative guide</a> for the project's culture, voice and visual direction. Your chosen task and identity lead the work.</p>
-<p class="gpt-small"><a id="gpt-guide-link" href="/sparky-chatgpt-guide.txt">Optional activity guide</a> · <a href="/moonboy-ai-canon-guide.txt">Moonboy public canon guide</a> · <a href="/moonboy-canon-index.json">Canon source index</a></p>
-<details class="gpt-prompt-details" id="gpt-prompt-details"><summary>View the exact message given to ChatGPT</summary><label for="gpt-prompt-preview">Message ready to send</label><textarea id="gpt-prompt-preview" readonly rows="8">I'm starting from zero.
-
-I have no idea yet. Choose one simple creative activity using ordinary materials and make me a first concept to react to.
-
-I'm a beginner. Use plain language, make a useful first draft, and give me one practical next step. Ask one essential question if you need it; otherwise choose sensible defaults and start.
-
-Before creating, browse https://cryptomoonboys.com/graffiti-kings-creative-guide.html for this project's Graffiti Kings culture, voice and creative direction. Apply it to my chosen task while respecting my own identity and preferences. If you cannot read it, say so and ask me to paste the page text.</textarea></details>
-<p class="gpt-small" id="gpt-copy-status" role="status" aria-live="polite"></p>
-</section>
-
-<section class="gpt-section gpt-memory" id="creator-memory-studio" aria-labelledby="memory-title">
-<h2 id="memory-title">3. Your portable creator memory</h2>
-<p class="gpt-small">Keep an approved identity and project record that you can move between ChatGPT, SWARMSY and other AI tools. Your data stays in this browser until you export or share it. No account, automatic upload or cloud sync.</p>
-<p class="gpt-small">Current activity: <strong id="memory-current-activity">Creative project</strong>. Starting a new memory resets the editor, not your ChatGPT conversation.</p>
-<div class="gpt-actions">
-<button type="button" class="gpt-button" id="memory-new">New project from activity</button>
-<button type="button" class="gpt-button" id="memory-import">Import JSON</button>
-<button type="button" class="gpt-button gpt-button--primary" id="memory-export-json">Download project JSON</button>
-<button type="button" class="gpt-button" id="memory-export-md">Download readable Markdown</button>
-<input id="memory-import-file" type="file" accept=".json,application/json" hidden aria-label="Choose creator memory JSON file">
+<img class="page-hero-art" src="/art/Swarmsy%E2%80%99s%20Neon%20London%20Creator%20Arcade.jpg" alt="SPARKY creator world artwork" decoding="async" fetchpriority="high" width="1672" height="941">
+<section class="sparky-start" aria-labelledby="sparky-title">
+<p class="kicker">SPARKY / CRYPTO MOONBOYS CREATOR WORLD</p>
+<h1 id="sparky-title">ONE SHOCK MESSAGE.<br><span>ONE MASCOT.</span><br>EVERYWHERE.</h1>
+<p>Build a street-art-inspired identity people recognise. Make the image with ChatGPT, put it on authorised real-world surfaces, echo the proof online and keep growing the same character and message into a brand.</p>
+<div class="routes">
+<p><strong>Build with our Moonboy:</strong> use a gifted or assigned, verified GK character and grow its own world. Qualifying HODL Warrior status follows the published terms.</p>
+<p><strong>Bring your own mascot:</strong> keep your own IP and build its world in the shared universe. No Moonboy or HODL Warrior status required.</p>
 </div>
-<div class="memory-form">
-<label>Project name <input data-memory-field="project.title" maxlength="140" placeholder="Your character, artwork, world or business"></label>
-<label>Project type / activity <input data-memory-field="project.kind" maxlength="100" placeholder="moonboy, website, music, art..."></label>
-<label class="memory-wide">Short project summary <textarea data-memory-field="project.summary" maxlength="3000" rows="3" placeholder="What exists and what are you building?"></textarea></label>
-<label>Voice / tone <textarea data-memory-field="identity.voice" maxlength="2000" rows="2" placeholder="How should it sound?"></textarea></label>
-<label>Visual style <textarea data-memory-field="identity.visual_style" maxlength="2000" rows="2" placeholder="Colours, silhouettes, motifs, styles to preserve"></textarea></label>
-<label>Themes <textarea data-memory-field="identity.themes" maxlength="2000" rows="2" placeholder="Story themes and recurring ideas"></textarea></label>
-<label>Boundaries <textarea data-memory-field="identity.boundaries" maxlength="2000" rows="2" placeholder="Things the project must avoid"></textarea></label>
-<label>Canon / project scope
-<select data-memory-field="canon.scope"><option value="independent">Independent creator project</option><option value="moonboys">Crypto Moonboys creator draft</option><option value="other">Other shared universe</option></select></label>
-<label>Next step <input data-memory-field="project.next_action" maxlength="1000" placeholder="The one thing to do next"></label>
-<label class="memory-wide">Canon / source notes <textarea data-memory-field="canon.notes" maxlength="2000" rows="2" placeholder="Source conflicts or missing proof; no draft becomes official automatically"></textarea></label>
-</div>
-<div class="memory-add-grid">
-<div class="memory-add-item"><label for="memory-add-decisions">Creator-approved decision</label><input id="memory-add-decisions" maxlength="2000" placeholder="Only add a decision you have actually approved"><button type="button" data-memory-add="decisions">Add approved decision</button></div>
-<div class="memory-add-item"><label for="memory-add-ideas">Unapproved idea</label><input id="memory-add-ideas" maxlength="2000" placeholder="A proposal still under discussion"><button type="button" data-memory-add="ideas">Add draft idea</button></div>
-<div class="memory-add-item"><label for="memory-add-sources">Source reference</label><input id="memory-add-sources" maxlength="2300" placeholder="Source title | https://example.com"><button type="button" data-memory-add="sources">Add source link</button></div>
-<div class="memory-add-item"><label for="memory-add-assets">Artwork / file reference</label><input id="memory-add-assets" maxlength="1200" placeholder="Artwork name | my-file.png"><button type="button" data-memory-add="assets">Add file reference</button></div>
-<div class="memory-add-item"><label for="memory-add-proofs">Unverified proof note</label><input id="memory-add-proofs" maxlength="2000" placeholder="What was actually completed? Keep evidence separately."><button type="button" data-memory-add="proofs">Add proof note</button></div>
-<div class="memory-add-item"><label for="memory-add-history">Project history note</label><input id="memory-add-history" maxlength="500" placeholder="Milestone or change (user-supplied)"><button type="button" data-memory-add="history">Add history note</button></div>
-</div>
-<div id="memory-entries" class="memory-entries" aria-live="polite"></div>
-<div class="gpt-actions">
-<button type="button" class="gpt-button gpt-button--primary" id="memory-copy-handoff">Copy project handoff for AI</button>
-<a class="gpt-button" href="https://chatgpt.com/" rel="noopener noreferrer" target="_blank">Open ChatGPT (paste handoff)</a>
-</div>
-<p id="memory-status" class="gpt-small" role="status" aria-live="polite"></p>
-<details id="memory-handoff-details" class="gpt-prompt-details"><summary>View / manually copy AI handoff</summary><textarea id="memory-handoff-preview" readonly rows="10" aria-label="AI handoff text"></textarea></details>
-<p class="gpt-small">Keep the JSON together with your actual art files. Source links are references, not verified facts. Your personal project approval does not grant official Moonboys canon or IP rights. <a href="/docs/portable-creator-memory.md">How the format works</a>.</p>
+<p>SPARKY will help shape the message, create assets where ChatGPT tools allow, plan the campaign, draft a creator world and proposed crew, draft invitations for new members and keep a project record for the next session.</p>
+<a class="launch" href="https://chatgpt.com/?q=You%20are%20SPARKY%20for%20my%20creator%20project.%20Read%20https%3A%2F%2Fcryptomoonboys.com%2Fguides/sparky/creator-campaign.md%20and%20https%3A%2F%2Fcryptomoonboys.com%2Fgraffiti-kings-creative-guide.html%20before%20starting.%20If%20a%20page%20cannot%20be%20opened%2C%20tell%20me%20and%20ask%20me%20to%20attach%20the%20Markdown%20brief.%20Do%20not%20claim%20to%20have%20read%20it.%0A%0ACore%20method%3A%20short%20shock%20message%2C%20ONE%20consistent%20mascot%2C%20lawful%20local%20proof%2C%20online%20echo%2C%20archive%2C%20next%20action.%20Act%20as%20my%20hands-on%20creative%20director%20and%20returning%20project%20manager.%20Use%20available%20image%20and%20file%20tools%20to%20make%20real%20assets%3B%20do%20not%20give%20me%20drawing%20lessons.%20Never%20claim%20you%20created%20a%20Project%2C%20scheduled%20work%2C%20posted%2C%20gifted%20an%20NFT%2C%20or%20approved%20canon%20unless%20it%20happened.%0A%0ATwo%20routes%3A%20a%20genuinely%20gifted%2Fassigned%20verified%20GK%20Moonboy%2FFlygirl%2C%20checking%20qualifying%20HODL%20Warrior%20status%20against%20published%20terms%3B%20or%20my%20own%20mascot%2FIP%2C%20with%20no%20Moonboy%20or%20HODL%20Warrior%20requirement.%20Build%20a%20sub-world%20and%20propose%20a%20GK%20faction%2Fcrew%20and%20recruitment%20campaign%20where%20appropriate%3B%20new%20lore%20and%20faction%20status%20remain%20proposals%20pending%20approval.%20Keep%20my%20mascot%20and%20chosen%20message%20consistent%20across%20poster%2C%20social%2C%20website%2C%20merch%20and%20lore.%0A%0AStart%20now.%20If%20I%20have%20not%20given%20you%20a%20mascot%2C%20ask%20only%3A%20%E2%80%9CHave%20you%20got%20a%20gifted%2Fassigned%20Moonboy%20image%2C%20or%20are%20we%20building%20around%20your%20own%20mascot%3F%E2%80%9D%20Then%20draft%20three%20short%20shock%20messages%2C%20recommend%20one%2C%20suggest%20one%20permissioned%20real-world%20move%20and%20its%20online%20echo%2C%20and%20help%20set%20up%20an%20editable%20project%20record%20and%20first%2025-minute%20action.%20When%20I%20return%2C%20use%20my%20saved%20project%20files%20to%20continue." target="_blank" rel="noopener noreferrer">Start building with ChatGPT</a>
+<p class="fine">ChatGPT will be asked to read the full brief. If it cannot access the file, <a href="/guides/sparky/creator-campaign.md" download>download the SPARKY brief</a> and attach it in the chat. A ChatGPT Project, image tools and scheduled actions depend on your account and available tools; return with your saved project record to continue.</p>
+<p class="fine"><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a></p>
 </section>
-
-<section class="gpt-section" aria-labelledby="gpt-next-title">
-<h2 id="gpt-next-title">4. Make it, save it and keep going</h2>
-<div class="gpt-tips"><div class="gpt-tip"><strong>Start small</strong>Paper, a phone or a simple web page is enough for a first version.</div><div class="gpt-tip"><strong>Show your progress</strong>Upload a sketch, actual photo, draft or file and ask for improvements.</div><div class="gpt-tip"><strong>Save your project</strong>Keep an editable project record with approved choices, sources and the next move.</div></div>
-</section>
-<section class="gpt-section" aria-labelledby="gpt-about">
-<h2 id="gpt-about">About SPARKY and real-world actions</h2>
-<p>This public Creator Studio offers SPARKY-style guidance through <strong>ChatGPT</strong> (subject to the user's ChatGPT access and tool availability). <a href="/swarmsy.html">SWARMSY PC beta</a> is a separate, optional local/API-powered application. The website does not run its own SPARKY model or connect to private SWARMSY workspace records. ChatGPT can plan, research and produce drafts, designs or files when its tools allow. Publishing sites, printing products, sending messages and taking payments require actual services, authorisation and evidence. Do not mistake concept mockups for real installations or sales.</p>
-<p>For lore and characters, use the <a href="/wiki/create-your-moonboy.html">Create Your Moonboy wiki guide</a>, the <a href="/moonboy-ai-canon-guide.txt">public AI canon instructions</a> and the <a href="/moonboy-canon-index.json">source index</a>. Creator-written material is not automatically official universe canon.</p>
-</section>
-</div><p><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a></p>
 </main>
-<script data-cfasync="false" src="/js/sparky-creator-activities.js?v=c9c032abd55d"></script>
-<script data-cfasync="false" src="/js/creator-memory.js?v=e2c07dbad0f4"></script>
-<script data-cfasync="false" src="/js/creator-memory-studio.js?v=3fb175182bdc"></script>
-<script data-cfasync="false" src="/js/sparky-gpt-app.js?v=5fc7742e5c19"></script>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>

@@ -32,9 +32,13 @@ test('real Pages artifact publishes every SPARKY guide and canon handoff URL', (
   requirePublic('js/creator-memory.js');
   requirePublic('js/creator-memory-studio.js');
   requirePublic('docs/portable-creator-memory.md');
-  assert.match(rootPage, /creator-memory-studio/);
+  const campaignBrief = requirePublic('guides/sparky/creator-campaign.md');
+  assert.match(rootPage, /href="\/guides\/sparky\/creator-campaign\.md" download/);
+  assert.match(rootPage, /https:\/\/chatgpt\.com\/\?q=/);
+  assert.match(campaignBrief, /Do not change the mascot between formats/);
+  assert.match(campaignBrief, /permissioned offline action/);
 
-  assert.match(rootPage, /js\/sparky-gpt-app\.js/);
+  assert.doesNotMatch(rootPage, /src="\/js\/sparky-gpt-app\.js/);
   assert.match(app, /moonboy-canon-index\.json/);
   assert.match(mainGuide, /SPARKY/i);
   assert.match(canonGuide, /PUBLIC Final Fork outcome remains unresolved/);
