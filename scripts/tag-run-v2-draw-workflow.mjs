@@ -1,5 +1,6 @@
 // Persisted commit/reveal draw workflow. It remains signer-agnostic; the
 // scheduled automation supplies distinct commit and policy-review identities.
+import { authenticatedGroupId } from '../workers/moonboys-api/tag-run/core.js';
 import { canonicalSnapshotSetDigest } from '../workers/moonboys-api/tag-run/v2-snapshot-commitment.js';
 import { previewCommunityDraw, sha256Text, validUtcDay, parseIntegerUnits,
   MAX_POINTS_PER_DAY, MAX_HISTORICAL_WEIGHT, TIP_ACCOUNT, WAX_MAINNET_CHAIN_ID
@@ -43,12 +44,13 @@ async function first(db,sql,...params){
   return row;
 }
 function mode(env,day,nowMs){
+  const chatId=authenticatedGroupId(env);
   if(!env?.DB||env.TAG_RUN_ENABLED!=='true'||env.TAG_RUN_WEEKLY_REWARDS_ENABLED!=='false'||
     env.TAG_RUN_V2_POOL_ENABLED!=='true'||env.TAG_RUN_V2_DRAWS_ENABLED!=='true'||
     env.TAG_RUN_V2_OBSERVATION_ENABLED!=='false'||env.TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED!=='true'||
-    env.TAG_RUN_V2_TIP_ACCOUNT!==TIP_ACCOUNT||!String(env.TELEGRAM_GROUP_CHAT_ID||'').match(/^-100[0-9]{5,20}$/))fail('release_not_approved');
+    env.TAG_RUN_V2_TIP_ACCOUNT!==TIP_ACCOUNT||!chatId)fail('release_not_approved');
   if(!validUtcDay(day)||day>=new Date(nowMs).toISOString().slice(0,10))fail('day_not_complete');
-  return String(env.TELEGRAM_GROUP_CHAT_ID);
+  return chatId;
 }
 async function pool(db){
   const p=await first(db,'SELECT * FROM tag_run_v2_pool_config WHERE config_id=1');
