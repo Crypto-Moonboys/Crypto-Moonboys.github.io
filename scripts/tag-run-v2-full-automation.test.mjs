@@ -7,7 +7,7 @@ import { phase5CronTasks, MOONBOYS_CRON } from
   '../workers/moonboys-api/scheduled/phase5-cron-plan.js';
 import { buildReviewedWaxTransfer, PAYOUT_EXECUTOR_AUTO_ENABLED } from
   '../workers/moonboys-api/tag-run/v2-payout-executor.js';
-import { runAutomaticCommunityPot } from
+import { automaticReleaseBlockers, runAutomaticCommunityPot } from
   '../workers/moonboys-api/tag-run/v2-automation.js';
 import {
   prepareActiveKeyTransaction, broadcastPreparedTransaction,
@@ -98,49 +98,70 @@ test('automation selects the same canonical group as Telegram scoring', async ()
     'already_started');
 });
 
-test('a short payout secret blocks draws but daily capture advances through an empty day', async () => {
-  const day = '2026-11-18';
-  const checkpointWrites = [];
+test('snapshot, draw and payout release gates are independent', () => {
+  const ready = automaticEnv({ DB: {} });
+  assert.deepEqual(automaticReleaseBlockers(ready), {
+    snapshot: null, draw: null, payout: null
+  });
+
+  const noSeed = { ...ready, TAG_RUN_V2_AUTOMATION_SEED_KEY: 'short' };
+  assert.deepEqual(automaticReleaseBlockers(noSeed), {
+    snapshot: null, draw: 'automation_seed_key', payout: null
+  });
+
+  const noSigner = { ...ready, TAG_RUN_V2_ACTIVE_PRIVATE_KEY: 'short' };
+  assert.deepEqual(automaticReleaseBlockers(noSigner), {
+    snapshot: null, draw: null, payout: 'active_private_key'
+  });
+
+  const payoutsOff = { ...ready, TAG_RUN_V2_PAYOUTS_ENABLED: 'false' };
+  assert.deepEqual(automaticReleaseBlockers(payoutsOff), {
+    snapshot: null, draw: null, payout: 'tag_run_v2_payouts_enabled'
+  });
+});
+
+test('a blocked snapshot release still captures on a retry tick and records a safe reason', async () => {
+  const auditWrites = [];
   const env = automaticEnv({
-    TAG_RUN_V2_AUTOMATION_SEED_KEY: 'short-fixture-value',
+    TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED: 'false',
     DB: {
       prepare(sql) {
         if (sql.startsWith('SELECT wallet_account')) {
           return { first: async () => ({ status: 'review_only' }) };
         }
-        return { bind(...params) {
-          if (sql.startsWith('SELECT last_completed_day_key')) {
+        if (sql.startsWith('SELECT last_completed_day_key')) {
+          return { bind: (...params) => ({ first: async () => {
             assert.deepEqual(params, ['-1001234567890']);
-            return { first: async () => ({ last_completed_day_key: '2026-11-17' }) };
-          }
-          if (sql.startsWith('SELECT m.telegram_id')) {
-            return { all: async () => ({ success: true, results: [] }) };
-          }
-          if (sql.startsWith('INSERT OR IGNORE INTO tag_run_v2_participation')) {
-            return { run: async () => ({ success: true, meta: { changes: 0 } }) };
-          }
-          if (sql.startsWith('SELECT COUNT(*) AS recorded')) {
-            return { first: async () => ({ recorded: 0, bad_digest: null }) };
-          }
-          if (sql.startsWith('INSERT INTO tag_run_v2_capture_cursors')) {
-            return { run: async () => {
-              checkpointWrites.push(params);
-              return { success: true };
-            } };
-          }
-          assert.fail('unexpected query in blocked payout cycle: ' + sql);
-        } };
+            return { last_completed_day_key: '2026-11-18' };
+          } }) };
+        }
+        if (sql.startsWith('INSERT OR IGNORE INTO tag_run_v2_audit')) {
+          return { bind: (...params) => ({ run: async () => {
+            auditWrites.push(params);
+            return { success: true, meta: { changes: 1 } };
+          } }) };
+        }
+        assert.fail('unexpected query in blocked snapshot cycle: ' + sql);
       }
     }
   });
   const fetchImpl = async () => assert.fail('blocked release made an outbound request');
-  const checkError = { message: 'v2_automation_release_not_authorized_automation_seed_key' };
-  await assert.rejects(runAutomaticCommunityPot(env, { fetchImpl }), checkError);
-  assert.deepEqual(checkpointWrites, []);
   await assert.rejects(runAutomaticCommunityPot(env, {
-    dailyStart: true, nowMs: Date.parse('2026-11-19T00:12:00Z'), fetchImpl
-  }), checkError);
-  assert.deepEqual(checkpointWrites, [['-1001234567890', day]]);
+    dailyStart: false,
+    nowMs: Date.parse('2026-11-19T21:30:00Z'),
+    fetchImpl
+  }), {
+    message: 'v2_automation_release_not_authorized_tag_run_v2_automation_release_approved'
+  });
+  assert.deepEqual(auditWrites, [[
+    'automation-release-blocked:snapshot:2026-11-19:' +
+      'tag_run_v2_automation_release_approved',
+    'automation_release_blocked',
+    JSON.stringify({
+      scope: 'snapshot', blocker: 'tag_run_v2_automation_release_approved'
+    }),
+    'automation:release-gate:v2'
+  ]]);
 });
 
 
