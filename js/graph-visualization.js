@@ -200,7 +200,7 @@
 
   function getModeFromURL() {
     const mode = new URLSearchParams(window.location.search).get('mode');
-    return normalizeMode(mode);
+    return normalizeMode(mode || document.body.dataset.graphDefaultMode);
   }
 
   function updateModeToggleUI(mode) {
