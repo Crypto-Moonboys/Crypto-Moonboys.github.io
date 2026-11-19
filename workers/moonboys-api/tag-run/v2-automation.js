@@ -2,7 +2,7 @@
 // Unknown assets remain quarantined. Only explicitly approved, pinned standard
 // token contracts can reach the active-key signer.
 import { runTagRunEngagement } from './engagement.js';
-import { previousDay } from './core.js';
+import { authenticatedGroupId, previousDay } from './core.js';
 import { TIP_ACCOUNT, sha256Text } from './v2-core.js';
 import {
   saveYesterdayParticipation, createAutomaticSnapshot
@@ -30,6 +30,20 @@ import {
 
 const HEX = /^[0-9a-f]{64}$/;
 const fail = reason => { throw new Error('v2_automation_' + reason); };
+const RELEASE_SETTINGS = Object.freeze({
+  TAG_RUN_ENABLED: 'true',
+  TAG_RUN_WEEKLY_REWARDS_ENABLED: 'false',
+  TAG_RUN_V2_OBSERVATION_ENABLED: 'false',
+  TAG_RUN_V2_POOL_ENABLED: 'true',
+  TAG_RUN_V2_DRAWS_ENABLED: 'true',
+  TAG_RUN_V2_PAYOUTS_ENABLED: 'true',
+  TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED: 'true',
+  TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED: 'true',
+  TAG_RUN_V2_AUTOMATION_ENABLED: 'true',
+  TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED: 'true',
+  TAG_RUN_V2_SIGNER_PERMISSION: 'active',
+  TAG_RUN_V2_TIP_ACCOUNT: TIP_ACCOUNT
+});
 
 function safeFailureReason(error) {
   const message = String(error?.message || '');
@@ -72,27 +86,22 @@ async function moveToReconciliationOnly(env, intent) {
   }
 }
 
-function assertMode(env) {
-  if (!env?.DB ||
-      env.TAG_RUN_ENABLED !== 'true' ||
-      env.TAG_RUN_WEEKLY_REWARDS_ENABLED !== 'false' ||
-      env.TAG_RUN_V2_OBSERVATION_ENABLED !== 'false' ||
-      env.TAG_RUN_V2_POOL_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_DRAWS_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_PAYOUTS_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED !== 'true' ||
-      env.TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED !== 'true' ||
-      env.TAG_RUN_V2_AUTOMATION_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED !== 'true' ||
-      env.TAG_RUN_V2_SIGNER_PERMISSION !== 'active' ||
-      env.TAG_RUN_V2_TIP_ACCOUNT !== TIP_ACCOUNT ||
-      !/^-100[0-9]{5,20}$/.test(String(env.TELEGRAM_GROUP_CHAT_ID || '')) ||
-      typeof env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY !== 'string' ||
-      env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY.length < 40 ||
-      typeof env.TAG_RUN_V2_AUTOMATION_SEED_KEY !== 'string' ||
-      env.TAG_RUN_V2_AUTOMATION_SEED_KEY.length < 32) {
-    fail('release_not_authorized');
+function releaseBlocker(env) {
+  if (!env?.DB) return 'db';
+  for (const [name, expected] of Object.entries(RELEASE_SETTINGS)) {
+    if (env[name] !== expected) return name.toLowerCase();
   }
+  if (!authenticatedGroupId(env)) return 'telegram_group_chat_id';
+  if (typeof env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY !== 'string' ||
+      env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY.length < 40) return 'active_private_key';
+  if (typeof env.TAG_RUN_V2_AUTOMATION_SEED_KEY !== 'string' ||
+      env.TAG_RUN_V2_AUTOMATION_SEED_KEY.length < 32) return 'automation_seed_key';
+  return null;
+}
+
+function assertMode(env) {
+  const blocker = releaseBlocker(env);
+  if (blocker) fail('release_not_authorized_' + blocker);
 }
 
 async function rows(db, sql, ...params) {
@@ -111,7 +120,7 @@ async function dailySeed(env, day) {
   const bytes = await crypto.subtle.sign(
     'HMAC', key,
     new TextEncoder().encode(
-      'tag-run-v2:automatic-draw:v1|' + env.TELEGRAM_GROUP_CHAT_ID + '|' + day
+      'tag-run-v2:automatic-draw:v1|' + authenticatedGroupId(env) + '|' + day
     )
   );
   return [...new Uint8Array(bytes)]
@@ -173,7 +182,7 @@ async function startDaily(env, { nowMs, fetchImpl, cryptoImpl }) {
 }
 
 async function advanceOneDraw(env, row, { nowMs, fetchImpl }) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   if (row.state === 'committed') {
     const seed = await dailySeed(env, row.day_key);
     try {
@@ -208,7 +217,7 @@ async function advanceOneDraw(env, row, { nowMs, fetchImpl }) {
 }
 
 async function advanceDraw(env, { nowMs, fetchImpl }) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const queue = await rows(env.DB,
     "SELECT day_key,state FROM tag_run_v2_draw_workflows WHERE chat_id=? " +
     "AND state IN ('committed','revealed') ORDER BY day_key",
@@ -247,7 +256,7 @@ async function advanceDraw(env, { nowMs, fetchImpl }) {
 }
 
 async function createOrOpenCap(env) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const missing = await env.DB.prepare(
     'SELECT s.day_key,s.asset_key,a.token_contract,a.token_symbol,a.token_precision ' +
     'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key ' +
@@ -330,7 +339,7 @@ async function createOrOpenCap(env) {
 }
 
 async function reserveOne(env) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const bundle = await env.DB.prepare(
     'SELECT b.*,a.token_contract,a.token_symbol,a.token_precision,w.wax_account ' +
     'FROM tag_run_v2_bundles b JOIN tag_run_v2_assets a ON a.asset_key=b.asset_key ' +
@@ -526,7 +535,7 @@ async function reconcileOne(env, fetchImpl) {
 }
 
 async function closeFinishedCap(env) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const cap = await env.DB.prepare(
     'SELECT c.chat_id,c.day_key,c.asset_key,c.revision FROM tag_run_v2_payout_caps c ' +
     "WHERE c.chat_id=? AND c.paused=0 " +
@@ -558,7 +567,23 @@ export async function runAutomaticCommunityPot(env, {
   dailyStart = false, nowMs = Date.now(), fetchImpl = fetch,
   cryptoImpl = globalThis.crypto
 } = {}) {
-  assertMode(env);
+  const blocker = releaseBlocker(env);
+  if (blocker) {
+    // Keep the daily participation checkpoint moving even if payout authority
+    // is unavailable. The capture path has its own pool and pause checks.
+    if (dailyStart && env?.DB && authenticatedGroupId(env) &&
+        env.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false') {
+      try {
+        await saveYesterdayParticipation(env, { nowMs, maxDays: 7 });
+      } catch {
+        console.warn(JSON.stringify({
+          event: 'tag_run_participation_capture_failed',
+          reason: 'capture_failed_while_payout_release_blocked'
+        }));
+      }
+    }
+    fail('release_not_authorized_' + blocker);
+  }
   const result = { mode: 'automatic', dailyStart, steps: [] };
 
   // Existing submissions and caps are serviced before attempting any new-day
@@ -574,7 +599,7 @@ export async function runAutomaticCommunityPot(env, {
     const existingDaily = await env.DB.prepare(
       'SELECT 1 AS present FROM tag_run_v2_draw_workflows ' +
       'WHERE chat_id=? AND day_key=?'
-    ).bind(String(env.TELEGRAM_GROUP_CHAT_ID), targetDay).first();
+    ).bind(authenticatedGroupId(env), targetDay).first();
     // A transient midnight RPC/D1 failure must not skip the day forever.
     if (dailyStart || !existingDaily) {
       return startDaily(env, { nowMs, fetchImpl, cryptoImpl });

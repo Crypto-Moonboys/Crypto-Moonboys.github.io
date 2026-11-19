@@ -64,6 +64,85 @@ test('automatic release still fails closed without its encrypted secrets', async
   assert.doesNotMatch(config, /TAG_RUN_V2_AUTOMATION_SEED_KEY\s*=/);
 });
 
+function automaticEnv(overrides = {}) {
+  const config = read('workers/moonboys-api/wrangler.toml');
+  const flags = Object.fromEntries(
+    [...config.matchAll(/^(TAG_RUN_[A-Z0-9_]+) = "([^"]*)"$/gm)]
+      .map(([, name, value]) => [name, value])
+  );
+  return {
+    ...flags,
+    TELEGRAM_GROUP_CHAT_ID: '  -1001234567890\n',
+    TAG_RUN_V2_ACTIVE_PRIVATE_KEY: 'x'.repeat(40),
+    TAG_RUN_V2_AUTOMATION_SEED_KEY: 'y'.repeat(32),
+    ...overrides
+  };
+}
+
+test('automation selects the same canonical group as Telegram scoring', async () => {
+  const groups = [];
+  const env = automaticEnv({ DB: {
+    prepare(sql) {
+      if (!sql.startsWith('SELECT 1 AS present FROM tag_run_v2_draw_workflows')) {
+        throw new Error('fixture permits only the daily workflow lookup');
+      }
+      return { bind(chatId) {
+        groups.push(chatId);
+        return { first: async () => ({ present: 1 }) };
+      } };
+    }
+  } });
+  const result = await runAutomaticCommunityPot(env);
+  assert.deepEqual(groups, ['-1001234567890']);
+  assert.equal(result.steps.find(step => step.step === 'daily_setup').status,
+    'already_started');
+});
+
+test('a short payout secret blocks draws but daily capture advances through an empty day', async () => {
+  const day = '2026-11-18';
+  const checkpointWrites = [];
+  const env = automaticEnv({
+    TAG_RUN_V2_AUTOMATION_SEED_KEY: 'short-fixture-value',
+    DB: {
+      prepare(sql) {
+        if (sql.startsWith('SELECT wallet_account')) {
+          return { first: async () => ({ status: 'review_only' }) };
+        }
+        return { bind(...params) {
+          if (sql.startsWith('SELECT last_completed_day_key')) {
+            assert.deepEqual(params, ['-1001234567890']);
+            return { first: async () => ({ last_completed_day_key: '2026-11-17' }) };
+          }
+          if (sql.startsWith('SELECT m.telegram_id')) {
+            return { all: async () => ({ success: true, results: [] }) };
+          }
+          if (sql.startsWith('INSERT OR IGNORE INTO tag_run_v2_participation')) {
+            return { run: async () => ({ success: true, meta: { changes: 0 } }) };
+          }
+          if (sql.startsWith('SELECT COUNT(*) AS recorded')) {
+            return { first: async () => ({ recorded: 0, bad_digest: null }) };
+          }
+          if (sql.startsWith('INSERT INTO tag_run_v2_capture_cursors')) {
+            return { run: async () => {
+              checkpointWrites.push(params);
+              return { success: true };
+            } };
+          }
+          assert.fail('unexpected query in blocked payout cycle: ' + sql);
+        } };
+      }
+    }
+  });
+  const fetchImpl = async () => assert.fail('blocked release made an outbound request');
+  const checkError = { message: 'v2_automation_release_not_authorized_automation_seed_key' };
+  await assert.rejects(runAutomaticCommunityPot(env, { fetchImpl }), checkError);
+  assert.deepEqual(checkpointWrites, []);
+  await assert.rejects(runAutomaticCommunityPot(env, {
+    dailyStart: true, nowMs: Date.parse('2026-11-19T00:12:00Z'), fetchImpl
+  }), checkError);
+  assert.deepEqual(checkpointWrites, [['-1001234567890', day]]);
+});
+
 
 test('automatic queue stages are isolated and rotate blocked obligations', () => {
   const automation = read(
