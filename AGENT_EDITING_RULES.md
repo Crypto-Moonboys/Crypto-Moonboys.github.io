@@ -37,7 +37,7 @@ Before editing public copy, agents must understand the hierarchy:
 - GKniftyHEADS is the primary foundation alongside other Moonboy factions connected to OG Graffiti Kings artists.
 - Every 1/1 holder is a HODL Warrior and part of the active creator army.
 - SWARMSY supports both paths with identity, strategy, planning, branding, publishing, growth and momentum as an optional locally installed PC beta.
-- The **public website's AI route** is `/gpt-users.html`: it hands SPARKY-guided creator activities to ChatGPT and has manual portable-memory export/import. It does not run a hosted SWARMSY model or access private PC records.
+- The **public website's AI route** is `/gpt-users.html`: it opens one SPARKY campaign brief in ChatGPT and offers a public Markdown download for manual project continuity. It does not run a hosted SWARMSY model or access private PC records.
 - `/sparky.html` is a retired public chat redirect. Do not add new website chat CTAs or claims of 24/7 free hosted SWARMSY AI. The legacy Worker `/public/npc-chat` must be retired separately after a dependency audit. Preserve unrelated Telegram/game endpoints.
 - When an action says **Start creating with AI**, link to `/gpt-users.html`. When it says **SWARMSY PC app/source**, link to `/swarmsy.html` or `https://github.com/Crypto-Moonboys/SWARMSY-Ai`.
 - Local SWARMSY use may need installation/hardware/API credentials, and configured providers may charge. Never imply public ChatGPT and private SWARMSY workspaces sync automatically.
