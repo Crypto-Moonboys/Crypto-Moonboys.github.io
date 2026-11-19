@@ -10,6 +10,8 @@ import { validatePayloadDirectory } from './validate-website-publish-payloads.mj
 import {
   MAX_STUB_ARTICLE_WORDS,
   REPORT_CLUSTERS,
+  articleContentHash,
+  articleMarkupHash,
   assertValidWikiContentTopology,
   buildWikiAudit,
   countCanonicalContentBlocks,
@@ -220,7 +222,34 @@ function gitOutput(rootDir, args) {
   }
 }
 
-function readBaselineManifest(rootDir) {
+// Read protected article identities from the base commit if its inventory lagged
+// behind the HTML. Ownership policy and all other ratchets still use the manifest.
+function reconcileBaselineArticles(rootDir, revision, manifest, warnings) {
+  const tree = execFileSync('git', ['ls-tree', '-rz', revision, '--', 'wiki/'], { cwd: rootDir, encoding: 'utf8' });
+  const blobs = new Map();
+  for (const entry of tree.split('\0')) {
+    const match = /^100(?:644|755) blob ([0-9a-f]{40})\t(.+)$/.exec(entry);
+    if (match) blobs.set(match[2], match[1]);
+  }
+  for (const page of manifest.pages) {
+    if (!page.page_exists || !page.git_blob_oid) continue;
+    if (!['canon-locked', 'metadata-only'].includes(page.automation_policy)) continue;
+    const expectedPath = `wiki/${page.slug}.html`;
+    const oid = blobs.get(expectedPath);
+    if (!oid || page.path !== expectedPath) {
+      throw new Error(`Cannot verify protected baseline path ${expectedPath} in ${revision}`);
+    }
+    if (oid === page.git_blob_oid) continue;
+    const html = execFileSync('git', ['cat-file', 'blob', oid], {
+      cwd: rootDir, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024,
+    });
+    page.article_content_hash = articleContentHash(html);
+    page.article_markup_hash = articleMarkupHash(html);
+    warnings.push(`${expectedPath}: stale baseline inventory; compared protected prose and markup against Git blob ${oid} at ${revision}`);
+  }
+}
+
+function readBaselineManifest(rootDir, warnings) {
   const candidates = [];
   for (const value of [process.env.BASE_SHA, process.env.GITHUB_BASE_SHA]) {
     if (/^[a-f0-9]{7,40}$/i.test(value || '') && !/^0+$/.test(value)) candidates.push(value);
@@ -231,14 +260,19 @@ function readBaselineManifest(rootDir) {
   candidates.push('HEAD^');
 
   for (const revision of [...new Set(candidates)]) {
-    const raw = gitOutput(rootDir, ['show', `${revision}:${publisher.CONTENT_STATE_MANIFEST_FILE}`]);
+    const commit = gitOutput(rootDir, ['rev-parse', '--verify', `${revision}^{commit}`]);
+    if (!commit) continue;
+    const raw = gitOutput(rootDir, ['show', `${commit}:${publisher.CONTENT_STATE_MANIFEST_FILE}`]);
     if (!raw) continue;
+    let manifest;
     try {
-      const manifest = JSON.parse(raw);
-      if (Array.isArray(manifest.pages)) return { manifest, revision };
+      manifest = JSON.parse(raw);
     } catch {
-      // Try the next safe, local git baseline.
+      continue;
     }
+    if (!Array.isArray(manifest.pages)) continue;
+    reconcileBaselineArticles(rootDir, commit, manifest, warnings);
+    return { manifest, revision: commit };
   }
   return null;
 }
@@ -614,7 +648,7 @@ export function runContentOwnershipAudit({
   const state = currentState || (path.resolve(rootDir) === ROOT ? buildWikiAudit() : null);
   if (!state) failures.push('A current content-state audit must be supplied when auditing a non-repository root.');
   const manifest = readManifest(manifestPath, failures);
-  const resolvedBaseline = baseline === undefined ? readBaselineManifest(rootDir) : baseline;
+  const resolvedBaseline = baseline === undefined ? readBaselineManifest(rootDir, warnings) : baseline;
   if (state) auditManifest(manifest, state, failures, warnings, resolvedBaseline, canonProseChangeApproved);
 
   const wikiFileSet = new Set(wikiFiles);
