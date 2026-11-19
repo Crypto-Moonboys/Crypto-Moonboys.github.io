@@ -1,6 +1,6 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { readHtmlAttribute, tokenizeActiveHtml } from './wiki-html-structure.mjs';
+import { readHtmlAttribute, readHtmlAttributes, tokenizeActiveHtml } from './wiki-html-structure.mjs';
 
 // Archive source HTML is an editorial record. Resolve ordinary links in the
 // published copy using the destinations declared by the site's redirect pages.
@@ -40,15 +40,13 @@ export async function publishDirectWikiLinks(root) {
     const pieces = [];
     for (const token of tokenizeActiveHtml(html)) {
       if (token.name !== 'a' || token.closing || token.foreignContent || token.shadowContent) continue;
-      const href = readHtmlAttribute(token.raw, 'href').value;
-      const destination = redirects.get(href);
+      const href = readHtmlAttributes(token.raw, { includeValueStart: true })
+        .find(attribute => attribute.name === 'href');
+      const destination = redirects.get(href?.value);
       if (!destination) continue;
-      // Preserve the original tag and every other attribute byte for byte.
-      const tag = token.raw.replace(/(\shref\s*=\s*)(["'])([^"']*)\2/i,
-        (match, prefix, quote, value) => value === href ? prefix + quote + destination + quote : match);
-      if (tag === token.raw) continue;
-      pieces.push(html.slice(end, token.start), tag);
-      end = token.end;
+      const start = token.start + href.valueStart;
+      pieces.push(html.slice(end, start), destination);
+      end = start + href.rawValue.length;
     }
     if (pieces.length) await writeFile(path.join(root, route), pieces.join('') + html.slice(end));
   }

@@ -455,6 +455,9 @@ try {
     }
   }
   assert.equal(await desktop.locator('#reset').count(), 0, 'Standalone builder must not include a Reset button');
+  const loreLink = desktop.getByRole('link', { name: 'Crypto Moonboys lore hub', exact: true });
+  assert.equal(await loreLink.getAttribute('href'), '/wiki/crypto-moonboys.html');
+  assert.ok(await loreLink.isVisible(), 'standalone builder retains its lore link after rendering');
   assert.deepEqual(await desktop.locator('.main-actions .action').evaluateAll((buttons) => buttons.map((button) => button.id)), ['randomize', 'download-png', 'clear-all'], 'Standalone actions must use the simplified order');
   const actionMetrics = await desktop.locator('.main-actions').evaluate((container) => ({
     containerWidth: container.getBoundingClientRect().width,

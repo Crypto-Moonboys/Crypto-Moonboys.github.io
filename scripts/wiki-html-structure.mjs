@@ -650,7 +650,7 @@ function isHtmlSpace(character) {
  * `title=" id=decoy"` is one title value, and `/` remains valid in an unquoted
  * value such as `href=/wiki/page.html`.
  */
-export function readHtmlAttributes(openingTag) {
+export function readHtmlAttributes(openingTag, { includeValueStart = false } = {}) {
   const source = String(openingTag || '');
   const startMatch = source.match(/^<([a-z][^\t\n\f\r />]*)/i);
   if (!startMatch) return [];
@@ -690,6 +690,7 @@ export function readHtmlAttributes(openingTag) {
     while (isHtmlSpace(source[cursor])) cursor += 1;
 
     let rawValue = null;
+    let valueStart = null;
     let quote = '';
     if (source[cursor] === '=') {
       cursor += 1;
@@ -700,12 +701,12 @@ export function readHtmlAttributes(openingTag) {
         : '';
       if (quote) {
         cursor += 1;
-        const valueStart = cursor;
+        valueStart = cursor;
         while (cursor < source.length && source[cursor] !== quote) cursor += 1;
         rawValue = source.slice(valueStart, cursor);
         if (source[cursor] === quote) cursor += 1;
       } else {
-        const valueStart = cursor;
+        valueStart = cursor;
         // `/` is data in the unquoted-value state. A self-closing slash is
         // recognized only after whitespace or a quoted value.
         while (
@@ -724,6 +725,7 @@ export function readHtmlAttributes(openingTag) {
       value: rawValue === null ? null : decodeHtmlAttributeValue(rawValue),
       rawValue,
       quote,
+      ...(includeValueStart ? { valueStart } : {}),
     });
   }
 
