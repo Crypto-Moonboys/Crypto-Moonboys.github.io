@@ -60,13 +60,26 @@ function coreTitle(fullTitle) {
     .toLowerCase();
 }
 
-/** Extract href="/wiki/…" URLs from raw HTML text. */
-function extractWikiLinks(html) {
+// Pages rewrites redirect links in the published copy. Count those public
+// destinations here too, while leaving the editorial HTML untouched.
+function publishedRedirects() {
+  const redirects = new Map();
+  for (const file of fs.readdirSync(WIKI_DIR).filter(f => f.endsWith('.html'))) {
+    const html = fs.readFileSync(path.join(WIKI_DIR, file), 'utf8');
+    const refresh = /<meta\b[^>]*http-equiv=["']refresh["'][^>]*>/i.exec(html)?.[0];
+    const content = refresh && /\bcontent=["']0\s*;\s*url\s*=\s*(\/[a-z0-9/_-]+\.html(?:#[a-z0-9_-]+)?)["']/i.exec(refresh)?.[1];
+    if (content) redirects.set(`/wiki/${file}`, content);
+  }
+  return redirects;
+}
+
+/** Extract public wiki destinations from source HTML. */
+function extractWikiLinks(html, redirects) {
   const links = new Set();
   const re = /href="(\/wiki\/[^"#?]+\.html)"/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
-    links.add(m[1]);
+    links.add((redirects.get(m[1]) || m[1]).split('#')[0]);
   }
   return links;
 }
@@ -81,6 +94,7 @@ function normalizeUrl(url) {
 // ---------------------------------------------------------------------------
 
 function main() {
+  const redirects = publishedRedirects();
   // 1. Load wiki index
   const index = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
 
@@ -117,7 +131,7 @@ function main() {
     const htmlLower = html.toLowerCase();
 
     // Existing links in this page
-    const existingLinks = extractWikiLinks(html);
+    const existingLinks = extractWikiLinks(html, redirects);
 
     // keyword_bag of this source page (for keyword-match detection)
     const sourceEntry  = byUrl.get(normalizeUrl(sourceUrl));

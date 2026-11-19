@@ -89,7 +89,7 @@ function pageHtml({ slug, title, description, intro, sections }) {
 </head>
 <body class="page-category page-standard-shell">
 <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(title)}</span></nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep" aria-hidden="true">›</span><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(title)}</span></nav>
       <div class="category-header"><span class="cat-big-icon" aria-hidden="true">NFT</span><div><h1 class="page-title">${escapeHtml(title)}</h1><p style="color:var(--color-text-muted)">${escapeHtml(description)}</p></div></div>
       <div class="page-title-line" aria-hidden="true"></div>
       <p style="color:var(--color-text-muted);margin-bottom:24px">${escapeHtml(intro)}</p>

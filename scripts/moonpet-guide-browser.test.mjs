@@ -81,7 +81,10 @@ try {
     assert.equal(await page.locator('.guide-step').first().getAttribute('open') !== null, true);
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Shift+Tab');
-    assert.equal(await page.locator('#utility-content [data-utility="about"]').evaluate(el => el === document.activeElement), true, 'focus wraps inside modal');
+    const loreLink = page.locator('#utility-layer a[href="/wiki/crypto-moonboys.html"]');
+    assert.equal(await loreLink.evaluate(el => el === document.activeElement), true, 'reverse tab wraps to the lore link');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.locator('[data-utility-close]').evaluate(el => el === document.activeElement), true, 'forward tab wraps to the close button');
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#utility-layer').isHidden(), true);
     assert.equal(await opener.evaluate(el => el === document.activeElement), true, 'close restores opener focus after guide/About navigation');

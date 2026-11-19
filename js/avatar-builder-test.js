@@ -10,6 +10,8 @@ const HOMEPAGE_INTRO_IMAGE = isHomepage ? (host?.dataset.introImage ?? null) : n
 
 if (!host) throw new Error('Avatar builder host was not found.');
 
+const loreLink = host.querySelector('.builder-lore-link');
+
 host.innerHTML = `
   <div class="builder-shell">
     <section class="control-panel category-panel" aria-label="Avatar traits">
@@ -51,6 +53,8 @@ host.innerHTML = `
     </aside>
   </div>
   <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>`;
+
+if (loreLink) host.querySelector('.selection-panel').appendChild(loreLink);
 
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
 let nextPreset = null;

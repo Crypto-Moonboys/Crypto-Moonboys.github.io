@@ -3231,7 +3231,7 @@ function upsertByUrl(existingEntries, newEntries) {
   );
 }
 
-function renderCategoryPage(category, entries) {
+export function renderCategoryPage(category, entries) {
   const catSlug = categorySlug(category);
   const items = entries
     .map((entry) => `        <a href="${escapeHtml(entry.url)}" class="article-list-item">
@@ -3253,7 +3253,7 @@ function renderCategoryPage(category, entries) {
 </head>
 <body class="page-category page-standard-shell">
 <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(category)}</span></nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(category)}</span></nav>
       <h1 class="page-title">${escapeHtml(category)}</h1>
       <div class="page-title-line" aria-hidden="true"></div>
       <div class="article-list" aria-label="Articles in ${escapeHtml(category)}">
