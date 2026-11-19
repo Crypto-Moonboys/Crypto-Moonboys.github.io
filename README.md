@@ -46,9 +46,9 @@ This README is the top-level repository guide for current product/brand truth an
 
 ### Public AI versus the SWARMSY PC application (current delivery)
 
-- **Use AI on the website:** [SPARKY Creator Studio](https://cryptomoonboys.com/gpt-users.html) provides public, beginner-friendly activities through **ChatGPT**. It opens ChatGPT; the website does not host the SWARMSY model, run a live SPARKY chatbot, proxy private workspace messages or require Telegram login for this experience. ChatGPT features and access depend on the user's ChatGPT account, plan and available tools.
+- **Use AI on the website:** [SPARKY Creator Studio](https://cryptomoonboys.com/gpt-users.html) opens one SPARKY campaign launch and a public Markdown brief in **ChatGPT**. It opens ChatGPT; the website does not host the SWARMSY model, run a live SPARKY chatbot, proxy private workspace messages or require Telegram login for this experience. ChatGPT features and access depend on the user's ChatGPT account, plan and available tools.
 - **Use SWARMSY on a PC:** [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate **beta desktop/local application** built on an AnythingLLM fork, with the SPARKY project guide, local-model support and optional configured model-provider APIs. Users must install/run it themselves; API providers may charge. Source code and build workflows do not imply that an installer or hosted service is currently available.
-- **Keep project continuity manually:** the website's Creator Studio can **download/import** `sparky-creator-memory` v1 JSON and export Markdown or a handoff to an AI chat. A compatible SWARMSY PC build can import/export the format. This is **not automatic account sync**; it does not transmit private SWARMSY workspaces to ChatGPT, attach artwork files, confer canon rights, or prove that a planned action happened.
+- **Keep project continuity manually:** the public campaign brief asks ChatGPT to organise editable project files when its tools allow; the user brings those files back in a later chat. The previous browser memory editor has been removed from the public page. A compatible SWARMSY PC build can still import/export the separate `sparky-creator-memory` v1 format. There is **no automatic account sync** between the website, ChatGPT and private SWARMSY workspaces.
 - **Retired website chatbot:** `/sparky.html` redirects to `/gpt-users.html`. The old Telegram-gated browser SPARKY chat is retired. **The legacy Cloudflare Worker `/public/npc-chat` route has not yet been disabled;** its secure retirement requires a separate dependency review and Worker deployment. Telegram login, the WIKICOMSBOT and game systems remain separate.
 - **Navigation rule:** links inviting a visitor to **start creating with AI now** must open `/gpt-users.html`. Links describing, installing or building the **optional PC app** must open `/swarmsy.html` or its GitHub repository. No page may describe the PC app as free hosted 24/7 AI or a public website chat.
 
@@ -60,7 +60,7 @@ The complete model is:
 - **Crypto Moonboys** — the public creator umbrella, community, knowledge world and shared cultural network.
 - **SWARMSY PC beta** — the optional locally run creator operating environment, distinct from the website and the public GPT experience.
 - **AnythingLLM** — the general intelligence, retrieval and advanced workspace foundation beneath SWARMSY.
-- **SPARKY** — the in-app guide/project-context manager in SWARMSY; SPARKY-labelled website activities are prompts handed to ChatGPT, not the same running process.
+- **SPARKY** — the in-app guide/project-context manager in SWARMSY; the website's campaign brief is handed to ChatGPT, not the same running process.
 - **Selected AI provider** — the local or API-backed reasoning engine helping SPARKY think.
 - **Starter Wiki Packs** — small situational guides that keep SPARKY focused, responsible and aware that the user may be preparing to act.
 - **User-grown project intelligence** — the user’s developing rules, documents, laws, sources, contacts, proof, methods and experience.
@@ -459,7 +459,7 @@ Never describe reward drops, burns, evolution, forging, creator-world publishing
 ### Live now in this repository
 
 - public homepage and Wiki;
-- public ChatGPT Creator Studio at `/gpt-users.html` with manual portable creator-memory JSON export/import; no hosted SWARMSY chat;
+- public ChatGPT Creator Studio at `/gpt-users.html` with one campaign brief handoff and user-managed project files; no hosted SWARMSY chat;
 - Telegram identity linking;
 - current faction selection;
 - Battle Chamber activity, missions and boards where wired;
@@ -554,7 +554,7 @@ The homepage must communicate within one viewing cycle:
 - qualifying 1/1 rights are governed by published creator terms;
 - Option 2 brings existing IP into the same universe with unique lore and can begin through the public ChatGPT Creator Studio;
 - SWARMSY is an optional PC creator operating environment, **not an always-on website chatbot**;
-- SPARKY is an in-app operator for SWARMSY; the website sends ChatGPT a short starter for the selected creative task, ending with an instruction to browse the public [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html). This shared page supplies the project's culture, voice and creative direction without repeating a large brief in every prompt. Website project handoffs include the same instruction; JSON exports stay portable. Activity guides are optional references on the page; Moonboy starters also include the relevant public canon guide and source index;
+- SPARKY is an in-app operator for SWARMSY; the website sends ChatGPT one campaign starter that asks it to read the public [SPARKY campaign brief](guides/sparky/creator-campaign.md) and [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html). Project continuity depends on the user's saved files and available ChatGPT features; the website does not sync private PC workspace records.
 - both paths belong to one movement.
 
 The homepage must not force a first-time visitor to understand every mechanic before choosing a route.
