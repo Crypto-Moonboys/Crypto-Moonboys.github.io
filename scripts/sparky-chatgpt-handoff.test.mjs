@@ -173,3 +173,14 @@ test('creative context offers shock without requiring a new identity or claiming
   }
 });
 
+
+test('SWARMSY continuity CTA points to the published brief, not the retired editor', () => {
+  const appPage = read('swarmsy.html');
+  const continuity = read('docs/portable-creator-memory.md');
+  assert.match(appPage, /href="\/guides\/sparky\/creator-campaign\.md" class="swarmsy-action-card"/);
+  assert.match(appPage, /KEEP YOUR PROJECT MOVING/);
+  assert.doesNotMatch(appPage, /#creator-memory-studio|SAVE YOUR PROJECT MEMORY|Export or import a portable project JSON file in the public Studio/);
+  assert.match(continuity, /website no longer contains a browser memory editor or JSON import\/export buttons/);
+  assert.match(continuity, /save those files and bring them back/i);
+  assert.match(continuity, /existing JSON record can attach it to ChatGPT/);
+});
