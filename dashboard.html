@@ -27,6 +27,12 @@
       font-size: .9rem;
       margin-bottom: 24px;
     }
+    .dashboard-graph {
+      padding: 20px 24px 36px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .dashboard-graph .graph-main { min-height: 70vh; }
+    .dashboard-graph .graph-canvas-wrap { min-height: 70vh; }
 
     /* ── Summary metrics ────────────────────────────────────────────────── */
     #dash-summary {
@@ -157,6 +163,8 @@
     /* ── Responsive ──────────────────────────────────────────────────────── */
     @media (max-width: 640px) {
       .dash-page { padding: 14px; }
+      .dashboard-graph { padding: 14px; }
+      .dashboard-graph .graph-canvas-wrap { min-height: 0; }
       .dash-table th:nth-child(n+4),
       .dash-table td:nth-child(n+4) { display: none; }
       .dash-metric { flex: 1 1 100px; min-width: 0; }
@@ -177,18 +185,74 @@
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/css/page-hero-art.css">
+  <link rel="stylesheet" href="/css/graph.css">
 </head>
-<body class="page-dashboard page-standard-shell">
+<body class="page-dashboard page-standard-shell" data-graph-default-mode="full">
 <main id="content" role="main">
+  <section class="dashboard-graph" aria-labelledby="dashboard-graph-title">
+    <div class="graph-page-header">
+      <h1 id="dashboard-graph-title">🌐 Full Entity Relationship Graph</h1>
+      <p>Explore links between the published wiki pages. Select a node to open its page.</p>
+    </div>
+    <div class="graph-toolbar">
+      <div class="graph-mode-toggle" role="tablist" aria-label="Graph mode">
+        <button id="graph-mode-hero" type="button" role="tab" aria-selected="true">Hero View</button>
+        <button id="graph-mode-full" type="button" role="tab" aria-selected="false">Full Data Graph</button>
+      </div>
+
+      <div class="graph-toolbar-main">
+        <label for="graph-filter-select">Filter:</label>
+        <select id="graph-filter-select" aria-label="Filter by category">
+          <option value="all">All categories</option>
+        </select>
+
+        <label for="graph-search">Search:</label>
+        <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off">
+
+        <button id="graph-reset-btn" type="button">Reset view</button>
+      </div>
+
+      <span class="graph-status" id="graph-status" aria-live="polite"></span>
+    </div>
+
+    <div class="graph-main">
+      <div class="graph-canvas-wrap">
+        <canvas id="graph-canvas" role="img" aria-label="Entity relationship graph"></canvas>
+      </div>
+
+      <aside class="graph-info-panel" aria-label="Node details">
+        <h3>Node Details</h3>
+        <div id="graph-info">
+          <p class="graph-info-placeholder">Click or hover a node to see details.</p>
+        </div>
+
+        <div class="graph-legend">
+          <h4>Category colours</h4>
+          <div class="legend-item"><span class="legend-dot" style="background:#58a6ff"></span>Characters</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f7c948"></span>Factions</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#3fb950"></span>Tokens</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#bc8cff"></span>Concepts</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#ff7b72"></span>Lore</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#8b949e"></span>Other</div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="graph-help" role="note">
+      <span>🖱️ Drag to pan</span>
+      <span>🔍 Scroll to zoom</span>
+      <span>👆 Click node to focus</span>
+      <span>↔️ Drag node to reposition</span>
+    </div>
+  </section>
   <img class="page-hero-art" src="/art/Neon%20London%20Wiki%20Dashboard.jpg" alt="Wiki dashboard artwork" decoding="async" fetchpriority="high" width="1983" height="793">
 
     <section class="wiki-living-hero dashboard-hero swarmsy-hero" aria-labelledby="dashboard-title">
       <div class="swarmsy-hero-inner">
         <div class="swarmsy-kicker wiki-alive-kicker">SYSTEM HUB / EDITORIAL INTELLIGENCE</div>
-        <h1 id="dashboard-title" class="swarmsy-title wiki-living-title">TRACK<br><span>WIKI SIGNAL</span><br>HEALTH</h1>
+        <h2 id="dashboard-title" class="swarmsy-title wiki-living-title">TRACK<br><span>WIKI SIGNAL</span><br>HEALTH</h2>
         <p class="swarmsy-lead">
           Browse every published page below. The editorial reports track pages in the search index.
-          <a href="/graph.html?mode=full">Explore the full graph</a>
         </p>
       </div>
     </section>
@@ -331,5 +395,6 @@
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/dashboard.js"></script>
+<script data-cfasync="false" src="/js/graph-visualization.js"></script>
 </body>
 </html>
