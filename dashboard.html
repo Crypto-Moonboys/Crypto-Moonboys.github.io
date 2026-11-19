@@ -27,6 +27,25 @@
       font-size: .9rem;
       margin-bottom: 24px;
     }
+    .dashboard-graph-shortcut {
+      padding: 12px 24px;
+      background: #090f1e;
+      border-bottom: 1px solid rgba(247, 201, 72, .35);
+    }
+    .dashboard-graph-shortcut a {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid #f7c948;
+      border-radius: var(--radius);
+      color: #ffe875;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .dashboard-graph-shortcut a:hover,
+    .dashboard-graph-shortcut a:focus-visible {
+      background: rgba(247, 201, 72, .16);
+      text-decoration: underline;
+    }
 
     /* ── Summary metrics ────────────────────────────────────────────────── */
     #dash-summary {
@@ -157,6 +176,7 @@
     /* ── Responsive ──────────────────────────────────────────────────────── */
     @media (max-width: 640px) {
       .dash-page { padding: 14px; }
+      .dashboard-graph-shortcut { padding: 10px 14px; }
       .dash-table th:nth-child(n+4),
       .dash-table td:nth-child(n+4) { display: none; }
       .dash-metric { flex: 1 1 100px; min-width: 0; }
@@ -180,6 +200,9 @@
 </head>
 <body class="page-dashboard page-standard-shell">
 <main id="content" role="main">
+  <div class="dashboard-graph-shortcut">
+    <a href="/graph.html?mode=full">✣ Open the full link graph →</a>
+  </div>
   <img class="page-hero-art" src="/art/Neon%20London%20Wiki%20Dashboard.jpg" alt="Wiki dashboard artwork" decoding="async" fetchpriority="high" width="1983" height="793">
 
     <section class="wiki-living-hero dashboard-hero swarmsy-hero" aria-labelledby="dashboard-title">
@@ -188,7 +211,6 @@
         <h1 id="dashboard-title" class="swarmsy-title wiki-living-title">TRACK<br><span>WIKI SIGNAL</span><br>HEALTH</h1>
         <p class="swarmsy-lead">
           Browse every published page below. The editorial reports track pages in the search index.
-          <a href="/graph.html?mode=full">Explore the full graph</a>
         </p>
       </div>
     </section>
