@@ -105,6 +105,7 @@ function publicSitePages() {
   const SITEMAP_ONLY_ROOT_PAGES = [
     { path: '/moonboy-builder.html', changefreq: 'monthly', priority: '0.6' },
     { path: '/search.html', changefreq: 'weekly', priority: '1.0' },
+    { path: '/graph.html', changefreq: 'weekly', priority: '0.7' },
     { path: '/block-topia.html', changefreq: 'daily', priority: '0.9' },
   ];
 
