@@ -226,12 +226,13 @@
     ]
   },
   "/wiki/589-xrpl.html": {
-    "outbound_count": 18,
+    "outbound_count": 19,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/666-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -257,12 +258,13 @@
     ]
   },
   "/wiki/666-xrpl.html": {
-    "outbound_count": 18,
+    "outbound_count": 19,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -572,12 +574,15 @@
   },
   "/wiki/alfie-blaze.html": {
     "outbound_count": 1,
-    "inbound_count": 0,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html"
     ],
     "suggested_outbound": [],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/bitcoin-kids.html",
+      "/wiki/bitcoin-x-kids.html"
+    ]
   },
   "/wiki/alfie-the-bitcoin-kid-blaze-reading.html": {
     "outbound_count": 56,
@@ -736,12 +741,13 @@
     ]
   },
   "/wiki/altcoins.html": {
-    "outbound_count": 39,
+    "outbound_count": 41,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
@@ -752,7 +758,8 @@
       "/wiki/ngmi-chronicles.html",
       "/wiki/paper-hands.html",
       "/wiki/solana.html",
-      "/wiki/tokenomics.html"
+      "/wiki/tokenomics.html",
+      "/wiki/tokens.html"
     ],
     "suggested_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -1048,13 +1055,14 @@
     ]
   },
   "/wiki/bear-xrpl.html": {
-    "outbound_count": 21,
+    "outbound_count": 22,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-market-siege.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -1172,14 +1180,19 @@
   },
   "/wiki/bitcoin-btc.html": {
     "outbound_count": 2,
-    "inbound_count": 0,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/bitcoin.html"
     ],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/altcoins.html",
+      "/wiki/bear-xrpl.html"
+    ]
   },
   "/wiki/bitcoin-graffpunks.html": {
     "outbound_count": 13,
@@ -1313,10 +1326,11 @@
     ]
   },
   "/wiki/bitcoin-kids.html": {
-    "outbound_count": 60,
+    "outbound_count": 61,
     "inbound_count": 77,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
@@ -1480,10 +1494,11 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-x-kids.html": {
-    "outbound_count": 62,
+    "outbound_count": 63,
     "inbound_count": 54,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
@@ -1905,18 +1920,20 @@
   },
   "/wiki/blockchain-technology.html": {
     "outbound_count": 2,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/blockchain.html"
     ],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/graffpunks-collection.html"
+    ]
   },
   "/wiki/blockchain.html": {
     "outbound_count": 29,
-    "inbound_count": 12,
+    "inbound_count": 11,
     "existing_outbound": [
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
@@ -1956,7 +1973,6 @@
       "/wiki/defi.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
-      "/wiki/graffpunks-collection.html",
       "/wiki/nfts.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/solana.html",
@@ -3443,7 +3459,7 @@
     ]
   },
   "/wiki/defi.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 15,
     "existing_outbound": [
       "/wiki/blockchain.html",
@@ -3459,6 +3475,7 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/the-finance-guild.html",
       "/wiki/tokenomics.html",
+      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/wax-dexs-defi.html",
       "/wiki/web3.html",
@@ -3898,7 +3915,7 @@
     ]
   },
   "/wiki/exchanges.html": {
-    "outbound_count": 20,
+    "outbound_count": 21,
     "inbound_count": 9,
     "existing_outbound": [
       "/wiki/altcoins.html",
@@ -3916,6 +3933,7 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
+      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/whale-lords.html"
     ],
@@ -13616,18 +13634,20 @@
   },
   "/wiki/gk-tokens.html": {
     "outbound_count": 2,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [
       "/wiki/gk.html"
     ],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/playable-nft-murals.html"
+    ]
   },
   "/wiki/gk.html": {
     "outbound_count": 38,
-    "inbound_count": 3,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -13672,8 +13692,7 @@
     ],
     "inbound_from": [
       "/wiki/gk-token.html",
-      "/wiki/gk-tokens.html",
-      "/wiki/playable-nft-murals.html"
+      "/wiki/gk-tokens.html"
     ]
   },
   "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html": {
@@ -22918,13 +22937,13 @@
     "inbound_from": []
   },
   "/wiki/graffpunks-collection.html": {
-    "outbound_count": 33,
+    "outbound_count": 34,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
+      "/wiki/blockchain-technology.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/graffiti-kings.html",
@@ -22938,6 +22957,7 @@
     "suggested_outbound": [
       "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub.html",
+      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
@@ -25569,12 +25589,14 @@
   },
   "/wiki/liquidity-pools.html": {
     "outbound_count": 1,
-    "inbound_count": 0,
+    "inbound_count": 1,
     "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/staking.html"
+    ]
   },
   "/wiki/loopfiend.html": {
     "outbound_count": 31,
@@ -25895,7 +25917,7 @@
     "inbound_from": []
   },
   "/wiki/memecoins.html": {
-    "outbound_count": 31,
+    "outbound_count": 32,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/altcoins.html",
@@ -25913,7 +25935,8 @@
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/stikfamwars.html",
-      "/wiki/tokenomics.html"
+      "/wiki/tokenomics.html",
+      "/wiki/tokens.html"
     ],
     "suggested_outbound": [
       "/wiki/bear-market-siege.html",
@@ -27262,13 +27285,13 @@
     "inbound_from": []
   },
   "/wiki/playable-nft-murals.html": {
-    "outbound_count": 43,
+    "outbound_count": 44,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/gk.html",
+      "/wiki/gk-tokens.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
       "/wiki/hard-fork-games.html",
@@ -27284,6 +27307,7 @@
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/gk.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -29056,11 +29080,12 @@
     ]
   },
   "/wiki/staking.html": {
-    "outbound_count": 11,
+    "outbound_count": 12,
     "inbound_count": 29,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
+      "/wiki/liquidity-pools.html",
       "/wiki/nbg-token.html",
       "/wiki/punk-token.html",
       "/wiki/tokenomics.html",
@@ -35663,7 +35688,7 @@
     ]
   },
   "/wiki/tokenomics.html": {
-    "outbound_count": 39,
+    "outbound_count": 40,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/altcoins.html",
@@ -35683,6 +35708,7 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/staking.html",
       "/wiki/stikfamwars.html",
+      "/wiki/tokens.html",
       "/wiki/whale-lords.html"
     ],
     "suggested_outbound": [
@@ -35719,12 +35745,19 @@
   },
   "/wiki/tokens.html": {
     "outbound_count": 1,
-    "inbound_count": 0,
+    "inbound_count": 6,
     "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": []
+    "inbound_from": [
+      "/wiki/altcoins.html",
+      "/wiki/defi.html",
+      "/wiki/exchanges.html",
+      "/wiki/memecoins.html",
+      "/wiki/tokenomics.html",
+      "/wiki/web3.html"
+    ]
   },
   "/wiki/trevor-fung.html": {
     "outbound_count": 24,
@@ -36316,7 +36349,7 @@
     ]
   },
   "/wiki/web3.html": {
-    "outbound_count": 46,
+    "outbound_count": 47,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/blockchain.html",
@@ -36333,6 +36366,7 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
+      "/wiki/tokens.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/wallets.html"
     ],

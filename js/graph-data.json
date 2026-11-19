@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-19T17:24:20.658Z",
-  "verified_at": "2026-11-19T17:24:20.658Z",
+  "generated_at": "2026-11-19T17:31:37.434Z",
+  "verified_at": "2026-11-19T17:31:37.434Z",
   "nodes": [
     {
       "id": "/",
@@ -451,7 +451,7 @@
       "title": "Altcoins",
       "url": "/wiki/altcoins.html",
       "category": "tokens",
-      "rank_score": 253,
+      "rank_score": 254,
       "authority_score": 24
     },
     {
@@ -507,7 +507,7 @@
       "title": "BEAR on XRPL",
       "url": "/wiki/bear-xrpl.html",
       "category": "tokens",
-      "rank_score": 186,
+      "rank_score": 187,
       "authority_score": 12
     },
     {
@@ -579,7 +579,7 @@
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
-      "rank_score": 291,
+      "rank_score": 289,
       "authority_score": 30
     },
     {
@@ -1539,7 +1539,7 @@
       "title": "$GK",
       "url": "/wiki/gk.html",
       "category": "tokens",
-      "rank_score": 256,
+      "rank_score": 254,
       "authority_score": 21
     },
     {
@@ -3067,7 +3067,7 @@
       "title": "Meme Coins",
       "url": "/wiki/memecoins.html",
       "category": "factions",
-      "rank_score": 265,
+      "rank_score": 266,
       "authority_score": 27
     },
     {
@@ -4275,7 +4275,7 @@
       "title": "Tokenomics",
       "url": "/wiki/tokenomics.html",
       "category": "factions",
-      "rank_score": 266,
+      "rank_score": 267,
       "authority_score": 27
     },
     {
@@ -4371,7 +4371,7 @@
       "title": "Web3",
       "url": "/wiki/web3.html",
       "category": "factions",
-      "rank_score": 267,
+      "rank_score": 268,
       "authority_score": 27
     },
     {
@@ -10187,20 +10187,20 @@
     {
       "source": "/wiki/589-xrpl.html",
       "target": "/wiki/666-xrpl.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/589-xrpl.html",
       "target": "/wiki/bear-xrpl.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/589-xrpl.html",
       "target": "/wiki/altcoins.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/589-xrpl.html",
@@ -10217,20 +10217,20 @@
     {
       "source": "/wiki/666-xrpl.html",
       "target": "/wiki/589-xrpl.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/666-xrpl.html",
       "target": "/wiki/bear-xrpl.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/666-xrpl.html",
       "target": "/wiki/altcoins.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/666-xrpl.html",
@@ -10463,20 +10463,20 @@
     {
       "source": "/wiki/altcoins.html",
       "target": "/wiki/589-xrpl.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/altcoins.html",
       "target": "/wiki/666-xrpl.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/altcoins.html",
       "target": "/wiki/bear-xrpl.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/altcoins.html",
@@ -10667,20 +10667,20 @@
     {
       "source": "/wiki/bear-xrpl.html",
       "target": "/wiki/589-xrpl.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/bear-xrpl.html",
       "target": "/wiki/666-xrpl.html",
-      "score": 65,
-      "weight": 0.65
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/bear-xrpl.html",
       "target": "/wiki/altcoins.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/bear-xrpl.html",
@@ -10787,7 +10787,7 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 133,
+      "score": 136,
       "weight": 1
     },
     {
@@ -10817,7 +10817,7 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 134,
+      "score": 137,
       "weight": 1
     },
     {
@@ -11434,15 +11434,15 @@
     },
     {
       "source": "/wiki/defi.html",
-      "target": "/wiki/the-finance-guild.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/exchanges.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/defi.html",
-      "target": "/wiki/exchanges.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/tokenomics.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/delicious-again-pete.html",
@@ -11657,8 +11657,14 @@
     {
       "source": "/wiki/exchanges.html",
       "target": "/wiki/tokenomics.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 98,
+      "weight": 0.98
+    },
+    {
+      "source": "/wiki/exchanges.html",
+      "target": "/wiki/web3.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/exchanges.html",
@@ -11668,19 +11674,13 @@
     },
     {
       "source": "/wiki/exchanges.html",
-      "target": "/wiki/web3.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/exchanges.html",
-      "target": "/wiki/pmsl.html",
+      "target": "/wiki/memecoins.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/exchanges.html",
-      "target": "/wiki/street-kingdoms.html",
+      "target": "/wiki/pmsl.html",
       "score": 84,
       "weight": 0.84
     },
@@ -20279,18 +20279,18 @@
     {
       "source": "/wiki/memecoins.html",
       "target": "/wiki/tokenomics.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/memecoins.html",
+      "target": "/wiki/exchanges.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/memecoins.html",
       "target": "/wiki/ngmi-chronicles.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/memecoins.html",
-      "target": "/wiki/pmsl.html",
       "score": 84,
       "weight": 0.84
     },
@@ -24797,8 +24797,14 @@
     {
       "source": "/wiki/tokenomics.html",
       "target": "/wiki/exchanges.html",
-      "score": 95,
-      "weight": 0.95
+      "score": 98,
+      "weight": 0.98
+    },
+    {
+      "source": "/wiki/tokenomics.html",
+      "target": "/wiki/memecoins.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -24808,19 +24814,13 @@
     },
     {
       "source": "/wiki/tokenomics.html",
-      "target": "/wiki/memecoins.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/web3.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/tokenomics.html",
       "target": "/wiki/pmsl.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/tokenomics.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 84,
       "weight": 0.84
     },
@@ -25156,6 +25156,12 @@
     },
     {
       "source": "/wiki/web3.html",
+      "target": "/wiki/exchanges.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/web3.html",
       "target": "/wiki/solana.html",
       "score": 86,
       "weight": 0.86
@@ -25168,19 +25174,13 @@
     },
     {
       "source": "/wiki/web3.html",
-      "target": "/wiki/exchanges.html",
+      "target": "/wiki/tokenomics.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/web3.html",
       "target": "/wiki/pmsl.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/web3.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 84,
       "weight": 0.84
     },

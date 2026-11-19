@@ -202,6 +202,7 @@
       "/wiki/666-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -226,6 +227,7 @@
       "/wiki/589-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -609,6 +611,7 @@
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
@@ -619,7 +622,8 @@
       "/wiki/ngmi-chronicles.html",
       "/wiki/paper-hands.html",
       "/wiki/solana.html",
-      "/wiki/tokenomics.html"
+      "/wiki/tokenomics.html",
+      "/wiki/tokens.html"
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -873,6 +877,7 @@
       "/wiki/666-xrpl.html",
       "/wiki/altcoins.html",
       "/wiki/bear-market-siege.html",
+      "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html"
     ],
@@ -1088,6 +1093,7 @@
   "/wiki/bitcoin-kids.html": {
     "existing_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -1169,6 +1175,7 @@
   "/wiki/bitcoin-x-kids.html": {
     "existing_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -2295,6 +2302,7 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/the-finance-guild.html",
       "/wiki/tokenomics.html",
+      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/wax-dexs-defi.html",
       "/wiki/web3.html",
@@ -2664,6 +2672,7 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
+      "/wiki/tokens.html",
       "/wiki/wallets.html",
       "/wiki/whale-lords.html"
     ],
@@ -17886,7 +17895,7 @@
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
+      "/wiki/blockchain-technology.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/graffiti-kings.html",
@@ -17900,6 +17909,7 @@
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub.html",
+      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
@@ -19998,7 +20008,8 @@
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/stikfamwars.html",
-      "/wiki/tokenomics.html"
+      "/wiki/tokenomics.html",
+      "/wiki/tokens.html"
     ],
     "suggested_links": [
       "/wiki/bear-market-siege.html",
@@ -20977,7 +20988,7 @@
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/gk.html",
+      "/wiki/gk-tokens.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
       "/wiki/hard-fork-games.html",
@@ -20993,6 +21004,7 @@
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/gk.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -22351,6 +22363,7 @@
     "existing_links": [
       "/wiki/crypto-moonboys.html",
       "/wiki/defi.html",
+      "/wiki/liquidity-pools.html",
       "/wiki/nbg-token.html",
       "/wiki/punk-token.html",
       "/wiki/tokenomics.html",
@@ -27872,6 +27885,7 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/staking.html",
       "/wiki/stikfamwars.html",
+      "/wiki/tokens.html",
       "/wiki/whale-lords.html"
     ],
     "suggested_links": [
@@ -28355,6 +28369,7 @@
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
+      "/wiki/tokens.html",
       "/wiki/wagmi-prophecy.html",
       "/wiki/wallets.html"
     ],
