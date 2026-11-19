@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-19T17:31:37.434Z",
-  "verified_at": "2026-11-19T17:31:37.434Z",
+  "generated_at": "2026-11-19T19:10:05.894Z",
+  "verified_at": "2026-11-19T19:10:05.894Z",
   "lite": true,
   "nodes": [
     {
@@ -750,21 +750,21 @@
       "weight": 1
     },
     {
+      "source": "/wiki/the-bitcoin-kid-army.html",
+      "target": "/wiki/bitcoin-kid-army.html",
+      "score": 135,
+      "weight": 1
+    },
+    {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
-      "score": 137,
+      "score": 134,
       "weight": 1
     },
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/bitcoin-x-kids.html",
-      "score": 136,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/bitcoin-kid-army.html",
-      "score": 135,
+      "score": 133,
       "weight": 1
     },
     {

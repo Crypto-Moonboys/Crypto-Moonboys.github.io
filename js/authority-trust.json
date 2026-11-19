@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-18T20:33:40.997Z",
+  "generated_at": "2026-11-19T19:07:51.122Z",
   "phase": "phase_5",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 533,
-    "avg_authority_score": 44,
+    "avg_authority_score": 45,
     "avg_trust_score": 57,
-    "high_authority_count": 121,
+    "high_authority_count": 124,
     "high_trust_count": 29,
     "narrative_present_count": 29
   },
@@ -16,11 +16,11 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 37,
+      "inbound_links": 41,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bitcoin-kids.html",
@@ -31,7 +31,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bitcoin-x-kids.html",
@@ -42,7 +42,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/block-topia.html",
@@ -53,7 +53,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/burn-to-earn.html",
@@ -64,51 +64,51 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/crypto-moonboys.html",
       "title": "Crypto Moonboys — The Story, Realms and Timeline",
       "authority_score": 100,
       "trust_score": 82,
-      "inbound_links": 435,
+      "inbound_links": 514,
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-concordance.html",
       "title": "Concordance of Broken Records",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 177,
+      "inbound_links": 180,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-faction-commentaries.html",
       "title": "Faction Commentaries on the First Witness",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 44,
+      "inbound_links": 47,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-forty-paths.html",
       "title": "The Forty Paths",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 41,
+      "inbound_links": 42,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-life-readings.html",
@@ -119,7 +119,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-master-chronology.html",
@@ -130,7 +130,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/games4punks-telegram.html",
@@ -141,7 +141,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
@@ -152,7 +152,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
@@ -163,7 +163,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
@@ -174,7 +174,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
@@ -185,7 +185,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
@@ -196,7 +196,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-nft-collection.html",
@@ -207,18 +207,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads.html",
       "title": "GKniftyHEADS",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 201,
+      "inbound_links": 202,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffpunks-24-7-radio.html",
@@ -229,7 +229,7 @@
       "entity_mentions": 4,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffpunks-reading-library.html",
@@ -240,7 +240,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffpunks.html",
@@ -251,18 +251,18 @@
       "entity_mentions": 3,
       "narrative_presence": true,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hard-fork-games.html",
       "title": "Hard Fork Games",
       "authority_score": 100,
       "trust_score": 82,
-      "inbound_links": 100,
+      "inbound_links": 104,
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hodl-warriors.html",
@@ -273,18 +273,18 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hodl-wars.html",
       "title": "HODL WARS",
       "authority_score": 100,
       "trust_score": 82,
-      "inbound_links": 95,
+      "inbound_links": 96,
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/midevilpunks.html",
@@ -295,18 +295,18 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/null-the-prophet.html",
       "title": "NULL THE PROPHET",
       "authority_score": 100,
       "trust_score": 82,
-      "inbound_links": 93,
+      "inbound_links": 95,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/pmsl.html",
@@ -317,7 +317,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/punk-token.html",
@@ -328,18 +328,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/queen-sarah-p-fly.html",
       "title": "Queen Sarah P-fly",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 37,
+      "inbound_links": 40,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/rave-relics.html",
@@ -350,18 +350,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/sacred-chain.html",
       "title": "The Sacred Chain",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 53,
+      "inbound_links": 54,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/stikfamwars.html",
@@ -372,7 +372,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-chain-scribes.html",
@@ -383,18 +383,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-finance-guild.html",
       "title": "The Finance Guild",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 38,
+      "inbound_links": 40,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-first-witness.html",
@@ -405,40 +405,40 @@
       "entity_mentions": 14,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-high-hats.html",
       "title": "The High Hats",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 34,
+      "inbound_links": 35,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-nice-easy-bois.html",
       "title": "The NICE &amp; EASY BOIS",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 38,
+      "inbound_links": 39,
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-princess.html",
       "title": "The Princess",
       "authority_score": 100,
       "trust_score": 57,
-      "inbound_links": 39,
+      "inbound_links": 40,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-whitewasher.html",
@@ -449,7 +449,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/triple-fork-event.html",
@@ -460,7 +460,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-source-register.html",
@@ -471,7 +471,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nbg-token.html",
@@ -482,7 +482,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hodl-x-warriors.html",
@@ -493,7 +493,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nbgx-token.html",
@@ -504,7 +504,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/staking.html",
@@ -515,18 +515,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/thorne-the-architect.html",
       "title": "Thorne The Architect",
-      "authority_score": 92,
+      "authority_score": 94,
       "trust_score": 57,
-      "inbound_links": 28,
+      "inbound_links": 29,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-justice-mercy-restitution.html",
@@ -537,7 +537,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
@@ -548,7 +548,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-block-topia-reading.html",
@@ -559,7 +559,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/jodie-zoom-2000.html",
+      "title": "Jodie ZOOM 2000",
+      "authority_score": 81,
+      "trust_score": 57,
+      "inbound_links": 24,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-crypto-moongirls.html",
@@ -570,7 +581,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
@@ -581,7 +592,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
@@ -592,7 +603,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bitcoin-kid-army.html",
@@ -603,7 +614,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "authority_score": 75,
+      "trust_score": 57,
+      "inbound_links": 20,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/genesis-kernel.html",
@@ -614,7 +636,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bitcoin.html",
@@ -625,7 +647,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffiti-kings.html",
@@ -636,18 +658,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/jodie-zoom-2000.html",
-      "title": "Jodie ZOOM 2000",
-      "authority_score": 73,
-      "trust_score": 57,
-      "inbound_links": 20,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
@@ -658,7 +669,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
@@ -669,18 +680,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "authority_score": 71,
-      "trust_score": 57,
-      "inbound_links": 18,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-book-3-the-keeper.html",
@@ -691,7 +691,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-blockchain-belle-783392.html",
@@ -702,7 +702,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
@@ -713,7 +713,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
@@ -724,7 +724,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls",
+      "authority_score": 68,
+      "trust_score": 57,
+      "inbound_links": 15,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bit-boss-783395.html",
@@ -735,7 +746,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffiti-nexus.html",
@@ -746,18 +757,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-allcity-bulls.html",
-      "title": "The AllCity Bulls",
+      "url": "/wiki/first-witness-book-5-the-chain.html",
+      "title": "Book V — The Chain",
       "authority_score": 66,
       "trust_score": 57,
-      "inbound_links": 14,
+      "inbound_links": 13,
       "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-bitcoin-kid-army.html",
@@ -768,7 +779,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/diamond-hands.html",
@@ -779,18 +790,29 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/first-witness-book-5-the-chain.html",
-      "title": "Book V — The Chain",
+      "url": "/wiki/the-squeaky-pinks.html",
+      "title": "The Squeaky Pinks",
       "authority_score": 65,
       "trust_score": 57,
-      "inbound_links": 13,
+      "inbound_links": 14,
       "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "category": "factions",
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/defi.html",
+      "title": "DeFi (Decentralised Finance)",
+      "authority_score": 64,
+      "trust_score": 57,
+      "inbound_links": 16,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-nomad-bears.html",
@@ -801,7 +823,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-long-transmission.html",
+      "title": "The Long Transmission",
+      "authority_score": 63,
+      "trust_score": 57,
+      "inbound_links": 10,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -812,7 +845,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
@@ -823,7 +856,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
@@ -834,7 +867,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
@@ -845,29 +878,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/defi.html",
-      "title": "DeFi (Decentralised Finance)",
-      "authority_score": 62,
-      "trust_score": 57,
-      "inbound_links": 15,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-long-transmission.html",
-      "title": "The Long Transmission",
-      "authority_score": 62,
-      "trust_score": 57,
-      "inbound_links": 10,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-book-7-the-hold.html",
@@ -878,7 +889,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-hodl-doctrine.html",
@@ -889,18 +900,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-squeaky-pinks.html",
-      "title": "The Squeaky Pinks",
-      "authority_score": 61,
-      "trust_score": 57,
-      "inbound_links": 12,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
@@ -911,7 +911,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "authority_score": 59,
+      "trust_score": 57,
+      "inbound_links": 12,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-heresies-corruptions-abuses.html",
@@ -922,7 +933,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/fomo-plague.html",
@@ -933,7 +944,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
@@ -944,29 +955,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "authority_score": 57,
-      "trust_score": 57,
-      "inbound_links": 11,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-bitcoin-witness.html",
       "title": "The Bitcoin Witness",
-      "authority_score": 57,
+      "authority_score": 58,
       "trust_score": 57,
       "inbound_links": 9,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/house-of-rackinsats.html",
+      "title": "House of Rackinsats",
+      "authority_score": 58,
+      "trust_score": 57,
+      "inbound_links": 13,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
@@ -977,7 +988,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
@@ -988,7 +999,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
@@ -999,7 +1010,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
@@ -1010,7 +1021,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "authority_score": 57,
+      "trust_score": 57,
+      "inbound_links": 10,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
@@ -1021,7 +1043,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-sarah-pfly-784349.html",
@@ -1032,7 +1054,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
@@ -1043,18 +1065,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/house-of-rackinsats.html",
-      "title": "House of Rackinsats",
+      "url": "/wiki/the-blockchain-furies.html",
+      "title": "The BLOCKCHAIN FURIES",
       "authority_score": 56,
       "trust_score": 57,
-      "inbound_links": 12,
-      "entity_mentions": 1,
+      "inbound_links": 10,
+      "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wax-blockchain.html",
@@ -1065,7 +1087,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
@@ -1076,7 +1098,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-child-of-fire.html",
@@ -1087,7 +1109,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-questions-for-the-living.html",
@@ -1098,7 +1120,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
@@ -1109,7 +1131,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
@@ -1120,18 +1142,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS",
+      "url": "/wiki/whale-lords.html",
+      "title": "The Whale Lords",
       "authority_score": 55,
       "trust_score": 57,
       "inbound_links": 9,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/charlie-buster.html",
+      "title": "charlie-buster",
+      "authority_score": 54,
+      "trust_score": 57,
+      "inbound_links": 12,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "misc",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-faction-ritual-variations.html",
@@ -1142,7 +1175,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
@@ -1153,7 +1186,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
@@ -1164,18 +1197,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-blockchain-furies.html",
-      "title": "The BLOCKCHAIN FURIES",
+      "url": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS",
       "authority_score": 54,
       "trust_score": 57,
       "inbound_links": 9,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-symbols-marks-sacred-design.html",
@@ -1186,29 +1219,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/whale-lords.html",
-      "title": "The Whale Lords",
-      "authority_score": 53,
-      "trust_score": 57,
-      "inbound_links": 8,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/charlie-buster.html",
-      "title": "charlie-buster",
-      "authority_score": 52,
-      "trust_score": 57,
-      "inbound_links": 11,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "misc",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/ethereum.html",
@@ -1219,7 +1230,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-great-concord-2030.html",
@@ -1230,7 +1241,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
@@ -1241,7 +1252,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/ngmi-chronicles.html",
@@ -1252,7 +1263,18 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-code-alchemists.html",
+      "title": "The CODE ALCHEMISTS",
+      "authority_score": 52,
+      "trust_score": 57,
+      "inbound_links": 8,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/exchanges.html",
@@ -1263,7 +1285,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-book-4-the-wall.html",
+      "title": "Book IV — The Wall",
+      "authority_score": 51,
+      "trust_score": 57,
+      "inbound_links": 6,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
@@ -1274,18 +1307,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-book-4-the-wall.html",
-      "title": "Book IV — The Wall",
-      "authority_score": 50,
-      "trust_score": 57,
-      "inbound_links": 6,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-book-9-the-unwritten-block.html",
@@ -1296,7 +1318,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-cipher-seraph-783413.html",
@@ -1307,7 +1329,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-coin-conqueress-783412.html",
@@ -1318,7 +1340,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
@@ -1329,18 +1351,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-rugpull-miners.html",
-      "title": "The RUGPULL MINERS",
+      "url": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS",
       "authority_score": 50,
       "trust_score": 57,
       "inbound_links": 7,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS",
+      "authority_score": 50,
+      "trust_score": 57,
+      "inbound_links": 7,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-null-erasure.html",
@@ -1351,7 +1384,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-triple-fork-chainfire.html",
+      "title": "The Triple Fork and Chainfire",
+      "authority_score": 49,
+      "trust_score": 57,
+      "inbound_links": 4,
+      "entity_mentions": 3,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
@@ -1362,7 +1406,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
@@ -1373,7 +1417,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-pinky-stains-776119.html",
@@ -1384,7 +1428,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
@@ -1395,7 +1439,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/satoshi-scroll.html",
@@ -1406,7 +1450,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wallets.html",
@@ -1417,7 +1461,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/agent-sam.html",
+      "title": "Agent SAM",
+      "authority_score": 48,
+      "trust_score": 57,
+      "inbound_links": 10,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
@@ -1428,18 +1483,40 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/first-witness-triple-fork-chainfire.html",
-      "title": "The Triple Fork and Chainfire",
+      "url": "/wiki/first-witness-sacred-fork.html",
+      "title": "The Sacred Fork",
       "authority_score": 48,
       "trust_score": 57,
-      "inbound_links": 4,
-      "entity_mentions": 3,
+      "inbound_links": 5,
+      "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-street-kingdoms-reading.html",
+      "title": "Street Kingdoms and the Living Reading",
+      "authority_score": 48,
+      "trust_score": 57,
+      "inbound_links": 5,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-world-chain-error.html",
+      "title": "The World Chain Error",
+      "authority_score": 48,
+      "trust_score": 57,
+      "inbound_links": 5,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
@@ -1450,7 +1527,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
@@ -1461,7 +1538,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
@@ -1472,29 +1549,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-code-alchemists.html",
-      "title": "The CODE ALCHEMISTS",
+      "url": "/wiki/the-information-mercenaries.html",
+      "title": "The INFORMATION MERCENARIES",
       "authority_score": 48,
       "trust_score": 57,
       "inbound_links": 6,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-ducky-boys.html",
-      "title": "The DUCKY BOYS",
-      "authority_score": 48,
-      "trust_score": 57,
-      "inbound_links": 6,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/thera-9.html",
@@ -1505,7 +1571,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wax-dexs-defi.html",
@@ -1516,7 +1582,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/elder-codex-7.html",
+      "title": "Elder Codex-7",
+      "authority_score": 47,
+      "trust_score": 57,
+      "inbound_links": 7,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-book-8-the-fire.html",
@@ -1527,40 +1604,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-sacred-fork.html",
-      "title": "The Sacred Fork",
-      "authority_score": 47,
-      "trust_score": 57,
-      "inbound_links": 5,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-street-kingdoms-reading.html",
-      "title": "Street Kingdoms and the Living Reading",
-      "authority_score": 47,
-      "trust_score": 57,
-      "inbound_links": 5,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-world-chain-error.html",
-      "title": "The World Chain Error",
-      "authority_score": 47,
-      "trust_score": 57,
-      "inbound_links": 5,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
@@ -1571,7 +1615,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
@@ -1582,7 +1626,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/lady-ink.html",
@@ -1593,7 +1637,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN",
+      "authority_score": 47,
+      "trust_score": 57,
+      "inbound_links": 6,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-book-6-the-fork.html",
@@ -1604,7 +1659,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-money-debt-honest-scales.html",
@@ -1615,7 +1670,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-prisons-punishment-return.html",
@@ -1626,7 +1681,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-776146.html",
@@ -1637,18 +1692,29 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-moonlords.html",
-      "title": "The MOONLORDS",
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS",
+      "authority_score": 46,
+      "trust_score": 82,
+      "inbound_links": 5,
+      "entity_mentions": 2,
+      "narrative_presence": true,
+      "category": "factions",
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-og-pixel-saints.html",
+      "title": "The OG PIXEL SAINTS",
       "authority_score": 46,
       "trust_score": 57,
       "inbound_links": 5,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wagmi-prophecy.html",
@@ -1659,18 +1725,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/elder-codex-7.html",
-      "title": "Elder Codex-7",
+      "url": "/wiki/first-witness-book-2-the-common-blood.html",
+      "title": "Book II — The Common Blood",
       "authority_score": 45,
       "trust_score": 57,
-      "inbound_links": 6,
-      "entity_mentions": 1,
+      "inbound_links": 3,
+      "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-glossary.html",
@@ -1681,7 +1747,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-sects-schools-schisms.html",
@@ -1692,7 +1758,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-war-defence-peacekeeping.html",
@@ -1703,7 +1769,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
@@ -1714,7 +1780,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
@@ -1725,7 +1791,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/great-consensus.html",
+      "title": "The Great Consensus",
+      "authority_score": 45,
+      "trust_score": 57,
+      "inbound_links": 8,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/memecoins.html",
@@ -1736,7 +1813,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/moon-mission.html",
@@ -1747,7 +1824,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/samaelexe.html",
@@ -1758,7 +1835,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/spraycode-writcode-mechanics.html",
@@ -1769,29 +1846,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-shard-mothers-of-manhattan.html",
-      "title": "The SHARD MOTHERS of MANHATTAN",
+      "url": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS",
       "authority_score": 45,
       "trust_score": 57,
       "inbound_links": 5,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/first-witness-book-2-the-common-blood.html",
-      "title": "Book II — The Common Blood",
-      "authority_score": 44,
+      "url": "/wiki/the-gasless-ghosts.html",
+      "title": "The GASLESS GHOSTS",
+      "authority_score": 45,
       "trust_score": 57,
-      "inbound_links": 3,
+      "inbound_links": 5,
       "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
@@ -1802,7 +1879,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
@@ -1813,7 +1890,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
@@ -1824,18 +1901,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-og-pixel-saints.html",
-      "title": "The OG PIXEL SAINTS",
+      "url": "/wiki/kael-voss.html",
+      "title": "Kael Voss",
+      "authority_score": 44,
+      "trust_score": 57,
+      "inbound_links": 9,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-bally-boys.html",
+      "title": "The BALLY BOYS",
       "authority_score": 44,
       "trust_score": 57,
       "inbound_links": 4,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/web3.html",
@@ -1846,7 +1934,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/xrp-kids.html",
@@ -1857,7 +1945,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-forever-darren-cullen-776124.html",
@@ -1868,7 +1956,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
@@ -1879,7 +1967,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
@@ -1890,7 +1978,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
@@ -1901,7 +1989,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
@@ -1912,7 +2000,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffpunks-ecosystem.html",
@@ -1923,7 +2011,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nbg.html",
@@ -1934,7 +2022,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/rug-pull-wars.html",
@@ -1945,18 +2033,29 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-gasless-ghosts.html",
-      "title": "The GASLESS GHOSTS",
+      "url": "/wiki/the-blockstars.html",
+      "title": "The BLOCKSTARS",
       "authority_score": 43,
       "trust_score": 57,
       "inbound_links": 4,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-tuskon-ogs.html",
+      "title": "The TUSKON OGS",
+      "authority_score": 43,
+      "trust_score": 57,
+      "inbound_links": 4,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/1m-free-nfts-program.html",
@@ -1967,7 +2066,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/altcoins.html",
@@ -1978,7 +2077,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bone-idol-ink.html",
@@ -1989,7 +2088,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-humour-satire-sacred-mockery.html",
@@ -2000,7 +2099,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-leadership-councils-succession.html",
@@ -2011,7 +2110,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-parables.html",
@@ -2022,7 +2121,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-work-craft-service.html",
@@ -2033,18 +2132,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/kael-voss.html",
-      "title": "Kael Voss",
-      "authority_score": 42,
-      "trust_score": 57,
-      "inbound_links": 8,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-citadel-of-optimization-a-deep.html",
@@ -2055,7 +2143,18 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "title": "The CRYPTO STONED BOYS",
+      "authority_score": 42,
+      "trust_score": 57,
+      "inbound_links": 2,
+      "entity_mentions": 3,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-great-dip.html",
@@ -2066,29 +2165,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-hard-fork-rockers.html",
-      "title": "The HARD FORK ROCKERS",
-      "authority_score": 42,
-      "trust_score": 82,
-      "inbound_links": 3,
-      "entity_mentions": 2,
-      "narrative_presence": true,
-      "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-information-mercenaries.html",
-      "title": "The INFORMATION MERCENARIES",
-      "authority_score": 42,
-      "trust_score": 57,
-      "inbound_links": 3,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/tokenomics.html",
@@ -2099,7 +2176,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bear-market-siege.html",
@@ -2110,7 +2187,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-family-children-elders.html",
@@ -2121,7 +2198,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-mediation-witness-circles.html",
@@ -2132,7 +2209,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-songs-chants-responses.html",
@@ -2143,7 +2220,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
@@ -2154,7 +2231,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-token-temptress-783401.html",
@@ -2165,7 +2242,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/iris-7.html",
@@ -2176,7 +2253,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nfts.html",
@@ -2187,7 +2264,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/paper-hands.html",
@@ -2198,7 +2275,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "title": "Squeaky Pinks Enforcers",
+      "authority_score": 41,
+      "trust_score": 57,
+      "inbound_links": 6,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/sylas-the-unbroken.html",
@@ -2209,18 +2297,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-blockstars.html",
-      "title": "The BLOCKSTARS",
+      "url": "/wiki/the-aztec-raiders.html",
+      "title": "The AZTEC RAIDERS",
       "authority_score": 41,
       "trust_score": 57,
       "inbound_links": 3,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-chronicles-of-the-whale-lords.html",
@@ -2231,18 +2319,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-evm-punks.html",
-      "title": "The EVM PUNKS",
-      "authority_score": 41,
-      "trust_score": 57,
-      "inbound_links": 3,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-infiltration-of-block-topia-part.html",
@@ -2253,18 +2330,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-tuskon-ogs.html",
-      "title": "The TUSKON OGS",
-      "authority_score": 41,
-      "trust_score": 57,
-      "inbound_links": 3,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/waxp.html",
@@ -2275,18 +2341,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/agent-sam.html",
-      "title": "Agent SAM",
-      "authority_score": 40,
-      "trust_score": 57,
-      "inbound_links": 6,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/darren-cullen.html",
@@ -2297,7 +2352,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "misc",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-apocrypha-disputed-passages.html",
@@ -2308,7 +2363,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-pride-temptation-false-idols.html",
+      "title": "Pride, Temptation and False Idols",
+      "authority_score": 40,
+      "trust_score": 57,
+      "inbound_links": 2,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-vandal-776147.html",
@@ -2319,7 +2385,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -2330,7 +2396,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/lfgk.html",
@@ -2341,18 +2407,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/the-bally-boys.html",
-      "title": "The BALLY BOYS",
+      "url": "/wiki/rune-tag.html",
+      "title": "Rune Tag",
       "authority_score": 40,
       "trust_score": 57,
-      "inbound_links": 2,
-      "entity_mentions": 2,
+      "inbound_links": 4,
+      "entity_mentions": 1,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "category": "characters",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-crypto-protocol-the-gkniftyheads-chronicle.html",
@@ -2363,18 +2429,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-crypto-stoned-boys.html",
-      "title": "The CRYPTO STONED BOYS",
-      "authority_score": 40,
-      "trust_score": 57,
-      "inbound_links": 1,
-      "entity_mentions": 3,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/veyra-nyx.html",
@@ -2385,7 +2440,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "title": "Aleema (Child of the Shard)",
+      "authority_score": 39,
+      "trust_score": 57,
+      "inbound_links": 5,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/atomichub.html",
@@ -2396,7 +2462,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/block-node-defenders.html",
@@ -2407,7 +2473,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-birth-naming-coming-of-age.html",
@@ -2418,7 +2484,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-calendar-feasts-remembrance.html",
@@ -2429,7 +2495,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-censorship-offence-public-marks.html",
@@ -2440,7 +2506,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
+      "authority_score": 39,
+      "trust_score": 57,
+      "inbound_links": 4,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-death-grief-remembrance.html",
@@ -2451,7 +2528,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-dreams-omens-coincidence.html",
@@ -2462,7 +2539,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-language-translation-sacred-words.html",
@@ -2473,7 +2550,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-libraries-architecture-archive-houses.html",
@@ -2484,18 +2561,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-pride-temptation-false-idols.html",
-      "title": "Pride, Temptation and False Idols",
-      "authority_score": 39,
-      "trust_score": 57,
-      "inbound_links": 2,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -2506,7 +2572,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-cryptofrank-784266.html",
@@ -2517,7 +2583,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
@@ -2528,7 +2594,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
@@ -2539,7 +2605,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
@@ -2550,7 +2616,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
@@ -2561,7 +2627,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
@@ -2572,7 +2638,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-stencil-siren-783296.html",
@@ -2583,7 +2649,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-tsunami-btc-titan-783760.html",
@@ -2594,7 +2660,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/satorebel.html",
+      "title": "SatoRebel",
+      "authority_score": 39,
+      "trust_score": 57,
+      "inbound_links": 4,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/solana.html",
@@ -2605,29 +2682,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/squeaky-pinks-enforcers.html",
-      "title": "Squeaky Pinks Enforcers",
-      "authority_score": 39,
-      "trust_score": 57,
-      "inbound_links": 5,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/the-aztec-raiders.html",
-      "title": "The AZTEC RAIDERS",
-      "authority_score": 39,
-      "trust_score": 57,
-      "inbound_links": 2,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-crypto-moonboys-wiki-system.html",
@@ -2638,7 +2693,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-gkniftyheads-the-immortal-architects.html",
@@ -2649,18 +2704,18 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
+      "url": "/wiki/first-witness-daily-practices-rituals.html",
+      "title": "Daily Practices and Rituals",
       "authority_score": 38,
       "trust_score": 57,
-      "inbound_links": 4,
-      "entity_mentions": 1,
+      "inbound_links": 1,
+      "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-education-schools-apprenticeship.html",
@@ -2671,7 +2726,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-healing-illness-disability-care.html",
@@ -2682,7 +2737,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/forkborn-collective.html",
@@ -2693,7 +2748,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitman-784220.html",
@@ -2704,7 +2759,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hodlmoonboys-nft-collection.html",
@@ -2715,7 +2770,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "misc",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/m1ntr-k1ll.html",
@@ -2726,18 +2781,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/rune-tag.html",
-      "title": "Rune Tag",
-      "authority_score": 38,
-      "trust_score": 57,
-      "inbound_links": 3,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/seeding-rights.html",
@@ -2748,7 +2792,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-28th-century-began-with-godlike.html",
@@ -2759,7 +2803,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-artists-awakening-the-call-from.html",
@@ -2770,7 +2814,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-bitcoin-kid-army-the-1-rebels.html",
@@ -2781,7 +2825,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -2792,7 +2836,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-chronicle-of-the-cipher-lord-a-satoshi-testament.html",
@@ -2803,7 +2847,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-crypto-moonboy-bible-the-eternal.html",
@@ -2814,7 +2858,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-great-reset-and-the-global-grid.html",
@@ -2825,7 +2869,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
@@ -2836,7 +2880,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-master-codex-the-triple-tier.html",
@@ -2847,7 +2891,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-protocol-of-ascension-why-the.html",
@@ -2858,7 +2902,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-sacred-expansion-the-great-consensus.html",
@@ -2869,18 +2913,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/aleema-child-of-the-shard.html",
-      "title": "Aleema (Child of the Shard)",
-      "authority_score": 37,
-      "trust_score": 57,
-      "inbound_links": 4,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-ageing-retirement-elderhood.html",
@@ -2891,7 +2924,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
@@ -2902,7 +2935,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-chain-archaeology-forensics.html",
@@ -2913,7 +2946,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-children-first-lessons.html",
@@ -2924,18 +2957,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-daily-practices-rituals.html",
-      "title": "Daily Practices and Rituals",
-      "authority_score": 37,
-      "trust_score": 57,
-      "inbound_links": 1,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-digital-inheritance-after-death.html",
@@ -2946,7 +2968,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-food-hospitality-common-table.html",
@@ -2957,7 +2979,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-intimacy-sexuality-privacy.html",
@@ -2968,7 +2990,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-marriage-partnership-adoption.html",
@@ -2979,7 +3001,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-proverbs-street-sayings.html",
@@ -2990,7 +3012,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
@@ -3001,7 +3023,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-silence-solitude-attention.html",
@@ -3012,7 +3034,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/frequency-of-the-fallen.html",
@@ -3023,7 +3045,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-binary-blitzer-784277.html",
@@ -3034,7 +3056,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
@@ -3045,7 +3067,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-fume-fury-783298.html",
@@ -3056,7 +3078,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-inked-fury-783258.html",
@@ -3067,7 +3089,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
@@ -3078,7 +3100,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
@@ -3089,7 +3111,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
@@ -3100,7 +3122,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-scribe-serpent-783260.html",
@@ -3111,7 +3133,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
@@ -3122,7 +3144,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-waxp-banshee-783409.html",
@@ -3133,7 +3155,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-waxp-banshee-783410.html",
@@ -3144,7 +3166,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
@@ -3155,18 +3177,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/great-consensus.html",
-      "title": "The Great Consensus",
-      "authority_score": 37,
-      "trust_score": 57,
-      "inbound_links": 4,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hodl-warriors-the-calling.html",
@@ -3177,7 +3188,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/level-9-cosmological-overdrive-metaphysics.html",
@@ -3188,7 +3199,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/neftyblocks.html",
@@ -3199,7 +3210,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/spirit-borns.html",
@@ -3210,7 +3221,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-eternal-pulse-the-war-that-forged.html",
@@ -3221,7 +3232,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-graffpunks-digital-renegades.html",
@@ -3232,7 +3243,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-nice-and-easy-bois-the-digital.html",
@@ -3243,7 +3254,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-null-protocol-collapse-of-digital.html",
@@ -3254,7 +3265,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-og-pixel-saints-warriors-of-light.html",
@@ -3265,7 +3276,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-sacred-chain-ontology-non-euclidean.html",
@@ -3276,7 +3287,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-signal-from-3008.html",
@@ -3287,7 +3298,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-whisper-codex-tales-of-the-darkside.html",
@@ -3298,7 +3309,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/whisper-codex.html",
+      "title": "The Whisper Codex",
+      "authority_score": 37,
+      "trust_score": 57,
+      "inbound_links": 5,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/billy-the-goat-kid.html",
@@ -3309,7 +3331,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-beauty-luxury-modesty-status.html",
+      "title": "Beauty, Luxury, Modesty and Status",
+      "authority_score": 36,
+      "trust_score": 57,
+      "inbound_links": 1,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-confession-apology-reconciliation.html",
@@ -3320,7 +3353,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-land-water-stewardship.html",
@@ -3331,7 +3364,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/first-witness-migration-refuge-exile-borders.html",
+      "title": "Migration, Refuge, Exile and Borders",
+      "authority_score": 36,
+      "trust_score": 57,
+      "inbound_links": 1,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-music-dance-performance.html",
@@ -3342,7 +3386,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-oaths-promises-vows.html",
@@ -3353,7 +3397,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/genesis-spray.html",
@@ -3364,7 +3408,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitman-784229.html",
@@ -3375,7 +3419,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-defi-dame-783400.html",
@@ -3386,7 +3430,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
@@ -3397,7 +3441,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
@@ -3408,7 +3452,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/grit.html",
@@ -3419,7 +3463,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-allcity-bulls-the-hyper-competitive.html",
@@ -3430,7 +3474,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-bally-boys-digital-entrepreneurs.html",
@@ -3441,7 +3485,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-blockchain-furies-digital-vigilantes.html",
@@ -3452,7 +3496,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-blockstars-digital-celebrities.html",
@@ -3463,7 +3507,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-chain-scribes-the-stoic-archivists.html",
@@ -3474,7 +3518,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-crypto-moongirls-cosmic-dreamers.html",
@@ -3485,7 +3529,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-crypto-stoned-boys-digital-philosophers.html",
@@ -3496,7 +3540,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-ducky-boys-the-digital-fixers.html",
@@ -3507,7 +3551,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-evm-punks-aggressive-digital.html",
@@ -3518,7 +3562,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-finance-guild-the-digital-ledger.html",
@@ -3529,7 +3573,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
@@ -3540,7 +3584,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-gasless-ghosts-spies-and-assassins.html",
@@ -3551,7 +3595,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-gk-protocol-the-eastern-hemisphere-is-kool.html",
@@ -3562,7 +3606,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-gkniftyheads-manifesto-this-is-your-early-warning.html",
@@ -3573,7 +3617,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-high-hats-the-digital-aristocrats.html",
@@ -3584,7 +3628,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-hodl-warriors-the-protocol-of.html",
@@ -3595,7 +3639,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-information-mercenaries-the-digital.html",
@@ -3606,7 +3650,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-nomad-bears-solitude-in-the-digital.html",
@@ -3617,7 +3661,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-rugpull-miners-digital-parasites.html",
@@ -3628,7 +3672,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-salvagers-the-digital-logisticians.html",
@@ -3639,7 +3683,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-shard-mothers-of-manhattan-the.html",
@@ -3650,7 +3694,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-tuskon-ogs-the-digital-loyalists.html",
@@ -3661,7 +3705,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wax-nft-marketplaces.html",
@@ -3672,7 +3716,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wuffi.html",
@@ -3683,7 +3727,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/croydon-tower-blocks.html",
+      "title": "Croydon Tower Blocks",
+      "authority_score": 35,
+      "trust_score": 57,
+      "inbound_links": 4,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/delicious-again-pete.html",
@@ -3694,18 +3749,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "misc",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-beauty-luxury-modesty-status.html",
-      "title": "Beauty, Luxury, Modesty and Status",
-      "authority_score": 35,
-      "trust_score": 57,
-      "inbound_links": 1,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-charity-mutual-aid-dependence.html",
@@ -3716,7 +3760,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-disaster-famine-mutual-aid.html",
@@ -3727,7 +3771,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-dual-use-tools-weapons.html",
@@ -3738,18 +3782,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/first-witness-migration-refuge-exile-borders.html",
-      "title": "Migration, Refuge, Exile and Borders",
-      "authority_score": 35,
-      "trust_score": 57,
-      "inbound_links": 1,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
@@ -3760,7 +3793,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gang-signs.html",
@@ -3771,7 +3804,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-present-world-war-3-the-blockchain-uprising-this-isnt-a-drill.html",
@@ -3782,7 +3815,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-satoshi-knight-784264.html",
@@ -3793,7 +3826,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-token-tycooness-783405.html",
@@ -3804,7 +3837,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
@@ -3815,7 +3848,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffiti-themed-substack-publication.html",
@@ -3826,7 +3859,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffpunks-collection.html",
@@ -3837,7 +3870,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/massive-lore-discovered-this-changes.html",
@@ -3848,7 +3881,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/mega-white-paper-the-gk-brain.html",
@@ -3859,7 +3892,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/metaverse-battles.html",
@@ -3870,7 +3903,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/moonboy-bible-entry-agent-sam.html",
@@ -3881,7 +3914,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/pyralith.html",
@@ -3892,7 +3925,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-aztec-raiders-the-digital-conquerors.html",
@@ -3903,7 +3936,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
@@ -3914,7 +3947,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-hard-fork-rockers-digital-revolutionaries.html",
@@ -3925,7 +3958,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-moonlords-the-corruptors-the.html",
@@ -3936,7 +3969,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-squeaky-pinks-the-digital-enforcers.html",
@@ -3947,18 +3980,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/whisper-codex.html",
-      "title": "The Whisper Codex",
-      "authority_score": 35,
-      "trust_score": 57,
-      "inbound_links": 4,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/xrp-ledger.html",
@@ -3969,7 +3991,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/dream-sovereign.html",
+      "title": "Dream Sovereign",
+      "authority_score": 34,
+      "trust_score": 57,
+      "inbound_links": 3,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "concepts",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-addiction-intoxication-compulsion.html",
@@ -3980,7 +4013,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/forklord-you.html",
@@ -3991,7 +4024,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/gk.html",
+      "title": "$GK",
+      "authority_score": 34,
+      "trust_score": 82,
+      "inbound_links": 3,
+      "entity_mentions": 1,
+      "narrative_presence": true,
+      "category": "tokens",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bit-skull-784280.html",
@@ -4002,7 +4046,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -4013,7 +4057,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-chroma-kid-783237.html",
@@ -4024,7 +4068,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-chroma-kid-783247.html",
@@ -4035,7 +4079,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-daring-doodle-783300.html",
@@ -4046,7 +4090,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-defi-dame-788015.html",
@@ -4057,7 +4101,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
@@ -4068,7 +4112,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
@@ -4079,7 +4123,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-rebel-riff-783269.html",
@@ -4090,7 +4134,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-shadow-streak-783245.html",
@@ -4101,7 +4145,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/grit42.html",
@@ -4112,7 +4156,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/harrison-rift.html",
@@ -4123,7 +4167,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/moonboy-bible-entry-denise-aethelgard.html",
@@ -4134,7 +4178,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nifty-crowns.html",
@@ -4145,7 +4189,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
+    },
+    {
+      "url": "/wiki/sister-halcyon.html",
+      "title": "Sister Halcyon",
+      "authority_score": 34,
+      "trust_score": 57,
+      "inbound_links": 1,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-gk-grid-warfare-protocols-a-gkniftyheads.html",
@@ -4156,7 +4211,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-graffpunks-rise.html",
@@ -4167,7 +4222,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/whale-lords-moonboys-war-arc.html",
@@ -4178,7 +4233,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/yo-listen-up-this-is-just-phase-one.html",
@@ -4189,7 +4244,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/40-year-old-graffiti-movement-launches.html",
@@ -4200,7 +4255,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/alfie-the-bitcoin-kid-blaze-reading.html",
@@ -4211,7 +4266,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/ava-chen.html",
@@ -4222,18 +4277,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/croydon-tower-blocks.html",
-      "title": "Croydon Tower Blocks",
-      "authority_score": 33,
-      "trust_score": 57,
-      "inbound_links": 3,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
@@ -4244,7 +4288,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/cryptographic-tactical-incident-report.html",
@@ -4255,7 +4299,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/defi-mining.html",
@@ -4266,7 +4310,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/dragan-volkov.html",
@@ -4277,7 +4321,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/fgl-token.html",
@@ -4288,7 +4332,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/first-witness-truth-commissions-after-conflict.html",
@@ -4299,7 +4343,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-chromatic-crusader-783301.html",
@@ -4310,7 +4354,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -4321,7 +4365,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
@@ -4332,7 +4376,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
@@ -4343,7 +4387,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/head-tags.html",
@@ -4354,7 +4398,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/in-the-year-3008-truth-became-encrypted.html",
@@ -4365,7 +4409,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/journal-entry-jodie-zoom-2000-the-games.html",
@@ -4376,7 +4420,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/loopfiend.html",
@@ -4387,7 +4431,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/lorewars-white-paper-the-signal-is.html",
@@ -4398,7 +4442,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/maidstone-base.html",
@@ -4409,7 +4453,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nft-blends-portal.html",
@@ -4420,7 +4464,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/pmsl-token.html",
@@ -4431,7 +4475,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/potential-crypto-moonboys-game-trilogy.html",
@@ -4442,7 +4486,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-code-alchemists-the-technical.html",
@@ -4453,7 +4497,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html",
@@ -4464,7 +4508,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/algorithmic-sanitation-inside-the.html",
@@ -4475,7 +4519,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/alien-worlds-tlm.html",
@@ -4486,7 +4530,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/canvas-clash.html",
@@ -4497,7 +4541,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/collect-free-nft-crypto-coin-phigital.html",
@@ -4508,7 +4552,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/crypto-moonboys-is-deliberately-a.html",
@@ -4519,7 +4563,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/crypto-moonboys-universe-comprehensive.html",
@@ -4530,18 +4574,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/dream-sovereign.html",
-      "title": "Dream Sovereign",
-      "authority_score": 32,
-      "trust_score": 57,
-      "inbound_links": 2,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/forksplit.html",
@@ -4552,7 +4585,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gk-factions-to-collect-and-hodl.html",
@@ -4563,18 +4596,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/gk.html",
-      "title": "$GK",
-      "authority_score": 32,
-      "trust_score": 82,
-      "inbound_links": 2,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
@@ -4585,7 +4607,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-raze-rebel-783250.html",
@@ -4596,7 +4618,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-slickshot-783235.html",
@@ -4607,7 +4629,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-virtual-vixen-783398.html",
@@ -4618,7 +4640,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
@@ -4629,7 +4651,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
@@ -4640,7 +4662,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
@@ -4651,7 +4673,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
@@ -4662,7 +4684,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/ian-harrison.html",
@@ -4673,7 +4695,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/it-was-about-becoming-something-more.html",
@@ -4684,7 +4706,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/pixel-journey.html",
@@ -4695,18 +4717,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
-      "url": "/wiki/sister-halcyon.html",
-      "title": "Sister Halcyon",
+      "url": "/wiki/six-pillars.html",
+      "title": "The Six Pillars",
       "authority_score": 32,
       "trust_score": 57,
-      "inbound_links": 0,
+      "inbound_links": 2,
       "entity_mentions": 1,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "category": "factions",
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/street-swarm-the-offline-first-tactical.html",
@@ -4717,7 +4739,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/why-this-matters-now-ai-is-restructuring.html",
@@ -4728,7 +4750,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/589-xrpl.html",
@@ -4739,7 +4761,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/666-xrpl.html",
@@ -4750,7 +4772,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/alcor-exchange.html",
@@ -4761,7 +4783,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/battlemech-blast.html",
@@ -4772,7 +4794,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bear-xrpl.html",
@@ -4783,7 +4805,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/exyboy.html",
@@ -4794,7 +4816,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/genesis-spray-drop.html",
@@ -4805,7 +4827,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -4816,7 +4838,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
@@ -4827,7 +4849,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -4838,7 +4860,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/lfgk-token-is-a-100-circulating-non.html",
@@ -4849,7 +4871,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nfthive.html",
@@ -4860,7 +4882,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/patchwork.html",
@@ -4871,7 +4893,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/punk-is-the-utility-token-behind.html",
@@ -4882,7 +4904,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/quell.html",
@@ -4893,18 +4915,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/satorebel.html",
-      "title": "SatoRebel",
-      "authority_score": 31,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/snipey-d-man-sirus.html",
@@ -4915,7 +4926,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/wax-pepe.html",
@@ -4926,7 +4937,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/atomicassets.html",
@@ -4937,7 +4948,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-brick-burner-783282.html",
@@ -4948,7 +4959,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-digital-diva-783394.html",
@@ -4959,7 +4970,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
@@ -4970,7 +4981,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-paint-patriot-783295.html",
@@ -4981,7 +4992,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-stencil-storm-783291.html",
@@ -4992,7 +5003,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
@@ -5003,7 +5014,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
@@ -5014,7 +5025,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
@@ -5025,7 +5036,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/graffiti-queens-in-decentraland.html",
@@ -5036,7 +5047,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/metropolis.html",
@@ -5047,7 +5058,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/noballgamess-nft-collection.html",
@@ -5058,18 +5069,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-11-18"
-    },
-    {
-      "url": "/wiki/six-pillars.html",
-      "title": "The Six Pillars",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 1,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/storm-struggle.html",
@@ -5080,7 +5080,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/street-artist-buster-aka-charlie-buster.html",
@@ -5091,7 +5091,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/trevor-fung.html",
@@ -5102,7 +5102,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "misc",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/bit-cap-5000.html",
@@ -5113,7 +5113,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/crypto-moonboy-pets.html",
@@ -5124,7 +5124,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
@@ -5135,7 +5135,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/legacy-over-hype-gk-turned-the-waxp.html",
@@ -5146,7 +5146,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/stake-is-a-community-powered-web3.html",
@@ -5157,7 +5157,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-case-for-digital-id-and-cbdcs-security-and-expansion.html",
@@ -5168,7 +5168,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-cleanupcentr.html",
@@ -5179,7 +5179,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials.html",
@@ -5190,7 +5190,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/ethereum-ecosystem.html",
@@ -5201,7 +5201,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
@@ -5212,7 +5212,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-crypto-charmcaster-783411.html",
@@ -5223,7 +5223,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-dizzy-drip-783255.html",
@@ -5234,7 +5234,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-drift-doodle-783252.html",
@@ -5245,7 +5245,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html",
@@ -5256,7 +5256,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
@@ -5267,7 +5267,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-graphite-ghost-783307.html",
@@ -5278,7 +5278,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
@@ -5289,7 +5289,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
@@ -5300,7 +5300,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-myerscoin13-784272.html",
@@ -5311,7 +5311,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
@@ -5322,7 +5322,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-tagger-tempest-783263.html",
@@ -5333,7 +5333,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
@@ -5344,7 +5344,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/hex-tagger-prime.html",
@@ -5355,7 +5355,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/jillian-godsil.html",
@@ -5366,7 +5366,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "misc",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/nifty-wizards.html",
@@ -5377,7 +5377,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/phygital-prints.html",
@@ -5388,7 +5388,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/tacoswap.html",
@@ -5399,7 +5399,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/waxp-exchange.html",
@@ -5410,7 +5410,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/create-your-moonboy.html",
@@ -5421,7 +5421,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-cipherella-783408.html",
@@ -5432,7 +5432,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
@@ -5443,7 +5443,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/playable-nft-murals.html",
@@ -5454,7 +5454,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/sneakar.html",
@@ -5465,7 +5465,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/how-to-play-crypto-moonboy-pets.html",
@@ -5476,7 +5476,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/2025-metaverse-launch-party.html",
@@ -5487,7 +5487,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gang-signs-card-game.html",
@@ -5498,7 +5498,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-darknet-lord-784276.html",
@@ -5509,7 +5509,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-marker-maven-783253.html",
@@ -5520,7 +5520,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-urban-oracle-783306.html",
@@ -5531,7 +5531,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
@@ -5542,7 +5542,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/graffiti-kings-creative-guide.html",
@@ -5553,7 +5553,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "concepts",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/atomichub-graffpunks-collection.html",
@@ -5564,7 +5564,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
@@ -5575,7 +5575,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
@@ -5586,7 +5586,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-deko-904071.html",
@@ -5597,7 +5597,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/rust2riches.html",
@@ -5608,7 +5608,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/tagzcoin.html",
@@ -5619,7 +5619,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/join-us-on-the-wax-blockchain.html",
@@ -5630,7 +5630,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/swarmsy.html",
@@ -5641,7 +5641,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
@@ -5652,7 +5652,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
@@ -5663,7 +5663,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/pixil-mini.html",
@@ -5674,7 +5674,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/about.html",
@@ -5685,7 +5685,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/gpt-users.html",
@@ -5696,7 +5696,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/categories/gkniftyheads.html",
@@ -5707,7 +5707,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/wiki/swap-nefty.html",
@@ -5718,7 +5718,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/how-to-play.html",
@@ -5729,7 +5729,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/og-templates/wiki-page.html",
@@ -5740,7 +5740,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "nfts-digital-art",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/categories/index.html",
@@ -5751,7 +5751,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/categories/tools.html",
@@ -5762,7 +5762,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/community.html",
@@ -5773,7 +5773,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/paths.html",
@@ -5784,7 +5784,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/gkniftyheads-incubator.html",
@@ -5795,7 +5795,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/hubs.html",
@@ -5806,7 +5806,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/og-templates/crypto-token-page.html",
@@ -5817,7 +5817,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/og-templates/nft-collection-page.html",
@@ -5828,7 +5828,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/og-templates/nft-template-page.html",
@@ -5839,7 +5839,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/sam.html",
@@ -5850,7 +5850,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/timeline.html",
@@ -5861,7 +5861,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     },
     {
       "url": "/moonboy-builder.html",
@@ -5872,7 +5872,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "misc",
-      "last_updated": "2026-11-18"
+      "last_updated": "2026-11-19"
     }
   ]
 }
