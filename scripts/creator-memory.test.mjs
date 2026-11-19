@@ -151,22 +151,16 @@ test("mergeTextEntries preserves live records first and fails instead of truncat
     Array.from({ length: 100 }, (_, i) => ({ text: "old" + i }))), /No records were dropped/);
 });
 
-test("public studio has local file/clipboard UI, no private URL injection and public format guide", () => {
+test("single ChatGPT launch keeps a public brief and the legacy memory format remains safe", () => {
   const page = read("gpt-users.html");
+  const brief = read("guides/sparky/creator-campaign.md");
   const ui = read("js/creator-memory-studio.js");
-  const app = read("js/sparky-gpt-app.js");
-  assert.match(page, /id="creator-memory-studio"/);
-  assert.match(page, /id="memory-import-file" type="file"/);
-  assert.match(page, /id="memory-export-json"/);
-  assert.match(page, /id="memory-export-md"/);
-  assert.match(page, /src="\/js\/creator-memory\.js\?v=[a-f0-9]{12}"/);
-  assert.match(page, /src="\/js\/creator-memory-studio\.js\?v=[a-f0-9]{12}"/);
+  assert.match(page, /href="\/guides\/sparky\/creator-campaign\.md" download/);
+  assert.doesNotMatch(page, /id="creator-memory-studio"|id="gpt-activity-groups"/);
+  assert.match(brief, /project files/);
   assert.match(ui, /URL\.createObjectURL/);
   assert.match(ui, /M\.serialize\(record\)/);
-  assert.match(ui, /\["history", "History notes"/);
-  assert.match(ui, /navigator\?\.clipboard\?\.writeText/);
-  assert.match(app, /sparky-activity-change/);
-  assert.ok(!ui.includes("fetch("), "studio must not upload anything");
-  assert.ok(!ui.includes("localStorage"), "studio must not silently store private project data");
+  assert.ok(!ui.includes("fetch("), "legacy memory module must not upload anything");
+  assert.ok(!ui.includes("localStorage"), "legacy memory module must not silently store private project data");
   assert.match(read("docs/portable-creator-memory.md"), /source index/);
 });
