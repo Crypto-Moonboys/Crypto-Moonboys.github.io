@@ -17300,7 +17300,7 @@ async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'p
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
     : { text: 'OPEN MOONPET OS', url: `https://t.me/WIKICOMSBOT?start=moonpet_${screen}${normalizedFocus ? `_${normalizedFocus}` : ''}` };
   await sendTelegramMessage(botToken, chatId,
-    `<b>MOONPET OS</b>\nThe pet game now runs inside its HTML5 Mini App. Chat gameplay controls are retired.`,
+    `<b>MOONPET OS</b>\nThe pet game now runs inside its HTML5 Mini App. Chat gameplay controls are retired.\n\nAfter hatching, Feed, Play and Clean the same pet before midnight UTC. Missing eligible care reduces future Pet XP awards by 10–25%. Your pet survives and keeps its earned XP. Complete care days gradually restore the full rate.`,
     { reply_markup: { inline_keyboard: [[launchButton], [telegramGamesChatButton(chatType)]] } },
   );
 }
@@ -17351,7 +17351,7 @@ async function cmdGkHelp(tok, chatId, chatType = 'private') {
     `/gkseason — Current season info\n` +
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
-    `/pet — Open Moonpet OS\n` +
+    `/pet — Open Moonpet OS for daily care. Missed care after hatching can reduce future Pet XP awards by 10–25%.\n` +
     `• Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards run inside Moonpet OS. Arena and Kaiju unlock only after you complete a Season pet and your active Moonpet has hatched; locked players see future panels and stale-state cleanup only.\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
