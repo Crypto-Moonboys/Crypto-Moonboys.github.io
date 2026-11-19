@@ -35,7 +35,7 @@ test('real Pages artifact publishes every SPARKY guide and canon handoff URL', (
   const campaignBrief = requirePublic('guides/sparky/creator-campaign.md');
   assert.match(rootPage, /href="\/guides\/sparky\/creator-campaign\.md" download/);
   assert.match(rootPage, /https:\/\/chatgpt\.com\/\?q=/);
-  assert.match(campaignBrief, /ONE consistent mascot/);
+  assert.match(campaignBrief, /Do not change the mascot between formats/);
   assert.match(campaignBrief, /permissioned offline action/);
 
   assert.doesNotMatch(rootPage, /src="\/js\/sparky-gpt-app\.js/);
