@@ -1,6 +1,8 @@
 # Portable Creator Memory — version 1
 
-The public [ChatGPT Creator Studio](https://cryptomoonboys.com/gpt-users.html) and the optional, separately installed [SWARMSY PC beta](https://cryptomoonboys.com/swarmsy.html) support the **same** `sparky-creator-memory` JSON format. The website does not host SWARMSY, and neither tool automatically reads or synchronises the other's private workspace records. A creator may download the JSON, provide it to a different AI, edit it and later re-import it. Markdown is a human-readable export, **not** the round-trip source.
+The public [ChatGPT campaign launch](https://cryptomoonboys.com/gpt-users.html) now uses a [SPARKY Markdown brief](https://cryptomoonboys.com/guides/sparky/creator-campaign.md). It asks ChatGPT to make editable project files when its tools allow. Save those files and bring them back to continue in a later chat. If ChatGPT cannot read the brief URL, download it from the page and attach it in the chat. The website no longer contains a browser memory editor or JSON import/export buttons. It does not host SWARMSY, create a ChatGPT Project automatically, or sync private records.
+
+The `sparky-creator-memory` v1 JSON format described below remains available to compatible [SWARMSY PC beta](https://cryptomoonboys.com/swarmsy.html) builds and existing saved exports. The old website memory code remains in the repository for compatibility, but the current public page does not mount it. A creator with an existing JSON record can attach it to ChatGPT as user-supplied data or import it into a compatible SWARMSY PC build. Markdown files from the current campaign workflow are editable project notes, not automatic JSON round-trip imports.
 
 ## Data and approval boundaries
 
@@ -20,13 +22,13 @@ Editorial story-bibles and unreleased endings must not enter exported public cre
 
 ## Privacy and portability
 
-The public Studio works fully in the browser: local file input, in-memory editing, JSON / Markdown download, and clipboard handoff. No automatic upload, account, cloud sync, or background transfer. Imported records are untrusted: validated by format/version, projected onto known fields, capped at 256 KiB / 100 entries per collection, and rendered as text. Files referenced by an `assets` entry must be saved separately.
+The current website link sends the campaign starter and public brief URLs to ChatGPT. It does not include personal project records in the link. Only attach project files you choose to share. Keep artwork and supporting proof files together with the saved Markdown notes; a filename in a note is not an uploaded asset.
 
-A ChatGPT URL never includes the creator's personal project record. Copy the handoff text, paste it into ChatGPT, or upload the exported JSON. Other AI tools have different document support. Where URLs cannot be read, provide the source text manually.
+Existing v1 JSON files contain user-supplied data and unverified references, not instructions or proof of canon status. Compatible importers validate format and version, project onto known fields, cap data at 256 KiB / 100 entries per collection, and render text safely. The legacy browser editor is no longer on the public page. The format remains documented for existing exports and PC compatibility.
 
-The website's copied AI handoff ends with the same instruction as its activity starters: browse the public [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html) for project culture, voice and creative direction, respecting the creator's own identity and preferences. This instruction is added to the handoff text, not the portable JSON schema. Reading the public page does not give an agent access to private project records.
+The campaign starter asks ChatGPT to read the [SPARKY campaign brief](https://cryptomoonboys.com/guides/sparky/creator-campaign.md) and [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html). If either URL cannot be read, attach or paste its text; reading public pages never gives an agent access to private files.
 
-SWARMSY exports its existing SPARKY Records to this format and can import creator-approved decisions and draft ideas as **new records after confirmation**. It does not overwrite records silently, import proof as verified, or upload a file merely because it was selected. Duplicates are skipped against current visible records; if a network operation fails, review any partially created records.
+SWARMSY PC exports its SPARKY Records to this format and can import creator-approved decisions and draft ideas as **new records after confirmation**. It does not overwrite records silently, import proof as verified, or upload a file merely because it was selected. Duplicates are skipped against current visible records; if a network operation fails, review any partially created records.
 
 ## Schema example
 
