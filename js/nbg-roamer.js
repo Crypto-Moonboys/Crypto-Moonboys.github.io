@@ -86,19 +86,43 @@
   }
 
   // Cosmetic website encounter. Never write to the game's replay, XP or scores.
+  // All artwork comes from the canonical NBG London asset manifest.
+  // Parachute A and B are brown; parachute C is turquoise.
   const ENEMY_TYPES = [
-    { key: 'parachuteRatA', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95 },
-    { key: 'parachuteRatB', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95 },
+    { key: 'parachuteRatA', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95, landedKey: 'brownRatWalk' },
+    { key: 'parachuteRatB', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95, landedKey: 'brownRatWalk' },
+    { key: 'parachuteRatC', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95, landedKey: 'turquoiseRatWalk' },
     { key: 'londonRat', kind: 'ground', width: 50, height: 60, columns: 5, frames: 25, frameMs: 90 },
     { key: 'turquoiseRatWalk', kind: 'ground', width: 50, height: 60, columns: 5, frames: 25, frameMs: 90 },
     { key: 'brownRatWalk', kind: 'ground', width: 64, height: 72, columns: 5, frames: 25, frameMs: 90 },
-    { key: 'graffitiBot', kind: 'ground', width: 70, height: 52, columns: 5, frames: 25, frameMs: 90 },
+    { key: 'graffitiBot', kind: 'ground', width: 70, height: 62, columns: 5, frames: 25, frameMs: 90 },
     { key: 'pigeon', kind: 'flying', width: 56, height: 44, columns: 5, frames: 20, frameMs: 85 },
     { key: 'balloonWalk', kind: 'ground', width: 54, height: 60, columns: 4, frames: 14, frameMs: 100 }
   ];
+  const ENEMY_BY_KEY = Object.fromEntries(ENEMY_TYPES.map(type => [type.key, type]));
+  const ENEMY_ATTACKS = Object.freeze({
+    londonRat: ['londonRatBladeFlurry', 'londonRatViperPounce'],
+    turquoiseRatWalk: ['turquoiseRatKick', 'turquoiseRatPunch'],
+    brownRatWalk: ['brownRatPunch'],
+    graffitiBot: ['graffitiBotKick', 'graffitiBotFire'],
+    balloonWalk: ['balloonRelease']
+  });
+  const ATTACK_POSES = Object.freeze({
+    londonRatBladeFlurry: { columns: 5, frames: 25, frameMs: 34, duration: 850 },
+    londonRatViperPounce: { columns: 5, frames: 25, frameMs: 34, duration: 850 },
+    turquoiseRatKick: { columns: 5, frames: 25, frameMs: 34, duration: 850 },
+    turquoiseRatPunch: { columns: 5, frames: 25, frameMs: 34, duration: 850 },
+    brownRatPunch: { columns: 5, frames: 25, frameMs: 34, duration: 850 },
+    graffitiBotKick: { columns: 5, frames: 25, frameMs: 38, duration: 950 },
+    graffitiBotFire: { columns: 4, frames: 16, frameMs: 55, duration: 880, effect: true },
+    graffitiBotHurt: { columns: 5, frames: 25, frameMs: 36, duration: 360 },
+    balloonRelease: { columns: 4, frames: 16, frameMs: 90, duration: 1440 }
+  });
   let encounterCanvas = null, encounterCtx = null, enemyImages = {}, enemies = [];
   let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0;
   let sprayUntil = 0, lastSpray = -Infinity, cleanSprayUrl = null, sprayPreparing = false;
+  const measuredFrames = new WeakMap();
+  let measureCanvas = null, measureContext = null;
   function createEncounterCanvas() {
     if (encounterCanvas) return;
     encounterCanvas = document.createElement('canvas');
