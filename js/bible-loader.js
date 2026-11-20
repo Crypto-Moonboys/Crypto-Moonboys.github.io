@@ -77,7 +77,7 @@
     section.innerHTML = `
       <p class="cm-kicker">Current SWARMSY-Ai implementation</p>
       <h2>WHAT IS IMPLEMENTED NOW</h2>
-      <p>SWARMSY is an optional locally run PC beta built on AnythingLLM, with user-configured local or API models. SPARKY guides projects inside that app. The public website instead offers <a href="/gpt-users.html">SPARKY-style ChatGPT creator activities</a>, not a hosted SWARMSY chat or automatic access to private records.</p>
+      <p>SWARMSY is an optional locally run PC beta built on AnythingLLM, with user-configured local or API models. SPARKY guides projects inside that app. The public website instead offers <a href="/ai-user.html">SPARKY's portable AI campaign brief</a>, not a hosted SWARMSY chat or automatic access to private records.</p>
       <div class="cm-role-grid">
         <div class="cm-role-card"><strong>Fixed protected SPARKY workspace</strong><p>The canonical SPARKY workspace is created automatically when missing, appears as a fixed “Continue with SPARKY” entry and is protected from normal rename, update and deletion routes.</p></div>
         <div class="cm-role-card"><strong>Starter journey</strong><p>Local SPARKY installations provide guided project onboarding. The current starter activities and their availability are documented in the PC repository, not guaranteed as public website features.</p></div>
@@ -88,8 +88,8 @@
       <p>The PC repository maintains a versioned pack catalogue for project identity, direction, approved records, planning and proof checks. Consult the current source for exact pack inventory; the packs are not automatically hosted as website services.</p>
       <h3>Creative controls</h3>
       <p>SAFE and WTF act as creative-intensity modes. MESSAGE, DOODAD and PLACEMENT help define what people remember, the recognisable device and the context that makes the idea land.</p>
-      <p class="cm-highlight">The repository proves source and build workflows, not an active hosted SWARMSY service or a finished installer. The website uses ChatGPT for public AI creation; creator-memory transfer to the separate PC application is manual.</p>
-      <div class="cm-actions"><a class="cm-button" href="/gpt-users.html">Create with ChatGPT</a><a class="cm-button cm-button--secondary" href="${SWARMSY_REPO}" target="_blank" rel="noopener noreferrer">Explore SWARMSY PC source</a></div>
+      <p class="cm-highlight">The repository proves source and build workflows, not an active hosted SWARMSY service or a finished installer. The website offers a portable brief for public AI creation; creator-memory transfer to the separate PC application is manual.</p>
+      <div class="cm-actions"><a class="cm-button" href="/ai-user.html">Create with AI</a><a class="cm-button cm-button--secondary" href="${SWARMSY_REPO}" target="_blank" rel="noopener noreferrer">Explore SWARMSY PC source</a></div>
     `;
 
     swarmsySection.after(section);

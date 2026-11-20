@@ -6,7 +6,7 @@ Both routes build creator-owned worlds within the Crypto Moonboys universe: deve
 
 Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
 
-Never describe the existing-IP route as leaving the Moonboys universe to work on unrelated projects. No Moonboy adoption is required for that route. Preserve current ChatGPT delivery and optional SWARMSY PC installation truth.
+Never describe the existing-IP route as leaving the Moonboys universe to work on unrelated projects. No Moonboy adoption is required for that route. Preserve current browser AI delivery and optional SWARMSY PC installation truth.
 
 
 ## Mission alignment
@@ -15,10 +15,10 @@ Public-facing changes must preserve the current Crypto Moonboys hierarchy:
 
 - Crypto Moonboys is the Graffiti Kings creator umbrella, not a game.
 - Path 1 lets users build one or more 1/1 Moonboy identities through XP, eligible free NFT drops, keep/flip/burn and forge progression.
-- Path 2 lets existing artists, businesses, product creators, brands and alter egos keep their identity and start through the public ChatGPT Creator Studio without needing a Moonboy. The separately installed SWARMSY PC beta is optional.
+- Path 2 lets existing artists, businesses, product creators, brands and alter egos keep their identity and start through the public AI Creator Studio without needing a Moonboy. The separately installed SWARMSY PC beta is optional.
 - Every 1/1 holder is a HODL Warrior and part of the active creator army.
-- Both paths can start through the public ChatGPT Creator Studio at `/gpt-users.html`, which opens ChatGPT with SPARKY-guided activities. SWARMSY supports both paths as an optional PC beta using local models or configured provider APIs; installation is required and providers may charge.
-- Public AI CTAs use `/gpt-users.html`. Optional PC app/source links use `/swarmsy.html` or `https://github.com/Crypto-Moonboys/SWARMSY-Ai`. Do not reintroduce the retired `/sparky.html` chat or imply automatic sharing of private workspaces.
+- Both paths can start through the public AI Creator Studio at `/ai-user.html`, which offers one portable SPARKY campaign brief. SWARMSY supports both paths as an optional PC beta using local models or configured provider APIs; installation is required and providers may charge.
+- Public AI CTAs use `/ai-user.html`. Optional PC app/source links use `/swarmsy.html` or `https://github.com/Crypto-Moonboys/SWARMSY-Ai`. Do not reintroduce the retired `/sparky.html` chat or imply automatic sharing of private workspaces.
 - Games, NFTs, the wiki, Battle Chamber, Block Topia and lore are supporting systems.
 
 Review `README.md` and `Crypto_Moonboys_Master_Source_of_Truth_v1.md` before changing mission, onboarding, ownership, reward or identity copy.
@@ -32,7 +32,7 @@ Review `README.md` and `Crypto_Moonboys_Master_Source_of_Truth_v1.md` before cha
 ## Validation before merge
 
 - `npm test` must pass before merge.
-- Public copy must be checked against both onboarding paths, the public ChatGPT start and the optional PC route.
+- Public copy must be checked against both onboarding paths, the public AI start and the optional PC route.
 - Reduced-motion and no-JavaScript homepage fallbacks must remain usable.
 - Ownership claims must match the published creator licence and royalty terms.
 - XP gate copy must match live configuration rather than stale documentation.

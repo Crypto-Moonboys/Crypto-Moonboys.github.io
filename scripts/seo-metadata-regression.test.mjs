@@ -55,7 +55,7 @@ console.log('SEO landing-page metadata regression PASSED — ' + checked + ' sit
 
 // Public entry routes must survive both sitemap and search-index regeneration.
 const publicEntries = [
-  '/gpt-users.html', '/join-us-on-the-wax-blockchain.html', '/moonboy-builder.html',
+  '/ai-user.html', '/join-us-on-the-wax-blockchain.html', '/moonboy-builder.html',
   '/swarmsy.html', '/gkniftyheads-incubator.html', '/community.html',
   '/how-to-play.html', '/how-to-play-crypto-moonboy-pets.html', '/paths.html', '/timeline.html',
 ];
@@ -66,7 +66,7 @@ for (const route of publicEntries) {
 }
 const home = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const searchPage = fs.readFileSync(path.join(ROOT, 'search.html'), 'utf8');
-for (const route of ['/gpt-users.html', '/wiki/crypto-moonboys.html', '/wiki/waxp.html', '/wiki/graffiti-kings.html', '/wiki/darren-cullen.html', '/wiki/charlie-buster.html', '/wiki/gkniftyheads-nft-collection.html']) {
+for (const route of ['/ai-user.html', '/wiki/crypto-moonboys.html', '/wiki/waxp.html', '/wiki/graffiti-kings.html', '/wiki/darren-cullen.html', '/wiki/charlie-buster.html', '/wiki/gkniftyheads-nft-collection.html']) {
   for (const [name, source] of [['homepage', home], ['article hub', searchPage]]) {
     const main = source.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || '';
     assert.ok(main.includes('href="' + route + '"'), name + ' needs a visible direct link to ' + route);

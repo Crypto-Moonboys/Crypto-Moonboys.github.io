@@ -152,7 +152,7 @@ test("mergeTextEntries preserves live records first and fails instead of truncat
 });
 
 test("single ChatGPT launch keeps a public brief and the legacy memory format remains safe", () => {
-  const page = read("gpt-users.html");
+  const page = read("ai-user.html");
   const brief = read("guides/sparky/creator-campaign.md");
   const ui = read("js/creator-memory-studio.js");
   assert.match(page, /href="\/guides\/sparky\/creator-campaign\.md" download/);
