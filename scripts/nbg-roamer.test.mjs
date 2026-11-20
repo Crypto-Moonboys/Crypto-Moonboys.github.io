@@ -116,3 +116,16 @@ test('Space is ignored outside active control and never hijacks text inputs', ()
   }
   assert.match(source, /interactive\(event\.target\) && !sprite\?\.contains\(event\.target\)/);
 });
+
+test('keyboard control begins with arrow or Space on a visible runner, not just a click', () => {
+  assert.match(source, /if \(!controlling\) \{[\s\S]*?takeControl\(\)/);
+  assert.match(source, /held\.add\(event\.code\);\s*event\.preventDefault\(\)/);
+  assert.match(source, /capture: true, passive: false/);
+  assert.match(source, /if \(controlling && performance\.now\(\) >= deadline\) return/);
+});
+test('navigation and form focus keep normal keyboard behaviour', () => {
+  assert.match(source, /interactive\(event\.target\) && !runnerTarget && !hiddenSummonTarget/);
+  assert.match(source, /if \(event\.repeat\) return/);
+  assert.match(source, /document\.hidden \|\| event\.defaultPrevented/);
+  assert.match(source, /event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey/);
+});
