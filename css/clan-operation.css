@@ -55,7 +55,8 @@
   cursor: pointer;
 }
 
-.clan-operation button:disabled {
+.clan-operation button:disabled,
+.clan-operation button[aria-disabled="true"] {
   opacity: .56;
   cursor: default;
 }

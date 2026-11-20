@@ -43,6 +43,7 @@ if (panel) {
   let generation = 0;
   let state;
   let pending = false;
+  let retryTimer;
 
   const tells = {
     safe_ore: 'One ore from the surface seam.',
@@ -54,10 +55,6 @@ if (panel) {
     panel_painted: 'Panel repainted.',
     combo_painted: 'Combo spray hit two panels.',
     layer_banked: 'Layer banked. Your Renown and wall print are saved.',
-    trail_surveyed: 'Landmark surveyed.',
-    trail_walked: 'Arrived at the next stop.',
-    trail_shortcut: 'Shortcut crossed. Supplies spent.',
-    trail_banked: 'Route banked. Your Renown and map fragment are saved.',
   };
   const errors = {
     pilot_closed: 'Clan Operations is currently closed.',
@@ -67,12 +64,12 @@ if (panel) {
     wrong_operation_faction: 'Open Clan Operations from the Battle Chamber to play as your current clan.',
     operation_faction_locked: 'You already started a different clan operation today. A new route opens at 00:00 UTC.',
     refresh_operation: 'The operation moved on. Refresh for your latest saved state.',
-    rate_limited: 'Too many requests. Give it a moment, then refresh.',
     operation_unavailable: 'Clan Operations is temporarily unavailable. Refresh to check your saved progress.',
   };
 
   function clearOperation() {
     state = undefined;
+    game.after(status);
     game.hidden = true;
     join.hidden = true;
     connect.hidden = true;
@@ -135,6 +132,22 @@ if (panel) {
     }
   }
 
+  function trailFeedback(data) {
+    if (data.status === 'complete') {
+      return 'All three routes banked. A different trail opens at 00:00 UTC.';
+    }
+    const { position, supplies, objectives, actions, camp } = data.trail;
+    const surveyed = objectives.filter(objective => objective.surveyed).length;
+    const next = actions[0]?.id === 'bank' ? 'Bank this route.' : `Survey the landmarks and reach ${camp}.`;
+    const arrival = {
+      trail_surveyed: `Arrived at ${position} and surveyed the landmark.`,
+      trail_shortcut: `Took a shortcut to ${position}.`,
+      trail_walked: `Arrived at ${position}.`,
+      trail_banked: `Route banked. Next leg starts at ${position}.`,
+    }[data.last_outcome] ?? `At ${position}.`;
+    return `${arrival} ${surveyed} of ${objectives.length} landmarks surveyed. Supplies left: ${supplies}. ${next}`;
+  }
+
   function showOperation(data) {
     if (chamberFaction && data.faction_id !== chamberFaction) {
       showError('wrong_operation_faction');
@@ -147,9 +160,7 @@ if (panel) {
     panel.dataset.activeOperation = data.faction_id;
     const operation = data.trail ?? data.wall ?? data.mine;
     title.textContent = operation.name;
-    const progress = data.trail
-      ? (data.status === 'complete' ? 'All three routes banked'
-        : `${data.trail.position} · Supplies: ${data.trail.supplies} · Survey landmarks, then reach ${data.trail.camp}`)
+    const progress = data.trail ? `${data.tier} / 3 routes banked`
       : data.wall ? `${data.tier} / 3 layers banked`
         : data.mine.target ? `${data.ore} / ${data.mine.target} ore` : 'All three tiers banked';
     stats.textContent = [
@@ -170,6 +181,11 @@ if (panel) {
       : data.trail ? 'Bank a route to start your collection.' : 'Bank a tier to start your collection.';
     wall.hidden = !!data.mine;
     controls.hidden = !data.mine;
+    if (data.trail) {
+      if (status.parentNode !== wall) wallControls.before(status);
+    } else if (status.parentNode !== panel) {
+      game.after(status);
+    }
     if (!data.mine) {
       wallPanels.setAttribute('aria-label', data.trail ? 'Expedition stops and paths' : 'Mural panels');
       wallControls.setAttribute('aria-label', data.trail ? 'Travel moves' : 'Paint moves');
@@ -182,23 +198,39 @@ if (panel) {
         : `Cut deep · ${data.mine.collapse_percent}% cave-in risk`;
       controls.querySelector('[value="bank"]').textContent = `Bank · +${data.mine.renown_per_tier.toLocaleString()} Renown`;
     }
-    status.textContent = tells[data.last_outcome] || (data.trail ? 'Walk for free or spend supplies on shortcuts.'
-      : data.wall ? 'Match the three panels to the stencil.' : 'Choose how to reach the next vein.');
-    if (data.wall?.actions[0]?.id === 'bank') status.textContent = 'Stencil matched. Bank this layer.';
-    if (data.trail?.actions[0]?.id === 'bank') status.textContent = 'Camp reached and landmarks surveyed. Bank this route.';
-    if (data.status === 'complete') status.textContent = data.trail
-      ? 'Expedition complete. A different trail opens at 00:00 UTC.'
-      : data.wall ? 'Wall complete. A different stencil opens at 00:00 UTC.'
-        : 'Mine cleared. A different route opens at 00:00 UTC.';
+    if (data.trail) status.textContent = trailFeedback(data);
+    else if (data.status === 'complete') status.textContent = data.wall
+      ? 'Wall complete. A different stencil opens at 00:00 UTC.'
+      : 'Mine cleared. A different route opens at 00:00 UTC.';
+    else if (data.wall?.actions[0]?.id === 'bank') status.textContent = 'Stencil matched. Bank this layer.';
+    else status.textContent = tells[data.last_outcome] || (data.wall
+      ? 'Match the three panels to the stencil.' : 'Choose how to reach the next vein.');
     updateControls();
   }
 
   function updateControls() {
     retry.disabled = pending;
-    for (const button of controls.querySelectorAll('button')) {
+    const mineButtons = controls.querySelectorAll('button');
+    const wallButtons = wallControls.querySelectorAll('button');
+    for (const button of mineButtons) {
       button.disabled = pending || !state?.mine?.actions.includes(button.getAttribute('value'));
     }
-    for (const button of wallControls.querySelectorAll('button')) button.disabled = pending;
+    for (const button of wallButtons) button.disabled = pending;
+    for (const button of [retry, ...mineButtons, ...wallButtons]) {
+      if (retryTimer) button.setAttribute('aria-disabled', 'true');
+      else button.removeAttribute('aria-disabled');
+    }
+  }
+
+  function waitForRetry(seconds) {
+    const delay = Number.isInteger(seconds) && seconds >= 1 && seconds <= 60 ? seconds : 60;
+    const trail = state?.trail ? `${trailFeedback(state)} ` : '';
+    status.textContent = `${trail}Too many requests. Try again in ${delay} ${delay === 1 ? 'second' : 'seconds'}.`;
+    retryTimer = window.setTimeout(() => {
+      retryTimer = undefined;
+      updateControls();
+      status.textContent = `${trail}You can try again now.`;
+    }, delay * 1000);
   }
 
   function showError(code) {
@@ -209,7 +241,7 @@ if (panel) {
   }
 
   async function request(action, button) {
-    if (pending) return;
+    if (pending || retryTimer) return;
     const restoreFocus = button && document.activeElement === button;
     const currentGeneration = generation;
     const currentOwner = owner;
@@ -244,9 +276,10 @@ if (panel) {
           ...(action ? { action, utc_day: state.utc_day, revision: state.revision, operation_faction: state.faction_id } : {}),
         }),
       });
-      const data = await response.json();
+      const data = response.status === 429 ? await response.json().catch(() => ({})) : await response.json();
       if (currentGeneration !== generation || currentOwner !== readOwner()) return;
-      if (response.ok) showOperation(data);
+      if (response.status === 429) waitForRetry(data?.retry_after_seconds);
+      else if (response.ok) showOperation(data);
       else showError(data.error);
     } catch {
       if (currentGeneration === generation && currentOwner === readOwner()) showError('operation_unavailable');
@@ -267,10 +300,12 @@ if (panel) {
   function refreshIdentity(event) {
     const nextOwner = readOwner();
     if (nextOwner === owner && event?.type === 'storage') return;
-    if (nextOwner === owner && pending && event?.type === 'moonboys:telegram-session') return;
+    if (nextOwner === owner && (pending || retryTimer) && event?.type === 'moonboys:telegram-session') return;
     owner = nextOwner;
     generation += 1;
     pending = false;
+    window.clearTimeout(retryTimer);
+    retryTimer = undefined;
     clearOperation();
     request();
   }

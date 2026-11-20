@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 
 const ROOT = process.cwd();
 const FACTIONS = [
@@ -1078,6 +1079,82 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
     await page.keyboard.press('Enter');
     await page.waitForFunction(() => window.clanMoves.length === 2);
     assert.deepEqual(await page.evaluate(() => window.clanMoves), ['paint-2', 'paint-2']);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Nomad Bears announce mobile travel and retain the map during a retry window', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    await page.clock.install({ time: new Date('2026-11-20T12:00:00Z') });
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/nomad-bears.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent(panel);
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const route = 2;
+    let state = { route_index: route, tier: 0, operationState: {} };
+    const view = (revision) => ({
+      ok: true, faction_id: 'nomad-bears', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', resets_at: '2026-11-21T00:00:00Z', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: 0, renown_total: 0, crew_banks: 0, collection: [],
+      trail: describeTrail(route, state.tier, state.operationState),
+    });
+    const states = [view(0)];
+    for (const action of ['travel-1', 'travel-2', 'travel-3']) {
+      state = { ...advanceTrail(state, action), route_index: route };
+      states.push(view(states.length));
+    }
+    await page.evaluate(snapshots => {
+      window.moveCount = 0;
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '105',
+        getSignedTelegramAuth: () => ({ id: '105' }),
+      };
+      window.fetch = async (_url, options) => {
+        const request = JSON.parse(options.body);
+        if (!request.action) return Response.json(snapshots[0]);
+        window.moveCount++;
+        if (window.moveCount === 3) {
+          return Response.json({ error: 'rate_limited', retry_after_seconds: 2 }, { status: 429 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+    }, states);
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v3.js') });
+    const feedback = page.getByRole('status');
+    const expectFeedback = pattern => feedback.filter({ hasText: pattern }).waitFor();
+    const travel = page.locator('[data-wall-controls]');
+    await page.getByRole('button', { name: 'Walk to Clock Steps' }).click();
+    await expectFeedback(/Arrived at Clock Steps.*0 of 2 landmarks surveyed.*Supplies left: 2/);
+    assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    const feedbackBox = await feedback.boundingBox();
+    const travelBox = await travel.boundingBox();
+    const travelGap = travelBox.y - feedbackBox.y - feedbackBox.height;
+    assert.ok(travelGap >= 0 && travelGap < 36, 'feedback is beside the mobile travel controls');
+    await page.getByRole('button', { name: 'Walk to Rooftop Garden' }).click();
+    await expectFeedback(/Arrived at Rooftop Garden and surveyed.*1 of 2 landmarks surveyed.*Supplies left: 2/);
+    const shortcut = page.getByRole('button', { name: /Shortcut to Antenna Deck/ });
+    await shortcut.click();
+    await expectFeedback(/Rooftop Garden.*Try again in 2 seconds/);
+    assert.equal(await shortcut.getAttribute('aria-disabled'), 'true');
+    assert.match(await page.locator('[data-current-stop]').innerText(), /Rooftop Garden/);
+    await shortcut.evaluate(button => button.click());
+    assert.equal(await page.evaluate(() => window.moveCount), 3, 'clicking during the wait sends no move');
+    await page.clock.runFor(2_000);
+    await expectFeedback(/You can try again now/);
+    assert.equal(await shortcut.getAttribute('aria-disabled'), null);
+    assert.equal(await page.evaluate(() => window.moveCount), 3, 'the rejected move was not replayed automatically');
+    await shortcut.click();
+    await expectFeedback(/Took a shortcut to Antenna Deck.*Supplies left: 0/);
   } finally {
     await browser.close();
   }

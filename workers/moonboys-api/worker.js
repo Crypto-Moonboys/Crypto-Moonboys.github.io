@@ -13349,7 +13349,8 @@ export default {
         verifyTelegramAuth,
         logApiFailure,
         rateLimit: (owner) => enforcePublicRateLimit(request, env, path, null, privateHeaders, {
-          ...(owner ? { includeIp: false, telegramId: owner } : { includeTelegram: false }),
+          // The pre-auth guard allows shared networks to play. Verified accounts keep their own budget.
+          ...(owner ? { includeIp: false, telegramId: owner } : { includeTelegram: false, ipLimit: 120 }),
         }),
       });
     }

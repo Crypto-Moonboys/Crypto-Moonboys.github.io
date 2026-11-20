@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
+import worker from '../workers/moonboys-api/worker.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
 import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
@@ -397,6 +399,60 @@ test('every Nomad Bears expedition can bank all three routes without supplies', 
     assert.ok(moves.every(n => n >= 4 && n <= 8), moves.join(', '));
     assert.ok(moves.reduce((sum, n) => sum + n, 0) <= 21, moves.join(', '));
   }
+});
+
+test('signed Nomad Bears share a network and keep independent move budgets', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  await db.prepare("INSERT INTO blocktopia_progression VALUES ('106', 'nomad-bears', 0, 0)").run();
+  t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-11-20T12:00:00Z') });
+  const env = { DB: db, CLAN_OPERATIONS_ENABLED: 'true', TELEGRAM_BOT_TOKEN: '123456:test-token' };
+  const secret = createHash('sha256').update(env.TELEGRAM_BOT_TOKEN).digest();
+  const authDate = Math.floor(Date.now() / 1000);
+  const network = '192.0.2.52';
+  const accounts = ['105', '106'].map(id => ({
+    id, auth_date: authDate,
+    hash: createHmac('sha256', secret).update('auth_date=' + authDate + '\nid=' + id).digest('hex'),
+  }));
+  const request = (telegram_auth, path, body = {}, ip = network) => worker.fetch(
+    new Request('https://local.test/clan-operations/' + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+      body: JSON.stringify({ telegram_auth, expedition_ui: 'trail-v1', ...body }),
+    }), env,
+  );
+  const move = (auth, state, action, ip) => request(auth, 'move', {
+    action, revision: state.revision, utc_day: state.utc_day, operation_faction: state.faction_id,
+  }, ip);
+  const states = [];
+  for (const auth of accounts) {
+    const response = await request(auth, 'state');
+    assert.equal(response.status, 200);
+    states.push(await response.json());
+  }
+  const route = dailyRouteIndex(new Date());
+  assert.equal(states[0].trail.name, 'Rooftop Passage');
+  const plan = [0, 1, 2].flatMap(tier => walkingPlan(route, tier));
+  assert.ok(plan.length * accounts.length > 30, 'exercise the old shared IP ceiling');
+  for (const action of plan) {
+    const responses = await Promise.all(accounts.map((auth, i) => move(auth, states[i], action)));
+    for (const [i, response] of responses.entries()) {
+      assert.equal(response.status, 200, 'account ' + (i + 1) + ' / ' + action);
+      states[i] = await response.json();
+    }
+  }
+  for (const state of states) {
+    assert.equal(state.renown_today, 30_000);
+    assert.equal(state.collection.length, 3);
+  }
+  // A stale move spends verified request budget without changing settled progress.
+  for (let attempt = plan.length; attempt < 30; attempt++) {
+    assert.equal((await move(accounts[0], states[0], 'bank')).status, 409);
+  }
+  const limited = await move(accounts[0], states[0], 'bank', '192.0.2.53');
+  assert.equal(limited.status, 429, 'the signed account budget follows the account across IPs');
+  assert.equal(limited.headers.get('Retry-After'), '60');
+  assert.equal((await move(accounts[1], states[1], 'bank')).status, 409, 'the other account can still submit moves');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM clan_operation_awards').first()).n, 6);
 });
 
 test('a missing Nomad Bears migration blocks signed play before any progress can be saved', async t => {
