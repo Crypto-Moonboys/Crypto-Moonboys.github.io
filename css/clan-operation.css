@@ -261,3 +261,30 @@
   display: block;
   margin-top: .35em;
 }
+
+.clan-crew-progress {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #755538;
+}
+
+.clan-crew-progress table {
+  width: 100%;
+  max-width: 44rem;
+  border-collapse: collapse;
+}
+
+.clan-crew-progress th,
+.clan-crew-progress td {
+  padding: .65rem .4rem;
+  border-bottom: 1px solid #755538;
+  text-align: right;
+}
+
+.clan-crew-progress th:first-child {
+  text-align: left;
+}
+
+.clan-crew-progress th a {
+  color: var(--mine-amber);
+}

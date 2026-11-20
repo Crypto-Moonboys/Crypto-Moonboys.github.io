@@ -1,6 +1,6 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
-import { FACTION_ALIASES } from '../shared/faction-canon.js';
+import { CANONICAL_FACTION_KEYS, FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
 import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
 import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describeTrail } from '../shared/clan-nomad-trail.js';
@@ -116,6 +116,35 @@ function utcDay(now) {
   return now.toISOString().slice(0, 10);
 }
 
+async function readCrewProgress(db, now) {
+  const day = utcDay(now);
+  const monday = new Date(now);
+  monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);
+  const weekStart = utcDay(monday);
+  // Use the faction/day index and count only settled receipts in the current UTC week.
+  const placeholders = CANONICAL_FACTION_KEYS.map(() => '?').join(', ');
+  const result = await db.prepare(`
+    SELECT faction_id, COUNT(*) AS week_banks,
+      SUM(CASE WHEN utc_day = ? THEN 1 ELSE 0 END) AS today_banks
+    FROM clan_operation_awards
+    WHERE faction_id IN (${placeholders}) AND utc_day BETWEEN ? AND ?
+    GROUP BY faction_id
+  `).bind(day, ...CANONICAL_FACTION_KEYS, weekStart, day).all();
+  if (result.success !== true || !Array.isArray(result.results)) throw new Error('crew_receipt_query_failed');
+  const byFaction = new Map(result.results.map(row => [row.faction_id, row]));
+  return {
+    ok: true, enabled: true, utc_day: day, week_start: weekStart,
+    crews: CANONICAL_FACTION_KEYS.map(factionId => {
+      const counts = byFaction.get(factionId);
+      return {
+        faction_id: factionId,
+        today_banks: counts?.today_banks ?? 0,
+        week_banks: counts?.week_banks ?? 0,
+      };
+    }),
+  };
+}
+
 async function readOperation(db, owner, now, factionId, operation) {
   const day = utcDay(now);
   // One statement keeps progress and its triggered awards in the same snapshot.
@@ -168,7 +197,18 @@ export async function handleClanOperations(request, env, helpers) {
   } = helpers;
   const actionRequest = path === '/clan-operations/move';
   if (request.method === 'GET' && !actionRequest) {
-    return respond({ ok: true, enabled: clanOperationsEnabled(env) });
+    const enabled = clanOperationsEnabled(env);
+    if (!enabled || new URL(request.url).searchParams.get('view') !== 'crew-progress') {
+      return respond({ ok: true, enabled });
+    }
+    const ipLimited = rateLimit?.();
+    if (ipLimited) return ipLimited;
+    try {
+      return respond(await readCrewProgress(env.DB, now()));
+    } catch (error) {
+      logApiFailure?.('clan_crew_progress_unavailable', { message: error?.message });
+      return respond({ error: 'crew_progress_unavailable' }, 503);
+    }
   }
   if (request.method !== 'POST') return respond({ error: 'method_not_allowed' }, 405);
   if (!clanOperationsEnabled(env)) return respond({ error: 'pilot_closed' }, 404);
