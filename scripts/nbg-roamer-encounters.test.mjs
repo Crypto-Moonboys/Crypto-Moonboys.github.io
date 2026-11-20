@@ -54,14 +54,20 @@ test('parachute art preserves rat colour independent of array order', () => {
 function encounterHarness() {
   const script = [
     definitions,
-    "let encounterCtx = {clearRect() {}}, encounterCanvas = {width: 1000, height: 700};",
-    "let active = true, controlling = false, enemies = [], encounterNextAt = 0, encounterSpawnIndex = 0;",
+    "let encounterCtx = {clearRect() {}, save() {}, restore() {}, fillText() {}}, encounterCanvas = {width: 1000, height: 700};",
+    "let active = true, controlling = false, runnerDefeated = false, enemies = [], encounterNextAt = 0, encounterSpawnIndex = 0;",
+    "const MAX_HEALTH = 3; let health = MAX_HEALTH;",
     "let x = -5000, y = 0, vy = 0, jumpsUsed = 0, sprayUntil = 0, direction = 1;",
     "const resizeEncounterCanvas = () => {};",
     "const framesDrawn = [];",
     "const drawEnemyPose = (key, pose, frame, x, top, w, h, facing, grounded) => framesDrawn.push({key, top, facing, grounded});",
     "const beginEnemyAttack = () => {};",
     "const defeatEnemy = enemy => {enemy.defeated = true};",
+    "const runnerHitbox = () => ({left:-5000,right:-4950,top:0,bottom:0});",
+    "const enemyHitbox = () => ({left:0,right:0,top:0,bottom:0});",
+    "const enemyAttackHitbox = () => null; const overlaps = () => false;",
+    "const damageRunner = () => false;",
+    "const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));",
     functionBody('spawnEnemy'),
     functionBody('updateEncounter'),
     "({spawnEnemy, updateEncounter, setEnemies: values => {enemies = values}, getEnemies: () => enemies, framesDrawn})"
@@ -189,9 +195,9 @@ test('each walking enemy cycles all its canonical attack poses while near the pl
 
 test('stomps and spray still work, gameplay remains separate and cleanup is bounded', () => {
   assert.match(source, /overlapX && vy < 0 &&\s*oldFoot <= enemyTop \+ 16 && playerFoot >= enemyTop/);
-  assert.match(source, /defeatEnemy\(enemy, now\);\s*vy = 430/);
+  assert.match(source, /defeatEnemy\(enemy, now\);\s*playerWon = true;\s*vy = 430/);
   assert.match(source, /sprayReach >= -10 && sprayReach < 125/);
-  assert.match(source, /const anim = now < sprayUntil \? 'spray'/);
+  assert.match(source, /: now < sprayUntil \? 'spray'/);
   assert.match(source, /if \(key === 'KeyF'\) spray\(\)/);
   assert.match(source, /const clearEncounter|function clearEncounter/);
   assert.match(source, /clearEncounter\(\);\s*if \(host\) host\.remove\(\)/);

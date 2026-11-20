@@ -12,6 +12,7 @@
   const GRAVITY = 1150;
   const JUMP_VELOCITIES = [630, 760]; // First two distinct presses.
   const JUMP_TAP_SPACING_MS = 115; // Match the source game's discrete jump taps.
+  const MAX_HEALTH = 3, HIT_INVULN_MS = 1200, HURT_MS = 450, DEFEAT_MS = 700;
   const held = new Set();
   let manifest, host, sprite, controls, active = false, controlling = false;
   let direction = 1, x = -100, y = 0, vy = 0, frame = 0, frameTime = 0, last = 0, deadline = 0;
@@ -121,6 +122,7 @@
   let encounterCanvas = null, encounterCtx = null, enemyImages = {}, enemies = [];
   let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0, encounterSpawnIndex = 0;
   let sprayUntil = 0, lastSpray = -Infinity, cleanSprayUrl = null, sprayPreparing = false;
+  let health = MAX_HEALTH, invulnerableUntil = 0, hurtUntil = 0, runnerDefeated = false, defeatAt = 0;
   const measuredFrames = new WeakMap();
   let measureCanvas = null, measureContext = null;
   function createEncounterCanvas() {
@@ -175,6 +177,9 @@
     enemies = [];
     encounterSpawnIndex = 0;
     sprayUntil = 0;
+    health = MAX_HEALTH;
+    invulnerableUntil = hurtUntil = defeatAt = 0;
+    runnerDefeated = false;
     encounterNextAt = performance.now() + 2200;
     createEncounterCanvas();
     resizeEncounterCanvas();
@@ -257,6 +262,57 @@
     encounterCtx.restore();
   }
 
+  // The website encounter has its own 3-hit life system. It never touches
+  // the NBG London health/replay/XP state, and never blocks page navigation.
+  function overlaps(a, b) {
+    return a.left < b.right && a.right > b.left &&
+      a.top < b.bottom && a.bottom > b.top;
+  }
+  function runnerHitbox(h) {
+    return { left: x + 14, right: x + 58, top: h - y - 74, bottom: h - y - 6 };
+  }
+  function enemyHitbox(enemy) {
+    const type = enemy.type;
+    return {
+      left: enemy.x + 8, right: enemy.x + type.width - 8,
+      top: enemy.top + (type.kind === 'parachute' ? 16 : 5),
+      bottom: enemy.top + type.height - 2
+    };
+  }
+  function enemyAttackHitbox(enemy, now) {
+    const attack = enemy.attack;
+    if (!attack || enemy.hitUntil > now || now < attack.startedAt) return null;
+    const duration = attack.until - attack.startedAt;
+    const elapsed = now - attack.startedAt;
+    // Attacks deal damage only during their active frames, not while winding up.
+    if (elapsed < duration * 0.22 || elapsed > duration * 0.85) return null;
+    const reach = attack.key === 'graffitiBotFire' ? 92 :
+      attack.key === 'balloonRelease' ? 56 : 44;
+    const left = attack.facing < 0
+      ? enemy.x - reach + 10 : enemy.x + enemy.type.width - 10;
+    return { left, right: left + reach, top: enemy.top - 8,
+      bottom: enemy.top + enemy.type.height - 2 };
+  }
+  function damageRunner(now, sourceX) {
+    if (!active || runnerDefeated || now < invulnerableUntil) return false;
+    health = Math.max(0, health - 1);
+    hurtUntil = now + HURT_MS;
+    invulnerableUntil = now + HIT_INVULN_MS;
+    sprayUntil = 0;
+    held.clear();
+    x = clamp(x + (sourceX >= x + 36 ? -25 : 25), 0,
+      Math.max(0, window.innerWidth - 72));
+    vy = Math.max(vy, 170);
+    if (sprite) sprite.setAttribute('aria-label',
+      'NBG runner: ' + health + ' of ' + MAX_HEALTH + ' health remaining');
+    if (health === 0) {
+      runnerDefeated = true;
+      defeatAt = now + DEFEAT_MS;
+      controlling = false;
+      if (controls) controls.hidden = true;
+    }
+    return true;
+  }
   function beginEnemyAttack(enemy, now) {
     const attacks = ENEMY_ATTACKS[enemy.type.key];
     if (!attacks || enemy.attack || now < enemy.nextAttackAt || enemy.hitUntil > now) return;
@@ -312,7 +368,7 @@
     source.src = ASSET_ROOT + manifest.animations.spray.spriteSheet;
   }
   function spray(now = performance.now()) {
-    if (!active || !controlling || now - lastSpray < 550) return;
+    if (!active || !controlling || runnerDefeated || now - lastSpray < 550) return;
     lastSpray = now;
     sprayUntil = now + 260;
     prepareSpraySprite();
@@ -382,17 +438,31 @@
       const oldFoot = h - previousPlayerY;
       const overlapX = playerRight > enemy.x + 8 && playerLeft < enemy.x + e.width - 8;
       const enemyTop = enemy.top + (e.kind === 'parachute' ? 12 : 5);
-      if (!enemy.hitUntil && overlapX && vy < 0 &&
+      let playerWon = false;
+      if (!runnerDefeated && !enemy.hitUntil && overlapX && vy < 0 &&
           oldFoot <= enemyTop + 16 && playerFoot >= enemyTop) {
         defeatEnemy(enemy, now);
+        playerWon = true;
         vy = 430;
         if (jumpsUsed > 0) jumpsUsed = Math.min(jumpsUsed, 2);
       }
       const sprayActive = controlling && now < sprayUntil;
       const sprayReach = direction > 0 ? enemy.x - (x + 54) : x - (enemy.x + e.width);
-      if (!enemy.hitUntil && sprayActive && sprayReach >= -10 && sprayReach < 125 &&
+      if (!runnerDefeated && !playerWon && !enemy.hitUntil && sprayActive &&
+          sprayReach >= -10 && sprayReach < 125 &&
           Math.abs((enemy.top + e.height / 2) - (playerTop + 38)) < 95) {
         defeatEnemy(enemy, now);
+        playerWon = true;
+      }
+      // Resolve stomp/spray before contact: a successful attack must not
+      // damage the runner during that same collision frame.
+      if (!runnerDefeated && !playerWon && !enemy.defeated && enemy.hitUntil <= now) {
+        const playerBody = runnerHitbox(h);
+        const bodyContact = overlaps(playerBody, enemyHitbox(enemy));
+        const attackBox = enemyAttackHitbox(enemy, now);
+        if (bodyContact || (attackBox && overlaps(playerBody, attackBox))) {
+          damageRunner(now, enemy.x + e.width / 2);
+        }
       }
       if (enemy.defeated || enemy.x < -140 || enemy.x > w + 180 || enemy.age > 30000) {
         enemy.defeated = true;
@@ -428,6 +498,15 @@
       }
     }
     enemies = enemies.filter(enemy => !enemy.defeated);
+    // Float a minimal health indicator near the runner, without intercepting
+    // links, scrolling or the underlying page.
+    encounterCtx.save();
+    encounterCtx.font = 'bold 18px system-ui, sans-serif';
+    encounterCtx.textAlign = 'center';
+    encounterCtx.fillStyle = '#f3bd25';
+    encounterCtx.fillText('♥'.repeat(health) + '♡'.repeat(MAX_HEALTH - health),
+      clamp(x + 36, 36, w - 36), Math.max(24, h - y - 91));
+    encounterCtx.restore();
   }
 
   function makeUI() {
@@ -490,7 +569,7 @@
     document.body.appendChild(host);
   }
   function takeControl() {
-    if (!active || disposed) return;
+    if (!active || disposed || runnerDefeated) return;
     controlling = true;
     deadline = performance.now() + CONTROL_MS;
     controls.hidden = false;
@@ -527,6 +606,7 @@
   function stop() {
     active = false; controlling = false; moving = false; held.clear();
     jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false; y = vy = 0;
+    health = MAX_HEALTH; invulnerableUntil = hurtUntil = defeatAt = 0; runnerDefeated = false;
     clearEncounter();
     if (host) host.remove();
     host = sprite = controls = null;
@@ -536,12 +616,15 @@
   }
   function tick(now) {
     if (!active || disposed) return;
+    if (runnerDefeated && now >= defeatAt) { stop(); return; }
     const delta = clamp((now - (last || now)) / 1000, 0, 0.05);
     last = now;
     if (controlling && now >= deadline) { controlling = false; held.clear(); controls.hidden = true; direction = 1; }
     const previousPlayerY = y;
     let crouch = false;
-    if (controlling) {
+    if (runnerDefeated) {
+      moving = false;
+    } else if (controlling) {
       const left = held.has('ArrowLeft') || held.has('KeyA');
       const right = held.has('ArrowRight') || held.has('KeyD');
       crouch = held.has('ArrowDown') || held.has('KeyS');
@@ -558,10 +641,13 @@
       }
     }
     updateEncounter(now, delta, previousPlayerY);
-    const anim = now < sprayUntil ? 'spray' : y > 0
+    const anim = runnerDefeated || now < hurtUntil ? 'hurt'
+      : now < sprayUntil ? 'spray' : y > 0
       ? backflipActive ? 'backflip' : vy >= 0 ? 'jump' : 'fall'
       : crouch && moving ? (direction < 0 ? 'crouchLeft' : 'crouchRight') : crouch ? 'idle' : moving ? 'run' : 'idle';
     setAnimation(anim, now);
+    sprite.style.opacity = !runnerDefeated && now < invulnerableUntil &&
+      Math.floor(now / 110) % 2 === 0 ? '0.45' : '1';
     sprite.style.transform = 'translate3d(' + x + 'px,' + (-y) + 'px,0) scaleX(' + (sprite.dataset.facing || '1') + ')';
     if (!controlling && x > innerWidth + 120) { stop(); return; }
     raf = requestAnimationFrame(tick);
@@ -592,7 +678,7 @@
     finally { spawning = false; updateSummonButton(); }
   }
   function onKeyDown(event) {
-    if (!active || disposed || document.hidden || event.defaultPrevented ||
+    if (!active || disposed || runnerDefeated || document.hidden || event.defaultPrevented ||
         event.altKey || event.ctrlKey || event.metaKey ||
         !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space','KeyF','KeyJ'].includes(event.code)) return;
     // A summoned runner can be taken over with the first movement key, without
