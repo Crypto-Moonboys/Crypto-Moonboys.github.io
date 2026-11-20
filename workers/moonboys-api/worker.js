@@ -9862,18 +9862,24 @@ function formatUtcHm(iso) {
   return String(iso || '').slice(11, 16);
 }
 
+function clanOperationPlayUrl() {
+  return `${SITE_URL}/community.html#clan-operation`;
+}
+
 function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
-  const durationMinutes = Math.round((Date.parse(eventRow.ends_at) - Date.parse(eventRow.starts_at)) / 60000) || 90;
   return [
     '🚨 WTF SIGNAL IN 10 MINUTES',
     '',
-    `${eventRow.title} opens at ${formatUtcHm(eventRow.starts_at)} UTC.`,
+    `${eventRow.title} · ${formatUtcHm(eventRow.starts_at)}–${formatUtcHm(eventRow.ends_at)} UTC.`,
     '',
     `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
-    `Window: ${durationMinutes} minutes.`,
     '',
-    'Check in when it opens and complete the objective to unlock roguelite options. Any XP shown for this signal is a preview.',
-    ...(clanPilot ? [`Clan Operations pilot: ${SITE_URL}/community.html#clan-operation`] : []),
+    'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
+    ...(clanPilot ? [
+      '',
+      `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
+      'Bank completed tiers for Clan Renown and collectibles. Your clan’s operation is open all UTC day.',
+    ] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
     `Arcade: ${SITE_URL}/games/`,
@@ -9897,8 +9903,8 @@ function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
     '',
     'Check the site for current tasks, timed quests, and roguelite options.',
     ...(clanPilot ? [
-      `Clan Operations pilot: ${SITE_URL}/community.html#clan-operation`,
-      'If Signal Intercept stays temporarily unavailable, reload the whole Battle Chamber page or reopen the link.',
+      `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
+      'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
     ] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
@@ -9942,6 +9948,7 @@ function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
           ends_at: row.ends_at,
           required_action: row.required_action,
           pre_event_minutes: TELEGRAM_GROUP_PRE_EVENT_MINUTES,
+          ...(options.clanPilot ? { clan_operation_url: clanOperationPlayUrl() } : {}),
         },
       });
     }
@@ -12035,7 +12042,16 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
     }
     const result = await sendTelegramGroupAnnouncement(env, candidate).catch((error) => ({ ok: false, error: error?.message || String(error) }));
     if (result?.ok) {
-      await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'sent', { metadata: { telegram_status: result.status || null } });
+      let messageId = result.telegram_message_id;
+      if (!messageId && typeof result.response === 'string') {
+        try { messageId = JSON.parse(result.response)?.result?.message_id; } catch { /* Older responses lack a message ID. */ }
+      }
+      await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'sent', {
+        metadata: {
+          telegram_status: result.status || null,
+          ...(Number.isSafeInteger(messageId) && messageId > 0 ? { telegram_message_id: messageId } : {}),
+        },
+      });
       summary.sent_count += 1;
       continue;
     }

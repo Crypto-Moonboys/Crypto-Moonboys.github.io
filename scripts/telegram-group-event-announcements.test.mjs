@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import { buildWtfPreviewSchedule } from '../workers/moonboys-api/shared/daily-wtf-schedule.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -59,8 +61,22 @@ check(workerJs.includes('nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs
 check(workerJs.includes('`wtf:${utcDay}:${row.event_id}:minus_10`'), 'timed announcement keys are stable');
 check(workerJs.includes("existing?.status === 'sent'") && workerJs.includes("reason: 'already_sent'"), 'duplicate sends are blocked after a sent log row');
 check(workerJs.includes('buildWtfPreEventGroupAnnouncement'), 'pre-event group message builder exists');
-check(workerJs.includes('Check in when it opens and complete the objective to unlock roguelite options. Any XP shown for this signal is a preview.'), 'pre-event copy requires objective completion and labels XP as preview');
+check(workerJs.includes('Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.'), 'pre-event copy requires objective completion and labels XP as preview');
 check(workerJs.includes('Battle Chamber: ${SITE_URL}/community.html') && workerJs.includes('Arcade: ${SITE_URL}/games/'), 'pre-event messages include Battle Chamber and Arcade links');
+
+const playUrl = 'https://cryptomoonboys.com/community.html#clan-operation';
+const announcementSource = workerJs.slice(workerJs.indexOf('function describeWtfRequiredAction('),
+  workerJs.indexOf('function buildDailyGroupSummaryMessage('));
+const buildNotice = runInNewContext(announcementSource + '\nbuildWtfPreEventGroupAnnouncement',
+  { SITE_URL: 'https://cryptomoonboys.com' });
+for (const row of buildWtfPreviewSchedule('2026-11-20', Date.parse('2026-11-20T00:00:00Z'))) {
+  const notice = buildNotice(row, true);
+  check(notice.split(playUrl).length === 2 && notice.includes('Clan Renown and collectibles') &&
+    notice.includes('Signal bonus XP is a preview only') &&
+    notice.includes(row.starts_at.slice(11, 16) + '–' + row.ends_at.slice(11, 16) + ' UTC'),
+    row.title + ' links to Clan Operations and distinguishes the two rewards');
+  check(!buildNotice(row, false).includes(playUrl), row.title + ' hides the play link when Clan Operations are disabled');
+}
 
 console.log('\n[3] Daily group summary');
 check(workerJs.includes('buildDailyGroupSummaryMessage'), 'daily group summary exists');
