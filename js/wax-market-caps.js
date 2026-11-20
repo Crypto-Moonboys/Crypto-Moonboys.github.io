@@ -5,6 +5,7 @@
   const rows = Array.from(panel.querySelectorAll('[data-collection]'), row => ({
     collection: row.dataset.collection,
     waxCell: row.querySelector('[data-wax]'),
+    hiveUsdCell: row.querySelector('[data-hive-usd]'),
     usdCell: row.querySelector('[data-usd]'),
     marketCap: null
   }));
@@ -34,12 +35,15 @@
         { signal: AbortSignal.timeout(12000) }
       );
       if (!response.ok) throw new Error('Market cap request failed');
-      const { waxMarketCap } = await response.json();
+      const { waxMarketCap, usdMarketCap } = await response.json();
+      row.hiveUsdCell.textContent = Number.isFinite(usdMarketCap) && usdMarketCap >= 0
+        ? usd.format(usdMarketCap) : 'Unavailable';
       if (!Number.isFinite(waxMarketCap) || waxMarketCap < 0) throw new Error('Invalid WAX market cap');
       row.marketCap = waxMarketCap;
       render(row);
     } catch {
       row.waxCell.textContent = 'Unavailable';
+      if (row.hiveUsdCell.textContent === '—') row.hiveUsdCell.textContent = 'Unavailable';
     }
   }
 
