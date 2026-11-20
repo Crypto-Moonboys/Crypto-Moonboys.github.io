@@ -142,12 +142,34 @@
     const w = window.innerWidth, h = window.innerHeight;
     const parachute = type.kind === 'parachute';
     return {
-      type, x: parachute ? w * (index ? 0.7 : 0.3) : w + 20 + index * 70,
-      top: parachute ? -type.height - index * 100 : type.kind === 'flying' ? h * 0.28 : h - type.height,
-      vx: parachute ? (index ? -10 : 10) : -(type.kind === 'flying' ? 100 : 58),
-      age: index * 140, defeated: false
+      type, identity: type.landedKey || type.key,
+      x: parachute ? w * (index ? 0.7 : 0.3) : w + 20 + index * 70,
+      top: parachute ? -type.height : h - type.height,
+      vx: parachute ? (index ? -10 : 10) : -58,
+      age: 0, defeated: false, hitUntil: 0, nextAttackAt: 0,
+      attack: null, attackIndex: 0
     };
   }
+
+  function preloadEnemyImages(generation) {
+    const install = data => {
+      if (disposed || generation !== encounterGeneration) return;
+      enemyManifest = data.enemies || {};
+      const keys = new Set([...ENEMY_TYPES.map(type => type.key), ...Object.keys(ATTACK_POSES)]);
+      for (const key of keys) {
+        const path = enemyManifest[key];
+        if (!path || enemyImages[key]) continue;
+        const image = new Image();
+        image.src = ASSET_ROOT + path;
+        enemyImages[key] = image;
+      }
+    };
+    if (enemyManifest) { install({ enemies: enemyManifest }); return; }
+    fetch(ASSET_ROOT + 'asset-manifest.json', { credentials: 'same-origin' })
+      .then(response => { if (!response.ok) throw Error('Missing NBG enemy manifest'); return response.json(); })
+      .then(install).catch(() => {});
+  }
+
   function startEncounter() {
     const generation = ++encounterGeneration;
     enemies = [];
@@ -155,33 +177,110 @@
     encounterNextAt = performance.now() + 2200;
     createEncounterCanvas();
     resizeEncounterCanvas();
-    // Parachute rats appear together when the character comes into view.
-    const parachutes = ENEMY_TYPES.slice(0, 2);
+    // Drop two distinct colours at the same instant, each retaining its own
+    // identity once its parachute is replaced by the matching walk sheet.
+    const parachutes = [ENEMY_BY_KEY.parachuteRatA, ENEMY_BY_KEY.parachuteRatC];
     for (let i = 0; i < parachutes.length; i++) enemies.push(spawnEnemy(parachutes[i], i));
-    // Preload actual NBG Level 1 artwork, without blocking player movement.
-    if (!enemyManifest) {
-      fetch(ASSET_ROOT + 'asset-manifest.json', { credentials: 'same-origin' })
-        .then(response => { if (!response.ok) throw Error('Missing NBG enemy manifest'); return response.json(); })
-        .then(data => {
-          if (disposed || generation !== encounterGeneration) return;
-          enemyManifest = data.enemies || {};
-          ENEMY_TYPES.forEach(type => {
-            const path = enemyManifest[type.key];
-            if (!path || enemyImages[type.key]) return;
-            const image = new Image();
-            image.src = ASSET_ROOT + path;
-            enemyImages[type.key] = image;
-          });
-        }).catch(() => {});
+    preloadEnemyImages(generation);
+  }
+
+  // Measure the visible pixels of each cell once, not its transparent 5x5
+  // frame border. Preserve the original aspect ratio and anchor the visible
+  // foot of every pose on the actual viewport bottom.
+  function visibleFrameBounds(image, pose, frame) {
+    let cache = measuredFrames.get(image);
+    if (!cache) { cache = new Map(); measuredFrames.set(image, cache); }
+    const index = Math.max(0, Math.min(pose.frames - 1, frame));
+    const cacheKey = pose.columns + ':' + pose.frames + ':' + index;
+    if (cache.has(cacheKey)) return cache.get(cacheKey);
+    const sourceW = image.naturalWidth / pose.columns;
+    const sourceH = image.naturalHeight / Math.ceil(pose.frames / pose.columns);
+    const sourceX = (index % pose.columns) * sourceW;
+    const sourceY = Math.floor(index / pose.columns) * sourceH;
+    let bounds = { x: sourceX, y: sourceY, width: sourceW, height: sourceH };
+    try {
+      if (!measureCanvas) {
+        measureCanvas = document.createElement('canvas');
+        measureContext = measureCanvas.getContext('2d', { willReadFrequently: true });
+      }
+      if (measureContext) {
+        const width = Math.max(1, Math.floor(sourceW)), height = Math.max(1, Math.floor(sourceH));
+        measureCanvas.width = width;
+        measureCanvas.height = height;
+        measureContext.clearRect(0, 0, width, height);
+        measureContext.drawImage(image, sourceX, sourceY, sourceW, sourceH, 0, 0, width, height);
+        const pixels = measureContext.getImageData(0, 0, width, height).data;
+        let minX = width, minY = height, maxX = -1, maxY = -1;
+        for (let row = 0; row < height; row++) {
+          for (let col = 0; col < width; col++) {
+            if (pixels[(row * width + col) * 4 + 3] <= 24) continue;
+            minX = Math.min(minX, col); maxX = Math.max(maxX, col);
+            minY = Math.min(minY, row); maxY = Math.max(maxY, row);
+          }
+        }
+        if (maxX >= 0) {
+          bounds = { x: sourceX + minX, y: sourceY + minY,
+            width: maxX - minX + 1, height: maxY - minY + 1 };
+        }
+      }
+    } catch (_) { /* Unreadable sheet: retain full-cell rendering. */ }
+    cache.set(cacheKey, bounds);
+    return bounds;
+  }
+
+  function drawEnemyPose(key, pose, frame, left, top, width, height, facing, grounded) {
+    const image = enemyImages[key];
+    if (!image || !image.complete || !image.naturalWidth || !encounterCtx) return;
+    const index = Math.max(0, Math.min(pose.frames - 1, frame));
+    const bounds = visibleFrameBounds(image, pose, index);
+    // The first frame sets pose scale. Subsequent stances retain physical
+    // proportions (e.g. crouched punches) instead of growing to fill a box.
+    const start = visibleFrameBounds(image, pose, 0);
+    const scale = Math.min(height / start.height, (width * 1.7) / start.width);
+    const drawW = bounds.width * scale, drawH = bounds.height * scale;
+    const drawX = left + (width - drawW) / 2;
+    const drawY = grounded ? encounterCanvas.height - drawH : top;
+    encounterCtx.save();
+    encounterCtx.imageSmoothingEnabled = false;
+    // Canonical NBG walking and attacking sheets face right. Mirror only the
+    // drawn cell, never its viewport x translation, when heading left.
+    if (facing < 0) {
+      encounterCtx.translate(Math.round(drawX + drawW), Math.round(drawY));
+      encounterCtx.scale(-1, 1);
+      encounterCtx.drawImage(image, bounds.x, bounds.y, bounds.width, bounds.height,
+        0, 0, Math.round(drawW), Math.round(drawH));
     } else {
-      ENEMY_TYPES.forEach(type => {
-        if (!enemyManifest[type.key] || enemyImages[type.key]) return;
-        const image = new Image();
-        image.src = ASSET_ROOT + enemyManifest[type.key];
-        enemyImages[type.key] = image;
-      });
+      encounterCtx.drawImage(image, bounds.x, bounds.y, bounds.width, bounds.height,
+        Math.round(drawX), Math.round(drawY), Math.round(drawW), Math.round(drawH));
+    }
+    encounterCtx.restore();
+  }
+
+  function beginEnemyAttack(enemy, now) {
+    const attacks = ENEMY_ATTACKS[enemy.type.key];
+    if (!attacks || enemy.attack || now < enemy.nextAttackAt || enemy.hitUntil > now) return;
+    const nearby = Math.abs(x + 36 - enemy.x - enemy.type.width / 2) <= 100 &&
+      y <= 125;
+    if (!nearby) return;
+    const key = attacks[enemy.attackIndex % attacks.length];
+    const pose = ATTACK_POSES[key];
+    enemy.attackIndex++;
+    enemy.attack = { key, startedAt: now, until: now + pose.duration,
+      facing: x + 36 < enemy.x + enemy.type.width / 2 ? -1 : 1 };
+    enemy.nextAttackAt = now + pose.duration + 1150;
+  }
+
+  function defeatEnemy(enemy, now) {
+    if (enemy.hitUntil > now || enemy.defeated) return;
+    enemy.attack = null;
+    // Graffbot alone has a dedicated hurt pose: play it before removing him.
+    if (enemy.type.key === 'graffitiBot') {
+      enemy.hitUntil = now + ATTACK_POSES.graffitiBotHurt.duration;
+    } else {
+      enemy.defeated = true;
     }
   }
+
   // The original spray sprite export has green/white matte. Apply the same
   // clean-up criteria used by NBG London; never alter the committed PNG.
   function prepareSpraySprite() {
