@@ -79,7 +79,7 @@ test('attack hitbox is directional and only active during attack frames', () => 
 test('contact from live enemy and active attack remove health in encounter loop', () => {
   const setup = [
     'const MAX_HEALTH=3,HIT_INVULN_MS=1200,HURT_MS=450,DEFEAT_MS=700;',
-    'const ENEMY_TYPES=[];',
+    'const ENEMY_TYPES=[]; const ATTACK_POSES={turquoiseRatKick:{frames:25,frameMs:34}};'
     'let health=MAX_HEALTH, invulnerableUntil=0,hurtUntil=0,runnerDefeated=false,defeatAt=0;',
     'let x=200,y=0,vy=0,sprayUntil=0,controlling=true,active=true,direction=1,jumpsUsed=0;',
     'let encounterNextAt=Infinity,encounterSpawnIndex=0;',
@@ -94,7 +94,7 @@ test('contact from live enemy and active attack remove health in encounter loop'
     'const defeatEnemy=e=>{e.defeated=true};',
     combat,
     extract('updateEncounter'),
-    '({setEnemy:e=>{enemies=[e]},setRunner:(px,py=0)=>{x=px;y=py;vy=0},',
+    '({setEnemy:e=>{enemies=[e]},setRunner:(px,py=0,pvy=0)=>{x=px;y=py;vy=pvy},',
     ' setSpray:until=>{sprayUntil=until}, updateEncounter,',
     ' get:()=>({health,runnerDefeated,vy,enemies})})'
   ].join('\n');
@@ -116,7 +116,7 @@ test('contact from live enemy and active attack remove health in encounter loop'
   h.updateEncounter(2400,0.016,0);
   assert.equal(h.get().health,1,'an active melee pose hits outside body range');
 
-  h.setRunner(200,50);
+  h.setRunner(200,50,-300);
   const stompTarget=enemy();
   h.setEnemy(stompTarget);
   h.updateEncounter(3600,0.016,68);
