@@ -11,7 +11,9 @@ import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-g
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
 import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
+import { advanceFork, describeFork, forkFinds } from '../workers/moonboys-api/shared/clan-rockers-fork.js';
 
+const forkMigration = readFileSync(new URL('../workers/moonboys-api/migrations/121_clan_hard_fork_rockers.sql', import.meta.url), 'utf8');
 const signalMigration = readFileSync(new URL('../workers/moonboys-api/migrations/120_clan_crypto_moongirls.sql', import.meta.url), 'utf8');
 const districtMigration = readFileSync(new URL('../workers/moonboys-api/migrations/119_clan_all_city_bulls.sql', import.meta.url), 'utf8');
 
@@ -26,13 +28,14 @@ const factionTable = `
 const factionRows = `
   INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
     ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4),
-    ('105', 'nomad-bears', 60, 5), ('107', 'blockchain-furies', 0, 0), ('108', 'crypto-moongirls', 77, 8)
+    ('105', 'nomad-bears', 60, 5), ('107', 'blockchain-furies', 0, 0), ('108', 'crypto-moongirls', 77, 8),
+    ('110', 'hard-fork-rockers', 55, 6)
 `;
 
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -52,12 +55,12 @@ function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
     action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction,
-    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1',
+    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, operation_faction: faction,
+      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, operation_faction: faction,
       utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
@@ -176,6 +179,7 @@ async function localD1(t) {
     await db.prepare(trailsMigration).run();
     await db.prepare(districtMigration).run();
     await db.prepare(signalMigration).run();
+    await db.prepare(forkMigration).run();
   } finally {
     schema.close();
   }
@@ -772,4 +776,102 @@ test('three Moongirls sweeps bank once each in D1 and reset at UTC midnight', { 
   assert.equal(tomorrow.renown_today, 0);
   assert.equal(tomorrow.renown_total, 30_000);
   assert.equal(tomorrow.collection.length, 3);
+});
+
+test('all nine Fork Runs can bank on either branch with one timed brace at most', () => {
+  for (let route = 0; route < 3; route++) {
+    for (let tier = 0; tier < 3; tier++) {
+      const base = { route_index: route, tier, operationState: {} };
+      assert.equal(advanceFork(base, 'bank'), null);
+      assert.equal(advanceFork(base, 'cross'), null);
+      for (const grade of ['stable', 'edge']) {
+        let state = { ...base, ...advanceFork(base, 'choose-' + grade) };
+        let braces = 0;
+        for (let section = 0; section < 3; section++) {
+          const view = describeFork(route, tier, state.operationState);
+          if (!view.actions.some(action => action.id === 'cross')) {
+            state = { ...state, ...advanceFork(state, 'brace') };
+            braces++;
+          }
+          const move = advanceFork(state, 'cross');
+          assert.ok(move);
+          state = { ...state, ...move };
+        }
+        assert.equal(braces, grade === 'edge' ? 1 : 0);
+        assert.equal(state.operationState.fork, grade);
+        assert.equal(advanceFork(state, 'bank').tier, tier + 1);
+      }
+      assert.notEqual(forkFinds(route, 'stable')[tier], forkFinds(route, 'edge')[tier]);
+    }
+  }
+});
+
+test('spending the brace early stalls the Edge Fork and allows a fresh Stable Fork', () => {
+  let state = { route_index: 0, tier: 0, operationState: {} };
+  for (const action of ['choose-edge', 'cross', 'brace', 'cross']) {
+    state = { ...state, ...advanceFork(state, action) };
+  }
+  const stalled = describeFork(0, 0, state.operationState);
+  assert.equal(stalled.stalled, true);
+  assert.equal(stalled.stability, 2);
+  assert.deepEqual(stalled.actions.map(action => action.id), ['choose-stable']);
+  assert.equal(advanceFork(state, 'bank'), null);
+  const recovered = advanceFork(state, 'choose-stable');
+  assert.equal(recovered.outcome, 'fork_recovered');
+  assert.deepEqual(recovered.operationState, { fork: 'stable' });
+  assert.equal(describeFork(0, 0, recovered.operationState).stability, 4);
+});
+
+test('Rockers fail closed before migration 121 while Moongirls remain available', async t => {
+  const { request, sql } = fixture(t);
+  sql.exec('DROP TRIGGER clan_operation_award_at_fork_bank');
+  assert.equal((await request({ id: '110' })).status, 503);
+  assert.equal((await request({ id: '110', action: 'choose-stable', revision: 0 })).status, 503);
+  assert.equal((await request({ id: '108' })).status, 200);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+test('Rockers bank branch-specific fragments once in D1 with the shared daily cap', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '110', faction: 'hard-fork-rockers' };
+  assert.equal((await request({ ...account, fork_ui: null })).status, 409);
+  assert.equal((await request({ ...account, signed: false })).status, 401);
+  assert.equal((await request({ ...account, faction: 'crypto-moongirls' })).status, 403);
+  let { data: state } = await request(account);
+  const route = dailyRouteIndex(settings.time);
+  const move = action => request({ ...account, action, revision: state.revision, day: state.utc_day });
+  const take = async action => {
+    const response = await move(action);
+    assert.equal(response.status, 200);
+    state = response.data;
+  };
+  assert.equal((await move('bank')).status, 409);
+  const expected = [];
+  for (const grade of ['edge', 'stable', 'edge']) {
+    await take('choose-' + grade);
+    for (let section = 0; section < 3; section++) {
+      if (!state.fork.actions.some(action => action.id === 'cross')) await take('brace');
+      await take('cross');
+    }
+    assert.deepEqual((await request(account)).data.fork, state.fork);
+    const banks = await Promise.all([move('bank'), move('bank')]);
+    assert.deepEqual(banks.map(result => result.status).sort(), [200, 409]);
+    state = banks.find(result => result.status === 200).data;
+    expected.push(forkFinds(route, grade)[state.tier - 1]);
+    assert.equal(state.renown_today, RENOWN_PER_TIER * state.tier);
+    assert.deepEqual(state.collection.map(item => item.name), expected);
+    assert.ok(state.collection.at(-1).specimen_key.endsWith('-' + grade));
+  }
+  assert.equal(state.status, 'complete');
+  assert.equal((await move('bank')).status, 409);
+  assert.deepEqual(await db.prepare("SELECT faction_xp, gems FROM blocktopia_progression WHERE telegram_id = '110'").first(),
+    { faction_xp: 55, gems: 6 });
+  settings.time = new Date('2026-11-21T00:00:00Z');
+  assert.equal((await move('choose-stable')).status, 409);
+  const tomorrow = (await request(account)).data;
+  assert.notEqual(tomorrow.fork.name, state.fork.name);
+  assert.equal(tomorrow.renown_today, 0);
+  assert.equal(tomorrow.renown_total, 30_000);
+  assert.deepEqual(tomorrow.collection.map(item => item.name), expected);
 });

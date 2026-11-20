@@ -6,6 +6,7 @@ import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../sh
 import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describeTrail } from '../shared/clan-nomad-trail.js';
 import { ALL_CITY_BULLS, DISTRICT_RULES_VERSION, advanceDistrict, describeDistrict } from '../shared/clan-bulls-district.js';
 import { CRYPTO_MOONGIRLS, SIGNAL_RULES_VERSION, SIGNAL_FEATURE, advanceSignal, describeSignal } from '../shared/clan-moongirls-signal.js';
+import { HARD_FORK_ROCKERS, FORK_RULES_VERSION, FORK_FEATURE, advanceFork, describeFork, forkFinds } from '../shared/clan-rockers-fork.js';
 
 const operations = new Map([
   [MINERS, {
@@ -48,6 +49,14 @@ const operations = new Map([
     advance: advanceSignal,
     view: (route, state) => ({ signal: describeSignal(route, state.tier, state.utc_day, state.operationState) }),
     finds: route => describeSignal(route, 3).finds,
+  }],
+  [HARD_FORK_ROCKERS, {
+    version: FORK_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_fork_bank',
+    actions: ['choose-stable', 'choose-edge', 'cross', 'brace', 'bank'],
+    advance: advanceFork,
+    view: (route, state) => ({ fork: describeFork(route, state.tier, state.operationState) }),
+    finds: forkFinds,
   }],
 ]);
 
@@ -109,8 +118,8 @@ async function readOperation(db, owner, now, factionId, operation) {
     last_action: state.last_action ?? null, last_outcome: state.last_outcome ?? null,
     renown_today: state.renown_today, renown_total: state.renown_total, crew_banks: state.crew_banks,
     collection: JSON.parse(state.collection).map(item => {
-      const [, , routeIndex, tier] = item.specimen_key.split('-');
-      return { ...item, name: operation.finds(Number(routeIndex))[Number(tier) - 1] };
+      const [, , routeIndex, tier, grade] = item.specimen_key.split('-');
+      return { ...item, name: operation.finds(Number(routeIndex), grade)[Number(tier) - 1] };
     }),
   };
 }
@@ -150,7 +159,8 @@ export async function handleClanOperations(request, env, helpers) {
     const staleTrailClient = factionId === NOMAD_BEARS && body.expedition_ui !== TRAIL_FEATURE;
     const staleDistrictClient = factionId === ALL_CITY_BULLS && body.district_ui !== 'district-v1';
     const staleSignalClient = factionId === CRYPTO_MOONGIRLS && body.signal_ui !== SIGNAL_FEATURE;
-    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient) {
+    const staleForkClient = factionId === HARD_FORK_ROCKERS && body.fork_ui !== FORK_FEATURE;
+    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient || staleForkClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 
