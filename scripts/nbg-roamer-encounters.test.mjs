@@ -54,9 +54,9 @@ test('parachute art preserves rat colour independent of array order', () => {
 function encounterHarness() {
   const script = [
     definitions,
-    "let encounterCtx = {clearRect() {}, save() {}, restore() {}, fillText() {}}, encounterCanvas = {width: 1000, height: 700};"
+    "let encounterCtx = {clearRect() {}, save() {}, restore() {}, fillText() {}}, encounterCanvas = {width: 1000, height: 700};",
     "let active = true, controlling = false, runnerDefeated = false, enemies = [], encounterNextAt = 0, encounterSpawnIndex = 0;",
-    "const MAX_HEALTH = 3; let health = MAX_HEALTH;"
+    "const MAX_HEALTH = 3; let health = MAX_HEALTH;",
     "let x = -5000, y = 0, vy = 0, jumpsUsed = 0, sprayUntil = 0, direction = 1;",
     "const resizeEncounterCanvas = () => {};",
     "const framesDrawn = [];",
@@ -66,7 +66,7 @@ function encounterHarness() {
     "const runnerHitbox = () => ({left:-5000,right:-4950,top:0,bottom:0});",
     "const enemyHitbox = () => ({left:0,right:0,top:0,bottom:0});",
     "const enemyAttackHitbox = () => null; const overlaps = () => false;",
-    "const damageRunner = () => false;"
+    "const damageRunner = () => false;",
     functionBody('spawnEnemy'),
     functionBody('updateEncounter'),
     "({spawnEnemy, updateEncounter, setEnemies: values => {enemies = values}, getEnemies: () => enemies, framesDrawn})"
