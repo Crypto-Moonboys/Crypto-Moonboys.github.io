@@ -12,6 +12,7 @@
   const GRAVITY = 1150;
   const JUMP_VELOCITIES = [630, 760]; // First two distinct presses.
   const JUMP_TAP_SPACING_MS = 115; // Match the source game's discrete jump taps.
+  const MAX_HEALTH = 3, HIT_INVULN_MS = 1200, HURT_MS = 450, DEFEAT_MS = 700;
   const held = new Set();
   let manifest, host, sprite, controls, active = false, controlling = false;
   let direction = 1, x = -100, y = 0, vy = 0, frame = 0, frameTime = 0, last = 0, deadline = 0;
@@ -121,6 +122,7 @@
   let encounterCanvas = null, encounterCtx = null, enemyImages = {}, enemies = [];
   let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0, encounterSpawnIndex = 0;
   let sprayUntil = 0, lastSpray = -Infinity, cleanSprayUrl = null, sprayPreparing = false;
+  let health = MAX_HEALTH, invulnerableUntil = 0, hurtUntil = 0, runnerDefeated = false, defeatAt = 0;
   const measuredFrames = new WeakMap();
   let measureCanvas = null, measureContext = null;
   function createEncounterCanvas() {
@@ -175,6 +177,9 @@
     enemies = [];
     encounterSpawnIndex = 0;
     sprayUntil = 0;
+    health = MAX_HEALTH;
+    invulnerableUntil = hurtUntil = defeatAt = 0;
+    runnerDefeated = false;
     encounterNextAt = performance.now() + 2200;
     createEncounterCanvas();
     resizeEncounterCanvas();
@@ -257,6 +262,57 @@
     encounterCtx.restore();
   }
 
+  // The website encounter has its own 3-hit life system. It never touches
+  // the NBG London health/replay/XP state, and never blocks page navigation.
+  function overlaps(a, b) {
+    return a.left < b.right && a.right > b.left &&
+      a.top < b.bottom && a.bottom > b.top;
+  }
+  function runnerHitbox(h) {
+    return { left: x + 14, right: x + 58, top: h - y - 74, bottom: h - y - 6 };
+  }
+  function enemyHitbox(enemy) {
+    const type = enemy.type;
+    return {
+      left: enemy.x + 8, right: enemy.x + type.width - 8,
+      top: enemy.top + (type.kind === 'parachute' ? 16 : 5),
+      bottom: enemy.top + type.height - 2
+    };
+  }
+  function enemyAttackHitbox(enemy, now) {
+    const attack = enemy.attack;
+    if (!attack || enemy.hitUntil > now || now < attack.startedAt) return null;
+    const duration = attack.until - attack.startedAt;
+    const elapsed = now - attack.startedAt;
+    // Attacks deal damage only during their active frames, not while winding up.
+    if (elapsed < duration * 0.22 || elapsed > duration * 0.85) return null;
+    const reach = attack.key === 'graffitiBotFire' ? 92 :
+      attack.key === 'balloonRelease' ? 56 : 44;
+    const left = attack.facing < 0
+      ? enemy.x - reach + 10 : enemy.x + enemy.type.width - 10;
+    return { left, right: left + reach, top: enemy.top - 8,
+      bottom: enemy.top + enemy.type.height - 2 };
+  }
+  function damageRunner(now, sourceX) {
+    if (!active || runnerDefeated || now < invulnerableUntil) return false;
+    health = Math.max(0, health - 1);
+    hurtUntil = now + HURT_MS;
+    invulnerableUntil = now + HIT_INVULN_MS;
+    sprayUntil = 0;
+    held.clear();
+    x = clamp(x + (sourceX >= x + 36 ? -25 : 25), 0,
+      Math.max(0, window.innerWidth - 72));
+    vy = Math.max(vy, 170);
+    if (sprite) sprite.setAttribute('aria-label',
+      'NBG runner: ' + health + ' of ' + MAX_HEALTH + ' health remaining');
+    if (health === 0) {
+      runnerDefeated = true;
+      defeatAt = now + DEFEAT_MS;
+      controlling = false;
+      if (controls) controls.hidden = true;
+    }
+    return true;
+  }
   function beginEnemyAttack(enemy, now) {
     const attacks = ENEMY_ATTACKS[enemy.type.key];
     if (!attacks || enemy.attack || now < enemy.nextAttackAt || enemy.hitUntil > now) return;
@@ -312,7 +368,7 @@
     source.src = ASSET_ROOT + manifest.animations.spray.spriteSheet;
   }
   function spray(now = performance.now()) {
-    if (!active || !controlling || now - lastSpray < 550) return;
+    if (!active || !controlling || runnerDefeated || now - lastSpray < 550) return;
     lastSpray = now;
     sprayUntil = now + 260;
     prepareSpraySprite();
@@ -490,7 +546,7 @@
     document.body.appendChild(host);
   }
   function takeControl() {
-    if (!active || disposed) return;
+    if (!active || disposed || runnerDefeated) return;
     controlling = true;
     deadline = performance.now() + CONTROL_MS;
     controls.hidden = false;
