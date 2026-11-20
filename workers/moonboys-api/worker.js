@@ -9862,7 +9862,9 @@ function formatUtcHm(iso) {
   return String(iso || '').slice(11, 16);
 }
 
-const CLAN_OPERATION_PLAY_URL = `${SITE_URL}/community.html#clan-operation`;
+function clanOperationPlayUrl() {
+  return `${SITE_URL}/community.html#clan-operation`;
+}
 
 function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
   return [
@@ -9875,7 +9877,7 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
     'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
     ...(clanPilot ? [
       '',
-      `Play your daily Clan Operation: ${CLAN_OPERATION_PLAY_URL}`,
+      `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
       'Bank completed tiers for Clan Renown and collectibles. Your clan’s operation is open all UTC day.',
     ] : []),
     '',
@@ -9901,7 +9903,7 @@ function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
     '',
     'Check the site for current tasks, timed quests, and roguelite options.',
     ...(clanPilot ? [
-      `Play your daily Clan Operation: ${CLAN_OPERATION_PLAY_URL}`,
+      `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
       'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
     ] : []),
     '',
@@ -9946,7 +9948,7 @@ function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
           ends_at: row.ends_at,
           required_action: row.required_action,
           pre_event_minutes: TELEGRAM_GROUP_PRE_EVENT_MINUTES,
-          ...(options.clanPilot ? { clan_operation_url: CLAN_OPERATION_PLAY_URL } : {}),
+          ...(options.clanPilot ? { clan_operation_url: clanOperationPlayUrl() } : {}),
         },
       });
     }
