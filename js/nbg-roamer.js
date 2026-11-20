@@ -438,17 +438,31 @@
       const oldFoot = h - previousPlayerY;
       const overlapX = playerRight > enemy.x + 8 && playerLeft < enemy.x + e.width - 8;
       const enemyTop = enemy.top + (e.kind === 'parachute' ? 12 : 5);
-      if (!enemy.hitUntil && overlapX && vy < 0 &&
+      let playerWon = false;
+      if (!runnerDefeated && !enemy.hitUntil && overlapX && vy < 0 &&
           oldFoot <= enemyTop + 16 && playerFoot >= enemyTop) {
         defeatEnemy(enemy, now);
+        playerWon = true;
         vy = 430;
         if (jumpsUsed > 0) jumpsUsed = Math.min(jumpsUsed, 2);
       }
       const sprayActive = controlling && now < sprayUntil;
       const sprayReach = direction > 0 ? enemy.x - (x + 54) : x - (enemy.x + e.width);
-      if (!enemy.hitUntil && sprayActive && sprayReach >= -10 && sprayReach < 125 &&
+      if (!runnerDefeated && !playerWon && !enemy.hitUntil && sprayActive &&
+          sprayReach >= -10 && sprayReach < 125 &&
           Math.abs((enemy.top + e.height / 2) - (playerTop + 38)) < 95) {
         defeatEnemy(enemy, now);
+        playerWon = true;
+      }
+      // Resolve stomp/spray before contact: a successful attack must not
+      // damage the runner during that same collision frame.
+      if (!runnerDefeated && !playerWon && !enemy.defeated && enemy.hitUntil <= now) {
+        const playerBody = runnerHitbox(h);
+        const bodyContact = overlaps(playerBody, enemyHitbox(enemy));
+        const attackBox = enemyAttackHitbox(enemy, now);
+        if (bodyContact || (attackBox && overlaps(playerBody, attackBox))) {
+          damageRunner(now, enemy.x + e.width / 2);
+        }
       }
       if (enemy.defeated || enemy.x < -140 || enemy.x > w + 180 || enemy.age > 30000) {
         enemy.defeated = true;
@@ -484,6 +498,15 @@
       }
     }
     enemies = enemies.filter(enemy => !enemy.defeated);
+    // Float a minimal health indicator near the runner, without intercepting
+    // links, scrolling or the underlying page.
+    encounterCtx.save();
+    encounterCtx.font = 'bold 18px system-ui, sans-serif';
+    encounterCtx.textAlign = 'center';
+    encounterCtx.fillStyle = '#f3bd25';
+    encounterCtx.fillText('♥'.repeat(health) + '♡'.repeat(MAX_HEALTH - health),
+      clamp(x + 36, 36, w - 36), Math.max(24, h - y - 91));
+    encounterCtx.restore();
   }
 
   function makeUI() {
@@ -583,6 +606,7 @@
   function stop() {
     active = false; controlling = false; moving = false; held.clear();
     jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false; y = vy = 0;
+    health = MAX_HEALTH; invulnerableUntil = hurtUntil = defeatAt = 0; runnerDefeated = false;
     clearEncounter();
     if (host) host.remove();
     host = sprite = controls = null;
@@ -592,12 +616,15 @@
   }
   function tick(now) {
     if (!active || disposed) return;
+    if (runnerDefeated && now >= defeatAt) { stop(); return; }
     const delta = clamp((now - (last || now)) / 1000, 0, 0.05);
     last = now;
     if (controlling && now >= deadline) { controlling = false; held.clear(); controls.hidden = true; direction = 1; }
     const previousPlayerY = y;
     let crouch = false;
-    if (controlling) {
+    if (runnerDefeated) {
+      moving = false;
+    } else if (controlling) {
       const left = held.has('ArrowLeft') || held.has('KeyA');
       const right = held.has('ArrowRight') || held.has('KeyD');
       crouch = held.has('ArrowDown') || held.has('KeyS');
@@ -614,10 +641,13 @@
       }
     }
     updateEncounter(now, delta, previousPlayerY);
-    const anim = now < sprayUntil ? 'spray' : y > 0
+    const anim = runnerDefeated || now < hurtUntil ? 'hurt'
+      : now < sprayUntil ? 'spray' : y > 0
       ? backflipActive ? 'backflip' : vy >= 0 ? 'jump' : 'fall'
       : crouch && moving ? (direction < 0 ? 'crouchLeft' : 'crouchRight') : crouch ? 'idle' : moving ? 'run' : 'idle';
     setAnimation(anim, now);
+    sprite.style.opacity = !runnerDefeated && now < invulnerableUntil &&
+      Math.floor(now / 110) % 2 === 0 ? '0.45' : '1';
     sprite.style.transform = 'translate3d(' + x + 'px,' + (-y) + 'px,0) scaleX(' + (sprite.dataset.facing || '1') + ')';
     if (!controlling && x > innerWidth + 120) { stop(); return; }
     raf = requestAnimationFrame(tick);
@@ -648,7 +678,7 @@
     finally { spawning = false; updateSummonButton(); }
   }
   function onKeyDown(event) {
-    if (!active || disposed || document.hidden || event.defaultPrevented ||
+    if (!active || disposed || runnerDefeated || document.hidden || event.defaultPrevented ||
         event.altKey || event.ctrlKey || event.metaKey ||
         !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space','KeyF','KeyJ'].includes(event.code)) return;
     // A summoned runner can be taken over with the first movement key, without
