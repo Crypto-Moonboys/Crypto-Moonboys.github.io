@@ -55,7 +55,8 @@
   cursor: pointer;
 }
 
-.clan-operation button:disabled {
+.clan-operation button:disabled,
+.clan-operation button[aria-disabled="true"] {
   opacity: .56;
   cursor: default;
 }
@@ -79,3 +80,25 @@
 .clan-wall li[data-shade="1"] { background: #542451; border-color: #d796dc; }
 .clan-wall li[data-shade="2"] { background: #17454e; border-color: #8de1ef; }
 .clan-wall li[data-matched] { box-shadow: inset 0 0 0 2px #f6e7ff; }
+
+.clan-operation[data-active-operation="nomad-bears"] {
+  --mine-amber: #b3f1e0;
+  border-color: #4a9284;
+  background: linear-gradient(145deg, #122e31, #11141d 62%);
+}
+
+[data-active-operation="nomad-bears"] .clan-wall li {
+  background: #192e31;
+  border-color: #4a9284;
+}
+[data-active-operation="nomad-bears"] .clan-wall li[data-current-stop] {
+  box-shadow: inset 0 0 0 2px #b3f1e0;
+}
+[data-active-operation="nomad-bears"] .clan-wall li[data-surveyed] strong {
+  color: #b3f1e0;
+}
+[data-active-operation="nomad-bears"] .clan-wall small {
+  display: block;
+  margin-top: .35em;
+  color: #d3ebe8;
+}

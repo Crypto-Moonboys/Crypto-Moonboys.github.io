@@ -3,6 +3,7 @@ import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../share
 import { FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
 import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
+import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describeTrail } from '../shared/clan-nomad-trail.js';
 
 const operations = new Map([
   [MINERS, {
@@ -18,6 +19,14 @@ const operations = new Map([
     advance: advanceWall,
     view: (route, state) => ({ wall: describeWall(route, state.tier, state.operationState.panels) }),
     finds: route => describeWall(route, 3).finds,
+  }],
+  [NOMAD_BEARS, {
+    version: TRAIL_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_trail_bank',
+    actions: ['travel-0', 'travel-1', 'travel-2', 'travel-3', 'travel-4', 'travel-5', 'bank'],
+    advance: advanceTrail,
+    view: (route, state) => ({ trail: describeTrail(route, state.tier, state.operationState) }),
+    finds: route => describeTrail(route, 3).finds,
   }],
 ]);
 
@@ -116,7 +125,9 @@ export async function handleClanOperations(request, env, helpers) {
     if (!operation) return respond({ error: 'faction_not_in_pilot' }, 403);
 
     // Cached mining clients expect a mine payload on every successful response.
-    if (factionId === GRAFFPUNKS && body.operation_ui !== 'wall-v1') {
+    const staleWallClient = factionId === GRAFFPUNKS && body.operation_ui !== 'wall-v1';
+    const staleTrailClient = factionId === NOMAD_BEARS && body.expedition_ui !== TRAIL_FEATURE;
+    if (staleWallClient || staleTrailClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 
@@ -124,6 +135,13 @@ export async function handleClanOperations(request, env, helpers) {
     // resolves the clan from identity and echoes it on moves.
     if (body.operation_faction != null && body.operation_faction !== factionId) {
       return respond({ error: 'wrong_operation_faction' }, 403);
+    }
+
+    // A trail bank must never advance on a database missing migration 118.
+    if (operation.awardTrigger && !(await env.DB.prepare(
+      "SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name = ?"
+    ).bind(operation.awardTrigger).first())) {
+      return respond({ error: 'operation_unavailable' }, 503);
     }
 
     const requestTime = now();
