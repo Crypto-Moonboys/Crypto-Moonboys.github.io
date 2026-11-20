@@ -9872,7 +9872,7 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
     `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
     `Window: ${durationMinutes} minutes.`,
     '',
-    'Check in when it opens to unlock roguelite options. Any XP shown for this signal is a preview.',
+    'Check in when it opens and complete the objective to unlock roguelite options. Any XP shown for this signal is a preview.',
     ...(clanPilot ? [`Clan Operations pilot (Rugpull Miners): ${SITE_URL}/community.html#clan-operation`] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,

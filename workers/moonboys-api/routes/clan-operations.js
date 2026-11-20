@@ -24,35 +24,39 @@ function utcDay(now) {
 
 async function readMine(db, owner, now) {
   const day = utcDay(now);
-  const row = await selectDay(db, owner, day);
-  if (row && (row.faction_id !== MINERS || row.rules_version !== RULES_VERSION)) return null;
-  const state = row ?? {
-    route_index: dailyRouteIndex(now), tier: 0, ore: 0, braced: 0, collapsed: 0, revision: 0,
-  };
-  const mine = describeMine(state.route_index, state);
-  const totals = await db.prepare(`
-    SELECT COALESCE(SUM(renown), 0) AS total,
-      COALESCE(SUM(CASE WHEN utc_day = ? THEN renown ELSE 0 END), 0) AS today
-    FROM clan_operation_awards WHERE telegram_id = ? AND faction_id = ?
-  `).bind(day, owner, MINERS).first();
-  const crew = await db.prepare(`
-    SELECT COUNT(*) AS banks FROM clan_operation_awards WHERE faction_id = ? AND utc_day = ?
-  `).bind(MINERS, day).first();
-  const collection = await db.prepare(`
-    SELECT specimen_key, COUNT(*) AS collected
-    FROM clan_operation_awards WHERE telegram_id = ? AND faction_id = ?
-    GROUP BY specimen_key ORDER BY specimen_key
-  `).bind(owner, MINERS).all();
+  // One statement keeps progress and its triggered awards in the same snapshot.
+  const state = await db.prepare(`
+    WITH specimen_totals AS (
+      SELECT specimen_key, COUNT(*) AS collected, SUM(renown) AS total,
+        SUM(CASE WHEN utc_day = ? THEN renown ELSE 0 END) AS today
+      FROM clan_operation_awards
+      WHERE telegram_id = ? AND faction_id = ?
+      GROUP BY specimen_key
+      ORDER BY specimen_key
+    ), personal AS (
+      SELECT COALESCE(SUM(total), 0) AS renown_total,
+        COALESCE(SUM(today), 0) AS renown_today,
+        json_group_array(json_object('specimen_key', specimen_key, 'collected', collected)) AS collection
+      FROM specimen_totals
+    )
+    SELECT mine.*, personal.*,
+      (SELECT COUNT(*) FROM clan_operation_awards WHERE faction_id = ? AND utc_day = ?) AS crew_banks
+    FROM personal
+    LEFT JOIN clan_operation_days AS mine ON mine.telegram_id = ? AND mine.utc_day = ?
+  `).bind(day, owner, MINERS, MINERS, day, owner, day).first();
+  if (state.revision != null && (state.faction_id !== MINERS || state.rules_version !== RULES_VERSION)) return null;
+  const tier = state.tier ?? 0;
+  const mine = describeMine(state.route_index ?? dailyRouteIndex(now), { ...state, tier });
   const reset = new Date(`${day}T00:00:00.000Z`);
   reset.setUTCDate(reset.getUTCDate() + 1);
   return {
-    ok: true, status: state.tier === 3 ? 'complete' : 'ready',
+    ok: true, status: tier === 3 ? 'complete' : 'ready',
     utc_day: day, resets_at: reset.toISOString(), faction_id: MINERS, mine,
-    revision: state.revision, tier: state.tier, ore: state.ore,
+    revision: state.revision ?? 0, tier, ore: state.ore ?? 0,
     braced: Boolean(state.braced), collapsed: Boolean(state.collapsed),
     last_action: state.last_action ?? null, last_outcome: state.last_outcome ?? null,
-    renown_today: totals.today, renown_total: totals.total, crew_banks: crew.banks,
-    collection: collection.results.map(item => {
+    renown_today: state.renown_today, renown_total: state.renown_total, crew_banks: state.crew_banks,
+    collection: JSON.parse(state.collection).map(item => {
       const [, , routeIndex, tier] = item.specimen_key.split('-');
       return { ...item, name: describeMine(Number(routeIndex), { tier: 3 }).finds[Number(tier) - 1] };
     }),
@@ -107,23 +111,25 @@ export async function handleClanOperations(request, env, helpers) {
       if (!next || utcDay(now()) !== day) return respond({ error: 'refresh_operation' }, 409);
 
       // D1 evaluates membership and revision in the same statement as the move.
-      // The award trigger is part of this UPDATE, so a failed receipt rolls back the move.
+      // RETURNING reports the matched day row independently of the award trigger’s change count.
       const result = saved
         ? await db.prepare(`
           UPDATE clan_operation_days SET tier = ?, ore = ?, braced = ?, collapsed = ?,
             last_action = ?, last_outcome = ?, revision = revision + 1, updated_at = ?
           WHERE telegram_id = ? AND utc_day = ? AND revision = ?
             AND faction_id = ? AND rules_version = ? AND ${STILL_MINER}
+          RETURNING revision
         `).bind(next.tier, next.ore, next.braced, next.collapsed, body.action, next.outcome,
-          requestTime.toISOString(), owner, day, state.revision, MINERS, RULES_VERSION, owner, ...minerKeys).run()
+          requestTime.toISOString(), owner, day, state.revision, MINERS, RULES_VERSION, owner, ...minerKeys).first()
         : await db.prepare(`
           INSERT INTO clan_operation_days (telegram_id, utc_day, faction_id, rules_version, route_index,
             revision, ore, braced, collapsed, last_action, last_outcome, updated_at)
           SELECT ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ? WHERE ${STILL_MINER}
           ON CONFLICT (telegram_id, utc_day) DO NOTHING
+          RETURNING revision
         `).bind(owner, day, MINERS, RULES_VERSION, route, next.ore, next.braced, next.collapsed,
-          body.action, next.outcome, requestTime.toISOString(), owner, ...minerKeys).run();
-      if (result.meta.changes !== 1) return respond({ error: 'refresh_operation' }, 409);
+          body.action, next.outcome, requestTime.toISOString(), owner, ...minerKeys).first();
+      if (!result) return respond({ error: 'refresh_operation' }, 409);
     }
     const mine = await readMine(env.DB, owner, requestTime);
     return mine ? respond(mine) : respond({ error: 'operation_unavailable' }, 409);

@@ -2,21 +2,24 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
+import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
 
 const migration = readFileSync(new URL('../workers/moonboys-api/migrations/116_clan_operations.sql', import.meta.url), 'utf8');
 
+const factionTable = `
+  CREATE TABLE blocktopia_progression (telegram_id TEXT PRIMARY KEY, faction TEXT, faction_xp INTEGER, gems INTEGER)
+`;
+const factionRows = `
+  INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
+    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2)
+`;
+
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`
-    CREATE TABLE blocktopia_progression (telegram_id TEXT PRIMARY KEY, faction TEXT, faction_xp INTEGER, gems INTEGER);
-    INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
-      ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2);
-    ${migration}
-  `);
-  const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
+  sql.exec(`${factionTable}; ${factionRows}; ${migration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -24,13 +27,16 @@ function fixture(t) {
         bind(...args) {
           return {
             first: async () => query.get(...args) ?? null,
-            all: async () => ({ results: query.all(...args) }),
-            run: async () => ({ meta: query.run(...args) }),
           };
         },
       };
     },
   };
+  return { ...requestFixture(db), sql };
+}
+
+function requestFixture(db) {
+  const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST' } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
@@ -55,7 +61,7 @@ function fixture(t) {
     }
     return data;
   }
-  return { request, fill, settings, sql };
+  return { request, fill, settings };
 }
 
 test('feature is closed by default and a signed current miner is required', async t => {
@@ -132,6 +138,93 @@ test('a database failure writing the award also rolls back the bank', async t =>
   assert.equal(reread.revision, state.revision);
   assert.equal(reread.tier, 0);
   assert.equal(reread.renown_today, 0);
+});
+
+async function localD1(t) {
+  const mf = new Miniflare(convertV4MiniflareOptions({
+    modules: true, compatibilityDate: '2026-04-12',
+    script: 'export default {fetch(){return new Response()}}',
+    d1Databases: { DB: 'clan-mining-test' },
+  }));
+  t.after(() => mf.dispose());
+  const db = await mf.getD1Database('DB');
+  // Preserve the complete trigger body when loading the migration.
+  const schema = new DatabaseSync(':memory:');
+  try {
+    schema.exec(migration);
+    const objects = schema.prepare('SELECT sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY rowid').all();
+    await db.batch([factionTable, factionRows, ...objects.map(row => row.sql)].map(sql => db.prepare(sql)));
+  } finally {
+    schema.close();
+  }
+  return db;
+}
+
+test('concurrent banks on D1 return one success and one conflict with one receipt', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, fill } = requestFixture(db);
+  const state = await fill((await request()).data);
+  const bank = () => request({ action: 'bank', revision: state.revision });
+  const responses = await Promise.all([bank(), bank()]);
+  assert.deepEqual(responses.map(response => response.status).sort(), [200, 409]);
+  const winner = responses.find(response => response.status === 200).data;
+  assert.equal(winner.tier, 1);
+  assert.equal(winner.renown_today, RENOWN_PER_TIER);
+  assert.equal(winner.collection.length, 1);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM clan_operation_awards').first()).n, 1);
+});
+
+test('a D1 refresh overlapping the next bank returns one consistent snapshot', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, fill } = requestFixture(db);
+  const first = await fill((await request()).data);
+  const firstBank = await request({ action: 'bank', revision: first.revision });
+  assert.equal(firstBank.status, 200);
+  const before = await fill(firstBank.data);
+  assert.equal(before.tier, 1);
+
+  const read = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  const refresh = requestFixture({
+    prepare(sql) {
+      const statement = db.prepare(sql);
+      if (!/FROM clan_operation_days WHERE|LEFT JOIN clan_operation_days/.test(sql)) return statement;
+      return {
+        bind(...args) {
+          const query = statement.bind(...args);
+          return {
+            async first() {
+              const result = await query.first();
+              read.resolve();
+              await release.promise;
+              return result;
+            },
+          };
+        },
+      };
+    },
+  }).request();
+  try {
+    await Promise.race([read.promise, refresh.then(response => {
+      throw new Error(`Refresh returned before the snapshot pause: ${response.status}`);
+    })]);
+    const bank = await request({ action: 'bank', revision: before.revision });
+    assert.equal(bank.status, 200);
+  } finally {
+    release.resolve();
+  }
+  const overlap = await refresh;
+  assert.equal(overlap.status, 200);
+  assert.equal(overlap.data.revision, before.revision);
+  assert.equal(overlap.data.tier, 1);
+  assert.equal(overlap.data.renown_today, RENOWN_PER_TIER);
+  assert.equal(overlap.data.collection.length, 1);
+  assert.equal(overlap.data.crew_banks, 1);
+  const after = (await request()).data;
+  assert.equal(after.tier, 2);
+  assert.equal(after.renown_today, 2 * RENOWN_PER_TIER);
+  assert.equal(after.collection.length, 2);
+  assert.equal(after.crew_banks, 2);
 });
 
 test('all 30 daily routes offer three equally paid tiers with a safe route', () => {
