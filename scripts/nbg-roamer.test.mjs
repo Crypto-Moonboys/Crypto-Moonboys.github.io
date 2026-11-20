@@ -167,12 +167,12 @@ test('three distinct jump presses use jump, backflip and fall art from game mani
   assert.match(source, /jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false/);
 });
 test('jump physics permit exactly three taps and third clears viewport height', () => {
-  const fn = source.match(/  function tryJump\(now = performance\.now\(\)\) \{[\s\S]*?\n  \}\n  function makeUI\(\)/);
+  const fn = source.match(/  function tryJump\(now = performance\.now\(\)\) \{[\s\S]*?\n  \}/);
   assert.ok(fn, 'jump implementation available for direct regression');
   const setup = [
     'let active = true, controlling = true, disposed = false, jumpsUsed = 0, lastJumpAt = -Infinity, backflipActive = false, y = 0, vy = 0;',
     'const JUMP_TAP_SPACING_MS = 115, GRAVITY = 1150, JUMP_VELOCITIES = [630, 760];',
-    fn[0].replace(/  function makeUI\(\)$/, ''),
+    fn[0],
     '({tryJump, read: () => ({jumpsUsed, vy, backflipActive}), setY: n => {y=n;}})'
   ].join('\n');
   const runner = runInNewContext(setup, { performance: { now: () => 0 }, window: { innerHeight: 800 }, Math });
