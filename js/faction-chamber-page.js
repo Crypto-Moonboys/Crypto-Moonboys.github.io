@@ -279,7 +279,7 @@
           '<li><strong>Event / chaos modifier:</strong> ×' + esc(effects.chaosModifier != null ? effects.chaosModifier : '1.0') + '</li>' +
           '<li><strong>Shield / defense:</strong> +' + esc(effects.shieldBonus != null ? effects.shieldBonus : '0') + ' starting shield support where game modes allow</li>' +
           '<li><strong>Combo modifier:</strong> ×' + esc(effects.comboModifier != null ? effects.comboModifier : '1.0') + '</li>' +
-          '<li><strong>XP boost:</strong> None. Faction XP metadata does not change earned XP.</li>' +
+          '<li><strong>Arcade XP:</strong> No bonus from card metadata. Faction XP is a separate server track with its own rules.</li>' +
         '</ul>';
     }
 

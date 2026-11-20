@@ -681,9 +681,9 @@
     }).join('');
 
     container.innerHTML =
-      '<p class="bc-perks-intro">Each faction has a distinct playstyle. Score modifiers apply only in arcade games that support faction effects; joining a faction does not boost earned XP.</p>' +
+      '<p class="bc-perks-intro">Each faction has a distinct playstyle. Score modifiers apply only in arcade games that support faction effects; the shown score modifier does not multiply Arcade XP. Faction XP is a separate server-tracked total.</p>' +
       '<div class="bc-perk-grid">' + cards + '</div>' +
-      '<p class="bc-perks-note">The old faction XP numbers were display-only reference data. They never multiplied earned XP.</p>';
+      '<p class="bc-perks-note">The old card XP numbers did not multiply Arcade XP. Server faction XP is a separate track; Hard Fork Rockers, Rugpull Miners and GraffPUNKS currently have 1.10×, 1.15× and 1.12× faction XP multipliers respectively.</p>';
   }
 
   // ── 8. Clout Rewards Board ────────────────────────────────────────────────
