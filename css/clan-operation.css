@@ -153,3 +153,28 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.clan-operation[data-active-operation="hard-fork-rockers"] {
+  --mine-amber: #ffe299;
+  border-color: #bb9253;
+  background: linear-gradient(145deg, #352414, #171722 65%);
+}
+
+[data-active-operation="hard-fork-rockers"] .clan-wall li {
+  background: #30271e;
+  border-color: #9f793e;
+}
+
+[data-active-operation="hard-fork-rockers"] .clan-wall li[data-fork-cleared] {
+  background: #273c32;
+  border-color: #7eae94;
+}
+
+[data-active-operation="hard-fork-rockers"] .clan-wall li[data-fork-next] {
+  box-shadow: inset 0 0 0 2px #ffe299;
+}
+
+[data-active-operation="hard-fork-rockers"] .clan-wall small {
+  display: block;
+  margin-top: .35em;
+}
