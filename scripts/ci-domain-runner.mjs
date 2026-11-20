@@ -53,6 +53,7 @@ const GROUPS = {
     ['node', '--test', 'scripts/moonpet-beta-streamline.test.mjs'],
     ['node', '--test', 'scripts/verify-graph-dispatch-pr.test.mjs'],
     ['node', '--test', 'scripts/faction-unified-authority.test.mjs'],
+    ['node', '--test', 'scripts/clan-mining-pilot.test.mjs'],
     ['node', 'scripts/leaderboard-source-consolidation.test.mjs'],
     ['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs'],
     ['node', '--test', 'scripts/moonpet-mission-status.test.mjs'],

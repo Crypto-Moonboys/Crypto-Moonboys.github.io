@@ -59,6 +59,7 @@ check(workerJs.includes('nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs
 check(workerJs.includes('`wtf:${utcDay}:${row.event_id}:minus_10`'), 'timed announcement keys are stable');
 check(workerJs.includes("existing?.status === 'sent'") && workerJs.includes("reason: 'already_sent'"), 'duplicate sends are blocked after a sent log row');
 check(workerJs.includes('buildWtfPreEventGroupAnnouncement'), 'pre-event group message builder exists');
+check(workerJs.includes('Check in when it opens and complete the objective to unlock roguelite options. Any XP shown for this signal is a preview.'), 'pre-event copy requires objective completion and labels XP as preview');
 check(workerJs.includes('Battle Chamber: ${SITE_URL}/community.html') && workerJs.includes('Arcade: ${SITE_URL}/games/'), 'pre-event messages include Battle Chamber and Arcade links');
 
 console.log('\n[3] Daily group summary');

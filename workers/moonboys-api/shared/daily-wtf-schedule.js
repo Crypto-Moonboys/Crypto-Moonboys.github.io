@@ -1,3 +1,5 @@
+export const WTF_REWARD_PREVIEW_LABEL = 'XP preview only';
+
 export const WTF_DAILY_SCHEDULE = Object.freeze([
   { event_id: 'wtf-midnight-signal', title: 'Midnight WTF Signal', event_type: 'signal_window', startHour: 0, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', rewardSegment: 'midnight', theme: 'neon-midnight' },
   { event_id: 'wtf-early-chain-wake-up', title: 'Early Chain Wake-Up', event_type: 'chain_wake_up', startHour: 4, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', rewardSegment: 'early', theme: 'chain-wake-up' },

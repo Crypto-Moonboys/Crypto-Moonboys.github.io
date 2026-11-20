@@ -44,6 +44,7 @@ import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from '.
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
+import { clanOperationsEnabled, handleClanOperations } from './routes/clan-operations.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleRadioStream } from './routes/radio-stream.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
@@ -119,7 +120,7 @@ import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMini
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 import { readCanonicalFactionProfile } from './shared/faction-projection.js';
-import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus } from './shared/daily-wtf-schedule.js';
+import { buildWtfIso, getWtfDailySchedule, getWtfEventStatus, WTF_REWARD_PREVIEW_LABEL } from './shared/daily-wtf-schedule.js';
 
 /**
  * Moonboys API — Cloudflare Worker entrypoint
@@ -8941,7 +8942,7 @@ function buildWtfScheduleRow(utcDay, event) {
     ends_at: new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString(),
     required_action: event.required_action,
     reward_key: event.reward_key,
-    xp_multiplier_display: '5x XP opportunity',
+    xp_multiplier_display: WTF_REWARD_PREVIEW_LABEL,
     theme: event.theme,
     metadata_json: JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
   };
@@ -9861,7 +9862,7 @@ function formatUtcHm(iso) {
   return String(iso || '').slice(11, 16);
 }
 
-function buildWtfPreEventGroupAnnouncement(eventRow) {
+function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
   const durationMinutes = Math.round((Date.parse(eventRow.ends_at) - Date.parse(eventRow.starts_at)) / 60000) || 90;
   return [
     '🚨 WTF SIGNAL IN 10 MINUTES',
@@ -9871,7 +9872,8 @@ function buildWtfPreEventGroupAnnouncement(eventRow) {
     `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
     `Window: ${durationMinutes} minutes.`,
     '',
-    'Check in when it opens, complete the objective, and unlock roguelite options.',
+    'Check in when it opens and complete the objective to unlock roguelite options. Any XP shown for this signal is a preview.',
+    ...(clanPilot ? [`Clan Operations pilot (Rugpull Miners): ${SITE_URL}/community.html#clan-operation`] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
     `Arcade: ${SITE_URL}/games/`,
@@ -9880,7 +9882,7 @@ function buildWtfPreEventGroupAnnouncement(eventRow) {
   ].join('\n');
 }
 
-function buildDailyGroupSummaryMessage(utcDay) {
+function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
   const windows = getWtfDailySchedule(utcDay)
     .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
     .join(', ');
@@ -9893,7 +9895,8 @@ function buildDailyGroupSummaryMessage(utcDay) {
     '',
     'Daily faction missions are live. Faction chambers have mission boards, and missed history does not reset. The city keeps moving while you are away.',
     '',
-    'Check the site for current tasks, timed quests, roguelite options, and XP/status preview details.',
+    'Check the site for current tasks, timed quests, and roguelite options.',
+    ...(clanPilot ? [`Clan Operations pilot (Rugpull Miners): ${SITE_URL}/community.html#clan-operation`] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
     `Arcade: ${SITE_URL}/games/`,
@@ -9929,7 +9932,7 @@ function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
         event_id: row.event_id,
         announcement_type: 'wtf_pre_event_minus_10',
         scheduled_for: new Date(scheduledMs).toISOString(),
-        message: buildWtfPreEventGroupAnnouncement(row),
+        message: buildWtfPreEventGroupAnnouncement(row, options.clanPilot),
         metadata: {
           title: row.title,
           starts_at: row.starts_at,
@@ -9956,7 +9959,7 @@ function getDailyGroupSummaryCandidates(nowMs, options = {}) {
     event_id: null,
     announcement_type: 'daily_summary',
     scheduled_for: new Date(scheduledMs).toISOString(),
-    message: buildDailyGroupSummaryMessage(utcDay),
+    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot),
     metadata: {
       wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
       coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
@@ -11979,6 +11982,7 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
   const force = options.force === true;
   const groupConfig = getTelegramGroupConfig(env);
   const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, {
+    clanPilot: clanOperationsEnabled(env),
     force,
     announcementKey: options.announcement_key || options.announcementKey || null,
     eventId: options.event_id || options.eventId || null,
@@ -13337,6 +13341,19 @@ export default {
       }
     }
 
+    if (path === '/clan-operations/state' || path === '/clan-operations/move') {
+      const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
+      return handleClanOperations(request, env, {
+        path,
+        respond: makeJsonResponder(privateHeaders),
+        verifyTelegramAuth,
+        logApiFailure,
+        rateLimit: (owner) => enforcePublicRateLimit(request, env, path, null, privateHeaders, {
+          ...(owner ? { includeIp: false, telegramId: owner } : { includeTelegram: false }),
+        }),
+      });
+    }
+
     // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
     const isRogueliteDailyRoute =
       path === '/roguelite/daily-state' ||
@@ -13384,7 +13401,7 @@ export default {
           description: row.description,
           required_action: row.required_action,
           reward_preview: row.reward_key,
-          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          multiplier_display: WTF_REWARD_PREVIEW_LABEL,
           visual_theme: row.theme || 'neon-signal',
           status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
         }));
@@ -13402,7 +13419,7 @@ export default {
             description: row.description,
             required_action: row.required_action,
             reward_preview: row.reward_key,
-            multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+            multiplier_display: WTF_REWARD_PREVIEW_LABEL,
             visual_theme: row.theme || 'neon-signal',
             status: 'upcoming',
           }));
@@ -13462,7 +13479,7 @@ export default {
           description: row.description,
           required_action: row.required_action,
           reward_preview: row.reward_key,
-          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          multiplier_display: WTF_REWARD_PREVIEW_LABEL,
           visual_theme: row.theme || 'neon-signal',
           status: scheduleStatus,
           player_status: playerStatus,
@@ -13486,7 +13503,7 @@ export default {
           description: row.description,
           required_action: row.required_action,
           reward_preview: row.reward_key,
-          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          multiplier_display: WTF_REWARD_PREVIEW_LABEL,
           visual_theme: row.theme || 'neon-signal',
           status: 'upcoming',
           player_status: 'not_checked_in',

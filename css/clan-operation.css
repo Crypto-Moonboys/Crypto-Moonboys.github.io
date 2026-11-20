@@ -1,0 +1,70 @@
+.clan-operation {
+  --mine-amber: #ffd779;
+  border: 1px solid #674c2b;
+  background: linear-gradient(145deg, #241a17, #11141d 62%);
+  padding: clamp(1rem, 3vw, 2rem);
+  color: #f5e9de;
+  border-radius: .9rem;
+  scroll-margin-top: 7rem;
+}
+
+.clan-operation h2,
+.clan-operation h3 { color: var(--mine-amber); }
+.clan-operation h3 { font-size: clamp(1.4rem, 4vw, 2.3rem); }
+.clan-operation p { max-width: 65ch; }
+.clan-operation [hidden] { display: none !important; }
+
+.clan-operation .clan-strata {
+  margin: 1.15rem 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .45rem;
+  list-style: none;
+}
+
+.clan-strata li {
+  padding: .75rem;
+  background: repeating-linear-gradient(160deg, #301e1a 0 17px, #39241d 18px 19px);
+  border: 1px solid #755538;
+  border-radius: .5rem;
+  overflow-wrap: anywhere;
+}
+
+.clan-strata li[data-banked] {
+  background: #283528;
+  border-color: #a4c887;
+  color: #ddf8c7;
+}
+
+.clan-operation .clan-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  margin: 1rem 0;
+}
+
+.clan-operation button {
+  border: 1px solid #bb964e;
+  border-radius: .5rem;
+  background: #332714;
+  color: #fff0c0;
+  padding: .55rem .8rem;
+  font: inherit;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.clan-operation button:disabled {
+  opacity: .56;
+  cursor: default;
+}
+
+.clan-operation button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 550px) {
+  .clan-operation .clan-strata { grid-template-columns: 1fr; }
+}

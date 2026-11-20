@@ -21,7 +21,7 @@ assert.match(landingMain, /<h1\b[^>]*>THE WORLD IS[\s\S]*YOUR CANVAS/);
 assert.match(landingMain, /<a\b[^>]*class="wax-entry-button"[^>]*href="\/join-us-on-the-wax-blockchain\.html"/);
 assert.equal((landingMain.match(/class="wax-entry-button"/g) || []).length, 1, 'Keep one primary WAX entry CTA');
 assert.match(landingMain, /aria-label="Project and artist guides"/);
-assert.match(landingMain, /href="\/gpt-users\.html"/,
+assert.match(landingMain, /href="\/ai-user\.html"/,
   'The public Creator Studio must be discoverable without the JavaScript shell');
 assert.doesNotMatch(landing, /<iframe\b|<video\b|home-art-strip|homepage-avatar-builder|Marilyn%20Monroe|src="\/js\/avatar-builder-test\.js"/i,
   'Entry route must not load the previous large videos, images or embedded builder');
