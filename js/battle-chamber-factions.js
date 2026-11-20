@@ -668,7 +668,6 @@
       // Also accepts window.FACTION_DEFS directly for resilience
       var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
       var def = defs && defs[f.key];
-      var xpMeta = def != null ? def.xpModifier : null;
       var scoreMulti = def != null ? def.scoreMultiplier : null;
 
       return '<div class="bc-perk-card" style="--faction-color:' + esc(f.color) + '">' +
@@ -676,16 +675,15 @@
         '<div class="bc-perk-name">' + esc(f.label) + '</div>' +
         '<div class="bc-perk-playstyle">' + esc(f.playstyle) + '</div>' +
         '<div class="bc-perk-text">' + esc(f.perkTeaser) + '</div>' +
-        '<div class="bc-perk-xp-meta">XP metadata: ' + (xpMeta != null ? '×' + esc(String(xpMeta)) + ' <em>display only</em>' : '<em>—</em>') + '</div>' +
-        '<div class="bc-perk-score-meta">Score modifier: ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '<em>—</em>') + '</div>' +
+        '<div class="bc-perk-score-meta">Score modifier (supported arcade games): ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '<em>—</em>') + '</div>' +
         '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
         '</div>';
     }).join('');
 
     container.innerHTML =
-      '<p class="bc-perks-intro">Each faction unlocks a specific gameplay playstyle and roguelite modifiers. Perks activate when you join and play arcade runs as that faction.</p>' +
+      '<p class="bc-perks-intro">Each faction has a distinct playstyle. Score modifiers apply only in arcade games that support faction effects; joining a faction does not boost earned XP.</p>' +
       '<div class="bc-perk-grid">' + cards + '</div>' +
-      '<p class="bc-perks-note">XP metadata is display-only and is not applied to XP base math unless the server explicitly backs it.</p>';
+      '<p class="bc-perks-note">The old faction XP numbers were display-only reference data. They never multiplied earned XP.</p>';
   }
 
   // ── 8. Clout Rewards Board ────────────────────────────────────────────────
