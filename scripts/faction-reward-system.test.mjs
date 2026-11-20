@@ -327,8 +327,8 @@ check(bridgeJs.includes('window.FACTION_EFFECT_DEFS'), 'bridge still exposes FAC
 // Battle Chamber hub links all faction chamber pages
 for (const key of LIVE_FACTION_KEYS) {
   check(
-    communityHtml.includes(`/battle-chamber/factions/${key}.html`),
-    `community.html still links to faction chamber: ${key}`
+    hubJs.includes(`/battle-chamber/factions/${key}.html`) && read('battle-chamber/factions/index.html').includes(`/battle-chamber/factions/${key}.html`),
+    `Faction cards and directory provide a chamber link for ${key}`
   );
 }
 

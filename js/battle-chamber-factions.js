@@ -474,6 +474,7 @@
           '<div class="bc-join-card-playstyle">' + esc(f.playstyle) + '</div>' +
           '<div class="bc-join-card-perk">' + esc(f.perkTeaser) + '</div>' +
           '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '">Join ' + esc(f.label) + '</button>' +
+          '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key]) + '">View ' + esc(f.label) + ' chamber</a>' +
           '</div>';
       }).join('');
 
@@ -659,31 +660,23 @@
 
   // ── 7. Faction Perks + Roguelite Options ─────────────────────────────────
 
-  function renderFactionPerks() {
+  function renderFactionPerks(status) {
     var container = el('battle-faction-perks');
     if (!container) return;
 
-    var cards = LIVE_FACTIONS.map(function (f) {
-      // Read effect metadata from FACTION_EFFECT_DEFS (set by bridge from FACTION_DEFS)
-      // Also accepts window.FACTION_DEFS directly for resilience
-      var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
-      var def = defs && defs[f.key];
-      var scoreMulti = def != null ? def.scoreMultiplier : null;
-
-      return '<div class="bc-perk-card" style="--faction-color:' + esc(f.color) + '">' +
-        '<div class="bc-perk-icon">' + f.icon + '</div>' +
-        '<div class="bc-perk-name">' + esc(f.label) + '</div>' +
-        '<div class="bc-perk-playstyle">' + esc(f.playstyle) + '</div>' +
-        '<div class="bc-perk-text">' + esc(f.perkTeaser) + '</div>' +
-        '<div class="bc-perk-score-meta">Score modifier (supported arcade games): ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '<em>—</em>') + '</div>' +
-        '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
-        '</div>';
-    }).join('');
+    var f = LIVE_FACTIONS.find(function (entry) { return entry.key === (status && status.faction); });
+    if (!f) {
+      container.innerHTML = '<p>Check current perks in the <a href="/battle-chamber/factions/index.html">faction chambers</a>.</p>';
+      return;
+    }
+    var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
+    var def = defs && defs[f.key];
+    var scoreMulti = def != null ? def.scoreMultiplier : null;
 
     container.innerHTML =
-      '<p class="bc-perks-intro">Each faction has a distinct playstyle. Score modifiers apply only in arcade games that support faction effects; the shown score modifier does not multiply Arcade XP. Faction XP is a separate server-tracked total.</p>' +
-      '<div class="bc-perk-grid">' + cards + '</div>' +
-      '<p class="bc-perks-note">The old card XP numbers did not multiply Arcade XP. Server faction XP is a separate track; Hard Fork Rockers, Rugpull Miners and GraffPUNKS currently have 1.10×, 1.15× and 1.12× faction XP multipliers respectively.</p>';
+      '<p><strong>' + esc(f.label) + '</strong> · ' + esc(f.perkTeaser) + '</p>' +
+      '<p>Score modifier in supported arcade games · ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '—') +
+      '. Faction XP is tracked separately.</p>';
   }
 
   // ── 8. Clout Rewards Board ────────────────────────────────────────────────
@@ -717,41 +710,31 @@
     return '<p class="bc-rew-intro"><strong>Faction reward unlocks</strong></p>';
   }
 
-  function renderFactionRewardUnlocks() {
+  function renderFactionRewardUnlocks(status) {
     var container = el('battle-faction-reward-unlocks');
     if (!container) return;
 
     var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
     var factions = rewardData && rewardData.factions ? rewardData.factions : null;
 
-    // Build per-faction reward status cards
-    var factionCards = '';
-    for (var fi = 0; fi < LIVE_FACTIONS.length; fi++) {
-      var f = LIVE_FACTIONS[fi];
-      var fReward = factions && factions[f.key] ? factions[f.key] : null;
-      var weeklyBadge = fReward && fReward.weekly && fReward.weekly.badge ? fReward.weekly.badge : '—';
-      var monthlyTitle = fReward && fReward.monthly && fReward.monthly.title ? fReward.monthly.title : '—';
-      var seasonalTrophy = fReward && fReward.seasonal && fReward.seasonal.trophy ? fReward.seasonal.trophy : '—';
-      var roguelitePerks = '—';
-      if (fReward && Array.isArray(fReward.roguelite)) {
-        var perks = fReward.roguelite.slice(0, 3);
-        var truncated = fReward.roguelite.length > 3;
-        roguelitePerks = perks.join(', ') + (truncated ? ', …' : '');
-      }
-
-      factionCards += '<div class="bc-faction-reward-card" style="--faction-color:' + esc(f.color) + '">' +
-        '<div class="bc-frc-header">' + f.icon + ' ' + esc(f.label) + '</div>' +
-        '<div class="bc-frc-row"><span>Weekly badge:</span> <strong>' + esc(weeklyBadge) + '</strong></div>' +
-        '<div class="bc-frc-row"><span>Monthly title:</span> <strong>' + esc(monthlyTitle) + '</strong></div>' +
-        '<div class="bc-frc-row"><span>Seasonal trophy:</span> <strong>' + esc(seasonalTrophy) + '</strong></div>' +
-        '<div class="bc-frc-row"><span>Roguelite options:</span> <strong>' + esc(roguelitePerks) + '</strong></div>' +
-        '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
-        '</div>';
+    var f = LIVE_FACTIONS.find(function (entry) { return entry.key === (status && status.faction); });
+    var fReward = f && factions && factions[f.key];
+    if (!fReward) {
+      container.innerHTML = getFactionRewardCopyHtml() +
+        '<p>See reward tracks in the <a href="/battle-chamber/factions/index.html">faction chambers</a>.</p>';
+      return;
     }
-
-    container.innerHTML =
-      getFactionRewardCopyHtml() +
-      '<div class="bc-faction-reward-grid">' + factionCards + '</div>';
+    var perks = Array.isArray(fReward.roguelite) ? fReward.roguelite : [];
+    var rewardRows = [
+      ['Weekly badge', fReward.weekly && fReward.weekly.badge],
+      ['Monthly title', fReward.monthly && fReward.monthly.title],
+      ['Seasonal trophy', fReward.seasonal && fReward.seasonal.trophy],
+      ['Roguelite options', perks.slice(0, 3).join(', ') + (perks.length > 3 ? ', …' : '')]
+    ];
+    container.innerHTML = getFactionRewardCopyHtml() +
+      '<dl>' + rewardRows.map(function (row) {
+        return '<dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1] || '—') + '</dd>';
+      }).join('') + '</dl>';
   }
 
   // ── 10. Faction Proof Feed headline ──────────────────────────────────────
