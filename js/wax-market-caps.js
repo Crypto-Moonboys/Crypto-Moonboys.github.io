@@ -16,16 +16,31 @@
   const rate = new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', minimumFractionDigits: 6, maximumFractionDigits: 8
   });
+  const pulses = new WeakMap();
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let price = null;
   let socket;
   let retry;
   let retryDelay = 1000;
   let suspended = false;
 
-  function render(row) {
+  function renderPrice(element, value, direction) {
+    if (element.textContent === value) return;
+    element.textContent = value;
+    if (!direction || typeof element.animate !== 'function') return;
+
+    pulses.get(element)?.cancel();
+    const color = direction > 0 ? '#59f59a' : '#ff727e';
+    const keyframes = reducedMotion.matches
+      ? [{ color }, { color }]
+      : [{ color, textShadow: `0 0 12px ${color}` }, {}];
+    pulses.set(element, element.animate(keyframes, { duration: 900, easing: 'ease-out' }));
+  }
+
+  function render(row, direction = 0) {
     if (row.marketCap === null) return;
     row.waxCell.textContent = wax.format(row.marketCap);
-    row.usdCell.textContent = price === null ? '—' : usd.format(row.marketCap * price);
+    renderPrice(row.usdCell, price === null ? '—' : usd.format(row.marketCap * price), direction);
   }
 
   async function loadMarketCap(row) {
@@ -72,10 +87,11 @@
       if (!Number.isFinite(nextPrice) || nextPrice <= 0) return;
 
       retryDelay = 1000;
+      const direction = price === null ? 0 : Math.sign(nextPrice - price);
       price = nextPrice;
-      quote.textContent = rate.format(price);
+      renderPrice(quote, rate.format(price), direction);
       status.textContent = 'Live quote from Crypto.com';
-      rows.forEach(render);
+      rows.forEach(row => render(row, direction));
     });
     connection.addEventListener('close', () => {
       if (suspended || socket !== connection) return;
