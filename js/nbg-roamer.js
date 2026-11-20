@@ -111,7 +111,12 @@
     }
     sprite.addEventListener('click', takeControl);
     sprite.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); takeControl(); }
+      // Space during control must reach the window movement handler to jump.
+      // Only use Enter/Space to activate when the runner is not yet controlled.
+      if (event.key === 'Enter' || (event.key === ' ' && !controlling)) {
+        event.preventDefault();
+        if (!controlling) takeControl();
+      }
     });
     host.append(sprite, controls);
     document.body.appendChild(host);
@@ -121,6 +126,9 @@
     controlling = true;
     deadline = performance.now() + CONTROL_MS;
     controls.hidden = false;
+    // The summon button retains focus after click, and its Space action would
+    // otherwise prevent gameplay input. Focus the runner without page scrolling.
+    sprite.focus({ preventScroll: true });
   }
   function setAnimation(name, now) {
     const a = manifest?.animations?.[name];
@@ -198,7 +206,7 @@
     finally { spawning = false; updateSummonButton(); }
   }
   function onKeyDown(event) {
-    if (!active || !controlling || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.repeat && !held.has(event.code) || interactive(event.target)) return;
+    if (!active || !controlling || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || (event.repeat && !held.has(event.code)) || (interactive(event.target) && !sprite?.contains(event.target))) return;
     if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space'].includes(event.code)) {
       held.add(event.code); event.preventDefault();
     }
