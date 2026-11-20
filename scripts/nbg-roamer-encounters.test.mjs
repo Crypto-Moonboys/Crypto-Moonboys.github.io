@@ -67,6 +67,7 @@ function encounterHarness() {
     "const enemyHitbox = () => ({left:0,right:0,top:0,bottom:0});",
     "const enemyAttackHitbox = () => null; const overlaps = () => false;",
     "const damageRunner = () => false;",
+    "const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));",
     functionBody('spawnEnemy'),
     functionBody('updateEncounter'),
     "({spawnEnemy, updateEncounter, setEnemies: values => {enemies = values}, getEnemies: () => enemies, framesDrawn})"
@@ -196,7 +197,7 @@ test('stomps and spray still work, gameplay remains separate and cleanup is boun
   assert.match(source, /overlapX && vy < 0 &&\s*oldFoot <= enemyTop \+ 16 && playerFoot >= enemyTop/);
   assert.match(source, /defeatEnemy\(enemy, now\);\s*playerWon = true;\s*vy = 430/);
   assert.match(source, /sprayReach >= -10 && sprayReach < 125/);
-  assert.match(source, /const anim = now < sprayUntil \? 'spray'/);
+  assert.match(source, /: now < sprayUntil \? 'spray'/);
   assert.match(source, /if \(key === 'KeyF'\) spray\(\)/);
   assert.match(source, /const clearEncounter|function clearEncounter/);
   assert.match(source, /clearEncounter\(\);\s*if \(host\) host\.remove\(\)/);
