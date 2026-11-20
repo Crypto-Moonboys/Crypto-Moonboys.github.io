@@ -56,5 +56,6 @@ test('uses the existing animation assets, not a copy of the game engine', () => 
   assert.match(source, /CONTROL_MS = 30000/);
   assert.doesNotMatch(source, /leaderboard|submitScore|awardXp|game\/nbg-level1\.js/i);
   assert.match(shell, /runner\.src = '\/js\/nbg-roamer\.js'/);
-  assert.match(shell, /(?:games\|game)/);
+  assert.match(shell, /pathname\.startsWith\('\/games\/'\)/);
+  assert.match(shell, /pathname\.startsWith\('\/game\/'\)/);
 });
