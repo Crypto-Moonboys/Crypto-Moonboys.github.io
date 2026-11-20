@@ -7,11 +7,14 @@ import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describe
 import { ALL_CITY_BULLS, DISTRICT_RULES_VERSION, advanceDistrict, describeDistrict } from '../shared/clan-bulls-district.js';
 import { CRYPTO_MOONGIRLS, SIGNAL_RULES_VERSION, SIGNAL_FEATURE, advanceSignal, describeSignal } from '../shared/clan-moongirls-signal.js';
 import { HARD_FORK_ROCKERS, FORK_RULES_VERSION, FORK_FEATURE, advanceFork, describeFork, forkFinds } from '../shared/clan-rockers-fork.js';
-
 import {
   BLOCKCHAIN_FURIES, BURST_RULES_VERSION, BURST_FEATURE, BURST_ACTIONS,
   advanceBurst, describeBurst, burstFinds,
 } from '../shared/clan-furies-burst.js';
+import {
+  BLOCKSTARS, SPOTLIGHT_RULES_VERSION, SPOTLIGHT_FEATURE, SPOTLIGHT_ACTIONS,
+  advanceSpotlight, describeSpotlight, spotlightFinds,
+} from '../shared/clan-blockstars-spotlight.js';
 
 const operations = new Map([
   [MINERS, {
@@ -70,6 +73,14 @@ const operations = new Map([
     advance: advanceBurst,
     view: (route, state) => ({ burst: describeBurst(route, state.tier, state.operationState) }),
     finds: burstFinds,
+  }],
+  [BLOCKSTARS, {
+    version: SPOTLIGHT_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_spotlight_bank',
+    actions: SPOTLIGHT_ACTIONS,
+    advance: advanceSpotlight,
+    view: (route, state) => ({ spotlight: describeSpotlight(route, state.tier, state.operationState) }),
+    finds: spotlightFinds,
   }],
 ]);
 
@@ -174,7 +185,9 @@ export async function handleClanOperations(request, env, helpers) {
     const staleSignalClient = factionId === CRYPTO_MOONGIRLS && body.signal_ui !== SIGNAL_FEATURE;
     const staleForkClient = factionId === HARD_FORK_ROCKERS && body.fork_ui !== FORK_FEATURE;
     const staleBurstClient = factionId === BLOCKCHAIN_FURIES && body.burst_ui !== BURST_FEATURE;
-    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient || staleForkClient || staleBurstClient) {
+    const staleSpotlightClient = factionId === BLOCKSTARS && body.spotlight_ui !== SPOTLIGHT_FEATURE;
+    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient ||
+        staleForkClient || staleBurstClient || staleSpotlightClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 

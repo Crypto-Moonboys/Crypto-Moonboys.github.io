@@ -15,6 +15,9 @@ import { advanceFork, describeFork, forkFinds } from '../workers/moonboys-api/sh
 
 import { advanceBurst, describeBurst, burstFinds } from '../workers/moonboys-api/shared/clan-furies-burst.js';
 
+import { advanceSpotlight, describeSpotlight, spotlightFinds } from '../workers/moonboys-api/shared/clan-blockstars-spotlight.js';
+
+const spotlightMigration = readFileSync(new URL('../workers/moonboys-api/migrations/123_clan_blockstars.sql', import.meta.url), 'utf8');
 const burstMigration = readFileSync(new URL('../workers/moonboys-api/migrations/122_clan_blockchain_furies.sql', import.meta.url), 'utf8');
 const forkMigration = readFileSync(new URL('../workers/moonboys-api/migrations/121_clan_hard_fork_rockers.sql', import.meta.url), 'utf8');
 const signalMigration = readFileSync(new URL('../workers/moonboys-api/migrations/120_clan_crypto_moongirls.sql', import.meta.url), 'utf8');
@@ -32,13 +35,13 @@ const factionRows = `
   INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
     ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4),
     ('105', 'nomad-bears', 60, 5), ('107', 'crypto-stoned-boys', 0, 0), ('108', 'crypto-moongirls', 77, 8),
-    ('110', 'hard-fork-rockers', 55, 6), ('111', 'blockchain-furies', 46, 7)
+    ('110', 'hard-fork-rockers', 55, 6), ('111', 'blockchain-furies', 46, 7), ('113', 'blockstars', 82, 5)
 `;
 
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration} ${spotlightMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -58,12 +61,12 @@ function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
     action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction,
-    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1',
+    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, operation_faction: faction,
+      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, operation_faction: faction,
       utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
@@ -184,6 +187,7 @@ async function localD1(t) {
     await db.prepare(signalMigration).run();
     await db.prepare(forkMigration).run();
     await db.prepare(burstMigration).run();
+    await db.prepare(spotlightMigration).run();
   } finally {
     schema.close();
   }
@@ -970,4 +974,110 @@ test('each Furies relay offers a different clean and comeback emblem in every ti
   assert.equal(emblems.size, 18);
   assert.equal(advanceBurst({ route_index: 0, tier: 3 }, 'prepare'), null);
   assert.equal(describeBurst(0, 3).phase, 'complete');
+});
+
+test('Blockstars refuse play until migration 123 while Furies remain available', async t => {
+  const { request, sql } = fixture(t);
+  sql.exec('DROP TRIGGER clan_operation_award_at_spotlight_bank');
+  assert.equal((await request({ id: '113' })).status, 503);
+  assert.equal((await request({ id: '113', action: 'book-headliner', revision: 0 })).status, 503);
+  assert.equal((await request({ id: '111' })).status, 200);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+function spotlightLineup(spotlight, useThirdMove) {
+  const moves = new Map(spotlight.actions.filter(move => move.id.startsWith('perform-'))
+    .map(move => [move.label, move.id]));
+  const cues = spotlight.beats.map(beat => beat.cue);
+  const lineup = cues.map(cue => moves.get(cue));
+  if (useThirdMove) {
+    const repeat = cues.findIndex((cue, index) => cues.indexOf(cue) !== index);
+    lineup[repeat] = [...moves.entries()].find(([label]) => !cues.includes(label))[1];
+  }
+  return lineup;
+}
+
+test('each Spotlight has two viable styles, and the Freestyle finale rewards using all three moves', () => {
+  const posters = new Set();
+  for (let route = 0; route < 3; route++) {
+    for (const style of ['headliner', 'freestyle']) {
+      for (let tier = 0; tier < 3; tier++) {
+        let state = { route_index: route, tier, operationState: {} };
+        state = { ...state, ...advanceSpotlight(state, 'book-' + style) };
+        const view = describeSpotlight(route, tier, state.operationState);
+        const perform = actions => actions.reduce((moveState, action) => ({
+          ...moveState, ...advanceSpotlight(moveState, action),
+        }), state);
+        const target = style === 'freestyle' && tier === 2;
+        if (target) {
+          const crowdOnly = perform(spotlightLineup(view, false));
+          const beforeRestart = describeSpotlight(route, tier, crowdOnly.operationState);
+          assert.equal(beforeRestart.applause, 8);
+          assert.equal(advanceSpotlight(crowdOnly, 'bank'), null);
+          assert.equal(advanceSpotlight(crowdOnly, 'restart').outcome, 'spotlight_restarted');
+        }
+        const qualifying = perform(spotlightLineup(view, target));
+        assert.equal(advanceSpotlight(qualifying, 'bank').tier, tier + 1);
+        posters.add(spotlightFinds(route, style)[tier]);
+      }
+    }
+  }
+  assert.equal(posters.size, 18);
+});
+
+test('Blockstars recover and bank server-verified sets once per tier in D1', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '113', faction: 'blockstars' };
+  assert.equal((await request({ ...account, spotlight_ui: null })).status, 409);
+  assert.equal((await request({ ...account, signed: false })).status, 401);
+  assert.equal((await request({ ...account, faction: 'blockchain-furies' })).status, 403);
+
+  let { data: state } = await request(account);
+  assert.ok(state.spotlight.featured.path.startsWith('/games/'));
+  const route = dailyRouteIndex(settings.time);
+  const move = action => request({ ...account, action, revision: state.revision, day: state.utc_day });
+  const take = async action => {
+    const response = await move(action);
+    assert.equal(response.status, 200, JSON.stringify(response));
+    state = response.data;
+  };
+  assert.equal((await move('bank')).status, 409);
+  await take('book-headliner');
+  const absentMove = state.spotlight.actions.find(move => !state.spotlight.beats.some(beat => beat.cue === move.label));
+  for (let beat = 0; beat < 4; beat++) await take(absentMove.id);
+  assert.equal(state.spotlight.applause, 0);
+  assert.equal((await move('bank')).status, 409);
+  await take('restart');
+  assert.equal(state.tier, 0);
+
+  const expected = [];
+  for (const [tier, style] of ['freestyle', 'headliner', 'freestyle'].entries()) {
+    await take('book-' + style);
+    const lineup = spotlightLineup(state.spotlight, style === 'freestyle');
+    await take(lineup[0]);
+    assert.deepEqual((await request(account)).data.spotlight, state.spotlight);
+    assert.equal((await move('bank')).status, 409);
+    for (const beat of lineup.slice(1)) await take(beat);
+    assert.equal(state.spotlight.ready, true);
+    const banks = await Promise.all([move('bank'), move('bank')]);
+    assert.deepEqual(banks.map(result => result.status).sort(), [200, 409]);
+    state = banks.find(result => result.status === 200).data;
+    expected.push(spotlightFinds(route, style)[tier]);
+    assert.equal(state.renown_today, RENOWN_PER_TIER * (tier + 1));
+    assert.deepEqual(state.collection.map(item => item.name), expected);
+    assert.ok(state.collection.at(-1).specimen_key.endsWith('-' + style));
+  }
+  assert.equal(state.status, 'complete');
+  assert.deepEqual(state.spotlight.actions, []);
+  assert.equal((await move('bank')).status, 409);
+  assert.deepEqual(await db.prepare("SELECT faction_xp, gems FROM blocktopia_progression WHERE telegram_id = '113'").first(),
+    { faction_xp: 82, gems: 5 });
+  settings.time = new Date('2026-11-21T00:00:00Z');
+  assert.equal((await move('book-headliner')).status, 409);
+  const tomorrow = (await request(account)).data;
+  assert.notEqual(tomorrow.spotlight.featured.path, state.spotlight.featured.path);
+  assert.equal(tomorrow.renown_today, 0);
+  assert.equal(tomorrow.renown_total, 30_000);
+  assert.deepEqual(tomorrow.collection.map(item => item.name), expected);
 });
