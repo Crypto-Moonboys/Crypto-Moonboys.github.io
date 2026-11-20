@@ -29,8 +29,8 @@ test('every original walking, parachute, and available attack pose is backed by 
     'parachuteRatA', 'parachuteRatB', 'parachuteRatC',
     'londonRat', 'turquoiseRatWalk', 'brownRatWalk', 'graffitiBot', 'pigeon', 'balloonWalk',
     'londonRatBladeFlurry', 'londonRatViperPounce', 'turquoiseRatKick',
-    'turquoiseRatPunch', 'brownRatPunch', 'graffitiBotKick', 'graffitiBotHurt',
-    'graffitiBotFire', 'balloonRelease'
+    'turquoiseRatPunch', 'brownRatPunch', 'graffitiBotKick', 'graffitiBotFire',
+    'graffitiBotHurt', 'balloonRelease'
   ];
   assert.deepEqual(
     [...catalog.types.map(type => type.key), ...Object.keys(catalog.poses)],
