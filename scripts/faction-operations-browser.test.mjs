@@ -6,6 +6,7 @@ import path from 'node:path';
 import { chromium } from 'playwright';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
+import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
 
 const ROOT = process.cwd();
 const FACTIONS = [
@@ -1076,7 +1077,7 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
         });
       };
     });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v4.js') });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v5.js') });
     const right = page.getByRole('button', { name: 'Cycle right' });
     await page.locator('[data-wall-controls] button[value="paint-2"]:not([aria-disabled]):enabled').waitFor();
     await right.focus();
@@ -1145,7 +1146,7 @@ test('Nomad Bears announce mobile travel and retain the map during a retry windo
         return Response.json(snapshots[request.revision + 1]);
       };
     }, states);
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v4.js') });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v5.js') });
     const feedback = page.getByRole('status');
     const expectFeedback = pattern => feedback.filter({ hasText: pattern }).waitFor();
     const travel = page.locator('[data-wall-controls]');
@@ -1224,7 +1225,7 @@ test('All City Bulls can read pressure, time a hold and bank a visible mark on m
       };
     }, { snapshots, pathToBank });
 
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v4.js') });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v5.js') });
     const feedback = page.getByRole('status');
     await feedback.filter({ hasText: /Next pressure: Market Gate/ }).waitFor();
     assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
@@ -1240,6 +1241,96 @@ test('All City Bulls can read pressure, time a hold and bank a visible mark on m
     await page.getByRole('button', { name: /Bank territory mark/ }).click();
     await feedback.filter({ hasText: /Territory Mark banked/ }).waitFor();
     assert.match(await page.locator('[data-mine-collection]').innerText(), /Market Gate Mark/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Crypto Moongirls can recover from a missed early lock and bank on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/crypto-moongirls.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="crypto-moongirls">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const day = '2026-11-20';
+    let state = { route_index: 0, tier: 0, utc_day: day, operationState: {} };
+    const view = () => describeSignal(state.route_index, state.tier, day, state.operationState);
+    const snapshot = revision => ({
+      ok: true, faction_id: 'crypto-moongirls', status: 'ready', tier: state.tier, revision,
+      utc_day: day, resets_at: '2099-01-01T00:00:00Z', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: view().finds[0], collected: 1 }] : [],
+      signal: view(),
+    });
+    const snapshots = [snapshot(0)];
+    const moves = [];
+    const play = action => {
+      state = { ...state, ...advanceSignal(state, action) };
+      moves.push(action);
+      snapshots.push(snapshot(moves.length));
+    };
+    play('scan-band');
+    play('scan-pulse');
+    const full = advanceSignal(state, 'scan-phase');
+    const [target] = describeSignal(state.route_index, state.tier, day, full.operationState).candidates;
+    const missed = view().candidates.find(channel => channel.id !== target.id);
+    play('lock-' + missed.id);
+    play('recalibrate');
+    play('scan-phase');
+    play('lock-' + target.id);
+    play('bank');
+
+    await page.evaluate(({ snapshots, moves }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.signal_ui !== 'signal-v1' || request.operation_faction !== 'crypto-moongirls') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (moves[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '108',
+        getSignedTelegramAuth: () => ({ id: '108' }),
+      };
+    }, { snapshots, moves });
+
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v5.js') });
+    const feedback = page.getByRole('status');
+    await feedback.filter({ hasText: /8 matching channels/ }).waitFor();
+    assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByRole('button', { name: 'Scan band' }).click();
+    await feedback.filter({ hasText: /4 matching channels.*Band/ }).waitFor();
+    await page.getByRole('button', { name: 'Scan pulse' }).click();
+    await feedback.filter({ hasText: /2 matching channels.*Pulse/ }).waitFor();
+    await page.getByRole('button', { name: 'Lock ' + missed.name }).click();
+    await feedback.filter({ hasText: /Signal jammed/ }).waitFor();
+    await page.getByRole('button', { name: 'Recalibrate receiver' }).click();
+    await feedback.filter({ hasText: /Finish all three scans/ }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /^Lock / }).count(), 0);
+    await page.getByRole('button', { name: 'Scan phase' }).click();
+    await feedback.filter({ hasText: /1 matching channel.*Phase/ }).waitFor();
+    await page.getByRole('button', { name: 'Lock ' + target.name }).click();
+    await feedback.filter({ hasText: /verified. Bank this sweep/ }).waitFor();
+    await page.getByRole('button', { name: /Bank signal intel/ }).click();
+    await feedback.filter({ hasText: /Signal Intel banked/ }).waitFor();
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Transit Trace/);
     assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   } finally {

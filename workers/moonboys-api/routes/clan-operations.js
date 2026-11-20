@@ -5,6 +5,7 @@ import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, d
 import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
 import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describeTrail } from '../shared/clan-nomad-trail.js';
 import { ALL_CITY_BULLS, DISTRICT_RULES_VERSION, advanceDistrict, describeDistrict } from '../shared/clan-bulls-district.js';
+import { CRYPTO_MOONGIRLS, SIGNAL_RULES_VERSION, SIGNAL_FEATURE, advanceSignal, describeSignal } from '../shared/clan-moongirls-signal.js';
 
 const operations = new Map([
   [MINERS, {
@@ -36,6 +37,17 @@ const operations = new Map([
     advance: advanceDistrict,
     view: (route, state) => ({ district: describeDistrict(route, state.tier, state.operationState) }),
     finds: route => describeDistrict(route, 3).finds,
+  }],
+  [CRYPTO_MOONGIRLS, {
+    version: SIGNAL_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_signal_bank',
+    actions: [
+      'scan-band', 'scan-pulse', 'scan-phase', 'recalibrate', 'bank',
+      'lock-0', 'lock-1', 'lock-2', 'lock-3', 'lock-4', 'lock-5', 'lock-6', 'lock-7',
+    ],
+    advance: advanceSignal,
+    view: (route, state) => ({ signal: describeSignal(route, state.tier, state.utc_day, state.operationState) }),
+    finds: route => describeSignal(route, 3).finds,
   }],
 ]);
 
@@ -85,7 +97,7 @@ async function readOperation(db, owner, now, factionId, operation) {
   if (state.revision != null && state.rules_version !== operation.version) return { error: 'operation_unavailable' };
   const tier = state.tier ?? 0;
   const operationState = JSON.parse(state.operation_state ?? '{}');
-  const view = operation.view(state.route_index ?? dailyRouteIndex(now), { ...state, tier, operationState });
+  const view = operation.view(state.route_index ?? dailyRouteIndex(now), { ...state, utc_day: day, tier, operationState });
   const reset = new Date(`${day}T00:00:00.000Z`);
   reset.setUTCDate(reset.getUTCDate() + 1);
   return {
@@ -137,7 +149,8 @@ export async function handleClanOperations(request, env, helpers) {
     const staleWallClient = factionId === GRAFFPUNKS && body.operation_ui !== 'wall-v1';
     const staleTrailClient = factionId === NOMAD_BEARS && body.expedition_ui !== TRAIL_FEATURE;
     const staleDistrictClient = factionId === ALL_CITY_BULLS && body.district_ui !== 'district-v1';
-    if (staleWallClient || staleTrailClient || staleDistrictClient) {
+    const staleSignalClient = factionId === CRYPTO_MOONGIRLS && body.signal_ui !== SIGNAL_FEATURE;
+    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 
@@ -166,7 +179,7 @@ export async function handleClanOperations(request, env, helpers) {
       const db = env.DB;
       const route = dailyRouteIndex(requestTime);
       const saved = await selectDay(db, owner, day);
-      const state = saved ?? { route_index: route, revision: 0, tier: 0, ore: 0, braced: 0, collapsed: 0 };
+      const state = saved ?? { route_index: route, utc_day: day, revision: 0, tier: 0, ore: 0, braced: 0, collapsed: 0 };
       if (saved && saved.faction_id !== factionId) return respond({ error: 'operation_faction_locked' }, 409);
       if (state.revision !== body.revision || (saved && saved.rules_version !== operation.version)) {
         return respond({ error: 'refresh_operation' }, 409);

@@ -10,7 +10,9 @@ import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../
 import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
+import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
 
+const signalMigration = readFileSync(new URL('../workers/moonboys-api/migrations/120_clan_crypto_moongirls.sql', import.meta.url), 'utf8');
 const districtMigration = readFileSync(new URL('../workers/moonboys-api/migrations/119_clan_all_city_bulls.sql', import.meta.url), 'utf8');
 
 const trailsMigration = readFileSync(new URL('../workers/moonboys-api/migrations/118_clan_nomad_bears.sql', import.meta.url), 'utf8');
@@ -24,13 +26,13 @@ const factionTable = `
 const factionRows = `
   INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
     ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4),
-    ('105', 'nomad-bears', 60, 5), ('107', 'blockchain-furies', 0, 0)
+    ('105', 'nomad-bears', 60, 5), ('107', 'blockchain-furies', 0, 0), ('108', 'crypto-moongirls', 77, 8)
 `;
 
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -48,11 +50,15 @@ function fixture(t) {
 
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
-  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1' } = {}) {
+  async function request({
+    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction,
+    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1',
+  } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, expedition_ui, district_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
+      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, operation_faction: faction,
+      utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
@@ -169,6 +175,7 @@ async function localD1(t) {
     await db.batch([wallsMigration.slice(0, alterEnd), wallsMigration.slice(alterEnd)].map(sql => db.prepare(sql)));
     await db.prepare(trailsMigration).run();
     await db.prepare(districtMigration).run();
+    await db.prepare(signalMigration).run();
   } finally {
     schema.close();
   }
@@ -613,6 +620,99 @@ test('Bulls bank three unique marks exactly once in D1 and reset district progre
   assert.equal((await move('push-1')).status, 409);
   const tomorrow = (await request(account)).data;
   assert.notEqual(tomorrow.district.name, state.district.name);
+  assert.equal(tomorrow.renown_today, 0);
+  assert.equal(tomorrow.renown_total, 30_000);
+  assert.equal(tomorrow.collection.length, 3);
+});
+
+test('signal scans resolve one channel in every sweep and a missed early lock can recover', () => {
+  for (let route = 0; route < 3; route++) {
+    for (let tier = 0; tier < 3; tier++) {
+      const targets = new Set();
+      for (let offset = 0; offset < 8; offset++) {
+        const now = new Date(Date.UTC(2026, 10, 20 + route + offset * 3));
+        const day = now.toISOString().slice(0, 10);
+        const base = { route_index: route, tier, utc_day: day, operationState: {} };
+        const move = (state, action) => ({ ...state, ...advanceSignal(state, action) });
+        const view = state => describeSignal(route, tier, day, state.operationState);
+        assert.equal(view(base).candidates.length, 8);
+        assert.equal(advanceSignal(base, 'lock-0'), null);
+        const band = move(base, 'scan-band');
+        assert.equal(view(band).candidates.length, 4);
+        assert.equal(advanceSignal(band, 'scan-band'), null);
+        const two = move(band, 'scan-pulse');
+        assert.equal(view(two).candidates.length, 2);
+        const full = move(two, 'scan-phase');
+        assert.equal(view(full).candidates.length, 1);
+        const [target] = view(full).candidates;
+        targets.add(target.id);
+        const verified = 'lock-' + target.id;
+
+        assert.equal(move(two, verified).outcome, 'signal_locked');
+        assert.equal(advanceSignal(full, 'bank'), null);
+        const wrong = view(two).candidates.find(channel => channel.id !== target.id);
+        const missed = move(two, 'lock-' + wrong.id);
+        assert.equal(missed.outcome, 'signal_misread');
+        assert.deepEqual(view(missed).actions.map(action => action.id), ['recalibrate']);
+        assert.equal(advanceSignal(missed, 'bank'), null);
+        const ready = move(missed, 'recalibrate');
+        assert.deepEqual(view(ready).measurements, view(two).measurements);
+        assert.deepEqual(view(ready).actions.map(action => action.id), ['scan-phase']);
+        const locked = move(move(ready, 'scan-phase'), verified);
+        assert.equal(locked.outcome, 'signal_locked');
+        assert.equal(advanceSignal(locked, 'bank').tier, tier + 1);
+      }
+      assert.equal(targets.size, 8, 'the same relay receives a rotating signal');
+    }
+  }
+});
+
+test('Moongirls fail closed before migration 120 while an earlier operation stays available', async t => {
+  const { request, sql } = fixture(t);
+  sql.exec('DROP TRIGGER clan_operation_award_at_signal_bank');
+  assert.equal((await request({ id: '108' })).status, 503);
+  assert.equal((await request({ id: '108', action: 'scan-band', revision: 0 })).status, 503);
+  assert.equal((await request({ id: '102' })).status, 200);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+test('three Moongirls sweeps bank once each in D1 and reset at UTC midnight', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '108', faction: 'crypto-moongirls' };
+  assert.equal((await request({ ...account, signal_ui: null })).status, 409);
+  assert.equal((await request({ ...account, signed: false })).status, 401);
+  assert.equal((await request({ ...account, faction: 'all-city-bulls' })).status, 403);
+
+  let { data: state } = await request(account);
+  const act = action => request({ ...account, action, revision: state.revision, day: state.utc_day });
+  const take = async action => {
+    const response = await act(action);
+    assert.equal(response.status, 200);
+    state = response.data;
+  };
+  assert.equal((await act('bank')).status, 409, 'a submitted Renown amount cannot bank an unverified signal');
+  for (let tier = 0; tier < 3; tier++) {
+    for (const filter of ['band', 'pulse', 'phase']) await take('scan-' + filter);
+    assert.equal(state.signal.candidates.length, 1);
+    assert.deepEqual((await request(account)).data.signal, state.signal);
+    await take(state.signal.actions[0].id);
+    const banks = await Promise.all([act('bank'), act('bank')]);
+    assert.deepEqual(banks.map(result => result.status).sort(), [200, 409]);
+    state = banks.find(result => result.status === 200).data;
+    assert.equal(state.renown_today, RENOWN_PER_TIER * (tier + 1));
+    assert.equal(state.crew_banks, tier + 1);
+  }
+
+  assert.equal(state.status, 'complete');
+  assert.deepEqual(state.collection.map(item => item.name), state.signal.finds);
+  assert.equal((await act('bank')).status, 409);
+  assert.deepEqual(await db.prepare("SELECT faction_xp, gems FROM blocktopia_progression WHERE telegram_id = '108'").first(),
+    { faction_xp: 77, gems: 8 });
+  settings.time = new Date('2026-11-21T00:00:00Z');
+  assert.equal((await act('scan-band')).status, 409);
+  const tomorrow = (await request(account)).data;
+  assert.notEqual(tomorrow.signal.name, state.signal.name);
   assert.equal(tomorrow.renown_today, 0);
   assert.equal(tomorrow.renown_total, 30_000);
   assert.equal(tomorrow.collection.length, 3);

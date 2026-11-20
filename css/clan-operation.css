@@ -127,3 +127,29 @@
   display: block;
   margin-top: .35em;
 }
+
+.clan-operation[data-active-operation="crypto-moongirls"] {
+  --mine-amber: #dfc7ff;
+  border-color: #a986ce;
+  background: linear-gradient(145deg, #312047, #171423 62%);
+}
+
+[data-active-operation="crypto-moongirls"] .clan-wall li {
+  background: #2b213d;
+  border-color: #8d73b4;
+}
+
+[data-active-operation="crypto-moongirls"] .clan-wall li[data-signal-locked] {
+  box-shadow: inset 0 0 0 2px #dfc7ff;
+}
+
+[data-active-operation="crypto-moongirls"] .clan-wall small {
+  display: block;
+  margin-top: .35em;
+}
+
+@media (max-width: 550px) {
+  .clan-operation[data-active-operation="crypto-moongirls"] .clan-wall {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
