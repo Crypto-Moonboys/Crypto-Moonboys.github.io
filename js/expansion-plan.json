@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-18T20:33:40.223Z",
+  "generated_at": "2026-11-20T00:58:38.918Z",
   "summary": {
-    "total_actions": 53,
+    "total_actions": 54,
     "strengthen_existing_page": 0,
-    "create_bridge_page": 9,
+    "create_bridge_page": 10,
     "create_topic_page": 38,
     "expand_cluster_support": 6
   },
@@ -19,7 +19,7 @@
         "topic_score:3680"
       ],
       "source_signals": [
-        "avg_rank_score:311",
+        "avg_rank_score:313",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1664",
         "tag_page_count:84",
@@ -55,18 +55,18 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 3688,
+      "priority_score": 3690,
       "target_topic": "Block Topia",
       "target_url_slug": "block-topia",
       "reasons": [
         "dedicated_strong_pages:0",
         "tag_page_count:84",
-        "topic_score:3672"
+        "topic_score:3674"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:313",
         "dedicated_strong_pages:0",
-        "entity_graph_co_citations:1663",
+        "entity_graph_co_citations:1664",
         "tag_page_count:84",
         "total_injection_hits:7"
       ],
@@ -109,7 +109,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -154,7 +154,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -199,7 +199,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -244,7 +244,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -289,7 +289,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -334,7 +334,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -379,7 +379,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -424,7 +424,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -469,7 +469,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -514,7 +514,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -559,7 +559,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -604,7 +604,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -649,7 +649,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -694,7 +694,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -739,7 +739,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -784,7 +784,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -829,7 +829,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -874,7 +874,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -919,7 +919,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -964,7 +964,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1009,7 +1009,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1054,7 +1054,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1099,7 +1099,7 @@
         "topic_score:3614"
       ],
       "source_signals": [
-        "avg_rank_score:310",
+        "avg_rank_score:312",
         "dedicated_strong_pages:0",
         "entity_graph_co_citations:1640",
         "tag_page_count:82",
@@ -1376,8 +1376,8 @@
       ],
       "related_pages": [
         "/wiki/bitcoin-kid-army.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
         "/wiki/first-witness-bitcoin-witness.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
         "/wiki/bitcoin-x-kids.html",
         "/wiki/the-bitcoin-kid-army.html"
       ],
@@ -1827,18 +1827,18 @@
     },
     {
       "action_type": "create_topic_page",
-      "priority_score": 182,
+      "priority_score": 176,
       "target_topic": "nft",
       "target_url_slug": "nft",
       "reasons": [
         "dedicated_strong_pages:0",
         "tag_page_count:7",
-        "topic_score:169"
+        "topic_score:163"
       ],
       "source_signals": [
         "avg_rank_score:250",
         "dedicated_strong_pages:0",
-        "entity_graph_co_citations:67",
+        "entity_graph_co_citations:64",
         "tag_page_count:7",
         "total_injection_hits:3"
       ],
@@ -1872,18 +1872,18 @@
     },
     {
       "action_type": "create_bridge_page",
-      "priority_score": 179,
+      "priority_score": 175,
       "target_topic": "nft-quot",
       "target_url_slug": "nft-quot",
       "reasons": [
-        "cross_tag_cluster_edges:78",
+        "cross_tag_cluster_edges:76",
         "cluster_a_pages:7",
         "cluster_b_pages:36",
         "existing_bridge_pages:0"
       ],
       "source_signals": [
-        "bridge_score:179",
-        "cross_cluster_edge_count:78",
+        "bridge_score:175",
+        "cross_cluster_edge_count:76",
         "cluster_a:nft",
         "cluster_b:quot",
         "suggested_page_topic:nft + quot (via alessandro)"
@@ -2068,8 +2068,8 @@
       ],
       "related_pages": [
         "/wiki/bitcoin-kid-army.html",
-        "/wiki/alfie-bitcoin-kid-blaze.html",
         "/wiki/first-witness-bitcoin-witness.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
         "/wiki/bitcoin-x-kids.html",
         "/wiki/the-bitcoin-kid-army.html"
       ],
@@ -2093,6 +2093,54 @@
         "belief system",
         "bitcoin",
         "bitcoin bible"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 154,
+      "target_topic": "Year 3008-protocol",
+      "target_url_slug": "year-3008-protocol",
+      "reasons": [
+        "cross_tag_cluster_edges:58",
+        "cluster_a_pages:84",
+        "cluster_b_pages:8",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:154",
+        "cross_cluster_edge_count:58",
+        "cluster_a:Year 3008",
+        "cluster_b:protocol",
+        "suggested_page_topic:Year 3008 + protocol (via 2030 Concord)"
+      ],
+      "related_pages": [
+        "/wiki/the-master-codex-the-triple-tier.html",
+        "/wiki/the-28th-century-began-with-godlike.html",
+        "/wiki/the-null-protocol-collapse-of-digital.html",
+        "/wiki/the-crypto-protocol-the-gkniftyheads-chronicle.html",
+        "/wiki/the-gk-protocol-the-eastern-hemisphere-is-kool.html"
+      ],
+      "supporting_clusters": [
+        "Year 3008",
+        "protocol"
+      ],
+      "recommended_sections": [
+        "Bridge overview: Year 3008 and protocol",
+        "Year 3008 context",
+        "protocol context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "authority",
+        "chronicle",
+        "codex",
+        "collapse",
+        "crimson",
+        "digital",
+        "eastern",
+        "eternal"
       ],
       "confidence": "medium"
     },
