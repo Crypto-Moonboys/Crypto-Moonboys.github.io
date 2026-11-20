@@ -8,6 +8,11 @@ import { ALL_CITY_BULLS, DISTRICT_RULES_VERSION, advanceDistrict, describeDistri
 import { CRYPTO_MOONGIRLS, SIGNAL_RULES_VERSION, SIGNAL_FEATURE, advanceSignal, describeSignal } from '../shared/clan-moongirls-signal.js';
 import { HARD_FORK_ROCKERS, FORK_RULES_VERSION, FORK_FEATURE, advanceFork, describeFork, forkFinds } from '../shared/clan-rockers-fork.js';
 
+import {
+  BLOCKCHAIN_FURIES, BURST_RULES_VERSION, BURST_FEATURE, BURST_ACTIONS,
+  advanceBurst, describeBurst, burstFinds,
+} from '../shared/clan-furies-burst.js';
+
 const operations = new Map([
   [MINERS, {
     version: RULES_VERSION,
@@ -57,6 +62,14 @@ const operations = new Map([
     advance: advanceFork,
     view: (route, state) => ({ fork: describeFork(route, state.tier, state.operationState) }),
     finds: forkFinds,
+  }],
+  [BLOCKCHAIN_FURIES, {
+    version: BURST_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_burst_bank',
+    actions: BURST_ACTIONS,
+    advance: advanceBurst,
+    view: (route, state) => ({ burst: describeBurst(route, state.tier, state.operationState) }),
+    finds: burstFinds,
   }],
 ]);
 
@@ -160,7 +173,8 @@ export async function handleClanOperations(request, env, helpers) {
     const staleDistrictClient = factionId === ALL_CITY_BULLS && body.district_ui !== 'district-v1';
     const staleSignalClient = factionId === CRYPTO_MOONGIRLS && body.signal_ui !== SIGNAL_FEATURE;
     const staleForkClient = factionId === HARD_FORK_ROCKERS && body.fork_ui !== FORK_FEATURE;
-    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient || staleForkClient) {
+    const staleBurstClient = factionId === BLOCKCHAIN_FURIES && body.burst_ui !== BURST_FEATURE;
+    if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient || staleForkClient || staleBurstClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 
