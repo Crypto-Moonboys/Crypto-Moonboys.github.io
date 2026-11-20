@@ -84,6 +84,156 @@
     backflipActive = stage === 3;
     return true;
   }
+
+  // Cosmetic website encounter. Never write to the game's replay, XP or scores.
+  const ENEMY_TYPES = [
+    { key: 'parachuteRatA', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95 },
+    { key: 'parachuteRatB', kind: 'parachute', width: 64, height: 64, columns: 5, frames: 25, frameMs: 95 },
+    { key: 'londonRat', kind: 'ground', width: 50, height: 60, columns: 5, frames: 25, frameMs: 90 },
+    { key: 'turquoiseRatWalk', kind: 'ground', width: 50, height: 60, columns: 5, frames: 25, frameMs: 90 },
+    { key: 'brownRatWalk', kind: 'ground', width: 64, height: 72, columns: 5, frames: 25, frameMs: 90 },
+    { key: 'graffitiBot', kind: 'ground', width: 70, height: 52, columns: 5, frames: 25, frameMs: 90 },
+    { key: 'pigeon', kind: 'flying', width: 56, height: 44, columns: 5, frames: 20, frameMs: 85 },
+    { key: 'balloonWalk', kind: 'ground', width: 54, height: 60, columns: 4, frames: 14, frameMs: 100 }
+  ];
+  let encounterCanvas = null, encounterCtx = null, enemyImages = {}, enemies = [];
+  let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0;
+  let sprayUntil = 0, lastSpray = -Infinity;
+  function createEncounterCanvas() {
+    if (encounterCanvas) return;
+    encounterCanvas = document.createElement('canvas');
+    encounterCanvas.id = 'nbg-roamer-enemies';
+    encounterCanvas.setAttribute('aria-hidden', 'true');
+    encounterCanvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:1499;pointer-events:none;image-rendering:pixelated';
+    document.body.appendChild(encounterCanvas);
+    encounterCtx = encounterCanvas.getContext('2d');
+  }
+  function resizeEncounterCanvas() {
+    if (!encounterCanvas) return;
+    const width = Math.max(1, window.innerWidth), height = Math.max(1, window.innerHeight);
+    if (encounterCanvas.width !== width) encounterCanvas.width = width;
+    if (encounterCanvas.height !== height) encounterCanvas.height = height;
+  }
+  function spawnEnemy(type, index = 0) {
+    const w = window.innerWidth, h = window.innerHeight;
+    const parachute = type.kind === 'parachute';
+    return {
+      type, x: parachute ? w * (index ? 0.7 : 0.3) : w + 20 + index * 70,
+      top: parachute ? -type.height - index * 100 : type.kind === 'flying' ? h * 0.28 : h - type.height,
+      vx: parachute ? (index ? -10 : 10) : -(type.kind === 'flying' ? 100 : 58),
+      age: index * 140, defeated: false
+    };
+  }
+  function startEncounter() {
+    const generation = ++encounterGeneration;
+    enemies = [];
+    sprayUntil = 0;
+    encounterNextAt = performance.now() + 2200;
+    createEncounterCanvas();
+    resizeEncounterCanvas();
+    // Parachute rats appear together when the character comes into view.
+    const parachutes = ENEMY_TYPES.slice(0, 2);
+    for (let i = 0; i < parachutes.length; i++) enemies.push(spawnEnemy(parachutes[i], i));
+    // Preload actual NBG Level 1 artwork, without blocking player movement.
+    if (!enemyManifest) {
+      fetch(ASSET_ROOT + 'asset-manifest.json', { credentials: 'same-origin' })
+        .then(response => { if (!response.ok) throw Error('Missing NBG enemy manifest'); return response.json(); })
+        .then(data => {
+          if (disposed || generation !== encounterGeneration) return;
+          enemyManifest = data.enemies || {};
+          ENEMY_TYPES.forEach(type => {
+            const path = enemyManifest[type.key];
+            if (!path || enemyImages[type.key]) return;
+            const image = new Image();
+            image.src = ASSET_ROOT + path;
+            enemyImages[type.key] = image;
+          });
+        }).catch(() => {});
+    } else {
+      ENEMY_TYPES.forEach(type => {
+        if (!enemyManifest[type.key] || enemyImages[type.key]) return;
+        const image = new Image();
+        image.src = ASSET_ROOT + enemyManifest[type.key];
+        enemyImages[type.key] = image;
+      });
+    }
+  }
+  function spray(now = performance.now()) {
+    if (!active || !controlling || now - lastSpray < 550) return;
+    lastSpray = now;
+    sprayUntil = now + 260;
+  }
+  function clearEncounter() {
+    encounterGeneration++;
+    enemies = [];
+    sprayUntil = 0;
+    if (encounterCanvas) encounterCanvas.remove();
+    encounterCanvas = encounterCtx = null;
+  }
+  function updateEncounter(now, delta, previousPlayerY) {
+    if (!encounterCtx || !active) return;
+    resizeEncounterCanvas();
+    encounterCtx.clearRect(0, 0, encounterCanvas.width, encounterCanvas.height);
+    const h = encounterCanvas.height, w = encounterCanvas.width;
+    if (controlling && now >= encounterNextAt && enemies.length < 8) {
+      const rotating = ENEMY_TYPES.slice(2);
+      const selected = rotating[Math.floor(now / 2500) % rotating.length];
+      enemies.push(spawnEnemy(selected));
+      encounterNextAt = now + 2600;
+    }
+    for (const enemy of enemies) {
+      if (enemy.defeated) continue;
+      const e = enemy.type;
+      enemy.age += delta * 1000;
+      enemy.x += enemy.vx * delta;
+      if (e.kind === 'parachute') {
+        enemy.top = Math.min(h - e.height, enemy.top + 105 * delta);
+        if (enemy.top >= h - e.height) {
+          // Parachute lands and turns into a moving rat.
+          enemy.type = ENEMY_TYPES[enemy === enemies[0] ? 3 : 4];
+          enemy.top = h - enemy.type.height;
+          enemy.vx = enemy.x < w / 2 ? 65 : -65;
+        }
+      } else if (e.kind === 'ground') {
+        enemy.top = h - e.height;
+      } else {
+        enemy.top = h * 0.25 + Math.sin(enemy.age / 300) * 35;
+      }
+      const playerLeft = x + 14, playerRight = x + 58;
+      const playerTop = h - y - 74, playerFoot = h - y;
+      const oldFoot = h - previousPlayerY;
+      const overlapX = playerRight > enemy.x + 8 && playerLeft < enemy.x + e.width - 8;
+      const enemyTop = enemy.top + (e.kind === 'parachute' ? 12 : 5);
+      if (overlapX && vy < 0 && oldFoot <= enemyTop + 16 && playerFoot >= enemyTop) {
+        enemy.defeated = true;
+        vy = 430; // Rebound upward after a successful stomp.
+        if (jumpsUsed > 0) jumpsUsed = Math.min(jumpsUsed, 2);
+      }
+      const sprayActive = controlling && now < sprayUntil;
+      const sprayReach = direction > 0 ? enemy.x - (x + 54) : x - (enemy.x + e.width);
+      if (sprayActive && sprayReach >= -10 && sprayReach < 125 &&
+          Math.abs((enemy.top + e.height / 2) - (playerTop + 38)) < 95) {
+        enemy.defeated = true;
+      }
+      if (enemy.defeated || enemy.x < -140 || enemy.x > w + 180 || enemy.age > 30000) {
+        enemy.defeated = true;
+        continue;
+      }
+      const image = enemyImages[e.key];
+      if (!image?.complete || !image.naturalWidth) continue;
+      const frame = Math.floor(enemy.age / e.frameMs) % e.frames;
+      const sourceW = image.naturalWidth / e.columns;
+      const sourceH = image.naturalHeight / Math.ceil(e.frames / e.columns);
+      encounterCtx.save();
+      encounterCtx.imageSmoothingEnabled = false;
+      encounterCtx.drawImage(image, (frame % e.columns) * sourceW,
+        Math.floor(frame / e.columns) * sourceH, sourceW, sourceH,
+        Math.round(enemy.x), Math.round(enemy.top), e.width, e.height);
+      encounterCtx.restore();
+    }
+    enemies = enemies.filter(enemy => !enemy.defeated);
+  }
+
   function makeUI() {
     if (host) return;
     const style = document.createElement('style');
@@ -116,7 +266,7 @@
     controls.className = 'nbg-controls';
     controls.hidden = true;
     controls.setAttribute('aria-label', 'NBG runner touch controls');
-    for (const [label, key] of [['◀', 'ArrowLeft'], ['▲', 'ArrowUp'], ['▼', 'ArrowDown'], ['▶', 'ArrowRight']]) {
+    for (const [label, key] of [['◀', 'ArrowLeft'], ['▲', 'ArrowUp'], ['▼', 'ArrowDown'], ['▶', 'ArrowRight'], ['SPRAY', 'KeyF']]) {
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = label;
@@ -126,6 +276,7 @@
         event.preventDefault(); button.setPointerCapture?.(event.pointerId);
         takeControl(); held.add(key);
         if (JUMP_CODES.includes(key)) tryJump();
+        if (key === 'KeyF') spray();
       });
       for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(type, release);
       controls.appendChild(button);
@@ -178,6 +329,7 @@
   function stop() {
     active = false; controlling = false; moving = false; held.clear();
     jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false; y = vy = 0;
+    clearEncounter();
     if (host) host.remove();
     host = sprite = controls = null;
     cancelAnimationFrame(raf);
@@ -189,6 +341,7 @@
     const delta = clamp((now - (last || now)) / 1000, 0, 0.05);
     last = now;
     if (controlling && now >= deadline) { controlling = false; held.clear(); controls.hidden = true; direction = 1; }
+    const previousPlayerY = y;
     let crouch = false;
     if (controlling) {
       const left = held.has('ArrowLeft') || held.has('KeyA');
@@ -206,7 +359,8 @@
         vy = 0; jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false;
       }
     }
-    const anim = y > 0
+    updateEncounter(now, delta, previousPlayerY);
+    const anim = now < sprayUntil ? 'spray' : y > 0
       ? backflipActive ? 'backflip' : vy >= 0 ? 'jump' : 'fall'
       : crouch && moving ? (direction < 0 ? 'crouchLeft' : 'crouchRight') : crouch ? 'idle' : moving ? 'run' : 'idle';
     setAnimation(anim, now);
@@ -232,6 +386,7 @@
       makeUI();
       active = true; controlling = false; x = -100; y = vy = 0; direction = 1; current = ''; last = 0;
       jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false;
+      startEncounter();
       if (manual) startSummonCooldown();
       raf = requestAnimationFrame(tick);
     } catch (_) { if (!disposed) schedule(); }
@@ -240,7 +395,7 @@
   function onKeyDown(event) {
     if (!active || disposed || document.hidden || event.defaultPrevented ||
         event.altKey || event.ctrlKey || event.metaKey ||
-        !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space'].includes(event.code)) return;
+        !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space','KeyF','KeyJ'].includes(event.code)) return;
     // A summoned runner can be taken over with the first movement key, without
     // requiring a separate click. Never intercept input in page controls.
     const runnerTarget = !!sprite?.contains(event.target);
@@ -252,6 +407,7 @@
       takeControl();
     }
     if (JUMP_CODES.includes(event.code) && !event.repeat && !held.has(event.code)) tryJump();
+    if ((event.code === 'KeyF' || event.code === 'KeyJ') && !event.repeat) spray();
     held.add(event.code);
     event.preventDefault();
   }
