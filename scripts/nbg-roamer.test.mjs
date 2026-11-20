@@ -88,5 +88,12 @@ test('manual appearance uses existing spawn, retains random cadence and enforces
 });
 test('summon UI is removed on pagehide and re-created when bfcache restores a page', () => {
   assert.match(source, /clearInterval\(summonCooldownTimer\);[\s\S]*?summonButton\?\.remove\(\)/);
-  assert.match(source, /if \(event\.persisted && disposed\) \{ disposed = false; ensureSummonButton\(\); schedule\(\); \}/);
+  assert.match(source, /if \\(event\\.persisted && disposed\\) \\{[\\s\\S]*?ensureSummonButton\\(\\);[\\s\\S]*?schedule\\(\\);/);
+});
+
+test('bfcache restoration resumes remaining summon cooldown without resetting its origin', () => {
+  assert.match(source, /function startSummonCooldown\\(resetStart = true\\)/);
+  assert.match(source, /if \\(resetStart\\) lastSummon = performance\\.now\\(\\)/);
+  assert.match(source, /if \\(performance\\.now\\(\\) - lastSummon < SUMMON_COOLDOWN_MS\\) startSummonCooldown\\(false\\)/);
+  assert.match(source, /setInterval\\(\\(\\) => \\{[\\s\\S]*?updateSummonButton\\(\\)/);
 });
