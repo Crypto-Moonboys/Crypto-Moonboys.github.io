@@ -166,7 +166,7 @@ test('PR4 mounts exactly once in nine faction chambers and Community; preserves 
   assert.match(community,/\/js\/faction-profile-data\.js/u,
     'Community must load the same canonical faction names as the chambers');
   assert.ok(community.indexOf('src="/js/faction-profile-data.js"') <
-    community.indexOf('src="/js/faction-operations.js"'));
+    community.indexOf('src="/js/faction-operations.js?'));
   const editorial=await readFile(path.join(ROOT,'dashboard.html'),'utf8');
   assert.doesNotMatch(editorial,/data-fop-(crew|private)|faction-operations\.js/u);
   assert.doesNotMatch(SCRIPT,/\b(?:localStorage|sessionStorage)\.(?:getItem|setItem|removeItem|clear)\s*\(|\bfetch\s*\(|\bXMLHttpRequest\b|\bsendBeacon\s*\(/u,
