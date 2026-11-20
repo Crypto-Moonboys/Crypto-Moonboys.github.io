@@ -97,3 +97,22 @@ test('bfcache restoration resumes remaining summon cooldown without resetting it
   assert.match(source, /if \(performance\.now\(\) - lastSummon < SUMMON_COOLDOWN_MS\) startSummonCooldown\(false\)/);
   assert.match(source, /setInterval\(\(\) => \{[\s\S]*?updateSummonButton\(\)/);
 });
+
+test('Space activates the runner only when idle and reaches gameplay while controlling', () => {
+  assert.match(source, /event\.key === 'Enter' \|\| \(event\.key === ' ' && !controlling\)/);
+  assert.match(source, /sprite\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(source, /held\.has\('Space'\)/);
+  assert.match(source, /sprite\?\.contains\(event\.target\)/);
+});
+test('Space is ignored outside active control and never hijacks text inputs', () => {
+  const { listeners } = boot('/wiki/crypto-moonboys.html');
+  for (const target of [
+    { closest: () => null },
+    { closest: () => ({ tagName: 'INPUT' }) }
+  ]) {
+    let prevented = false;
+    listeners.keydown({ code: 'Space', key: ' ', target, preventDefault() { prevented = true; } });
+    assert.equal(prevented, false);
+  }
+  assert.match(source, /interactive\(event\.target\) && !sprite\?\.contains\(event\.target\)/);
+});
