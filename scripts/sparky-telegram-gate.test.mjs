@@ -28,7 +28,7 @@ test("site entry points open ChatGPT instead of claiming a hosted SWARMSY assist
   assert.match(home, /No Moonboy or SWARMSY installation required/);
   assert.doesNotMatch(home, /SWARMSY Ai WILL BLOW YOU UP|SWARMSY helps you name it, shape it, create it and keep YOU moving 24\/7/);
   assert.match(shell, /sparkyAgent\.href = '\/ai-user\.html'/);
-  assert.match(shell, /Start creating with AI via the SPARKY Creator Studio/);
+  assert.match(shell, /Start a campaign with the SPARKY AI Creator Studio/);
   assert.match(swarmsy, /optional PC beta/);
   assert.match(swarmsy, /not a hosted SWARMSY login or live chat/);
   assert.match(readme, /Retired website chatbot/);

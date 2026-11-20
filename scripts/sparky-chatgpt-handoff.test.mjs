@@ -180,5 +180,5 @@ test('SWARMSY continuity CTA points to the published brief, not the retired edit
   assert.doesNotMatch(appPage, /#creator-memory-studio|SAVE YOUR PROJECT MEMORY|Export or import a portable project JSON file in the public Studio/);
   assert.match(continuity, /website no longer contains a browser memory editor or JSON import\/export buttons/);
   assert.match(continuity, /save those files and bring them back/i);
-  assert.match(continuity, /existing JSON record can attach it to your chosen AI/);
+  assert.match(continuity, /existing JSON record can attach it to another AI service/);
 });

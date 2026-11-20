@@ -217,7 +217,7 @@ if (!shellJs) {
     ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
     ["sparkyAgent.href = '/ai-user.html'", 'public ChatGPT Studio link target'],
     ["/SPARKY%20FLOATING%20CLIP.png", 'SWARMSY/Sparky floating PNG asset'],
-    ["Start creating with AI via the SPARKY Creator Studio", 'ChatGPT Studio aria label'],
+    ["Start a campaign with the SPARKY AI Creator Studio", 'ChatGPT Studio aria label'],
   ];
   for (const [needle, label] of sparkyCompatibilityChecks) {
     if (shellJs.includes(needle)) {
