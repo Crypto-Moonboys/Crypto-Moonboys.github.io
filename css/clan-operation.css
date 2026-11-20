@@ -102,3 +102,28 @@
   margin-top: .35em;
   color: #d3ebe8;
 }
+
+.clan-operation[data-active-operation="all-city-bulls"] {
+  --mine-amber: #ffc5a8;
+  border-color: #be705b;
+  background: linear-gradient(145deg, #3d201d, #16141c 62%);
+}
+
+[data-active-operation="all-city-bulls"] .clan-wall li {
+  background: #342225;
+  border-color: #a46862;
+}
+
+[data-active-operation="all-city-bulls"] .clan-wall li[data-secured] {
+  background: #442e27;
+  color: #ffe1bf;
+}
+
+[data-active-operation="all-city-bulls"] .clan-wall li[data-pressure] {
+  box-shadow: inset 0 0 0 2px #ffc5a8;
+}
+
+[data-active-operation="all-city-bulls"] .clan-wall small {
+  display: block;
+  margin-top: .35em;
+}

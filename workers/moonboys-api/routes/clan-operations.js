@@ -4,6 +4,7 @@ import { FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
 import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
 import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describeTrail } from '../shared/clan-nomad-trail.js';
+import { ALL_CITY_BULLS, DISTRICT_RULES_VERSION, advanceDistrict, describeDistrict } from '../shared/clan-bulls-district.js';
 
 const operations = new Map([
   [MINERS, {
@@ -27,6 +28,14 @@ const operations = new Map([
     advance: advanceTrail,
     view: (route, state) => ({ trail: describeTrail(route, state.tier, state.operationState) }),
     finds: route => describeTrail(route, 3).finds,
+  }],
+  [ALL_CITY_BULLS, {
+    version: DISTRICT_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_district_bank',
+    actions: ['push-0', 'push-1', 'push-2', 'hold-0', 'hold-1', 'hold-2', 'bank'],
+    advance: advanceDistrict,
+    view: (route, state) => ({ district: describeDistrict(route, state.tier, state.operationState) }),
+    finds: route => describeDistrict(route, 3).finds,
   }],
 ]);
 
@@ -124,10 +133,11 @@ export async function handleClanOperations(request, env, helpers) {
     const operation = operations.get(factionId);
     if (!operation) return respond({ error: 'faction_not_in_pilot' }, 403);
 
-    // Cached mining clients expect a mine payload on every successful response.
+    // Match the operation payload to what the caller's cached client can render.
     const staleWallClient = factionId === GRAFFPUNKS && body.operation_ui !== 'wall-v1';
     const staleTrailClient = factionId === NOMAD_BEARS && body.expedition_ui !== TRAIL_FEATURE;
-    if (staleWallClient || staleTrailClient) {
+    const staleDistrictClient = factionId === ALL_CITY_BULLS && body.district_ui !== 'district-v1';
+    if (staleWallClient || staleTrailClient || staleDistrictClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 
@@ -137,7 +147,7 @@ export async function handleClanOperations(request, env, helpers) {
       return respond({ error: 'wrong_operation_faction' }, 403);
     }
 
-    // A trail bank must never advance on a database missing migration 118.
+    // Refuse play if the trigger that atomically banks this operation is missing.
     if (operation.awardTrigger && !(await env.DB.prepare(
       "SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name = ?"
     ).bind(operation.awardTrigger).first())) {
