@@ -5,7 +5,9 @@ import test from 'node:test';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
+import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
 
+const wallsMigration = readFileSync(new URL('../workers/moonboys-api/migrations/117_clan_graffpunks.sql', import.meta.url), 'utf8');
 const migration = readFileSync(new URL('../workers/moonboys-api/migrations/116_clan_operations.sql', import.meta.url), 'utf8');
 
 const factionTable = `
@@ -13,13 +15,13 @@ const factionTable = `
 `;
 const factionRows = `
   INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
-    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2)
+    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4)
 `;
 
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -37,11 +39,11 @@ function fixture(t) {
 
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
-  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST' } = {}) {
+  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1' } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
+      action, revision, operation_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
@@ -154,6 +156,8 @@ async function localD1(t) {
     schema.exec(migration);
     const objects = schema.prepare('SELECT sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY rowid').all();
     await db.batch([factionTable, factionRows, ...objects.map(row => row.sql)].map(sql => db.prepare(sql)));
+    const alterEnd = wallsMigration.indexOf(';') + 1;
+    await db.batch([wallsMigration.slice(0, alterEnd), wallsMigration.slice(alterEnd)].map(sql => db.prepare(sql)));
   } finally {
     schema.close();
   }
@@ -245,4 +249,121 @@ test('all 30 daily routes offer three equally paid tiers with a safe route', () 
     assert.equal(state.tier, 3);
   }
   assert.equal(routeNames.size, 3);
+});
+
+test('GraffPUNKS layers grant one print and the same Renown cap through D1', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '104', faction: 'graffpunks' };
+  const getWall = () => request(account);
+  for (const action of [undefined, 'paint-0']) {
+    const cachedClient = await request({ ...account, action, revision: 0, operation_ui: null });
+    assert.equal(cachedClient.status, 409);
+    assert.equal(cachedClient.data.error, 'operation_unavailable');
+  }
+  const cachedMiner = await request({ id: '101', operation_ui: null });
+  assert.equal(cachedMiner.status, 200);
+  assert.ok(cachedMiner.data.mine);
+  const move = (state, action) => request({ ...account, day: state.utc_day, revision: state.revision, action });
+  assert.equal((await request({ id: '101', faction: 'graffpunks' })).data.error, 'wrong_operation_faction');
+  let state = (await getWall()).data;
+  const initialWall = state.wall.name;
+  assert.equal(state.faction_id, 'graffpunks');
+  assert.equal(state.renown_today, 0);
+  assert.equal((await move(state, 'bank')).status, 409);
+  assert.equal((await move(state, 'deep')).status, 400);
+  const beforeCombo = state.wall.panels.map(panel => panel.shade);
+  const first = await move(state, 'blend-0');
+  assert.equal(first.status, 200);
+  state = first.data;
+  assert.equal(state.wall.panels.filter((panel, i) => panel.shade !== beforeCombo[i]).length, 2);
+  assert.deepEqual((await getWall()).data.wall.panels, state.wall.panels, 'wall survives a reload');
+
+  for (let tier = 1; tier <= 3; tier++) {
+    for (const panel of [0, 1, 2]) {
+      for (let turn = 0; turn < 2 && !state.wall.panels[panel].matched; turn++) {
+        const painted = await move(state, `paint-${panel}`);
+        assert.equal(painted.status, 200);
+        state = painted.data;
+      }
+    }
+    assert.ok(state.wall.panels.every(panel => panel.matched));
+    const banks = await Promise.all([move(state, 'bank'), move(state, 'bank')]);
+    assert.deepEqual(banks.map(result => result.status).sort(), [200, 409]);
+    state = banks.find(result => result.status === 200).data;
+    assert.equal(state.tier, tier);
+    assert.equal(state.renown_today, tier * RENOWN_PER_TIER);
+    assert.equal(state.crew_banks, tier);
+    assert.equal(state.collection.length, tier);
+    assert.ok(state.collection.every(entry => entry.specimen_key.startsWith('wall-v2-')));
+  }
+  assert.equal(state.status, 'complete');
+  assert.equal((await move(state, 'bank')).status, 409);
+  assert.equal((await request()).data.crew_banks, 0, 'Miners have their own crew count');
+
+  await db.prepare("UPDATE blocktopia_progression SET faction = 'rugpull-miners' WHERE telegram_id = '104'").run();
+  const miners = { id: '104', faction: 'rugpull-miners' };
+  assert.equal((await request(miners)).data.error, 'operation_faction_locked');
+  assert.equal((await request({ ...miners, action: 'safe', revision: state.revision })).status, 409);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM clan_operation_awards').first()).n, 3);
+  settings.time = new Date('2026-11-21T00:00:00Z');
+  assert.equal((await request(miners)).data.mine.actions.includes('safe'), true);
+
+  await db.prepare("UPDATE blocktopia_progression SET faction = 'graffpunks' WHERE telegram_id = '104'").run();
+  state = (await getWall()).data;
+  assert.notEqual(state.wall.name, initialWall);
+  assert.equal(state.renown_today, 0);
+  assert.equal(state.renown_total, 30_000);
+  assert.equal(state.collection.length, 3);
+});
+
+test('each daily stencil has three solvable layers and combo moves shorten the route', () => {
+  const names = new Set();
+  const pairings = new Set();
+  for (let route_index = 0; route_index < 3; route_index++) {
+    let state = { route_index, tier: 0, operationState: {} };
+    let count = 0;
+    names.add(describeWall(route_index, 0).name);
+    pairings.add(describeWall(route_index, 0).actions.filter(({ id }) => id.startsWith('blend')).map(({ label }) => label).join(','));
+    while (state.tier < 3) {
+      const wall = describeWall(route_index, state.tier, state.operationState.panels);
+      const panel = wall.panels.findIndex(tile => !tile.matched);
+      const next = advanceWall(state, panel < 0 ? 'bank' : `paint-${panel}`);
+      assert.ok(next);
+      state = { route_index, ...next };
+      assert.ok(++count <= 18);
+    }
+    assert.equal(count, 18, 'every route has the same guaranteed single-panel effort');
+    let combo = { route_index, tier: 2, operationState: {} };
+    for (const action of ['blend-0', 'blend-1']) {
+      combo = { route_index, ...advanceWall(combo, action) };
+    }
+    const unmatched = describeWall(route_index, 2, combo.operationState.panels).panels
+      .reduce((indexes, panel, i) => panel.matched ? indexes : indexes.concat(i), []);
+    assert.equal(unmatched.length, 2);
+    combo = { route_index, ...advanceWall(combo, `paint-${unmatched[0]}`) };
+    combo = { route_index, ...advanceWall(combo, `paint-${unmatched[1]}`) };
+    assert.equal(advanceWall(combo, 'bank').tier, 3, 'four paint moves instead of six');
+  }
+  assert.equal(names.size, 3);
+  assert.equal(pairings.size, 3);
+});
+
+test('migration 117 retains the saved Miners bank and supports the next one', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec(migration);
+    db.exec(`
+      INSERT INTO clan_operation_days (telegram_id, utc_day, faction_id, rules_version, route_index, updated_at)
+      VALUES ('101', '2026-11-20', 'rugpull-miners', 1, 0, '2026-11-20T12:00:00Z');
+      UPDATE clan_operation_days SET tier = 1 WHERE telegram_id = '101';
+    `);
+    db.exec(wallsMigration);
+    assert.equal(db.prepare("SELECT operation_state FROM clan_operation_days WHERE telegram_id = '101'").get().operation_state, '{}');
+    db.exec("UPDATE clan_operation_days SET tier = 2 WHERE telegram_id = '101'");
+    assert.deepEqual(db.prepare('SELECT specimen_key FROM clan_operation_awards ORDER BY tier').all().map(row => row.specimen_key),
+      ['mine-v1-0-1', 'mine-v1-0-2']);
+  } finally {
+    db.close();
+  }
 });

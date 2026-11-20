@@ -64,8 +64,8 @@
       <div data-fop-crew aria-live="polite"><p>Loading public faction operations…</p></div>
     </details>
     <section class="section clan-operation" id="clan-operation" data-clan-operation aria-labelledby="clan-operation-title">
-      <h2 id="clan-operation-title">Clan Operations · Rugpull Miners</h2>
-      <p>Work the surface seam, brace the shaft, or risk a deep cut. Bank each tier for Clan Renown and a specimen. The route changes at 00:00 UTC.</p>
+      <h2 id="clan-operation-title">Clan Operations</h2>
+      <p>Open your clan’s daily operation. Rugpull Miners work the mine and GraffPUNKS paint the wall. The route changes at 00:00 UTC.</p>
       <div data-mine-game hidden>
         <h3 data-mine-name></h3>
         <p data-mine-stats></p>
@@ -81,13 +81,17 @@
           <button type="button" value="recover">Clear cave-in</button>
           <button type="button" value="bank">Bank tier</button>
         </div>
-        <p><strong>Specimen collection</strong></p>
+        <div data-wall-game hidden>
+          <ol class="clan-strata clan-wall" data-wall-panels aria-label="Mural panels"></ol>
+          <div class="clan-controls" data-wall-controls aria-label="Paint moves"></div>
+        </div>
+        <p><strong data-operation-collection-label>Collection</strong></p>
         <p data-mine-collection></p>
       </div>
       <p role="status">Checking pilot availability…</p>
       <p data-mine-connect hidden><a href="/gkniftyheads-incubator.html">Connect Telegram</a></p>
       <p data-mine-join hidden><a href="/community.html#battle-join-faction">Choose a faction</a></p>
-      <button type="button" data-mine-refresh>Refresh mine</button>
+      <button type="button" data-mine-refresh>Refresh operation</button>
     </section>
     <details class="section bc-disclosure fop-community" id="battle-my-contribution-today" aria-labelledby="battle-my-contribution-title">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2" id="battle-my-contribution-title">My Faction Contribution</span></summary>
@@ -213,6 +217,6 @@
 <script data-cfasync="false" src="/js/battle-chamber-factions.js"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js"></script>
-<script data-cfasync="false" type="module" src="/js/clan-operation.js"></script>
+<script data-cfasync="false" type="module" src="/js/clan-operation-v2.js"></script>
 </body>
 </html>
