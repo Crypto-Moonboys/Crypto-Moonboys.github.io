@@ -610,6 +610,16 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function bootShell() {
+    // Lightweight website easter egg; never inject the game runtime into a game route.
+    if (!window.location.pathname.startsWith('/games/') &&
+        !window.location.pathname.startsWith('/game/') &&
+        !document.querySelector('script[data-nbg-roamer]')) {
+      const runner = document.createElement('script');
+      runner.src = '/js/nbg-roamer.js';
+      runner.async = true;
+      runner.dataset.nbgRoamer = '1';
+      document.head.appendChild(runner);
+    }
     ensurePlayerActionSync();
     ensureNav();
     startRecoveryObserver();
