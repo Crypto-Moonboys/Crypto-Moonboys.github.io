@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 const source = readFileSync(new URL('../js/nbg-roamer.js', import.meta.url), 'utf8');
+const wikiCss = readFileSync(new URL('../css/wiki.css', import.meta.url), 'utf8');
 const shell = readFileSync(new URL('../js/site-shell.js', import.meta.url), 'utf8');
 const manifest = JSON.parse(readFileSync(new URL('../game/assets/player/nbg-runner-animation-manifest.json', import.meta.url), 'utf8'));
 function boot(path) {
@@ -128,4 +129,14 @@ test('navigation and form focus keep normal keyboard behaviour', () => {
   assert.match(source, /if \(event\.repeat\) return/);
   assert.match(source, /document\.hidden \|\| event\.defaultPrevented/);
   assert.match(source, /event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey/);
+});
+
+test('summon sits above Back to Top with a visible gap on desktop and mobile', () => {
+  const summonBottom = Number(source.match(/#nbg-roamer-summon \{position:fixed;right:\d+px;bottom:calc\((\d+)px/)[1]);
+  const topRule = wikiCss.match(/#back-to-top \{([^}]+)\}/)[1];
+  const topBottom = Number(topRule.match(/bottom:\s*(\d+)px/)[1]);
+  const topHeight = Number(topRule.match(/height:\s*(\d+)px/)[1]);
+  assert.ok(summonBottom >= topBottom + topHeight + 12, 'Summon must clear Back to Top by at least 12px');
+  assert.match(source, /bottom:calc\(78px \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(wikiCss, /#back-to-top\.visible/);
 });
