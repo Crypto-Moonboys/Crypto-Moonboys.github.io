@@ -131,9 +131,9 @@ check(
 );
 check(
   html.includes('href="/my-moonboy.html">check their verified missions on My Moonboy</a>') &&
-    html.includes('href="/gpt-users.html">ChatGPT Creator Studio</a>') &&
+    html.includes('href="/ai-user.html">AI Creator Studio</a>') &&
     html.includes('Build a body of work and direct relationships with supporters, customers, collaborators'),
-  'Homepage supports the current My Moonboy and ChatGPT Creator Studio routes'
+  'Homepage supports the current My Moonboy and AI Creator Studio routes'
 );
 check(
   html.includes('aria-label="Build a HODL Warrior"'),

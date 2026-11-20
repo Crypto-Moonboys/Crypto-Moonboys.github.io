@@ -12,7 +12,7 @@ The main `/wiki/crypto-moonboys.html` page is the story-led heart of the lore, i
 
 Both routes build creator-owned worlds within the Crypto Moonboys universe: develop a GK Moonboy or Flygirl sub-world, or bring your own IP and develop its unique lore and connections to the shared universe. SWARMSY is the creator and storyteller helping develop characters, stories and links between worlds, with creators directing and approving their work.
 
-The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public ChatGPT Creator Studio; the SWARMSY PC beta remains an optional separate installation.
+The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public AI Creator Studio; the SWARMSY PC beta remains an optional separate installation.
 
 Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
 
@@ -21,7 +21,7 @@ Updated: 16 November 2026 (current cast/command and main-story role; product mis
 
 Legacy filename retained for compatibility with existing agents and links.
 
-> **Delivery clarification (10 October 2026; no change to lore, rights or the two-path mission):** Public AI creation on `cryptomoonboys.com` runs through the [ChatGPT Creator Studio](https://cryptomoonboys.com/gpt-users.html), which opens ChatGPT rather than a hosted SWARMSY server. [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate, optional PC beta for local or user-configured API-backed models. The website's old `sparky.html` chat has retired; private project records are not shared automatically and the public `/public/npc-chat` Worker bridge awaits separate retirement. Older instructions below saying “use SWARMSY” describe the optional private creator route, **not** a public website chat. Current delivery truth and link targets are governed by the [repository README](README.md).
+> **Delivery clarification (10 October 2026; no change to lore, rights or the two-path mission):** Public AI creation on `cryptomoonboys.com` runs through the [AI Creator Studio](https://cryptomoonboys.com/ai-user.html), which offers a portable prompt and brief for any browser AI rather than a hosted SWARMSY server. [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate, optional PC beta for local or user-configured API-backed models. The website's old `sparky.html` chat has retired; private project records are not shared automatically and the public `/public/npc-chat` Worker bridge awaits separate retirement. Older instructions below saying “use SWARMSY” describe the optional private creator route, **not** a public website chat. Current delivery truth and link targets are governed by the [repository README](README.md).
 
 ## Read This First
 

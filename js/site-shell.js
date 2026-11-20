@@ -89,7 +89,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (p.startsWith('/games/')) return '/wiki/games-graffpunks.html';
     if (p.startsWith('/battle-chamber/') || p === '/community.html') return '/search.html?q=Battle%20Chamber';
     if (p === '/swarmsy.html') return '/search.html?q=SWARMSY';
-    if (p === '/sparky.html' || p === '/gpt-users.html') return '/search.html?q=SPARKY%20Creator%20Studio';
+    if (p === '/sparky.html' || p === '/ai-user.html') return '/search.html?q=SPARKY%20Creator%20Studio';
     if (p === '/dashboard.html' || p === '/admin-tools.html') return '/search.html?q=System%20Hub';
     return '/search.html';
   }
@@ -505,10 +505,10 @@ window.__HUD_CONSOLIDATED__ = true;
     if (document.getElementById('site-paperclip-agent')) return;
     const sparkyAgent = document.createElement('a');
     sparkyAgent.id = 'site-paperclip-agent';
-    sparkyAgent.href = '/gpt-users.html';
-    sparkyAgent.setAttribute('aria-label', 'Start creating with ChatGPT via the SPARKY Creator Studio');
-    sparkyAgent.title = 'Open ChatGPT Creator Studio';
-    sparkyAgent.innerHTML = '<img src="/SPARKY%20FLOATING%20CLIP.png" alt="" loading="lazy" decoding="async"><span>CREATE WITH GPT</span>';
+    sparkyAgent.href = '/ai-user.html';
+    sparkyAgent.setAttribute('aria-label', 'Start a campaign with the SPARKY AI Creator Studio');
+    sparkyAgent.title = 'Open AI Creator Studio';
+    sparkyAgent.innerHTML = '<img src="/SPARKY%20FLOATING%20CLIP.png" alt="" loading="lazy" decoding="async"><span>CREATE WITH AI</span>';
     document.body.appendChild(sparkyAgent);
   }
 

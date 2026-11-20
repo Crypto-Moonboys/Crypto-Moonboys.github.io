@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const base = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => readFileSync(path.join(base,p),'utf8');
-const page = read('gpt-users.html');
+const page = read('ai-user.html');
 const wiki = read('wiki/create-your-moonboy.html');
 const guide = read('moonboy-ai-canon-guide.txt');
 const sourceIndex = JSON.parse(read('moonboy-canon-index.json'));
@@ -66,7 +66,7 @@ test('public source index contains only approved existing public sources',()=>{
   assert.match(guide,/NEW DRAFT/);
   assert.match(guide,/PUBLIC Final Fork outcome remains unresolved/i);
   assert.match(wiki,/<h1[^>]*>Create Your Moonboy<\/h1>/);
-  assert.match(wiki,/href="\/gpt-users\.html\?activity=moonboy"/);
+  assert.match(wiki,/href="\/ai-user\.html"/);
   const seen=new Set();
   for(const s of sourceIndex.sources){
     assert.ok(!seen.has(s.id),'duplicate source id '+s.id);seen.add(s.id);
@@ -98,20 +98,18 @@ test('Moonboy creator article remains a manually owned non-canon reference', () 
   assert.doesNotMatch(wiki, /data-canon-revision|data-canon-source-tier/);
 });
 
-test('single ChatGPT launch carries the campaign spine and reads the published brief', () => {
-  const links = [...page.matchAll(/href="(https:\/\/chatgpt\.com\/\?q=[^"]+)"/g)];
-  assert.equal(links.length, 1, 'one ChatGPT launch link');
-  const url = new URL(links[0][1].replaceAll('&amp;', '&'));
-  assert.deepEqual([...url.searchParams.keys()], ['q']);
-  const prompt = url.searchParams.get('q');
-  assert.match(prompt, /guides\/sparky\/creator-campaign\.md/);
-  assert.match(prompt, /graffiti-kings-creative-guide\.html/);
-  assert.match(prompt, /ONE consistent mascot/);
-  assert.match(prompt, /shock message/);
-  assert.match(prompt, /genuinely gifted\/assigned verified GK Moonboy/);
-  assert.match(prompt, /my own mascot\/IP/);
-  assert.match(prompt, /returning project manager/);
-  assert.match(prompt, /Never claim you created a Project, scheduled work, posted/);
+test('portable AI starter carries the campaign spine and reads the published brief', () => {
+  const starter = page.match(/<textarea id="ai-starter-text"[^>]*>([\s\S]*?)<\/textarea>/)?.[1];
+  assert.ok(starter, 'portable starter prompt missing');
+  assert.match(page, /id="copy-ai-starter"/);
+  assert.match(starter, /guides\/sparky\/creator-campaign\.md/);
+  assert.match(starter, /graffiti-kings-creative-guide\.html/);
+  assert.match(starter, /ONE consistent mascot/);
+  assert.match(starter, /shock message/);
+  assert.match(starter, /gifted\/assigned Moonboy/);
+  assert.match(starter, /my own original mascot\/IP/);
+  assert.match(starter, /returning creative director and project manager/);
+  assert.match(starter, /do not claim 24\/7 background activity/);
   assert.match(page, /href="\/guides\/sparky\/creator-campaign\.md" download/);
   assert.doesNotMatch(page, /id="gpt-activity-groups"|id="creator-memory-studio"|data-feature=|sparky-gpt-app\.js/);
 });
@@ -128,7 +126,7 @@ test('campaign brief has both routes, original mascot continuity, real proof and
   assert.match(brief, /political Forty/);
   assert.match(brief, /Do not claim background posting, scheduled check-ins/);
   assert.doesNotMatch(brief, /brand-canon\/story-bibles|final-fork-ending/i);
-  assert.match(page, /<link rel="canonical" href="https:\/\/cryptomoonboys\.com\/gpt-users\.html">/);
+  assert.match(page, /<link rel="canonical" href="https:\/\/cryptomoonboys\.com\/ai-user\.html">/);
   assert.match(page, /href="\/wiki\/crypto-moonboys\.html"/);
 });
 
@@ -182,5 +180,5 @@ test('SWARMSY continuity CTA points to the published brief, not the retired edit
   assert.doesNotMatch(appPage, /#creator-memory-studio|SAVE YOUR PROJECT MEMORY|Export or import a portable project JSON file in the public Studio/);
   assert.match(continuity, /website no longer contains a browser memory editor or JSON import\/export buttons/);
   assert.match(continuity, /save those files and bring them back/i);
-  assert.match(continuity, /existing JSON record can attach it to ChatGPT/);
+  assert.match(continuity, /existing JSON record can attach it to your chosen AI/);
 });

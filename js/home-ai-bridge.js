@@ -1,7 +1,7 @@
 /* home-ai-bridge.js — Crypto Moonboys two-path onboarding animation.
  * Crypto Moonboys is the umbrella. Visitors can either forge a Moonboy
  * identity and join the HODL Warriors, or keep an existing identity and
- * start with the public ChatGPT Creator Studio; optionally use SWARMSY PC.
+ * start with the public AI Creator Studio; optionally use SWARMSY PC.
  */
 (function () {
   'use strict';

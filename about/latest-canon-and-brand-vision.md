@@ -23,7 +23,7 @@ Owning public account: [Crypto Moonboys](../wiki/crypto-moonboys.html#market-fac
 
 Both routes build creator-owned worlds within the Crypto Moonboys universe: develop a GK Moonboy or Flygirl sub-world, or bring your own IP and develop its unique lore and connections to the shared universe. SWARMSY is the creator and storyteller helping develop characters, stories and links between worlds, with creators directing and approving their work.
 
-The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public ChatGPT Creator Studio; the SWARMSY PC beta remains an optional separate installation.
+The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public AI Creator Studio; the SWARMSY PC beta remains an optional separate installation.
 
 Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
 
@@ -39,7 +39,7 @@ It does not replace published legal terms, live runtime code, community approval
 
 ## Current AI delivery — 10 October 2026
 
-The [ChatGPT Creator Studio](https://cryptomoonboys.com/gpt-users.html) is the public AI starting point for both creator paths. Its SPARKY-guided activities open ChatGPT; the website does not run a hosted SWARMSY chatbot. [SWARMSY PC beta](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is optional and separately installed, using local models or user-configured provider APIs. Installation and model setup are required; providers may charge. Creator-memory JSON import/export is manual, with no automatic sharing or synchronisation of private workspaces. `/sparky.html` is a retired redirect; the legacy Worker bridge awaits separate retirement.
+The [AI Creator Studio](https://cryptomoonboys.com/ai-user.html) is the public AI starting point for both creator paths. Its SPARKY campaign starter works with the visitor's chosen browser AI; the website does not run a hosted SWARMSY chatbot. [SWARMSY PC beta](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is optional and separately installed, using local models or user-configured provider APIs. Installation and model setup are required; providers may charge. Creator-memory JSON import/export is manual, with no automatic sharing or synchronisation of private workspaces. `/sparky.html` is a retired redirect; the legacy Worker bridge awaits separate retirement.
 
 This clarification concerns current product delivery only. It does not alter historical W81 source bytes, fictional canon, creator rights or either onboarding path.
 
@@ -78,7 +78,7 @@ Crypto Moonboys has two valid entry paths.
 | Path | Who it is for | User outcome |
 |---|---|---|
 | Path 1: Build a Moonboy identity | People who want a new character, avatar, alter ego, mascot, faction identity or creator-world anchor | A Moonboy becomes a recognisable identity that can become content, products, stories, games, merch, community and a creator world |
-| Path 2: Bring your own IP into the universe | Artists, graffiti writers, musicians, brands, product creators, businesses, organisations, public personalities and unfinished projects | The user keeps their own IP, develops its world and unique lore within the Crypto Moonboys universe, and uses SWARMSY-assisted storytelling to connect it to other worlds; public creation starts through ChatGPT and the PC beta is optional |
+| Path 2: Bring your own IP into the universe | Artists, graffiti writers, musicians, brands, product creators, businesses, organisations, public personalities and unfinished projects | The user keeps their own IP, develops its world and unique lore within the Crypto Moonboys universe, and uses SWARMSY-assisted storytelling to connect it to other worlds; public creation starts with the visitor's chosen AI and the PC beta is optional |
 
 Path 1 is not mandatory. A user does not need a Moonboy, NFT, faction or arcade score to use the wider creator system.
 
@@ -104,7 +104,7 @@ A user should be able to understand the current action route without reading the
 ### Path 2: Own-IP Worldbuilding Route
 
 1. Keep the real identity, business, product, art practice or alter ego.
-2. Start through the public ChatGPT Creator Studio to clarify identity, audience, promise, story, tone and visual signal, or optionally use a separately installed SWARMSY PC beta.
+2. Start through the public AI Creator Studio to clarify identity, audience, promise, story, tone and visual signal, or optionally use a separately installed SWARMSY PC beta.
 3. Build a practical content, campaign, product or launch plan.
 4. Preserve approved decisions through creator-memory locks and proof review; move portable JSON between tools manually when needed.
 5. Publish with clearer direction and less drift.
@@ -118,9 +118,9 @@ A user should be able to understand the current action route without reading the
 | Graffiti Kings | Real cultural origin, street-art foundation and proof that public signal can become a business and movement |
 | Crypto Moonboys | Public creator umbrella, shared world, public website, community, wiki and onboarding routes |
 | Moonboys and factions | Character-led identity system and optional worldbuilding route |
-| ChatGPT Creator Studio | Public AI starting point for both paths; hands activities and creator context to ChatGPT |
+| AI Creator Studio | Public AI starting point for both paths; provides a portable campaign starter and brief |
 | SWARMSY PC beta | Optional, separately installed private creator environment for local models or configured provider APIs |
-| SPARKY | Guide/operator inside SWARMSY; website activities use SPARKY-labelled prompts handed to ChatGPT, not the same running process |
+| SPARKY | Guide/operator inside SWARMSY; website offers a SPARKY-labelled starter for the visitor's chosen AI, not the same running process |
 | Starter Wiki Packs | Small situational context packs so SPARKY knows what kind of action the user may be preparing |
 | User-grown intelligence | The user's own saved rules, proofs, sources, contacts, lessons, style, budget, decisions and project memory |
 | Memory Locks | Approved facts and decisions protected from silent drift |
@@ -163,7 +163,7 @@ Crypto Moonboys should always be explained through user benefit before mechanics
 
 | User problem | How Crypto Moonboys helps |
 |---|---|
-| I do not know who I am publicly | The public ChatGPT Creator Studio helps clarify identity, positioning, tone, story and visual signal; SWARMSY PC beta is an optional installed route |
+| I do not know who I am publicly | The public AI Creator Studio helps clarify identity, positioning, tone, story and visual signal; SWARMSY PC beta is an optional installed route |
 | I want a character or alter ego | Path 1 gives the user a Moonboy identity route and a world to build around |
 | I already have a brand or art practice | Path 2 lets the user keep it and strengthen it without forcing NFTs or new names |
 | I need people to remember me | The system pushes symbols, repetition, story, proof, content and community momentum |
@@ -271,7 +271,7 @@ Use:
 - There are two ways to join.
 - Build a new Moonboy identity, or bring the identity you already own.
 - Games and NFTs are tools inside the system, not the mission.
-- Both paths can start through the public ChatGPT Creator Studio; SWARMSY PC beta is an optional installed route for planning and momentum.
+- Both paths can start through the public AI Creator Studio; SWARMSY PC beta is an optional installed route for planning and momentum.
 - GK provides the floor. The community builds on top.
 
 Avoid:
@@ -288,7 +288,7 @@ Avoid:
 | Question | Answer |
 |---|---|
 | Who? | Crypto Moonboys is for creators, fans, artists, brands, builders, players and beginners who need identity, story, proof, ownership routes and community momentum. |
-| Do now? | Choose Path 1 or Path 2, use the public site/wiki, link Telegram where required, join live activities, start through the public ChatGPT Creator Studio or optional SWARMSY PC beta, create proof, and start shaping a character or existing identity. |
+| Do now? | Choose Path 1 or Path 2, use the public site/wiki, link Telegram where required, join live activities, start through the public AI Creator Studio or optional SWARMSY PC beta, create proof, and start shaping a character or existing identity. |
 | How? | The system combines public worldbuilding, private creator planning, Telegram-linked progression, Arcade XP, Battle Chamber activity, wiki memory, optional NFTs/1/1s, and community canon review. |
 | Why? | Because raw talent disappears without identity, repetition, proof and community. AI makes content cheap; strong identity becomes the valuable thing. |
 | How does it help users? | It gives users a recognisable signal, structure, tools, lore, IP routes, proof habits, community amplification and a practical path from idea to public momentum. |
