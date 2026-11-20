@@ -130,7 +130,8 @@ function secondsUntil(value, nowMs) {
 }
 
 function renderSignalSummary(state) {
-  const summary = document.querySelector('[data-wtf-signal-summary]');
+  if (typeof document === 'undefined') return;
+  const summary = document.querySelector?.('[data-wtf-signal-summary]');
   if (!summary) return;
   const focus = state.active_event || state.next_event;
   if (!focus) {
@@ -138,11 +139,13 @@ function renderSignalSummary(state) {
       ? 'Checking the Daily WTF schedule…' : 'No current or upcoming signal confirmed.';
     return;
   }
-  const time = iso => String(iso || '').slice(11, 16);
-  const utcWindow = `${time(focus.start_at)}–${time(focus.end_at)} UTC`;
+  const start = Date.parse(focus.start_at);
+  const end = Date.parse(focus.end_at);
+  const utcWindow = Number.isFinite(start) && Number.isFinite(end)
+    ? ` · ${new Date(start).toISOString().slice(11, 16)}–${new Date(end).toISOString().slice(11, 16)} UTC` : '';
   const label = focus.fallback || state.source === 'client_fallback_schedule' ? 'Schedule preview'
     : state.active_event ? 'Current signal' : 'Next signal';
-  summary.textContent = `${label} · ${focus.title} · ${utcWindow}`;
+  summary.textContent = `${label} · ${focus.title}${utcWindow}`;
 }
 
 function updateGlobal(payload, extra) {
