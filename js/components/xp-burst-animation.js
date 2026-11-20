@@ -45,7 +45,9 @@
 
     var note = document.createElement('div');
     note.className = 'xp-burst-meta';
-    note.textContent = 'Signal cleared. Chain options unlocked.';
+    note.textContent = payload.persisted_xp_awarded === false
+      ? 'Signal cleared. XP shown is a preview. Chain options unlocked.'
+      : 'Signal cleared. Chain options unlocked.';
 
     card.appendChild(title);
     card.appendChild(totalNode);
