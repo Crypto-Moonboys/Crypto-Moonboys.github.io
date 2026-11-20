@@ -611,7 +611,8 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function bootShell() {
     // Lightweight website easter egg; never inject the game runtime into a game route.
-    if (!/^\\/(?:games|game)(?:\\/|$)/u.test(window.location.pathname) &&
+    if (!window.location.pathname.startsWith('/games/') &&
+        !window.location.pathname.startsWith('/game/') &&
         !document.querySelector('script[data-nbg-roamer]')) {
       const runner = document.createElement('script');
       runner.src = '/js/nbg-roamer.js';
