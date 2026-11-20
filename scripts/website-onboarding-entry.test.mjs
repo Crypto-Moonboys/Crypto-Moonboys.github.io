@@ -23,8 +23,8 @@ assert.match(mission, /GK Moonboy or Flygirl/,
 assert.match(mission, /bring your own characters, artist identity, brand or project/,
   'Mission still explains the existing-IP route');
 const academy = experience.match(/<section\b[^>]*id="open-creative-academy"[^>]*>([\s\S]*?)<\/section>/)?.[1] || '';
-assert.match(academy, /href="\/gpt-users\.html"/,
-  'Academy provides the public ChatGPT Creator Studio route');
+assert.match(academy, /href="\/ai-user\.html"/,
+  'Academy provides the public AI Creator Studio route');
 assert.match(academy, /href="\/swarmsy\.html"/,
   'Academy provides the optional SWARMSY PC route');
 assert.match(experience, /class="simple-community"[^>]*aria-label="Join the Crypto Moonboys community"/,
@@ -32,7 +32,7 @@ assert.match(experience, /class="simple-community"[^>]*aria-label="Join the Cryp
 assert.match(experience, /href="\/gkniftyheads-incubator\.html" class="simple-community"/,
   'Community entry opens the live community page');
 assert.match(experience, /id="build-moonboy"/);
-assert.match(experience, /href="\/gpt-users\.html"/, 'Independent web AI route remains available');
+assert.match(experience, /href="\/ai-user\.html"/, 'Independent web AI route remains available');
 assert.doesNotMatch(experience, /<h2>Choose how <span>you start/, 'WAX experience does not duplicate route instructions');
 
 const hub = account.indexOf('id="mm-start-here"');
