@@ -119,7 +119,7 @@
     balloonRelease: { columns: 4, frames: 16, frameMs: 90, duration: 1440 }
   });
   let encounterCanvas = null, encounterCtx = null, enemyImages = {}, enemies = [];
-  let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0;
+  let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0, encounterSpawnIndex = 0;
   let sprayUntil = 0, lastSpray = -Infinity, cleanSprayUrl = null, sprayPreparing = false;
   const measuredFrames = new WeakMap();
   let measureCanvas = null, measureContext = null;
@@ -173,6 +173,7 @@
   function startEncounter() {
     const generation = ++encounterGeneration;
     enemies = [];
+    encounterSpawnIndex = 0;
     sprayUntil = 0;
     encounterNextAt = performance.now() + 2200;
     createEncounterCanvas();
@@ -319,6 +320,7 @@
   function clearEncounter() {
     encounterGeneration++;
     enemies = [];
+    encounterSpawnIndex = 0;
     sprayUntil = 0;
     if (encounterCanvas) encounterCanvas.remove();
     encounterCanvas = encounterCtx = null;
@@ -328,61 +330,100 @@
     resizeEncounterCanvas();
     encounterCtx.clearRect(0, 0, encounterCanvas.width, encounterCanvas.height);
     const h = encounterCanvas.height, w = encounterCanvas.width;
-    if (controlling && now >= encounterNextAt && enemies.length < 8) {
-      const rotating = ENEMY_TYPES.slice(2);
-      const selected = rotating[Math.floor(now / 2500) % rotating.length];
-      enemies.push(spawnEnemy(selected));
+
+    // Present every original enemy over the encounter rather than repeatedly
+    // selecting the same one from a timestamp modulo.
+    const rotating = ENEMY_TYPES.filter(type => type.kind !== 'parachute');
+    if (controlling && now >= encounterNextAt && encounterSpawnIndex < rotating.length) {
+      enemies.push(spawnEnemy(rotating[encounterSpawnIndex++]));
       encounterNextAt = now + 2600;
     }
+
     for (const enemy of enemies) {
       if (enemy.defeated) continue;
-      const e = enemy.type;
+      if (enemy.hitUntil && now >= enemy.hitUntil) {
+        enemy.defeated = true;
+        continue;
+      }
       enemy.age += delta * 1000;
-      enemy.x += enemy.vx * delta;
+      let e = enemy.type;
       if (e.kind === 'parachute') {
-        enemy.top = Math.min(h - e.height, enemy.top + 105 * delta);
+        enemy.x += enemy.vx * delta;
+        enemy.top = Math.min(h - e.height, enemy.top + Math.max(190, h / 3) * delta);
         if (enemy.top >= h - e.height) {
-          // Parachute lands and turns into a moving rat.
-          enemy.type = ENEMY_TYPES[enemy === enemies[0] ? 3 : 4];
-          enemy.top = h - enemy.type.height;
+          // Never map by array position: each parachute owns its landed
+          // identity, including after other enemies are killed or reordered.
+          enemy.type = ENEMY_BY_KEY[e.landedKey];
+          e = enemy.type;
+          enemy.top = h - e.height;
+          enemy.age = 0;
           enemy.vx = enemy.x < w / 2 ? 65 : -65;
         }
-      } else if (e.kind === 'ground') {
-        enemy.top = h - e.height;
       } else {
-        enemy.top = h * 0.25 + Math.sin(enemy.age / 300) * 35;
+        if (enemy.attack && now >= enemy.attack.until) enemy.attack = null;
+        beginEnemyAttack(enemy, now);
+        if (!enemy.attack && !enemy.hitUntil) {
+          enemy.x += enemy.vx * delta;
+          const left = 8, right = Math.max(left, w - e.width - 8);
+          if (enemy.x <= left) {
+            enemy.x = left;
+            enemy.vx = Math.abs(enemy.vx);
+          } else if (enemy.x >= right) {
+            enemy.x = right;
+            enemy.vx = -Math.abs(enemy.vx);
+          }
+        }
+        // All enemy bodies, including the flying pig, share the same floor.
+        enemy.top = h - e.height;
       }
+
       const playerLeft = x + 14, playerRight = x + 58;
       const playerTop = h - y - 74, playerFoot = h - y;
       const oldFoot = h - previousPlayerY;
       const overlapX = playerRight > enemy.x + 8 && playerLeft < enemy.x + e.width - 8;
       const enemyTop = enemy.top + (e.kind === 'parachute' ? 12 : 5);
-      if (overlapX && vy < 0 && oldFoot <= enemyTop + 16 && playerFoot >= enemyTop) {
-        enemy.defeated = true;
-        vy = 430; // Rebound upward after a successful stomp.
+      if (!enemy.hitUntil && overlapX && vy < 0 &&
+          oldFoot <= enemyTop + 16 && playerFoot >= enemyTop) {
+        defeatEnemy(enemy, now);
+        vy = 430;
         if (jumpsUsed > 0) jumpsUsed = Math.min(jumpsUsed, 2);
       }
       const sprayActive = controlling && now < sprayUntil;
       const sprayReach = direction > 0 ? enemy.x - (x + 54) : x - (enemy.x + e.width);
-      if (sprayActive && sprayReach >= -10 && sprayReach < 125 &&
+      if (!enemy.hitUntil && sprayActive && sprayReach >= -10 && sprayReach < 125 &&
           Math.abs((enemy.top + e.height / 2) - (playerTop + 38)) < 95) {
-        enemy.defeated = true;
+        defeatEnemy(enemy, now);
       }
       if (enemy.defeated || enemy.x < -140 || enemy.x > w + 180 || enemy.age > 30000) {
         enemy.defeated = true;
         continue;
       }
-      const image = enemyImages[e.key];
-      if (!image?.complete || !image.naturalWidth) continue;
-      const frame = Math.floor(enemy.age / e.frameMs) % e.frames;
-      const sourceW = image.naturalWidth / e.columns;
-      const sourceH = image.naturalHeight / Math.ceil(e.frames / e.columns);
-      encounterCtx.save();
-      encounterCtx.imageSmoothingEnabled = false;
-      encounterCtx.drawImage(image, (frame % e.columns) * sourceW,
-        Math.floor(frame / e.columns) * sourceH, sourceW, sourceH,
-        Math.round(enemy.x), Math.round(enemy.top), e.width, e.height);
-      encounterCtx.restore();
+
+      let key = e.key, pose = e, frameTime = enemy.age, facing = enemy.vx < 0 ? -1 : 1;
+      if (enemy.hitUntil > now) {
+        key = 'graffitiBotHurt';
+        pose = ATTACK_POSES[key];
+        frameTime = now - (enemy.hitUntil - pose.duration);
+      } else if (enemy.attack) {
+        key = enemy.attack.key === 'graffitiBotFire' ? 'graffitiBotKick' : enemy.attack.key;
+        pose = ATTACK_POSES[key];
+        frameTime = now - enemy.attack.startedAt;
+        facing = enemy.attack.facing;
+      }
+      const frame = Math.min(pose.frames - 1, Math.floor(frameTime / pose.frameMs));
+      drawEnemyPose(key, pose, e.kind === 'parachute' ? frame % pose.frames : frame,
+        enemy.x, enemy.top, e.width, e.height, facing, e.kind !== 'parachute');
+
+      // Graffbot fire is a separate original effect sheet, not a replacement
+      // for the robot's body or its grounded feet.
+      if (enemy.attack?.key === 'graffitiBotFire' && enemyImages.graffitiBotFire) {
+        const flame = ATTACK_POSES.graffitiBotFire;
+        const fireFrame = Math.min(flame.frames - 1,
+          Math.floor((now - enemy.attack.startedAt) / flame.frameMs));
+        const fireX = facing > 0 ? enemy.x + e.width - 8 : enemy.x - 88;
+        drawEnemyPose('graffitiBotFire', flame, fireFrame,
+          fireX, h - 80, 96, 48, facing, false);
+      }
     }
     enemies = enemies.filter(enemy => !enemy.defeated);
   }
