@@ -117,7 +117,7 @@
       </div>
       <div class="dash-metric ${orphanCount > 0 ? 'dash-metric--warn' : ''}">
         <span class="dash-metric-value">${orphanCount}</span>
-        <span class="dash-metric-label">Orphan Pages</span>
+        <span class="dash-metric-label">Isolated Wiki Pages</span>
       </div>
       <div class="dash-metric ${gapCount > 0 ? 'dash-metric--warn' : ''}">
         <span class="dash-metric-value">${gapCount}</span>
@@ -125,7 +125,7 @@
       </div>
       <div class="dash-metric ${highDrift > 0 ? 'dash-metric--alert' : ''}">
         <span class="dash-metric-value">${highDrift}</span>
-        <span class="dash-metric-label">Authority Drift</span>
+        <span class="dash-metric-label">Authority / Link Gap</span>
       </div>
     `;
   }
@@ -186,12 +186,20 @@
     const container = qs('#dash-content-gaps');
     if (!container) return;
 
-    if (!data || !data.underlinked_pages || !data.underlinked_pages.length) {
+    if (!data || !data.underlinked_pages) {
       container.innerHTML = noData('Content gap data not available.');
       return;
     }
 
-    const pages = data.underlinked_pages.slice(0, 15);
+    const underlinked = data.underlinked_pages.filter(page =>
+      page.url.startsWith('/wiki/') &&
+      page.reasons.some(reason => reason.startsWith('low_inbound_links:'))
+    );
+    if (!underlinked.length) {
+      container.innerHTML = noData('No high-priority wiki pages have fewer than three inbound links.');
+      return;
+    }
+    const pages = underlinked.slice(0, 15);
     const rows = pages.map(p => {
       const slug = p.url.replace(/^\/wiki\//, '').replace(/\.html$/, '');
       const label = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -207,7 +215,7 @@
     }).join('');
 
     container.innerHTML = `
-      <p class="dash-section-note">Top ${pages.length} under-linked pages (out of ${data.underlinked_pages.length} total)</p>
+      <p class="dash-section-note">Top ${pages.length} under-linked wiki pages (out of ${underlinked.length} total). Content-planning signals are counted separately.</p>
       <table class="dash-table">
         <thead>
           <tr>
@@ -242,14 +250,14 @@
     const rows = highItems.map(e => {
       const title = e.title.replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim();
       const dirIcon =
-        e.drift_direction === 'authority_exceeds_centrality' ? '⬆️ Auth' :
-        e.drift_direction === 'centrality_exceeds_authority' ? '⬇️ Cent' : '⚖️';
+        e.drift_direction === 'authority_exceeds_links' ? '⬆️ Authority' :
+        e.drift_direction === 'links_exceed_authority' ? '⬆️ Links' : '⚖️';
       const driftPct = (e.drift * 100).toFixed(1);
       return `
         <tr>
           <td><a href="${e.url}">${title}</a></td>
           <td class="num">${e.authority_score}</td>
-          <td class="num">${e.graph_centrality}</td>
+          <td class="num">${e.inbound_links}</td>
           <td class="num drift-dir">${dirIcon}</td>
           <td class="num"><span class="badge badge-red">${driftPct}%</span></td>
         </tr>
@@ -260,16 +268,17 @@
       <p class="dash-section-note">
         <span class="badge badge-red">${data.summary.high_drift_count} high</span>
         <span class="badge badge-yellow">${data.summary.medium_drift_count} medium</span>
-        &nbsp;avg drift: ${(data.summary.avg_drift * 100).toFixed(1)}%
+        &nbsp;avg rank gap: ${(data.summary.avg_drift * 100).toFixed(1)}%
       </p>
+      <p class="dash-section-note">Editorial authority versus actual inbound wiki links, compared by percentile rank. This is an internal linking signal, not a Google ranking or penalty.</p>
       <table class="dash-table">
         <thead>
           <tr>
             <th>Entity</th>
             <th>Authority Score</th>
-            <th>Graph Centrality</th>
+            <th>Inbound Links</th>
             <th>Direction</th>
-            <th>Drift</th>
+            <th>Rank Gap</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>

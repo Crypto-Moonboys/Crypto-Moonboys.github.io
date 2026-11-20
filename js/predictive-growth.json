@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-18T20:33:41.587Z",
+  "generated_at": "2026-11-20T00:58:50.223Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
@@ -43,7 +43,7 @@
       "momentum_score": 80,
       "authority_trend": "rising",
       "editorial_activity_score": 90,
-      "predicted_priority": 48,
+      "predicted_priority": 46,
       "recommendation": "reinforce"
     },
     {
@@ -52,7 +52,7 @@
       "momentum_score": 80,
       "authority_trend": "rising",
       "editorial_activity_score": 90,
-      "predicted_priority": 129,
+      "predicted_priority": 130,
       "recommendation": "reinforce"
     },
     {
@@ -133,7 +133,7 @@
       "momentum_score": 76,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 47,
+      "predicted_priority": 45,
       "recommendation": "monitor"
     },
     {
@@ -151,7 +151,7 @@
       "momentum_score": 75,
       "authority_trend": "rising",
       "editorial_activity_score": 90,
-      "predicted_priority": 121,
+      "predicted_priority": 122,
       "recommendation": "reinforce"
     },
     {
@@ -313,7 +313,7 @@
       "momentum_score": 71,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 98,
+      "predicted_priority": 102,
       "recommendation": "monitor"
     },
     {
@@ -367,7 +367,7 @@
       "momentum_score": 71,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 87,
+      "predicted_priority": 85,
       "recommendation": "monitor"
     },
     {
@@ -430,7 +430,7 @@
       "momentum_score": 71,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 101,
+      "predicted_priority": 102,
       "recommendation": "monitor"
     },
     {
@@ -463,7 +463,7 @@
     {
       "url": "/wiki/thorne-the-architect.html",
       "title": "Thorne The Architect",
-      "momentum_score": 68,
+      "momentum_score": 69,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 68,
@@ -475,7 +475,7 @@
       "momentum_score": 67,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 81,
+      "predicted_priority": 82,
       "recommendation": "monitor"
     },
     {
@@ -484,7 +484,7 @@
       "momentum_score": 64,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 78,
+      "predicted_priority": 79,
       "recommendation": "monitor"
     },
     {
@@ -512,6 +512,15 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 45,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/jodie-zoom-2000.html",
+      "title": "Jodie ZOOM 2000",
+      "momentum_score": 63,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 74,
       "recommendation": "monitor"
     },
     {
@@ -547,7 +556,16 @@
       "momentum_score": 61,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 69,
+      "predicted_priority": 68,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms",
+      "momentum_score": 61,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 76,
       "recommendation": "monitor"
     },
     {
@@ -566,15 +584,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 50,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/jodie-zoom-2000.html",
-      "title": "Jodie ZOOM 2000",
-      "momentum_score": 60,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 74,
       "recommendation": "monitor"
     },
     {
@@ -614,15 +623,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "momentum_score": 59,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 76,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
       "title": "🍒 Altcoin Avenger 💋",
       "momentum_score": 58,
@@ -650,6 +650,33 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls",
+      "momentum_score": 58,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 64,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/charlie-buster.html",
+      "title": "charlie-buster",
+      "momentum_score": 57,
+      "authority_trend": "rising",
+      "editorial_activity_score": 90,
+      "predicted_priority": 0,
+      "recommendation": "reinforce"
+    },
+    {
+      "url": "/wiki/defi.html",
+      "title": "DeFi (Decentralised Finance)",
+      "momentum_score": 57,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/first-witness-book-5-the-chain.html",
       "title": "Book V — The Chain",
       "momentum_score": 57,
@@ -665,15 +692,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 44,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-allcity-bulls.html",
-      "title": "The AllCity Bulls",
-      "momentum_score": 57,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 64,
       "recommendation": "monitor"
     },
     {
@@ -695,21 +713,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/charlie-buster.html",
-      "title": "charlie-buster",
-      "momentum_score": 56,
-      "authority_trend": "rising",
-      "editorial_activity_score": 90,
-      "predicted_priority": 0,
-      "recommendation": "reinforce"
-    },
-    {
-      "url": "/wiki/defi.html",
-      "title": "DeFi (Decentralised Finance)",
-      "momentum_score": 56,
+      "url": "/wiki/the-squeaky-pinks.html",
+      "title": "The Squeaky Pinks",
+      "momentum_score": 57,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 0,
+      "predicted_priority": 67,
       "recommendation": "monitor"
     },
     {
@@ -756,6 +765,15 @@
       "editorial_activity_score": 0,
       "predicted_priority": 0,
       "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/blockchain.html",
+      "title": "Blockchain Technology",
+      "momentum_score": 55,
+      "authority_trend": "stable",
+      "editorial_activity_score": 90,
+      "predicted_priority": 0,
+      "recommendation": "reinforce"
     },
     {
       "url": "/wiki/first-witness-book-7-the-hold.html",
@@ -812,24 +830,6 @@
       "recommendation": "reinforce"
     },
     {
-      "url": "/wiki/the-squeaky-pinks.html",
-      "title": "The Squeaky Pinks",
-      "momentum_score": 55,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 67,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/blockchain.html",
-      "title": "Blockchain Technology",
-      "momentum_score": 54,
-      "authority_trend": "stable",
-      "editorial_activity_score": 90,
-      "predicted_priority": 0,
-      "recommendation": "reinforce"
-    },
-    {
       "url": "/wiki/first-witness-bitcoin-witness.html",
       "title": "The Bitcoin Witness",
       "momentum_score": 54,
@@ -872,6 +872,33 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/house-of-rackinsats.html",
+      "title": "House of Rackinsats",
+      "momentum_score": 54,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS",
+      "momentum_score": 54,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 69,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "momentum_score": 54,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 72,
       "recommendation": "monitor"
     },
     {
@@ -983,15 +1010,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/house-of-rackinsats.html",
-      "title": "House of Rackinsats",
-      "momentum_score": 53,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/samaelexe.html",
       "title": "Samael.exe",
       "momentum_score": 53,
@@ -1010,21 +1028,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-hard-fork-rockers.html",
-      "title": "The HARD FORK ROCKERS",
+      "url": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS",
       "momentum_score": 53,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 69,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS",
-      "momentum_score": 53,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 72,
+      "predicted_priority": 37,
       "recommendation": "monitor"
     },
     {
@@ -1034,6 +1043,15 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/whale-lords.html",
+      "title": "The Whale Lords",
+      "momentum_score": 53,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 65,
       "recommendation": "monitor"
     },
     {
@@ -1100,12 +1118,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/whale-lords.html",
-      "title": "The Whale Lords",
+      "url": "/wiki/the-code-alchemists.html",
+      "title": "The CODE ALCHEMISTS",
       "momentum_score": 52,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 65,
+      "predicted_priority": 70,
       "recommendation": "monitor"
     },
     {
@@ -1147,6 +1165,15 @@
     {
       "url": "/wiki/first-witness-null-erasure.html",
       "title": "NULL and the Theology of Erasure",
+      "momentum_score": 51,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 80,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/first-witness-triple-fork-chainfire.html",
+      "title": "The Triple Fork and Chainfire",
       "momentum_score": 51,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -1235,6 +1262,24 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/rune-tag.html",
+      "title": "Rune Tag",
+      "momentum_score": 51,
+      "authority_trend": "rising",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/satorebel.html",
+      "title": "SatoRebel",
+      "momentum_score": 51,
+      "authority_trend": "rising",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/satoshi-scroll.html",
       "title": "The Satoshi Scroll",
       "momentum_score": 51,
@@ -1244,12 +1289,21 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-rugpull-miners.html",
-      "title": "The RUGPULL MINERS",
+      "url": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS",
       "momentum_score": 51,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 37,
+      "predicted_priority": 72,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS",
+      "momentum_score": 51,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 70,
       "recommendation": "monitor"
     },
     {
@@ -1262,12 +1316,30 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/agent-sam.html",
+      "title": "Agent SAM",
+      "momentum_score": 50,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/elder-codex-7.html",
+      "title": "Elder Codex-7",
+      "momentum_score": 50,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 67,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/first-witness-ai-synthetic-minds.html",
       "title": "Technology, AI and Synthetic Minds",
       "momentum_score": 50,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 84,
+      "predicted_priority": 83,
       "recommendation": "monitor"
     },
     {
@@ -1298,8 +1370,8 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/first-witness-triple-fork-chainfire.html",
-      "title": "The Triple Fork and Chainfire",
+      "url": "/wiki/first-witness-world-chain-error.html",
+      "title": "The World Chain Error",
       "momentum_score": 50,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -1307,12 +1379,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/first-witness-world-chain-error.html",
-      "title": "The World Chain Error",
+      "url": "/wiki/gk.html",
+      "title": "$GK",
       "momentum_score": 50,
       "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 80,
+      "editorial_activity_score": 90,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1388,30 +1460,21 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/rune-tag.html",
-      "title": "Rune Tag",
-      "momentum_score": 50,
-      "authority_trend": "rising",
-      "editorial_activity_score": 0,
-      "predicted_priority": 68,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-code-alchemists.html",
-      "title": "The CODE ALCHEMISTS",
+      "url": "/wiki/the-information-mercenaries.html",
+      "title": "The INFORMATION MERCENARIES",
       "momentum_score": 50,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 70,
+      "predicted_priority": 69,
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-ducky-boys.html",
-      "title": "The DUCKY BOYS",
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN",
       "momentum_score": 50,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 72,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1430,15 +1493,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/elder-codex-7.html",
-      "title": "Elder Codex-7",
-      "momentum_score": 49,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 67,
       "recommendation": "monitor"
     },
     {
@@ -1532,15 +1586,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/gk.html",
-      "title": "$GK",
-      "momentum_score": 49,
-      "authority_trend": "stable",
-      "editorial_activity_score": 90,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
       "title": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
       "momentum_score": 49,
@@ -1586,6 +1631,24 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/great-consensus.html",
+      "title": "The Great Consensus",
+      "momentum_score": 49,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/kael-voss.html",
+      "title": "Kael Voss",
+      "momentum_score": 49,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/memecoins.html",
       "title": "Meme Coins",
       "momentum_score": 49,
@@ -1604,6 +1667,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/sister-halcyon.html",
+      "title": "Sister Halcyon",
+      "momentum_score": 49,
+      "authority_trend": "rising",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/spraycode-writcode-mechanics.html",
       "title": "Spraycode &amp; Writcode Mechanics",
       "momentum_score": 49,
@@ -1613,12 +1685,30 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-moonlords.html",
-      "title": "The MOONLORDS",
+      "url": "/wiki/the-bally-boys.html",
+      "title": "The BALLY BOYS",
       "momentum_score": 49,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 70,
+      "predicted_priority": 74,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS",
+      "momentum_score": 49,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/the-gasless-ghosts.html",
+      "title": "The GASLESS GHOSTS",
+      "momentum_score": 49,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 69,
       "recommendation": "monitor"
     },
     {
@@ -1628,15 +1718,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 69,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-shard-mothers-of-manhattan.html",
-      "title": "The SHARD MOTHERS of MANHATTAN",
-      "momentum_score": 49,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1775,15 +1856,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/kael-voss.html",
-      "title": "Kael Voss",
-      "momentum_score": 48,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/rug-pull-wars.html",
       "title": "Rug Pull Wars",
       "momentum_score": 48,
@@ -1793,12 +1865,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/sister-halcyon.html",
-      "title": "Sister Halcyon",
+      "url": "/wiki/the-blockstars.html",
+      "title": "The BLOCKSTARS",
       "momentum_score": 48,
-      "authority_trend": "rising",
+      "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 0,
+      "predicted_priority": 37,
       "recommendation": "monitor"
     },
     {
@@ -1811,12 +1883,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-gasless-ghosts.html",
-      "title": "The GASLESS GHOSTS",
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "title": "The CRYPTO STONED BOYS",
       "momentum_score": 48,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 69,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1829,12 +1901,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-information-mercenaries.html",
-      "title": "The INFORMATION MERCENARIES",
+      "url": "/wiki/the-tuskon-ogs.html",
+      "title": "The TUSKON OGS",
       "momentum_score": 48,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 69,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1847,8 +1919,8 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/agent-sam.html",
-      "title": "Agent SAM",
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "title": "Aleema (Child of the Shard)",
       "momentum_score": 47,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -1888,7 +1960,7 @@
       "momentum_score": 47,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 85,
+      "predicted_priority": 84,
       "recommendation": "monitor"
     },
     {
@@ -1912,6 +1984,15 @@
     {
       "url": "/wiki/first-witness-censorship-offence-public-marks.html",
       "title": "Censorship, Offence and Public Marks",
+      "momentum_score": 47,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
       "momentum_score": 47,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -2144,15 +2225,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/satorebel.html",
-      "title": "SatoRebel",
-      "momentum_score": 47,
-      "authority_trend": "rising",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/squeaky-pinks-enforcers.html",
       "title": "Squeaky Pinks Enforcers",
       "momentum_score": 47,
@@ -2177,24 +2249,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 38,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-bally-boys.html",
-      "title": "The BALLY BOYS",
-      "momentum_score": 47,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 74,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-blockstars.html",
-      "title": "The BLOCKSTARS",
-      "momentum_score": 47,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 37,
       "recommendation": "monitor"
     },
     {
@@ -2225,24 +2279,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/the-crypto-stoned-boys.html",
-      "title": "The CRYPTO STONED BOYS",
-      "momentum_score": 47,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-evm-punks.html",
-      "title": "The EVM PUNKS",
-      "momentum_score": 47,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/the-gkniftyheads-the-immortal-architects.html",
       "title": "The GKniftyHEADS (The Immortal Architects) | Crypto Moonboys",
       "momentum_score": 47,
@@ -2258,15 +2294,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 69,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-tuskon-ogs.html",
-      "title": "The TUSKON OGS",
-      "momentum_score": 47,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -2299,15 +2326,6 @@
     {
       "url": "/wiki/2025-metaverse-launch-party.html",
       "title": "2025 Metaverse Launch Party",
-      "momentum_score": 46,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/aleema-child-of-the-shard.html",
-      "title": "Aleema (Child of the Shard)",
       "momentum_score": 46,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -2351,21 +2369,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/first-witness-counterfeit-relics-fraud.html",
-      "title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
-      "momentum_score": 46,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/first-witness-daily-practices-rituals.html",
       "title": "Daily Practices and Rituals",
       "momentum_score": 46,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 0,
+      "predicted_priority": 86,
       "recommendation": "monitor"
     },
     {
@@ -2455,7 +2464,7 @@
       "momentum_score": 46,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 73,
+      "predicted_priority": 43,
       "recommendation": "monitor"
     },
     {
@@ -2585,15 +2594,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/great-consensus.html",
-      "title": "The Great Consensus",
-      "momentum_score": 46,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/hodl-warriors-the-calling.html",
       "title": "HODL Warriors: The Calling | Crypto Moonboys",
       "momentum_score": 46,
@@ -2698,7 +2698,7 @@
       "momentum_score": 46,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 71,
+      "predicted_priority": 70,
       "recommendation": "monitor"
     },
     {
@@ -2761,7 +2761,7 @@
       "momentum_score": 46,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 71,
+      "predicted_priority": 70,
       "recommendation": "monitor"
     },
     {
@@ -2837,6 +2837,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/whisper-codex.html",
+      "title": "The Whisper Codex",
+      "momentum_score": 46,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/billy-the-goat-kid.html",
       "title": "Billy the Goat Kid",
       "momentum_score": 45,
@@ -2846,8 +2855,26 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/croydon-tower-blocks.html",
+      "title": "Croydon Tower Blocks",
+      "momentum_score": 45,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 40,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/delicious-again-pete.html",
       "title": "Delicious Again Pete",
+      "momentum_score": 45,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/dream-sovereign.html",
+      "title": "Dream Sovereign",
       "momentum_score": 45,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -3157,7 +3184,7 @@
       "momentum_score": 45,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 73,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -3503,15 +3530,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/whisper-codex.html",
-      "title": "The Whisper Codex",
-      "momentum_score": 45,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/wuffi.html",
       "title": "WUFFI / $WUF",
       "momentum_score": 45,
@@ -3602,15 +3620,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/croydon-tower-blocks.html",
-      "title": "Croydon Tower Blocks",
-      "momentum_score": 44,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 40,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/crypto-moonboys-is-deliberately-a.html",
       "title": "Crypto Moonboys: One Name, Many Connected Worlds | Crypto Moonboys",
       "momentum_score": 44,
@@ -3658,15 +3667,6 @@
     {
       "url": "/wiki/dragan-volkov.html",
       "title": "Dragan Volkov",
-      "momentum_score": 44,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/dream-sovereign.html",
-      "title": "Dream Sovereign",
       "momentum_score": 44,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -3908,6 +3908,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/six-pillars.html",
+      "title": "The Six Pillars",
+      "momentum_score": 44,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/street-swarm-the-offline-first-tactical.html",
       "title": "Street Swarm: Making Beyond the Connection | Crypto Moonboys",
       "momentum_score": 44,
@@ -4003,7 +4012,7 @@
       "momentum_score": 43,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 66,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -4012,7 +4021,7 @@
       "momentum_score": 43,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 78,
+      "predicted_priority": 40,
       "recommendation": "monitor"
     },
     {
@@ -4030,7 +4039,7 @@
       "momentum_score": 43,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 66,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -4196,21 +4205,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/six-pillars.html",
-      "title": "The Six Pillars",
-      "momentum_score": 43,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/snipey-d-man-sirus.html",
       "title": "Snipey 'D-Man' Sirus",
       "momentum_score": 43,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 62,
+      "predicted_priority": 39,
       "recommendation": "monitor"
     },
     {
@@ -4642,7 +4642,7 @@
       "momentum_score": 36,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 29,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4651,7 +4651,7 @@
       "momentum_score": 36,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 14,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4660,7 +4660,7 @@
       "momentum_score": 35,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 29,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4669,7 +4669,7 @@
       "momentum_score": 34,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 34,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4687,7 +4687,7 @@
       "momentum_score": 32,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 44,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4696,7 +4696,7 @@
       "momentum_score": 32,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 19,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4705,7 +4705,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 44,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4714,7 +4714,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 29,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4723,7 +4723,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 29,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4732,7 +4732,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 44,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4741,7 +4741,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 39,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4750,7 +4750,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 39,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4759,7 +4759,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 39,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4768,7 +4768,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 39,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4777,7 +4777,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 39,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4786,7 +4786,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 44,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4795,7 +4795,7 @@
       "momentum_score": 31,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 39,
+      "predicted_priority": 0,
       "recommendation": "hold"
     },
     {
@@ -4804,7 +4804,7 @@
       "momentum_score": 30,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
-      "predicted_priority": 54,
+      "predicted_priority": 0,
       "recommendation": "hold"
     }
   ]
