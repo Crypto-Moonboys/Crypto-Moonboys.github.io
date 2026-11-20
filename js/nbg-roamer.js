@@ -365,10 +365,10 @@
         if (!enemy.attack && !enemy.hitUntil) {
           enemy.x += enemy.vx * delta;
           const left = 8, right = Math.max(left, w - e.width - 8);
-          if (enemy.x <= left) {
+          if (enemy.x <= left && enemy.vx < 0) {
             enemy.x = left;
             enemy.vx = Math.abs(enemy.vx);
-          } else if (enemy.x >= right) {
+          } else if (enemy.x >= right && enemy.vx > 0) {
             enemy.x = right;
             enemy.vx = -Math.abs(enemy.vx);
           }
@@ -410,8 +410,10 @@
         frameTime = now - enemy.attack.startedAt;
         facing = enemy.attack.facing;
       }
-      const frame = Math.min(pose.frames - 1, Math.floor(frameTime / pose.frameMs));
-      drawEnemyPose(key, pose, e.kind === 'parachute' ? frame % pose.frames : frame,
+      const frame = enemy.attack || enemy.hitUntil > now
+        ? Math.min(pose.frames - 1, Math.floor(frameTime / pose.frameMs))
+        : Math.floor(enemy.age / pose.frameMs) % pose.frames;
+      drawEnemyPose(key, pose, frame,
         enemy.x, enemy.top, e.width, e.height, facing, e.kind !== 'parachute');
 
       // Graffbot fire is a separate original effect sheet, not a replacement
