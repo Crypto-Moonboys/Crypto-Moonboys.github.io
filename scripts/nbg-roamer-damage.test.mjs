@@ -79,7 +79,7 @@ test('attack hitbox is directional and only active during attack frames', () => 
 test('contact from live enemy and active attack remove health in encounter loop', () => {
   const setup = [
     'const MAX_HEALTH=3,HIT_INVULN_MS=1200,HURT_MS=450,DEFEAT_MS=700;',
-    'const ENEMY_TYPES=[]; const ATTACK_POSES={turquoiseRatKick:{frames:25,frameMs:34}};'
+    'const ENEMY_TYPES=[]; const ATTACK_POSES={turquoiseRatKick:{frames:25,frameMs:34}};',
     'let health=MAX_HEALTH, invulnerableUntil=0,hurtUntil=0,runnerDefeated=false,defeatAt=0;',
     'let x=200,y=0,vy=0,sprayUntil=0,controlling=true,active=true,direction=1,jumpsUsed=0;',
     'let encounterNextAt=Infinity,encounterSpawnIndex=0;',
