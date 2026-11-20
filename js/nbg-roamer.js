@@ -12,6 +12,8 @@
   const GRAVITY = 1150;
   const JUMP_VELOCITIES = [630, 760]; // First two distinct presses.
   const JUMP_TAP_SPACING_MS = 115; // Match the source game's discrete jump taps.
+  const PARACHUTE_DESCENT_FACTOR = 0.7; // Both drops descend 30% slower.
+  const PIG_FLIGHT_HEIGHT_MULTIPLIER = 2; // Pig clears the floor by 200% of its sprite height.
   const MAX_HEALTH = 3, HIT_INVULN_MS = 1200, HURT_MS = 450, DEFEAT_MS = 700;
   const held = new Set();
   let manifest, host, sprite, controls, active = false, controlling = false;
@@ -146,7 +148,10 @@
     return {
       type, identity: type.landedKey || type.key,
       x: parachute ? w * (index ? 0.7 : 0.3) : w + 20 + index * 70,
-      top: parachute ? -type.height : h - type.height,
+      top: parachute ? -type.height
+        : type.kind === 'flying'
+          ? Math.max(0, h - type.height * (1 + PIG_FLIGHT_HEIGHT_MULTIPLIER))
+          : h - type.height,
       vx: parachute ? (index ? -10 : 10) : -58,
       age: 0, defeated: false, hitUntil: 0, nextAttackAt: 0,
       attack: null, attackIndex: 0
@@ -405,7 +410,8 @@
       let e = enemy.type;
       if (e.kind === 'parachute') {
         enemy.x += enemy.vx * delta;
-        enemy.top = Math.min(h - e.height, enemy.top + Math.max(190, h / 3) * delta);
+        enemy.top = Math.min(h - e.height,
+          enemy.top + Math.max(190, h / 3) * PARACHUTE_DESCENT_FACTOR * delta);
         if (enemy.top >= h - e.height) {
           // Never map by array position: each parachute owns its landed
           // identity, including after other enemies are killed or reordered.
@@ -429,8 +435,11 @@
             enemy.vx = -Math.abs(enemy.vx);
           }
         }
-        // All enemy bodies, including the flying pig, share the same floor.
-        enemy.top = h - e.height;
+        // Walking enemies stay on the floor. The winged pig flies sideways
+        // at two sprite heights above it, with matching airborne hitboxes.
+        enemy.top = e.kind === 'flying'
+          ? Math.max(0, h - e.height * (1 + PIG_FLIGHT_HEIGHT_MULTIPLIER))
+          : h - e.height;
       }
 
       const playerLeft = x + 14, playerRight = x + 58;
@@ -484,7 +493,7 @@
         ? Math.min(pose.frames - 1, Math.floor(frameTime / pose.frameMs))
         : Math.floor(enemy.age / pose.frameMs) % pose.frames;
       drawEnemyPose(key, pose, frame,
-        enemy.x, enemy.top, e.width, e.height, facing, e.kind !== 'parachute');
+        enemy.x, enemy.top, e.width, e.height, facing, e.kind === 'ground');
 
       // Graffbot fire is a separate original effect sheet, not a replacement
       // for the robot's body or its grounded feet.
