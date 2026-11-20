@@ -111,7 +111,12 @@
     }
     sprite.addEventListener('click', takeControl);
     sprite.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); takeControl(); }
+      // Space during control must reach the window movement handler to jump.
+      // Only use Enter/Space to activate when the runner is not yet controlled.
+      if (event.key === 'Enter' || (event.key === ' ' && !controlling)) {
+        event.preventDefault();
+        if (!controlling) takeControl();
+      }
     });
     host.append(sprite, controls);
     document.body.appendChild(host);
@@ -121,6 +126,9 @@
     controlling = true;
     deadline = performance.now() + CONTROL_MS;
     controls.hidden = false;
+    // The summon button retains focus after click, and its Space action would
+    // otherwise prevent gameplay input. Focus the runner without page scrolling.
+    sprite.focus({ preventScroll: true });
   }
   function setAnimation(name, now) {
     const a = manifest?.animations?.[name];
@@ -198,13 +206,24 @@
     finally { spawning = false; updateSummonButton(); }
   }
   function onKeyDown(event) {
-    if (!active || !controlling || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.repeat && !held.has(event.code) || interactive(event.target)) return;
-    if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space'].includes(event.code)) {
-      held.add(event.code); event.preventDefault();
+    if (!active || disposed || document.hidden || event.defaultPrevented ||
+        event.altKey || event.ctrlKey || event.metaKey ||
+        !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD','KeyW','KeyS','Space'].includes(event.code)) return;
+    // A summoned runner can be taken over with the first movement key, without
+    // requiring a separate click. Never intercept input in page controls.
+    const runnerTarget = !!sprite?.contains(event.target);
+    const hiddenSummonTarget = event.target === summonButton && summonButton.hidden;
+    if (interactive(event.target) && !runnerTarget && !hiddenSummonTarget) return;
+    if (controlling && performance.now() >= deadline) return;
+    if (!controlling) {
+      if (event.repeat) return; // Never activate control from an already-held scrolling key.
+      takeControl();
     }
+    held.add(event.code);
+    event.preventDefault();
   }
   function onKeyUp(event) { held.delete(event.code); }
-  window.addEventListener('keydown', onKeyDown, { passive: false });
+  window.addEventListener('keydown', onKeyDown, { capture: true, passive: false });
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', () => held.clear());
   document.addEventListener('visibilitychange', () => { if (document.hidden) { held.clear(); if (active) stop(); } });

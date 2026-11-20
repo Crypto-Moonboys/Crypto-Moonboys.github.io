@@ -97,3 +97,35 @@ test('bfcache restoration resumes remaining summon cooldown without resetting it
   assert.match(source, /if \(performance\.now\(\) - lastSummon < SUMMON_COOLDOWN_MS\) startSummonCooldown\(false\)/);
   assert.match(source, /setInterval\(\(\) => \{[\s\S]*?updateSummonButton\(\)/);
 });
+
+test('Space activates the runner only when idle and reaches gameplay while controlling', () => {
+  assert.match(source, /event\.key === 'Enter' \|\| \(event\.key === ' ' && !controlling\)/);
+  assert.match(source, /sprite\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(source, /held\.has\('Space'\)/);
+  assert.match(source, /sprite\?\.contains\(event\.target\)/);
+});
+test('Space is ignored outside active control and never hijacks text inputs', () => {
+  const { listeners } = boot('/wiki/crypto-moonboys.html');
+  for (const target of [
+    { closest: () => null },
+    { closest: () => ({ tagName: 'INPUT' }) }
+  ]) {
+    let prevented = false;
+    listeners.keydown({ code: 'Space', key: ' ', target, preventDefault() { prevented = true; } });
+    assert.equal(prevented, false);
+  }
+  assert.match(source, /interactive\(event\.target\) && !sprite\?\.contains\(event\.target\)/);
+});
+
+test('keyboard control begins with arrow or Space on a visible runner, not just a click', () => {
+  assert.match(source, /if \(!controlling\) \{[\s\S]*?takeControl\(\)/);
+  assert.match(source, /held\.add\(event\.code\);\s*event\.preventDefault\(\)/);
+  assert.match(source, /capture: true, passive: false/);
+  assert.match(source, /if \(controlling && performance\.now\(\) >= deadline\) return/);
+});
+test('navigation and form focus keep normal keyboard behaviour', () => {
+  assert.match(source, /interactive\(event\.target\) && !runnerTarget && !hiddenSummonTarget/);
+  assert.match(source, /if \(event\.repeat\) return/);
+  assert.match(source, /document\.hidden \|\| event\.defaultPrevented/);
+  assert.match(source, /event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey/);
+});
