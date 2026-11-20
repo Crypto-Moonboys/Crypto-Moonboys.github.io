@@ -98,7 +98,7 @@
   ];
   let encounterCanvas = null, encounterCtx = null, enemyImages = {}, enemies = [];
   let enemyManifest = null, encounterNextAt = 0, encounterGeneration = 0;
-  let sprayUntil = 0, lastSpray = -Infinity;
+  let sprayUntil = 0, lastSpray = -Infinity, cleanSprayUrl = null, sprayPreparing = false;
   function createEncounterCanvas() {
     if (encounterCanvas) return;
     encounterCanvas = document.createElement('canvas');
@@ -158,10 +158,40 @@
       });
     }
   }
+  // The original spray sprite export has green/white matte. Apply the same
+  // clean-up criteria used by NBG London; never alter the committed PNG.
+  function prepareSpraySprite() {
+    if (sprayPreparing || cleanSprayUrl || !manifest?.animations?.spray) return;
+    sprayPreparing = true;
+    const source = new Image();
+    source.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = source.naturalWidth;
+        canvas.height = source.naturalHeight;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(source, 0, 0);
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < pixels.data.length; i += 4) {
+          const r = pixels.data[i], g = pixels.data[i + 1], b = pixels.data[i + 2];
+          const matte = g > r + 12 && g > b + 8 && r >= 45 && r <= 115 &&
+            g >= 75 && g <= 155 && b >= 40 && b <= 120;
+          const white = r >= 250 && g >= 250 && b >= 250;
+          if (matte || white) pixels.data[i + 3] = 0;
+        }
+        ctx.putImageData(pixels, 0, 0);
+        cleanSprayUrl = canvas.toDataURL('image/png');
+      } catch (_) { /* Continue with original art when processing is unavailable. */ }
+      sprayPreparing = false;
+    };
+    source.onerror = () => { sprayPreparing = false; };
+    source.src = ASSET_ROOT + manifest.animations.spray.spriteSheet;
+  }
   function spray(now = performance.now()) {
     if (!active || !controlling || now - lastSpray < 550) return;
     lastSpray = now;
     sprayUntil = now + 260;
+    prepareSpraySprite();
   }
   function clearEncounter() {
     encounterGeneration++;
@@ -316,7 +346,9 @@
     // Match the source game's per-animation visual foot alignment. The
     // sprite frame includes transparent padding beneath the character.
     sprite.style.bottom = -(a.renderOffsetY || 0) + 'px';
-    img.src = img.dataset.animation === name ? img.src : ASSET_ROOT + a.spriteSheet;
+    const imageSrc = name === 'spray' && cleanSprayUrl ? cleanSprayUrl : ASSET_ROOT + a.spriteSheet;
+    if (img.dataset.animation !== name || img.dataset.imageSrc !== imageSrc) img.src = imageSrc;
+    img.dataset.imageSrc = imageSrc;
     img.dataset.animation = name;
     img.style.width = (a.columns * a.sourceFrameWidth) + 'px';
     img.style.height = (Math.ceil((a.frames + (a.frameStart || 0)) / a.columns) * a.sourceFrameHeight) + 'px';
