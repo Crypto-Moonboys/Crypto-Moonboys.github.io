@@ -416,6 +416,7 @@
       if (disposed || document.hidden) { if (!disposed) schedule(); return; }
       clearTimeout(timer);
       makeUI();
+      prepareSpraySprite(); // Preprocess the existing spray art before first attack.
       active = true; controlling = false; x = -100; y = vy = 0; direction = 1; current = ''; last = 0;
       jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false;
       startEncounter();
