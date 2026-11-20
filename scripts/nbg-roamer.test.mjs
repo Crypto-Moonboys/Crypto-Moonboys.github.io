@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 const source = readFileSync(new URL('../js/nbg-roamer.js', import.meta.url), 'utf8');
+const wikiCss = readFileSync(new URL('../css/wiki.css', import.meta.url), 'utf8');
 const shell = readFileSync(new URL('../js/site-shell.js', import.meta.url), 'utf8');
 const manifest = JSON.parse(readFileSync(new URL('../game/assets/player/nbg-runner-animation-manifest.json', import.meta.url), 'utf8'));
 function boot(path) {
@@ -128,4 +129,22 @@ test('navigation and form focus keep normal keyboard behaviour', () => {
   assert.match(source, /if \(event\.repeat\) return/);
   assert.match(source, /document\.hidden \|\| event\.defaultPrevented/);
   assert.match(source, /event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey/);
+});
+
+test('round icon summon sits left of Back to Top without overlap', () => {
+  const summonRule = source.match(/#nbg-roamer-summon \{([^}]+)\}/)[1];
+  const topRule = wikiCss.match(/#back-to-top \{([^}]+)\}/)[1];
+  const px = (rule, property) => Number(rule.match(new RegExp(property + ':\\s*(\\d+)px'))[1]);
+  const summonRight = px(summonRule, 'right');
+  const topRight = px(topRule, 'right');
+  const topWidth = px(topRule, 'width');
+  assert.ok(summonRight >= topRight + topWidth + 12, 'Buttons must have a 12px horizontal gap');
+  assert.equal(px(summonRule, 'width'), 42);
+  assert.equal(px(summonRule, 'height'), 42);
+  assert.equal(px(summonRule, 'bottom'), px(topRule, 'bottom'));
+  assert.match(summonRule, /border-radius:50%/);
+  assert.match(source, /summonButton\.textContent = '▶'/);
+  assert.doesNotMatch(source, /summonButton\.textContent = remaining > 0/);
+  assert.match(source, /summonButton\.setAttribute\('aria-label', remaining > 0/);
+  assert.match(source, /bottom:calc\(18px \+ env\(safe-area-inset-bottom, 0px\)\)/);
 });

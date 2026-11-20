@@ -25,7 +25,8 @@
     const remaining = Math.max(0, SUMMON_COOLDOWN_MS - (performance.now() - lastSummon));
     summonButton.hidden = active;
     summonButton.disabled = active || spawning || remaining > 0;
-    summonButton.textContent = remaining > 0 ? 'NBG RUNNER (' + Math.ceil(remaining / 1000) + 's)' : 'SUMMON NBG RUNNER';
+    summonButton.textContent = '▶';
+    summonButton.setAttribute('aria-label', remaining > 0 ? 'NBG runner available in ' + Math.ceil(remaining / 1000) + ' seconds' : 'Summon NBG London runner');
     summonButton.title = remaining > 0 ? 'Runner recharging' : 'Summon the NBG London runner';
   }
   function ensureSummonButton() {
@@ -33,9 +34,9 @@
     const style = document.createElement('style');
     style.id = 'nbg-roamer-summon-css';
     style.textContent = `
-      #nbg-roamer-summon {position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom, 0px));z-index:1502;
-        border:2px solid #f3bd25;border-radius:8px;background:#090d14;color:#f3bd25;font:700 12px/1.2 system-ui,sans-serif;
-        padding:12px;min-height:44px;max-width:min(200px,calc(100vw - 24px));cursor:pointer;box-shadow:0 3px 12px #0009;}
+      #nbg-roamer-summon {position:fixed;right:72px;bottom:calc(18px + env(safe-area-inset-bottom, 0px));z-index:1502;
+        border:2px solid #f3bd25;border-radius:50%;background:#090d14;color:#f3bd25;font:700 17px/1 system-ui,sans-serif;
+        padding:0;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 12px #0009;}
       #nbg-roamer-summon[hidden] {display:none;}
       #nbg-roamer-summon:disabled {opacity:.6;cursor:default;}
       #nbg-roamer-summon:focus-visible {outline:3px solid #fff;outline-offset:2px;}
