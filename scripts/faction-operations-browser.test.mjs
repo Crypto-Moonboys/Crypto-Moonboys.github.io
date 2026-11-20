@@ -1030,3 +1030,55 @@ test('PR5 background accepted-action reconciliation preserves focused private co
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
 });
+
+test('the mural mounts into cached chamber HTML and Enter keeps the selected paint control', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage();
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent(panel
+      .replace(/        <div data-wall-game hidden>[\s\S]*?        <\/div>\n/, '')
+      .replace(' data-operation-collection-label', ''));
+    assert.equal(await page.locator('[data-wall-game]').count(), 0);
+    await page.evaluate(() => {
+      window.clanMoves = [];
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '101',
+        getSignedTelegramAuth: () => ({ id: '101' }),
+      };
+      window.fetch = async (_url, options) => {
+        const request = JSON.parse(options.body);
+        if (request.operation_ui !== 'wall-v1') return Response.json({}, { status: 409 });
+        if (request.action) window.clanMoves.push(request.action);
+        const revision = window.clanMoves.length;
+        return Response.json({
+          ok: true, faction_id: 'graffpunks', status: 'ready', tier: 0, revision,
+          utc_day: '2026-11-20', resets_at: '2099-01-01T00:00:00Z',
+          renown_per_tier: 10000, renown_today: 0, renown_total: 0, crew_banks: 0, collection: [],
+          wall: {
+            name: 'Signal Wall', finds: ['Outline', 'Chrome', 'Pink'],
+            panels: [{ name: 'Right', shade: revision % 3, paint: String(revision), target: 'Chrome', matched: false }],
+            actions: [{ id: 'paint-0', label: 'Cycle left' }, { id: 'paint-2', label: 'Cycle right' }],
+          },
+        });
+      };
+    });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v2.js') });
+    const right = page.getByRole('button', { name: 'Cycle right' });
+    await right.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => document.activeElement?.getAttribute('value') === 'paint-2' && window.clanMoves.length === 1);
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => window.clanMoves.length === 2);
+    assert.deepEqual(await page.evaluate(() => window.clanMoves), ['paint-2', 'paint-2']);
+  } finally {
+    await browser.close();
+  }
+});

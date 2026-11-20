@@ -39,11 +39,11 @@ function fixture(t) {
 
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
-  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction } = {}) {
+  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1' } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
+      action, revision, operation_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
@@ -256,6 +256,14 @@ test('GraffPUNKS layers grant one print and the same Renown cap through D1', { t
   const { request, settings } = requestFixture(db);
   const account = { id: '104', faction: 'graffpunks' };
   const getWall = () => request(account);
+  for (const action of [undefined, 'paint-0']) {
+    const cachedClient = await request({ ...account, action, revision: 0, operation_ui: null });
+    assert.equal(cachedClient.status, 409);
+    assert.equal(cachedClient.data.error, 'operation_unavailable');
+  }
+  const cachedMiner = await request({ id: '101', operation_ui: null });
+  assert.equal(cachedMiner.status, 200);
+  assert.ok(cachedMiner.data.mine);
   const move = (state, action) => request({ ...account, day: state.utc_day, revision: state.revision, action });
   assert.equal((await request({ id: '101', faction: 'graffpunks' })).data.error, 'wrong_operation_faction');
   let state = (await getWall()).data;

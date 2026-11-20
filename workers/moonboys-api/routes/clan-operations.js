@@ -115,6 +115,11 @@ export async function handleClanOperations(request, env, helpers) {
     const operation = operations.get(factionId);
     if (!operation) return respond({ error: 'faction_not_in_pilot' }, 403);
 
+    // Cached mining clients expect a mine payload on every successful response.
+    if (factionId === GRAFFPUNKS && body.operation_ui !== 'wall-v1') {
+      return respond({ error: 'operation_unavailable' }, 409);
+    }
+
     // Chamber pages can require a given clan. The shared Battle Chamber
     // resolves the clan from identity and echoes it on moves.
     if (body.operation_faction != null && body.operation_faction !== factionId) {
