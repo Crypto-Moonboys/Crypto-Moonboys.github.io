@@ -59,3 +59,13 @@ test('uses the existing animation assets, not a copy of the game engine', () => 
   assert.match(shell, /pathname\.startsWith\('\/games\/'\)/);
   assert.match(shell, /pathname\.startsWith\('\/game\/'\)/);
 });
+
+test('mirroring composes after viewport translation, preserving left movement', () => {
+  assert.match(source, /translate3d\('\s*\+\s*x[\s\S]*?scaleX\('/);
+  assert.doesNotMatch(source, /sprite\.style\.scale\s*=/);
+});
+test('pagehide clears controls and pageshow resumes fresh schedule after bfcache restore', () => {
+  assert.match(source, /addEventListener\('pagehide',[\s\S]*?disposed = true;[\s\S]*?stop\(\)/);
+  assert.match(source, /addEventListener\('pageshow',[\s\S]*?event\.persisted && disposed[\s\S]*?schedule\(\)/);
+  assert.match(source, /active = false; controlling = false; moving = false; held\.clear\(\)/);
+});
