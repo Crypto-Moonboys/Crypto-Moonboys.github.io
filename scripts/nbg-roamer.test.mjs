@@ -102,7 +102,7 @@ test('bfcache restoration resumes remaining summon cooldown without resetting it
 test('Space activates the runner only when idle and reaches gameplay while controlling', () => {
   assert.match(source, /event\.key === 'Enter' \|\| \(event\.key === ' ' && !controlling\)/);
   assert.match(source, /sprite\.focus\(\{ preventScroll: true \}\)/);
-  assert.match(source, /held\.has\('Space'\)/);
+  assert.match(source, /JUMP_CODES\.includes\(event\.code\) && !event\.repeat && !held\.has\(event\.code\)\) tryJump\(\)/);
   assert.match(source, /sprite\?\.contains\(event\.target\)/);
 });
 test('Space is ignored outside active control and never hijacks text inputs', () => {
@@ -147,4 +147,45 @@ test('round icon summon sits left of Back to Top without overlap', () => {
   assert.doesNotMatch(source, /summonButton\.textContent = remaining > 0/);
   assert.match(source, /summonButton\.setAttribute\('aria-label', remaining > 0/);
   assert.match(source, /bottom:calc\(18px \+ env\(safe-area-inset-bottom, 0px\)\)/);
+});
+
+test('removes yellow focus rectangle without disabling keyboard input', () => {
+  assert.match(source, /#nbg-roamer \.nbg-sprite:focus-visible \{outline:none;\}/);
+  assert.doesNotMatch(source, /#nbg-roamer \.nbg-sprite:focus-visible \{outline:2px solid #f3bd25;\}/);
+  assert.match(source, /sprite\.tabIndex = 0/);
+  assert.match(source, /sprite\.focus\(\{ preventScroll: true \}\)/);
+});
+test('three distinct jump presses use jump, backflip and fall art from game manifest', () => {
+  for (const animation of ['jump', 'fall', 'backflip']) {
+    assert.match(source, new RegExp("'" + animation + "'"));
+    assert.ok(manifest.animations[animation]?.spriteSheet);
+  }
+  assert.match(source, /JUMP_CODES = \['ArrowUp', 'KeyW', 'Space'\]/);
+  assert.match(source, /if \(JUMP_CODES\.includes\(key\)\) tryJump\(\)/);
+  assert.match(source, /JUMP_CODES\.includes\(event\.code\) && !event\.repeat && !held\.has\(event\.code\)\) tryJump\(\)/);
+  assert.match(source, /backflipActive \? 'backflip' : vy >= 0 \? 'jump' : 'fall'/);
+  assert.match(source, /jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false/);
+});
+test('jump physics permit exactly three taps and third clears viewport height', () => {
+  const fn = source.match(/  function tryJump\(now = performance\.now\(\)\) \{[\s\S]*?\n  \}\n  function makeUI\(\)/);
+  assert.ok(fn, 'jump implementation available for direct regression');
+  const setup = [
+    'let active = true, controlling = true, disposed = false, jumpsUsed = 0, lastJumpAt = -Infinity, backflipActive = false, y = 0, vy = 0;',
+    'const JUMP_TAP_SPACING_MS = 115, GRAVITY = 1150, JUMP_VELOCITIES = [630, 760];',
+    fn[0].replace(/  function makeUI\(\)$/, ''),
+    '({tryJump, read: () => ({jumpsUsed, vy, backflipActive}), setY: n => {y=n;}})'
+  ].join('\n');
+  const runner = runInNewContext(setup, { performance: { now: () => 0 }, window: { innerHeight: 800 }, Math });
+  assert.equal(runner.tryJump(0), true);
+  assert.equal(runner.read().jumpsUsed, 1);
+  assert.equal(runner.tryJump(20), false, 'held/rapid press must not add a jump');
+  runner.setY(30);
+  assert.equal(runner.tryJump(130), true);
+  assert.equal(runner.read().jumpsUsed, 2);
+  assert.equal(runner.tryJump(260), true);
+  assert.equal(runner.read().jumpsUsed, 3);
+  assert.equal(runner.read().backflipActive, true);
+  assert.ok(runner.read().vy ** 2 / (2 * 1150) > 800, 'final jump exits top of screen');
+  assert.equal(runner.tryJump(400), false, 'fourth jump cannot boost again');
+  assert.match(source, /if \(y === 0\) \{\s*vy = 0; jumpsUsed = 0/);
 });
