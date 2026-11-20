@@ -5188,8 +5188,8 @@
       "governance_action": "defer"
     },
     {
-      "url": "/gpt-users.html",
-      "title": "SPARKY Creator Studio | Start With ChatGPT",
+      "url": "/ai-user.html",
+      "title": "Build Your Creator World | SPARKY",
       "governance_priority_score": 18,
       "trust_band": "low",
       "authority_band": "weak",

@@ -219,9 +219,9 @@
       "authority_score": 4
     },
     {
-      "id": "/gpt-users.html",
-      "title": "SPARKY Creator Studio | Start With ChatGPT",
-      "url": "/gpt-users.html",
+      "id": "/ai-user.html",
+      "title": "Build Your Creator World | SPARKY",
+      "url": "/ai-user.html",
       "category": "characters",
       "rank_score": 212,
       "authority_score": 10
@@ -4462,7 +4462,7 @@
     },
     {
       "source": "/",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -4528,7 +4528,7 @@
     },
     {
       "source": "/about.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -4780,7 +4780,7 @@
     },
     {
       "source": "/about/join-community.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -4876,7 +4876,7 @@
     },
     {
       "source": "/about/our-mission.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -4948,7 +4948,7 @@
     },
     {
       "source": "/about/what-is-crypto-moonboys.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9364,7 +9364,7 @@
     },
     {
       "source": "/categories/tools.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9615,32 +9615,32 @@
       "weight": 0.5
     },
     {
-      "source": "/gpt-users.html",
+      "source": "/ai-user.html",
       "target": "/graffiti-kings-creative-guide.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
-      "source": "/gpt-users.html",
+      "source": "/ai-user.html",
       "target": "/swarmsy.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
-      "source": "/gpt-users.html",
+      "source": "/ai-user.html",
       "target": "/wiki/create-your-moonboy.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
-      "source": "/gpt-users.html",
+      "source": "/ai-user.html",
       "target": "/wiki/crypto-moonboys.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/graffiti-kings-creative-guide.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9730,7 +9730,7 @@
     },
     {
       "source": "/join-us-on-the-wax-blockchain.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9994,7 +9994,7 @@
     },
     {
       "source": "/search.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -10078,7 +10078,7 @@
     },
     {
       "source": "/swarmsy.html",
-      "target": "/gpt-users.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
