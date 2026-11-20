@@ -1655,14 +1655,98 @@ test('Crypto Stoned Boys can see the odds, spend their reroll and recover an art
     await status.filter({ hasText: 'Jam vented' }).waitFor();
     await page.getByRole('button', { name: 'Extract the salvage' }).click();
     await status.filter({ hasText: /lights settle.*Bank your artifact/ }).waitFor();
+    await page.evaluate(() => {
+      window.bankEvents = 0;
+      window.addEventListener('moonboys:clan-operation-banked', () => { window.bankEvents++; });
+    });
     await page.getByRole('button', { name: /Bank chaos artifact.*10,000 Renown/ }).click();
     await status.filter({ hasText: 'Artifact banked' }).waitFor();
+    assert.equal(await page.evaluate(() => window.bankEvents), 1);
     assert.match(await page.locator('[data-mine-collection]').innerText(), /Neon Coil · Recovered/);
     assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
     await shortcut.click();
     await status.filter({ hasText: /Shortcut jammed.*Vent the jam/ }).waitFor();
     assert.equal(await reroll.count(), 0);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('crew progress handles older Workers, refreshes after a bank, and clears stale totals', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-crew-progress[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<main class="clan-operation">' + panel + '</main>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/faction-profile-data.js') });
+    await page.evaluate(() => {
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid/base' };
+      window.crewRequests = [];
+      window.fetch = (url, options) => {
+        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress' || options.credentials !== 'omit') {
+          throw new Error('incorrect public request');
+        }
+        return new Promise(resolve => window.crewRequests.push(resolve));
+      };
+    });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-crew-board.js') });
+
+    const board = page.getByRole('region', { name: 'Clan crew progress' });
+    const table = page.getByRole('table');
+    const bears = page.getByRole('row', { name: /Nomad Bears/ });
+    const refresh = page.getByRole('button', { name: 'Refresh crew progress' });
+    async function deliver(index, value, statusCode = 200) {
+      await page.waitForFunction(index => window.crewRequests.length > index, index);
+      await page.evaluate(({ index, value, statusCode }) => {
+        window.crewRequests[index](Response.json(value, { status: statusCode }));
+      }, { index, value, statusCode });
+    }
+    const counts = (today, week) => ({
+      ok: true, enabled: true, utc_day: '2026-11-20', week_start: '2026-11-16',
+      crews: FACTIONS.map(faction_id => ({
+        faction_id,
+        today_banks: faction_id === 'nomad-bears' ? today : 0,
+        week_banks: faction_id === 'nomad-bears' ? week : 0,
+      })).reverse(),
+    });
+    const banked = () => page.evaluate(() => window.dispatchEvent(new Event('moonboys:clan-operation-banked')));
+
+    await deliver(0, { ok: true, enabled: true });
+    await page.locator('[data-clan-crew-refresh]:not([aria-disabled])').waitFor({ state: 'attached' });
+    assert.equal(await board.count(), 0);
+    await banked();
+    await deliver(1, counts(1, 4));
+    await table.waitFor();
+    assert.equal(await table.getByRole('row').count(), 10);
+    assert.match(await table.getByRole('row').nth(1).innerText(), /Hard Fork Rockers/);
+    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['1', '4']);
+    assert.equal(await bears.getByRole('link').getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await refresh.click();
+    await page.waitForFunction(() => window.crewRequests.length === 3);
+    await banked();
+    await deliver(3, counts(2, 5));
+    await board.getByRole('status').filter({ hasText: 'Crew progress updated.' }).waitFor();
+    await deliver(2, counts(1, 4));
+    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['2', '5']);
+
+    await refresh.click();
+    await deliver(4, { error: 'crew_progress_unavailable' }, 503);
+    await board.getByRole('status').filter({ hasText: 'Crew progress is temporarily unavailable.' }).waitFor();
+    assert.equal(await table.count(), 0);
+    await refresh.click();
+    await deliver(5, { ok: true, enabled: false });
+    await board.waitFor({ state: 'hidden' });
   } finally {
     await browser.close();
   }

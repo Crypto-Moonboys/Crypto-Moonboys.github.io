@@ -6,6 +6,7 @@ import test from 'node:test';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
 import worker from '../workers/moonboys-api/worker.js';
+import { CANONICAL_FACTION_KEYS } from '../workers/moonboys-api/shared/faction-canon.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
 import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
@@ -52,6 +53,7 @@ function fixture(t) {
         bind(...args) {
           return {
             first: async () => query.get(...args) ?? null,
+            all: async () => ({ success: true, results: query.all(...args) }),
           };
         },
       };
@@ -63,7 +65,7 @@ function fixture(t) {
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
-    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction,
+    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit,
     operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
@@ -72,11 +74,12 @@ function requestFixture(db) {
       action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
       utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
-    const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
+    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view : ''}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
         verifyTelegramAuth: async () => signed,
+        rateLimit,
         now: () => settings.time,
         roll: () => settings.chance,
       });
@@ -1204,4 +1207,67 @@ test('Chaos banks different artifacts once in D1 and consumes one reroll per UTC
   assert.equal(tomorrow.renown_today, 0);
   assert.equal(tomorrow.renown_total, 30_000);
   assert.deepEqual(tomorrow.collection.map(item => item.name), expected);
+});
+
+test('public crew progress respects the pilot flag, the IP limit and ledger availability', async t => {
+  const { request, settings, sql } = fixture(t);
+  const query = { method: 'GET', view: 'crew-progress', signed: false };
+  settings.enabled = '';
+  assert.deepEqual(await request(query), { status: 200, data: { ok: true, enabled: false } });
+  settings.enabled = 'true';
+  assert.deepEqual(await request({ ...query, view: undefined }), { status: 200, data: { ok: true, enabled: true } });
+  assert.equal((await request({ ...query, rateLimit: owner => {
+    assert.equal(owner, undefined);
+    return Response.json({ error: 'rate_limited' }, { status: 429 });
+  } })).status, 429);
+
+  const zero = await request(query);
+  assert.equal(zero.status, 200);
+  assert.deepEqual(zero.data.crews, CANONICAL_FACTION_KEYS.map(faction_id => ({ faction_id, today_banks: 0, week_banks: 0 })));
+
+  sql.exec('DROP TABLE clan_operation_awards');
+  assert.deepEqual(await request(query), { status: 503, data: { error: 'crew_progress_unavailable' } });
+});
+
+test('crew progress counts only committed D1 banks within UTC day and week boundaries', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings, fill } = requestFixture(db);
+  const query = { method: 'GET', view: 'crew-progress' };
+  async function mine(date) {
+    settings.time = new Date(date);
+    const ready = await fill((await request()).data);
+    const bank = () => request({ action: 'bank', revision: ready.revision, day: ready.utc_day });
+    const outcomes = await Promise.all([bank(), bank()]);
+    assert.deepEqual(outcomes.map(result => result.status).sort(), [200, 409]);
+  }
+  await mine('2026-11-15T23:59:59Z');
+  await mine('2026-11-16T00:00:00Z');
+  await mine('2026-11-22T23:59:58Z');
+  const sunday = (await request(query)).data;
+  assert.deepEqual(Object.keys(sunday).sort(), ['crews', 'enabled', 'ok', 'utc_day', 'week_start']);
+  assert.equal(sunday.week_start, '2026-11-16');
+  assert.deepEqual(sunday.crews.find(crew => crew.faction_id === 'rugpull-miners'),
+    { faction_id: 'rugpull-miners', today_banks: 1, week_banks: 2 });
+
+  settings.time = new Date('2026-11-23T00:00:00Z');
+  const monday = (await request(query)).data;
+  assert.equal(monday.week_start, '2026-11-23');
+  assert.equal(monday.utc_day, '2026-11-23');
+  assert.ok(monday.crews.every(crew => crew.week_banks === 0 && crew.today_banks === 0));
+  const chaos = (await request({ id: '107' })).data;
+  const act = (action, revision) => request({ id: '107', day: chaos.utc_day, action, revision });
+  const shortcut = (await act('shortcut', 0)).data;
+  assert.equal(shortcut.chaos.grade, 'glitch');
+  assert.deepEqual((await request(query)).data.crews, monday.crews, 'a playable cache is not a bank');
+  assert.equal((await act('bank', shortcut.revision)).status, 200);
+  const changed = (await request(query)).data;
+  assert.deepEqual(changed.crews.find(crew => crew.faction_id === 'crypto-stoned-boys'),
+    { faction_id: 'crypto-stoned-boys', today_banks: 1, week_banks: 1 });
+
+  const response = await worker.fetch(new Request('https://local.test/clan-operations/state?view=crew-progress', {
+    headers: { 'CF-Connecting-IP': '192.0.2.61' },
+  }), { DB: db, CLAN_OPERATIONS_ENABLED: 'true' });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
+  assert.equal((await response.json()).crews.length, CANONICAL_FACTION_KEYS.length);
 });

@@ -553,8 +553,10 @@ if (panel) {
       const data = response.status === 429 ? await response.json().catch(() => ({})) : await response.json();
       if (currentGeneration !== generation || currentOwner !== readOwner()) return;
       if (response.status === 429) waitForRetry(data?.retry_after_seconds);
-      else if (response.ok) showOperation(data);
-      else showError(data.error);
+      else if (response.ok) {
+        showOperation(data);
+        if (action === 'bank') window.dispatchEvent(new Event('moonboys:clan-operation-banked'));
+      } else showError(data.error);
     } catch {
       if (currentGeneration === generation && currentOwner === readOwner()) showError('operation_unavailable');
     } finally {

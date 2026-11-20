@@ -92,6 +92,17 @@
       <p data-mine-connect hidden><a href="/gkniftyheads-incubator.html">Connect Telegram</a></p>
       <p data-mine-join hidden><a href="/community.html#battle-join-faction">Choose a faction</a></p>
       <button type="button" data-mine-refresh>Refresh operation</button>
+      <section class="clan-crew-progress" aria-labelledby="clan-crew-progress-title" data-clan-crew-progress hidden>
+        <h3 id="clan-crew-progress-title">Clan crew progress</h3>
+        <p>Each bank is one completed operation tier. The week begins Monday at 00:00 UTC.</p>
+        <p data-clan-crew-period></p>
+        <table data-clan-crew-table aria-labelledby="clan-crew-progress-title">
+          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p role="status"></p>
+        <button type="button" data-clan-crew-refresh>Refresh crew progress</button>
+      </section>
     </section>
     <details class="section bc-disclosure fop-community" id="battle-my-contribution-today" aria-labelledby="battle-my-contribution-title">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2" id="battle-my-contribution-title">My Faction Contribution</span></summary>
@@ -217,6 +228,7 @@
 <script data-cfasync="false" src="/js/battle-chamber-factions.js"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js"></script>
-<script data-cfasync="false" type="module" src="/js/clan-operation-v9.js"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js"></script>
+<script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=1"></script>
 </body>
 </html>
