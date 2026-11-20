@@ -52,8 +52,8 @@
     document.body.appendChild(summonButton);
     updateSummonButton();
   }
-  function startSummonCooldown() {
-    lastSummon = performance.now();
+  function startSummonCooldown(resetStart = true) {
+    if (resetStart) lastSummon = performance.now();
     clearInterval(summonCooldownTimer);
     summonCooldownTimer = setInterval(() => {
       updateSummonButton();
@@ -218,7 +218,12 @@
     summonButton = null;
   });
   window.addEventListener('pageshow', event => {
-    if (event.persisted && disposed) { disposed = false; ensureSummonButton(); schedule(); }
+    if (event.persisted && disposed) {
+      disposed = false;
+      ensureSummonButton();
+      if (performance.now() - lastSummon < SUMMON_COOLDOWN_MS) startSummonCooldown(false);
+      schedule();
+    }
   });
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', ensureSummonButton, { once: true });
