@@ -129,6 +129,22 @@ function secondsUntil(value, nowMs) {
   return Number.isFinite(ms) ? Math.max(0, Math.floor((ms - nowMs) / 1000)) : 0;
 }
 
+function renderSignalSummary(state) {
+  const summary = document.querySelector('[data-wtf-signal-summary]');
+  if (!summary) return;
+  const focus = state.active_event || state.next_event;
+  if (!focus) {
+    summary.textContent = state.status === 'loading'
+      ? 'Checking the Daily WTF schedule…' : 'No current or upcoming signal confirmed.';
+    return;
+  }
+  const time = iso => String(iso || '').slice(11, 16);
+  const utcWindow = `${time(focus.start_at)}–${time(focus.end_at)} UTC`;
+  const label = focus.fallback || state.source === 'client_fallback_schedule' ? 'Schedule preview'
+    : state.active_event ? 'Current signal' : 'Next signal';
+  summary.textContent = `${label} · ${focus.title} · ${utcWindow}`;
+}
+
 function updateGlobal(payload, extra) {
   const safe = payload && typeof payload === 'object' ? payload : {};
   const transientStatus = extra && extra.status ? String(extra.status) : '';
@@ -170,6 +186,7 @@ function updateGlobal(payload, extra) {
     no_events: noEvents,
     fetched_at: new Date().toISOString(),
   };
+  renderSignalSummary(window.MOONBOYS_WTF_EVENTS);
 }
 
 function setTransientState(status, message) {

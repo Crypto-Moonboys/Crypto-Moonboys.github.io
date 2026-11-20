@@ -80,6 +80,7 @@
     <section class="section clan-operation" id="clan-operation" data-clan-operation aria-labelledby="clan-operation-title">
       <h2 id="clan-operation-title">Clan Operations</h2>
       <p>Open your clan’s daily operation. Rugpull Miners work the mine, GraffPUNKS paint the wall, Nomad Bears map the trail, All City Bulls hold the district, Crypto Moongirls intercept signals, Hard Fork Rockers cross the forks, Blockchain Furies chain pulses, The Blockstars take the spotlight, and Crypto Stoned Boys recover chaos artifacts. The route changes at 00:00 UTC.</p>
+      <p>Bank each completed tier for 10,000 Clan Renown and a collectible. Complete all three tiers for up to 30,000 Clan Renown per UTC day.</p>
       <div data-mine-game hidden>
         <h3 data-mine-name></h3>
         <p data-mine-stats></p>
@@ -130,8 +131,14 @@
 
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Today's Active Options</span></summary>
+      <div id="battle-wtf-signal">
+        <p>Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each signal runs for 90 minutes.</p>
+        <p data-wtf-signal-summary role="status">Checking the Daily WTF schedule…</p>
+        <p>Completing a timed signal objective unlocks roguelite options. Signal bonus XP is preview only.</p>
+        <p><a href="#clan-operation">Play your daily Clan Operation</a> to earn Clan Renown and collectibles. Your operation is available all UTC day.</p>
+      </div>
       <div id="battle-todays-active-options">
-        <p>Today’s active opportunities reset at UTC midnight. Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each signal runs for 90 minutes. The live system below is the source of truth for what is active now.</p>
+        <p>Today’s active opportunities reset at UTC midnight.</p>
       </div>
     </details>
 
@@ -198,14 +205,14 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
-<script data-cfasync="false" src="/js/components/xp-burst-animation.js"></script>
+<script data-cfasync="false" src="/js/components/xp-burst-animation.js?wtf-clan=1"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/telegram-community.js"></script>
 
 <script data-cfasync="false" src="/js/battle-chamber-platform.js"></script>
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
-<script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js"></script>
+<script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js?wtf-clan=1"></script>
 <script data-cfasync="false" src="/js/battle-chamber-factions.js?one-clan-section=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
