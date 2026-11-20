@@ -76,7 +76,7 @@ if (panel) {
     const moves = data.wall.actions.map(({ id, label }) => {
       const button = wallControls.querySelector(`[value="${id}"]`) ?? document.createElement('button');
       button.type = 'button';
-      button.value = id;
+      button.setAttribute('value', id);
       button.textContent = id === 'bank' ? `${label} · +${data.renown_per_tier.toLocaleString()} Renown` : label;
       return button;
     });
@@ -136,7 +136,7 @@ if (panel) {
   function updateControls() {
     retry.disabled = pending;
     for (const button of controls.querySelectorAll('button')) {
-      button.disabled = pending || !state?.mine?.actions.includes(button.value);
+      button.disabled = pending || !state?.mine?.actions.includes(button.getAttribute('value'));
     }
     for (const button of wallControls.querySelectorAll('button')) button.disabled = pending;
   }
@@ -214,7 +214,7 @@ if (panel) {
   for (const buttons of [controls, wallControls]) {
     buttons.addEventListener('click', event => {
       const button = event.target.closest('button[value]');
-      if (button && !button.disabled && state) request(button.value);
+      if (button && !button.disabled && state) request(button.getAttribute('value'));
     });
   }
   window.addEventListener('moonboys:identity-change', refreshIdentity);
