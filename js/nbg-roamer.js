@@ -33,7 +33,7 @@
     const style = document.createElement('style');
     style.id = 'nbg-roamer-summon-css';
     style.textContent = `
-      #nbg-roamer-summon {position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom, 0px));z-index:1502;
+      #nbg-roamer-summon {position:fixed;right:12px;bottom:calc(78px + env(safe-area-inset-bottom, 0px));z-index:1502;
         border:2px solid #f3bd25;border-radius:8px;background:#090d14;color:#f3bd25;font:700 12px/1.2 system-ui,sans-serif;
         padding:12px;min-height:44px;max-width:min(200px,calc(100vw - 24px));cursor:pointer;box-shadow:0 3px 12px #0009;}
       #nbg-roamer-summon[hidden] {display:none;}
