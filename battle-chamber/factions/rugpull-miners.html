@@ -36,13 +36,17 @@
           <button type="button" value="recover">Clear cave-in</button>
           <button type="button" value="bank">Bank tier</button>
         </div>
-        <p><strong>Specimen collection</strong></p>
+        <div data-wall-game hidden>
+          <ol class="clan-strata clan-wall" data-wall-panels aria-label="Mural panels"></ol>
+          <div class="clan-controls" data-wall-controls aria-label="Paint moves"></div>
+        </div>
+        <p><strong data-operation-collection-label>Collection</strong></p>
         <p data-mine-collection></p>
       </div>
       <p role="status">Checking pilot availability…</p>
       <p data-mine-connect hidden><a href="/gkniftyheads-incubator.html">Connect Telegram</a></p>
       <p data-mine-join hidden><a href="/community.html#battle-join-faction">Choose a faction</a></p>
-      <button type="button" data-mine-refresh>Refresh mine</button>
+      <button type="button" data-mine-refresh>Refresh operation</button>
     </section>
     <section class="section fop-section" id="fcp-crew-operations" aria-labelledby="fcp-crew-operations-title">
       <h2 id="fcp-crew-operations-title">CREW OPERATIONS TODAY</h2>
