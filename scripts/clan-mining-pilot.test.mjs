@@ -9,6 +9,9 @@ import worker from '../workers/moonboys-api/worker.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
 import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
+import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
+
+const districtMigration = readFileSync(new URL('../workers/moonboys-api/migrations/119_clan_all_city_bulls.sql', import.meta.url), 'utf8');
 
 const trailsMigration = readFileSync(new URL('../workers/moonboys-api/migrations/118_clan_nomad_bears.sql', import.meta.url), 'utf8');
 
@@ -20,13 +23,14 @@ const factionTable = `
 `;
 const factionRows = `
   INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
-    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4), ('105', 'nomad-bears', 60, 5)
+    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4),
+    ('105', 'nomad-bears', 60, 5), ('107', 'blockchain-furies', 0, 0)
 `;
 
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -44,11 +48,11 @@ function fixture(t) {
 
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
-  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1', expedition_ui = 'trail-v1' } = {}) {
+  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1' } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, expedition_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
+      action, revision, operation_ui, expedition_ui, district_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
@@ -78,7 +82,7 @@ test('feature is closed by default and a signed current miner is required', asyn
   assert.equal((await request()).status, 404);
   settings.enabled = 'true';
   assert.equal((await request({ signed: false })).status, 401);
-  assert.equal((await request({ id: '102' })).data.error, 'faction_not_in_pilot');
+  assert.equal((await request({ id: '107' })).data.error, 'faction_not_in_pilot');
   assert.equal((await request({ id: '999' })).data.error, 'join_faction');
   assert.equal((await request({ id: '103' })).status, 200, 'legacy faction alias');
   assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0, 'state read is side-effect-free');
@@ -164,6 +168,7 @@ async function localD1(t) {
     const alterEnd = wallsMigration.indexOf(';') + 1;
     await db.batch([wallsMigration.slice(0, alterEnd), wallsMigration.slice(alterEnd)].map(sql => db.prepare(sql)));
     await db.prepare(trailsMigration).run();
+    await db.prepare(districtMigration).run();
   } finally {
     schema.close();
   }
@@ -523,4 +528,92 @@ test('Nomad Bears survey and bank three routes with one receipt per tier in D1',
   assert.notEqual(tomorrow.trail.name, state.trail.name);
   assert.equal(tomorrow.renown_today, 0);
   assert.equal(tomorrow.renown_total, 30_000);
+});
+
+function districtPlan(route, tier, saved = {}) {
+  const queue = [{ saved, plan: [] }];
+  const seen = new Set();
+  for (const { saved, plan } of queue) {
+    const key = JSON.stringify(saved);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    for (const { id } of describeDistrict(route, tier, saved).actions) {
+      if (id === 'bank') return [...plan, id];
+      const next = advanceDistrict({ route_index: route, tier, operationState: saved }, id);
+      queue.push({ saved: next.operationState, plan: [...plan, id] });
+    }
+  }
+  assert.fail('No district hold can be banked');
+}
+
+test('all nine district holds can be completed with comparable move counts', () => {
+  for (let route = 0; route < 3; route++) {
+    const moves = [0, 1, 2].map(tier => districtPlan(route, tier).length);
+    assert.ok(moves.every(count => count >= 5 && count <= 7), String(moves));
+    assert.ok(moves.reduce((total, count) => total + count, 0) <= 21);
+  }
+});
+
+test('district pressure penalizes a push and only the forecast point can be held', () => {
+  const state = { route_index: 0, tier: 0, operationState: {} };
+  assert.equal(advanceDistrict(state, 'bank'), null);
+  assert.equal(advanceDistrict(state, 'hold-0'), null, 'cannot hold without control');
+  const opening = advanceDistrict(state, 'push-1');
+  assert.deepEqual(opening.operationState.control, [0, 2, 0]);
+  const underPressure = { ...state, ...opening };
+  assert.equal(advanceDistrict(underPressure, 'hold-0'), null, 'cannot hold off forecast');
+  assert.deepEqual(advanceDistrict(underPressure, 'push-2').operationState.control, [0, 1, 2]);
+  const held = advanceDistrict(underPressure, 'hold-1');
+  assert.deepEqual(held.operationState.control, [0, 3, 0]);
+  assert.equal(held.operationState.held, true);
+  assert.equal(advanceDistrict({ ...state, operationState: { control: [2, 2, 2] } }, 'bank'), null);
+});
+
+test('Bulls fail closed before migration 119 while earlier operations remain available', async t => {
+  const { request, sql } = fixture(t);
+  sql.exec('DROP TRIGGER clan_operation_award_at_district_bank');
+  assert.equal((await request({ id: '102' })).status, 503);
+  assert.equal((await request({ id: '102', action: 'push-1', revision: 0 })).status, 503);
+  assert.equal((await request({ id: '105' })).status, 200);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+test('Bulls bank three unique marks exactly once in D1 and reset district progress at UTC midnight', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '102', faction: 'all-city-bulls' };
+  assert.equal((await request({ ...account, district_ui: null })).status, 409, 'cached clients reject the new payload safely');
+  assert.equal((await request({ ...account, signed: false })).status, 401);
+  assert.equal((await request({ ...account, faction: 'nomad-bears' })).status, 403);
+  const route = dailyRouteIndex(settings.time);
+  let { data: state } = await request(account);
+  const move = action => request({ ...account, action, revision: state.revision, day: state.utc_day });
+  assert.equal((await move('bank')).status, 409, 'client-supplied Renown cannot bank an unsecured district');
+  for (let tier = 0; tier < 3; tier++) {
+    for (const action of districtPlan(route, tier).slice(0, -1)) {
+      const response = await move(action);
+      assert.equal(response.status, 200);
+      state = response.data;
+    }
+    const refreshed = await request(account);
+    assert.deepEqual(refreshed.data.district, state.district);
+    const banks = await Promise.all([move('bank'), move('bank')]);
+    assert.deepEqual(banks.map(response => response.status).sort(), [200, 409]);
+    state = banks.find(response => response.status === 200).data;
+    assert.equal(state.renown_today, RENOWN_PER_TIER * (tier + 1));
+    assert.equal(state.crew_banks, tier + 1);
+    assert.equal(state.collection.length, tier + 1);
+  }
+  assert.equal(state.status, 'complete');
+  assert.deepEqual(state.collection.map(item => item.name), state.district.finds);
+  assert.equal((await move('bank')).status, 409);
+  assert.deepEqual(await db.prepare("SELECT faction_xp, gems FROM blocktopia_progression WHERE telegram_id = '102'").first(),
+    { faction_xp: 88, gems: 9 });
+  settings.time = new Date('2026-11-21T00:00:00Z');
+  assert.equal((await move('push-1')).status, 409);
+  const tomorrow = (await request(account)).data;
+  assert.notEqual(tomorrow.district.name, state.district.name);
+  assert.equal(tomorrow.renown_today, 0);
+  assert.equal(tomorrow.renown_total, 30_000);
+  assert.equal(tomorrow.collection.length, 3);
 });
