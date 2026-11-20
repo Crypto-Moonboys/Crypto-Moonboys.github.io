@@ -54,6 +54,7 @@ test('parachute art preserves rat colour independent of array order', () => {
 function encounterHarness() {
   const script = [
     definitions,
+    "const PARACHUTE_DESCENT_FACTOR = 0.7, PIG_FLIGHT_HEIGHT_MULTIPLIER = 2;",
     "let encounterCtx = {clearRect() {}, save() {}, restore() {}, fillText() {}}, encounterCanvas = {width: 1000, height: 700};",
     "let active = true, controlling = false, runnerDefeated = false, enemies = [], encounterNextAt = 0, encounterSpawnIndex = 0;",
     "const MAX_HEALTH = 3; let health = MAX_HEALTH;",
@@ -203,4 +204,43 @@ test('stomps and spray still work, gameplay remains separate and cleanup is boun
   assert.match(source, /clearEncounter\(\);\s*if \(host\) host\.remove\(\)/);
   assert.match(source, /if \(disposed \|\| generation !== encounterGeneration\) return/);
   assert.doesNotMatch(source, /awardXp|submitScore|leaderboard\.post|\/api\/scores/i);
+});
+
+test('both parachute rats descend 30 percent slower with unchanged simultaneous start', () => {
+  const h = encounterHarness();
+  const initialA = h.spawnEnemy(catalog.byKey.parachuteRatA, 0);
+  const initialC = h.spawnEnemy(catalog.byKey.parachuteRatC, 1);
+  const initialTop = initialA.top;
+  assert.equal(initialTop, initialC.top, 'both start together above the screen');
+  h.setEnemies([initialA, initialC]);
+  h.updateEncounter(1000, 1, 0);
+  const originalSpeed = Math.max(190, 700 / 3);
+  assert.ok(Math.abs((initialA.top - initialTop) - originalSpeed * 0.7) < 0.000001);
+  assert.equal(initialA.top, initialC.top, '30% slowdown applies equally to both parachutes');
+  assert.equal(initialA.type.key, 'parachuteRatA');
+  assert.equal(initialC.type.key, 'parachuteRatC');
+  assert.match(source, /PARACHUTE_DESCENT_FACTOR = 0\.7/);
+});
+
+test('flying pig flies sideways two sprite heights above floor, with elevated collision box', () => {
+  const h = encounterHarness();
+  const pig = h.spawnEnemy(catalog.byKey.pigeon, 0);
+  const rat = h.spawnEnemy(catalog.byKey.londonRat, 0);
+  assert.equal(pig.type.height, 44);
+  assert.equal(pig.top + pig.type.height, 700 - pig.type.height * 2,
+    'pig bottom sits 200% of its height above ground');
+  pig.x = 450;
+  rat.x = 250;
+  h.setEnemies([pig, rat]);
+  h.updateEncounter(200, 0.1, 0);
+  assert.ok(pig.x < 450, 'pig remains horizontally moving');
+  assert.equal(pig.top + pig.type.height, 612, 'pig remains at raised flight altitude');
+  assert.equal(rat.top + rat.type.height, 700, 'walking enemies remain on the ground');
+  const pigDraw = h.framesDrawn.find(draw => draw.key === 'pigeon');
+  const ratDraw = h.framesDrawn.find(draw => draw.key === 'londonRat');
+  assert.equal(pigDraw.grounded, false, 'pig is rendered airborne, not snapped to the floor');
+  assert.equal(pigDraw.top, pig.top, 'pig sprite and collision height agree');
+  assert.equal(ratDraw.grounded, true, 'normal rats retain the floor anchor');
+  assert.match(source, /PIG_FLIGHT_HEIGHT_MULTIPLIER = 2/);
+  assert.match(source, /enemy\.top = e\.kind === 'flying'/);
 });
