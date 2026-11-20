@@ -98,26 +98,29 @@ test('Moonboy creator article remains a manually owned non-canon reference', () 
   assert.doesNotMatch(wiki, /data-canon-revision|data-canon-source-tier/);
 });
 
-test('portable AI starter carries the campaign spine and reads the published brief', () => {
+test('portable AI starter routes faction launches and general campaigns through the published brief', () => {
   const starter = page.match(/<textarea id="ai-starter-text"[^>]*>([\s\S]*?)<\/textarea>/)?.[1];
   assert.ok(starter, 'portable starter prompt missing');
   assert.match(page, /id="copy-ai-starter"/);
   assert.match(starter, /guides\/sparky\/creator-campaign\.md/);
   assert.match(starter, /graffiti-kings-creative-guide\.html/);
-  assert.match(starter, /ONE consistent mascot/);
-  assert.match(starter, /shock message/);
-  assert.match(starter, /gifted\/assigned Moonboy/);
-  assert.match(starter, /my own original mascot\/IP/);
-  assert.match(starter, /returning creative director and project manager/);
-  assert.match(starter, /do not claim 24\/7 background activity/);
+  assert.match(starter, /GK Moonboy or Fly Girl I own or an original character/);
+  assert.match(starter, /character and clan.*mark or mascot for each.*shock taglines/);
+  assert.match(starter, /fictional spoof posts for X.*editable wiki site files for GitHub Pages/);
+  assert.match(starter, /both links and explicitly request submission/);
+  assert.match(starter, /Never submit automatically/);
+  assert.match(starter, /general creator campaign.*exportable record/);
   assert.match(page, /href="\/guides\/sparky\/creator-campaign\.md" download/);
   assert.doesNotMatch(page, /id="gpt-activity-groups"|id="creator-memory-studio"|data-feature=|sparky-gpt-app\.js/);
 });
 
 test('campaign brief has both routes, original mascot continuity, real proof and canon gates', () => {
   const brief = read('guides/sparky/creator-campaign.md');
-  assert.match(brief, /A\. Build with a gifted\/assigned Moonboy/);
-  assert.match(brief, /B\. Bring their own mascot\/IP/);
+  assert.match(brief, /A\. Build with a GK character/);
+  assert.match(brief, /B\. Bring their own character or IP/);
+  assert.match(brief, /HODL Warriors, the united army/);
+  assert.match(brief, /GitHub Pages wiki together in the \[GKniftyHEADS Telegram group\]/);
+  assert.match(brief, /faction page and lead-character profile on the main Moonboys Wiki/);
   assert.match(brief, /Do not change the mascot between formats/);
   assert.match(brief, /permissioned offline action/);
   assert.match(brief, /online echo/);

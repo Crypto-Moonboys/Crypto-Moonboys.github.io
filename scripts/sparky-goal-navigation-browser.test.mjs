@@ -27,7 +27,7 @@ try {
     assert.equal(await cta.isVisible(), true);
     const prompt = await page.locator('#ai-starter-text').inputValue();
     assert.match(prompt, /guides\/sparky\/creator-campaign\.md/);
-    assert.match(prompt, /ONE consistent mascot/);
+    assert.match(prompt, /editable wiki site files for GitHub Pages/);
     await cta.click();
     assert.match(await page.locator('#copy-ai-status').textContent(), /Copied|Copy the selected starter/);
     assert.equal(await page.locator('.gpt-group, #creator-memory-studio').count(), 0);
