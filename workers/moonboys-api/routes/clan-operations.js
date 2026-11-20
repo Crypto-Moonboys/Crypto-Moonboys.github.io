@@ -15,6 +15,10 @@ import {
   BLOCKSTARS, SPOTLIGHT_RULES_VERSION, SPOTLIGHT_FEATURE, SPOTLIGHT_ACTIONS,
   advanceSpotlight, describeSpotlight, spotlightFinds,
 } from '../shared/clan-blockstars-spotlight.js';
+import {
+  CRYPTO_STONED_BOYS, CHAOS_RULES_VERSION, CHAOS_FEATURE, CHAOS_ACTIONS,
+  advanceChaos, describeChaos, chaosFinds,
+} from '../shared/clan-stoned-chaos.js';
 
 const operations = new Map([
   [MINERS, {
@@ -81,6 +85,14 @@ const operations = new Map([
     advance: advanceSpotlight,
     view: (route, state) => ({ spotlight: describeSpotlight(route, state.tier, state.operationState) }),
     finds: spotlightFinds,
+  }],
+  [CRYPTO_STONED_BOYS, {
+    version: CHAOS_RULES_VERSION,
+    awardTrigger: 'clan_operation_award_at_chaos_bank',
+    actions: CHAOS_ACTIONS,
+    advance: advanceChaos,
+    view: (route, state) => ({ chaos: describeChaos(route, state.tier, state.operationState) }),
+    finds: chaosFinds,
   }],
 ]);
 
@@ -186,8 +198,9 @@ export async function handleClanOperations(request, env, helpers) {
     const staleForkClient = factionId === HARD_FORK_ROCKERS && body.fork_ui !== FORK_FEATURE;
     const staleBurstClient = factionId === BLOCKCHAIN_FURIES && body.burst_ui !== BURST_FEATURE;
     const staleSpotlightClient = factionId === BLOCKSTARS && body.spotlight_ui !== SPOTLIGHT_FEATURE;
+    const staleChaosClient = factionId === CRYPTO_STONED_BOYS && body.chaos_ui !== CHAOS_FEATURE;
     if (staleWallClient || staleTrailClient || staleDistrictClient || staleSignalClient ||
-        staleForkClient || staleBurstClient || staleSpotlightClient) {
+        staleForkClient || staleBurstClient || staleSpotlightClient || staleChaosClient) {
       return respond({ error: 'operation_unavailable' }, 409);
     }
 
