@@ -189,3 +189,15 @@ test('jump physics permit exactly three taps and third clears viewport height', 
   assert.equal(runner.tryJump(400), false, 'fourth jump cannot boost again');
   assert.match(source, /if \(y === 0\) \{\s*vy = 0; jumpsUsed = 0/);
 });
+
+test('roaming runner uses the physical viewport bottom and source-game visual offsets', () => {
+  assert.match(source, /#nbg-roamer \{position:fixed;bottom:0;left:0;/);
+  assert.match(source, /sprite\.style\.bottom = -\(a\.renderOffsetY \|\| 0\) \+ 'px'/);
+  assert.doesNotMatch(source, /#nbg-roamer \{position:fixed;bottom:env\(safe-area-inset-bottom/);
+  for (const name of ['idle', 'run', 'crouchLeft', 'crouchRight', 'jump', 'backflip', 'fall']) {
+    assert.ok(Number.isFinite(manifest.animations[name].renderOffsetY),
+      name + ' needs the original game visual-foot offset');
+  }
+  assert.equal(manifest.animations.run.renderOffsetY, 12);
+  assert.equal(manifest.animations.idle.renderOffsetY, 6);
+});

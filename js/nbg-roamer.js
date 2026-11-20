@@ -89,7 +89,7 @@
     const style = document.createElement('style');
     style.id = 'nbg-roamer-css';
     style.textContent = `
-      #nbg-roamer {position:fixed;bottom:env(safe-area-inset-bottom, 0px);left:0;z-index:1500;width:0;height:0;pointer-events:none;contain:layout style;}
+      #nbg-roamer {position:fixed;bottom:0;left:0;z-index:1500;width:0;height:0;pointer-events:none;contain:layout style;}
       #nbg-roamer .nbg-sprite {position:absolute;left:0;bottom:0;width:72px;height:86px;overflow:hidden;image-rendering:pixelated;pointer-events:auto;cursor:pointer;outline:none;touch-action:manipulation;}
       #nbg-roamer .nbg-sprite:focus-visible {outline:none;}
       #nbg-roamer .nbg-sheet {position:absolute;top:0;left:0;max-width:none;image-rendering:pixelated;transform-origin:top left;pointer-events:none;}
@@ -162,6 +162,9 @@
     const scaleY = a.renderHeight / a.sourceFrameHeight;
     sprite.style.width = a.renderWidth + 'px';
     sprite.style.height = a.renderHeight + 'px';
+    // Match the source game's per-animation visual foot alignment. The
+    // sprite frame includes transparent padding beneath the character.
+    sprite.style.bottom = -(a.renderOffsetY || 0) + 'px';
     img.src = img.dataset.animation === name ? img.src : ASSET_ROOT + a.spriteSheet;
     img.dataset.animation = name;
     img.style.width = (a.columns * a.sourceFrameWidth) + 'px';
