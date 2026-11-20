@@ -6,18 +6,63 @@
   if (/^\/(?:games|game)(?:\/|$)/.test(path) || /\.(?:pdf|xml|json)$/.test(path)) return;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
   window.__NBG_ROAMER_BOOTED__ = true;
-  const MIN_DELAY = 180000, MAX_DELAY = 420000, CONTROL_MS = 30000;
+  const MIN_DELAY = 180000, MAX_DELAY = 420000, CONTROL_MS = 30000, SUMMON_COOLDOWN_MS = 60000;
   const ASSET_ROOT = '/game/assets/';
   const held = new Set();
   let manifest, host, sprite, controls, active = false, controlling = false;
   let direction = 1, x = -100, y = 0, vy = 0, frame = 0, frameTime = 0, last = 0, deadline = 0;
   let current = '', raf = 0, timer = 0, moving = false, disposed = false;
+  let summonButton = null, summonCooldownTimer = 0, lastSummon = -Infinity, spawning = false;
   const interactive = target => !!target?.closest?.('input, textarea, select, button, a, [contenteditable], [role="textbox"], [role="dialog"]');
   const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
   function schedule() {
     if (disposed) return;
     clearTimeout(timer);
     timer = setTimeout(spawn, MIN_DELAY + Math.random() * (MAX_DELAY - MIN_DELAY));
+  }
+  function updateSummonButton() {
+    if (!summonButton) return;
+    const remaining = Math.max(0, SUMMON_COOLDOWN_MS - (performance.now() - lastSummon));
+    summonButton.hidden = active;
+    summonButton.disabled = active || spawning || remaining > 0;
+    summonButton.textContent = remaining > 0 ? 'NBG RUNNER (' + Math.ceil(remaining / 1000) + 's)' : 'SUMMON NBG RUNNER';
+    summonButton.title = remaining > 0 ? 'Runner recharging' : 'Summon the NBG London runner';
+  }
+  function ensureSummonButton() {
+    if (summonButton || disposed) return;
+    const style = document.createElement('style');
+    style.id = 'nbg-roamer-summon-css';
+    style.textContent = `
+      #nbg-roamer-summon {position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom, 0px));z-index:1502;
+        border:2px solid #f3bd25;border-radius:8px;background:#090d14;color:#f3bd25;font:700 12px/1.2 system-ui,sans-serif;
+        padding:12px;min-height:44px;max-width:min(200px,calc(100vw - 24px));cursor:pointer;box-shadow:0 3px 12px #0009;}
+      #nbg-roamer-summon[hidden] {display:none;}
+      #nbg-roamer-summon:disabled {opacity:.6;cursor:default;}
+      #nbg-roamer-summon:focus-visible {outline:3px solid #fff;outline-offset:2px;}
+    `;
+    if (!document.getElementById(style.id)) document.head.appendChild(style);
+    summonButton = document.createElement('button');
+    summonButton.id = 'nbg-roamer-summon';
+    summonButton.type = 'button';
+    summonButton.setAttribute('aria-label', 'Summon NBG London runner');
+    summonButton.addEventListener('click', () => {
+      if (active || spawning || disposed || performance.now() - lastSummon < SUMMON_COOLDOWN_MS) return;
+      void spawn(true);
+    });
+    document.body.appendChild(summonButton);
+    updateSummonButton();
+  }
+  function startSummonCooldown(resetStart = true) {
+    if (resetStart) lastSummon = performance.now();
+    clearInterval(summonCooldownTimer);
+    summonCooldownTimer = setInterval(() => {
+      updateSummonButton();
+      if (performance.now() - lastSummon >= SUMMON_COOLDOWN_MS) {
+        clearInterval(summonCooldownTimer);
+        summonCooldownTimer = 0;
+      }
+    }, 1000);
+    updateSummonButton();
   }
   function makeUI() {
     if (host) return;
@@ -103,6 +148,7 @@
     if (host) host.remove();
     host = sprite = controls = null;
     cancelAnimationFrame(raf);
+    updateSummonButton();
     schedule();
   }
   function tick(now) {
@@ -129,19 +175,27 @@
     if (!controlling && x > innerWidth + 120) { stop(); return; }
     raf = requestAnimationFrame(tick);
   }
-  async function spawn() {
-    if (disposed || active || document.hidden) { schedule(); return; }
+  async function spawn(manual = false) {
+    if (disposed || active || spawning || document.hidden) {
+      if (!manual && !active) schedule();
+      return;
+    }
+    spawning = true;
+    updateSummonButton();
     try {
       if (!manifest) {
         const response = await fetch(ASSET_ROOT + 'player/nbg-runner-animation-manifest.json', { credentials: 'same-origin' });
         if (!response.ok) throw Error('NBG animation manifest unavailable');
         manifest = await response.json();
       }
-      if (disposed || document.hidden) { schedule(); return; }
+      if (disposed || document.hidden) { if (!disposed) schedule(); return; }
+      clearTimeout(timer);
       makeUI();
       active = true; controlling = false; x = -100; y = vy = 0; direction = 1; current = ''; last = 0;
+      if (manual) startSummonCooldown();
       raf = requestAnimationFrame(tick);
-    } catch (_) { schedule(); }
+    } catch (_) { if (!disposed) schedule(); }
+    finally { spawning = false; updateSummonButton(); }
   }
   function onKeyDown(event) {
     if (!active || !controlling || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.repeat && !held.has(event.code) || interactive(event.target)) return;
@@ -158,9 +212,23 @@
     disposed = true;
     clearTimeout(timer);
     stop(); // Clear capture state and remove the DOM even when the page enters bfcache.
+    clearInterval(summonCooldownTimer);
+    summonCooldownTimer = 0;
+    summonButton?.remove();
+    summonButton = null;
   });
   window.addEventListener('pageshow', event => {
-    if (event.persisted && disposed) { disposed = false; schedule(); }
+    if (event.persisted && disposed) {
+      disposed = false;
+      ensureSummonButton();
+      if (performance.now() - lastSummon < SUMMON_COOLDOWN_MS) startSummonCooldown(false);
+      schedule();
+    }
   });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ensureSummonButton, { once: true });
+  } else {
+    ensureSummonButton();
+  }
   schedule();
 })();
