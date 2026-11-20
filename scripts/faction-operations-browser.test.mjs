@@ -1070,7 +1070,7 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
         });
       };
     });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v2.js') });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v3.js') });
     const right = page.getByRole('button', { name: 'Cycle right' });
     await right.focus();
     await page.keyboard.press('Enter');

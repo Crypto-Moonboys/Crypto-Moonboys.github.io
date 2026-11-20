@@ -6,6 +6,9 @@ import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
 import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
+import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
+
+const trailsMigration = readFileSync(new URL('../workers/moonboys-api/migrations/118_clan_nomad_bears.sql', import.meta.url), 'utf8');
 
 const wallsMigration = readFileSync(new URL('../workers/moonboys-api/migrations/117_clan_graffpunks.sql', import.meta.url), 'utf8');
 const migration = readFileSync(new URL('../workers/moonboys-api/migrations/116_clan_operations.sql', import.meta.url), 'utf8');
@@ -15,13 +18,13 @@ const factionTable = `
 `;
 const factionRows = `
   INSERT INTO blocktopia_progression VALUES ('101', 'rugpull-miners', 77, 8),
-    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4)
+    ('102', 'all-city-bulls', 88, 9), ('103', 'rugpull-minors', 33, 2), ('104', 'graff-punks', 99, 4), ('105', 'nomad-bears', 60, 5)
 `;
 
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -39,11 +42,11 @@ function fixture(t) {
 
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
-  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1' } = {}) {
+  async function request({ action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, operation_ui = 'wall-v1', expedition_ui = 'trail-v1' } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
+      action, revision, operation_ui, expedition_ui, operation_faction: faction, utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
@@ -158,6 +161,7 @@ async function localD1(t) {
     await db.batch([factionTable, factionRows, ...objects.map(row => row.sql)].map(sql => db.prepare(sql)));
     const alterEnd = wallsMigration.indexOf(';') + 1;
     await db.batch([wallsMigration.slice(0, alterEnd), wallsMigration.slice(alterEnd)].map(sql => db.prepare(sql)));
+    await db.prepare(trailsMigration).run();
   } finally {
     schema.close();
   }
@@ -366,4 +370,101 @@ test('migration 117 retains the saved Miners bank and supports the next one', ()
   } finally {
     db.close();
   }
+});
+
+function walkingPlan(routeIndex, tier) {
+  const queue = [{ state: { route_index: routeIndex, tier, operationState: {} }, plan: [] }];
+  const seen = new Set();
+  while (queue.length) {
+    const { state, plan } = queue.shift();
+    const key = JSON.stringify(state.operationState);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const trail = describeTrail(routeIndex, tier, state.operationState);
+    for (const { id, label } of trail.actions) {
+      if (id === 'bank') return [...plan, id];
+      if (!label.startsWith('Walk to ')) continue;
+      const next = advanceTrail(state, id);
+      queue.push({ state: { ...next, route_index: routeIndex }, plan: [...plan, id] });
+    }
+  }
+  assert.fail('No free walking route to camp');
+}
+
+test('every Nomad Bears expedition can bank all three routes without supplies', () => {
+  for (let route = 0; route < 3; route++) {
+    const moves = [0, 1, 2].map(tier => walkingPlan(route, tier).length);
+    assert.ok(moves.every(n => n >= 4 && n <= 8), moves.join(', '));
+    assert.ok(moves.reduce((sum, n) => sum + n, 0) <= 21, moves.join(', '));
+  }
+});
+
+test('a missing Nomad Bears migration blocks signed play before any progress can be saved', async t => {
+  const { request, sql } = fixture(t);
+  sql.exec('DROP TRIGGER clan_operation_award_at_trail_bank');
+  assert.equal((await request({ id: '105' })).status, 503);
+  assert.equal((await request({ id: '105', revision: 0, action: 'travel-1' })).status, 503);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+test('Nomad Bears survey and bank three routes with one receipt per tier in D1', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '105', faction: 'nomad-bears' };
+  settings.time = new Date('2026-11-21T12:00:00Z');
+  const route = dailyRouteIndex(settings.time);
+  assert.equal(route, 0);
+  const move = (state, action) => request({ ...account, day: state.utc_day, revision: state.revision, action });
+  assert.equal((await request({ ...account, expedition_ui: null })).status, 409, 'cached clients receive a handled refresh response');
+  let state = (await request(account)).data;
+  assert.equal(state.trail.name, 'Frostline Traverse');
+  assert.equal(state.trail.supplies, 2);
+  assert.equal((await move(state, 'bank')).status, 409);
+  assert.equal((await move(state, 'travel-5')).status, 409, 'cannot jump to a nonadjacent stop');
+
+  for (const [stop, supplies] of [[2, 1], [4, 0], [5, 0]]) {
+    const traveled = await move(state, 'travel-' + stop);
+    assert.equal(traveled.status, 200);
+    state = traveled.data;
+    assert.equal(state.trail.supplies, supplies);
+  }
+  assert.equal(state.trail.position, 'North Camp');
+  assert.equal((await move(state, 'bank')).status, 409, 'camp alone is insufficient');
+  state = (await move(state, 'travel-4')).data;
+  assert.equal((await move(state, 'travel-2')).status, 409, 'no supplies for the shortcut');
+  const reloaded = (await request(account)).data;
+  assert.deepEqual(reloaded.trail, state.trail);
+  for (const stop of [3, 4, 5]) {
+    const traveled = await move(state, 'travel-' + stop);
+    assert.equal(traveled.status, 200);
+    state = traveled.data;
+  }
+
+  for (let tier = 1; tier <= 3; tier++) {
+    if (tier > 1) {
+      assert.equal(state.trail.supplies, 2, 'supplies refill on the next route');
+      for (const action of walkingPlan(route, tier - 1).slice(0, -1)) {
+        const traveled = await move(state, action);
+        assert.equal(traveled.status, 200);
+        state = traveled.data;
+      }
+    }
+    const banks = await Promise.all([move(state, 'bank'), move(state, 'bank')]);
+    assert.deepEqual(banks.map(result => result.status).sort(), [200, 409]);
+    state = banks.find(result => result.status === 200).data;
+    assert.equal(state.tier, tier);
+    assert.equal(state.renown_today, RENOWN_PER_TIER * tier);
+    assert.equal(state.crew_banks, tier);
+    assert.equal(state.collection.length, tier);
+    assert.ok(state.collection.every(item => item.specimen_key.startsWith('trail-v3-')));
+  }
+  assert.equal(state.status, 'complete');
+  assert.equal((await move(state, 'bank')).status, 409);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM clan_operation_awards').first()).n, 3);
+  settings.time = new Date('2026-11-22T00:00:00Z');
+  assert.equal((await move(state, 'travel-1')).status, 409, 'stale UTC day rejected');
+  const tomorrow = (await request(account)).data;
+  assert.notEqual(tomorrow.trail.name, state.trail.name);
+  assert.equal(tomorrow.renown_today, 0);
+  assert.equal(tomorrow.renown_total, 30_000);
 });

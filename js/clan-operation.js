@@ -1,1 +1,1 @@
-import './clan-operation-v2.js';
+import './clan-operation-v3.js';
