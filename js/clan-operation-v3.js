@@ -209,15 +209,13 @@ if (panel) {
   }
 
   function updateControls() {
-    retry.disabled = pending;
     const mineButtons = controls.querySelectorAll('button');
-    const wallButtons = wallControls.querySelectorAll('button');
     for (const button of mineButtons) {
-      button.disabled = pending || !state?.mine?.actions.includes(button.getAttribute('value'));
+      button.disabled = !state?.mine?.actions.includes(button.getAttribute('value'));
     }
-    for (const button of wallButtons) button.disabled = pending;
-    for (const button of [retry, ...mineButtons, ...wallButtons]) {
-      if (retryTimer) button.setAttribute('aria-disabled', 'true');
+    // A temporary request lock must keep the player's focused button in the tab order.
+    for (const button of [retry, ...mineButtons, ...wallControls.querySelectorAll('button')]) {
+      if (pending || retryTimer) button.setAttribute('aria-disabled', 'true');
       else button.removeAttribute('aria-disabled');
     }
   }

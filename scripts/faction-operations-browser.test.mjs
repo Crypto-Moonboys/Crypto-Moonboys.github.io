@@ -1040,6 +1040,7 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
   });
   try {
     const page = await browser.newPage();
+    page.setDefaultTimeout(5_000);
     const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
     const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
     assert.ok(panel);
@@ -1057,7 +1058,10 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
       window.fetch = async (_url, options) => {
         const request = JSON.parse(options.body);
         if (request.operation_ui !== 'wall-v1') return Response.json({}, { status: 409 });
-        if (request.action) window.clanMoves.push(request.action);
+        if (request.action) {
+          window.clanMoves.push(request.action);
+          await new Promise(resolve => { window.releaseClanMove = resolve; });
+        }
         const revision = window.clanMoves.length;
         return Response.json({
           ok: true, faction_id: 'graffpunks', status: 'ready', tier: 0, revision,
@@ -1073,12 +1077,23 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
     });
     await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v3.js') });
     const right = page.getByRole('button', { name: 'Cycle right' });
+    await page.locator('[data-wall-controls] button[value="paint-2"]:not([aria-disabled]):enabled').waitFor();
     await right.focus();
     await page.keyboard.press('Enter');
-    await page.waitForFunction(() => document.activeElement?.getAttribute('value') === 'paint-2' && window.clanMoves.length === 1);
+    await page.waitForFunction(() => window.clanMoves.length === 1);
+    assert.equal(await right.evaluate(button => document.activeElement === button), true, 'focus stays on the pending move');
+    assert.equal(await right.getAttribute('aria-disabled'), 'true');
+    await page.keyboard.press('Enter');
+    assert.deepEqual(await page.evaluate(() => window.clanMoves), ['paint-2'], 'Enter cannot queue a second move while one is pending');
+    await page.evaluate(() => window.releaseClanMove());
+    await page.waitForFunction(() => document.querySelector('[data-wall-panels] li')?.textContent.includes('Right: 1'));
+    assert.equal(await right.getAttribute('aria-disabled'), null);
+    assert.equal(await right.evaluate(button => document.activeElement === button), true, 'focus stays on the action after repainting');
     await page.keyboard.press('Enter');
     await page.waitForFunction(() => window.clanMoves.length === 2);
     assert.deepEqual(await page.evaluate(() => window.clanMoves), ['paint-2', 'paint-2']);
+    await page.evaluate(() => window.releaseClanMove());
+    await page.waitForFunction(() => document.querySelector('[data-wall-panels] li')?.textContent.includes('Right: 2'));
   } finally {
     await browser.close();
   }
