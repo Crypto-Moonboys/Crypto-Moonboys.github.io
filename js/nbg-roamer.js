@@ -22,6 +22,7 @@
   function makeUI() {
     if (host) return;
     const style = document.createElement('style');
+    style.id = 'nbg-roamer-css';
     style.textContent = `
       #nbg-roamer {position:fixed;bottom:env(safe-area-inset-bottom, 0px);left:0;z-index:1500;width:0;height:0;pointer-events:none;contain:layout style;}
       #nbg-roamer .nbg-sprite {position:absolute;left:0;bottom:0;width:72px;height:86px;overflow:hidden;image-rendering:pixelated;pointer-events:auto;cursor:pointer;outline-offset:3px;touch-action:manipulation;}
@@ -32,7 +33,7 @@
       #nbg-roamer .nbg-controls button {width:48px;height:48px;border:2px solid #f3bd25;border-radius:9px;background:#090d14e8;color:white;font-size:22px;touch-action:none;}
       @media (min-width:850px) and (pointer:fine) {#nbg-roamer .nbg-controls {display:none;}}
     `;
-    document.head.appendChild(style);
+    if (!document.getElementById('nbg-roamer-css')) document.head.appendChild(style);
     host = document.createElement('div');
     host.id = 'nbg-roamer';
     host.setAttribute('aria-label', 'NBG London roaming character');
@@ -94,8 +95,8 @@
     img.style.left = (-col * a.sourceFrameWidth * scaleX) + 'px';
     img.style.top = (-row * a.sourceFrameHeight * scaleY) + 'px';
     img.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
-    // Mirroring is applied to the complete rendered sprite, not the sheet cells.
-    sprite.style.scale = (a.nativeFacing && a.nativeFacing !== direction ? -1 : direction === -1 && !a.nativeFacing ? -1 : 1) + ' 1';
+    // Store facing for tick: translate first, then mirror around the sprite centre.
+    sprite.dataset.facing = String(a.nativeFacing ? direction * a.nativeFacing : direction);
   }
   function stop() {
     active = false; controlling = false; moving = false; held.clear();
@@ -124,7 +125,7 @@
     if (y > 0 || vy > 0) { y = Math.max(0, y + vy * delta); vy -= 1100 * delta; if (y === 0) vy = 0; }
     const anim = y > 0 ? (vy >= 0 ? 'jump' : 'fall') : crouch && moving ? (direction < 0 ? 'crouchLeft' : 'crouchRight') : crouch ? 'idle' : moving ? 'run' : 'idle';
     setAnimation(anim, now);
-    sprite.style.transform = 'translate3d(' + x + 'px,' + (-y) + 'px,0)';
+    sprite.style.transform = 'translate3d(' + x + 'px,' + (-y) + 'px,0) scaleX(' + (sprite.dataset.facing || '1') + ')';
     if (!controlling && x > innerWidth + 120) { stop(); return; }
     raf = requestAnimationFrame(tick);
   }
@@ -153,6 +154,13 @@
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', () => held.clear());
   document.addEventListener('visibilitychange', () => { if (document.hidden) { held.clear(); if (active) stop(); } });
-  window.addEventListener('pagehide', () => { disposed = true; clearTimeout(timer); cancelAnimationFrame(raf); held.clear(); });
+  window.addEventListener('pagehide', () => {
+    disposed = true;
+    clearTimeout(timer);
+    stop(); // Clear capture state and remove the DOM even when the page enters bfcache.
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted && disposed) { disposed = false; schedule(); }
+  });
   schedule();
 })();
