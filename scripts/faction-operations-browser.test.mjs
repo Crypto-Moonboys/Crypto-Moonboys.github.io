@@ -1264,7 +1264,7 @@ test('Crypto Moongirls can recover from a missed early lock and bank on mobile',
     await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
 
     const day = '2026-11-20';
-    let state = { route_index: 0, tier: 0, utc_day: day, operationState: {} };
+    let state = { route_index: 0, tier: 0, utc_day: day, operationState: { target: 1 } };
     const view = () => describeSignal(state.route_index, state.tier, day, state.operationState);
     const snapshot = revision => ({
       ok: true, faction_id: 'crypto-moongirls', status: 'ready', tier: state.tier, revision,

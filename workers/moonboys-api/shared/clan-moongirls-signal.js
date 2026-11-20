@@ -20,8 +20,13 @@ function signalState(routeIndex, tier, utcDay, saved = {}) {
   if (tier >= BANKS_PER_DAY) return { route, candidates: [], measurements: [], actions: [] };
 
   const patternOffset = routeIndex * 3 + tier * 5;
-  const dayIndex = Math.floor(Date.parse(utcDay + 'T00:00:00Z') / 86_400_000);
-  const targetIndex = (dayIndex + tier * (routeIndex + 1)) % CHANNEL_COUNT;
+  const scans = saved.scans ?? [];
+  let targetIndex = saved.target;
+  if (targetIndex == null && scans.length) {
+    // A sweep started under the original v5 rule must keep its published clues.
+    const dayIndex = Math.floor(Date.parse(utcDay + 'T00:00:00Z') / 86_400_000);
+    targetIndex = (dayIndex + tier * (routeIndex + 1)) % CHANNEL_COUNT;
+  }
   const channels = Array.from({ length: CHANNEL_COUNT }, (_, index) => {
     const pattern = (index + patternOffset) % CHANNEL_COUNT;
     return {
@@ -31,7 +36,6 @@ function signalState(routeIndex, tier, utcDay, saved = {}) {
     };
   });
   const target = channels[targetIndex];
-  const scans = saved.scans ?? [];
   const measurements = FILTERS.flatMap(({ id }, bit) => scans.includes(id) ? [target.traits[bit]] : []);
   const candidates = saved.locked ? [target] : channels.filter(channel => measurements.every(trait =>
     channel.traits.some(candidate => candidate.label === trait.label && candidate.value === trait.value),
@@ -71,8 +75,10 @@ export function advanceSignal(state, action) {
     return { ...next, operationState: { ...saved, jammed: false }, outcome: 'signal_recalibrated' };
   }
   if (action.startsWith('scan-')) {
+    // The first accepted scan stores this draw with that account's sweep revision.
+    const target = targetIndex ?? crypto.getRandomValues(new Uint8Array(1))[0] % CHANNEL_COUNT;
     return {
-      ...next, operationState: { ...saved, scans: [...(saved.scans ?? []), action.slice(5)] },
+      ...next, operationState: { ...saved, target, scans: [...(saved.scans ?? []), action.slice(5)] },
       outcome: 'signal_scanned',
     };
   }

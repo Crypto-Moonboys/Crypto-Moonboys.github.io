@@ -67,7 +67,7 @@ if (panel) {
     wrong_operation_faction: 'Open Clan Operations from the Battle Chamber to play as your current clan.',
     operation_faction_locked: 'You already started a different clan operation today. A new route opens at 00:00 UTC.',
     refresh_operation: 'The operation moved on. Refresh for your latest saved state.',
-    operation_unavailable: 'Clan Operations is temporarily unavailable. Refresh to check your saved progress.',
+    operation_unavailable: 'Clan Operations is temporarily unavailable. If Refresh operation keeps showing this message, reload or reopen the Battle Chamber page.',
   };
 
   function clearOperation() {

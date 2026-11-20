@@ -9896,7 +9896,10 @@ function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
     'Daily faction missions are live. Faction chambers have mission boards, and missed history does not reset. The city keeps moving while you are away.',
     '',
     'Check the site for current tasks, timed quests, and roguelite options.',
-    ...(clanPilot ? [`Clan Operations pilot: ${SITE_URL}/community.html#clan-operation`] : []),
+    ...(clanPilot ? [
+      `Clan Operations pilot: ${SITE_URL}/community.html#clan-operation`,
+      'If Signal Intercept stays temporarily unavailable, reload the whole Battle Chamber page or reopen the link.',
+    ] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
     `Arcade: ${SITE_URL}/games/`,

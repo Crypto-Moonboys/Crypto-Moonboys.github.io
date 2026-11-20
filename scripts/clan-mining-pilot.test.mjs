@@ -625,14 +625,12 @@ test('Bulls bank three unique marks exactly once in D1 and reset district progre
   assert.equal(tomorrow.collection.length, 3);
 });
 
-test('signal scans resolve one channel in every sweep and a missed early lock can recover', () => {
+test('every signal target is verifiable and missed early locks recover', () => {
   for (let route = 0; route < 3; route++) {
     for (let tier = 0; tier < 3; tier++) {
-      const targets = new Set();
-      for (let offset = 0; offset < 8; offset++) {
-        const now = new Date(Date.UTC(2026, 10, 20 + route + offset * 3));
-        const day = now.toISOString().slice(0, 10);
-        const base = { route_index: route, tier, utc_day: day, operationState: {} };
+      for (let channel = 0; channel < 8; channel++) {
+        const day = '2026-11-20';
+        const base = { route_index: route, tier, utc_day: day, operationState: { target: channel } };
         const move = (state, action) => ({ ...state, ...advanceSignal(state, action) });
         const view = state => describeSignal(route, tier, day, state.operationState);
         assert.equal(view(base).candidates.length, 8);
@@ -645,7 +643,7 @@ test('signal scans resolve one channel in every sweep and a missed early lock ca
         const full = move(two, 'scan-phase');
         assert.equal(view(full).candidates.length, 1);
         const [target] = view(full).candidates;
-        targets.add(target.id);
+        assert.equal(target.id, channel);
         const verified = 'lock-' + target.id;
 
         assert.equal(move(two, verified).outcome, 'signal_locked');
@@ -662,9 +660,67 @@ test('signal scans resolve one channel in every sweep and a missed early lock ca
         assert.equal(locked.outcome, 'signal_locked');
         assert.equal(advanceSignal(locked, 'bank').tier, tier + 1);
       }
-      assert.equal(targets.size, 8, 'the same relay receives a rotating signal');
     }
   }
+});
+
+test('an older v5 sweep keeps its observed signal on the next scan', () => {
+  const day = '2026-11-20';
+  const legacy = { route_index: 0, tier: 0, utc_day: day, operationState: { scans: ['band'] } };
+  const before = describeSignal(0, 0, day, legacy.operationState);
+  assert.deepEqual(before.measurements, [{ label: 'Band', value: 'High' }]);
+  const next = advanceSignal(legacy, 'scan-pulse');
+  assert.equal(next.operationState.target, 1);
+  assert.deepEqual(describeSignal(0, 0, day, next.operationState).measurements[0], before.measurements[0]);
+});
+
+test('the first scan samples and saves a separate target per account and sweep in D1', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  await db.prepare("INSERT INTO blocktopia_progression VALUES ('109', 'crypto-moongirls', 0, 0)").run();
+  const { request } = requestFixture(db);
+  const draws = [0, 7, 3];
+  let sampled = 0;
+  t.mock.method(crypto, 'getRandomValues', bytes => {
+    assert.ok(sampled < draws.length, 'only first scans should draw a target');
+    bytes[0] = draws[sampled++];
+    return bytes;
+  });
+
+  for (const id of ['108', '109']) {
+    const start = await request({ id });
+    assert.equal(start.status, 200);
+    assert.equal(start.data.revision, 0);
+    assert.equal(start.data.signal.candidates.length, 8);
+  }
+  assert.equal(sampled, 0);
+  const move = async (id, action, revision) => {
+    const result = await request({ id, action, revision });
+    assert.equal(result.status, 200);
+    assert.equal(Object.hasOwn(result.data.signal, 'target'), false);
+    return result.data;
+  };
+  const a = await move('108', 'scan-band', 0);
+  const b = await move('109', 'scan-band', 0);
+  assert.equal(a.signal.name, b.signal.name, 'the daily relay is shared');
+  assert.notDeepEqual(a.signal.measurements, b.signal.measurements);
+  assert.deepEqual((await request({ id: '108' })).data.signal, a.signal);
+  await move('108', 'scan-pulse', 1);
+  const fullA = await move('108', 'scan-phase', 2);
+  await move('109', 'scan-pulse', 1);
+  const fullB = await move('109', 'scan-phase', 2);
+  assert.deepEqual(fullA.signal.candidates.map(channel => channel.id), [0]);
+  assert.deepEqual(fullB.signal.candidates.map(channel => channel.id), [7]);
+  const locked = await move('108', 'lock-0', 3);
+  const banked = await move('108', 'bank', locked.revision);
+  assert.equal(banked.renown_today, RENOWN_PER_TIER);
+  assert.equal(banked.signal.candidates.length, 8);
+  assert.equal(sampled, 2);
+  await move('108', 'scan-band', banked.revision);
+  assert.equal(sampled, 3);
+  const saved = await db.prepare(
+    "SELECT json_extract(operation_state, '$.target') AS target FROM clan_operation_days WHERE telegram_id = '108'",
+  ).first();
+  assert.equal(saved.target, 3);
 });
 
 test('Moongirls fail closed before migration 120 while an earlier operation stays available', async t => {
