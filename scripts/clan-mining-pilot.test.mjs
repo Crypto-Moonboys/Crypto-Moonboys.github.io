@@ -17,6 +17,9 @@ import { advanceBurst, describeBurst, burstFinds } from '../workers/moonboys-api
 
 import { advanceSpotlight, describeSpotlight, spotlightFinds } from '../workers/moonboys-api/shared/clan-blockstars-spotlight.js';
 
+import { advanceChaos, describeChaos, chaosFinds } from '../workers/moonboys-api/shared/clan-stoned-chaos.js';
+
+const chaosMigration = readFileSync(new URL('../workers/moonboys-api/migrations/124_clan_crypto_stoned_boys.sql', import.meta.url), 'utf8');
 const spotlightMigration = readFileSync(new URL('../workers/moonboys-api/migrations/123_clan_blockstars.sql', import.meta.url), 'utf8');
 const burstMigration = readFileSync(new URL('../workers/moonboys-api/migrations/122_clan_blockchain_furies.sql', import.meta.url), 'utf8');
 const forkMigration = readFileSync(new URL('../workers/moonboys-api/migrations/121_clan_hard_fork_rockers.sql', import.meta.url), 'utf8');
@@ -41,7 +44,7 @@ const factionRows = `
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration} ${spotlightMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration} ${spotlightMigration} ${chaosMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -61,12 +64,12 @@ function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
     action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction,
-    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1',
+    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, operation_faction: faction,
+      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
       utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}`, { method, body }),
@@ -97,7 +100,7 @@ test('feature is closed by default and a signed current miner is required', asyn
   assert.equal((await request()).status, 404);
   settings.enabled = 'true';
   assert.equal((await request({ signed: false })).status, 401);
-  assert.equal((await request({ id: '107' })).data.error, 'faction_not_in_pilot');
+  assert.equal((await request({ id: '107' })).data.chaos.phase, 'scouting');
   assert.equal((await request({ id: '999' })).data.error, 'join_faction');
   assert.equal((await request({ id: '103' })).status, 200, 'legacy faction alias');
   assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0, 'state read is side-effect-free');
@@ -188,6 +191,7 @@ async function localD1(t) {
     await db.prepare(forkMigration).run();
     await db.prepare(burstMigration).run();
     await db.prepare(spotlightMigration).run();
+    await db.prepare(chaosMigration).run();
   } finally {
     schema.close();
   }
@@ -1077,6 +1081,126 @@ test('Blockstars recover and bank server-verified sets once per tier in D1', { t
   assert.equal((await move('book-headliner')).status, 409);
   const tomorrow = (await request(account)).data;
   assert.notEqual(tomorrow.spotlight.featured.path, state.spotlight.featured.path);
+  assert.equal(tomorrow.renown_today, 0);
+  assert.equal(tomorrow.renown_total, 30_000);
+  assert.deepEqual(tomorrow.collection.map(item => item.name), expected);
+});
+
+test('all nine canonical factions have an operation while the pilot is enabled', async t => {
+  const { request, sql } = fixture(t);
+  for (const id of ['101', '102', '104', '105', '107', '108', '110', '111', '113']) {
+    const { status, data } = await request({ id });
+    assert.equal(status, 200, id);
+    assert.equal(data.renown_per_tier, 10_000, id);
+    assert.equal(data.tier, 0, id);
+  }
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+test('Crypto Stoned Boys fail closed until migration 124 while Blockstars remain available', async t => {
+  const { request, sql } = fixture(t);
+  sql.exec('DROP TRIGGER clan_operation_award_at_chaos_bank');
+  assert.equal((await request({ id: '107' })).status, 503);
+  assert.equal((await request({ id: '107', action: 'shortcut', revision: 0 })).status, 503);
+  assert.equal((await request({ id: '113' })).status, 200);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM clan_operation_days').get().n, 0);
+});
+
+test('Chaos odds match the cutoff and either route can bank on every tier', () => {
+  const artifacts = new Set();
+  for (let route = 0; route < 3; route++) {
+    for (let tier = 0; tier < 3; tier++) {
+      const start = { route_index: route, tier, operationState: { rerollUsed: true } };
+      const take = (state, action, roll) => ({ ...state, ...advanceChaos(state, action, roll) });
+      const inspect = state => describeChaos(route, tier, state.operationState);
+      const odds = inspect(start).success_percent;
+      const shortcut = take(start, 'shortcut', odds - 0.01);
+      assert.equal(inspect(shortcut).grade, 'glitch');
+      const jam = take(start, 'shortcut', odds);
+      assert.equal(inspect(jam).phase, 'jammed');
+      assert.equal(advanceChaos(jam, 'reroll', 0), null);
+      const recovery = take(take(jam, 'vent'), 'salvage');
+      assert.equal(inspect(recovery).grade, 'salvage');
+      const scan = take(start, 'scan');
+      const tuning = inspect(scan);
+      const stable = take(scan, tuning.actions.find(move => move.label === 'Tune ' + tuning.target_signal).id);
+      assert.equal(inspect(stable).grade, 'stable');
+      for (const path of [shortcut, recovery, stable]) {
+        const bank = advanceChaos(path, 'bank');
+        assert.equal(bank.tier, tier + 1);
+        assert.equal(bank.operationState.rerollUsed, true);
+        artifacts.add(chaosFinds(route, inspect(path).grade)[tier]);
+      }
+    }
+  }
+  assert.equal(artifacts.size, 27);
+});
+
+test('Chaos banks different artifacts once in D1 and consumes one reroll per UTC day', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  const account = { id: '107', faction: 'crypto-stoned-boys' };
+  assert.equal((await request({ ...account, chaos_ui: null })).status, 409);
+  assert.equal((await request({ ...account, signed: false })).status, 401);
+  assert.equal((await request({ ...account, faction: 'blockstars' })).status, 403);
+
+  let { data: state } = await request(account);
+  const route = dailyRouteIndex(settings.time);
+  const move = action => request({ ...account, action, revision: state.revision, day: state.utc_day });
+  const take = async action => {
+    const response = await move(action);
+    assert.equal(response.status, 200, JSON.stringify(response));
+    state = response.data;
+  };
+  const expected = [];
+  const bank = async grade => {
+    assert.equal(state.chaos.grade, grade);
+    const results = await Promise.all([move('bank'), move('bank')]);
+    assert.deepEqual(results.map(result => result.status).sort(), [200, 409]);
+    state = results.find(result => result.status === 200).data;
+    expected.push(chaosFinds(route, grade)[state.tier - 1]);
+    assert.equal(state.renown_today, RENOWN_PER_TIER * state.tier);
+    assert.deepEqual(state.collection.map(item => item.name), expected);
+    assert.ok(state.collection.at(-1).specimen_key.endsWith('-' + grade));
+  };
+  assert.equal((await move('bank')).status, 409);
+  assert.equal((await move('reroll')).status, 409);
+  await take('scan');
+  const target = 'Tune ' + state.chaos.target_signal;
+  await take(state.chaos.actions.find(action => action.label !== target).id);
+  assert.equal(state.last_outcome, 'chaos_wrong_signal');
+  assert.equal(state.chaos.reroll_available, true);
+  await take(state.chaos.actions.find(action => action.label === target).id);
+  await bank('stable');
+
+  settings.chance = 99;
+  await take('shortcut');
+  assert.equal(state.chaos.phase, 'jammed');
+  const rerolls = await Promise.all([move('reroll'), move('reroll')]);
+  assert.deepEqual(rerolls.map(result => result.status).sort(), [200, 409]);
+  state = rerolls.find(result => result.status === 200).data;
+  assert.equal(state.last_outcome, 'chaos_reroll_jammed');
+  assert.equal((await move('reroll')).status, 409);
+  assert.deepEqual((await request(account)).data.chaos, state.chaos);
+  await take('vent');
+  await take('salvage');
+  await bank('salvage');
+  assert.equal(state.chaos.reroll_available, false);
+
+  settings.chance = 0;
+  await take('shortcut');
+  assert.equal(typeof state.chaos.effect, 'string');
+  await bank('glitch');
+  assert.equal(state.status, 'complete');
+  assert.deepEqual(state.chaos.actions, []);
+  assert.equal((await move('bank')).status, 409);
+  assert.deepEqual(await db.prepare("SELECT faction_xp, gems FROM blocktopia_progression WHERE telegram_id = '107'").first(),
+    { faction_xp: 0, gems: 0 });
+  settings.time = new Date('2026-11-21T00:00:00Z');
+  assert.equal((await move('shortcut')).status, 409);
+  const tomorrow = (await request(account)).data;
+  assert.notEqual(tomorrow.chaos.name, state.chaos.name);
+  assert.equal(tomorrow.chaos.reroll_available, true);
   assert.equal(tomorrow.renown_today, 0);
   assert.equal(tomorrow.renown_total, 30_000);
   assert.deepEqual(tomorrow.collection.map(item => item.name), expected);

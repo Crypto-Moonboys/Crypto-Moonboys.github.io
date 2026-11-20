@@ -241,3 +241,23 @@
   color: var(--mine-amber);
   font-weight: 700;
 }
+
+.clan-operation[data-active-operation="crypto-stoned-boys"] {
+  --mine-amber: #dfc8ff;
+  border-color: #8b6eab;
+  background: radial-gradient(ellipse at top, #332643, #171722 72%);
+}
+
+[data-active-operation="crypto-stoned-boys"] .clan-wall {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+[data-active-operation="crypto-stoned-boys"] .clan-wall li {
+  background: #302639;
+  border-color: #8972a6;
+}
+
+[data-active-operation="crypto-stoned-boys"] .clan-wall small {
+  display: block;
+  margin-top: .35em;
+}
