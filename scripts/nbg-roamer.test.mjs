@@ -131,12 +131,20 @@ test('navigation and form focus keep normal keyboard behaviour', () => {
   assert.match(source, /event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey/);
 });
 
-test('summon sits above Back to Top with a visible gap on desktop and mobile', () => {
-  const summonBottom = Number(source.match(/#nbg-roamer-summon \{position:fixed;right:\d+px;bottom:calc\((\d+)px/)[1]);
+test('round icon summon sits left of Back to Top without overlap', () => {
+  const summonRule = source.match(/#nbg-roamer-summon \{([^}]+)\}/)[1];
   const topRule = wikiCss.match(/#back-to-top \{([^}]+)\}/)[1];
-  const topBottom = Number(topRule.match(/bottom:\s*(\d+)px/)[1]);
-  const topHeight = Number(topRule.match(/height:\s*(\d+)px/)[1]);
-  assert.ok(summonBottom >= topBottom + topHeight + 12, 'Summon must clear Back to Top by at least 12px');
-  assert.match(source, /bottom:calc\(78px \+ env\(safe-area-inset-bottom, 0px\)\)/);
-  assert.match(wikiCss, /#back-to-top\.visible/);
+  const px = (rule, property) => Number(rule.match(new RegExp(property + ':\\s*(\\d+)px'))[1]);
+  const summonRight = px(summonRule, 'right');
+  const topRight = px(topRule, 'right');
+  const topWidth = px(topRule, 'width');
+  assert.ok(summonRight >= topRight + topWidth + 12, 'Buttons must have a 12px horizontal gap');
+  assert.equal(px(summonRule, 'width'), 42);
+  assert.equal(px(summonRule, 'height'), 42);
+  assert.equal(px(summonRule, 'bottom'), px(topRule, 'bottom'));
+  assert.match(summonRule, /border-radius:50%/);
+  assert.match(source, /summonButton\.textContent = '▶'/);
+  assert.doesNotMatch(source, /summonButton\.textContent = remaining > 0/);
+  assert.match(source, /summonButton\.setAttribute\('aria-label', remaining > 0/);
+  assert.match(source, /bottom:calc\(18px \+ env\(safe-area-inset-bottom, 0px\)\)/);
 });
