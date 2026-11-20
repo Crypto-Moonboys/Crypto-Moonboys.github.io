@@ -11,7 +11,7 @@ function boot(path) {
   const context = {
     location: { pathname: path },
     window: { addEventListener: (n, f) => { listeners[n] = f; }, matchMedia: () => ({ matches: false }) },
-    document: { addEventListener: (n, f) => { listeners[n] = f; } },
+    document: { readyState: 'loading', addEventListener: (n, f) => { listeners[n] = f; } },
     setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
     clearTimeout: () => {}, cancelAnimationFrame: () => {},
     Math,
@@ -68,4 +68,25 @@ test('pagehide clears controls and pageshow resumes fresh schedule after bfcache
   assert.match(source, /addEventListener\('pagehide',[\s\S]*?disposed = true;[\s\S]*?stop\(\)/);
   assert.match(source, /addEventListener\('pageshow',[\s\S]*?event\.persisted && disposed[\s\S]*?schedule\(\)/);
   assert.match(source, /active = false; controlling = false; moving = false; held\.clear\(\)/);
+});
+
+test('summon button is fixed at bottom-right, keyboard accessible and excluded from game routes', () => {
+  assert.match(source, /#nbg-roamer-summon \{position:fixed;right:12px;bottom:/);
+  assert.match(source, /summonButton\.type = 'button'/);
+  assert.match(source, /aria-label', 'Summon NBG London runner'/);
+  assert.match(source, /document\.addEventListener\('DOMContentLoaded', ensureSummonButton/);
+  assert.match(source, /if \(active \|\| spawning \|\| disposed/);
+});
+test('manual appearance uses existing spawn, retains random cadence and enforces 60s cooldown', () => {
+  assert.match(source, /SUMMON_COOLDOWN_MS = 60000/);
+  assert.match(source, /void spawn\(true\)/);
+  assert.match(source, /if \(manual\) startSummonCooldown\(\)/);
+  assert.match(source, /clearTimeout\(timer\);\s*makeUI\(\)/);
+  assert.match(source, /summonButton\.hidden = active/);
+  assert.match(source, /SUMMON_COOLDOWN_MS - \(performance\.now\(\) - lastSummon\)/);
+  assert.match(source, /if \(performance\.now\(\) - lastSummon >= SUMMON_COOLDOWN_MS\)/);
+});
+test('summon UI is removed on pagehide and re-created when bfcache restores a page', () => {
+  assert.match(source, /clearInterval\(summonCooldownTimer\);[\s\S]*?summonButton\?\.remove\(\)/);
+  assert.match(source, /if \(event\.persisted && disposed\) \{ disposed = false; ensureSummonButton\(\); schedule\(\); \}/);
 });
