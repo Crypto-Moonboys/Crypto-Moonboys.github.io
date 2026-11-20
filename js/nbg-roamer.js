@@ -8,10 +8,15 @@
   window.__NBG_ROAMER_BOOTED__ = true;
   const MIN_DELAY = 180000, MAX_DELAY = 420000, CONTROL_MS = 30000, SUMMON_COOLDOWN_MS = 60000;
   const ASSET_ROOT = '/game/assets/';
+  const JUMP_CODES = ['ArrowUp', 'KeyW', 'Space'];
+  const GRAVITY = 1150;
+  const JUMP_VELOCITIES = [630, 760]; // First two distinct presses.
+  const JUMP_TAP_SPACING_MS = 115; // Match the source game's discrete jump taps.
   const held = new Set();
   let manifest, host, sprite, controls, active = false, controlling = false;
   let direction = 1, x = -100, y = 0, vy = 0, frame = 0, frameTime = 0, last = 0, deadline = 0;
   let current = '', raf = 0, timer = 0, moving = false, disposed = false;
+  let jumpsUsed = 0, lastJumpAt = -Infinity, backflipActive = false;
   let summonButton = null, summonCooldownTimer = 0, lastSummon = -Infinity, spawning = false;
   const interactive = target => !!target?.closest?.('input, textarea, select, button, a, [contenteditable], [role="textbox"], [role="dialog"]');
   const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
@@ -65,14 +70,28 @@
     }, 1000);
     updateSummonButton();
   }
+  // Use the original game's jump, fall and backflip sheets, but independent
+  // viewport-height physics: the final boost carries the runner offscreen.
+  function tryJump(now = performance.now()) {
+    if (!active || !controlling || disposed || jumpsUsed >= 3 ||
+        now - lastJumpAt < JUMP_TAP_SPACING_MS) return false;
+    if (jumpsUsed === 0 && y !== 0) return false;
+    const stage = ++jumpsUsed;
+    lastJumpAt = now;
+    vy = stage === 3
+      ? Math.sqrt(2 * GRAVITY * (window.innerHeight + 180))
+      : JUMP_VELOCITIES[stage - 1];
+    backflipActive = stage === 3;
+    return true;
+  }
   function makeUI() {
     if (host) return;
     const style = document.createElement('style');
     style.id = 'nbg-roamer-css';
     style.textContent = `
       #nbg-roamer {position:fixed;bottom:env(safe-area-inset-bottom, 0px);left:0;z-index:1500;width:0;height:0;pointer-events:none;contain:layout style;}
-      #nbg-roamer .nbg-sprite {position:absolute;left:0;bottom:0;width:72px;height:86px;overflow:hidden;image-rendering:pixelated;pointer-events:auto;cursor:pointer;outline-offset:3px;touch-action:manipulation;}
-      #nbg-roamer .nbg-sprite:focus-visible {outline:2px solid #f3bd25;}
+      #nbg-roamer .nbg-sprite {position:absolute;left:0;bottom:0;width:72px;height:86px;overflow:hidden;image-rendering:pixelated;pointer-events:auto;cursor:pointer;outline:none;touch-action:manipulation;}
+      #nbg-roamer .nbg-sprite:focus-visible {outline:none;}
       #nbg-roamer .nbg-sheet {position:absolute;top:0;left:0;max-width:none;image-rendering:pixelated;transform-origin:top left;pointer-events:none;}
       #nbg-roamer .nbg-controls {position:fixed;bottom:calc(100px + env(safe-area-inset-bottom, 0px));right:12px;display:flex;gap:8px;pointer-events:auto;z-index:1501;}
       #nbg-roamer .nbg-controls[hidden] {display:none;}
@@ -106,6 +125,7 @@
       button.addEventListener('pointerdown', event => {
         event.preventDefault(); button.setPointerCapture?.(event.pointerId);
         takeControl(); held.add(key);
+        if (JUMP_CODES.includes(key)) tryJump();
       });
       for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(type, release);
       controls.appendChild(button);
@@ -154,6 +174,7 @@
   }
   function stop() {
     active = false; controlling = false; moving = false; held.clear();
+    jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false; y = vy = 0;
     if (host) host.remove();
     host = sprite = controls = null;
     cancelAnimationFrame(raf);
@@ -165,20 +186,26 @@
     const delta = clamp((now - (last || now)) / 1000, 0, 0.05);
     last = now;
     if (controlling && now >= deadline) { controlling = false; held.clear(); controls.hidden = true; direction = 1; }
-    let crouch = false, jump = false;
+    let crouch = false;
     if (controlling) {
       const left = held.has('ArrowLeft') || held.has('KeyA');
       const right = held.has('ArrowRight') || held.has('KeyD');
       crouch = held.has('ArrowDown') || held.has('KeyS');
-      jump = held.has('ArrowUp') || held.has('KeyW') || held.has('Space');
       moving = left !== right;
       if (moving) direction = left ? -1 : 1;
-      if (jump && y === 0) vy = 480;
       if (moving) x += direction * (crouch ? 85 : 175) * delta;
       x = clamp(x, 0, Math.max(0, innerWidth - 72));
     } else { moving = true; x += 185 * delta; }
-    if (y > 0 || vy > 0) { y = Math.max(0, y + vy * delta); vy -= 1100 * delta; if (y === 0) vy = 0; }
-    const anim = y > 0 ? (vy >= 0 ? 'jump' : 'fall') : crouch && moving ? (direction < 0 ? 'crouchLeft' : 'crouchRight') : crouch ? 'idle' : moving ? 'run' : 'idle';
+    if (y > 0 || vy > 0) {
+      y = Math.max(0, y + vy * delta);
+      vy -= GRAVITY * delta;
+      if (y === 0) {
+        vy = 0; jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false;
+      }
+    }
+    const anim = y > 0
+      ? backflipActive ? 'backflip' : vy >= 0 ? 'jump' : 'fall'
+      : crouch && moving ? (direction < 0 ? 'crouchLeft' : 'crouchRight') : crouch ? 'idle' : moving ? 'run' : 'idle';
     setAnimation(anim, now);
     sprite.style.transform = 'translate3d(' + x + 'px,' + (-y) + 'px,0) scaleX(' + (sprite.dataset.facing || '1') + ')';
     if (!controlling && x > innerWidth + 120) { stop(); return; }
@@ -201,6 +228,7 @@
       clearTimeout(timer);
       makeUI();
       active = true; controlling = false; x = -100; y = vy = 0; direction = 1; current = ''; last = 0;
+      jumpsUsed = 0; lastJumpAt = -Infinity; backflipActive = false;
       if (manual) startSummonCooldown();
       raf = requestAnimationFrame(tick);
     } catch (_) { if (!disposed) schedule(); }
@@ -220,6 +248,7 @@
       if (event.repeat) return; // Never activate control from an already-held scrolling key.
       takeControl();
     }
+    if (JUMP_CODES.includes(event.code) && !event.repeat && !held.has(event.code)) tryJump();
     held.add(event.code);
     event.preventDefault();
   }
