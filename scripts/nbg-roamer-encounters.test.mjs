@@ -128,6 +128,39 @@ test('actual visible pixels, not transparent source frame padding, define floor 
   assert.match(source, /getImageData\(0, 0, width, height\)/);
 });
 
+
+test('transparent bottom padding is measured from actual per-frame alpha and cached', () => {
+  let reads = 0;
+  const sampler = {
+    clearRect(){}, drawImage(){},
+    getImageData(_x,_y,width,height) {
+      reads++;
+      const pixels = new Uint8ClampedArray(width * height * 4);
+      pixels[((height - 2) * width + 1) * 4 + 3] = 255;
+      pixels[((height - 2) * width + 2) * 4 + 3] = 255;
+      return {data:pixels};
+    }
+  };
+  const runtime = runInNewContext([
+    'let measureCanvas = null, measureContext = null;',
+    'const measuredFrames = new WeakMap();',
+    functionBody('visibleFrameBounds'),
+    'visibleFrameBounds'
+  ].join('\n'), {
+    document: {createElement() {return {getContext() {return sampler}}}},
+    Math
+  });
+  const image = {naturalWidth:8,naturalHeight:8};
+  const pose = {columns:2,frames:4};
+  const visible = runtime(image,pose,0);
+  assert.equal(visible.x,1);
+  assert.equal(visible.y,2);
+  assert.equal(visible.width,2);
+  assert.equal(visible.height,1);
+  assert.equal(runtime(image,pose,0),visible,'same image/frame reuses cached bounds');
+  assert.equal(reads,1,'alpha is sampled only once per frame');
+});
+
 test('each walking enemy cycles all its canonical attack poses while near the player', () => {
   const api = runInNewContext([
     definitions,
