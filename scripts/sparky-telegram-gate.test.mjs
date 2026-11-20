@@ -32,5 +32,5 @@ test("site entry points open ChatGPT instead of claiming a hosted SWARMSY assist
   assert.match(swarmsy, /optional PC beta/);
   assert.match(swarmsy, /not a hosted SWARMSY login or live chat/);
   assert.match(readme, /Retired website chatbot/);
-  assert.match(readme, /not automatic account sync/);
+  assert.match(readme, /no automatic account sync/);
 });
