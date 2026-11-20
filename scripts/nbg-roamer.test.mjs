@@ -72,7 +72,7 @@ test('pagehide clears controls and pageshow resumes fresh schedule after bfcache
 });
 
 test('summon button is fixed at bottom-right, keyboard accessible and excluded from game routes', () => {
-  assert.match(source, /#nbg-roamer-summon \{position:fixed;right:12px;bottom:/);
+  assert.match(source, /#nbg-roamer-summon \{position:fixed;right:72px;bottom:calc\(18px/);
   assert.match(source, /summonButton\.type = 'button'/);
   assert.match(source, /aria-label', 'Summon NBG London runner'/);
   assert.match(source, /document\.addEventListener\('DOMContentLoaded', ensureSummonButton/);
@@ -115,7 +115,7 @@ test('Space is ignored outside active control and never hijacks text inputs', ()
     listeners.keydown({ code: 'Space', key: ' ', target, preventDefault() { prevented = true; } });
     assert.equal(prevented, false);
   }
-  assert.match(source, /interactive\(event\.target\) && !sprite\?\.contains\(event\.target\)/);
+  assert.match(source, /interactive\(event\.target\) && !runnerTarget && !hiddenSummonTarget/);
 });
 
 test('keyboard control begins with arrow or Space on a visible runner, not just a click', () => {
@@ -134,7 +134,7 @@ test('navigation and form focus keep normal keyboard behaviour', () => {
 test('round icon summon sits left of Back to Top without overlap', () => {
   const summonRule = source.match(/#nbg-roamer-summon \{([^}]+)\}/)[1];
   const topRule = wikiCss.match(/#back-to-top \{([^}]+)\}/)[1];
-  const px = (rule, property) => Number(rule.match(new RegExp(property + ':\\s*(\\d+)px'))[1]);
+  const px = (rule, property) => Number(rule.match(new RegExp(property + ':\\s*(?:calc\\()?\\s*(\\d+)px'))[1]);
   const summonRight = px(summonRule, 'right');
   const topRight = px(topRule, 'right');
   const topWidth = px(topRule, 'width');
