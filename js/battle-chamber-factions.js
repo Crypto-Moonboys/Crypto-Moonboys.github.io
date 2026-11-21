@@ -263,6 +263,7 @@
     ['graffpunks', { src: '/art/the%20GraffPUNKS%20Crypto%20Moonboys.jpg', alt: 'GraffPUNKS Crypto Moonboys artwork', size: 1254 }],
     ['hard-fork-rockers', { src: '/art/crypto%20moonboys%20The%20Hard%20fork%20Rockers.jpg', alt: 'Hard Fork Rockers artwork', size: 1254 }],
     ['nomad-bears', { src: '/art/crypto%20moonboys%20The%20Nomad%20Bears.jpg', alt: 'Nomad Bears artwork', size: 1254 }],
+    ['rugpull-miners', { src: '/art/Rugpull%20Miners%20by%20the%20Crypto%20Moonboys.jpg', alt: 'Rugpull Miners artwork', size: 1254 }],
   ]);
 
   function renderStandings() {
