@@ -751,13 +751,19 @@
     var rewardRows = [
       ['Weekly badge', fReward.weekly && fReward.weekly.badge],
       ['Monthly title', fReward.monthly && fReward.monthly.title],
-      ['Seasonal trophy', fReward.seasonal && fReward.seasonal.trophy],
-      ['Roguelite options', perks.slice(0, 3).join(', ') + (perks.length > 3 ? ', …' : '')]
+      ['Seasonal trophy', fReward.seasonal && fReward.seasonal.trophy]
     ];
+    var options = perks.length
+      ? '<ul>' + perks.map(function (perk) {
+          var label = String(perk).replace(/_/g, ' ');
+          return '<li>' + esc(label.charAt(0).toUpperCase() + label.slice(1)) + '</li>';
+        }).join('') + '</ul>'
+      : '—';
     container.innerHTML = getFactionRewardCopyHtml() +
-      '<dl>' + rewardRows.map(function (row) {
-        return '<dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1] || '—') + '</dd>';
-      }).join('') + '</dl>';
+      '<dl class="bc-reward-unlock-list">' + rewardRows.map(function (row) {
+        return '<div class="bc-reward-unlock"><dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1] || '—') + '</dd></div>';
+      }).join('') +
+      '<div class="bc-reward-unlock bc-reward-unlock--options"><dt>Roguelite options</dt><dd>' + options + '</dd></div></dl>';
   }
 
   // ── 10. Faction Proof Feed headline ──────────────────────────────────────
