@@ -42,7 +42,7 @@ export var FACTION_DEFS = Object.freeze({
   'hard-fork-rockers': Object.freeze({
     key:             'hard-fork-rockers',
     label:           'Hard Fork Rockers',
-    bonusText:       '🪨 Hard Fork Rockers: Endurance stability active',
+    bonusText:       'Hard Fork Rockers: Endurance stability active',
     scoreMultiplier: 1.0,
     survivalBonus:   0.12,
     chaosModifier:   0.82,
@@ -55,7 +55,7 @@ export var FACTION_DEFS = Object.freeze({
   'rugpull-miners': Object.freeze({
     key:             'rugpull-miners',
     label:           'Rugpull Miners',
-    bonusText:       '⛏️ Rugpull Miners: Shielded recovery active',
+    bonusText:       'Rugpull Miners: Shielded recovery active',
     scoreMultiplier: 1.0,
     survivalBonus:   0.15,
     chaosModifier:   0.88,
@@ -68,7 +68,7 @@ export var FACTION_DEFS = Object.freeze({
   graffpunks: Object.freeze({
     key:             'graffpunks',
     label:           'GraffPUNKS',
-    bonusText:       '🎨 GraffPUNKS: Chaos & combo bonus active',
+    bonusText:       'GraffPUNKS: Chaos & combo bonus active',
     scoreMultiplier: 1.0,
     survivalBonus:   0.0,
     chaosModifier:   1.25,
@@ -81,7 +81,7 @@ export var FACTION_DEFS = Object.freeze({
   'blockchain-furies': Object.freeze({
     key:             'blockchain-furies',
     label:           'Blockchain Furies',
-    bonusText:       '🔥 Blockchain Furies: Speed and revenge chain active',
+    bonusText:       'Blockchain Furies: Speed and revenge chain active',
     scoreMultiplier: 1.03,
     survivalBonus:   0.08,
     chaosModifier:   1.12,
@@ -94,7 +94,7 @@ export var FACTION_DEFS = Object.freeze({
   'crypto-moongirls': Object.freeze({
     key:             'crypto-moongirls',
     label:           'Crypto Moongirls',
-    bonusText:       '🌙 Crypto Moongirls: Precision control active',
+    bonusText:       'Crypto Moongirls: Precision control active',
     scoreMultiplier: 1.04,
     survivalBonus:   0.08,
     chaosModifier:   0.92,
@@ -107,7 +107,7 @@ export var FACTION_DEFS = Object.freeze({
   blockstars: Object.freeze({
     key:             'blockstars',
     label:           'The Blockstars',
-    bonusText:       '⭐ The Blockstars: Spotlight clout active',
+    bonusText:       'The Blockstars: Spotlight clout active',
     scoreMultiplier: 1.08,
     survivalBonus:   0.03,
     chaosModifier:   1.0,
@@ -120,7 +120,7 @@ export var FACTION_DEFS = Object.freeze({
   'all-city-bulls': Object.freeze({
     key:             'all-city-bulls',
     label:           'All City Bulls',
-    bonusText:       '🐂 All City Bulls: Territory pressure active',
+    bonusText:       'All City Bulls: Territory pressure active',
     scoreMultiplier: 1.1,
     survivalBonus:   0.05,
     chaosModifier:   1.08,
@@ -133,7 +133,7 @@ export var FACTION_DEFS = Object.freeze({
   'nomad-bears': Object.freeze({
     key:             'nomad-bears',
     label:           'Nomad Bears',
-    bonusText:       '🐻 Nomad Bears: Route variety stability active',
+    bonusText:       'Nomad Bears: Route variety stability active',
     scoreMultiplier: 1.02,
     survivalBonus:   0.1,
     chaosModifier:   0.95,
@@ -146,7 +146,7 @@ export var FACTION_DEFS = Object.freeze({
   'crypto-stoned-boys': Object.freeze({
     key:             'crypto-stoned-boys',
     label:           'Crypto Stoned Boys',
-    bonusText:       '😶‍🌫️ Crypto Stoned Boys: Chill random branch active',
+    bonusText:       'Crypto Stoned Boys: Chill random branch active',
     scoreMultiplier: 1.01,
     survivalBonus:   0.12,
     chaosModifier:   1.03,

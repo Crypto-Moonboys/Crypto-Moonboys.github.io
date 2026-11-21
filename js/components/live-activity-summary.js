@@ -72,7 +72,7 @@
     var icon = e.type === 'xp' ? 'XP' : e.type === 'faction' ? 'FAC' : e.type === 'sync' ? 'SYNC' : 'LIVE';
     return '<div class="las-event-row">' +
       '<span class="las-event-time">' + esc(e.time) + '</span>' +
-      '<span class="las-event-icon" aria-hidden="true">' + icon + '</span>' +
+      '<span class="las-event-icon" aria-hidden="true">' + (window.MOONBOYS_FACTION?.renderIcon?.(e.faction, 16) || icon) + '</span>' +
       '<span class="las-event-text">' + esc(e.text) + '</span>' +
       '</div>';
   }
@@ -1000,11 +1000,11 @@
       if (!d.source || d.source === 'load') return;
       var fa = window.MOONBOYS_FACTION;
       var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
-      var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
+      var fLabel = meta ? meta.label : String(d.faction || 'faction');
       var text = d.source === 'join'
         ? 'Joined ' + fLabel
         : 'Faction XP earned (' + fLabel + ')';
-      addToLog(buildLogEntry('faction', text));
+      addToLog({ ...buildLogEntry('faction', text), faction: d.faction });
     });
 
     bus.on('sync:state', function (d) {

@@ -64,15 +64,15 @@ var SEASON_THEMES = Object.freeze([
 ]);
 
 var FACTION_LABELS = Object.freeze({
-  'hard-fork-rockers': '🪨 Hard Fork Rockers',
-  'rugpull-miners': '⛏️ Rugpull Miners',
-  graffpunks: '🎨 GraffPUNKS',
-  'blockchain-furies': '🔥 Blockchain Furies',
-  'crypto-moongirls': '🌙 Crypto Moongirls',
-  blockstars: '⭐ The Blockstars',
-  'all-city-bulls': '🐂 All City Bulls',
-  'nomad-bears': '🐻 Nomad Bears',
-  'crypto-stoned-boys': '😶‍🌫️ Crypto Stoned Boys',
+  'hard-fork-rockers': 'Hard Fork Rockers',
+  'rugpull-miners': 'Rugpull Miners',
+  graffpunks: 'GraffPUNKS',
+  'blockchain-furies': 'Blockchain Furies',
+  'crypto-moongirls': 'Crypto Moongirls',
+  blockstars: 'The Blockstars',
+  'all-city-bulls': 'All City Bulls',
+  'nomad-bears': 'Nomad Bears',
+  'crypto-stoned-boys': 'Crypto Stoned Boys',
 });
 
 // ── Public API ───────────────────────────────────────────────────────────────

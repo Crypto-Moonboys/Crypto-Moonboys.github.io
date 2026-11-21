@@ -308,12 +308,12 @@ function createLegacybootstrapTetris(root) {
       _tetrisEventRateMult = applyFactionEventRate(1, _tetrisFactionId) * modPressureRate;
       // Apply faction combo bonus to run: GraffPUNKS extends the combo window
       run.comboBoostMax += (applyFactionComboBonus(1, _tetrisFactionId) - 1) * 4;
-      if (_fx.bonusText) addFloatBanner(null, _fx.bonusText, '#f7c948');
+      if (_fx.bonusText) addFloatBanner(null, _fx.bonusText, '#f7c948', window.MOONBOYS_FACTION?.getIconImage?.(_tetrisFactionId));
     } catch (_) { _tetrisFactionId = 'unaligned'; _tetrisEventRateMult = modPressureRate; }
   }
 
-  function addFloatBanner(_s, text, color) {
-    bannerQueue.push({ text, color: color || '#f7c948', ttl: 2.2 });
+  function addFloatBanner(_s, text, color, factionIcon) {
+    bannerQueue.push({ text, factionIcon, color: color || '#f7c948', ttl: 2.2 });
   }
 
   function injectGarbageLines(_s, count) {
@@ -587,8 +587,8 @@ function createLegacybootstrapTetris(root) {
     }
   }
 
-  function addFloatingText(text, x, y, color = '#f7c948', scale = 1) {
-    floatingTexts.push({ text, x, y, color, life: 0.9, maxLife: 0.9, vy: -40, scale });
+  function addFloatingText(text, x, y, color = '#f7c948', scale = 1, factionIcon) {
+    floatingTexts.push({ text, x, y, color, life: 0.9, maxLife: 0.9, vy: -40, scale, factionIcon });
     if (floatingTexts.length > MAX_FLOATING) floatingTexts.splice(0, floatingTexts.length - MAX_FLOATING);
   }
 
@@ -912,7 +912,8 @@ function createLegacybootstrapTetris(root) {
       ctx.fillStyle = f.color;
       ctx.font = `bold ${Math.round(16 * f.scale)}px system-ui`;
       ctx.textAlign = 'center';
-      ctx.fillText(f.text, f.x, f.y);
+      if (f.factionIcon) window.MOONBOYS_FACTION.drawBannerText(ctx, f.text, f.x, f.y, f.factionIcon, 18);
+      else ctx.fillText(f.text, f.x, f.y);
       ctx.restore();
     }
   }
@@ -1076,7 +1077,7 @@ function createLegacybootstrapTetris(root) {
       bannerTimer -= dt;
       if (bannerTimer <= 0 && bannerQueue.length) {
         const b = bannerQueue.shift();
-        addFloatingText(b.text, canvas.width * 0.5, canvas.height * 0.2, b.color || '#f7c948', 1.1);
+        addFloatingText(b.text, canvas.width * 0.5, canvas.height * 0.2, b.color || '#f7c948', 1.1, b.factionIcon);
         bannerTimer = 1.5;
       }
     }

@@ -822,7 +822,10 @@ function resetRun(state) {
     const _fx = getFactionEffects(state.factionId);
     state.lives = Math.min(applyFactionStartingShield(state.lives, state.factionId, { supportsShield: true }), 5);
     state.factionPressureMult = applyFactionEventRate(1, state.factionId) * modPressureRate;
-    if (_fx.bonusText) setTransientBanner(state.root, _fx.bonusText, '#f7c948');
+    if (_fx.bonusText) {
+      cueBanner(state, _fx.bonusText, '#f7c948');
+      state.warningBanner.value.factionIcon = window.MOONBOYS_FACTION?.getIconImage?.(state.factionId);
+    }
   } catch (_) { state.factionId = 'unaligned'; state.factionPressureMult = modPressureRate; }
   advanceWave(state);
 }
@@ -1435,7 +1438,8 @@ function drawOverlay(ctx, state) {
     ctx.fillStyle = b.color;
     ctx.font = '700 30px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(b.text, state.worldW * 0.5, 58);
+    if (b.factionIcon) window.MOONBOYS_FACTION.drawBannerText(ctx, b.text, state.worldW * 0.5, 58, b.factionIcon, 26);
+    else ctx.fillText(b.text, state.worldW * 0.5, 58);
     ctx.globalAlpha = 1;
   }
   if (!state.running || state.paused || state.gameOver) {

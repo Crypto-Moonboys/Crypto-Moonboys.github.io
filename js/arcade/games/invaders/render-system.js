@@ -1124,7 +1124,8 @@ export function createRenderer(ctx, W, H) {
     ctx.shadowColor = banner.color || '#ff4444';
     ctx.font        = 'bold 20px system-ui';
     ctx.textAlign   = 'center';
-    ctx.fillText(banner.text, W / 2, 36);
+    if (banner.factionIcon) window.MOONBOYS_FACTION.drawBannerText(ctx, banner.text, W / 2, 36, banner.factionIcon, 20);
+    else ctx.fillText(banner.text, W / 2, 36);
     ctx.shadowBlur  = 0;
     ctx.globalAlpha = 1;
     ctx.restore();
