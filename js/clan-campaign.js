@@ -9,6 +9,7 @@ if (panel) {
   const personal = panel.querySelector('[data-campaign-personal]');
   const personalStatus = personal.querySelector('[role="status"]');
   const collection = personal.querySelector('ul');
+  const eligibility = panel.querySelector('[data-campaign-eligibility]');
   const factionName = key => window.MOONBOYS_FACTION_PROFILES?.[key]?.name || key.replaceAll('-', ' ');
   const formatDate = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
   const date = day => formatDate.format(new Date(day));
@@ -16,6 +17,7 @@ if (panel) {
   const percent = points => `${(points / 100).toLocaleString('en-GB', { maximumFractionDigits: 2 })}%`;
   let request = 0;
   let personalRequest = 0;
+  let hasOpenChallenges = false;
 
   function elt(tag, text) {
     const node = document.createElement(tag);
@@ -62,6 +64,10 @@ if (panel) {
       return;
     }
     if (window.mode === 'city') {
+      if (progress.cityFactionSlots) {
+        const minimum = Math.ceil(window.cityTarget * progress.cityFactionSlots / 100);
+        section.append(elt('p', `Equal crew shares · at least ${minimum} contributing factions needed.`));
+      }
       const stages = progress.stages ?? [{ title: 'City progress', points: progress.cityPoints }];
       for (const stage of stages) {
         if (stage.points === null) {
@@ -89,6 +95,7 @@ if (panel) {
     const section = elt(closed ? 'details' : 'section');
     section.append(elt(closed ? 'summary' : 'h5', window.title), elt('p', period(window)),
       elt('p', window.description));
+    if (window.id === 'objective-1') section.append(elt('p', 'Your first bank during this challenge enters your faction automatically.'));
     if (award) section.append(elt('p', `Collectible · ${award.title}`));
     showProgress(section, window);
     return section;
@@ -97,10 +104,12 @@ if (panel) {
   function renderCampaign(data) {
     body.replaceChildren();
     const { campaign, upcoming, previous } = data;
+    hasOpenChallenges = Boolean(campaign?.windows.some(window => window.status === 'open'));
     if (art && campaign?.theme.artwork) art.src = '/art/' + encodeURIComponent(campaign.theme.artwork);
     else if (art) art.src = defaultArt;
 
-    if (upcoming) body.append(elt('p', `Next campaign · Season ${upcoming.seasonId} · ${upcoming.title} · ${date(upcoming.startsOn)} at 00:00 UTC`));
+    if (upcoming) body.append(elt('p', `Next campaign · Season ${upcoming.seasonId} · ${upcoming.title} · ${date(upcoming.startsOn)} at 00:00 UTC`),
+      elt('p', 'Choose or keep your faction at season reset. Bank during the opening challenge to enter. Later challenges use the locked roster for the UTC week they open.'));
     if (campaign) {
       body.append(elt('h4', `Season ${campaign.seasonId} · ${campaign.theme.title}`),
         elt('p', period(campaign)), elt('p', campaign.theme.description));
@@ -116,11 +125,13 @@ if (panel) {
         }
         acts.append(item);
       }
-      body.append(acts, elt('p', 'Bank tiers in your daily operation. Each challenge uses the locked roster for the UTC week in which it opens.'),
+      body.append(acts, elt('p', 'Bank tiers in your daily operation. After the opening challenge, each challenge uses the locked roster for the UTC week in which it opens.'),
         elt('h4', 'Open challenges'));
       const link = elt('a', 'Play today’s Clan Operation');
       link.href = '#clan-operation';
-      body.append(link);
+      const rosterLink = elt('a', 'Check the crew roster');
+      rosterLink.href = '#clan-crew-progress-title';
+      body.append(link, document.createTextNode(' · '), rosterLink);
       const open = campaign.windows.filter(window => window.status === 'open');
       const awardFor = window => campaign.collectibles.find(award => award.earnedFrom === window.id);
       for (const window of open) body.append(showWindow(window, awardFor(window), false));
@@ -152,6 +163,7 @@ if (panel) {
       if (current !== request) return;
       renderCampaign(data);
       status.textContent = '';
+      refreshCollectibles();
     } catch {
       if (current !== request) return;
       body.replaceChildren();
@@ -165,11 +177,13 @@ if (panel) {
     const current = ++personalRequest;
     collection.replaceChildren();
     personalStatus.textContent = '';
-    if (!personal.open) return;
+    eligibility?.replaceChildren();
+    if (!personal.open && !hasOpenChallenges) return;
     const identity = window.MOONBOYS_IDENTITY;
     const owner = identity?.getTelegramId?.();
     if (!owner) {
       personalStatus.textContent = 'Connect Telegram to see your campaign collectibles.';
+      if (hasOpenChallenges && eligibility) eligibility.textContent = 'Connect Telegram to check which challenges your banks count toward.';
       return;
     }
     const stillCurrent = () => current === personalRequest && owner === identity.getTelegramId?.();
@@ -182,18 +196,36 @@ if (panel) {
       if (!auth) throw new Error('telegram_auth_unavailable');
       const data = await loadCampaign('', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_auth: auth, campaign_rewards_ui: 1 }),
+        body: JSON.stringify({ telegram_auth: auth, campaign_rewards_ui: 1, campaign_eligibility: hasOpenChallenges }),
       });
       if (!stillCurrent()) return;
+      if (hasOpenChallenges && eligibility && Array.isArray(data.eligibility)) {
+        const labels = {
+          eligible: 'Your banks count.',
+          bank_to_enter: 'Bank your first tier to enter.',
+          faction_mismatch: 'Your entry is tied to a different faction.',
+          roster_closed: 'The opening roster closed before you entered.',
+        };
+        if (!data.joined) eligibility.textContent = 'Choose a faction to enter the campaign.';
+        else {
+          const list = elt('ul');
+          for (const item of data.eligibility) list.append(elt('li', `${item.title} · ${labels[item.status]}`));
+          eligibility.append(list);
+        }
+      }
       const items = data.collectibles.map(award => elt('li', `${award.collectible} · Season ${award.season_id}`));
       collection.replaceChildren(...items);
       personalStatus.textContent = items.length ? '' : 'You haven’t earned a campaign collectible yet.';
     } catch {
-      if (stillCurrent()) personalStatus.textContent = 'Your campaign collectibles are temporarily unavailable.';
+      if (stillCurrent()) {
+        personalStatus.textContent = 'Your campaign collectibles are temporarily unavailable.';
+        if (hasOpenChallenges && eligibility) eligibility.textContent = 'Your campaign eligibility is temporarily unavailable.';
+      }
     }
   }
 
   refresh.addEventListener('click', refreshCampaign);
+  document.querySelector('a[href="#clan-season-campaign"]')?.addEventListener('click', () => { disclosure.open = true; });
   disclosure.addEventListener('toggle', () => { if (disclosure.open) refreshCampaign(); });
   personal.addEventListener('toggle', refreshCollectibles);
   window.addEventListener('moonboys:identity-change', refreshCollectibles);

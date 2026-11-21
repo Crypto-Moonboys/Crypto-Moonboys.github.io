@@ -36,6 +36,8 @@
         <div class="swarmsy-kicker">BATTLE CHAMBER / LIVE FACTION ACTIVITY</div>
         <h1 id="community-title" class="swarmsy-title">BATTLE CHAMBER<br><span>FACTIONS. MISSIONS. CLOUT.</span></h1>
         <p class="swarmsy-lead">Join a crew, take on live missions and see who's moving.</p>
+        <p><a href="#clan-operation">Play today’s operation</a> · <a href="#clan-crew-progress-title">Crew roster</a> · <a href="#clan-season-campaign">Seasonal campaign</a></p>
+        <p data-wtf-signal-summary role="status">Checking the Daily WTF schedule…</p>
       </div>
     </section>
     <div id="gklink-status" class="gklink-banner" style="display:none"></div>
@@ -156,7 +158,7 @@
         <img class="bc-join-art" src="/art/Command%20Fortress%20Infiltration.jpg" alt="Command Fortress Infiltration" width="1254" height="1254" loading="lazy" decoding="async">
         <div class="bc-join-content">
           <div data-fop-private aria-live="polite"><p>Checking your verified faction status…</p></div>
-          <p><a href="/my-moonboy.html?tab=faction">Full personal missions and claims in My Moonboy</a></p>
+          <p><a href="/my-moonboy.html?tab=faction">My faction activity in My Moonboy</a></p>
         </div>
       </div>
     </details>
@@ -164,7 +166,10 @@
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Active Faction Missions</span></summary>
       <div class="bc-join-layout">
         <img class="bc-join-art" src="/art/Rooftop%20Siege%20Before%20Dawn.jpg" alt="Rooftop Siege Before Dawn" width="1254" height="1254" loading="lazy" decoding="async">
-        <div id="battle-active-missions" class="bc-join-content"><div class="community-loading">Loading missions&#8230;</div></div>
+        <div class="bc-join-content">
+          <div id="battle-active-missions"><div class="community-loading">Loading missions&#8230;</div></div>
+          <p><a href="/my-moonboy.html">Full personal missions and claims in My Moonboy</a></p>
+        </div>
       </div>
     </details>
 
@@ -175,7 +180,6 @@
         <div class="bc-join-content">
           <div id="battle-wtf-signal">
             <p>Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each signal runs for 90 minutes.</p>
-            <p data-wtf-signal-summary role="status">Checking the Daily WTF schedule…</p>
             <p>Completing a timed signal objective unlocks roguelite options. XP shown for those objectives is a preview.</p>
             <p data-clan-signal-bonus hidden></p>
             <p><a href="#clan-operation">Play your daily Clan Operation</a> to earn Clan Renown and collectibles. Your operation is available all UTC day.</p>
@@ -207,7 +211,7 @@
 
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction War Standings</span></summary>
-      <p class="bc-standings-note">Battle Chamber loads server-backed standings when available. Current standings and status are shown below.</p>
+      <p class="bc-standings-note">Faction Clout ranks factions on this board. Clan Renown comes from banking daily operation tiers. Campaign progress comes from eligible banks during seasonal challenges.</p>
       <div id="battle-faction-standings"><div class="community-loading">Loading faction standings&#8230;</div></div>
     </details>
 
@@ -236,6 +240,7 @@
       <section class="clan-campaign" aria-labelledby="clan-campaign-title" data-clan-campaign>
         <h3 id="clan-campaign-title">Clan campaign</h3>
         <p role="status" data-campaign-status></p>
+        <div aria-live="polite" data-campaign-eligibility></div>
         <div data-campaign-content></div>
         <button type="button" data-campaign-refresh>Refresh campaign</button>
         <details data-campaign-personal>
@@ -274,18 +279,18 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script data-cfasync="false" src="/js/components/xp-burst-animation.js?wtf-clan=1"></script>
-<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script data-cfasync="false" src="/js/faction-alignment.js?season-choice=1"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/telegram-community.js"></script>
 
 <script data-cfasync="false" src="/js/battle-chamber-platform.js"></script>
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
 <script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js?wtf-clan=1"></script>
-<script data-cfasync="false" src="/js/battle-chamber-factions.js?faction-icons=3"></script>
+<script data-cfasync="false" src="/js/battle-chamber-factions.js?faction-icons=3&amp;season-choice=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=3"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=2"></script>
-<script data-cfasync="false" type="module" src="/js/clan-campaign.js"></script>
+<script data-cfasync="false" type="module" src="/js/clan-campaign.js?opening-week=1"></script>
 </body>
 </html>

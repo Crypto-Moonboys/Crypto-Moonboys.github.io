@@ -43,7 +43,14 @@ export function buildClanCampaign(season) {
   const objectives = select(campaignObjectives, 12, season.id, 11)
     .map((entry, i) => makeWindow('objective', i, OBJECTIVE_OFFSETS[i], 7, entry));
   const events = select(campaignEvents, 8, season.id, 23)
-    .map((entry, i) => makeWindow('event', i, EVENT_OFFSETS[i], 4, entry));
+    .map((entry, i) => {
+      const event = makeWindow('event', i, EVENT_OFFSETS[i], 4, entry);
+      if (season.id >= FIRST_SEASON + 2 && event.title === 'Night Shift') {
+        event.routeModifier = 'reverse';
+        event.description += ' The nightly route rotation runs in reverse during this event.';
+      }
+      return event;
+    });
   const finale = makeWindow('finale', 0, COMMUNITY_SEASON_DAYS - 7, 7, campaignFinales[themeIndex]);
   const eventAward = events.find(event => event.effect === 'reveal-collectible') ?? events[7];
   const awardSlots = [objectives[3], objectives[7], objectives[11], eventAward, finale];
