@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/faction-operations.css">
   <link rel="stylesheet" href="/css/clan-operation.css">
-  <link rel="stylesheet" href="/css/action-page-cards.css?standings-art=3">
+  <link rel="stylesheet" href="/css/action-page-cards.css?standings-art=4">
 
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/css/page-hero-art.css">
@@ -158,7 +158,7 @@
         <img class="bc-join-art" src="/art/Command%20Fortress%20Infiltration.jpg" alt="Command Fortress Infiltration" width="1254" height="1254" loading="lazy" decoding="async">
         <div class="bc-join-content">
           <div data-fop-private aria-live="polite"><p>Checking your verified faction status…</p></div>
-          <p><a href="/my-moonboy.html">Full personal missions and claims in My Moonboy</a></p>
+          <p><a href="/my-moonboy.html?tab=faction">My faction activity in My Moonboy</a></p>
         </div>
       </div>
     </details>
@@ -166,7 +166,10 @@
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Active Faction Missions</span></summary>
       <div class="bc-join-layout">
         <img class="bc-join-art" src="/art/Rooftop%20Siege%20Before%20Dawn.jpg" alt="Rooftop Siege Before Dawn" width="1254" height="1254" loading="lazy" decoding="async">
-        <div id="battle-active-missions" class="bc-join-content"><div class="community-loading">Loading missions&#8230;</div></div>
+        <div class="bc-join-content">
+          <div id="battle-active-missions"><div class="community-loading">Loading missions&#8230;</div></div>
+          <p><a href="/my-moonboy.html">Full personal missions and claims in My Moonboy</a></p>
+        </div>
       </div>
     </details>
 
@@ -283,10 +286,10 @@
 <script data-cfasync="false" src="/js/battle-chamber-platform.js"></script>
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
 <script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js?wtf-clan=1"></script>
-<script data-cfasync="false" src="/js/battle-chamber-factions.js?season-choice=1"></script>
+<script data-cfasync="false" src="/js/battle-chamber-factions.js?faction-icons=3&amp;season-choice=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
-<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=2"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=3"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=2"></script>
 <script data-cfasync="false" type="module" src="/js/clan-campaign.js?opening-week=1"></script>
 </body>

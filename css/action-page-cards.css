@@ -676,6 +676,40 @@ body.page-community #battle-missed-perks-history {
   padding: 14px 16px;
 }
 
+body.page-community .bc-reward-unlock-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+body.page-community .bc-reward-unlock {
+  padding: 10px 14px;
+  border: 1px solid var(--action-card-border);
+  border-radius: 12px;
+  background: var(--action-card-bg);
+  overflow-wrap: anywhere;
+}
+
+body.page-community .bc-reward-unlock--options {
+  grid-column: 1 / -1;
+}
+
+body.page-community .bc-reward-unlock dt {
+  color: var(--color-text-muted, #a6bdcc);
+}
+
+body.page-community .bc-reward-unlock dd {
+  margin: 2px 0 0;
+  font-weight: 700;
+}
+
+body.page-community .bc-reward-unlock dd ul {
+  margin: 4px 0 0;
+  padding-inline-start: 20px;
+  font-weight: normal;
+}
+
 body.page-community .bc-weekly-row,
 body.page-community .bc-frc-row {
   display: grid;
@@ -947,6 +981,10 @@ body.page-community .bc-retry-btn {
 }
 
 @media (max-width: 720px) {
+  body.page-community .bc-reward-unlock-list {
+    grid-template-columns: 1fr;
+  }
+
   body.page-community .bc-faction-row.bc-faction-row--with-art {
     grid-template-columns: minmax(0, 1fr);
   }

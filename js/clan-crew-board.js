@@ -183,7 +183,8 @@ if (board && api && profiles && factionOrder?.length) {
         name.scope = 'row';
         const link = document.createElement('a');
         link.href = '/battle-chamber/factions/' + key + '.html';
-        link.textContent = profiles[key].name;
+        link.innerHTML = window.MOONBOYS_FACTION?.renderIcon?.(key, 20) || '';
+        link.append(profiles[key].name);
         name.append(link);
         row.append(name);
         for (const value of [counts.today_banks, counts.week_banks]) {
