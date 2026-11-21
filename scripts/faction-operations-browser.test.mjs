@@ -1865,3 +1865,87 @@ test('season campaign shows schedule, progress and account-owned collectibles at
     await browser.close();
   }
 });
+
+test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning portrait', { timeout: 30_000 }, async () => {
+  const { buildPfpRound } = await import('../workers/moonboys-api/shared/clan-pfp-roll.js');
+  const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
+  const browser = await chromium.launch({ executablePath, headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const community = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const markup = community.match(/<section class="section clan-operation"[^>]*>[\s\S]*?<\/section>/)?.[0];
+    assert.ok(markup?.includes('data-pfp-download'));
+    const css = await readFile(path.join(ROOT, 'css/clan-operation.css'), 'utf8');
+    const round = await buildPfpRound('2026-11-21');
+    let latest = null;
+    let writes = 0;
+    await page.route('https://pfp.test/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/') {
+        await route.fulfill({ contentType: 'text/html', body: '<style>' + css + '</style>' + markup });
+      } else if (url.pathname.startsWith('/clan-operations/pfp/')) {
+        if (route.request().method() === 'GET') {
+          await route.fulfill({ json: { ok: true, enabled: true } });
+          return;
+        }
+        if (url.pathname.endsWith('/roll')) {
+          const body = route.request().postDataJSON();
+          assert.equal(body.telegram_auth.id, '111');
+          assert.match(body.request_id, /^[a-f0-9-]{36}$/);
+          writes++;
+          latest = { request_id: body.request_id, matched: round.pools.map(pool => pool.category), stack: round.target, xp: 50 };
+        }
+        await route.fulfill({ json: { ok: true, target: round.target, pools: round.pools, limit: 5, rolls_left: 5 - writes,
+          utc_day: today(), resets_at: nextReset(), latest, result: latest, winner: latest } });
+      } else if (url.pathname === '/data/avatar-builder-manifest.json' || url.pathname.startsWith('/img/avatar-builder/')) {
+        await route.fulfill({ path: path.join(ROOT, url.pathname.slice(1)) });
+      } else await route.abort();
+    });
+    await page.addInitScript(() => {
+      window.__pfpOwner = '111';
+      window.MOONBOYS_API = { getApiBase: () => location.origin };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => window.__pfpOwner,
+        getFreshTelegramAuth: async () => ({ id: window.__pfpOwner }),
+      };
+    });
+    const boot = async () => {
+      await page.goto('https://pfp.test/');
+      await page.addScriptTag({ content: browserModule('clan-pfp-roll.js') });
+      await page.locator('[data-clan-operation]').evaluate(node => node.dataset.activeOperation = 'graffpunks');
+      await page.getByRole('button', { name: 'Paint Wall' }).waitFor();
+      await page.getByRole('button', { name: 'Daily PFP Roll' }).click();
+    };
+    await boot();
+    assert.equal(await page.locator('#clan-main-operation').isVisible(), false);
+    assert.equal(await page.locator('#clan-pfp-roll canvas').count(), 1);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByRole('button', { name: 'Randomize' }).click();
+    await page.getByText(/Full match.*50 Community XP/).waitFor();
+    assert.equal(writes, 1);
+    await page.getByText(/4 of 5 free rolls left/).waitFor();
+
+    await boot();
+    await page.getByText(/Full match.*50 Community XP/).waitFor();
+    assert.equal(writes, 1, 'refresh reads without spending another roll');
+    const downloadEvent = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download winning PNG' }).click();
+    const download = await downloadEvent;
+    const png = await readFile(await download.path());
+    assert.equal(png.readUInt32BE(16), 1000);
+    assert.equal(png.readUInt32BE(20), 1000);
+
+    await page.getByRole('button', { name: 'Paint Wall' }).click();
+    assert.equal(await page.locator('#clan-main-operation').isVisible(), true);
+    assert.equal(await page.locator('#clan-pfp-roll').isVisible(), false);
+    await page.getByRole('button', { name: 'Daily PFP Roll' }).click();
+    await page.evaluate(() => {
+      window.__pfpOwner = '';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByRole('link', { name: 'Connect Telegram' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Download winning PNG' }).isVisible(), false);
+  } finally {
+    await browser.close();
+  }
+});

@@ -1,5 +1,6 @@
 import { clearOptionalStack, defaultStack, indexManifest } from './avatar-builder-core.mjs';
 import { createHomepagePresetCycle } from './avatar-builder-homepage-presets.mjs';
+import { downloadPortraitPng, loadAvatarImage, paintAvatarLayers } from './avatar-portrait.mjs';
 import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgrounds/registry.js';
 
 const PAGE_SIZE = 24;
@@ -101,15 +102,6 @@ function dismissHomepageIntro() {
   elements.downloadPng.disabled = false;
 }
 
-function loadExportImage(trait) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`${trait.name} could not be loaded for export.`));
-    image.src = trait.layer;
-  });
-}
-
 function exportFilename(date = new Date()) {
   const pad = (value) => String(value).padStart(2, '0');
   return `crypto-moonboy-${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}.png`;
@@ -144,33 +136,12 @@ async function downloadAvatarPng() {
     }
     const images = new Map(await Promise.all(snapshot
       .filter((trait) => !isAnimatedBackground(trait))
-      .map(async (trait) => [trait.id, await loadExportImage(trait)])));
+      .map(async (trait) => [trait.id, await loadAvatarImage(trait)])));
     const canvas = document.createElement('canvas');
     canvas.width = 1000;
     canvas.height = 1000;
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('PNG export is not supported by this browser.');
-    snapshot.forEach((trait) => {
-      if (isAnimatedBackground(trait)) {
-        context.drawImage(animatedFrame, 0, 0, 1000, 1000);
-      } else {
-        context.drawImage(images.get(trait.id), 0, 0, 1000, 1000);
-      }
-    });
-    const blob = await new Promise((resolve, reject) => {
-      canvas.toBlob((result) => {
-        if (result) resolve(result);
-        else reject(new Error('The browser could not create the PNG.'));
-      }, 'image/png');
-    });
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = exportFilename();
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    paintAvatarLayers(canvas, snapshot.map(trait => isAnimatedBackground(trait) ? animatedFrame : images.get(trait.id)));
+    await downloadPortraitPng(canvas, exportFilename());
     announce('Avatar PNG download ready.');
   } catch (error) {
     announce(error instanceof Error ? error.message : 'Avatar PNG could not be downloaded.');
