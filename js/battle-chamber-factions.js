@@ -485,7 +485,6 @@
           '<div class="bc-aligned-row bc-aligned-clout-note">Your runs, missions, and proof events now count toward this faction.</div>' +
           seasonDisplay +
           '<div class="bc-aligned-actions">' +
-            '<a class="bc-cta-btn" href="/games/index.html">Play Arcade</a>' +
             '<a class="bc-cta-btn bc-cta-secondary" href="#battle-active-missions">View Daily Missions</a>' +
             '<a class="bc-cta-btn bc-cta-chamber" href="' + esc(chamberLink) + '">View Faction Chamber</a>' +
           '</div>' +
