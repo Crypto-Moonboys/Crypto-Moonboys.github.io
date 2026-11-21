@@ -16,6 +16,7 @@ import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
+import { addFactionEmojiToStatus } from './telegram/faction-emoji.js';
 import { createTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
@@ -742,15 +743,21 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
   // interactive command or callback replies. Preserve formatting/keyboards.
   botToken = unwrapTelegramBotToken(botToken);
   try {
-    const response = await fetch(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', ...extra }),
-        ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
-      }
-    );
+    const decoratedText = (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities
+      ? await addFactionEmojiToStatus(text, botToken)
+      : text;
+    const send = messageText => fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: messageText, parse_mode: 'HTML', ...extra }),
+      ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
+    });
+    let response = await send(decoratedText);
+    // Only retry when Telegram explicitly rejected the message.
+    if (decoratedText !== text && response.status === 400) {
+      await response.text();
+      response = await send(text);
+    }
     const responseText = await response.text();
     console.log('TG send status:', response.status);
     if (!response.ok) {
