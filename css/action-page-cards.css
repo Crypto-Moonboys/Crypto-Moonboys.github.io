@@ -547,6 +547,24 @@ body.page-community .bc-frc-row > * {
   min-width: 0;
 }
 
+body.page-community .bc-faction-row.bc-faction-row--with-art {
+  grid-template-columns: minmax(0, 1fr) clamp(64px, 10vw, 144px);
+  justify-items: stretch;
+}
+
+body.page-community .bc-faction-row-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+body.page-community .bc-faction-row-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 body.page-community .bc-faction-row--dominant {
   background: linear-gradient(135deg, rgba(247, 201, 72, 0.09), rgba(0, 255, 204, 0.055));
   border-color: rgba(247, 201, 72, 0.34);

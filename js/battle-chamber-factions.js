@@ -271,7 +271,8 @@
       var rank = idx + 1;
       var momentumLabel = MOMENTUM_LABELS[Math.min(3, row.momentum || 0)];
       var isDominant = row.faction === dominant;
-      return '<div class="bc-faction-row' + (isDominant ? ' bc-faction-row--dominant' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
+      var hasArt = row.faction === 'all-city-bulls';
+      var content =
         '<span class="bc-faction-rank">#' + rank + '</span>' +
         '<span class="bc-faction-icon">' + meta.icon + '</span>' +
         '<span class="bc-faction-name">' + esc(meta.label) + (isDominant ? ' <span class="bc-dominant-badge">⚔ LEADING</span>' : '') + '</span>' +
@@ -280,7 +281,13 @@
         '<span class="bc-faction-weekly">Week: <strong>' + (row.weekly || 0) + '</strong></span>' +
         '<span class="bc-faction-momentum">Momentum: <strong>' + esc(momentumLabel) + '</strong></span>' +
         '<span class="bc-faction-perk-teaser">' + esc(meta.perkTeaser) + '</span>' +
-        '<a class="bc-faction-chamber-link" href="' + esc(CHAMBER_ROUTES[row.faction] || '/battle-chamber/factions/index.html') + '" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>' +
+        '<a class="bc-faction-chamber-link" href="' + esc(CHAMBER_ROUTES[row.faction] || '/battle-chamber/factions/index.html') + '" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>';
+      return '<div class="bc-faction-row' + (isDominant ? ' bc-faction-row--dominant' : '') +
+        (hasArt ? ' bc-faction-row--with-art' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
+        (hasArt
+          ? '<div class="bc-faction-row-content">' + content + '</div>' +
+            '<img class="bc-faction-row-art" src="/art/ALLCITY%20BULLS%20CRYPTO%20MOONBOYS.png" alt="All City Bulls artwork" width="350" height="350" loading="lazy" decoding="async">'
+          : content) +
         '</div>';
     }).join('');
 
