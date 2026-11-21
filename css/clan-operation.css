@@ -324,3 +324,45 @@
 .clan-campaign summary {
   cursor: pointer;
 }
+
+.clan-operation .pfp-roll-switch button[aria-pressed="true"] {
+  background: var(--mine-amber);
+  color: #17131a;
+}
+
+.clan-pfp-roll {
+  max-inline-size: 31rem;
+  margin: 1.25rem auto;
+}
+
+.clan-pfp-roll canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 1px solid #a76a96;
+  border-radius: .75rem;
+  background: #13111b;
+}
+
+.clan-pfp-roll [data-pfp-result] {
+  font-weight: 700;
+  min-block-size: 1.5em;
+}
+
+.clan-operation .clan-pfp-roll button[data-pfp-randomize] {
+  background: #f5cf83;
+  color: #18121c;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .clan-pfp-roll canvas.pfp-rolling {
+    animation: clan-pfp-shuffle .24s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes clan-pfp-shuffle {
+  from { filter: blur(1px) brightness(.9); transform: scale(.998); }
+  to { filter: blur(4px) brightness(1.15); transform: scale(1); }
+}

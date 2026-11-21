@@ -120,3 +120,18 @@ Local release checks include the campaign regression cases in
 `scripts/clan-mining-pilot.test.mjs` and the mobile campaign panel in
 `scripts/faction-operations-browser.test.mjs`. Use a local D1 fixture to
 exercise the first campaign before the scheduled production handover.
+
+### Daily PFP Roll
+
+Battle Chamber uses the Builder’s 20 saved PFPs for the daily target rotation.
+D1 pins each target and its three trait pools by UTC day. Each signed faction
+member can use five free rolls per day. The Worker awards 0, 5, 15 or 50
+Community XP for zero, one, two or three matching traits. A full match also
+makes the winning portrait available for PNG export from the current round.
+
+Apply `128_clan_pfp_roll.sql` before turning on `CLAN_PFP_ROLL_ENABLED` in the
+Moonboys API Worker. The game also uses the Clan Operations availability
+setting. The per-account request ID keys both the roll and its Community XP
+receipt. Roll persistence and XP settlement share one D1 batch. PFP rolls
+write to their own tables and Community XP, leaving Paint Wall banks on the
+existing operations ledger.

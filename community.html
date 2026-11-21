@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/faction-operations.css">
-  <link rel="stylesheet" href="/css/clan-operation.css">
+  <link rel="stylesheet" href="/css/clan-operation.css?pfp-roll=1">
   <link rel="stylesheet" href="/css/action-page-cards.css?standings-art=4">
 
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -94,34 +94,53 @@
     </details>
     <section class="section clan-operation" id="clan-operation" data-clan-operation aria-labelledby="clan-operation-title">
       <h2 id="clan-operation-title">Clan Operations</h2>
-      <p>Open your clan’s daily operation. Rugpull Miners work the mine, GraffPUNKS paint the wall, Nomad Bears map the trail, All City Bulls hold the district, Crypto Moongirls intercept signals, Hard Fork Rockers cross the forks, Blockchain Furies chain pulses, The Blockstars take the spotlight, and Crypto Stoned Boys recover chaos artifacts. The route changes at 00:00 UTC.</p>
-      <p>Bank each completed tier for 10,000 Clan Renown and a collectible. Complete all three tiers for up to 30,000 Clan Renown per UTC day.</p>
-      <div data-mine-game hidden>
-        <h3 data-mine-name></h3>
-        <p data-mine-stats></p>
-        <ol class="clan-strata" aria-label="Operation tier rewards">
-          <li data-mine-tier></li>
-          <li data-mine-tier></li>
-          <li data-mine-tier></li>
-        </ol>
-        <div class="clan-controls" data-mine-controls>
-          <button type="button" value="safe">Mine surface · +1 ore</button>
-          <button type="button" value="brace">Brace shaft</button>
-          <button type="button" value="deep">Cut deep</button>
-          <button type="button" value="recover">Clear cave-in</button>
-          <button type="button" value="bank">Bank tier</button>
-        </div>
-        <div data-wall-game hidden>
-          <ol class="clan-strata clan-wall" data-wall-panels aria-label="Mural panels"></ol>
-          <div class="clan-controls" data-wall-controls aria-label="Paint moves"></div>
-        </div>
-        <p><strong data-operation-collection-label>Collection</strong></p>
-        <p data-mine-collection></p>
+      <div class="clan-controls pfp-roll-switch" data-pfp-switch role="group" aria-label="Clan Operations game" hidden>
+        <button type="button" aria-controls="clan-main-operation" aria-pressed="true" data-pfp-mode="clan">Faction operation</button>
+        <button type="button" aria-controls="clan-pfp-roll" aria-pressed="false" data-pfp-mode="pfp">Daily PFP Roll</button>
       </div>
-      <p role="status">Checking pilot availability…</p>
-      <p data-mine-connect hidden><a href="/gkniftyheads-incubator.html">Connect Telegram</a></p>
-      <p data-mine-join hidden><a href="/community.html#battle-join-faction">Choose a faction</a></p>
-      <button type="button" data-mine-refresh>Refresh operation</button>
+      <div id="clan-main-operation">
+        <p>Open your clan’s daily operation. Rugpull Miners work the mine, GraffPUNKS paint the wall, Nomad Bears map the trail, All City Bulls hold the district, Crypto Moongirls intercept signals, Hard Fork Rockers cross the forks, Blockchain Furies chain pulses, The Blockstars take the spotlight, and Crypto Stoned Boys recover chaos artifacts. The route changes at 00:00 UTC.</p>
+        <p>Bank each completed tier for 10,000 Clan Renown and a collectible. Complete all three tiers for up to 30,000 Clan Renown per UTC day.</p>
+        <div data-mine-game hidden>
+          <h3 data-mine-name></h3>
+          <p data-mine-stats></p>
+          <ol class="clan-strata" aria-label="Operation tier rewards">
+            <li data-mine-tier></li>
+            <li data-mine-tier></li>
+            <li data-mine-tier></li>
+          </ol>
+          <div class="clan-controls" data-mine-controls>
+            <button type="button" value="safe">Mine surface · +1 ore</button>
+            <button type="button" value="brace">Brace shaft</button>
+            <button type="button" value="deep">Cut deep</button>
+            <button type="button" value="recover">Clear cave-in</button>
+            <button type="button" value="bank">Bank tier</button>
+          </div>
+          <div data-wall-game hidden>
+            <ol class="clan-strata clan-wall" data-wall-panels aria-label="Mural panels"></ol>
+            <div class="clan-controls" data-wall-controls aria-label="Paint moves"></div>
+          </div>
+          <p><strong data-operation-collection-label>Collection</strong></p>
+          <p data-mine-collection></p>
+        </div>
+        <p role="status">Checking pilot availability…</p>
+        <p data-mine-connect hidden><a href="/gkniftyheads-incubator.html">Connect Telegram</a></p>
+        <p data-mine-join hidden><a href="/community.html#battle-join-faction">Choose a faction</a></p>
+        <button type="button" data-mine-refresh>Refresh operation</button>
+      </div>
+      <section id="clan-pfp-roll" class="clan-pfp-roll" aria-labelledby="clan-pfp-roll-title" hidden>
+        <h3 id="clan-pfp-roll-title">Daily PFP Roll</h3>
+        <p>Match today’s Moonboy traits to earn Community XP. Full match odds are 1 in 27 per roll.</p>
+        <canvas data-pfp-canvas width="1000" height="1000" aria-label="Moonboy portrait"></canvas>
+        <p data-pfp-result role="status" aria-atomic="true"></p>
+        <p data-pfp-count></p>
+        <div class="clan-controls">
+          <button type="button" data-pfp-randomize disabled>Randomize</button>
+          <button type="button" data-pfp-download hidden>Download winning PNG</button>
+          <a href="/gkniftyheads-incubator.html" data-pfp-connect hidden>Connect Telegram</a>
+          <a href="#battle-join-faction" data-pfp-join hidden>Choose a faction</a>
+        </div>
+      </section>
       <section class="clan-crew-progress" aria-labelledby="clan-crew-progress-title" data-clan-crew-progress hidden>
         <h3 id="clan-crew-progress-title">Clan crew progress</h3>
         <p>Each bank is one completed operation tier. The week begins Monday at 00:00 UTC.</p>
@@ -292,5 +311,6 @@
 <script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=3"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=2"></script>
 <script data-cfasync="false" type="module" src="/js/clan-campaign.js?opening-week=1"></script>
+<script data-cfasync="false" type="module" src="/js/clan-pfp-roll.js"></script>
 </body>
 </html>

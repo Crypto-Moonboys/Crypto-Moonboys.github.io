@@ -1,7 +1,8 @@
 // GK's curated Moonboys, shared by the homepage and permanent standalone builder.
 // Add presets here once to update the click cycle in both places.
-const PRESETS = Object.freeze([
+export const AVATAR_PRESETS = Object.freeze([
   {
+    "id": "moonboy-01",
     "background": "background-mb-bg-2",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-2",
@@ -13,6 +14,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-2"
   },
   {
+    "id": "moonboy-02",
     "background": "background-bitcoin-code-rain",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-1",
@@ -24,6 +26,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-12"
   },
   {
+    "id": "moonboy-03",
     "background": "background-mb-background",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-6",
@@ -35,6 +38,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-25"
   },
   {
+    "id": "moonboy-04",
     "background": "background-mb-bg-6",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-12",
@@ -46,6 +50,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-57"
   },
   {
+    "id": "moonboy-05",
     "background": "background-mb-bg-33",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-12",
@@ -57,6 +62,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-40"
   },
   {
+    "id": "moonboy-06",
     "background": "background-mb-bg-36",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-12",
@@ -68,6 +74,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-11"
   },
   {
+    "id": "moonboy-07",
     "background": "background-mb-bg-3",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-12",
@@ -79,6 +86,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-67"
   },
   {
+    "id": "moonboy-08",
     "background": "background-mb-bg-23",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-11",
@@ -90,6 +98,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-43"
   },
   {
+    "id": "moonboy-09",
     "background": "background-mb-bg-23",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-3",
@@ -101,6 +110,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-42"
   },
   {
+    "id": "moonboy-10",
     "background": "background-mb-bg-34",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-4",
@@ -112,6 +122,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-44"
   },
   {
+    "id": "moonboy-11",
     "background": "background-mb-bg-1a",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-6",
@@ -123,6 +134,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-20"
   },
   {
+    "id": "moonboy-12",
     "background": "background-pixel-fire",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-10",
@@ -134,6 +146,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-22"
   },
   {
+    "id": "moonboy-13",
     "background": "background-mb-bg-46",
     "body": "body-mb-body",
     "tattoos": "tattoos-mb-tattoo-8",
@@ -145,6 +158,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-104"
   },
   {
+    "id": "moonboy-14",
     "background": "background-mb-bg-40",
     "body": "body-mb-body",
     "tattoos": null,
@@ -156,6 +170,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-18"
   },
   {
+    "id": "moonboy-15",
     "background": "background-mb-bg-8",
     "body": "body-mb-body",
     "tattoos": null,
@@ -167,6 +182,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-54"
   },
   {
+    "id": "moonboy-16",
     "background": "background-matrix-rain",
     "body": "body-mb-body",
     "tattoos": null,
@@ -178,6 +194,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-19"
   },
   {
+    "id": "moonboy-17",
     "background": "background-mb-bg-26",
     "body": "body-mb-body",
     "tattoos": null,
@@ -189,6 +206,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-52"
   },
   {
+    "id": "moonboy-18",
     "background": "background-mb-bg-31",
     "body": "body-mb-body",
     "tattoos": null,
@@ -200,6 +218,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-67"
   },
   {
+    "id": "moonboy-19",
     "background": "background-mb-bg-38",
     "body": "body-mb-body",
     "tattoos": null,
@@ -211,6 +230,7 @@ const PRESETS = Object.freeze([
     "right-arm": "right-arm-mb-right-31"
   },
   {
+    "id": "moonboy-20",
     "background": "background-mb-bg-1",
     "body": "body-mb-body",
     "tattoos": null,
@@ -221,13 +241,13 @@ const PRESETS = Object.freeze([
     "left-arm": "left-arm-mb-left-8",
     "right-arm": "right-arm-mb-right-53"
   }
-].map(Object.freeze));
+].map(({ id, ...stack }) => Object.freeze({ id, stack: Object.freeze(stack) })));
 
 export function createHomepagePresetCycle(manifest) {
   const traits = new Map(manifest.traits.map(trait => [trait.id, trait]));
   // Resolve every preset before enabling the cycle: a stale ID must not
   // silently replace one of GK's chosen traits with a different layer.
-  for (const preset of PRESETS) {
+  for (const { stack: preset } of AVATAR_PRESETS) {
     if (Object.keys(preset).length !== manifest.categories.length) {
       throw new Error('Homepage preset categories do not match the manifest.');
     }
@@ -241,8 +261,8 @@ export function createHomepagePresetCycle(manifest) {
   }
   let cursor = 0;
   return () => {
-    const stack = { ...PRESETS[cursor] };
-    cursor = (cursor + 1) % PRESETS.length;
+    const stack = { ...AVATAR_PRESETS[cursor].stack };
+    cursor = (cursor + 1) % AVATAR_PRESETS.length;
     return stack;
   };
 }

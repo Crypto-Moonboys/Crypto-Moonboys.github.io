@@ -46,6 +46,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
 import { clanOperationsEnabled, handleClanOperations } from './routes/clan-operations.js';
+import { handleClanPfpRoll } from './routes/clan-pfp-roll.js';
 import { clanPeriodStart, closeClanPeriods } from './shared/clan-period-rewards.js';
 import { maintainClanCampaigns } from './shared/clan-campaigns.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart, settleClanSignalXp } from './shared/clan-signal-xp.js';
@@ -13374,9 +13375,11 @@ export default {
       }
     }
 
-    if (path === '/clan-operations/state' || path === '/clan-operations/move') {
+    const isClanPfpRoll = path === '/clan-operations/pfp/state' || path === '/clan-operations/pfp/roll';
+    if (isClanPfpRoll || path === '/clan-operations/state' || path === '/clan-operations/move') {
       const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
-      return handleClanOperations(request, env, {
+      const handle = isClanPfpRoll ? handleClanPfpRoll : handleClanOperations;
+      return handle(request, env, {
         path,
         respond: makeJsonResponder(privateHeaders),
         verifyTelegramAuth,
