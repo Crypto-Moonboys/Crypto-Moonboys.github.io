@@ -21,36 +21,44 @@ export function renderClanPeriodRewards(list, awards, faction = null) {
 const profile = document.querySelector('[data-clan-profile-awards]');
 if (profile) {
   const list = profile.querySelector('ul');
+  const status = profile.querySelector('[role="status"]');
   let requestId = 0;
   async function refreshAwards() {
     const current = ++requestId;
-    profile.hidden = true;
     list.replaceChildren();
+    list.hidden = true;
+    status.textContent = '';
+    if (!profile.open) return;
     const api = window.MOONBOYS_API?.getApiBase?.({ mode: 'write' });
     const identity = window.MOONBOYS_IDENTITY;
     const owner = identity?.getTelegramId?.();
-    if (!api || !owner) return;
-    const stillCurrent = () => current === requestId && owner === identity.getTelegramId?.();
+    if (!api || !owner) {
+      status.textContent = 'Connect Telegram to view your clan awards.';
+      return;
+    }
+    status.textContent = 'Loading clan awards…';
+    const stillCurrent = () => profile.open && current === requestId && owner === identity.getTelegramId?.();
     try {
       const auth = identity.getFreshTelegramAuth
         ? await identity.getFreshTelegramAuth()
         : identity.getSignedTelegramAuth?.();
-      if (!auth || !stillCurrent()) return;
+      if (!stillCurrent()) return;
+      if (!auth) throw new Error('clan_award_session_unavailable');
       const response = await fetch(`${api}/clan-operations/state`, {
         method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(12_000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegram_auth: auth, period_rewards_ui: 'profile' }),
       });
-      if (!response.ok) return;
+      if (!response.ok) throw new Error('clan_awards_unavailable');
       const data = await response.json();
       if (stillCurrent() && Array.isArray(data.period_rewards)) {
         renderClanPeriodRewards(list, data.period_rewards);
-        profile.hidden = list.hidden;
+        status.textContent = list.hidden ? 'No clan awards earned yet.' : '';
       }
     } catch {
-      // Leave account-specific awards hidden if ownership or data is unavailable.
+      if (stillCurrent()) status.textContent = 'Clan awards are temporarily unavailable.';
     }
   }
   window.addEventListener('moonboys:identity-change', refreshAwards);
-  refreshAwards();
+  profile.addEventListener('toggle', refreshAwards);
 }
