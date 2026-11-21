@@ -257,6 +257,7 @@
   var STANDINGS_ART = new Map([
     ['all-city-bulls', { src: '/art/London%20Allcity%20Bull%20Hero.jpg', alt: 'London All City Bull Hero', size: 800 }],
     ['blockchain-furies', { src: '/art/Blockchain%20Furries%20Crypto%20Moonboys.jpg', alt: 'Blockchain Furies Crypto Moonboys artwork', size: 1254 }],
+    ['blockstars', { src: '/art/The%20Blockstars%20Crypto%20Moonboys.jpg', alt: 'The Blockstars Crypto Moonboys artwork', size: 1254 }],
   ]);
 
   function renderStandings() {
