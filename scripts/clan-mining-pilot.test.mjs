@@ -20,6 +20,7 @@ import { advanceSpotlight, describeSpotlight, spotlightFinds } from '../workers/
 
 import { advanceChaos, describeChaos, chaosFinds } from '../workers/moonboys-api/shared/clan-stoned-chaos.js';
 
+const rosterMigration = readFileSync(new URL('../workers/moonboys-api/migrations/125_clan_crew_rosters.sql', import.meta.url), 'utf8');
 const chaosMigration = readFileSync(new URL('../workers/moonboys-api/migrations/124_clan_crypto_stoned_boys.sql', import.meta.url), 'utf8');
 const spotlightMigration = readFileSync(new URL('../workers/moonboys-api/migrations/123_clan_blockstars.sql', import.meta.url), 'utf8');
 const burstMigration = readFileSync(new URL('../workers/moonboys-api/migrations/122_clan_blockchain_furies.sql', import.meta.url), 'utf8');
@@ -45,7 +46,7 @@ const factionRows = `
 function fixture(t) {
   const sql = new DatabaseSync(':memory:');
   t.after(() => sql.close());
-  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration} ${spotlightMigration} ${chaosMigration}`);
+  sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration} ${spotlightMigration} ${chaosMigration} ${rosterMigration}`);
   const db = {
     prepare(statement) {
       const query = sql.prepare(statement);
@@ -53,6 +54,7 @@ function fixture(t) {
         bind(...args) {
           return {
             first: async () => query.get(...args) ?? null,
+            run: async () => query.run(...args),
             all: async () => ({ success: true, results: query.all(...args) }),
           };
         },
@@ -65,16 +67,16 @@ function fixture(t) {
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
-    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit,
+    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, crewEntry, weekStart,
     operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
       action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
-      utc_day: day, renown: 99_999_999, telegram_id: '102', ore: 99,
+      utc_day: day, crew_entry: crewEntry, week_start: weekStart, renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
-    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view : ''}`, { method, body }),
+    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') : ''}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
@@ -195,6 +197,7 @@ async function localD1(t) {
     await db.prepare(burstMigration).run();
     await db.prepare(spotlightMigration).run();
     await db.prepare(chaosMigration).run();
+    await db.prepare(rosterMigration).run();
   } finally {
     schema.close();
   }
@@ -1270,4 +1273,87 @@ test('crew progress counts only committed D1 banks within UTC day and week bound
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
   assert.equal((await response.json()).crews.length, CANONICAL_FACTION_KEYS.length);
+});
+
+test('weekly crew entry is signed, UTC-bound and keeps the original faction on retries', async t => {
+  const { request, settings, sql } = fixture(t);
+  settings.time = new Date('2026-11-22T23:59:59Z');
+  const entry = { id: '104', crewEntry: 'join', weekStart: '2026-11-23' };
+  assert.equal((await request({ ...entry, signed: false })).status, 401);
+  assert.deepEqual((await request({ id: '104', crewEntry: 'status' })).data,
+    { ok: true, week_start: '2026-11-23', entered_faction: null });
+  assert.deepEqual((await request(entry)).data,
+    { ok: true, week_start: '2026-11-23', entered_faction: 'graffpunks' });
+  sql.exec("UPDATE blocktopia_progression SET faction = 'nomad-bears' WHERE telegram_id = '104'");
+  assert.equal((await request(entry)).data.entered_faction, 'graffpunks');
+  settings.time = new Date('2026-11-23T00:00:00Z');
+  assert.equal((await request(entry)).data.error, 'crew_week_changed');
+  assert.equal((await request({ ...entry, weekStart: '2026-11-30' })).data.entered_faction, 'nomad-bears');
+  assert.equal(sql.prepare('SELECT COUNT(*) AS count FROM clan_crew_roster_entries').get().count, 2);
+});
+
+test('crew ranking scores five best days, retains absent members, and ranks exact ties equally', async t => {
+  const { request, settings, sql } = fixture(t);
+  const week = '2026-11-16';
+  settings.time = new Date('2026-11-22T23:59:59Z');
+  const roster = sql.prepare('INSERT INTO clan_crew_roster_entries VALUES (?, ?, ?)');
+  const bank = sql.prepare('INSERT INTO clan_operation_awards VALUES (?, ?, ?, ?, 10000, ?, ?)');
+  const played = sql.prepare(`INSERT INTO clan_operation_days
+    (telegram_id, utc_day, faction_id, rules_version, route_index, updated_at) VALUES (?, ?, ?, 1, 0, ?)`);
+  function record(id, faction, days, tiers) {
+    for (const day of days) {
+      const date = '2026-11-' + day;
+      const time = date + 'T12:00:00Z';
+      played.run(id, date, faction, time);
+      for (let tier = 1; tier <= tiers; tier++) bank.run(id, date, faction, tier, 'audit', time);
+    }
+  }
+  const bears = 'nomad-bears';
+  const graff = 'graffpunks';
+  const miners = 'rugpull-miners';
+  for (const id of ['1', '2', '3']) roster.run(week, id, bears);
+  for (const id of ['4', '5', '6', '7']) roster.run(week, id, graff);
+  for (const id of ['8', '9']) roster.run(week, id, miners);
+  const days = [16, 17, 18, 19, 20, 21, 22];
+  record('1', bears, days, 3);
+  record('2', bears, days, 2);
+  record('3', graff, [16], 3); // A faction switch does not move the roster entry.
+  record('4', graff, days, 3);
+  record('5', graff, days, 3);
+  record('6', graff, [16], 3);
+  record('7', graff, [15, 23], 3);
+  record('8', miners, days, 3);
+  record('9', miners, days, 3);
+  record('10', bears, days, 3); // No competition entry.
+  const get = () => request({ method: 'GET', view: 'crew-progress', standings: true });
+  const find = (results, faction) => results.crews.find(row => row.faction_id === faction);
+  const { data } = await get();
+  assert.equal(data.competition.current.ranked, true);
+  assert.deepEqual(find(data.competition.current, bears), {
+    faction_id: bears, roster_size: 3, active_members: 2, scored_banks: 25, possible_banks: 45, rank: 1,
+  });
+  assert.deepEqual(find(data.competition.current, graff), {
+    faction_id: graff, roster_size: 4, active_members: 3, scored_banks: 33, possible_banks: 60, rank: 2,
+  });
+  assert.equal(find(data.competition.current, miners).rank, null);
+  assert.equal(find(data, bears).week_banks, 56);
+
+  // Make the exact fractions equal with differing roster sizes (24/45 = 32/60).
+  sql.exec("DELETE FROM clan_operation_awards WHERE utc_day = '2026-11-16' AND tier = 3 AND telegram_id = '6'");
+  sql.exec("DELETE FROM clan_operation_awards WHERE utc_day >= '2026-11-20' AND tier = 2 AND telegram_id = '2'");
+  const tied = (await get()).data.competition.current;
+  assert.equal(find(tied, bears).scored_banks, 24);
+  assert.equal(find(tied, graff).rank, 1);
+  assert.equal(find(tied, bears).rank, 1);
+
+  settings.time = new Date('2026-11-23T00:00:00Z');
+  const next = (await get()).data.competition;
+  assert.equal(next.current.ranked, false);
+  assert.deepEqual(next.previous, tied);
+
+  sql.exec('DROP TABLE clan_crew_roster_entries');
+  const beforeMigration = await get();
+  assert.equal(beforeMigration.status, 200);
+  assert.equal(beforeMigration.data.competition, undefined);
+  assert.equal(beforeMigration.data.crews.length, 9);
 });

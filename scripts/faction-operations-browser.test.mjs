@@ -1691,8 +1691,16 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await page.evaluate(() => {
       window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid/base' };
       window.crewRequests = [];
+      window.crewEntryRequests = [];
       window.fetch = (url, options) => {
-        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress' || options.credentials !== 'omit') {
+        if (url === 'https://fixture.invalid/base/clan-operations/state' && options.method === 'POST') {
+          const body = JSON.parse(options.body);
+          window.crewEntryRequests.push(body);
+          return Response.json({
+            ok: true, week_start: '2026-11-23', entered_faction: body.crew_entry === 'join' ? 'nomad-bears' : null,
+          });
+        }
+        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1' || options.credentials !== 'omit') {
           throw new Error('incorrect public request');
         }
         return new Promise(resolve => window.crewRequests.push(resolve));
@@ -1747,6 +1755,36 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await refresh.click();
     await deliver(5, { ok: true, enabled: false });
     await board.waitFor({ state: 'hidden' });
+
+    await page.evaluate(() => {
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '123', getSignedTelegramAuth: () => ({ id: '123' }),
+      };
+    });
+    const weekly = (start, ranked) => ({
+      week_start: start, ranked, min_crews: 2, min_roster: 3,
+      crews: FACTIONS.map(faction_id => ({
+        faction_id, roster_size: 3, active_members: 2, scored_banks: 30, possible_banks: 45,
+        rank: ranked && faction_id === 'nomad-bears' ? 1 : null,
+      })),
+    });
+    await banked();
+    await deliver(6, {
+      ...counts(1, 4),
+      competition: {
+        current: weekly('2026-11-16', true), previous: weekly('2026-11-09', false),
+        next_week_start: '2026-11-23',
+      },
+    });
+    await bears.getByRole('cell', { name: /#1 · 66.7%/ }).waitFor();
+    await board.getByLabel('Weekly score period').selectOption('previous');
+    await board.getByText(/2026-11-09 UTC is unranked/).waitFor();
+    await board.getByRole('button', { name: 'Enter week starting 2026-11-23 UTC' }).click();
+    await board.getByText('Entered for Nomad Bears in the week starting 2026-11-23 UTC.').waitFor();
+    assert.deepEqual(await page.evaluate(() => window.crewEntryRequests.at(-1)), {
+      telegram_auth: { id: '123' }, crew_entry: 'join', week_start: '2026-11-23',
+    });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   } finally {
     await browser.close();
   }

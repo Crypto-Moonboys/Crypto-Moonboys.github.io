@@ -1,5 +1,6 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
+import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
 import { CANONICAL_FACTION_KEYS, FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
 import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
@@ -118,9 +119,7 @@ function utcDay(now) {
 
 async function readCrewProgress(db, now) {
   const day = utcDay(now);
-  const monday = new Date(now);
-  monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);
-  const weekStart = utcDay(monday);
+  const weekStart = crewWeek(now).start;
   // Use the faction/day index and count only settled receipts in the current UTC week.
   const placeholders = CANONICAL_FACTION_KEYS.map(() => '?').join(', ');
   const result = await db.prepare(`
@@ -198,13 +197,27 @@ export async function handleClanOperations(request, env, helpers) {
   const actionRequest = path === '/clan-operations/move';
   if (request.method === 'GET' && !actionRequest) {
     const enabled = clanOperationsEnabled(env);
-    if (!enabled || new URL(request.url).searchParams.get('view') !== 'crew-progress') {
+    const params = new URL(request.url).searchParams;
+    if (!enabled || params.get('view') !== 'crew-progress') {
       return respond({ ok: true, enabled });
     }
     const ipLimited = rateLimit?.();
     if (ipLimited) return ipLimited;
     try {
-      return respond(await readCrewProgress(env.DB, now()));
+      const time = now();
+      const progress = await readCrewProgress(env.DB, time);
+      if (params.get('standings') === '1') {
+        try {
+          const [current, previous] = await Promise.all([
+            readCrewStandings(env.DB, crewWeek(time)),
+            readCrewStandings(env.DB, crewWeek(time, -1)),
+          ]);
+          progress.competition = { current, previous, next_week_start: crewWeek(time, 1).start };
+        } catch (error) {
+          logApiFailure?.('clan_crew_standings_unavailable', { message: error?.message });
+        }
+      }
+      return respond(progress);
     } catch (error) {
       logApiFailure?.('clan_crew_progress_unavailable', { message: error?.message });
       return respond({ error: 'crew_progress_unavailable' }, 503);
@@ -229,6 +242,25 @@ export async function handleClanOperations(request, env, helpers) {
     const factionId = membership.faction_id;
     const operation = operations.get(factionId);
     if (!operation) return respond({ error: 'faction_not_in_pilot' }, 403);
+
+    if (!actionRequest && body.crew_entry != null) {
+      if (body.crew_entry !== 'status' && body.crew_entry !== 'join') return respond({ error: 'invalid_crew_entry' }, 400);
+      const week = crewWeek(now(), 1).start;
+      if (body.crew_entry === 'join') {
+        if (body.week_start !== week) return respond({ error: 'crew_week_changed' }, 409);
+        const keys = [factionId, ...Object.keys(FACTION_ALIASES).filter(key => FACTION_ALIASES[key] === factionId)];
+        await env.DB.prepare(`
+          INSERT INTO clan_crew_roster_entries (week_start, telegram_id, faction_id)
+          SELECT ?, ?, ? WHERE ${stillInFaction(keys)}
+          ON CONFLICT (week_start, telegram_id) DO NOTHING
+        `).bind(week, owner, factionId, owner, ...keys).run();
+      }
+      const entry = await env.DB.prepare(
+        'SELECT faction_id FROM clan_crew_roster_entries WHERE week_start = ? AND telegram_id = ?'
+      ).bind(week, owner).first();
+      if (body.crew_entry === 'join' && !entry) return respond({ error: 'crew_faction_changed' }, 409);
+      return respond({ ok: true, week_start: week, entered_faction: entry?.faction_id ?? null });
+    }
 
     // Match the operation payload to what the caller's cached client can render.
     const staleWallClient = factionId === GRAFFPUNKS && body.operation_ui !== 'wall-v1';
