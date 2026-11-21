@@ -451,8 +451,8 @@
         : (serverStatus.message || 'Live server standings unavailable. Showing local display state.')) + '</p>' +
       '<div class="bc-weekly-rows">' + rowsHtml + '</div>' +
       '<div class="bc-season-current">' +
-        '<strong>Season 1: The Clout War</strong>' +
-        '<p>Each season runs a full cross-faction campaign. Complete seasonal missions, build maximum clout, and secure your faction\'s place in the Battle Chamber record.</p>' +
+        '<strong>Seasonal Faction Clout</strong>' +
+        '<p>Earn faction clout through Battle Chamber missions.</p>' +
       '</div>' +
       '<p class="bc-hall-of-fame">Seasonal winners become part of the Battle Chamber record. Hall of Fame placement is permanent.</p>';
   }

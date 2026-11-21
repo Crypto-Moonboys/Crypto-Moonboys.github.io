@@ -46,6 +46,7 @@ import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-l
 import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
 import { clanOperationsEnabled, handleClanOperations } from './routes/clan-operations.js';
 import { clanPeriodStart, closeClanPeriods } from './shared/clan-period-rewards.js';
+import { maintainClanCampaigns } from './shared/clan-campaigns.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart, settleClanSignalXp } from './shared/clan-signal-xp.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleRadioStream } from './routes/radio-stream.js';
@@ -15575,6 +15576,7 @@ export default {
         ['community_season_rollover', periodStart, (db, _from, at) => rollCommunitySeason(db, at)],
         ['clan_signal_xp', signalStart, settleClanSignalXp],
         ['clan_period_rewards', periodStart, closeClanPeriods],
+        ['clan_campaigns', periodStart, maintainClanCampaigns],
       ];
       for (const [task, start, run] of tasks) {
         if (!start) continue;
