@@ -286,7 +286,7 @@
         (hasArt ? ' bc-faction-row--with-art' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
         (hasArt
           ? '<div class="bc-faction-row-content">' + content + '</div>' +
-            '<img class="bc-faction-row-art" src="/art/ALLCITY%20BULLS%20CRYPTO%20MOONBOYS.png" alt="All City Bulls artwork" width="350" height="350" loading="lazy" decoding="async">'
+            '<img class="bc-faction-row-art" src="/art/London%20Allcity%20Bull%20Hero.jpg" alt="London All City Bull Hero" width="800" height="800" loading="lazy" decoding="async">'
           : content) +
         '</div>';
     }).join('');
