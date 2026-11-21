@@ -41,12 +41,13 @@ async function expectBadge(page, text) {
     const rect = image.getBoundingClientRect();
     return { background: css.backgroundColor, border: css.borderWidth, shadow: css.boxShadow,
       animation: getComputedStyle(image).animationName, width: el.getBoundingClientRect().width,
+      height: el.getBoundingClientRect().height,
       fits: rect.left >= 0 && rect.right <= innerWidth };
   });
   assert.equal(style.background, 'rgba(0, 0, 0, 0)', 'no login panel background');
   assert.equal(style.border, '0px', 'no login panel border');
   assert.equal(style.shadow, 'none', 'no login panel shadow');
-  assert.ok(style.width >= 44, 'icon retains an accessible touch target');
+  assert.ok(style.width >= 44 && style.height >= 44, 'icon retains a 44 × 44 px touch target');
   assert.equal(style.fits, true, 'icon stays inside the viewport');
   assert.equal(style.animation, text === 'Log in with Telegram' ? 'cspTelegramLoginPulse' : 'none');
 
