@@ -17,7 +17,7 @@ function element() {
 for (const id of [
   'nbg-record-status', 'nbg-record-account', 'nbg-record-personal',
   'nbg-record-rows', 'nbg-prize-rows', 'nbg-prize-cutoff', 'nbg-hud-player',
-  'nbg-record-ranking',
+  'nbg-record-ranking', 'nbg-finish-status',
 ]) elements.set(id, element());
 const document = {
   readyState: 'loading',
@@ -48,6 +48,7 @@ const window = {
   MOONBOYS_API: { getLeaderboardUrl: () => 'https://leaderboard.test' },
   localStorage,
   addEventListener(type, fn) { listeners.set(type, fn); },
+  dispatchEvent() {},
 };
 let heldStartResponse = null;
 let nextRunSequence = 0;
@@ -81,8 +82,9 @@ async function fetch(url, options = {}) {
   call.response = data;
   return { ok: true, async json() { return data; } };
 }
+class CustomEvent { constructor(type, options) { this.type = type; this.detail = options.detail; } }
 const source = readFileSync('game/nbg-london-leaderboards.js', 'utf8');
-vm.runInNewContext(source, { window, document, fetch, URL, Date, String, Number, Promise, Object, Array, console });
+vm.runInNewContext(source, { window, document, fetch, URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent });
 assert.equal(typeof domReady, 'function');
 domReady();
 async function flush() {
@@ -275,7 +277,7 @@ const reloadedWindow = {
 };
 vm.runInNewContext(source, {
   window: reloadedWindow, document: reloadedDocument, fetch,
-  URL, Date, String, Number, Promise, Object, Array, console,
+  URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent,
 });
 reloadReady();
 await flush();
@@ -385,3 +387,22 @@ assert.equal(requests('/run/start').length, beforeAppRejection + 2,
   'confirmed application rejection must not lock future starts');
 
 console.log('[PASS] NBG London start/finish Telegram account-race protection');
+
+// Reset must leave a completed run intact while Telegram credentials refresh.
+await emit('nbg-level-reset');
+await emit('nbg-level-started');
+const finishesBeforeReset = requests('/run/finish').length;
+let releaseFinishAuth;
+nextAuth = () => new Promise(resolve => { releaseFinishAuth = resolve; });
+await emit('nbg-level-complete', { replay: { version: 1, frames: 'AQIDBAU=' } });
+assert.equal(window.NBGLondonFinishPending(), true);
+assert.equal(elements.get('nbg-finish-status').hidden, false);
+await emit('nbg-level-reset');
+releaseFinishAuth(auth('500'));
+nextAuth = async () => auth('500');
+await flush();
+assert.equal(requests('/run/finish').length, finishesBeforeReset + 1);
+assert.equal(window.NBGLondonFinishPending(), false);
+assert.match(elements.get('nbg-finish-status').textContent, /result saved/);
+await emit('nbg-level-reset');
+assert.equal(elements.get('nbg-finish-status').hidden, true);

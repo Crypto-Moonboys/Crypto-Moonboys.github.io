@@ -28,6 +28,8 @@
   var PRACTICE_START_MESSAGE = 'Practice only (Telegram-linked): a previous ranked start may still be processing. Scores are not saved; refreshing does not clear the pending-start safety hold.';
   var preparedStartGeneration = -1;
   var status = null;
+  var finishStatus = null;
+  var finishPending = false;
   var tableBody = null;
   var account = null;
   var personal = null;
@@ -203,6 +205,11 @@
     if (status) status.textContent = message;
   }
 
+  function setFinishStatus(message) {
+    setStatus(message);
+    if (finishStatus) finishStatus.textContent = message;
+  }
+
   function pendingStartKey(id) {
     return 'nbg-london:pending-ranked-start:v1:' + id;
   }
@@ -287,7 +294,8 @@
         method: data ? 'POST' : 'GET',
         headers: data ? { 'Content-Type': 'application/json' } : {},
         body: data ? JSON.stringify(data) : undefined,
-        cache: 'no-store'
+        cache: 'no-store',
+        signal: path === '/run/finish' ? AbortSignal.timeout(20000) : undefined
       });
     } catch (error) {
       // HTTP error responses prove that processing has returned, but a fetch
@@ -610,22 +618,28 @@
   }
 
   async function finishRankedRun(detail) {
+    if (finishPending) return;
+    finishPending = true;
+    if (finishStatus) finishStatus.hidden = false;
+    setFinishStatus('Saving ranked result…');
     var current = generation;
     var sessionPromise = runPromise;
-    if (!sessionPromise) {
-      setStatus(practiceOnlyReason ?
-        'Practice run completed. ' + practiceOnlyReason :
-        runIdentity ?
-          'Run complete. Telegram verification unavailable; no official score was saved.' :
-          'Run complete. Guest scores are not stored permanently.');
-      return;
-    }
     try {
+      if (!sessionPromise) {
+        setFinishStatus(practiceOnlyReason ?
+          'Practice run completed. ' + practiceOnlyReason :
+          runIdentity ?
+            'Run complete. Telegram verification unavailable; no official score was saved.' :
+            'Run complete. Guest scores are not stored permanently.');
+        return;
+      }
       var session = await sessionPromise;
       if (current !== generation || !session || !session.run_id) {
-        if (current === generation) {
+        if (current !== generation) {
+          setFinishStatus('Run not saved: Telegram account changed.');
+        } else {
           if (uncertainOwner(runIdentity)) practiceOnlyReason = PRACTICE_START_MESSAGE;
-          setStatus(practiceOnlyReason ?
+          setFinishStatus(practiceOnlyReason ?
             'Practice run completed. ' + practiceOnlyReason :
             session && session.ranked === false ?
               'Practice run completed. Official XP and records were not saved during beta.' :
@@ -635,26 +649,31 @@
       }
       var gate = window.MOONBOYS_IDENTITY;
       if (current !== generation || !gate || String(gate.getTelegramId() || '') !== session.telegram_id) {
-        if (current === generation) setStatus('Run not saved: Telegram account changed during play.');
+        setFinishStatus('Run not saved: Telegram account changed during play.');
         return;
       }
       var auth = await signedAuth();
       if (!auth || current !== generation || String(auth.id) !== session.telegram_id ||
           String(gate.getTelegramId() || '') !== session.telegram_id || !gate.isTelegramLinked()) {
-        if (current === generation) setStatus('Run not saved: Telegram account changed or login expired.');
+        setFinishStatus('Run not saved: Telegram account changed or login expired.');
         return;
       }
       if (!detail.replay || detail.replay.version !== 1) {
-        setStatus('Run not saved: missing gameplay replay. Reset and play a fresh run.');
+        setFinishStatus(detail.replayInterrupted ?
+          'Run not saved: gameplay recording was interrupted by a browser pause.' :
+          'Run not saved: missing gameplay replay.');
         return;
       }
-      setStatus('Verifying gameplay against server-side scoring rules…');
+      setFinishStatus('Verifying gameplay against server-side scoring rules…');
       var result = await callJson('/run/finish', {
         telegram_auth: auth, run_id: session.run_id,
         replay: detail.replay
       });
-      if (current !== generation) return;
-      setStatus('Official replay-verified result saved for ' + result.player + ': ' +
+      if (current !== generation) {
+        setFinishStatus('Result saved to the Telegram account that started this run.');
+        return;
+      }
+      setFinishStatus('Official replay-verified result saved for ' + result.player + ': ' +
         formatTime(result.time_ms) + ' · ' + result.xp.toLocaleString() +
         ' verified game XP (may differ from practice HUD XP).');
       window.dispatchEvent(new CustomEvent('nbg-record-result', {
@@ -665,13 +684,22 @@
       loadPrizeStandings();
     } catch (error) {
       if (current === generation) {
-        setStatus('Run not saved: ' + error.message + '. Unsaved runs are not queued.');
+        setFinishStatus(error?.authoritativeRejection ?
+          'Run not saved: ' + error.message + '.' :
+          'Save could not be confirmed. Check your personal bests before playing again.');
+        loadPersonal();
+        loadLeaders();
+        loadPrizeStandings();
         if (error && error.authoritativeRejection === true) {
           window.dispatchEvent(new CustomEvent('nbg-record-result', {
             detail: { accepted: false, authoritative: true }
           }));
         }
+      } else {
+        setFinishStatus('Save could not be confirmed after the Telegram account changed.');
       }
+    } finally {
+      finishPending = false;
     }
   }
 
@@ -762,6 +790,7 @@
   function init() {
     installFullscreenRecordsDrawer();
     status = document.getElementById('nbg-record-status');
+    finishStatus = document.getElementById('nbg-finish-status');
     accessGate = document.getElementById('nbg-access-gate');
     accessGateMessage = document.getElementById('nbg-access-gate-message');
     accessRecheck = document.getElementById('nbg-access-recheck');
@@ -818,6 +847,7 @@
       loadPersonal();
     });
     window.NBGLondonBeforeQueuedRun = beforeQueuedRun;
+    window.NBGLondonFinishPending = function () { return finishPending; };
     window.addEventListener('nbg-level-started', function () {
       if (preparedStartGeneration === generation) {
         preparedStartGeneration = -1;
@@ -829,6 +859,8 @@
       finishRankedRun(event.detail || {});
     });
     window.addEventListener('nbg-level-reset', function () {
+      if (finishPending) return;
+      if (finishStatus) finishStatus.hidden = true;
       generation += 1;
       runPromise = null;
       runIdentity = null;
