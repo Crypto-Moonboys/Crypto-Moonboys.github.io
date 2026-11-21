@@ -103,8 +103,8 @@ var _ticker = [];
 var _tickerEl = null;
 var TICKER_MAX = 5;
 
-function _addTickerItem(text) {
-  _ticker.unshift({ text: text, ts: Date.now() });
+function _addTickerItem(text, faction) {
+  _ticker.unshift({ text: text, faction: faction, ts: Date.now() });
   if (_ticker.length > TICKER_MAX) _ticker.length = TICKER_MAX;
   _renderTicker();
 }
@@ -113,7 +113,7 @@ function _renderTicker() {
   if (!_tickerEl) return;
   _tickerEl.innerHTML = _ticker.map(function (item, i) {
     return '<div class="fh-tick-row' + (i === 0 ? ' fh-tick-new' : '') + '">'
-      + _esc(item.text) + '</div>';
+      + (window.MOONBOYS_FACTION?.renderIcon?.(item.faction, 16) || '') + _esc(item.text) + '</div>';
   }).join('');
 }
 
@@ -143,7 +143,7 @@ function _buildHtml(factionId, fx, rotation, missionsDone, total, rank) {
     '<div class="fh-body" id="fh-body">',
       '<div class="fh-row">',
         '<span class="fh-label">Faction</span>',
-        '<span class="fh-val">' + _esc(fx.label || factionId) + '</span>',
+        '<span class="fh-val">' + (window.MOONBOYS_FACTION?.renderIcon?.(factionId, 18) || '') + _esc(fx.label || factionId) + '</span>',
       '</div>',
       '<div class="fh-row" id="fh-bonus-row" style="' + bonusDisplay + '">',
         '<span class="fh-label">Bonus</span>',
@@ -159,7 +159,7 @@ function _buildHtml(factionId, fx, rotation, missionsDone, total, rank) {
       '</div>',
       '<div class="fh-row">',
         '<span class="fh-label">Rotation</span>',
-        '<span class="fh-val fh-val--rotation">' + _esc(rotation.label || '—') + '</span>',
+        '<span class="fh-val fh-val--rotation">' + (window.MOONBOYS_FACTION?.renderIcon?.(rotation.featuredFaction, 16) || '') + _esc(rotation.label || '—') + '</span>',
       '</div>',
       '<div class="fh-row">',
         '<span class="fh-label">Missions</span>',
@@ -245,7 +245,7 @@ export function mountFactionHud() {
     // Wire live ticker
     _tickerEl = panel.querySelector('#fh-ticker');
     subscribeActivityFeed(function (detail) {
-      if (detail && detail.text) _addTickerItem(detail.text);
+      if (detail && detail.text) _addTickerItem(detail.text, detail.faction);
     });
 
     // Listen for faction updates to refresh the HUD
@@ -261,7 +261,10 @@ export function mountFactionHud() {
         if (bonusEl)  bonusEl.textContent = nextFx.bonusText || '';
         if (bonusRow) bonusRow.style.display = nextFx.bonusText ? '' : 'none';
         var factionValEl = panel.querySelector('.fh-val');
-        if (factionValEl) factionValEl.textContent = nextFx.label || nextFaction;
+        if (factionValEl) {
+          factionValEl.innerHTML = (window.MOONBOYS_FACTION?.renderIcon?.(nextFaction, 18) || '') +
+            _esc(nextFx.label || nextFaction);
+        }
       });
       bus.on('faction:mission:complete', function () {
         try {

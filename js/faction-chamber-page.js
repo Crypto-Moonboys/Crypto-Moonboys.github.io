@@ -187,7 +187,7 @@
       var missionCount = (getFactionMissions(key).daily || []).length;
       return '' +
         '<article class="fcp-card" style="--faction-color:' + esc(p.chamberColor) + '">' +
-          '<h3>' + esc(p.icon) + ' ' + esc(p.name) + '</h3>' +
+          '<h3>' + (window.MOONBOYS_FACTION?.renderIcon?.(key, 28) || '') + esc(p.name) + '</h3>' +
           '<p class="fcp-card-tagline">' + esc(p.tagline) + '</p>' +
           '<p>' + esc(p.playstyle) + '</p>' +
           '<p><strong>Current weekly rank:</strong> ' + esc(formatRankDisplay(rank)) + '</p>' +
@@ -244,7 +244,7 @@
     if (hero) {
       hero.innerHTML = '' +
         '<div class="swarmsy-hero-inner fcp-hero-card" style="--faction-color:' + esc(profile.chamberColor) + '">' +
-          '<div class="swarmsy-kicker wiki-alive-kicker">' + esc(profile.icon) + ' FACTION CHAMBER / BATTLE SIGNAL</div>' +
+          '<div class="swarmsy-kicker wiki-alive-kicker">' + (window.MOONBOYS_FACTION?.renderIcon?.(key, 24) || '') + 'FACTION CHAMBER / BATTLE SIGNAL</div>' +
           '<h1 class="swarmsy-title wiki-living-title">' + esc(profile.name) + '</h1>' +
           '<p class="swarmsy-lead fcp-hero-tagline">' + esc(profile.tagline) + '</p>' +
           '<p class="swarmsy-lead">' + esc(profile.joinCtaCopy) + '</p>' +

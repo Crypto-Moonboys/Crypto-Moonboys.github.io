@@ -40,39 +40,39 @@
   // ── Faction roster ────────────────────────────────────────────────────────
 
   var LIVE_FACTIONS = [
-    { key: 'hard-fork-rockers',   label: 'Hard Fork Rockers',  icon: '🪨', color: '#56dcff',
+    { key: 'hard-fork-rockers',   label: 'Hard Fork Rockers',  color: '#56dcff',
       playstyle: 'Endurance · Stability · Streak Protection',
       perkTeaser: 'Reduced chaos exposure, long-run bonus branches, streak protection',
       rewardBias: 'endurance' },
-    { key: 'rugpull-miners',      label: 'Rugpull Miners',     icon: '⛏️', color: '#ff6ad5',
+    { key: 'rugpull-miners',      label: 'Rugpull Miners',     color: '#ff6ad5',
       playstyle: 'Defensive Recovery · Shield Support · Resource Pressure',
       perkTeaser: 'Shield bonus, comeback branches, resource-recovery quests',
       rewardBias: 'contribution' },
-    { key: 'graffpunks',          label: 'GraffPUNKS',         icon: '🎨', color: '#7dff72',
+    { key: 'graffpunks',          label: 'GraffPUNKS',         color: '#7dff72',
       playstyle: 'Chaos · Combos · High-Risk Clout',
       perkTeaser: 'Higher chaos bursts, bigger combo paths, high-risk rabbit holes',
       rewardBias: 'chaos' },
-    { key: 'blockchain-furies',   label: 'Blockchain Furies',  icon: '🔥', color: '#ff9f43',
+    { key: 'blockchain-furies',   label: 'Blockchain Furies',  color: '#ff9f43',
       playstyle: 'Speed · Aggression · Revenge Momentum',
       perkTeaser: 'Fast-run missions, burst windows, revenge bonuses after failed runs',
       rewardBias: 'chaos' },
-    { key: 'crypto-moongirls',    label: 'Crypto Moongirls',   icon: '🌙', color: '#b88dff',
+    { key: 'crypto-moongirls',    label: 'Crypto Moongirls',   color: '#b88dff',
       playstyle: 'Control · Precision · Signal Dominance',
       perkTeaser: 'Precision missions, leaderboard control, elite faction titles',
       rewardBias: 'contribution' },
-    { key: 'blockstars',          label: 'The Blockstars',     icon: '⭐', color: '#ffd166',
+    { key: 'blockstars',          label: 'The Blockstars',     color: '#ffd166',
       playstyle: 'Celebrity Clout · Spotlight Events · Public Ranking',
       perkTeaser: 'Featured player chances, clout multipliers, monthly fame tracks',
       rewardBias: 'contribution' },
-    { key: 'all-city-bulls',      label: 'All City Bulls',     icon: '🐂', color: '#ff6b6b',
+    { key: 'all-city-bulls',      label: 'All City Bulls',     color: '#ff6b6b',
       playstyle: 'Brute Force · High-Score Pressure · Territory Dominance',
       perkTeaser: 'Score target branches, weekly war contribution boosts',
       rewardBias: 'contribution' },
-    { key: 'nomad-bears',         label: 'Nomad Bears',        icon: '🐻', color: '#8ecf7a',
+    { key: 'nomad-bears',         label: 'Nomad Bears',        color: '#8ecf7a',
       playstyle: 'Exploration · Consistency · Multi-Game Variety',
       perkTeaser: 'Variety bonuses, multi-game rabbit holes, daily/weekly route bonuses',
       rewardBias: 'endurance' },
-    { key: 'crypto-stoned-boys',  label: 'Crypto Stoned Boys', icon: '😶‍🌫️', color: '#8fd3ff',
+    { key: 'crypto-stoned-boys',  label: 'Crypto Stoned Boys', color: '#8fd3ff',
       playstyle: 'Chill Grind · Weird Events · Randomizer Energy',
       perkTeaser: 'Random bonus branches, rare event chances, low-pressure XP paths',
       rewardBias: 'endurance' },
@@ -212,6 +212,10 @@
 
   // ── Faction meta lookup ───────────────────────────────────────────────────
 
+  function renderFactionIcon(key, size) {
+    return window.MOONBOYS_FACTION?.renderIcon?.(key, size) || '';
+  }
+
   function factionMeta(key) {
     for (var i = 0; i < LIVE_FACTIONS.length; i++) {
       if (LIVE_FACTIONS[i].key === key) return LIVE_FACTIONS[i];
@@ -286,7 +290,7 @@
       var art = STANDINGS_ART.get(row.faction);
       var content =
         '<span class="bc-faction-rank">#' + rank + '</span>' +
-        '<span class="bc-faction-icon">' + meta.icon + '</span>' +
+        '<span class="bc-faction-icon">' + renderFactionIcon(meta.key) + '</span>' +
         '<span class="bc-faction-name">' + esc(meta.label) + (isDominant ? ' <span class="bc-dominant-badge">⚔ LEADING</span>' : '') + '</span>' +
         '<span class="bc-faction-power">Power: <strong>' + (row.power || 0) + '</strong></span>' +
         '<span class="bc-faction-daily">Today: <strong>' + (row.daily || 0) + '</strong></span>' +
@@ -329,7 +333,7 @@
       '<div class="bc-weekly-header">' +
         '<div class="bc-weekly-leader">' +
           (leaderMeta
-            ? '<span class="bc-weekly-icon">' + leaderMeta.icon + '</span> <strong>' + esc(leaderMeta.label) + '</strong> — Weekly Leader'
+            ? '<span class="bc-weekly-icon">' + renderFactionIcon(leaderMeta.key) + '</span> <strong>' + esc(leaderMeta.label) + '</strong> — Weekly Leader'
             : 'No weekly data yet') +
         '</div>' +
       '</div>' +
@@ -338,7 +342,7 @@
           var meta = factionMeta(row.faction);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Weekly contribution: <strong>' + (row.weekly || 0) + '</strong></span>' +
             '</div>';
         }).join('') +
@@ -373,7 +377,7 @@
           var meta = factionMeta(row.faction_id);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Monthly clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
             '</div>';
         }).join('');
@@ -386,7 +390,7 @@
           var meta = factionMeta(row.faction);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Monthly clout: <strong>0</strong></span>' +
             '</div>';
         }).join('');
@@ -422,7 +426,7 @@
           var meta = factionMeta(row.faction_id);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Seasonal clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
             '</div>';
         }).join('');
@@ -435,7 +439,7 @@
           var meta = factionMeta(row.faction);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Seasonal clout: <strong>0</strong></span>' +
             '</div>';
         }).join('');
@@ -473,7 +477,7 @@
         : '';
       container.innerHTML =
         '<div class="bc-aligned-panel" style="--faction-color:' + esc(meta.color) + '">' +
-          '<div class="bc-aligned-header">' + meta.icon + ' <strong>' + esc(meta.label) + '</strong></div>' +
+          '<div class="bc-aligned-header">' + renderFactionIcon(meta.key) + ' <strong>' + esc(meta.label) + '</strong></div>' +
           '<div class="bc-aligned-season-lock">You are locked to ' + esc(meta.label) + ' for this season.</div>' +
           '<div class="bc-aligned-row"><span>Faction XP:</span> <strong>' + (Number(cached.faction_xp) || 0) + '</strong></div>' +
           '<div class="bc-aligned-row"><span>Active bonus:</span> <strong>' + esc((cached.bonuses && cached.bonuses.bonus) || meta.perkTeaser) + '</strong></div>' +
@@ -489,7 +493,7 @@
     } else {
       var cards = LIVE_FACTIONS.map(function (f) {
         return '<div class="bc-join-card" style="--faction-color:' + esc(f.color) + '">' +
-          '<div class="bc-join-card-icon">' + f.icon + '</div>' +
+          '<div class="bc-join-card-icon">' + renderFactionIcon(f.key, 40) + '</div>' +
           '<div class="bc-join-card-name">' + esc(f.label) + '</div>' +
           '<div class="bc-join-card-playstyle">' + esc(f.playstyle) + '</div>' +
           '<div class="bc-join-card-perk">' + esc(f.perkTeaser) + '</div>' +
@@ -529,7 +533,7 @@
           var targetMeta = factionMeta(targetFaction);
           container.innerHTML =
             '<div class="bc-join-confirm-panel" style="--faction-color:' + esc(targetMeta.color) + '">' +
-              '<div class="bc-join-confirm-icon">' + targetMeta.icon + '</div>' +
+              '<div class="bc-join-confirm-icon">' + renderFactionIcon(targetMeta.key, 40) + '</div>' +
               '<div class="bc-join-confirm-title">Confirm faction choice</div>' +
               '<div class="bc-join-confirm-faction"><strong>' + esc(targetMeta.label) + '</strong></div>' +
               '<div class="bc-join-confirm-lock">You will be locked to this faction for the current season.</div>' +
@@ -565,7 +569,7 @@
                 // Show success message before re-rendering
                 container.innerHTML =
                   '<div class="bc-join-success-panel" style="--faction-color:' + esc(targetMeta.color) + '">' +
-                    '<div class="bc-join-success-icon">' + targetMeta.icon + '</div>' +
+                    '<div class="bc-join-success-icon">' + renderFactionIcon(targetMeta.key, 40) + '</div>' +
                     '<div class="bc-join-success-msg">You joined ' + esc(targetMeta.label) + '. Your faction clout now counts for this season.</div>' +
                   '</div>';
                 // Reload full status and re-render after brief delay.
@@ -673,7 +677,7 @@
     }
 
     container.innerHTML =
-      '<div class="bc-missions-header">' + meta.icon + ' ' + esc(meta.label) + ' — Today\'s Missions</div>' +
+      '<div class="bc-missions-header">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + ' — Today\'s Missions</div>' +
       '<div class="bc-missions-list">' + rows + '</div>' +
       '<div class="bc-missions-note">' + esc(CONTENT.missionsNote || 'Mission rewards are clout/war contribution only. Linked identity users sync mission progress to server.') + '</div>';
   }
