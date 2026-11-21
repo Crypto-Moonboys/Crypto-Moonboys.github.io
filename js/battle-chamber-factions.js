@@ -255,9 +255,15 @@
   // ── 1. Faction War Standings ──────────────────────────────────────────────
 
   var STANDINGS_ART = new Map([
+    ['crypto-moongirls', { src: '/art/crypto%20moongirls.jpg', alt: 'Crypto Moongirls artwork', size: 1254 }],
     ['all-city-bulls', { src: '/art/London%20Allcity%20Bull%20Hero.jpg', alt: 'London All City Bull Hero', size: 800 }],
     ['blockchain-furies', { src: '/art/Blockchain%20Furries%20Crypto%20Moonboys.jpg', alt: 'Blockchain Furies Crypto Moonboys artwork', size: 1254 }],
     ['blockstars', { src: '/art/The%20Blockstars%20Crypto%20Moonboys.jpg', alt: 'The Blockstars Crypto Moonboys artwork', size: 1254 }],
+    ['crypto-stoned-boys', { src: '/art/crypto%20stonedboys.jpg', alt: 'Crypto Stoned Boys artwork', size: 1254 }],
+    ['graffpunks', { src: '/art/the%20GraffPUNKS%20Crypto%20Moonboys.jpg', alt: 'GraffPUNKS Crypto Moonboys artwork', size: 1254 }],
+    ['hard-fork-rockers', { src: '/art/crypto%20moonboys%20The%20Hard%20fork%20Rockers.jpg', alt: 'Hard Fork Rockers artwork', size: 1254 }],
+    ['nomad-bears', { src: '/art/crypto%20moonboys%20The%20Nomad%20Bears.jpg', alt: 'Nomad Bears artwork', size: 1254 }],
+    ['rugpull-miners', { src: '/art/Rugpull%20Miners%20by%20the%20Crypto%20Moonboys.jpg', alt: 'Rugpull Miners artwork', size: 1254 }],
   ]);
 
   function renderStandings() {
