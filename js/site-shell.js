@@ -388,7 +388,25 @@ window.__HUD_CONSOLIDATED__ = true;
     if (content.parentElement !== mainWrapper) mainWrapper.insertBefore(content, mainWrapper.firstChild);
 
     ensureFooter(mainWrapper);
+    ensureMarketTicker(header);
     return { layout, mainWrapper, content };
+  }
+
+  function ensureMarketTicker(header) {
+    const ticker = document.querySelector('[data-shell-market-ticker]');
+    if (ticker && header.nextElementSibling !== ticker) header.after(ticker);
+    if (document.getElementById('wax-market-ticker-script')) return;
+
+    const stylesheet = document.createElement('link');
+    stylesheet.id = 'wax-market-ticker-style';
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = '/css/wax-market-ticker.css?v=1';
+    document.head.appendChild(stylesheet);
+
+    const script = document.createElement('script');
+    script.id = 'wax-market-ticker-script';
+    script.src = '/js/wax-market-caps.js?v=8';
+    document.head.appendChild(script);
   }
 
   function ensureFooter(mainWrapper) {
