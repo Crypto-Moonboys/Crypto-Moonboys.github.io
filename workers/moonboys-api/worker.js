@@ -45,6 +45,8 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
 import { clanOperationsEnabled, handleClanOperations } from './routes/clan-operations.js';
+import { clanPeriodStart, closeClanPeriods } from './shared/clan-period-rewards.js';
+import { CLAN_SIGNAL_XP, clanSignalXpStart, settleClanSignalXp } from './shared/clan-signal-xp.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleRadioStream } from './routes/radio-stream.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
@@ -9866,7 +9868,8 @@ function clanOperationPlayUrl() {
   return `${SITE_URL}/community.html#clan-operation`;
 }
 
-function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
+function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot, signalXpFrom) {
+  const bankBonus = clanPilot && signalXpFrom && signalXpFrom < eventRow.ends_at;
   return [
     '🚨 WTF SIGNAL IN 10 MINUTES',
     '',
@@ -9874,11 +9877,16 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
     '',
     `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
     '',
-    'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
+    bankBonus
+      ? 'Complete the timed objective to unlock roguelite options.'
+      : 'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
     ...(clanPilot ? [
       '',
       `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
       'Bank completed tiers for Clan Renown and collectibles. Your clan’s operation is open all UTC day.',
+      ...(bankBonus
+        ? [`Bank a Clan Operation tier during the live window for ${CLAN_SIGNAL_XP} Community XP once per player.`]
+        : []),
     ] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
@@ -9888,7 +9896,8 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot) {
   ].join('\n');
 }
 
-function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
+function buildDailyGroupSummaryMessage(utcDay, clanPilot, signalXpFrom) {
+  const bankBonus = clanPilot && signalXpFrom && signalXpFrom.slice(0, 10) <= utcDay;
   const windows = getWtfDailySchedule(utcDay)
     .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
     .join(', ');
@@ -9904,7 +9913,9 @@ function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
     'Check the site for current tasks, timed quests, and roguelite options.',
     ...(clanPilot ? [
       `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
-      'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
+      bankBonus
+        ? `Bank tiers for Clan Renown and collectibles. During live signal windows, eligible banks earn ${CLAN_SIGNAL_XP} Community XP once per player per window.`
+        : 'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
     ] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
@@ -9941,7 +9952,7 @@ function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
         event_id: row.event_id,
         announcement_type: 'wtf_pre_event_minus_10',
         scheduled_for: new Date(scheduledMs).toISOString(),
-        message: buildWtfPreEventGroupAnnouncement(row, options.clanPilot),
+        message: buildWtfPreEventGroupAnnouncement(row, options.clanPilot, options.signalXpFrom),
         metadata: {
           title: row.title,
           starts_at: row.starts_at,
@@ -9969,7 +9980,7 @@ function getDailyGroupSummaryCandidates(nowMs, options = {}) {
     event_id: null,
     announcement_type: 'daily_summary',
     scheduled_for: new Date(scheduledMs).toISOString(),
-    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot),
+    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot, options.signalXpFrom),
     metadata: {
       wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
       coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
@@ -11993,6 +12004,7 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
   const groupConfig = getTelegramGroupConfig(env);
   const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, {
     clanPilot: clanOperationsEnabled(env),
+    signalXpFrom: clanSignalXpStart(env),
     force,
     announcementKey: options.announcement_key || options.announcementKey || null,
     eventId: options.event_id || options.eventId || null,
@@ -15561,6 +15573,26 @@ export default {
     const shouldRunChatMenuCleanup = !cron || cron === '*/5 * * * *';
     const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
     const scheduledResults = [];
+
+    if (shouldRunTimedEvents && clanOperationsEnabled(env)) {
+      const now = new Date(Number(event?.scheduledTime) || Date.now());
+      const periodStart = clanPeriodStart(env);
+      const signalStart = clanSignalXpStart(env);
+      const tasks = [
+        ['clan_signal_xp', signalStart, settleClanSignalXp],
+        ['clan_period_rewards', periodStart, closeClanPeriods],
+      ];
+      for (const [task, start, run] of tasks) {
+        if (!start) continue;
+        try {
+          await run(env.DB, start, now);
+          scheduledResults.push({ task, ok: true, error: null });
+        } catch (error) {
+          logApiFailure(task + '_scheduled_failed', { message: error?.message });
+          scheduledResults.push({ task, ok: false, error: error?.message || 'unknown_error' });
+        }
+      }
+    }
 
     if (shouldRunDigest) {
       const summary = await runTelegramDailyDigest(env, {

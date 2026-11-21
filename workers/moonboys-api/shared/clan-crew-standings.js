@@ -45,7 +45,11 @@ export async function readCrewStandings(db, week) {
     GROUP BY roster.faction_id
   `).bind(week.start, week.end, week.start, DAYS_PER_SCORE, week.start).all();
   if (result.success !== true || !Array.isArray(result.results)) throw new Error('crew_standings_query_failed');
-  const totals = new Map(result.results.map(row => [row.faction_id, row]));
+  return { week_start: week.start, ...rankCrewScores(result.results) };
+}
+
+export function rankCrewScores(rows) {
+  const totals = new Map(rows.map(row => [row.faction_id, row]));
   const crews = CANONICAL_FACTION_KEYS.map(factionId => {
     const row = totals.get(factionId);
     const rosterSize = row?.roster_size ?? 0;
@@ -54,7 +58,7 @@ export async function readCrewStandings(db, week) {
       roster_size: rosterSize,
       active_members: row?.active_members ?? 0,
       scored_banks: row?.scored_banks ?? 0,
-      possible_banks: rosterSize * DAYS_PER_SCORE * BANKS_PER_DAY,
+      possible_banks: row?.possible_banks ?? rosterSize * DAYS_PER_SCORE * BANKS_PER_DAY,
       rank: null,
     };
   });
@@ -69,5 +73,5 @@ export async function readCrewStandings(db, week) {
       crew.rank = index && compare(eligible[index - 1], crew) === 0 ? eligible[index - 1].rank : index + 1;
     }
   }
-  return { week_start: week.start, ranked, min_roster: MIN_ROSTER, min_crews: MIN_CREWS, crews };
+  return { ranked, min_roster: MIN_ROSTER, min_crews: MIN_CREWS, crews };
 }

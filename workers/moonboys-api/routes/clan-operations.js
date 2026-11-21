@@ -1,6 +1,8 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
+import { clanPeriodStart, readClanPeriodResults, readClanPeriodRewards } from '../shared/clan-period-rewards.js';
+import { CLAN_SIGNAL_XP, clanSignalXpStart } from '../shared/clan-signal-xp.js';
 import { CANONICAL_FACTION_KEYS, FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
 import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
@@ -117,6 +119,13 @@ function utcDay(now) {
   return now.toISOString().slice(0, 10);
 }
 
+const cityMilestones = [30, 100, 300];
+
+function cityProgress(banks) {
+  return { stage: cityMilestones.filter(goal => banks >= goal).length,
+    next: cityMilestones.find(goal => goal > banks) ?? null };
+}
+
 async function readCrewProgress(db, now) {
   const day = utcDay(now);
   const weekStart = crewWeek(now).start;
@@ -217,6 +226,18 @@ export async function handleClanOperations(request, env, helpers) {
           logApiFailure?.('clan_crew_standings_unavailable', { message: error?.message });
         }
       }
+      if (params.get('city') === '1') {
+        for (const crew of progress.crews) crew.city = cityProgress(crew.week_banks);
+      }
+      const signalStart = clanSignalXpStart(env);
+      if (signalStart && signalStart <= time.toISOString()) progress.signal_bonus_xp = CLAN_SIGNAL_XP;
+      if (clanPeriodStart(env)) {
+        try {
+          progress.final_results = await readClanPeriodResults(env.DB);
+        } catch (error) {
+          logApiFailure?.('clan_period_results_unavailable', { message: error?.message });
+        }
+      }
       return respond(progress);
     } catch (error) {
       logApiFailure?.('clan_crew_progress_unavailable', { message: error?.message });
@@ -235,6 +256,10 @@ export async function handleClanOperations(request, env, helpers) {
   const ownerLimited = rateLimit?.(owner);
   if (ownerLimited) return ownerLimited;
   try {
+    if (!actionRequest && body.period_rewards_ui === 'profile') {
+      const rewards = clanPeriodStart(env) ? await readClanPeriodRewards(env.DB, owner) : [];
+      return respond({ ok: true, period_rewards: rewards });
+    }
     const membership = canonicalFactionProjection(
       await env.DB.prepare(CANONICAL_FACTION_READ_SQL).bind(owner).first(),
     );
@@ -337,6 +362,13 @@ export async function handleClanOperations(request, env, helpers) {
       if (!result) return respond({ error: 'refresh_operation' }, 409);
     }
     const state = await readOperation(env.DB, owner, requestTime, factionId, operation);
+    if (!state.error && !actionRequest && body.period_rewards_ui === 1 && clanPeriodStart(env)) {
+      try {
+        state.period_rewards = await readClanPeriodRewards(env.DB, owner);
+      } catch (error) {
+        logApiFailure?.('clan_period_rewards_unavailable', { message: error?.message });
+      }
+    }
     return respond(state, state.error ? 409 : 200);
   } catch (error) {
     logApiFailure?.('clan_operations_unavailable', { message: error?.message });

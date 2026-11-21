@@ -130,6 +130,7 @@
         <h3 id="clan-crew-progress-title">Clan crew progress</h3>
         <p>Each bank is one completed operation tier. The week begins Monday at 00:00 UTC.</p>
         <p data-clan-crew-period></p>
+        <p data-clan-city-rules hidden>Each crew’s confirmed banks advance its city project at 30, 100 and 300 weekly banks. Projects reset Monday at 00:00 UTC.</p>
         <div data-clan-crew-competition hidden>
           <p>Weekly score counts each signed-up member’s best five UTC days out of seven. The roster locks on Monday at 00:00 UTC. Your entry stays with the faction you sign up for. Every signed-up member counts toward the crew’s possible score.</p>
           <label>Weekly score period
@@ -143,10 +144,15 @@
           <p data-clan-crew-entry role="status"></p>
         </div>
         <table data-clan-crew-table aria-labelledby="clan-crew-progress-title">
-          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th><th scope="col" data-clan-crew-score hidden>Weekly score</th></tr></thead>
+          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th><th scope="col" data-clan-city hidden>City project</th><th scope="col" data-clan-crew-score hidden>Weekly score</th></tr></thead>
           <tbody></tbody>
         </table>
         <p role="status"></p>
+        <div data-clan-final-results hidden>
+          <h4>Final clan results and Hall of Fame</h4>
+          <p>Weekly scores use each entrant’s five best UTC days. Monthly and seasonal scores combine those roster scores for days within the period. Eligible crews need three entrants and at least one bank to place. At least two crews must meet the roster threshold. Tied winners share first place. Players who banked for their winning roster earn the in-game award.</p>
+          <ul></ul>
+        </div>
         <button type="button" data-clan-crew-refresh>Refresh crew progress</button>
       </section>
     </section>
@@ -176,7 +182,8 @@
           <div id="battle-wtf-signal">
             <p>Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each signal runs for 90 minutes.</p>
             <p data-wtf-signal-summary role="status">Checking the Daily WTF schedule…</p>
-            <p>Completing a timed signal objective unlocks roguelite options. Signal bonus XP is preview only.</p>
+            <p>Completing a timed signal objective unlocks roguelite options. XP shown for those objectives is a preview.</p>
+            <p data-clan-signal-bonus hidden></p>
             <p><a href="#clan-operation">Play your daily Clan Operation</a> to earn Clan Renown and collectibles. Your operation is available all UTC day.</p>
           </div>
           <div id="battle-todays-active-options">
@@ -272,7 +279,7 @@
 <script data-cfasync="false" src="/js/battle-chamber-factions.js?standings-art=4"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
-<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=1"></script>
-<script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=1"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=2"></script>
+<script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=2"></script>
 </body>
 </html>

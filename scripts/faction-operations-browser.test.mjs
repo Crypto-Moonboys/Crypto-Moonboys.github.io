@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { buildSync } from 'esbuild';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
 import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
@@ -13,6 +14,11 @@ import { advanceBurst, describeBurst, burstFinds } from '../workers/moonboys-api
 import { advanceFork, describeFork, forkFinds } from '../workers/moonboys-api/shared/clan-rockers-fork.js';
 
 const ROOT = process.cwd();
+function browserModule(filename) {
+  return buildSync({ entryPoints: [path.join(ROOT, 'js', filename)], bundle: true, write: false }).outputFiles[0].text;
+}
+const clanOperationScript = browserModule('clan-operation-v9.js');
+const crewBoardScript = browserModule('clan-crew-board.js');
 const FACTIONS = [
   'hard-fork-rockers','rugpull-miners','graffpunks','blockchain-furies',
   'crypto-moongirls','blockstars','all-city-bulls','nomad-bears','crypto-stoned-boys',
@@ -1081,7 +1087,7 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
         });
       };
     });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
     const right = page.getByRole('button', { name: 'Cycle right' });
     await page.locator('[data-wall-controls] button[value="paint-2"]:not([aria-disabled]):enabled').waitFor();
     await right.focus();
@@ -1150,7 +1156,7 @@ test('Nomad Bears announce mobile travel and retain the map during a retry windo
         return Response.json(snapshots[request.revision + 1]);
       };
     }, states);
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
     const feedback = page.getByRole('status');
     const expectFeedback = pattern => feedback.filter({ hasText: pattern }).waitFor();
     const travel = page.locator('[data-wall-controls]');
@@ -1229,7 +1235,7 @@ test('All City Bulls can read pressure, time a hold and bank a visible mark on m
       };
     }, { snapshots, pathToBank });
 
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
     const feedback = page.getByRole('status');
     await feedback.filter({ hasText: /Next pressure: Market Gate/ }).waitFor();
     assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
@@ -1314,7 +1320,7 @@ test('Crypto Moongirls can recover from a missed early lock and bank on mobile',
       };
     }, { snapshots, moves });
 
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
     const feedback = page.getByRole('status');
     await feedback.filter({ hasText: /8 matching channels/ }).waitFor();
     assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
@@ -1394,7 +1400,7 @@ test('Hard Fork Rockers can recover a stalled Edge Fork and bank on mobile', { t
       };
     }, { snapshots, moves });
 
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
     const status = page.getByRole('status');
     await status.filter({ hasText: /Choose a fork/ }).waitFor();
     assert.equal(await status.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
@@ -1477,7 +1483,7 @@ test('Blockchain Furies hide the sequence in play and guide the revenge chain on
         getSignedTelegramAuth: () => ({ id: '111' }),
       };
     }, { moves, snapshots });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
 
     const status = page.getByRole('status');
     const board = page.getByRole('list', { name: 'Burst sequence' });
@@ -1556,7 +1562,7 @@ test('The Blockstars can recover a missed set and bank a remix poster on mobile'
         getSignedTelegramAuth: () => ({ id: '113' }),
       };
     }, { moves, snapshots });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
 
     const status = page.getByRole('status');
     assert.equal(await page.getByRole('link', { name: /featured Arcade game.*Meme Swarm/ }).getAttribute('href'),
@@ -1638,7 +1644,7 @@ test('Crypto Stoned Boys can see the odds, spend their reroll and recover an art
         getSignedTelegramAuth: () => ({ id: '107' }),
       };
     }, { moves, snapshots });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-operation-v9.js') });
+    await page.addScriptTag({ content: clanOperationScript });
 
     const status = page.getByRole('status');
     const shortcut = page.getByRole('button', { name: 'Try the chaos shortcut' });
@@ -1700,13 +1706,13 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
             ok: true, week_start: '2026-11-23', entered_faction: body.crew_entry === 'join' ? 'nomad-bears' : null,
           });
         }
-        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1' || options.credentials !== 'omit') {
+        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1&city=1' || options.credentials !== 'omit') {
           throw new Error('incorrect public request');
         }
         return new Promise(resolve => window.crewRequests.push(resolve));
       };
     });
-    await page.addScriptTag({ path: path.join(ROOT, 'js/clan-crew-board.js') });
+    await page.addScriptTag({ content: crewBoardScript });
 
     const board = page.getByRole('region', { name: 'Clan crew progress' });
     const table = page.getByRole('table');
@@ -1743,10 +1749,15 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await refresh.click();
     await page.waitForFunction(() => window.crewRequests.length === 3);
     await banked();
-    await deliver(3, counts(2, 5));
+    const refreshed = counts(2, 100);
+    for (const crew of refreshed.crews) {
+      crew.city = crew.faction_id === 'nomad-bears' ? { stage: 2, next: 300 } : { stage: 0, next: 30 };
+    }
+    await deliver(3, refreshed);
     await board.getByRole('status').filter({ hasText: 'Crew progress updated.' }).waitFor();
     await deliver(2, counts(1, 4));
-    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['2', '5']);
+    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['2', '100', 'Trail network · Expanded · 100/300 banks']);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 
     await refresh.click();
     await deliver(4, { error: 'crew_progress_unavailable' }, 503);

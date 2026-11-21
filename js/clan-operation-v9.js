@@ -1,3 +1,5 @@
+import { renderClanPeriodRewards } from './clan-period-display.js';
+
 const panel = document.querySelector('[data-clan-operation]');
 
 if (panel) {
@@ -43,6 +45,10 @@ if (panel) {
   const collection = panel.querySelector('[data-mine-collection]');
   const collectionLabel = panel.querySelector('[data-operation-collection-label]')
     ?? collection.previousElementSibling?.querySelector('strong');
+  const periodRewards = document.createElement('ul');
+  periodRewards.setAttribute('aria-label', 'Earned clan period rewards');
+  periodRewards.hidden = true;
+  collection.after(periodRewards);
   const strata = [...panel.querySelectorAll('[data-mine-tier]')];
   const retry = panel.querySelector('[data-mine-refresh]');
   const join = panel.querySelector('[data-mine-join]');
@@ -84,6 +90,8 @@ if (panel) {
     title.textContent = '';
     stats.textContent = '';
     collection.textContent = '';
+    periodRewards.replaceChildren();
+    periodRewards.hidden = true;
     wallPanels.replaceChildren();
     wallControls.replaceChildren();
     delete panel.dataset.activeOperation;
@@ -375,6 +383,9 @@ if (panel) {
   }
 
   function showOperation(data) {
+    if (Array.isArray(data.period_rewards)) {
+      renderClanPeriodRewards(periodRewards, data.period_rewards, chamberFaction);
+    }
     if (chamberFaction && data.faction_id !== chamberFaction) {
       showError('wrong_operation_faction');
       return;
@@ -539,6 +550,7 @@ if (panel) {
         body: JSON.stringify({
           telegram_auth: auth,
           operation_ui: 'wall-v1',
+          period_rewards_ui: 1,
           expedition_ui: 'trail-v1',
           district_ui: 'district-v1',
           signal_ui: 'signal-v1',

@@ -4426,9 +4426,9 @@ body.page-home .article-card-cat {
 }
 
 #site-header > #moonboys-global-status-badge .csp-badge {
-  width: 34px;
-  height: 34px;
-  padding: 3px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
 }
 
 #site-header > #moonboys-global-status-badge .csp-telegram-icon {
