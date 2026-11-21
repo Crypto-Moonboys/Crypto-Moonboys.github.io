@@ -25,10 +25,14 @@ test('two full rotations use all saved builds, with one full match in 27 outcome
     for (const round of cycle) {
       assert.deepEqual(round.target, presets.get(round.presetId));
       assert.equal(round.pools.length, 3);
+      if (round.presetId === 'moonboy-16') {
+        assert.deepEqual(round.pools.map(pool => pool.category), ['hat', 'chains', 'clothes']);
+      }
       const results = [0, 0, 0, 0];
       for (let i = 0; i < 27; i++) {
         const indices = [i % 3, Math.floor(i / 3) % 3, Math.floor(i / 9)];
         const draw = drawPfpRoll(round, () => indices.shift());
+        if (draw.stack.face) assert.notEqual(draw.stack.hat, 'hat-mb-hat-49');
         for (const [category, id] of Object.entries(draw.stack)) {
           if (!id) continue;
           const trait = traits.get(id);
