@@ -51,10 +51,10 @@ if (profile) {
       });
       if (!response.ok) throw new Error('clan_awards_unavailable');
       const data = await response.json();
-      if (stillCurrent() && Array.isArray(data.period_rewards)) {
-        renderClanPeriodRewards(list, data.period_rewards);
-        status.textContent = list.hidden ? 'No clan awards earned yet.' : '';
-      }
+      if (!stillCurrent()) return;
+      if (!Array.isArray(data.period_rewards)) throw new Error('clan_awards_unavailable');
+      renderClanPeriodRewards(list, data.period_rewards);
+      status.textContent = list.hidden ? 'No clan awards earned yet.' : '';
     } catch {
       if (stillCurrent()) status.textContent = 'Clan awards are temporarily unavailable.';
     }
