@@ -262,6 +262,7 @@
     ['crypto-stoned-boys', { src: '/art/crypto%20stonedboys.jpg', alt: 'Crypto Stoned Boys artwork', size: 1254 }],
     ['graffpunks', { src: '/art/the%20GraffPUNKS%20Crypto%20Moonboys.jpg', alt: 'GraffPUNKS Crypto Moonboys artwork', size: 1254 }],
     ['hard-fork-rockers', { src: '/art/crypto%20moonboys%20The%20Hard%20fork%20Rockers.jpg', alt: 'Hard Fork Rockers artwork', size: 1254 }],
+    ['nomad-bears', { src: '/art/crypto%20moonboys%20The%20Nomad%20Bears.jpg', alt: 'Nomad Bears artwork', size: 1254 }],
   ]);
 
   function renderStandings() {
