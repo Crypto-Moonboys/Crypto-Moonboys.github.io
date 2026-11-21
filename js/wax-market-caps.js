@@ -34,7 +34,7 @@
     const keyframes = reducedMotion.matches
       ? [{ color }, { color }]
       : [{ color, textShadow: `0 0 12px ${color}` }, {}];
-    pulses.set(element, element.animate(keyframes, { duration: 900, easing: 'ease-out' }));
+    pulses.set(element, element.animate(keyframes, { duration: 3000, easing: 'ease-out' }));
   }
 
   function render(row, direction = 0) {
