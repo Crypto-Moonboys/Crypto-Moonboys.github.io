@@ -10,7 +10,14 @@ const FACTION_EMOJI = Object.freeze({
   'The Blockstars': '🧱',
   'Nomad Bears': '🐻',
 });
-const FACTION_LINE = /^Faction: (All City Bulls|Crypto Moongirls|Crypto Stoned Boys|GraffPUNKS|Hard Fork Rockers|Rugpull Miners|Blockchain Furies|The Blockstars|Nomad Bears)$/m;
+// Daily-loop status uses canonical faction IDs as its labels.
+const FACTION_LABELS = Object.freeze(Object.fromEntries(
+  Object.keys(FACTION_EMOJI).map(label => [
+    label === 'The Blockstars' ? 'blockstars' : label.toLowerCase().replaceAll(' ', '-'),
+    label,
+  ]),
+));
+const FACTION_LINE = /^Faction: ([^\r\n]+)$/m;
 const normalizeEmoji = value => String(value || '').replace(/\uFE0F/g, '');
 
 let packCache;
@@ -53,10 +60,11 @@ async function getFactionEmojiPack(token, fetchImpl) {
 
 export async function addFactionEmojiToStatus(text, token, fetchImpl = fetch) {
   const match = FACTION_LINE.exec(text);
-  if (!match) return text;
+  const label = match && (FACTION_LABELS[match[1]] || match[1]);
+  if (!label || !Object.hasOwn(FACTION_EMOJI, label)) return text;
   const entries = await getFactionEmojiPack(token, fetchImpl);
-  const sticker = entries?.get(FACTION_EMOJI[match[1]]);
+  const sticker = entries?.get(FACTION_EMOJI[label]);
   if (!sticker) return text;
-  return text.replace(FACTION_LINE, (_, faction) =>
-    `Faction: <tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji> ${faction}`);
+  return text.replace(FACTION_LINE, () =>
+    `Faction: <tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji> ${label}`);
 }
