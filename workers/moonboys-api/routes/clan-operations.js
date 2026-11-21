@@ -2,7 +2,7 @@ import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
 import { clanPeriodStart, readClanPeriodResults, readClanPeriodRewards } from '../shared/clan-period-rewards.js';
-import { readClanCampaign, readClanCampaignCollectibles } from '../shared/clan-campaigns.js';
+import { clanCampaignReversesRoute, readClanCampaign, readClanCampaignCollectibles, readClanCampaignEligibility } from '../shared/clan-campaigns.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart } from '../shared/clan-signal-xp.js';
 import { CANONICAL_FACTION_KEYS, FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
@@ -154,7 +154,12 @@ async function readCrewProgress(db, now) {
   };
 }
 
-async function readOperation(db, owner, now, factionId, operation) {
+async function operationRoute(db, now, campaignEnabled) {
+  const route = dailyRouteIndex(now);
+  return campaignEnabled && await clanCampaignReversesRoute(db, utcDay(now)) ? 2 - route : route;
+}
+
+async function readOperation(db, owner, now, factionId, operation, campaignEnabled) {
   const day = utcDay(now);
   // One statement keeps progress and its triggered awards in the same snapshot.
   const state = await db.prepare(`
@@ -180,7 +185,8 @@ async function readOperation(db, owner, now, factionId, operation) {
   if (state.revision != null && state.rules_version !== operation.version) return { error: 'operation_unavailable' };
   const tier = state.tier ?? 0;
   const operationState = JSON.parse(state.operation_state ?? '{}');
-  const view = operation.view(state.route_index ?? dailyRouteIndex(now), { ...state, utc_day: day, tier, operationState });
+  const route = state.route_index ?? await operationRoute(db, now, campaignEnabled);
+  const view = operation.view(route, { ...state, utc_day: day, tier, operationState });
   const reset = new Date(`${day}T00:00:00.000Z`);
   reset.setUTCDate(reset.getUTCDate() + 1);
   return {
@@ -209,11 +215,12 @@ export async function handleClanOperations(request, env, helpers) {
     const enabled = clanOperationsEnabled(env);
     const params = new URL(request.url).searchParams;
     if (params.get('view') === 'campaign') {
-      if (!enabled || !clanPeriodStart(env)) return respond({ error: 'campaigns_unavailable' }, 404);
+      const from = clanPeriodStart(env);
+      if (!enabled || !from) return respond({ error: 'campaigns_unavailable' }, 404);
       const ipLimited = rateLimit?.();
       if (ipLimited) return ipLimited;
       try {
-        return respond({ ok: true, ...await readClanCampaign(env.DB, now()) });
+        return respond({ ok: true, ...await readClanCampaign(env.DB, now(), from) });
       } catch (error) {
         logApiFailure?.('clan_campaign_unavailable', { message: error?.message });
         return respond({ error: 'campaign_unavailable' }, 503);
@@ -270,6 +277,14 @@ export async function handleClanOperations(request, env, helpers) {
   try {
     if (!actionRequest && body.campaign_rewards_ui === 1) {
       if (!clanPeriodStart(env)) return respond({ error: 'campaigns_unavailable' }, 404);
+      if (body.campaign_eligibility === true) {
+        const membership = canonicalFactionProjection(await env.DB.prepare(CANONICAL_FACTION_READ_SQL).bind(owner).first());
+        const [collectibles, eligibility] = await Promise.all([
+          readClanCampaignCollectibles(env.DB, owner),
+          membership.joined ? readClanCampaignEligibility(env.DB, owner, membership.faction_id, now()) : [],
+        ]);
+        return respond({ ok: true, collectibles, eligibility, joined: membership.joined });
+      }
       return respond({ ok: true, collectibles: await readClanCampaignCollectibles(env.DB, owner) });
     }
     if (!actionRequest && body.period_rewards_ui === 'profile') {
@@ -332,6 +347,7 @@ export async function handleClanOperations(request, env, helpers) {
 
     const requestTime = now();
     const day = utcDay(requestTime);
+    const campaignEnabled = Boolean(clanPeriodStart(env));
     if (actionRequest) {
       if (body.utc_day !== day || !Number.isSafeInteger(body.revision) || body.revision < 0) {
         return respond({ error: 'refresh_operation' }, 409);
@@ -340,8 +356,8 @@ export async function handleClanOperations(request, env, helpers) {
         return respond({ error: 'invalid_move' }, 400);
       }
       const db = env.DB;
-      const route = dailyRouteIndex(requestTime);
       const saved = await selectDay(db, owner, day);
+      const route = saved?.route_index ?? await operationRoute(db, requestTime, campaignEnabled);
       const state = saved ?? { route_index: route, utc_day: day, revision: 0, tier: 0, ore: 0, braced: 0, collapsed: 0 };
       if (saved && saved.faction_id !== factionId) return respond({ error: 'operation_faction_locked' }, 409);
       if (state.revision !== body.revision || (saved && saved.rules_version !== operation.version)) {
@@ -377,7 +393,7 @@ export async function handleClanOperations(request, env, helpers) {
           operationState, body.action, next.outcome, requestTime.toISOString(), owner, ...keys).first();
       if (!result) return respond({ error: 'refresh_operation' }, 409);
     }
-    const state = await readOperation(env.DB, owner, requestTime, factionId, operation);
+    const state = await readOperation(env.DB, owner, requestTime, factionId, operation, campaignEnabled);
     if (!state.error && !actionRequest && body.period_rewards_ui === 1 && clanPeriodStart(env)) {
       try {
         state.period_rewards = await readClanPeriodRewards(env.DB, owner);

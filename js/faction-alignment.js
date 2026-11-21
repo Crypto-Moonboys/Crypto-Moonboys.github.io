@@ -176,6 +176,7 @@
       faction: faction,
       faction_xp: Number(data.faction_xp) || 0,
       season_key: data.season_key || null,
+      can_choose_faction: data.can_choose_faction === true,
       bonuses: {
         icon: bonuses.icon || FACTIONS[faction].icon,
         color: bonuses.color || FACTIONS[faction].color,
@@ -207,6 +208,7 @@
       season_key: data.season_key || null,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms: cooldownMs,
+      can_choose_faction: false,
       cooldown_ms_remaining: 0,
     };
     setCachedStatus(payload);
@@ -229,6 +231,7 @@
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp_total) || 0,
       season_key: data.season_key || (priorStatus && priorStatus.season_key) || null,
+      can_choose_faction: priorStatus?.can_choose_faction === true && priorStatus.faction === normalizeFaction(data.faction),
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms_remaining: 0,
     };

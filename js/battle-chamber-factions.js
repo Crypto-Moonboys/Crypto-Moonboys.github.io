@@ -464,11 +464,12 @@
     if (!container) return;
 
     var factionApi = window.MOONBOYS_FACTION;
-    var cached = status || (factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null);
+    var saved = factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null;
+    var cached = status && status.faction !== saved?.faction ? status : { ...saved, ...status };
     var currentFaction = (cached && cached.faction) ? cached.faction : 'unaligned';
     var isAligned = currentFaction !== 'unaligned';
 
-    if (isAligned) {
+    if (isAligned && cached.can_choose_faction !== true) {
       var meta = factionMeta(currentFaction);
       var chamberLink = CHAMBER_ROUTES[currentFaction] || '/battle-chamber/factions/index.html';
       var seasonKey = (cached && cached.season_key) ? cached.season_key : null;
@@ -496,13 +497,14 @@
           '<div class="bc-join-card-name">' + esc(f.label) + '</div>' +
           '<div class="bc-join-card-playstyle">' + esc(f.playstyle) + '</div>' +
           '<div class="bc-join-card-perk">' + esc(f.perkTeaser) + '</div>' +
-          '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '">Join ' + esc(f.label) + '</button>' +
+          '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '">' + (currentFaction === f.key ? 'Stay with ' : 'Join ') + esc(f.label) + '</button>' +
           '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key]) + '">View ' + esc(f.label) + ' chamber</a>' +
           '</div>';
       }).join('');
 
       container.innerHTML =
         '<div class="bc-join-season-notice">' +
+          (isAligned ? '<p>Season ' + esc(String(cached.season_key || '').replace(/^S/, '')) + ' is open. Stay with your faction or choose a new one.</p>' : '') +
           '<p class="bc-join-season-lock-copy">' + esc(CONTENT.factionLock || 'Choose carefully. Your faction is locked for the current season.') + '</p>' +
           '<p class="bc-join-season-reset-copy">' + esc(CONTENT.factionReset || 'At season reset, your faction lock clears and you can join again or pick a new side.') + '</p>' +
           '<p class="bc-join-link-copy">' + esc(CONTENT.factionIdentityRequired || 'Faction clout only counts when you are Telegram-linked. No faction, no faction clout.') + '</p>' +

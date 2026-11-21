@@ -88,18 +88,22 @@ period rewards are enabled.
 Migration `127_clan_campaigns.sql` adds the campaign plans, frozen results and
 collectible receipts. Apply it before deploying the compatible Worker. The
 existing Clan Operations and period reward settings enable the campaign tick.
-The first eligible full season is Season 13. The Worker saves the plan for an
-eligible active or upcoming season and keeps that plan through later builds.
+The first eligible full season is Season 13. The public preview projects the
+next dated season in advance. The Worker saves the plan for an eligible active
+or upcoming season and keeps that plan through later builds.
 The first two campaigns use all 60 catalogue parts across two disjoint sets.
 Subsequent campaigns alternate themes and select objectives, events and
 collectibles deterministically from their respective pools.
 
-Each gameplay window uses the roster locked for its opening UTC week. Only
-matching server-confirmed Clan Operation banks count. Individual challenges
+The first objective admits players through their first confirmed bank during
+the window and uses the faction on that receipt. It awards progress. Later
+windows use the roster locked for their opening UTC week. Only matching
+server-confirmed Clan Operation banks count. Individual challenges
 cap each entrant’s credit at the challenge target and require at least 70%
 of the roster’s possible score. Team challenges use the stated objective.
-City events and the co-op finale give each faction an equal share of the
-city meter. Ranked finale scores count equal parts participation and banks
+City events and the co-op finale give each rostered faction an equal share of
+the city meter, with at least four shares. The usual 30% and 35% city goals
+require at least two contributing factions. Ranked finale scores count equal parts participation and banks
 per eligible roster day. At least two crews with three entrants are needed
 to place. Ties share the result.
 
@@ -108,6 +112,9 @@ who banked in the window receive a receipt when the window closes. Final
 results and receipts commit together after a five-minute UTC buffer.
 Collectibles are in-game records. The existing rankings and reward ledgers
 continue to use their original inputs and rules.
+
+Starting with Season 15, a selected Night Shift event reverses the daily route
+rotation for newly opened operations. A saved daily run keeps its route.
 
 Local release checks include the campaign regression cases in
 `scripts/clan-mining-pilot.test.mjs` and the mobile campaign panel in

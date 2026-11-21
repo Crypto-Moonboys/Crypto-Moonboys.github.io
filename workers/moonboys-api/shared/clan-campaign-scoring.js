@@ -19,6 +19,7 @@ function memberScore(member, window) {
     case 'days': return dates.length;
     case 'fullDays': return full.length;
     case 'fullRoutes': return new Set(full.map(day => day.route)).size;
+    case 'rebuildRoutes': return new Set(full.map(day => day.route)).size >= window.target ? window.target : 0;
     case 'finalDays': return byTier(3);
     case 'middleDays': return byTier(2);
     case 'routes': return member.routes.size;
@@ -72,7 +73,7 @@ function teamScore(crew, window) {
 
 function evaluateRebuild(window, rosters, banks) {
   const middle = new Date(+new Date(window.startsOn) + 2 * DAY_MS).toISOString().slice(0, 10);
-  const initial = evaluateCampaignWindow({ ...window, metric: 'fullRoutes', endsBefore: middle },
+  const initial = evaluateCampaignWindow({ ...window, metric: 'rebuildRoutes', endsBefore: middle },
     rosters, banks.filter(bank => bank.utc_day < middle));
   const unlocked = initial.cityPoints >= window.cityTarget * 100;
   const final = unlocked ? evaluateCampaignWindow({ ...window, metric: 'fullDays', target: 1, startsOn: middle },
@@ -120,6 +121,7 @@ export function evaluateCampaignWindow(window, rosters, banks) {
   });
   let eligibleFactions;
   let cityPoints = null;
+  let cityFactionSlots = null;
   if (window.mode === 'ranked') {
     const compare = (a, b) => {
       const [aValue, aMax] = fractions.get(a.faction_id);
@@ -131,11 +133,14 @@ export function evaluateCampaignWindow(window, rosters, banks) {
     eligibleFactions = eligible.length >= 2 && fractions.get(eligible[0].faction_id)[0] > 0
       ? eligible.filter(row => compare(row, eligible[0]) === 0).map(row => row.faction_id) : [];
   } else if (window.mode === 'city') {
-    cityPoints = Math.floor(rows.reduce((sum, row) => sum + row.points, 0) / rows.length);
+    // Opening-week registration freezes each faction's share before the window.
+    // Four shares at minimum keep the 30% and 35% goals cooperative.
+    cityFactionSlots = Math.max(4, rows.filter(row => row.roster > 0).length);
+    cityPoints = Math.floor(rows.reduce((sum, row) => sum + row.points, 0) / cityFactionSlots);
     eligibleFactions = cityPoints >= window.cityTarget * 100
       ? rows.filter(row => row.participants).map(row => row.faction_id) : [];
   } else {
     eligibleFactions = rows.filter(row => row.points >= threshold * 100).map(row => row.faction_id);
   }
-  return { rows, threshold, cityPoints, eligibleFactions };
+  return { rows, threshold, cityPoints, cityFactionSlots, eligibleFactions };
 }

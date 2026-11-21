@@ -89,14 +89,15 @@ function fixture(t) {
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
-    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, crewEntry, weekStart, campaignRewards,
+    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, crewEntry, weekStart, campaignRewards, campaignEligibility,
     operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
       action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
-      utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, renown: 99_999_999, telegram_id: '102', ore: 99,
+      utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, campaign_eligibility: campaignEligibility,
+      renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') : ''}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart }, {
@@ -1524,7 +1525,7 @@ test('campaign picker selects 30 compatible parts and the first two seasons use 
 
 test('campaign endpoints hide future details, pin plans and grant only one collectible per verified contributor', async t => {
   const db = await localD1(t);
-  const { settings, request } = requestFixture(db);
+  const { settings, request, fill } = requestFixture(db);
   const schema = new DatabaseSync(':memory:');
   schema.exec(`CREATE TABLE telegram_seasons (
     id INTEGER PRIMARY KEY, start_date TEXT, end_date TEXT, is_active INTEGER
@@ -1533,9 +1534,15 @@ test('campaign endpoints hide future details, pin plans and grant only one colle
   const objects = schema.prepare('SELECT sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY rowid').all();
   await db.batch(objects.map(row => db.prepare(row.sql)));
   schema.close();
+  settings.periodStart = campaignStart;
+  settings.time = new Date('2026-12-01T12:00:00Z');
+  await db.prepare('INSERT INTO telegram_seasons VALUES (12, ?, ?, 1)')
+    .bind('2026-11-21T16:31:19.578Z', season13.start_date).run();
+  const forecast = (await request({ method: 'GET', view: 'campaign' })).data;
+  assert.deepEqual(forecast.upcoming, { seasonId: 13, startsOn: '2026-12-16', title: 'The Clout War' });
+  assert.equal(await db.prepare('SELECT COUNT(*) AS count FROM clan_campaigns').first('count'), 0);
   await db.prepare('INSERT INTO telegram_seasons VALUES (?, ?, ?, 1), (?, ?, ?, 1)')
     .bind(13, season13.start_date, season13.end_date, 14, season14.start_date, season14.end_date).run();
-  settings.periodStart = campaignStart;
   assert.equal((await request({ method: 'GET', view: 'campaign', rateLimit: () => Response.json({}, { status: 429 }) })).status, 429);
   const maintain = at => maintainClanCampaigns(db, campaignStart, new Date(at));
   settings.time = new Date('2026-12-15T12:00:00Z');
@@ -1548,6 +1555,18 @@ test('campaign endpoints hide future details, pin plans and grant only one colle
   await maintain(settings.time);
   assert.equal(await readPlan(), snapshot);
   const plan = JSON.parse(snapshot);
+  settings.time = new Date(season13.start_date);
+  await db.prepare('INSERT INTO clan_crew_roster_entries VALUES (?, ?, ?)')
+    .bind('2026-12-14', '101', 'nomad-bears').run();
+  const eligibility = async () => (await request({ campaignRewards: 1, campaignEligibility: true })).data.eligibility;
+  assert.equal((await eligibility()).find(item => item.window_id === 'objective-1').status, 'bank_to_enter');
+  let operation = await fill((await request()).data);
+  operation = (await request({ action: 'bank', revision: operation.revision, day: operation.utc_day })).data;
+  assert.equal(operation.renown_today, 10_000);
+  const opening = (await request({ method: 'GET', view: 'campaign' })).data.campaign.windows.find(item => item.id === 'objective-1');
+  assert.equal(opening.progress.rows.find(row => row.faction_id === 'rugpull-miners').participants, 1);
+  assert.equal(opening.progress.rows.find(row => row.faction_id === 'nomad-bears').roster, 0);
+  assert.equal((await eligibility()).find(item => item.window_id === 'objective-1').status, 'eligible');
   const window = plan.windows.find(item => item.id === 'objective-4');
   const openingWeek = crewWeek(new Date(window.startsOn)).start;
   await db.prepare('INSERT INTO clan_crew_roster_entries VALUES (?, ?, ?), (?, ?, ?)')
@@ -1590,6 +1609,28 @@ test('campaign endpoints hide future details, pin plans and grant only one colle
   assert.deepEqual((await look('105')).data.collectibles, []);
 });
 
+test('a future Night Shift reverses newly opened routes and preserves a saved daily run', async t => {
+  const { db, sql, settings, request } = fixture(t);
+  sql.exec(`CREATE TABLE telegram_seasons (id INTEGER PRIMARY KEY); ${newerMigration('127_clan_campaigns')}`);
+  const possible = Array.from({ length: 12 }, (_, i) => buildClanCampaign({ ...season13, id: 15 + i }));
+  const plan = possible.find(item => item.windows.some(window => window.routeModifier === 'reverse'));
+  const nightShift = plan.windows.find(window => window.routeModifier === 'reverse');
+  settings.periodStart = campaignStart;
+  settings.time = new Date(nightShift.startsOn);
+  while (dailyRouteIndex(settings.time) === 1) settings.time = new Date(+settings.time + 86_400_000);
+  await db.prepare('INSERT INTO telegram_seasons VALUES (?)').bind(plan.seasonId).run();
+  await db.prepare('INSERT INTO clan_campaigns VALUES (?, ?, ?, ?)')
+    .bind(plan.seasonId, plan.startsOn, plan.endsBefore, JSON.stringify(plan)).run();
+  const day = settings.time.toISOString().slice(0, 10);
+  const move = await request({ action: 'safe', revision: 0, day });
+  assert.equal(move.status, 200);
+  assert.equal(sql.prepare('SELECT route_index FROM clan_operation_days').get().route_index, 2 - dailyRouteIndex(settings.time));
+  sql.exec('DELETE FROM clan_campaigns');
+  const next = await request({ action: 'safe', revision: 1, day });
+  assert.equal(next.status, 200);
+  assert.equal(sql.prepare('SELECT route_index FROM clan_operation_days').get().route_index, 2 - dailyRouteIndex(settings.time));
+});
+
 test('the campaign finale normalizes crew size and the city assigns every faction equal capacity', () => {
   const window = { mode: 'ranked', metric: 'showdown', target: 1, startsOn: '2026-12-16', endsBefore: '2026-12-23' };
   const rosters = [
@@ -1608,8 +1649,14 @@ test('the campaign finale normalizes crew size and the city assigns every factio
   assert.deepEqual(progress.eligibleFactions, ['nomad-bears']);
   assert.deepEqual(evaluateCampaignWindow(window, rosters.slice(0, 1), oneThird).eligibleFactions, []);
   const city = evaluateCampaignWindow({ ...window, mode: 'city', metric: 'routes', target: 3, cityTarget: 10 }, rosters, oneThird);
-  assert.equal(city.cityPoints, 246);
+  assert.equal(city.cityPoints, 555);
+  assert.equal(city.cityFactionSlots, 4);
   assert.deepEqual(city.eligibleFactions, []);
+  const smallRoster = rosters.map(row => ({ ...row, size: 1 }));
+  const cityEvent = { ...window, mode: 'city', metric: 'banks', target: 1, cityTarget: 35 };
+  assert.equal(evaluateCampaignWindow(cityEvent, smallRoster, oneThird.slice(0, 1)).cityPoints, 2500);
+  assert.deepEqual(evaluateCampaignWindow(cityEvent, smallRoster, oneThird.slice(0, 2)).eligibleFactions.sort(),
+    ['nomad-bears', 'rugpull-miners']);
 });
 
 
@@ -1646,4 +1693,67 @@ test('Recovery Shift counts the first bank after a missed challenge day', () => 
   const openingBank = progress('2027-03-07', '2027-03-08', '2027-03-10');
   assert.equal(openingBank.rows.find(row => row.faction_id === faction_id).points, 5_000);
   assert.deepEqual(openingBank.eligibleFactions, []);
+});
+
+test('a signed returning player gets one new faction choice at the UTC season boundary', async t => {
+  const sql = new DatabaseSync(':memory:');
+  t.after(() => sql.close());
+  sql.exec(readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
+  sql.exec(newerMigration('017_faction_season_lock'));
+  sql.exec(`
+    DELETE FROM telegram_seasons;
+    INSERT INTO telegram_seasons (id, name, start_date, end_date, is_active) VALUES
+      (12, 'Season 12', '2026-11-21T16:31:19.578Z', '2026-12-16T00:00:00.000Z', 1),
+      (13, 'Season 13', '2026-12-16T00:00:00.000Z', '2027-03-16T00:00:00.000Z', 1);
+    INSERT INTO telegram_users (telegram_id) VALUES ('1801'), ('1802');
+    INSERT INTO blocktopia_progression (telegram_id, faction) VALUES ('1801', 'nomad-bears'), ('1802', 'nomad-bears');
+    INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id) VALUES ('1801', 'S12', 'nomad-bears');
+  `);
+  const db = {
+    prepare(statement) {
+      const query = sql.prepare(statement);
+      const bind = (...values) => ({
+        first: async () => query.get(...values),
+        all: async () => ({ success: true, results: query.all(...values) }),
+        run: async () => ({
+          success: true,
+          results: /^SELECT\b/i.test(statement.trim()) ? query.all(...values) : (query.run(...values), []),
+        }),
+      });
+      return { ...bind(), bind };
+    },
+    async batch(statements) {
+      sql.exec('BEGIN');
+      try {
+        const result = await Promise.all(statements.map(statement => statement.run()));
+        sql.exec('COMMIT');
+        return result;
+      } catch (error) {
+        sql.exec('ROLLBACK');
+        throw error;
+      }
+    },
+  };
+  t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-12-15T23:59:59.999Z') });
+  const env = { DB: db, TELEGRAM_BOT_TOKEN: '123456:test-token' };
+  const secret = createHash('sha256').update(env.TELEGRAM_BOT_TOKEN).digest();
+  const send = (path, faction, id = '1801') => {
+    const auth_date = Math.floor(Date.now() / 1000);
+    const hash = createHmac('sha256', secret).update(`auth_date=${auth_date}\nid=${id}`).digest('hex');
+    return worker.fetch(new Request('https://local.test/faction/' + path, {
+      method: 'POST', body: JSON.stringify({ telegram_auth: { id, auth_date, hash }, faction }),
+    }), env);
+  };
+  assert.equal((await send('join', 'all-city-bulls')).status, 409);
+  t.mock.timers.setTime(Date.parse(season13.start_date));
+  assert.equal((await (await send('status')).json()).can_choose_faction, true);
+  const joined = await send('join', 'all-city-bulls');
+  assert.equal(joined.status, 200);
+  assert.equal((await joined.json()).switched, true);
+  assert.equal((await send('join', 'graffpunks')).status, 409);
+  assert.equal((await send('join', 'all-city-bulls')).status, 200);
+  const status = await (await send('status')).json();
+  assert.equal(status.faction, 'all-city-bulls');
+  assert.equal(status.can_choose_faction, false);
+  assert.equal((await send('join', 'all-city-bulls', '1802')).status, 409, 'legacy faction remains locked');
 });
