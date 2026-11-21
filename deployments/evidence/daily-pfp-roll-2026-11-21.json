@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-21T23:24:05.669Z",
+  "repository_commit": "565a0f9527264ca5fa808a250c78c4889d9b9626",
+  "pull_request": 1905,
+  "full_linux_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/44957979701",
+  "worker": {
+    "name": "moonboys-api",
+    "version_id": "12d3ee89-0620-4103-a47f-29b0dcec0ebd",
+    "deployment_id": "e433dfbb-1f34-438b-a3ff-9280e972c04b",
+    "deployment_created_on": "2026-11-21T23:22:55.214627Z",
+    "previous_version_id": "c429976f-e29f-453d-8f46-5b9913892f97",
+    "traffic_percent": 100,
+    "feature_flag": {
+      "CLAN_PFP_ROLL_ENABLED": "true"
+    },
+    "prior_bindings_preserved": 53
+  },
+  "d1": {
+    "database": "wikicoms",
+    "migration": "128_clan_pfp_roll.sql",
+    "recorded_at": "2026-11-21T23:22:45Z",
+    "tables": [
+      "clan_pfp_rolls",
+      "clan_pfp_rounds"
+    ]
+  },
+  "checks": [
+    {
+      "url": "https://api.cryptomoonboys.com/deployment-info",
+      "status": 200,
+      "commit": "565a0f9527264ca5fa808a250c78c4889d9b9626",
+      "deployed_at": "2026-11-21T23:22:19.548Z"
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/clan-operations/state",
+      "status": 200,
+      "enabled": true
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/clan-operations/pfp/state",
+      "status": 200,
+      "enabled": true
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/clan-operations/pfp/roll",
+      "method": "POST",
+      "authenticated": false,
+      "status": 401,
+      "error": "connect_telegram"
+    },
+    {
+      "url": "https://cryptomoonboys.com/js/clan-pfp-roll.js",
+      "sha256": "44814912f03749f93ab608cc1a235dd469671e9c0a3e844ba251f562ff0c2b0a"
+    }
+  ],
+  "limitation": "Production smoke checks used no signed Telegram session and did not spend a roll or award XP."
+}
