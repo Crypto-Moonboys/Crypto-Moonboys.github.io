@@ -25,7 +25,11 @@ function memberScore(member, window) {
     case 'repeatRoute': return Math.max(0, ...member.routes.values());
     case 'finds': return member.finds.size;
     case 'openingDays': return dates.filter(date => +new Date(date) < firstTwoDaysEnd).length;
-    case 'recoveries': return dates.filter((date, i) => i && +new Date(date) - +new Date(dates[i - 1]) > DAY_MS).length;
+    case 'recoveries': {
+      return dates.filter((date, index) => index === 0
+        ? date > window.startsOn
+        : Date.parse(date) - Date.parse(dates[index - 1]) > DAY_MS).length;
+    }
     case 'streak': {
       let streak = 0;
       let longest = 0;

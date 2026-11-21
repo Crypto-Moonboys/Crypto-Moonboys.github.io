@@ -1631,3 +1631,19 @@ test('City Rebuild needs early district work before late banks can finish the ev
   assert.deepEqual(unlocked.eligibleFactions, []);
   assert.deepEqual(evaluateCampaignWindow(window, roster, [...first, ...second, ...last]).eligibleFactions, crews);
 });
+
+test('Recovery Shift counts the first bank after a missed challenge day', () => {
+  const window = { mode: 'crew', metric: 'recoveries', target: 2,
+    startsOn: '2027-03-07', endsBefore: '2027-03-14' };
+  const faction_id = 'rugpull-miners';
+  const rosters = [{ faction_id, size: 1 }];
+  const progress = (...dates) => evaluateCampaignWindow(window, rosters,
+    dates.map(utc_day => ({ faction_id, telegram_id: '101', utc_day,
+      tier: 1, route_index: 0, specimen_key: 'find-1' })));
+  const recovered = progress('2027-03-08', '2027-03-10');
+  assert.equal(recovered.rows.find(row => row.faction_id === faction_id).points, 10_000);
+  assert.deepEqual(recovered.eligibleFactions, [faction_id]);
+  const openingBank = progress('2027-03-07', '2027-03-08', '2027-03-10');
+  assert.equal(openingBank.rows.find(row => row.faction_id === faction_id).points, 5_000);
+  assert.deepEqual(openingBank.eligibleFactions, []);
+});
