@@ -947,6 +947,14 @@ body.page-community .bc-retry-btn {
 }
 
 @media (max-width: 720px) {
+  body.page-community .bc-faction-row.bc-faction-row--with-art {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.page-community .bc-faction-row-art {
+    order: -1;
+  }
+
   body.page-game .notice,
   body.page-game .roguelite-loop-content,
   body.page-game .article-list-item {
