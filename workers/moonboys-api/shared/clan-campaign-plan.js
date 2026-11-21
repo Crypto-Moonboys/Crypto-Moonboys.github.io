@@ -36,8 +36,8 @@ export function buildClanCampaign(season) {
   const day = offset => new Date(+start + offset * DAY_MS).toISOString().slice(0, 10);
   const themeIndex = (season.id - FIRST_SEASON) % campaignThemes.length;
   const makeWindow = (kind, index, offset, length, entry) => {
-    const [title, description, metric, target, mode = 'crew', cityTarget] = entry;
-    return { id: kind + '-' + (index + 1), kind, title, description, metric, target, mode, cityTarget,
+    const [title, description, metric, target, mode = 'crew', cityTarget, effect] = entry;
+    return { id: kind + '-' + (index + 1), kind, title, description, metric, target, mode, cityTarget, effect,
       startsOn: day(offset), endsBefore: day(offset + length) };
   };
   const objectives = select(campaignObjectives, 12, season.id, 11)
@@ -45,7 +45,8 @@ export function buildClanCampaign(season) {
   const events = select(campaignEvents, 8, season.id, 23)
     .map((entry, i) => makeWindow('event', i, EVENT_OFFSETS[i], 4, entry));
   const finale = makeWindow('finale', 0, COMMUNITY_SEASON_DAYS - 7, 7, campaignFinales[themeIndex]);
-  const awardSlots = [objectives[3], objectives[7], objectives[11], events[7], finale];
+  const eventAward = events.find(event => event.effect === 'reveal-collectible') ?? events[7];
+  const awardSlots = [objectives[3], objectives[7], objectives[11], eventAward, finale];
   const collectibles = select(campaignCollectibles, 5, season.id, 31)
     .map((title, i) => ({ title, earnedFrom: awardSlots[i].id }));
   return {

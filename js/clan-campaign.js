@@ -62,11 +62,18 @@ if (panel) {
       return;
     }
     if (window.mode === 'city') {
-      const meter = elt('progress');
-      meter.max = window.cityTarget * 100;
-      meter.value = progress.cityPoints;
-      meter.setAttribute('aria-label', 'City progress toward the event target');
-      section.append(elt('p', `City progress ${percent(progress.cityPoints)} · target ${window.cityTarget}%`), meter);
+      const stages = progress.stages ?? [{ title: 'City progress', points: progress.cityPoints }];
+      for (const stage of stages) {
+        if (stage.points === null) {
+          section.append(elt('p', `${stage.title} unlocks when the districts are restored.`));
+          continue;
+        }
+        const meter = elt('progress');
+        meter.max = window.cityTarget * 100;
+        meter.value = stage.points;
+        meter.setAttribute('aria-label', stage.title);
+        section.append(elt('p', `${stage.title} · ${percent(stage.points)} · target ${window.cityTarget}%`), meter);
+      }
     } else if (window.mode === 'ranked') {
       const winners = progress.eligibleFactions.map(factionName);
       section.append(elt('p', winners.length

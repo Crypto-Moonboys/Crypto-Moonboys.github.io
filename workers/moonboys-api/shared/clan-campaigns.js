@@ -125,7 +125,8 @@ export async function readClanCampaign(db, now) {
     return { ...window, status: progress ? 'closed' : 'settling', progress: progress ?? null };
   });
   const collectibles = saved.collectibles.filter(award =>
-    windows.some(window => window.id === award.earnedFrom && window.status !== 'upcoming'));
+    windows.some(window => window.id === award.earnedFrom && window.status !== 'upcoming'
+      && (window.effect !== 'reveal-collectible' || window.progress?.eligibleFactions.length)));
   return { utc_day: day, campaign: { ...saved, windows, collectibles }, upcoming: preview, previous };
 }
 

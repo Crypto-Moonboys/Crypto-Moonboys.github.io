@@ -1499,6 +1499,8 @@ test('campaign picker selects 30 compatible parts and the first two seasons use 
     assert.equal(campaign.windows.filter(window => window.kind === 'objective').length, 12);
     assert.equal(campaign.windows.filter(window => window.kind === 'event').length, 8);
     assert.ok(campaign.collectibles.every(item => campaign.windows.some(window => window.id === item.earnedFrom)));
+    const supplyDrop = campaign.windows.find(window => window.effect === 'reveal-collectible');
+    if (supplyDrop) assert.ok(campaign.collectibles.some(item => item.earnedFrom === supplyDrop.id));
   }
   const remixes = Array.from({ length: 50 }, (_, i) => buildClanCampaign({ ...season13, id: 15 + i }));
   assert.ok(new Set(remixes.map(campaign => campaign.windows.map(window => window.title).join('|'))).size >= 45);
@@ -1608,4 +1610,24 @@ test('the campaign finale normalizes crew size and the city assigns every factio
   const city = evaluateCampaignWindow({ ...window, mode: 'city', metric: 'routes', target: 3, cityTarget: 10 }, rosters, oneThird);
   assert.equal(city.cityPoints, 246);
   assert.deepEqual(city.eligibleFactions, []);
+});
+
+
+test('City Rebuild needs early district work before late banks can finish the event', () => {
+  const window = { mode: 'city', metric: 'rebuild', target: 2, cityTarget: 35,
+    startsOn: '2026-12-16', endsBefore: '2026-12-20' };
+  const crews = CANONICAL_FACTION_KEYS.slice(0, 4);
+  const roster = crews.map(faction_id => ({ faction_id, size: 1 }));
+  const fullDay = (utc_day, route_index) => crews.flatMap(faction_id => [1, 2, 3].map(tier =>
+    ({ faction_id, telegram_id: faction_id, utc_day, tier, route_index, specimen_key: 'find-' + tier })));
+  const first = fullDay('2026-12-16', 0);
+  const second = fullDay('2026-12-17', 1);
+  const last = fullDay('2026-12-18', 2);
+  const blocked = evaluateCampaignWindow(window, roster, [...first, ...last]);
+  assert.equal(blocked.stages[1].points, null);
+  assert.deepEqual(blocked.eligibleFactions, []);
+  const unlocked = evaluateCampaignWindow(window, roster, [...first, ...second]);
+  assert.equal(unlocked.stages[1].points, 0);
+  assert.deepEqual(unlocked.eligibleFactions, []);
+  assert.deepEqual(evaluateCampaignWindow(window, roster, [...first, ...second, ...last]).eligibleFactions, crews);
 });

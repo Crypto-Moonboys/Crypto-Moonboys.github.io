@@ -58,10 +58,10 @@ export const campaignEvents = [
   ['Cross-City Convoy', 'Two crew members banking on the same day move supplies. Repeat on a second day to deliver them.', 'pairedDays', 2, 'crew'],
   ['Signal Scramble', 'Bank across three routes and three days to restore the signal nodes.', 'routeRelay', 3, 'crew'],
   ['Open Streets', 'The first bank from each crew member counts. Reach three quarters of the eligible roster.', 'participation', 75, 'crew'],
-  ['Supply Drop', 'Banks across the city fill the supply meter. London needs 35% of its total potential.', 'banks', 5, 'city', 35],
+  ['Supply Drop', 'Banks across the city fill the supply meter. London needs 35% of its total potential to reveal the collectible.', 'banks', 5, 'city', 35, 'reveal-collectible'],
   ['Night Shift', 'Bank a full shift on any UTC day during the event.', 'fullDays', 1, 'crew'],
   ['Last Station', 'Bank on three distinct routes to fuel the last station. London needs 30% of its total potential.', 'routes', 3, 'city', 30],
-  ['City Rebuild', 'Crews complete full shifts on multiple routes. London needs 35% of its total potential to complete the rebuild.', 'fullRoutes', 2, 'city', 35],
+  ['City Rebuild', 'Full shifts on two routes during the first two UTC days unlock the final stage. Then bank another full shift during the last two days.', 'rebuild', 2, 'city', 35],
 ];
 
 // Selected from existing operation finds. A campaign receipt is a separate,

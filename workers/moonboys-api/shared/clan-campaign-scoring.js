@@ -66,7 +66,24 @@ function teamScore(crew, window) {
   }
 }
 
+function evaluateRebuild(window, rosters, banks) {
+  const middle = new Date(+new Date(window.startsOn) + 2 * DAY_MS).toISOString().slice(0, 10);
+  const initial = evaluateCampaignWindow({ ...window, metric: 'fullRoutes', endsBefore: middle },
+    rosters, banks.filter(bank => bank.utc_day < middle));
+  const unlocked = initial.cityPoints >= window.cityTarget * 100;
+  const final = unlocked ? evaluateCampaignWindow({ ...window, metric: 'fullDays', target: 1, startsOn: middle },
+    rosters, banks.filter(bank => bank.utc_day >= middle)) : null;
+  return {
+    ...(final ?? initial), eligibleFactions: final?.eligibleFactions ?? [],
+    stages: [
+      { title: 'Restore the districts', points: initial.cityPoints },
+      { title: 'Finish the rebuild', points: final?.cityPoints ?? null, startsOn: middle },
+    ],
+  };
+}
+
 export function evaluateCampaignWindow(window, rosters, banks) {
+  if (window.metric === 'rebuild') return evaluateRebuild(window, rosters, banks);
   const crews = new Map(CANONICAL_FACTION_KEYS.map(key => [
     key, { roster: 0, banks: 0, members: new Map(), days: new Map(), routes: new Set() },
   ]));
