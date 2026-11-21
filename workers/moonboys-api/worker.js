@@ -17033,7 +17033,7 @@ async function handleTelegramUpdate(update, env) {
     case 'gkquests':
     case 'quest':        await cmdGkQuests(env, tok, chatId, telegramId, fromUser);  break;
     case 'gkfaction':
-    case 'faction':      await cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser); break;
+    case 'faction':      await cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser, chatType); break;
     case 'gkunlink':     await cmdGkUnlink(db, tok, chatId, telegramId);             break;
     case 'daily':        await cmdDaily(env, tok, chatId, telegramId, fromUser);     break;
     case 'solve':        await cmdSolve(tok, chatId);                                break;
@@ -20275,7 +20275,7 @@ async function cmdGkQuests(env, tok, chatId, telegramId, fromUser) {
     `Arcade: ${SITE_URL}/games/index.html`
   );
 }
-async function cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser) {
+async function cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser, chatType) {
   const db = env.DB;
   // Anti-cheat gate: blocked accounts cannot perform competitive actions.
   try {
@@ -20304,9 +20304,9 @@ async function cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser) {
   const battleChamberUrl = `${SITE_URL}/community.html#battle-join-faction`;
   const replyMarkup = {
     inline_keyboard: [
-      [
+      ...(chatType === 'private' ? [[
         { text: 'Open Battle Chamber', web_app: { url: battleChamberUrl } },
-      ],
+      ]] : []),
       [
         { text: 'Open in Browser', url: battleChamberUrl },
       ],
