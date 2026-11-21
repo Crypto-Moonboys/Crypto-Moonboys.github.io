@@ -1,6 +1,56 @@
 (() => {
-  const panel = document.querySelector('#wax-market-caps');
-  if (!panel) return;
+  const header = document.getElementById('site-header');
+  const stylesheet = document.getElementById('wax-market-ticker-style');
+  if (!header || !stylesheet) return;
+
+  // Replace homepage-only markup if an older HTML response is still cached.
+  const previous = document.getElementById('wax-market-caps');
+  if (previous?.hasAttribute('data-shell-market-ticker')) return;
+  previous?.remove();
+
+  const panel = document.createElement('section');
+  panel.id = 'wax-market-caps';
+  panel.className = 'wax-market-ticker';
+  panel.setAttribute('aria-label', 'NFT Hive collection market caps in US dollars');
+  panel.setAttribute('data-shell-market-ticker', '');
+  panel.hidden = true;
+  panel.innerHTML = `
+    <div class="wax-ticker-window">
+      <div class="wax-ticker-track">
+        <ul class="wax-ticker-list" data-ticker-list>
+          <li data-collection="graffk1ngsuk">
+            <a href="https://nfthive.io/collection/graffk1ngsuk"><span class="wax-ticker-name">Graffiti Kings UK</span><span data-usd>—</span></a>
+          </li>
+          <li data-collection="graffiti.r2">
+            <a href="https://nfthive.io/collection/graffiti.r2"><span class="wax-ticker-name">Graffiti Kings R2</span><span data-usd>—</span></a>
+          </li>
+          <li data-collection="hodlmoonboys">
+            <a href="https://nfthive.io/collection/hodlmoonboys"><span class="wax-ticker-name">HODL Moonboys</span><span data-usd>—</span></a>
+          </li>
+          <li data-collection="gr4ffitiking">
+            <a href="https://nfthive.io/collection/gr4ffitiking"><span class="wax-ticker-name">GR4FFITIKING</span><span data-usd>—</span></a>
+          </li>
+          <li data-collection="dabitcoinkid">
+            <a href="https://nfthive.io/collection/dabitcoinkid"><span class="wax-ticker-name">Bitcoin Kids</span><span data-usd>—</span></a>
+          </li>
+          <li data-collection="gkniftyheads">
+            <a href="https://nfthive.io/collection/gkniftyheads"><span class="wax-ticker-name">GKniftyHEADS</span><span data-usd>—</span></a>
+          </li>
+          <li data-collection="noballgamess">
+            <a href="https://nfthive.io/collection/noballgamess"><span class="wax-ticker-name">No Ball Games</span><span data-usd>—</span></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <button class="wax-ticker-control" data-ticker-pause type="button" aria-label="Pause market ticker" aria-pressed="false" hidden><span aria-hidden="true">Ⅱ</span></button>
+    <span class="wax-ticker-status" data-market-cap-status role="status">Loading NFT Hive market caps.</span>
+  `;
+  header.after(panel);
+  if (stylesheet.sheet) {
+    panel.hidden = false;
+  } else {
+    stylesheet.addEventListener('load', () => { panel.hidden = false; }, { once: true });
+  }
 
   const list = panel.querySelector('[data-ticker-list]');
   const copy = list.cloneNode(true);
@@ -32,7 +82,9 @@
   // Keep a consistent speed at different viewport widths and font sizes.
   panel.setAttribute('data-scroll', '');
   new ResizeObserver(([entry]) => {
-    panel.style.setProperty('--ticker-duration', `${entry.contentRect.width / 48}s`);
+    if (entry.contentRect.width > 0) {
+      panel.style.setProperty('--ticker-duration', `${entry.contentRect.width / 48}s`);
+    }
   }).observe(list);
 
   function renderPrice(element, value, direction) {
