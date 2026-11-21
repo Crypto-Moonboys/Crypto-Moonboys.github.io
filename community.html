@@ -111,8 +111,20 @@
         <h3 id="clan-crew-progress-title">Clan crew progress</h3>
         <p>Each bank is one completed operation tier. The week begins Monday at 00:00 UTC.</p>
         <p data-clan-crew-period></p>
+        <div data-clan-crew-competition hidden>
+          <p>Weekly score counts each signed-up member’s best five UTC days out of seven. The roster locks on Monday at 00:00 UTC. Your entry stays with the faction you sign up for. Every signed-up member counts toward the crew’s possible score.</p>
+          <label>Weekly score period
+            <select data-clan-crew-week>
+              <option value="current">This week</option>
+              <option value="previous">Last week</option>
+            </select>
+          </label>
+          <p data-clan-crew-ranking role="status"></p>
+          <button type="button" data-clan-crew-join hidden></button>
+          <p data-clan-crew-entry role="status"></p>
+        </div>
         <table data-clan-crew-table aria-labelledby="clan-crew-progress-title">
-          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th></tr></thead>
+          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th><th scope="col" data-clan-crew-score hidden>Weekly score</th></tr></thead>
           <tbody></tbody>
         </table>
         <p role="status"></p>
@@ -216,7 +228,7 @@
 <script data-cfasync="false" src="/js/battle-chamber-factions.js?one-clan-section=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
-<script data-cfasync="false" type="module" src="/js/clan-crew-board.js"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=1"></script>
 </body>
 </html>

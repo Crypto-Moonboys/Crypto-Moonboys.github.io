@@ -44,24 +44,24 @@ const moonboysState = read('js/core/moonboys-state.js');
 const retroTheme = read('css/retro-16bit-theme.css');
 const ensureInlineLiveStatsBlock = functionBlock(siteShell, 'ensureInlineLiveStats');
 
+function assetUrlPattern(src) {
+  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return `["']${escaped}(?:\\?[^"'<>#]*)?["']`;
+}
 function hasScript(html, src) {
-  return html.includes(`src="${src}"`) || html.includes(`src='${src}'`);
+  return new RegExp(`<script[^>]*\\s+src=${assetUrlPattern(src)}`).test(html);
 }
 function hasModuleScript(html, src) {
-  const re = new RegExp(`<script[^>]+type=["']module["'][^>]+src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
-  return re.test(html);
+  return new RegExp(`<script[^>]*type=["']module["'][^>]*\\s+src=${assetUrlPattern(src)}`).test(html);
 }
 function hasPreloadFor(html, href) {
-  const re = new RegExp(`<link[^>]+rel=["']preload["'][^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
-  return re.test(html);
+  return new RegExp(`<link[^>]*rel=["']preload["'][^>]*\\s+href=${assetUrlPattern(href)}`).test(html);
 }
 function hasModulePreloadFor(html, href) {
-  const re = new RegExp(`<link[^>]+rel=["']modulepreload["'][^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
-  return re.test(html);
+  return new RegExp(`<link[^>]*rel=["']modulepreload["'][^>]*\\s+href=${assetUrlPattern(href)}`).test(html);
 }
 function hasCfBypassedModuleScript(html, src) {
-  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`<script[^>]+data-cfasync=["']false["'][^>]+type=["']module["'][^>]+src=["']${escaped}["']`).test(html);
+  return new RegExp(`<script[^>]*data-cfasync=["']false["'][^>]*type=["']module["'][^>]*\\s+src=${assetUrlPattern(src)}`).test(html);
 }
 
 function functionBlock(src, name) {
