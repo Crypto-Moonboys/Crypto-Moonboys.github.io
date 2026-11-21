@@ -31,7 +31,7 @@ import { SELECTED_RUN_PET_SQL, requireRunMutationResults, recoverDeletedPetRunSt
 import { clampPetCareValue, applyPetCareDecay, readPetInstanceWithAtomicCareDecay } from './pets/care-decay.js';
 import { petSpaceOrderSql, petRankedSpaceCteSql } from './pets/space-order.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
-import { selectCommunitySeason, communitySeasonSql, communityReceiptTimestampSql } from './community-season-authority.js';
+import { COMMUNITY_SEASON_DAYS, rollCommunitySeason, selectCommunitySeason, communitySeasonSql, communityReceiptTimestampSql } from './community-season-authority.js';
 import { awardCommunityXp, hasDailyCommunityClaim } from './community-xp-awards.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
@@ -1520,14 +1520,8 @@ async function getUserFaction(db, telegramId) {
   return readCanonicalFactionProfile(db, telegramId);
 }
 
-/**
- * Return the most recent row from telegram_seasons (latest by id).
- * Returns null safely if the table is absent or empty.
- */
-async function getCurrentSeason(db) {
-  return db.prepare(
-    `SELECT * FROM telegram_seasons ORDER BY id DESC LIMIT 1`
-  ).first().catch(() => null);
+function getCurrentSeason(db, at = new Date()) {
+  return selectCommunitySeason(db, at);
 }
 
 const PET_GROWTH_STAGE_THRESHOLDS = [
@@ -8342,7 +8336,6 @@ const BATTLE_CHAMBER_FACTION_LABELS = Object.freeze({
 const BATTLE_CHAMBER_CLAMP_MAX = 5000;
 const BATTLE_CHAMBER_METADATA_MAX_LENGTH = 4000;
 const BATTLE_CHAMBER_SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
-const BATTLE_CHAMBER_DAYS_PER_SEASON = 90;
 
 const PLAYER_STATE_TABLES = [
   'player_modifier_state',
@@ -8520,13 +8513,13 @@ function getBattleChamberPeriodKey(periodType, nowMs = Date.now()) {
 }
 
 function getBattleSeasonFallbackKey(nowMs = Date.now()) {
-  const seasonLengthMs = BATTLE_CHAMBER_DAYS_PER_SEASON * 24 * 60 * 60 * 1000;
+  const seasonLengthMs = COMMUNITY_SEASON_DAYS * 24 * 60 * 60 * 1000;
   const seasonIndex = Math.floor((nowMs - BATTLE_CHAMBER_SEASON_EPOCH_MS) / seasonLengthMs);
   return `S${seasonIndex + 1}`;
 }
 
 async function getBattleSeasonKey(db, nowMs = Date.now()) {
-  const season = await getCurrentSeason(db).catch(() => null);
+  const season = await getCurrentSeason(db, new Date(nowMs)).catch(() => null);
   if (season && typeof season === 'object') {
     const explicit = season.season_key || season.key || season.slug || season.code;
     if (explicit) return String(explicit);
@@ -15579,6 +15572,7 @@ export default {
       const periodStart = clanPeriodStart(env);
       const signalStart = clanSignalXpStart(env);
       const tasks = [
+        ['community_season_rollover', periodStart, (db, _from, at) => rollCommunitySeason(db, at)],
         ['clan_signal_xp', signalStart, settleClanSignalXp],
         ['clan_period_rewards', periodStart, closeClanPeriods],
       ];

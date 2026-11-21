@@ -74,3 +74,11 @@ grants receipt-backed entitlements in one transaction.
   Completing a legacy signal objective can still unlock its roguelite options.
   XP amounts shown there are previews. Daily operation Renown, collectibles,
   Arcade XP, Battle Chamber Clout and WAX balances use their existing ledgers.
+
+The five-minute production tick prepares the next Community season during
+the final 24 hours of a dated season. The successor starts at the exact
+previous end time and runs for 90 days. Date-aware reads keep the existing
+season current until that boundary. The closing standings and rewards use
+the existing settlement buffer. An operator seeds the initial season with
+an end date. Later seasons continue automatically while Clan Operations and
+period rewards are enabled.
