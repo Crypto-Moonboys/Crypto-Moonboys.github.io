@@ -233,12 +233,23 @@
       </div>
     </details>
 
-    <details class="section bc-disclosure">
+    <details class="section bc-disclosure" id="clan-season-campaign">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Seasonal Campaign</span></summary>
       <div class="bc-join-layout">
-        <img class="bc-join-art" src="/art/Four-Season%20Campaign%20Across%20London.jpg" alt="Four-Season Campaign Across London" width="1254" height="1254" loading="lazy" decoding="async">
+        <img class="bc-join-art" src="/art/Four-Season%20Campaign%20Across%20London.jpg" alt="" data-campaign-art width="1254" height="1254" loading="lazy" decoding="async">
         <div id="battle-seasonal-campaign" class="bc-join-content"><div class="community-loading">Loading seasonal campaign&#8230;</div></div>
       </div>
+      <section class="clan-campaign" aria-labelledby="clan-campaign-title" data-clan-campaign>
+        <h3 id="clan-campaign-title">Clan campaign</h3>
+        <p role="status" data-campaign-status></p>
+        <div data-campaign-content></div>
+        <button type="button" data-campaign-refresh>Refresh campaign</button>
+        <details data-campaign-personal>
+          <summary>My campaign collectibles</summary>
+          <p role="status"></p>
+          <ul></ul>
+        </details>
+      </section>
     </details>
 
     <details class="section bc-disclosure">
@@ -281,5 +292,6 @@
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=2"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?crew-progress=2"></script>
+<script data-cfasync="false" type="module" src="/js/clan-campaign.js"></script>
 </body>
 </html>

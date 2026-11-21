@@ -2,6 +2,7 @@ import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
 import { clanPeriodStart, readClanPeriodResults, readClanPeriodRewards } from '../shared/clan-period-rewards.js';
+import { readClanCampaign, readClanCampaignCollectibles } from '../shared/clan-campaigns.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart } from '../shared/clan-signal-xp.js';
 import { CANONICAL_FACTION_KEYS, FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
@@ -207,6 +208,17 @@ export async function handleClanOperations(request, env, helpers) {
   if (request.method === 'GET' && !actionRequest) {
     const enabled = clanOperationsEnabled(env);
     const params = new URL(request.url).searchParams;
+    if (params.get('view') === 'campaign') {
+      if (!enabled || !clanPeriodStart(env)) return respond({ error: 'campaigns_unavailable' }, 404);
+      const ipLimited = rateLimit?.();
+      if (ipLimited) return ipLimited;
+      try {
+        return respond({ ok: true, ...await readClanCampaign(env.DB, now()) });
+      } catch (error) {
+        logApiFailure?.('clan_campaign_unavailable', { message: error?.message });
+        return respond({ error: 'campaign_unavailable' }, 503);
+      }
+    }
     if (!enabled || params.get('view') !== 'crew-progress') {
       return respond({ ok: true, enabled });
     }
@@ -256,6 +268,10 @@ export async function handleClanOperations(request, env, helpers) {
   const ownerLimited = rateLimit?.(owner);
   if (ownerLimited) return ownerLimited;
   try {
+    if (!actionRequest && body.campaign_rewards_ui === 1) {
+      if (!clanPeriodStart(env)) return respond({ error: 'campaigns_unavailable' }, 404);
+      return respond({ ok: true, collectibles: await readClanCampaignCollectibles(env.DB, owner) });
+    }
     if (!actionRequest && body.period_rewards_ui === 'profile') {
       const rewards = clanPeriodStart(env) ? await readClanPeriodRewards(env.DB, owner) : [];
       return respond({ ok: true, period_rewards: rewards });

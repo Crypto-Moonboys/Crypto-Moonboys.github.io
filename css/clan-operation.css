@@ -294,3 +294,33 @@
   text-align: left;
   overflow-wrap: anywhere;
 }
+
+.clan-campaign {
+  margin-block-start: 1rem;
+}
+
+.clan-campaign section,
+.clan-campaign details {
+  margin-block: 1rem;
+}
+
+.clan-campaign table {
+  inline-size: 100%;
+  text-align: start;
+}
+
+.clan-campaign th,
+.clan-campaign td {
+  padding: .25rem;
+  text-align: start;
+  border-block-end: 1px solid currentColor;
+}
+
+.clan-campaign progress {
+  max-inline-size: 100%;
+  accent-color: #56dcff;
+}
+
+.clan-campaign summary {
+  cursor: pointer;
+}

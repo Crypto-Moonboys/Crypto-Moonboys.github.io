@@ -1800,3 +1800,68 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await browser.close();
   }
 });
+
+test('season campaign shows schedule, progress and account-owned collectibles at 390px', { timeout: 30_000 }, async () => {
+  const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
+  const browser = await chromium.launch({ executablePath, headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const section = html.match(/<details[^>]+id="clan-season-campaign"[\s\S]+?<\/section>/)?.[0];
+    assert.ok(section, 'seasonal campaign uses the real Battle Chamber mount');
+    await page.setContent('<body class="page-community">' + section + '</details></body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/action-page-cards.css') });
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+    await page.evaluate(() => {
+      const program = {
+        ok: true, utc_day: '2026-12-17', upcoming: null, previous: null,
+        campaign: {
+          seasonId: 13, startsOn: '2026-12-16', endsBefore: '2027-03-16',
+          theme: { title: 'The Clout War', description: 'Earn campaign progress from bank receipts.' },
+          acts: [{ title: 'Claim the Streets', startsOn: '2026-12-16', endsBefore: '2027-01-15' }],
+          windows: [
+            { id: 'objective-1', kind: 'objective', status: 'open', mode: 'crew', title: 'Full Shift',
+              startsOn: '2026-12-16', endsBefore: '2026-12-23', description: 'Bank three tiers.',
+              progress: { threshold: 70, rows: [{ faction_id: 'rugpull-miners', participants: 1, roster: 2, points: 5000 }], eligibleFactions: [] } },
+            { id: 'event-1', kind: 'event', status: 'upcoming', startsOn: '2026-12-19', endsBefore: '2026-12-23' },
+          ],
+          collectibles: [{ title: 'Chrome Flake', earnedFrom: 'objective-1' }],
+        },
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_FACTION_PROFILES = { 'rugpull-miners': { name: 'Rugpull Miners' } };
+      window.__campaignOwner = '111';
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => window.__campaignOwner,
+        getFreshTelegramAuth: async () => ({ id: window.__campaignOwner }),
+      };
+      window.fetch = async (url, options) => {
+        if (options?.method === 'POST') {
+          const input = JSON.parse(options.body);
+          if (input.campaign_rewards_ui !== 1 || input.telegram_auth.id !== '111') throw new Error('unexpected account');
+          return Response.json({ ok: true, collectibles: [{ season_id: 13, collectible: 'Awarded Chrome Flake' }] });
+        }
+        if (!url.endsWith('?view=campaign')) throw new Error('unexpected campaign endpoint');
+        return Response.json(program);
+      };
+    });
+    await page.addScriptTag({ content: browserModule('clan-campaign.js') });
+    await page.getByText('Seasonal Campaign', { exact: true }).click();
+    await page.getByRole('heading', { name: 'Season 13 · The Clout War' }).waitFor();
+    assert.equal(await page.getByText(/Current act/).count(), 1);
+    assert.equal(await page.getByRole('table', { name: 'Full Shift' }).getByText('50%').count(), 1);
+    assert.equal(await page.getByText('Next event opens 19 Dec 2026 at 00:00 UTC.').count(), 1);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await page.getByText('My campaign collectibles', { exact: true }).click();
+    await page.getByText('Awarded Chrome Flake · Season 13').waitFor();
+    await page.evaluate(() => {
+      window.__campaignOwner = '';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByText('Connect Telegram to see your campaign collectibles.').waitFor();
+    assert.equal(await page.getByText('Awarded Chrome Flake · Season 13').count(), 0);
+  } finally {
+    await browser.close();
+  }
+});
