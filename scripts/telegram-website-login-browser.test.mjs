@@ -183,7 +183,7 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const sessionCount = sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n;
       await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      const accountLink = page.locator('.bc-hero-ctas a[href="/my-moonboy.html"]');
+      const accountLink = page.getByRole('link', { name: 'Full personal missions and claims in My Moonboy', exact: true });
       assert.equal(await accountLink.isVisible(), true, 'connected Community navigation leads to My Moonboy');
       await Promise.all([
         page.waitForURL(SITE + '/my-moonboy.html'),
