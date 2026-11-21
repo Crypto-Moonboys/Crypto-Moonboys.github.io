@@ -548,7 +548,7 @@ body.page-community .bc-frc-row > * {
 }
 
 body.page-community .bc-faction-row.bc-faction-row--with-art {
-  grid-template-columns: minmax(0, 1fr) clamp(64px, 10vw, 144px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   justify-items: stretch;
 }
 
