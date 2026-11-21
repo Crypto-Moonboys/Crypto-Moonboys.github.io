@@ -2,20 +2,21 @@
   const panel = document.querySelector('#wax-market-caps');
   if (!panel) return;
 
-  const rows = Array.from(panel.querySelectorAll('[data-collection]'), row => ({
+  const list = panel.querySelector('[data-ticker-list]');
+  const copy = list.cloneNode(true);
+  copy.classList.add('wax-ticker-copy');
+  copy.setAttribute('aria-hidden', 'true');
+  copy.querySelectorAll('a').forEach(link => { link.tabIndex = -1; });
+  list.after(copy);
+
+  const repeatedPrices = copy.querySelectorAll('[data-usd]');
+  const rows = Array.from(list.querySelectorAll('[data-collection]'), (row, index) => ({
     collection: row.dataset.collection,
-    waxCell: row.querySelector('[data-wax]'),
-    hiveUsdCell: row.querySelector('[data-hive-usd]'),
-    usdCell: row.querySelector('[data-usd]'),
+    prices: [row.querySelector('[data-usd]'), repeatedPrices[index]],
     marketCap: null
   }));
-  const quote = panel.querySelector('[data-wax-quote]');
   const status = panel.querySelector('[data-quote-status]');
   const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-  const wax = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
-  const rate = new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', minimumFractionDigits: 6, maximumFractionDigits: 8
-  });
   const pulses = new WeakMap();
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let price = null;
@@ -23,6 +24,19 @@
   let retry;
   let retryDelay = 1000;
   let suspended = false;
+
+  const pause = panel.querySelector('[data-ticker-pause]');
+  pause.hidden = false;
+  pause.addEventListener('click', () => {
+    const paused = panel.toggleAttribute('data-paused');
+    pause.setAttribute('aria-pressed', String(paused));
+    pause.firstElementChild.textContent = paused ? '▶' : 'Ⅱ';
+  });
+  // Keep a consistent speed at different viewport widths and font sizes.
+  panel.setAttribute('data-scroll', '');
+  new ResizeObserver(([entry]) => {
+    panel.style.setProperty('--ticker-duration', `${entry.contentRect.width / 48}s`);
+  }).observe(list);
 
   function renderPrice(element, value, direction) {
     if (element.textContent === value) return;
@@ -38,9 +52,9 @@
   }
 
   function render(row, direction = 0) {
-    if (row.marketCap === null) return;
-    row.waxCell.textContent = wax.format(row.marketCap);
-    renderPrice(row.usdCell, price === null ? '—' : usd.format(row.marketCap * price), direction);
+    if (row.marketCap === null || price === null) return;
+    const value = usd.format(row.marketCap * price);
+    row.prices.forEach(element => renderPrice(element, value, direction));
   }
 
   async function loadMarketCap(row) {
@@ -50,15 +64,12 @@
         { signal: AbortSignal.timeout(12000) }
       );
       if (!response.ok) throw new Error('Market cap request failed');
-      const { waxMarketCap, usdMarketCap } = await response.json();
-      row.hiveUsdCell.textContent = Number.isFinite(usdMarketCap) && usdMarketCap >= 0
-        ? usd.format(usdMarketCap) : 'Unavailable';
+      const { waxMarketCap } = await response.json();
       if (!Number.isFinite(waxMarketCap) || waxMarketCap < 0) throw new Error('Invalid WAX market cap');
       row.marketCap = waxMarketCap;
       render(row);
     } catch {
-      row.waxCell.textContent = 'Unavailable';
-      if (row.hiveUsdCell.textContent === '—') row.hiveUsdCell.textContent = 'Unavailable';
+      row.prices.forEach(element => { element.title = 'Market cap unavailable'; });
     }
   }
 
@@ -89,12 +100,14 @@
       retryDelay = 1000;
       const direction = price === null ? 0 : Math.sign(nextPrice - price);
       price = nextPrice;
-      renderPrice(quote, rate.format(price), direction);
-      status.textContent = 'Live quote from Crypto.com';
+      panel.removeAttribute('data-stale');
+      const liveStatus = 'Market caps converted at the live WAXP/USD quote.';
+      if (status.textContent !== liveStatus) status.textContent = liveStatus;
       rows.forEach(row => render(row, direction));
     });
     connection.addEventListener('close', () => {
       if (suspended || socket !== connection) return;
+      panel.setAttribute('data-stale', '');
       status.textContent = price === null
         ? 'WAXP/USD quote unavailable. Reconnecting…'
         : 'Showing last quote. Reconnecting…';
