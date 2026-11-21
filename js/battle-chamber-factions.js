@@ -254,6 +254,11 @@
 
   // ── 1. Faction War Standings ──────────────────────────────────────────────
 
+  var STANDINGS_ART = new Map([
+    ['all-city-bulls', { src: '/art/London%20Allcity%20Bull%20Hero.jpg', alt: 'London All City Bull Hero', size: 800 }],
+    ['blockchain-furies', { src: '/art/Blockchain%20Furries%20Crypto%20Moonboys.jpg', alt: 'Blockchain Furies Crypto Moonboys artwork', size: 1254 }],
+  ]);
+
   function renderStandings() {
     var container = el('battle-faction-standings');
     if (!container) return;
@@ -271,7 +276,7 @@
       var rank = idx + 1;
       var momentumLabel = MOMENTUM_LABELS[Math.min(3, row.momentum || 0)];
       var isDominant = row.faction === dominant;
-      var hasArt = row.faction === 'all-city-bulls';
+      var art = STANDINGS_ART.get(row.faction);
       var content =
         '<span class="bc-faction-rank">#' + rank + '</span>' +
         '<span class="bc-faction-icon">' + meta.icon + '</span>' +
@@ -283,10 +288,11 @@
         '<span class="bc-faction-perk-teaser">' + esc(meta.perkTeaser) + '</span>' +
         '<a class="bc-faction-chamber-link" href="' + esc(CHAMBER_ROUTES[row.faction] || '/battle-chamber/factions/index.html') + '" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>';
       return '<div class="bc-faction-row' + (isDominant ? ' bc-faction-row--dominant' : '') +
-        (hasArt ? ' bc-faction-row--with-art' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
-        (hasArt
+        (art ? ' bc-faction-row--with-art' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
+        (art
           ? '<div class="bc-faction-row-content">' + content + '</div>' +
-            '<img class="bc-faction-row-art" src="/art/London%20Allcity%20Bull%20Hero.jpg" alt="London All City Bull Hero" width="800" height="800" loading="lazy" decoding="async">'
+            '<img class="bc-faction-row-art" src="' + esc(art.src) + '" alt="' + esc(art.alt) +
+            '" width="' + art.size + '" height="' + art.size + '" loading="lazy" decoding="async">'
           : content) +
         '</div>';
     }).join('');
