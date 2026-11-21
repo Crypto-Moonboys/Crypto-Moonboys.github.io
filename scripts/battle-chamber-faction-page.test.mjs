@@ -141,7 +141,8 @@ check(communityHtml.includes('tg-community-leaderboard'), 'community.html includ
 check(communityHtml.includes('tg-activity-feed'), 'community.html includes tg-activity-feed');
 check(communityHtml.includes('gklink-status'), 'community.html includes gklink-status');
 check(!communityHtml.includes('data-tg-sync-cta'), 'community.html links to My Moonboy rather than rendering a second login banner');
-check(communityHtml.includes('href="/my-moonboy.html"'), 'community.html retains the central account entry point');
+check(!communityHtml.includes('bc-hero-ctas'), 'community.html omits the hero shortcut cards');
+check(communityHtml.includes('href="/my-moonboy.html?tab=faction"'), 'community.html retains the My Moonboy link in the missions section');
 
 console.log('\n[5b] community.html - Battle Chamber card polish CSS');
 check(/body\.page-community \.bc-why-list li\s*\{[\s\S]*?padding:\s*14px 16px 14px 48px;/.test(actionCardsCss), 'why-join list cards keep inner padding and icon gutter');
