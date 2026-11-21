@@ -355,7 +355,7 @@ window.__HUD_CONSOLIDATED__ = true;
         if (node.nodeType !== Node.ELEMENT_NODE) return false;
         const tag = node.tagName.toLowerCase();
         return !['script', 'style', 'link', 'header', 'nav'].includes(tag)
-          && !['site-header', 'sidebar', 'sidebar-overlay', 'layout'].includes(node.id);
+          && !['site-header', 'site-shell-top', 'site-shell-top-spacer', 'sidebar', 'sidebar-overlay', 'layout'].includes(node.id);
       });
       for (const node of movable) content.appendChild(node);
       document.body.insertBefore(content, document.querySelector('script'));
@@ -368,6 +368,7 @@ window.__HUD_CONSOLIDATED__ = true;
   function ensureLayout() {
     const header = ensureHeader();
     const content = ensureMainContent();
+    const spacer = ensurePinnedTop(header);
 
     // Remove stale page-has-right-panel class from HTML source (no global right panel).
     document.body.classList.remove('page-has-right-panel');
@@ -376,7 +377,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (!layout) {
       layout = document.createElement('div');
       layout.id = 'layout';
-      header.insertAdjacentElement('afterend', layout);
+      spacer.after(layout);
     }
 
     let mainWrapper = document.getElementById('main-wrapper');
@@ -390,6 +391,30 @@ window.__HUD_CONSOLIDATED__ = true;
     ensureFooter(mainWrapper);
     ensureMarketTicker(header);
     return { layout, mainWrapper, content };
+  }
+
+  function ensurePinnedTop(header) {
+    let top = document.getElementById('site-shell-top');
+    if (!top) {
+      top = document.createElement('div');
+      top.id = 'site-shell-top';
+      document.body.prepend(top);
+      new ResizeObserver(() => {
+        const height = top.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--shell-top-height', `${height}px`);
+      }).observe(top);
+    }
+
+    if (header.parentElement !== top) top.prepend(header);
+
+    let spacer = document.getElementById('site-shell-top-spacer');
+    if (!spacer) {
+      spacer = document.createElement('div');
+      spacer.id = 'site-shell-top-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+    }
+    if (top.nextElementSibling !== spacer) top.after(spacer);
+    return spacer;
   }
 
   function ensureMarketTicker(header) {
