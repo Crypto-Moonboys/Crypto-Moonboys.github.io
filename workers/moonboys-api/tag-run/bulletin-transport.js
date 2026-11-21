@@ -1,5 +1,6 @@
 // Every daily 18:00 UTC bulletin uses GK's fixed launch artwork.
 // Its full body is a separate message: Telegram photo captions are limited to 1024 characters.
+import { sendMoonboysPlainTelegramPost } from '../telegram/faction-emoji.js';
 import { authenticatedGroupId } from './core.js';
 
 export const TAG_RUN_BULLETIN_IMAGE =
@@ -7,10 +8,11 @@ export const TAG_RUN_BULLETIN_IMAGE =
 
 async function request(token, method, payload, fetchImpl) {
   try {
-    const response = await fetchImpl('https://api.telegram.org/bot' + token + '/' + method, {
+    const response = await sendMoonboysPlainTelegramPost(token, payload, body =>
+      fetchImpl('https://api.telegram.org/bot' + token + '/' + method, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+      body: JSON.stringify(body)
+    }), fetchImpl);
     const body = await response.json();
     return response.ok && body?.ok === true &&
       Number.isSafeInteger(body.result?.message_id) && body.result.message_id > 0
@@ -40,8 +42,7 @@ export async function sendTagRunBulletin(env, text, fetchImpl = fetch) {
     ...routing, photo: TAG_RUN_BULLETIN_IMAGE,
     caption: 'TAG RUN · STREET CRED + COMMUNITY POT'
   }, fetchImpl);
-  // This is always the distinct, full bulletin body, never a duplicate photo
-  // fallback. Preserve it even when the independent image request is unconfirmed.
+  // Always send the distinct, full bulletin body, even if the image was unconfirmed.
   const textStatus = await request(token, 'sendMessage', {
     ...routing, text, disable_web_page_preview: true
   }, fetchImpl);

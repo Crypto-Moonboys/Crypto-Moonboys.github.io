@@ -77,3 +77,28 @@ test('missing token or group and invalid text make no API requests',async()=>{
   await assert.rejects(sendTagRunBulletin(env,'',fetchImpl),/invalid_text/);
   assert.equal(calls,0);
 });
+
+test('live-style token uses bold headings and pack icons for both bulletin posts', async () => {
+  const methods = [];
+  const delivered = [];
+  const stickers = ['⚽', '💋', '🫁', '💉', '💊', '💣', '🗡', '🧱', '🐻']
+    .map((emoji, index) => ({ emoji, custom_emoji_id: String(index + 1) }));
+  const result = await sendTagRunBulletin({
+    ...env, TELEGRAM_BOT_TOKEN: '123456:test_token_for_bulletins',
+  }, 'Clan update\nA & B', async (url, options) => {
+    const method = url.split('/').at(-1);
+    methods.push(method);
+    const body = JSON.parse(options.body);
+    if (method === 'getStickerSet') {
+      assert.equal(body.name, 'GKMoonboys');
+      return Response.json({ ok: true, result: { sticker_type: 'custom_emoji', stickers } });
+    }
+    delivered.push(body);
+    return ack();
+  });
+  assert.equal(result.status, 'sent');
+  assert.deepEqual(methods, ['getStickerSet', 'sendPhoto', 'sendMessage']);
+  assert.match(delivered[0].caption, /^<tg-emoji[^>]*>.*<\/tg-emoji> <b>TAG RUN.*<\/b>$/u);
+  assert.match(delivered[1].text, /^<tg-emoji[^>]*>.*<\/tg-emoji> <b>Clan update<\/b>\nA &amp; B$/u);
+  assert(delivered.every(post => post.message_thread_id === 23456 && post.parse_mode === 'HTML'));
+});

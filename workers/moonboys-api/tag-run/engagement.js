@@ -1,5 +1,6 @@
 // Engagement reads credited messages and settled payouts; never reserves or sends tokens.
 import { utcDay, previousDay, previousWeek, rankFor } from './core.js';
+import { sendMoonboysPlainTelegramPost } from '../telegram/faction-emoji.js';
 import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../telegram/moonboy-message-gateway.js';
 
 const DAY = 86400000;
@@ -118,10 +119,11 @@ export async function publishEngagement(env, eventKey, text, fetchImpl=fetch) {
     });
     if(media.status==='sent') status='sent';
     else if(media.status==='disabled' || media.status==='composition_failed') {
-      const r=await fetchImpl('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({chat_id:chat,text,disable_web_page_preview:true,...options})
-      });
+      const payload = { chat_id: chat, text, disable_web_page_preview: true, ...options };
+      const r = await sendMoonboysPlainTelegramPost(env.TELEGRAM_BOT_TOKEN, payload, body =>
+        fetchImpl('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/sendMessage', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        }), fetchImpl);
       const body=await r.json();
       if(r.ok && body?.ok===true) status='sent';
     }
