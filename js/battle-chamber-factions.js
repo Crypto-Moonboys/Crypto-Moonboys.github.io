@@ -261,6 +261,7 @@
     ['blockstars', { src: '/art/The%20Blockstars%20Crypto%20Moonboys.jpg', alt: 'The Blockstars Crypto Moonboys artwork', size: 1254 }],
     ['crypto-stoned-boys', { src: '/art/crypto%20stonedboys.jpg', alt: 'Crypto Stoned Boys artwork', size: 1254 }],
     ['graffpunks', { src: '/art/the%20GraffPUNKS%20Crypto%20Moonboys.jpg', alt: 'GraffPUNKS Crypto Moonboys artwork', size: 1254 }],
+    ['hard-fork-rockers', { src: '/art/crypto%20moonboys%20The%20Hard%20fork%20Rockers.jpg', alt: 'Hard Fork Rockers artwork', size: 1254 }],
   ]);
 
   function renderStandings() {
