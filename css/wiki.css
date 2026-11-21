@@ -18,7 +18,7 @@
   --color-good: #5ce0a8;
   --color-warn: #f7c948;
   --color-red: #ff7b72;
-  --shell-header-h: 68px;
+  --shell-header-h: 46px;
   --shell-gutter: clamp(14px, 2vw, 28px);
   --font-sans: 'Rajdhani', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-display: 'Orbitron', 'Rajdhani', 'Segoe UI', sans-serif;
@@ -110,8 +110,9 @@ button {
   display: grid;
   grid-template-columns: minmax(180px, auto) minmax(220px, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px var(--shell-gutter);
+  align-content: center;
+  gap: 6px 8px;
+  padding: 2px var(--shell-gutter);
   background: rgba(7, 11, 18, 0.94);
   border-bottom: 1px solid rgba(247, 201, 72, 0.22);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.26);
@@ -119,7 +120,7 @@ button {
 }
 
 body.page-onboarding-shell {
-  --shell-header-h: 68px;
+  --shell-header-h: 46px;
 }
 
 body.page-onboarding-shell #site-header {
@@ -179,14 +180,18 @@ body.page-onboarding-shell #moonboys-global-status-badge {
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  gap: 10px;
+  gap: 8px;
   color: inherit;
   text-decoration: none;
 }
 
+.site-logo .site-logo-home > span {
+  min-width: 0;
+}
+
 .site-logo img {
-  width: 40px;
-  height: 40px;
+  width: 25px;
+  height: 25px;
   object-fit: cover;
   border: 1px solid rgba(247, 201, 72, 0.35);
   border-radius: 50%;
@@ -208,7 +213,7 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 
 .site-logo .logo-sub {
   display: block;
-  margin-top: 3px;
+  margin-top: 1px;
   color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -218,11 +223,12 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 }
 
 .site-logo .logo-live-feed {
-  font: inherit;
   display: flex;
   gap: 8px;
-  margin-top: 4px;
-  margin-left: 50px;
+  margin-top: 2px;
+  margin-left: 33px;
+  font-size: 0.65rem;
+  line-height: 1.1;
   letter-spacing: normal;
   text-transform: none;
 }
@@ -362,11 +368,11 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 #global-nav,
 .header-nav {
   display: flex;
-  justify-content: flex-end;
+  justify-content: safe flex-end;
   min-width: 0;
   gap: 6px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
 
 #global-nav a,
@@ -374,9 +380,10 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 .header-nav a {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
-  gap: 6px;
-  padding: 7px 10px;
+  min-height: 28px;
+  gap: 5px;
+  padding: 3px 8px;
+  line-height: 1.2;
   color: var(--color-text-muted);
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -4418,22 +4425,48 @@ body.page-home .article-card-cat {
   margin-top: 14px;
 }
 
+#site-header > #moonboys-global-status-badge .csp-badge {
+  width: 34px;
+  height: 34px;
+  padding: 3px;
+}
+
+#site-header > #moonboys-global-status-badge .csp-telegram-icon {
+  width: 28px;
+}
+
+@media (min-width: 1121px) {
+  body:not(.page-onboarding-shell) #site-header {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto minmax(0, auto);
+  }
+}
+
 @media (max-width: 1120px) {
+  :root {
+    --shell-header-h: 105px;
+  }
+
   #site-header {
-    grid-template-columns: minmax(140px, auto) 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  #site-shell-top #site-header > #moonboys-global-status-badge {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   #global-nav {
     grid-column: 1 / -1;
     justify-content: flex-start;
-    padding-bottom: 2px;
+  }
+
+  #global-nav a {
+    min-height: 34px;
   }
 }
 
 @media (max-width: 720px) {
-  :root {
-    --shell-header-h: 118px;
-  }
 
   #header-search {
     grid-column: 1 / -1;
