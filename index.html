@@ -77,123 +77,11 @@
     .home-explore a:focus-visible { outline:3px solid #fff; outline-offset:4px; }
     .home-explore-links { display:flex; flex-wrap:wrap; gap:12px 24px; padding:0; list-style:none; }
     .home-explore-links a { color:var(--wax-gold); text-underline-offset:3px; }
-    .wax-market-ticker {
-      display: flex;
-      align-items: stretch;
-      --ticker-font-size: .875rem;
-      --ticker-height: calc(var(--ticker-font-size) + 2px);
-      block-size: var(--ticker-height);
-      background: #000;
-      box-shadow: inset 0 -1px #27313a;
-      font-size: var(--ticker-font-size);
-      line-height: 1;
-    }
-    .wax-market-ticker .wax-ticker-window { flex: 1; min-inline-size: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
-    .wax-market-ticker .wax-ticker-track { display: flex; inline-size: max-content; }
-    .wax-market-ticker .wax-ticker-list {
-      display: flex;
-      align-items: stretch;
-      justify-content: space-around;
-      flex: 1 0 auto;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .wax-market-ticker .wax-ticker-list li { margin: 0; border-inline-end: 1px solid #242b31; }
-    .wax-market-ticker .wax-ticker-list a {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      block-size: var(--ticker-height);
-      padding-inline: 18px;
-      color: #fff;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .wax-market-ticker a:hover .wax-ticker-name { color: var(--wax-gold); }
-    .wax-market-ticker .wax-ticker-name { color: #c9d1d9; font-weight: 600; }
-    .wax-market-ticker [data-usd] {
-      min-inline-size: 11ch;
-      color: #fff;
-      font: 600 var(--ticker-font-size)/1 ui-monospace, SFMono-Regular, Consolas, monospace;
-      font-variant-numeric: tabular-nums;
-      text-align: end;
-    }
-    .wax-market-ticker [data-usd][data-stale] { color: #9aa5af; }
-    .wax-market-ticker .wax-ticker-control {
-      flex: 0 0 28px;
-      padding: 0;
-      font: inherit;
-      border: 0;
-      border-inline-start: 1px solid #27313a;
-      background: #000;
-      color: #c9d1d9;
-      cursor: pointer;
-    }
-    .wax-market-ticker .wax-ticker-control:hover { color: var(--wax-gold); }
-    .wax-market-ticker :is(a, button):focus-visible { outline: 2px solid var(--wax-gold); outline-offset: -3px; }
-    .wax-market-ticker .wax-ticker-copy { display: none; }
-    .wax-ticker-status {
-      position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-    @keyframes wax-ticker-scroll { to { transform: translateX(-50%); } }
-    @media (prefers-reduced-motion: no-preference) {
-      .wax-market-ticker[data-scroll] .wax-ticker-window:not(:has(:focus-visible)) { overflow: clip; }
-      .wax-market-ticker[data-scroll] .wax-ticker-window:not(:has(:focus-visible)) .wax-ticker-track {
-        min-inline-size: 200%;
-        animation: wax-ticker-scroll var(--ticker-duration, 32s) linear infinite;
-        animation-play-state: var(--ticker-play-state, running);
-      }
-      .wax-market-ticker[data-scroll] .wax-ticker-window:not(:has(:focus-visible)) .wax-ticker-copy { display: flex; }
-      .wax-market-ticker[data-paused] { --ticker-play-state: paused; }
-    }
-    @media (hover: hover) {
-      .wax-market-ticker .wax-ticker-window:hover { --ticker-play-state: paused; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .wax-market-ticker .wax-ticker-control { display: none; }
-    }
     @media (max-width:600px) { .wax-entry { min-height:65svh; padding:48px 18px 68px; } .wax-entry-button { width:100%; } }
   </style>
 </head>
 <body class="page-home page-standard-shell wax-landing">
 <main id="content" role="main">
-  <section id="wax-market-caps" class="wax-market-ticker" aria-label="NFT Hive collection market caps in US dollars">
-    <div class="wax-ticker-window">
-      <div class="wax-ticker-track">
-        <ul class="wax-ticker-list" data-ticker-list>
-          <li data-collection="graffk1ngsuk">
-            <a href="https://nfthive.io/collection/graffk1ngsuk"><span class="wax-ticker-name">Graffiti Kings UK</span><span data-usd>—</span></a>
-          </li>
-          <li data-collection="graffiti.r2">
-            <a href="https://nfthive.io/collection/graffiti.r2"><span class="wax-ticker-name">Graffiti Kings R2</span><span data-usd>—</span></a>
-          </li>
-          <li data-collection="hodlmoonboys">
-            <a href="https://nfthive.io/collection/hodlmoonboys"><span class="wax-ticker-name">HODL Moonboys</span><span data-usd>—</span></a>
-          </li>
-          <li data-collection="gr4ffitiking">
-            <a href="https://nfthive.io/collection/gr4ffitiking"><span class="wax-ticker-name">GR4FFITIKING</span><span data-usd>—</span></a>
-          </li>
-          <li data-collection="dabitcoinkid">
-            <a href="https://nfthive.io/collection/dabitcoinkid"><span class="wax-ticker-name">Bitcoin Kids</span><span data-usd>—</span></a>
-          </li>
-          <li data-collection="gkniftyheads">
-            <a href="https://nfthive.io/collection/gkniftyheads"><span class="wax-ticker-name">GKniftyHEADS</span><span data-usd>—</span></a>
-          </li>
-          <li data-collection="noballgamess">
-            <a href="https://nfthive.io/collection/noballgamess"><span class="wax-ticker-name">No Ball Games</span><span data-usd>—</span></a>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <button class="wax-ticker-control" data-ticker-pause type="button" aria-label="Pause market ticker" aria-pressed="false" hidden><span aria-hidden="true">Ⅱ</span></button>
-    <span class="wax-ticker-status" data-market-cap-status role="status">Loading NFT Hive market caps.</span>
-  </section>
   <section class="wax-entry" aria-labelledby="wax-entry-title">
     <div class="wax-entry-inner">
       <p class="wax-entry-kicker">Crypto Moonboys × Graffiti Kings</p>
@@ -225,7 +113,6 @@
     </nav>
   </section>
 </main>
-<script data-cfasync="false" defer src="/js/wax-market-caps.js?v=7"></script>
 <script>
   // Preserve direct links to sections moved off the former homepage.
   (() => {
