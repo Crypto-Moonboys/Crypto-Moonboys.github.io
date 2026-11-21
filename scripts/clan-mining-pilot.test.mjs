@@ -20,6 +20,7 @@ import { advanceSpotlight, describeSpotlight, spotlightFinds } from '../workers/
 
 import { advanceChaos, describeChaos, chaosFinds } from '../workers/moonboys-api/shared/clan-stoned-chaos.js';
 
+import { rollCommunitySeason, selectCommunitySeason } from '../workers/moonboys-api/community-season-authority.js';
 import { closeClanPeriods, readClanPeriodRewards, readClanPeriodResults } from '../workers/moonboys-api/shared/clan-period-rewards.js';
 import { settleClanSignalXp } from '../workers/moonboys-api/shared/clan-signal-xp.js';
 
@@ -1438,4 +1439,35 @@ test('a paid WTF window uses fresh bank receipts and credits Community XP at mos
   assert.equal(row.claim_key, '2026-11-23:wtf-morning-signal');
   assert.equal(row.earned_at, from);
   assert.equal(row.season_id, 1);
+});
+
+
+test('Community season rollover prepares a continuous successor exactly once', async t => {
+  const { db, sql } = fixture(t);
+  sql.exec(`CREATE TABLE telegram_seasons (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, start_date TEXT, end_date TEXT, is_active INTEGER
+  );`);
+  const clock = at => new Date(at);
+  const roll = at => rollCommunitySeason(db, clock(at));
+  const current = at => selectCommunitySeason(db, clock(at));
+  const count = () => sql.prepare('SELECT COUNT(*) AS n FROM telegram_seasons').get().n;
+  await roll('2026-12-15T00:00:00Z');
+  assert.equal(count(), 0, 'an operator seeds the first season');
+  sql.exec(`INSERT INTO telegram_seasons VALUES
+    (12, 'Season 12', '2026-11-21T16:31:19.578Z', '2026-12-16T00:00:00.000Z', 1)`);
+  await roll('2026-12-14T23:59:59Z');
+  assert.equal(count(), 1);
+  await Promise.all([roll('2026-12-15T00:00:00Z'), roll('2026-12-15T00:00:00Z')]);
+  assert.equal(count(), 2);
+  assert.equal((await current('2026-12-15T23:59:59Z')).id, 12);
+  const next = await current('2026-12-16T00:00:00Z');
+  assert.equal(next.id, 13);
+  assert.equal(next.name, 'Season 13');
+  assert.equal(next.end_date, '2027-03-16T00:00:00.000Z');
+  await roll('2027-06-16T03:00:00Z');
+  assert.equal((await current('2027-06-16T03:00:00Z')).id, 15, 'missed ticks can catch up');
+  assert.equal((await current('2026-12-01T00:00:00Z')).id, 12, 'delayed awards can resolve their original season');
+  sql.exec("UPDATE telegram_seasons SET is_active=0 WHERE id=15");
+  await roll('2028-01-01T00:00:00Z');
+  assert.equal(count(), 4, 'disabled seasons do not roll over');
 });
