@@ -304,6 +304,19 @@ body.page-community .bc-join-content {
   grid-area: content;
 }
 
+body.page-community .bc-reward-vault .bc-join-layout {
+  margin-top: 0;
+}
+
+body.page-community .bc-reward-vault .bc-join-content {
+  display: grid;
+  gap: 12px;
+}
+
+body.page-community .bc-reward-vault .bc-disclosure:not([open]) {
+  padding-bottom: 0;
+}
+
 @media (max-width: 860px) {
   body.page-community .bc-join-layout {
     grid-template-columns: minmax(0, 1fr);
