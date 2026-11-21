@@ -78,6 +78,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '109_tag_run_v2_full_automation.sql',
   '110_tag_run_admin_member_blocks.sql',
   '111_tag_run_reward_only_blocks.sql',
+  '128_clan_pfp_roll.sql',
 ]);
 
 function readJson(filePath, label) {
