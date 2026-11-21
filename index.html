@@ -80,11 +80,15 @@
     .wax-market-ticker {
       display: flex;
       align-items: stretch;
+      --ticker-font-size: .875rem;
+      --ticker-height: calc(var(--ticker-font-size) + 2px);
+      block-size: var(--ticker-height);
       background: #000;
-      border-bottom: 1px solid #27313a;
-      font-size: .875rem;
+      box-shadow: inset 0 -1px #27313a;
+      font-size: var(--ticker-font-size);
+      line-height: 1;
     }
-    .wax-market-ticker .wax-ticker-window { flex: 1; min-inline-size: 0; overflow-x: auto; }
+    .wax-market-ticker .wax-ticker-window { flex: 1; min-inline-size: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
     .wax-market-ticker .wax-ticker-track { display: flex; inline-size: max-content; }
     .wax-market-ticker .wax-ticker-list {
       display: flex;
@@ -100,7 +104,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      min-block-size: 44px;
+      block-size: var(--ticker-height);
       padding-inline: 18px;
       color: #fff;
       text-decoration: none;
@@ -111,13 +115,15 @@
     .wax-market-ticker [data-usd] {
       min-inline-size: 11ch;
       color: #fff;
-      font: 600 .875rem/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
+      font: 600 var(--ticker-font-size)/1 ui-monospace, SFMono-Regular, Consolas, monospace;
       font-variant-numeric: tabular-nums;
       text-align: end;
     }
-    .wax-market-ticker[data-stale] [data-usd] { color: #9aa5af; }
+    .wax-market-ticker [data-usd][data-stale] { color: #9aa5af; }
     .wax-market-ticker .wax-ticker-control {
-      flex: 0 0 44px;
+      flex: 0 0 28px;
+      padding: 0;
+      font: inherit;
       border: 0;
       border-inline-start: 1px solid #27313a;
       background: #000;
@@ -157,7 +163,7 @@
 </head>
 <body class="page-home page-standard-shell wax-landing">
 <main id="content" role="main">
-  <section id="wax-market-caps" class="wax-market-ticker" aria-label="NFT collection market caps in US dollars">
+  <section id="wax-market-caps" class="wax-market-ticker" aria-label="NFT Hive collection market caps in US dollars">
     <div class="wax-ticker-window">
       <div class="wax-ticker-track">
         <ul class="wax-ticker-list" data-ticker-list>
@@ -186,7 +192,7 @@
       </div>
     </div>
     <button class="wax-ticker-control" data-ticker-pause type="button" aria-label="Pause market ticker" aria-pressed="false" hidden><span aria-hidden="true">Ⅱ</span></button>
-    <span class="wax-ticker-status" data-quote-status role="status">Waiting for the live market quote.</span>
+    <span class="wax-ticker-status" data-market-cap-status role="status">Loading NFT Hive market caps.</span>
   </section>
   <section class="wax-entry" aria-labelledby="wax-entry-title">
     <div class="wax-entry-inner">
@@ -219,7 +225,7 @@
     </nav>
   </section>
 </main>
-<script data-cfasync="false" defer src="/js/wax-market-caps.js?v=6"></script>
+<script data-cfasync="false" defer src="/js/wax-market-caps.js?v=7"></script>
 <script>
   // Preserve direct links to sections moved off the former homepage.
   (() => {
