@@ -83,8 +83,15 @@ async function fetch(url, options = {}) {
   return { ok: true, async json() { return data; } };
 }
 class CustomEvent { constructor(type, options) { this.type = type; this.detail = options.detail; } }
+let expireFinishPreparation;
+function captureTimeout(callback, delay) {
+  assert.equal(delay, 15000);
+  expireFinishPreparation = callback;
+  return 1;
+}
+function clearCapturedTimeout() { expireFinishPreparation = null; }
 const source = readFileSync('game/nbg-london-leaderboards.js', 'utf8');
-vm.runInNewContext(source, { window, document, fetch, URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent });
+vm.runInNewContext(source, { window, document, fetch, URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent, setTimeout: captureTimeout, clearTimeout: clearCapturedTimeout });
 assert.equal(typeof domReady, 'function');
 domReady();
 async function flush() {
@@ -277,7 +284,7 @@ const reloadedWindow = {
 };
 vm.runInNewContext(source, {
   window: reloadedWindow, document: reloadedDocument, fetch,
-  URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent,
+  URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent, setTimeout: captureTimeout, clearTimeout: clearCapturedTimeout,
 });
 reloadReady();
 await flush();
@@ -406,3 +413,19 @@ assert.equal(window.NBGLondonFinishPending(), false);
 assert.match(elements.get('nbg-finish-status').textContent, /result saved/);
 await emit('nbg-level-reset');
 assert.equal(elements.get('nbg-finish-status').hidden, true);
+
+await emit('nbg-level-started');
+const finishesBeforeTimeout = requests('/run/finish').length;
+let lateAuth;
+nextAuth = () => new Promise(resolve => { lateAuth = resolve; });
+await emit('nbg-level-complete', { replay: { version: 1, frames: 'AQIDBAU=' } });
+assert.equal(window.NBGLondonFinishPending(), true);
+expireFinishPreparation();
+await flush();
+assert.equal(window.NBGLondonFinishPending(), false);
+assert.match(elements.get('nbg-finish-status').textContent, /verification timed out/);
+nextAuth = async () => auth('500');
+await emit('nbg-level-reset');
+lateAuth(auth('500'));
+await flush();
+assert.equal(requests('/run/finish').length, finishesBeforeTimeout);

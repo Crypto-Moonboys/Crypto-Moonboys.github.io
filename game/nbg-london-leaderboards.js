@@ -624,6 +624,7 @@
     setFinishStatus('Saving ranked result…');
     var current = generation;
     var sessionPromise = runPromise;
+    var preparationTimer;
     try {
       if (!sessionPromise) {
         setFinishStatus(practiceOnlyReason ?
@@ -633,7 +634,13 @@
             'Run complete. Guest scores are not stored permanently.');
         return;
       }
-      var session = await sessionPromise;
+      // Bound both the start receipt and credential refresh before posting.
+      var preparationDeadline = new Promise(function (_, reject) {
+        preparationTimer = setTimeout(function () {
+          reject(new Error('finish_preparation_timeout'));
+        }, 15000);
+      });
+      var session = await Promise.race([sessionPromise, preparationDeadline]);
       if (current !== generation || !session || !session.run_id) {
         if (current !== generation) {
           setFinishStatus('Run not saved: Telegram account changed.');
@@ -652,7 +659,8 @@
         setFinishStatus('Run not saved: Telegram account changed during play.');
         return;
       }
-      var auth = await signedAuth();
+      var auth = await Promise.race([signedAuth(), preparationDeadline]);
+      clearTimeout(preparationTimer);
       if (!auth || current !== generation || String(auth.id) !== session.telegram_id ||
           String(gate.getTelegramId() || '') !== session.telegram_id || !gate.isTelegramLinked()) {
         setFinishStatus('Run not saved: Telegram account changed or login expired.');
@@ -684,7 +692,9 @@
       loadPrizeStandings();
     } catch (error) {
       if (current === generation) {
-        setFinishStatus(error?.authoritativeRejection ?
+        setFinishStatus(error?.message === 'finish_preparation_timeout' ?
+          'Run not saved: ranked session or Telegram verification timed out.' :
+          error?.authoritativeRejection ?
           'Run not saved: ' + error.message + '.' :
           'Save could not be confirmed. Check your personal bests before playing again.');
         loadPersonal();
@@ -699,6 +709,7 @@
         setFinishStatus('Save could not be confirmed after the Telegram account changed.');
       }
     } finally {
+      clearTimeout(preparationTimer);
       finishPending = false;
     }
   }
