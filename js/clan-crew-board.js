@@ -1,3 +1,5 @@
+import { CLAN_REWARD_NAMES } from './clan-period-display.js';
+
 const board = document.querySelector('[data-clan-crew-progress]');
 const api = window.MOONBOYS_API?.getApiBase?.({ mode: 'write' });
 const profiles = window.MOONBOYS_FACTION_PROFILES;
@@ -15,6 +17,56 @@ if (board && api && profiles && factionOrder?.length) {
   const scoreHeader = board.querySelector('[data-clan-crew-score]');
   const join = board.querySelector('[data-clan-crew-join]');
   const entry = board.querySelector('[data-clan-crew-entry]');
+  const cityRules = board.querySelector('[data-clan-city-rules]');
+  const cityHeader = board.querySelector('[data-clan-city]');
+  const finals = board.querySelector('[data-clan-final-results]');
+  const signalBonus = document.querySelector('[data-clan-signal-bonus]');
+  const cityProjects = {
+    'rugpull-miners': 'Mine tunnels',
+    graffpunks: 'Faction mural',
+    'nomad-bears': 'Trail network',
+    'all-city-bulls': 'District defences',
+    'crypto-moongirls': 'Signal network',
+    'hard-fork-rockers': 'Fork crossings',
+    'blockchain-furies': 'Pulse grid',
+    blockstars: 'City spotlight',
+    'crypto-stoned-boys': 'Artifact archive',
+  };
+  const cityStages = ['Underway', 'Opened', 'Expanded', 'Complete'];
+
+  function renderRewards(result) {
+    if (signalBonus) {
+      signalBonus.hidden = !result?.signal_bonus_xp;
+      signalBonus.textContent = result?.signal_bonus_xp
+        ? `Bank a Clan Operation tier during a live signal to earn ${result.signal_bonus_xp} Community XP once per window. The bonus may take a few minutes to appear.`
+        : '';
+    }
+    if (!finals) return;
+    finals.hidden = !Array.isArray(result?.final_results);
+    const items = (result?.final_results ?? []).map(period => {
+      const item = document.createElement('li');
+      const winners = period.crews.filter(crew => crew.rank === 1).map(crew => profiles[crew.faction_id].name);
+      const winnerLabel = winners.length ? `${winners.join(', ')} · ${CLAN_REWARD_NAMES[period.kind]}` : 'No winner';
+      const ranks = period.crews.filter(crew => crew.rank !== null).sort((a, b) => a.rank - b.rank);
+      item.textContent = `${period.kind[0].toUpperCase() + period.kind.slice(1)} · ${period.starts_on} to ${period.ends_before} UTC (end exclusive) · ${winnerLabel}`;
+      if (ranks.length) {
+        const scores = document.createElement('ul');
+        for (const { rank, faction_id, scored_banks, possible_banks } of ranks) {
+          const score = document.createElement('li');
+          score.textContent = `#${rank} ${profiles[faction_id].name} · ${percent.format(scored_banks / possible_banks)}`;
+          scores.append(score);
+        }
+        item.append(scores);
+      }
+      return item;
+    });
+    if (!items.length && !finals.hidden) {
+      const item = document.createElement('li');
+      item.textContent = 'The first eligible period has yet to close.';
+      items.push(item);
+    }
+    finals.querySelector('ul').replaceChildren(...items);
+  }
   const readOwner = () => String(window.MOONBOYS_IDENTITY?.getTelegramId?.() ?? '');
   const date = /^\d{4}-\d{2}-\d{2}$/;
   let generation = 0;
@@ -93,13 +145,14 @@ if (board && api && profiles && factionOrder?.length) {
     refresh.setAttribute('aria-disabled', 'true');
     if (!board.hidden) status.textContent = 'Refreshing crew progress…';
     try {
-      const response = await fetch(`${api}/clan-operations/state?view=crew-progress${competitionPanel ? '&standings=1' : ''}`, {
+      const response = await fetch(`${api}/clan-operations/state?view=crew-progress${competitionPanel ? '&standings=1' : ''}${cityHeader ? '&city=1' : ''}`, {
         credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(12_000),
       });
       if (!response.ok) throw new Error('crew progress unavailable');
       const result = await response.json();
       if (current !== generation) return;
       data = result;
+      renderRewards(data);
       if (data.ok === true && (data.enabled === false || data.crews === undefined)) {
         // Older Workers only return the pilot flag. Wait for the published board contract.
         board.hidden = true;
@@ -116,6 +169,9 @@ if (board && api && profiles && factionOrder?.length) {
       if (data.ok !== true || data.enabled !== true || !date.test(data.utc_day) || !date.test(data.week_start) ||
           !Array.isArray(data.crews) || data.crews.length !== factionOrder.length) throw new Error('invalid crew progress');
       const byFaction = new Map(data.crews.map(row => [row.faction_id, row]));
+      const showCity = Boolean(cityHeader && data.crews.every(crew => crew.city));
+      if (cityRules) cityRules.hidden = !showCity;
+      if (cityHeader) cityHeader.hidden = !showCity;
       const content = factionOrder.map(key => {
         const counts = byFaction.get(key);
         if (!counts || !Number.isSafeInteger(counts.today_banks) || !Number.isSafeInteger(counts.week_banks) ||
@@ -134,6 +190,13 @@ if (board && api && profiles && factionOrder?.length) {
           const cell = document.createElement('td');
           cell.textContent = value.toLocaleString();
           row.append(cell);
+        }
+        if (showCity) {
+          const city = document.createElement('td');
+          city.setAttribute('data-clan-city-project', '');
+          const next = counts.city.next === null ? '' : ` · ${counts.week_banks}/${counts.city.next} banks`;
+          city.textContent = `${cityProjects[key]} · ${cityStages[counts.city.stage]}${next}`;
+          row.append(city);
         }
         const scoreCell = document.createElement('td');
         scoreCell.setAttribute('data-clan-crew-score', '');
@@ -159,6 +222,8 @@ if (board && api && profiles && factionOrder?.length) {
       period.textContent = '';
       table.hidden = true;
       data = undefined;
+      renderRewards();
+      if (cityRules) cityRules.hidden = true;
       if (competitionPanel) {
         competitionPanel.hidden = true;
         refreshEntry();

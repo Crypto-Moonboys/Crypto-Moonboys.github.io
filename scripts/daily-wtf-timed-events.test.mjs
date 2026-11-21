@@ -211,7 +211,8 @@ check(xpBurstJs.includes('payload.persisted_xp_awarded === true') &&
   xpBurstJs.includes('Roguelite options unlocked. Signal bonus XP is preview only.'), 'only a persisted award can animate XP');
 check(communityHtml.includes('data-wtf-signal-summary') && communityHtml.includes('href="#clan-operation"') &&
   communityHtml.includes('Bank each completed tier for 10,000 Clan Renown') &&
-  communityHtml.includes('Signal bonus XP is preview only.'), 'Battle Chamber gives the operation link and both reward rules');
+  communityHtml.includes('XP shown for those objectives is a preview.') &&
+  communityHtml.includes('data-clan-signal-bonus hidden'), 'Battle Chamber gives the operation link and distinguishes preview objectives from settled bank bonuses');
 check(wtfSystemJs.includes('renderSignalSummary(window.MOONBOYS_WTF_EVENTS)') &&
   wtfSystemJs.includes('Schedule preview'), 'visible signal summary labels fallback schedules as previews');
 check(communityHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'community loads timed event system');

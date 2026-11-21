@@ -20,6 +20,10 @@ import { advanceSpotlight, describeSpotlight, spotlightFinds } from '../workers/
 
 import { advanceChaos, describeChaos, chaosFinds } from '../workers/moonboys-api/shared/clan-stoned-chaos.js';
 
+import { closeClanPeriods, readClanPeriodRewards, readClanPeriodResults } from '../workers/moonboys-api/shared/clan-period-rewards.js';
+import { settleClanSignalXp } from '../workers/moonboys-api/shared/clan-signal-xp.js';
+
+const newerMigration = number => readFileSync(new URL(`../workers/moonboys-api/migrations/${number}.sql`, import.meta.url), 'utf8');
 const rosterMigration = readFileSync(new URL('../workers/moonboys-api/migrations/125_clan_crew_rosters.sql', import.meta.url), 'utf8');
 const chaosMigration = readFileSync(new URL('../workers/moonboys-api/migrations/124_clan_crypto_stoned_boys.sql', import.meta.url), 'utf8');
 const spotlightMigration = readFileSync(new URL('../workers/moonboys-api/migrations/123_clan_blockstars.sql', import.meta.url), 'utf8');
@@ -48,20 +52,32 @@ function fixture(t) {
   t.after(() => sql.close());
   sql.exec(`${factionTable}; ${factionRows}; ${migration} ${wallsMigration} ${trailsMigration} ${districtMigration} ${signalMigration} ${forkMigration} ${burstMigration} ${spotlightMigration} ${chaosMigration} ${rosterMigration}`);
   const db = {
+    async batch(statements) {
+      sql.exec('BEGIN');
+      try {
+        const results = await Promise.all(statements.map(statement => statement.run()));
+        sql.exec('COMMIT');
+        return results;
+      } catch (error) {
+        sql.exec('ROLLBACK');
+        throw error;
+      }
+    },
     prepare(statement) {
       const query = sql.prepare(statement);
       return {
+        all: async () => ({ success: true, results: query.all() }),
         bind(...args) {
           return {
             first: async () => query.get(...args) ?? null,
-            run: async () => query.run(...args),
+            run: async () => ({ ...query.run(...args), success: true }),
             all: async () => ({ success: true, results: query.all(...args) }),
           };
         },
       };
     },
   };
-  return { ...requestFixture(db), sql };
+  return { ...requestFixture(db), sql, db };
 }
 
 function requestFixture(db) {
@@ -1356,4 +1372,70 @@ test('crew ranking scores five best days, retains absent members, and ranks exac
   assert.equal(beforeMigration.status, 200);
   assert.equal(beforeMigration.data.competition, undefined);
   assert.equal(beforeMigration.data.crews.length, 9);
+});
+
+
+function bankReceipt(sql, owner, faction, at, tier = 1) {
+  const day = at.slice(0, 10);
+  sql.prepare(`INSERT OR IGNORE INTO clan_operation_days
+    (telegram_id, faction_id, utc_day, rules_version, route_index, updated_at)
+    VALUES (?, ?, ?, 1, 0, ?)`).run(owner, faction, day, at);
+  sql.prepare(`INSERT INTO clan_operation_awards
+    (telegram_id, utc_day, faction_id, tier, renown, specimen_key, awarded_at)
+    VALUES (?, ?, ?, ?, 10000, 'mine-v1-0-1', ?)`).run(owner, day, faction, tier, at);
+}
+
+test('clan periods freeze UTC results and issue one entitlement per active winner', async t => {
+  const { db, sql } = fixture(t);
+  sql.exec(`${newerMigration('126_clan_period_rewards')}
+    CREATE TABLE telegram_seasons (id INTEGER PRIMARY KEY, start_date TEXT, end_date TEXT);
+    INSERT INTO telegram_seasons VALUES (12, '2026-11-01', '2026-12-01T01:00:00Z');
+    INSERT INTO clan_crew_roster_entries VALUES
+      ('2026-11-23', '1', 'nomad-bears'), ('2026-11-23', '2', 'nomad-bears'),
+      ('2026-11-23', '3', 'nomad-bears'), ('2026-11-23', '4', 'graffpunks'),
+      ('2026-11-23', '5', 'graffpunks'), ('2026-11-23', '6', 'graffpunks');`);
+  const at = '2026-11-23T12:00:00.000Z';
+  bankReceipt(sql, '1', 'nomad-bears', at);
+  bankReceipt(sql, '4', 'graffpunks', at);
+  bankReceipt(sql, '3', 'rugpull-miners', at);
+  const from = '2026-11-01';
+  await closeClanPeriods(db, from, new Date('2026-11-30T00:04:59Z'));
+  assert.equal((await readClanPeriodResults(db)).some(x => x.period_key === '2026-11-23'), false);
+  await closeClanPeriods(db, from, new Date('2026-12-01T00:10Z'));
+  const frozen = await readClanPeriodResults(db);
+  assert.deepEqual(frozen.map(x => x.kind), ['monthly', 'weekly']);
+  assert.equal(frozen.every(x => x.crews.filter(crew => crew.rank === 1).length === 2), true);
+  assert.deepEqual((await readClanPeriodRewards(db, '1')).map(x => x.kind), ['monthly', 'weekly']);
+  assert.equal((await readClanPeriodRewards(db, '2')).length, 0, 'inactive roster members do not earn an award');
+  assert.equal((await readClanPeriodRewards(db, '3')).length, 0, 'banks in a different faction do not count');
+  bankReceipt(sql, '5', 'graffpunks', at);
+  await Promise.all([closeClanPeriods(db, from, new Date('2026-12-01T01:10Z')), closeClanPeriods(db, from, new Date('2026-12-01T01:10Z'))]);
+  const settled = await readClanPeriodResults(db);
+  assert.deepEqual(settled.filter(x => x.kind !== 'seasonal'), frozen);
+  assert.deepEqual(settled.find(x => x.kind === 'seasonal').crews.filter(crew => crew.rank === 1).map(crew => crew.faction_id), ['graffpunks']);
+  assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM clan_period_reward_receipts").get().n, 6);
+});
+
+test('a paid WTF window uses fresh bank receipts and credits Community XP at most once', async t => {
+  const { db, sql } = fixture(t);
+  sql.exec(`CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY, xp INTEGER DEFAULT 0, level INTEGER DEFAULT 1, updated_at TEXT);
+    CREATE TABLE telegram_seasons (id INTEGER PRIMARY KEY, start_date TEXT, end_date TEXT, is_active INTEGER);
+    CREATE TABLE telegram_xp_log (id INTEGER PRIMARY KEY, telegram_id TEXT, action TEXT, reference_id TEXT, xp_change INTEGER, created_at TEXT);
+    CREATE TABLE telegram_leaderboard (telegram_id TEXT, season_id INTEGER, xp INTEGER, updated_at TEXT, PRIMARY KEY (telegram_id, season_id));
+    INSERT INTO telegram_users (telegram_id) VALUES ('101'), ('102');
+    INSERT INTO telegram_seasons VALUES (1, '2026-11-01', '2026-12-01', 1);
+    ${newerMigration('089_community_xp_award_receipts')}`);
+  const from = '2026-11-23T08:00:00.000Z';
+  bankReceipt(sql, '101', 'nomad-bears', '2026-11-23T04:00:00.000Z');
+  bankReceipt(sql, '101', 'nomad-bears', from, 2);
+  bankReceipt(sql, '101', 'nomad-bears', '2026-11-23T09:29:59.000Z', 3);
+  bankReceipt(sql, '102', 'graffpunks', '2026-11-23T09:30:00.000Z');
+  await settleClanSignalXp(db, from, new Date('2026-11-23T12:00Z'));
+  await settleClanSignalXp(db, from, new Date('2026-11-24T12:00Z'));
+  assert.equal(sql.prepare("SELECT xp FROM telegram_users WHERE telegram_id='101'").get().xp, 100);
+  assert.equal(sql.prepare("SELECT xp FROM telegram_users WHERE telegram_id='102'").get().xp, 0);
+  const row = sql.prepare('SELECT claim_key, earned_at, season_id FROM telegram_community_xp_awards').get();
+  assert.equal(row.claim_key, '2026-11-23:wtf-morning-signal');
+  assert.equal(row.earned_at, from);
+  assert.equal(row.season_id, 1);
 });

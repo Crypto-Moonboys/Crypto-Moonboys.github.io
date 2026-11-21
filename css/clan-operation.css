@@ -288,3 +288,9 @@
 .clan-crew-progress th a {
   color: var(--mine-amber);
 }
+
+
+.clan-crew-progress td[data-clan-city-project] {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
