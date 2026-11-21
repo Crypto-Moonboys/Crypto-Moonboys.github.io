@@ -14018,13 +14018,21 @@ export default {
         }
         const progression = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const faction = factionMeta(progression?.faction || FACTION_UNALIGNED);
-        const seasonKey = await getBattleSeasonKey(env.DB, Date.now(), { strict: true });
-        const choices = await env.DB.prepare(
-          'SELECT season_key FROM telegram_faction_season_locks WHERE telegram_id = ?'
-        ).bind(verified.telegramId).all();
-        if (!choices.success) return err('Faction season status unavailable', 503);
-        const canChooseFaction = faction.key === FACTION_UNALIGNED ||
-          (choices.results.length > 0 && !choices.results.some(choice => choice.season_key === seasonKey));
+        let seasonKey = null;
+        let canChooseFaction = false;
+        try {
+          const key = await getBattleSeasonKey(env.DB, Date.now(), { strict: true });
+          const choices = await env.DB.prepare(
+            'SELECT season_key FROM telegram_faction_season_locks WHERE telegram_id = ?'
+          ).bind(verified.telegramId).all();
+          if (choices.success) {
+            seasonKey = key;
+            canChooseFaction = faction.key === FACTION_UNALIGNED ||
+              (choices.results.length > 0 && !choices.results.some(choice => choice.season_key === key));
+          }
+        } catch {
+          // The signed faction stays readable if season choice is temporarily unavailable.
+        }
         return json({
           ok: true,
           faction: faction.key,
