@@ -59,5 +59,16 @@
       "sha256": "44814912f03749f93ab608cc1a235dd469671e9c0a3e844ba251f562ff0c2b0a"
     }
   ],
-  "limitation": "Production smoke checks used no signed Telegram session and did not spend a roll or award XP."
+  "limitation": "Production smoke checks used no signed Telegram session and did not spend a roll or award XP.",
+  "expected_commits": {
+    "moonboys-api": "565a0f9527264ca5fa808a250c78c4889d9b9626"
+  },
+  "workers": [
+    {
+      "service": "moonboys-api",
+      "commit": "565a0f9527264ca5fa808a250c78c4889d9b9626",
+      "deployed_at": "2026-11-21T23:22:19.548Z",
+      "url": "https://api.cryptomoonboys.com/deployment-info"
+    }
+  ]
 }

@@ -29,7 +29,7 @@
       ],
       "evidence": [
         {
-          "type": "cloudflare-worker-deployment-and-live-smoke",
+          "type": "retained-worker-provenance",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/daily-pfp-roll-2026-11-21.json",
           "recorded_at": "2026-11-21T23:24:05.669Z"
         },
