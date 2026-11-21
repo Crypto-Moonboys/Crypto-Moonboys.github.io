@@ -9869,6 +9869,7 @@ function clanOperationPlayUrl() {
 }
 
 function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot, signalXpFrom) {
+  const bankBonus = clanPilot && signalXpFrom && signalXpFrom < eventRow.ends_at;
   return [
     '🚨 WTF SIGNAL IN 10 MINUTES',
     '',
@@ -9876,12 +9877,14 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot, signalXpFrom) {
     '',
     `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
     '',
-    'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
+    bankBonus
+      ? 'Complete the timed objective to unlock roguelite options.'
+      : 'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
     ...(clanPilot ? [
       '',
       `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
       'Bank completed tiers for Clan Renown and collectibles. Your clan’s operation is open all UTC day.',
-      ...(signalXpFrom && signalXpFrom < eventRow.ends_at
+      ...(bankBonus
         ? [`Bank a Clan Operation tier during the live window for ${CLAN_SIGNAL_XP} Community XP once per player.`]
         : []),
     ] : []),
@@ -9893,7 +9896,8 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot, signalXpFrom) {
   ].join('\n');
 }
 
-function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
+function buildDailyGroupSummaryMessage(utcDay, clanPilot, signalXpFrom) {
+  const bankBonus = clanPilot && signalXpFrom && signalXpFrom.slice(0, 10) <= utcDay;
   const windows = getWtfDailySchedule(utcDay)
     .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
     .join(', ');
@@ -9909,7 +9913,9 @@ function buildDailyGroupSummaryMessage(utcDay, clanPilot) {
     'Check the site for current tasks, timed quests, and roguelite options.',
     ...(clanPilot ? [
       `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
-      'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
+      bankBonus
+        ? `Bank tiers for Clan Renown and collectibles. During live signal windows, eligible banks earn ${CLAN_SIGNAL_XP} Community XP once per player per window.`
+        : 'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
     ] : []),
     '',
     `Battle Chamber: ${SITE_URL}/community.html`,
@@ -9974,7 +9980,7 @@ function getDailyGroupSummaryCandidates(nowMs, options = {}) {
     event_id: null,
     announcement_type: 'daily_summary',
     scheduled_for: new Date(scheduledMs).toISOString(),
-    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot),
+    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot, options.signalXpFrom),
     metadata: {
       wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
       coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
