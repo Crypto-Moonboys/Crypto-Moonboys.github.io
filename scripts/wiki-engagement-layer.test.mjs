@@ -62,16 +62,15 @@ check(apiConfig.includes('LEADERBOARD:        false') && apiConfig.includes('LIV
 
 check(comments.includes("CustomEvent('moonboys:comment-posted'"), 'Successful comment posts notify mission completion');
 check(comments.includes("COMMENT_PROFILE_KEY = 'moonboys_comment_profile_v1'"), 'Comment form stores a browser-local commenter profile');
-check(comments.includes('applyLinkedTelegramIdentity(form)') && comments.includes('getTelegramName') && comments.includes('getTelegramAuth') && comments.includes('isTelegramLinked'), 'Linked Telegram identity auto-fills comment form fields from identity-gate state');
-check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIfEmpty(form, 'telegram_username'"), 'Comment auto-fill does not overwrite manually typed values');
+check(comments.includes('getLinkedTelegramProfile(telegramAuth)') && comments.includes('payload.name = profile.name') && comments.includes('payload.telegram_auth = telegramAuth'), 'Signed comment submission uses the Telegram identity and fresh proof');
+check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIfEmpty(form, 'telegram_username'"), 'Guest profile auto-fill does not overwrite manually typed values');
 check(!comments.includes('telegram-widget.js') && !comments.includes('data-telegram-login') && !comments.includes('Bot domain invalid'), 'Linked/comment form path avoids the broken Telegram widget');
-check(comments.includes('Telegram linked:') && comments.includes('Email optional — Telegram identity will be used.'), 'Linked Telegram users see email-optional Telegram identity copy');
-check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
+check(comments.includes('[data-comment-guest-only]') && !comments.includes('Email optional — Telegram identity will be used.'), 'Linked readers skip guest identity fields and login copy');
+check(comments.includes('if (!email && !telegramAuth)') && comments.includes('payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
 check(comments.includes('Email comments work without Telegram. Verified rewards require Telegram sign-in via My Moonboy.'), 'Wiki comment identity hint is concise, preserves email-only commenting, and routes verified rewards to My Moonboy');
-const telegramIdentityHelper = section(comments, 'function injectTelegramWidget(container)', '// ── Vote button delegation');
-check(telegramIdentityHelper.includes('updateCommentIdentityCopy(form)') && telegramIdentityHelper.includes('applyLinkedTelegramIdentity(form)'),
-  'Initial comment widget reuses form identity status without overwriting My Moonboy guidance');
-check(!telegramIdentityHelper.includes('statusEl.textContent') && !comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub'),
+check(comments.includes("window.addEventListener('moonboys:identity-change', refreshCommentIdentity)") &&
+  comments.includes('forEach(updateCommentIdentityCopy)'), 'Comment form follows changes to the shared identity');
+check(!comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub'),
   'Guest comment setup does not write stale Incubator Hub directions');
 
 check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
