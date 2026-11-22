@@ -44,7 +44,11 @@ const waterfrontGroves = new Map([
   ["20,11", [7, 2, 3]]
 ]);
 
+const waterfrontBotAtlas = { file: "bot-frames" };
+const residentBots = [3, 4, 5, 6, 7];
+
 const waterfrontAtlases = {
+  "bots": { "bot-frames": [0, 0, 128, 1024] },
   "hk-night": {
     "afterblock-club": [2, 2, 111, 115],
     "apartments": [128, 2, 100, 118],
@@ -109,7 +113,7 @@ const waterfrontDetails = Object.fromEntries(
 
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
   const sprites = Object.fromEntries(
-    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails)]
+    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas]
       .map(sprite => [sprite.file, sprite])
   );
   return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
@@ -242,8 +246,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const feet = y + 26;
       const step = Math.floor(time * 6) % 2;
       queue(feet, () => {
-        person(artist, feet, panel % 2 ? "#596ab1" : "#9d527a", "#303048", step);
-        rect("#b88867", hand, feet - 7, 1, 2);
+        bot(2, artist, feet, direction, 0, step + 1);
         const color = muralPasses[pass % muralPasses.length].color;
         rect(color, hand, feet - 8, 1, 2);
         for (let speck = 0; speck < 3; speck++) {
@@ -298,8 +301,11 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const center = (ax + (bx - ax) * blend) * size + 16;
     const x = Math.round(index === 0 ? center + (door - (col * size + 16)) * (1 - blend) : center);
     const y = Math.round((ay + (by - ay) * blend) * size + 24);
-    const step = age < trip || age > trip + 2 ? Math.floor(time * 7) % 2 : 0;
-    queue(y, () => person(x, y, seed % 2 ? "#559b90" : "#a65a83", "#373049", step));
+    const moving = age < trip || age > trip + 2;
+    const direction = age > trip + 2 ? -1 : 1;
+    const frame = moving ? 1 + Math.floor(time * 7) % 3 : 0;
+    queue(y, () => bot(residentBots[seed % residentBots.length], x, y,
+      (bx - ax) * direction, (by - ay) * direction, frame));
   }
   const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
     col >= left && col <= right && row >= top && row <= bottom)?.material;
@@ -706,6 +712,20 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     rect("#ffe19a", x - 1, y - 12, 4, 3);
   }
 
+  function bot(model, x, y, dx = 0, dy = 1, frame = 0) {
+    const image = waterfrontBotAtlas.image;
+    const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
+    const size = 20;
+    rect("#1026338c", x - 5, y - 1, 10, 3);
+    if (image) {
+      ctx.drawImage(image, frame * 32, (model * 4 + facing) * 32, 32, 32,
+        x - size / 2, y - size, size, size);
+    } else {
+      rect("#384a58", x - 4, y - 9, 8, 8);
+      rect("#7de8df", x - 2, y - 7, 4, 2);
+    }
+  }
+
   function person(x, y, jacket, hat, step = 0, carriesLight = false) {
     const pixel = (ink, dx, dy, w, h) =>
       rect(ink, x + Math.round(dx * personScale * 2) / 2, y + Math.round(dy * personScale * 2) / 2,
@@ -726,15 +746,15 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const crew = window.waterfrontBuildNotes ?? [];
   function drawCrew() {
     const speakers = [
-      { col: district.spawn.x - 2, color: "#e5a767", line: crew[0] },
-      { col: district.spawn.x + 2, color: "#70cbbd", line: crew[1] }
+      { col: district.spawn.x - 2, line: crew[0] },
+      { col: district.spawn.x + 2, line: crew[1] }
     ];
     const row = district.spawn.y;
-    speakers.forEach(({ col, color, line }, index) => {
+    speakers.forEach(({ col, line }, index) => {
       if (!roadAt(col, row) || !line) return;
       const x = col * size + 16;
       const y = row * size + 13;
-      person(x, y, color, "#3b465a");
+      bot(index, x, y);
       if (time !== null && Math.floor(time / 6) % 2 !== index) return;
       const top = y - 27 - (time === null ? index * 16 : 0);
       const left = Math.max(2, Math.min(x - 76, width * size - 154));
