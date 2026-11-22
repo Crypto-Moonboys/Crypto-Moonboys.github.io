@@ -6,11 +6,11 @@ const { setTimeout: sleep } = require("node:timers/promises");
 const { findSpritesheetIds, extractDownloadTargets, buildLocalAtlas } = require("./generate-moonpet-assets");
 
 const repo = "Crypto-Moonboys/Crypto-Moonboys.github.io";
-const branch = "block-topia/lumina-walk-preview";
+const branch = "block-topia/lumina-top-down-walk-preview";
 const characterId = "cmwriml8w00u1c2zesdafgm48";
-const output = "games/block-topia/founder-preview";
+const output = "games/block-topia/founder-preview/top-down";
 const stateDir = path.join(os.homedir(), ".local/state/block-topia-art");
-const statePath = path.join(stateDir, "lumina-walk-se.json");
+const statePath = path.join(stateDir, "lumina-top-down-walk-south.json");
 const size = 256;
 const count = 25;
 const sheetSize = { w: 1280, h: 1280 };
@@ -59,14 +59,14 @@ async function obtainJob() {
     if (error.code !== "ENOENT") throw error;
   }
   if (state?.jobId) return state.jobId;
-  if (state) throw new Error("Previous submission outcome is unknown. Reconcile walk_se in AutoSprite before allowing another paid request.");
+  if (state) throw new Error("Previous submission outcome is unknown. Reconcile top_down_walk_south in AutoSprite before allowing another paid request.");
   await auto("/account");
   await save({ submitting: true });
   const submitted = await auto(`/characters/${characterId}/spritesheets`, {
     animations: [{
       kind: "custom",
-      name: "walk_se",
-      prompt: "Animate this exact Lumina sprite walking in place toward the lower right in a fixed three-quarter isometric view. Seamless alternating steps, stable foot baseline, transparent background. Preserve her white smock, red apron, blue boots and compact lantern."
+      name: "top_down_walk_south",
+      prompt: "Redraw the supplied Lumina reference for a fixed overhead, top-down 2D pixel-art camera on a square grid. Animate her walking in place facing south, straight toward the bottom edge of the screen. Show the top of her head and shoulders with enough front detail to read her expression and outfit. Use seamless alternating steps, a common foot anchor and a transparent background. Preserve her white smock, red apron, blue boots and compact lantern. Keep the full character visible in every frame."
     }],
     videoTier: "turbo",
     frameCount: count,
@@ -108,7 +108,7 @@ body{background:#121c2b;color:#e6efff;font:1rem system-ui;margin:2rem}
 canvas{background:#22334a;image-rendering:pixelated;max-width:100%}
 </style>
 <h1>Lumina</h1>
-<p>Southeast walk cycle · Block Topia founder preview</p>
+<p>Top-down south-facing walk cycle · Block Topia founder preview</p>
 <canvas id="sprite" width="256" height="256" aria-label="Lumina walking in place"></canvas>
 <p><button id="play" type="button" disabled>Pause animation</button></p>
 <p id="status" role="status">Loading sprite sheet…</p>
@@ -143,7 +143,7 @@ sheet.onload = () => {
 };
 sheet.onerror = () => { status.textContent = "Could not load the sprite sheet."; };
 play.onclick = toggle;
-sheet.src = "walk-se.png";
+sheet.src = "walk-south.png";
 </script>
 </html>
 `;
@@ -160,7 +160,7 @@ async function publish(files) {
   let commitSha = refs.find(ref => ref.ref === `refs/heads/${branch}`)?.object.sha;
   if (commitSha) {
     const commit = await github(`/git/commits/${commitSha}`);
-    if (commit.message !== "Add Lumina southeast walk preview") {
+    if (commit.message !== "Add Lumina top-down south-facing walk preview") {
       throw new Error("The preview branch already exists with a different commit.");
     }
   } else {
@@ -175,13 +175,13 @@ async function publish(files) {
     }
     const result = await github("/git/trees", { base_tree: parent.tree.sha, tree });
     const commit = await github("/git/commits", {
-      message: "Add Lumina southeast walk preview", tree: result.sha, parents: [parent.sha]
+      message: "Add Lumina top-down south-facing walk preview", tree: result.sha, parents: [parent.sha]
     });
     commitSha = commit.sha;
     await github("/git/refs", { ref: `refs/heads/${branch}`, sha: commitSha });
   }
   const pr = await github("/pulls", {
-    title: "Preview Lumina's southeast walk cycle",
+    title: "Preview Lumina's top-down south-facing walk cycle",
     head: branch,
     base: "main",
     draft: true,
@@ -215,9 +215,9 @@ async function run() {
   const atlas = buildLocalAtlas({ frameCount: count, frameSize: size, sheetSize });
   console.log(await publish({
     "index.html": preview,
-    "walk-se.png": png,
-    "walk-se.json": JSON.stringify(atlas, null, 2) + "\n",
-    "provenance.json": JSON.stringify({ character: "Lumina", characterId, jobId, sheetId, source: "AutoSprite" }, null, 2) + "\n"
+    "walk-south.png": png,
+    "walk-south.json": JSON.stringify(atlas, null, 2) + "\n",
+    "provenance.json": JSON.stringify({ character: "Lumina", characterId, jobId, sheetId, view: "top-down", direction: "south", source: "AutoSprite" }, null, 2) + "\n"
   }));
 }
 
