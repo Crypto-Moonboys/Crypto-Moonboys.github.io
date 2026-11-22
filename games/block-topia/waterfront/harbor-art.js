@@ -5,6 +5,12 @@ const muralPasses = [
 ];
 
 const waterfrontSprites = {
+  E: { file: "block-exchange", width: 32, maxHeight: 42 },
+  V: { file: "cold-vault", width: 32, maxHeight: 42 },
+  H: { file: "hash-house", width: 32, maxHeight: 42 },
+  L: { file: "lucky-block-casino", width: 32, maxHeight: 42 },
+  N: { file: "neon-ledger-casino", width: 32, maxHeight: 42 },
+  A: { file: "afterblock-club", width: 32, maxHeight: 42 },
   h: { file: "lighthouse", width: 42, maxHeight: 52 },
   w: { file: "workshop", width: 32, maxHeight: 36 },
   c: { file: "apartments", width: 32, maxHeight: 51 },
@@ -221,7 +227,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const south = roadAt(col, row + 1);
     const west = roadAt(col - 1, row);
     const east = roadAt(col + 1, row);
-    const entrance = "hwcgsb".includes(tileAt(col, row - 1));
+    const entrance = Object.hasOwn(waterfrontSprites, tileAt(col, row - 1));
     rect(surface, x + 4, y + 4, 24, 24);
     if (north || entrance) rect(surface, x + 4, y, 24, 5);
     if (south) rect(surface, x + 4, y + 27, 24, 5);
@@ -310,7 +316,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       return;
     }
 
-    if ("hwcgsb".includes(tile)) {
+    if (Object.hasOwn(waterfrontSprites, tile)) {
       queue(y + 29, () => building(tile, x, y));
       if (tile === "h") {
         const image = waterfrontSprites.h.image;
@@ -318,7 +324,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         const height = image ? Math.round(Math.min(maxHeight, image.naturalHeight * width / image.naturalWidth) * 2) / 2 : 64;
         beacons.push([x + 16, image ? y + 29 - height * 0.83 : y - 17]);
       }
-      if (time !== null && "csw".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
+      if (time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
     } else if (tile === "." && row === 2) {
       if (hasSeawall && col >= wallStart && col < wallEnd) return;
       if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
@@ -349,7 +355,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         const pulse = time === null ? 0.5 : 0.5 + 0.5 * Math.cos(time * Math.PI / 7);
         glow(x + 16, top + drawHeight * 0.17, 18 + pulse * 5, "#55ffdf88");
       }
-      if ("csw".includes(tile)) {
+      if ("cswELNA".includes(tile)) {
         const intensity = time === null ? 0.32 : 0.3 + 0.13 * Math.sin(time * 0.7 + (x + y) / 17);
         const windowX = tile === "c" ? 0.22 : 0.72;
         glow(left + drawWidth * windowX, top + drawHeight * 0.74, 9,
