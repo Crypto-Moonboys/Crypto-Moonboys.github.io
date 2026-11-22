@@ -65,7 +65,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script src="district.js?v=8"></script>
 <script src="build-notes.js?v=2"></script>
-<script src="harbor-art.js?v=22"></script>
+<script src="harbor-art.js?v=27"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -151,9 +151,11 @@ select.value = "r";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
+let discussionElapsed = 0;
+let previousDiscussionFrame = null;
 
 function paintMap() {
-  window.drawWaterfront(ctx, rows, player, district, sceneTime);
+  window.drawWaterfront(ctx, rows, player, district, sceneTime, reducedMotion.matches ? null : discussionElapsed);
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -267,6 +269,7 @@ let renderScale = 0;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
 let zoom = compactMap ? 1.35 : 1.85;
 let pinch = null;
+let mapTouchActive = false;
 let ignoreTapUntil = 0;
 
 function applyZoomSize() {
@@ -351,6 +354,7 @@ function pinchPosition(touches) {
 }
 
 mapScroll.addEventListener("touchstart", event => {
+  mapTouchActive = true;
   if (event.touches.length !== 2) return;
   event.preventDefault();
   pinch = pinchPosition(event.touches);
@@ -370,6 +374,7 @@ mapScroll.addEventListener("touchmove", event => {
 for (const name of ["touchend", "touchcancel"]) {
   mapScroll.addEventListener(name, event => {
     if (event.touches.length < 2) pinch = null;
+    if (event.touches.length === 0) mapTouchActive = false;
     if (ignoreTapUntil === Infinity && event.touches.length === 0) {
       ignoreTapUntil = performance.now() + 350;
     }
@@ -416,6 +421,8 @@ window.loadWaterfrontSprites().then(paintMap);
 
 let frameId;
 function animateHarbor(now) {
+  if (previousDiscussionFrame !== null) discussionElapsed += (now - previousDiscussionFrame) / 1000;
+  previousDiscussionFrame = now;
   if (sceneTime === null || now / 1000 - sceneTime >= 1 / 18) {
     sceneTime = now / 1000;
     paintMap();
@@ -425,6 +432,7 @@ function animateHarbor(now) {
 
 function syncAnimation() {
   cancelAnimationFrame(frameId);
+  previousDiscussionFrame = null;
   if (document.hidden || reducedMotion.matches) {
     sceneTime = null;
     paintMap();
@@ -435,6 +443,21 @@ function syncAnimation() {
 document.addEventListener("visibilitychange", syncAnimation);
 reducedMotion.addEventListener("change", syncAnimation);
 syncAnimation();
+
+// Refresh public displays without interrupting map edits or active gestures.
+const refreshInterval = 20 * 60 * 1000;
+let refreshDeadline = Date.now() + refreshInterval;
+function refreshWaterfront() {
+  clearTimeout(refreshTimer);
+  const remaining = refreshDeadline - Date.now();
+  if (remaining <= 0 && !editing && !mapTouchActive && !mousePan) {
+    window.location.reload();
+    return;
+  }
+  refreshTimer = setTimeout(refreshWaterfront, remaining > 0 ? remaining : 1000);
+}
+let refreshTimer = setTimeout(refreshWaterfront, refreshInterval);
+window.addEventListener("pageshow", refreshWaterfront);
 </script>
 </body>
 </html>
