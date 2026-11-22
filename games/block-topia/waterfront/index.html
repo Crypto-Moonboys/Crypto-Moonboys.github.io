@@ -64,8 +64,8 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </main>
 <script src="district.js?v=8"></script>
-<script src="build-notes.js"></script>
-<script src="harbor-art.js?v=28"></script>
+<script src="build-notes.js?v=2"></script>
+<script src="harbor-art.js?v=29"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -151,9 +151,11 @@ select.value = "r";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
+let discussionElapsed = 0;
+let previousDiscussionFrame = null;
 
 function paintMap() {
-  window.drawWaterfront(ctx, rows, player, district, sceneTime);
+  window.drawWaterfront(ctx, rows, player, district, sceneTime, reducedMotion.matches ? null : discussionElapsed);
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -419,6 +421,8 @@ window.loadWaterfrontSprites().then(paintMap);
 
 let frameId;
 function animateHarbor(now) {
+  if (previousDiscussionFrame !== null) discussionElapsed += (now - previousDiscussionFrame) / 1000;
+  previousDiscussionFrame = now;
   if (sceneTime === null || now / 1000 - sceneTime >= 1 / 18) {
     sceneTime = now / 1000;
     paintMap();
@@ -428,6 +432,7 @@ function animateHarbor(now) {
 
 function syncAnimation() {
   cancelAnimationFrame(frameId);
+  previousDiscussionFrame = null;
   if (document.hidden || reducedMotion.matches) {
     sceneTime = null;
     paintMap();
