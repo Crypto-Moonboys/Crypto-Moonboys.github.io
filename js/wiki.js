@@ -515,13 +515,18 @@ const searchPeople = new Set([
   'ian-harrison', 'jillian-godsil', 'jonny-laurence-nelson-tag-records', 'sneakar',
   'street-artist-buster-aka-charlie-buster', 'trevor-fung',
 ].map(slug => `/wiki/${slug}.html`));
+const legacyNftCollections = new Set([
+  '/wiki/atomichub-graffpunks-collection.html',
+  '/wiki/hodlmoonboys-nft-collection.html',
+  '/wiki/noballgamess-nft-collection.html',
+]);
 
 function searchResultType(item) {
   const url = resolveWikiUrl(item.url);
   if (url.startsWith('/games/')) return 'games';
   if (item.category === 'community-people' || searchPeople.has(url)) return 'people';
   if (['nfts', 'nfts-digital-art', 'wax-nfts'].includes(item.category)
-    || item.brand?.concept_type === 'collection') return 'nfts';
+    || item.brand?.concept_type === 'collection' || legacyNftCollections.has(url)) return 'nfts';
   if (url.startsWith('/wiki/') && ['lore', 'core', 'characters', 'factions'].includes(item.category)) return 'lore';
   return null;
 }

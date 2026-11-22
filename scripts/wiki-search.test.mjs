@@ -613,6 +613,18 @@ const graffpunksStopwordOnly = {
   filters.nfts.click();
   assert.ok(displayed().includes('/wiki/gkniftyheads-nft-collection.html'));
   assert.equal(displayed().length, 24);
+  for (const [query, url] of [
+    ['Hodl Moonboys NFT Collection', '/wiki/hodlmoonboys-nft-collection.html'],
+    ['NoBallGames NFT Collection Tracker', '/wiki/noballgamess-nft-collection.html'],
+    ['AtomicHub Graffpunks Collection', '/wiki/atomichub-graffpunks-collection.html'],
+  ]) {
+    filters.all.click();
+    search(query);
+    assert.ok(displayed().includes(url), query);
+    assert.equal(filters.nfts.disabled, false, query);
+    filters.nfts.click();
+    assert.ok(displayed().includes(url), query);
+  }
   search('');
   assert.ok(sections.every(section => !section.hidden));
   assert.equal(elements['search-filters'].hidden, true);
