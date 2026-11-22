@@ -1,4 +1,4 @@
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { readHtmlAttribute, readHtmlAttributes, tokenizeActiveHtml } from './wiki-html-structure.mjs';
 
@@ -49,5 +49,40 @@ export async function publishDirectWikiLinks(root) {
       end = start + href.rawValue.length;
     }
     if (pieces.length) await writeFile(path.join(root, route), pieces.join('') + html.slice(end));
+  }
+}
+
+// Related cards need at most eight titles and excerpts for the current article.
+// Keep these files in the Pages artifact so each build follows the current graph.
+export async function publishWikiRelatedData(root) {
+  const graphText = await readFile(path.join(root, 'js/entity-graph.json'), 'utf8').catch(error => {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (graphText === null) return;
+
+  const graph = JSON.parse(graphText);
+  const index = JSON.parse(await readFile(path.join(root, 'js/wiki-index.json'), 'utf8'));
+  const entries = new Map(index.map(entry => [entry.url, entry]));
+  const articleNames = (await readdir(path.join(root, 'wiki'))).filter(name => /^[a-z0-9_-]+\.html$/u.test(name));
+  const wikiUrls = new Set(articleNames.map(name => '/wiki/' + name));
+  const output = path.join(root, 'js/wiki-related');
+  await mkdir(output, { recursive: true });
+
+  for (const filename of articleNames) {
+    const sourceUrl = '/wiki/' + filename;
+    const links = (graph[sourceUrl]?.related_pages ?? [])
+      .filter(({ target_url }) => target_url !== sourceUrl && wikiUrls.has(target_url))
+      .slice(0, 8)
+      .map(({ target_url }) => {
+        const entry = entries.get(target_url);
+        const description = entry?.desc || '';
+        return {
+          target_url,
+          title: entry?.title || target_url,
+          desc: description.length > 120 ? description.slice(0, 120) + '…' : description,
+        };
+      });
+    await writeFile(path.join(output, filename.replace(/\.html$/u, '.json')), JSON.stringify(links));
   }
 }

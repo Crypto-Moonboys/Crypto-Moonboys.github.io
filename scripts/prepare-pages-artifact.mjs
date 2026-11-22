@@ -4,7 +4,7 @@ import path from 'node:path';
 import { isEditorialOnlyPath, checkPublicDisclosure } from './public-canon-disclosure.mjs';
 import { ensurePublishedCanonicals } from './seo-publish-canonicals.mjs';
 
-import { publishDirectWikiLinks } from './publish-direct-wiki-links.mjs';
+import { publishDirectWikiLinks, publishWikiRelatedData } from './publish-direct-wiki-links.mjs';
 
 const artifactDir = process.argv[2] || 'public-site';
 const repoRoot = path.resolve('.');
@@ -187,6 +187,7 @@ async function main() {
     }
   }
   await publishDirectWikiLinks(resolvedArtifactDir);
+  await publishWikiRelatedData(resolvedArtifactDir);
   await verifyPublicDisclosure(resolvedArtifactDir);
   console.log(`Prepared GitHub Pages artifact: ${path.relative(repoRoot, resolvedArtifactDir)}`);
 }

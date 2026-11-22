@@ -231,9 +231,32 @@ function stageRelatedPages() {
   }
   runNearViewport(target, async () => {
     if (needsMarker) target.remove();
-    await Promise.all([loadWikiIndex(), loadEntityGraph()]);
-    renderRelatedPages();
+    await loadRelatedPages();
   });
+}
+
+async function loadRelatedPages() {
+  const filename = /^\/wiki\/([a-z0-9_-]+)\.html$/u.exec(window.location.pathname)?.[1];
+  if (!filename) return;
+
+  const url = getDerivedJsonUrl(`wiki-related/${filename}.json`);
+  try {
+    let response = await fetch(url);
+    if (response.status === 503) {
+      await new Promise(resolve => setTimeout(resolve, WIKI_INDEX_RETRY_DELAY_MS));
+      response = await fetch(url);
+    }
+    if (response.status === 404) {
+      // Source checkouts and older deploys still serve the shared graph.
+      await Promise.all([loadWikiIndex(), loadEntityGraph()]);
+      renderRelatedPages();
+    } else if (response.ok) {
+      const links = await response.json();
+      if (Array.isArray(links)) renderRelatedPages(links);
+    }
+  } catch (error) {
+    console.warn('[wiki.js] Related pages unavailable:', error);
+  }
 }
 
 async function loadEntityGraph() {
@@ -247,22 +270,22 @@ async function loadEntityGraph() {
   }
 }
 
-function renderRelatedPages() {
+function renderRelatedPages(compactLinks) {
   const pathname = window.location.pathname;
-  if (!pathname.startsWith('/wiki/') || !ENTITY_GRAPH) return;
+  const pages = compactLinks ?? ENTITY_GRAPH?.[pathname]?.related_pages;
+  if (!Array.isArray(pages)) return;
 
-  const pageEntry = ENTITY_GRAPH[pathname];
-  if (!pageEntry || !Array.isArray(pageEntry.related_pages) || !pageEntry.related_pages.length) return;
-
-  const indexByUrl = {};
-  for (const item of WIKI_INDEX) {
-    indexByUrl[item.url] = item;
+  const indexByUrl = Object.create(null);
+  if (compactLinks) {
+    for (const entry of compactLinks) indexByUrl[entry.target_url] = entry;
+  } else {
+    for (const entry of WIKI_INDEX) indexByUrl[entry.url] = entry;
   }
 
   const MAX_RELATED = 8;
   const MAX_DESC_LENGTH = 120;
-  const related = pageEntry.related_pages
-    .filter(r => r.target_url && r.target_url !== pathname)
+  const related = pages
+    .filter(({ target_url }) => /^\/wiki\/[a-z0-9_-]+\.html$/u.test(target_url) && target_url !== pathname)
     .slice(0, MAX_RELATED);
 
   if (!related.length) return;
