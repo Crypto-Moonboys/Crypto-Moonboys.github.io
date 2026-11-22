@@ -59,7 +59,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </main>
 <script src="district.js?v=6"></script>
-<script src="harbor-art.js?v=6"></script>
+<script src="harbor-art.js?v=7"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -129,13 +129,20 @@ for (const [tile, { name }] of Object.entries(tiles)) {
 }
 select.value = "r";
 
-function draw() {
-  window.drawWaterfront(ctx, rows, player, district);
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let sceneTime = null;
+
+function paintMap() {
+  window.drawWaterfront(ctx, rows, player, district, sceneTime);
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
     ctx.strokeRect(1, 1, mapWidth - 2, mapHeight - 2);
   }
+}
+
+function draw() {
+  paintMap();
   locationLabel.textContent = tiles[rows[player.y][player.x]].name + " · " + (player.x + 1) + ", " + (player.y + 1);
 }
 
@@ -243,7 +250,29 @@ ctx.imageSmoothingEnabled = false;
 const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
 mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
 draw();
-window.loadWaterfrontSprites().then(draw);
+window.loadWaterfrontSprites().then(paintMap);
+
+let frameId;
+function animateHarbor(now) {
+  if (sceneTime === null || now / 1000 - sceneTime >= 1 / 18) {
+    sceneTime = now / 1000;
+    paintMap();
+  }
+  frameId = requestAnimationFrame(animateHarbor);
+}
+
+function syncAnimation() {
+  cancelAnimationFrame(frameId);
+  if (document.hidden || reducedMotion.matches) {
+    sceneTime = null;
+    paintMap();
+    return;
+  }
+  frameId = requestAnimationFrame(animateHarbor);
+}
+document.addEventListener("visibilitychange", syncAnimation);
+reducedMotion.addEventListener("change", syncAnimation);
+syncAnimation();
 </script>
 </body>
 </html>
