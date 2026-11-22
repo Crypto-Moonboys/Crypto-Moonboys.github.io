@@ -10,6 +10,35 @@ const integration = "block-topia/integration";
 const stateDir = path.join(os.homedir(), ".local/state/block-topia-build");
 const rendererSize = 12;
 const palette = { water: "#143950", road: "#667b8a", ground: "#283e35", dock: "#98734e", house: "#aa5149", lighthouse: "#dbc69c" };
+const waterfrontTemplate = {
+  name: "Lumina’s Waterfront",
+  rows: [
+    "~~~~d~~~~~~~",
+    "~~~~d~~~~~~~",
+    "....r.......",
+    "...hr_......",
+    "....r.......",
+    "....r_......",
+    ...Array(6).fill("............")
+  ]
+};
+const tileTypes = ["~", ".", "r", "_", "d", "h"];
+const maxEdits = 6;
+const tileCoordinate = { type: "integer", minimum: 0, maximum: rendererSize - 1 };
+const editFormat = {
+  type: "object",
+  required: ["edits"],
+  additionalProperties: false,
+  properties: {
+    edits: {
+      type: "array", maxItems: maxEdits,
+      items: {
+        type: "object", required: ["x", "y", "tile"], additionalProperties: false,
+        properties: { x: tileCoordinate, y: tileCoordinate, tile: { type: "string", enum: tileTypes } }
+      }
+    }
+  }
+};
 
 async function github(route, body, method = body ? "POST" : "GET") {
   const response = await fetch(`https://api.github.com/repos/${repo}${route}`, {
@@ -78,6 +107,31 @@ function validateDistrict(district) {
     throw new Error("Every road, dock, lighthouse and plot must connect to the road network.");
   }
   return { name: district.name, rows: district.rows, route };
+}
+
+function applyDistrictEdits(base, proposal) {
+  const edits = proposal?.edits;
+  if (!Array.isArray(edits) || edits.length > maxEdits) {
+    throw new Error(`Return up to ${maxEdits} tile edits.`);
+  }
+  const rows = base.rows.map(row => [...row]);
+  const seen = new Set();
+  for (const edit of edits) {
+    const { x, y, tile } = edit ?? {};
+    if (![x, y].every(coordinate => Number.isInteger(coordinate) && coordinate >= 0 && coordinate < rendererSize)
+      || !tileTypes.includes(tile)) {
+      throw new Error("Tile edits must contain x and y coordinates from 0 to 11 and an approved tile code.");
+    }
+    const index = y * rendererSize + x;
+    if (seen.has(index)) throw new Error("Edit each tile at most once per proposal.");
+    seen.add(index);
+    rows[y][x] = tile;
+  }
+  const district = validateDistrict({ name: base.name, rows: rows.map(row => row.join("")) });
+  if ((district.rows.join("").match(/_/g) ?? []).length < 2) {
+    throw new Error("Keep at least two connected buildable plots.");
+  }
+  return district;
 }
 
 function render(district, colors) {
@@ -313,46 +367,44 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, repair
   const reviewFeedback = repair.feedback || "";
   const number = issue.number;
   const brief = { title: issue.title, body: String(issue.body || "").slice(0, 6000) };
+  const base = validateDistrict(repair.rejectedDistrict ?? previous ?? waterfrontTemplate);
   const researchDir = round ? path.dirname(path.dirname(dir)) : dir;
   const research = await checkpoint(researchDir, "research.json", () => references(researchDir));
   const plan = await checkpoint(dir, "plan.json", () => model("planner",
-    "Propose a tiny top-down district with a connected street, dock, lighthouse, and empty plots. Use key plan.", { brief, previous, round, reviewFeedback, research: research.notes.planner }));
+    "Propose one useful improvement to the supplied waterfront map. Keep its street, dock, lighthouse and connected plots. Use key plan.",
+    { brief, map: base.rows, round, reviewFeedback, research: research.notes.planner }));
   const art = await checkpoint(dir, "art.json", () => model("artist",
     "Return six hexadecimal #RRGGBB colors with keys water, road, ground, dock, house, lighthouse. If repairing a palette, use the rejected colors and review feedback to correct visual findings.", { plan, reviewFeedback, rejectedPalette: repair.rejectedPalette, research: research.notes.artist }));
   const colors = Object.fromEntries(Object.entries(palette).map(([key, fallback]) =>
-    [key, typeof art[key] === "string" && /^#[0-9a-f]{6}$/i.test(art[key]) ? art[key] : fallback]));
+    [key, typeof art[key] === "string" && /^#[0-9a-f]{6}$/i.test(art[key]) ? art[key].toLowerCase() : fallback]));
   const district = await checkpoint(dir, "district.json", async () => {
-    let feedback = reviewFeedback || (previous ? "Keep the existing district recognizable and make one useful, visible improvement to its layout." : "");
+    let feedback = "";
     for (let retry = 0; retry < 3; retry++) {
       try {
-        const layout = await model("developer",
-        "Return keys name and rows. rows is exactly twelve strings of twelve chars each. Use ~ water, . ground, r road, d dock, h lighthouse, _ buildable plot. Connect all road and dock cells orthogonally. Put every lighthouse and plot next to a connecting road or dock.", { plan, previous, research: research.notes.developer, feedback }, {
-          type: "object", required: ["name", "rows"], additionalProperties: false,
-          properties: {
-            name: { type: "string", minLength: 1, maxLength: 80 },
-            rows: { type: "array", minItems: 12, maxItems: 12,
-              items: { type: "string", pattern: "^[~.r_dh]{12}$" } }
-          }
-        });
-        const verified = validateDistrict(layout);
-        if (previous && verified.rows.join("") === previous.rows.join("")) {
-          throw new Error("This round repeated the previous layout. Improve a road, dock or plot.");
+        const proposal = await model("developer",
+          'Edit up to six existing map cells. Coordinates are zero-based, x goes right and y goes down. Example: {"edits":[{"x":4,"y":6,"tile":"r"}]}. Use ~ water, . ground, r road, d dock, h lighthouse, _ buildable plot. Keep all roads and docks connected orthogonally and keep every lighthouse and plot next to a walkable cell. Return an empty edits array for a palette-only repair.',
+          { plan, map: base.rows, reviewFeedback, feedback, research: research.notes.developer }, editFormat);
+        const verified = applyDistrictEdits(base, proposal);
+        const comparison = repair.rejectedDistrict ?? previous;
+        if (samePreview(verified, colors, repair.rejectedDistrict, repair.rejectedPalette)
+          || samePreview(verified, colors, previous, previous?.colors)) {
+          throw new Error("The preview did not change. Improve a tile or apply a reviewed palette change.");
         }
-        return { ...verified, layoutSource: "model" };
+        const changed = verified.rows.join("") !== base.rows.join("");
+        return { ...verified, layoutSource: changed ? "model-edits" : comparison ? comparison.layoutSource ?? "model" : "starter" };
       } catch (error) {
         if (error.message.startsWith("Ollama returned") || ["TimeoutError", "AbortError", "TypeError"].includes(error.name)) throw error;
         feedback = error.message;
       }
     }
-    if (previous || attempt > 1 && repair.rejectedPalette) throw new Error(feedback);
-    console.log(`Issue #${number}: using the validated starter layout after invalid model layouts.`);
-    const rows = ["~~~~d~~~~~~~", "~~~~d~~~~~~~", "....r.......", "...hr_......",
-      "....r.......", "....r_......", ...Array(6).fill("............")];
-    return { ...validateDistrict({ name: "Lumina’s Waterfront", rows }), layoutSource: "starter" };
+    if (previous || repair.rejectedDistrict || repair.rejectedPalette) throw new Error(feedback);
+    console.log(`Issue #${number}: using the validated starter layout after invalid model edits.`);
+    return { ...base, layoutSource: "starter" };
   });
   const verified = validateDistrict(district);
+  const publishedDistrict = { ...verified, colors, layoutSource: district.layoutSource ?? "model" };
   const review = await checkpoint(dir, "qa.json", () => model("playtester",
-    "Review the supplied district data for visual and navigation risks. Use key findings. Do not claim you ran the browser.", { district: verified, research: research.notes.playtester }));
+    "Review the supplied district data for visual and navigation risks. Use key findings. Do not claim you ran the browser.", { district: publishedDistrict, research: research.notes.playtester }));
   const preview = render(verified, colors);
   const htmlFile = path.join(dir, "preview.html");
   await fs.writeFile(htmlFile, preview);
@@ -360,16 +412,22 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, repair
   await checkApproval(issue, round ? iterationLabel : approval);
   const files = {
     "index.html": preview,
-    "district.json": JSON.stringify({ ...verified, colors, layoutSource: district.layoutSource ?? "model" }, null, 2) + "\n",
+    "district.json": JSON.stringify(publishedDistrict, null, 2) + "\n",
     "build-review.json": JSON.stringify({ issue: number, round, research: research.outcome, review }, null, 2) + "\n"
   };
   if (round) {
     const outcome = await publishRound(issue, round, attempt, dir, files);
-    return outcome.feedback ? { ...outcome, rejectedPalette: colors } : outcome;
+    if (outcome.feedback) return { ...outcome, rejectedPalette: colors, rejectedDistrict: publishedDistrict };
+    return { ...outcome, district: publishedDistrict };
   }
   const pr = await publish(number, files);
   await writeProgress(dir, "done.json", { pr });
   console.log(pr);
+}
+
+function samePreview(layout, colors, previous, previousColors) {
+  if (!previous || layout.rows.join("") !== previous.rows.join("")) return false;
+  return !previousColors || Object.keys(palette).every(key => previousColors[key]?.toLowerCase() === colors[key]);
 }
 
 async function* approvedIssues() {
@@ -465,12 +523,12 @@ async function runQueue() {
             await writeProgress(dir, "repair.json", {
               attempt: progress.attempt + 1,
               feedback: outcome.feedback,
-              rejectedPalette: outcome.rejectedPalette ?? progress.rejectedPalette
+              rejectedPalette: outcome.rejectedPalette ?? progress.rejectedPalette,
+              rejectedDistrict: outcome.rejectedDistrict ?? progress.rejectedDistrict
             });
             console.log(`Issue #${issue.number}: queued round ${round} repair.`);
           } else if (outcome.url) {
-            const district = JSON.parse(await fs.readFile(path.join(attemptDir, "district.json"), "utf8"));
-            await writeProgress(dir, "done.json", { pr: outcome.url, district });
+            await writeProgress(dir, "done.json", { pr: outcome.url, district: outcome.district });
             console.log(outcome.url);
           } else {
             console.log(`Issue #${issue.number}: waiting for Codex on round ${round}.`);
@@ -490,6 +548,10 @@ async function runQueue() {
 }
 
 if (require.main === module) {
-  runQueue().catch(error => { console.error(error.message); process.exitCode = 1; });
+  const starterPreview = process.argv[2] === "--starter-preview";
+  const command = starterPreview
+    ? Promise.resolve().then(() => process.stdout.write(render(validateDistrict(waterfrontTemplate), palette)))
+    : runQueue();
+  command.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateDistrict, render, browserCheck };
+module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck };
