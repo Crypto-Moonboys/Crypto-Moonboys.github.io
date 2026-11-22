@@ -66,7 +66,6 @@
   const NODE_MIN_RADIUS = 4;
   const NODE_MAX_RADIUS = 18;
   const DEFAULT_EDGE_WEIGHT = 0.5;
-  const EDGE_WEIGHT_OFFSET = 0.2;
   const EDGE_ALPHA_BASE = 0.2;
   const EDGE_ALPHA_HOVER = 0.68;
   const EDGE_ALPHA_BASE_HERO = 0.46;
@@ -104,12 +103,6 @@
   const MAX_VIEWPORT_PADDING = 110;
 
   // Force simulation parameters (full graph mode only)
-  const ITERATIONS = 400;
-  const REPULSION = 5000;
-  const ATTRACTION = 0.012;
-  const DAMPING = 0.88;
-  const CENTER_GRAVITY = 0.06;
-  const MAX_DISPLACEMENT = 8;
 
   // ── State ────────────────────────────────────────────────────────────────
   let graphData = null;
@@ -138,6 +131,8 @@
   let graphReady = false;
   let hasUserAdjustedView = false;
   let fullGraphLoaded = false;
+  let fullGraphRequest;
+  let graphLayoutWorker;
   let filterOptionsBuilt = false;
   let currentMode = MODE_HERO;
   let renderGeneration = 0;
@@ -228,6 +223,8 @@
     const nextMode = normalizeMode(mode);
     renderGeneration += 1;
     const generation = renderGeneration;
+    graphLayoutWorker?.terminate();
+    graphLayoutWorker = undefined;
 
     if (animFrame) {
       cancelAnimationFrame(animFrame);
@@ -342,11 +339,17 @@
       return;
     }
 
-    fetch(GRAPH_DATA_URL)
+    fullGraphRequest ??= fetch(GRAPH_DATA_URL)
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
       })
+      .catch(error => {
+        fullGraphRequest = undefined;
+        throw error;
+      });
+
+    fullGraphRequest
       .then((data) => {
         if (generation !== renderGeneration || currentMode !== MODE_FULL) return;
         graphData = data;
@@ -423,105 +426,73 @@
   function runLayout(generation) {
     layoutDone = false;
     if (animFrame) cancelAnimationFrame(animFrame);
-    let step = 0;
-    const frameBudgetMs = 8;
-    setStatus('Computing layout… 0%');
+    const { width, height } = canvas;
+    const isCurrent = () => generation === renderGeneration && currentMode === MODE_FULL;
+    setStatus('Computing layout…');
 
-    function tick() {
-      if (generation !== renderGeneration || currentMode !== MODE_FULL) {
-        return;
-      }
-
-      const deadline = performance.now() + frameBudgetMs;
-      do {
-        simulateStep(1 - step / ITERATIONS);
-        step += 1;
-      } while (step < ITERATIONS && performance.now() < deadline);
-
-      const progress = Math.round((step / ITERATIONS) * 100);
-      setStatus(`Computing layout… ${progress}%`);
-
-      if (step < ITERATIONS) {
-        animFrame = requestAnimationFrame(tick);
-        return;
-      }
-
+    function finish() {
+      if (!isCurrent()) return;
       layoutDone = true;
       const container = canvas.parentElement;
-      const cw = container.clientWidth;
-      const ch = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
-      canvas.width = cw;
-      canvas.height = ch;
+      canvas.width = container.clientWidth;
+      canvas.height = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
       fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
       revealGraph();
       draw();
       setStatus('');
     }
 
-    animFrame = requestAnimationFrame(tick);
-  }
-
-  function simulateStep(cool) {
-    const n = nodePositions.length;
-    const W = canvas.width;
-    const H = canvas.height;
-    const cx = W / 2;
-    const cy = H / 2;
-
-    for (let i = 0; i < n; i += 1) {
-      nodePositions[i].fx = 0;
-      nodePositions[i].fy = 0;
-    }
-
-    for (let i = 0; i < n; i += 1) {
-      for (let j = i + 1; j < n; j += 1) {
-        const pi = nodePositions[i];
-        const pj = nodePositions[j];
-        const dx = pi.x - pj.x;
-        const dy = pi.y - pj.y;
-        const dist2 = dx * dx + dy * dy + 1;
-        const force = REPULSION / dist2;
-        const fx = force * dx;
-        const fy = force * dy;
-        pi.fx += fx;
-        pi.fy += fy;
-        pj.fx -= fx;
-        pj.fy -= fy;
+    async function runOnMainThread() {
+      try {
+        const { LAYOUT_ITERATIONS, stepGraphLayout } = await import('/js/graph-layout.js');
+        let step = 0;
+        function tick() {
+          if (!isCurrent()) return;
+          const deadline = performance.now() + 8;
+          do {
+            stepGraphLayout(nodePositions, edgeList, width, height, 1 - step / LAYOUT_ITERATIONS);
+            step += 1;
+          } while (step < LAYOUT_ITERATIONS && performance.now() < deadline);
+          if (step < LAYOUT_ITERATIONS) animFrame = requestAnimationFrame(tick);
+          else finish();
+        }
+        if (isCurrent()) animFrame = requestAnimationFrame(tick);
+      } catch (error) {
+        console.warn('Graph layout module unavailable:', error);
+        finish();
       }
     }
 
-    for (const edge of edgeList) {
-      const pi = nodePositions[edge.si];
-      const pj = nodePositions[edge.ti];
-      const dx = pi.x - pj.x;
-      const dy = pi.y - pj.y;
-      const dist = Math.sqrt(dx * dx + dy * dy) + 1;
-      const force = ATTRACTION * dist * ((edge.weight || DEFAULT_EDGE_WEIGHT) + EDGE_WEIGHT_OFFSET);
-      pi.fx -= force * dx;
-      pi.fy -= force * dy;
-      pj.fx += force * dx;
-      pj.fy += force * dy;
-    }
-
-    for (let i = 0; i < n; i += 1) {
-      const p = nodePositions[i];
-      p.fx += CENTER_GRAVITY * (cx - p.x);
-      p.fy += CENTER_GRAVITY * (cy - p.y);
-    }
-
-    const maxD = MAX_DISPLACEMENT * (cool * 0.7 + 0.3);
-    for (let i = 0; i < n; i += 1) {
-      const p = nodePositions[i];
-      if (p === dragNode) continue;
-      p.vx = (p.vx + p.fx) * DAMPING;
-      p.vy = (p.vy + p.fy) * DAMPING;
-      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-      if (speed > maxD) {
-        p.vx = (p.vx / speed) * maxD;
-        p.vy = (p.vy / speed) * maxD;
-      }
-      p.x += p.vx;
-      p.y += p.vy;
+    try {
+      const worker = new Worker('/js/graph-layout-worker.js', { type: 'module' });
+      graphLayoutWorker = worker;
+      const stop = () => {
+        worker.terminate();
+        if (graphLayoutWorker === worker) graphLayoutWorker = undefined;
+      };
+      worker.onmessage = ({ data: points }) => {
+        stop();
+        if (!isCurrent()) return;
+        points.forEach(({ x, y }, index) => {
+          nodePositions[index].x = x;
+          nodePositions[index].y = y;
+        });
+        finish();
+      };
+      worker.onerror = () => {
+        stop();
+        if (isCurrent()) runOnMainThread();
+      };
+      worker.postMessage({
+        points: nodePositions.map(({ x, y }) => ({ x, y, vx: 0, vy: 0 })),
+        edges: edgeList,
+        width,
+        height,
+      });
+    } catch {
+      graphLayoutWorker?.terminate();
+      graphLayoutWorker = undefined;
+      runOnMainThread();
     }
   }
 

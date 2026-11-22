@@ -259,10 +259,12 @@
   }
 
   function renderIcon(faction, size) {
-    var src = iconSrc(faction);
+    var key = normalizeFaction(faction);
+    var src = FACTION_ICON_SRC[key];
     var pixels = Number.isInteger(size) && size > 0 ? size : 20;
     return src
-      ? '<img class="faction-identity-icon" src="' + src + '" alt="" width="' + pixels +
+      ? '<img class="faction-identity-icon" src="' + src + '" srcset="/art/responsive/faction-' + key +
+        '-128.png 128w, ' + src + ' 350w" sizes="' + pixels + 'px" alt="" width="' + pixels +
         '" height="' + pixels + '" style="width:' + pixels + 'px;height:' + pixels +
         'px;object-fit:contain;vertical-align:middle;flex:none" decoding="async"> '
       : '';
