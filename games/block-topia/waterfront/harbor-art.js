@@ -1,5 +1,5 @@
 const waterfrontSprites = {
-  h: { file: "lighthouse", width: 29, maxHeight: 64 },
+  h: { file: "lighthouse", width: 34, maxHeight: 75 },
   w: { file: "workshop", width: 32, maxHeight: 36 },
   c: { file: "apartments", width: 32, maxHeight: 51 },
   g: { file: "graffiti-wall", width: 29, maxHeight: 30 },
