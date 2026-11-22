@@ -2,7 +2,7 @@ const waterfrontSprites = {
   h: { file: "lighthouse", width: 34, maxHeight: 75 },
   w: { file: "workshop", width: 32, maxHeight: 36 },
   c: { file: "apartments", width: 32, maxHeight: 51 },
-  g: { file: "graffiti-wall", width: 29, maxHeight: 30 },
+  g: { file: "graffiti-wall-front", width: 32, maxHeight: 27 },
   s: { file: "record-shop", width: 32, maxHeight: 40 },
   b: { file: "warehouse", width: 32, maxHeight: 39 }
 };
@@ -77,13 +77,17 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
       return;
     }
 
-    if (tile === "r") {
+    if (tile === "r" || tile === "p") {
+      const surface = tiles[tile].color;
       rect("#303242", x + 2, y + 2, 28, 28);
-      rect(tiles.r.color, x + 4, y + 4, 24, 24);
-      if (roadAt(col, row - 1)) rect(tiles.r.color, x + 4, y, 24, 5);
-      if (roadAt(col, row + 1)) rect(tiles.r.color, x + 4, y + 27, 24, 5);
-      if (roadAt(col - 1, row)) rect(tiles.r.color, x, y + 4, 5, 24);
-      if (roadAt(col + 1, row)) rect(tiles.r.color, x + 27, y + 4, 5, 24);
+      rect(surface, x + 4, y + 4, 24, 24);
+      if (roadAt(col, row - 1)) rect(surface, x + 4, y, 24, 5);
+      if (roadAt(col, row + 1)) rect(surface, x + 4, y + 27, 24, 5);
+      if (roadAt(col - 1, row)) rect(surface, x, y + 4, 5, 24);
+      if (roadAt(col + 1, row)) rect(surface, x + 27, y + 4, 5, 24);
+      if ("hwcgsb".includes(tileAt(col, row - 1))) {
+        rect(tiles.p.color, x + 2, y - 3, 28, 8);
+      }
       for (let i = 0; i < 9; i++) {
         rect(i % 2 ? "#666677" : "#353746", x + 5 + (i * 11 + seed) % 20, y + 5 + (i * 7 + seed) % 20, 4, 1);
       }
