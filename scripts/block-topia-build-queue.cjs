@@ -249,6 +249,15 @@ async function build(issue, dir) {
   console.log(pr);
 }
 
+async function* approvedIssues() {
+  const pageSize = 100;
+  for (let page = 1; ; page++) {
+    const issues = await github(`/issues?state=open&labels=${approval}&sort=created&direction=asc&per_page=${pageSize}&page=${page}`);
+    yield* issues;
+    if (issues.length < pageSize) return;
+  }
+}
+
 async function runQueue() {
   if (!process.env.GH_TOKEN) throw new Error("Missing repository-scoped GH_TOKEN.");
   if (spawnSync(process.env.BLOCK_TOPIA_CHROMIUM || "chromium", ["--version"], { env: withoutPublishCredentials() }).status !== 0) {
@@ -260,8 +269,7 @@ async function runQueue() {
     const result = spawnSync("flock", ["-n", "-E", "75", "3"], { stdio: ["ignore", "ignore", "pipe", lock.fd] });
     if (result.status === 75) return;
     if (result.error || result.status !== 0) throw new Error("Could not acquire the queue lock.");
-    const issues = await github(`/issues?state=open&labels=${approval}&sort=created&direction=asc&per_page=100`);
-    for (const issue of issues) {
+    for await (const issue of approvedIssues()) {
       if (issue.pull_request) continue;
       const dir = path.join(stateDir, String(issue.number));
       await fs.mkdir(dir, { recursive: true, mode: 0o700 });
