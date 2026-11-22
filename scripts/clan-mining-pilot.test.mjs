@@ -29,6 +29,7 @@ import { buildClanCampaign } from '../workers/moonboys-api/shared/clan-campaign-
 import { evaluateCampaignWindow } from '../workers/moonboys-api/shared/clan-campaign-scoring.js';
 import { maintainClanCampaigns } from '../workers/moonboys-api/shared/clan-campaigns.js';
 import { crewWeek } from '../workers/moonboys-api/shared/clan-crew-standings.js';
+import { clanLeaderStart, publicLeaderRoutes, runClanLeaderRounds } from '../workers/moonboys-api/shared/clan-leader-presence.js';
 
 const newerMigration = number => readFileSync(new URL(`../workers/moonboys-api/migrations/${number}.sql`, import.meta.url), 'utf8');
 const rosterMigration = readFileSync(new URL('../workers/moonboys-api/migrations/125_clan_crew_rosters.sql', import.meta.url), 'utf8');
@@ -91,17 +92,17 @@ function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
     action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, leaders, crewEntry, weekStart, campaignRewards, campaignEligibility,
-    wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
+    leaderAction, wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
-    const path = `/clan-operations/${action ? 'move' : 'state'}`;
+    const path = `/clan-operations/${leaderAction ? 'leader-slowdown' : action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
       action, revision, operation_ui, wall_studio_ui: wallStudio, wall_recipe: wallRecipe, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
       utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, campaign_eligibility: campaignEligibility,
-      renown: 99_999_999, telegram_id: '102', ore: 99,
+      renown: 99_999_999, telegram_id: '102', ore: 99, ...leaderAction,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') + (leaders ? '&leaders=1' : '') : ''}`, { method, body }),
-      { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart }, {
+      { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart, CLAN_LEADER_PLAY_FROM: settings.leaderStart }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
         verifyTelegramAuth: async () => signed,
@@ -1872,4 +1873,98 @@ test('faction leaders use verified activity and one perk from each finalized wee
   const nextWeek = (await get()).data.leaders;
   assert.equal(nextWeek.prior_week_final, false);
   assert.ok(nextWeek.crews.every(({ power, perk }) => !power && perk === null));
+});
+
+test('rival leader pauses debit once, protect recovery time, and skip only bot rounds', async t => {
+  const { sql, settings, db, request } = fixture(t);
+  sql.exec(`
+    DROP TABLE blocktopia_progression;
+    ${newerMigration('010_blocktopia_progression_repair')}
+    ${newerMigration('129_clan_leader_presence')}
+    CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);
+    ${newerMigration('019_daily_wtf_timed_events')}
+    INSERT INTO blocktopia_progression (telegram_id, faction, xp, gems)
+    VALUES ('101', 'graff-punks', 2000, 100), ('102', 'all-city-bulls', 0, 0), ('103', 'graffpunks', 0, 0);
+  `);
+  settings.leaderStart = '2026-11-23';
+  settings.time = new Date('2026-11-23T00:05Z');
+  const start = clanLeaderStart({ CLAN_LEADER_PLAY_FROM: settings.leaderStart });
+  assert.equal(clanLeaderStart({ CLAN_LEADER_PLAY_FROM: '2026-02-31' }), null);
+  const publicPage = '/wiki/crypto-moonboys.html';
+  const game = '/games/chain-maze/';
+  const sitemap = `<urlset>
+    <loc>https://cryptomoonboys.com${game}</loc><loc>https://cryptomoonboys.com${publicPage}</loc>
+    <loc>https://elsewhere.invalid/page</loc><loc>https://cryptomoonboys.com/admin/balances</loc>
+    <loc>https://cryptomoonboys.com/%2f%2felsewhere.invalid</loc></urlset>`;
+  assert.ok(publicLeaderRoutes(sitemap).includes(publicPage));
+  assert.ok(publicLeaderRoutes(sitemap).includes(game));
+  assert.ok(!publicLeaderRoutes(sitemap).some(path => /admin|elsewhere/.test(path)));
+  const visited = [];
+  const fetchPage = async (url, options) => {
+    if (url.endsWith('/sitemap.xml')) return new Response(sitemap);
+    assert.equal(options.method, 'HEAD');
+    assert.equal(options.redirect, 'manual');
+    visited.push(url);
+    return new Response(null);
+  };
+  const tick = () => runClanLeaderRounds(db, start, settings.time, fetchPage);
+  await tick();
+  await tick();
+  assert.equal(visited.length, 9, 'a repeated tick does not repeat completed rounds');
+  assert.ok(visited.some(url => url.endsWith('/games/chain-maze/')));
+  assert.ok(visited.some(url => url.includes('/battle-chamber/factions/')));
+  const get = async target => (await request({ method: 'GET', view: 'crew-progress', leaders: true }))
+    .data.leaders.crews.find(crew => crew.faction_id === target);
+  const rival = 'nomad-bears';
+  const initial = await get(rival);
+  assert.equal(initial.presence.rounds, 1);
+  assert.equal(initial.power, 1);
+  const interact = (target, option, currency, sequence, id = '101', signed = true) => request({
+    id, signed, leaderAction: {
+      target, option, currency, request_id: '00000000-0000-4000-8000-' + String(sequence).padStart(12, '0'),
+      minutes: 9999, cost: 0,
+    },
+  });
+  assert.equal((await interact(rival, 'territory', null, 1, '101', false)).status, 401);
+  assert.equal((await interact('graffpunks', 'hour', 'xp', 2)).status, 403);
+  assert.equal((await interact(rival, 'hour', 'xp', 3, '102')).status, 402);
+
+  settings.time = new Date('2026-11-23T00:06Z');
+  const ask = await interact(rival, 'alliance', null, 4);
+  assert.equal(ask.status, 200);
+  assert.equal(ask.data.paused_until, Date.parse('2026-11-23T00:26Z') / 1000);
+  assert.match(ask.data.reply, /verify/);
+  assert.equal((await interact('blockstars', 'territory', null, 5)).data.error, 'daily_question_used');
+  assert.equal((await interact(rival, 'hour', 'xp', 6)).data.error, 'leader_unavailable');
+  settings.time = new Date('2026-11-23T00:10Z');
+  bankReceipt(sql, '103', rival, settings.time.toISOString());
+  await tick();
+  const paused = await get(rival);
+  assert.equal(paused.presence.talking, true);
+  assert.equal(paused.presence.rounds, 1);
+  assert.equal(paused.power, 2, 'a bank still counts during the pause');
+  assert.equal((await get('all-city-bulls')).presence.rounds, 2, 'other leaders still play');
+
+  settings.time = new Date('2026-11-23T00:30Z');
+  await tick();
+  assert.equal((await get(rival)).presence.rounds, 2, 'training resumes during recovery');
+  assert.equal((await interact(rival, 'hour', 'xp', 7)).status, 409);
+  const purchases = await Promise.all([
+    interact('blockstars', 'day', 'gems', 8), interact('blockstars', 'day', 'gems', 8),
+  ]);
+  assert.deepEqual(purchases[0], purchases[1]);
+  assert.equal(purchases[0].status, 200);
+  assert.equal(purchases[0].data.paused_until, Date.parse('2026-11-24T00:30Z') / 1000);
+  assert.equal((await interact('blockstars', 'hour', 'xp', 8)).data.error, 'request_conflict');
+  assert.equal((await interact('rugpull-miners', 'hour', 'xp', 9)).status, 200);
+  const wallet = sql.prepare("SELECT xp, gems FROM blocktopia_progression WHERE telegram_id = '101'").get();
+  assert.deepEqual([wallet.xp, wallet.gems], [1900, 50]);
+  const costs = sql.prepare('SELECT xp_change, gems_change FROM blocktopia_progression_events ORDER BY action_type').all();
+  assert.deepEqual(costs.map(row => [row.xp_change, row.gems_change]), [[0, -50], [-100, 0]]);
+
+  sql.exec(`CREATE TRIGGER reject_audit BEFORE INSERT ON blocktopia_progression_events
+    BEGIN SELECT RAISE(ABORT, 'test audit outage'); END;`);
+  assert.equal((await interact('hard-fork-rockers', 'hour', 'xp', 10)).status, 503);
+  assert.equal(sql.prepare("SELECT xp FROM blocktopia_progression WHERE telegram_id = '101'").get().xp, 1900);
+  assert.equal((await get('hard-fork-rockers')).presence.paused_until, null);
 });

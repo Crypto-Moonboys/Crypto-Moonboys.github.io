@@ -1,4 +1,5 @@
 import { CLAN_REWARD_NAMES } from './clan-period-display.js';
+import { mountClanLeaderDialog } from './clan-leader-dialog.js';
 
 const board = document.querySelector('[data-clan-crew-progress]');
 const api = window.MOONBOYS_API?.getApiBase?.({ mode: 'write' });
@@ -22,6 +23,8 @@ if (board && api && profiles && factionOrder?.length) {
   const finals = board.querySelector('[data-clan-final-results]');
   const leaderHeader = board.querySelector('[data-clan-leader-header]');
   const leaderRules = board.querySelector('[data-clan-leader-rules]');
+  const presenceRules = board.querySelector('[data-clan-leader-presence-rules]');
+  const talkToLeader = leaderHeader && mountClanLeaderDialog(document.body, () => load());
   // The front idle frame is first in each four-row group of the Waterfront atlas.
   const leaderSprites = [
     'all-city-bulls', 'nomad-bears', 'hard-fork-rockers', 'rugpull-miners',
@@ -161,6 +164,26 @@ if (board && api && profiles && factionOrder?.length) {
     const breakdown = document.createElement('div');
     breakdown.textContent = `${leader.banks} banks · ${leader.signals} signals · +${leader.boost.toLocaleString()} perk`;
     cell.append(breakdown);
+    if (leader.presence && data.leaders.controls) {
+      const { rounds, site_path, faction_path, paused_until, talking } = leader.presence;
+      const activity = document.createElement('div');
+      const paused = paused_until && paused_until * 1000 > Date.now();
+      activity.textContent = `${rounds.toLocaleString()} leader rounds${paused ? (talking ? ' · In conversation' : ' · Paused') : ''}`;
+      const links = document.createElement('div');
+      const faction = document.createElement('a');
+      faction.href = faction_path;
+      faction.textContent = 'Faction page';
+      const visit = document.createElement('a');
+      visit.href = site_path;
+      visit.textContent = 'Last site visit';
+      links.append(faction);
+      if (site_path !== faction_path) links.append(' · ', visit);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = 'Talk or slow down';
+      button.addEventListener('click', () => talkToLeader(profiles[leader.faction_id].name, leader, data.leaders.controls));
+      cell.append(activity, links, button);
+    }
     if (!leader.perk) {
       const status = document.createElement('small');
       status.textContent = priorWeekFinal ? 'Unranked last week' : 'Awaiting final weekly standings';
@@ -224,6 +247,7 @@ if (board && api && profiles && factionOrder?.length) {
       const showLeaders = Boolean(leaderHeader && factionOrder.every(key => leaders.has(key)));
       if (leaderHeader) leaderHeader.hidden = !showLeaders;
       if (leaderRules) leaderRules.hidden = !showLeaders;
+      if (presenceRules) presenceRules.hidden = !showLeaders || !data.leaders?.controls;
       const expanded = new Set(Array.from(rows.querySelectorAll('.clan-leader-cell details[open]'),
         node => node.closest('tr').dataset.faction));
       const content = factionOrder.map(key => {

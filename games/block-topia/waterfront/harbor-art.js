@@ -210,7 +210,7 @@ function factionRoutes(rows, district) {
   return routes;
 }
 
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null) {
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderPauses = []) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -936,12 +936,16 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   let nearestFaction;
+  const factionHits = [];
   function drawFactionWalkers() {
     if (!waterfrontFactionAtlas.image) return;
     const routes = factionRoutes(rows, district);
     waterfrontFactions.forEach((name, index) => {
       const route = routes[index];
-      const progress = ((time ?? 0) / (1.05 + index * 0.045)) % route.length;
+      const pause = leaderPauses[index];
+      const paused = pause?.until > Date.now();
+      const walkerTime = paused ? pause.sceneTime : time;
+      const progress = ((walkerTime ?? 0) / (1.05 + index * 0.045)) % route.length;
       const step = Math.floor(progress);
       const from = route[step];
       const to = route[(step + 1) % route.length];
@@ -951,8 +955,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const x = Math.round((from.x + dx * blend) * size + 16);
       const y = Math.round((from.y + dy * blend) * size + 22);
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
-      const frame = time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
+      const frame = paused || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
       queue(y, () => factionCharacter(index, x, y, facing, frame, 20));
+      factionHits.push({ index, x, y, paused, talking: pause?.talking });
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
       if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
         nearestFaction = { name, x, y, separation };
@@ -1019,5 +1024,14 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   beacons.forEach(([x, y]) => beacon(x, y, true));
   drawCrew();
   drawFactionLabel();
-
+  for (const { x, y, paused, talking } of factionHits) {
+    if (!paused) continue;
+    ctx.save();
+    ctx.fillStyle = '#eaf2e5';
+    ctx.font = '7px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(talking ? 'Talking' : 'Paused', x, y - 34);
+    ctx.restore();
+  }
+  return factionHits;
 };

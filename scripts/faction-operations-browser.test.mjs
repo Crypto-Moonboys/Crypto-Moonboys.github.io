@@ -2089,3 +2089,79 @@ test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning por
     await browser.close();
   }
 });
+
+test('Waterfront opens a weighted conversation from a faction sprite and submits the signed choice', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, reducedMotion: 'reduce' });
+    page.setDefaultTimeout(4_000);
+    const requestBodies = [];
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const start = '/games/block-topia/waterfront/';
+    const target = 'nomad-bears';
+    let paused;
+    await page.route('https://waterfront.test/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/js/api-config.js') return route.fulfill({
+        contentType: 'application/javascript', body: 'window.MOONBOYS_API={getApiBase:()=>location.origin}',
+      });
+      if (url.pathname === '/js/identity-gate.js') return route.fulfill({
+        contentType: 'application/javascript',
+        body: "window.MOONBOYS_IDENTITY={getTelegramId:()=>'123',getSignedTelegramAuth:()=>({id:'123'})}",
+      });
+      if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
+        leaders: {
+          controls: {
+            questions: [{ id: 'defences', title: 'Which part of the city would you defend first?', minutes: 10 }],
+            paid: [{ id: 'hour', title: 'Pause for 1 hour', xp: 100, gems: 5 }],
+          },
+          crews: FACTIONS.map(faction_id => ({ faction_id, presence: faction_id === target && paused
+            ? { paused_until: paused, available_at: paused + 3600, talking: true } : {} })),
+        },
+      } });
+      if (url.pathname === '/clan-operations/leader-slowdown') {
+        requestBodies.push(route.request().postDataJSON());
+        paused = Math.floor(Date.now() / 1000) + 600;
+        return route.fulfill({ json: { ok: true, paused_until: paused, reply: 'Keep the supply lanes open.' } });
+      }
+      const file = path.join(ROOT, url.pathname === start ? start + 'index.html' : url.pathname);
+      return existsSync(file) ? route.fulfill({ path: file }) : route.fulfill({ status: 404 });
+    });
+    await page.goto('https://waterfront.test' + start);
+    await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
+    await page.waitForFunction(() => factionHits.length === 9);
+    const position = await page.evaluate(() => {
+      const hit = factionHits.find(item => item.index === 1);
+      const map = document.querySelector('#map');
+      const scroll = document.querySelector('.map-scroll');
+      const rect = map.getBoundingClientRect();
+      scroll.scrollLeft = hit.x * rect.width / mapWidth - scroll.clientWidth / 2;
+      scroll.scrollTop = (hit.y - 8) * rect.height / mapHeight - scroll.clientHeight / 2;
+      const shifted = map.getBoundingClientRect();
+      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
+    });
+    await page.mouse.click(position.x, position.y);
+    const dialog = page.getByRole('dialog', { name: 'The Nomad Bears' });
+    await dialog.getByRole('button', { name: /spend 100 XP/ }).waitFor();
+    await dialog.getByRole('button', { name: /defend first\? · 10 min/ }).click();
+    await dialog.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
+    assert.equal(requestBodies.length, 1);
+    const [{ request_id, ...body }] = requestBodies;
+    assert.match(request_id, /^[0-9a-f-]{36}$/);
+    assert.deepEqual(body, { telegram_auth: { id: '123' }, target, option: 'defences', currency: null });
+    await page.waitForFunction(() => factionHits.find(hit => hit.index === 1)?.paused);
+    await dialog.getByRole('button', { name: 'Close leader dialog' }).click();
+    await page.getByRole('button', { name: 'Info' }).click();
+    await page.getByLabel('Faction leader', { exact: true }).selectOption(target);
+    await page.getByRole('button', { name: 'Talk', exact: true }).click();
+    await dialog.getByText(/Available for another interaction at/).waitFor();
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});

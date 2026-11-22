@@ -219,15 +219,15 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         SET xp = ?, gems = ?, tier = ?, win_streak = ?, upgrade_efficiency = ?, upgrade_signal = ?,
             upgrade_defense = ?, upgrade_gem = ?, upgrade_npc = ?, rpg_mode_active = ?,
             last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-        WHERE telegram_id = ?
+        WHERE telegram_id = ? AND xp = ? AND gems = ?
       `).bind(
         xpAfterDrain, gems, tierAfter, winStreak,
         upgrades.efficiency, upgrades.signal, upgrades.defense, upgrades.gem, upgrades.npc,
         rpgModeActive ? 1 : 0,
-        verified.telegramId,
+        verified.telegramId, progressionRow.xp, progressionRow.gems,
       ).run();
       if (changedRows(updateResult) !== 1) {
-        logBlockTopiaFailure('progression_drain_update_missed', { path, telegramId: verified.telegramId });
+        return err('Progression changed. Please retry.', 409);
       }
 
       const arcadeXpTotal = Math.max(0, Math.floor(Number(arcadeState?.arcade_xp_total) || 0));

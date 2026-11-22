@@ -49,6 +49,7 @@ import { clanOperationsEnabled, handleClanOperations } from './routes/clan-opera
 import { handleClanPfpRoll } from './routes/clan-pfp-roll.js';
 import { clanPeriodStart, closeClanPeriods } from './shared/clan-period-rewards.js';
 import { maintainClanCampaigns } from './shared/clan-campaigns.js';
+import { clanLeaderStart, runClanLeaderRounds } from './shared/clan-leader-presence.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart, settleClanSignalXp } from './shared/clan-signal-xp.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleRadioStream } from './routes/radio-stream.js';
@@ -12261,11 +12262,13 @@ export default {
           return err('Grant cannot be applied at current cap', 409);
         }
 
-        await env.DB.prepare(`
+        const updated = await env.DB.prepare(`
           UPDATE blocktopia_progression
           SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP
-          WHERE telegram_id = ?
-        `).bind(nextXp, nextGems, telegramId).run();
+          WHERE telegram_id = ? AND xp = ? AND gems = ?
+          RETURNING telegram_id
+        `).bind(nextXp, nextGems, telegramId, row.xp, row.gems).first();
+        if (!updated) return err('Progression changed. Please retry.', 409);
 
         await writeBlockTopiaAdminGrantAudit(env.DB, {
           telegramId,
@@ -13389,7 +13392,7 @@ export default {
     }
 
     const isClanPfpRoll = path === '/clan-operations/pfp/state' || path === '/clan-operations/pfp/roll';
-    if (isClanPfpRoll || path === '/clan-operations/state' || path === '/clan-operations/move') {
+    if (isClanPfpRoll || path === '/clan-operations/state' || path === '/clan-operations/move' || path === '/clan-operations/leader-slowdown') {
       const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
       const handle = isClanPfpRoll ? handleClanPfpRoll : handleClanOperations;
       return handle(request, env, {
@@ -15578,9 +15581,10 @@ export default {
         ['clan_signal_xp', signalStart, settleClanSignalXp],
         ['clan_period_rewards', periodStart, closeClanPeriods],
         ['clan_campaigns', periodStart, maintainClanCampaigns],
+        ['clan_leader_rounds', clanLeaderStart(env), runClanLeaderRounds],
       ];
       for (const [task, start, run] of tasks) {
-        if (!start) continue;
+        if (start == null) continue;
         try {
           await run(env.DB, start, now);
           scheduledResults.push({ task, ok: true, error: null });

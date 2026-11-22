@@ -1,0 +1,27 @@
+.clan-leader-dialog {
+  box-sizing: border-box;
+  width: min(30rem, calc(100vw - 1.25rem));
+  max-height: 88vh;
+  max-height: 88dvh;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid #658782;
+  border-radius: .35rem;
+  background: #13131c;
+  color: #f5edf5;
+}
+.clan-leader-dialog::backdrop { background: #080b12c9; }
+.clan-leader-dialog h2 { margin-block: .7rem; font-size: 1.2rem; }
+.clan-leader-dialog button {
+  min-height: 44px;
+  font: inherit;
+  color: inherit;
+  background: #1b2d33;
+  border: 1px solid #658782;
+  border-radius: .25rem;
+  padding: .45rem .65rem;
+}
+.clan-leader-dialog a { color: #91efe3; }
+.clan-leader-dialog fieldset { min-inline-size: 0; border: 0; padding: 0; margin: .8rem 0 0; }
+.clan-leader-dialog fieldset button { display: block; width: 100%; margin-top: .3rem; text-align: left; }
+.clan-leader-dialog button:disabled { opacity: .55; }

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina’s Waterfront | Block Topia</title>
+<link rel="stylesheet" href="/css/clan-leader-dialog.css">
 <style>
 :root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0}
@@ -50,6 +51,11 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </section>
 <label for="player-faction">Player faction</label>
 <select id="player-faction"><option value="">Default explorer</option></select>
+<div id="map-leader-controls" hidden>
+<label for="map-leader-faction">Faction leader</label>
+<select id="map-leader-faction"></select>
+<button id="map-leader-talk" type="button">Talk</button>
+</div>
 <details id="build-discussion" hidden><summary>Build discussion</summary><ol></ol></details>
 <details id="editor">
 <summary>Map editor</summary>
@@ -66,8 +72,10 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </div>
 </main>
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
 <script src="district.js?v=8"></script>
-<script src="harbor-art.js?v=33"></script>
+<script src="harbor-art.js?v=34"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -194,9 +202,13 @@ async function loadBuildDiscussion() {
 }
 let previousDiscussionFrame = null;
 
+let factionHits = [];
+let factionDialogsEnabled = false;
+let leaderPauses = [];
 function paintMap() {
   const faction = playerFaction.value === "" ? null : Number(playerFaction.value);
-  window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime, reducedMotion.matches ? null : discussionElapsed);
+  factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
+    reducedMotion.matches ? null : discussionElapsed, leaderPauses) ?? [];
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -282,10 +294,18 @@ document.querySelector("#editor").addEventListener("toggle", event => {
 canvas.addEventListener("click", event => {
   if (performance.now() < ignoreTapUntil) return;
   const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((event.clientX - rect.left) * mapWidth / rect.width / tileSize);
-  const y = Math.floor((event.clientY - rect.top) * mapHeight / rect.height / tileSize);
+  const mapX = (event.clientX - rect.left) * mapWidth / rect.width;
+  const mapY = (event.clientY - rect.top) * mapHeight / rect.height;
+  const x = Math.floor(mapX / tileSize);
+  const y = Math.floor(mapY / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
   if (!editing) {
+    const leader = factionDialogsEnabled && factionHits.findLast(hit =>
+      Math.abs(hit.x - mapX) <= 11 && mapY >= hit.y - 20 && mapY <= hit.y + 2);
+    if (leader) {
+      canvas.dispatchEvent(new CustomEvent('waterfront:faction-talk', { detail: leader.index }));
+      return;
+    }
     walkTo(x, y);
     return;
   }
@@ -365,7 +385,7 @@ infoPanel.addEventListener("keydown", event => {
 });
 
 viewport.addEventListener("wheel", event => {
-  if (infoPanel.contains(event.target)) return;
+  if (infoPanel.contains(event.target) || event.target.closest('.clan-leader-dialog')) return;
   if (event.deltaY === 0) return;
   event.preventDefault();
   const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? mapScroll.clientHeight : 1;
@@ -515,5 +535,6 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) loadBuildDiscussion();
 });
 </script>
+<script data-cfasync="false" type="module" src="leader-dialog.js"></script>
 </body>
 </html>

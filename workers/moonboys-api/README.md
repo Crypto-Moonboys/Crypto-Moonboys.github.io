@@ -135,3 +135,22 @@ setting. The per-account request ID keys both the roll and its Community XP
 receipt. Roll persistence and XP settlement share one D1 batch. PFP rolls
 write to their own tables and Community XP, leaving Paint Wall banks on the
 existing operations ledger.
+
+### Faction leader rounds and rival slowdowns
+
+Apply `129_clan_leader_presence.sql` before setting `CLAN_LEADER_PLAY_FROM`
+to the agreed UTC start date (`YYYY-MM-DD`). Leave the variable unset while
+the feature is closed. The five-minute Worker tick uses the public site's
+sitemap and each faction's own chamber URL for visits. An available leader
+can complete one unranked training round per tick with the shared mining rules.
+A successful round adds one Leader Power. Missed ticks are skipped. Internal
+rounds do not make entries in player ledgers or arcade leaderboards.
+
+Signed members may interrupt a rival with one free preset question per UTC
+day (5, 10 or 20 minutes). A paid pause costs 100 Block Topia XP or 5 Block
+Topia gems for 1 hour, or 1,200 XP or 50 gems for 24 hours. There is a one-hour
+recovery interval after brief or hourly pauses, and six hours after a 24-hour
+pause. Slowdowns cannot overlap or accumulate during recovery. Paid actions
+atomically write a pause and a progression cost receipt. The feature only
+affects independent leader rounds, while members' banks and signals continue
+during the pause.

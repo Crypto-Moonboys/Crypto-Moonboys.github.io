@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/faction-operations.css">
   <link rel="stylesheet" href="/css/clan-operation.css?crew-card=1&leaders=1">
+  <link rel="stylesheet" href="/css/clan-leader-dialog.css">
   <link rel="stylesheet" href="/css/action-page-cards.css?battle-copy=1">
 
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -184,6 +185,7 @@
           <p>Bank a Clan Operation tier for 1 Leader Power. Each verified Daily WTF completion earns 2 Leader Power for the faction on your locked weekly roster.</p>
           <p>After the final weekly standings are published, first place unlocks level 9 and ninth unlocks level 1. Each ranked faction leader automatically selects one of three perks for the new week. Tied factions earn the same level.</p>
           <p>Leader Power is shown alongside the official weekly score. Official ranks and prizes use existing crew scoring.</p>
+          <p data-clan-leader-presence-rules hidden>Leaders can earn 1 power every five minutes. Asking a weighted question or buying a slowdown pauses a rival leader’s rounds. Each account gets one free question per UTC day. Leaders recover before they can be paused again.</p>
         </details>
       </div>
       <div class="clan-crew-table-scroll" role="region" aria-label="Crew standings" tabindex="0">
@@ -371,7 +373,7 @@
 <script data-cfasync="false" src="/js/battle-chamber-factions.js?battle-copy=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
-<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=4"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=5"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?wall-studio=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-campaign.js?opening-week=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-pfp-roll.js"></script>
