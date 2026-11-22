@@ -54,10 +54,10 @@ body.page-community #content {
 .fcp-hero-card,
 .fcp-panel,
 .fcp-card {
-  background: rgba(8, 18, 34, 0.62);
-  border: 1px solid rgba(86, 220, 255, 0.18);
-  border-top: 3px solid var(--faction-color, #56dcff);
-  border-radius: 10px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-top: 1px solid var(--faction-color, #56dcff);
+  border-radius: var(--shell-card-corner);
   padding: 16px;
   line-height: 1.65;
 }

@@ -13,13 +13,10 @@
 .wiki-flagship-section {
   margin-bottom: 1.25rem;
   padding: clamp(1.25rem, 3vw, 2.35rem);
-  border: 1px solid rgba(247, 201, 72, .2);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at top right, rgba(0, 232, 240, .08), transparent 34%),
-    radial-gradient(circle at bottom left, rgba(247, 201, 72, .08), transparent 36%),
-    var(--wiki-flagship-panel);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  background: var(--shell-card-bg);
+  box-shadow: none;
 }
 
 .wiki-flagship-kicker {
@@ -87,9 +84,9 @@
 .wiki-flagship-card {
   min-width: 0;
   padding: 1rem 1.05rem;
-  border: 1px solid rgba(0, 232, 240, .16);
-  border-radius: 14px;
-  background: rgba(0, 232, 240, .045);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  background: var(--shell-card-bg);
 }
 
 .wiki-flagship-card strong {
@@ -110,9 +107,9 @@
 .wiki-flagship-highlight {
   margin-top: 1rem;
   padding: .95rem 1rem;
-  border-left: 4px solid var(--wiki-flagship-gold);
-  border-radius: 8px;
-  background: rgba(247, 201, 72, .08);
+  border-left: 1px solid var(--wiki-flagship-gold);
+  border-radius: var(--shell-card-corner);
+  background: var(--shell-card-bg);
   color: #f7f2dc;
   font-weight: 700;
   line-height: 1.65;
@@ -153,12 +150,10 @@
   width: min(100% - 24px, 1180px);
   margin: 1.25rem auto;
   padding: clamp(1.1rem, 2.5vw, 1.7rem);
-  border: 1px solid rgba(0, 232, 240, .3);
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at top right, rgba(0, 232, 240, .1), transparent 38%),
-    rgba(8, 12, 17, .96);
-  box-shadow: 0 18px 55px rgba(0, 0, 0, .3);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  background: var(--shell-card-bg);
+  box-shadow: none;
 }
 
 .wiki-live-source-card__eyebrow {

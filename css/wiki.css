@@ -555,11 +555,11 @@ h2,
 .section-heading {
   margin: 28px 0 14px;
   padding: 10px 14px;
-  color: var(--color-accent-2);
-  background: rgba(86, 220, 255, 0.055);
-  border-left: 3px solid rgba(86, 220, 255, 0.55);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.18);
-  border-radius: var(--radius-sm);
+  color: var(--shell-heading-accent, var(--shell-neon-cyan));
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--shell-heading-accent, var(--shell-neon-cyan));
+  border-radius: var(--shell-card-corner);
   font-size: clamp(1.05rem, 2.1vw, 1.45rem);
   text-transform: uppercase;
 }
@@ -677,10 +677,10 @@ table {
   min-width: 0;
   overflow: hidden;
   color: var(--color-text);
-  background: rgba(7, 11, 18, 0.86);
-  border: 1px solid rgba(86, 220, 255, 0.22);
-  border-radius: 8px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28), 0 0 26px rgba(86, 220, 255, 0.06);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .gk-showcase-card:first-child {
@@ -905,9 +905,9 @@ table {
   min-width: 0;
   padding: 10px;
   color: var(--color-text);
-  background: rgba(7, 11, 18, 0.48);
-  border: 1px solid rgba(86, 220, 255, 0.12);
-  border-radius: 8px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
   box-shadow: none;
 }
 
@@ -1175,9 +1175,9 @@ table {
   gap: 12px;
   min-width: 0;
   padding: 12px;
-  background: rgba(7, 11, 18, 0.62);
-  border: 1px solid rgba(86, 220, 255, 0.14);
-  border-radius: 8px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
 }
 
 .gk-audit-card-image,
@@ -1723,6 +1723,10 @@ body.page-search .section-heading {
   margin-top: 28px;
 }
 
+body.page-search #search-start-title {
+  --shell-heading-accent: var(--color-accent);
+}
+
 .wiki-living-hero {
   position: relative;
   box-sizing: border-box;
@@ -1849,18 +1853,19 @@ body.page-how-to-play .swarmsy-lead {
   min-width: 0;
   padding: 16px 20px;
   color: var(--color-text);
-  background: rgba(3, 8, 15, 0.72);
-  border: 1px solid rgba(86, 220, 255, 0.30);
-  border-radius: 14px;
-  box-shadow: inset 0 0 0 1px rgba(0, 255, 204, 0.04), 0 0 24px rgba(0, 255, 204, 0.06);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
   font-size: 1rem;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: border-color 180ms ease;
 }
 
 .wiki-hero-search-input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 28px rgba(247, 201, 72, 0.14), inset 0 0 0 1px rgba(247, 201, 72, 0.08);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 @keyframes wikiHeroBreath {
@@ -2055,7 +2060,7 @@ body.page-gkniftyheads-collection .gk-collection-route {
   color: #f4ffff;
   background: linear-gradient(90deg, rgba(0, 255, 204, 0.12), rgba(86, 220, 255, 0.05));
   border: 1px solid rgba(0, 255, 204, 0.45);
-  border-left: 5px solid #00ffcc;
+  border-inline-start-color: var(--shell-neon-cyan);
   border-radius: 0;
   box-shadow: inset 0 0 24px rgba(0, 255, 204, 0.05);
   font-size: clamp(0.92rem, 1.08vw, 1.04rem);
@@ -2169,9 +2174,10 @@ body.page-gkniftyheads-collection .article-meta {
 .swarmsy-callout {
   padding: 16px 18px;
   color: var(--color-text-muted);
-  background: rgba(247, 201, 72, 0.08);
-  border-left: 4px solid var(--color-accent);
-  border-radius: var(--radius-md);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--color-accent);
+  border-radius: var(--shell-card-corner);
   line-height: 1.7;
 }
 
@@ -2287,24 +2293,22 @@ body.page-wiki .wiki-section {
 body.page-wiki .wiki-section h2,
 body.page-wiki .wiki-section h3 {
   margin-top: 0;
-  color: #00ffcc;
-  background: rgba(86, 220, 255, 0.07);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.2);
+  color: var(--shell-neon-cyan);
+  background: var(--shell-card-deep);
+  border-block-end: 1px solid var(--shell-card-line);
   border-radius: var(--shell-card-corner);
   display: block;
   font-family: var(--font-display);
-  text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }
 
 body.page-wiki .wiki-section summary [role="heading"] {
   display: block;
   margin-top: 0;
-  color: #00ffcc;
-  background: rgba(86, 220, 255, 0.07);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.2);
+  color: var(--shell-neon-cyan);
+  background: var(--shell-card-deep);
+  border-block-end: 1px solid var(--shell-card-line);
   border-radius: var(--shell-card-corner);
   font-family: var(--font-display);
-  text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }
 
 body.page-wiki .lore-facts-stack {
@@ -2342,10 +2346,10 @@ body.page-wiki strong {
 
 body.page-wiki table {
   overflow: hidden;
-  background: rgba(0, 255, 204, 0.04);
-  border: 1px solid rgba(0, 255, 204, 0.16);
-  border-radius: 16px;
-  box-shadow: 0 0 24px rgba(0, 255, 204, 0.045);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .wiki-hero {
@@ -2454,11 +2458,11 @@ body.page-wiki .wiki-comments {
 
 body.page-wiki .wiki-comments {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-radius: 18px;
-  box-shadow: 0 0 30px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-left: 1px solid rgba(86, 220, 255, 0.62);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .citation-vote-panel-actions,
@@ -4310,10 +4314,10 @@ body.page-home .home-dropdown-row {
 
 body.page-home .home-section-dropdown {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -4436,11 +4440,7 @@ body.page-home .section-heading {
   margin-right: clamp(20px, 3vw, 48px);
   margin-left: clamp(20px, 3vw, 48px);
   color: var(--color-accent);
-  background: rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  --shell-heading-accent: var(--color-accent);
 }
 
 body.page-home .category-card,
@@ -4702,4 +4702,30 @@ body.page-wiki article[data-entity-slug="crypto-moonboys"] :is(p, .cm-lead) {
 body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) #content > .cm-page {
   max-width: 1480px !important;
   margin-inline: auto;
+}
+
+/* Older articles and page-local components still declare corner radii in
+   their own stylesheets. Normalize their surfaces at the shared shell level.
+   Match card, panel, and section classes by suffix to avoid inner icons,
+   badges, and controls. */
+#content :where(
+  h1, h2, h3, h4, h5, h6, [role="heading"], .section-heading,
+  [class$="-card"], [class*="-card "],
+  [class$="-panel"], [class*="-panel "],
+  [class$="-tile"], [class*="-tile "],
+  [class$="-box"], [class*="-box "],
+  [class$="-section"], [class*="-section "],
+  [class$="-hero"], [class*="-hero "],
+  .card, .panel, .tile, .infobox,
+  .article-contents, .character-contents, .faction-contents,
+  .wiki-contents, .canon-toc, .navigation-contents, .battle-page-media,
+  .battle-heat-summary, .related-wiki-paths
+) {
+  border-radius: var(--shell-card-corner) !important;
+}
+
+#content :where(.article-contents, .character-contents, .faction-contents,
+  .wiki-contents, .canon-toc, .navigation-contents) {
+  background: var(--shell-card-bg);
+  border-color: var(--shell-card-line);
 }

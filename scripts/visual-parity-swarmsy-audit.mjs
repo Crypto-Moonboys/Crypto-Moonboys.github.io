@@ -668,8 +668,12 @@ if (wikiCss) {
     fail(`${GLOBAL_SHELL_CSS} - wiki titles must use SWARMSY glowing display typography`);
     wikiArticleVisualOk = false;
   }
-  if (!blockHas(wikiSectionHeadingBlock, /color\s*:\s*#00ffcc/i) || !blockHas(wikiSectionHeadingBlock, /text-shadow\s*:/i)) {
-    fail(`${GLOBAL_SHELL_CSS} - wiki section headings must use cyan SWARMSY glow`);
+  if (
+    !blockHas(wikiSectionHeadingBlock, /color\s*:\s*var\(--shell-neon-cyan\)/i) ||
+    !blockHas(wikiSectionHeadingBlock, /border-block-end\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i) ||
+    !blockHas(wikiSectionHeadingBlock, /border-radius\s*:\s*var\(--shell-card-corner\)/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - wiki section headings must use cyan text, square corners, and a 1px divider`);
     wikiArticleVisualOk = false;
   }
   if (
