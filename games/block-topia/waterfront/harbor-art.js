@@ -148,9 +148,11 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const tileAt = (x, y) => rows[y]?.[x] ?? (y < 2 ? "~" : ".");
   const roadAt = (x, y) => Boolean(tiles[tileAt(x, y)].walkable);
   // The mural reserves the promenade between the middle and east docks.
-  const wallStart = 13;
-  const wallEnd = 24;
-  const hasSeawall = rows[2]?.slice(wallStart, wallEnd) === ".".repeat(wallEnd - wallStart);
+  const harbor = district.harborOffset;
+  const quayRow = harbor.y + 2;
+  const wallStart = harbor.x + 13;
+  const wallEnd = harbor.x + 24;
+  const hasSeawall = rows[quayRow]?.slice(wallStart, wallEnd) === ".".repeat(wallEnd - wallStart);
   // Keep doors and people readable without widening the walkable grid.
   const personScale = 0.55;
   const objects = [];
@@ -208,7 +210,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function graffitiSeawall() {
     if (!hasSeawall) return;
     const x = wallStart * size;
-    const y = 2 * size;
+    const y = quayRow * size;
     const width = (wallEnd - wallStart) * size;
     rect("#171826", x, y + 3, width, 23);
     rect("#575061", x, y + 1, width, 4);
@@ -416,7 +418,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const water = tile === "~";
     const dock = tile === "d";
 
-    const ground = tile === "." ? (row === 2 ? "concrete" : groundAt(col, row)) : undefined;
+    const ground = tile === "." ? (row === quayRow ? "concrete" : groundAt(col, row)) : undefined;
     const base = ground === "grass" ? grassPattern || "#283b39" : ground === "gravel" ? "#342f3c" : ground === "concrete" ? "#30323e" : "#1b1d2a";
     rect(water || dock ? "#0b192d" : base, x, y, size, size);
     for (let i = 0; i < 8; i++) {
@@ -469,10 +471,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       return;
     }
 
-    const location = col + "," + row;
+    const location = (col - harbor.x) + "," + (row - harbor.y);
     const planter = planterLots.get(location);
     const furniture = furnitureLots.get(location);
-    const grove = ground === "grass" && waterfrontGroves.get(col + "," + row);
+    const grove = ground === "grass" && waterfrontGroves.get(location);
     if (grove) {
       const positions = [[-6, -10, 0.72], [5, -5, 0.9], [-6, 0, 0.63]];
       grove.forEach((variant, index) => {
@@ -492,7 +494,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
           : [x + 16, y - 17]);
       }
       if (time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed, entranceCenter(tile, col, bounds));
-    } else if (tile === "." && row === 2) {
+    } else if (tile === "." && row === quayRow) {
       if (hasSeawall && col >= wallStart && col < wallEnd) return;
       if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
       else if (seed % 4 === 0) queue(y + 28, () => mooring(x, y));

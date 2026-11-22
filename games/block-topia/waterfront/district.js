@@ -96,3 +96,47 @@ window.waterfrontDistrict = {
     b: { name: "Warehouse", color: "#714e54" }
   }
 };
+
+// The original harbor remains the only built-up district.
+{
+  const district = window.waterfrontDistrict;
+  const harborRows = district.rows;
+  const offset = { x: 10, y: 8 };
+  const world = Array.from({length: 34}, () => Array(56).fill("~"));
+  const fill = (left, top, right, bottom, tile) => {
+    for (let y = top; y <= bottom; y++) world[y].fill(tile, left, right + 1);
+  };
+  fill(9, 10, 47, 26, ".");
+  fill(11, 27, 45, 28, ".");
+  fill(15, 29, 40, 29, ".");
+  fill(39, 9, 44, 9, ".");
+  fill(2, 3, 15, 4, ".");
+  fill(4, 2, 13, 5, ".");
+  fill(50, 22, 54, 29, ".");
+  fill(51, 20, 53, 31, ".");
+  harborRows.forEach((row, y) => [...row].forEach((tile, x) => {
+    world[y + offset.y][x + offset.x] = tile;
+  }));
+  fill(24, 20, 24, 27, "r");
+  fill(13, 24, 44, 24, "r");
+  fill(44, 14, 44, 24, "r");
+  fill(36, 14, 44, 14, "r");
+  fill(44, 19, 46, 19, "p");
+  fill(16, 24, 16, 27, "p");
+  fill(36, 24, 36, 28, "p");
+  const openZones = [
+    { name: "West Meadow", material: "grass", bounds: [11,20,22,23] },
+    { name: "Southwest Park", material: "grass", bounds: [12,25,23,28] },
+    { name: "South Point", material: "grass", bounds: [25,25,40,29] },
+    { name: "East Common", material: "grass", bounds: [38,15,43,22] },
+    { name: "East Shore", material: "grass", bounds: [45,11,47,26] }
+  ];
+  district.harborRows = harborRows;
+  district.harborOffset = offset;
+  district.spawn = {x: district.spawn.x + offset.x, y: district.spawn.y + offset.y};
+  district.rows = world.map(row => row.join(""));
+  district.groundZones = [...district.groundZones.map(zone => ({
+    ...zone, bounds: zone.bounds.map((n,i) => n + (i % 2 ? offset.y : offset.x))
+  })), ...openZones,
+  {material:"grass", bounds:[2,2,15,5]}, {material:"grass", bounds:[50,20,54,31]}];
+}
