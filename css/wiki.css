@@ -1644,6 +1644,44 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   color: var(--color-accent);
 }
 
+.page-swarmsy .swarmsy-more-info {
+  margin-top: 12px;
+}
+
+.page-swarmsy .swarmsy-more-info > summary {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.page-swarmsy .swarmsy-more-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-swarmsy .swarmsy-more-info > summary > span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font: bold .75rem/1 system-ui, sans-serif;
+}
+
+.page-swarmsy .swarmsy-more-info > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.page-swarmsy .swarmsy-more-info > p {
+  max-width: 65ch;
+  margin: .4rem 0;
+}
+
 body.page-search #content,
 body.page-dashboard #content,
 body.page-how-to-play #content,
