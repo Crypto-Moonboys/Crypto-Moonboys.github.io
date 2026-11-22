@@ -52,7 +52,7 @@ assert.equal(new Set(factionLinks).size, 9, 'All nine published faction chambers
 for (const x of [
   'function buildForm(pageId)', 'function wireForm(', 'function wireVotes(',
   "CustomEvent('moonboys:comment-posted'", "if (!email && !telegramAuth)",
-  'function injectTelegramWidget(container)', 'function updateCommentIdentityCopy(form)'
+  'function refreshCommentIdentity()', 'function updateCommentIdentityCopy(form)'
 ]) {
   assert.ok(comments.includes(x), 'Wiki comment action intact: ' + x);
 }
