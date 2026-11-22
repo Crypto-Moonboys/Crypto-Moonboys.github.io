@@ -66,6 +66,7 @@ const landing = fs.readFileSync(landingPath, 'utf8');
 const homeWidgets = fs.readFileSync(homeWidgetsPath, 'utf8');
 const legacyEntry = fs.readFileSync(legacyEntryPath, 'utf8');
 const myMoonboy = fs.readFileSync(myMoonboyPath, 'utf8');
+const myMoonboyCss = fs.readFileSync(path.join(ROOT, 'css/my-moonboy.css'), 'utf8');
 
 const badDaysGalleryStart = myMoonboy.indexOf('<section id="bad-days-artwork" class="mm-bad-days-gallery"');
 const heroPositions = heroImages.map(({ publicPath }) => myMoonboy.indexOf('src="' + publicPath + '"'));
@@ -97,9 +98,10 @@ check(heroPositions.every((position, i) => i === 0 || position > heroPositions[i
   'Five panels remain in the approved V1 through V5 order');
 check(badDaysGalleryStart > myMoonboy.indexOf('id="mm-economy"') && badDaysGalleryStart < myMoonboy.lastIndexOf('</main>'),
   'Full artwork follows My Moonboy mission and economy content');
-check(/\.mm-bad-days-gallery img\s*\{[^}]*display:block;[^}]*width:100%;[^}]*height:auto/.test(myMoonboy) &&
-  myMoonboy.includes('width:calc(100% + 2 * var(--shell-gutter))'),
-  'Artwork uses full-width, uncropped and responsive images beyond shell gutters');
+check(/href="\/css\/my-moonboy\.css(?:\?[^"]*)?"/.test(myMoonboy) &&
+  /body\.page-my-moonboy #content\s*\{[^}]*max-width:\s*none;[^}]*padding:\s*0;/.test(myMoonboyCss) &&
+  /\.mm-bad-days-gallery img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*auto/.test(myMoonboyCss),
+  'Artwork uses full-width, uncropped and responsive images in the edge-to-edge page shell');
 check(
   !html.includes('/img/homepage/BUILD%20A%20CRYPTO%20MOONBOY%20HERO%20PIC.jpg'),
   'Removed Build a Crypto Moonboy hero image is absent from the homepage'
