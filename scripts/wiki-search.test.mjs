@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { compactWikiSearchIndex } from './publish-wiki-search-index.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '..');
@@ -1658,3 +1659,53 @@ const graffpunksStopwordOnly = {
 }
 
 console.log('wiki-search.test: PASS');
+
+// The Pages artifact sends only the fields the browser uses. Compare the
+// complete ranked rows and rendered results, including typo and browse paths.
+{
+  const editorial = JSON.parse(await fs.readFile(path.join(ROOT, 'js/wiki-index.json'), 'utf8'));
+  const compact = compactWikiSearchIndex(editorial);
+  assert.deepEqual(compact.map(entry => entry.url), editorial.map(entry => entry.url));
+  for (const [i, entry] of editorial.entries()) {
+    assert.equal(compact[i].rank_score, entry.rank_score);
+    assert.equal(sb.getArticleSummary(compact[i]), sb.getArticleSummary(entry), entry.url);
+    assert.equal(sb.searchResultType(compact[i]), sb.searchResultType(entry), entry.url);
+  }
+  const plainResults = ({ scored, usedPartialFallback, correctedQuery }) => JSON.stringify({
+    usedPartialFallback,
+    correctedQuery,
+    rows: scored.map(({ item, ...scores }) => ({ url: item.url, ...scores })),
+  });
+  for (const query of [
+    'waxp', 'bitcoin kid', 'HODL X Warriors', 'CharlIe Buster',
+    'moongrils', 'Graffiti Kigns', 'block topia', 'graffpunks radio',
+    'Swarmsy', 'NFT collections', 'explore fox', 'the a to', 'zzznomatchzz',
+  ]) {
+    const options = { allowPartialFallback: true };
+    assert.equal(plainResults(await selectMatches(compact, query, options)),
+      plainResults(await selectMatches(editorial, query, options)), query);
+  }
+  for (const query of ['', 'NFT collections', 'block topia', 'moongrils']) {
+    assert.deepEqual(await renderSearchResults(compact, query), await renderSearchResults(editorial, query), query);
+  }
+  console.log(`Compact Search matches full-index results, summaries and filters for ${editorial.length} entries`);
+}
+
+{
+  const sandbox = makeSandbox();
+  sandbox.document.querySelector = selector => selector === 'script[data-wiki-search-index]'
+    ? { getAttribute: () => 'wiki-search-index.json' }
+    : null;
+  const requests = [];
+  sandbox.fetch = async url => {
+    requests.push(url);
+    return requests.length === 1 ? { ok: false, status: 503 }
+      : requests.length === 2 ? { ok: false, status: 404 }
+        : { ok: true, status: 200, json: async () => [graffpunksMain] };
+  };
+  await sandbox.loadWikiIndex();
+  assert.deepEqual(requests, [
+    '/js/wiki-search-index.json', '/js/wiki-search-index.json', '/js/wiki-index.json',
+  ]);
+  assert.equal(sandbox.window.MOONBOYS_WIKI_SEARCH.getIndexLoadState(), 'loaded');
+}
