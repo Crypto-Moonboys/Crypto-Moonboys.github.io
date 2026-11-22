@@ -64,6 +64,44 @@ test('returning /start or /games with Games already pinned never sends a duplica
   assert.deepEqual(mock.calls.map(c => c.method), ['getChat']);
 });
 
+test('Games pin adds pack emojis and recognizes the delivered custom-emoji text', async () => {
+  const token = '123456789:abcdefghijklmnopqrstuvwxyzABCDE';
+  const expectedMarkup = { inline_keyboard: [[{ text: 'OPEN GAMES', web_app: { url: GAMES } }]] };
+  const calls = [];
+  let pinnedMessage;
+  const fetchImpl = async (url, init) => {
+    const method = url.split('/').at(-1);
+    calls.push(method);
+    const args = JSON.parse(init.body);
+    if (method === 'getChat') return Response.json({ ok: true, result: { pinned_message: pinnedMessage } });
+    if (method === 'getStickerSet') {
+      return Response.json({ ok: true, result: { sticker_type: 'custom_emoji', stickers: [
+        { emoji: '🧱', custom_emoji_id: '1' }, { emoji: '⚽', custom_emoji_id: '2' },
+      ] } });
+    }
+    if (method === 'sendMessage') {
+      assert.equal(args.parse_mode, 'HTML');
+      assert.deepEqual(args.reply_markup, expectedMarkup);
+      const entities = [];
+      const text = args.text.replace(/<\/?b>/g, '').replace(
+        /<tg-emoji emoji-id="(\d+)">([^<]+)<\/tg-emoji>/gu, (full, id, emoji, rawOffset) => {
+          const removedMarkup = entities.reduce((total, entity) => total + entity.markupLength, 0);
+          entities.push({ type: 'custom_emoji', custom_emoji_id: id, offset: rawOffset - removedMarkup,
+            length: emoji.length, markupLength: full.length - emoji.length });
+          return emoji;
+        });
+      assert.equal(entities.length, 2);
+      pinnedMessage = { text, entities, reply_markup: expectedMarkup };
+      return Response.json({ ok: true, result: { message_id: 9001 } });
+    }
+    assert.equal(method, 'pinChatMessage');
+    return Response.json({ ok: true, result: true });
+  };
+  assert.equal((await ensureTelegramGamesPinned(token, '123456789', GAMES, { fetchImpl })).status, 'pinned');
+  assert.equal((await ensureTelegramGamesPinned(token, '123456789', GAMES, { fetchImpl })).status, 'already_pinned');
+  assert.deepEqual(calls, ['getChat', 'getStickerSet', 'sendMessage', 'pinChatMessage', 'getChat']);
+});
+
 test('failed getChat avoids spamming the player with an untracked shortcut', async () => {
   const mock = mockTelegram({ errors: { getChat: true } });
   assert.equal((await ensureTelegramGamesPinned('bot:test', '123456789', GAMES, mock)).status,

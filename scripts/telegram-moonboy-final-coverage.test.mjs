@@ -8,9 +8,76 @@ import {
 } from '../workers/moonboys-api/telegram/command-media-context.js';
 import { isMoonboyTelegramMediaEnabled, sendControlledMoonboyTelegram } from
   '../workers/moonboys-api/telegram/moonboy-message-gateway.js';
-import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import worker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const token = '123456789:abcdefghijklmnopqrstuvwxyzABCDE';
+const stickers = ['⚽', '💋', '🫁', '💉', '💊', '💣', '🗡', '🧱', '🐻', '⚽']
+  .map((emoji, index) => ({ emoji, custom_emoji_id: String(5000000000000000000n + BigInt(index)) }));
+const packEmoji = /<tg-emoji emoji-id="(\d+)">[^<]+<\/tg-emoji> /gu;
+
+function stickerSet() {
+  return Response.json({ ok: true, result: { sticker_type: 'custom_emoji', stickers } });
+}
+
+test('Daily Board sends four unique pack emojis in the existing group photo caption', async t => {
+  const manifest = readFileSync(new URL('../data/avatar-builder-manifest.json', import.meta.url));
+  const image = {
+    transform: () => image,
+    draw: () => image,
+    output: async () => ({ response: () => new Response(new Uint8Array(384), {
+      headers: { 'content-type': 'image/jpeg' }
+    }) }),
+  };
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    if (url.endsWith('/getStickerSet')) return stickerSet();
+    if (url.endsWith('/avatar-builder-manifest.json')) return new Response(manifest);
+    if (url.includes('/img/avatar-builder/layers/')) {
+      return new Response(new Uint8Array([0x52, 0x49, 0x46, 0x46]), {
+        headers: { 'content-type': 'image/webp' }
+      });
+    }
+    calls.push({ url, body: init.body });
+    return Response.json({ ok: true, result: { message_id: 700 } });
+  });
+  const env = {
+    ADMIN_SECRET: 'fixture-admin',
+    TELEGRAM_BOT_TOKEN: token,
+    TELEGRAM_GROUP_CHAT_ID: '-1001234567890',
+    TELEGRAM_GROUP_THREAD_ID: '42',
+    TELEGRAM_MOONBOY_PHOTOS_ENABLED: 'true',
+    TELEGRAM_MOONBOY_MEDIA_MODE: 'group',
+    TELEGRAM_MOONBOY_MESSAGE_KINDS: 'group-announcement',
+    CLAN_OPERATIONS_ENABLED: 'true',
+    CLAN_SIGNAL_XP_FROM: '2026-11-01T00:00:00.000Z',
+    IMAGES: { input: () => image },
+    DB: { prepare: () => ({ bind: name => ({
+      first: async () => ({ name }), run: async () => ({ meta: { changes: 1 } }),
+    }) }) },
+  };
+  const response = await worker.fetch(new Request('https://fixture.test/telegram/group-announcements/run', {
+    method: 'POST',
+    headers: { 'x-admin-secret': env.ADMIN_SECRET },
+    body: JSON.stringify({ type: 'daily_summary', now: '2026-11-22T09:00:00.000Z' }),
+  }), env);
+  const summary = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(summary));
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].url.endsWith('/sendPhoto'));
+  const form = calls[0].body;
+  const caption = form.get('caption');
+  const icons = [...caption.matchAll(packEmoji)];
+  assert.equal(icons.length, 4);
+  assert.equal(new Set(icons.map(match => match[1])).size, 4);
+  assert.ok(caption.length > 1024, 'HTML tags push the raw caption over the limit');
+  const clean = caption.replace(packEmoji, '');
+  assert.match(clean, /<b>⚡ Battle Chamber Daily Board is live\.<\/b>/u);
+  assert.match(clean, /community\.html#clan-operation/);
+  assert.match(clean, /100 Community XP/);
+  assert.equal(form.get('chat_id'), env.TELEGRAM_GROUP_CHAT_ID);
+  assert.equal(form.get('message_thread_id'), env.TELEGRAM_GROUP_THREAD_ID);
+  assert.equal(form.get('parse_mode'), 'HTML');
+});
 
 test('command artwork is blocked even with stale configuration enabling every kind', async () => {
   for (const mode of ['canary', 'group']) {
@@ -38,9 +105,7 @@ test('actual command/callback text gateway preserves routing and keyboard withou
   t.mock.method(globalThis, 'fetch', async (url, init) => {
     if (url.endsWith('/getStickerSet')) {
       assert.equal(JSON.parse(init.body).name, 'GKMoonboys');
-      const stickers = ['⚽', '💋', '🫁', '💉', '💊', '💣', '🗡', '🧱', '🐻']
-        .map((emoji, index) => ({ emoji, custom_emoji_id: String(index + 1) }));
-      return Response.json({ ok: true, result: { sticker_type: 'custom_emoji', stickers } });
+      return stickerSet();
     }
     calls.push({ url, body: JSON.parse(init.body) });
     return Response.json({ ok: true, result: { message_id: 7 } });
@@ -65,7 +130,7 @@ test('actual command/callback text gateway preserves routing and keyboard withou
   assert.equal(calls.length, 4);
   for (const call of calls) {
     assert.equal(call.url, 'https://api.telegram.org/bot' + token + '/sendMessage');
-    const icon = /<tg-emoji emoji-id="([1-9])">[^<]+<\/tg-emoji> /gu;
+    const icon = packEmoji;
     const icons = [...call.body.text.matchAll(icon)];
     const isPrivate = call.body.chat_id === 123;
     assert.equal(icons.length, isPrivate ? 2 : 1);

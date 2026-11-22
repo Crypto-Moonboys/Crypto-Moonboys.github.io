@@ -1,6 +1,8 @@
 // PR2 — opt-in Telegram media transport. NOT wired into production routes.
 // Never retry a photo after a transport error: Telegram may have delivered it.
 // No Worker config, Images binding, DB writes, or live feature flags here.
+import { telegramMessageLength } from './faction-emoji.js';
+
 export const TELEGRAM_PHOTO_CAPTION_LIMIT = 1024;
 export const TELEGRAM_TEXT_LIMIT = 4096;
 export const TELEGRAM_PHOTO_MAX_BYTES = 500_000;
@@ -24,9 +26,9 @@ function validateThreadId(value) {
   return Number(id);
 }
 
-function validateText(text) {
+function validateText(text, parseMode) {
   if (typeof text !== 'string' || !text.length) fail('invalid_text');
-  if (text.length > TELEGRAM_TEXT_LIMIT) fail('text_exceeds_4096');
+  if (telegramMessageLength(text, parseMode) > TELEGRAM_TEXT_LIMIT) fail('text_exceeds_4096');
   return text;
 }
 
@@ -154,15 +156,16 @@ export async function sendTelegramMoonboyMessage({
   signal = undefined
 } = {}) {
   const id = validateChatId(chatId);
-  const body = validateText(text);
   const safeOptions = copyOptions(options);
+  const body = validateText(text, safeOptions.parse_mode);
+  const photoSkipped = telegramMessageLength(body, safeOptions.parse_mode) > TELEGRAM_PHOTO_CAPTION_LIMIT;
   // Do not make the network call if configuration is invalid.
   const textUrl = telegramUrl(token, 'sendMessage');
   const photoUrl = telegramUrl(token, 'sendPhoto');
 
-  if (photo === undefined || photo === null || body.length > TELEGRAM_PHOTO_CAPTION_LIMIT) {
+  if (photo === undefined || photo === null || photoSkipped) {
     const result = await sendText({ token, chatId: id, text: body, options: safeOptions, fetchImpl, signal });
-    return { ...result, method: 'sendMessage', photoSkipped: body.length > TELEGRAM_PHOTO_CAPTION_LIMIT };
+    return { ...result, method: 'sendMessage', photoSkipped };
   }
 
   // A confirmed Telegram file_id avoids both a paid image transformation and
