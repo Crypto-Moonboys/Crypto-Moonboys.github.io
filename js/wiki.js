@@ -32,6 +32,38 @@ function goToSearch(q) {
 /* ── SEARCH INDEX ────────────────────────────────────────────────────────── */
 let WIKI_INDEX = [];
 let WIKI_INDEX_LOAD_STATE = 'idle';
+let arcadeSearchEntries = [];
+let arcadeSearchRequest;
+
+const SEARCH_DESTINATIONS = [
+  { url: '/wiki/crypto-moonboys.html', names: ['Crypto Moonboys', 'Moonboys', 'Moonboy', 'Crypto Moonboys lore'] },
+  { url: '/ai-user.html', names: ['AI Creator Studio', 'SPARKY Creator Studio', 'Creator Studio', 'SPARKY'] },
+  { url: '/swarmsy.html', names: ['SWARMSY', 'SWARMSY AI'] },
+  { url: '/moonboy-builder.html', names: ['Moonboy Builder', 'Moonboy PFP Builder'] },
+  { url: '/wiki/the-crypto-moongirls.html', names: ['Crypto Moongirls', 'Moongirls'] },
+  { url: '/wiki/charlie-buster.html', names: ['Charlie Buster'] },
+  { url: '/wiki/graffiti-kings.html', names: ['Graffiti Kings'] },
+  { url: '/wiki/gkniftyheads.html', names: ['GKniftyHEADS'] },
+  { url: '/wiki/gkniftyheads-nft-collection.html', names: ['GKniftyHEADS NFT collection', 'GKniftyHEADS collection'] },
+  { url: '/wiki/graffpunks.html', names: ['GraffPUNKS'] },
+  { url: '/wiki/graffpunks-24-7-radio.html', names: ['GraffPUNKS 24/7 Radio', 'GraffPUNKS Radio'] },
+  { url: '/wiki/waxp.html', names: ['WAXP', 'WAX blockchain'] },
+  { url: '/wiki/xrp-ledger.html', names: ['XRP Ledger', 'XRP', 'XRPL', 'XRPL DEX'] },
+  { url: '/community.html', names: ['Battle Chamber'] },
+  {
+    url: '/battle-chamber/factions/',
+    names: ['Faction Chambers', 'Faction Directory'],
+    description: 'Browse the Crypto Moonboys faction chambers and find a faction to join.',
+  },
+  {
+    url: '/games/',
+    names: ['Moonboys Arcade', 'Arcade', 'Games'],
+    description: 'Browse public Crypto Moonboys games and find Arcade leaderboards.',
+  },
+];
+
+const SEARCH_DIRECTORY_ENTRIES = SEARCH_DESTINATIONS.filter(({ description }) => description)
+  .map(({ url, names, description }) => ({ url, title: names[0], description }));
 
 /* ── ENTITY MAP ──────────────────────────────────────────────────────────── */
 let ENTITY_MAP = null;
@@ -46,7 +78,7 @@ let ENTITY_GRAPH = null;
  *   - rank_score is computed offline by the generator and baked into the index.
  *   - The frontend MUST NOT recompute authority from word count, keyword bags,
  *     tag counts, title length, or any other heuristic signal.
- *   - The frontend MUST NOT override or ignore rank_score ordering.
+ *   - Article results retain this ordering within the ranked results.
  *
  * SEARCH MODE (query present):
  *   finalScore = (queryScore * FINAL_QUERY_WEIGHT) + (rank_score * FINAL_RANK_WEIGHT)
@@ -57,7 +89,8 @@ let ENTITY_GRAPH = null;
  * TIE-BREAKING:
  *   title → URL
  *
- * DO NOT add new ranking logic here.
+ * Exact names and unambiguous one-edit corrections can surface an official
+ * destination ahead of the ranked list without changing any authority score.
  */
 const FINAL_QUERY_WEIGHT = 2.5;
 const FINAL_RANK_WEIGHT = 1;
@@ -127,6 +160,26 @@ async function loadWikiIndex() {
     console.error('[wiki.js] wiki-index load failed:', err);
     WIKI_INDEX = [];
     WIKI_INDEX_LOAD_STATE = 'failed';
+  }
+}
+
+async function loadArcadeSearchEntries() {
+  try {
+    const response = await fetch('/games/');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const catalog = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const games = new Map();
+    for (const link of catalog.querySelectorAll('a.article-list-item[href]')) {
+      const url = link.getAttribute('href');
+      if (!/^\/games\/[a-z0-9-]+\/$/.test(url)) continue;
+      const title = link.querySelector('.ali-title')?.textContent.split(' — ')[0].trim();
+      if (!title) continue;
+      const description = link.querySelector('.ali-desc')?.textContent.trim() || '';
+      games.set(url, { url, title, description, category: 'Arcade' });
+    }
+    arcadeSearchEntries = [...games.values()];
+  } catch (error) {
+    console.warn('[wiki.js] Arcade search entries unavailable:', error);
   }
 }
 
@@ -375,6 +428,17 @@ function getArticleSummary(item) {
   return `Explore this Crypto Moonboys Wiki article covering ${title}.`;
 }
 
+function isOneSearchEdit(left, right) {
+  if (left.length > right.length) [left, right] = [right, left];
+  if (right.length - left.length > 1 || left === right) return false;
+  let i = 0;
+  while (i < left.length && left[i] === right[i]) i++;
+  if (left.length !== right.length) return left.slice(i) === right.slice(i + 1);
+  return left.slice(i + 1) === right.slice(i + 1)
+    || (left[i] === right[i + 1] && left[i + 1] === right[i]
+      && left.slice(i + 2) === right.slice(i + 2));
+}
+
 function selectSearchMatches(query, options) {
   const q = String(query || '').trim();
   const opts = options || {};
@@ -384,12 +448,22 @@ function selectSearchMatches(query, options) {
     .filter(token => token.length >= 3 && !SEARCH_TEXT_STOP_WORDS.has(token));
   const meaningfulQueryTokenCount = meaningfulQueryTokens.length;
 
-  if (!q || !WIKI_INDEX.length || limit === 0) {
+  if (!q || limit === 0) {
     return { scored: [], usedPartialFallback: false };
   }
 
+  const entriesByUrl = new Map(
+    [...SEARCH_DIRECTORY_ENTRIES, ...arcadeSearchEntries, ...WIKI_INDEX].map(item => [item.url, item])
+  );
+  const destinations = [
+    ...SEARCH_DESTINATIONS,
+    ...arcadeSearchEntries.map(({ url, title }) => ({ url, names: [title] })),
+  ].filter(({ url }) => entriesByUrl.has(url));
+  const key = normalizeEntityKey(q);
+  const preferred = destinations.find(({ names }) => names.some(name => normalizeEntityKey(name) === key));
+
   const meaningfulQuery = meaningfulQueryTokens.join(' ');
-  const allScored = WIKI_INDEX.map(item => {
+  const allScored = Array.from(entriesByUrl.values(), item => {
     const baseScore = scoreResult(item, q);
     const meaningfulMatchedTokenCount = meaningfulQuery
       ? scoreResult(item, meaningfulQuery).matchedTokenCount
@@ -398,6 +472,17 @@ function selectSearchMatches(query, options) {
   });
   let scored = allScored.filter(r => r.matchedTokenCount > 0 && r.matchedTokenCount >= r.totalTokenCount);
   let usedPartialFallback = false;
+
+  if (!preferred && !scored.length && allowPartialFallback && key.length >= 5) {
+    const corrections = destinations.flatMap(({ url, names }) => {
+      const name = names.find(candidate => isOneSearchEdit(key, normalizeEntityKey(candidate)));
+      return name ? [{ url, name }] : [];
+    });
+    if (corrections.length === 1) {
+      const { name } = corrections[0];
+      return { ...selectSearchMatches(name, opts), correctedQuery: name };
+    }
+  }
 
   if (!scored.length && allowPartialFallback) {
     usedPartialFallback = true;
@@ -413,6 +498,10 @@ function selectSearchMatches(query, options) {
   scored.sort((a, b) => (usedPartialFallback && meaningfulQueryTokenCount >= 3
     ? b.meaningfulMatchedTokenCount - a.meaningfulMatchedTokenCount : 0)
     || compareScoredResults(a, b));
+  if (preferred) {
+    const destination = allScored.find(({ item }) => item.url === preferred.url);
+    scored = [destination, ...scored.filter(({ item }) => item.url !== preferred.url)];
+  }
   if (Number.isFinite(limit)) scored = scored.slice(0, limit);
 
   return { scored, usedPartialFallback };
@@ -425,6 +514,9 @@ function renderSearchPage(query) {
   if (!container) return;
 
   const q = String(query || '').trim();
+  document.querySelectorAll('[data-search-browse]').forEach(section => {
+    section.hidden = Boolean(q);
+  });
 
   if (WIKI_INDEX_LOAD_STATE === 'failed') {
     container.innerHTML = '<p class="search-empty">Search index failed to load. Refresh the page or try again later.</p>';
@@ -440,16 +532,16 @@ function renderSearchPage(query) {
 
   let items;
   if (q) {
-    const { scored } = selectSearchMatches(q, { allowPartialFallback: true });
+    const { scored, correctedQuery } = selectSearchMatches(q, { allowPartialFallback: true });
     items = scored.map(r => r.item);
-    if (heading) heading.textContent = `Results for "${q}" (${items.length})`;
+    if (heading) heading.textContent = `Results for "${correctedQuery || q}" (${items.length})`;
   } else {
     items = [...WIKI_INDEX].sort(compareIndexItemsStable);
     if (heading) heading.textContent = `All Articles (${items.length})`;
   }
 
   if (!items.length) {
-    container.innerHTML = `<p class="search-empty">No articles found for "${escapeHtml(q)}".</p>`;
+    container.innerHTML = `<p class="search-empty">No results found for "${escapeHtml(q)}".</p>`;
     return;
   }
 
@@ -553,8 +645,10 @@ async function _wikiInit() {
     _backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
-  // ── Async data loading (kicked off after nav is already bound) ────────────
+  // Bind search before loading data so deep links and typing switch the layout immediately.
+  const refreshSearch = bindSearchControls();
   await loadWikiIndex();
+  refreshSearch();
   await loadEntityMap();
   buildEntityLookup();
 
@@ -563,50 +657,63 @@ async function _wikiInit() {
     await loadEntityGraph();
     renderRelatedPages();
   }
+}
 
-  // ── Search page ─────────────────────────────────────────────────────────
-  const _q = new URLSearchParams(window.location.search).get('q') || '';
-  renderSearchPage(_q);
+function bindSearchControls() {
+  const searchInput = document.getElementById('search-page-input');
+  const headerInput = document.getElementById('search-input');
+  const headerButton = document.getElementById('search-btn');
+  const dropdown = document.getElementById('search-results');
 
-  const _searchInput = document.getElementById('search-page-input');
-  if (_searchInput) {
-    _searchInput.value = _q;
-    _searchInput.addEventListener('input', () => {
-      const newQ = _searchInput.value.trim();
-      renderSearchPage(newQ);
+  function showHeaderResults() {
+    if (!dropdown) return;
+    const { scored } = selectSearchMatches(headerInput.value, { allowPartialFallback: true, limit: 5 });
+    dropdown.innerHTML = scored.map(({ item }) => {
+      const href = resolveWikiUrl(item.url);
+      return `<a class="search-result-item" href="${escapeHtml(href)}" role="option">${escapeHtml(item.title || href)}</a>`;
+    }).join('');
+  }
+
+  function refreshResults() {
+    if (searchInput) renderSearchPage(searchInput.value);
+    if (headerInput) showHeaderResults();
+  }
+
+  function requestGames(query) {
+    if (query.trim() && !arcadeSearchRequest) {
+      arcadeSearchRequest = loadArcadeSearchEntries().then(refreshResults);
+    }
+  }
+
+  if (searchInput) {
+    searchInput.value = new URLSearchParams(window.location.search).get('q') || '';
+    renderSearchPage(searchInput.value);
+    requestGames(searchInput.value);
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      renderSearchPage(query);
+      requestGames(query);
       const url = new URL(window.location.href);
-      if (newQ) { url.searchParams.set('q', newQ); } else { url.searchParams.delete('q'); }
+      if (query) url.searchParams.set('q', query);
+      else url.searchParams.delete('q');
       history.replaceState(null, '', url.toString());
     });
   }
 
-  // ── Header search bar ────────────────────────────────────────────────────
-  const _headerInput = document.getElementById('search-input');
-  const _headerBtn   = document.getElementById('search-btn');
-  const _dropdown    = document.getElementById('search-results');
-
-  function _showHeaderDropdown(val) {
-    if (!_dropdown) return;
-    const v = String(val || '').trim();
-    if (!v || !WIKI_INDEX.length) { _dropdown.innerHTML = ''; return; }
-    const { scored } = selectSearchMatches(v, { allowPartialFallback: true, limit: 5 });
-    if (!scored.length) { _dropdown.innerHTML = ''; return; }
-    _dropdown.innerHTML = scored.map(r => {
-      const href  = resolveWikiUrl(r.item.url);
-      const title = r.item.title || href;
-      return `<a class="search-result-item" href="${escapeHtml(href)}" role="option">${escapeHtml(title)}</a>`;
-    }).join('');
-  }
-
-  if (_headerInput) {
-    _headerInput.addEventListener('input', () => _showHeaderDropdown(_headerInput.value));
-    _headerInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { goToSearch(_headerInput.value); }
+  if (headerInput) {
+    headerInput.addEventListener('input', () => {
+      showHeaderResults();
+      requestGames(headerInput.value);
+    });
+    headerInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') goToSearch(headerInput.value);
     });
   }
-  if (_headerBtn) {
-    _headerBtn.addEventListener('click', () => goToSearch(_headerInput ? _headerInput.value : ''));
+  if (headerButton) {
+    headerButton.addEventListener('click', () => goToSearch(headerInput ? headerInput.value : ''));
   }
+
+  return refreshResults;
 }
 
 // Handle the case where this script is deferred (e.g. by Cloudflare Rocket Loader)
