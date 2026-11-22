@@ -484,3 +484,61 @@
   background: #68304f;
   border-color: #f9cced;
 }
+
+.wall-studio {
+  display: grid;
+  gap: .8rem;
+  margin-top: 1rem;
+}
+.wall-studio h4 { margin: 0; color: #ffe9f6; font-size: 1.25rem; }
+.wall-studio-budget { color: #e0f9a6; font-weight: 700; }
+.wall-studio-budget[data-over-budget] { color: #ffabc8; }
+.wall-studio-checks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: .25rem;
+}
+.wall-studio-canvas, .wall-studio-print {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #67576b;
+  background: #221d28 url('/img/clan-wall/underpass-triptych.webp') center / cover;
+}
+.wall-studio-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: .65rem;
+}
+.wall-studio-tools fieldset {
+  display: grid;
+  align-content: start;
+  gap: .55rem;
+  padding: .65rem;
+  min-width: 0;
+  border: 1px solid #665870;
+  background: #181521;
+}
+.wall-studio-tools legend { color: #ffd1ec; padding: 0 .25rem; }
+.wall-studio-field, .wall-studio-tools label { display: grid; gap: .2rem; }
+.wall-studio-tools .wall-studio-check { grid-template-columns: auto 1fr; align-items: center; gap: .45rem; }
+.wall-studio-tools select {
+  width: 100%;
+  color: #fff2f9;
+  background: #2b202e;
+  border: 1px solid #a27594;
+  min-height: 2.6rem;
+  padding: .25rem;
+}
+.wall-studio > button { justify-self: start; }
+[data-active-operation="graffpunks"] [data-wall-controls] [value="studio-start"] { grid-column: 1 / -1; }
+@media (min-width: 1050px) {
+  .wall-studio { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; }
+  .wall-studio h4, .wall-studio-checks { grid-column: 1 / -1; }
+  .wall-studio-budget { grid-column: 1 / -1; }
+  .wall-studio-canvas { grid-column: 1; grid-row: 4 / 6; }
+  .wall-studio-tools { grid-column: 2; grid-row: 4; }
+  .wall-studio > button { grid-column: 2; grid-row: 5; }
+}

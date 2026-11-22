@@ -1127,6 +1127,92 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
   }
 });
 
+test('Underpass studio previews, undoes, restores and banks a layered piece on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    const css = await readFile(path.join(ROOT, 'css/clan-operation.css'), 'utf8');
+    let started = false;
+    let saved;
+    let reads = 0;
+    await page.route('https://studio.test/**', route =>
+      route.fulfill({ contentType: 'text/html', body: '<style>' + css + '</style>' + panel }));
+    await page.route('https://studio.test/clan-operations/**', async route => {
+      const body = route.request().postDataJSON();
+      assert.equal(body.wall_studio_ui, 'underpass-studio-v1');
+      reads += 1;
+      if (body.action === 'studio-start') started = true;
+      if (body.action === 'bank') saved = body.wall_recipe;
+      await route.fulfill({ json: {
+        ok: true, faction_id: 'graffpunks', status: 'ready', tier: saved ? 1 : 0, revision: reads,
+        utc_day: today(), resets_at: nextReset(), renown_per_tier: 10000, renown_today: saved ? 10000 : 0,
+        renown_total: saved ? 10000 : 0, crew_banks: saved ? 1 : 0,
+        collection: saved ? [{ name: 'Chalk Rubbing', collected: 1 }] : [],
+        wall: { name: 'Underpass Triptych', finds: ['Chalk Rubbing', 'UV Throwie', 'Lime Overprint'], panels: [],
+          studio: { started, complete: false },
+          actions: started ? [] : [{ id: 'studio-start', label: 'Start brief' }],
+          studio_prints: saved ? [{ name: 'Chalk Rubbing', utc_day: today(), recipe: saved }] : [] },
+      } });
+    });
+    await page.addInitScript(() => {
+      window.MOONBOYS_API = { getApiBase: () => 'https://studio.test' };
+      window.MOONBOYS_IDENTITY = { getTelegramId: () => '104', getSignedTelegramAuth: () => ({ id: '104' }) };
+    });
+    async function boot() {
+      await page.goto('https://studio.test/');
+      await page.addScriptTag({ content: clanOperationScript });
+    }
+    await boot();
+    await page.getByRole('button', { name: 'Start brief' }).click();
+    await page.getByText('Chalk Rubbing brief').waitFor();
+    const bank = page.getByRole('button', { name: /Bank wall print/ });
+    assert.equal(await bank.isEnabled(), false);
+    const canvas = page.locator('.wall-studio-canvas');
+    const initial = await canvas.evaluate(node => node.toDataURL());
+    const select = (label, value) => page.locator('.wall-studio').getByLabel(label, { exact: true }).selectOption(value);
+    await select('Letter style', 'throw-up');
+    await select('Fill style', 'chrome');
+    await select('Placement', 'split');
+    await page.getByRole('checkbox', { name: /Lime keyline/ }).check();
+    assert.equal(await bank.isEnabled(), true);
+    assert.notEqual(await canvas.evaluate(node => node.toDataURL()), initial);
+    assert.equal(await canvas.evaluate(node =>
+      node.getContext('2d').getImageData(480, 0, 1, node.height).data.every(value => value === 0)), true);
+    await select('Cap', 'fat');
+    assert.equal(await bank.isEnabled(), true);
+    await select('Method', 'extrusion');
+    await page.getByText(/units over budget/).waitFor();
+    assert.equal(await bank.isEnabled(), false);
+    await page.getByRole('button', { name: 'Undo last edit' }).click();
+    assert.equal(await bank.isEnabled(), true);
+    assert.equal(reads, 2, 'editing and undo stay local');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const boardBounds = await canvas.boundingBox();
+    const toolBounds = await page.locator('.wall-studio-tools').boundingBox();
+    assert.ok(boardBounds.x + boardBounds.width <= toolBounds.x, 'desktop tools sit beside the canvas');
+    assert.equal(boardBounds.y, toolBounds.y);
+    await boot();
+    await page.getByText('Chalk Rubbing brief').waitFor();
+    assert.equal(await bank.isEnabled(), true, 'reload restores the unbanked recipe');
+    await bank.click();
+    await page.getByText('UV Throwie brief').waitFor();
+    assert.equal(saved.sketch, 'throw-up');
+    assert.equal(saved.outline, 'fat');
+    assert.equal(saved.depth, 'none');
+    assert.equal(await page.locator('.wall-studio-print').count(), 1);
+  } finally {
+    await browser.close();
+  }
+});
+
 test('Nomad Bears announce mobile travel and retain the map during a retry window', { timeout: 30_000 }, async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
