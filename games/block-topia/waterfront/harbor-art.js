@@ -152,7 +152,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     // Slim floodlights sit on the coping and wash the wall from above.
     for (const fraction of [1 / 6, 1 / 2, 5 / 6]) {
       const mount = Math.round(x + width * fraction);
-      glow(mount, y + 7, 24, "#ffcb7a38");
+      glow(mount, y + 7, 24, "#ffcb7a57");
       rect("#1a1723", mount - 1, y - 3, 2, 5);
       rect("#242331", mount - 5, y - 4, 10, 4);
       rect("#79717b", mount - 4, y - 4, 8, 1);
@@ -208,7 +208,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   function curb(x, y, horizontal, length = 32) {
     rect("#242632", x, y, horizontal ? length : 4, horizontal ? 4 : length);
-    rect("#77717b", x, y, horizontal ? length : 3, horizontal ? 2 : length);
+    rect("#696779", x, y, horizontal ? length : 3, horizontal ? 2 : length);
     for (let at = 6; at < length; at += 7) {
       rect("#484552", x + (horizontal ? at : 0), y + (horizontal ? 0 : at),
         horizontal ? 1 : 3, horizontal ? 2 : 1);
@@ -216,7 +216,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function pavedSurface(tile, col, row, x, y, seed) {
-    const surface = tiles[tile].color;
+    const surface = tile === "r" ? "#353a4d" : "#5d5264";
     const north = roadAt(col, row - 1);
     const south = roadAt(col, row + 1);
     const west = roadAt(col - 1, row);
@@ -242,8 +242,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         rect(i % 2 ? "#575b69" : "#373c4a", x + 5 + (seed + i * 13) % 21,
           y + 5 + ((seed >>> 8) + i * 9) % 21, 2, 1);
       }
-      if (west && east && !north && !south && !entrance) rect("#b2a181", x + 11, y + 15, 10, 1);
-      if (north && south && !west && !east) rect("#b2a181", x + 15, y + 11, 1, 10);
+      if (west && east && !north && !south && !entrance) rect("#ac9870", x + 11, y + 15, 10, 1);
+      if (north && south && !west && !east) rect("#ac9870", x + 15, y + 11, 1, 10);
       if (!south && seed % 5 === 0) {
         rect("#242733", x + 20, y + 24, 7, 3);
         for (let i = 21; i < 27; i += 2) rect("#666a78", x + i, y + 24, 1, 2);
@@ -263,23 +263,26 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const dock = tile === "d";
 
     const ground = tile === "." ? groundAt(col, row) : undefined;
-    const base = ground === "grass" ? "#34493e" : ground === "gravel" ? "#443c40" : tiles["."].color;
-    rect(water || dock ? tiles["~"].color : base, x, y, size, size);
+    const base = ground === "grass" ? "#283b39" : ground === "gravel" ? "#342f3c" : "#1b1d2a";
+    rect(water || dock ? "#0b192d" : base, x, y, size, size);
     for (let i = 0; i < 8; i++) {
       const a = (seed + i * 7) % 27;
       const b = ((seed >>> 7) + i * 11) % 30;
       const shade = i % 2 ? "#ffffff16" : "#091d2740";
-      if (water || dock) rect(i % 2 ? "#428aa459" : "#133042", x + a, y + b, 3 + i % 3, 1);
+      if (water || dock) rect(i % 2 ? "#569fc157" : "#142b47", x + a, y + b, 3 + i % 3, 1);
       else if (ground === "grass") {
-        rect(i % 2 ? "#536951" : "#293b35", x + a, y + b, 1, 2);
-        rect("#415843", x + a + 1, y + b + 1, 2, 1);
+        rect(i % 2 ? "#44594b" : "#202f2f", x + a, y + b, 1, 2);
+        rect("#354942", x + a + 1, y + b + 1, 2, 1);
       } else if (ground === "gravel") {
-        rect(i % 2 ? "#655758" : "#312c35", x + a, y + b, 3, 1);
+        rect(i % 2 ? "#514752" : "#312c35", x + a, y + b, 3, 1);
         rect("#53484a", x + a + 1, y + b + 1, 1, 1);
       } else rect(shade, x + a, y + b, 2 + i % 3, 2);
     }
 
     if (water) {
+      // Short, horizontal glints stay in the water and drift in the night light.
+      const glint = (seed + Math.floor((time ?? 0) * 2)) % 22;
+      if (seed % 3 === 0) rect("#54888566", x + 2 + glint, y + 11, 6, 1);
       if (tileAt(col, row + 1) !== "~" && tileAt(col, row + 1) !== "d") {
         rect("#252334", x, y + 24, size, 8);
         rect("#6c667b", x, y + 24, size, 3);
@@ -468,8 +471,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function lamp(x, y) {
-    rect("#ffb67015", x - 9, y - 9, 20, 16);
-    rect("#ffb67021", x - 5, y - 6, 12, 9);
+    glow(x + 1, y - 3, 20, "#ffba7160");
     rect("#231f2a", x, y - 8, 2, 10);
     rect("#6f6857", x - 2, y - 13, 6, 6);
     rect("#ffe19a", x - 1, y - 12, 4, 3);
