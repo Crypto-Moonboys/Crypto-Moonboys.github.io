@@ -501,9 +501,27 @@ const graffpunksStopwordOnly = {
   const links = [...catalog.matchAll(/<a href="([^"]+)" class="article-list-item">[^\n]*?<div class="ali-title">([^<]+)<\/div><div class="ali-desc">([^<]+)/g)];
   const sandbox = makeSandbox();
   const sections = [{ hidden: false }, { hidden: false }];
+  const controls = id => ({
+    dataset: { searchFilter: id },
+    count: { textContent: '' },
+    addEventListener(name, listener) { this[name] = listener; },
+    setAttribute(name, value) { this[name] = value; },
+    querySelector() { return this.count; },
+  });
+  const filters = Object.fromEntries(
+    ['all', 'games', 'lore', 'people', 'nfts'].map(id => [id, controls(id)])
+  );
+  const input = { value: '', addEventListener(name, listener) { this[name] = listener; } };
+  const loadMore = controls();
+  const shortcuts = { hidden: true };
+  const results = { innerHTML: '' };
   const elements = {
     'search-heading': { textContent: '' },
-    'search-results-page': { innerHTML: '' },
+    'search-results-page': results,
+    'search-page-input': input,
+    'search-filters': { querySelectorAll: () => Object.values(filters) },
+    'search-block-topia-shortcuts': shortcuts,
+    'search-load-more': loadMore,
   };
   sandbox.document.getElementById = id => elements[id] || null;
   sandbox.document.querySelectorAll = selector => selector === '[data-search-browse]' ? sections : [];
@@ -558,6 +576,59 @@ const graffpunksStopwordOnly = {
   assert.ok(sections.every(section => !section.hidden));
   assert.equal(elements['search-heading'].textContent, `All Articles (${index.length})`);
   assert.doesNotMatch(elements['search-results-page'].innerHTML, /href="\/games\/forkfield\/"/);
+
+  sandbox.bindSearchControls();
+  const displayed = () => [...results.innerHTML.matchAll(/<a href="([^"]+)" class="article-card-title"/g)]
+    .map(([, href]) => href);
+  const search = value => { input.value = value; input.input(); };
+  assert.equal(displayed().length, 24, 'empty browse mode also paginates the article list');
+  search('Block Topia');
+  assert.equal(shortcuts.hidden, false);
+  const pageOne = displayed();
+  assert.equal(pageOne.length, 24);
+  assert.ok(Number(filters.all.count.textContent) > 48);
+  loadMore.click();
+  const pageTwo = displayed();
+  assert.equal(pageTwo.length, 48);
+  assert.deepEqual(pageTwo.slice(0, 24), pageOne);
+  assert.equal(new Set(pageTwo).size, 48);
+  filters.games.click();
+  assert.equal(filters.games['aria-pressed'], 'true');
+  assert.equal(shortcuts.hidden, true);
+  assert.ok(displayed().includes('/games/block-topia/'));
+  assert.ok(displayed().every(url => url.startsWith('/games/')));
+  assert.equal(displayed().length, Number(filters.games.count.textContent));
+  assert.equal(loadMore.hidden, true);
+  filters.lore.click();
+  assert.ok(Number(filters.lore.count.textContent) > 24);
+  assert.equal(displayed().length, 24);
+  assert.equal(filters.all.count.textContent, String(sandbox.selectSearchMatches('Block Topia').scored.length));
+  loadMore.click();
+  assert.equal(displayed().length, Math.min(48, Number(filters.lore.count.textContent)));
+  assert.equal(filters.lore['aria-pressed'], 'true');
+  search('Charlie Buster');
+  filters.people.click();
+  assert.equal(displayed()[0], '/wiki/charlie-buster.html');
+  search('GKniftyHEADS');
+  filters.nfts.click();
+  assert.ok(displayed().includes('/wiki/gkniftyheads-nft-collection.html'));
+  assert.equal(displayed().length, 24);
+  for (const [query, url] of [
+    ['Hodl Moonboys NFT Collection', '/wiki/hodlmoonboys-nft-collection.html'],
+    ['NoBallGames NFT Collection Tracker', '/wiki/noballgamess-nft-collection.html'],
+    ['AtomicHub Graffpunks Collection', '/wiki/atomichub-graffpunks-collection.html'],
+  ]) {
+    filters.all.click();
+    search(query);
+    assert.ok(displayed().includes(url), query);
+    assert.equal(filters.nfts.disabled, false, query);
+    filters.nfts.click();
+    assert.ok(displayed().includes(url), query);
+  }
+  search('');
+  assert.ok(sections.every(section => !section.hidden));
+  assert.equal(elements['search-filters'].hidden, true);
+  assert.equal(displayed().length, 24);
 }
 
 // Wiki-index loading retries transient 503 responses without masking bad assets.
