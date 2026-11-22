@@ -149,7 +149,7 @@ function save() {
 document.addEventListener("keydown", event => {
   const key = event.key.toLowerCase();
   if (!Object.hasOwn(keys, key) || event.ctrlKey || event.metaKey || event.altKey ||
-      event.target.closest("button, select, input, textarea, [contenteditable]")) return;
+      event.target.closest("select, input, textarea, [contenteditable]")) return;
   event.preventDefault();
   move(keys[key]);
 });
