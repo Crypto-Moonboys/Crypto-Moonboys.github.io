@@ -261,6 +261,7 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (container.hidden) return;
       var status  = form.querySelector('.comment-form-status');
       var name    = form.querySelector('[name=name]').value.trim();
       var email   = form.querySelector('[name=email]').value.trim();
@@ -352,7 +353,15 @@
   }
 
   function refreshCommentIdentity() {
-    document.querySelectorAll('.wiki-comments .comment-form[data-page-id]').forEach(updateCommentIdentityCopy);
+    init();
+    var signedIn = isSignedIn();
+    document.querySelectorAll('[data-story-proposal-link]').forEach(function (link) {
+      link.hidden = !signedIn;
+    });
+  }
+
+  function isSignedIn() {
+    return !!getLinkedTelegramProfile();
   }
 
   // ── Vote button delegation ───────────────────────────────────
@@ -448,7 +457,7 @@
     var status = form.querySelector('[role="status"]');
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
-      if (button.disabled) return;
+      if (container.hidden || button.disabled) return;
       var proposal = form.elements.proposal.value.trim();
       if (proposal.length < 20 || proposal.length > 1500) {
         status.textContent = 'Use 20 to 1,500 characters.';
@@ -492,6 +501,13 @@
   }
 
   function initSection(el) {
+    el.hidden = !isSignedIn();
+    if (el.hidden) return;
+    var existingForm = el.querySelector('.comment-form[data-page-id]');
+    if (existingForm) {
+      updateCommentIdentityCopy(existingForm);
+      return;
+    }
     var pageId = el.dataset.pageId ||
       document.location.pathname.split('/').pop().replace(/\.html$/, '');
 
@@ -531,13 +547,13 @@
   }
 
   // Expose for battle-layer.js to call after dynamically injecting a container
-  window.MOONBOYS_COMMENTS = { initSection: initSection };
+  window.MOONBOYS_COMMENTS = { initSection: initSection, isSignedIn: isSignedIn };
   window.addEventListener('moonboys:identity-change', refreshCommentIdentity);
   window.addEventListener('moonboys:telegram-session', refreshCommentIdentity);
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', refreshCommentIdentity);
   } else {
-    init();
+    refreshCommentIdentity();
   }
 }());

@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 
 const script = await readFile(new URL('../js/comments.js', import.meta.url), 'utf8');
 
-test('Wiki comments show a clean composer for Telegram accounts and preserve guest posting', async () => {
+test('Wiki comments show a clean composer for Telegram accounts and hide the entire section from visitors', async () => {
   const browser = await chromium.launch({
     headless: true,
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
@@ -18,11 +18,13 @@ test('Wiki comments show a clean composer for Telegram accounts and preserve gue
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const posts = [];
+    let reads = 0;
     const origin = 'https://wiki-comments.test';
     page.on('pageerror', error => errors.push(error.message));
     await page.route(origin + '/wiki/test-article.html', route => route.fulfill({
       contentType: 'text/html',
       body: '<!doctype html><html lang="en"><body><main>' +
+        '<p data-story-proposal-link hidden><a href="#wiki-story-proposal">Suggest a story change</a></p>' +
         '<div class="wiki-comments" data-page-id="test-article"></div></main></body></html>',
     }));
     await page.route(origin + '/comments**', async route => {
@@ -32,7 +34,8 @@ test('Wiki comments show a clean composer for Telegram accounts and preserve gue
         const moderation = payload.telegram_auth ? 'approved' : 'pending';
         return route.fulfill({ json: { comment_id: '1', moderation } });
       }
-      return route.fulfill({ json: { comments: [] } });
+      reads++;
+      return route.fulfill({ json: { comments: [{ name: 'Test reader', text: 'An existing comment.' }] } });
     });
     await page.goto(origin + '/wiki/test-article.html');
     await page.evaluate(() => {
@@ -60,28 +63,25 @@ test('Wiki comments show a clean composer for Telegram accounts and preserve gue
       window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
     }, account);
 
-    await accountRow.waitFor({ state: 'visible' });
-    assert.match(await accountRow.textContent(), /Email comments work without Telegram/);
-    assert.equal(await accountRow.locator('a[href="/my-moonboy.html"]').count(), 1);
-    assert.equal(await section.locator('.comments-top-contributors, .comments-link-card--benefits').count(), 0);
-    await form.locator('[name="name"]').fill('Guest Name');
-    await form.locator('[name="email"]').fill('guest@example.test');
-    await form.locator('[name="discord_username"]').fill('guest-discord');
-    await draft.fill('A guest note on the article.');
-    await submit.click();
-    await status.getByText('Comment received and awaiting automated review.').waitFor();
-    assert.equal(posts[0].email, 'guest@example.test');
-    assert.equal(posts[0].name, 'Guest Name');
-    assert.equal(posts[0].telegram_auth, undefined);
+    const proposalLink = page.locator('[data-story-proposal-link]');
+    await section.waitFor({ state: 'hidden' });
+    await proposalLink.waitFor({ state: 'hidden' });
+    assert.equal(await form.count(), 0);
+    assert.equal(reads, 0);
 
     await changeAccount({ linked: false, hasId: true, fresh: false });
-    assert.match(await accountRow.textContent(), /Log in with Telegram to access eligible rewards/);
+    await section.waitFor({ state: 'hidden' });
+    assert.equal(await form.count(), 0, 'a Telegram ID alone does not reveal comments');
+    assert.equal(reads, 0);
+
+    await changeAccount({ linked: true, hasId: true, fresh: true });
+    await section.getByRole('heading', { name: 'Comments & Battle Layer' }).waitFor();
+    await section.getByText('An existing comment.').waitFor();
+    await proposalLink.waitFor({ state: 'visible' });
+    assert.equal(reads, 1);
     await draft.fill('A signed-in note that should use my Telegram profile.');
     await story.locator('summary').click();
     const login = story.getByRole('link', { name: 'Telegram login' });
-    await login.waitFor({ state: 'visible' });
-
-    await changeAccount({ linked: true, hasId: true, fresh: true });
     await accountRow.waitFor({ state: 'hidden' });
     await form.locator('.comment-form-identity').waitFor({ state: 'hidden' });
     await login.waitFor({ state: 'hidden' });
@@ -89,12 +89,12 @@ test('Wiki comments show a clean composer for Telegram accounts and preserve gue
     assert.match(await draft.inputValue(), /signed-in note/);
     await submit.click();
     await status.getByText('Comment posted.').waitFor();
-    assert.equal(posts.length, 2);
-    assert.equal(posts[1].name, 'Test Player');
-    assert.equal(posts[1].telegram_username, 'tester');
-    assert.equal(posts[1].telegram_auth.id, '112233');
-    assert.equal(posts[1].email, undefined);
-    assert.equal(posts[1].discord_username, undefined);
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].name, 'Test Player');
+    assert.equal(posts[0].telegram_username, 'tester');
+    assert.equal(posts[0].telegram_auth.id, '112233');
+    assert.equal(posts[0].email, undefined);
+    assert.equal(posts[0].discord_username, undefined);
     assert.equal(await draft.inputValue(), '');
     await accountRow.waitFor({ state: 'hidden' });
 
@@ -102,10 +102,14 @@ test('Wiki comments show a clean composer for Telegram accounts and preserve gue
     await draft.fill('Keep this draft if my Telegram session is no longer usable.');
     await submit.click();
     await status.getByText(/session has expired/).waitFor();
-    assert.equal(posts.length, 2);
+    assert.equal(posts.length, 1);
     await changeAccount({ linked: false, hasId: false, fresh: false });
-    await accountRow.waitFor({ state: 'visible' });
-    await login.waitFor({ state: 'visible' });
+    await section.waitFor({ state: 'hidden' });
+    await proposalLink.waitFor({ state: 'hidden' });
+    await form.dispatchEvent('submit');
+    assert.equal(posts.length, 1, 'a hidden composer cannot submit');
+    await changeAccount({ linked: true, hasId: true, fresh: true });
+    await section.waitFor({ state: 'visible' });
     assert.match(await draft.inputValue(), /Keep this draft/);
     assert.equal(errors.length, 0, errors.join('\n'));
   } finally {

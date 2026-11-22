@@ -69,7 +69,7 @@ check(comments.includes('[data-comment-guest-only]') && !comments.includes('Emai
 check(comments.includes('if (!email && !telegramAuth)') && comments.includes('payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
 check(comments.includes('Email comments work without Telegram. Verified rewards require Telegram sign-in via My Moonboy.'), 'Wiki comment identity hint is concise, preserves email-only commenting, and routes verified rewards to My Moonboy');
 check(comments.includes("window.addEventListener('moonboys:identity-change', refreshCommentIdentity)") &&
-  comments.includes('forEach(updateCommentIdentityCopy)'), 'Comment form follows changes to the shared identity');
+  comments.includes('el.hidden = !isSignedIn()'), 'Comment section follows changes to the shared identity');
 check(!comments.includes('Telegram quick-fill unavailable. Log in through the Incubator Hub'),
   'Guest comment setup does not write stale Incubator Hub directions');
 

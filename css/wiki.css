@@ -2447,6 +2447,12 @@ body.page-wiki .og-collapsible-data.is-expanded .gk-rarity-table {
   mask-image: none;
 }
 
+.wiki-comments:empty,
+.wiki-comments[hidden],
+[data-story-proposal-link][hidden] {
+  display: none;
+}
+
 body.page-wiki .citation-vote-panel,
 body.page-wiki .wiki-comments {
   width: min(100%, 1120px);

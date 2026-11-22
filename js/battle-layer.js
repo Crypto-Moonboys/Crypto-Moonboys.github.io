@@ -325,8 +325,11 @@
   }
 
   function buildMissionHTML(pageId, engagement) {
+    var comments = window.MOONBOYS_COMMENTS;
+    var showProposalLink = comments && comments.isSignedIn && comments.isSignedIn();
     var proposalLink = BASE && FEATURES.COMMENTS && document.location.pathname === '/wiki/' + pageId + '.html'
-      ? '<p class="battle-copy"><a href="#wiki-story-proposal">Suggest a story change</a></p>'
+      ? '<p class="battle-copy" data-story-proposal-link' + (showProposalLink ? '' : ' hidden') +
+        '><a href="#wiki-story-proposal">Suggest a story change</a></p>'
       : '';
     return '<div class="battle-shell battle-shell--missions"><div class="battle-shell-inner">' +
       '<h3>Daily Missions</h3>' +
