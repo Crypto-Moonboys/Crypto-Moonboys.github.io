@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumina walk preview</title>
+<style>
+body{background:#121c2b;color:#e6efff;font:1rem system-ui;margin:2rem}
+canvas{background:#22334a;image-rendering:pixelated;max-width:100%}
+</style>
+<h1>Lumina</h1>
+<p>Top-down south-facing walk cycle · Block Topia founder preview</p>
+<canvas id="sprite" width="256" height="256" aria-label="Lumina walking in place"></canvas>
+<p><button id="play" type="button" disabled>Pause animation</button></p>
+<p id="status" role="status">Loading sprite sheet…</p>
+<script>
+const canvas = document.querySelector("#sprite");
+const play = document.querySelector("#play");
+const status = document.querySelector("#status");
+const context = canvas.getContext("2d");
+const sheet = new Image();
+let frame = 0;
+let timer;
+function draw() {
+  context.clearRect(0, 0, 256, 256);
+  context.drawImage(sheet, frame % 5 * 256, Math.floor(frame / 5) * 256, 256, 256, 0, 0, 256, 256);
+}
+function toggle() {
+  if (timer) {
+    clearInterval(timer);
+    timer = undefined;
+    play.textContent = "Play animation";
+  } else {
+    timer = setInterval(() => { frame = (frame + 1) % 25; draw(); }, 80);
+    play.textContent = "Pause animation";
+  }
+}
+sheet.onload = () => {
+  draw();
+  play.disabled = false;
+  status.textContent = "Sprite sheet loaded.";
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) play.textContent = "Play animation";
+  else toggle();
+};
+sheet.onerror = () => { status.textContent = "Could not load the sprite sheet."; };
+play.onclick = toggle;
+sheet.src = "walk-south.png";
+</script>
+</html>
