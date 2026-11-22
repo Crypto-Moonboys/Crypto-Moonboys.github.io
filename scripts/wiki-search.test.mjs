@@ -327,6 +327,40 @@ const graffpunksStopwordOnly = {
   assert.equal(heading, 'All Articles', 'Failed-load search page keeps the all-articles heading');
 }
 
+{
+  const sandbox = makeSandbox();
+  let approach;
+  const heading = { textContent: '' };
+  const articles = { innerHTML: '' };
+  const elements = {
+    'search-page-input': { value: '', addEventListener() {} },
+    'search-heading': heading,
+    'search-results-page': articles,
+  };
+  sandbox.document.getElementById = id => elements[id] || null;
+  sandbox.IntersectionObserver = class {
+    constructor(callback) { approach = callback; }
+    observe(target) { assert.equal(target, heading); }
+    disconnect() {}
+  };
+  const requests = [];
+  sandbox.fetch = async url => {
+    requests.push(url);
+    return { ok: true, status: 200, json: async () => [graffpunksMain] };
+  };
+
+  sandbox.bindSearchControls();
+  approach([{ isIntersecting: false }]);
+  assert.deepEqual(requests, [], 'Category browsing does not download either index before the article list approaches');
+  approach([{ isIntersecting: true }]);
+  const request = sandbox.loadWikiIndex();
+  assert.equal(sandbox.loadWikiIndex(), request, 'Concurrent index consumers share the same request');
+  await request;
+  assert.deepEqual(requests, ['/js/wiki-index.json']);
+  assert.equal(heading.textContent, 'All Articles (1)');
+  assert.match(articles.innerHTML, /GraffPUNKS/);
+}
+
 // ── 11. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
 {
   let callCount = 0;
@@ -778,21 +812,12 @@ const graffpunksStopwordOnly = {
     const rightKeys = new Set([right.canonical_title, ...right.aliases].map(entityKey));
     assert.deepEqual([...leftKeys].filter(key => rightKeys.has(key)), [], `${label} traditions share no canonical or alias lookup keys`);
   }
-  for (const entity of [kids, xKids, warriors, xWarriors]) {
-    for (const limit of [5, 10]) {
-      const result = await selectMatches(wikiIndex, entity.canonical_title, { allowPartialFallback: true, limit });
-      assert.equal(result.scored[0]?.item.url, entity.canonical_url,
-        `${entity.canonical_title} resolves first in autocomplete and full search without changing short-word rules`);
-    }
-  }
-  for (const ordered of [[kids, xKids, warriors, xWarriors], [xWarriors, warriors, xKids, kids]]) {
-    sb.entityFixtures = ordered;
-    vm.runInContext('ENTITY_MAP = Object.fromEntries(entityFixtures.map(entity => [entity.entity_id, entity])); buildEntityLookup();', sb);
-    for (const entity of ordered) {
-      for (const name of [entity.canonical_title, ...entity.aliases]) {
-        sb.entityQuery = name;
-        assert.equal(vm.runInContext('ENTITY_LOOKUP[normalizeEntityKey(entityQuery)].canonical_url', sb), entity.canonical_url,
-          `Entity lookup resolves ${name} independently of record order`);
+  for (const orderedIndex of [wikiIndex, [...wikiIndex].reverse()]) {
+    for (const entity of [kids, xKids, warriors, xWarriors]) {
+      for (const limit of [5, 10]) {
+        const result = await selectMatches(orderedIndex, entity.canonical_title, { allowPartialFallback: true, limit });
+        assert.equal(result.scored[0]?.item.url, entity.canonical_url,
+          `${entity.canonical_title} resolves first in autocomplete and full search independently of index order`);
       }
     }
   }

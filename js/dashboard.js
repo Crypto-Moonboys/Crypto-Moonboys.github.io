@@ -7,60 +7,74 @@
 (function () {
   'use strict';
 
-  const DATA = {
-    siteStats:              '/js/site-stats.json',
-    blogEditions:           '/js/blog-editions.json',
-    contentGaps:            '/js/content-gaps.json',
-    expansionPlan:          '/js/expansion-plan.json',
-    growthPriority:         '/js/growth-priority.json',
-    clusterHealth:          '/js/cluster-health.json',
-    authorityDrift:         '/js/authority-drift.json',
-    entityChangelog:        '/js/entity-changelog.json',
-    editorialChangelog:     '/js/editorial-changelog.json',
-    authorityTrust:         '/js/authority-trust.json',
-    timelineIntelligence:   '/js/timeline-intelligence.json',
-    predictiveGrowth:       '/js/predictive-growth.json',
-    governanceSignals:      '/js/governance-signals.json',
-    publishingReadiness:    '/js/publishing-readiness.json',
-  };
+  const reportRequests = new Map();
 
-  // ── Bootstrap ────────────────────────────────────────────────────────────
-  function init() {
-    Promise.allSettled(
-      Object.entries(DATA).map(([key, url]) =>
-        fetch(url)
-          .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-          .then(data => [key, data])
-          .catch(err => { console.warn(`Dashboard: failed to load ${url}: ${err.message}`); return [key, null]; })
-      )
-    ).then(results => {
-      const loaded = {};
-      for (const r of results) {
-        if (r.status === 'fulfilled') {
-          const [key, val] = r.value;
-          loaded[key] = val;
-        }
-      }
-      render(loaded);
-    });
+  function loadReport(name) {
+    if (!reportRequests.has(name)) {
+      reportRequests.set(name, fetch(`/js/${name}.json`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .catch(error => {
+          console.warn(`Dashboard: failed to load ${name}:`, error);
+          return null;
+        }));
+    }
+    return reportRequests.get(name);
   }
 
-  // ── Top-level render ─────────────────────────────────────────────────────
-  function render(d) {
-    renderSummaryMetrics(d.siteStats, d.contentGaps, d.authorityDrift);
-    renderBlogEditions(d.blogEditions);
-    renderClusterHealth(d.clusterHealth);
-    renderContentGaps(d.contentGaps);
-    renderAuthorityDrift(d.authorityDrift);
-    renderEntityChangelog(d.entityChangelog);
-    renderGrowthPriority(d.growthPriority);
-    renderExpansionPlan(d.expansionPlan);
-    renderAuthorityTrust(d.authorityTrust);
-    renderTimelineIntelligence(d.timelineIntelligence);
-    renderEditorialChangelog(d.editorialChangelog);
-    renderPredictiveGrowth(d.predictiveGrowth);
-    renderGovernanceSignals(d.governanceSignals);
-    renderPublishingReadiness(d.publishingReadiness);
+  function initReports() {
+    Promise.all(['site-stats', 'content-gaps', 'authority-drift'].map(loadReport))
+      .then(([stats, gaps, drift]) => renderSummaryMetrics(stats, gaps, drift));
+
+    const reports = [
+      ['blog-editions', renderBlogEditions],
+      ['cluster-health', renderClusterHealth],
+      ['content-gaps', renderContentGaps],
+      ['authority-drift', renderAuthorityDrift],
+      ['entity-changelog', renderEntityChangelog],
+      ['growth-priority', renderGrowthPriority],
+      ['expansion-plan', renderExpansionPlan],
+      ['authority-trust', renderAuthorityTrust],
+      ['timeline-intelligence', renderTimelineIntelligence],
+      ['editorial-changelog', renderEditorialChangelog],
+      ['predictive-growth', renderPredictiveGrowth],
+      ['governance-signals', renderGovernanceSignals],
+      ['publishing-readiness', renderPublishingReadiness],
+    ];
+
+    const loaders = new Map();
+    const observer = typeof IntersectionObserver === 'undefined' ? null :
+      new IntersectionObserver(entries => {
+        for (const { target, isIntersecting } of entries) {
+          if (!isIntersecting || !loaders.has(target)) continue;
+          observer.unobserve(target);
+          const load = loaders.get(target);
+          loaders.delete(target);
+          load();
+        }
+      }, { rootMargin: '200px 0px' });
+
+    for (const [name, renderReport] of reports) {
+      const target = qs(`#dash-${name}`);
+      if (!target) continue;
+      const load = async () => {
+        target.setAttribute('aria-busy', 'true');
+        try {
+          renderReport(await loadReport(name));
+        } finally {
+          target.removeAttribute('aria-busy');
+        }
+      };
+
+      if (observer) {
+        loaders.set(target, load);
+        observer.observe(target);
+      } else {
+        load();
+      }
+    }
   }
 
   function renderBlogEditions(data) {
@@ -880,7 +894,7 @@
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
   function initAll() {
-    init();
+    initReports();
     const directory = qs('#dash-page-directory');
     if (!directory) return;
     const container = qs('#dash-page-links');

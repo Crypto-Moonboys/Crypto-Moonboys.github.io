@@ -72,6 +72,10 @@
     .dash-section {
       margin-bottom: 36px;
     }
+    .dash-section > div[id^="dash-"]:empty,
+    .dash-section > div[aria-busy="true"] {
+      min-height: 6rem;
+    }
     .dash-section-heading {
       display: flex;
       align-items: center;
@@ -398,7 +402,7 @@
 
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/dashboard.js"></script>
+<script data-cfasync="false" src="/js/dashboard.js?v=staged-loading"></script>
 <script data-cfasync="false" src="/js/graph-visualization.js"></script>
 </body>
 </html>
