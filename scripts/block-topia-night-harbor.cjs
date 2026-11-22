@@ -4,8 +4,11 @@
 const { mkdir, writeFile } = require("node:fs/promises");
 const { join } = require("node:path");
 
+const roofView = process.argv.includes("--roof-view");
 const aligned = process.argv.includes("--aligned");
-const style = aligned
+const style = roofView
+  ? "16-bit RPG overworld sprite. Camera 45 degrees above ground, facing the south wall, zero yaw. Show roof TOP occupying about 40% of silhouette; front facade below. Horizontal eaves, no visible left or right wall. Violet shadows, amber lights."
+  : aligned
   ? "16-bit pixel art. Straight-on orthographic front from slightly above, horizontal roof edges, front only, no side wall or diagonals. Same scale: single door 16 px high, window 10 px high. Violet shadows, amber light."
   : "16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.";
 const objects = [
@@ -15,10 +18,15 @@ const objects = [
   ["workshop", "Dock mechanic workshop with rusted roof vents, roll-up steel shutter and warm light under a metal canopy."],
   ["apartments", "Compact dockside apartment block with dark red brick, roof vents, teal trim and stacked amber windows."],
   ["graffiti-wall", "Standalone weathered brick wall with original cyan and pink wildstyle graffiti, chipped mortar and a lit concrete cap."]
-].filter(([id]) => !aligned || id !== "lighthouse").map(([id, subject]) => ({
+].filter(([id]) => roofView ? id !== "lighthouse" && id !== "workshop" : !aligned || id !== "lighthouse").map(([id, subject]) => ({
   id,
-  name: "Block Topia Night Harbor " + (aligned ? "v2 - " : "v1 - ") + id,
-  prompt: (aligned ? ({warehouse:"One-story brick warehouse with graffiti on a rolling shutter.", workshop:"One-story workshop, rusted roof and lit work bay.", "record-shop":"One-story vinyl shop, teal awning and magenta sign.", apartments:"Compact two-story brick apartments, stacked amber windows.", "graffiti-wall":"Straight horizontal brick wall, cyan and pink wildstyle."})[id] : subject) + " " + style,
+  name: "Block Topia Night Harbor " + (roofView ? "v3 - " : aligned ? "v2 - " : "v1 - ") + id,
+  prompt: (roofView ? ({
+    warehouse: "Low tagged warehouse, deep ribbed roof.",
+    "record-shop": "Vinyl shop, flat roof behind teal awning.",
+    apartments: "Two floors, amber windows, deep flat roof.",
+    "graffiti-wall": "Low brick wall, wide visible top cap, neon tags."
+  })[id] : aligned ? ({warehouse:"One-story brick warehouse with graffiti on a rolling shutter.", workshop:"One-story workshop, rusted roof and lit work bay.", "record-shop":"One-story vinyl shop, teal awning and magenta sign.", apartments:"Compact two-story brick apartments, stacked amber windows.", "graffiti-wall":"Straight horizontal brick wall, cyan and pink wildstyle."})[id] : subject) + " " + style,
   pixelArt: true
 }));
 
