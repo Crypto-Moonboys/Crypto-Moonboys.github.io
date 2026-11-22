@@ -32,6 +32,7 @@ function goToSearch(q) {
 /* ── SEARCH INDEX ────────────────────────────────────────────────────────── */
 let WIKI_INDEX = [];
 let WIKI_INDEX_LOAD_STATE = 'idle';
+let wikiIndexRequest;
 let arcadeSearchEntries = [];
 let arcadeSearchRequest;
 
@@ -64,10 +65,6 @@ const SEARCH_DESTINATIONS = [
 
 const SEARCH_DIRECTORY_ENTRIES = SEARCH_DESTINATIONS.filter(({ description }) => description)
   .map(({ url, names, description }) => ({ url, title: names[0], description }));
-
-/* ── ENTITY MAP ──────────────────────────────────────────────────────────── */
-let ENTITY_MAP = null;
-let ENTITY_LOOKUP = {};
 
 /* ── ENTITY GRAPH (related pages) ───────────────────────────────────────── */
 let ENTITY_GRAPH = null;
@@ -133,7 +130,13 @@ function getDerivedJsonUrl(fileName) {
   return `/js/${fileName}`;
 }
 
-async function loadWikiIndex() {
+function loadWikiIndex() {
+  if (WIKI_INDEX_LOAD_STATE === 'loaded') return Promise.resolve();
+  wikiIndexRequest ??= fetchWikiIndex().finally(() => { wikiIndexRequest = undefined; });
+  return wikiIndexRequest;
+}
+
+async function fetchWikiIndex() {
   const url = getDerivedJsonUrl('wiki-index.json');
   console.debug('[wiki.js] loading wiki-index from:', url);
   WIKI_INDEX_LOAD_STATE = 'loading';
@@ -199,26 +202,37 @@ window.MOONBOYS_WIKI_SEARCH = {
   retryIndexLoad: retryWikiIndexLoad,
 };
 
-async function loadEntityMap() {
-  if (ENTITY_MAP) return;
-  try {
-    const res = await fetch(getDerivedJsonUrl('entity-map.json'));
-    const arr = await res.json();
-    ENTITY_MAP = {};
-    arr.forEach(r => {
-      if (r.entity_id) ENTITY_MAP[r.entity_id] = r;
-    });
-  } catch {
-    ENTITY_MAP = {};
+function runNearViewport(target, callback) {
+  if (typeof IntersectionObserver === 'undefined') {
+    callback();
+    return;
   }
+
+  const observer = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      observer.disconnect();
+      callback();
+    }
+  }, { rootMargin: '200px 0px' });
+  observer.observe(target);
 }
 
-function buildEntityLookup() {
-  ENTITY_LOOKUP = {};
-  Object.values(ENTITY_MAP || {}).forEach(e => {
-    [e.canonical_title, ...(e.aliases || [])].forEach(v => {
-      ENTITY_LOOKUP[normalizeEntityKey(v)] = e;
-    });
+function stageRelatedPages() {
+  if (!window.location.pathname.startsWith('/wiki/')) return;
+  const article = document.querySelector('article');
+  if (!article) return;
+
+  let target = document.querySelector('[data-related-wiki-paths="true"]');
+  const needsMarker = !target;
+  if (needsMarker) {
+    target = document.createElement('div');
+    target.setAttribute('aria-hidden', 'true');
+    article.after(target);
+  }
+  runNearViewport(target, async () => {
+    if (needsMarker) target.remove();
+    await Promise.all([loadWikiIndex(), loadEntityGraph()]);
+    renderRelatedPages();
   });
 }
 
@@ -586,6 +600,8 @@ function renderSearchPage(query) {
     return;
   }
 
+  if (!q && WIKI_INDEX_LOAD_STATE === 'idle') return;
+
   if (WIKI_INDEX_LOAD_STATE !== 'loaded') {
     container.innerHTML = '<p class="search-empty">Loading articles…</p>';
     if (heading) heading.textContent = 'All Articles';
@@ -653,7 +669,7 @@ function renderSearchPage(query) {
 }
 
 /* ── DOM READY ───────────────────────────────────────────────────────────── */
-async function _wikiInit() {
+function _wikiInit() {
   // Standalone arcade pages use wiki.js without the shared site shell.
   if (!window.MOONBOYS_WIKI_SHELL && !document.querySelector('script[data-moonboys-site-icons]')) {
     const icons = document.createElement('script');
@@ -721,18 +737,8 @@ async function _wikiInit() {
     _backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
-  // Bind search before loading data so deep links and typing switch the layout immediately.
-  const refreshSearch = bindSearchControls();
-  await loadWikiIndex();
-  refreshSearch();
-  await loadEntityMap();
-  buildEntityLookup();
-
-  // ── Related pages (wiki pages only) ─────────────────────────────────────
-  if (window.location.pathname.startsWith('/wiki/')) {
-    await loadEntityGraph();
-    renderRelatedPages();
-  }
+  bindSearchControls();
+  stageRelatedPages();
 }
 
 function bindSearchControls() {
@@ -755,8 +761,16 @@ function bindSearchControls() {
     if (headerInput) showHeaderResults();
   }
 
-  function requestGames(query) {
-    if (query.trim() && !arcadeSearchRequest) {
+  let refreshAfterIndex;
+  function startSearchIndex() {
+    if (WIKI_INDEX_LOAD_STATE === 'loaded' || WIKI_INDEX_LOAD_STATE === 'failed') return;
+    refreshAfterIndex ??= loadWikiIndex().then(refreshResults);
+  }
+
+  function requestSearchData(query) {
+    if (!query.trim()) return;
+    startSearchIndex();
+    if (!arcadeSearchRequest) {
       arcadeSearchRequest = loadArcadeSearchEntries().then(refreshResults);
     }
   }
@@ -778,8 +792,8 @@ function bindSearchControls() {
       searchPage.filter = Object.hasOwn(SEARCH_FILTER_LABELS, filter) ? filter : 'all';
       searchPage.limit = SEARCH_PAGE_SIZE;
       searchInput.value = params.get('q') || '';
+      requestSearchData(searchInput.value);
       renderSearchPage(searchInput.value);
-      requestGames(searchInput.value);
     }
 
     function selectFilter(filter) {
@@ -791,10 +805,17 @@ function bindSearchControls() {
     }
 
     restoreSearch();
+    const browseHeading = document.getElementById('search-heading');
+    if (browseHeading && WIKI_INDEX_LOAD_STATE === 'idle') {
+      runNearViewport(browseHeading, () => {
+        startSearchIndex();
+        renderSearchPage(searchInput.value);
+      });
+    }
     window.addEventListener?.('popstate', restoreSearch);
     searchInput.addEventListener('input', () => {
+      requestSearchData(searchInput.value);
       renderSearchPage(searchInput.value);
-      requestGames(searchInput.value);
       updateSearchUrl();
     });
 
@@ -816,9 +837,10 @@ function bindSearchControls() {
   }
 
   if (headerInput) {
+    requestSearchData(headerInput.value);
     headerInput.addEventListener('input', () => {
       showHeaderResults();
-      requestGames(headerInput.value);
+      requestSearchData(headerInput.value);
     });
     headerInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') goToSearch(headerInput.value);
@@ -828,7 +850,6 @@ function bindSearchControls() {
     headerButton.addEventListener('click', () => goToSearch(headerInput ? headerInput.value : ''));
   }
 
-  return refreshResults;
 }
 
 // Handle the case where this script is deferred (e.g. by Cloudflare Rocket Loader)
