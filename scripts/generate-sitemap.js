@@ -35,6 +35,17 @@ const EXCLUDED_URLS = new Set([
   '/wiki/index.html'
 ]);
 
+// These public routes do not belong in the wiki's search index or graph.
+const SITEMAP_ONLY_PLAY_ROUTES = [
+  '/games/',
+  '/games/chain-maze/',
+  '/games/forkfield/',
+  '/games/bullrun-brick-smash/',
+  '/battle-chamber/factions/',
+  '/battle-chamber/factions/blockstars.html',
+  '/battle-chamber/factions/crypto-stoned-boys.html',
+];
+
 function url(loc, changefreq, priority) {
   return `  <url><loc>${loc}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
 }
@@ -147,6 +158,12 @@ function publicSitePages() {
 function writeSitemap() {
   const entries = publicSitePages().map(({ route, changefreq, priority }) =>
     url(BASE_URL + route, changefreq, priority));
+  for (const route of SITEMAP_ONLY_PLAY_ROUTES) {
+    const file = route.endsWith('/') ? route + 'index.html' : route;
+    if (fs.existsSync(path.join(ROOT, file.slice(1)))) {
+      entries.push(url(BASE_URL + route, 'monthly', '0.6'));
+    }
+  }
   for (const file of wikiPageFiles()) {
     entries.push(url(`${BASE_URL}/wiki/${file}`, 'weekly', '0.7'));
   }

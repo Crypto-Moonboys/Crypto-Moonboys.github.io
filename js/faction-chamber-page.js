@@ -468,7 +468,7 @@
     var related = byId('fcp-related-links');
     if (related) {
       var links = (profile.relatedLinks || []).concat([
-        { label: 'Faction directory', href: '/battle-chamber/factions/index.html' },
+        { label: 'Faction directory', href: '/battle-chamber/factions/' },
         { label: 'Battle Chamber hub', href: '/community.html' },
       ]);
       related.innerHTML = '<ul>' + links.map(function (item) {
