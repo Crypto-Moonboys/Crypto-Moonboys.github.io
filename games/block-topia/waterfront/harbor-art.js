@@ -27,7 +27,11 @@ const waterfrontTrees = [
   { file: "tree-banyan", height: 31 },
   { file: "tree-camphor", height: 36 },
   { file: "tree-palm", height: 39 },
-  { file: "tree-ornamental", height: 25 }
+  { file: "tree-ornamental", height: 25 },
+  { file: "tree-casuarina", height: 38 },
+  { file: "tree-frangipani", height: 28 },
+  { file: "tree-mangrove", height: 23 },
+  { file: "tree-paperbark", height: 35 }
 ];
 
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
@@ -309,6 +313,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
+  let treeIndex = 0;
   function terrain(tile, col, row) {
     const x = col * size;
     const y = row * size;
@@ -385,7 +390,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       if (seed % 4 === 0) queue(y + 28, () => lamp(x + 22, y + 23));
       else if (seed % 5 === 1) queue(y + 28, () => crates(x, y));
     } else if (tile === "." && seed % 11 === 3) {
-      queue(y + 28, () => tree(x, y, seed));
+      const variant = treeIndex++ % waterfrontTrees.length;
+      queue(y + 28, () => tree(x, y, variant));
     } else if (tile === "." && seed % 5 === 1) {
       rect("#34323e", x + 8, y + 8, 13, 12);
       rect("#2b303b", x + 10, y + 10, 9, 8);
@@ -532,8 +538,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function tree(x, y, seed) {
-    const { image, height } = waterfrontTrees[(Math.floor(seed / 11)) % waterfrontTrees.length];
+  function tree(x, y, variant) {
+    const { image, height } = waterfrontTrees[variant];
     if (image) {
       const width = Math.round(height * image.naturalWidth / image.naturalHeight);
       const sway = time === null ? 0 : Math.sin(time * 1.7 + (x + y) / 31) * 0.045;
