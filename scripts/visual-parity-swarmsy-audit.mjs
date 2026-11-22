@@ -639,8 +639,8 @@ if (wikiCss) {
     || selectorBlock(wikiCss, 'body.page-wiki .wiki-section h2,\r\nbody.page-wiki .wiki-section h3');
   const wikiFactBlock = selectorBlock(wikiCss, 'body.page-wiki .lore-fact-block,\nbody.page-wiki .wiki-card,\nbody.page-wiki .infobox,\nbody.page-wiki .notice,\nbody.page-wiki .related-wiki-paths li,\nbody.page-wiki .related-wiki-card,\nbody.page-wiki .citation-vote-panel')
     || selectorBlock(wikiCss, 'body.page-wiki .lore-fact-block,\r\nbody.page-wiki .wiki-card,\r\nbody.page-wiki .infobox,\r\nbody.page-wiki .notice,\r\nbody.page-wiki .related-wiki-paths li,\r\nbody.page-wiki .related-wiki-card,\r\nbody.page-wiki .citation-vote-panel');
-  const wikiMetaBlock = selectorBlock(wikiCss, 'body.page-wiki .article-badge,\nbody.page-wiki .meta-item')
-    || selectorBlock(wikiCss, 'body.page-wiki .article-badge,\r\nbody.page-wiki .meta-item');
+  const wikiMetaBlock = selectorBlock(wikiCss, 'body.page-wiki .article-badge,\nbody.page-wiki .meta-item,\nbody.page-wiki .article-meta .tag')
+    || selectorBlock(wikiCss, 'body.page-wiki .article-badge,\r\nbody.page-wiki .meta-item,\r\nbody.page-wiki .article-meta .tag');
   const wikiFactGridBlock = selectorBlock(wikiCss, 'body.page-wiki .lore-facts-stack');
 
   const cardChecks = [
@@ -677,11 +677,11 @@ if (wikiCss) {
     wikiArticleVisualOk = false;
   }
   if (
-    !blockHas(wikiMetaBlock, /border-radius\s*:\s*999px/i) ||
+    !blockHas(wikiMetaBlock, /border-radius\s*:\s*var\(--shell-card-corner\)/i) ||
     !blockHas(wikiMetaBlock, /background\s*:/i) ||
-    !blockHas(wikiMetaBlock, /border\s*:/i)
+    !blockHas(wikiMetaBlock, /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - wiki metadata must render as SWARMSY pills, not plain text`);
+    fail(`${GLOBAL_SHELL_CSS} - wiki metadata must render as square labels with a shared 1px border`);
     wikiArticleVisualOk = false;
   }
   if (!blockHas(wikiFactGridBlock, /display\s*:\s*grid/i)) {
@@ -691,7 +691,7 @@ if (wikiCss) {
 } else {
   wikiArticleVisualOk = false;
 }
-if (wikiArticleVisualOk) pass('Wiki article pages have shared cards, display typography, pills, and fact grids');
+if (wikiArticleVisualOk) pass('Wiki article pages have shared cards, display typography, metadata labels, and fact grids');
 
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);

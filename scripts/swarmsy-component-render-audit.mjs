@@ -160,7 +160,7 @@ for (const route of ROUTES) {
       wikiTitle: metrics('body.page-wiki .page-title, body.page-wiki .article-title'),
       wikiSection: metrics('body.page-wiki .wiki-section'),
       wikiFactCard: metrics('body.page-wiki .lore-fact-block, body.page-wiki .wiki-card, body.page-wiki .infobox, body.page-wiki .notice'),
-      wikiMetaPill: metrics('body.page-wiki .article-badge, body.page-wiki .meta-item'),
+      wikiMetaLabel: metrics('body.page-wiki .article-badge, body.page-wiki .meta-item, body.page-wiki .article-meta .tag'),
       categoryCard: metrics('.category-card'),
       gameOrArticleCard: metrics('.game-card, .article-list-item, .article-card'),
       communityPanel: metrics('.page-community .section, .bc-why-list li, .bc-join-card, .bc-perk-card'),
@@ -267,10 +267,10 @@ for (const route of ROUTES) {
     } else if (!/rgb\(255,\s*255,\s*255\)|rgb\(247,\s*201,\s*72\)|rgb\(0,\s*255,\s*204\)/i.test(audit.wikiTitle.color)) {
       fail(route, `wiki title must use bright SWARMSY display colour, got ${audit.wikiTitle.color}`);
     }
-    if (!audit.wikiMetaPill) {
-      fail(route, 'wiki metadata pill missing');
-    } else if (audit.wikiMetaPill.borderRadius < 14 || audit.wikiMetaPill.paddingTop < 6) {
-      fail(route, 'wiki metadata must render as pill/card, not plain text');
+    if (!audit.wikiMetaLabel) {
+      fail(route, 'wiki metadata label missing');
+    } else if (!hasAngularCardStyle(audit.wikiMetaLabel) || audit.wikiMetaLabel.paddingTop < 6) {
+      fail(route, 'wiki metadata labels must have square corners, padding, and a 1px border');
     }
   }
 
