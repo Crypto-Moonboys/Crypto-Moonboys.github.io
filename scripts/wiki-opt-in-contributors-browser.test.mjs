@@ -17,7 +17,8 @@ test('opt-in Wiki contributors display only source-backed article comment counts
     args: ['--no-sandbox', '--disable-dev-shm-usage'],
   });
   try {
-    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     await page.setContent('<!doctype html><html lang="en"><body class="page-wiki">' +
@@ -25,6 +26,7 @@ test('opt-in Wiki contributors display only source-backed article comment counts
       '</body></html>');
     await page.evaluate(() => {
       window.MOONBOYS_API = { BASE_URL: '/mock-api', FEATURES: { COMMENTS: true } };
+      window.MOONBOYS_IDENTITY = { isTelegramLinked: () => true };
       window.__commentFetches = 0;
       window.fetch = async url => {
         if (!String(url).includes('/comments')) throw Error('Unexpected request: ' + url);
@@ -70,10 +72,9 @@ test('opt-in Wiki contributors display only source-backed article comment counts
     assert.ok(await page.evaluate(() => window.__commentFetches >= 2),
       'both article comments and optional contributor views read actual comment source');
     assert.deepEqual(errors, []);
-    await page.close();
-
     // Disabled commentary must not create an empty source-less leaderboard.
-    const disabled = await browser.newPage();
+    const disabled = await context.newPage();
+    await page.close();
     await disabled.setContent('<!doctype html><html lang="en"><body>' +
       '<div class="wiki-comments" data-page-id="disabled"></div></body></html>');
     await disabled.evaluate(() => {
@@ -106,7 +107,7 @@ test('ordinary Wiki article production bootstrap never loads contributor ranking
       if (pathname === '/wiki/alcor-exchange.html') {
         return route.fulfill({ contentType: 'text/html', body:
           '<!doctype html><html><head>' +
-          '<script>window.MOONBOYS_API={BASE_URL:"/mock-api",FEATURES:{COMMENTS:true}}</script>' +
+          '<script>window.MOONBOYS_API={BASE_URL:"/mock-api",FEATURES:{COMMENTS:true}};window.MOONBOYS_IDENTITY={isTelegramLinked:()=>true}</script>' +
           '<script src="/js/api-config.js"></script>' +
           '<script src="/js/comments.js"></script></head>' +
           '<body class="page-wiki"><main><article class="wiki-content">' +
@@ -130,7 +131,7 @@ test('ordinary Wiki article production bootstrap never loads contributor ranking
 
     await page.goto('https://wiki-bootstrap.example/wiki/alcor-exchange.html', { waitUntil:'load' });
     await page.waitForFunction(() => document.querySelector('article.wiki-content')?.dataset.flagshipRuntimeReady === '1');
-    await page.locator('.comment-form').waitFor({state:'attached'});
+    await page.locator('.comment-form[data-page-id]').waitFor({state:'attached'});
     await page.waitForFunction(() => document.querySelector('script[data-wiki-template-dashboard-runtime]'));
     assert.equal(contributorLoads, 0, 'automatic Wiki migrator must not load the specialist commenter module');
     assert.equal(await page.locator('script[src*="wiki-live-contributors.js"]').count(), 0);
