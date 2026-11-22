@@ -14250,6 +14250,64 @@ export default {
       }
     }
 
+    if (path === '/wiki/story-proposals' && request.method === 'POST') {
+      const rate = enforcePublicRateLimit(request, env, path, null, corsHeaders, {
+        ipLimit: 12, includeTelegram: false,
+      });
+      if (rate) return rate;
+      const body = await request.json().catch(() => null);
+      if (!body || typeof body !== 'object' || Array.isArray(body)) return err('Invalid JSON', 400);
+      const identity = await verifyWebsiteCredential(body?.telegram_auth, env);
+      if (!identity || identity.error) {
+        return err(identity?.error || 'telegram_website_login_required', identity?.status || 401);
+      }
+
+      const pageId = typeof body.page_id === 'string' ? normalizeWikiPageId(body.page_id) : null;
+      const proposal = typeof body.proposal === 'string' ? body.proposal.trim() : '';
+      if (!pageId || proposal.length < 20 || proposal.length > 1500) {
+        return err('invalid_story_proposal', 400);
+      }
+      const group = getTelegramGroupConfig(env);
+      if (!/^-[1-9]\d{0,19}$/.test(group.chat_id || '') ||
+          (group.message_thread_id && !/^[1-9]\d{0,12}$/.test(group.message_thread_id)) ||
+          !env.TELEGRAM_BOT_TOKEN) {
+        return err('story_proposal_delivery_unavailable', 503);
+      }
+      const senderRate = enforcePublicRateLimit(request, env, path, null, corsHeaders, {
+        includeIp: false, telegramId: identity.telegramId, telegramLimit: 1,
+      });
+      if (senderRate) return senderRate;
+
+      const user = identity.user;
+      const username = String(user.username || '');
+      const author = /^[a-zA-Z0-9_]{1,32}$/.test(username) ? '@' + username
+        : normalizeTextField([user.first_name, user.last_name].filter(Boolean).join(' '), 80) || 'Telegram member';
+      const text = [
+        '<b>Wiki story change proposal</b>',
+        'Article: ' + SITE_URL + '/wiki/' + pageId + '.html',
+        'Submitted by: ' + escapeHtml(author),
+        '',
+        '<blockquote>' + escapeHtml(proposal) + '</blockquote>',
+        '',
+        'For editorial review.',
+      ].join('\n');
+      const sent = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, group.chat_id, text, {
+        disable_web_page_preview: true,
+        ...(group.message_thread_id ? { message_thread_id: Number(group.message_thread_id) } : {}),
+      }, { signal: AbortSignal.timeout(8000) });
+      if (!sent.ok) {
+        return sent.status >= 400 && sent.status < 500
+          ? err('story_proposal_delivery_failed', 502)
+          : err('story_proposal_delivery_unconfirmed', 503);
+      }
+      let receipt;
+      try { receipt = JSON.parse(sent.response); } catch { /* Telegram acknowledgement could not be read. */ }
+      if (receipt?.ok !== true || !Number.isSafeInteger(receipt?.result?.message_id) || receipt.result.message_id <= 0) {
+        return err('story_proposal_delivery_unconfirmed', 503);
+      }
+      return json({ ok: true }, 201);
+    }
+
     // ── GET /player/state ─────────────────────────────────────────────────
     // Returns full server-backed player state for a Telegram-linked user.
     // Requires a signed telegram_auth payload in the query string or POST body.
