@@ -44,10 +44,12 @@ const waterfrontGroves = new Map([
   ["20,11", [7, 2, 3]]
 ]);
 
+const waterfrontCargoAtlas = { file: "cargo-frames" };
 const waterfrontBotAtlas = { file: "bot-frames" };
 const residentBots = [3, 4, 5, 6, 7];
 
 const waterfrontAtlases = {
+  "cargo": { "cargo-frames": [0, 0, 256, 96] },
   "bots": { "bot-frames": [0, 0, 128, 1024] },
   "hk-night": {
     "afterblock-club": [2, 2, 111, 115],
@@ -113,7 +115,7 @@ const waterfrontDetails = Object.fromEntries(
 
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
   const sprites = Object.fromEntries(
-    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas]
+    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas]
       .map(sprite => [sprite.file, sprite])
   );
   return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
@@ -151,13 +153,13 @@ function freightFor(rows, district) {
   rows.forEach((row, y) => [...row].forEach((tile, x) => {
     if (!canWalk(x, y)) return;
     if ("bwHEVcLsNA".includes(rows[y - 1]?.[x] ?? "~")) stores.push({ x, y });
-    else if (tile !== "p" && (x * 7 + y * 13) % 9 === 0) yards.push({ x, y });
+    else if (tile !== "p" && (x * 7 + y * 13) % 5 === 0) yards.push({ x, y });
   }));
   const reachable = point => findRoute(district.spawn, point, canWalk) !== null;
   const stops = yards.filter(reachable);
   const doors = stores.filter(reachable);
-  const cargo = stops.slice(0, 12).map((point, kind) => ({ point, kind }));
-  doors.slice(0, 6).forEach((point, index) => cargo.push({ point, kind: index, indoors: true }));
+  const cargo = stops.slice(0, Math.min(18, Math.max(0, stops.length - 5))).map((point, kind) => ({ point, kind }));
+  doors.slice(0, 6).forEach((point, index) => cargo.push({ point, kind: 18 + index, indoors: true }));
   const bots = [0, 4, 3, 7].map((model, index) => ({
     model, point: stops[index] ?? district.spawn, dx: 0, dy: 1, due: 0
   }));
@@ -770,6 +772,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function freightObject(kind, x, y) {
+    const image = waterfrontCargoAtlas.image;
+    if (image) {
+      rect("#161b27a8", x - 7, y - 1, 14, 3);
+      ctx.drawImage(image, kind % 8 * 32, Math.floor(kind / 8) * 32, 32, 32,
+        x - 10, y - 19, 20, 20);
+      return;
+    }
     const [body, light, dark] = cargoDesigns[kind % cargoDesigns.length];
     const wide = kind % 3 === 0;
     const w = wide ? 17 : 12;
