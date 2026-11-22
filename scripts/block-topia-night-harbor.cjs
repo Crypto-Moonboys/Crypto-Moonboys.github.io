@@ -4,7 +4,10 @@
 const { mkdir, writeFile } = require("node:fs/promises");
 const { join } = require("node:path");
 
-const style = "16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.";
+const aligned = process.argv.includes("--aligned");
+const style = aligned
+  ? "16-bit pixel art. Straight-on orthographic front from slightly above, horizontal roof edges, front only, no side wall or diagonals. Same scale: single door 16 px high, window 10 px high. Violet shadows, amber light."
+  : "16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.";
 const objects = [
   ["lighthouse", "Tall weathered brick lighthouse with copper cap, turquoise beacon and warm amber service door."],
   ["warehouse", "Dark dock warehouse with ribbed metal roof, brick front, rolling door and original hot-pink wildstyle graffiti."],
@@ -12,10 +15,10 @@ const objects = [
   ["workshop", "Dock mechanic workshop with rusted roof vents, roll-up steel shutter and warm light under a metal canopy."],
   ["apartments", "Compact dockside apartment block with dark red brick, roof vents, teal trim and stacked amber windows."],
   ["graffiti-wall", "Standalone weathered brick wall with original cyan and pink wildstyle graffiti, chipped mortar and a lit concrete cap."]
-].map(([id, subject]) => ({
+].filter(([id]) => !aligned || id !== "lighthouse").map(([id, subject]) => ({
   id,
-  name: "Block Topia Night Harbor v1 - " + id,
-  prompt: subject + " " + style,
+  name: "Block Topia Night Harbor " + (aligned ? "v2 - " : "v1 - ") + id,
+  prompt: (aligned ? ({warehouse:"One-story brick warehouse with graffiti on a rolling shutter.", workshop:"One-story workshop, rusted roof and lit work bay.", "record-shop":"One-story vinyl shop, teal awning and magenta sign.", apartments:"Compact two-story brick apartments, stacked amber windows.", "graffiti-wall":"Straight horizontal brick wall, cyan and pink wildstyle."})[id] : subject) + " " + style,
   pixelArt: true
 }));
 
