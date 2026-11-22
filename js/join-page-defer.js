@@ -1,4 +1,4 @@
-/* Keep section text and anchors in HTML; hydrate heavy assets near view. */
+/* Keep the WAX page's text/anchors in HTML; hydrate heavy assets near view. */
 (() => {
   'use strict';
   const builder = document.querySelector('[data-builder-module]');
@@ -8,13 +8,8 @@
       element.querySelectorAll('img[data-section-src]').forEach(activate);
       delete element.dataset.sectionImages;
     } else if (element.dataset.sectionSrc) {
-      if (element.dataset.sectionSrcset) {
-        // Preserve native auto sizing for responsive lazy images.
-        element.srcset = element.dataset.sectionSrcset;
-        delete element.dataset.sectionSrcset;
-      } else {
-        element.loading = 'eager';
-      }
+      // The observer owns proximity; do not apply a second browser lazy gate.
+      element.loading = 'eager';
       element.src = element.dataset.sectionSrc;
       delete element.dataset.sectionSrc;
     } else if (element === builder && !builder.dataset.builderStarted) {
