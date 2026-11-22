@@ -309,14 +309,15 @@ async function checkApproval(issue, requiredLabel) {
   }
 }
 
-async function build(issue, dir, round = 0, previous = null, attempt = 1, reviewFeedback = "") {
+async function build(issue, dir, round = 0, previous = null, attempt = 1, repair = {}) {
+  const reviewFeedback = repair.feedback || "";
   const number = issue.number;
   const brief = { title: issue.title, body: String(issue.body || "").slice(0, 6000) };
   const research = await checkpoint(dir, "research.json", () => references(dir));
   const plan = await checkpoint(dir, "plan.json", () => model("planner",
-    "Propose a tiny top-down district with a connected street, dock, lighthouse, and empty plots. Use key plan.", { brief, previous, round, research: research.notes.planner }));
+    "Propose a tiny top-down district with a connected street, dock, lighthouse, and empty plots. Use key plan.", { brief, previous, round, reviewFeedback, research: research.notes.planner }));
   const art = await checkpoint(dir, "art.json", () => model("artist",
-    "Return six hexadecimal #RRGGBB colors with keys water, road, ground, dock, house, lighthouse.", { plan, research: research.notes.artist }));
+    "Return six hexadecimal #RRGGBB colors with keys water, road, ground, dock, house, lighthouse. If repairing a palette, use the rejected colors and review feedback to correct visual findings.", { plan, reviewFeedback, rejectedPalette: repair.rejectedPalette, research: research.notes.artist }));
   const colors = Object.fromEntries(Object.entries(palette).map(([key, fallback]) =>
     [key, typeof art[key] === "string" && /^#[0-9a-f]{6}$/i.test(art[key]) ? art[key] : fallback]));
   const district = await checkpoint(dir, "district.json", async () => {
@@ -349,7 +350,10 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, review
     "district.json": JSON.stringify({ ...verified, colors }, null, 2) + "\n",
     "build-review.json": JSON.stringify({ issue: number, round, research: research.outcome, review }, null, 2) + "\n"
   };
-  if (round) return publishRound(issue, round, attempt, dir, files);
+  if (round) {
+    const outcome = await publishRound(issue, round, attempt, dir, files);
+    return outcome.feedback ? { ...outcome, rejectedPalette: colors } : outcome;
+  }
   const pr = await publish(number, files);
   await writeProgress(dir, "done.json", { pr });
   console.log(pr);
@@ -362,6 +366,23 @@ async function* approvedIssues() {
     yield* issues;
     if (issues.length < pageSize) return;
   }
+}
+
+async function* rotateIssues(issues, cursor) {
+  const beforeCursor = [];
+  let afterCursor = !cursor;
+  for await (const issue of issues) {
+    if (String(issue.number) === cursor) {
+      afterCursor = true;
+      // The cursor remains eligible after a complete turn around the queue.
+      beforeCursor.push(issue);
+    } else if (afterCursor) {
+      yield issue;
+    } else {
+      beforeCursor.push(issue);
+    }
+  }
+  yield* beforeCursor;
 }
 
 async function completed(dir) {
@@ -384,15 +405,7 @@ async function runQueue() {
     const previouslyRun = await fs.readFile(path.join(stateDir, "last-issue.json"), "utf8").catch(error => {
       if (error.code !== "ENOENT") throw error;
     });
-    let deferred;
-    async function* nextIssues() {
-      for await (const issue of approvedIssues()) {
-        if (String(issue.number) === previouslyRun?.trim()) deferred = issue;
-        else yield issue;
-      }
-      if (deferred) yield deferred;
-    }
-    for await (const issue of nextIssues()) {
+    for await (const issue of rotateIssues(approvedIssues(), previouslyRun?.trim())) {
       if (issue.pull_request) continue;
       const issueDir = path.join(stateDir, String(issue.number));
       const iterative = issue.labels?.some(label => label.name === iterationLabel);
@@ -425,7 +438,7 @@ async function runQueue() {
           await fs.mkdir(attemptDir, { recursive: true, mode: 0o700 });
           let outcome;
           try {
-            outcome = await build(issue, attemptDir, round, previous, progress.attempt, progress.feedback);
+            outcome = await build(issue, attemptDir, round, previous, progress.attempt, progress);
           } catch (error) {
             // A fresh layout attempt can repair invalid candidates. Keep any
             // already-published PR checkpoint when failures are operational.
@@ -436,7 +449,11 @@ async function runQueue() {
             outcome = { feedback: error.message };
           }
           if (outcome.feedback) {
-            await writeProgress(dir, "repair.json", { attempt: progress.attempt + 1, feedback: outcome.feedback });
+            await writeProgress(dir, "repair.json", {
+              attempt: progress.attempt + 1,
+              feedback: outcome.feedback,
+              rejectedPalette: outcome.rejectedPalette ?? progress.rejectedPalette
+            });
             console.log(`Issue #${issue.number}: queued round ${round} repair.`);
           } else if (outcome.url) {
             const district = JSON.parse(await fs.readFile(path.join(attemptDir, "district.json"), "utf8"));
