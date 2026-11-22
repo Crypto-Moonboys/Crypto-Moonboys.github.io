@@ -48,6 +48,20 @@ window.waterfrontDistrict = {
     ".pb..rc.......r.......c.rw..",
     ".pp..rp.......r.......pprp.."
   ],
+  // Ground finishes for open land. Coordinates are inclusive [left, top, right, bottom].
+  groundZones: [
+    { material: "grass", bounds: [7, 3, 10, 5] },
+    { material: "grass", bounds: [15, 3, 18, 5] },
+    { material: "grass", bounds: [12, 7, 16, 8] },
+    { material: "grass", bounds: [18, 7, 19, 8] },
+    { material: "grass", bounds: [8, 10, 13, 11] },
+    { material: "grass", bounds: [19, 10, 21, 11] },
+    { material: "gravel", bounds: [0, 2, 7, 5] },
+    { material: "gravel", bounds: [19, 2, 27, 5] },
+    { material: "gravel", bounds: [2, 7, 8, 8] },
+    { material: "gravel", bounds: [0, 10, 4, 11] },
+    { material: "gravel", bounds: [25, 10, 27, 11] }
+  ],
   tiles: {
     "~": { name: "Water", color: "#101f34" },
     ".": { name: "Ground", color: "#23242e" },
