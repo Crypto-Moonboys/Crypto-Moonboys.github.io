@@ -531,6 +531,27 @@ function searchResultType(item) {
   return null;
 }
 
+const SEARCH_FILTER_LABELS = { games: 'Game', lore: 'Lore', people: 'People', nfts: 'NFTs & Collections' };
+
+function highlightSearchText(text, pattern) {
+  if (!pattern) return escapeHtml(text);
+  return text.split(pattern).map((part, index) =>
+    index % 2 ? `<mark>${escapeHtml(part)}</mark>` : escapeHtml(part)
+  ).join('');
+}
+
+function renderSearchDebug(items, query) {
+  const panel = document.getElementById('ranking-debug');
+  if (!panel) return;
+  panel.hidden = new URLSearchParams(window.location.search).get('debug') !== '1';
+  if (panel.hidden) return;
+  document.getElementById('ranking-debug-query').textContent = query || 'All articles';
+  document.getElementById('ranking-debug-table').innerHTML = items.map(item => {
+    const { queryScore, rankScore, finalScore } = scoreResult(item, query);
+    return `<tr><td>${escapeHtml(item.title || item.url)}</td><td>${escapeHtml(resolveWikiUrl(item.url))}</td><td>${queryScore}</td><td>${formatRankSignal(rankScore)}</td><td>${formatRankSignal(finalScore)}</td></tr>`;
+  }).join('');
+}
+
 function renderSearchPage(query) {
   const container = document.getElementById('search-results-page');
   const heading   = document.getElementById('search-heading');
@@ -554,6 +575,10 @@ function renderSearchPage(query) {
   if (shortcuts) shortcuts.hidden = !showFilters
     || searchPage.filter !== 'all' || normalizeEntityKey(q) !== 'blocktopia';
   if (loadMore && WIKI_INDEX_LOAD_STATE !== 'loaded') loadMore.hidden = true;
+  const showAll = document.getElementById('search-show-all');
+  const browseLinks = document.getElementById('search-empty-browse');
+  if (showAll) showAll.hidden = true;
+  if (browseLinks) browseLinks.hidden = true;
 
   if (WIKI_INDEX_LOAD_STATE === 'failed') {
     container.innerHTML = '<p class="search-empty">Search index failed to load. Refresh the page or try again later.</p>';
@@ -568,9 +593,13 @@ function renderSearchPage(query) {
   }
 
   let items;
+  let matchedQuery = q;
+  let totalMatches = 0;
   if (q) {
     const { scored, correctedQuery } = selectSearchMatches(q, { allowPartialFallback: true });
     items = scored.map(r => r.item);
+    totalMatches = items.length;
+    matchedQuery = correctedQuery || q;
     if (filters) {
       const groups = { all: items, games: [], lore: [], people: [], nfts: [] };
       for (const item of items) {
@@ -593,40 +622,32 @@ function renderSearchPage(query) {
   }
 
   if (loadMore) loadMore.hidden = items.length <= searchPage.limit;
+  const visible = items.slice(0, searchPage.limit);
+  renderSearchDebug(visible, matchedQuery);
   if (!items.length) {
-    container.innerHTML = searchPage.filter === 'all'
-      ? `<p class="search-empty">No results found for "${escapeHtml(q)}".</p>`
-      : '<p class="search-empty">No results in this filter.</p>';
+    const canBroaden = totalMatches > 0 && searchPage.filter !== 'all';
+    container.innerHTML = canBroaden
+      ? '<p class="search-empty">No results in this filter.</p>'
+      : `<p class="search-empty">No results found for "${escapeHtml(q)}".</p>`;
+    if (showAll) showAll.hidden = !canBroaden;
+    if (browseLinks) browseLinks.hidden = !q || canBroaden;
     return;
   }
 
-  container.innerHTML = items.slice(0, searchPage.limit).map(item => {
-    const href    = resolveWikiUrl(item.url);
-    const title   = item.title || href;
-    const summaryText = getArticleSummary(item);
-    const summary = `<p class="article-card-summary">${escapeHtml(summaryText)}</p>`;
-    const tags = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];
-    const topTags = tags.slice(0, 3);
-    const metaBits = [];
-    if (item.category) metaBits.push(`Category: ${formatCategoryLabel(item.category)}`);
-    const rankSignal = formatRankSignal(item.rank_score);
-    if (rankSignal) metaBits.push(`Rank signal: ${rankSignal}`);
-    if (topTags.length) {
-      metaBits.push(`Tags: ${topTags.join(', ')}`);
-    }
-    const meta = metaBits.length
-      ? `<div class="article-card-meta">${metaBits.map(bit => `<span class="article-card-meta-item">${escapeHtml(bit)}</span>`).join('')}</div>`
-      : '';
-    const tagPills = topTags.length
-      ? `<div class="article-card-tags">${topTags.map(t => `<span class="article-card-tag">${escapeHtml(t)}</span>`).join('')}</div>`
-      : '';
-    const path = `<p class="article-card-path">${escapeHtml(href)}</p>`;
+  const terms = [...new Set(tokenizeSearchQuery(matchedQuery))]
+    .filter(term => term.length >= 2 && term.length <= 64 && !SEARCH_TEXT_STOP_WORDS.has(term))
+    .slice(0, 12).sort((a, b) => b.length - a.length);
+  const pattern = terms.length ? new RegExp(`(${terms.join('|')})`, 'gi') : null;
+  container.innerHTML = visible.map(item => {
+    const href = resolveWikiUrl(item.url);
+    const title = item.title || humanizePathSlug(href);
+    const summary = getArticleSummary(item);
+    const snippet = summary.length > 180 ? summary.slice(0, 177).trimEnd() + '…' : summary;
+    const type = SEARCH_FILTER_LABELS[searchResultType(item)] || formatCategoryLabel(item.category) || 'Article';
     return `<div class="article-card">
-  <a href="${escapeHtml(href)}" class="article-card-title">${escapeHtml(title)}</a>
-  ${summary}
-  ${meta}
-  ${tagPills}
-  ${path}
+  <a href="${escapeHtml(href)}" class="article-card-title">${highlightSearchText(title, pattern)}</a>
+  <span class="article-card-meta-item">${escapeHtml(type)}</span>
+  <p class="article-card-summary">${highlightSearchText(snippet, pattern)}</p>
 </div>`;
   }).join('\n');
 }
@@ -741,29 +762,50 @@ function bindSearchControls() {
   }
 
   if (searchInput) {
-    searchInput.value = new URLSearchParams(window.location.search).get('q') || '';
-    renderSearchPage(searchInput.value);
-    requestGames(searchInput.value);
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim();
-      renderSearchPage(query);
-      requestGames(query);
+    function updateSearchUrl() {
       const url = new URL(window.location.href);
+      const query = searchInput.value.trim();
       if (query) url.searchParams.set('q', query);
       else url.searchParams.delete('q');
+      if (query && searchPage.filter !== 'all') url.searchParams.set('type', searchPage.filter);
+      else url.searchParams.delete('type');
       history.replaceState(null, '', url.toString());
+    }
+
+    function restoreSearch() {
+      const params = new URLSearchParams(window.location.search);
+      const filter = params.get('type');
+      searchPage.filter = Object.hasOwn(SEARCH_FILTER_LABELS, filter) ? filter : 'all';
+      searchPage.limit = SEARCH_PAGE_SIZE;
+      searchInput.value = params.get('q') || '';
+      renderSearchPage(searchInput.value);
+      requestGames(searchInput.value);
+    }
+
+    function selectFilter(filter) {
+      if (filter === searchPage.filter) return;
+      searchPage.filter = filter;
+      searchPage.limit = SEARCH_PAGE_SIZE;
+      renderSearchPage(searchInput.value);
+      updateSearchUrl();
+    }
+
+    restoreSearch();
+    window.addEventListener?.('popstate', restoreSearch);
+    searchInput.addEventListener('input', () => {
+      renderSearchPage(searchInput.value);
+      requestGames(searchInput.value);
+      updateSearchUrl();
     });
 
     const filters = document.getElementById('search-filters');
     for (const button of filters?.querySelectorAll('[data-search-filter]') || []) {
-      button.addEventListener('click', () => {
-        const filter = button.dataset.searchFilter;
-        if (filter === searchPage.filter) return;
-        searchPage.filter = filter;
-        searchPage.limit = SEARCH_PAGE_SIZE;
-        renderSearchPage(searchInput.value);
-      });
+      button.addEventListener('click', () => selectFilter(button.dataset.searchFilter));
     }
+    document.getElementById('search-show-all')?.addEventListener('click', () => {
+      selectFilter('all');
+      filters?.querySelector('[data-search-filter="all"]')?.focus();
+    });
 
     document.getElementById('search-load-more')?.addEventListener('click', () => {
       const firstNewResult = searchPage.limit;

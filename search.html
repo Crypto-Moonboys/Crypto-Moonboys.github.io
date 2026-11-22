@@ -38,7 +38,8 @@
 .search-control:focus-visible { outline:2px solid var(--color-accent,#f7c65c); outline-offset:2px; }
 .search-control:disabled { opacity:.58; cursor:default; }
 .search-filter-count { font-variant-numeric:tabular-nums; }
-#search-load-more { margin-block:1rem; }
+#search-load-more, #search-show-all { margin-block:1rem; }
+.article-card mark { background:var(--color-accent,#f7c65c); color:#141018; }
 </style>
 </head>
 <body class="page-search page-standard-shell">
@@ -184,10 +185,10 @@
             <thead>
               <tr>
                 <th>Title</th>
+                <th>URL</th>
                 <th>Query score</th>
                 <th>Rank score</th>
                 <th>Final score</th>
-                <th>Rank signals</th>
               </tr>
             </thead>
             <tbody id="ranking-debug-table"></tbody>
@@ -203,6 +204,12 @@
       >
         <!-- Populated by wiki.js -->
       </div>
+      <button id="search-show-all" class="search-control" type="button" hidden>Show all results</button>
+      <nav id="search-empty-browse" class="search-controls" aria-label="Browse when search has no matches" hidden>
+        <a class="search-control" href="/games/">Browse Arcade</a>
+        <a class="search-control" href="/categories/lore.html">Browse Lore</a>
+        <a class="search-control" href="/categories/nfts.html">Browse NFTs</a>
+      </nav>
       <button id="search-load-more" class="search-control" type="button" aria-controls="search-results-page" hidden>Load more</button>
     </main>
 
@@ -226,7 +233,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 7. Page-specific scripts -->
 
-<script data-cfasync="false" src="/js/wiki.js?v=site-search-filters-20261122"></script>
+<script data-cfasync="false" src="/js/wiki.js?v=site-search-polish-20261122"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 </body>
 </html>
