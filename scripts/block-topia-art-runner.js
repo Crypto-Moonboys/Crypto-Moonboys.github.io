@@ -3,7 +3,7 @@ const os = require("node:os");
 const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 const { setTimeout: sleep } = require("node:timers/promises");
-const { findSpritesheetIds, extractDownloadTargets, buildLocalAtlas } = require("./generate-moonpet-assets");
+const { findSpritesheetIds, collectUrlCandidates, buildLocalAtlas } = require("./generate-moonpet-assets");
 
 const repo = "Crypto-Moonboys/Crypto-Moonboys.github.io";
 const branch = "block-topia/lumina-top-down-walk-preview";
@@ -185,9 +185,56 @@ async function publish(files) {
     head: branch,
     base: "main",
     draft: true,
-    body: "Part of #1921. Adds the AutoSprite sheet, grid atlas and isolated Lumina preview. The runner checked the PNG signature, dimensions and alpha support. Browser and visual sprite review are pending. Merge/deploy remains pending GK approval."
+    body: "Part of #1921. Adds the AutoSprite sheet, grid atlas and isolated Lumina preview. The runner checked the PNG signature, dimensions and transparency support. Browser and visual sprite review are pending. Merge/deploy remains pending GK approval."
   });
   return pr.html_url;
+}
+
+function inspectPng(png) {
+  if (png.length < 33 || png.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
+    || png.readUInt32BE(8) !== 13 || png.toString("ascii", 12, 16) !== "IHDR") {
+    return { description: "not a PNG with a valid header" };
+  }
+  const width = png.readUInt32BE(16);
+  const height = png.readUInt32BE(20);
+  const color = png[25];
+  let transparency = [4, 6].includes(color);
+  // Optimized PNGs can store transparent colors in tRNS instead of an alpha channel.
+  for (let offset = 33; offset + 12 <= png.length;) {
+    const length = png.readUInt32BE(offset);
+    const next = offset + 12 + length;
+    if (next > png.length) break;
+    const type = png.toString("ascii", offset + 4, offset + 8);
+    if (type === "IDAT" || type === "IEND") break;
+    if (type === "tRNS") {
+      transparency ||= (color === 0 && length === 2) || (color === 2 && length === 6)
+        || (color === 3 && length > 0 && length <= 256
+          && png.subarray(offset + 8, offset + 8 + length).some(alpha => alpha < 255));
+    }
+    offset = next;
+  }
+  return {
+    valid: width === sheetSize.w && height === sheetSize.h && transparency,
+    description: `${width}x${height} PNG (color type ${color}, transparency ${transparency ? "present" : "absent"})`
+  };
+}
+
+async function downloadSheet(record) {
+  const failures = [];
+  const tried = new Set();
+  for (const target of collectUrlCandidates(record)) {
+    if (target.kind !== "png" || new URL(target.url).protocol !== "https:" || tried.has(target.url)) continue;
+    tried.add(target.url);
+    try {
+      const png = Buffer.from(await (await request(target.url)).arrayBuffer());
+      const result = inspectPng(png);
+      if (result.valid) return png;
+      failures.push(result.description);
+    } catch (error) {
+      failures.push(error.message);
+    }
+  }
+  throw new Error(`Expected a transparent ${sheetSize.w}x${sheetSize.h} sprite sheet. Found: ${failures.join("; ") || "no HTTPS PNG candidates"}.`);
 }
 
 async function run() {
@@ -202,16 +249,7 @@ async function run() {
   const jobId = await obtainJob();
   console.log(`AutoSprite job ${jobId}`);
   const { sheetId, record } = await waitForSheet(jobId);
-  const target = extractDownloadTargets(record).find(entry => entry.kind === "png");
-  if (!target || new URL(target.url).protocol !== "https:") {
-    throw new Error("The completed job has no HTTPS sprite sheet download.");
-  }
-  const png = Buffer.from(await (await request(target.url)).arrayBuffer());
-  if (png.length < 33 || png.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
-    || png.readUInt32BE(16) !== sheetSize.w || png.readUInt32BE(20) !== sheetSize.h
-    || ![4, 6].includes(png[25])) {
-    throw new Error("Expected a 1280×1280 PNG sprite sheet with an alpha channel.");
-  }
+  const png = await downloadSheet(record);
   const atlas = buildLocalAtlas({ frameCount: count, frameSize: size, sheetSize });
   console.log(await publish({
     "index.html": preview,
