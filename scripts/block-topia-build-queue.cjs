@@ -5,13 +5,15 @@ const { spawnSync } = require("node:child_process");
 
 const repo = "Crypto-Moonboys/Crypto-Moonboys.github.io";
 const approval = "block-topia-approved";
+const iterationLabel = "block-topia-iterate";
+const integration = "block-topia/integration";
 const stateDir = path.join(os.homedir(), ".local/state/block-topia-build");
 const rendererSize = 12;
 const palette = { water: "#143950", road: "#667b8a", ground: "#283e35", dock: "#98734e", house: "#aa5149", lighthouse: "#dbc69c" };
 
-async function github(route, body) {
+async function github(route, body, method = body ? "POST" : "GET") {
   const response = await fetch(`https://api.github.com/repos/${repo}${route}`, {
-    method: body ? "POST" : "GET",
+    method,
     headers: {
       Authorization: `Bearer ${process.env.GH_TOKEN}`,
       Accept: "application/vnd.github+json",
@@ -205,23 +207,129 @@ async function publish(number, files) {
   return pr.html_url;
 }
 
-async function build(issue, dir) {
+async function codexReview(pr, head) {
+  const endpoint = `/issues/${pr.number}/comments`;
+  const marker = `<!-- block-topia-review:${head} -->`;
+  const comments = [];
+  for (let page = 1; ; page++) {
+    const batch = await github(`${endpoint}?per_page=100&page=${page}`);
+    comments.push(...batch);
+    if (batch.length < 100) break;
+  }
+  for (const comment of comments) {
+    if (!["chatgpt-codex-connector[bot]", "chatgpt-codex-connector"].includes(comment.user?.login)) continue;
+    const record = comment.body?.match(/<!-- codex-review-state:v1 (.+?) -->/);
+    if (!record) continue;
+    const review = JSON.parse(record[1]).code_review;
+    if (review?.commit_sha !== head || review.status !== "completed") continue;
+    if (review.has_unresolved_findings === false) return { passed: true };
+    if (review.has_unresolved_findings === true) {
+      const inline = await github(`/pulls/${pr.number}/comments?per_page=100`);
+      const notes = inline.filter(note => ["chatgpt-codex-connector[bot]", "chatgpt-codex-connector"].includes(note.user?.login) && note.commit_id === head)
+        .map(note => String(note.body)).join("\n").slice(0, 4000);
+      return { feedback: notes || "Codex reported unresolved findings. Review the previous layout for connection and visual problems." };
+    }
+  }
+  const lastRequest = comments.filter(comment => comment.body?.startsWith("@codex review")
+    && comment.body.includes(marker)).at(-1);
+  if (!lastRequest || Date.now() - Date.parse(lastRequest.created_at) >= 30 * 60_000) {
+    await github(endpoint, { body: `@codex review\n\nPlease describe concrete fixes for any layout or preview problems you find.\n\n${marker}` });
+  }
+  return { waiting: true };
+}
+
+async function publishRound(issue, round, attempt, dir, files) {
+  const number = issue.number;
+  const branch = `block-topia/issue-${number}-round-${round}-attempt-${attempt}`;
+  const matchingRefs = async name => (await github(`/git/matching-refs/heads/${name}`))
+    .find(ref => ref.ref === `refs/heads/${name}`);
+  const publication = await checkpoint(dir, "publication.json", async () => {
+    let base = await matchingRefs(integration);
+    if (!base) {
+      const main = await github("/git/ref/heads/main");
+      base = await github("/git/refs", { ref: `refs/heads/${integration}`, sha: main.object.sha });
+    }
+    const parent = await github(`/git/commits/${base.object.sha}`);
+    const tree = Object.entries(files).map(([name, content]) => ({
+      path: `games/block-topia/founder-preview/issue-${number}/${name}`,
+      mode: "100644",
+      type: "blob",
+      content
+    }));
+    const next = await github("/git/trees", { base_tree: parent.tree.sha, tree });
+    const commit = await github("/git/commits", {
+      message: `Build waterfront #${number}, round ${round}`,
+      tree: next.sha,
+      parents: [parent.sha]
+    });
+    return { base: parent.sha, head: commit.sha };
+  });
+  const query = `/pulls?state=all&head=${encodeURIComponent("Crypto-Moonboys:" + branch)}&base=${encodeURIComponent(integration)}`;
+  const existing = (await github(query))[0];
+  if (existing) {
+    const pr = await github(`/pulls/${existing.number}`);
+    if (pr.base.ref !== integration || pr.head.sha !== publication.head) {
+      throw new Error("The existing integration PR differs from the tested round.");
+    }
+    if (pr.merged) return { url: pr.html_url };
+    if (pr.state !== "open" || pr.draft) throw new Error("The integration PR is closed or awaiting review.");
+  }
+  if ((await matchingRefs(integration))?.object.sha !== publication.base) {
+    return { feedback: "The integration branch advanced. Rebuild and retest the round against its new base." };
+  }
+  const ref = await matchingRefs(branch);
+  if (!ref) await github("/git/refs", { ref: `refs/heads/${branch}`, sha: publication.head });
+  else if (ref.object.sha !== publication.head) throw new Error("Round branch differs from the tested commit.");
+
+  const pr = existing ?? await github("/pulls", {
+    head: branch, base: integration, draft: false,
+    title: `Block Topia waterfront #${number}, round ${round}`,
+    body: `Part of #${number}. This integration-only round passed local route and Chromium rendering checks.`
+  });
+  await checkApproval(issue, iterationLabel);
+  const review = await codexReview(pr, publication.head);
+  if (!review.passed) return review;
+  await checkApproval(issue, iterationLabel);
+  if ((await matchingRefs(integration))?.object.sha !== publication.base) {
+    return { feedback: "Integration advanced before merge. Rebuild and retest the round against its new base." };
+  }
+  const merged = await github(`/pulls/${pr.number}/merge`, {
+    sha: publication.head, merge_method: "merge"
+  }, "PUT");
+  if (!merged.merged) throw new Error("GitHub did not merge the tested integration round.");
+  return { url: pr.html_url };
+}
+
+async function checkApproval(issue, requiredLabel) {
+  const current = await github(`/issues/${issue.number}`);
+  const labels = new Set(current.labels.map(label => label.name));
+  if (current.state !== "open" || !labels.has(approval) || !labels.has(requiredLabel)
+    || current.title !== issue.title || current.body !== issue.body) {
+    throw new Error("Issue was closed, changed or lost approval during the build.");
+  }
+}
+
+async function build(issue, dir, round = 0, previous = null, attempt = 1, reviewFeedback = "") {
   const number = issue.number;
   const brief = { title: issue.title, body: String(issue.body || "").slice(0, 6000) };
   const research = await checkpoint(dir, "research.json", () => references(dir));
   const plan = await checkpoint(dir, "plan.json", () => model("planner",
-    "Propose a tiny top-down district with a connected street, dock, lighthouse, and empty plots. Use key plan.", { brief, research: research.notes.planner }));
+    "Propose a tiny top-down district with a connected street, dock, lighthouse, and empty plots. Use key plan.", { brief, previous, round, research: research.notes.planner }));
   const art = await checkpoint(dir, "art.json", () => model("artist",
     "Return six hexadecimal #RRGGBB colors with keys water, road, ground, dock, house, lighthouse.", { plan, research: research.notes.artist }));
   const colors = Object.fromEntries(Object.entries(palette).map(([key, fallback]) =>
     [key, typeof art[key] === "string" && /^#[0-9a-f]{6}$/i.test(art[key]) ? art[key] : fallback]));
   const district = await checkpoint(dir, "district.json", async () => {
-    let feedback = "";
+    let feedback = reviewFeedback || (previous ? "Keep the existing district recognizable and make one useful, visible improvement to its layout." : "");
     for (let attempt = 0; attempt < 3; attempt++) {
       const layout = await model("developer",
-        "Return keys name and rows. rows is exactly twelve strings of twelve chars each. Use ~ water, . ground, r road, d dock, h lighthouse, _ buildable plot. Connect all road and dock cells orthogonally. Put every lighthouse and plot next to a connecting road or dock.", { plan, research: research.notes.developer, feedback });
+        "Return keys name and rows. rows is exactly twelve strings of twelve chars each. Use ~ water, . ground, r road, d dock, h lighthouse, _ buildable plot. Connect all road and dock cells orthogonally. Put every lighthouse and plot next to a connecting road or dock.", { plan, previous, research: research.notes.developer, feedback });
       try {
-        return validateDistrict(layout);
+        const verified = validateDistrict(layout);
+        if (previous && verified.rows.join("") === previous.rows.join("")) {
+          throw new Error("This round repeated the previous layout. Improve a road, dock or plot.");
+        }
+        return verified;
       } catch (error) {
         feedback = error.message;
       }
@@ -235,16 +343,14 @@ async function build(issue, dir) {
   const htmlFile = path.join(dir, "preview.html");
   await fs.writeFile(htmlFile, preview);
   await browserCheck(htmlFile, path.join(dir, "chromium"));
-  const liveIssue = await github(`/issues/${number}`);
-  if (liveIssue.state !== "open" || !liveIssue.labels.some(label => label.name === approval)
-    || liveIssue.title !== issue.title || liveIssue.body !== issue.body) {
-    throw new Error("Issue was closed, changed or lost approval during the build.");
-  }
-  const pr = await publish(number, {
+  await checkApproval(issue, round ? iterationLabel : approval);
+  const files = {
     "index.html": preview,
     "district.json": JSON.stringify({ ...verified, colors }, null, 2) + "\n",
-    "build-review.json": JSON.stringify({ issue: number, research: research.outcome, review }, null, 2) + "\n"
-  });
+    "build-review.json": JSON.stringify({ issue: number, round, research: research.outcome, review }, null, 2) + "\n"
+  };
+  if (round) return publishRound(issue, round, attempt, dir, files);
+  const pr = await publish(number, files);
   await writeProgress(dir, "done.json", { pr });
   console.log(pr);
 }
@@ -258,6 +364,12 @@ async function* approvedIssues() {
   }
 }
 
+async function completed(dir) {
+  return fs.stat(path.join(dir, "done.json")).catch(error => {
+    if (error.code !== "ENOENT") throw error;
+  });
+}
+
 async function runQueue() {
   if (!process.env.GH_TOKEN) throw new Error("Missing repository-scoped GH_TOKEN.");
   if (spawnSync(process.env.BLOCK_TOPIA_CHROMIUM || "chromium", ["--version"], { env: withoutPublishCredentials() }).status !== 0) {
@@ -269,21 +381,71 @@ async function runQueue() {
     const result = spawnSync("flock", ["-n", "-E", "75", "3"], { stdio: ["ignore", "ignore", "pipe", lock.fd] });
     if (result.status === 75) return;
     if (result.error || result.status !== 0) throw new Error("Could not acquire the queue lock.");
-    for await (const issue of approvedIssues()) {
+    const previouslyRun = await fs.readFile(path.join(stateDir, "last-issue.json"), "utf8").catch(error => {
+      if (error.code !== "ENOENT") throw error;
+    });
+    let deferred;
+    async function* nextIssues() {
+      for await (const issue of approvedIssues()) {
+        if (String(issue.number) === previouslyRun?.trim()) deferred = issue;
+        else yield issue;
+      }
+      if (deferred) yield deferred;
+    }
+    for await (const issue of nextIssues()) {
       if (issue.pull_request) continue;
-      const dir = path.join(stateDir, String(issue.number));
+      const issueDir = path.join(stateDir, String(issue.number));
+      const iterative = issue.labels?.some(label => label.name === iterationLabel);
+      let dir = issueDir;
+      let previous = null;
+      let round = 0;
+      if (iterative) {
+        for (round = 1; ; round++) {
+          dir = path.join(issueDir, `round-${round}`);
+          if (!(await completed(dir))) break;
+          previous = JSON.parse(await fs.readFile(path.join(dir, "done.json"), "utf8")).district;
+        }
+      } else if (await completed(dir)) continue;
       await fs.mkdir(dir, { recursive: true, mode: 0o700 });
-      if (await fs.stat(path.join(dir, "done.json")).catch(error => {
-        if (error.code !== "ENOENT") throw error;
-      })) continue;
       const lastError = await fs.readFile(path.join(dir, "last-error.json"), "utf8").catch(error => {
         if (error.code !== "ENOENT") throw error;
       });
       if (lastError && Date.now() - Date.parse(JSON.parse(lastError).at) < 30 * 60_000) continue;
+      await writeProgress(stateDir, "last-issue.json", issue.number);
       try {
         const prior = await checkpoint(dir, "brief.json", () => ({ title: issue.title, body: issue.body }));
         if (prior.title !== issue.title || prior.body !== issue.body) throw new Error("Brief changed after work started. Use a new approved issue for the revised brief.");
-        await build(issue, dir);
+        if (!round) await build(issue, dir);
+        else {
+          const progress = JSON.parse(await fs.readFile(path.join(dir, "repair.json"), "utf8").catch(error => {
+            if (error.code !== "ENOENT") throw error;
+            return '{"attempt":1}';
+          }));
+          const attemptDir = path.join(dir, `attempt-${progress.attempt}`);
+          await fs.mkdir(attemptDir, { recursive: true, mode: 0o700 });
+          let outcome;
+          try {
+            outcome = await build(issue, attemptDir, round, previous, progress.attempt, progress.feedback);
+          } catch (error) {
+            // A fresh layout attempt can repair invalid candidates. Keep any
+            // already-published PR checkpoint when failures are operational.
+            const layoutExists = await fs.stat(path.join(attemptDir, "district.json")).catch(failure => {
+              if (failure.code !== "ENOENT") throw failure;
+            });
+            if (layoutExists) throw error;
+            outcome = { feedback: error.message };
+          }
+          if (outcome.feedback) {
+            await writeProgress(dir, "repair.json", { attempt: progress.attempt + 1, feedback: outcome.feedback });
+            console.log(`Issue #${issue.number}: queued round ${round} repair.`);
+          } else if (outcome.url) {
+            const district = JSON.parse(await fs.readFile(path.join(attemptDir, "district.json"), "utf8"));
+            await writeProgress(dir, "done.json", { pr: outcome.url, district });
+            console.log(outcome.url);
+          } else {
+            console.log(`Issue #${issue.number}: waiting for Codex on round ${round}.`);
+          }
+        }
       } catch (error) {
         console.error(`Issue #${issue.number}: ${error.message}`);
         await writeProgress(dir, "last-error.json", { message: error.message, at: new Date().toISOString() });
