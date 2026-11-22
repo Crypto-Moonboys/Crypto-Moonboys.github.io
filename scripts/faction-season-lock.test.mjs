@@ -43,6 +43,7 @@ function read(relPath) {
 
 // ── Source files ──────────────────────────────────────────────────────────────
 
+const community    = read('community.html');
 const bcFactions   = read('js/battle-chamber-factions.js');
 const alignment    = read('js/faction-alignment.js');
 const worker       = read('workers/moonboys-api/worker.js');
@@ -158,8 +159,8 @@ check(
 );
 
 check(
-  bcFactions.includes('Your runs, missions, and proof events'),
-  'Aligned user sees clout contribution note',
+  community.includes('your runs, missions and proof events count toward your faction'),
+  'Join information explains what counts toward the faction',
 );
 
 check(
@@ -168,23 +169,18 @@ check(
 );
 
 check(
-  bcFactions.includes('Choose carefully. Your faction is locked for the current season'),
+  bcFactions.includes('Your choice lasts the season.'),
   'Unaligned panel shows season lock warning copy',
 );
 
 check(
-  bcFactions.includes('At season reset') || bcFactions.includes('season lock clears'),
-  'Unaligned panel shows season reset copy',
+  community.includes('You can choose again next season.'),
+  'Join information explains when players can choose again',
 );
 
 check(
-  bcFactions.includes('Faction clout only counts when you are Telegram-linked'),
-  'Unaligned panel shows Telegram-link requirement',
-);
-
-check(
-  bcFactions.includes('No faction, no faction clout'),
-  'Unaligned panel shows no-faction warning',
+  community.includes('With Telegram linked, your runs, missions and proof events count toward your faction.'),
+  'Join information explains the Telegram-link requirement',
 );
 
 // season_key merged into dispatched status when loadStatus() doesn't return it

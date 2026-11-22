@@ -97,7 +97,7 @@ const LIVE_FACTION_LABELS = [
   'Crypto Stoned Boys',
 ];
 for (const label of LIVE_FACTION_LABELS) {
-  check(communityHtml.includes(label), `community.html includes faction: ${label}`);
+  check(bcFactionsJs.includes(label), `Community faction renderer includes: ${label}`);
 }
 
 // ── community.html: weekly / monthly / seasonal sections ──────────────────────
@@ -142,7 +142,7 @@ check(communityHtml.includes('tg-activity-feed'), 'community.html includes tg-ac
 check(communityHtml.includes('gklink-status'), 'community.html includes gklink-status');
 check(!communityHtml.includes('data-tg-sync-cta'), 'community.html links to My Moonboy rather than rendering a second login banner');
 check(!communityHtml.includes('bc-hero-ctas'), 'community.html omits the hero shortcut cards');
-check(communityHtml.includes('href="/my-moonboy.html?tab=faction"'), 'community.html retains the My Moonboy link in the missions section');
+check(communityHtml.includes('href="/my-moonboy.html?tab=faction"'), 'community.html retains the My Moonboy faction link');
 
 console.log('\n[5b] community.html - Battle Chamber card polish CSS');
 check(/body\.page-community \.bc-why-list li\s*\{[\s\S]*?padding:\s*14px 16px 14px 48px;/.test(actionCardsCss), 'why-join list cards keep inner padding and icon gutter');

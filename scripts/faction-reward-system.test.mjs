@@ -243,10 +243,8 @@ check(hubJs.includes('battle-chamber:faction-rewards-ready'), 'battle-chamber-fa
 
 const communityHtml = read(COMMUNITY_HTML_FILE);
 check(communityHtml.includes('battle-faction-reward-unlocks'), 'community.html includes battle-faction-reward-unlocks container');
-check(communityHtml.includes('Win the week. Own the chamber.'), 'community.html includes copy: "Win the week. Own the chamber."');
-check(communityHtml.includes('Monthly clout puts your faction on the board.'), 'community.html includes copy: "Monthly clout puts your faction on the board."');
-check(communityHtml.includes('Seasonal winners become part of the Battle Chamber record.'), 'community.html includes copy: "Seasonal winners become part of the Battle Chamber record."');
-check(communityHtml.includes('Badges, stickers, titles, and roguelite options prove your faction moved.'), 'community.html includes copy: "Badges, stickers, titles, and roguelite options prove your faction moved."');
+check(/<details class="bc-more-info">[\s\S]*?More info about faction rewards[\s\S]*?clout, badges, stickers, titles and roguelite options/.test(communityHtml),
+  'Community puts the faction reward types behind the More info control');
 check(communityHtml.includes('Faction rewards are gameplay/status rewards only.'), 'community.html includes copy: "Faction rewards are gameplay/status rewards only."');
 
 // ── 5. Faction page wiring ────────────────────────────────────────────────────
