@@ -16,7 +16,7 @@ import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
-import { addMoonboysMessageEmoji, formatMoonboysAnnouncement } from './telegram/faction-emoji.js';
+import { addMoonboysMessageEmoji, formatMoonboysAnnouncement, telegramMessageLength } from './telegram/faction-emoji.js';
 import { createTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
@@ -744,10 +744,11 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
   // interactive command or callback replies. Preserve formatting/keyboards.
   botToken = unwrapTelegramBotToken(botToken);
   try {
-    const decoratedText = requestOptions.usePackEmoji !== false &&
-        (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && typeof text === 'string' && text.length < 4096
+    const branded = requestOptions.usePackEmoji !== false &&
+        (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && typeof text === 'string' && telegramMessageLength(text, 'HTML') < 4096
       ? await addMoonboysMessageEmoji(text, botToken)
       : text;
+    const decoratedText = branded !== text && telegramMessageLength(branded, 'HTML') <= 4096 ? branded : text;
     const send = messageText => fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -780,9 +781,10 @@ async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
   let outcome;
   let caption = text;
   try {
-    if ((extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && !extra.caption_entities && typeof text === 'string' && text.length < 1024) {
+    if (requestOptions.usePackEmoji !== false && (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && !extra.caption_entities &&
+        typeof text === 'string' && telegramMessageLength(text, 'HTML') < 1024) {
       const branded = await addMoonboysMessageEmoji(text, env.TELEGRAM_BOT_TOKEN);
-      if (branded.length <= 1024) caption = branded;
+      if (telegramMessageLength(branded, 'HTML') <= 1024) caption = branded;
     }
     const seed = moonboyTelegramMessageSeed(messageKind, chatId, logicalId, sequence);
     outcome = await sendControlledMoonboyTelegram({
@@ -16456,10 +16458,10 @@ async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
     botToken = unwrapTelegramBotToken(botToken);
     const caption = extra.caption;
     const branded = extra.parse_mode === 'HTML' && !extra.caption_entities &&
-      typeof caption === 'string' && caption.length < 1024
+      typeof caption === 'string' && telegramMessageLength(caption, 'HTML') < 1024
       ? await addMoonboysMessageEmoji(caption, botToken)
       : caption;
-    const brandedCaption = branded?.length <= 1024 ? branded : caption;
+    const brandedCaption = branded !== caption && telegramMessageLength(branded, 'HTML') <= 1024 ? branded : caption;
     const send = value => fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

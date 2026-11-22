@@ -1,7 +1,7 @@
 // PR3 — controlled bot Telegram photo canary integration.
 // No change to existing Telegram delivery while the feature is disabled.
 // This module only handles text-only messages; never intercept existing photos.
-import { addMoonboysMessageEmoji, formatMoonboysAnnouncement } from './faction-emoji.js';
+import { addMoonboysMessageEmoji, formatMoonboysAnnouncement, telegramMessageLength } from './faction-emoji.js';
 import {
   loadHomepageMoonboyManifest, composeTelegramMoonboy
 } from './moonboy-portrait.js';
@@ -76,7 +76,7 @@ export async function sendControlledMoonboyTelegram({
     return { status: 'disabled' };
   }
   if (typeof text !== 'string' || text.length === 0 ||
-      text.length > TELEGRAM_PHOTO_CAPTION_LIMIT) {
+      telegramMessageLength(text, options.parse_mode) > TELEGRAM_PHOTO_CAPTION_LIMIT) {
     // PR2 deliberately sends long captions as text only; avoid a nine-layer
     // paid composition that would not be used.
     return { status: 'disabled' };
@@ -120,7 +120,7 @@ export async function sendControlledMoonboyTelegram({
     if (LEGACY_DEFAULT_KIND.has(messageKind) && !options.parse_mode && !options.entities && !options.caption_entities) {
       const heading = formatMoonboysAnnouncement(text);
       const branded = await addMoonboysMessageEmoji(heading, original.token, fetchImpl);
-      if (branded !== heading && branded.length <= TELEGRAM_PHOTO_CAPTION_LIMIT) {
+      if (branded !== heading && telegramMessageLength(branded, 'HTML') <= TELEGRAM_PHOTO_CAPTION_LIMIT) {
         payload = { ...original, text: branded, options: { ...options, parse_mode: 'HTML' } };
       }
     }
