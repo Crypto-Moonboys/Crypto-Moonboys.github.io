@@ -451,6 +451,73 @@
       });
   }
 
+  function buildStoryProposal(pageId) {
+    if (!BASE || !FEATURES.COMMENTS || document.location.pathname !== '/wiki/' + pageId + '.html') return '';
+    return '<details id="wiki-story-proposal">' +
+      '<summary>Suggest a story change</summary>' +
+      '<form class="comment-form" data-story-proposal>' +
+        '<p>Log in with Telegram to send your suggestion and Telegram name to the community group for editorial review. <a href="/my-moonboy.html">Telegram login</a></p>' +
+        '<div class="comment-form-field">' +
+          '<label>What should change, and why?' +
+            '<textarea name="proposal" rows="5" minlength="20" maxlength="1500" required placeholder="Describe the change. Include the relevant passage or source if you have one."></textarea>' +
+          '</label>' +
+        '</div>' +
+        '<button type="submit" class="swarmsy-form-button">Send to Telegram</button>' +
+        '<div class="comment-form-status" role="status"></div>' +
+      '</form>' +
+    '</details>';
+  }
+
+  function wireStoryProposal(container, pageId) {
+    var form = container.querySelector('[data-story-proposal]');
+    if (!form) return;
+    var button = form.querySelector('button');
+    var status = form.querySelector('[role="status"]');
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if (button.disabled) return;
+      var proposal = form.elements.proposal.value.trim();
+      if (proposal.length < 20 || proposal.length > 1500) {
+        status.textContent = 'Use 20 to 1,500 characters.';
+        return;
+      }
+      button.disabled = true;
+      status.textContent = 'Checking Telegram login…';
+      try {
+        var auth = await getFreshTelegramAuth();
+        if (!auth || typeof auth.hash !== 'string' || !auth.hash.startsWith('s1_')) {
+          status.textContent = 'Log in with Telegram on My Moonboy, then return to send your proposal.';
+          return;
+        }
+        status.textContent = 'Sending to Telegram…';
+        var response = await fetch(BASE + '/wiki/story-proposals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page_id: pageId, proposal: proposal, telegram_auth: auth })
+        });
+        var result = await response.json();
+        if (response.ok && result.ok === true) {
+          form.reset();
+          status.textContent = 'Proposal sent to the Telegram group for review.';
+        } else if (response.status === 401) {
+          status.textContent = 'Your Telegram login expired. Log in again to send your proposal.';
+        } else if (response.status === 403) {
+          status.textContent = 'This Telegram account cannot submit a proposal.';
+        } else if (response.status === 429) {
+          status.textContent = 'Please wait a minute before sending another proposal.';
+        } else if (result.error === 'story_proposal_delivery_unconfirmed') {
+          status.textContent = 'Delivery could not be confirmed. Check the group before sending again.';
+        } else {
+          status.textContent = 'Could not send your proposal. Your draft is still here.';
+        }
+      } catch (_) {
+        status.textContent = 'Delivery could not be confirmed. Check the group before sending again.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
   function initSection(el) {
     var pageId = el.dataset.pageId ||
       document.location.pathname.split('/').pop().replace(/\.html$/, '');
@@ -467,6 +534,7 @@
           '</div>' +
         '</header>' +
         buildForm(pageId) +
+        buildStoryProposal(pageId) +
         '<div class="comments-list-panel">' +
           '<h3>Latest Collector Notes</h3>' +
           '<div class="comments-list" id="comments-list-' + pageId + '">' + listPlaceholder + '</div>' +
@@ -474,6 +542,7 @@
       '</section>';
 
     wireForm(el, pageId);
+    wireStoryProposal(el, pageId);
     wireVotes(el);
     injectTelegramWidget(el);
 

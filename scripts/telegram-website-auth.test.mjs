@@ -77,6 +77,47 @@ test('faction status accepts website POST proof and preserves existing faction p
   assert.equal(preservationSnapshot(sqlite), snapshot);
 });
 
+test('wiki story proposals require a current website login and go only to the configured Telegram topic', async t => {
+  const { env, sqlite } = fixture();
+  const { data } = await loggedIn(env);
+  const proposal = 'Correct the Agent SAM timeline. <b>This is quoted evidence, not a heading.</b>';
+  const submit = (payload, overrides = {}) => apiWorker.fetch(new Request(API + '/wiki/story-proposals', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: 'agent-sam', proposal, ...payload }),
+  }), { ...env, TELEGRAM_GROUP_CHAT_ID: '-1001234567890', TELEGRAM_GROUP_THREAD_ID: '42', ...overrides });
+  const sent = [];
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    if (url.endsWith('/getStickerSet')) return Response.json({ ok: false }, { status: 400 });
+    assert.ok(url.endsWith('/sendMessage'));
+    sent.push(JSON.parse(init.body));
+    return Response.json({ ok: true, result: { message_id: 987 } });
+  });
+  assert.equal((await submit({ email: 'reader@example.test' })).status, 401);
+  assert.equal((await submit({ telegram_auth: { id: ID, hash: 'a'.repeat(64) } })).status, 401);
+  assert.equal((await submit({ telegram_auth: { ...data.telegram_auth, id: '9999' } })).status, 403);
+  assert.equal((await submit({ telegram_auth: data.telegram_auth, page_id: '../elsewhere' })).status, 400);
+  assert.equal((await submit({ telegram_auth: data.telegram_auth }, { TELEGRAM_GROUP_CHAT_ID: '' })).status, 503);
+  assert.equal(sent.length, 0);
+  const xp = preservationSnapshot(sqlite);
+  const response = await submit({
+    telegram_auth: data.telegram_auth, chat_id: '-99', message_thread_id: 13, name: 'Forged name',
+  });
+  assert.equal(response.status, 201, await response.clone().text());
+  assert.deepEqual(await response.json(), { ok: true });
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].chat_id, '-1001234567890');
+  assert.equal(sent[0].message_thread_id, 42);
+  assert.equal(sent[0].disable_web_page_preview, true);
+  assert.match(sent[0].text, /https:\/\/cryptomoonboys\.com\/wiki\/agent-sam\.html/);
+  assert.match(sent[0].text, /<blockquote>Correct the Agent SAM timeline\. &lt;b&gt;/);
+  assert.doesNotMatch(sent[0].text, /Forged name|s1_/);
+  assert.equal(preservationSnapshot(sqlite), xp);
+  assert.equal((await submit({ telegram_auth: data.telegram_auth })).status, 429);
+  sqlite.exec('UPDATE telegram_website_sessions SET revoked_at = 1');
+  assert.equal((await submit({ telegram_auth: data.telegram_auth })).status, 401);
+  assert.equal(sent.length, 1);
+});
+
 test('Telegram profile only exposes the signed caller and rejects arbitrary owner selectors', async () => {
   const { env, sqlite } = fixture();
   const { data } = await loggedIn(env);
