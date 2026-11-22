@@ -34,7 +34,7 @@ window.waterfrontDistrict = {
     "..b..rc.......r.......c.rw..",
     ".....r........r.........r..."
   ],
-  rows: [
+  previousDoorstepRows: [
     "~~~d~~~~~~~~d~~~~~~~~~~~d~~~",
     "~~~d~~~~~~~~d~~~~~~~~~~~d~~~",
     "...r.......rr...........r...",
@@ -44,6 +44,20 @@ window.waterfrontDistrict = {
     ".rrrrrrrrrrrrrrrrrrrrrrrrrr.",
     ".r.sw.r...r...c..r...r..s.r.",
     ".r.pp.r...rw..p..r...r.gp.r.",
+    ".rrrrrrrrrrrrrrrrrrrrrrrrrr.",
+    ".pb..rc.......r.......c.rw..",
+    ".pp..rp.......r.......pprp.."
+  ],
+  rows: [
+    "~~~d~~~~~~~~d~~~~~~~~~~~d~~~",
+    "~~~d~~~~~~~~d~~~~~~~~~~~d~~~",
+    "...r.......rr...........r...",
+    ".g.r.b.....hrw...~....g.r.b.",
+    ".rrrrrr....prp.......rrrrrr.",
+    "..wr.grE.V..rc.L..N.A.w.r.g.",
+    ".rrrrrrrrrrrrrrrrrrrrrrrrrr.",
+    ".r.sw.r...r...c..r...r..s.r.",
+    ".r.pp.r.H.rw..p..r...r.gp.r.",
     ".rrrrrrrrrrrrrrrrrrrrrrrrrr.",
     ".pb..rc.......r.......c.rw..",
     ".pp..rp.......r.......pprp.."
@@ -63,6 +77,12 @@ window.waterfrontDistrict = {
     { material: "gravel", bounds: [25, 10, 27, 11] }
   ],
   tiles: {
+    E: { name: "Block Exchange", color: "#4f4366" },
+    V: { name: "Cold Vault", color: "#4f4366" },
+    H: { name: "Hash House", color: "#4f4366" },
+    L: { name: "Lucky Block Casino", color: "#4f4366" },
+    N: { name: "Neon Ledger Casino", color: "#4f4366" },
+    A: { name: "Afterblock Club", color: "#4f4366" },
     "~": { name: "Water", color: "#101f34" },
     ".": { name: "Ground", color: "#23242e" },
     p: { name: "Paved footpath", color: "#6f6268", walkable: true },
