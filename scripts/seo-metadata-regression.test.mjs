@@ -15,7 +15,8 @@ for (const url of urls) {
   const parsed = new URL(url);
   if (parsed.pathname.startsWith('/wiki/')) continue;
   assert.equal(parsed.origin, BASE, 'only owned canonical URLs may appear in the sitemap');
-  const file = parsed.pathname === '/' ? 'index.html' : parsed.pathname.slice(1);
+  const route = parsed.pathname.slice(1);
+  const file = parsed.pathname.endsWith('/') ? route + 'index.html' : route;
   const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
   const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1] || '';
   assert.ok(head, file + ' has no head');
@@ -78,15 +79,40 @@ for (const file of ['paths.html', 'hubs.html']) {
   assert.equal(blocks.length, 1, file + ' should describe its WebPage once');
 }
 assert.match(fs.readFileSync(path.join(ROOT, 'dashboard.html'), 'utf8'), /name="robots" content="noindex, follow"/);
+for (const [oldRoute, canonicalRoute] of [
+  ['/games/pac-chain/', '/games/chain-maze/'],
+  ['/games/asteroid-fork/', '/games/forkfield/'],
+  ['/games/breakout-bullrun/', '/games/bullrun-brick-smash/'],
+  ['/games/index.html', '/games/'],
+  ['/battle-chamber/factions/index.html', '/battle-chamber/factions/'],
+]) {
+  const file = oldRoute.endsWith('/') ? oldRoute + 'index.html' : oldRoute;
+  const source = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  assert.ok(source.includes('<link rel="canonical" href="' + BASE + canonicalRoute + '">'),
+    oldRoute + ' must declare the current public URL');
+  assert.ok(!urls.includes(BASE + oldRoute), 'duplicate URLs must stay out of the sitemap');
+  assert.ok(urls.includes(BASE + canonicalRoute), 'canonical URL missing from the sitemap: ' + canonicalRoute);
+}
 for (const [oldRoute, destination, canonicalRoute] of [
   ['/wiki/tokens.html', '/categories/cryptocurrencies.html', '/categories/cryptocurrencies.html'],
   ['/wiki/liquidity-pools.html', '/wiki/defi.html#amm', '/wiki/defi.html'],
+  ...[
+    ['xrp', 'xrp-ledger'],
+    ['xrpl-dex', 'xrp-ledger'],
+    ['xrpl-tokens', 'xrp-ledger'],
+    ['xrpl-trust-lines', 'xrp-ledger'],
+    ['hard-fork-games-event', 'hard-fork-games'],
+    ['no-ball-games-nbg-collection', 'noballgamess-nft-collection'],
+    ['substack-posts-on-graffpunks-substack-com', 'graffpunks-reading-library'],
+    ['substack-posts-on-graffpunkssubstackcom', 'graffpunks-reading-library'],
+  ].map(([alias, target]) => ['/wiki/' + alias + '.html', '/wiki/' + target + '.html', '/wiki/' + target + '.html']),
 ]) {
   const source = fs.readFileSync(path.join(ROOT, oldRoute), 'utf8');
   assert.ok(source.includes('content="0; url=' + destination + '"'), oldRoute + ' must resolve the old guide');
   assert.ok(source.includes('href="' + BASE + canonicalRoute + '"'), 'canonicals must not include section fragments');
   assert.ok(source.includes('<a href="' + destination + '">'), 'readers need a fallback link');
   assert.ok(!urls.includes(BASE + oldRoute), 'aliases must not enter the sitemap');
+  assert.ok(urls.includes(BASE + canonicalRoute), 'alias destination missing from the sitemap: ' + canonicalRoute);
 }
 const currencyHub = fs.readFileSync(path.join(ROOT, 'categories/cryptocurrencies.html'), 'utf8');
 for (const [, route] of currencyHub.matchAll(/href="(\/wiki\/[^"#?]+\.html)"/g)) {
