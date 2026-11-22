@@ -18,11 +18,13 @@ const play = document.querySelector("#play");
 const status = document.querySelector("#status");
 const context = canvas.getContext("2d");
 const sheet = new Image();
+let frames;
 let frame = 0;
 let timer;
 function draw() {
   context.clearRect(0, 0, 256, 256);
-  context.drawImage(sheet, frame % 5 * 256, Math.floor(frame / 5) * 256, 256, 256, 0, 0, 256, 256);
+  const { x, y, w, h } = frames[frame];
+  context.drawImage(sheet, x, y, w, h, 0, 0, canvas.width, canvas.height);
 }
 function toggle() {
   if (timer) {
@@ -30,7 +32,7 @@ function toggle() {
     timer = undefined;
     play.textContent = "Play animation";
   } else {
-    timer = setInterval(() => { frame = (frame + 1) % 25; draw(); }, 80);
+    timer = setInterval(() => { frame = (frame + 1) % frames.length; draw(); }, 80);
     play.textContent = "Pause animation";
   }
 }
@@ -43,6 +45,16 @@ sheet.onload = () => {
 };
 sheet.onerror = () => { status.textContent = "Could not load the sprite sheet."; };
 play.onclick = toggle;
-sheet.src = "walk-south.png";
+fetch("walk-south.json")
+  .then(response => {
+    if (!response.ok) throw new Error("Could not load the animation atlas.");
+    return response.json();
+  })
+  .then(atlas => {
+    frames = Object.values(atlas.frames);
+    if (!frames.length) throw new Error("The animation atlas has no frames.");
+    sheet.src = "walk-south.png";
+  })
+  .catch(error => { status.textContent = error.message; });
 </script>
 </html>
