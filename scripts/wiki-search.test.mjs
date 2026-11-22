@@ -303,7 +303,7 @@ const graffpunksStopwordOnly = {
     }
   };
   const { html, heading } = await renderSearchResults([onlyPartial], 'graffpunks radio');
-  assert.ok(html.includes('GraffPUNKS — Crypto Moonboys Wiki'),
+  assert.ok(html.includes('<mark>GraffPUNKS</mark> — Crypto Moonboys Wiki'),
     'Search page must render partial matches when no result matches all tokens');
   assert.equal(heading, 'Results for "graffpunks radio" (1)',
     'Fallback branch should still report the rendered partial result count');
@@ -577,6 +577,8 @@ const graffpunksStopwordOnly = {
   assert.equal(elements['search-heading'].textContent, `All Articles (${index.length})`);
   assert.doesNotMatch(elements['search-results-page'].innerHTML, /href="\/games\/forkfield\/"/);
 
+  let sharedUrl;
+  sandbox.history.replaceState = (_state, _title, url) => { sharedUrl = new URL(url); };
   sandbox.bindSearchControls();
   const displayed = () => [...results.innerHTML.matchAll(/<a href="([^"]+)" class="article-card-title"/g)]
     .map(([, href]) => href);
@@ -594,6 +596,8 @@ const graffpunksStopwordOnly = {
   assert.equal(new Set(pageTwo).size, 48);
   filters.games.click();
   assert.equal(filters.games['aria-pressed'], 'true');
+  assert.equal(sharedUrl.searchParams.get('type'), 'games');
+  assert.equal(sharedUrl.searchParams.get('q'), 'Block Topia');
   assert.equal(shortcuts.hidden, true);
   assert.ok(displayed().includes('/games/block-topia/'));
   assert.ok(displayed().every(url => url.startsWith('/games/')));
@@ -626,6 +630,7 @@ const graffpunksStopwordOnly = {
     assert.ok(displayed().includes(url), query);
   }
   search('');
+  assert.ok(!sharedUrl.searchParams.has('type') && !sharedUrl.searchParams.has('q'));
   assert.ok(sections.every(section => !section.hidden));
   assert.equal(elements['search-filters'].hidden, true);
   assert.equal(displayed().length, 24);
