@@ -150,7 +150,7 @@ window.__HUD_CONSOLIDATED__ = true;
     return `
         <div class="site-logo">
           <a class="site-logo-home" href="/index.html" aria-label="Crypto Moonboys home">
-            <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
+            <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" srcset="/art/responsive/shell-moonboys-logo-72.png 72w, /art/responsive/shell-moonboys-logo-144.png 144w, /CRYPTO-MOONBOYS-BITCOIN-LOGO.png 476w" sizes="36px" alt="" width="36" height="36" loading="eager" decoding="async">
             <span>
               <span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span>
               <span class="logo-sub">LIVE KNOWLEDGE NETWORK</span>
@@ -551,7 +551,7 @@ window.__HUD_CONSOLIDATED__ = true;
     sparkyAgent.href = '/ai-user.html';
     sparkyAgent.setAttribute('aria-label', 'Start a campaign with the SPARKY AI Creator Studio');
     sparkyAgent.title = 'Open AI Creator Studio';
-    sparkyAgent.innerHTML = '<img src="/SPARKY%20FLOATING%20CLIP.png" alt="" loading="lazy" decoding="async"><span>CREATE WITH AI</span>';
+    sparkyAgent.innerHTML = '<img src="/SPARKY%20FLOATING%20CLIP.png" srcset="/art/responsive/shell-sparky-72.png 72w, /art/responsive/shell-sparky-144.png 144w, /SPARKY%20FLOATING%20CLIP.png 213w" sizes="36px" alt="" loading="lazy" decoding="async"><span>CREATE WITH AI</span>';
     document.body.appendChild(sparkyAgent);
   }
 
