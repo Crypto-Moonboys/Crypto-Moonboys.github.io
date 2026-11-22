@@ -890,19 +890,57 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
+  function factionCharacter(faction, x, y, facing = 0, frame = 0) {
+    rect("#080f1cad", x - 5, y - 1, 10, 3);
+    ctx.drawImage(waterfrontFactionAtlas.image, frame * 36, (faction * 4 + facing) * 36, 36, 36,
+      x - 9, y - 17, 18, 18);
+  }
+
   function actor() {
     const x = player.x * size + 16;
     const y = player.y * size + 22;
-    const image = waterfrontFactionAtlas.image;
-    if (!image || !Number.isInteger(player.faction) || !waterfrontFactions[player.faction]) {
+    if (waterfrontFactionAtlas.image && Number.isInteger(player.faction) && waterfrontFactions[player.faction]) {
+      factionCharacter(player.faction, x, y, player.facing, player.frame);
+    } else {
       person(x, y, "#c17362", "#39778c", 0, true);
-      return;
     }
-    const facing = player.facing ?? 0;
-    const frame = player.frame ?? 0;
-    rect("#080f1cad", x - 5, y - 1, 10, 3);
-    ctx.drawImage(image, frame * 36, (player.faction * 4 + facing) * 36, 36, 36,
-      x - 9, y - 17, 18, 18);
+  }
+
+  let nearestFaction;
+  function drawFactionWalkers() {
+    if (!waterfrontFactionAtlas.image) return;
+    const { x: start, y: row } = district.spawn;
+    let left = start;
+    let right = start;
+    while (roadAt(left - 1, row)) left--;
+    while (roadAt(right + 1, row)) right++;
+    const distance = (right - left) * size;
+    waterfrontFactions.forEach((name, index) => {
+      const phase = (index / waterfrontFactions.length + (time ?? 0) * 0.018) % 1;
+      const east = phase < 0.5;
+      const progress = east ? phase * 2 : (1 - phase) * 2;
+      const x = Math.round(left * size + 16 + distance * progress);
+      const y = row * size + (east ? 26 : 13);
+      const frame = time === null || distance === 0 ? 0 : 1 + Math.floor(time * 7 + index) % 3;
+      queue(y, () => factionCharacter(index, x, y, east ? 2 : 1, frame));
+      const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
+      if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
+        nearestFaction = { name, x, y, separation };
+      }
+    });
+  }
+
+  function drawFactionLabel() {
+    if (!nearestFaction) return;
+    const { name, x, y } = nearestFaction;
+    ctx.save();
+    ctx.font = "7px system-ui";
+    const width = Math.ceil(ctx.measureText(name).width) + 8;
+    rect("#131926ed", x - width / 2, y - 30, width, 11);
+    ctx.fillStyle = "#eaf2e5";
+    ctx.textAlign = "center";
+    ctx.fillText(name, x, y - 22);
+    ctx.restore();
   }
 
   const crew = window.waterfrontBuildDiscussion ?? [];
@@ -943,9 +981,11 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   beacons.forEach(([x, y]) => beacon(x, y, false));
   graffitiSeawall();
   drawFreight();
+  drawFactionWalkers();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));
   drawCrew();
+  drawFactionLabel();
 
 };
