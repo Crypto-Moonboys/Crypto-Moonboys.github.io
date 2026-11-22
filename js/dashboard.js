@@ -25,8 +25,14 @@
   }
 
   function initReports() {
-    Promise.all(['site-stats', 'content-gaps', 'authority-drift'].map(loadReport))
-      .then(([stats, gaps, drift]) => renderSummaryMetrics(stats, gaps, drift));
+    const embedded = document.getElementById('dashboard-summary-data');
+    if (embedded) {
+      const { stats, gaps, drift } = JSON.parse(embedded.textContent);
+      renderSummaryMetrics(stats, gaps, drift);
+    } else {
+      Promise.all(['site-stats', 'content-gaps', 'authority-drift'].map(loadReport))
+        .then(([stats, gaps, drift]) => renderSummaryMetrics(stats, gaps, drift));
+    }
 
     const reports = [
       ['blog-editions', renderBlogEditions],
