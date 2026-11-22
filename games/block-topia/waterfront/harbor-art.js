@@ -126,7 +126,13 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
         const sprite = document.createElement("canvas");
         sprite.width = width;
         sprite.height = height;
-        sprite.getContext("2d").drawImage(atlas, x, y, width, height, 0, 0, width, height);
+        const context = sprite.getContext("2d");
+        context.drawImage(atlas, x, y, width, height, 0, 0, width, height);
+        if (["hk-night", "trees", "cargo", "street-detail"].includes(group)) {
+          context.globalCompositeOperation = "source-atop";
+          context.fillStyle = file.startsWith("furniture-") ? "#0b102525" : "#0b102548";
+          context.fillRect(0, 0, width, height);
+        }
         sprites[file].image = sprite;
       }
       resolve();
@@ -192,6 +198,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   // Keep doors and people readable without widening the walkable grid.
   const personScale = 0.55;
   const objects = [];
+  const buildingShadows = [];
   const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
 
@@ -525,6 +532,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       queue(y + 24, () => detail("furniture-" + furniture, x + 16, y + 24, furniture < 4 ? 7 : 9));
     } else if (Object.hasOwn(waterfrontSprites, tile)) {
       const bounds = buildingBounds(tile, col, row);
+      const left = bounds?.left ?? x + 3;
+      const right = left + (bounds?.drawWidth ?? 26);
+      buildingShadows.push([left, right, y + 28]);
       queue(y + 29, () => building(tile, x, y, bounds));
       if (tile === "h") {
         beacons.push(bounds
@@ -571,7 +581,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function building(tile, x, y, bounds) {
-    rect("#0c252c83", x + 4, y + 24, 29, 7);
+    rect("#080d19b8", x + 4, y + 24, 29, 7);
     if (bounds) {
       const { image, left, top, drawWidth, drawHeight } = bounds;
       ctx.drawImage(image, left, top, drawWidth, drawHeight);
@@ -695,7 +705,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     if (image) {
       const width = Math.round(height * image.width / image.height);
       const sway = time === null ? 0 : Math.sin(time * 1.7 + (x + y) / 31) * 0.045;
-      rect("#152e327a", x + 7, y + 25, 22, 4);
+      rect("#080e1ab0", x + 6, y + 25, 24, 5);
       ctx.save();
       ctx.transform(1, 0, sway, 1, x + 16, y + 28);
       ctx.drawImage(image, -Math.floor(width / 2), -height, width, height);
@@ -748,7 +758,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const image = waterfrontBotAtlas.image;
     const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
     const size = 20;
-    rect("#1026338c", x - 5, y - 1, 10, 3);
+    rect("#080f1cad", x - 6, y - 1, 12, 4);
     if (image) {
       ctx.drawImage(image, frame * 32, (model * 4 + facing) * 32, 32, 32,
         x - size / 2, y - size, size, size);
@@ -905,6 +915,11 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   rows.forEach((_, y) => {
     for (let x = 0; x < width; x++) terrain(tileAt(x, y), x, y);
   });
+  rect("#080a1c32", 0, 0, width * size, rows.length * size);
+  for (const [left, right, base] of buildingShadows) {
+    polygon("#080b1890", [[left, base - 8], [right, base - 8], [right + 14, base + 5], [left + 12, base + 5]]);
+    polygon("#080b184d", [[left + 12, base + 5], [right + 14, base + 5], [right + 20, base + 9], [left + 19, base + 9]]);
+  }
   beacons.forEach(([x, y]) => beacon(x, y, false));
   graffitiSeawall();
   drawFreight();
