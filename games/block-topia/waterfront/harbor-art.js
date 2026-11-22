@@ -19,15 +19,19 @@ const waterfrontSprites = {
   b: { file: "warehouse", width: 49, maxHeight: 55 }
 };
 
+const waterfrontTerrain = Object.fromEntries(
+  ["curb-straight", "curb-corner", "footpath-pavers"].map(file => [file, { file }])
+);
+
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
-  return Promise.all(Object.values(waterfrontSprites).map(sprite => new Promise(resolve => {
+  return Promise.all(Object.values({ ...waterfrontSprites, ...waterfrontTerrain }).map(sprite => new Promise(resolve => {
     const image = new Image();
     image.onload = () => {
       sprite.image = image;
       resolve();
     };
     image.onerror = resolve;
-    image.src = "assets/hk-night/" + sprite.file + ".png";
+    image.src = "assets/" + (Object.hasOwn(waterfrontTerrain, sprite.file) ? "terrain/" : "hk-night/") + sprite.file + ".png";
   })));
 };
 
@@ -203,7 +207,29 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
     col >= left && col <= right && row >= top && row <= bottom)?.material;
 
-  function curb(x, y, horizontal, length = 32) {
+  const paving = waterfrontTerrain["footpath-pavers"].image;
+  const pavingPattern = paving && ctx.createPattern(paving, "repeat");
+
+  function curbCorner(x, y, flipX, flipY) {
+    const image = waterfrontTerrain["curb-corner"].image;
+    if (!image) return;
+    ctx.save();
+    ctx.translate(x + (flipX ? 11 : 0), y + (flipY ? 11 : 0));
+    ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+    ctx.drawImage(image, 0, 0);
+    ctx.restore();
+  }
+
+  function curb(x, y, horizontal, length) {
+    const image = waterfrontTerrain["curb-straight"].image;
+    if (image) {
+      ctx.save();
+      ctx.translate(x + (horizontal ? 0 : 4), y);
+      if (!horizontal) ctx.rotate(Math.PI / 2);
+      ctx.drawImage(image, 0, 0, length, 4);
+      ctx.restore();
+      return;
+    }
     rect("#242632", x, y, horizontal ? length : 4, horizontal ? 4 : length);
     rect("#696779", x, y, horizontal ? length : 3, horizontal ? 2 : length);
     for (let at = 6; at < length; at += 7) {
@@ -214,7 +240,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   function pavedSurface(tile, col, row, x, y, seed) {
     const street = tile === "r";
-    const surface = street ? "#353a4d" : "#5d5264";
+    const surface = street ? "#353a4d" : pavingPattern || "#5d5264";
     const northTile = tileAt(col, row - 1);
     const north = roadAt(col, row - 1);
     const south = roadAt(col, row + 1);
@@ -239,10 +265,20 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     if (!east) curb(x + edge, y + (north ? 0 : inset), false,
       lane + (north ? inset : 0) + (south ? inset : 0));
 
+    if (!north && !entrance && !west) curbCorner(x + inset - 3, y + inset - 2, false, false);
+    if (!north && !entrance && !east) curbCorner(x + edge - 7, y + inset - 2, true, false);
+    if (!south && !west) curbCorner(x + inset - 3, y + edge - 7, false, true);
+    if (!south && !east) curbCorner(x + edge - 7, y + edge - 7, true, true);
+
     if (street) {
       for (let i = 0; i < 12; i++) {
         rect(i % 2 ? "#575b69" : "#373c4a", x + inset + (seed + i * 13) % (lane - 2),
           y + inset + ((seed >>> 8) + i * 9) % lane, 2, 1);
+      }
+      if (seed % 4 === 0) {
+        rect("#292d3c", x + inset + 2, y + inset + 3, 5, 1);
+        rect("#292d3c", x + inset + 6, y + inset + 4, 1, 2);
+        rect("#4d646b", x + inset + 3, y + inset + 3, 2, 1);
       }
       if (west && east && !north && !south && !entrance) rect("#ac9870", x + 12, y + 15, 8, 1);
       if (north && south && !west && !east) rect("#ac9870", x + 15, y + 12, 1, 8);
@@ -250,7 +286,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         rect("#242733", x + 18, y + edge - 3, 6, 2);
         for (let i = 19; i < 24; i += 2) rect("#666a78", x + i, y + edge - 3, 1, 1);
       }
-    } else {
+    } else if (!pavingPattern) {
       for (let dy = inset + 2; dy < edge - 1; dy += 4) {
         rect("#534b57", x + inset, y + dy, lane, 1);
         rect("#534b57", x + inset + (dy % 3) * 3 + 3, y + dy, 1, 3);
@@ -273,17 +309,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const water = tile === "~";
     const dock = tile === "d";
 
-    const ground = tile === "." ? groundAt(col, row) : undefined;
-    const base = ground === "grass" ? "#283b39" : ground === "gravel" ? "#342f3c" : "#1b1d2a";
+    const ground = tile === "." ? (row === 2 ? "concrete" : groundAt(col, row)) : undefined;
+    const base = ground === "grass" ? "#283b39" : ground === "gravel" ? "#342f3c" : ground === "concrete" ? "#30323e" : "#1b1d2a";
     rect(water || dock ? "#0b192d" : base, x, y, size, size);
     for (let i = 0; i < 8; i++) {
       const a = (seed + i * 7) % 27;
       const b = ((seed >>> 7) + i * 11) % 30;
       const shade = i % 2 ? "#ffffff16" : "#091d2740";
       if (water || dock) rect(i % 2 ? "#569fc157" : "#142b47", x + a, y + b, 3 + i % 3, 1);
-      else if (ground === "grass") {
+      else if (ground === "concrete") {
+        rect(i % 2 ? "#454655" : "#252833", x + a, y + b, 2, 1);
+        if (i % 3 === 0) rect("#596366", x + a + 1, y + b + 1, 1, 1);
+      } else if (ground === "grass") {
         rect(i % 2 ? "#44594b" : "#202f2f", x + a, y + b, 1, 2);
         rect("#354942", x + a + 1, y + b + 1, 2, 1);
+        if (i % 3 === 0) rect("#607451", x + a + 2, y + b, 1, 1);
       } else if (ground === "gravel") {
         rect(i % 2 ? "#514752" : "#312c35", x + a, y + b, 3, 1);
         rect("#53484a", x + a + 1, y + b + 1, 1, 1);
