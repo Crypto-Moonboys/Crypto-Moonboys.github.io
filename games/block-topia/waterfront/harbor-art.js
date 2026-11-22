@@ -34,6 +34,16 @@ const waterfrontTrees = [
   { file: "tree-paperbark", height: 35 }
 ];
 
+// Groves sit inside grass lots. Each entry lists the tree variants from back to front.
+const waterfrontGroves = new Map([
+  ["8,3", [1, 0, 5]],
+  ["10,4", [7, 3]],
+  ["15,4", [4, 6, 5]],
+  ["18,7", [2, 5]],
+  ["11,11", [4, 0, 7]],
+  ["20,11", [7, 2, 3]]
+]);
+
 const waterfrontAtlases = {
   "hk-night": {
     "afterblock-club": [2, 2, 111, 115],
@@ -416,7 +426,14 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       return;
     }
 
-    if (Object.hasOwn(waterfrontSprites, tile)) {
+    const grove = ground === "grass" && waterfrontGroves.get(col + "," + row);
+    if (grove) {
+      const positions = [[-6, -10, 0.72], [5, -5, 0.9], [-6, 0, 0.63]];
+      grove.forEach((variant, index) => {
+        const [dx, dy, scale] = positions[index];
+        queue(y + dy + 28, () => tree(x + dx, y + dy, variant, scale));
+      });
+    } else if (Object.hasOwn(waterfrontSprites, tile)) {
       const bounds = buildingBounds(tile, col, row);
       queue(y + 29, () => building(tile, x, y, bounds));
       if (tile === "h") {
@@ -581,8 +598,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function tree(x, y, variant) {
-    const { image, height } = waterfrontTrees[variant];
+  function tree(x, y, variant, scale = 1) {
+    const sprite = waterfrontTrees[variant];
+    const { image } = sprite;
+    const height = Math.round(sprite.height * scale);
     if (image) {
       const width = Math.round(height * image.width / image.height);
       const sway = time === null ? 0 : Math.sin(time * 1.7 + (x + y) / 31) * 0.045;
