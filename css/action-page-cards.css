@@ -982,73 +982,112 @@ body.page-community #battle-join-faction .bc-join-card-actions {
   margin-top: auto;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1400px) and (min-height: 800px) {
   body.page-community #join-faction-section + .bc-join-layout {
-    grid-template-columns: minmax(0, 8fr) minmax(0, 5fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  body.page-community #join-faction-section + .bc-join-layout > .bc-join-art {
-    max-width: 600px;
-    justify-self: end;
+  body.page-community #join-faction-section + .bc-join-layout:has(.bc-join-grid) {
+    --faction-frame-height: clamp(560px, calc(100svh - 230px), 720px);
+    height: var(--faction-frame-height);
+  }
+
+  body.page-community #join-faction-section + .bc-join-layout:has(.bc-join-grid) > .bc-join-art {
+    height: var(--faction-frame-height);
+    object-fit: cover;
+    object-position: center;
+  }
+
+  body.page-community .bc-join-content:has(.bc-join-grid),
+  body.page-community #battle-join-faction:has(.bc-join-grid) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body.page-community .bc-join-content:has(.bc-join-grid) {
+    height: 100%;
+  }
+
+  body.page-community #battle-join-faction:has(.bc-join-grid),
+  body.page-community #battle-join-faction .bc-join-grid {
+    flex: 1;
   }
 
   body.page-community #battle-join-faction .bc-join-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    min-height: 0;
+    gap: 7px;
     margin-top: 8px;
   }
 
   body.page-community #battle-join-faction .bc-join-card {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding: 8px 10px;
+    gap: 4px;
+    padding: 7px 8px;
   }
 
   body.page-community #battle-join-faction .bc-join-card-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
   }
 
   body.page-community #battle-join-faction .bc-join-card-icon img {
-    max-width: 28px;
-    max-height: 28px;
+    max-width: 24px;
+    max-height: 24px;
   }
 
   body.page-community #battle-join-faction .bc-join-card-name,
   body.page-community #battle-join-faction .bc-join-card-playstyle,
   body.page-community #battle-join-faction .bc-join-card-perk {
-    line-height: 1.3;
+    line-height: 1.2;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-name {
+    font-size: 15px;
   }
 
   body.page-community #battle-join-faction .bc-join-card-playstyle,
   body.page-community #battle-join-faction .bc-join-card-perk {
-    font-size: 0.875rem;
+    font-size: 13px;
   }
 
   body.page-community #battle-join-faction .bc-join-card-actions {
-    padding-top: 3px;
+    gap: 5px;
+    padding-top: 2px;
   }
 
   body.page-community #battle-join-faction .bc-join-card-actions > * {
-    min-height: 32px;
-    padding: 5px 9px;
-    font-size: 0.8125rem;
+    min-height: 27px;
+    padding: 3px 6px;
+    font-size: 12px;
   }
 
   body.page-community #battle-join-faction .bc-join-season-notice {
-    padding: 8px 12px;
+    padding: 6px 10px;
   }
 
   body.page-community #battle-join-faction .bc-join-season-notice p,
-  body.page-community #battle-join-faction .bc-join-intro {
+  body.page-community #battle-join-faction .bc-join-intro,
+  body.page-community .bc-join-content:has(.bc-join-grid) > #faction-chambers-live {
     margin: 0;
-    line-height: 1.4;
+    font-size: 14px;
+    line-height: 1.3;
   }
 
-  body.page-community #battle-join-faction .bc-join-intro {
-    margin-top: 8px;
+  body.page-community #battle-join-faction .bc-join-intro,
+  body.page-community .bc-join-content:has(.bc-join-grid) > #faction-chambers-live {
+    margin-top: 5px;
+  }
+}
+
+/* Compact desktop cards keep the playstyle and actions visible in the frame. */
+@media (min-width: 1400px) and (min-height: 800px) and (max-height: 899px) {
+  body.page-community #battle-join-faction .bc-join-card-perk {
+    display: none;
   }
 }
 
