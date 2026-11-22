@@ -966,6 +966,92 @@ body.page-community .bc-retry-btn {
   cursor: pointer;
 }
 
+body.page-community #battle-join-faction .bc-join-card-heading,
+body.page-community #battle-join-faction .bc-join-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.page-community #battle-join-faction .bc-join-card-icon {
+  flex: none;
+}
+
+body.page-community #battle-join-faction .bc-join-card-actions {
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+@media (min-width: 1200px) {
+  body.page-community #join-faction-section + .bc-join-layout {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 5fr);
+  }
+
+  body.page-community #join-faction-section + .bc-join-layout > .bc-join-art {
+    max-width: 600px;
+    justify-self: end;
+  }
+
+  body.page-community #battle-join-faction .bc-join-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 10px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-icon img {
+    max-width: 28px;
+    max-height: 28px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-name,
+  body.page-community #battle-join-faction .bc-join-card-playstyle,
+  body.page-community #battle-join-faction .bc-join-card-perk {
+    line-height: 1.3;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-playstyle,
+  body.page-community #battle-join-faction .bc-join-card-perk {
+    font-size: 0.875rem;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-actions {
+    padding-top: 3px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-actions > * {
+    min-height: 32px;
+    padding: 5px 9px;
+    font-size: 0.8125rem;
+  }
+
+  body.page-community #battle-join-faction .bc-join-season-notice {
+    padding: 8px 12px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-season-notice p,
+  body.page-community #battle-join-faction .bc-join-intro {
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  body.page-community #battle-join-faction .bc-join-intro {
+    margin-top: 8px;
+  }
+}
+
 @media (max-width: 1180px) {
   body.page-community .bc-faction-row,
   body.page-community .bc-weekly-row,
