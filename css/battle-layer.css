@@ -326,32 +326,27 @@
   flex: 0 0 auto;
   max-width: 150px;
   padding: 5px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: var(--shell-card-corner);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: currentColor;
   font-size: 0.72rem;
   line-height: 1.2;
   text-align: center;
   color: var(--color-text-muted, #aab3c5);
-  background: rgba(255,255,255,0.04);
+  background: var(--shell-card-deep);
 }
 
 .mission-status--complete {
   color: #7bf8a6;
-  border-color: rgba(123,248,166,0.38);
-  background: rgba(123,248,166,0.09);
 }
 
 .mission-status--ready {
   color: #a5edf9;
-  border-color: rgba(94,221,255,0.35);
-  background: rgba(94,221,255,0.08);
 }
 
 .mission-status--locked,
 .mission-status--unavailable {
   color: #ffd166;
-  border-color: rgba(255,209,102,0.32);
-  background: rgba(255,209,102,0.08);
 }
 
 .mission-text,

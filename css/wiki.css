@@ -2266,17 +2266,19 @@ body.page-wiki .article-stats {
 }
 
 body.page-wiki .article-badge,
-body.page-wiki .meta-item {
+body.page-wiki .meta-item,
+body.page-wiki .article-meta .tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   width: max-content;
   max-width: 100%;
   padding: 7px 11px;
-  color: var(--color-text-muted);
-  background: rgba(247, 201, 72, 0.08);
-  border: 1px solid rgba(247, 201, 72, 0.24);
-  border-radius: 999px;
+  color: var(--color-accent);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--color-accent);
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-mono);
   line-height: 1.35;
 }
