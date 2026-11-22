@@ -1149,3 +1149,53 @@ body.page-community #battle-join-faction .bc-join-card-actions {
     transform: none !important;
   }
 }
+
+body.page-community .bc-more-info {
+  margin-block: .3rem .65rem;
+}
+
+body.page-community .bc-more-info > summary {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  cursor: pointer;
+  list-style: none;
+  color: var(--color-accent, #ffd779);
+}
+
+body.page-community .bc-more-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.page-community .bc-more-info > summary > [aria-hidden] {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font: bold .75rem/1 system-ui, sans-serif;
+}
+
+body.page-community .bc-more-info > summary:focus-visible {
+  outline: 2px solid currentColor;
+  border-radius: 4px;
+}
+
+body.page-community .bc-info-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+body.page-community .bc-more-info > p {
+  max-width: 58ch;
+  margin: .25rem 0 .5rem;
+}
