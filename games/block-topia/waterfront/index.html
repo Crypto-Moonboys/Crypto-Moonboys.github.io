@@ -50,6 +50,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </section>
 <label for="player-faction">Player faction</label>
 <select id="player-faction"><option value="">Default explorer</option></select>
+<details id="build-discussion" hidden><summary>Build discussion</summary><ol></ol></details>
 <details id="editor">
 <summary>Map editor</summary>
 <fieldset aria-label="Edit your map">
@@ -66,8 +67,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </main>
 <script src="district.js?v=8"></script>
-<script src="build-notes.js?v=2"></script>
-<script src="harbor-art.js?v=32"></script>
+<script src="harbor-art.js?v=33"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -166,6 +166,32 @@ select.value = "r";
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
 let discussionElapsed = 0;
+let publishedDiscussion = "";
+async function loadBuildDiscussion() {
+  try {
+    const response = await fetch("build-discussion.json", { cache: "no-cache" });
+    if (!response.ok) return;
+    const turns = await response.json();
+    if (!Array.isArray(turns) || !turns.every(turn => turn &&
+      (turn.speaker === 0 || turn.speaker === 1) && typeof turn.text === "string")) return;
+    const current = JSON.stringify(turns);
+    if (current === publishedDiscussion) return;
+    publishedDiscussion = current;
+    window.waterfrontBuildDiscussion = turns;
+    discussionElapsed = 0;
+    previousDiscussionFrame = null;
+    const panel = document.querySelector("#build-discussion");
+    panel.hidden = !turns.length;
+    panel.querySelector("ol").replaceChildren(...turns.map(turn => {
+      const entry = document.createElement("li");
+      entry.textContent = (turn.speaker === 0 ? "Builder" : "Reviewer") + " — " + turn.text;
+      return entry;
+    }));
+    paintMap();
+  } catch {
+    // A temporary fetch failure leaves the last published discussion available.
+  }
+}
 let previousDiscussionFrame = null;
 
 function paintMap() {
@@ -481,6 +507,13 @@ function refreshWaterfront() {
 }
 let refreshTimer = setTimeout(refreshWaterfront, refreshInterval);
 window.addEventListener("pageshow", refreshWaterfront);
+loadBuildDiscussion();
+setInterval(() => {
+  if (!document.hidden) loadBuildDiscussion();
+}, 60000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadBuildDiscussion();
+});
 </script>
 </body>
 </html>
