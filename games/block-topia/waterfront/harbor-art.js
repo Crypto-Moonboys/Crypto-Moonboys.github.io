@@ -1,3 +1,24 @@
+const waterfrontSprites = {
+  h: { file: "lighthouse", width: 34, maxHeight: 75 },
+  w: { file: "workshop", width: 32, maxHeight: 36 },
+  c: { file: "apartments", width: 32, maxHeight: 51 },
+  g: { file: "graffiti-wall", width: 29, maxHeight: 30 },
+  s: { file: "record-shop", width: 32, maxHeight: 40 },
+  b: { file: "warehouse", width: 32, maxHeight: 39 }
+};
+
+window.loadWaterfrontSprites = function loadWaterfrontSprites() {
+  return Promise.all(Object.values(waterfrontSprites).map(sprite => new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => {
+      sprite.image = image;
+      resolve();
+    };
+    image.onerror = resolve;
+    image.src = "assets/night-harbor/" + sprite.file + ".png";
+  })));
+};
+
 /* Original pixel art. Terrain draws first, then objects and actors by ground position. */
 window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
   const { tileSize: size, tiles } = district;
@@ -87,6 +108,17 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
 
   function building(tile, x, y) {
     rect("#0c252c83", x + 4, y + 24, 29, 7);
+    const sprite = waterfrontSprites[tile];
+    if (sprite?.image) {
+      const { image, width, maxHeight } = sprite;
+      const scale = Math.min(width / image.naturalWidth, maxHeight / image.naturalHeight);
+      const drawWidth = Math.round(image.naturalWidth * scale * 2) / 2;
+      const drawHeight = Math.round(image.naturalHeight * scale * 2) / 2;
+      const left = Math.round((x + (size - drawWidth) / 2) * 2) / 2;
+      ctx.drawImage(image, left, y + 29 - drawHeight, drawWidth, drawHeight);
+      return;
+    }
+
     if (tile === "h") {
       rect("#2e4449", x + 5, y + 23, 22, 6);
       rect("#8b8580", x + 8, y - 13, 16, 38);
