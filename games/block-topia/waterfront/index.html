@@ -262,11 +262,7 @@ document.querySelector("#reset").addEventListener("click", () => {
   save();
   draw();
 });
-const renderScale = 1;
-canvas.width = mapWidth * renderScale;
-canvas.height = mapHeight * renderScale;
-ctx.scale(renderScale, renderScale);
-ctx.imageSmoothingEnabled = false;
+let renderScale = 0;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
 let zoom = compactMap ? 1.35 : 1.85;
 let pinch = null;
@@ -274,17 +270,28 @@ let ignoreTapUntil = 0;
 
 function applyZoomSize() {
   const cover = Math.max(mapScroll.clientWidth, mapScroll.clientHeight * mapWidth / mapHeight);
-  canvas.style.width = Math.ceil(cover * zoom) + "px";
+  const displayWidth = Math.ceil(cover * zoom);
+  canvas.style.width = displayWidth + "px";
   canvas.style.minWidth = "0";
   // Match the height to the rounded width so even the last row covers the viewport.
-  canvas.style.height = Math.max(mapScroll.clientHeight, Math.ceil(cover * zoom * mapHeight / mapWidth)) + "px";
+  canvas.style.height = Math.max(mapScroll.clientHeight, Math.ceil(displayWidth * mapHeight / mapWidth)) + "px";
+  // Keep the overview cheap and retain source sprite detail at close range.
+  const nextScale = displayWidth * window.devicePixelRatio > mapWidth ? 2 : 1;
+  if (renderScale !== nextScale) {
+    renderScale = nextScale;
+    canvas.width = mapWidth * renderScale;
+    canvas.height = mapHeight * renderScale;
+    ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    paintMap();
+  }
 }
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
   const before = canvas.getBoundingClientRect();
   const mapX = (fromX - before.left) / before.width;
   const mapY = (fromY - before.top) / before.height;
-  zoom = Math.max(1, Math.min(4, scale));
+  zoom = Math.max(1, Math.min(5, scale));
   applyZoomSize();
   const after = canvas.getBoundingClientRect();
   mapScroll.scrollLeft += after.left + mapX * after.width - toX;
