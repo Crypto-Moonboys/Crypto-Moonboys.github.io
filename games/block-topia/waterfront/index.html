@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina’s Waterfront | Block Topia</title>
 <style>
-:root{color-scheme:dark;background:#101a20;color:#eef2df;font:1rem system-ui,sans-serif}
+:root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0}
-a{color:#b6e4da}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
+a{color:#91efe3}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
 header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding-block:.85rem}
-h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) Georgia,serif;letter-spacing:-.015em}
-.viewport{position:relative;height:clamp(26rem,72vh,56rem);background:#123c51;border-block:1px solid #577674}
-canvas{display:block;width:100%;height:100%;image-rendering:pixelated;cursor:pointer}
+h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) system-ui,sans-serif;letter-spacing:-.04em}
+.viewport{position:relative;background:#101f34;border-block:1px solid #494455}
+.map-scroll{overflow-x:auto;overscroll-behavior-inline:contain}
+canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixelated;cursor:pointer}
 canvas[data-editing=true]{cursor:crosshair}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
 .tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 2rem;padding-block:.75rem}
@@ -24,7 +25,7 @@ details{padding:.35rem 0}
 fieldset{border:0;padding:0;margin:.65rem 0 0;min-inline-size:0}
 fieldset p{max-width:42rem;margin:.4rem 0}
 fieldset button{margin:.2rem .15rem .2rem 0}
-@media(max-width:44rem){.viewport{height:auto;aspect-ratio:1}.movement p{flex-basis:100%}}
+@media(min-width:740px){.pan-help{display:none}}
 </style>
 </head>
 <body>
@@ -34,12 +35,14 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <a href="../">← Block Topia</a>
 </header>
 <div class="viewport">
-<canvas id="map" width="384" height="384" role="img" aria-describedby="movement-help" aria-label="Waterfront map with streets, a dock, lighthouse, workshop and harbor cottages"></canvas>
+<div class="map-scroll">
+<canvas id="map" width="896" height="384" role="img" aria-describedby="movement-help" aria-label="Nighttime waterfront map with docks, a lighthouse, warehouses, graffiti walls and record shops"></canvas>
+</div>
 <p id="location"></p>
 </div>
 <div class="tools">
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap a street or dock tile to walk there.</p>
+<p id="movement-help">Click or tap a street or dock to walk there. <span class="pan-help">Swipe sideways to see the whole harbor.</span></p>
 </section>
 <details id="editor">
 <summary>Map editor</summary>
@@ -55,8 +58,8 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </details>
 </div>
 </main>
-<script src="district.js"></script>
-<script src="harbor-art.js"></script>
+<script src="district.js?v=2"></script>
+<script src="harbor-art.js?v=2"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -65,7 +68,9 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const storageKey = "block-topia.waterfront.v1";
+const storageKey = "block-topia.waterfront.v2";
+const legacyStorageKey = "block-topia.waterfront.v1";
+const mapScroll = document.querySelector(".map-scroll");
 const canvas = document.querySelector("#map");
 const ctx = canvas.getContext("2d");
 const edit = document.querySelector("#edit");
@@ -75,18 +80,37 @@ const locationLabel = document.querySelector("#location");
 let rows = [...initial];
 let player = { ...spawn };
 let editing = false;
-let offset = 0;
 let walkTimer;
 
 function walkable(tile) {
   return Boolean(tiles[tile]?.walkable);
 }
 
-try {
+function validLayout(candidate, baseline, startX) {
+  return Array.isArray(candidate) && candidate.length === baseline.length &&
+    candidate.every((row, y) => typeof row === "string" && row.length === baseline[y].length &&
+      [...row].every(tile => Object.hasOwn(tiles, tile))) &&
+    walkable(candidate[spawn.y][startX]);
+}
+
+function restoreLayout() {
   const saved = JSON.parse(localStorage.getItem(storageKey));
-  if (Array.isArray(saved) && saved.length === initial.length &&
-      saved.every(row => typeof row === "string" && row.length === columns && [...row].every(tile => Object.hasOwn(tiles, tile))) &&
-      walkable(saved[spawn.y][spawn.x])) rows = saved;
+  if (validLayout(saved, initial, spawn.x)) return saved;
+
+  const { rows: previous, columnOffset } = district.previousLayout;
+  const legacy = JSON.parse(localStorage.getItem(legacyStorageKey));
+  if (!validLayout(legacy, previous, spawn.x - columnOffset)) return [...initial];
+
+  // Carry over player edits while keeping the new street connections in untouched tiles.
+  return initial.map((row, y) => [...row].map((tile, x) => {
+    const oldX = x - columnOffset;
+    const edited = legacy[y][oldX];
+    return edited !== undefined && edited !== previous[y][oldX] ? edited : tile;
+  }).join(""));
+}
+
+try {
+  rows = restoreLayout();
 } catch {
   status.textContent = "The saved layout could not be loaded.";
 }
@@ -97,21 +121,13 @@ for (const [tile, { name }] of Object.entries(tiles)) {
 select.value = "r";
 
 function draw() {
-  offset = window.drawWaterfront(ctx, rows, player, district);
+  window.drawWaterfront(ctx, rows, player, district);
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
-    ctx.strokeRect(offset + 1, 1, mapWidth - 2, mapHeight - 2);
+    ctx.strokeRect(1, 1, mapWidth - 2, mapHeight - 2);
   }
   locationLabel.textContent = tiles[rows[player.y][player.x]].name + " · " + (player.x + 1) + ", " + (player.y + 1);
-}
-
-function resizeMap() {
-  const { width, height } = canvas.getBoundingClientRect();
-  if (!width || !height) return;
-  canvas.width = Math.max(mapWidth, Math.round(width * mapHeight / height));
-  canvas.height = mapHeight;
-  draw();
 }
 
 function findRoute(start, goal, canWalk) {
@@ -140,7 +156,8 @@ function walkTo(x, y) {
   clearTimeout(walkTimer);
   const route = findRoute(player, { x, y }, (col, row) => walkable(rows[row]?.[col]));
   if (!route) {
-    locationLabel.textContent += locationLabel.textContent.endsWith(" · No walking route") ? "" : " · No walking route";
+    draw();
+    locationLabel.textContent += " · No walking route";
     return;
   }
   function advance(index) {
@@ -177,7 +194,7 @@ document.querySelector("#editor").addEventListener("toggle", event => {
 });
 canvas.addEventListener("click", event => {
   const rect = canvas.getBoundingClientRect();
-  const x = Math.floor(((event.clientX - rect.left) * canvas.width / rect.width - offset) / tileSize);
+  const x = Math.floor((event.clientX - rect.left) * canvas.width / rect.width / tileSize);
   const y = Math.floor((event.clientY - rect.top) * canvas.height / rect.height / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
   if (!editing) {
@@ -209,8 +226,11 @@ document.querySelector("#reset").addEventListener("click", () => {
   save();
   draw();
 });
-new ResizeObserver(resizeMap).observe(canvas);
-resizeMap();
+canvas.width = mapWidth;
+canvas.height = mapHeight;
+const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
+mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
+draw();
 </script>
 </body>
 </html>
