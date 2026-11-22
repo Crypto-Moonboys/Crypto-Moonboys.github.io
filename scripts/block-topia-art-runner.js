@@ -1,5 +1,6 @@
 const fs = require("node:fs/promises");
 const os = require("node:os");
+const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 const { setTimeout: sleep } = require("node:timers/promises");
 const { findSpritesheetIds, extractDownloadTargets, buildLocalAtlas } = require("./generate-moonpet-assets");
@@ -222,12 +223,19 @@ async function run() {
 
 async function main() {
   await fs.mkdir(stateDir, { recursive: true, mode: 0o700 });
-  const lock = await fs.open(statePath + ".lock", "wx", 0o600);
+  const lock = await fs.open(statePath + ".lock", "a", 0o600);
   try {
+    // flock locks the inherited file description, which stays open in Node.
+    // Keep the inode on disk so concurrent invocations always lock the same file.
+    const result = spawnSync("flock", ["-n", "-E", "75", "3"], {
+      stdio: ["ignore", "ignore", "pipe", lock.fd]
+    });
+    if (result.error) throw new Error(`Cannot run flock: ${result.error.message}`);
+    if (result.status === 75) throw new Error("Another Block Topia art runner is active.");
+    if (result.status !== 0) throw new Error("Could not acquire the Block Topia art runner lock.");
     await run();
   } finally {
     await lock.close();
-    await fs.unlink(statePath + ".lock");
   }
 }
 
