@@ -267,6 +267,7 @@ let renderScale = 0;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
 let zoom = compactMap ? 1.35 : 1.85;
 let pinch = null;
+let mapTouchActive = false;
 let ignoreTapUntil = 0;
 
 function applyZoomSize() {
@@ -351,6 +352,7 @@ function pinchPosition(touches) {
 }
 
 mapScroll.addEventListener("touchstart", event => {
+  mapTouchActive = true;
   if (event.touches.length !== 2) return;
   event.preventDefault();
   pinch = pinchPosition(event.touches);
@@ -370,6 +372,7 @@ mapScroll.addEventListener("touchmove", event => {
 for (const name of ["touchend", "touchcancel"]) {
   mapScroll.addEventListener(name, event => {
     if (event.touches.length < 2) pinch = null;
+    if (event.touches.length === 0) mapTouchActive = false;
     if (ignoreTapUntil === Infinity && event.touches.length === 0) {
       ignoreTapUntil = performance.now() + 350;
     }
@@ -435,6 +438,21 @@ function syncAnimation() {
 document.addEventListener("visibilitychange", syncAnimation);
 reducedMotion.addEventListener("change", syncAnimation);
 syncAnimation();
+
+// Refresh public displays without interrupting map edits or active gestures.
+const refreshInterval = 20 * 60 * 1000;
+let refreshDeadline = Date.now() + refreshInterval;
+function refreshWaterfront() {
+  clearTimeout(refreshTimer);
+  const remaining = refreshDeadline - Date.now();
+  if (remaining <= 0 && !editing && !mapTouchActive && !mousePan) {
+    window.location.reload();
+    return;
+  }
+  refreshTimer = setTimeout(refreshWaterfront, remaining > 0 ? remaining : 1000);
+}
+let refreshTimer = setTimeout(refreshWaterfront, refreshInterval);
+window.addEventListener("pageshow", refreshWaterfront);
 </script>
 </body>
 </html>
