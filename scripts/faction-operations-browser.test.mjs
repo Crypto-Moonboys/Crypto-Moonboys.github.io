@@ -1082,16 +1082,28 @@ test('the mural mounts into cached chamber HTML and Enter keeps the selected pai
           renown_per_tier: 10000, renown_today: 0, renown_total: 0, crew_banks: 0, collection: [],
           wall: {
             name: 'Signal Wall', finds: ['Outline', 'Chrome', 'Pink'],
-            panels: [{ name: 'Right', shade: revision % 3, paint: String(revision), target: 'Chrome', matched: false }],
+            panels: ['Left', 'Centre', 'Right'].map(name => ({ name, shade: revision % 3, paint: String(revision), target: 'Chrome', matched: false })),
             actions: [{ id: 'paint-0', label: 'Cycle left' }, { id: 'paint-2', label: 'Cycle right' }],
           },
         });
       };
     });
     await page.addScriptTag({ content: clanOperationScript });
-    await page.locator('[data-wall-panels][data-mural="signal-wall"] .clan-mural-art').waitFor();
+    await page.locator('[data-wall-panels][data-mural="signal-wall"] .clan-mural-art').first().waitFor();
     assert.equal(await page.locator('.clan-wall-prints [role="listitem"]').count(), 3);
     assert.match(await page.locator('.clan-wall-prints [role="listitem"]').first().innerText(), /Unbanked/);
+    const slices = page.locator('.clan-mural-art');
+    for (const width of [390, 1920]) {
+      await page.setViewportSize({ width, height: 800 });
+      const bounds = await slices.evaluateAll(elements => elements.map(element => {
+        const rect = element.getBoundingClientRect();
+        return { x: rect.x, right: rect.right, width: rect.width, panelWidth: element.parentElement.clientWidth };
+      }));
+      assert.equal(bounds.length, 3);
+      for (const slice of bounds) assert.ok(Math.abs(slice.width - slice.panelWidth) < 1);
+      assert.equal(bounds[0].right, bounds[1].x);
+      assert.equal(bounds[1].right, bounds[2].x);
+    }
     const right = page.getByRole('button', { name: 'Cycle right' });
     await page.locator('[data-wall-controls] button[value="paint-2"]:not([aria-disabled]):enabled').waitFor();
     await right.focus();
