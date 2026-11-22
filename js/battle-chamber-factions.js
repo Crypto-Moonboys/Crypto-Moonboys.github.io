@@ -492,13 +492,18 @@
         '</div>';
     } else {
       var cards = LIVE_FACTIONS.map(function (f) {
+        var action = currentFaction === f.key ? 'Stay with' : 'Join';
         return '<div class="bc-join-card" style="--faction-color:' + esc(f.color) + '">' +
-          '<div class="bc-join-card-icon">' + renderFactionIcon(f.key, 40) + '</div>' +
-          '<div class="bc-join-card-name">' + esc(f.label) + '</div>' +
+          '<div class="bc-join-card-heading"><div class="bc-join-card-icon">' + renderFactionIcon(f.key, 40) + '</div>' +
+          '<div class="bc-join-card-name">' + esc(f.label) + '</div></div>' +
           '<div class="bc-join-card-playstyle">' + esc(f.playstyle) + '</div>' +
           '<div class="bc-join-card-perk">' + esc(f.perkTeaser) + '</div>' +
-          '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '">' + (currentFaction === f.key ? 'Stay with ' : 'Join ') + esc(f.label) + '</button>' +
-          '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key]) + '">View ' + esc(f.label) + ' chamber</a>' +
+          '<div class="bc-join-card-actions">' +
+            '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '" aria-label="' +
+              action + ' ' + esc(f.label) + '">' + (action === 'Join' ? 'Join' : 'Stay') + '</button>' +
+            '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key]) + '" aria-label="View chamber for ' +
+              esc(f.label) + '">View chamber</a>' +
+          '</div>' +
           '</div>';
       }).join('');
 
