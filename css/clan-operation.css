@@ -395,6 +395,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 3px;
 }
+.clan-operation .clan-wall[data-mural] { gap: 0; }
 .clan-operation .clan-wall[data-mural]:empty { display: none; }
 
 [data-mural] [data-shade="0"] { --mural-paint: var(--mural-paint-0); }
@@ -409,16 +410,17 @@
   padding: 0 0 .6rem;
   overflow: hidden;
   background: #181521;
-  border: 1px solid #665870;
+  border: 0;
+  border-radius: 0;
   box-shadow: none;
 }
-.clan-operation .clan-wall[data-mural] li[data-matched] { border-color: #f9cced; }
 .clan-wall[data-mural] li > :not(.clan-mural-art) { margin-inline: clamp(4px, 1.3vw, 15px); }
 .clan-wall[data-mural] small { color: #d7cbd8; }
 .clan-wall[data-mural] li[data-matched] small { color: #ffd9f2; }
 
 .clan-mural-art {
   display: block;
+  width: 100%;
   aspect-ratio: 1;
   max-height: 16rem;
   position: relative;
