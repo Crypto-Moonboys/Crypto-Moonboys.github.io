@@ -723,20 +723,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     person(player.x * size + 16, player.y * size + 22, "#c17362", "#39778c", 0, true);
   }
 
-  const crew = window.waterfrontBuildNotes ?? [];
+  const crew = window.waterfrontBuildDiscussion ?? [];
+  const turn = crew[time === null ? crew.length - 1 : Math.floor(time / 8)];
   function drawCrew() {
     const speakers = [
-      { col: district.spawn.x - 2, color: "#e5a767", line: crew[0] },
-      { col: district.spawn.x + 2, color: "#70cbbd", line: crew[1] }
+      { col: district.spawn.x - 2, color: "#e5a767" },
+      { col: district.spawn.x + 2, color: "#70cbbd" }
     ];
     const row = district.spawn.y;
-    speakers.forEach(({ col, color, line }, index) => {
-      if (!roadAt(col, row) || !line) return;
+    speakers.forEach(({ col, color }, index) => {
+      if (!roadAt(col, row)) return;
       const x = col * size + 16;
       const y = row * size + 13;
       person(x, y, color, "#3b465a");
-      if (time !== null && Math.floor(time / 6) % 2 !== index) return;
-      const top = y - 27 - (time === null ? index * 16 : 0);
+      if (!turn || turn.speaker !== index) return;
+      const top = y - 27;
       const left = Math.max(2, Math.min(x - 76, width * size - 154));
       rect("#16303b", left - 1, top - 1, 154, 16);
       rect("#eaf2e5", left, top, 152, 14);
@@ -744,7 +745,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       ctx.save();
       ctx.font = "6px system-ui";
       ctx.fillStyle = "#152831";
-      ctx.fillText(String(line).slice(0, 76), left + 4, top + 9, 144);
+      ctx.fillText(String(turn.text).slice(0, 76), left + 4, top + 9, 144);
       ctx.restore();
     });
   }
