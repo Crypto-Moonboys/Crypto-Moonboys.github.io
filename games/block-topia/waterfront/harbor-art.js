@@ -890,10 +890,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function factionCharacter(faction, x, y, facing = 0, frame = 0) {
-    rect("#080f1cad", x - 5, y - 1, 10, 3);
+  function factionCharacter(faction, x, y, facing = 0, frame = 0, spriteSize = 18) {
+    rect("#080f1cad", x - spriteSize / 3.6, y - 1, spriteSize / 1.8, 3);
     ctx.drawImage(waterfrontFactionAtlas.image, frame * 36, (faction * 4 + facing) * 36, 36, 36,
-      x - 9, y - 17, 18, 18);
+      x - spriteSize / 2, y + 1 - spriteSize, spriteSize, spriteSize);
   }
 
   function actor() {
@@ -922,7 +922,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const x = Math.round(left * size + 16 + distance * progress);
       const y = row * size + (east ? 26 : 13);
       const frame = time === null || distance === 0 ? 0 : 1 + Math.floor(time * 7 + index) % 3;
-      queue(y, () => factionCharacter(index, x, y, east ? 2 : 1, frame));
+      queue(y, () => factionCharacter(index, x, y, east ? 2 : 1, frame, 20));
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
       if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
         nearestFaction = { name, x, y, separation };
@@ -936,10 +936,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.save();
     ctx.font = "7px system-ui";
     const width = Math.ceil(ctx.measureText(name).width) + 8;
-    rect("#131926ed", x - width / 2, y - 30, width, 11);
+    rect("#131926ed", x - width / 2, y - 32, width, 11);
     ctx.fillStyle = "#eaf2e5";
     ctx.textAlign = "center";
-    ctx.fillText(name, x, y - 22);
+    ctx.fillText(name, x, y - 24);
     ctx.restore();
   }
 
