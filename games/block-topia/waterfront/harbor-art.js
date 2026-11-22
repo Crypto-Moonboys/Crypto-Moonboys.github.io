@@ -135,6 +135,36 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
 };
 
 /* Original pixel art. Terrain draws first, then objects and actors by ground position. */
+const cargoDesigns = [
+  ["#b76d44", "#f2b274", "#583b3d"], ["#3a8f90", "#8be2c6", "#24454e"],
+  ["#65588c", "#bb9bd6", "#38334e"], ["#a18746", "#f6d16e", "#51473b"],
+  ["#576a85", "#a8cae1", "#303948"], ["#966278", "#efa9af", "#4d3449"]
+];
+
+let harborFreight;
+function freightFor(rows, district) {
+  const layout = rows.join("\n");
+  if (harborFreight?.layout === layout) return harborFreight;
+  const canWalk = (x, y) => Boolean(district.tiles[rows[y]?.[x]]?.walkable);
+  const stores = [];
+  const yards = [];
+  rows.forEach((row, y) => [...row].forEach((tile, x) => {
+    if (!canWalk(x, y)) return;
+    if ("bwHEVcLsNA".includes(rows[y - 1]?.[x] ?? "~")) stores.push({ x, y });
+    else if (tile !== "p" && (x * 7 + y * 13) % 9 === 0) yards.push({ x, y });
+  }));
+  const reachable = point => findRoute(district.spawn, point, canWalk) !== null;
+  const stops = yards.filter(reachable);
+  const doors = stores.filter(reachable);
+  const cargo = stops.slice(0, 12).map((point, kind) => ({ point, kind }));
+  doors.slice(0, 6).forEach((point, index) => cargo.push({ point, kind: index, indoors: true }));
+  const bots = [0, 4, 3, 7].map((model, index) => ({
+    model, point: stops[index] ?? district.spawn, dx: 0, dy: 1, due: 0
+  }));
+  harborFreight = { layout, canWalk, stops, cargo, bots };
+  return harborFreight;
+}
+
 window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
@@ -739,6 +769,100 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     if (carriesLight) pixel("#bbf9f3", 5, -9, 4, 5);
   }
 
+  function freightObject(kind, x, y) {
+    const [body, light, dark] = cargoDesigns[kind % cargoDesigns.length];
+    const wide = kind % 3 === 0;
+    const w = wide ? 17 : 12;
+    const h = kind % 3 === 1 ? 12 : 9;
+    const left = x - Math.floor(w / 2);
+    rect("#161b27a8", left - 1, y - 1, w + 3, 3);
+    rect(dark, left, y - h, w, h);
+    rect(body, left + 1, y - h + 2, w - 3, h - 3);
+    rect(light, left + 1, y - h + 1, w - 3, 2);
+    if (kind % 2) {
+      rect(dark, left + 3, y - h + 4, w - 6, 1);
+      rect(light, left + 4, y - 4, w - 8, 1);
+    } else {
+      rect(light, left + 3, y - h + 3, 1, h - 4);
+      rect(light, left + w - 5, y - h + 3, 1, h - 4);
+    }
+  }
+
+  function drawFreight() {
+    const { canWalk, stops, cargo, bots } = freightFor(rows, district);
+    const now = time ?? 0;
+    const go = (worker, point) => {
+      worker.route = findRoute(worker.point, point, canWalk) ?? [];
+      const start = worker.point;
+      worker.route = [start, ...worker.route];
+      worker.started = now;
+      worker.due = now + (worker.route.length - 1) * 0.6 + 0.6;
+    };
+    for (const worker of bots) {
+      if (time !== null && now >= worker.due) {
+        if (worker.route) worker.point = worker.route.at(-1);
+        worker.route = null;
+        if (worker.carrying) {
+          worker.load.point = worker.point;
+          worker.load.reserved = false;
+          worker.load = null;
+          worker.carrying = false;
+        } else if (worker.load) {
+          if (worker.load.indoors && !worker.inside) {
+            worker.inside = true;
+            worker.due = now + 2;
+          } else {
+            worker.exiting = worker.inside;
+            worker.inside = false;
+            worker.load.indoors = false;
+            worker.load.point = null;
+            worker.carrying = true;
+            go(worker, worker.destination);
+          }
+        } else {
+          const open = cargo.filter(item => !item.reserved);
+          const load = open[Math.floor(Math.random() * open.length)];
+          const destinations = stops.filter(point =>
+            !cargo.some(item => item.point === point) &&
+            !bots.some(other => other.load && other.destination === point));
+          if (load && destinations.length) {
+            worker.load = load;
+            load.reserved = true;
+            worker.destination = destinations[Math.floor(Math.random() * destinations.length)];
+            go(worker, load.point);
+          } else worker.due = now + 3;
+        }
+      }
+      if (worker.inside) continue;
+      const progress = time === null ? 0 : (now - worker.started) / 0.6;
+      const index = Math.floor(progress);
+      const from = worker.route?.[index] ?? worker.route?.at(-1) ?? worker.point;
+      const to = worker.route?.[index + 1] ?? from;
+      const moving = from !== to;
+      if (moving) {
+        worker.dx = to.x - from.x;
+        worker.dy = to.y - from.y;
+      }
+      const fraction = moving ? progress - index : 0;
+      const x = Math.round((from.x + worker.dx * fraction) * size + 16);
+      const entering = worker.load?.indoors && !moving ? Math.max(0, 1 - (worker.due - now) / 0.6) : 0;
+      const exiting = worker.carrying && worker.exiting ? Math.max(0, 1 - progress) : 0;
+      const y = Math.round((from.y + worker.dy * fraction) * size + 23 - 25 * (entering + exiting));
+      const load = worker.carrying && worker.load;
+      queue(y, () => {
+        const atDoor = entering > 0 || exiting > 0;
+        bot(worker.model, x, y, atDoor ? 0 : worker.dx, entering > 0 ? -1 : exiting > 0 ? 1 : worker.dy,
+          moving || atDoor ? 1 + Math.floor(now * 7) % 3 : 0);
+        if (load) freightObject(load.kind, x + worker.dx * 6, y - 9);
+      });
+    }
+    for (const item of cargo) {
+      if (!item.point || item.indoors) continue;
+      const { x, y } = item.point;
+      queue(y * size + 20, () => freightObject(item.kind, x * size + 16, y * size + 20));
+    }
+  }
+
   function actor() {
     person(player.x * size + 16, player.y * size + 22, "#c17362", "#39778c", 0, true);
   }
@@ -774,6 +898,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   });
   beacons.forEach(([x, y]) => beacon(x, y, false));
   graffitiSeawall();
+  drawFreight();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));
