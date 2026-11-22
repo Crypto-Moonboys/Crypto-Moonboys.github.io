@@ -548,7 +548,7 @@ body.page-community .bc-faction-row {
   align-items: center;
   gap: 10px 14px;
   padding: 14px 16px;
-  border-left: 3px solid var(--faction-color, #00ffcc);
+  border-left: 1px solid var(--faction-color, #00ffcc);
 }
 
 body.page-community .bc-faction-row > *,
