@@ -452,9 +452,9 @@ if (wikiCss) {
       selector: '.swarmsy-action-card',
       checks: [
         ['grid/flex layout', /display\s*:\s*(?:grid|flex|inline-flex)/i],
-        ['border', /border\s*:/i],
+        ['shared 1px border', /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i],
         ['background', /background\s*:/i],
-        ['rounded card radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['shared square card corners', /border-radius\s*:\s*var\(--shell-card-corner\)/i],
         ['padding', /padding\s*:/i],
       ],
     },
@@ -462,9 +462,9 @@ if (wikiCss) {
       className: 'swarmsy-card',
       selector: '.swarmsy-card',
       checks: [
-        ['border', /border\s*:/i],
+        ['shared 1px border', /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i],
         ['background', /background\s*:/i],
-        ['rounded card radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['shared square card corners', /border-radius\s*:\s*var\(--shell-card-corner\)/i],
         ['padding', /padding\s*:/i],
       ],
     },
@@ -472,9 +472,9 @@ if (wikiCss) {
       className: 'swarmsy-section',
       selector: '.swarmsy-section',
       checks: [
-        ['border', /border\s*:/i],
+        ['shared 1px border', /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i],
         ['background', /background\s*:/i],
-        ['rounded section radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['shared square card corners', /border-radius\s*:\s*var\(--shell-card-corner\)/i],
         ['padding', /padding\s*:/i],
       ],
     },
@@ -627,7 +627,7 @@ if (!factionRendererJs.includes('swarmsy-hero-inner fcp-hero-card') || !factionR
 }
 if (livingHeroOk) pass('Living full-width hero contract is wired across search, dashboard, how-to-play, and faction routes');
 
-console.log('\n[10] Wiki article pages inherit the SWARMSY glowing card and font contract');
+console.log('\n[10] Wiki article pages inherit the shared card and font contract');
 let wikiArticleVisualOk = true;
 if (wikiCss) {
   const wikiContentBlock = selectorBlock(wikiCss, 'body.page-wiki .wiki-content,\nbody.page-wiki .wiki-page,\nbody.page-wiki .article-body')
@@ -651,12 +651,12 @@ if (wikiCss) {
   for (const [block, label] of cardChecks) {
     if (
       !blockHas(block, /background\s*:/i) ||
-      !blockHas(block, /border\s*:/i) ||
-      !blockHas(block, /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i) ||
-      !blockHas(block, /box-shadow\s*:/i) ||
+      !blockHas(block, /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i) ||
+      !blockHas(block, /border-radius\s*:\s*var\(--shell-card-corner\)/i) ||
+      !blockHas(block, /box-shadow\s*:\s*none/i) ||
       !blockHas(block, /padding\s*:/i)
     ) {
-      fail(`${GLOBAL_SHELL_CSS} - ${label} must use SWARMSY glass card background, border, glow, radius, and padding`);
+      fail(`${GLOBAL_SHELL_CSS} - ${label} must use a dark surface, 1px shared border, square corners, and padding without a shadow`);
       wikiArticleVisualOk = false;
     }
   }
@@ -687,7 +687,7 @@ if (wikiCss) {
 } else {
   wikiArticleVisualOk = false;
 }
-if (wikiArticleVisualOk) pass('Wiki article pages have SWARMSY glowing typography, cards, pills, and fact grids');
+if (wikiArticleVisualOk) pass('Wiki article pages have shared cards, display typography, pills, and fact grids');
 
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);

@@ -1,18 +1,18 @@
 /* PR 4 / #1552 — scoped public crew and private aligned-member operations.
  * Existing faction lore, standings, reward tracks and editorial pages unchanged. */
 .fop-section, .fop-community {
-  --fop-line: rgba(151, 206, 234, .28);
+  --fop-line: var(--shell-card-line, rgba(155, 167, 203, .24));
   --fop-ink: #eff9ff;
   --fop-muted: #c2d2dd;
-  --fop-accent: #94e9e2;
+  --fop-accent: var(--shell-neon-cyan, #6eeaff);
 }
 .fop-section [data-fop-crew], .fop-section [data-fop-private],
 .fop-community [data-fop-crew], .fop-community [data-fop-private] {
   color: var(--fop-ink);
   border: 1px solid var(--fop-line);
-  border-radius: 10px;
+  border-radius: var(--shell-card-corner, 0px);
   padding: clamp(12px, 2vw, 20px);
-  background: rgba(9, 21, 36, .7);
+  background: var(--shell-card-deep, #0b0d15);
 }
 .fop-section [data-fop-crew] *, .fop-section [data-fop-private] *,
 .fop-community [data-fop-crew] *, .fop-community [data-fop-private] * {
@@ -51,9 +51,9 @@
 .fop-section .fop-mission, .fop-community .fop-mission {
   min-width: 0;
   border: 1px solid var(--fop-line);
-  border-radius: 8px;
+  border-radius: var(--shell-card-corner, 0px);
   padding: 12px;
-  background: rgba(255, 255, 255, .035);
+  background: var(--shell-card-bg, #10121c);
 }
 .fop-section .fop-mission h3, .fop-community .fop-mission h3 {
   font-size: .96rem;
@@ -82,7 +82,7 @@
   align-items: center;
   min-height: 44px;
   border: 1px solid var(--fop-line);
-  border-radius: 7px;
+  border-radius: var(--shell-card-corner, 0px);
   padding: 9px 10px;
 }
 .fop-section [data-fop-crew] a, .fop-section [data-fop-private] a,
@@ -92,7 +92,7 @@
 .fop-section [data-fop-private] button, .fop-community [data-fop-private] button {
   min-height: 44px;
   border: 1px solid var(--fop-accent);
-  border-radius: 7px;
+  border-radius: var(--shell-card-corner, 0px);
   background: rgba(148,233,226,.09);
   color: var(--fop-ink);
   cursor: pointer;
