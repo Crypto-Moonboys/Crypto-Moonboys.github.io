@@ -486,6 +486,13 @@ function renderSearchPage(query) {
 
 /* ── DOM READY ───────────────────────────────────────────────────────────── */
 async function _wikiInit() {
+  // Standalone arcade pages use wiki.js without the shared site shell.
+  if (!window.MOONBOYS_WIKI_SHELL && !document.querySelector('script[data-moonboys-site-icons]')) {
+    const icons = document.createElement('script');
+    icons.src = '/js/site-icons.js?v=1';
+    icons.dataset.moonboysSiteIcons = '1';
+    document.head.appendChild(icons);
+  }
   // ── Sidebar / hamburger ────────────────────────────────────────────────────
   // Bind BEFORE any await so the hamburger is interactive immediately, even on
   // pages without site-shell.js and even under slow network conditions.
