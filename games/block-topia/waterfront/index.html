@@ -7,12 +7,10 @@
 <style>
 :root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0}
-a{color:#91efe3}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding-block:.85rem}
-h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) system-ui,sans-serif;letter-spacing:-.04em}
-.viewport{position:relative;background:#101f34;border-block:1px solid #494455}
-.map-scroll{overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y;max-height:clamp(18rem,43vw,74svh)}
-.viewport:fullscreen .map-scroll{height:100%;max-height:none}
+a{color:#91efe3}
+.viewport{position:relative;background:#101f34}
+.map-scroll{height:100vh;height:100dvh;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y}
+.viewport:fullscreen .map-scroll{height:100%}
 .map-controls{position:absolute;z-index:1;top:.65rem;right:.65rem;display:flex;gap:.35rem}
 .map-controls button{background:#13131cef}
 .map-controls button[hidden]{display:none}
@@ -20,8 +18,8 @@ canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixe
 canvas[data-editing=true]{cursor:crosshair}
 canvas.is-panning{cursor:grabbing}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
-.tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 2rem;padding-block:.75rem}
-.movement{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
+.tools{position:absolute;z-index:2;top:3.75rem;right:.65rem;width:min(25rem,calc(100% - 1.3rem));max-height:calc(100% - 4.4rem);overflow:auto;overscroll-behavior:contain;padding:1rem;background:#13131cf5;border:1px solid #658782;border-radius:.25rem}
+.tools .movement{margin-block:.8rem}
 .movement p,#status{margin:0;font-size:.85rem;color:#c1d4cc}
 button,select{font:inherit;min-height:44px;padding:.45rem .65rem;background:#1b2d33;color:inherit;border:1px solid #658782;border-radius:.25rem}
 button,summary{cursor:pointer}button[aria-pressed=true]{background:#356858}
@@ -34,10 +32,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </head>
 <body>
 <main>
-<header>
-<h1>Lumina’s Waterfront</h1>
-<a href="../">← Block Topia</a>
-</header>
 <div class="viewport">
 <div class="map-scroll">
 <canvas id="map" width="896" height="384" role="img" aria-describedby="movement-help" aria-label="Nighttime waterfront map with docks, a lighthouse, warehouses, graffiti walls and record shops"></canvas>
@@ -45,11 +39,12 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <div class="map-controls" role="group" aria-label="Map view">
 <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
 <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+<button id="map-info" type="button" aria-controls="map-tools" aria-expanded="false">Info</button>
 <button id="map-fullscreen" type="button" hidden>Fullscreen</button>
 </div>
 <p id="location"></p>
-</div>
-<div class="tools">
+<div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
+<a href="../">← Block Topia</a>
 <section class="movement" aria-label="Explore the harbor">
 <p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll over the map or pinch with two fingers to zoom.</p>
 </section>
@@ -65,6 +60,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <p id="status" role="status"></p>
 </fieldset>
 </details>
+</div>
 </div>
 </main>
 <script src="district.js?v=7"></script>
@@ -284,7 +280,21 @@ function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
   mapScroll.scrollTop += after.top + mapY * after.height - toY;
 }
 
+const infoButton = document.querySelector("#map-info");
+const infoPanel = document.querySelector("#map-tools");
+infoButton.addEventListener("click", () => {
+  infoPanel.hidden = !infoPanel.hidden;
+  infoButton.setAttribute("aria-expanded", String(!infoPanel.hidden));
+});
+infoPanel.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    infoButton.click();
+    infoButton.focus();
+  }
+});
+
 viewport.addEventListener("wheel", event => {
+  if (infoPanel.contains(event.target)) return;
   if (event.deltaY === 0) return;
   event.preventDefault();
   const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? mapScroll.clientHeight : 1;
