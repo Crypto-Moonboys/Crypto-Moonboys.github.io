@@ -42,6 +42,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   };
   const tileAt = (x, y) => rows[y]?.[x] ?? (y < 2 ? "~" : ".");
   const roadAt = (x, y) => Boolean(tiles[tileAt(x, y)].walkable);
+  // The mural reserves the promenade between the middle and east docks.
+  const wallStart = 13;
+  const wallEnd = 24;
+  const hasSeawall = rows[2]?.slice(wallStart, wallEnd) === ".".repeat(wallEnd - wallStart);
   const objects = [];
   const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
@@ -95,13 +99,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function graffitiSeawall() {
-    // Between the middle and east docks. Let custom map edits take priority.
-    const start = 13;
-    const end = 24;
-    if (rows[2]?.slice(start, end) !== ".".repeat(end - start)) return;
-    const x = start * size;
+    if (!hasSeawall) return;
+    const x = wallStart * size;
     const y = 2 * size;
-    const width = (end - start) * size;
+    const width = (wallEnd - wallStart) * size;
     rect("#171826", x, y + 3, width, 23);
     rect("#575061", x, y + 1, width, 4);
     rect("#81717e", x, y + 1, width, 1);
@@ -146,6 +147,16 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
           rect(color, hand + direction * (speck - 1), feet - 16 - drift, 1, 1);
         }
       });
+    }
+
+    // Slim floodlights sit on the coping and wash the wall from above.
+    for (const fraction of [1 / 6, 1 / 2, 5 / 6]) {
+      const mount = Math.round(x + width * fraction);
+      glow(mount, y + 7, 24, "#ffcb7a38");
+      rect("#1a1723", mount - 1, y - 3, 2, 5);
+      rect("#242331", mount - 5, y - 4, 10, 4);
+      rect("#79717b", mount - 4, y - 4, 8, 1);
+      rect("#ffdb9a", mount - 4, y - 1, 8, 1);
     }
   }
 
@@ -305,6 +316,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       }
       if (time !== null && "csw".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
     } else if (tile === "." && row === 2) {
+      if (hasSeawall && col >= wallStart && col < wallEnd) return;
       if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
       else if (seed % 4 === 0) queue(y + 28, () => mooring(x, y));
     } else if (tile === "." && (roadAt(col - 1, row) || roadAt(col + 1, row))) {
