@@ -16,7 +16,7 @@ import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
-import { addFactionEmojiToStatus } from './telegram/faction-emoji.js';
+import { addMoonboysMessageEmoji, formatMoonboysAnnouncement } from './telegram/faction-emoji.js';
 import { createTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
@@ -744,8 +744,9 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
   // interactive command or callback replies. Preserve formatting/keyboards.
   botToken = unwrapTelegramBotToken(botToken);
   try {
-    const decoratedText = (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities
-      ? await addFactionEmojiToStatus(text, botToken)
+    const decoratedText = requestOptions.usePackEmoji !== false &&
+        (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && typeof text === 'string' && text.length < 4096
+      ? await addMoonboysMessageEmoji(text, botToken)
       : text;
     const send = messageText => fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
@@ -777,10 +778,15 @@ async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
   requestOptions = {}
 } = {}) {
   let outcome;
+  let caption = text;
   try {
+    if ((extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && !extra.caption_entities && typeof text === 'string' && text.length < 1024) {
+      const branded = await addMoonboysMessageEmoji(text, env.TELEGRAM_BOT_TOKEN);
+      if (branded.length <= 1024) caption = branded;
+    }
     const seed = moonboyTelegramMessageSeed(messageKind, chatId, logicalId, sequence);
     outcome = await sendControlledMoonboyTelegram({
-      env, chatId, chatKind, messageKind, seed, text,
+      env, chatId, chatKind, messageKind, seed, text: caption,
       options: { parse_mode: 'HTML', ...extra },
       signal: requestOptions.signal
     });
@@ -793,6 +799,11 @@ async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
   }
   if (outcome?.status === 'disabled' || outcome?.status === 'composition_failed') {
     return sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, text, extra, requestOptions);
+  }
+  if (outcome?.status === 'rejected' && caption !== text) {
+    return sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, text, extra, {
+      ...requestOptions, usePackEmoji: false,
+    });
   }
   if (outcome?.status === 'sent') {
     return {
@@ -9644,7 +9655,7 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     ? `${nextWtf.title} (${String(nextWtf.starts_at).slice(11, 16)}-${String(nextWtf.ends_at).slice(11, 16)} UTC)`
     : 'No live window right now. Next signal loads soon.';
   const message =
-    `GM, the Battle Chamber has reset. Your faction has new work.\n\n` +
+    `<b>Battle Chamber Daily Digest</b>\nGM, the Battle Chamber has reset. Your faction has new work.\n\n` +
     `<b>Faction:</b> ${escapeHtml(factionLabel)}\n\n` +
     `<b>Today’s faction daily missions</b>\n${missionLines}\n\n` +
     `<b>WTF timed signal</b>\n${escapeHtml(wtfSignalLine)}\nCheck in when the signal opens.\n\n` +
@@ -11984,7 +11995,7 @@ async function sendTelegramGroupAnnouncement(env, candidate) {
   const extra = { disable_web_page_preview: true };
   if (groupConfig.message_thread_id) extra.message_thread_id = Number(groupConfig.message_thread_id) || groupConfig.message_thread_id;
   const result = await sendBaseWorkerMoonboyMessage(
-    env, groupConfig.chat_id, candidate.message, extra, {
+    env, groupConfig.chat_id, formatMoonboysAnnouncement(candidate.message), extra, {
       chatKind: 'group', messageKind: 'group-announcement',
       logicalId: candidate.announcement_key
     }
@@ -16442,11 +16453,23 @@ async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
     return { ok: false, status: 0, error: 'missing_chat_or_token_or_photo' };
   }
   try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+    botToken = unwrapTelegramBotToken(botToken);
+    const caption = extra.caption;
+    const branded = extra.parse_mode === 'HTML' && !extra.caption_entities &&
+      typeof caption === 'string' && caption.length < 1024
+      ? await addMoonboysMessageEmoji(caption, botToken)
+      : caption;
+    const brandedCaption = branded?.length <= 1024 ? branded : caption;
+    const send = value => fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, photo, ...extra }),
+      body: JSON.stringify({ chat_id: chatId, photo, ...extra, caption: value }),
     });
+    let response = await send(brandedCaption);
+    if (brandedCaption !== caption && response.status === 400) {
+      await response.text();
+      response = await send(caption);
+    }
     const responseText = await response.text();
     if (!response.ok) {
       console.log('TG photo failed', JSON.stringify({ status: response.status, chatId, response: responseText }));

@@ -36,6 +36,12 @@ test('command artwork is blocked even with stale configuration enabling every ki
 test('actual command/callback text gateway preserves routing and keyboard without artwork', async t => {
   const calls = [];
   t.mock.method(globalThis, 'fetch', async (url, init) => {
+    if (url.endsWith('/getStickerSet')) {
+      assert.equal(JSON.parse(init.body).name, 'GKMoonboys');
+      const stickers = ['⚽', '💋', '🫁', '💉', '💊', '💣', '🗡', '🧱', '🐻']
+        .map((emoji, index) => ({ emoji, custom_emoji_id: String(index + 1) }));
+      return Response.json({ ok: true, result: { sticker_type: 'custom_emoji', stickers } });
+    }
     calls.push({ url, body: JSON.parse(init.body) });
     return Response.json({ ok: true, result: { message_id: 7 } });
   });
@@ -58,7 +64,7 @@ test('actual command/callback text gateway preserves routing and keyboard withou
   assert.equal(calls.length, 4);
   for (const call of calls) {
     assert.equal(call.url, 'https://api.telegram.org/bot' + token + '/sendMessage');
-    assert.equal(call.body.text, '<b>Command reply</b>');
+    assert.match(call.body.text, /^<tg-emoji emoji-id="[1-9]">.+<\/tg-emoji> <b>Command reply<\/b>$/u);
     assert.equal(call.body.parse_mode, 'HTML');
     assert.equal(call.body.message_thread_id, 42);
     assert.deepEqual(call.body.reply_markup, keyboard);

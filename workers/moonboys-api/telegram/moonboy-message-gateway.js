@@ -1,6 +1,7 @@
 // PR3 — controlled bot Telegram photo canary integration.
 // No change to existing Telegram delivery while the feature is disabled.
 // This module only handles text-only messages; never intercept existing photos.
+import { addMoonboysMessageEmoji, formatMoonboysAnnouncement } from './faction-emoji.js';
 import {
   loadHomepageMoonboyManifest, composeTelegramMoonboy
 } from './moonboy-portrait.js';
@@ -114,10 +115,19 @@ export async function sendControlledMoonboyTelegram({
   // After transport starts, even a thrown exception can follow a successful
   // Telegram upload/acknowledgement. Never let it trigger a duplicate message.
   try {
-    const outcome = await sendTelegramMoonboyMessage({
-      token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait,
-      options, fetchImpl, signal
-    });
+    const original = { token: env.TELEGRAM_BOT_TOKEN, chatId, text, photo: portrait, options, fetchImpl, signal };
+    let payload = original;
+    if (LEGACY_DEFAULT_KIND.has(messageKind) && !options.parse_mode && !options.entities && !options.caption_entities) {
+      const heading = formatMoonboysAnnouncement(text);
+      const branded = await addMoonboysMessageEmoji(heading, original.token, fetchImpl);
+      if (branded !== heading && branded.length <= TELEGRAM_PHOTO_CAPTION_LIMIT) {
+        payload = { ...original, text: branded, options: { ...options, parse_mode: 'HTML' } };
+      }
+    }
+    let outcome = await sendTelegramMoonboyMessage(payload);
+    if (payload !== original && outcome.status === 'rejected') {
+      outcome = await sendTelegramMoonboyMessage({ ...original, photo: null });
+    }
     if (outcome.status === 'sent' && outcome.telegramFileId) {
       await cacheMoonboyTelegramFileId(cacheImpl, seed, outcome.telegramFileId);
     }
