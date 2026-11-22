@@ -23,15 +23,22 @@ const waterfrontTerrain = Object.fromEntries(
   ["curb-straight", "curb-corner", "footpath-pavers"].map(file => [file, { file }])
 );
 
+const waterfrontTrees = [
+  { file: "tree-banyan", height: 31 },
+  { file: "tree-camphor", height: 36 },
+  { file: "tree-palm", height: 39 },
+  { file: "tree-ornamental", height: 25 }
+];
+
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
-  return Promise.all(Object.values({ ...waterfrontSprites, ...waterfrontTerrain }).map(sprite => new Promise(resolve => {
+  return Promise.all([...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees].map(sprite => new Promise(resolve => {
     const image = new Image();
     image.onload = () => {
       sprite.image = image;
       resolve();
     };
     image.onerror = resolve;
-    image.src = "assets/" + (Object.hasOwn(waterfrontTerrain, sprite.file) ? "terrain/" : "hk-night/") + sprite.file + ".png";
+    image.src = "assets/" + (sprite.file.startsWith("tree-") ? "trees/" : Object.hasOwn(waterfrontTerrain, sprite.file) ? "terrain/" : "hk-night/") + sprite.file + ".png";
   })));
 };
 
@@ -378,7 +385,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       if (seed % 4 === 0) queue(y + 28, () => lamp(x + 22, y + 23));
       else if (seed % 5 === 1) queue(y + 28, () => crates(x, y));
     } else if (tile === "." && seed % 11 === 3) {
-      queue(y + 28, () => tree(x, y));
+      queue(y + 28, () => tree(x, y, seed));
     } else if (tile === "." && seed % 5 === 1) {
       rect("#34323e", x + 8, y + 8, 13, 12);
       rect("#2b303b", x + 10, y + 10, 9, 8);
@@ -525,7 +532,18 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function tree(x, y) {
+  function tree(x, y, seed) {
+    const { image, height } = waterfrontTrees[(Math.floor(seed / 11)) % waterfrontTrees.length];
+    if (image) {
+      const width = Math.round(height * image.naturalWidth / image.naturalHeight);
+      const sway = time === null ? 0 : Math.sin(time * 1.7 + (x + y) / 31) * 0.045;
+      rect("#152e327a", x + 7, y + 25, 22, 4);
+      ctx.save();
+      ctx.transform(1, 0, sway, 1, x + 16, y + 28);
+      ctx.drawImage(image, -Math.floor(width / 2), -height, width, height);
+      ctx.restore();
+      return;
+    }
     rect("#152e327a", x + 7, y + 25, 23, 5);
     rect("#85614a", x + 13, y + 15, 5, 13);
     x += time === null ? 0 : Math.round(Math.sin(time * 1.7 + (x + y) / 31) * 1.6);
