@@ -842,7 +842,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
           const open = cargo.filter(item => !item.reserved);
           const load = open[Math.floor(Math.random() * open.length)];
           const destinations = stops.filter(point =>
-            !cargo.some(item => item.point === point) &&
+            !cargo.some(item => item.point?.x === point.x && item.point?.y === point.y) &&
             !bots.some(other => other.load && other.destination === point));
           if (load && destinations.length) {
             worker.load = load;
