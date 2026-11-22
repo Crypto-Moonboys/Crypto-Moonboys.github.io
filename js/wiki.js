@@ -137,12 +137,20 @@ function loadWikiIndex() {
 }
 
 async function fetchWikiIndex() {
-  const url = getDerivedJsonUrl('wiki-index.json');
+  const fullIndexUrl = getDerivedJsonUrl('wiki-index.json');
+  const script = document.querySelector('script[data-wiki-search-index]');
+  let url = script?.getAttribute('data-wiki-search-index') === 'wiki-search-index.json'
+    ? getDerivedJsonUrl('wiki-search-index.json')
+    : fullIndexUrl;
   console.debug('[wiki.js] loading wiki-index from:', url);
   WIKI_INDEX_LOAD_STATE = 'loading';
   try {
     for (let attempt = 1; attempt <= WIKI_INDEX_MAX_ATTEMPTS; attempt++) {
-      const res = await fetch(url);
+      let res = await fetch(url);
+      if (res.status === 404 && url !== fullIndexUrl) {
+        url = fullIndexUrl;
+        res = await fetch(url);
+      }
       console.debug('[wiki.js] wiki-index fetch status:', res.status);
 
       if (res.status === 503 && attempt < WIKI_INDEX_MAX_ATTEMPTS) {
