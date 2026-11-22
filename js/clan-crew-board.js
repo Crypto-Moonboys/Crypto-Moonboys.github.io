@@ -20,6 +20,13 @@ if (board && api && profiles && factionOrder?.length) {
   const cityRules = board.querySelector('[data-clan-city-rules]');
   const cityHeader = board.querySelector('[data-clan-city]');
   const finals = board.querySelector('[data-clan-final-results]');
+  const leaderHeader = board.querySelector('[data-clan-leader-header]');
+  const leaderRules = board.querySelector('[data-clan-leader-rules]');
+  // The front idle frame is first in each four-row group of the Waterfront atlas.
+  const leaderSprites = [
+    'all-city-bulls', 'nomad-bears', 'hard-fork-rockers', 'rugpull-miners',
+    'crypto-moongirls', 'blockchain-furies', 'graffpunks', 'crypto-stoned-boys', 'blockstars',
+  ];
   const signalBonus = document.querySelector('[data-clan-signal-bonus]');
   const cityProjects = {
     'rugpull-miners': 'Mine tunnels',
@@ -140,17 +147,57 @@ if (board && api && profiles && factionOrder?.length) {
     }
   }
 
-  async function load() {
+  function renderLeader(leader, priorWeekFinal) {
+    const cell = document.createElement('td');
+    cell.className = 'clan-leader-cell';
+    const power = document.createElement('strong');
+    power.textContent = `${leader.power.toLocaleString()} power`;
+    const portrait = document.createElement('span');
+    portrait.className = 'clan-leader-sprite';
+    portrait.setAttribute('aria-hidden', 'true');
+    portrait.style.backgroundPositionY = `-${leaderSprites.indexOf(leader.faction_id) * 144}px`;
+    cell.append(portrait, power);
+
+    const breakdown = document.createElement('div');
+    breakdown.textContent = `${leader.banks} banks · ${leader.signals} signals · +${leader.boost.toLocaleString()} perk`;
+    cell.append(breakdown);
+    if (!leader.perk) {
+      const status = document.createElement('small');
+      status.textContent = priorWeekFinal ? 'Unranked last week' : 'Awaiting final weekly standings';
+      cell.append(status);
+      return cell;
+    }
+
+    const { rank, level, selected, options } = leader.perk;
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = `Lv ${level} · ${options.find(option => option.id === selected).name}`;
+    const previous = document.createElement('p');
+    previous.textContent = `Last week #${rank}. The leader selected one perk for this week.`;
+    const choices = document.createElement('ul');
+    for (const option of options) {
+      const line = document.createElement('li');
+      line.textContent = `${option.name} · +${option.points} ${option.unit}${option.id === selected ? ' (active)' : ''}`;
+      choices.append(line);
+    }
+    details.append(summary, previous, choices);
+    cell.append(details);
+    return cell;
+  }
+
+  async function load({ automatic = false } = {}) {
+    if (automatic && refresh.getAttribute('aria-disabled') === 'true') return;
     const current = ++generation;
     refresh.setAttribute('aria-disabled', 'true');
-    if (!board.hidden) status.textContent = 'Refreshing crew progress…';
+    if (!board.hidden && !automatic) status.textContent = 'Refreshing crew progress…';
     try {
-      const response = await fetch(`${api}/clan-operations/state?view=crew-progress${competitionPanel ? '&standings=1' : ''}${cityHeader ? '&city=1' : ''}`, {
+      const response = await fetch(`${api}/clan-operations/state?view=crew-progress${competitionPanel ? '&standings=1' : ''}${cityHeader ? '&city=1' : ''}${leaderHeader ? '&leaders=1' : ''}`, {
         credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(12_000),
       });
       if (!response.ok) throw new Error('crew progress unavailable');
       const result = await response.json();
       if (current !== generation) return;
+      const previousEntryWeek = data?.competition?.next_week_start;
       data = result;
       renderRewards(data);
       if (data.ok === true && (data.enabled === false || data.crews === undefined)) {
@@ -172,6 +219,13 @@ if (board && api && profiles && factionOrder?.length) {
       const showCity = Boolean(cityHeader && data.crews.every(crew => crew.city));
       if (cityRules) cityRules.hidden = !showCity;
       if (cityHeader) cityHeader.hidden = !showCity;
+      const leaders = new Map((data.leaders?.week_start === data.week_start ? data.leaders.crews ?? [] : [])
+        .map(leader => [leader.faction_id, leader]));
+      const showLeaders = Boolean(leaderHeader && factionOrder.every(key => leaders.has(key)));
+      if (leaderHeader) leaderHeader.hidden = !showLeaders;
+      if (leaderRules) leaderRules.hidden = !showLeaders;
+      const expanded = new Set(Array.from(rows.querySelectorAll('.clan-leader-cell details[open]'),
+        node => node.closest('tr').dataset.faction));
       const content = factionOrder.map(key => {
         const counts = byFaction.get(key);
         if (!counts || !Number.isSafeInteger(counts.today_banks) || !Number.isSafeInteger(counts.week_banks) ||
@@ -203,6 +257,12 @@ if (board && api && profiles && factionOrder?.length) {
         scoreCell.setAttribute('data-clan-crew-score', '');
         scoreCell.hidden = true;
         row.append(scoreCell);
+        if (showLeaders) {
+          const cell = renderLeader(leaders.get(key), data.leaders.prior_week_final);
+          const details = cell.querySelector('details');
+          if (details) details.open = expanded.has(key);
+          row.append(cell);
+        }
         return row;
       });
       rows.replaceChildren(...content);
@@ -210,15 +270,15 @@ if (board && api && profiles && factionOrder?.length) {
         competitionPanel.hidden = !data.competition;
         scoreHeader.hidden = true;
         renderCompetition();
-        refreshEntry();
+        if (!automatic || previousEntryWeek !== data.competition?.next_week_start) refreshEntry();
       }
       period.textContent = `UTC today ${data.utc_day} · Week starting ${data.week_start}`;
       table.hidden = false;
       const announce = !board.hidden;
       board.hidden = false;
-      status.textContent = announce ? 'Crew progress updated.' : '';
+      if (!automatic) status.textContent = announce ? 'Crew progress updated.' : '';
     } catch {
-      if (current !== generation) return;
+      if (current !== generation || (automatic && !board.hidden)) return;
       rows.replaceChildren();
       period.textContent = '';
       table.hidden = true;
@@ -246,4 +306,9 @@ if (board && api && profiles && factionOrder?.length) {
   window.addEventListener('moonboys:faction-status', () => refreshEntry());
   window.addEventListener('moonboys:clan-operation-banked', load);
   load();
+  if (leaderHeader) {
+    setInterval(() => {
+      if (!document.hidden && !board.contains(document.activeElement)) load({ automatic: true });
+    }, 60_000);
+  }
 }

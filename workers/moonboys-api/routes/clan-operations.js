@@ -1,6 +1,7 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
+import { readFactionLeaders } from '../shared/clan-faction-leaders.js';
 import { clanPeriodStart, readClanPeriodResults, readClanPeriodRewards } from '../shared/clan-period-rewards.js';
 import { clanCampaignReversesRoute, readClanCampaign, readClanCampaignCollectibles, readClanCampaignEligibility } from '../shared/clan-campaigns.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart } from '../shared/clan-signal-xp.js';
@@ -288,6 +289,14 @@ export async function handleClanOperations(request, env, helpers) {
           progress.final_results = await readClanPeriodResults(env.DB);
         } catch (error) {
           logApiFailure?.('clan_period_results_unavailable', { message: error?.message });
+        }
+      }
+      if (params.get('leaders') === '1') {
+        try {
+          progress.leaders = await readFactionLeaders(env.DB, progress.week_start, progress.utc_day,
+            progress.final_results ?? []);
+        } catch (error) {
+          logApiFailure?.('clan_faction_leaders_unavailable', { message: error?.message });
         }
       }
       return respond(progress);

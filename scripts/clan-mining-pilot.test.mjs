@@ -90,7 +90,7 @@ function fixture(t) {
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
-    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, crewEntry, weekStart, campaignRewards, campaignEligibility,
+    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, leaders, crewEntry, weekStart, campaignRewards, campaignEligibility,
     wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
@@ -100,7 +100,7 @@ function requestFixture(db) {
       utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, campaign_eligibility: campaignEligibility,
       renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
-    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') : ''}`, { method, body }),
+    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') + (leaders ? '&leaders=1' : '') : ''}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
@@ -1810,4 +1810,66 @@ test('a signed returning player gets one new faction choice at the UTC season bo
   assert.equal(status.faction, 'all-city-bulls');
   assert.equal(status.can_choose_faction, false);
   assert.equal((await send('join', 'all-city-bulls', '1802')).status, 409, 'legacy faction remains locked');
+});
+
+test('faction leaders use verified activity and one perk from each finalized weekly tier', async t => {
+  const { sql, settings, request } = fixture(t);
+  sql.exec("CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY); INSERT INTO telegram_users VALUES ('1'), ('2'), ('3'), ('99');");
+  sql.exec(`${newerMigration('019_daily_wtf_timed_events')}
+    ${newerMigration('126_clan_period_rewards')}`);
+  settings.periodStart = '2026-11-16';
+  settings.time = new Date('2026-11-24T16:30Z');
+  const at = '2026-11-24T16:15:00.000Z';
+  const first = CANONICAL_FACTION_KEYS[0];
+  const second = CANONICAL_FACTION_KEYS[1];
+  const third = CANONICAL_FACTION_KEYS[2];
+  const standings = CANONICAL_FACTION_KEYS.map((faction_id, index) => ({
+    faction_id, rank: index + 1, roster_size: 4, possible_banks: 60,
+    active_members: index === 0 ? 2 : 3,
+    scored_banks: index === 1 ? 24 : 9,
+  }));
+  const saveResult = sql.prepare(`INSERT INTO clan_period_results
+    VALUES ('weekly', '2026-11-16', '2026-11-16', '2026-11-23', '2026-11-23T00:05:00Z', ?)`);
+  const enter = sql.prepare('INSERT INTO clan_crew_roster_entries VALUES (?, ?, ?)');
+  const signal = sql.prepare(`INSERT INTO daily_wtf_player_events
+    (telegram_id, event_id, utc_day, status, completed_at) VALUES (?, ?, ?, ?, ?)`);
+  for (const [index, faction] of [first, second, third].entries()) {
+    const owner = String(index + 1);
+    enter.run('2026-11-23', owner, faction);
+    bankReceipt(sql, owner, faction, at);
+    bankReceipt(sql, owner, faction, at, 2);
+    signal.run(owner, 'accepted', '2026-11-24', 'completed', at);
+    signal.run(owner, 'check-in-only', '2026-11-24', 'checked_in', null);
+    signal.run(owner, 'old-signal', '2026-11-22', 'completed', '2026-11-22T16:15:00Z');
+  }
+  signal.run('99', 'not-on-roster', '2026-11-24', 'completed', at);
+
+  const get = () => request({ method: 'GET', view: 'crew-progress', standings: true, leaders: true });
+  const prior = (await get()).data;
+  assert.equal(prior.leaders.prior_week_final, false);
+  assert.equal(prior.leaders.crews[0].power, 4);
+  saveResult.run(JSON.stringify(standings));
+  const result = (await get()).data;
+  assert.equal(result.leaders.week_start, '2026-11-23');
+  assert.equal(result.leaders.prior_week_final, true);
+  assert.deepEqual(result.leaders.crews.map(crew => crew.perk?.level), [9, 8, 7, 6, 5, 4, 3, 2, 1]);
+  for (const crew of result.leaders.crews) {
+    assert.equal(new Set(crew.perk.options.map(option => option.metric)).size, 3);
+  }
+  assert.deepEqual(result.leaders.crews.slice(0, 3).map(({ perk, base, boost, power, member_days }) =>
+    [perk.selected, base, boost, power, member_days]), [
+    ['rally', 4, 18, 22, 1], ['relay', 4, 24, 28, 1], ['supply', 4, 14, 18, 1],
+  ]);
+  assert.deepEqual(result.competition, prior.competition);
+
+  bankReceipt(sql, '1', first, '2026-11-25T16:15:00.000Z');
+  settings.time = new Date('2026-11-25T17:00Z');
+  const nextDay = (await get()).data.leaders.crews[0];
+  assert.deepEqual(nextDay.perk, result.leaders.crews[0].perk);
+  assert.equal(nextDay.power, 41);
+
+  settings.time = new Date('2026-11-30T00:00Z');
+  const nextWeek = (await get()).data.leaders;
+  assert.equal(nextWeek.prior_week_final, false);
+  assert.ok(nextWeek.crews.every(({ power, perk }) => !power && perk === null));
 });

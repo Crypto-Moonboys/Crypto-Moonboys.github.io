@@ -549,3 +549,25 @@
   .wall-studio-tools { grid-column: 2; grid-row: 4; }
   .wall-studio > button { grid-column: 2; grid-row: 5; }
 }
+
+.clan-leader-cell {
+  min-width: 11rem;
+}
+
+.clan-leader-sprite {
+  display: inline-block;
+  vertical-align: middle;
+  width: 36px;
+  height: 36px;
+  margin-inline-end: .35rem;
+  image-rendering: pixelated;
+  background: url("/games/block-topia/waterfront/assets/atlases/factions.png") no-repeat;
+}
+
+.clan-leader-cell summary {
+  cursor: pointer;
+}
+
+.clan-leader-cell details ul {
+  padding-inline-start: 1.25rem;
+}

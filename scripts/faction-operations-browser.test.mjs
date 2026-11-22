@@ -1819,7 +1819,7 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
             ok: true, week_start: '2026-11-23', entered_faction: body.crew_entry === 'join' ? 'nomad-bears' : null,
           });
         }
-        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1&city=1' || options.credentials !== 'omit') {
+        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1&city=1&leaders=1' || options.credentials !== 'omit') {
           throw new Error('incorrect public request');
         }
         return new Promise(resolve => window.crewRequests.push(resolve));
@@ -1908,6 +1908,33 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     assert.deepEqual(await page.evaluate(() => window.crewEntryRequests.at(-1)), {
       telegram_auth: { id: '123' }, crew_entry: 'join', week_start: '2026-11-23',
     });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await banked();
+    await deliver(7, {
+      ...counts(1, 4),
+      leaders: {
+        week_start: '2026-11-16', prior_week_final: true,
+        crews: FACTIONS.map(faction_id => ({
+          faction_id, banks: 4, signals: 1, boost: 9, power: 15,
+          perk: faction_id === 'nomad-bears' ? {
+            rank: 1, level: 9, selected: 'relay',
+            options: [
+              { id: 'supply', name: 'Supply Dock', points: 9, unit: 'per banked task tier' },
+              { id: 'relay', name: 'Signal Relay', points: 27, unit: 'per completed signal' },
+              { id: 'rally', name: 'Crew Rally', points: 18, unit: 'per active member per UTC day' },
+            ],
+          } : null,
+        })),
+      },
+    });
+    await bears.getByText('15 power').waitFor();
+    await bears.getByText('Lv 9 · Signal Relay', { exact: true }).click();
+    assert.deepEqual(await bears.locator('.clan-leader-cell li').allTextContents(), [
+      'Supply Dock · +9 per banked task tier',
+      'Signal Relay · +27 per completed signal (active)',
+      'Crew Rally · +18 per active member per UTC day',
+    ]);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   } finally {
     await browser.close();
