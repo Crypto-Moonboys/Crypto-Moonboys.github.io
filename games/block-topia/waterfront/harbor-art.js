@@ -44,10 +44,12 @@ const waterfrontGroves = new Map([
   ["20,11", [7, 2, 3]]
 ]);
 
+const waterfrontCargoAtlas = { file: "cargo-frames" };
 const waterfrontBotAtlas = { file: "bot-frames" };
 const residentBots = [3, 4, 5, 6, 7];
 
 const waterfrontAtlases = {
+  "cargo": { "cargo-frames": [0, 0, 256, 96] },
   "bots": { "bot-frames": [0, 0, 128, 1024] },
   "hk-night": {
     "afterblock-club": [2, 2, 111, 115],
@@ -113,7 +115,7 @@ const waterfrontDetails = Object.fromEntries(
 
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
   const sprites = Object.fromEntries(
-    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas]
+    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas]
       .map(sprite => [sprite.file, sprite])
   );
   return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
@@ -124,7 +126,13 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
         const sprite = document.createElement("canvas");
         sprite.width = width;
         sprite.height = height;
-        sprite.getContext("2d").drawImage(atlas, x, y, width, height, 0, 0, width, height);
+        const context = sprite.getContext("2d");
+        context.drawImage(atlas, x, y, width, height, 0, 0, width, height);
+        if (["hk-night", "trees", "cargo", "street-detail"].includes(group)) {
+          context.globalCompositeOperation = "source-atop";
+          context.fillStyle = file.startsWith("furniture-") ? "#0b102525" : "#0b102548";
+          context.fillRect(0, 0, width, height);
+        }
         sprites[file].image = sprite;
       }
       resolve();
@@ -135,6 +143,36 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
 };
 
 /* Original pixel art. Terrain draws first, then objects and actors by ground position. */
+const cargoDesigns = [
+  ["#b76d44", "#f2b274", "#583b3d"], ["#3a8f90", "#8be2c6", "#24454e"],
+  ["#65588c", "#bb9bd6", "#38334e"], ["#a18746", "#f6d16e", "#51473b"],
+  ["#576a85", "#a8cae1", "#303948"], ["#966278", "#efa9af", "#4d3449"]
+];
+
+let harborFreight;
+function freightFor(rows, district) {
+  const layout = rows.join("\n");
+  if (harborFreight?.layout === layout) return harborFreight;
+  const canWalk = (x, y) => Boolean(district.tiles[rows[y]?.[x]]?.walkable);
+  const stores = [];
+  const yards = [];
+  rows.forEach((row, y) => [...row].forEach((tile, x) => {
+    if (!canWalk(x, y)) return;
+    if ("bwHEVcLsNA".includes(rows[y - 1]?.[x] ?? "~")) stores.push({ x, y });
+    else if (tile !== "p" && (x * 7 + y * 13) % 5 === 0) yards.push({ x, y });
+  }));
+  const reachable = point => findRoute(district.spawn, point, canWalk) !== null;
+  const stops = yards.filter(reachable);
+  const doors = stores.filter(reachable);
+  const cargo = stops.slice(0, Math.min(18, Math.max(0, stops.length - 5))).map((point, kind) => ({ point, kind }));
+  doors.slice(0, 6).forEach((point, index) => cargo.push({ point, kind: 18 + index, indoors: true }));
+  const bots = [0, 4, 3, 7].map((model, index) => ({
+    model, point: stops[index] ?? district.spawn, dx: 0, dy: 1, due: 0
+  }));
+  harborFreight = { layout, canWalk, stops, cargo, bots };
+  return harborFreight;
+}
+
 window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
@@ -160,6 +198,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   // Keep doors and people readable without widening the walkable grid.
   const personScale = 0.55;
   const objects = [];
+  const buildingShadows = [];
   const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
 
@@ -493,6 +532,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       queue(y + 24, () => detail("furniture-" + furniture, x + 16, y + 24, furniture < 4 ? 7 : 9));
     } else if (Object.hasOwn(waterfrontSprites, tile)) {
       const bounds = buildingBounds(tile, col, row);
+      const left = bounds?.left ?? x + 3;
+      const right = left + (bounds?.drawWidth ?? 26);
+      buildingShadows.push([left, right, y + 28]);
       queue(y + 29, () => building(tile, x, y, bounds));
       if (tile === "h") {
         beacons.push(bounds
@@ -539,7 +581,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function building(tile, x, y, bounds) {
-    rect("#0c252c83", x + 4, y + 24, 29, 7);
+    rect("#080d19b8", x + 4, y + 24, 29, 7);
     if (bounds) {
       const { image, left, top, drawWidth, drawHeight } = bounds;
       ctx.drawImage(image, left, top, drawWidth, drawHeight);
@@ -663,7 +705,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     if (image) {
       const width = Math.round(height * image.width / image.height);
       const sway = time === null ? 0 : Math.sin(time * 1.7 + (x + y) / 31) * 0.045;
-      rect("#152e327a", x + 7, y + 25, 22, 4);
+      rect("#080e1ab0", x + 6, y + 25, 24, 5);
       ctx.save();
       ctx.transform(1, 0, sway, 1, x + 16, y + 28);
       ctx.drawImage(image, -Math.floor(width / 2), -height, width, height);
@@ -716,7 +758,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const image = waterfrontBotAtlas.image;
     const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
     const size = 20;
-    rect("#1026338c", x - 5, y - 1, 10, 3);
+    rect("#080f1cad", x - 6, y - 1, 12, 4);
     if (image) {
       ctx.drawImage(image, frame * 32, (model * 4 + facing) * 32, 32, 32,
         x - size / 2, y - size, size, size);
@@ -737,6 +779,107 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     pixel("#eac69e", -3, -15, 6, 5);
     pixel(hat, -5, -17, 10, 4);
     if (carriesLight) pixel("#bbf9f3", 5, -9, 4, 5);
+  }
+
+  function freightObject(kind, x, y) {
+    const image = waterfrontCargoAtlas.image;
+    if (image) {
+      rect("#161b27a8", x - 7, y - 1, 14, 3);
+      ctx.drawImage(image, kind % 8 * 32, Math.floor(kind / 8) * 32, 32, 32,
+        x - 10, y - 19, 20, 20);
+      return;
+    }
+    const [body, light, dark] = cargoDesigns[kind % cargoDesigns.length];
+    const wide = kind % 3 === 0;
+    const w = wide ? 17 : 12;
+    const h = kind % 3 === 1 ? 12 : 9;
+    const left = x - Math.floor(w / 2);
+    rect("#161b27a8", left - 1, y - 1, w + 3, 3);
+    rect(dark, left, y - h, w, h);
+    rect(body, left + 1, y - h + 2, w - 3, h - 3);
+    rect(light, left + 1, y - h + 1, w - 3, 2);
+    if (kind % 2) {
+      rect(dark, left + 3, y - h + 4, w - 6, 1);
+      rect(light, left + 4, y - 4, w - 8, 1);
+    } else {
+      rect(light, left + 3, y - h + 3, 1, h - 4);
+      rect(light, left + w - 5, y - h + 3, 1, h - 4);
+    }
+  }
+
+  function drawFreight() {
+    const { canWalk, stops, cargo, bots } = freightFor(rows, district);
+    const now = time ?? 0;
+    const go = (worker, point) => {
+      worker.route = findRoute(worker.point, point, canWalk) ?? [];
+      const start = worker.point;
+      worker.route = [start, ...worker.route];
+      worker.started = now;
+      worker.due = now + (worker.route.length - 1) * 0.6 + 0.6;
+    };
+    for (const worker of bots) {
+      if (time !== null && now >= worker.due) {
+        if (worker.route) worker.point = worker.route.at(-1);
+        worker.route = null;
+        if (worker.carrying) {
+          worker.load.point = worker.point;
+          worker.load.reserved = false;
+          worker.load = null;
+          worker.carrying = false;
+        } else if (worker.load) {
+          if (worker.load.indoors && !worker.inside) {
+            worker.inside = true;
+            worker.due = now + 2;
+          } else {
+            worker.exiting = worker.inside;
+            worker.inside = false;
+            worker.load.indoors = false;
+            worker.load.point = null;
+            worker.carrying = true;
+            go(worker, worker.destination);
+          }
+        } else {
+          const open = cargo.filter(item => !item.reserved);
+          const load = open[Math.floor(Math.random() * open.length)];
+          const destinations = stops.filter(point =>
+            !cargo.some(item => item.point?.x === point.x && item.point?.y === point.y) &&
+            !bots.some(other => other.load && other.destination === point));
+          if (load && destinations.length) {
+            worker.load = load;
+            load.reserved = true;
+            worker.destination = destinations[Math.floor(Math.random() * destinations.length)];
+            go(worker, load.point);
+          } else worker.due = now + 3;
+        }
+      }
+      if (worker.inside) continue;
+      const progress = time === null ? 0 : (now - worker.started) / 0.6;
+      const index = Math.floor(progress);
+      const from = worker.route?.[index] ?? worker.route?.at(-1) ?? worker.point;
+      const to = worker.route?.[index + 1] ?? from;
+      const moving = from !== to;
+      if (moving) {
+        worker.dx = to.x - from.x;
+        worker.dy = to.y - from.y;
+      }
+      const fraction = moving ? progress - index : 0;
+      const x = Math.round((from.x + worker.dx * fraction) * size + 16);
+      const entering = worker.load?.indoors && !moving ? Math.max(0, 1 - (worker.due - now) / 0.6) : 0;
+      const exiting = worker.carrying && worker.exiting ? Math.max(0, 1 - progress) : 0;
+      const y = Math.round((from.y + worker.dy * fraction) * size + 23 - 25 * (entering + exiting));
+      const load = worker.carrying && worker.load;
+      queue(y, () => {
+        const atDoor = entering > 0 || exiting > 0;
+        bot(worker.model, x, y, atDoor ? 0 : worker.dx, entering > 0 ? -1 : exiting > 0 ? 1 : worker.dy,
+          moving || atDoor ? 1 + Math.floor(now * 7) % 3 : 0);
+        if (load) freightObject(load.kind, x + worker.dx * 6, y - 9);
+      });
+    }
+    for (const item of cargo) {
+      if (!item.point || item.indoors) continue;
+      const { x, y } = item.point;
+      queue(y * size + 20, () => freightObject(item.kind, x * size + 16, y * size + 20));
+    }
   }
 
   function actor() {
@@ -773,8 +916,14 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   rows.forEach((_, y) => {
     for (let x = 0; x < width; x++) terrain(tileAt(x, y), x, y);
   });
+  rect("#080a1c32", 0, 0, width * size, rows.length * size);
+  for (const [left, right, base] of buildingShadows) {
+    polygon("#080b1890", [[left, base - 8], [right, base - 8], [right + 14, base + 5], [left + 12, base + 5]]);
+    polygon("#080b184d", [[left + 12, base + 5], [right + 14, base + 5], [right + 20, base + 9], [left + 19, base + 9]]);
+  }
   beacons.forEach(([x, y]) => beacon(x, y, false));
   graffitiSeawall();
+  drawFreight();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));
