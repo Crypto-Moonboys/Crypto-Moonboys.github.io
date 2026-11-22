@@ -1,4 +1,4 @@
-.clan-operation {
+:is(.clan-operation, .clan-crew-progress) {
   --mine-amber: #ffd779;
   border: 1px solid #674c2b;
   background: linear-gradient(145deg, #241a17, #11141d 62%);
@@ -9,10 +9,12 @@
 }
 
 .clan-operation h2,
-.clan-operation h3 { color: var(--mine-amber); }
+.clan-operation h3,
+.clan-crew-progress h2,
+.clan-crew-progress h3 { color: var(--mine-amber); }
 .clan-operation h3 { font-size: clamp(1.4rem, 4vw, 2.3rem); }
 .clan-operation p { max-width: 65ch; }
-.clan-operation [hidden] { display: none !important; }
+:is(.clan-operation, .clan-crew-progress) [hidden] { display: none !important; }
 
 .clan-operation .clan-strata {
   margin: 1.15rem 0;
@@ -44,7 +46,7 @@
   margin: 1rem 0;
 }
 
-.clan-operation button {
+:is(.clan-operation, .clan-crew-progress) button {
   border: 1px solid #bb964e;
   border-radius: .5rem;
   background: #332714;
@@ -55,13 +57,13 @@
   cursor: pointer;
 }
 
-.clan-operation button:disabled,
-.clan-operation button[aria-disabled="true"] {
+:is(.clan-operation, .clan-crew-progress) button:disabled,
+:is(.clan-operation, .clan-crew-progress) button[aria-disabled="true"] {
   opacity: .56;
   cursor: default;
 }
 
-.clan-operation button:focus-visible {
+:is(.clan-operation, .clan-crew-progress) button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
 }
@@ -263,9 +265,14 @@
 }
 
 .clan-crew-progress {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #755538;
+  min-width: 0;
+}
+.clan-crew-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.clan-crew-table-scroll:focus-visible {
+  outline: 2px solid #fff;
 }
 
 .clan-crew-progress table {

@@ -1799,7 +1799,12 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
     const panel = html.match(/<section[^>]* data-clan-crew-progress[\s\S]*?<\/section>/)?.[0];
     assert.ok(panel);
-    await page.setContent('<main class="clan-operation">' + panel + '</main>');
+    assert.equal(await page.evaluate(markup => {
+      const document = new DOMParser().parseFromString(markup, 'text/html');
+      const progress = document.querySelector('[data-clan-crew-progress]');
+      return progress?.previousElementSibling === document.querySelector('[data-clan-operation]');
+    }, html), true, 'crew progress is a sibling card');
+    await page.setContent('<main>' + panel + '</main>');
     await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
     await page.addScriptTag({ path: path.join(ROOT, 'js/faction-profile-data.js') });
     await page.evaluate(() => {
