@@ -1,3 +1,9 @@
+const muralPasses = [
+  { color: "#56d9cf", strokes: [[[1,6],[5,1],[11,1],[8,6],[4,6],[2,10],[11,10]],[[13,10],[18,1],[22,1],[20,6],[15,6],[24,10]],[[26,10],[29,2],[34,1],[36,4],[30,9],[26,10]]] },
+  { color: "#e66eaa", strokes: [[[1,10],[5,1],[8,7],[12,1],[16,2],[13,10]],[[19,1],[17,10],[23,9],[25,1]],[[29,1],[26,10],[35,10],[37,7],[30,5],[36,2]]] },
+  { color: "#f4b46f", strokes: [[[1,2],[13,1]],[[8,1],[4,10]],[[13,10],[18,2],[24,1],[22,7],[14,7]],[[27,10],[31,2],[37,1],[35,6],[29,7],[37,10]]] }
+];
+
 const waterfrontSprites = {
   h: { file: "lighthouse", width: 34, maxHeight: 75 },
   w: { file: "workshop", width: 32, maxHeight: 36 },
@@ -37,7 +43,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const tileAt = (x, y) => rows[y]?.[x] ?? (y < 2 ? "~" : ".");
   const roadAt = (x, y) => Boolean(tiles[tileAt(x, y)].walkable);
   const objects = [];
-  const beams = [];
+  const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
 
   function glow(x, y, radius, color) {
@@ -47,17 +53,100 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     rect(light, x - radius, y - radius, radius * 2, radius * 2);
   }
 
-  function beacon(x, y) {
-    const angle = (time ?? 0) * Math.PI / 7 - Math.PI / 2;
-    const length = 170;
+  function beacon(x, y, foreground) {
+    const swing = Math.sin((time ?? 0) * Math.PI / 7) * 1.26;
+    const angle = foreground ? Math.PI / 2 + swing : -Math.PI / 2 + swing;
+    const length = foreground ? 172 : 220;
     const beam = ctx.createRadialGradient(x, y, 0, x, y, length);
-    beam.addColorStop(0, "#b4ffed75");
-    beam.addColorStop(0.4, "#70f3ed42");
+    beam.addColorStop(0, foreground ? "#aeffeb96" : "#b4ffed75");
+    beam.addColorStop(0.4, foreground ? "#70f3ed60" : "#70f3ed42");
     beam.addColorStop(1, "transparent");
     polygon(beam, [[x, y], ...[-0.12, 0.12].map(spread => [
       x + Math.cos(angle + spread) * length,
       y + Math.sin(angle + spread) * length * 0.72
     ])]);
+  }
+
+  function paintMural(x, y, width, pass, fraction) {
+    if (fraction <= 0) return;
+    const { color, strokes } = muralPasses[pass % muralPasses.length];
+    const offset = pass % 2 ? 5 : 1;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x + (pass % 2 ? width * (1 - fraction) : 0), y, width * fraction, 16);
+    ctx.clip();
+    for (const [ink, weight] of [["#262239", 4], [color, 2]]) {
+      ctx.lineWidth = weight;
+      ctx.strokeStyle = ink;
+      for (const stroke of strokes) {
+        ctx.beginPath();
+        stroke.forEach(([sx, sy], i) => {
+          const px = x + offset + sx * (width - 14) / 38;
+          const py = y + 2 + sy;
+          if (i) ctx.lineTo(px, py);
+          else ctx.moveTo(px, py);
+        });
+        ctx.stroke();
+      }
+    }
+    rect(color, x + 11, y + 13, 4, 1);
+    rect(color, x + width - 12, y + 3, 3, 1);
+    ctx.restore();
+  }
+
+  function graffitiSeawall() {
+    // Between the middle and east docks. Let custom map edits take priority.
+    const start = 13;
+    const end = 24;
+    if (rows[2]?.slice(start, end) !== ".".repeat(end - start)) return;
+    const x = start * size;
+    const y = 2 * size;
+    const width = (end - start) * size;
+    rect("#171826", x, y + 3, width, 23);
+    rect("#575061", x, y + 1, width, 4);
+    rect("#81717e", x, y + 1, width, 1);
+    rect("#4a3545", x + 1, y + 5, width - 2, 17);
+    for (let row = 0; row < 3; row++) {
+      const top = y + 6 + row * 5;
+      rect("#362936", x + 1, top + 3, width - 2, 1);
+      for (let col = 6 + (row % 2) * 4; col < width - 2; col += 8) {
+        rect("#382d3b", x + col, top, 1, 4);
+        rect("#604354", x + col + 1, top, 3, 1);
+      }
+    }
+    rect("#292735", x, y + 22, width, 3);
+
+    const panelWidth = (width - 12) / 3;
+    for (let panel = 0; panel < 3; panel++) {
+      const left = x + 6 + panel * panelWidth;
+      const elapsed = (time ?? 0) + panel * 4;
+      const pass = Math.floor(elapsed / 16) + 2;
+      const progress = time === null ? 1 : (elapsed % 16) / 16;
+      paintMural(left, y + 6, panelWidth, pass - 2, 1);
+      paintMural(left, y + 6, panelWidth, pass - 1, 1);
+      paintMural(left, y + 6, panelWidth, pass, progress);
+      if (time === null) continue;
+      const direction = pass % 2 ? -1 : 1;
+      const hand = Math.round(left + panelWidth * (direction === 1 ? progress : 1 - progress));
+      const artist = hand - direction * 5;
+      const feet = y + 32;
+      const step = Math.floor(time * 6) % 2;
+      queue(feet, () => {
+        rect("#10121caa", artist - 4, feet, 9, 2);
+        rect("#242235", artist - 3, feet - 5, 2, 4 + step);
+        rect("#242235", artist + 1, feet - 5, 2, 5 - step);
+        rect(panel % 2 ? "#596ab1" : "#9d527a", artist - 4, feet - 12, 8, 8);
+        rect("#b88867", artist - 2, feet - 15, 4, 4);
+        rect("#303048", artist - 3, feet - 17, 6, 4);
+        rect("#b88867", hand, feet - 14, 2, 4);
+        const color = muralPasses[pass % muralPasses.length].color;
+        rect(color, hand, feet - 15, 2, 2);
+        for (let speck = 0; speck < 3; speck++) {
+          const drift = (Math.floor(time * 12) + speck * 2) % 5;
+          rect(color, hand + direction * (speck - 1), feet - 16 - drift, 1, 1);
+        }
+      });
+    }
   }
 
   function smoke(x, y, phase) {
@@ -212,7 +301,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       if (tile === "h") {
         const image = waterfrontSprites.h.image;
         const height = image ? Math.min(75, image.naturalHeight * 34 / image.naturalWidth) : 64;
-        beams.push(() => beacon(x + 16, y + 29 - height * 0.72));
+        beacons.push([x + 16, y + 29 - height * 0.72]);
       }
       if (time !== null && "csw".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
     } else if (tile === "." && row === 2) {
@@ -389,8 +478,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   rows.forEach((_, y) => {
     for (let x = 0; x < width; x++) terrain(tileAt(x, y), x, y);
   });
-  beams.forEach(draw => draw());
+  beacons.forEach(([x, y]) => beacon(x, y, false));
+  graffitiSeawall();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
+  beacons.forEach(([x, y]) => beacon(x, y, true));
 
 };
