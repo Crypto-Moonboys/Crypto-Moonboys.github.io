@@ -42,7 +42,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 <div class="tools">
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap a street or dock to walk there. <span class="pan-help">Swipe sideways to see the whole harbor.</span></p>
+<p id="movement-help">Click or tap a street, footpath, or dock to walk there. <span class="pan-help">Swipe sideways to see the whole harbor.</span></p>
 </section>
 <details id="editor">
 <summary>Map editor</summary>
@@ -58,8 +58,8 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </details>
 </div>
 </main>
-<script src="district.js?v=2"></script>
-<script src="harbor-art.js?v=4"></script>
+<script src="district.js?v=5"></script>
+<script src="harbor-art.js?v=5"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -68,7 +68,8 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const storageKey = "block-topia.waterfront.v2";
+const storageKey = "block-topia.waterfront.v3";
+const previousStorageKey = "block-topia.waterfront.v2";
 const legacyStorageKey = "block-topia.waterfront.v1";
 const mapScroll = document.querySelector(".map-scroll");
 const canvas = document.querySelector("#map");
@@ -97,9 +98,17 @@ function restoreLayout() {
   const saved = JSON.parse(localStorage.getItem(storageKey));
   if (validLayout(saved, initial, spawn.x)) return saved;
 
+  const wide = JSON.parse(localStorage.getItem(previousStorageKey));
+  if (validLayout(wide, district.previousWideRows, spawn.x)) {
+    return applyEdits(wide, district.previousWideRows, 0);
+  }
   const { rows: previous, columnOffset } = district.previousLayout;
   const legacy = JSON.parse(localStorage.getItem(legacyStorageKey));
   if (!validLayout(legacy, previous, spawn.x - columnOffset)) return [...initial];
+  return applyEdits(legacy, previous, columnOffset);
+}
+
+function applyEdits(legacy, previous, columnOffset) {
 
   // Carry over player edits while keeping the new street connections in untouched tiles.
   return initial.map((row, y) => [...row].map((tile, x) => {
