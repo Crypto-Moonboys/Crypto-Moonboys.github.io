@@ -494,6 +494,72 @@ const graffpunksStopwordOnly = {
   assert.equal(scored.length, 0, 'Nonsense query should return no header autocomplete suggestions');
 }
 
+// Official routes can rank above lore, and game discovery uses the public Arcade list.
+{
+  const index = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
+  const catalog = await fs.readFile(path.join(ROOT, 'games', 'index.html'), 'utf8');
+  const links = [...catalog.matchAll(/<a href="([^"]+)" class="article-list-item">[^\n]*?<div class="ali-title">([^<]+)<\/div><div class="ali-desc">([^<]+)/g)];
+  const sandbox = makeSandbox();
+  const sections = [{ hidden: false }, { hidden: false }];
+  const elements = {
+    'search-heading': { textContent: '' },
+    'search-results-page': { innerHTML: '' },
+  };
+  sandbox.document.getElementById = id => elements[id] || null;
+  sandbox.document.querySelectorAll = selector => selector === '[data-search-browse]' ? sections : [];
+  sandbox.fetch = async url => url === '/games/'
+    ? { ok: true, text: async () => catalog }
+    : { ok: true, json: async () => index };
+  sandbox.DOMParser = class {
+    parseFromString(html, type) {
+      assert.equal(html, catalog);
+      assert.equal(type, 'text/html');
+      return {
+        querySelectorAll(selector) {
+          assert.equal(selector, 'a.article-list-item[href]');
+          return links.map(([, url, title, description]) => ({
+            getAttribute: () => url,
+            querySelector: name => ({ textContent: name === '.ali-title' ? title : description }),
+          }));
+        },
+      };
+    }
+  };
+  await sandbox.loadWikiIndex();
+  await sandbox.loadArcadeSearchEntries();
+  for (const [query, url, corrected] of [
+    ['Crypto Moonboys', '/wiki/crypto-moonboys.html'],
+    ['AI Creator Studio', '/ai-user.html'],
+    ['G.K. Nifty Heads', '/wiki/gkniftyheads.html'],
+    ['XRP', '/wiki/xrp-ledger.html'],
+    ['Faction Chambers', '/battle-chamber/factions/'],
+    ['Forkfield', '/games/forkfield/'],
+    ['Bullrun Brick Smash', '/games/bullrun-brick-smash/'],
+    ['Chain Maze', '/games/chain-maze/'],
+    ['NBG London Graffiti Run', '/games/nbg-london/'],
+    ['moongrils', '/wiki/the-crypto-moongirls.html', 'Moongirls'],
+    ['swarmsi', '/swarmsy.html', 'SWARMSY'],
+    ['Graffiti Kigns', '/wiki/graffiti-kings.html', 'Graffiti Kings'],
+  ]) {
+    const full = sandbox.selectSearchMatches(query);
+    const header = sandbox.selectSearchMatches(query, { limit: 5 });
+    assert.equal(full.scored[0]?.item.url, url, query);
+    assert.equal(header.scored[0]?.item.url, url, query);
+    assert.equal(full.scored.filter(result => result.item.url === url).length, 1);
+    assert.equal(full.correctedQuery, corrected, query);
+  }
+  assert.equal(sandbox.selectSearchMatches('moongrils', { allowPartialFallback: false }).scored.length, 0);
+  sandbox.renderSearchPage('Forkfield');
+  assert.ok(sections.every(section => section.hidden));
+  assert.match(elements['search-results-page'].innerHTML, /href="\/games\/forkfield\/"/);
+  sandbox.renderSearchPage('moongrils');
+  assert.match(elements['search-heading'].textContent, /Results for "Moongirls"/);
+  sandbox.renderSearchPage(' ');
+  assert.ok(sections.every(section => !section.hidden));
+  assert.equal(elements['search-heading'].textContent, `All Articles (${index.length})`);
+  assert.doesNotMatch(elements['search-results-page'].innerHTML, /href="\/games\/forkfield\/"/);
+}
+
 // Wiki-index loading retries transient 503 responses without masking bad assets.
 {
   let callCount = 0;
@@ -1483,7 +1549,7 @@ const graffpunksStopwordOnly = {
     search_index: { normalized_title: 'block topia', tokens: ['block', 'topia'], keyword_bag: ['air', 'ledger'] }
   };
   const matches = await selectMatches([repairLedger, airLedger], 'Air Ledger', { allowPartialFallback: true, limit: 5 });
-  assert.deepEqual(matches.scored.map(row => row.item.url), ['/wiki/block-topia.html']);
+  assert.deepEqual(Array.from(matches.scored, row => row.item.url), ['/wiki/block-topia.html']);
   assert.equal(scoreResult(repairLedger, 'air ledger').matchedTokenCount, 1, 'air must not match repair');
   assert.equal(scoreResult(repairLedger, 'repair ledger').matchedTokenCount, 2, 'whole corpus words remain searchable');
   const prefix = await selectMatches([airLedger], 'block top', { allowPartialFallback: true, limit: 5 });
