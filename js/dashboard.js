@@ -48,13 +48,22 @@
     const observer = typeof IntersectionObserver === 'undefined' ? null :
       new IntersectionObserver(entries => {
         for (const { target, isIntersecting } of entries) {
-          if (!isIntersecting || !loaders.has(target)) continue;
-          observer.unobserve(target);
-          const load = loaders.get(target);
-          loaders.delete(target);
-          load();
+          if (isIntersecting) loadObservedReport(target);
         }
       }, { rootMargin: '200px 0px' });
+
+    function loadObservedReport(section) {
+      const load = loaders.get(section);
+      if (!load) return;
+      loaders.delete(section);
+      observer.unobserve(section);
+      load();
+    }
+
+    function loadLinkedReport() {
+      const linkedElement = document.getElementById(window.location.hash.slice(1));
+      loadObservedReport(linkedElement?.closest('.dash-section'));
+    }
 
     for (const [name, renderReport] of reports) {
       const target = qs(`#dash-${name}`);
@@ -68,13 +77,16 @@
         }
       };
 
-      if (observer) {
-        loaders.set(target, load);
-        observer.observe(target);
+      const section = target.closest('.dash-section');
+      if (observer && section) {
+        loaders.set(section, load);
+        observer.observe(section);
       } else {
         load();
       }
     }
+    loadLinkedReport();
+    window.addEventListener('hashchange', loadLinkedReport);
   }
 
   function renderBlogEditions(data) {
