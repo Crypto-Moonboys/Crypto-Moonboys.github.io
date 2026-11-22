@@ -11,7 +11,7 @@ a{color:#91efe3}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
 header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding-block:.85rem}
 h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) system-ui,sans-serif;letter-spacing:-.04em}
 .viewport{position:relative;background:#101f34;border-block:1px solid #494455}
-.map-scroll{overflow-x:auto;overscroll-behavior-inline:contain}
+.map-scroll{overflow:auto;overscroll-behavior-inline:contain;touch-action:pan-x pan-y}
 canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixelated;cursor:pointer}
 canvas[data-editing=true]{cursor:crosshair}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
@@ -42,7 +42,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 <div class="tools">
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap a street, footpath, or dock to walk there. <span class="pan-help">Swipe sideways to see the whole harbor.</span></p>
+<p id="movement-help">Click or tap to walk. Scroll over the map or pinch with two fingers to zoom. <span class="pan-help">Swipe sideways to see the whole harbor.</span></p>
 </section>
 <details id="editor">
 <summary>Map editor</summary>
@@ -209,6 +209,7 @@ document.querySelector("#editor").addEventListener("toggle", event => {
   if (!event.currentTarget.open && editing) setEditing(false);
 });
 canvas.addEventListener("click", event => {
+  if (performance.now() < ignoreTapUntil) return;
   const rect = canvas.getBoundingClientRect();
   const x = Math.floor((event.clientX - rect.left) * mapWidth / rect.width / tileSize);
   const y = Math.floor((event.clientY - rect.top) * mapHeight / rect.height / tileSize);
@@ -247,6 +248,66 @@ canvas.width = mapWidth * renderScale;
 canvas.height = mapHeight * renderScale;
 ctx.scale(renderScale, renderScale);
 ctx.imageSmoothingEnabled = false;
+let zoom = 1;
+let pinch = null;
+let ignoreTapUntil = 0;
+
+function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
+  const before = canvas.getBoundingClientRect();
+  const mapX = (fromX - before.left) / before.width;
+  const mapY = (fromY - before.top) / before.height;
+  zoom = Math.max(0.6, Math.min(3, scale));
+  mapScroll.style.maxHeight = (Math.max(740, mapScroll.clientWidth) * mapHeight / mapWidth) + "px";
+  canvas.style.width = (zoom * 100) + "%";
+  canvas.style.minWidth = (zoom * 740) + "px";
+  const after = canvas.getBoundingClientRect();
+  mapScroll.scrollLeft += after.left + mapX * after.width - toX;
+  mapScroll.scrollTop += after.top + mapY * after.height - toY;
+}
+
+mapScroll.addEventListener("wheel", event => {
+  if (event.deltaY === 0) return;
+  event.preventDefault();
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? mapScroll.clientHeight : 1;
+  const delta = Math.max(-160, Math.min(160, event.deltaY * unit));
+  zoomMap(zoom * Math.exp(-delta * 0.0025), event.clientX, event.clientY);
+}, { passive: false });
+
+function pinchPosition(touches) {
+  const [a, b] = [touches[0], touches[1]];
+  return {
+    distance: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2
+  };
+}
+
+mapScroll.addEventListener("touchstart", event => {
+  if (event.touches.length !== 2) return;
+  event.preventDefault();
+  pinch = pinchPosition(event.touches);
+  ignoreTapUntil = Infinity;
+}, { passive: false });
+
+mapScroll.addEventListener("touchmove", event => {
+  if (!pinch || event.touches.length !== 2) return;
+  event.preventDefault();
+  const next = pinchPosition(event.touches);
+  if (pinch.distance > 0 && next.distance > 0) {
+    zoomMap(zoom * next.distance / pinch.distance, pinch.x, pinch.y, next.x, next.y);
+  }
+  pinch = next;
+}, { passive: false });
+
+for (const name of ["touchend", "touchcancel"]) {
+  mapScroll.addEventListener(name, event => {
+    if (event.touches.length < 2) pinch = null;
+    if (ignoreTapUntil === Infinity && event.touches.length === 0) {
+      ignoreTapUntil = performance.now() + 350;
+    }
+  });
+}
+
 const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
 mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
 draw();
