@@ -508,15 +508,47 @@ function selectSearchMatches(query, options) {
 }
 
 /* ── SEARCH PAGE RENDERER ────────────────────────────────────────────────── */
+const SEARCH_PAGE_SIZE = 24;
+const searchPage = { query: '', filter: 'all', limit: SEARCH_PAGE_SIZE };
+const searchPeople = new Set([
+  'bone-idol-ink', 'charlie-buster', 'darren-cullen', 'delicious-again-pete',
+  'ian-harrison', 'jillian-godsil', 'jonny-laurence-nelson-tag-records', 'sneakar',
+  'street-artist-buster-aka-charlie-buster', 'trevor-fung',
+].map(slug => `/wiki/${slug}.html`));
+
+function searchResultType(item) {
+  const url = resolveWikiUrl(item.url);
+  if (url.startsWith('/games/')) return 'games';
+  if (item.category === 'community-people' || searchPeople.has(url)) return 'people';
+  if (['nfts', 'nfts-digital-art', 'wax-nfts'].includes(item.category)
+    || item.brand?.concept_type === 'collection') return 'nfts';
+  if (url.startsWith('/wiki/') && ['lore', 'core', 'characters', 'factions'].includes(item.category)) return 'lore';
+  return null;
+}
+
 function renderSearchPage(query) {
   const container = document.getElementById('search-results-page');
   const heading   = document.getElementById('search-heading');
   if (!container) return;
 
   const q = String(query || '').trim();
+  if (q !== searchPage.query) {
+    searchPage.query = q;
+    searchPage.limit = SEARCH_PAGE_SIZE;
+  }
+  if (!q) searchPage.filter = 'all';
   document.querySelectorAll('[data-search-browse]').forEach(section => {
     section.hidden = Boolean(q);
   });
+
+  const filters = document.getElementById('search-filters');
+  const shortcuts = document.getElementById('search-block-topia-shortcuts');
+  const loadMore = document.getElementById('search-load-more');
+  const showFilters = Boolean(q) && WIKI_INDEX_LOAD_STATE === 'loaded';
+  if (filters) filters.hidden = !showFilters;
+  if (shortcuts) shortcuts.hidden = !showFilters
+    || searchPage.filter !== 'all' || normalizeEntityKey(q) !== 'blocktopia';
+  if (loadMore && WIKI_INDEX_LOAD_STATE !== 'loaded') loadMore.hidden = true;
 
   if (WIKI_INDEX_LOAD_STATE === 'failed') {
     container.innerHTML = '<p class="search-empty">Search index failed to load. Refresh the page or try again later.</p>';
@@ -534,18 +566,36 @@ function renderSearchPage(query) {
   if (q) {
     const { scored, correctedQuery } = selectSearchMatches(q, { allowPartialFallback: true });
     items = scored.map(r => r.item);
+    if (filters) {
+      const groups = { all: items, games: [], lore: [], people: [], nfts: [] };
+      for (const item of items) {
+        groups[searchResultType(item)]?.push(item);
+      }
+      for (const button of filters.querySelectorAll('[data-search-filter]')) {
+        const filter = button.dataset.searchFilter;
+        const count = groups[filter].length;
+        const active = filter === searchPage.filter;
+        button.querySelector('.search-filter-count').textContent = String(count);
+        button.setAttribute('aria-pressed', String(active));
+        button.disabled = !active && count === 0;
+      }
+      items = groups[searchPage.filter];
+    }
     if (heading) heading.textContent = `Results for "${correctedQuery || q}" (${items.length})`;
   } else {
     items = [...WIKI_INDEX].sort(compareIndexItemsStable);
     if (heading) heading.textContent = `All Articles (${items.length})`;
   }
 
+  if (loadMore) loadMore.hidden = items.length <= searchPage.limit;
   if (!items.length) {
-    container.innerHTML = `<p class="search-empty">No results found for "${escapeHtml(q)}".</p>`;
+    container.innerHTML = searchPage.filter === 'all'
+      ? `<p class="search-empty">No results found for "${escapeHtml(q)}".</p>`
+      : '<p class="search-empty">No results in this filter.</p>';
     return;
   }
 
-  container.innerHTML = items.map(item => {
+  container.innerHTML = items.slice(0, searchPage.limit).map(item => {
     const href    = resolveWikiUrl(item.url);
     const title   = item.title || href;
     const summaryText = getArticleSummary(item);
@@ -697,6 +747,24 @@ function bindSearchControls() {
       if (query) url.searchParams.set('q', query);
       else url.searchParams.delete('q');
       history.replaceState(null, '', url.toString());
+    });
+
+    const filters = document.getElementById('search-filters');
+    for (const button of filters?.querySelectorAll('[data-search-filter]') || []) {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.searchFilter;
+        if (filter === searchPage.filter) return;
+        searchPage.filter = filter;
+        searchPage.limit = SEARCH_PAGE_SIZE;
+        renderSearchPage(searchInput.value);
+      });
+    }
+
+    document.getElementById('search-load-more')?.addEventListener('click', () => {
+      const firstNewResult = searchPage.limit;
+      searchPage.limit += SEARCH_PAGE_SIZE;
+      renderSearchPage(searchInput.value);
+      document.querySelectorAll('#search-results-page .article-card-title')[firstNewResult]?.focus();
     });
   }
 
