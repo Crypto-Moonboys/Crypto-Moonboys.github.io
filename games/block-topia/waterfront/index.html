@@ -63,8 +63,8 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </div>
 </main>
-<script src="district.js?v=7"></script>
-<script src="harbor-art.js?v=19"></script>
+<script src="district.js?v=8"></script>
+<script src="harbor-art.js?v=20"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -73,7 +73,7 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const storageKey = "block-topia.waterfront.v4";
+const storageKey = "block-topia.waterfront.v5";
 const doorstepStorageKey = "block-topia.waterfront.v3";
 const previousStorageKey = "block-topia.waterfront.v2";
 const legacyStorageKey = "block-topia.waterfront.v1";
@@ -94,29 +94,36 @@ function walkable(tile) {
   return Boolean(tiles[tile]?.walkable);
 }
 
-function validLayout(candidate, baseline, startX) {
+function validLayout(candidate, baseline, startX, startY = spawn.y) {
   return Array.isArray(candidate) && candidate.length === baseline.length &&
     candidate.every((row, y) => typeof row === "string" && row.length === baseline[y].length &&
       [...row].every(tile => Object.hasOwn(tiles, tile))) &&
-    walkable(candidate[spawn.y][startX]);
+    walkable(candidate[startY][startX]);
 }
 
 function restoreLayout() {
   const saved = JSON.parse(localStorage.getItem(storageKey));
   if (validLayout(saved, initial, spawn.x)) return saved;
 
+  const { x: offsetX, y: offsetY } = district.harborOffset;
+  const harborX = spawn.x - offsetX;
+  const harborY = spawn.y - offsetY;
+  const previousHarbor = JSON.parse(localStorage.getItem("block-topia.waterfront.v4"));
+  if (validLayout(previousHarbor, district.harborRows, harborX, harborY)) {
+    return applyEdits(previousHarbor, district.harborRows, offsetX);
+  }
   const doorstep = JSON.parse(localStorage.getItem(doorstepStorageKey));
-  if (validLayout(doorstep, district.previousDoorstepRows, spawn.x)) {
-    return applyEdits(doorstep, district.previousDoorstepRows, 0);
+  if (validLayout(doorstep, district.previousDoorstepRows, harborX, harborY)) {
+    return applyEdits(doorstep, district.previousDoorstepRows, offsetX);
   }
   const wide = JSON.parse(localStorage.getItem(previousStorageKey));
-  if (validLayout(wide, district.previousWideRows, spawn.x)) {
-    return applyEdits(wide, district.previousWideRows, 0);
+  if (validLayout(wide, district.previousWideRows, harborX, harborY)) {
+    return applyEdits(wide, district.previousWideRows, offsetX);
   }
   const { rows: previous, columnOffset } = district.previousLayout;
   const legacy = JSON.parse(localStorage.getItem(legacyStorageKey));
-  if (!validLayout(legacy, previous, spawn.x - columnOffset)) return [...initial];
-  return applyEdits(legacy, previous, columnOffset);
+  if (!validLayout(legacy, previous, harborX - columnOffset, harborY)) return [...initial];
+  return applyEdits(legacy, previous, offsetX + columnOffset);
 }
 
 function applyEdits(legacy, previous, columnOffset) {
@@ -124,8 +131,9 @@ function applyEdits(legacy, previous, columnOffset) {
   // Carry over player edits while keeping the new street connections in untouched tiles.
   return initial.map((row, y) => [...row].map((tile, x) => {
     const oldX = x - columnOffset;
-    const edited = legacy[y][oldX];
-    return edited !== undefined && edited !== previous[y][oldX] ? edited : tile;
+    const oldY = y - district.harborOffset.y;
+    const edited = legacy[oldY]?.[oldX];
+    return edited !== undefined && edited !== previous[oldY]?.[oldX] ? edited : tile;
   }).join(""));
 }
 
@@ -254,26 +262,29 @@ document.querySelector("#reset").addEventListener("click", () => {
   save();
   draw();
 });
-const renderScale = 2;
+const renderScale = 1;
 canvas.width = mapWidth * renderScale;
 canvas.height = mapHeight * renderScale;
 ctx.scale(renderScale, renderScale);
 ctx.imageSmoothingEnabled = false;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
-let zoom = compactMap ? 1.25 : 1.75;
+let zoom = compactMap ? 1.35 : 1.85;
 let pinch = null;
 let ignoreTapUntil = 0;
 
 function applyZoomSize() {
-  canvas.style.width = (zoom * 100) + "%";
-  canvas.style.minWidth = (zoom * 740) + "px";
+  const cover = Math.max(mapScroll.clientWidth, mapScroll.clientHeight * mapWidth / mapHeight);
+  canvas.style.width = Math.ceil(cover * zoom) + "px";
+  canvas.style.minWidth = "0";
+  // Match the height to the rounded width so even the last row covers the viewport.
+  canvas.style.height = Math.max(mapScroll.clientHeight, Math.ceil(cover * zoom * mapHeight / mapWidth)) + "px";
 }
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
   const before = canvas.getBoundingClientRect();
   const mapX = (fromX - before.left) / before.width;
   const mapY = (fromY - before.top) / before.height;
-  zoom = Math.max(0.6, Math.min(3, scale));
+  zoom = Math.max(1, Math.min(4, scale));
   applyZoomSize();
   const after = canvas.getBoundingClientRect();
   mapScroll.scrollLeft += after.left + mapX * after.width - toX;
@@ -385,6 +396,8 @@ for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) {
   });
 }
 
+window.addEventListener("resize", applyZoomSize);
+document.addEventListener("fullscreenchange", applyZoomSize);
 applyZoomSize();
 const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
 mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
