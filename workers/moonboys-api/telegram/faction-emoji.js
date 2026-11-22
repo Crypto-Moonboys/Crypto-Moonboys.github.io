@@ -59,24 +59,48 @@ async function getFactionEmojiPack(token, fetchImpl) {
   return pendingLookup;
 }
 
-const MESSAGE_EMOJI_COUNT = 4;
+const MAX_MESSAGE_EMOJIS = 4;
+
+function findStatementLines(lines) {
+  const statements = [];
+  const htmlTag = /<(\/?)[a-z][\w-]*(?:\s[^<>]*)?>/gi;
+  let openTags = 0;
+  // Odd indexes are the original line separators.
+  for (let index = 0; index < lines.length; index += 2) {
+    const line = lines[index];
+    const startsOutsideMarkup = openTags === 0;
+    const plain = line.replace(htmlTag, (_, closing) => {
+      openTags = Math.max(0, openTags + (closing ? -1 : 1));
+      return '';
+    });
+    if (startsOutsideMarkup && plain.trim() && !/<(?:code|pre)(?:\s|>)/i.test(line)) {
+      statements.push(index);
+    }
+  }
+  return statements;
+}
 
 // Sample without replacement so a message never repeats a pack emoji.
 export async function addMoonboysMessageEmoji(text, token, fetchImpl = fetch) {
   if (typeof text !== 'string' || !text.trim() || text.includes('<tg-emoji') ||
       !isTelegramBotToken(token)) return text;
+  const message = text.replace(FACTION_LINE, (line, name) =>
+    Object.hasOwn(FACTION_LABELS, name) ? `Faction: ${FACTION_LABELS[name]}` : line);
+  const lines = message.split(/(\r?\n)/);
+  const statements = findStatementLines(lines);
+  const count = Math.min(MAX_MESSAGE_EMOJIS, statements.length);
+  if (!count) return text;
   const entries = await getFactionEmojiPack(token, fetchImpl);
   if (!entries) return text;
   const stickers = Object.values(FACTION_EMOJI).map(emoji => entries.get(emoji));
-  const icons = [];
-  for (let index = 0; index < MESSAGE_EMOJI_COUNT; index++) {
+  for (let index = 0; index < count; index++) {
     const selected = Math.floor(Math.random() * stickers.length);
     const [sticker] = stickers.splice(selected, 1);
-    icons.push(`<tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji>`);
+    const position = Math.round(index * (statements.length - 1) / Math.max(1, count - 1));
+    const lineIndex = statements[position];
+    lines[lineIndex] = `<tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji> ${lines[lineIndex]}`;
   }
-  const message = text.replace(FACTION_LINE, (line, name) =>
-    Object.hasOwn(FACTION_LABELS, name) ? `Faction: ${FACTION_LABELS[name]}` : line);
-  return `${icons.join(' ')} ${message}`;
+  return lines.join('');
 }
 
 export function formatMoonboysAnnouncement(text) {

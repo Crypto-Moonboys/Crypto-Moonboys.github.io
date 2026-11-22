@@ -85,7 +85,7 @@ test('live-style token uses bold headings and pack icons for both bulletin posts
     .map((emoji, index) => ({ emoji, custom_emoji_id: String(index + 1) }));
   const result = await sendTagRunBulletin({
     ...env, TELEGRAM_BOT_TOKEN: '123456:test_token_for_bulletins',
-  }, 'Clan update\nA & B', async (url, options) => {
+  }, 'Clan update\n\nA & B\nThird statement\nFourth statement\nFifth statement\nLast statement', async (url, options) => {
     const method = url.split('/').at(-1);
     methods.push(method);
     const body = JSON.parse(options.body);
@@ -98,14 +98,17 @@ test('live-style token uses bold headings and pack icons for both bulletin posts
   });
   assert.equal(result.status, 'sent');
   assert.deepEqual(methods, ['getStickerSet', 'sendPhoto', 'sendMessage']);
-  const bodies = [delivered[0].caption, delivered[1].text].map(post => {
-    const prefix = post.match(/^(?:<tg-emoji emoji-id="[1-9]">[^<]+<\/tg-emoji> ){4}/u)?.[0];
-    assert.ok(prefix, 'Each post starts with four custom emojis');
-    const ids = [...prefix.matchAll(/emoji-id="([1-9])"/gu)].map(match => match[1]);
-    assert.equal(new Set(ids).size, 4);
-    return post.slice(prefix.length);
-  });
-  assert.equal(bodies[0], '<b>TAG RUN · STREET CRED + COMMUNITY POT</b>');
-  assert.equal(bodies[1], '<b>Clan update</b>\nA &amp; B');
+  const icon = /<tg-emoji emoji-id="([1-9])">[^<]+<\/tg-emoji> /gu;
+  const caption = delivered[0].caption;
+  const message = delivered[1].text;
+  const ids = [...message.matchAll(icon)].map(match => match[1]);
+  assert.equal([...caption.matchAll(icon)].length, 1);
+  assert.equal(ids.length, 4);
+  assert.equal(new Set(ids).size, 4);
+  const lines = message.split('\n');
+  assert.deepEqual(lines.map(line => [...line.matchAll(icon)].length), [1, 0, 0, 1, 1, 0, 1]);
+  assert.equal(caption.replace(icon, ''), '<b>TAG RUN · STREET CRED + COMMUNITY POT</b>');
+  assert.equal(message.replace(icon, ''),
+    '<b>Clan update</b>\n\nA &amp; B\nThird statement\nFourth statement\nFifth statement\nLast statement');
   assert(delivered.every(post => post.message_thread_id === 23456 && post.parse_mode === 'HTML'));
 });

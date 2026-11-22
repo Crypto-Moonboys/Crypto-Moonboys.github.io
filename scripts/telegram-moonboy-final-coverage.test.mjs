@@ -57,7 +57,7 @@ test('actual command/callback text gateway preserves routing and keyboard withou
       const update = callback ? { callback_query: { message } } : { message };
       const context = createTelegramCommandMediaContext(env, update);
       const result = await __petMediaTestHooks.sendTelegramMessage(context, message.chat.id,
-        group ? '<b>Command reply</b>' : '<b>Command reply</b>\nFaction: graffpunks',
+        group ? '<b>Command reply</b>' : '<b>Command reply</b>\nFaction: graffpunks\n<pre>\nPreserve this\n</pre>',
         { message_thread_id: 42, reply_markup: keyboard });
       assert.equal(result.ok, true);
     }
@@ -65,11 +65,16 @@ test('actual command/callback text gateway preserves routing and keyboard withou
   assert.equal(calls.length, 4);
   for (const call of calls) {
     assert.equal(call.url, 'https://api.telegram.org/bot' + token + '/sendMessage');
-    const icons = [...call.body.text.matchAll(/<tg-emoji emoji-id="([1-9])">[^<]+<\/tg-emoji> /gu)];
-    assert.equal(icons.length, 4);
-    assert.equal(new Set(icons.map(icon => icon[1])).size, 4);
-    const body = call.body.text.slice(icons.map(icon => icon[0]).join('').length);
-    assert.equal(body, call.body.chat_id === 123 ? '<b>Command reply</b>\nFaction: GraffPUNKS' : '<b>Command reply</b>');
+    const icon = /<tg-emoji emoji-id="([1-9])">[^<]+<\/tg-emoji> /gu;
+    const icons = [...call.body.text.matchAll(icon)];
+    const isPrivate = call.body.chat_id === 123;
+    assert.equal(icons.length, isPrivate ? 2 : 1);
+    assert.equal(new Set(icons.map(match => match[1])).size, icons.length);
+    assert.equal(icons[0].index, 0);
+    if (isPrivate) assert.equal(icons[1].index, call.body.text.indexOf('\n') + 1);
+    assert.equal(call.body.text.replace(icon, ''), isPrivate
+      ? '<b>Command reply</b>\nFaction: GraffPUNKS\n<pre>\nPreserve this\n</pre>'
+      : '<b>Command reply</b>');
     assert.equal(call.body.parse_mode, 'HTML');
     assert.equal(call.body.message_thread_id, 42);
     assert.deepEqual(call.body.reply_markup, keyboard);
