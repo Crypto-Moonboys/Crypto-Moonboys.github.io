@@ -1179,6 +1179,12 @@ test('Underpass studio previews, undoes, restores and banks a layered piece on m
     const select = (label, value) => page.locator('.wall-studio').getByLabel(label, { exact: true }).selectOption(value);
     await select('Letter style', 'throw-up');
     await select('Fill style', 'chrome');
+    assert.ok(await canvas.evaluate(node => {
+      const pixels = node.getContext('2d').getImageData(0, 0, node.width, node.height).data;
+      const solidRedValues = new Set();
+      for (let i = 0; i < pixels.length; i += 4) if (pixels[i + 3] === 255) solidRedValues.add(pixels[i]);
+      return solidRedValues.size > 16;
+    }), 'chrome has visible light and dark bands across the painted letters');
     await select('Placement', 'split');
     await page.getByRole('checkbox', { name: /Lime keyline/ }).check();
     assert.equal(await bank.isEnabled(), true);

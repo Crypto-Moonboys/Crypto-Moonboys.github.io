@@ -38,7 +38,7 @@ export function paintPiece(canvas, recipe) {
   const font = { tag: 'italic 900 135px sans-serif', 'throw-up': '900 166px sans-serif',
     wildstyle: 'italic 900 179px Impact, sans-serif' }[recipe.sketch];
   const colors = INKS[recipe.palette];
-  const fill = ctx.createLinearGradient(0, 108, 0, baseline);
+  const fill = ctx.createLinearGradient(0, -138, 0, 0);
   const stops = recipe.fill === 'chrome'
     ? [[0, '#394451'], [.25, '#f5fbff'], [.49, '#adbac8'], [.51, '#293445'], [.83, '#dae5ec'], [1, '#768390']]
     : [[0, colors[0]], [1, colors[1]]];
@@ -62,10 +62,25 @@ export function paintPiece(canvas, recipe) {
       if (weight) {
         ctx.strokeStyle = style;
         ctx.lineWidth = weight;
-        ctx.strokeText(word, 0, 0);
       } else {
         ctx.fillStyle = style;
-        ctx.fillText(word, 0, 0);
+      }
+
+      // Overlap the throw-up letters, and kick individual wildstyle letters off the baseline.
+      const letters = [...word];
+      const widths = letters.map(letter => ctx.measureText(letter).width);
+      const overlap = recipe.sketch === 'tag' ? 0 : 9;
+      const total = widths.reduce((sum, width) => sum + width, 0) - overlap * (letters.length - 1);
+      let cursor = -total / 2;
+      for (const [index, letter] of letters.entries()) {
+        ctx.save();
+        const step = recipe.sketch === 'wildstyle' ? 9 : recipe.sketch === 'throw-up' ? 4 : 0;
+        ctx.translate(cursor + widths[index] / 2, (index % 2 ? -1 : 1) * step);
+        ctx.rotate((index % 2 ? 1 : -1) * step / 70);
+        if (weight) ctx.strokeText(letter, 0, 0);
+        else ctx.fillText(letter, 0, 0);
+        ctx.restore();
+        cursor += widths[index] - overlap;
       }
       ctx.restore();
     }
