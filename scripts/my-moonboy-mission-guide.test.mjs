@@ -148,7 +148,10 @@ test('public resource guide and private checklist are isolated, with logout purg
     "['node', '--test', 'scripts/my-moonboy-mission-guide.test.mjs']"));
   for (const page of ['join-us-on-the-wax-blockchain.html','community.html','games/index.html',
     'gkniftyheads-incubator.html','how-to-play.html']) {
-    assert.match(read(page), /href="\/my-moonboy\.html"/u,
+    const entry = page === 'community.html'
+      ? /href="\/my-moonboy\.html\?tab=faction"/u
+      : /href="\/my-moonboy\.html"/u;
+    assert.match(read(page), entry,
       page + ' must make the signed mission checklist discoverable');
   }
 });

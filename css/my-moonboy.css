@@ -14,9 +14,14 @@ body.page-my-moonboy #content {
   --mm-gutter: clamp(18px, 4.25vw, 88px);
   --mm-gap: clamp(16px, 2vw, 32px);
   --mm-inset: clamp(16px, 2.2vw, 34px);
+  --mm-console-height: 56px;
+  --mm-console-clearance: var(--mm-console-height);
   --mm-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
   color: var(--mm-ink);
-  background: radial-gradient(ellipse at 77% 12%, #152532 0, transparent 43%), #080e16;
+  background:
+    radial-gradient(ellipse at 82% 18%, rgba(64, 118, 145, .19), transparent 54rem),
+    radial-gradient(ellipse at 0% 52%, rgba(30, 65, 92, .18), transparent 60rem),
+    #080e16;
   font: 400 1rem/1.55 system-ui, sans-serif;
   color-scheme: dark;
 }
@@ -28,7 +33,7 @@ body.page-my-moonboy #content {
 .mm-page :focus-visible {
   outline: 1px solid #ffe0a0;
   outline-offset: 3px;
-  scroll-margin-top: calc(var(--shell-header-h, 72px) + 1rem);
+  scroll-margin-top: 12px;
 }
 
 .mm-page h1, .mm-page h2, .mm-page h3 {
@@ -75,29 +80,59 @@ body.page-my-moonboy #content {
   height: 100%;
   object-fit: cover;
   object-position: center 42%;
-  filter: saturate(.79);
+  filter: saturate(.83) contrast(1.05);
 }
 
 .mm-hero::after {
   content: "";
   background:
-    linear-gradient(90deg, #080e16 0%, rgba(8, 14, 22, .94) 20%, rgba(8, 14, 22, .59) 48%, transparent 76%),
-    linear-gradient(0deg, #080e16 0%, transparent 42%);
+    linear-gradient(90deg, #080e16 0%, rgba(8, 14, 22, .92) 18%, rgba(8, 14, 22, .52) 49%, transparent 76%),
+    linear-gradient(0deg, #080e16 0%, transparent 49%);
 }
 
 .mm-hero-reticle {
+  --mm-frame: linear-gradient(rgba(189, 235, 245, .5), rgba(189, 235, 245, .5));
   position: absolute;
-  top: 16%;
-  right: var(--mm-gutter);
-  bottom: 16%;
-  left: 56%;
+  inset: 12% var(--mm-gutter) 19% 53%;
+  overflow: hidden;
   pointer-events: none;
   background:
-    linear-gradient(rgba(189, 235, 245, .55), rgba(189, 235, 245, .55)) left top / 24px 1px,
-    linear-gradient(rgba(189, 235, 245, .55), rgba(189, 235, 245, .55)) left top / 1px 24px,
-    linear-gradient(rgba(189, 235, 245, .55), rgba(189, 235, 245, .55)) right bottom / 24px 1px,
-    linear-gradient(rgba(189, 235, 245, .55), rgba(189, 235, 245, .55)) right bottom / 1px 24px;
+    var(--mm-frame) left top / 24px 1px,
+    var(--mm-frame) left top / 1px 24px,
+    var(--mm-frame) right bottom / 24px 1px,
+    var(--mm-frame) right bottom / 1px 24px;
   background-repeat: no-repeat;
+}
+
+.mm-hero-grid, .mm-hero-scan {
+  position: absolute;
+  inset: 0;
+}
+
+.mm-hero-grid {
+  background:
+    radial-gradient(circle at 44% 46%, transparent 0 26%, rgba(187, 233, 246, .15) 26% calc(26% + 1px), transparent calc(26% + 1px)),
+    linear-gradient(rgba(187, 233, 246, .12) 1px, transparent 1px) 50% 46% / 48px 48px,
+    linear-gradient(90deg, rgba(187, 233, 246, .12) 1px, transparent 1px) 50% 46% / 48px 48px;
+  mask-image: radial-gradient(ellipse at 44% 46%, #000, transparent 72%);
+}
+
+.mm-hero-scan {
+  opacity: 0;
+  background:
+    linear-gradient(0deg, transparent calc(50% - 1px), rgba(184, 238, 253, .2) 50%, transparent calc(50% + 1px)),
+    linear-gradient(0deg, transparent 36%, rgba(127, 203, 229, .12) 50%, transparent 51%);
+  mask-image: linear-gradient(90deg, transparent, #000 16% 84%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-hero-scan { animation: mm-hero-sweep 3.1s .15s ease-out both; }
+}
+
+@keyframes mm-hero-sweep {
+  0% { transform: translateY(-52%); opacity: 0; }
+  22%, 68% { opacity: 1; }
+  100% { transform: translateY(52%); opacity: 0; }
 }
 
 .mm-heading { position: relative; max-width: 64rem; }
@@ -110,12 +145,20 @@ body.page-my-moonboy #content {
   text-shadow: 0 6px 36px #070d14;
 }
 
-.mm-heading > p:last-child {
+.mm-heading .mm-intro {
   max-width: 33rem;
   margin: 0;
   font-size: clamp(1rem, 1.15vw, 1.22rem);
   color: #c5d3e0;
   text-wrap: pretty;
+}
+
+.mm-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 21px;
 }
 
 .mm-kicker {
@@ -153,7 +196,7 @@ body.page-my-moonboy #content {
   border-top: 1px solid var(--mm-line);
   padding: var(--mm-inset);
   background: var(--mm-surface);
-  box-shadow: var(--mm-shadow);
+  box-shadow: var(--mm-shadow), inset 0 1px rgba(210, 240, 252, .025);
 }
 
 .mm-gate {
@@ -162,10 +205,10 @@ body.page-my-moonboy #content {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px 28px;
-  border-top-color: rgba(162, 222, 242, .52);
+  border-image: linear-gradient(90deg, rgba(166, 236, 250, .78), var(--mm-line) 65%) 1;
   background:
-    linear-gradient(98deg, rgba(111, 194, 226, .12), transparent 68%),
-    #14212f;
+    radial-gradient(ellipse at 6% 0%, rgba(119, 190, 216, .18), transparent 65%),
+    linear-gradient(105deg, #1a2a38, #111c28 70%);
 }
 
 .mm-gate-intro { flex: 1 1 19rem; min-width: 0; }
@@ -203,7 +246,7 @@ body.page-my-moonboy #content {
 .mm-page .mm-button[disabled] { cursor: progress; opacity: .65; }
 
 .mm-entry {
-  background: linear-gradient(155deg, #121e2b, #0d1722 70%);
+  background: linear-gradient(155deg, #142331, #0f1924 70%);
 }
 
 .mm-entry-links {
@@ -257,9 +300,58 @@ body.page-my-moonboy #content {
   gap: var(--mm-gap);
 }
 
-#mm-private > section { grid-column: 1 / -1; }
-#mm-private > .mm-summary, #mm-private > .mm-priority { grid-column: auto; }
+#mm-private > * { grid-column: 1 / -1; }
+
+.mm-console-nav {
+  position: sticky;
+  top: var(--shell-top-height, 0px);
+  z-index: 2;
+  display: flex;
+  min-width: 0;
+  height: var(--mm-console-height);
+  border-block: 1px solid var(--mm-line);
+  background: linear-gradient(105deg, #182a39, #0e1b27);
+  box-shadow: 0 12px 28px rgba(0, 4, 11, .55);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.mm-console-nav a {
+  display: grid;
+  place-items: center;
+  flex: 1 0 auto;
+  min-height: 44px;
+  border-bottom: 1px solid transparent;
+  padding: 0 clamp(12px, 1.2vw, 20px);
+  color: var(--mm-muted);
+  font: 500 .85rem/1.2 var(--mm-mono);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mm-console-nav a + a { border-left: 1px solid var(--mm-line); }
+.mm-console-nav a:focus-visible { outline-offset: -3px; }
+.mm-console-nav a:hover, .mm-console-nav a:focus-visible,
+#mm-private:has(#mm-overview:target) a[href="#mm-overview"],
+#mm-private:has(#mm-priority:target) a[href="#mm-priority"],
+#mm-private:has(#mm-progression:target) a[href="#mm-progression"],
+#mm-private:has(#mm-pet-status:target) a[href="#mm-pet-status"],
+#mm-private:has(#mm-ledger:target) a[href="#mm-ledger"],
+#mm-private:has(#mm-complete-checklist:target) .mm-console-nav a[href="#mm-complete-checklist"] {
+  border-bottom-color: var(--mm-accent);
+  background: linear-gradient(0deg, rgba(158, 233, 244, .12), transparent 80%);
+  color: var(--mm-accent);
+}
+
+#mm-private > section[id], #mm-private > section :focus-visible {
+  scroll-margin-top: calc(var(--mm-console-clearance) + 12px);
+}
+
+.mm-workspace > section[id] { scroll-margin-top: 12px; }
+.mm-workspace section:target { border-top-color: rgba(164, 233, 244, .68); }
 .mm-summary { border-top-color: rgba(162, 222, 242, .45); }
+.mm-priority { background: linear-gradient(152deg, #1a2b39, #101a27 62%); }
 
 .mm-summary-header, .mm-section-heading {
   display: flex;
@@ -342,6 +434,7 @@ body.page-my-moonboy #content {
 }
 
 .mm-task h3 { margin: 8px 0 6px; }
+.mm-priority .mm-task { border-top-color: rgba(161, 233, 243, .4); }
 .mm-task p, .mm-pet p, .mm-pet li { margin: 5px 0; color: var(--mm-muted); font-size: .9rem; }
 .mm-task .mm-task-why { color: var(--mm-ink); }
 .mm-task .mm-task-scope, .mm-pet-filter > span { color: var(--mm-accent); }
@@ -438,7 +531,6 @@ body.page-my-moonboy #content {
 .mm-more:has(> [hidden]) { display: none; }
 .mm-empty { margin: 0; border-top: 1px solid var(--mm-line); padding: 12px 0; color: var(--mm-muted); }
 
-.mm-economy-manual, .mm-complete-checklist { scroll-margin-top: calc(var(--shell-header-h, 72px) + 1rem); }
 .mm-economy-manual > p, .mm-complete-checklist > p { max-width: 80ch; color: var(--mm-muted); }
 .mm-economy-manual .mm-entry-more { margin-bottom: 12px; }
 
@@ -474,6 +566,13 @@ body.page-my-moonboy #content {
 .page-my-moonboy .mm-bad-days-gallery { background: #000; }
 .page-my-moonboy .mm-bad-days-gallery img { display: block; width: 100%; max-width: none; height: auto; }
 
+@media (min-width: 1051px) {
+  #mm-private { grid-template-rows: auto max-content auto; }
+  #mm-private > .mm-summary { grid-area: 2 / 1; }
+  #mm-private > .mm-priority { grid-area: 2 / 2 / span 2; }
+  #mm-progression { grid-area: 3 / 1; }
+}
+
 @media (max-width: 1050px) {
   #mm-private { grid-template-columns: minmax(0, 1fr); }
   .mm-priority .mm-task-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
@@ -482,21 +581,29 @@ body.page-my-moonboy #content {
 }
 
 @media (max-width: 640px) {
-  .mm-hero { min-height: 375px; align-items: end; padding-top: 134px; padding-bottom: 52px; }
-  .mm-hero-art img { object-position: 70% 42%; }
+  .mm-hero { min-height: 405px; align-items: end; padding-top: 140px; padding-bottom: 55px; }
+  .mm-hero-art img { object-position: 77% 40%; }
   .mm-hero::after {
     background:
       linear-gradient(0deg, #080e16, rgba(8, 14, 22, .78) 44%, transparent 83%),
       linear-gradient(90deg, rgba(8, 14, 22, .64), transparent 86%);
   }
-  .mm-hero-reticle { top: 8%; left: 45%; bottom: auto; height: 28%; }
+  .mm-hero-reticle { top: 8%; left: 44%; bottom: auto; height: 30%; }
   .mm-heading h1 { font-size: clamp(2.85rem, 10vw, 4rem); }
   .mm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
   .mm-gate .mm-button-primary { grid-column: 1 / -1; }
-  .mm-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mm-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .mm-stats > div { grid-column: span 2; }
+  .mm-stats > div:nth-child(n+4) { grid-column: span 3; }
   .mm-task-list, .mm-filters { grid-template-columns: minmax(0, 1fr); }
 }
 
+@media (max-height: 520px) {
+  .mm-page { --mm-console-clearance: 0px; }
+  .mm-console-nav { position: static; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html:has(.page-my-moonboy) { scroll-behavior: auto; }
   .mm-page *, .mm-page *::before, .mm-page *::after { transition: none; }
 }

@@ -211,6 +211,64 @@ for (const width of [360, 390, 1280]) {
   });
 }
 
+for (const [width, reducedMotion] of [[390, 'reduce'], [1440, 'no-preference']]) {
+  test('Mission dashboard anchors stay clear of the pinned controls at ' + width + 'px', async () => {
+    const f = await setup({width, height: 900}, false);
+    try {
+      const {page} = f;
+      await page.emulateMedia({reducedMotion});
+      await page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+      const dashboard = page.getByRole('navigation', {name:'Mission dashboard'});
+      const openDashboard = page.getByRole('link', {name:'Open mission dashboard'});
+      assert.equal(await dashboard.count(), 0);
+      assert.equal(await openDashboard.count(), 0);
+      await page.getByRole('link', {name:'Explore routes'}).press('Enter');
+      await page.waitForURL(url => url.hash === '#mm-start-here');
+      assert.ok(await page.locator('#mm-start-here').isVisible());
+      const animation = await page.locator('.mm-hero-scan').evaluate(element => getComputedStyle(element).animationName);
+      assert.equal(animation, reducedMotion === 'reduce' ? 'none' : 'mm-hero-sweep');
+
+      await page.evaluate(() => {
+        window.__mmTest.linked = true;
+        window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      });
+      await dashboard.waitFor();
+      await openDashboard.press('Enter');
+      await page.waitForURL(url => url.hash === '#mm-overview');
+      await dashboard.getByRole('link', {name:'Ledger', exact:true}).press('Enter');
+      await page.waitForFunction(() => {
+        const header = document.getElementById('site-shell-top').getBoundingClientRect();
+        const menu = document.querySelector('.mm-console-nav').getBoundingClientRect();
+        const ledger = document.getElementById('mm-ledger').getBoundingClientRect();
+        return location.hash === '#mm-ledger' && Math.abs(menu.top - header.bottom) <= 1 &&
+          Math.abs(ledger.top - menu.bottom - 12) <= 2;
+      });
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'mm-ledger');
+      await page.locator('[data-mm-tab="claims"]').click();
+      assert.equal(new URL(page.url()).searchParams.get('tab'), 'claims');
+      assert.equal(new URL(page.url()).hash, '#mm-ledger');
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
+      assert.equal(f.errors.length, 0, f.errors.join('\n'));
+    } finally { await f.browser.close(); }
+  });
+}
+
+test('A shared ledger link scrolls only after the private dashboard is available', async () => {
+  const f = await setup({width:390, height:900}, true, '', {authDelayMs:750});
+  try {
+    await f.page.emulateMedia({reducedMotion:'reduce'});
+    await f.page.goto(SITE + '/my-moonboy.html?tab=claims#mm-ledger', {waitUntil:'domcontentloaded'});
+    await f.page.waitForFunction(() => {
+      const panel = document.getElementById('mm-private');
+      const menu = panel.querySelector('.mm-console-nav').getBoundingClientRect();
+      const ledger = document.getElementById('mm-ledger').getBoundingClientRect();
+      return !panel.hidden && Math.abs(ledger.top - menu.bottom - 12) <= 2;
+    });
+    assert.equal(await f.page.locator('[data-mm-tab="claims"]').getAttribute('aria-selected'), 'true');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('Claims tab retains blocked saved season-tier and Finale payouts without presenting them as claim-ready', async () => {
   const f = await setup({width:390,height:844}, true);
   f.setPlanFactory((owner, cursor) => {

@@ -515,9 +515,16 @@
     state.ownerKey = ownerId;
     state.lastUtcDay = String(payload.period && payload.period.utc_day || state.lastUtcDay);
     state.nextCursor = payload.pagination.next_cursor || null;
+    const wasHidden = privatePanel.hidden;
     gatePanel.hidden = true;
     privatePanel.hidden = false;
     render();
+    if (wasHidden) {
+      const section = byId(window.location.hash.slice(1));
+      if (section?.parentElement === privatePanel && section.matches('section')) {
+        section.scrollIntoView({ block: 'start', behavior: 'instant' });
+      }
+    }
   }
 
   async function refresh(options) {
@@ -930,8 +937,8 @@
     const directory = petDirectory();
     const top = state.stale ? [] : plan.top_actions.filter(taskActionable).slice(0, 3);
     byId('mm-next-note').textContent = state.stale
-      ? 'This snapshot is stale; Top 3 hidden until server refresh. Use Retry.'
-      : 'Only live, owner-verified source projections are actionable. Preview tasks cannot enter this list.';
+      ? 'Refresh verified tasks to see current priorities.'
+      : 'Verified actions you can open at their source.';
     byId('mm-next').innerHTML = top.length
       ? top.map(task => taskMarkup(task, true, directory)).join('')
       : '<p class="mm-empty">' + (state.stale
@@ -988,7 +995,8 @@
     if (!TABS.has(tab)) return;
     state.tab = tab;
     if (remember) {
-      const path = window.location.pathname + '?tab=' + encodeURIComponent(tab);
+      const ledgerAnchor = window.location.hash === '#mm-ledger' ? '#mm-ledger' : '';
+      const path = window.location.pathname + '?tab=' + encodeURIComponent(tab) + ledgerAnchor;
       window.history.replaceState(null, '', path);
     }
     render();
