@@ -93,6 +93,7 @@ if (panel) {
     periodRewards.replaceChildren();
     periodRewards.hidden = true;
     wallPanels.replaceChildren();
+    delete wallPanels.dataset.mural;
     wallControls.replaceChildren();
     delete panel.dataset.activeOperation;
     for (const layer of strata) {
@@ -101,15 +102,66 @@ if (panel) {
     }
   }
 
+  const muralRoutes = {
+    'Signal Wall': 'signal-wall',
+    'Underpass Triptych': 'underpass-triptych',
+    'Rooftop Relay': 'rooftop-relay',
+  };
+
   function showWall(data) {
-    const tiles = data.wall.panels.map(({ name, shade, paint, target, matched }) => {
+    wallPanels.dataset.mural = muralRoutes[data.wall.name] ?? 'signal-wall';
+    const panels = data.wall.panels;
+    const tiles = panels.map(({ name, shade, paint, target, matched }, index) => {
       const tile = document.createElement('li');
       tile.dataset.shade = shade;
+      tile.style.setProperty('--mural-position', `${index * 50}%`);
       tile.toggleAttribute('data-matched', matched);
-      tile.textContent = `${name}: ${paint} · ${matched ? 'Matched' : 'Target: ' + target}`;
+
+      const art = document.createElement('span');
+      art.className = 'clan-mural-art';
+      art.setAttribute('aria-hidden', 'true');
+      const label = document.createElement('strong');
+      label.textContent = name;
+      const finish = document.createElement('span');
+      finish.textContent = paint;
+      const goal = document.createElement('small');
+      goal.textContent = matched ? '✓ Matched' : 'Target: ' + target;
+      tile.append(art, label, finish, goal);
       return tile;
     });
     wallPanels.replaceChildren(...tiles);
+  }
+
+  function showWallPrints(data) {
+    const route = muralRoutes[data.wall.name] ?? 'signal-wall';
+    const saved = new Map(data.collection.map(item => [item.name, item.collected]));
+    const list = document.createElement('span');
+    list.setAttribute('role', 'list');
+    list.className = 'clan-wall-prints';
+    list.dataset.mural = route;
+    for (const [index, name] of data.wall.finds.entries()) {
+      const count = saved.get(name) ?? 0;
+      const item = document.createElement('span');
+      item.setAttribute('role', 'listitem');
+      item.dataset.shade = index;
+      const art = document.createElement('span');
+      art.className = 'clan-wall-print-art';
+      art.hidden = count === 0;
+      art.setAttribute('aria-hidden', 'true');
+      const label = document.createElement('strong');
+      label.textContent = name;
+      const quantity = document.createElement('small');
+      quantity.textContent = count ? `Collected ×${count}` : 'Unbanked';
+      item.append(art, label, quantity);
+      list.append(item);
+      saved.delete(name);
+    }
+    collection.replaceChildren(list);
+    if (saved.size) {
+      const history = document.createElement('span');
+      history.textContent = [...saved].map(([name, count]) => `${name} ×${count}`).join(' · ');
+      collection.append(history);
+    }
   }
 
   function showTrail(trail) {
@@ -425,7 +477,8 @@ if (panel) {
       : data.signal ? 'Signal Intel collection'
       : data.district ? 'Territory Mark collection'
       : data.trail ? 'Route fragment collection' : data.wall ? 'Wall print collection' : 'Specimen collection';
-    collection.textContent = data.collection.length
+    if (data.wall?.finds?.length) showWallPrints(data);
+    else collection.textContent = data.collection.length
       ? data.collection.map(item => `${item.name} ×${item.collected}`).join(' · ')
       : data.trail ? 'Bank a route to start your collection.' : 'Bank a tier to start your collection.';
     wall.hidden = !!data.mine;
@@ -457,6 +510,7 @@ if (panel) {
     } else if (status.parentNode !== panel) {
       game.after(status);
     }
+    if (!data.wall) delete wallPanels.dataset.mural;
     if (!data.mine) {
       wallPanels.setAttribute('aria-label', data.chaos ? 'Chaos routes' : data.spotlight ? 'Spotlight stage' : data.burst ? 'Burst sequence' : data.fork ? 'Fork route board'
         : data.signal ? 'Signal candidates' : data.district ? 'District control points' : data.trail ? 'Expedition stops and paths' : 'Mural panels');
