@@ -6,7 +6,8 @@ import { clanCampaignReversesRoute, readClanCampaign, readClanCampaignCollectibl
 import { CLAN_SIGNAL_XP, clanSignalXpStart } from '../shared/clan-signal-xp.js';
 import { CANONICAL_FACTION_KEYS, FACTION_ALIASES } from '../shared/faction-canon.js';
 import { MINERS, RULES_VERSION, RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../shared/clan-mining.js';
-import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall } from '../shared/clan-graff.js';
+import { STUDIO_FEATURE } from '../../../js/clan-wall-studio-rules.mjs';
+import { GRAFFPUNKS, WALL_RULES_VERSION, advanceWall, describeWall, wallStudioMode } from '../shared/clan-graff.js';
 import { NOMAD_BEARS, TRAIL_RULES_VERSION, TRAIL_FEATURE, advanceTrail, describeTrail } from '../shared/clan-nomad-trail.js';
 import { ALL_CITY_BULLS, DISTRICT_RULES_VERSION, advanceDistrict, describeDistrict } from '../shared/clan-bulls-district.js';
 import { CRYPTO_MOONGIRLS, SIGNAL_RULES_VERSION, SIGNAL_FEATURE, advanceSignal, describeSignal } from '../shared/clan-moongirls-signal.js';
@@ -34,7 +35,8 @@ const operations = new Map([
   }],
   [GRAFFPUNKS, {
     version: WALL_RULES_VERSION,
-    actions: ['paint-0', 'paint-1', 'paint-2', 'blend-0', 'blend-1', 'bank'],
+    awardTrigger: 'clan_operation_award_at_wall_bank',
+    actions: ['studio-start', 'paint-0', 'paint-1', 'paint-2', 'blend-0', 'blend-1', 'bank'],
     advance: advanceWall,
     view: (route, state) => ({ wall: describeWall(route, state.tier, state.operationState.panels) }),
     finds: route => describeWall(route, 3).finds,
@@ -159,7 +161,7 @@ async function operationRoute(db, now, campaignEnabled) {
   return campaignEnabled && await clanCampaignReversesRoute(db, utcDay(now)) ? 2 - route : route;
 }
 
-async function readOperation(db, owner, now, factionId, operation, campaignEnabled) {
+async function readOperation(db, owner, now, factionId, operation, campaignEnabled, studioSupported) {
   const day = utcDay(now);
   // One statement keeps progress and its triggered awards in the same snapshot.
   const state = await db.prepare(`
@@ -187,6 +189,37 @@ async function readOperation(db, owner, now, factionId, operation, campaignEnabl
   const operationState = JSON.parse(state.operation_state ?? '{}');
   const route = state.route_index ?? await operationRoute(db, now, campaignEnabled);
   const view = operation.view(route, { ...state, utc_day: day, tier, operationState });
+  if (factionId === GRAFFPUNKS) {
+    const studio = wallStudioMode(route, tier, operationState, studioSupported);
+    if (studio && !studioSupported) return { error: 'operation_unavailable' };
+    if (studio) {
+      const started = operationState.studioStarted === true;
+      view.wall.panels = [];
+      view.wall.actions = tier < 3 && !started ? [{ id: 'studio-start', label: 'Start brief' }] : [];
+      view.wall.studio = { started, complete: tier >= 3 };
+    }
+    if (studioSupported && state.collection.includes('wall-v2-1-')) {
+      const prints = await db.prepare(`
+        WITH latest AS (
+          SELECT layer.key AS layer_index, layer.value AS recipe, award.utc_day,
+            ROW_NUMBER() OVER (PARTITION BY layer.key ORDER BY award.utc_day DESC) AS sequence
+          FROM clan_operation_awards AS award
+          JOIN clan_operation_days AS work ON work.telegram_id = award.telegram_id AND work.utc_day = award.utc_day
+          JOIN json_each(work.operation_state, '$.studioPrints') AS layer
+            ON CAST(layer.key AS INTEGER) + 1 = award.tier
+          WHERE award.telegram_id = ? AND award.faction_id = 'graffpunks' AND work.route_index = 1
+        )
+        SELECT layer_index, recipe, utc_day FROM latest WHERE sequence = 1 ORDER BY layer_index
+      `).bind(owner).all();
+      if (!prints.success) throw new Error('wall_prints_unavailable');
+      view.wall.studio_prints = prints.results.map(row => ({
+        name: operation.finds(1)[Number(row.layer_index)],
+        utc_day: row.utc_day,
+        recipe: JSON.parse(row.recipe),
+      }));
+    }
+  }
+
   const reset = new Date(`${day}T00:00:00.000Z`);
   reset.setUTCDate(reset.getUTCDate() + 1);
   return {
@@ -348,6 +381,7 @@ export async function handleClanOperations(request, env, helpers) {
     const requestTime = now();
     const day = utcDay(requestTime);
     const campaignEnabled = Boolean(clanPeriodStart(env));
+    const studioSupported = body.wall_studio_ui === STUDIO_FEATURE;
     if (actionRequest) {
       if (body.utc_day !== day || !Number.isSafeInteger(body.revision) || body.revision < 0) {
         return respond({ error: 'refresh_operation' }, 409);
@@ -365,7 +399,7 @@ export async function handleClanOperations(request, env, helpers) {
       }
       const next = operation.advance({
         ...state, operationState: JSON.parse(state.operation_state ?? '{}'),
-      }, body.action, roll());
+      }, body.action, roll(), { supported: studioSupported, recipe: body.wall_recipe });
       if (!next || utcDay(now()) !== day) return respond({ error: 'refresh_operation' }, 409);
 
       const keys = [factionId, ...Object.keys(FACTION_ALIASES).filter(key => FACTION_ALIASES[key] === factionId)];
@@ -393,7 +427,7 @@ export async function handleClanOperations(request, env, helpers) {
           operationState, body.action, next.outcome, requestTime.toISOString(), owner, ...keys).first();
       if (!result) return respond({ error: 'refresh_operation' }, 409);
     }
-    const state = await readOperation(env.DB, owner, requestTime, factionId, operation, campaignEnabled);
+    const state = await readOperation(env.DB, owner, requestTime, factionId, operation, campaignEnabled, studioSupported);
     if (!state.error && !actionRequest && body.period_rewards_ui === 1 && clanPeriodStart(env)) {
       try {
         state.period_rewards = await readClanPeriodRewards(env.DB, owner);

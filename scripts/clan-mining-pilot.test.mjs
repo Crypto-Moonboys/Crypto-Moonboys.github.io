@@ -8,6 +8,7 @@ import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operat
 import worker from '../workers/moonboys-api/worker.js';
 import { CANONICAL_FACTION_KEYS } from '../workers/moonboys-api/shared/faction-canon.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
+import { assessRecipe, DEFAULT_RECIPE, STUDIO_FEATURE, UNDERPASS_ROUTE } from '../js/clan-wall-studio-rules.mjs';
 import { advanceWall, describeWall } from '../workers/moonboys-api/shared/clan-graff.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
@@ -90,12 +91,12 @@ function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
     action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, crewEntry, weekStart, campaignRewards, campaignEligibility,
-    operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
+    wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
     const path = `/clan-operations/${action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
-      action, revision, operation_ui, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
+      action, revision, operation_ui, wall_studio_ui: wallStudio, wall_recipe: wallRecipe, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
       utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, campaign_eligibility: campaignEligibility,
       renown: 99_999_999, telegram_id: '102', ore: 99,
     }) : undefined;
@@ -312,6 +313,59 @@ test('all 30 daily routes offer three equally paid tiers with a safe route', () 
     assert.equal(state.tier, 3);
   }
   assert.equal(routeNames.size, 3);
+});
+
+test('Underpass studio checks the brief and budget, then saves one replay-safe print per tier', async t => {
+  const db = await localD1(t);
+  const { request, settings } = requestFixture(db);
+  while (dailyRouteIndex(settings.time) !== UNDERPASS_ROUTE) settings.time.setUTCDate(settings.time.getUTCDate() + 1);
+  const day = settings.time.toISOString().slice(0, 10);
+  const account = { id: '104', faction: 'graffpunks', day, wallStudio: STUDIO_FEATURE };
+  const move = (revision, action, wallRecipe, overrides = {}) =>
+    request({ ...account, revision, action, wallRecipe, ...overrides });
+  const first = (await request(account)).data;
+  assert.deepEqual(first.wall.studio, { started: false, complete: false });
+  assert.equal(first.wall.actions[0].id, 'studio-start');
+  const recipes = [
+    { ...DEFAULT_RECIPE, sketch: 'throw-up', fill: 'chrome', placement: 'split', finish: ['lime-keyline'] },
+    { ...DEFAULT_RECIPE, sketch: 'throw-up', width: 'wide', fill: 'fade', outline: 'skinny', depth: 'shadow' },
+    { ...DEFAULT_RECIPE, sketch: 'wildstyle', outline: 'skinny', depth: 'extrusion', reach: 'long',
+      finish: ['lime-keyline', 'highlights'] },
+  ];
+  assert.equal((await move(0, 'bank', recipes[0])).status, 409, 'first bank requires the locked studio state');
+  assert.equal((await move(0, 'studio-start', null, { wallStudio: null })).status, 409);
+  assert.equal((await move(0, 'studio-start')).data.wall.studio.started, true);
+  assert.equal((await move(1, 'paint-0', null, { wallStudio: null })).status, 409, 'classic clients cannot change a started studio round');
+  assert.equal((await move(1, 'bank', DEFAULT_RECIPE)).status, 409);
+  const tooMuchPaint = { ...recipes[0], outline: 'fat', depth: 'extrusion', reach: 'long' };
+  assert.ok(assessRecipe(0, tooMuchPaint).checks.every(check => check.met));
+  assert.equal((await move(1, 'bank', tooMuchPaint)).status, 409);
+  assert.equal((await move(1, 'bank', { ...recipes[0], finish: ['lime-keyline', 'lime-keyline'] })).status, 409);
+  let revision = 1;
+  for (const [tier, recipe] of recipes.entries()) {
+    assert.equal(assessRecipe(tier, recipe).canBank, true);
+    const banks = await Promise.all([move(revision, 'bank', recipe), move(revision, 'bank', recipe)]);
+    assert.deepEqual(banks.map(r => r.status).sort(), [200, 409]);
+    const next = banks.find(r => r.status === 200).data;
+    assert.equal(next.renown_today, (tier + 1) * RENOWN_PER_TIER);
+    assert.equal(next.wall.studio_prints.length, tier + 1);
+    assert.deepEqual(next.wall.studio_prints[tier].recipe, assessRecipe(tier, recipe).recipe);
+    revision = next.revision;
+  }
+  assert.equal((await request(account)).data.wall.studio.complete, true);
+  assert.equal((await move(revision, 'bank', recipes[2])).status, 409);
+  settings.time.setUTCDate(settings.time.getUTCDate() + 1);
+  const nextDay = { ...account, day: settings.time.toISOString().slice(0, 10) };
+  const historical = (await request(nextDay)).data;
+  assert.equal(historical.wall.studio_prints.length, 3);
+  assert.equal(historical.wall.studio_prints[0].utc_day, day);
+  assert.equal(historical.renown_today, 0);
+
+  await db.prepare("UPDATE blocktopia_progression SET faction = 'graffpunks' WHERE telegram_id = '103'").run();
+  settings.time.setUTCDate(settings.time.getUTCDate() - 1);
+  const legacy = { ...account, id: '103', wallStudio: null };
+  assert.equal((await request({ ...legacy, revision: 0, action: 'paint-0' })).status, 200);
+  assert.equal((await request({ ...legacy, wallStudio: STUDIO_FEATURE })).data.wall.studio, undefined);
 });
 
 test('GraffPUNKS layers grant one print and the same Renown cap through D1', { timeout: 30_000 }, async t => {

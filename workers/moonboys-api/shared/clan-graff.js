@@ -1,3 +1,5 @@
+import { assessRecipe, UNDERPASS_ROUTE } from '../../../js/clan-wall-studio-rules.mjs';
+
 export const GRAFFPUNKS = 'graffpunks';
 export const WALL_RULES_VERSION = 2;
 
@@ -52,10 +54,31 @@ export function describeWall(routeIndex, tier, savedPanels) {
   };
 }
 
-export function advanceWall(state, action) {
+export function wallStudioMode(route, tier, state, supported) {
+  // An already painted or banked legacy round keeps its original rules for the day.
+  return route === UNDERPASS_ROUTE && (state.studioStarted === true
+    || (supported && tier === 0 && !state.panels));
+}
+
+export function advanceWall(state, action, _chance, studio = {}) {
+  const saved = state.operationState;
+  const next = { tier: state.tier, ore: 0, braced: 0, collapsed: 0 };
+  if (wallStudioMode(state.route_index, state.tier, saved, studio.supported)) {
+    if (!studio.supported || state.tier >= 3) return null;
+    if (action === 'studio-start' && !saved.studioStarted) {
+      return { ...next, operationState: { studioStarted: true, studioPrints: {} }, outcome: 'studio_started' };
+    }
+    if (action !== 'bank' || !saved.studioStarted) return null;
+    const result = assessRecipe(state.tier, studio.recipe);
+    if (!result?.canBank) return null;
+    return {
+      ...next, tier: state.tier + 1,
+      operationState: { ...saved, studioPrints: { ...saved.studioPrints, [state.tier]: result.recipe } },
+      outcome: 'layer_banked',
+    };
+  }
   const wall = describeWall(state.route_index, state.tier, state.operationState.panels);
   if (!wall.actions.some(move => move.id === action)) return null;
-  const next = { tier: state.tier, ore: 0, braced: 0, collapsed: 0 };
   if (action === 'bank') {
     return { ...next, tier: state.tier + 1, operationState: {}, outcome: 'layer_banked' };
   }

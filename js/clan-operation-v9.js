@@ -1,3 +1,5 @@
+import { STUDIO_FEATURE } from './clan-wall-studio-rules.mjs';
+import { mountWallStudio, renderPrint } from './clan-wall-studio.mjs';
 import { renderClanPeriodRewards } from './clan-period-display.js';
 
 const panel = document.querySelector('[data-clan-operation]');
@@ -33,6 +35,9 @@ if (panel) {
   }
   const wallPanels = wall.querySelector('[data-wall-panels]');
   const wallControls = wall.querySelector('[data-wall-controls]');
+  const studioMount = document.createElement('div');
+  wallPanels.after(studioMount);
+  let studioEditor, studioResult;
   const boardRules = document.createElement('p');
   boardRules.hidden = true;
   const featuredGame = document.createElement('p');
@@ -95,6 +100,8 @@ if (panel) {
     wallPanels.replaceChildren();
     delete wallPanels.dataset.mural;
     wallControls.replaceChildren();
+    studioMount.replaceChildren();
+    studioEditor = studioResult = undefined;
     delete panel.dataset.activeOperation;
     for (const layer of strata) {
       layer.textContent = '';
@@ -134,6 +141,7 @@ if (panel) {
 
   function showWallPrints(data) {
     const route = muralRoutes[data.wall.name] ?? 'signal-wall';
+    const prints = new Map((data.wall.studio_prints ?? []).map(print => [print.name, print]));
     const saved = new Map(data.collection.map(item => [item.name, item.collected]));
     const list = document.createElement('span');
     list.setAttribute('role', 'list');
@@ -152,7 +160,8 @@ if (panel) {
       label.textContent = name;
       const quantity = document.createElement('small');
       quantity.textContent = count ? `Collected ×${count}` : 'Unbanked';
-      item.append(art, label, quantity);
+      item.append((prints.has(name) && renderPrint(prints.get(name))) || art, label, quantity);
+      prints.delete(name);
       list.append(item);
       saved.delete(name);
     }
@@ -160,6 +169,23 @@ if (panel) {
     if (saved.size) {
       const history = document.createElement('span');
       history.textContent = [...saved].map(([name, count]) => `${name} ×${count}`).join(' · ');
+      collection.append(history);
+    }
+    if (prints.size) {
+      const history = document.createElement('span');
+      history.className = 'clan-wall-prints';
+      history.setAttribute('role', 'list');
+      history.setAttribute('aria-label', 'Recent Underpass wall prints');
+      for (const print of prints.values()) {
+        const art = renderPrint(print);
+        if (!art) continue;
+        const item = document.createElement('span');
+        item.setAttribute('role', 'listitem');
+        const title = document.createElement('strong');
+        title.textContent = print.name;
+        item.append(art, title);
+        history.append(item);
+      }
       collection.append(history);
     }
   }
@@ -511,6 +537,11 @@ if (panel) {
       game.after(status);
     }
     if (!data.wall) delete wallPanels.dataset.mural;
+    const editingPiece = data.wall?.studio?.started && !data.wall.studio.complete;
+    if (!editingPiece) {
+      studioMount.replaceChildren();
+      studioEditor = studioResult = undefined;
+    }
     if (!data.mine) {
       wallPanels.setAttribute('aria-label', data.chaos ? 'Chaos routes' : data.spotlight ? 'Spotlight stage' : data.burst ? 'Burst sequence' : data.fork ? 'Fork route board'
         : data.signal ? 'Signal candidates' : data.district ? 'District control points' : data.trail ? 'Expedition stops and paths' : 'Mural panels');
@@ -524,7 +555,16 @@ if (panel) {
       else if (data.district) showDistrict(data.district);
       else if (data.trail) showTrail(data.trail);
       else showWall(data);
-      showMoves(operation.actions, data.renown_per_tier);
+      showMoves(editingPiece ? [{ id: 'bank', label: 'Bank wall print' }] : operation.actions, data.renown_per_tier);
+      if (editingPiece) {
+        const key = `wall-studio:${owner}:${data.utc_day}:${data.tier}`;
+        if (studioEditor?.storageKey !== key) {
+          studioEditor = mountWallStudio(studioMount, { tier: data.tier, storageKey: key, onChange(result) {
+            studioResult = result;
+            updateControls();
+          } });
+        }
+      }
     } else {
       controls.querySelector('[value="deep"]').textContent = data.braced
         ? 'Cut deep · +3 ore'
@@ -534,8 +574,9 @@ if (panel) {
     const feedback = boardFeedback(data);
     if (feedback) status.textContent = feedback;
     else if (data.status === 'complete') status.textContent = data.wall
-      ? 'Wall complete. A different stencil opens at 00:00 UTC.'
+      ? 'Wall complete. The next route opens at 00:00 UTC.'
       : 'Mine cleared. A different route opens at 00:00 UTC.';
+    else if (data.wall?.studio) status.textContent = tells[data.last_outcome] || 'Build a piece that meets the brief within the paint budget.';
     else if (data.wall?.actions[0]?.id === 'bank') status.textContent = 'Stencil matched. Bank this layer.';
     else status.textContent = tells[data.last_outcome] || (data.wall
       ? 'Match the three panels to the stencil.' : 'Choose how to reach the next vein.');
@@ -544,6 +585,10 @@ if (panel) {
 
   function updateControls() {
     const mineButtons = controls.querySelectorAll('button');
+    if (studioResult) {
+      const bank = wallControls.querySelector('[value="bank"]');
+      if (bank) bank.disabled = !studioResult.canBank;
+    }
     for (const button of mineButtons) {
       button.disabled = !state?.mine?.actions.includes(button.getAttribute('value'));
     }
@@ -604,6 +649,8 @@ if (panel) {
         body: JSON.stringify({
           telegram_auth: auth,
           operation_ui: 'wall-v1',
+          wall_studio_ui: STUDIO_FEATURE,
+          ...(action === 'bank' && studioResult ? { wall_recipe: studioResult.recipe } : {}),
           period_rewards_ui: 1,
           expedition_ui: 'trail-v1',
           district_ui: 'district-v1',
@@ -621,6 +668,7 @@ if (panel) {
       if (response.status === 429) waitForRetry(data?.retry_after_seconds);
       else if (response.ok) {
         showOperation(data);
+        if (restoreFocus && studioEditor && (action === 'studio-start' || action === 'bank')) studioEditor.heading.focus();
         if (action === 'bank') window.dispatchEvent(new Event('moonboys:clan-operation-banked'));
       } else showError(data.error);
     } catch {
