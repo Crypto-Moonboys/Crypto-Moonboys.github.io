@@ -19,6 +19,7 @@
   --color-warn: #f7c948;
   --color-red: #ff7b72;
   --shell-header-h: 46px;
+  --wax-ticker-height: calc(.875rem + 2px);
   --shell-gutter: clamp(14px, 2vw, 28px);
   --font-sans: 'Rajdhani', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-display: 'Orbitron', 'Rajdhani', 'Segoe UI', sans-serif;
@@ -91,6 +92,9 @@ button {
   position: fixed;
   inset: 0 0 auto;
   z-index: 220;
+  /* Reserve the ticker row while its stylesheet and script load. */
+  padding-block-end: var(--wax-ticker-height);
+  background: linear-gradient(#000, #000) bottom / 100% var(--wax-ticker-height) no-repeat;
 }
 
 #site-shell-top > #site-header {
@@ -99,7 +103,12 @@ button {
 }
 
 #site-shell-top-spacer {
-  block-size: var(--shell-top-height, var(--shell-header-h));
+  block-size: var(--shell-top-height, calc(var(--shell-header-h) + var(--wax-ticker-height)));
+}
+
+#site-shell-top > [data-shell-market-ticker] {
+  position: absolute;
+  inset: auto 0 0;
 }
 
 #site-header {
@@ -402,6 +411,13 @@ body.page-onboarding-shell #moonboys-global-status-badge {
   color: var(--color-accent);
   background: rgba(247, 201, 72, 0.10);
   border-color: rgba(247, 201, 72, 0.42);
+}
+
+#global-nav .nav-icon {
+  display: inline-flex;
+  flex: none;
+  inline-size: 1.15em;
+  block-size: 1.15em;
 }
 
 #layout {
@@ -4461,6 +4477,11 @@ body.page-home .article-card-img {
 
 body.page-home .article-card-cat {
   margin-top: 14px;
+}
+
+#site-header > #moonboys-global-status-badge {
+  min-inline-size: 44px;
+  min-block-size: 44px;
 }
 
 #site-header > #moonboys-global-status-badge .csp-badge {
