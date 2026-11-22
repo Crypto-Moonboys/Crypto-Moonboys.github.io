@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://cryptomoonboys.com/my-moonboy.html">
   <title>My Moonboy — Personal Mission Control | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/my-moonboy.css?v=mission-control-v2">
+  <link rel="stylesheet" href="/css/my-moonboy.css?v=mission-control-v3">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-my-moonboy page-standard-shell">
@@ -19,51 +19,49 @@
         <source srcset="/art/my-moonboy-london-dossier.webp" type="image/webp" width="1536" height="1024">
         <img src="/art/My%20Moonboy_%20Neon%20London%20Mission%20Control.jpg" alt="" decoding="async" fetchpriority="high" width="1983" height="793">
       </picture>
-      <span class="mm-hero-reticle" aria-hidden="true"></span>
+      <div class="mm-hero-reticle" aria-hidden="true">
+        <span class="mm-hero-grid"></span>
+        <span class="mm-hero-scan"></span>
+      </div>
       <div class="mm-heading">
         <p class="mm-kicker">Personal Mission Control</p>
         <h1>My Moonboy</h1>
-        <p>See your verified missions, claims and MoonPet progress. Build a GK Moonboy or Flygirl sub-world, or bring your own IP and lore into the Crypto Moonboys universe.</p>
+        <p class="mm-intro">Your verified missions, claims and MoonPet progress in one place.</p>
+        <div class="mm-hero-links">
+          <a class="mm-button mm-button-primary mm-private-link" href="#mm-overview">Open mission dashboard</a>
+          <a class="mm-button" href="#mm-start-here">Explore routes</a>
+          <div class="mm-session-controls" data-telegram-session-controls>
+            <button type="button" class="mm-button" data-telegram-logout hidden>Log out / switch account</button>
+          </div>
+        </div>
       </div>
     </header>
 
     <div class="mm-workspace">
       <section class="mm-gate" id="mm-gate" aria-labelledby="mm-gate-title">
         <div class="mm-gate-intro">
-          <p class="mm-kicker">Telegram identity</p>
+          <p class="mm-kicker">Private dashboard</p>
           <h2 id="mm-gate-title">Checking Telegram identity</h2>
           <p id="mm-gate-description" role="status">Checking your verified account session. No personal information is loaded anonymously.</p>
         </div>
         <div class="mm-actions">
           <a class="mm-button mm-button-primary" href="/gkniftyheads-incubator.html#telegram-login-help" data-telegram-login>Log in with Telegram</a>
-          <button class="mm-button" id="mm-gate-retry" type="button">Retry verified read</button>
+          <button class="mm-button" id="mm-gate-retry" type="button">Retry connection</button>
           <a class="mm-button" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">Open Telegram Bot</a>
         </div>
       </section>
 
-      <section class="mm-entry" id="mm-start-here" aria-labelledby="mm-start-title">
-        <div class="mm-section-heading">
-          <h2 id="mm-start-title">Choose your route</h2>
-          <div class="mm-session-controls" data-telegram-session-controls>
-            <button type="button" class="mm-button" data-telegram-logout hidden>Log out / switch account</button>
-          </div>
-        </div>
-        <nav class="mm-entry-links" aria-label="Games, community and creator routes">
-          <a href="/games/">Play Games</a>
-          <a href="/battle-chamber/factions/index.html">Join a Faction</a>
-          <a href="/gkniftyheads-incubator.html">GKniftyHEADS Community</a>
-          <a href="/community.html#live-battle-chamber">Battle Chamber</a>
-          <a href="/swarmsy.html">Build a Moonboy or use your own IP</a>
-        </nav>
-        <nav class="mm-entry-more" aria-label="Guides">
-          <a href="/how-to-play.html">How to Play</a>
-          <a href="/wiki/hodl-warriors.html">HODL Warriors</a>
-          <a href="/wiki/crypto-moonboys.html">About the Universe</a>
-        </nav>
-      </section>
-
       <div id="mm-private" hidden>
-        <section class="mm-summary" aria-labelledby="mm-overview-title">
+        <nav class="mm-console-nav" aria-label="Mission dashboard">
+          <a href="#mm-overview">Overview</a>
+          <a href="#mm-priority">Next actions</a>
+          <a href="#mm-progression">Balances</a>
+          <a href="#mm-pet-status">MoonPets</a>
+          <a href="#mm-ledger">Ledger</a>
+          <a href="#mm-complete-checklist">Checklist</a>
+        </nav>
+
+        <section class="mm-summary" id="mm-overview" aria-labelledby="mm-overview-title" tabindex="-1">
           <div class="mm-summary-header">
             <div>
               <p class="mm-kicker">Verified account</p>
@@ -88,18 +86,15 @@
           </details>
         </section>
 
-        <section class="mm-section mm-priority" aria-labelledby="mm-next-title">
+        <section class="mm-section mm-priority" id="mm-priority" aria-labelledby="mm-next-title" tabindex="-1">
           <div class="mm-section-heading">
-            <div>
-              <p class="mm-kicker">Priority missions</p>
-              <h2 id="mm-next-title">Your next 3 actions</h2>
-            </div>
+            <h2 id="mm-next-title">Your next 3 actions</h2>
           </div>
-          <p class="mm-muted" id="mm-next-note">A source must be verified as actionable before it can appear here.</p>
+          <p class="mm-muted" id="mm-next-note">Checking for verified actions…</p>
           <div id="mm-next" class="mm-task-grid"></div>
         </section>
 
-        <section class="mm-section" aria-labelledby="mm-units-title">
+        <section class="mm-section" id="mm-progression" aria-labelledby="mm-units-title" tabindex="-1">
           <div class="mm-section-heading">
             <h2 id="mm-units-title">Balances and progression</h2>
           </div>
@@ -122,7 +117,7 @@
           </div>
         </section>
 
-        <section class="mm-section" aria-labelledby="mm-pets-title">
+        <section class="mm-section" id="mm-pet-status" aria-labelledby="mm-pets-title" tabindex="-1">
           <div class="mm-section-heading">
             <h2 id="mm-pets-title">Your MoonPets</h2>
             <a href="/moonpet-game.html" class="mm-button">Open MoonPet game</a>
@@ -133,7 +128,7 @@
           <div id="mm-pets" class="mm-pet-grid"></div>
         </section>
 
-        <section class="mm-section" aria-labelledby="mm-all-title">
+        <section class="mm-section" id="mm-ledger" aria-labelledby="mm-all-title" tabindex="-1">
           <div class="mm-section-heading">
             <h2 id="mm-all-title">Mission ledger</h2>
             <p class="mm-muted" id="mm-page-count">0 tasks loaded</p>
@@ -171,7 +166,7 @@
           <div id="mm-results" class="mm-task-list" role="tabpanel" tabindex="0" aria-label="Filtered missions"></div>
           <p class="mm-more"><button class="mm-button" id="mm-load-more" type="button" hidden>Load more verified tasks</button></p>
         </section>
-        <section class="mm-section mm-complete-checklist" id="mm-complete-checklist" aria-labelledby="mm-complete-checklist-title">
+        <section class="mm-section mm-complete-checklist" id="mm-complete-checklist" aria-labelledby="mm-complete-checklist-title" tabindex="-1">
           <div class="mm-section-heading">
             <h2 id="mm-complete-checklist-title">My complete mission and claims checklist</h2>
           </div>
@@ -179,6 +174,24 @@
           <div id="mm-checklist"><p class="mm-muted">Checking your verified account and source tasks…</p></div>
         </section>
       </div>
+
+      <section class="mm-entry" id="mm-start-here" aria-labelledby="mm-start-title" tabindex="-1">
+        <h2 id="mm-start-title">Choose your route</h2>
+        <p class="mm-muted">Build a GK Moonboy or Flygirl sub-world, or bring your own IP and lore into the Crypto Moonboys universe.</p>
+        <nav class="mm-entry-links" aria-label="Games, community and creator routes">
+          <a href="/games/">Play Games</a>
+          <a href="/battle-chamber/factions/index.html">Join a Faction</a>
+          <a href="/gkniftyheads-incubator.html">GKniftyHEADS Community</a>
+          <a href="/community.html#live-battle-chamber">Battle Chamber</a>
+          <a href="/swarmsy.html">Build a Moonboy or use your own IP</a>
+        </nav>
+        <nav class="mm-entry-more" aria-label="Guides">
+          <a href="/how-to-play.html">How to Play</a>
+          <a href="/wiki/hodl-warriors.html">HODL Warriors</a>
+          <a href="/wiki/crypto-moonboys.html">About the Universe</a>
+        </nav>
+      </section>
+
       <section class="mm-section mm-economy-manual" id="mm-economy" aria-labelledby="mm-economy-title">
         <div class="mm-section-heading">
           <h2 id="mm-economy-title">Rewards and economy guide</h2>
@@ -212,7 +225,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script data-cfasync="false" src="/js/my-moonboy-mission-guide.js"></script>
-<script data-cfasync="false" src="/js/my-moonboy.js?v=20261118-journey-dashboard-v1"></script>
+<script data-cfasync="false" src="/js/my-moonboy.js?v=mission-control-v3"></script>
 <script data-cfasync="false" type="module" src="/js/clan-period-display.js"></script>
 </body>
 </html>

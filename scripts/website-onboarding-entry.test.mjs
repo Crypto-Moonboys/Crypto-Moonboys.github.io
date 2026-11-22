@@ -38,7 +38,9 @@ assert.doesNotMatch(experience, /<h2>Choose how <span>you start/, 'WAX experienc
 const hub = account.indexOf('id="mm-start-here"');
 const gate = account.indexOf('id="mm-gate"');
 const privatePanel = account.indexOf('id="mm-private" hidden');
-assert.ok(gate > 0 && gate < hub && hub < privatePanel, 'Sign-in and route directory precede the hidden private panel');
+const privatePanelEnd = account.indexOf('</div>\n\n      <section class="mm-entry"', privatePanel);
+assert.ok(gate > 0 && gate < privatePanel && privatePanel < privatePanelEnd && privatePanelEnd < hub,
+  'Sign-in and the route directory remain public around the hidden dashboard');
 assert.match(account, /data-telegram-session-controls[^>]*>[\s\S]*data-telegram-logout hidden/, 'My Moonboy keeps compact logout outside private account panel');
 const accountControls = read('js/components/telegram-sync-cta.js');
 assert.match(accountControls, /rememberedWebsite[\s\S]*data-telegram-session-controls/, 'Compact logout remains available for remembered website sessions after rollback');

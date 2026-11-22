@@ -139,10 +139,12 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
 
       await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      const moonboyCta = page.getByRole('link', { name: 'Full personal missions and claims in My Moonboy', exact: true });
+      const contribution = page.locator('#battle-my-contribution-today');
+      await contribution.locator('summary').first().click();
+      const moonboyCta = contribution.locator('.bc-join-content > p > a[href="/my-moonboy.html?tab=faction"]');
       assert.equal(await moonboyCta.isVisible(), true, 'Battle Chamber routes account help to My Moonboy');
       await Promise.all([
-        page.waitForURL(SITE + '/my-moonboy.html'),
+        page.waitForURL(SITE + '/my-moonboy.html?tab=faction'),
         moonboyCta.click(),
       ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);

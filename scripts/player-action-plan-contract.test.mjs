@@ -103,7 +103,7 @@ test('documented API scope forbids unverified or mutating read-side shortcuts', 
   // PR2's authenticated read-only API was implemented and merged.
   const personalPage = read('my-moonboy.html');
   if (personalPage) {
-    assert.match(personalPage, /src="\/js\/my-moonboy\.js\?v=20261118-journey-dashboard-v1"/u);
+    assert.match(personalPage, /src="\/js\/my-moonboy\.js\?v=mission-control-v3"/u);
     assert.match(personalPage, /src="\/js\/identity-gate\.js"/u);
     assert.match(read('js/my-moonboy.js'), /getFreshTelegramAuth/u);
     assert.match(read('js/my-moonboy.js'), /\/player\/action-plan/u);
