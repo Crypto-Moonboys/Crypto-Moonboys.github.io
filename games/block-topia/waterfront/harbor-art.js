@@ -34,15 +34,58 @@ const waterfrontTrees = [
   { file: "tree-paperbark", height: 35 }
 ];
 
+const waterfrontAtlases = {
+  "hk-night": {
+    "afterblock-club": [2, 2, 111, 115],
+    "apartments": [128, 2, 100, 118],
+    "block-exchange": [254, 2, 108, 116],
+    "cold-vault": [380, 2, 122, 113],
+    "graffiti-wall": [2, 124, 105, 35],
+    "hash-house": [128, 124, 108, 109],
+    "lighthouse": [254, 124, 107, 117],
+    "lucky-block-casino": [380, 124, 113, 108],
+    "neon-ledger-casino": [2, 246, 103, 108],
+    "record-shop": [128, 246, 105, 105],
+    "warehouse": [254, 246, 106, 100],
+    "workshop": [380, 246, 107, 108]
+  },
+  "trees": {
+    "tree-banyan": [2, 2, 123, 115],
+    "tree-camphor": [129, 2, 80, 122],
+    "tree-casuarina": [256, 2, 68, 120],
+    "tree-frangipani": [383, 2, 114, 117],
+    "tree-mangrove": [2, 129, 120, 92],
+    "tree-ornamental": [129, 129, 88, 112],
+    "tree-palm": [256, 129, 79, 122],
+    "tree-paperbark": [383, 129, 46, 123]
+  },
+  "terrain": {
+    "curb-corner": [2, 2, 11, 11],
+    "curb-straight": [30, 2, 24, 4],
+    "footpath-pavers": [58, 2, 20, 20]
+  }
+};
+
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
-  return Promise.all([...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees].map(sprite => new Promise(resolve => {
-    const image = new Image();
-    image.onload = () => {
-      sprite.image = image;
+  const sprites = Object.fromEntries(
+    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees]
+      .map(sprite => [sprite.file, sprite])
+  );
+  return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
+    const atlas = new Image();
+    atlas.onload = () => {
+      for (const [file, [x, y, width, height]] of Object.entries(frames)) {
+        // Existing drawing and repeating patterns use an isolated sprite surface.
+        const sprite = document.createElement("canvas");
+        sprite.width = width;
+        sprite.height = height;
+        sprite.getContext("2d").drawImage(atlas, x, y, width, height, 0, 0, width, height);
+        sprites[file].image = sprite;
+      }
       resolve();
     };
-    image.onerror = resolve;
-    image.src = "assets/" + (sprite.file.startsWith("tree-") ? "trees/" : Object.hasOwn(waterfrontTerrain, sprite.file) ? "terrain/" : "hk-night/") + sprite.file + ".png";
+    atlas.onerror = resolve;
+    atlas.src = "assets/atlases/" + group + ".png";
   })));
 };
 
@@ -406,10 +449,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     // Reserve half of each adjoining open lot so two facades never claim the same ground.
     const lotLeft = x - (col > 0 && tileAt(col - 1, row) === "." ? 15 : 0);
     const lotRight = x + size + (col < rows[0].length - 1 && tileAt(col + 1, row) === "." ? 15 : 0);
-    const scale = Math.min(width / image.naturalWidth, maxHeight / image.naturalHeight,
-      (lotRight - lotLeft) / image.naturalWidth);
-    const drawWidth = Math.floor(image.naturalWidth * scale * 2) / 2;
-    const drawHeight = Math.floor(image.naturalHeight * scale * 2) / 2;
+    const scale = Math.min(width / image.width, maxHeight / image.height,
+      (lotRight - lotLeft) / image.width);
+    const drawWidth = Math.floor(image.width * scale * 2) / 2;
+    const drawHeight = Math.floor(image.height * scale * 2) / 2;
     const centered = Math.round((x + (size - drawWidth) / 2) * 2) / 2;
     const left = Math.max(lotLeft, Math.min(centered, lotRight - drawWidth));
     return { image, left, top: y + 29 - drawHeight, drawWidth, drawHeight };
@@ -541,7 +584,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function tree(x, y, variant) {
     const { image, height } = waterfrontTrees[variant];
     if (image) {
-      const width = Math.round(height * image.naturalWidth / image.naturalHeight);
+      const width = Math.round(height * image.width / image.height);
       const sway = time === null ? 0 : Math.sin(time * 1.7 + (x + y) / 31) * 0.045;
       rect("#152e327a", x + 7, y + 25, 22, 4);
       ctx.save();
