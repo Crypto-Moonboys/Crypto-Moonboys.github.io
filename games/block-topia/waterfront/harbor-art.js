@@ -37,6 +37,57 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
   const tileAt = (x, y) => rows[y]?.[x] ?? (y < 2 ? "~" : ".");
   const roadAt = (x, y) => Boolean(tiles[tileAt(x, y)].walkable);
   const objects = [];
+  const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
+    col >= left && col <= right && row >= top && row <= bottom)?.material;
+
+  function curb(x, y, horizontal, length = 32) {
+    rect("#242632", x, y, horizontal ? length : 4, horizontal ? 4 : length);
+    rect("#77717b", x, y, horizontal ? length : 3, horizontal ? 2 : length);
+    for (let at = 6; at < length; at += 7) {
+      rect("#484552", x + (horizontal ? at : 0), y + (horizontal ? 0 : at),
+        horizontal ? 1 : 3, horizontal ? 2 : 1);
+    }
+  }
+
+  function pavedSurface(tile, col, row, x, y, seed) {
+    const surface = tiles[tile].color;
+    const north = roadAt(col, row - 1);
+    const south = roadAt(col, row + 1);
+    const west = roadAt(col - 1, row);
+    const east = roadAt(col + 1, row);
+    const entrance = "hwcgsb".includes(tileAt(col, row - 1));
+    rect(surface, x + 4, y + 4, 24, 24);
+    if (north || entrance) rect(surface, x + 4, y, 24, 5);
+    if (south) rect(surface, x + 4, y + 27, 24, 5);
+    if (west) rect(surface, x, y + 4, 5, 24);
+    if (east) rect(surface, x + 27, y + 4, 5, 24);
+    if (!north && !entrance) curb(x, y + 1, true);
+    if (!south) curb(x, y + 27, true);
+    if (!west) curb(x + 1, y + 5, false, 22);
+    if (!east) curb(x + 27, y + 5, false, 22);
+
+    if (tile === "p") {
+      for (let dy = 6; dy < 27; dy += 5) {
+        rect("#534b57", x + 5, y + dy, 22, 1);
+        for (let dx = 8 + dy % 3; dx < 26; dx += 8) rect("#534b57", x + dx, y + dy, 1, 4);
+      }
+    } else {
+      for (let i = 0; i < 18; i++) {
+        rect(i % 2 ? "#575b69" : "#373c4a", x + 5 + (seed + i * 13) % 21,
+          y + 5 + ((seed >>> 8) + i * 9) % 21, 2, 1);
+      }
+      if (west && east && !north && !south && !entrance) rect("#b2a181", x + 11, y + 15, 10, 1);
+      if (north && south && !west && !east) rect("#b2a181", x + 15, y + 11, 1, 10);
+      if (!south && seed % 5 === 0) {
+        rect("#242733", x + 20, y + 24, 7, 3);
+        for (let i = 21; i < 27; i += 2) rect("#666a78", x + i, y + 24, 1, 2);
+      }
+    }
+    if (entrance) {
+      rect("#72646b", x + 2, y - 3, 28, 7);
+      rect("#aaa09a", x + 3, y + 2, 26, 1);
+    }
+  }
 
   function terrain(tile, col, row) {
     const x = col * size;
@@ -45,13 +96,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
     const water = tile === "~";
     const dock = tile === "d";
 
-    rect(water || dock ? tiles["~"].color : tiles["."].color, x, y, size, size);
+    const ground = tile === "." ? groundAt(col, row) : undefined;
+    const base = ground === "grass" ? "#34493e" : ground === "gravel" ? "#443c40" : tiles["."].color;
+    rect(water || dock ? tiles["~"].color : base, x, y, size, size);
     for (let i = 0; i < 8; i++) {
       const a = (seed + i * 7) % 27;
       const b = ((seed >>> 7) + i * 11) % 30;
       const shade = i % 2 ? "#ffffff16" : "#091d2740";
       if (water || dock) rect(i % 2 ? "#428aa459" : "#133042", x + a, y + b, 3 + i % 3, 1);
-      else rect(shade, x + a, y + b, 2 + i % 3, 2);
+      else if (ground === "grass") {
+        rect(i % 2 ? "#536951" : "#293b35", x + a, y + b, 1, 2);
+        rect("#415843", x + a + 1, y + b + 1, 2, 1);
+      } else if (ground === "gravel") {
+        rect(i % 2 ? "#655758" : "#312c35", x + a, y + b, 3, 1);
+        rect("#53484a", x + a + 1, y + b + 1, 1, 1);
+      } else rect(shade, x + a, y + b, 2 + i % 3, 2);
     }
 
     if (water) {
@@ -78,19 +137,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
     }
 
     if (tile === "r" || tile === "p") {
-      const surface = tiles[tile].color;
-      rect("#303242", x + 2, y + 2, 28, 28);
-      rect(surface, x + 4, y + 4, 24, 24);
-      if (roadAt(col, row - 1)) rect(surface, x + 4, y, 24, 5);
-      if (roadAt(col, row + 1)) rect(surface, x + 4, y + 27, 24, 5);
-      if (roadAt(col - 1, row)) rect(surface, x, y + 4, 5, 24);
-      if (roadAt(col + 1, row)) rect(surface, x + 27, y + 4, 5, 24);
-      if ("hwcgsb".includes(tileAt(col, row - 1))) {
-        rect(tiles.p.color, x + 2, y - 3, 28, 8);
-      }
-      for (let i = 0; i < 9; i++) {
-        rect(i % 2 ? "#666677" : "#353746", x + 5 + (i * 11 + seed) % 20, y + 5 + (i * 7 + seed) % 20, 4, 1);
-      }
+      pavedSurface(tile, col, row, x, y, seed);
       return;
     }
 
