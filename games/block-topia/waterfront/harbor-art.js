@@ -181,6 +181,35 @@ function freightFor(rows, district) {
   return harborFreight;
 }
 
+let factionPatrol;
+function factionRoutes(rows, district) {
+  const layout = rows.join("\n");
+  if (factionPatrol?.layout === layout) return factionPatrol.routes;
+  const points = [district.spawn];
+  const visited = new Set([district.spawn.x + "," + district.spawn.y]);
+  const canWalk = (x, y) => Boolean(district.tiles[rows[y]?.[x]]?.walkable);
+  for (const point of points) {
+    for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+      const x = point.x + dx;
+      const y = point.y + dy;
+      const key = x + "," + y;
+      if (!visited.has(key) && canWalk(x, y)) {
+        visited.add(key);
+        points.push({ x, y });
+      }
+    }
+  }
+  const routes = waterfrontFactions.map((_, index) => {
+    const stops = Array.from({ length: 9 }, (_, leg) =>
+      points[(index * 37 + leg * 53 + leg * leg * 7) % points.length]);
+    return stops.flatMap((stop, leg) => [
+      stop, ...findRoute(stop, stops[(leg + 1) % stops.length], canWalk).slice(0, -1)
+    ]);
+  });
+  factionPatrol = { layout, routes };
+  return routes;
+}
+
 window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
@@ -909,20 +938,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   let nearestFaction;
   function drawFactionWalkers() {
     if (!waterfrontFactionAtlas.image) return;
-    const { x: start, y: row } = district.spawn;
-    let left = start;
-    let right = start;
-    while (roadAt(left - 1, row)) left--;
-    while (roadAt(right + 1, row)) right++;
-    const distance = (right - left) * size;
+    const routes = factionRoutes(rows, district);
     waterfrontFactions.forEach((name, index) => {
-      const phase = (index / waterfrontFactions.length + (time ?? 0) * 0.018) % 1;
-      const east = phase < 0.5;
-      const progress = east ? phase * 2 : (1 - phase) * 2;
-      const x = Math.round(left * size + 16 + distance * progress);
-      const y = row * size + (east ? 26 : 13);
-      const frame = time === null || distance === 0 ? 0 : 1 + Math.floor(time * 7 + index) % 3;
-      queue(y, () => factionCharacter(index, x, y, east ? 2 : 1, frame, 20));
+      const route = routes[index];
+      const progress = ((time ?? 0) / (1.05 + index * 0.045)) % route.length;
+      const step = Math.floor(progress);
+      const from = route[step];
+      const to = route[(step + 1) % route.length];
+      const blend = progress - step;
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const x = Math.round((from.x + dx * blend) * size + 16);
+      const y = Math.round((from.y + dy * blend) * size + 22);
+      const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
+      const frame = time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
+      queue(y, () => factionCharacter(index, x, y, facing, frame, 20));
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
       if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
         nearestFaction = { name, x, y, separation };
@@ -944,7 +974,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   const crew = window.waterfrontBuildDiscussion ?? [];
-  const turn = crew[discussionElapsed === null ? crew.length - 1 : Math.floor(discussionElapsed / 8)];
+  const turn = crew[discussionElapsed === null ? crew.length - 1 : Math.floor(discussionElapsed / 12)];
   function drawCrew() {
     const speakers = [
       { col: district.spawn.x - 2 },
@@ -953,9 +983,11 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const row = district.spawn.y;
     speakers.forEach(({ col }, index) => {
       if (!roadAt(col, row)) return;
-      const x = col * size + 16;
+      const pace = time === null ? 0 : Math.sin(time * 0.9 + index * Math.PI);
+      const x = col * size + 16 + Math.round(pace * 5);
       const y = row * size + 13;
-      bot(index, x, y);
+      const facing = time === null ? 0 : Math.cos(time * 0.9 + index * Math.PI);
+      bot(index, x, y, facing, 0, time === null ? 0 : 1 + Math.floor(time * 6) % 3);
       if (!turn || turn.speaker !== index) return;
       const top = y - 27;
       const left = Math.max(2, Math.min(x - 76, width * size - 154));
