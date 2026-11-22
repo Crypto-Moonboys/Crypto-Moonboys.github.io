@@ -19,12 +19,12 @@ window.__HUD_CONSOLIDATED__ = true;
   let siteStatsPromise = null;
 
   const links = [
-    { label: 'WIKI', href: '/search.html', icon: '◫', title: 'Wiki' },
-    { label: 'GAMES', href: '/games/', icon: '◆', title: 'Games' },
-    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy — public start and personal account' },
-    { label: 'BATTLE CHAMBER', href: '/community.html', icon: '⚔', title: 'Battle Chamber' },
-    { label: 'SWARMSY', href: '/swarmsy.html', icon: '✦', title: 'SWARMSY' },
-    { label: 'SYSTEM HUB', href: '/dashboard.html', icon: '◎', title: 'System Hub' }
+    { label: 'WIKI', href: '/search.html', icon: 'wiki', title: 'Wiki' },
+    { label: 'GAMES', href: '/games/', icon: 'games', title: 'Games' },
+    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: 'moon', title: 'My Moonboy — public start and personal account' },
+    { label: 'BATTLE CHAMBER', href: '/community.html', icon: 'battle', title: 'Battle Chamber' },
+    { label: 'SWARMSY', href: '/swarmsy.html', icon: 'sparks', title: 'SWARMSY' },
+    { label: 'SYSTEM HUB', href: '/dashboard.html', icon: 'system', title: 'System Hub' }
   ];
 
   // Public route discovery never authenticates a player: My Moonboy itself
@@ -38,19 +38,19 @@ window.__HUD_CONSOLIDATED__ = true;
     {
       heading: 'Wiki Routes',
       items: [
-        { label: 'Crypto Moonboys', href: '/wiki/crypto-moonboys.html', icon: '☾', title: 'Crypto Moonboys' },
-        { label: 'All Articles', href: '/search.html', icon: '⌕', title: 'All Articles' },
-        { label: 'Categories', href: '/categories/index.html', icon: '▦', title: 'Categories' },
-        { label: 'Timeline', href: '/timeline.html', icon: '⌁', title: 'Timeline' },
-        { label: 'Graph', href: '/graph.html', icon: '✣', title: 'Graph' }
+        { label: 'Crypto Moonboys', href: '/wiki/crypto-moonboys.html', icon: 'moon', title: 'Crypto Moonboys' },
+        { label: 'All Articles', href: '/search.html', icon: 'search', title: 'All Articles' },
+        { label: 'Categories', href: '/categories/index.html', icon: 'categories', title: 'Categories' },
+        { label: 'Timeline', href: '/timeline.html', icon: 'timeline', title: 'Timeline' },
+        { label: 'Graph', href: '/graph.html', icon: 'graph', title: 'Graph' }
       ]
     },
     {
       heading: 'Build Layers',
       items: [
-        { label: 'Factions', href: '/battle-chamber/factions/', icon: '◉', title: 'Factions' },
-        { label: 'Block Topia', href: '/games/block-topia/', icon: '▣', title: 'Block Topia' },
-        { label: 'How To Play', href: '/how-to-play.html', icon: '?', title: 'How To Play' }
+        { label: 'Factions', href: '/battle-chamber/factions/', icon: 'factions', title: 'Factions' },
+        { label: 'Block Topia', href: '/games/block-topia/', icon: 'block-topia', title: 'Block Topia' },
+        { label: 'How To Play', href: '/how-to-play.html', icon: 'help', title: 'How To Play' }
       ]
     }
   ];
@@ -115,7 +115,7 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function navLinkHtml(item, className) {
     const active = isActiveRoute(item.href) ? ' active' : '';
-    const icon = item.icon ? `<span class="nav-icon" aria-hidden="true">${escapeHtml(item.icon)}</span>` : '';
+    const icon = item.icon ? `<span class="nav-icon" data-site-icon="${escapeHtml(item.icon)}" aria-hidden="true"></span>` : '';
     return `<a class="${className}${active}" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title || item.label)}" data-shell-link="${escapeHtml(item.label)}">${icon}<span>${escapeHtml(item.label)}</span></a>`;
   }
 
@@ -508,7 +508,7 @@ window.__HUD_CONSOLIDATED__ = true;
       const photo = getTelegramPhotoUrl(gate);
       avatar.innerHTML = photo
         ? `<img src="${escapeHtml(photo)}" alt="" loading="lazy" decoding="async">`
-        : '<span class="hud-avatar-icon" aria-hidden="true">☾</span>';
+        : '<span class="hud-avatar-icon" data-site-icon="moon" aria-hidden="true"></span>';
     }
     if (nameEl) {
       if (!nameEl.firstChild || nameEl.firstChild.nodeType !== Node.TEXT_NODE) nameEl.textContent = 'Telegram not linked';
@@ -653,6 +653,12 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function bootShell() {
+    if (!document.querySelector('script[data-moonboys-site-icons]')) {
+      const icons = document.createElement('script');
+      icons.src = '/js/site-icons.js?v=1';
+      icons.dataset.moonboysSiteIcons = '1';
+      document.head.appendChild(icons);
+    }
     // Lightweight website easter egg; never inject the game runtime into a game route.
     if (!window.location.pathname.startsWith('/games/') &&
         !window.location.pathname.startsWith('/game/') &&

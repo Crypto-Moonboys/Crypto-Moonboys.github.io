@@ -81,10 +81,11 @@ body.page-standalone-tool { overflow: hidden; }
   border-radius: 7px;
   color: var(--muted);
 }
-.avatar-builder-host .category-button svg { width: clamp(13px, 55%, 20px); height: clamp(13px, 55%, 20px); color: var(--cyan); }
+.avatar-builder-host .builder-category-icon { display: grid; place-items: center; }
+.avatar-builder-host .builder-category-icon .site-icon-glyph { width: 100%; height: 100%; }
+.avatar-builder-host .category-button .builder-category-icon { width: clamp(13px, 55%, 20px); height: clamp(13px, 55%, 20px); color: var(--cyan); }
 .avatar-builder-host .selected-icon { width: 27px; height: 27px; color: var(--cyan); }
 .avatar-builder-host .category-button[aria-pressed="true"] { color: var(--white); border-color: var(--gold); background: rgba(246, 191, 47, .1); }
-.avatar-builder-host .category-button[aria-pressed="true"] svg { color: var(--gold); }
 
 .avatar-builder-host .trait-tray { min-height: 0; display: flex; flex: 1; flex-direction: column; border-top: 1px solid var(--line); }
 .avatar-builder-host .tray-heading { display: flex; justify-content: space-between; align-items: center; padding: .75rem 1.1rem .5rem; }
@@ -148,7 +149,7 @@ body.page-standalone-tool { overflow: hidden; }
   box-shadow: inset 0 0 18px rgba(0, 0, 0, .72), 0 0 0 2px rgba(39, 233, 239, .72), 0 0 14px rgba(39, 233, 239, .65);
 }
 .avatar-builder-host .trait-button[aria-pressed="true"]::after {
-  content: "\2713";
+  content: "";
   position: absolute;
   top: .3rem;
   right: .3rem;
@@ -157,7 +158,7 @@ body.page-standalone-tool { overflow: hidden; }
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--gold) url("/art/icons/successcheckone.png") center / 64% no-repeat;
   color: #071017;
   font-size: .8rem;
   font-weight: 900;

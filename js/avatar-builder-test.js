@@ -4,7 +4,10 @@ import { downloadPortraitPng, loadAvatarImage, paintAvatarLayers } from './avata
 import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgrounds/registry.js';
 
 const PAGE_SIZE = 24;
-const ICONS_URL = '/img/avatar-builder/category-icons.svg';
+const categoryIcons = {
+  background: 'art', body: 'contributor', tattoos: 'graffiti', clothes: 'armor',
+  chains: 'chain', face: 'masks', hat: 'rank', 'left-arm': 'fist-shield', 'right-arm': 'fist-shield'
+};
 const host = document.querySelector('.avatar-builder-host');
 const isHomepage = host?.dataset.builderContext === 'homepage';
 const HOMEPAGE_INTRO_IMAGE = isHomepage ? (host?.dataset.introImage ?? null) : null;
@@ -87,7 +90,7 @@ const elements = {
 };
 
 function icon(categoryId, className = '') {
-  return `<svg class="${className}" aria-hidden="true" viewBox="0 0 48 48"><use href="${ICONS_URL}#${categoryId}"></use></svg>`;
+  return `<span class="builder-category-icon ${className}" data-site-icon="${categoryIcons[categoryId] || 'art'}" aria-hidden="true"></span>`;
 }
 
 function announce(message) {
