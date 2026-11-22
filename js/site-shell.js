@@ -655,7 +655,7 @@ window.__HUD_CONSOLIDATED__ = true;
   function bootShell() {
     if (!document.querySelector('script[data-moonboys-site-icons]')) {
       const icons = document.createElement('script');
-      icons.src = '/js/site-icons.js?v=1';
+      icons.src = '/js/site-icons.js?v=2';
       icons.dataset.moonboysSiteIcons = '1';
       document.head.appendChild(icons);
     }
