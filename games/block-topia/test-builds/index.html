@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Topia | Community test builds</title>
+<style>
+:root{color-scheme:dark;font:100% system-ui,sans-serif;background:#101722;color:#e1eef4}body{margin:0}
+main{max-width:63rem;margin:auto;padding:clamp(1rem,4vw,3rem)}a{color:#a2e9e5}
+h1{font-size:clamp(2rem,5vw,3.5rem);margin:.55em 0 .25em;line-height:1}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(14rem,.75fr);gap:2rem;margin-top:2rem}
+canvas{display:block;width:100%;max-width:30rem;height:auto;image-rendering:pixelated;border:1px solid #39515d}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem 1rem;padding:0;list-style:none;font-size:.9rem}
+.legend i{display:inline-block;width:.75rem;height:.75rem;border:1px solid #acb9c2;margin-right:.35rem}
+aside{border-top:1px solid #39515d}label,select{display:block}select{margin:.5rem 0 1rem;padding:.55rem;font:inherit}
+@media(max-width:42rem){.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<a href="../">← Block Topia</a>
+<h1>Community test builds</h1>
+<p>Explore Lumina’s waterfront and compare how the map changed between builds.</p>
+<div class="layout">
+<section aria-labelledby="district">
+<h2 id="district">Lumina’s Waterfront</h2>
+<canvas id="map" width="384" height="384" role="img" aria-label="Top-down waterfront map"></canvas>
+<ul id="legend" class="legend" aria-label="Map key"></ul>
+<noscript><p>Enable JavaScript to view the map and switch rounds.</p></noscript>
+</section>
+<aside aria-labelledby="history">
+<h2 id="history">Build history</h2>
+<label for="build">Waterfront build</label>
+<select id="build"><option value="0">Round 3 · Latest</option><option value="1">Round 2</option><option value="2">Round 1</option></select>
+<p id="status" aria-live="polite"></p>
+<a id="pull" href="https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/1939">View pull request</a>
+</aside>
+</div>
+</main>
+<script>
+const builds = [{"n":1939,"merged":true,"data":{"district":{"name":"Lumina’s Waterfront","rows":["~~~~d~~~~~~~","~~~~d~~~~~~~","...rr.......","...hr_...~..","....r.......","....r_......","............","............","............","............","............","............"],"route":[27,28,16,40,4,52,64]},"colors":{"water":"#143950","road":"#667b8a","ground":"#283e35","dock":"#98734e","house":"#aa5149","lighthouse":"#dbc69c"}},"summary":"Added a road tile beside the lighthouse approach."},{"n":1934,"merged":true,"data":{"district":{"name":"Lumina’s Waterfront","rows":["~~~~d~~~~~~~","~~~~d~~~~~~~","....r.......","...hr_...~..","....r.......","....r_......","............","............","............","............","............","............"],"route":[28,16,40,4,52,64]},"colors":{"water":"#143950","road":"#667b8a","ground":"#283e35","dock":"#98734e","house":"#aa5149","lighthouse":"#dbc69c"}},"summary":"Added a small inland water tile."},{"n":1933,"merged":true,"data":{"district":{"name":"Lumina’s Waterfront","rows":["~~~~d~~~~~~~","~~~~d~~~~~~~","....r.......","...hr_......","....r.......","....r_......","............","............","............","............","............","............"],"route":[28,16,40,4,52,64]},"colors":{"water":"#143950","road":"#667b8a","ground":"#283e35","dock":"#98734e","house":"#aa5149","lighthouse":"#dbc69c"}},"summary":"Laid out the first road, dock, lighthouse and two building plots."}];
+const tiles = {
+  "~": ["Water", "water"], r: ["Road", "road"], ".": ["Ground", "ground"],
+  d: ["Dock", "dock"], h: ["Lighthouse", "lighthouse"], _: ["Empty plot", "house"]
+};
+const canvas = document.querySelector("#map");
+const ctx = canvas.getContext("2d");
+const select = document.querySelector("#build");
+
+function renderBuild() {
+  const { n, data: { district, colors }, summary } = builds[Number(select.value)];
+  district.rows.forEach((row, y) => {
+    [...row].forEach((tile, x) => {
+      ctx.fillStyle = colors[tiles[tile][1]];
+      ctx.fillRect(x * 32, y * 32, 32, 32);
+      if (tile === "h") {
+        ctx.fillStyle = "#fff4bb";
+        ctx.fillRect(x * 32 + 12, y * 32 + 5, 8, 10);
+      }
+    });
+  });
+  const legend = document.querySelector("#legend");
+  legend.replaceChildren();
+  for (const [label, key] of Object.values(tiles)) {
+    const entry = document.createElement("li");
+    const swatch = document.createElement("i");
+    swatch.style.backgroundColor = colors[key];
+    swatch.setAttribute("aria-hidden", "true");
+    entry.append(swatch, label);
+    legend.append(entry);
+  }
+  document.querySelector("#status").textContent = "Merged into integration. " + summary;
+  const pull = document.querySelector("#pull");
+  pull.href = "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/" + n;
+  pull.textContent = "View PR #" + n;
+}
+
+select.value = "0";
+select.addEventListener("change", renderBuild);
+renderBuild();
+</script>
+</body>
+</html>
