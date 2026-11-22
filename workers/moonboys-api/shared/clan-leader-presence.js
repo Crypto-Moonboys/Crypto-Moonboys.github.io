@@ -62,7 +62,8 @@ export async function runClanLeaderRounds(db, start, at, fetchPage = fetch) {
   if (slot < start) return;
   const roster = checkedRows(await db.prepare(`
     WITH occupied AS (
-      SELECT target_faction AS faction_id FROM clan_leader_slowdowns WHERE starts_at <= ?1 AND ends_at > ?1
+      SELECT target_faction AS faction_id FROM clan_leader_slowdowns
+      WHERE available_at > ?1 AND starts_at <= ?1 AND ends_at > ?1
       UNION SELECT faction_id FROM clan_leader_rounds WHERE slot = ?1
     )
     SELECT value AS faction_id FROM json_each(?2)

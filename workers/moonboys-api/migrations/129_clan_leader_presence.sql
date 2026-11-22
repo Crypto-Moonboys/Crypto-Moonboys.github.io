@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS clan_leader_slowdowns (
 );
 
 CREATE INDEX IF NOT EXISTS clan_leader_slowdowns_target ON clan_leader_slowdowns (target_faction, available_at);
+CREATE INDEX IF NOT EXISTS clan_leader_slowdowns_active ON clan_leader_slowdowns (available_at);
 
 CREATE TRIGGER IF NOT EXISTS clan_leader_slowdown_spend
 AFTER INSERT ON clan_leader_slowdowns
