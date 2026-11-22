@@ -5,75 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina’s Waterfront | Block Topia</title>
 <style>
-:root{color-scheme:dark;background:#0d151e;color:#e9f4ed;font:1rem system-ui,sans-serif}
-body{margin:0}main{max-width:66rem;margin:auto;padding:clamp(1rem,4vw,3rem)}
-a{color:#9feee1}h1{font-size:clamp(2rem,6vw,4rem);margin:.4em 0}
-.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(14rem,1fr);gap:2rem;align-items:start}
-canvas{display:block;width:100%;height:auto;image-rendering:pixelated;box-shadow:0 0 0 1px #38534e}
-button,select{font:inherit;padding:.55rem;background:#192c34;color:inherit;border:1px solid #567a78}
-button{cursor:pointer}button[aria-pressed=true]{background:#285953}
-.controls{display:grid;grid-template-columns:repeat(3,3rem);gap:.25rem;margin-block:1rem}
-.controls button:first-child{grid-column:2}.controls button:nth-child(2){grid-column:1}
-aside{border-top:1px solid #38534e}fieldset{border:1px solid #38534e;margin:1rem 0;padding:.75rem}
-fieldset button{margin:.35rem .2rem .1rem 0}small{color:#b4cdc7}
-@media(max-width:44rem){.layout{grid-template-columns:1fr}}
+:root{color-scheme:dark;background:#101a20;color:#eef2df;font:1rem system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0}
+a{color:#b6e4da}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding-block:.85rem}
+h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) Georgia,serif;letter-spacing:-.015em}
+.viewport{position:relative;height:clamp(26rem,72vh,56rem);background:#123c51;border-block:1px solid #577674}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated;cursor:pointer}
+canvas[data-editing=true]{cursor:crosshair}
+#location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
+.tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 2rem;padding-block:.75rem}
+.movement{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
+.movement p,#status{margin:0;font-size:.85rem;color:#c1d4cc}
+button,select{font:inherit;min-height:44px;padding:.45rem .65rem;background:#1b2d33;color:inherit;border:1px solid #658782;border-radius:.25rem}
+button,summary{cursor:pointer}button[aria-pressed=true]{background:#356858}
+button:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid #ffdd90;outline-offset:3px}
+details{padding:.35rem 0}
+fieldset{border:0;padding:0;margin:.65rem 0 0;min-inline-size:0}
+fieldset p{max-width:42rem;margin:.4rem 0}
+fieldset button{margin:.2rem .15rem .2rem 0}
+@media(max-width:44rem){.viewport{height:auto;aspect-ratio:1}.movement p{flex-basis:100%}}
 </style>
 </head>
 <body>
 <main>
-<a href="../">← Block Topia</a>
+<header>
 <h1>Lumina’s Waterfront</h1>
-<div class="layout">
-<canvas id="map" width="384" height="384" role="img" aria-label="Waterfront map with streets, a dock, lighthouse, workshop and harbor cottages"></canvas>
-<aside>
-<h2>Explore the harbor</h2>
-<p>Use the arrow keys, WASD or the buttons to walk the streets and dock.</p>
-<div class="controls" aria-label="Movement">
-<button type="button" data-move="up" aria-label="Walk north">↑</button>
-<button type="button" data-move="left" aria-label="Walk west">←</button>
-<button type="button" data-move="down" aria-label="Walk south">↓</button>
-<button type="button" data-move="right" aria-label="Walk east">→</button>
-</div>
+<a href="../">← Block Topia</a>
+</header>
+<div class="viewport">
+<canvas id="map" width="384" height="384" role="img" aria-describedby="movement-help" aria-label="Waterfront map with streets, a dock, lighthouse, workshop and harbor cottages"></canvas>
 <p id="location"></p>
-<fieldset>
-<legend>Edit your map</legend>
+</div>
+<div class="tools">
+<section class="movement" aria-label="Explore the harbor">
+<p id="movement-help">Click or tap a street or dock tile to walk there.</p>
+</section>
+<details id="editor">
+<summary>Map editor</summary>
+<fieldset aria-label="Edit your map">
 <button id="edit" type="button" aria-pressed="false">Edit tiles</button>
 <label for="tile">Tile</label>
 <select id="tile"></select>
-<p><small>Turn on Edit tiles, then select a square on the map. Edits save in this browser. Download the layout to share it.</small></p>
+<p><small>Turn on Edit tiles, then select a square inside the highlighted district. Edits save in this browser. Download the layout to share it.</small></p>
 <button id="download" type="button">Download map</button>
 <button id="reset" type="button">Reset map</button>
 <p id="status" role="status"></p>
 </fieldset>
-</aside>
+</details>
 </div>
 </main>
+<script src="district.js"></script>
+<script src="harbor-art.js"></script>
 <script>
 "use strict";
-const initial = [
-  "~~~~d~~~~~~~",
-  "~~~~d~~~~~~~",
-  "...rr.......",
-  "...hrw...~..",
-  "....r.......",
-  "....rc......",
-  "..rrrrrrrr..",
-  "..r...c..r..",
-  "..rw.....r..",
-  "..rrrrrrrr..",
-  "......r.....",
-  "......r....."
-];
-const tiles = {
-  "~": ["Water", "#17465d"], ".": ["Ground", "#35554a"],
-  r: ["Street", "#657e87"], d: ["Dock", "#ac865d"],
-  h: ["Lighthouse", "#e6cc98"], w: ["Workshop", "#bf8454"],
-  c: ["Harbor cottage", "#a86060"]
-};
+const district = window.waterfrontDistrict;
+const { rows: initial, spawn, tiles, tileSize } = district;
+const columns = initial[0].length;
+const mapWidth = columns * tileSize;
+const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const keys = { arrowup:"up", arrowleft:"left", arrowdown:"down", arrowright:"right", w:"up", a:"left", s:"down", d:"right" };
 const storageKey = "block-topia.waterfront.v1";
-const spawn = { x: 4, y: 6 };
 const canvas = document.querySelector("#map");
 const ctx = canvas.getContext("2d");
 const edit = document.querySelector("#edit");
@@ -83,58 +75,83 @@ const locationLabel = document.querySelector("#location");
 let rows = [...initial];
 let player = { ...spawn };
 let editing = false;
+let offset = 0;
+let walkTimer;
 
 function walkable(tile) {
-  return tile === "r" || tile === "d";
+  return Boolean(tiles[tile]?.walkable);
 }
 
 try {
   const saved = JSON.parse(localStorage.getItem(storageKey));
-  if (Array.isArray(saved) && saved.length === 12 &&
-      saved.every(row => typeof row === "string" && row.length === 12 && [...row].every(tile => Object.hasOwn(tiles, tile))) &&
+  if (Array.isArray(saved) && saved.length === initial.length &&
+      saved.every(row => typeof row === "string" && row.length === columns && [...row].every(tile => Object.hasOwn(tiles, tile))) &&
       walkable(saved[spawn.y][spawn.x])) rows = saved;
 } catch {
   status.textContent = "The saved layout could not be loaded.";
 }
 
-for (const [tile, [name]] of Object.entries(tiles)) {
+for (const [tile, { name }] of Object.entries(tiles)) {
   select.add(new Option(name, tile));
 }
 select.value = "r";
 
 function draw() {
-  rows.forEach((row, y) => [...row].forEach((tile, x) => {
-    const left = x * 32;
-    const top = y * 32;
-    ctx.fillStyle = tiles[tile][1];
-    ctx.fillRect(left, top, 32, 32);
-    if (tile === "~" || tile === "d" || tile === "r") {
-      ctx.fillStyle = tile === "~" ? "#27627a" : "#ffffff24";
-      ctx.fillRect(left + 5, top + 14, 22, 2);
-    }
-    if ("hwc".includes(tile)) {
-      ctx.fillStyle = "#263139";
-      ctx.fillRect(left+4, top+5, 24, 23);
-      ctx.fillStyle = tiles[tile][1];
-      ctx.fillRect(left+6, top+7, 20, 12);
-      ctx.fillStyle = "#ffe6aa";
-      ctx.fillRect(left+13, top+20, 6, 6);
-    }
-  }));
-  ctx.fillStyle = "#10212b";
-  ctx.fillRect(player.x*32+8, player.y*32+8, 16, 16);
-  ctx.fillStyle = "#8fffe7";
-  ctx.fillRect(player.x*32+11, player.y*32+11, 10, 10);
-  locationLabel.textContent = tiles[rows[player.y][player.x]][0] + " · " + (player.x+1) + ", " + (player.y+1);
+  offset = window.drawWaterfront(ctx, rows, player, district);
+  if (editing) {
+    ctx.strokeStyle = "#fce5a2";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(offset + 1, 1, mapWidth - 2, mapHeight - 2);
+  }
+  locationLabel.textContent = tiles[rows[player.y][player.x]].name + " · " + (player.x + 1) + ", " + (player.y + 1);
 }
 
-function move(direction) {
-  const [dx, dy] = directions[direction];
-  const x = player.x + dx;
-  const y = player.y + dy;
-  if (!walkable(rows[y]?.[x])) return;
-  player = { x, y };
+function resizeMap() {
+  const { width, height } = canvas.getBoundingClientRect();
+  if (!width || !height) return;
+  canvas.width = Math.max(mapWidth, Math.round(width * mapHeight / height));
+  canvas.height = mapHeight;
   draw();
+}
+
+function findRoute(start, goal, canWalk) {
+  const queue = [{ ...start, previous: null }];
+  const seen = new Set([start.x + "," + start.y]);
+  for (const step of queue) {
+    if (step.x === goal.x && step.y === goal.y) {
+      const route = [];
+      for (let node = step; node.previous; node = node.previous) route.push(node);
+      return route.reverse();
+    }
+    for (const [dx, dy] of Object.values(directions)) {
+      const x = step.x + dx;
+      const y = step.y + dy;
+      const key = x + "," + y;
+      if (!seen.has(key) && canWalk(x, y)) {
+        seen.add(key);
+        queue.push({ x, y, previous: step });
+      }
+    }
+  }
+  return null;
+}
+
+function walkTo(x, y) {
+  clearTimeout(walkTimer);
+  const route = findRoute(player, { x, y }, (col, row) => walkable(rows[row]?.[col]));
+  if (!route) {
+    locationLabel.textContent += locationLabel.textContent.endsWith(" · No walking route") ? "" : " · No walking route";
+    return;
+  }
+  function advance(index) {
+    const step = route[index];
+    if (!step) return;
+    player = { x: step.x, y: step.y };
+    draw();
+    if (index + 1 < route.length) walkTimer = setTimeout(() => advance(index + 1), 120);
+  }
+  draw();
+  advance(0);
 }
 
 function save() {
@@ -146,27 +163,27 @@ function save() {
   }
 }
 
-document.addEventListener("keydown", event => {
-  const key = event.key.toLowerCase();
-  if (!Object.hasOwn(keys, key) || event.ctrlKey || event.metaKey || event.altKey ||
-      event.target.closest("select, input, textarea, [contenteditable]")) return;
-  event.preventDefault();
-  move(keys[key]);
-});
-document.querySelectorAll("[data-move]").forEach(button => {
-  button.addEventListener("click", () => move(button.dataset.move));
-});
-edit.addEventListener("click", () => {
-  editing = !editing;
+function setEditing(enabled) {
+  clearTimeout(walkTimer);
+  editing = enabled;
+  canvas.dataset.editing = String(editing);
   edit.setAttribute("aria-pressed", String(editing));
   status.textContent = editing ? "Select a square to place a tile." : "Tile editing is off.";
+  draw();
+}
+edit.addEventListener("click", () => setEditing(!editing));
+document.querySelector("#editor").addEventListener("toggle", event => {
+  if (!event.currentTarget.open && editing) setEditing(false);
 });
 canvas.addEventListener("click", event => {
-  if (!editing) return;
   const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((event.clientX - rect.left) * 12 / rect.width);
-  const y = Math.floor((event.clientY - rect.top) * 12 / rect.height);
-  if (x < 0 || x >= 12 || y < 0 || y >= 12) return;
+  const x = Math.floor(((event.clientX - rect.left) * canvas.width / rect.width - offset) / tileSize);
+  const y = Math.floor((event.clientY - rect.top) * canvas.height / rect.height / tileSize);
+  if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
+  if (!editing) {
+    walkTo(x, y);
+    return;
+  }
   if (x === spawn.x && y === spawn.y && !walkable(select.value)) {
     status.textContent = "Keep the starting square walkable.";
     return;
@@ -177,7 +194,7 @@ canvas.addEventListener("click", event => {
   draw();
 });
 document.querySelector("#download").addEventListener("click", () => {
-  const url = URL.createObjectURL(new Blob([JSON.stringify({ name: "Lumina’s Waterfront", rows }, null, 2)], { type: "application/json" }));
+  const url = URL.createObjectURL(new Blob([JSON.stringify({ name: district.name, rows }, null, 2)], { type: "application/json" }));
   const link = document.createElement("a");
   link.href = url;
   link.download = "luminas-waterfront.json";
@@ -186,12 +203,14 @@ document.querySelector("#download").addEventListener("click", () => {
 });
 document.querySelector("#reset").addEventListener("click", () => {
   if (!window.confirm("Reset your browser’s map to the original layout?")) return;
+  clearTimeout(walkTimer);
   rows = [...initial];
   player = { ...spawn };
   save();
   draw();
 });
-draw();
+new ResizeObserver(resizeMap).observe(canvas);
+resizeMap();
 </script>
 </body>
 </html>
