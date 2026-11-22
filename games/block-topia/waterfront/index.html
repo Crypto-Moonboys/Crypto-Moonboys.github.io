@@ -48,6 +48,8 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <section class="movement" aria-label="Explore the harbor">
 <p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll over the map or pinch with two fingers to zoom.</p>
 </section>
+<label for="player-faction">Player faction</label>
+<select id="player-faction"><option value="">Default explorer</option></select>
 <details id="editor">
 <summary>Map editor</summary>
 <fieldset aria-label="Edit your map">
@@ -65,7 +67,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script src="district.js?v=8"></script>
 <script src="build-notes.js?v=2"></script>
-<script src="harbor-art.js?v=29"></script>
+<script src="harbor-art.js?v=30"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -88,6 +90,18 @@ const status = document.querySelector("#status");
 const locationLabel = document.querySelector("#location");
 let rows = [...initial];
 let player = { ...spawn };
+const playerFaction = document.querySelector("#player-faction");
+waterfrontFactions.forEach((name, index) => playerFaction.add(new Option(name, index)));
+try {
+  const savedFaction = localStorage.getItem("block-topia.waterfront.faction");
+  if (savedFaction !== null && waterfrontFactions[Number(savedFaction)]) playerFaction.value = savedFaction;
+} catch {}
+playerFaction.addEventListener("change", () => {
+  try {
+    localStorage.setItem("block-topia.waterfront.faction", playerFaction.value);
+  } catch {}
+  draw();
+});
 let editing = false;
 let walkTimer;
 
@@ -155,7 +169,8 @@ let discussionElapsed = 0;
 let previousDiscussionFrame = null;
 
 function paintMap() {
-  window.drawWaterfront(ctx, rows, player, district, sceneTime, reducedMotion.matches ? null : discussionElapsed);
+  const faction = playerFaction.value === "" ? null : Number(playerFaction.value);
+  window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime, reducedMotion.matches ? null : discussionElapsed);
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -192,6 +207,7 @@ function findRoute(start, goal, canWalk) {
 
 function walkTo(x, y) {
   clearTimeout(walkTimer);
+  player.frame = 0;
   const route = findRoute(player, { x, y }, (col, row) => walkable(rows[row]?.[col]));
   if (!route) {
     draw();
@@ -201,9 +217,16 @@ function walkTo(x, y) {
   function advance(index) {
     const step = route[index];
     if (!step) return;
-    player = { x: step.x, y: step.y };
+    const facing = step.x < player.x ? 1 : step.x > player.x ? 2 : step.y < player.y ? 3 : 0;
+    player = { x: step.x, y: step.y, facing, frame: 1 + index % 3 };
     draw();
-    if (index + 1 < route.length) walkTimer = setTimeout(() => advance(index + 1), 120);
+    walkTimer = setTimeout(() => {
+      if (index + 1 < route.length) advance(index + 1);
+      else {
+        player.frame = 0;
+        draw();
+      }
+    }, 120);
   }
   draw();
   advance(0);

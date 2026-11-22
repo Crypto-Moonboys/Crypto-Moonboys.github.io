@@ -45,11 +45,19 @@ const waterfrontGroves = new Map([
 ]);
 
 const waterfrontCargoAtlas = { file: "cargo-frames" };
+const waterfrontFactionAtlas = { file: "faction-frames" };
+// Order matches the rows packed from the named source portraits.
+const waterfrontFactions = [
+  "All City Bulls", "The Nomad Bears", "Hard Fork Rockers",
+  "Rugpull Miners", "Crypto Moongirls", "The Blockchain Furies",
+  "GraffPunks", "Crypto Stinedboys", "The Blockstars"
+];
 const waterfrontBotAtlas = { file: "bot-frames" };
 const residentBots = [3, 4, 5, 6, 7];
 
 const waterfrontAtlases = {
   "cargo": { "cargo-frames": [0, 0, 256, 96] },
+  "factions": { "faction-frames": [0, 0, 144, 1296] },
   "bots": { "bot-frames": [0, 0, 128, 1024] },
   "hk-night": {
     "afterblock-club": [2, 2, 111, 115],
@@ -115,7 +123,7 @@ const waterfrontDetails = Object.fromEntries(
 
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
   const sprites = Object.fromEntries(
-    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas]
+    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas, waterfrontFactionAtlas]
       .map(sprite => [sprite.file, sprite])
   );
   return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
@@ -883,7 +891,18 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function actor() {
-    person(player.x * size + 16, player.y * size + 22, "#c17362", "#39778c", 0, true);
+    const x = player.x * size + 16;
+    const y = player.y * size + 22;
+    const image = waterfrontFactionAtlas.image;
+    if (!image || !Number.isInteger(player.faction) || !waterfrontFactions[player.faction]) {
+      person(x, y, "#c17362", "#39778c", 0, true);
+      return;
+    }
+    const facing = player.facing ?? 0;
+    const frame = player.frame ?? 0;
+    rect("#080f1cad", x - 5, y - 1, 10, 3);
+    ctx.drawImage(image, frame * 36, (player.faction * 4 + facing) * 36, 36, 36,
+      x - 9, y - 17, 18, 18);
   }
 
   const crew = window.waterfrontBuildDiscussion ?? [];
