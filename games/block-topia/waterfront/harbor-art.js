@@ -5,18 +5,18 @@ const muralPasses = [
 ];
 
 const waterfrontSprites = {
-  E: { file: "block-exchange", width: 32, maxHeight: 42 },
-  V: { file: "cold-vault", width: 32, maxHeight: 42 },
-  H: { file: "hash-house", width: 32, maxHeight: 42 },
-  L: { file: "lucky-block-casino", width: 32, maxHeight: 42 },
-  N: { file: "neon-ledger-casino", width: 32, maxHeight: 42 },
-  A: { file: "afterblock-club", width: 32, maxHeight: 42 },
-  h: { file: "lighthouse", width: 42, maxHeight: 52 },
-  w: { file: "workshop", width: 32, maxHeight: 36 },
-  c: { file: "apartments", width: 32, maxHeight: 51 },
+  E: { file: "block-exchange", width: 54, maxHeight: 67 },
+  V: { file: "cold-vault", width: 48, maxHeight: 51 },
+  H: { file: "hash-house", width: 56, maxHeight: 65 },
+  L: { file: "lucky-block-casino", width: 58, maxHeight: 62 },
+  N: { file: "neon-ledger-casino", width: 54, maxHeight: 63 },
+  A: { file: "afterblock-club", width: 55, maxHeight: 64 },
+  h: { file: "lighthouse", width: 52, maxHeight: 78 },
+  w: { file: "workshop", width: 46, maxHeight: 54 },
+  c: { file: "apartments", width: 55, maxHeight: 72 },
   g: { file: "graffiti-wall", width: 32, maxHeight: 27 },
-  s: { file: "record-shop", width: 32, maxHeight: 40 },
-  b: { file: "warehouse", width: 32, maxHeight: 39 }
+  s: { file: "record-shop", width: 46, maxHeight: 56 },
+  b: { file: "warehouse", width: 49, maxHeight: 55 }
 };
 
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
@@ -52,6 +52,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const wallStart = 13;
   const wallEnd = 24;
   const hasSeawall = rows[2]?.slice(wallStart, wallEnd) === ".".repeat(wallEnd - wallStart);
+  // Keep doors and people readable without widening the walkable grid.
+  const personScale = 0.55;
   const objects = [];
   const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
@@ -135,22 +137,17 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       if (time === null) continue;
       const direction = pass % 2 ? -1 : 1;
       const hand = Math.round(left + panelWidth * (direction === 1 ? progress : 1 - progress));
-      const artist = hand - direction * 5;
-      const feet = y + 32;
+      const artist = hand - direction * 3;
+      const feet = y + 26;
       const step = Math.floor(time * 6) % 2;
       queue(feet, () => {
-        rect("#10121caa", artist - 4, feet, 9, 2);
-        rect("#242235", artist - 3, feet - 5, 2, 4 + step);
-        rect("#242235", artist + 1, feet - 5, 2, 5 - step);
-        rect(panel % 2 ? "#596ab1" : "#9d527a", artist - 4, feet - 12, 8, 8);
-        rect("#b88867", artist - 2, feet - 15, 4, 4);
-        rect("#303048", artist - 3, feet - 17, 6, 4);
-        rect("#b88867", hand, feet - 14, 2, 4);
+        person(artist, feet, panel % 2 ? "#596ab1" : "#9d527a", "#303048", step);
+        rect("#b88867", hand, feet - 7, 1, 2);
         const color = muralPasses[pass % muralPasses.length].color;
-        rect(color, hand, feet - 15, 2, 2);
+        rect(color, hand, feet - 8, 1, 2);
         for (let speck = 0; speck < 3; speck++) {
           const drift = (Math.floor(time * 12) + speck * 2) % 5;
-          rect(color, hand + direction * (speck - 1), feet - 16 - drift, 1, 1);
+          rect(color, hand + direction * (speck - 1), feet - 9 - drift, 1, 1);
         }
       });
     }
@@ -177,7 +174,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function resident(col, row, seed) {
+  function resident(col, row, seed, door) {
     const points = [[col, row]];
     for (let i = 0; i < 3; i++) {
       const [x, y] = points.at(-1);
@@ -197,17 +194,11 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const blend = progress - index;
     const [ax, ay] = points[index];
     const [bx, by] = points[index + 1];
-    const x = Math.round((ax + (bx - ax) * blend) * size + 16);
+    const center = (ax + (bx - ax) * blend) * size + 16;
+    const x = Math.round(index === 0 ? center + (door - (col * size + 16)) * (1 - blend) : center);
     const y = Math.round((ay + (by - ay) * blend) * size + 24);
     const step = age < trip || age > trip + 2 ? Math.floor(time * 7) % 2 : 0;
-    queue(y, () => {
-      rect("#161827a0", x - 4, y + 1, 9, 2);
-      rect("#20232e", x - 3, y - 3, 2, 4 + step);
-      rect("#20232e", x + 1, y - 3, 2, 5 - step);
-      rect(seed % 2 ? "#559b90" : "#a65a83", x - 4, y - 10, 8, 7);
-      rect("#c49371", x - 2, y - 14, 4, 4);
-      rect("#373049", x - 3, y - 16, 6, 3);
-    });
+    queue(y, () => person(x, y, seed % 2 ? "#559b90" : "#a65a83", "#373049", step));
   }
   const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
     col >= left && col <= right && row >= top && row <= bottom)?.material;
@@ -222,42 +213,56 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function pavedSurface(tile, col, row, x, y, seed) {
-    const surface = tile === "r" ? "#353a4d" : "#5d5264";
+    const street = tile === "r";
+    const surface = street ? "#353a4d" : "#5d5264";
+    const northTile = tileAt(col, row - 1);
     const north = roadAt(col, row - 1);
     const south = roadAt(col, row + 1);
     const west = roadAt(col - 1, row);
     const east = roadAt(col + 1, row);
-    const entrance = Object.hasOwn(waterfrontSprites, tileAt(col, row - 1));
-    rect(surface, x + 4, y + 4, 24, 24);
-    if (north || entrance) rect(surface, x + 4, y, 24, 5);
-    if (south) rect(surface, x + 4, y + 27, 24, 5);
-    if (west) rect(surface, x, y + 4, 5, 24);
-    if (east) rect(surface, x + 27, y + 4, 5, 24);
-    if (!north && !entrance) curb(x, y + 1, true);
-    if (!south) curb(x, y + 27, true);
-    if (!west) curb(x + 1, y + 5, false, 22);
-    if (!east) curb(x + 27, y + 5, false, 22);
+    const entrance = Object.hasOwn(waterfrontSprites, northTile);
+    const inset = street ? 7 : 9;
+    const lane = size - 2 * inset;
+    const edge = size - inset;
+    rect(surface, x + inset, y + inset, lane, lane);
+    if (north) rect(surface, x + inset, y, lane, inset + 1);
+    if (south) rect(surface, x + inset, y + edge - 1, lane, inset + 1);
+    if (west) rect(surface, x, y + inset, inset + 1, lane);
+    if (east) rect(surface, x + edge - 1, y + inset, inset + 1, lane);
 
-    if (tile === "p") {
-      for (let dy = 6; dy < 27; dy += 5) {
-        rect("#534b57", x + 5, y + dy, 22, 1);
-        for (let dx = 8 + dy % 3; dx < 26; dx += 8) rect("#534b57", x + dx, y + dy, 1, 4);
+    if (!north && !entrance) curb(x + (west ? 0 : inset), y + inset - 2, true,
+      lane + (west ? inset : 0) + (east ? inset : 0));
+    if (!south) curb(x + (west ? 0 : inset), y + edge, true,
+      lane + (west ? inset : 0) + (east ? inset : 0));
+    if (!west) curb(x + inset - 3, y + (north ? 0 : inset), false,
+      lane + (north ? inset : 0) + (south ? inset : 0));
+    if (!east) curb(x + edge, y + (north ? 0 : inset), false,
+      lane + (north ? inset : 0) + (south ? inset : 0));
+
+    if (street) {
+      for (let i = 0; i < 12; i++) {
+        rect(i % 2 ? "#575b69" : "#373c4a", x + inset + (seed + i * 13) % (lane - 2),
+          y + inset + ((seed >>> 8) + i * 9) % lane, 2, 1);
+      }
+      if (west && east && !north && !south && !entrance) rect("#ac9870", x + 12, y + 15, 8, 1);
+      if (north && south && !west && !east) rect("#ac9870", x + 15, y + 12, 1, 8);
+      if (!south && seed % 5 === 0) {
+        rect("#242733", x + 18, y + edge - 3, 6, 2);
+        for (let i = 19; i < 24; i += 2) rect("#666a78", x + i, y + edge - 3, 1, 1);
       }
     } else {
-      for (let i = 0; i < 18; i++) {
-        rect(i % 2 ? "#575b69" : "#373c4a", x + 5 + (seed + i * 13) % 21,
-          y + 5 + ((seed >>> 8) + i * 9) % 21, 2, 1);
-      }
-      if (west && east && !north && !south && !entrance) rect("#ac9870", x + 11, y + 15, 10, 1);
-      if (north && south && !west && !east) rect("#ac9870", x + 15, y + 11, 1, 10);
-      if (!south && seed % 5 === 0) {
-        rect("#242733", x + 20, y + 24, 7, 3);
-        for (let i = 21; i < 27; i += 2) rect("#666a78", x + i, y + 24, 1, 2);
+      for (let dy = inset + 2; dy < edge - 1; dy += 4) {
+        rect("#534b57", x + inset, y + dy, lane, 1);
+        rect("#534b57", x + inset + (dy % 3) * 3 + 3, y + dy, 1, 3);
       }
     }
     if (entrance) {
-      rect("#72646b", x + 2, y - 3, 28, 7);
-      rect("#aaa09a", x + 3, y + 2, 26, 1);
+      const door = entranceCenter(northTile, col, buildingBounds(northTile, col, row - 1));
+      // A landing joins the facade to the narrow street even on an offset lot.
+      const left = Math.min(door - 5, x + inset + 2);
+      const right = Math.max(door + 5, x + edge - 2);
+      rect("#72646b", left, y - 3, right - left, inset + 4);
+      rect("#aaa09a", door - 5, y - 1, 10, 1);
     }
   }
 
@@ -317,14 +322,14 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
 
     if (Object.hasOwn(waterfrontSprites, tile)) {
-      queue(y + 29, () => building(tile, x, y));
+      const bounds = buildingBounds(tile, col, row);
+      queue(y + 29, () => building(tile, x, y, bounds));
       if (tile === "h") {
-        const image = waterfrontSprites.h.image;
-        const { width, maxHeight } = waterfrontSprites.h;
-        const height = image ? Math.round(Math.min(maxHeight, image.naturalHeight * width / image.naturalWidth) * 2) / 2 : 64;
-        beacons.push([x + 16, image ? y + 29 - height * 0.83 : y - 17]);
+        beacons.push(bounds
+          ? [bounds.left + bounds.drawWidth / 2, bounds.top + bounds.drawHeight * 0.17]
+          : [x + 16, y - 17]);
       }
-      if (time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
+      if (time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed, entranceCenter(tile, col, bounds));
     } else if (tile === "." && row === 2) {
       if (hasSeawall && col >= wallStart && col < wallEnd) return;
       if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
@@ -340,20 +345,44 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function building(tile, x, y) {
+  function buildingBounds(tile, col, row) {
+    const { image, width, maxHeight } = waterfrontSprites[tile];
+    if (!image) return null;
+    const x = col * size;
+    const y = row * size;
+    // Reserve half of each adjoining open lot so two facades never claim the same ground.
+    const lotLeft = x - (col > 0 && tileAt(col - 1, row) === "." ? 15 : 0);
+    const lotRight = x + size + (col < rows[0].length - 1 && tileAt(col + 1, row) === "." ? 15 : 0);
+    const scale = Math.min(width / image.naturalWidth, maxHeight / image.naturalHeight,
+      (lotRight - lotLeft) / image.naturalWidth);
+    const drawWidth = Math.floor(image.naturalWidth * scale * 2) / 2;
+    const drawHeight = Math.floor(image.naturalHeight * scale * 2) / 2;
+    const centered = Math.round((x + (size - drawWidth) / 2) * 2) / 2;
+    const left = Math.max(lotLeft, Math.min(centered, lotRight - drawWidth));
+    return { image, left, top: y + 29 - drawHeight, drawWidth, drawHeight };
+  }
+
+  function entranceCenter(tile, col, bounds) {
+    const doorPosition = tile === "s" ? 0.72 : 0.5;
+    return bounds ? Math.round(bounds.left + bounds.drawWidth * doorPosition) : col * size + 16;
+  }
+
+  function building(tile, x, y, bounds) {
     rect("#0c252c83", x + 4, y + 24, 29, 7);
-    const sprite = waterfrontSprites[tile];
-    if (sprite?.image) {
-      const { image, width, maxHeight } = sprite;
-      const scale = Math.min(width / image.naturalWidth, maxHeight / image.naturalHeight);
-      const drawWidth = Math.round(image.naturalWidth * scale * 2) / 2;
-      const drawHeight = Math.round(image.naturalHeight * scale * 2) / 2;
-      const left = Math.round((x + (size - drawWidth) / 2) * 2) / 2;
-      const top = y + 29 - drawHeight;
+    if (bounds) {
+      const { image, left, top, drawWidth, drawHeight } = bounds;
       ctx.drawImage(image, left, top, drawWidth, drawHeight);
+      if (tile === "c") {
+        // The source apartment door is only a few pixels tall at street scale.
+        const door = entranceCenter(tile, x / size, bounds);
+        rect("#121922", door - 3.5, y + 17, 7, 12);
+        rect("#1d5159", door - 2.5, y + 18, 5, 11);
+        rect("#65c2b7", door - 1.5, y + 19, 3, 3);
+        rect("#e1ae6e", door + 1.5, y + 24, 1, 1);
+      }
       if (tile === "h") {
         const pulse = time === null ? 0.5 : 0.5 + 0.5 * Math.cos(time * Math.PI / 7);
-        glow(x + 16, top + drawHeight * 0.17, 18 + pulse * 5, "#55ffdf88");
+        glow(left + drawWidth / 2, top + drawHeight * 0.17, 18 + pulse * 5, "#55ffdf88");
       }
       if ("cswELNA".includes(tile)) {
         const intensity = time === null ? 0.32 : 0.3 + 0.13 * Math.sin(time * 0.7 + (x + y) / 17);
@@ -484,16 +513,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     rect("#ffe19a", x - 1, y - 12, 4, 3);
   }
 
+  function person(x, y, jacket, hat, step = 0, carriesLight = false) {
+    const pixel = (ink, dx, dy, w, h) =>
+      rect(ink, x + Math.round(dx * personScale * 2) / 2, y + Math.round(dy * personScale * 2) / 2,
+        Math.round(w * personScale * 2) / 2, Math.round(h * personScale * 2) / 2);
+    pixel("#1026338c", -6, 1, 15, 4);
+    pixel("#152b39", -4, -4, 3, 5 + step);
+    pixel("#152b39", 2, -4, 3, 6 - step);
+    pixel(jacket, -5, -11, 10, 8);
+    pixel("#eac69e", -3, -15, 6, 5);
+    pixel(hat, -5, -17, 10, 4);
+    if (carriesLight) pixel("#bbf9f3", 5, -9, 4, 5);
+  }
+
   function actor() {
-    const x = player.x * size + 16;
-    const y = player.y * size + 22;
-    rect("#1026338c", x - 6, y + 1, 15, 4);
-    rect("#152b39", x - 4, y - 4, 3, 6);
-    rect("#152b39", x + 2, y - 4, 3, 6);
-    rect("#c17362", x - 5, y - 11, 10, 8);
-    rect("#eac69e", x - 3, y - 15, 6, 5);
-    rect("#39778c", x - 5, y - 17, 10, 4);
-    rect("#bbf9f3", x + 5, y - 9, 4, 5);
+    person(player.x * size + 16, player.y * size + 22, "#c17362", "#39778c", 0, true);
   }
 
   rows.forEach((_, y) => {

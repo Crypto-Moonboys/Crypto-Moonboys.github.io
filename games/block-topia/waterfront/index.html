@@ -11,13 +11,14 @@ a{color:#91efe3}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
 header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding-block:.85rem}
 h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) system-ui,sans-serif;letter-spacing:-.04em}
 .viewport{position:relative;background:#101f34;border-block:1px solid #494455}
-.map-scroll{overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y;max-height:var(--map-height,none)}
+.map-scroll{overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y;max-height:clamp(18rem,43vw,74svh)}
 .viewport:fullscreen .map-scroll{height:100%;max-height:none}
 .map-controls{position:absolute;z-index:1;top:.65rem;right:.65rem;display:flex;gap:.35rem}
 .map-controls button{background:#13131cef}
 .map-controls button[hidden]{display:none}
 canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixelated;cursor:pointer}
 canvas[data-editing=true]{cursor:crosshair}
+canvas.is-panning{cursor:grabbing}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
 .tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 2rem;padding-block:.75rem}
 .movement{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
@@ -29,7 +30,6 @@ details{padding:.35rem 0}
 fieldset{border:0;padding:0;margin:.65rem 0 0;min-inline-size:0}
 fieldset p{max-width:42rem;margin:.4rem 0}
 fieldset button{margin:.2rem .15rem .2rem 0}
-@media(min-width:740px){.pan-help{display:none}}
 </style>
 </head>
 <body>
@@ -51,7 +51,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 <div class="tools">
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap to walk. Scroll over the map or pinch with two fingers to zoom. <span class="pan-help">Swipe sideways to see the whole harbor.</span></p>
+<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll over the map or pinch with two fingers to zoom.</p>
 </section>
 <details id="editor">
 <summary>Map editor</summary>
@@ -68,7 +68,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </main>
 <script src="district.js?v=7"></script>
-<script src="harbor-art.js?v=12"></script>
+<script src="harbor-art.js?v=13"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -263,18 +263,22 @@ canvas.width = mapWidth * renderScale;
 canvas.height = mapHeight * renderScale;
 ctx.scale(renderScale, renderScale);
 ctx.imageSmoothingEnabled = false;
-let zoom = 1;
+const compactMap = window.matchMedia("(max-width: 739px)").matches;
+let zoom = compactMap ? 1.25 : 1.75;
 let pinch = null;
 let ignoreTapUntil = 0;
+
+function applyZoomSize() {
+  canvas.style.width = (zoom * 100) + "%";
+  canvas.style.minWidth = (zoom * 740) + "px";
+}
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
   const before = canvas.getBoundingClientRect();
   const mapX = (fromX - before.left) / before.width;
   const mapY = (fromY - before.top) / before.height;
   zoom = Math.max(0.6, Math.min(3, scale));
-  mapScroll.style.setProperty("--map-height", (Math.max(740, mapScroll.clientWidth) * mapHeight / mapWidth) + "px");
-  canvas.style.width = (zoom * 100) + "%";
-  canvas.style.minWidth = (zoom * 740) + "px";
+  applyZoomSize();
   const after = canvas.getBoundingClientRect();
   mapScroll.scrollLeft += after.left + mapX * after.width - toX;
   mapScroll.scrollTop += after.top + mapY * after.height - toY;
@@ -343,8 +347,39 @@ for (const name of ["touchend", "touchcancel"]) {
   });
 }
 
+let mousePan = null;
+canvas.addEventListener("pointerdown", event => {
+  if (event.pointerType !== "mouse" || event.button !== 0 || editing) return;
+  mousePan = {
+    id: event.pointerId, x: event.clientX, y: event.clientY,
+    left: mapScroll.scrollLeft, top: mapScroll.scrollTop, active: false
+  };
+  canvas.setPointerCapture(event.pointerId);
+});
+canvas.addEventListener("pointermove", event => {
+  if (!mousePan || mousePan.id !== event.pointerId) return;
+  const dx = event.clientX - mousePan.x;
+  const dy = event.clientY - mousePan.y;
+  if (!mousePan.active && Math.hypot(dx, dy) < 6) return;
+  mousePan.active = true;
+  canvas.classList.add("is-panning");
+  mapScroll.scrollLeft = mousePan.left - dx;
+  mapScroll.scrollTop = mousePan.top - dy;
+});
+for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) {
+  canvas.addEventListener(name, event => {
+    if (mousePan?.id !== event.pointerId) return;
+    if (mousePan.active) ignoreTapUntil = performance.now() + 150;
+    mousePan = null;
+    canvas.classList.remove("is-panning");
+  });
+}
+
+applyZoomSize();
 const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
 mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
+const waterfrontCenter = (spawn.y - 1) * canvas.clientHeight / initial.length;
+mapScroll.scrollTop = Math.max(0, waterfrontCenter - mapScroll.clientHeight / 2);
 draw();
 window.loadWaterfrontSprites().then(paintMap);
 
