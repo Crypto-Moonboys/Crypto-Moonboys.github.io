@@ -69,6 +69,33 @@ const waterfrontAtlases = {
     "tree-palm": [256, 129, 79, 122],
     "tree-paperbark": [383, 129, 46, 123]
   },
+  "street-detail": {
+    "flowers-0": [2, 2, 30, 23],
+    "flowers-1": [34, 2, 30, 21],
+    "flowers-2": [66, 2, 30, 22],
+    "flowers-3": [98, 2, 30, 21],
+    "flowers-4": [130, 2, 30, 27],
+    "flowers-5": [162, 2, 30, 25],
+    "flowers-6": [194, 2, 30, 26],
+    "flowers-7": [226, 2, 30, 25],
+    "flowers-8": [2, 34, 30, 27],
+    "flowers-9": [34, 34, 28, 30],
+    "flowers-10": [66, 34, 30, 21],
+    "flowers-11": [98, 34, 30, 28],
+    "furniture-0": [2, 66, 20, 30],
+    "furniture-1": [34, 66, 22, 30],
+    "furniture-2": [66, 66, 28, 30],
+    "furniture-3": [98, 66, 22, 30],
+    "furniture-4": [130, 66, 30, 20],
+    "furniture-5": [162, 66, 30, 20],
+    "furniture-6": [194, 66, 30, 19],
+    "furniture-7": [226, 66, 30, 14],
+    "furniture-8": [2, 98, 16, 30],
+    "furniture-9": [34, 98, 24, 30],
+    "furniture-10": [66, 98, 9, 30],
+    "furniture-11": [98, 98, 15, 30],
+    "grass": [0, 128, 64, 64]
+  },
   "terrain": {
     "curb-corner": [2, 2, 11, 11],
     "curb-straight": [30, 2, 24, 4],
@@ -76,9 +103,13 @@ const waterfrontAtlases = {
   }
 };
 
+const waterfrontDetails = Object.fromEntries(
+  Object.keys(waterfrontAtlases["street-detail"]).map(file => [file, { file }])
+);
+
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
   const sprites = Object.fromEntries(
-    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees]
+    [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails)]
       .map(sprite => [sprite.file, sprite])
   );
   return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
@@ -271,6 +302,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
     col >= left && col <= right && row >= top && row <= bottom)?.material;
 
+  const grass = waterfrontDetails.grass.image;
+  const grassPattern = grass && ctx.createPattern(grass, "repeat");
   const paving = waterfrontTerrain["footpath-pavers"].image;
   const pavingPattern = paving && ctx.createPattern(paving, "repeat");
 
@@ -366,6 +399,15 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
+  const planterLots = new Map([
+    ["7,3", 0], ["9,3", 1], ["8,4", 2], ["9,4", 3],
+    ["14,4", 4], ["16,4", 5], ["17,4", 6], ["19,4", 7],
+    ["12,8", 8], ["15,8", 9], ["19,8", 10], ["21,10", 11]
+  ]);
+  const furnitureLots = new Map([
+    ["0,2", 0], ["5,2", 4], ["7,2", 5], ["10,2", 1],
+    ["25,2", 2], ["27,2", 6], ["4,10", 3], ["19,10", 7]
+  ]);
   let treeIndex = 0;
   function terrain(tile, col, row) {
     const x = col * size;
@@ -375,7 +417,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const dock = tile === "d";
 
     const ground = tile === "." ? (row === 2 ? "concrete" : groundAt(col, row)) : undefined;
-    const base = ground === "grass" ? "#283b39" : ground === "gravel" ? "#342f3c" : ground === "concrete" ? "#30323e" : "#1b1d2a";
+    const base = ground === "grass" ? grassPattern || "#283b39" : ground === "gravel" ? "#342f3c" : ground === "concrete" ? "#30323e" : "#1b1d2a";
     rect(water || dock ? "#0b192d" : base, x, y, size, size);
     for (let i = 0; i < 8; i++) {
       const a = (seed + i * 7) % 27;
@@ -386,6 +428,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         rect(i % 2 ? "#454655" : "#252833", x + a, y + b, 2, 1);
         if (i % 3 === 0) rect("#596366", x + a + 1, y + b + 1, 1, 1);
       } else if (ground === "grass") {
+        if (grassPattern) continue;
         rect(i % 2 ? "#44594b" : "#202f2f", x + a, y + b, 1, 2);
         rect("#354942", x + a + 1, y + b + 1, 2, 1);
         if (i % 3 === 0) rect("#607451", x + a + 2, y + b, 1, 1);
@@ -426,6 +469,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       return;
     }
 
+    const location = col + "," + row;
+    const planter = planterLots.get(location);
+    const furniture = furnitureLots.get(location);
     const grove = ground === "grass" && waterfrontGroves.get(col + "," + row);
     if (grove) {
       const positions = [[-6, -10, 0.72], [5, -5, 0.9], [-6, 0, 0.63]];
@@ -433,6 +479,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         const [dx, dy, scale] = positions[index];
         queue(y + dy + 28, () => tree(x + dx, y + dy, variant, scale));
       });
+    } else if (tile === "." && planter !== undefined) {
+      queue(y + 24, () => detail("flowers-" + planter, x + 16, y + 24, planter < 4 ? 7 : 10));
+    } else if (tile === "." && furniture !== undefined) {
+      queue(y + 24, () => detail("furniture-" + furniture, x + 16, y + 24, furniture < 4 ? 7 : 9));
     } else if (Object.hasOwn(waterfrontSprites, tile)) {
       const bounds = buildingBounds(tile, col, row);
       queue(y + 29, () => building(tile, x, y, bounds));
@@ -632,7 +682,22 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     rect("#d4a46c", x + 9, y + 17, 6, 1);
   }
 
+  function detail(name, x, base, height) {
+    const { image } = waterfrontDetails[name];
+    if (!image) return;
+    const width = Math.round(height * image.width / image.height);
+    ctx.drawImage(image, x - Math.floor(width / 2), base - height, width, height);
+  }
+
   function lamp(x, y) {
+    const variant = (Math.floor(x / size) + Math.floor(y / size)) % 4;
+    const name = "furniture-" + (8 + variant);
+    if (waterfrontDetails[name].image) {
+      const colors = ["#ffba7160", "#59e8dd50", "#ffba7160", "#ee61c64d"];
+      glow(x + (variant === 0 ? 3 : 0), y - 12, 17, colors[variant]);
+      detail(name, x, y + 3, 18);
+      return;
+    }
     glow(x + 1, y - 3, 20, "#ffba7160");
     rect("#231f2a", x, y - 8, 2, 10);
     rect("#6f6857", x - 2, y - 13, 6, 6);
