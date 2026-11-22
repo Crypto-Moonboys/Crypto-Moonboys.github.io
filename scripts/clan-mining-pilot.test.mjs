@@ -30,6 +30,7 @@ import { evaluateCampaignWindow } from '../workers/moonboys-api/shared/clan-camp
 import { maintainClanCampaigns } from '../workers/moonboys-api/shared/clan-campaigns.js';
 import { crewWeek } from '../workers/moonboys-api/shared/clan-crew-standings.js';
 import { clanLeaderStart, publicLeaderRoutes, runClanLeaderRounds } from '../workers/moonboys-api/shared/clan-leader-presence.js';
+import { makeLoreCatalog, publishedLoreText } from '../workers/moonboys-api/shared/clan-leader-lore.js';
 
 const newerMigration = number => readFileSync(new URL(`../workers/moonboys-api/migrations/${number}.sql`, import.meta.url), 'utf8');
 const rosterMigration = readFileSync(new URL('../workers/moonboys-api/migrations/125_clan_crew_rosters.sql', import.meta.url), 'utf8');
@@ -92,17 +93,18 @@ function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
     action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, leaders, crewEntry, weekStart, campaignRewards, campaignEligibility,
-    leaderAction, wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
+    leaderAction, loreAction, wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
-    const path = `/clan-operations/${leaderAction ? 'leader-slowdown' : action ? 'move' : 'state'}`;
+    const path = `/clan-operations/${loreAction ? 'leader-lore' : leaderAction ? 'leader-slowdown' : action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
       action, revision, operation_ui, wall_studio_ui: wallStudio, wall_recipe: wallRecipe, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
       utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, campaign_eligibility: campaignEligibility,
-      renown: 99_999_999, telegram_id: '102', ore: 99, ...leaderAction,
+      renown: 99_999_999, telegram_id: '102', ore: 99, ...leaderAction, ...loreAction,
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') + (leaders ? '&leaders=1' : '') : ''}`, { method, body }),
-      { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart, CLAN_LEADER_PLAY_FROM: settings.leaderStart }, {
+      { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart, CLAN_LEADER_PLAY_FROM: settings.leaderStart,
+        CLAN_LEADER_LORE_ENABLED: settings.loreEnabled, CLAN_LEADER_AI: settings.loreAi }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
         verifyTelegramAuth: async () => signed,
@@ -1967,4 +1969,80 @@ test('rival leader pauses debit once, protect recovery time, and skip only bot r
   assert.equal((await interact('hard-fork-rockers', 'hour', 'xp', 10)).status, 503);
   assert.equal(sql.prepare("SELECT xp FROM blocktopia_progression WHERE telegram_id = '101'").get().xp, 1900);
   assert.equal((await get('hard-fork-rockers')).presence.paused_until, null);
+});
+
+test('leader lore uses public wiki and current canon evidence, verifies citations and budgets AI calls', async t => {
+  const { sql, settings, request } = fixture(t);
+  sql.exec(`${newerMigration('130_clan_leader_lore')}
+    CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);
+    ${newerMigration('019_daily_wtf_timed_events')}`);
+  const site = 'https://cryptomoonboys.com';
+  const canonPath = '/about/latest-canon-and-brand-vision.md';
+  const wikiPath = '/wiki/bitcoin-kid-army.html';
+  const editorial = '/brand-canon/story-bibles/gk-master-canon.md';
+  const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
+    { title: 'Editorial Only', url: editorial }, { title: 'Offsite', url: '//elsewhere.invalid/pub.html' }];
+  const sitemap = `<loc>${site}/games/chain-maze/</loc><loc>${site}${editorial}</loc>`;
+  const catalog = makeLoreCatalog(index, sitemap);
+  assert.ok(catalog.some(source => source.path === '/games/chain-maze/'));
+  assert.ok(catalog.some(source => source.path === canonPath));
+  assert.ok(!catalog.some(source => source.path === editorial || source.path.startsWith('//')));
+  assert.equal(publishedLoreText(editorial, '# Editorial master'), '');
+  assert.equal(publishedLoreText(wikiPath, '<head><meta name="robots" content="noindex"></head><main>Private listing</main>'), '');
+
+  const visits = [];
+  const prompts = [];
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    assert.equal(init.redirect, 'error');
+    assert.ok(url.startsWith(site + '/'));
+    const path = url.slice(site.length);
+    visits.push(path);
+    if (path === '/js/wiki-index.json') return Response.json(index);
+    if (path === '/sitemap.xml') return new Response(sitemap);
+    if (path === canonPath || path === wikiPath) {
+      return new Response(readFileSync(new URL('..' + path, import.meta.url), 'utf8'));
+    }
+    return new Response(null, { status: 404 });
+  });
+  let fakeResponse;
+  settings.loreEnabled = 'true';
+  settings.loreAi = { run: async (model, input) => {
+    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct');
+    assert.equal(input.response_format.json_schema.type, 'object');
+    prompts.push(input.messages);
+    const sources = JSON.parse(input.messages[1].content).publicReferences;
+    assert.ok(sources.some(source => /Alfie/i.test(source.excerpt)));
+    return { response: fakeResponse ?? {
+      reply: 'Alfie Blaze leads the Bitcoin Kid Army and takes his orders from GKniftyHEADS.',
+      sources: sources.map(source => source.id),
+    } };
+  }};
+  const question = (overrides = {}, options = {}) => request({
+    id: '999', loreAction: { npc: 'graffpunks', question: 'Who commands the Bitcoin Kid Army?', ...overrides }, ...options,
+  });
+  assert.equal((await question({}, { signed: false })).status, 401);
+  assert.equal((await question({ npc: 'not-a-faction' })).status, 400);
+  assert.equal(visits.length, 0, 'auth and valid roster required before fetching');
+  const reply = await question();
+  assert.equal(reply.status, 200);
+  assert.match(reply.data.reply, /Alfie Blaze/);
+  assert.deepEqual(new Set(reply.data.sources.map(item => item.path)), new Set([wikiPath, canonPath]));
+  assert.match(prompts[0][0].content, /graffpunks/);
+  assert.ok(!visits.includes(editorial));
+  fakeResponse = { reply: 'This links to the private material right here.', sources: [99] };
+  assert.deepEqual((await question({ npc: 'nomad-bears' })).data.sources, []);
+  assert.match(prompts[1][0].content, /nomad-bears/);
+  fakeResponse = { reply: 'Open gk-master-canon now.', sources: [1] };
+  assert.deepEqual((await question()).data.sources, []);
+  fakeResponse = undefined;
+  sql.exec("UPDATE clan_leader_lore_usage SET questions = 11 WHERE telegram_id = '999'");
+  const competing = await Promise.all([question(), question()]);
+  assert.deepEqual(competing.map(result => result.status).sort(), [200, 429]);
+  assert.equal(prompts.length, 4, 'only one call reserved the final account question');
+  sql.exec(`INSERT INTO clan_leader_lore_usage VALUES ('2026-11-20', '1', 188)`);
+  assert.equal((await question({}, { id: '998' })).status, 429, 'the shared daily budget is also enforced');
+  settings.time = new Date('2026-11-21T00:00Z');
+  assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
+  settings.loreEnabled = 'false';
+  assert.equal((await question()).status, 404);
 });

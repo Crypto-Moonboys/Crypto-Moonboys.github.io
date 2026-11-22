@@ -18,6 +18,92 @@ export async function getClanLeaderBoard() {
   return (await response.json()).leaders ?? null;
 }
 
+function loreChat(target) {
+  const section = document.createElement('section');
+  section.className = 'clan-leader-lore';
+  section.innerHTML = `
+    <h3>Ask about the Moonboys universe</h3>
+    <div role="log" aria-label="Lore conversation"></div>
+    <form>
+      <label>Question <textarea rows="2" maxlength="600" required></textarea></label>
+      <button type="submit">Ask the leader</button>
+      <p role="status"></p>
+    </form>`;
+  const transcript = section.querySelector('[role=log]');
+  const form = section.querySelector('form');
+  const input = form.querySelector('textarea');
+  const button = form.querySelector('button');
+  const status = form.querySelector('[role=status]');
+  const previous = [];
+  const gate = window.MOONBOYS_IDENTITY;
+  if (!gate?.getTelegramId?.()) {
+    status.textContent = 'Connect Telegram in Battle Chamber to start a lore chat.';
+    input.disabled = button.disabled = true;
+  }
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const question = input.value.trim();
+    if (!question || button.disabled) return;
+    const owner = gate.getTelegramId();
+    input.disabled = button.disabled = true;
+    status.textContent = 'Checking the Moonboys sources…';
+    try {
+      const auth = gate.getFreshTelegramAuth ? await gate.getFreshTelegramAuth() : gate.getSignedTelegramAuth?.();
+      if (!auth || gate.getTelegramId() !== owner) {
+        status.textContent = 'Reconnect Telegram to continue this chat.';
+        return;
+      }
+      const api = window.MOONBOYS_API.getApiBase({ mode: 'write' });
+      const response = await fetch(api + '/clan-operations/leader-lore', {
+        method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(35000),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_auth: auth, npc: target, question, previous }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        status.textContent = result.error === 'lore_daily_limit' ? 'The chat has reached its daily limit. Try again after midnight UTC.'
+          : result.error === 'rate_limited' ? 'Too many questions at once. Try again in a minute.'
+          : 'Lore chat is temporarily unavailable. Try again shortly.';
+        return;
+      }
+      if (gate.getTelegramId() !== owner) return;
+      const turn = document.createElement('article');
+      const prompt = document.createElement('strong');
+      prompt.textContent = question;
+      const answer = document.createElement('p');
+      answer.textContent = result.reply;
+      turn.append(prompt, answer);
+      if (result.sources?.length) {
+        const sources = document.createElement('ul');
+        for (const { title, path } of result.sources) {
+          if (typeof path !== 'string' || !/^\/(?!\/)[\w/.~-]*$/.test(path)) continue;
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = path;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = title;
+          item.append(link);
+          sources.append(item);
+        }
+        turn.append(sources);
+      }
+      transcript.append(turn);
+      transcript.scrollTop = transcript.scrollHeight;
+      previous.push(question);
+      if (previous.length > 2) previous.shift();
+      input.value = '';
+      status.textContent = '';
+    } catch {
+      status.textContent = 'Lore chat is temporarily unavailable. Try again shortly.';
+    } finally {
+      input.disabled = button.disabled = false;
+      if (section.isConnected) input.focus();
+    }
+  });
+  return section;
+}
+
 export function mountClanLeaderDialog(parent, onChange) {
   const dialog = document.createElement('dialog');
   dialog.className = 'clan-leader-dialog';
@@ -28,25 +114,28 @@ export function mountClanLeaderDialog(parent, onChange) {
     <p data-leader-state></p>
     <p><a href="/community.html">Open Battle Chamber</a></p>
     <p role="status" data-leader-reply></p>
+    <div data-leader-lore></div>
     <section data-leader-options></section>`;
   parent.append(dialog);
   const heading = dialog.querySelector('h2');
   const state = dialog.querySelector('[data-leader-state]');
   const reply = dialog.querySelector('[data-leader-reply]');
   const options = dialog.querySelector('[data-leader-options]');
+  const lore = dialog.querySelector('[data-leader-lore]');
   const requests = new Map();
   let current = 0;
 
-  function display(name, leader, controls) {
+  function display(name, leader, controls, chatEnabled) {
     const { faction_id: target, presence } = leader;
     const serial = ++current;
     heading.textContent = name;
     state.textContent = '';
     reply.textContent = '';
     options.replaceChildren();
+    lore.replaceChildren(...(chatEnabled ? [loreChat(target)] : []));
     if (!dialog.open) dialog.showModal();
     if (!presence || !controls) {
-      state.textContent = 'Leader interactions are currently closed.';
+      if (!chatEnabled) state.textContent = 'Leader interactions are currently closed.';
       return;
     }
     const until = presence.available_at;

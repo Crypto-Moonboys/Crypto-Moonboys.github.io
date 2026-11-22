@@ -2100,6 +2100,7 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
     const page = await browser.newPage({ viewport: { width: 390, height: 800 }, reducedMotion: 'reduce' });
     page.setDefaultTimeout(4_000);
     const requestBodies = [];
+    const loreBodies = [];
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     const start = '/games/block-topia/waterfront/';
@@ -2116,6 +2117,7 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
       });
       if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
         leaders: {
+          chat_enabled: true,
           controls: {
             questions: [{ id: 'defences', title: 'Which part of the city would you defend first?', minutes: 10 }],
             paid: [{ id: 'hour', title: 'Pause for 1 hour', xp: 100, gems: 5 }],
@@ -2124,6 +2126,13 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
             ? { paused_until: paused, available_at: paused + 3600, talking: true } : {} })),
         },
       } });
+      if (url.pathname === '/clan-operations/leader-lore') {
+        loreBodies.push(route.request().postDataJSON());
+        return route.fulfill({ json: {
+          ok: true, reply: 'The Nomad Bears are one of the two market factions.',
+          sources: [{ title: 'Crypto Moonboys', path: '/wiki/crypto-moonboys.html' }],
+        } });
+      }
       if (url.pathname === '/clan-operations/leader-slowdown') {
         requestBodies.push(route.request().postDataJSON());
         paused = Math.floor(Date.now() / 1000) + 600;
@@ -2160,6 +2169,18 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
     await page.getByLabel('Faction leader', { exact: true }).selectOption(target);
     await page.getByRole('button', { name: 'Talk', exact: true }).click();
     await dialog.getByText(/Available for another interaction at/).waitFor();
+    const chat = dialog.getByRole('log', { name: 'Lore conversation' });
+    await dialog.getByLabel('Question').fill('Who are the Nomad Bears?');
+    await dialog.getByRole('button', { name: 'Ask the leader' }).click();
+    await chat.getByText('The Nomad Bears are one of the two market factions.').waitFor();
+    assert.equal(await chat.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
+    await dialog.getByLabel('Question').fill('Who are their rivals?');
+    await dialog.getByRole('button', { name: 'Ask the leader' }).click();
+    await page.waitForFunction(() => document.querySelectorAll('[role=log] article').length === 2);
+    assert.deepEqual(loreBodies[1], {
+      telegram_auth: { id: '123' }, npc: target, question: 'Who are their rivals?', previous: ['Who are the Nomad Bears?'],
+    });
+    assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

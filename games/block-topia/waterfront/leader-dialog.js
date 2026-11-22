@@ -1,4 +1,4 @@
-import { getClanLeaderBoard, mountClanLeaderDialog } from '/js/clan-leader-dialog.js';
+import { getClanLeaderBoard, mountClanLeaderDialog } from '/js/clan-leader-dialog.js?lore=1';
 
 const names = new Map([
   ['all-city-bulls', 'All City Bulls'],
@@ -22,7 +22,7 @@ const openDialog = mountClanLeaderDialog(document.querySelector('.viewport'), re
 async function refresh() {
   try {
     const next = await getClanLeaderBoard();
-    const enabled = Boolean(next?.controls);
+    const enabled = Boolean(next?.controls || next?.chat_enabled);
     factionDialogsEnabled = enabled;
     controls.hidden = !enabled;
     board = next;
@@ -44,7 +44,7 @@ async function refresh() {
 
 function talk(key) {
   const leader = board?.crews.find(crew => crew.faction_id === key);
-  if (leader && board.controls) openDialog(names.get(key), leader, board.controls);
+  if (leader && (board.controls || board.chat_enabled)) openDialog(names.get(key), leader, board.controls, board.chat_enabled);
 }
 
 document.querySelector('#map').addEventListener('waterfront:faction-talk', event => talk(keys[event.detail]));

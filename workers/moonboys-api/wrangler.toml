@@ -4,6 +4,9 @@ compatibility_date = "2026-04-12"
 workers_dev = true
 preview_urls = true
 
+[ai]
+binding = "CLAN_LEADER_AI"
+
 [triggers]
 # Existing 5-minute timed events and 09:00 Telegram digest stay unchanged.
 # TAG RUN bulletin runs once daily at 18:00 UTC; participation captures at 00:12 UTC.

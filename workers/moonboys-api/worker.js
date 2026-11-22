@@ -13392,7 +13392,8 @@ export default {
     }
 
     const isClanPfpRoll = path === '/clan-operations/pfp/state' || path === '/clan-operations/pfp/roll';
-    if (isClanPfpRoll || path === '/clan-operations/state' || path === '/clan-operations/move' || path === '/clan-operations/leader-slowdown') {
+    const isClanLeaderLore = path === '/clan-operations/leader-lore';
+    if (isClanPfpRoll || isClanLeaderLore || path === '/clan-operations/state' || path === '/clan-operations/move' || path === '/clan-operations/leader-slowdown') {
       const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
       const handle = isClanPfpRoll ? handleClanPfpRoll : handleClanOperations;
       return handle(request, env, {
@@ -13402,7 +13403,9 @@ export default {
         logApiFailure,
         rateLimit: (owner) => enforcePublicRateLimit(request, env, path, null, privateHeaders, {
           // The pre-auth guard allows shared networks to play. Verified accounts keep their own budget.
-          ...(owner ? { includeIp: false, telegramId: owner } : { includeTelegram: false, ipLimit: 120 }),
+          ...(owner
+            ? { includeIp: false, telegramId: owner, ...(isClanLeaderLore ? { telegramLimit: 4 } : {}) }
+            : { includeTelegram: false, ipLimit: isClanLeaderLore ? 24 : 120 }),
         }),
       });
     }

@@ -1,5 +1,5 @@
 import { CLAN_REWARD_NAMES } from './clan-period-display.js';
-import { mountClanLeaderDialog } from './clan-leader-dialog.js';
+import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=1';
 
 const board = document.querySelector('[data-clan-crew-progress]');
 const api = window.MOONBOYS_API?.getApiBase?.({ mode: 'write' });
@@ -178,11 +178,15 @@ if (board && api && profiles && factionOrder?.length) {
       visit.textContent = 'Last site visit';
       links.append(faction);
       if (site_path !== faction_path) links.append(' · ', visit);
+      cell.append(activity, links);
+    }
+    if ((leader.presence && data.leaders.controls) || data.leaders.chat_enabled) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.textContent = 'Talk or slow down';
-      button.addEventListener('click', () => talkToLeader(profiles[leader.faction_id].name, leader, data.leaders.controls));
-      cell.append(activity, links, button);
+      button.textContent = data.leaders.chat_enabled ? 'Talk to leader' : 'Talk or slow down';
+      button.addEventListener('click', () => talkToLeader(profiles[leader.faction_id].name, leader,
+        data.leaders.controls, data.leaders.chat_enabled));
+      cell.append(button);
     }
     if (!leader.perk) {
       const status = document.createElement('small');

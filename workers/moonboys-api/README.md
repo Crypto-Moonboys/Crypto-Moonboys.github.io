@@ -154,3 +154,21 @@ pause. Slowdowns cannot overlap or accumulate during recovery. Paid actions
 atomically write a pause and a progression cost receipt. The feature only
 affects independent leader rounds, while members' banks and signals continue
 during the pause.
+
+### Faction leader lore chat
+
+Apply `130_clan_leader_lore.sql` and deploy the `CLAN_LEADER_AI` Workers AI
+binding. Set `CLAN_LEADER_LORE_ENABLED=true` when ready to open chat. These
+controls can run independently of the paid pause and training-round cutover.
+Players sign in with Telegram and can ask any of the nine faction leaders.
+The Worker sends the question, up to two earlier questions, and public source
+excerpts to the model. Telegram auth and account IDs stay within the Worker.
+Only daily usage counts are saved to D1.
+
+Retrieval uses the current public Wiki index and sitemap plus the published
+canon Markdown references listed in `shared/clan-leader-lore.js`. Open questions
+can fetch pages across the site. Editorial records, drafts and unlisted paths
+stay outside the chat corpus. The Worker links only to references used in the
+request. Each UTC day allows 12 model calls per signed player and 200 across
+the site. Lore questions cannot pause a leader, change scores or charge a
+player's balance.

@@ -25,3 +25,19 @@
 .clan-leader-dialog fieldset { min-inline-size: 0; border: 0; padding: 0; margin: .8rem 0 0; }
 .clan-leader-dialog fieldset button { display: block; width: 100%; margin-top: .3rem; text-align: left; }
 .clan-leader-dialog button:disabled { opacity: .55; }
+.clan-leader-lore h3 { font-size: 1rem; margin-block: .8rem .35rem; }
+.clan-leader-lore [role=log] { max-height: 15rem; overflow: auto; overflow-wrap: anywhere; }
+.clan-leader-lore article { border-bottom: 1px solid #658782; padding-block: .45rem; }
+.clan-leader-lore article p { margin-block: .25rem; white-space: pre-line; }
+.clan-leader-lore ul { margin-block: .3rem; }
+.clan-leader-lore textarea {
+  display: block;
+  width: 100%;
+  padding: .45rem;
+  margin-block: .3rem;
+  background: #1b2d33;
+  color: inherit;
+  border: 1px solid #658782;
+  border-radius: .25rem;
+  font: inherit;
+}
