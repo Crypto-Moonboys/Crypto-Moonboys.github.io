@@ -11,13 +11,12 @@ a{color:#b6e4da}header,.tools{padding-inline:clamp(1rem,3vw,3rem)}
 header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding-block:.85rem}
 h1{margin:0;font:600 clamp(1.45rem,3vw,2.65rem) Georgia,serif;letter-spacing:-.015em}
 .viewport{position:relative;height:clamp(26rem,72vh,56rem);background:#123c51;border-block:1px solid #577674}
-canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated;cursor:pointer}
 canvas[data-editing=true]{cursor:crosshair}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
 .tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 2rem;padding-block:.75rem}
 .movement{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
 .movement p,#status{margin:0;font-size:.85rem;color:#c1d4cc}
-.controls{display:flex;gap:.25rem}
 button,select{font:inherit;min-height:44px;padding:.45rem .65rem;background:#1b2d33;color:inherit;border:1px solid #658782;border-radius:.25rem}
 button,summary{cursor:pointer}button[aria-pressed=true]{background:#356858}
 button:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid #ffdd90;outline-offset:3px}
@@ -35,18 +34,12 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <a href="../">← Block Topia</a>
 </header>
 <div class="viewport">
-<canvas id="map" width="384" height="384" role="img" aria-label="Waterfront map with streets, a dock, lighthouse, workshop and harbor cottages"></canvas>
+<canvas id="map" width="384" height="384" role="img" aria-describedby="movement-help" aria-label="Waterfront map with streets, a dock, lighthouse, workshop and harbor cottages"></canvas>
 <p id="location"></p>
 </div>
 <div class="tools">
 <section class="movement" aria-label="Explore the harbor">
-<div class="controls" aria-label="Movement">
-<button type="button" data-move="up" aria-label="Walk north">↑</button>
-<button type="button" data-move="left" aria-label="Walk west">←</button>
-<button type="button" data-move="down" aria-label="Walk south">↓</button>
-<button type="button" data-move="right" aria-label="Walk east">→</button>
-</div>
-<p>Walk with the arrow keys, WASD or these controls.</p>
+<p id="movement-help">Click or tap a street or dock tile to walk there.</p>
 </section>
 <details id="editor">
 <summary>Map editor</summary>
@@ -72,7 +65,6 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const keys = { arrowup:"up", arrowleft:"left", arrowdown:"down", arrowright:"right", w:"up", a:"left", s:"down", d:"right" };
 const storageKey = "block-topia.waterfront.v1";
 const canvas = document.querySelector("#map");
 const ctx = canvas.getContext("2d");
@@ -84,6 +76,7 @@ let rows = [...initial];
 let player = { ...spawn };
 let editing = false;
 let offset = 0;
+let walkTimer;
 
 function walkable(tile) {
   return Boolean(tiles[tile]?.walkable);
@@ -121,13 +114,44 @@ function resizeMap() {
   draw();
 }
 
-function move(direction) {
-  const [dx, dy] = directions[direction];
-  const x = player.x + dx;
-  const y = player.y + dy;
-  if (!walkable(rows[y]?.[x])) return;
-  player = { x, y };
+function findRoute(start, goal, canWalk) {
+  const queue = [{ ...start, previous: null }];
+  const seen = new Set([start.x + "," + start.y]);
+  for (const step of queue) {
+    if (step.x === goal.x && step.y === goal.y) {
+      const route = [];
+      for (let node = step; node.previous; node = node.previous) route.push(node);
+      return route.reverse();
+    }
+    for (const [dx, dy] of Object.values(directions)) {
+      const x = step.x + dx;
+      const y = step.y + dy;
+      const key = x + "," + y;
+      if (!seen.has(key) && canWalk(x, y)) {
+        seen.add(key);
+        queue.push({ x, y, previous: step });
+      }
+    }
+  }
+  return null;
+}
+
+function walkTo(x, y) {
+  clearTimeout(walkTimer);
+  const route = findRoute(player, { x, y }, (col, row) => walkable(rows[row]?.[col]));
+  if (!route) {
+    locationLabel.textContent += locationLabel.textContent.endsWith(" · No walking route") ? "" : " · No walking route";
+    return;
+  }
+  function advance(index) {
+    const step = route[index];
+    if (!step) return;
+    player = { x: step.x, y: step.y };
+    draw();
+    if (index + 1 < route.length) walkTimer = setTimeout(() => advance(index + 1), 120);
+  }
   draw();
+  advance(0);
 }
 
 function save() {
@@ -139,17 +163,8 @@ function save() {
   }
 }
 
-document.addEventListener("keydown", event => {
-  const key = event.key.toLowerCase();
-  if (!Object.hasOwn(keys, key) || event.ctrlKey || event.metaKey || event.altKey ||
-      event.target.closest("select, input, textarea, [contenteditable]")) return;
-  event.preventDefault();
-  move(keys[key]);
-});
-document.querySelectorAll("[data-move]").forEach(button => {
-  button.addEventListener("click", () => move(button.dataset.move));
-});
 function setEditing(enabled) {
+  clearTimeout(walkTimer);
   editing = enabled;
   canvas.dataset.editing = String(editing);
   edit.setAttribute("aria-pressed", String(editing));
@@ -161,11 +176,14 @@ document.querySelector("#editor").addEventListener("toggle", event => {
   if (!event.currentTarget.open && editing) setEditing(false);
 });
 canvas.addEventListener("click", event => {
-  if (!editing) return;
   const rect = canvas.getBoundingClientRect();
   const x = Math.floor(((event.clientX - rect.left) * canvas.width / rect.width - offset) / tileSize);
   const y = Math.floor((event.clientY - rect.top) * canvas.height / rect.height / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
+  if (!editing) {
+    walkTo(x, y);
+    return;
+  }
   if (x === spawn.x && y === spawn.y && !walkable(select.value)) {
     status.textContent = "Keep the starting square walkable.";
     return;
@@ -185,6 +203,7 @@ document.querySelector("#download").addEventListener("click", () => {
 });
 document.querySelector("#reset").addEventListener("click", () => {
   if (!window.confirm("Reset your browser’s map to the original layout?")) return;
+  clearTimeout(walkTimer);
   rows = [...initial];
   player = { ...spawn };
   save();
