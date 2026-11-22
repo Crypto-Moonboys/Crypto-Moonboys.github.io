@@ -59,7 +59,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </div>
 </main>
 <script src="district.js?v=2"></script>
-<script src="harbor-art.js?v=2"></script>
+<script src="harbor-art.js?v=3"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -194,8 +194,8 @@ document.querySelector("#editor").addEventListener("toggle", event => {
 });
 canvas.addEventListener("click", event => {
   const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((event.clientX - rect.left) * canvas.width / rect.width / tileSize);
-  const y = Math.floor((event.clientY - rect.top) * canvas.height / rect.height / tileSize);
+  const x = Math.floor((event.clientX - rect.left) * mapWidth / rect.width / tileSize);
+  const y = Math.floor((event.clientY - rect.top) * mapHeight / rect.height / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
   if (!editing) {
     walkTo(x, y);
@@ -226,11 +226,15 @@ document.querySelector("#reset").addEventListener("click", () => {
   save();
   draw();
 });
-canvas.width = mapWidth;
-canvas.height = mapHeight;
+const renderScale = 2;
+canvas.width = mapWidth * renderScale;
+canvas.height = mapHeight * renderScale;
+ctx.scale(renderScale, renderScale);
+ctx.imageSmoothingEnabled = false;
 const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
 mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
 draw();
+window.loadWaterfrontSprites().then(draw);
 </script>
 </body>
 </html>
