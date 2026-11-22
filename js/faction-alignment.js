@@ -264,7 +264,7 @@
     var pixels = Number.isInteger(size) && size > 0 ? size : 20;
     return src
       ? '<img class="faction-identity-icon" src="' + src + '" srcset="/art/responsive/faction-' + key +
-        '-96.png 96w, ' + src + ' 350w" sizes="' + pixels + 'px" alt="" width="' + pixels +
+        '-128.png 128w, ' + src + ' 350w" sizes="' + pixels + 'px" alt="" width="' + pixels +
         '" height="' + pixels + '" style="width:' + pixels + 'px;height:' + pixels +
         'px;object-fit:contain;vertical-align:middle;flex:none" decoding="async"> '
       : '';
