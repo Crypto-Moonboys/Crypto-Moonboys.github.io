@@ -20,7 +20,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
 };
 
 /* Original pixel art. Terrain draws first, then objects and actors by ground position. */
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -37,6 +37,72 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
   const tileAt = (x, y) => rows[y]?.[x] ?? (y < 2 ? "~" : ".");
   const roadAt = (x, y) => Boolean(tiles[tileAt(x, y)].walkable);
   const objects = [];
+  const beams = [];
+  const queue = (depth, draw) => objects.push({ depth, draw });
+
+  function glow(x, y, radius, color) {
+    const light = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    light.addColorStop(0, color);
+    light.addColorStop(1, "transparent");
+    rect(light, x - radius, y - radius, radius * 2, radius * 2);
+  }
+
+  function beacon(x, y) {
+    const angle = (time ?? 0) * Math.PI / 7 - Math.PI / 2;
+    const length = 170;
+    const beam = ctx.createRadialGradient(x, y, 0, x, y, length);
+    beam.addColorStop(0, "#b4ffed75");
+    beam.addColorStop(0.4, "#70f3ed42");
+    beam.addColorStop(1, "transparent");
+    polygon(beam, [[x, y], ...[-0.12, 0.12].map(spread => [
+      x + Math.cos(angle + spread) * length,
+      y + Math.sin(angle + spread) * length * 0.72
+    ])]);
+  }
+
+  function smoke(x, y, phase) {
+    for (let i = 0; i < 4; i++) {
+      const age = ((time / 3.6 + phase + i / 4) % 1);
+      const drift = Math.round(age * 13 + Math.sin(age * 6 + phase) * 2);
+      const rise = Math.round(age * 24);
+      const size = 2 + Math.floor(age * 5);
+      rect("rgba(164, 157, 175, " + (0.43 * (1 - age)) + ")", x + drift, y - rise, size, size);
+      rect("rgba(208, 194, 203, " + (0.25 * (1 - age)) + ")", x + drift + 1, y - rise - 1, size - 1, 2);
+    }
+  }
+
+  function resident(col, row, seed) {
+    const points = [[col, row]];
+    for (let i = 0; i < 3; i++) {
+      const [x, y] = points.at(-1);
+      const neighbors = i === 0 ? [[x, y + 1]] : [[x, y + 1], [x - 1, y], [x + 1, y], [x, y - 1]];
+      const next = neighbors.find(([nx, ny]) => roadAt(nx, ny) &&
+        !points.some(([px, py]) => px === nx && py === ny));
+      if (!next) break;
+      points.push(next);
+    }
+    const steps = points.length - 1;
+    if (!steps) return;
+    const age = (time + seed % 19) % 20;
+    const trip = steps * 0.75;
+    if (age >= 2 * trip + 2) return;
+    const progress = Math.min(age, trip, 2 * trip + 2 - age) / 0.75;
+    const index = Math.min(Math.floor(progress), steps - 1);
+    const blend = progress - index;
+    const [ax, ay] = points[index];
+    const [bx, by] = points[index + 1];
+    const x = Math.round((ax + (bx - ax) * blend) * size + 16);
+    const y = Math.round((ay + (by - ay) * blend) * size + 24);
+    const step = age < trip || age > trip + 2 ? Math.floor(time * 7) % 2 : 0;
+    queue(y, () => {
+      rect("#161827a0", x - 4, y + 1, 9, 2);
+      rect("#20232e", x - 3, y - 3, 2, 4 + step);
+      rect("#20232e", x + 1, y - 3, 2, 5 - step);
+      rect(seed % 2 ? "#559b90" : "#a65a83", x - 4, y - 10, 8, 7);
+      rect("#c49371", x - 2, y - 14, 4, 4);
+      rect("#373049", x - 3, y - 16, 6, 3);
+    });
+  }
   const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
     col >= left && col <= right && row >= top && row <= bottom)?.material;
 
@@ -142,15 +208,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
     }
 
     if ("hwcgsb".includes(tile)) {
-      objects.push(() => building(tile, x, y));
+      queue(y + 29, () => building(tile, x, y));
+      if (tile === "h") {
+        const image = waterfrontSprites.h.image;
+        const height = image ? Math.min(75, image.naturalHeight * 34 / image.naturalWidth) : 64;
+        beams.push(() => beacon(x + 16, y + 29 - height * 0.72));
+      }
+      if (time !== null && "csw".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
     } else if (tile === "." && row === 2) {
-      if (roadAt(col - 1, row) || roadAt(col + 1, row)) objects.push(() => lamp(x + 16, y + 21));
-      else if (seed % 4 === 0) objects.push(() => mooring(x, y));
+      if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
+      else if (seed % 4 === 0) queue(y + 28, () => mooring(x, y));
     } else if (tile === "." && (roadAt(col - 1, row) || roadAt(col + 1, row))) {
-      if (seed % 4 === 0) objects.push(() => lamp(x + 22, y + 23));
-      else if (seed % 5 === 1) objects.push(() => crates(x, y));
+      if (seed % 4 === 0) queue(y + 28, () => lamp(x + 22, y + 23));
+      else if (seed % 5 === 1) queue(y + 28, () => crates(x, y));
     } else if (tile === "." && seed % 11 === 3) {
-      objects.push(() => tree(x, y));
+      queue(y + 28, () => tree(x, y));
     } else if (tile === "." && seed % 5 === 1) {
       rect("#34323e", x + 8, y + 8, 13, 12);
       rect("#2b303b", x + 10, y + 10, 9, 8);
@@ -166,7 +238,21 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
       const drawWidth = Math.round(image.naturalWidth * scale * 2) / 2;
       const drawHeight = Math.round(image.naturalHeight * scale * 2) / 2;
       const left = Math.round((x + (size - drawWidth) / 2) * 2) / 2;
-      ctx.drawImage(image, left, y + 29 - drawHeight, drawWidth, drawHeight);
+      const top = y + 29 - drawHeight;
+      ctx.drawImage(image, left, top, drawWidth, drawHeight);
+      if (tile === "h") {
+        const pulse = time === null ? 0.5 : 0.5 + 0.5 * Math.cos(time * Math.PI / 7);
+        glow(x + 16, top + drawHeight * 0.28, 18 + pulse * 5, "#55ffdf88");
+      }
+      if ("csw".includes(tile)) {
+        const intensity = time === null ? 0.32 : 0.3 + 0.13 * Math.sin(time * 0.7 + (x + y) / 17);
+        const windowX = tile === "c" ? 0.22 : 0.72;
+        glow(left + drawWidth * windowX, top + drawHeight * 0.74, 9,
+          "rgba(255, 177, 79, " + intensity + ")");
+      }
+      if (time !== null && "wc".includes(tile)) {
+        smoke(left + drawWidth * (tile === "w" ? 0.33 : 0.29), top + drawHeight * 0.12, (x + y) / 137);
+      }
       return;
     }
 
@@ -181,6 +267,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
       rect("#81979b", x + 13, y - 21, 2, 7);
       polygon("#943e36", [[x+3,y-23],[x+16,y-34],[x+29,y-23]]);
       rect("#efaa72", x + 12, y - 29, 8, 2);
+      glow(x + 16, y - 17, 17, "#55ffdf66");
       return;
     }
 
@@ -261,6 +348,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
   function tree(x, y) {
     rect("#152e327a", x + 7, y + 25, 23, 5);
     rect("#85614a", x + 13, y + 15, 5, 13);
+    x += time === null ? 0 : Math.round(Math.sin(time * 1.7 + (x + y) / 31) * 1.6);
     polygon("#24463f", [[x+3,y+18],[x+9,y+4],[x+18,y+1],[x+28,y+9],[x+28,y+21],[x+19,y+24],[x+6,y+22]]);
     polygon("#537a5d", [[x+5,y+16],[x+10,y+5],[x+19,y+4],[x+24,y+9],[x+21,y+16],[x+10,y+19]]);
     rect("#8d9c60", x + 10, y + 8, 7, 2);
@@ -300,8 +388,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district) {
 
   rows.forEach((_, y) => {
     for (let x = 0; x < width; x++) terrain(tileAt(x, y), x, y);
-    if (y === player.y) objects.push(actor);
   });
-  objects.forEach(draw => draw());
+  beams.forEach(draw => draw());
+  queue(player.y * size + 22, actor);
+  objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
 
 };
