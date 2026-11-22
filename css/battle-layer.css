@@ -733,36 +733,6 @@
   font-size: .85rem;
 }
 
-/* ============================================================
-   3008 SECURITY FILM VISUAL PASS (battle/community shell)
-   ============================================================ */
-.battle-card,
-.community-card,
-.home-widget.battle-widget,
-.battle-shell,
-.battle-link-card,
-.community-stat-box,
-.feed-burst,
-.leader-row,
-.mission-row,
-.profile-row,
-.community-row,
-.tg-lb-row,
-.tg-quest-card {
-  background: linear-gradient(165deg, rgba(9, 23, 45, .74), rgba(7, 18, 34, .56));
-  border: 1px solid rgba(94, 221, 255, 0.24);
-  box-shadow: inset 0 0 0 1px rgba(145, 236, 255, .08), 0 12px 34px rgba(0, 0, 0, .28);
-  backdrop-filter: blur(10px);
-}
-
-.battle-card::before,
-.community-card::before,
-.battle-shell::before {
-  background:
-    radial-gradient(circle at top right, rgba(86,220,255,0.20), transparent 42%),
-    radial-gradient(circle at bottom left, rgba(168,140,255,0.14), transparent 38%);
-}
-
 .battle-chip,
 .community-stat-pill,
 .faction-chip,
@@ -776,8 +746,7 @@
 }
 
 .faction-btn:hover,
-.faction-btn:focus-visible,
-.battle-link-card:hover {
+.faction-btn:focus-visible {
   border-color: rgba(94, 221, 255, 0.52);
   box-shadow: 0 0 18px rgba(86,220,255,.18);
 }
@@ -788,7 +757,7 @@
   background: linear-gradient(180deg, rgba(59,209,255,0.20), rgba(255,255,255,0.04));
 }
 
-/* Battle layer 3008 shell harmonization */
+/* Shared Battle Chamber and wiki engagement panels. */
 .community-card,
 .battle-card,
 .battle-shell,
@@ -798,20 +767,27 @@
 .leader-row,
 .mission-row,
 .profile-row,
-.community-row {
-  border-color: rgba(101, 233, 255, 0.24);
-  background: rgba(5, 16, 30, 0.56);
-  border-radius: 12px;
-  box-shadow: 0 0 0 1px rgba(108, 237, 255, 0.08) inset, 0 14px 36px rgba(0, 0, 0, 0.34);
+.community-row,
+.home-widget.battle-widget,
+.tg-lb-row,
+.tg-quest-card {
+  border: 1px solid var(--shell-card-line);
+  background: var(--shell-card-bg);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .community-card::before,
 .battle-card::before,
 .battle-shell::before {
-  background:
-    linear-gradient(120deg, rgba(92, 233, 255, 0.12), transparent 45%),
-    radial-gradient(circle at 80% 24%, rgba(115, 128, 255, 0.12), transparent 40%);
-  opacity: 0.85;
+  background: none;
+}
+
+.battle-link-card:hover,
+.battle-link-card:focus-visible {
+  border-color: var(--shell-neon-cyan);
+  background: var(--shell-card-hover);
 }
 
 .community-card h3,
@@ -824,7 +800,7 @@
 body.conflict-active .battle-shell,
 body.conflict-active .battle-card,
 body.conflict-active .community-card {
-  box-shadow: 0 0 0 1px rgba(255,0,80,.22) inset, 0 0 26px rgba(255,0,80,.2);
+  border-color: var(--shell-neon-pink);
 }
 
 /* Wiki engagement module: final cascade owner.
@@ -847,17 +823,14 @@ body.conflict-active .community-card {
   align-items: stretch;
   margin: 0;
   padding: 8px;
-  border: 1px solid rgba(99, 211, 255, .18);
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(10,23,44,.50), rgba(8,18,34,.28));
-  box-shadow: inset 0 0 0 1px rgba(122,236,255,.04);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  background: var(--shell-card-deep);
+  box-shadow: none;
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck .battle-shell {
   min-height: 0;
-  border-radius: 10px;
-  box-shadow: none;
-  background: rgba(5, 16, 30, .48);
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck .battle-shell-inner {
@@ -917,37 +890,8 @@ body.conflict-active .community-card {
   z-index: 1;
 }
 
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell {
-  border: 1px solid transparent;
-  border-radius: 18px;
-  background:
-    linear-gradient(145deg, rgba(5, 12, 26, .94), rgba(7, 15, 34, .84)) padding-box,
-    linear-gradient(135deg, rgba(183, 81, 255, .92), rgba(0, 221, 255, .94), rgba(247, 201, 72, .72), rgba(183, 81, 255, .82)) border-box;
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, .42),
-    0 0 22px rgba(0, 221, 255, .08),
-    inset 0 0 34px rgba(0, 221, 255, .035);
-  animation: gkCollectionCardPulse 8.8s ease-in-out infinite;
-}
-
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before {
-  inset: -1px;
-  background:
-    radial-gradient(circle at 18% 10%, rgba(191, 91, 255, .13), transparent 34%),
-    radial-gradient(circle at 82% 18%, rgba(0, 221, 255, .12), transparent 32%),
-    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, .045) 38%, transparent 62%);
-  background-size: 100% 100%, 100% 100%, 240% 100%;
-  opacity: .68;
-  animation: gkCollectionEdgeSweep 10.5s linear infinite;
-}
-
-.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::after {
-  content: "";
-  position: absolute;
-  inset: 9px;
-  border: 1px solid rgba(86, 220, 255, .1);
-  border-radius: 13px;
-  pointer-events: none;
+.wiki-engagement-module .battle-deck.battle-engagement-deck--collection .gk-collection-about-card {
+  border-inline-start-color: var(--shell-neon-violet);
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell--media h3,
@@ -1272,7 +1216,6 @@ body.conflict-active .community-card {
   align-items: flex-start;
   gap: 8px;
   padding: 7px 9px;
-  border-radius: 10px;
 }
 
 .wiki-engagement-module .battle-deck.battle-engagement-deck .battle-shell--missions .mission-text,
@@ -1280,28 +1223,6 @@ body.conflict-active .community-card {
 .wiki-engagement-module .battle-deck.battle-engagement-deck .battle-shell--missions .mission-status {
   font-size: .72rem;
   line-height: 1.3;
-}
-
-@keyframes gkCollectionCardPulse {
-  0%,
-  100% {
-    box-shadow:
-      0 18px 42px rgba(0, 0, 0, .42),
-      0 0 18px rgba(0, 221, 255, .075),
-      inset 0 0 34px rgba(0, 221, 255, .035);
-  }
-  50% {
-    box-shadow:
-      0 21px 48px rgba(0, 0, 0, .46),
-      0 0 28px rgba(183, 81, 255, .105),
-      0 0 22px rgba(0, 221, 255, .1),
-      inset 0 0 38px rgba(247, 201, 72, .025);
-  }
-}
-
-@keyframes gkCollectionEdgeSweep {
-  from { background-position: 0 0, 0 0, 0% 0; }
-  to { background-position: 0 0, 0 0, 240% 0; }
 }
 
 @keyframes gkCollectionTitleFlow {
@@ -1375,8 +1296,6 @@ body.page-gkniftyheads-collection .wiki-engagement-module,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell,
-  .wiki-engagement-module .battle-deck.battle-engagement-deck--collection .battle-shell::before,
   .gk-collection-about-title,
   .mission-like-row .like-icon,
   .cite-vote-btn {

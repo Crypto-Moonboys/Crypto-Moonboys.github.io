@@ -108,6 +108,10 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, de
 const failures = [];
 const results = [];
 
+function hasAngularCardStyle(data) {
+  return data.borderTopWidth === 1 && data.borderRadius === 0 && data.boxShadow === 'none';
+}
+
 function fail(route, message) {
   failures.push(`${route} - ${message}`);
 }
@@ -130,6 +134,7 @@ for (const route of ROUTES) {
         borderTopWidth: parseFloat(style.borderTopWidth),
         backgroundColor: style.backgroundColor,
         borderRadius: parseFloat(style.borderTopLeftRadius),
+        boxShadow: style.boxShadow,
         paddingTop: parseFloat(style.paddingTop),
         paddingLeft: parseFloat(style.paddingLeft),
         color: style.color,
@@ -205,7 +210,11 @@ for (const route of ROUTES) {
       if (data.backgroundColor === 'rgba(0, 0, 0, 0)' || data.backgroundColor === 'transparent') {
         fail(route, `${name} must have background`);
       }
-      if (data.borderRadius < 14) fail(route, `${name} border-radius must be >= 14px`);
+      if (name === '.swarmsy-pill') {
+        if (data.borderRadius < 14) fail(route, `${name} should retain its pill shape`);
+      } else if (!hasAngularCardStyle(data)) {
+        fail(route, `${name} must have square corners and a 1px border without a shadow`);
+      }
       if (data.paddingTop < 8 || data.paddingLeft < 8) fail(route, `${name} must have padding`);
     }
 
@@ -222,18 +231,18 @@ for (const route of ROUTES) {
   }
 
   if (route === '/index.html' && audit.categoryCard) {
-    if (audit.categoryCard.borderTopWidth < 1 || audit.categoryCard.borderRadius < 14 || audit.categoryCard.paddingTop < 8) {
-      fail(route, 'category cards look flattened');
+    if (!hasAngularCardStyle(audit.categoryCard) || audit.categoryCard.paddingTop < 8) {
+      fail(route, 'category cards must have square corners, a 1px border, and card padding');
     }
   }
   if (route === '/games/' && audit.gameOrArticleCard) {
-    if (audit.gameOrArticleCard.borderTopWidth < 1 || audit.gameOrArticleCard.borderRadius < 14 || audit.gameOrArticleCard.paddingTop < 8) {
-      fail(route, 'game/article cards look flattened');
+    if (!hasAngularCardStyle(audit.gameOrArticleCard) || audit.gameOrArticleCard.paddingTop < 8) {
+      fail(route, 'game/article cards must have square corners, a 1px border, and card padding');
     }
   }
   if (route === '/community.html' && audit.communityPanel) {
-    if (audit.communityPanel.borderTopWidth < 1 || audit.communityPanel.borderRadius < 14 || audit.communityPanel.paddingTop < 8) {
-      fail(route, 'community sections/cards look flattened');
+    if (!hasAngularCardStyle(audit.communityPanel) || audit.communityPanel.paddingTop < 8) {
+      fail(route, 'community sections/cards must have square corners, a 1px border, and card padding');
     }
   }
   if (route.startsWith('/wiki/')) {
@@ -248,9 +257,9 @@ for (const route of ROUTES) {
       }
       if (data.borderTopWidth < 1) fail(route, `${name} must have visible border`);
       if (data.backgroundColor === 'rgba(0, 0, 0, 0)' || data.backgroundColor === 'transparent') {
-        fail(route, `${name} must have SWARMSY glass background`);
+        fail(route, `${name} must have a visible card background`);
       }
-      if (data.borderRadius < 14) fail(route, `${name} border-radius must be >= 14px`);
+      if (!hasAngularCardStyle(data)) fail(route, `${name} must have square corners and a 1px border without a shadow`);
       if (data.paddingTop < 14 || data.paddingLeft < 14) fail(route, `${name} must have card padding`);
     }
     if (!audit.wikiTitle) {
@@ -294,5 +303,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`  [PASS] ${ROUTES.length} pages render SWARMSY components and wiki article cards/glow as expected`);
+console.log(`  [PASS] ${ROUTES.length} pages render SWARMSY components and angular wiki cards as expected`);
 console.log('\nSWARMSY component render audit passed.\n');

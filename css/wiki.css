@@ -3,7 +3,15 @@
 /* Crypto Moonboys global SWARMSY shell */
 
 :root {
-  --color-bg: #070b12;
+  --color-bg: #080910;
+  --shell-card-bg: #10121c;
+  --shell-card-deep: #0b0d15;
+  --shell-card-hover: #171a29;
+  --shell-card-line: rgba(155, 167, 203, 0.24);
+  --shell-card-corner: 0px;
+  --shell-neon-cyan: #6eeaff;
+  --shell-neon-pink: #ff67ce;
+  --shell-neon-violet: #c3a4ff;
   --color-surface: rgba(10, 15, 24, 0.88);
   --color-surface-2: rgba(16, 24, 36, 0.82);
   --color-panel: rgba(255, 255, 255, 0.045);
@@ -122,9 +130,8 @@ button {
   align-content: center;
   gap: 6px 8px;
   padding: 2px var(--shell-gutter);
-  background: rgba(7, 11, 18, 0.94);
-  border-bottom: 1px solid rgba(247, 201, 72, 0.22);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.26);
+  background: var(--shell-card-deep);
+  border-bottom: 1px solid var(--shell-card-line);
   backdrop-filter: blur(16px);
 }
 
@@ -394,9 +401,9 @@ body.page-onboarding-shell #moonboys-global-status-badge {
   padding: 3px 8px;
   line-height: 1.2;
   color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 999px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
@@ -496,10 +503,10 @@ body.sidebar-open #sidebar-overlay {
 .bc-monthly-rewards,
 .bc-season-rewards {
   color: var(--color-text);
-  background: var(--color-panel);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .wiki-page,
@@ -1562,18 +1569,15 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .swarmsy-card,
 .swarmsy-action-card {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .swarmsy-card {
   min-height: 150px;
   padding: 22px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
 }
 
 .swarmsy-card h3 {
@@ -1596,9 +1600,6 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   gap: 8px;
   min-height: 108px;
   padding: 18px 20px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
   text-decoration: none;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
@@ -1606,7 +1607,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .swarmsy-action-card:hover,
 .swarmsy-action-card:focus-visible {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.09);
+  background: var(--shell-card-hover);
   border-color: rgba(0, 255, 204, 0.48);
   transform: translateY(-2px);
 }
@@ -1629,7 +1630,6 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 }
 
 .swarmsy-action-card--gold {
-  background: rgba(247, 201, 72, 0.08);
   border-color: rgba(247, 201, 72, 0.32);
 }
 
@@ -1638,7 +1638,6 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 }
 
 .swarmsy-action-card--magenta {
-  background: rgba(255, 0, 170, 0.07);
   border-color: rgba(255, 0, 170, 0.28);
 }
 
@@ -1649,10 +1648,10 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .swarmsy-section {
   margin-top: 34px;
   padding: 28px;
-  background: rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 255, 204, 0.035);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .swarmsy-section h2 {
@@ -2157,10 +2156,9 @@ body.page-gkniftyheads-collection .article-meta {
 .page-community .section {
   margin-top: 24px;
   padding: 22px;
-  background: rgba(10, 15, 24, 0.76);
-  border: 1px solid rgba(86, 220, 255, 0.18);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
 }
 
 .battle-page .section h2,
@@ -2243,13 +2241,10 @@ body.page-wiki .article-body {
   overflow: hidden;
   margin-top: 24px;
   padding: clamp(24px, 2.7vw, 42px);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(247, 201, 72, 0.09), transparent 26%),
-    radial-gradient(circle at 100% 0%, rgba(0, 255, 204, 0.08), transparent 32%),
-    rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  box-shadow: 0 0 40px rgba(0, 255, 204, 0.07), var(--shadow-panel);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .lead-paragraph,
@@ -2283,10 +2278,10 @@ body.page-wiki .meta-item {
 body.page-wiki .wiki-section {
   margin: clamp(22px, 3vw, 38px) 0;
   padding: clamp(20px, 2.4vw, 32px);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 18px;
-  box-shadow: 0 0 30px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .wiki-section h2,
@@ -2294,9 +2289,8 @@ body.page-wiki .wiki-section h3 {
   margin-top: 0;
   color: #00ffcc;
   background: rgba(86, 220, 255, 0.07);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
   border-bottom: 1px solid rgba(86, 220, 255, 0.2);
-  border-radius: 10px;
+  border-radius: var(--shell-card-corner);
   display: block;
   font-family: var(--font-display);
   text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
@@ -2307,9 +2301,8 @@ body.page-wiki .wiki-section summary [role="heading"] {
   margin-top: 0;
   color: #00ffcc;
   background: rgba(86, 220, 255, 0.07);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
   border-bottom: 1px solid rgba(86, 220, 255, 0.2);
-  border-radius: 10px;
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-display);
   text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }
@@ -2329,11 +2322,10 @@ body.page-wiki .related-wiki-card,
 body.page-wiki .citation-vote-panel {
   padding: 18px 20px;
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(247, 201, 72, 0.5);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .lore-paragraph,
@@ -3191,10 +3183,10 @@ body.page-wiki .comments-list-panel {
 .hub-card,
 .collection-card {
   color: var(--color-text);
-  background: rgba(86, 220, 255, 0.045);
-  border: 1px solid rgba(86, 220, 255, 0.18);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 0 24px rgba(86, 220, 255, 0.04);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .category-card,
@@ -3225,7 +3217,7 @@ body.page-wiki .comments-list-panel {
 .hub-card:hover,
 .collection-card:hover {
   color: var(--color-text);
-  background: rgba(86, 220, 255, 0.085);
+  background: var(--shell-card-hover);
   border-color: rgba(86, 220, 255, 0.45);
   transform: translateY(-2px);
 }
@@ -3475,7 +3467,7 @@ body.page-wiki .comments-list-panel {
 .bc-join-card,
 .bc-perk-card,
 .bc-faction-reward-card {
-  border-top: 3px solid var(--faction-color, #56dcff);
+  border-top-color: var(--faction-color, var(--shell-neon-cyan));
 }
 
 .bc-mission-row,
@@ -3483,9 +3475,9 @@ body.page-wiki .comments-list-panel {
   display: grid;
   gap: 8px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(86, 220, 255, 0.14);
-  border-radius: var(--radius-md);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
 }
 
 #site-footer {
@@ -4185,10 +4177,10 @@ body.page-home .home-widget ul {
 
 body.page-home .home-widget li {
   padding: 14px 16px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 22px rgba(0, 255, 204, 0.045);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-home .home-mission-panel .section-heading,
@@ -4211,10 +4203,10 @@ body.page-home .home-universe-card {
   gap: 10px;
   min-height: 150px;
   padding: 18px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-home .home-proof-card strong,
@@ -4249,10 +4241,10 @@ body.page-home .home-cta-card {
   padding: 18px;
   color: var(--color-text);
   text-decoration: none;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -4263,9 +4255,9 @@ body.page-home .home-cta-card {
 body.page-home .home-cta-card:hover,
 body.page-home .home-cta-card:focus-visible {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.09);
+  background: var(--shell-card-hover);
   border-color: rgba(247, 201, 72, 0.42);
-  box-shadow: 0 0 34px rgba(247, 201, 72, 0.12), 0 0 28px rgba(0, 255, 204, 0.085);
+  box-shadow: none;
   transform: translateY(-2px);
 }
 
