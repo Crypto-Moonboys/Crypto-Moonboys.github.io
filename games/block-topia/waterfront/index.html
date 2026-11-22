@@ -434,6 +434,21 @@ function syncAnimation() {
 document.addEventListener("visibilitychange", syncAnimation);
 reducedMotion.addEventListener("change", syncAnimation);
 syncAnimation();
+
+// Refresh public displays without interrupting map edits or active gestures.
+const refreshInterval = 20 * 60 * 1000;
+let refreshDeadline = Date.now() + refreshInterval;
+function refreshWaterfront() {
+  clearTimeout(refreshTimer);
+  const remaining = refreshDeadline - Date.now();
+  if (remaining <= 0 && !editing && !pinch && !mousePan) {
+    window.location.reload();
+    return;
+  }
+  refreshTimer = setTimeout(refreshWaterfront, remaining > 0 ? remaining : 1000);
+}
+let refreshTimer = setTimeout(refreshWaterfront, refreshInterval);
+window.addEventListener("pageshow", refreshWaterfront);
 </script>
 </body>
 </html>
