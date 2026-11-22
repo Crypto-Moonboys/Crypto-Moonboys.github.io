@@ -5,10 +5,10 @@ const muralPasses = [
 ];
 
 const waterfrontSprites = {
-  h: { file: "lighthouse", width: 34, maxHeight: 75 },
+  h: { file: "lighthouse", width: 42, maxHeight: 52 },
   w: { file: "workshop", width: 32, maxHeight: 36 },
   c: { file: "apartments", width: 32, maxHeight: 51 },
-  g: { file: "graffiti-wall-front", width: 32, maxHeight: 27 },
+  g: { file: "graffiti-wall", width: 32, maxHeight: 27 },
   s: { file: "record-shop", width: 32, maxHeight: 40 },
   b: { file: "warehouse", width: 32, maxHeight: 39 }
 };
@@ -21,7 +21,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
       resolve();
     };
     image.onerror = resolve;
-    image.src = "assets/night-harbor/" + sprite.file + ".png";
+    image.src = "assets/hk-night/" + sprite.file + ".png";
   })));
 };
 
@@ -314,8 +314,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       queue(y + 29, () => building(tile, x, y));
       if (tile === "h") {
         const image = waterfrontSprites.h.image;
-        const height = image ? Math.min(75, image.naturalHeight * 34 / image.naturalWidth) : 64;
-        beacons.push([x + 16, y + 29 - height * 0.72]);
+        const { width, maxHeight } = waterfrontSprites.h;
+        const height = image ? Math.round(Math.min(maxHeight, image.naturalHeight * width / image.naturalWidth) * 2) / 2 : 64;
+        beacons.push([x + 16, image ? y + 29 - height * 0.83 : y - 17]);
       }
       if (time !== null && "csw".includes(tile) && seed % 3 !== 1) resident(col, row, seed);
     } else if (tile === "." && row === 2) {
@@ -346,7 +347,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       ctx.drawImage(image, left, top, drawWidth, drawHeight);
       if (tile === "h") {
         const pulse = time === null ? 0.5 : 0.5 + 0.5 * Math.cos(time * Math.PI / 7);
-        glow(x + 16, top + drawHeight * 0.28, 18 + pulse * 5, "#55ffdf88");
+        glow(x + 16, top + drawHeight * 0.17, 18 + pulse * 5, "#55ffdf88");
       }
       if ("csw".includes(tile)) {
         const intensity = time === null ? 0.32 : 0.3 + 0.13 * Math.sin(time * 0.7 + (x + y) / 17);
@@ -355,7 +356,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
           "rgba(255, 177, 79, " + intensity + ")");
       }
       if (time !== null && "wc".includes(tile)) {
-        smoke(left + drawWidth * (tile === "w" ? 0.33 : 0.29), top + drawHeight * 0.12, (x + y) / 137);
+        smoke(left + drawWidth * (tile === "w" ? 0.25 : 0.55), top + drawHeight * 0.12, (x + y) / 137);
       }
       return;
     }
