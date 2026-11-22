@@ -57,14 +57,19 @@ test('actual command/callback text gateway preserves routing and keyboard withou
       const update = callback ? { callback_query: { message } } : { message };
       const context = createTelegramCommandMediaContext(env, update);
       const result = await __petMediaTestHooks.sendTelegramMessage(context, message.chat.id,
-        '<b>Command reply</b>', { message_thread_id: 42, reply_markup: keyboard });
+        group ? '<b>Command reply</b>' : '<b>Command reply</b>\nFaction: graffpunks',
+        { message_thread_id: 42, reply_markup: keyboard });
       assert.equal(result.ok, true);
     }
   }
   assert.equal(calls.length, 4);
   for (const call of calls) {
     assert.equal(call.url, 'https://api.telegram.org/bot' + token + '/sendMessage');
-    assert.match(call.body.text, /^<tg-emoji emoji-id="[1-9]">.+<\/tg-emoji> <b>Command reply<\/b>$/u);
+    const icons = [...call.body.text.matchAll(/<tg-emoji emoji-id="([1-9])">[^<]+<\/tg-emoji> /gu)];
+    assert.equal(icons.length, 4);
+    assert.equal(new Set(icons.map(icon => icon[1])).size, 4);
+    const body = call.body.text.slice(icons.map(icon => icon[0]).join('').length);
+    assert.equal(body, call.body.chat_id === 123 ? '<b>Command reply</b>\nFaction: GraffPUNKS' : '<b>Command reply</b>');
     assert.equal(call.body.parse_mode, 'HTML');
     assert.equal(call.body.message_thread_id, 42);
     assert.deepEqual(call.body.reply_markup, keyboard);

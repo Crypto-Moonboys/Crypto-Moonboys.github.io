@@ -98,7 +98,14 @@ test('live-style token uses bold headings and pack icons for both bulletin posts
   });
   assert.equal(result.status, 'sent');
   assert.deepEqual(methods, ['getStickerSet', 'sendPhoto', 'sendMessage']);
-  assert.match(delivered[0].caption, /^<tg-emoji[^>]*>.*<\/tg-emoji> <b>TAG RUN.*<\/b>$/u);
-  assert.match(delivered[1].text, /^<tg-emoji[^>]*>.*<\/tg-emoji> <b>Clan update<\/b>\nA &amp; B$/u);
+  const bodies = [delivered[0].caption, delivered[1].text].map(post => {
+    const prefix = post.match(/^(?:<tg-emoji emoji-id="[1-9]">[^<]+<\/tg-emoji> ){4}/u)?.[0];
+    assert.ok(prefix, 'Each post starts with four custom emojis');
+    const ids = [...prefix.matchAll(/emoji-id="([1-9])"/gu)].map(match => match[1]);
+    assert.equal(new Set(ids).size, 4);
+    return post.slice(prefix.length);
+  });
+  assert.equal(bodies[0], '<b>TAG RUN · STREET CRED + COMMUNITY POT</b>');
+  assert.equal(bodies[1], '<b>Clan update</b>\nA &amp; B');
   assert(delivered.every(post => post.message_thread_id === 23456 && post.parse_mode === 'HTML'));
 });

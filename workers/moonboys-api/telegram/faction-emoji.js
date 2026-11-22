@@ -59,31 +59,24 @@ async function getFactionEmojiPack(token, fetchImpl) {
   return pendingLookup;
 }
 
-export async function addFactionEmojiToStatus(text, token, fetchImpl = fetch) {
-  const match = FACTION_LINE.exec(text);
-  const label = match && (FACTION_LABELS[match[1]] || match[1]);
-  if (!label || !Object.hasOwn(FACTION_EMOJI, label)) return text;
-  const entries = await getFactionEmojiPack(token, fetchImpl);
-  const sticker = entries?.get(FACTION_EMOJI[label]);
-  if (!sticker) return text;
-  return text.replace(FACTION_LINE, () =>
-    `Faction: <tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji> ${label}`);
-}
+const MESSAGE_EMOJI_COUNT = 4;
 
-// Insert one pack emoji per message. A known faction uses its own icon.
+// Sample without replacement so a message never repeats a pack emoji.
 export async function addMoonboysMessageEmoji(text, token, fetchImpl = fetch) {
   if (typeof text !== 'string' || !text.trim() || text.includes('<tg-emoji') ||
       !isTelegramBotToken(token)) return text;
-  const match = FACTION_LINE.exec(text);
-  const label = match && (FACTION_LABELS[match[1]] || match[1]);
-  if (label && Object.hasOwn(FACTION_EMOJI, label)) {
-    return addFactionEmojiToStatus(text, token, fetchImpl);
-  }
   const entries = await getFactionEmojiPack(token, fetchImpl);
   if (!entries) return text;
-  const emojis = Object.values(FACTION_EMOJI);
-  const sticker = entries.get(emojis[Math.floor(Math.random() * emojis.length)]);
-  return `<tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji> ${text}`;
+  const stickers = Object.values(FACTION_EMOJI).map(emoji => entries.get(emoji));
+  const icons = [];
+  for (let index = 0; index < MESSAGE_EMOJI_COUNT; index++) {
+    const selected = Math.floor(Math.random() * stickers.length);
+    const [sticker] = stickers.splice(selected, 1);
+    icons.push(`<tg-emoji emoji-id="${sticker.custom_emoji_id}">${sticker.emoji}</tg-emoji>`);
+  }
+  const message = text.replace(FACTION_LINE, (line, name) =>
+    Object.hasOwn(FACTION_LABELS, name) ? `Faction: ${FACTION_LABELS[name]}` : line);
+  return `${icons.join(' ')} ${message}`;
 }
 
 export function formatMoonboysAnnouncement(text) {
