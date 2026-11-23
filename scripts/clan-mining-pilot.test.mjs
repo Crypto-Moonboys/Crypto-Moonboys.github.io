@@ -2006,6 +2006,8 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const wikiPath = '/wiki/bitcoin-kid-army.html';
   const graffpunksPath = '/wiki/graffpunks.html';
   const overviewPath = '/wiki/crypto-moonboys.html';
+  const providerOverview = 'Who are your Crypto Moonboys?';
+  const detailedCommand = 'Who commands the Bitcoin Kid Army and how does the chain of command work?';
   const editorial = '/brand-canon/story-bibles/gk-master-canon.md';
   const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
     { title: 'Editorial Only', url: editorial }, { title: 'Offsite', url: '//elsewhere.invalid/pub.html' }];
@@ -2046,13 +2048,9 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
       assert.deepEqual(Object.keys(prompt).sort(), ['earlierQuestions', 'publicReferences', 'question']);
       const { question, publicReferences: sources } = prompt;
       let answer;
-      if (question === 'who are the crypto moonboys?') {
+      if (question === providerOverview) {
         assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
         answer = { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] };
-      } else if (question === 'Who are you?' || question === 'Introduce yourself') {
-        assert.equal(sources.length, 1);
-        assert.match(sources[0].excerpt, /fictional Year 3008 counterpart carries the Paint Path/);
-        answer = { reply: 'I represent GraffPUNKS. We carry the Paint Path through the Street Kingdoms.', sources: [1] };
       } else if (question.includes(publishedMd) || question.includes(artifactPage)) {
         assert.match(sources[0].excerpt, /waterfront/i);
         answer = { reply: 'This source describes the waterfront.', sources: [1] };
@@ -2079,7 +2077,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     return new Response(null, { status: 404 });
   });
   const question = (overrides = {}, options = {}) => request({
-    id: '999', loreAction: { npc: 'graffpunks', question: 'Who commands the Bitcoin Kid Army?', ...overrides }, ...options,
+    id: '999', loreAction: { npc: 'graffpunks', question: detailedCommand, ...overrides }, ...options,
   });
   assert.equal((await question({}, { signed: false })).status, 401);
   assert.equal((await question({ npc: 'not-a-faction' })).status, 400);
@@ -2120,20 +2118,44 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   settings.time = new Date('2026-11-21T00:00Z');
   assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
   const overview = await question({
-    npc: 'blockstars', question: 'who are the crypto moonboys?',
-    previous: ['Who commands the Bitcoin Kid Army?'],
+    npc: 'blockstars', question: providerOverview,
+    previous: [detailedCommand],
   });
   assert.equal(overview.status, 200);
   assert.match(overview.data.reply, /characters in a shared fantasy world/);
   assert.deepEqual(overview.data.sources.map(item => item.path), [overviewPath]);
   const freshChat = await question({ npc: 'blockstars', question: 'who are the crypto moonboys?' });
   assert.deepEqual(freshChat.data.sources.map(item => item.path), [overviewPath]);
+  const callsBeforeIntroduction = prompts.length;
+  const visitsBeforeIntroduction = visits.length;
+  const usage = sql.prepare('SELECT questions FROM clan_leader_lore_usage WHERE utc_day = ? AND telegram_id = ?');
+  const questionsBeforeIntroduction = usage.get('2026-11-21', '999').questions;
   for (const intro of ['Who are you?', 'Introduce yourself']) {
     const response = await question({ npc: 'graffpunks', question: intro });
     assert.equal(response.status, 200);
-    assert.match(response.data.reply, /Paint Path/);
-    assert.deepEqual(response.data.sources.map(source => source.path), [graffpunksPath]);
+    assert.match(response.data.reply, /I represent GraffPUNKS here on the Waterfront/);
+    assert.deepEqual(response.data.sources, [{ title: 'GraffPUNKS Wiki', path: graffpunksPath }]);
   }
+  assert.equal(prompts.length, callsBeforeIntroduction, 'local introductions skip the provider');
+  assert.equal(visits.length, visitsBeforeIntroduction, 'local introductions skip source fetches');
+  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction, 'local introductions do not spend question quota');
+  // The exact overview matches locally while the preceding variant exercises the provider.
+  assert.match(freshChat.data.reply, /Year 3008/);
+  const callsBeforeCanon = prompts.length;
+  for (const [prompt, path, evidence] of [
+    ['Who commands the Bitcoin Kid Army?', wikiPath, /Alfie Blaze.*GKniftyHEADS/],
+    ['Tell me about the Nomad Bares.', '/wiki/the-nomad-bears.html', /wanderers, artists and couriers/],
+    ['What is the difference between HODL Warriors and HODL X Warriors?', '/wiki/hodl-x-warriors.html', /united GK underworld army/],
+    ['How does the Final Fork end?', '/wiki/hodl-wars.html', /unresolved/],
+  ]) {
+    const response = await question({ question: prompt });
+    assert.equal(response.status, 200);
+    assert.match(response.data.reply, evidence);
+    assert.deepEqual(response.data.sources.map(source => source.path), [path]);
+  }
+  assert.equal(prompts.length, callsBeforeCanon, 'local canon answers skip the provider');
+  assert.equal(visits.length, visitsBeforeIntroduction, 'local canon answers skip source fetches');
+  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction, 'local canon answers do not spend question quota');
   const identities = new Set();
   for (const [index, npc] of CANONICAL_FACTION_KEYS.entries()) {
     const response = await question({ npc, question: 'What does ' + site + publishedMd + ' say?' }, { id: String(400 + index) });
