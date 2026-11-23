@@ -41,3 +41,54 @@
   border-radius: .25rem;
   font: inherit;
 }
+
+.leader-map-details, .leader-map-bubble {
+  position: absolute;
+  z-index: 3;
+  background: #13131cf5;
+  color: #f5edf5;
+  border: 1px solid #658782;
+  border-radius: .35rem;
+  padding: .55rem .7rem;
+}
+.leader-map-details {
+  inset: auto .65rem .85rem auto;
+  width: min(15rem, calc(100% - 1.3rem));
+}
+.leader-map-details h2 { font-size: 1rem; margin: 0 2rem .25rem 0; }
+.leader-map-details p { margin: .25rem 1.2rem .4rem 0; }
+.leader-map-details a, .leader-map-details [data-ask], .leader-map-details [data-slow] {
+  display: block;
+  margin-block: .25rem;
+}
+.leader-map-details [data-close] { position: absolute; top: .28rem; right: .28rem; }
+.leader-map-details [hidden], .leader-map-bubble [hidden] { display: none; }
+.leader-map-bubble {
+  width: max-content;
+  max-width: min(17rem, calc(100% - 1.3rem));
+  transform: translate(-50%, -100%);
+  overflow-wrap: anywhere;
+  font-size: .9rem;
+}
+.leader-map-bubble::after {
+  content: '';
+  position: absolute;
+  left: calc(50% - .35rem);
+  top: 100%;
+  border: .35rem solid transparent;
+  border-top-color: #658782;
+  pointer-events: none;
+}
+.leader-map-bubble button { min-height: 32px; min-width: 32px; padding: .1rem; margin-inline-start: .15rem; }
+.leader-map-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+#leader-question-title + form textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin-block: .3rem;
+  padding: .4rem;
+  background: #1b2d33;
+  color: inherit;
+  font: inherit;
+}
+[data-full-reply] p { white-space: pre-line; overflow-wrap: anywhere; }

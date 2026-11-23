@@ -210,7 +210,7 @@ function factionRoutes(rows, district) {
   return routes;
 }
 
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderPauses = []) {
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = []) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -940,11 +940,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function drawFactionWalkers() {
     if (!waterfrontFactionAtlas.image) return;
     const routes = factionRoutes(rows, district);
+    const now = Date.now();
     waterfrontFactions.forEach((name, index) => {
+      const state = leaderStates[index];
+      if (state?.playingUntil > now) return;
       const route = routes[index];
-      const pause = leaderPauses[index];
-      const paused = pause?.until > Date.now();
-      const walkerTime = paused ? pause.sceneTime : time;
+      const paused = state?.pausedUntil > now;
+      const walkerTime = paused ? state.sceneTime : time;
       const progress = ((walkerTime ?? 0) / (1.05 + index * 0.045)) % route.length;
       const step = Math.floor(progress);
       const from = route[step];
@@ -957,7 +959,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const frame = paused || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
       queue(y, () => factionCharacter(index, x, y, facing, frame, 20));
-      factionHits.push({ index, x, y, paused, talking: pause?.talking });
+      factionHits.push({ index, x, y, paused, talking: state?.talking });
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
       if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
         nearestFaction = { name, x, y, separation };

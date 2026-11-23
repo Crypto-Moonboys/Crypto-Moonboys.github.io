@@ -2090,14 +2090,14 @@ test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning por
   }
 });
 
-test('Waterfront opens a weighted conversation from a faction sprite and submits the signed choice', { timeout: 30_000 }, async () => {
+test('Waterfront hides playing leaders and uses sprite details, double-click and a sourced reply bubble', { timeout: 30_000 }, async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
       (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
     headless: true,
   });
   try {
-    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, reducedMotion: 'reduce' });
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, hasTouch: true, reducedMotion: 'reduce' });
     page.setDefaultTimeout(4_000);
     const requestBodies = [];
     const loreBodies = [];
@@ -2106,6 +2106,11 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
     const start = '/games/block-topia/waterfront/';
     const target = 'nomad-bears';
     let paused;
+    const awayUntil = Math.floor(Date.now() / 1000) + 60;
+    const longReply = 'The Nomad Bears are one of the two market factions. ' + 'Their public wiki account explains how their travelling crews protect routes, trade information, and respond when the other market faction gains ground throughout the city.';
+    let releaseFirstReply;
+    const holdReply = new Promise(resolve => { releaseFirstReply = resolve; });
+    await page.clock.install();
     await page.route('https://waterfront.test/**', async route => {
       const url = new URL(route.request().url());
       if (url.pathname === '/js/api-config.js') return route.fulfill({
@@ -2123,13 +2128,15 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
             paid: [{ id: 'hour', title: 'Pause for 1 hour', xp: 100, gems: 5 }],
           },
           crews: FACTIONS.map(faction_id => ({ faction_id, presence: faction_id === target && paused
-            ? { paused_until: paused, available_at: paused + 3600, talking: true } : {} })),
+            ? { paused_until: paused, available_at: paused + 3600, talking: true }
+            : faction_id === 'graffpunks' ? { playing_until: awayUntil } : {} })),
         },
       } });
       if (url.pathname === '/clan-operations/leader-lore') {
         loreBodies.push(route.request().postDataJSON());
+        if (loreBodies.length === 1) await holdReply;
         return route.fulfill({ json: {
-          ok: true, reply: 'The Nomad Bears are one of the two market factions.',
+          ok: true, reply: longReply,
           sources: [{ title: 'Crypto Moonboys', path: '/wiki/crypto-moonboys.html' }],
         } });
       }
@@ -2143,7 +2150,7 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
     });
     await page.goto('https://waterfront.test' + start);
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
-    await page.waitForFunction(() => factionHits.length === 9);
+    await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     const position = await page.evaluate(() => {
       const hit = factionHits.find(item => item.index === 1);
       const map = document.querySelector('#map');
@@ -2155,32 +2162,48 @@ test('Waterfront opens a weighted conversation from a faction sprite and submits
       return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
     });
     await page.mouse.click(position.x, position.y);
-    const dialog = page.getByRole('dialog', { name: 'The Nomad Bears' });
-    await dialog.getByRole('button', { name: /spend 100 XP/ }).waitFor();
-    await dialog.getByRole('button', { name: /defend first\? · 10 min/ }).click();
-    await dialog.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
+    const details = page.getByRole('region', { name: 'The Nomad Bears', exact: true });
+    await details.waitFor();
+    assert.equal(await details.getByRole('link', { name: 'Faction page' }).getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await page.getByRole('dialog').count(), 0);
+    await page.mouse.dblclick(position.x, position.y);
+    const composer = page.getByRole('dialog', { name: 'Ask The Nomad Bears' });
+    await composer.getByLabel('Question').fill('Who are the Nomad Bears?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await composer.waitFor({ state: 'hidden' });
+    const bubble = page.locator('.leader-map-bubble');
+    await bubble.getByText('Checking the wiki…').waitFor();
+    releaseFirstReply();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.match(await bubble.locator('[data-speech]').innerText(), /…$/u);
+    await bubble.getByRole('button', { name: 'More info' }).click();
+    const full = page.getByRole('dialog', { name: 'The Nomad Bears · Reply' });
+    await full.getByText(longReply, { exact: true }).waitFor();
+    assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
+    await full.getByRole('button', { name: 'Close full reply' }).click();
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+
+    await details.getByRole('button', { name: 'Rival slowdowns' }).click();
+    const slowdown = page.getByRole('dialog', { name: 'The Nomad Bears', exact: true });
+    await slowdown.getByRole('button', { name: /defend first\? · 10 min/ }).click();
+    await slowdown.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
     assert.equal(requestBodies.length, 1);
     const [{ request_id, ...body }] = requestBodies;
     assert.match(request_id, /^[0-9a-f-]{36}$/);
     assert.deepEqual(body, { telegram_auth: { id: '123' }, target, option: 'defences', currency: null });
     await page.waitForFunction(() => factionHits.find(hit => hit.index === 1)?.paused);
-    await dialog.getByRole('button', { name: 'Close leader dialog' }).click();
-    await page.getByRole('button', { name: 'Info' }).click();
-    await page.getByLabel('Faction leader', { exact: true }).selectOption(target);
-    await page.getByRole('button', { name: 'Talk', exact: true }).click();
-    await dialog.getByText(/Available for another interaction at/).waitFor();
-    const chat = dialog.getByRole('log', { name: 'Lore conversation' });
-    await dialog.getByLabel('Question').fill('Who are the Nomad Bears?');
-    await dialog.getByRole('button', { name: 'Ask the leader' }).click();
-    await chat.getByText('The Nomad Bears are one of the two market factions.').waitFor();
-    assert.equal(await chat.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
-    await dialog.getByLabel('Question').fill('Who are their rivals?');
-    await dialog.getByRole('button', { name: 'Ask the leader' }).click();
-    await page.waitForFunction(() => document.querySelectorAll('[role=log] article').length === 2);
+    await slowdown.getByRole('button', { name: 'Close leader dialog' }).click();
+    await page.touchscreen.tap(position.x, position.y);
+    await page.touchscreen.tap(position.x, position.y);
+    await composer.getByLabel('Question').fill('Who are their rivals?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
     assert.deepEqual(loreBodies[1], {
       telegram_auth: { id: '123' }, npc: target, question: 'Who are their rivals?', previous: ['Who are the Nomad Bears?'],
     });
     assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
+    await page.clock.fastForward(65_000);
+    await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

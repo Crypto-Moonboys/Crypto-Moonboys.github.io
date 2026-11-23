@@ -3,6 +3,7 @@ import { advanceMine, dailyRouteIndex, describeMine } from './clan-mining.js';
 
 const SLOT_SECONDS = 300;
 const DAY_SECONDS = 86400;
+export const LEADER_POINTS_PER_ROUND = 12;
 const HOME = 'https://cryptomoonboys.com';
 const DEFAULT_ROUTES = ['/games/', '/community.html', '/battle-chamber/factions/'];
 const QUESTIONS = [
@@ -55,20 +56,44 @@ function completeTrainingRound(at) {
   return false;
 }
 
+// A new draw each UTC hour gives every faction a slot, with at most
+// three leaders playing at once. Retried ticks see the same draw.
+export function clanLeadersForSlot(slot) {
+  const hour = Math.floor(slot / 3600);
+  let seed = Math.imul(hour + 1, 0x9e3779b1);
+  function shuffle(values) {
+    for (let i = values.length - 1; i > 0; i--) {
+      seed ^= seed << 13;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;
+      const j = (seed >>> 0) % (i + 1);
+      [values[i], values[j]] = [values[j], values[i]];
+    }
+    return values;
+  }
+  // Finish the final round before the UTC day and weekly chart can roll over.
+  const slots = hour % 24 === 23 ? 11 : 12;
+  const starts = shuffle(Array.from({ length: slots }, (_, index) => index)).slice(0, 3);
+  const group = starts.indexOf(Math.floor(slot % 3600 / SLOT_SECONDS));
+  return group < 0 ? [] : shuffle([...CANONICAL_FACTION_KEYS]).slice(group * 3, group * 3 + 3);
+}
+
 // Every leader plays the same server-side training rules in a fresh, unranked
 // round. No player profile, bank or Arcade result is created.
 export async function runClanLeaderRounds(db, start, at, fetchPage = fetch) {
   const slot = Math.floor(utcSecond(at) / SLOT_SECONDS) * SLOT_SECONDS;
   if (slot < start) return;
+  const scheduled = clanLeadersForSlot(slot);
+  if (!scheduled.length) return;
   const roster = checkedRows(await db.prepare(`
     WITH occupied AS (
       SELECT target_faction AS faction_id FROM clan_leader_slowdowns
-      WHERE available_at > ?1 AND starts_at <= ?1 AND ends_at > ?1
+      WHERE available_at > ?1 AND starts_at < ?1 + ${SLOT_SECONDS} AND ends_at > ?1
       UNION SELECT faction_id FROM clan_leader_rounds WHERE slot = ?1
     )
     SELECT value AS faction_id FROM json_each(?2)
     WHERE value NOT IN (SELECT faction_id FROM occupied)
-  `).bind(slot, JSON.stringify(CANONICAL_FACTION_KEYS)).all());
+  `).bind(slot, JSON.stringify(scheduled)).all());
   if (!roster.length) return;
   const sitemap = await fetchPage(HOME + '/sitemap.xml', { redirect: 'error', cf: { cacheEverything: true, cacheTtl: 3600 } });
   if (!sitemap.ok) throw new Error('clan_leader_site_catalog_unavailable');
@@ -77,9 +102,7 @@ export async function runClanLeaderRounds(db, start, at, fetchPage = fetch) {
   const turn = Math.floor(slot / SLOT_SECONDS);
   const visits = await Promise.all(roster.map(async ({ faction_id }) => {
     const index = CANONICAL_FACTION_KEYS.indexOf(faction_id);
-    const stop = (turn + index) % 6;
-    const choices = stop < 4 && games.length ? games : routes;
-    const path = stop === 0 ? factionPath(faction_id) : choices[(Math.floor(turn / 6) + 17 * index) % choices.length];
+    const path = games.length ? games[(turn + 17 * index) % games.length] : '/games/';
     const page = await fetchPage(HOME + path, { method: 'HEAD', redirect: 'manual' }).catch(() => null);
     const canonical = page?.headers.get('location');
     const internalRedirect = canonical?.startsWith('/') && !canonical.startsWith('//');
@@ -89,7 +112,7 @@ export async function runClanLeaderRounds(db, start, at, fetchPage = fetch) {
   const writes = visits.filter(Boolean).map(({ faction_id, path }) => db.prepare(`
     INSERT INTO clan_leader_rounds (faction_id, slot, site_path)
     SELECT ?1, ?2, ?3 WHERE NOT EXISTS (
-      SELECT 1 FROM clan_leader_slowdowns WHERE target_faction = ?1 AND starts_at <= ?2 AND ends_at > ?2
+      SELECT 1 FROM clan_leader_slowdowns WHERE target_faction = ?1 AND starts_at < ?2 + ${SLOT_SECONDS} AND ends_at > ?2
     )
     ON CONFLICT (faction_id, slot) DO NOTHING
   `).bind(faction_id, slot, path));
@@ -100,10 +123,19 @@ export async function readClanLeaderPresence(db, weekStart, at) {
   const time = utcSecond(at);
   const [rounds, slowdowns] = await Promise.all([
     db.prepare(`
-      SELECT faction_id, COUNT(*) AS rounds,
-        (SELECT site_path FROM clan_leader_rounds AS latest
-         WHERE latest.faction_id = rounds.faction_id AND slot <= ?2 ORDER BY slot DESC LIMIT 1) AS site_path
-      FROM clan_leader_rounds AS rounds WHERE slot >= ?1 AND slot <= ?2 GROUP BY faction_id
+      WITH eligible AS (
+        SELECT faction_id, slot, site_path FROM clan_leader_rounds AS rounds
+        WHERE slot >= ?1 AND slot <= ?2 AND NOT EXISTS (
+          SELECT 1 FROM clan_leader_slowdowns AS pause WHERE pause.target_faction = rounds.faction_id
+            AND pause.available_at > rounds.slot AND pause.ends_at > rounds.slot
+            AND pause.starts_at < rounds.slot + ${SLOT_SECONDS}
+        )
+      )
+      SELECT faction_id, SUM(slot <= ?2 - ${SLOT_SECONDS}) AS rounds,
+        MAX(CASE WHEN slot > ?2 - ${SLOT_SECONDS} THEN slot + ${SLOT_SECONDS} END) AS playing_until,
+        (SELECT latest.site_path FROM eligible AS latest
+         WHERE latest.faction_id = eligible.faction_id ORDER BY latest.slot DESC LIMIT 1) AS site_path
+      FROM eligible GROUP BY faction_id
     `).bind(Date.parse(weekStart + 'T00:00:00Z') / 1000, time).all(),
     db.prepare(`
       SELECT target_faction, kind, option_id, starts_at, ends_at, available_at FROM clan_leader_slowdowns
@@ -122,6 +154,7 @@ export async function readClanLeaderPresence(db, weekStart, at) {
       const active = window && window.ends_at > time;
       return [faction, {
         rounds: byFaction.get(faction)?.rounds ?? 0,
+        playing_until: byFaction.get(faction)?.playing_until ?? null,
         site_path: byFaction.get(faction)?.site_path ?? factionPath(faction),
         faction_path: factionPath(faction),
         paused_until: active ? window.ends_at : null,

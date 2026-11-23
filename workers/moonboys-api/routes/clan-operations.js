@@ -2,7 +2,7 @@ import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
 import { readFactionLeaders } from '../shared/clan-faction-leaders.js';
-import { clanLeaderStart, readClanLeaderPresence, slowClanLeader } from '../shared/clan-leader-presence.js';
+import { clanLeaderStart, LEADER_POINTS_PER_ROUND, readClanLeaderPresence, slowClanLeader } from '../shared/clan-leader-presence.js';
 import { answerClanLeaderLore, clanLeaderLoreEnabled } from '../shared/clan-leader-lore.js';
 import { clanPeriodStart, readClanPeriodResults, readClanPeriodRewards } from '../shared/clan-period-rewards.js';
 import { clanCampaignReversesRoute, readClanCampaign, readClanCampaignCollectibles, readClanCampaignEligibility } from '../shared/clan-campaigns.js';
@@ -308,7 +308,7 @@ export async function handleClanOperations(request, env, helpers) {
             progress.leaders.controls = presence.controls;
             for (const leader of progress.leaders.crews) {
               leader.presence = presence.byFaction.get(leader.faction_id);
-              leader.power += leader.presence.rounds;
+              leader.power += leader.presence.rounds * LEADER_POINTS_PER_ROUND;
             }
           }
         } catch (error) {

@@ -2,8 +2,8 @@ import { publicLeaderRoutes } from './clan-leader-presence.js';
 
 const SITE = 'https://cryptomoonboys.com';
 const MODEL = '@cf/meta/llama-3.1-8b-instruct';
-const OWNER_DAILY_LIMIT = 12;
-const SITE_DAILY_LIMIT = 200;
+const FREE_QUESTIONS = 10;
+const MAX_TASK_QUESTIONS = 3;
 const UNKNOWN = 'I couldn’t verify that in the published Moonboys sources. Try a character, faction, place or story name.';
 const PERSONAS = {
   'all-city-bulls': 'direct, confident and focused on territory and what crews can build',
@@ -189,16 +189,30 @@ export function loreExcerpt(source, text, question) {
   return selected.sort((a, b) => a.index - b.index).map(({ text }) => text).join('\n').slice(0, 2600);
 }
 
-async function reserveQuestion(db, owner, utcDay) {
+async function reserveQuestion(db, owner, utcDay, siteLimit) {
   return db.prepare(`
     INSERT INTO clan_leader_lore_usage (utc_day, telegram_id, questions)
-    SELECT ?1, ?2, 1 WHERE (
+    SELECT ?1, ?2, 1 WHERE ?3 IS NULL OR (
       SELECT COALESCE(SUM(questions), 0) FROM clan_leader_lore_usage WHERE utc_day = ?1
     ) < ?3
     ON CONFLICT (utc_day, telegram_id) DO UPDATE SET questions = questions + 1
-    WHERE questions < ?4
+    WHERE questions < ?4 + (
+      SELECT MIN(COUNT(*), ?5) FROM clan_operation_awards WHERE telegram_id = ?2 AND utc_day = ?1
+    )
     RETURNING questions
-  `).bind(utcDay, owner, SITE_DAILY_LIMIT, OWNER_DAILY_LIMIT).first();
+  `).bind(utcDay, owner, siteLimit, FREE_QUESTIONS, MAX_TASK_QUESTIONS).first();
+}
+
+async function questionLimitError(db, owner, utcDay) {
+  const { used, earned } = await db.prepare(`
+    SELECT COALESCE((
+      SELECT questions FROM clan_leader_lore_usage WHERE utc_day = ?1 AND telegram_id = ?2
+    ), 0) AS used, (
+      SELECT MIN(COUNT(*), ?3) FROM clan_operation_awards WHERE utc_day = ?1 AND telegram_id = ?2
+    ) AS earned
+  `).bind(utcDay, owner, MAX_TASK_QUESTIONS).first();
+  if (used < FREE_QUESTIONS + earned) return 'lore_site_limit';
+  return earned === MAX_TASK_QUESTIONS ? 'lore_daily_limit' : 'lore_task_required';
 }
 
 const schema = {
@@ -218,6 +232,12 @@ export async function answerClanLeaderLore(env, owner, body, now) {
   }
   const previous = Array.isArray(body.previous) ? body.previous.slice(-2)
     .filter(value => typeof value === 'string').map(value => value.slice(0, 400)) : [];
+  const day = now.toISOString().slice(0, 10);
+  const configuredLimit = Number(env.CLAN_LEADER_LORE_SITE_LIMIT);
+  const siteLimit = Number.isSafeInteger(configuredLimit) && configuredLimit > 0 ? configuredLimit : null;
+  if (!await reserveQuestion(env.DB, owner, day, siteLimit)) {
+    return { error: await questionLimitError(env.DB, owner, day), status: 429 };
+  }
   const combined = [question, ...previous].join(' ');
   const active = bestSources(await getCatalog(), question, previous);
   const fetched = await Promise.allSettled(active.map(async source => {
@@ -230,10 +250,6 @@ export async function answerClanLeaderLore(env, owner, body, now) {
   }
   const excerpts = fetched.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : []);
   if (!excerpts.length) return { ok: true, reply: UNKNOWN, sources: [] };
-  if (!await reserveQuestion(env.DB, owner, now.toISOString().slice(0, 10))) {
-    return { error: 'lore_daily_limit', status: 429 };
-  }
-
   const model = await env.CLAN_LEADER_AI.run(MODEL, {
     max_tokens: 380,
     temperature: 0.25,

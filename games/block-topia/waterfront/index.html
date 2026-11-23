@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina’s Waterfront | Block Topia</title>
-<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=1">
+<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=2">
 <style>
 :root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0}
@@ -47,14 +47,14 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
 <a href="../">← Block Topia</a>
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll over the map or pinch with two fingers to zoom.</p>
+<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Select a faction leader for details, or double-click or double-tap to ask a question.</p>
 </section>
 <label for="player-faction">Player faction</label>
 <select id="player-faction"><option value="">Default explorer</option></select>
 <div id="map-leader-controls" hidden>
 <label for="map-leader-faction">Faction leader</label>
 <select id="map-leader-faction"></select>
-<button id="map-leader-talk" type="button">Talk</button>
+<button id="map-leader-talk" type="button">Show details</button>
 </div>
 <details id="build-discussion" hidden><summary>Build discussion</summary><ol></ol></details>
 <details id="editor">
@@ -75,7 +75,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <script src="district.js?v=8"></script>
-<script src="harbor-art.js?v=34"></script>
+<script src="harbor-art.js?v=35"></script>
 <script>
 "use strict";
 const district = window.waterfrontDistrict;
@@ -203,12 +203,13 @@ async function loadBuildDiscussion() {
 let previousDiscussionFrame = null;
 
 let factionHits = [];
-let factionDialogsEnabled = false;
-let leaderPauses = [];
+let leaderStates = [];
+let previousLeaderTap;
 function paintMap() {
   const faction = playerFaction.value === "" ? null : Number(playerFaction.value);
   factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
-    reducedMotion.matches ? null : discussionElapsed, leaderPauses) ?? [];
+    reducedMotion.matches ? null : discussionElapsed, leaderStates) ?? [];
+  canvas.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -300,12 +301,20 @@ canvas.addEventListener("click", event => {
   const y = Math.floor(mapY / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
   if (!editing) {
-    const leader = factionDialogsEnabled && factionHits.findLast(hit =>
+    const time = performance.now();
+    const nearFirstTap = previousLeaderTap && time - previousLeaderTap.time <= 360 &&
+      Math.hypot(event.clientX - previousLeaderTap.x, event.clientY - previousLeaderTap.y) <= 16;
+    const leader = (nearFirstTap && factionHits.find(hit => hit.index === previousLeaderTap.index)) ||
+      factionHits.findLast(hit =>
       Math.abs(hit.x - mapX) <= 11 && mapY >= hit.y - 20 && mapY <= hit.y + 2);
     if (leader) {
-      canvas.dispatchEvent(new CustomEvent('waterfront:faction-talk', { detail: leader.index }));
+      const ask = Boolean(nearFirstTap && previousLeaderTap.index === leader.index);
+      previousLeaderTap = ask ? null : { index: leader.index, time, x: event.clientX, y: event.clientY };
+      canvas.dispatchEvent(new CustomEvent('waterfront:leader-select', { detail: { index: leader.index, ask } }));
       return;
     }
+    previousLeaderTap = null;
+    canvas.dispatchEvent(new Event('waterfront:leader-clear'));
     walkTo(x, y);
     return;
   }
@@ -385,7 +394,7 @@ infoPanel.addEventListener("keydown", event => {
 });
 
 viewport.addEventListener("wheel", event => {
-  if (infoPanel.contains(event.target) || event.target.closest('.clan-leader-dialog')) return;
+  if (infoPanel.contains(event.target) || event.target.closest('.clan-leader-dialog, .leader-map-details, .leader-map-bubble')) return;
   if (event.deltaY === 0) return;
   event.preventDefault();
   const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? mapScroll.clientHeight : 1;
@@ -519,7 +528,8 @@ let refreshDeadline = Date.now() + refreshInterval;
 function refreshWaterfront() {
   clearTimeout(refreshTimer);
   const remaining = refreshDeadline - Date.now();
-  if (remaining <= 0 && !editing && !mapTouchActive && !mousePan) {
+  if (remaining <= 0 && !editing && !mapTouchActive && !mousePan &&
+      !viewport.querySelector('dialog[open]') && !viewport.hasAttribute('data-leader-question-pending')) {
     window.location.reload();
     return;
   }
@@ -535,6 +545,6 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) loadBuildDiscussion();
 });
 </script>
-<script data-cfasync="false" type="module" src="leader-dialog.js?lore=1"></script>
+<script data-cfasync="false" type="module" src="leader-dialog.js?lore=2"></script>
 </body>
 </html>

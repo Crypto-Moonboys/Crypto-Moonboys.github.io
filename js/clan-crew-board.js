@@ -1,5 +1,5 @@
 import { CLAN_REWARD_NAMES } from './clan-period-display.js';
-import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=1';
+import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=2';
 
 const board = document.querySelector('[data-clan-crew-progress]');
 const api = window.MOONBOYS_API?.getApiBase?.({ mode: 'write' });
@@ -165,17 +165,18 @@ if (board && api && profiles && factionOrder?.length) {
     breakdown.textContent = `${leader.banks} banks · ${leader.signals} signals · +${leader.boost.toLocaleString()} perk`;
     cell.append(breakdown);
     if (leader.presence && data.leaders.controls) {
-      const { rounds, site_path, faction_path, paused_until, talking } = leader.presence;
+      const { rounds, site_path, faction_path, paused_until, playing_until, talking } = leader.presence;
       const activity = document.createElement('div');
       const paused = paused_until && paused_until * 1000 > Date.now();
-      activity.textContent = `${rounds.toLocaleString()} leader rounds${paused ? (talking ? ' · In conversation' : ' · Paused') : ''}`;
+      activity.textContent = `${rounds.toLocaleString()} leader rounds${paused ? (talking ? ' · In conversation' : ' · Paused')
+        : playing_until * 1000 > Date.now() ? ' · Playing a game' : ''}`;
       const links = document.createElement('div');
       const faction = document.createElement('a');
       faction.href = faction_path;
       faction.textContent = 'Faction page';
       const visit = document.createElement('a');
       visit.href = site_path;
-      visit.textContent = 'Last site visit';
+      visit.textContent = 'Arcade visit';
       links.append(faction);
       if (site_path !== faction_path) links.append(' · ', visit);
       cell.append(activity, links);

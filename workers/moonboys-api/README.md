@@ -140,11 +140,13 @@ existing operations ledger.
 
 Apply `129_clan_leader_presence.sql` before setting `CLAN_LEADER_PLAY_FROM`
 to the agreed UTC start date (`YYYY-MM-DD`). Leave the variable unset while
-the feature is closed. The five-minute Worker tick uses the public site's
-sitemap and each faction's own chamber URL for visits. An available leader
-can complete one unranked training round per tick with the shared mining rules.
-A successful round adds one Leader Power. Missed ticks are skipped. Internal
-rounds do not make entries in player ledgers or arcade leaderboards.
+the feature is closed. Each hour the Worker assigns every faction one
+five-minute game window. Start times and groups vary while each window allows
+at most three leaders off the map. The Worker uses public arcade routes from
+the sitemap and the shared mining rules for unranked training. An uninterrupted
+round adds 12 Leader Power when its window closes, for the same daily ceiling
+of 288 per leader. Missed ticks are skipped. Training never writes player
+ledgers or arcade leaderboards.
 
 Signed members may interrupt a rival with one free preset question per UTC
 day (5, 10 or 20 minutes). A paid pause costs 100 Block Topia XP or 5 Block
@@ -169,6 +171,11 @@ Retrieval uses the current public Wiki index and sitemap plus the published
 canon Markdown references listed in `shared/clan-leader-lore.js`. Open questions
 can fetch pages across the site. Editorial records, drafts and unlisted paths
 stay outside the chat corpus. The Worker links only to references used in the
-request. Each UTC day allows 12 model calls per signed player and 200 across
-the site. Lore questions cannot pause a leader, change scores or charge a
-player's balance.
+request. Each signed player gets 10 questions per UTC day plus one question
+for each verified Clan Operation tier banked that day, up to three extras.
+Set `CLAN_LEADER_LORE_SITE_LIMIT` only if needed to cap total model traffic by
+UTC day. It is unset by default. In Waterfront,
+select a leader for details and double-click or double-tap to ask. Send closes
+the composer and the reply appears above the leader. The info button opens
+the full reply and sources. Lore questions do not affect rounds, scores or
+player balances.

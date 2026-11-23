@@ -18,6 +18,54 @@ export async function getClanLeaderBoard() {
   return (await response.json()).leaders ?? null;
 }
 
+export async function sendClanLeaderQuestion(npc, question, previous) {
+  const gate = window.MOONBOYS_IDENTITY;
+  const owner = gate?.getTelegramId?.();
+  if (!owner) return { error: 'connect_telegram' };
+  try {
+    const auth = gate.getFreshTelegramAuth ? await gate.getFreshTelegramAuth() : gate.getSignedTelegramAuth?.();
+    if (!auth || gate.getTelegramId() !== owner) return { error: 'connect_telegram' };
+    const api = window.MOONBOYS_API.getApiBase({ mode: 'write' });
+    const response = await fetch(api + '/clan-operations/leader-lore', {
+      method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(35000),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth, npc, question, previous }),
+    });
+    const result = await response.json();
+    if (gate.getTelegramId() !== owner) return { error: 'connect_telegram' };
+    return response.ok && result.ok ? result : { error: result.error };
+  } catch {
+    return { error: 'leader_lore_unavailable' };
+  }
+}
+
+export function clanLeaderQuestionError(error) {
+  const messages = {
+    connect_telegram: 'Connect Telegram in Battle Chamber to ask a question.',
+    lore_task_required: 'You’ve used your 10 free questions. Bank a Clan Operation tier today to unlock another.',
+    lore_daily_limit: 'You’ve used all your free and task-earned questions for today. They reset at midnight UTC.',
+    lore_site_limit: 'The site has used its AI allowance for today. It resets at midnight UTC.',
+    rate_limited: 'Too many questions at once. Try again in a minute.',
+  };
+  return messages[error] ?? 'Lore chat is temporarily unavailable. Try again shortly.';
+}
+
+export function clanLeaderSourceLinks(entries) {
+  const sources = document.createElement('ul');
+  for (const { title, path } of entries ?? []) {
+    if (typeof path !== 'string' || !/^\/(?!\/)[\w/.~-]*$/.test(path)) continue;
+    const item = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = path;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = title;
+    item.append(link);
+    sources.append(item);
+  }
+  return sources;
+}
+
 function loreChat(target) {
   const section = document.createElement('section');
   section.className = 'clan-leader-lore';
@@ -44,62 +92,28 @@ function loreChat(target) {
     event.preventDefault();
     const question = input.value.trim();
     if (!question || button.disabled) return;
-    const owner = gate.getTelegramId();
     input.disabled = button.disabled = true;
     status.textContent = 'Checking the Moonboys sources…';
-    try {
-      const auth = gate.getFreshTelegramAuth ? await gate.getFreshTelegramAuth() : gate.getSignedTelegramAuth?.();
-      if (!auth || gate.getTelegramId() !== owner) {
-        status.textContent = 'Reconnect Telegram to continue this chat.';
-        return;
-      }
-      const api = window.MOONBOYS_API.getApiBase({ mode: 'write' });
-      const response = await fetch(api + '/clan-operations/leader-lore', {
-        method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(35000),
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_auth: auth, npc: target, question, previous }),
-      });
-      const result = await response.json();
-      if (!response.ok || !result.ok) {
-        status.textContent = result.error === 'lore_daily_limit' ? 'The chat has reached its daily limit. Try again after midnight UTC.'
-          : result.error === 'rate_limited' ? 'Too many questions at once. Try again in a minute.'
-          : 'Lore chat is temporarily unavailable. Try again shortly.';
-        return;
-      }
-      if (gate.getTelegramId() !== owner) return;
-      const turn = document.createElement('article');
-      const prompt = document.createElement('strong');
-      prompt.textContent = question;
-      const answer = document.createElement('p');
-      answer.textContent = result.reply;
-      turn.append(prompt, answer);
-      if (result.sources?.length) {
-        const sources = document.createElement('ul');
-        for (const { title, path } of result.sources) {
-          if (typeof path !== 'string' || !/^\/(?!\/)[\w/.~-]*$/.test(path)) continue;
-          const item = document.createElement('li');
-          const link = document.createElement('a');
-          link.href = path;
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.textContent = title;
-          item.append(link);
-          sources.append(item);
-        }
-        turn.append(sources);
-      }
-      transcript.append(turn);
-      transcript.scrollTop = transcript.scrollHeight;
-      previous.push(question);
-      if (previous.length > 2) previous.shift();
-      input.value = '';
-      status.textContent = '';
-    } catch {
-      status.textContent = 'Lore chat is temporarily unavailable. Try again shortly.';
-    } finally {
-      input.disabled = button.disabled = false;
-      if (section.isConnected) input.focus();
+    const result = await sendClanLeaderQuestion(target, question, previous);
+    input.disabled = button.disabled = false;
+    if (!result.ok) {
+      status.textContent = clanLeaderQuestionError(result.error);
+      return;
     }
+    const turn = document.createElement('article');
+    const prompt = document.createElement('strong');
+    prompt.textContent = question;
+    const answer = document.createElement('p');
+    answer.textContent = result.reply;
+    turn.append(prompt, answer);
+    if (result.sources?.length) turn.append(clanLeaderSourceLinks(result.sources));
+    transcript.append(turn);
+    transcript.scrollTop = transcript.scrollHeight;
+    previous.push(question);
+    if (previous.length > 2) previous.shift();
+    input.value = '';
+    status.textContent = '';
+    if (section.isConnected) input.focus();
   });
   return section;
 }

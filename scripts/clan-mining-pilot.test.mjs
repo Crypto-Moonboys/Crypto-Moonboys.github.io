@@ -29,7 +29,7 @@ import { buildClanCampaign } from '../workers/moonboys-api/shared/clan-campaign-
 import { evaluateCampaignWindow } from '../workers/moonboys-api/shared/clan-campaign-scoring.js';
 import { maintainClanCampaigns } from '../workers/moonboys-api/shared/clan-campaigns.js';
 import { crewWeek } from '../workers/moonboys-api/shared/clan-crew-standings.js';
-import { clanLeaderStart, publicLeaderRoutes, runClanLeaderRounds } from '../workers/moonboys-api/shared/clan-leader-presence.js';
+import { clanLeaderStart, clanLeadersForSlot, LEADER_POINTS_PER_ROUND, publicLeaderRoutes, runClanLeaderRounds } from '../workers/moonboys-api/shared/clan-leader-presence.js';
 import { makeLoreCatalog, publishedLoreText } from '../workers/moonboys-api/shared/clan-leader-lore.js';
 
 const newerMigration = number => readFileSync(new URL(`../workers/moonboys-api/migrations/${number}.sql`, import.meta.url), 'utf8');
@@ -104,7 +104,8 @@ function requestFixture(db) {
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') + (leaders ? '&leaders=1' : '') : ''}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart, CLAN_LEADER_PLAY_FROM: settings.leaderStart,
-        CLAN_LEADER_LORE_ENABLED: settings.loreEnabled, CLAN_LEADER_AI: settings.loreAi }, {
+        CLAN_LEADER_LORE_ENABLED: settings.loreEnabled, CLAN_LEADER_AI: settings.loreAi,
+        CLAN_LEADER_LORE_SITE_LIMIT: settings.loreSiteLimit }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
         verifyTelegramAuth: async () => signed,
@@ -1889,9 +1890,23 @@ test('rival leader pauses debit once, protect recovery time, and skip only bot r
     VALUES ('101', 'graff-punks', 2000, 100), ('102', 'all-city-bulls', 0, 0), ('103', 'graffpunks', 0, 0);
   `);
   settings.leaderStart = '2026-11-23';
-  settings.time = new Date('2026-11-23T00:05Z');
+
   const start = clanLeaderStart({ CLAN_LEADER_PLAY_FROM: settings.leaderStart });
   assert.equal(clanLeaderStart({ CLAN_LEADER_PLAY_FROM: '2026-02-31' }), null);
+  const rival = 'nomad-bears';
+  const slotFloor = Array.from({ length: 288 }, (_, index) => start + index * 300);
+  const draws = slotFloor.map(clanLeadersForSlot);
+  assert.ok(draws.every(group => group.length <= 3), 'at least six walkers remain in Waterfront');
+  assert.equal(draws.at(-1).length, 0, 'all scheduled points can settle before midnight');
+  for (const faction of CANONICAL_FACTION_KEYS) {
+    assert.equal(draws.filter(group => group.includes(faction)).length, 24);
+  }
+  assert.notDeepEqual(draws, slotFloor.map(slot => clanLeadersForSlot(slot + 86400)));
+  const rivalSlot = slotFloor.find(slot => clanLeadersForSlot(slot).includes(rival));
+  const other = clanLeadersForSlot(rivalSlot).find(faction => faction !== rival);
+  const at = seconds => { settings.time = new Date(seconds * 1000); };
+  at(rivalSlot);
+
   const publicPage = '/wiki/crypto-moonboys.html';
   const game = '/games/chain-maze/';
   const sitemap = `<urlset>
@@ -1912,15 +1927,14 @@ test('rival leader pauses debit once, protect recovery time, and skip only bot r
   const tick = () => runClanLeaderRounds(db, start, settings.time, fetchPage);
   await tick();
   await tick();
-  assert.equal(visited.length, 9, 'a repeated tick does not repeat completed rounds');
+  assert.equal(visited.length, 3, 'a repeated tick does not open duplicate game sessions');
   assert.ok(visited.some(url => url.endsWith('/games/chain-maze/')));
-  assert.ok(visited.some(url => url.includes('/battle-chamber/factions/')));
   const get = async target => (await request({ method: 'GET', view: 'crew-progress', leaders: true }))
     .data.leaders.crews.find(crew => crew.faction_id === target);
-  const rival = 'nomad-bears';
   const initial = await get(rival);
-  assert.equal(initial.presence.rounds, 1);
-  assert.equal(initial.power, 1);
+  assert.equal(initial.presence.rounds, 0);
+  assert.equal(initial.presence.playing_until, rivalSlot + 300);
+  assert.equal(initial.power, 0);
   const interact = (target, option, currency, sequence, id = '101', signed = true) => request({
     id, signed, leaderAction: {
       target, option, currency, request_id: '00000000-0000-4000-8000-' + String(sequence).padStart(12, '0'),
@@ -1931,32 +1945,38 @@ test('rival leader pauses debit once, protect recovery time, and skip only bot r
   assert.equal((await interact('graffpunks', 'hour', 'xp', 2)).status, 403);
   assert.equal((await interact(rival, 'hour', 'xp', 3, '102')).status, 402);
 
-  settings.time = new Date('2026-11-23T00:06Z');
+  at(rivalSlot + 60);
   const ask = await interact(rival, 'alliance', null, 4);
   assert.equal(ask.status, 200);
-  assert.equal(ask.data.paused_until, Date.parse('2026-11-23T00:26Z') / 1000);
+  assert.equal(ask.data.paused_until, rivalSlot + 1260);
   assert.match(ask.data.reply, /verify/);
   assert.equal((await interact('blockstars', 'territory', null, 5)).data.error, 'daily_question_used');
   assert.equal((await interact(rival, 'hour', 'xp', 6)).data.error, 'leader_unavailable');
-  settings.time = new Date('2026-11-23T00:10Z');
+  at(rivalSlot + 300);
   bankReceipt(sql, '103', rival, settings.time.toISOString());
   await tick();
   const paused = await get(rival);
   assert.equal(paused.presence.talking, true);
-  assert.equal(paused.presence.rounds, 1);
-  assert.equal(paused.power, 2, 'a bank still counts during the pause');
-  assert.equal((await get('all-city-bulls')).presence.rounds, 2, 'other leaders still play');
+  assert.equal(paused.presence.playing_until, null);
+  assert.equal(paused.presence.rounds, 0);
+  assert.equal(paused.power, 1, 'a bank still counts during the pause');
+  assert.equal((await get(other)).presence.rounds, 1, 'other leaders still play');
 
-  settings.time = new Date('2026-11-23T00:30Z');
-  await tick();
-  assert.equal((await get(rival)).presence.rounds, 2, 'training resumes during recovery');
+  at(rivalSlot + 1260);
   assert.equal((await interact(rival, 'hour', 'xp', 7)).status, 409);
+  const nextSlot = slotFloor.find(slot => slot >= rivalSlot + 1260 && clanLeadersForSlot(slot).includes(rival));
+  at(nextSlot);
+  await tick();
+  assert.equal((await get(rival)).presence.playing_until, nextSlot + 300, 'training resumes during recovery');
+  at(nextSlot + 300);
+  assert.equal((await get(rival)).power, 1 + LEADER_POINTS_PER_ROUND);
+  const boughtAt = settings.time.getTime() / 1000;
   const purchases = await Promise.all([
     interact('blockstars', 'day', 'gems', 8), interact('blockstars', 'day', 'gems', 8),
   ]);
   assert.deepEqual(purchases[0], purchases[1]);
   assert.equal(purchases[0].status, 200);
-  assert.equal(purchases[0].data.paused_until, Date.parse('2026-11-24T00:30Z') / 1000);
+  assert.equal(purchases[0].data.paused_until, boughtAt + 86400);
   assert.equal((await interact('blockstars', 'hour', 'xp', 8)).data.error, 'request_conflict');
   assert.equal((await interact('rugpull-miners', 'hour', 'xp', 9)).status, 200);
   const wallet = sql.prepare("SELECT xp, gems FROM blocktopia_progression WHERE telegram_id = '101'").get();
@@ -2035,12 +2055,27 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   fakeResponse = { reply: 'Open gk-master-canon now.', sources: [1] };
   assert.deepEqual((await question()).data.sources, []);
   fakeResponse = undefined;
-  sql.exec("UPDATE clan_leader_lore_usage SET questions = 11 WHERE telegram_id = '999'");
+  sql.exec("UPDATE clan_leader_lore_usage SET questions = 9 WHERE telegram_id = '999'");
   const competing = await Promise.all([question(), question()]);
   assert.deepEqual(competing.map(result => result.status).sort(), [200, 429]);
   assert.equal(prompts.length, 4, 'only one call reserved the final account question');
-  sql.exec(`INSERT INTO clan_leader_lore_usage VALUES ('2026-11-20', '1', 188)`);
-  assert.equal((await question({}, { id: '998' })).status, 429, 'the shared daily budget is also enforced');
+  assert.equal((await question()).data.error, 'lore_task_required');
+  bankReceipt(sql, '998', 'nomad-bears', '2026-11-20T10:00:00.000Z');
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-19T10:00:00.000Z');
+  assert.equal((await question()).data.error, 'lore_task_required', 'other players and past banks give no credits');
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:00:00.000Z');
+  const bonus = await Promise.all([question(), question()]);
+  assert.deepEqual(bonus.map(result => result.status).sort(), [200, 429], 'one verified bank unlocks one question');
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:01:00.000Z', 2);
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:02:00.000Z', 3);
+  assert.equal((await question()).status, 200);
+  assert.equal((await question()).status, 200);
+  assert.equal((await question()).data.error, 'lore_daily_limit');
+  sql.exec(`INSERT INTO clan_leader_lore_usage VALUES ('2026-11-20', '1', 187)`);
+  settings.loreSiteLimit = '200';
+  assert.equal((await question({}, { id: '998' })).data.error, 'lore_site_limit', 'the shared daily budget is also enforced');
+  settings.loreSiteLimit = undefined;
+  assert.equal((await question({}, { id: '998' })).status, 200, 'there is no default shared question pool');
   settings.time = new Date('2026-11-21T00:00Z');
   assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
   settings.loreEnabled = 'false';
