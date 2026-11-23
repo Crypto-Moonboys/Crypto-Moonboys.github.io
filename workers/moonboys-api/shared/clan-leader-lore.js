@@ -73,7 +73,6 @@ export function clanLeaderLoreEnabled(env) {
 async function generateLore(env, endpoint, messages, gemini) {
   const [system, user] = messages;
   const headers = gemini ? {
-    'x-goog-api-key': env.CLAN_LEADER_GEMINI_KEY.trim(),
     'cf-aig-authorization': 'Bearer ' + env.CLAN_LEADER_GATEWAY_TOKEN.trim(),
     'cf-aig-collect-log': 'false',
     'cf-aig-skip-cache': 'true',
@@ -96,11 +95,21 @@ async function generateLore(env, endpoint, messages, gemini) {
       thinkingConfig: { thinkingLevel: 'LOW' },
     },
   } : { model: env.CLAN_LEADER_HERMES_MODEL?.trim() || 'hermes-agent', stream: false, messages };
-  const response = await fetch(endpoint, {
-    method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(LORE_MODEL_TIMEOUT_MS),
-    headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-  });
+  const requestUrl = new URL(endpoint);
+  // Native Google generation uses the key query parameter for AI Gateway BYOK detection.
+  if (gemini) requestUrl.searchParams.set('key', env.CLAN_LEADER_GEMINI_KEY.trim());
+  let response;
+  try {
+    response = await fetch(requestUrl.href, {
+      method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(LORE_MODEL_TIMEOUT_MS),
+      headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+  } catch {
+    // Fetch errors may include the URL. Keep the provider credential out of logs.
+    throw new Error(gemini ? 'lore_gemini_network_error' : 'lore_hermes_network_error');
+  }
   if (!response.ok) {
+    if (gemini) console.warn('Clan leader Gemini upstream status', response.status);
     await response.body?.cancel();
     throw new Error(gemini ? 'lore_gemini_unavailable' : 'lore_hermes_unavailable');
   }
