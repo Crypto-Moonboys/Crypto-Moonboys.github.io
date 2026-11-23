@@ -1,4 +1,4 @@
-import { publicLeaderRoutes } from './clan-leader-presence.js';
+import { matchClanLeaderSlowdownQuestion, publicLeaderRoutes } from './clan-leader-presence.js';
 
 const SITE = 'https://cryptomoonboys.com';
 const MOONBOYS_OVERVIEW = { path: '/wiki/crypto-moonboys.html', title: 'Crypto Moonboys Wiki Overview' };
@@ -300,7 +300,23 @@ async function questionLimitError(db, owner, utcDay) {
   return earned === MAX_TASK_QUESTIONS ? 'lore_daily_limit' : 'lore_task_required';
 }
 
-export async function answerClanLeaderLore(env, owner, body, now) {
+const LOCAL_REPLIES = [
+  [/^(?:who|what) are you$|^introduce yourself$/, ({name, wiki}) => ({ reply: `I represent ${name} here on the Waterfront. What do you want to know?`, sources: [{ title: name + ' Wiki', path: wiki }] })],
+  [/^(?:where are we|where am i|what (?:place|map) is this|what is the waterfront)$/, 'You’re on Lumina’s Waterfront in Block Topia. The streets connect the docks, parks and faction hangouts.'],
+  [/^(?:how do i|how can i|can i) (?:join|pick|choose) (?:a |your )?(?:clan|faction)$/, 'Open Battle Chamber on the Community page and choose your faction there.'],
+  [/^(?:where is|where s|how do i find) (?:the )?(?:battle chamber|community page)$/, 'You’ll find Battle Chamber on the Community page.'],
+  [/^(?:how do i|how can i|can i) (?:slow|pause|distract)(?: down)? (?:a |the )?(?:rival |clan |faction )?(?:leader|npc|bot)$/, 'Ask a rival leader a slowdown question. The free options last 5, 10 or 20 minutes, and you can use one per UTC day.'],
+  [/^(?:how long (?:does|is) (?:a |the )?(?:slowdown|pause)(?: last)?|what (?:are|s) (?:the )?slowdown (?:options|times))$/, 'Free slowdown questions pause a rival for 5, 10 or 20 minutes. Paid options run for one hour or 24 hours.'],
+  [/^(?:can (?:we|i) stack (?:slowdowns|pauses)|do (?:slowdowns|pauses) stack|how long is (?:the )?(?:free slowdown )?(?:cooldown|recovery))$/, 'A leader can have only one slowdown at a time. A free talk leaves one hour of recovery after the pause ends.'],
+  [/^(?:when (?:does|do) (?:my |the )?(?:free )?(?:slowdown|slowdowns|slowdown questions?) reset|how many free slowdown questions (?:do i get|can i ask))$/, 'You get one free slowdown question per UTC day. It resets at midnight UTC.'],
+  [/^(?:why (?:do|did) (?:the )?(?:leaders|npcs) leave the map|where (?:do|did) (?:the )?(?:leaders|npcs) go|how long (?:are you|are leaders) away)$/, 'Leaders step away for scheduled five-minute game slots and return afterwards. An active slowdown keeps a rival on the map.'],
+  [/^(?:how many (?:chat |lore )?questions (?:do i get|can i ask)|what is (?:my |the )?(?:chat|lore) limit)$/, 'You get 10 free lore questions per UTC day. Bank Clan Operation tiers today to unlock up to three more.'],
+  [/^(?:thanks|thank you|cheers|much appreciated)(?: mate| friend)?$/, 'Anytime. See you on the Waterfront.'],
+  [/^(?:bye|goodbye|see you|see ya|later)(?: mate| friend)?$/, 'Take care out there.'],
+  [/^(?:what can you do|what can i ask|how does (?:this |npc )?chat work)$/, 'Ask me about Moonboys lore, talk about whatever’s on your mind, or ask me to imagine a new story.'],
+];
+
+export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
   const gemini = env.CLAN_LEADER_LORE_PROVIDER === 'gemini';
   const endpoint = gemini ? geminiEndpoint(env) : hermesEndpoint(env);
   if (!endpoint) return { error: 'leader_lore_closed', status: 404 };
@@ -313,6 +329,27 @@ export async function answerClanLeaderLore(env, owner, body, now) {
     return { ok: true, reply: GREETINGS[npc], sources: [] };
   }
   const leader = LEADERS[npc];
+  const slowdown = matchClanLeaderSlowdownQuestion(question);
+  if (slowdown && applyTalk) {
+    const result = await applyTalk(npc, slowdown.id);
+    if (result.ok) {
+      return { ok: true, reply: result.reply + ' I’ll stay on the Waterfront for ' + slowdown.minutes + ' minutes.',
+        sources: [], paused_until: result.paused_until };
+    }
+    const notices = {
+      join_faction: 'Join a faction to use a rival slowdown.',
+      rival_required: 'Only a rival leader can be slowed down.',
+      daily_question_used: 'Your free slowdown is used for this UTC day.',
+      leader_unavailable: 'This leader is already paused or recovering.',
+      leader_play_closed: 'Leader slowdowns are currently closed.',
+    };
+    const notice = notices[result.error];
+    if (notice) return { ok: true, reply: slowdown.answer + ' ' + notice, sources: [] };
+    return result;
+  }
+  const local = LOCAL_REPLIES.find(([pattern]) => pattern.test(normal(question)))?.[1];
+  if (typeof local === 'function') return { ok: true, ...local(leader) };
+  if (local) return { ok: true, reply: local, sources: [] };
   const history = Array.isArray(body.recent_turns) ? body.recent_turns : body.previous;
   const recentTurns = (Array.isArray(history) ? history.slice(-2) : []).flatMap(turn => {
     const prompt = typeof turn === 'string' ? turn : turn?.question;
