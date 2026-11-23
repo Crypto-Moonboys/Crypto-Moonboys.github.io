@@ -9,16 +9,28 @@ const elements = new Map();
 function element() {
   return {
     textContent: '', children: [], dataset: {},
-    setAttribute() {},
-    appendChild(child) { this.children.push(child); },
+    attributes: new Map(), events: new Map(),
+    setAttribute(name, value) { this.attributes.set(name, value); },
+    addEventListener(type, fn) { this.events.set(type, fn); },
+    focus() {},
+    insertBefore(child, sibling) {
+      this.children.splice(this.children.indexOf(sibling), 0, child);
+      elements.set(child.id, child);
+    },
+    appendChild(child) {
+      this.children.push(child);
+      if (child.id) elements.set(child.id, child);
+    },
     replaceChildren(...children) { this.children = children; },
   };
 }
 for (const id of [
+  'game-overlay', 'overlay-ctrl-bar', 'overlay-btn-info', 'nbg-record-board',
   'nbg-record-status', 'nbg-record-account', 'nbg-record-personal',
   'nbg-record-rows', 'nbg-prize-rows', 'nbg-prize-cutoff', 'nbg-hud-player',
   'nbg-record-ranking', 'nbg-finish-status',
 ]) elements.set(id, element());
+elements.get('overlay-ctrl-bar').appendChild(elements.get('overlay-btn-info'));
 const document = {
   readyState: 'loading',
   getElementById(id) { return elements.get(id); },
@@ -44,6 +56,7 @@ const localStorage = {
   removeItem(key) { stored.delete(key); },
 };
 const window = {
+  location: { hostname: 'localhost', hash: '#nbg-record-board' },
   MOONBOYS_IDENTITY: gate,
   MOONBOYS_API: { getLeaderboardUrl: () => 'https://leaderboard.test' },
   localStorage,
@@ -94,6 +107,18 @@ const source = readFileSync('game/nbg-london-leaderboards.js', 'utf8');
 vm.runInNewContext(source, { window, document, fetch, URL, Date, String, Number, Promise, Object, Array, console, AbortSignal, CustomEvent, setTimeout: captureTimeout, clearTimeout: clearCapturedTimeout });
 assert.equal(typeof domReady, 'function');
 domReady();
+const drawer = elements.get('nbg-record-drawer');
+const scores = elements.get('nbg-open-records');
+assert.equal(drawer.hidden, false, 'a new visit to the scores fragment opens the existing drawer');
+assert.equal(scores.attributes.get('aria-expanded'), 'true');
+elements.get('nbg-close-records').events.get('click')();
+assert.equal(drawer.hidden, true, 'the linked drawer can be closed normally');
+window.location.hash = '#other';
+listeners.get('hashchange')();
+assert.equal(drawer.hidden, true, 'unrelated fragments leave the drawer closed');
+window.location.hash = '#nbg-record-board';
+listeners.get('hashchange')();
+assert.equal(drawer.hidden, false, 'same-page navigation also opens the scores drawer');
 async function flush() {
   await new Promise(resolve => setImmediate(resolve));
 }
