@@ -91,7 +91,7 @@ function bootMap(district) {
       if (!window.drawWaterfront) await script('harbor-art.js?v=35');
       if (!window.waterfrontMapLoaded) await script('map.js?v=1');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
-      await import('./leader-dialog.js?lore=3');
+      await import('./leader-dialog.js?lore=4');
     })().catch(error => {
       mapStartup = null;
       throw error;
