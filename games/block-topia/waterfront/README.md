@@ -32,6 +32,27 @@ A faction member can use one free slowdown per UTC day on a rival leader. A succ
 - Run `node --test scripts/clan-mining-pilot.test.mjs` and `npm run test:canon`. Check that exact aliases return the expected source without an upstream request and that mixed and creative questions still reach the provider.
 - For Gemini, production uses `CLAN_LEADER_LORE_ENABLED=true`, the Gemini provider selection and `CLAN_LEADER_GEMINI_GATEWAY`. Keep `CLAN_LEADER_GEMINI_KEY` and `CLAN_LEADER_GATEWAY_TOKEN` in Worker secrets. After a runtime change is approved and merged, deploy `moonboys-api` and verify a signed greeting, a local canon question, and a creative request. Merging the code and deploying the Worker are separate steps.
 
+## Nine faction leaders and the weekly boost loop
+
+The Battle Chamber has one NPC leader for each of its nine factions. The goal is a year-round competition where members complete Daily WTF Signals to support their own leader, and can slow rival leaders to improve their faction’s position.
+
+### What the Worker does today
+
+- **NPC grinding.** The scheduled Worker gives each of the nine leaders one five-minute slot per UTC hour, with up to three leaders playing at once. During the slot a leader leaves the Waterfront to play. The Worker rotates through public game routes, checks that the page is reachable, and simulates a server-side training round. Each eligible completed round adds 12 leader support points.
+- **Member support.** Current-week leader power starts with one point per banked task tier and two per completed Daily WTF Signal. It also includes NPC round points and any earned weekly boost. Encourage members to complete Daily Signals throughout the week.
+- **Weekly close.** The existing crew competition runs Monday through Sunday UTC. It finalizes eligible crew standings using members’ best five banking days and ranks by the share of available banks completed. Ranks can tie and ineligible or scoreless crews can be unranked. These standings determine next week’s leader boost level as `10 - rank`.
+- **Next week’s boost.** There are three options at each level. Supply Dock adds `level` per banked tier, Signal Relay adds `3 × level` per completed signal, and Crew Rally adds `2 × level` per active member-day. The Worker currently selects automatically from the previous week’s finalized activity. The selected boost adds points as members complete the qualifying activity in the new week.
+- **Slowing a rival.** A free question or paid pause skips overlapping grinding slots, so the target earns fewer NPC round points and your leader can gain ground on the support leaderboard. The current paid options are 1 hour for 100 XP or 5 gems, and 24 hours for 1,200 XP or 50 gems. They have 1-hour and 6-hour recoveries respectively. The server owns eligibility, cost, pause and recovery.
+
+### Intended rules still to implement
+
+1. **Grind the actual games.** Give the year-round NPC rotation verified completion rules for each supported Battle Chamber game. Today’s route visit and generic training round do not execute the game on that page.
+2. **Close a nine-faction leader competition every seven days.** Settle the combined eligible points once, publish places 1–9 under agreed tie and eligibility rules, and make the final placement reflect NPC rounds, member Signals and earned boosts. Today the official crew standings still come from task banking. Slowing a leader affects support points, but does not currently change the official standings that award next week’s perk.
+3. **Award rank points and a three-option lottery.** Define the points and reward odds for each place, which faction member or role makes the pick, and the default if nobody picks. Settle the selected outcome once and carry the awarded points into the next week. The current automatic perk selector has no lottery, pick or opening points balance.
+4. **Connect member WTF boosts to the result.** Define how the weekly NPC result changes members’ boosts, who qualifies, and how much stronger results improve their odds. Current perks add leader support points based on member activity. The requested payout and odds rules need their own settlement and display.
+
+Start in [Clan Operations routes](../../../workers/moonboys-api/routes/clan-operations.js), [leader support and perks](../../../workers/moonboys-api/shared/clan-faction-leaders.js), [crew standings](../../../workers/moonboys-api/shared/clan-crew-standings.js) and [period settlement](../../../workers/moonboys-api/shared/clan-period-rewards.js). Test weekly rollover, ties, missed or retried scheduled ticks, repeat lottery picks, and overlapping pauses before changing the reward flow.
+
 ## Map and art handover
 
 Keep the night-time harbor palette, original graffiti, and consistent top-down building fronts. For generated art, use transparent PNGs at a consistent pixel scale, place files under `assets/`, and record their source or generation job in the PR. Keep generation credentials on the runner.
