@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { runInNewContext } from 'node:vm';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 
@@ -109,3 +110,25 @@ assert.ok(
 );
 
 console.log('telegram-daily-loop-commands.test.mjs passed');
+
+const renderSignal = runInNewContext(
+  [sourceFormatter, wtfLine, functionBlock('formatUtcHm'), 'formatDailyWtfLine'].join('\n'),
+  { escapeHtml: value => String(value) },
+);
+const windows = [
+  { title: 'Midnight', starts_at: '2026-11-23T00:00:00Z', ends_at: '2026-11-23T01:30:00Z' },
+  { title: 'Morning', starts_at: '2026-11-23T08:00:00Z', ends_at: '2026-11-23T09:30:00Z',
+    checked_in_at: '2026-11-23T08:01:00Z' },
+  { title: 'Midday', starts_at: '2026-11-23T12:00:00Z', ends_at: '2026-11-23T13:30:00Z' },
+];
+const signalText = (time, state = 'live') => renderSignal({
+  source_status: { daily_wtf_status: { state } },
+  daily_wtf_status: { events: windows },
+}, Date.parse(`2026-11-23T${time}Z`));
+assert.match(signalText('08:05:00'), /Morning.*checked in/);
+assert.match(signalText('09:30:00'), /Midday.*upcoming/);
+assert.match(signalText('23:00:00'), /No remaining window today/);
+assert.match(signalText('08:05:00', 'preview'), /Morning.*preview schedule/);
+assert.match(signalText('08:05:00', 'query_failed'), /sync unavailable/);
+windows[1].completed_at = '2026-11-23T08:03:00Z';
+assert.match(signalText('08:05:00'), /Morning.*completed/);

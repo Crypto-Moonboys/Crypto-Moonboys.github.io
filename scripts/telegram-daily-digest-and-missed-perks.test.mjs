@@ -123,17 +123,17 @@ check(workerJs.includes("reason: 'pending_recent'") && workerJs.includes("reason
 check(workerJs.includes("safeStatus === 'sent' ? nowIso : null"), 'worker sets sent_at only for sent status');
 check(workerJs.includes('DIGEST_SEND_BATCH_SIZE') && workerJs.includes('DIGEST_SEND_MAX_CONCURRENCY') && workerJs.includes('Promise.all'), 'digest runner uses bounded batching/concurrency');
 check(workerJs.includes('processed: 0') && workerJs.includes('skipped:') && workerJs.includes('failed: 0'), 'digest summary includes processed/sent/failed/skipped tracking');
-check(workerJs.includes('GM, the Battle Chamber has reset. Your faction has new work.'), 'digest includes hello/check-in copy');
+check(workerJs.includes('Your daily Battle Chamber update.') && workerJs.includes('Check in when the signal opens.'), 'digest includes daily update and check-in guidance');
 check(/Today.{0,12}faction daily missions/.test(workerJs), 'digest includes today mission section');
 check(workerJs.includes('Missed perks update'), 'digest includes missed perks update');
-check(workerJs.includes('Faction daily log'), 'digest includes faction daily log');
+check(workerJs.includes('Legacy faction Clout') && workerJs.includes('Weekly Clout rank:') && workerJs.includes('#unified-leaderboard'), 'digest labels the legacy rank and links to Unified Rankings');
 check(workerJs.includes('Open Battle Chamber') && workerJs.includes('Play Arcade') && workerJs.includes('View Faction Chamber'), 'digest includes CTA links');
 check(workerJs.includes('getLinkedTelegramUsersForDigest'), 'digest source uses linked-user query');
 
 console.log('\n[6] UI checks');
 check(communityHtml.includes('battle-todays-active-options'), 'Battle Chamber has Today’s Active Options panel');
 check(communityHtml.includes('battle-missed-perks-history'), 'Battle Chamber has Missed Days / Missed Perks panel');
-check(communityHtml.includes('Missed perks history builds over time.'), 'Missed panel copy says history builds over time');
+check(communityHtml.includes('Missed history does not reset.'), 'Missed panel explains that history survives the daily reset');
 check(!communityHtml.toLowerCase().includes('missed history clears daily'), 'no copy contains "missed history clears daily" (case-insensitive)');
 check(factionPageJs.includes('fcp-daily-digest') && factionPageJs.includes('fcp-missed-perks'), 'faction chamber renderer includes missed/digest hooks');
 check(bridgeJs.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && bridgeJs.includes('MOONBOYS_ROGUELITE_MISSED_HISTORY'), 'bridge wires roguelite daily/missed caches');
