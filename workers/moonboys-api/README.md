@@ -159,20 +159,30 @@ during the pause.
 
 ### Faction leader lore chat
 
-Apply `130_clan_leader_lore.sql` and deploy the `CLAN_LEADER_AI` Workers AI
-binding. Set `CLAN_LEADER_LORE_ENABLED=true` when ready to open chat. These
-controls can run independently of the paid pause and training-round cutover.
+Apply `130_clan_leader_lore.sql` and configure a dedicated Hermes API gateway
+on the VPS with its provider set to local Ollama. Use a game-only profile
+with all toolsets disabled and no access to the build runner’s credentials or
+private workspace. Keep Ollama and Hermes bound to loopback. Use an authenticated
+HTTPS proxy that forwards only `POST /v1/chat/completions` to that profile.
+Set `CLAN_LEADER_HERMES_URL` to the full HTTPS endpoint and store the bearer key
+as the `CLAN_LEADER_HERMES_TOKEN` Worker secret.
+`CLAN_LEADER_HERMES_MODEL` names the gateway profile and defaults to
+`hermes-agent`. The Ollama model itself is configured on the VPS.
+Set `CLAN_LEADER_LORE_ENABLED=true` when the connection is ready. Chat requires
+the Hermes configuration and uses no hosted model fallback.
 Players sign in with Telegram and can ask any of the nine faction leaders.
 The Worker sends the question, up to two earlier questions, and public source
 excerpts to the model. Telegram auth and account IDs stay within the Worker.
 Only daily usage counts are saved to D1.
 
-Retrieval uses the current public Wiki index and sitemap plus the published
-canon Markdown references listed in `shared/clan-leader-lore.js`. Open questions
-can fetch pages across the site. Editorial records, drafts and unlisted paths
-stay outside the chat corpus. The Worker links only to references used in the
-request. Each signed player gets 10 questions per UTC day plus one question
-for each verified Clan Operation tier banked that day, up to three extras.
+The nine leaders have their own faction identity, voice and guiding values.
+They share a knowledge catalog built from the published site artifact, public
+Wiki index, sitemap and current canon references. Pages publishes the artifact's
+HTML and Markdown path index at `/js/leader-lore-sources.json`. The Worker reads
+short excerpts from relevant documents when a question is asked and links the
+sources it used. Editorial-only files, noindex pages and account routes stay out
+of model context. Each signed player gets 10 questions per UTC day plus one
+question for each verified Clan Operation tier banked that day, up to three extras.
 Set `CLAN_LEADER_LORE_SITE_LIMIT` only if needed to cap total model traffic by
 UTC day. It is unset by default. In Waterfront,
 select a leader for details and double-click or double-tap to ask. Send closes
