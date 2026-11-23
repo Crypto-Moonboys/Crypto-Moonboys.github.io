@@ -72,7 +72,15 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <select id="map-leader-faction"></select>
 <button id="map-leader-talk" type="button">Show details</button>
 </div>
-<details id="build-discussion" hidden><summary>Build discussion</summary><ol></ol></details>
+<details id="build-discussion" hidden>
+<summary>Build crew conversations</summary>
+<p>Daily crew briefing · <strong id="crew-briefing-topic"></strong></p>
+<ol id="crew-briefing-lines"></ol>
+<div id="recorded-build-discussion" hidden>
+<p>Recorded build discussion</p>
+<ol id="recorded-build-lines"></ol>
+</div>
+</details>
 <details id="editor">
 <summary>Map editor</summary>
 <fieldset aria-label="Edit your map">
@@ -90,6 +98,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" type="module" src="entry.js?v=3"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=4"></script>
 </body>
 </html>

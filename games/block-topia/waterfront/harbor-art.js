@@ -990,7 +990,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   const crew = window.waterfrontBuildDiscussion ?? [];
-  const turn = crew[discussionElapsed === null ? crew.length - 1 : Math.floor(discussionElapsed / 12)];
+  const turn = crew.length ? crew[discussionElapsed === null ? 0 : Math.floor(discussionElapsed / 12) % crew.length] : null;
   function drawCrew() {
     const speakers = [
       { col: district.spawn.x - 2 },

@@ -87,27 +87,47 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
 let discussionElapsed = 0;
 let publishedDiscussion = "";
-async function loadBuildDiscussion() {
-  try {
-    const response = await fetch("build-discussion.json", { cache: "no-cache" });
-    if (!response.ok) return;
-    const turns = await response.json();
-    if (!Array.isArray(turns) || !turns.every(turn => turn &&
-      (turn.speaker === 0 || turn.speaker === 1) && typeof turn.text === "string")) return;
-    const current = JSON.stringify(turns);
-    if (current === publishedDiscussion) return;
-    publishedDiscussion = current;
-    window.waterfrontBuildDiscussion = turns;
-    discussionElapsed = 0;
-    previousDiscussionFrame = null;
-    const panel = document.querySelector("#build-discussion");
-    panel.hidden = !turns.length;
-    panel.querySelector("ol").replaceChildren(...turns.map(turn => {
+let recordedDiscussion = [];
+let discussionRequest = 0;
+
+function updateBuildDiscussion(now = new Date()) {
+  const briefing = window.waterfrontCrewBriefing(now.getUTCDay());
+  const turns = [...briefing.turns, ...recordedDiscussion];
+  const current = JSON.stringify(turns);
+  if (current === publishedDiscussion) return;
+  publishedDiscussion = current;
+  window.waterfrontBuildDiscussion = turns;
+  discussionElapsed = 0;
+  previousDiscussionFrame = null;
+
+  const panel = document.querySelector("#build-discussion");
+  panel.hidden = false;
+  panel.querySelector("#crew-briefing-topic").textContent = briefing.title;
+  for (const [id, entries, roles] of [
+    ["crew-briefing-lines", briefing.turns, ["Crew planner", "Site checker"]],
+    ["recorded-build-lines", recordedDiscussion, ["Builder", "Reviewer"]],
+  ]) {
+    panel.querySelector("#" + id).replaceChildren(...entries.map(turn => {
       const entry = document.createElement("li");
-      entry.textContent = (turn.speaker === 0 ? "Builder" : "Reviewer") + " — " + turn.text;
+      entry.textContent = roles[turn.speaker] + " — " + turn.text;
       return entry;
     }));
-    paintMap();
+  }
+  panel.querySelector("#recorded-build-discussion").hidden = !recordedDiscussion.length;
+  paintMap();
+}
+
+async function loadBuildDiscussion() {
+  const request = ++discussionRequest;
+  updateBuildDiscussion();
+  try {
+    const response = await fetch("build-discussion.json", { cache: "no-cache" });
+    if (!response.ok || request !== discussionRequest) return;
+    const turns = await response.json();
+    if (request !== discussionRequest || !Array.isArray(turns) || !turns.every(turn => turn &&
+      (turn.speaker === 0 || turn.speaker === 1) && typeof turn.text === "string")) return;
+    recordedDiscussion = turns;
+    updateBuildDiscussion();
   } catch {
     // A temporary fetch failure leaves the last published discussion available.
   }

@@ -2,6 +2,14 @@
 
 Lumina’s Waterfront is Block Topia’s walkable island district. Build a dense, lived-in cyberpunk harbor inspired by Hong Kong at night. Anchor the city in docks, steep rooflines, narrow streets, neon storefronts, parks and graffiti. Keep the current visual language of deep blue shadows, amber windows, teal waterfront light and selective magenta accents. Use original art and the supplied faction designs.
 
+## Purpose and audience
+
+This district gives verified faction players a place to explore. Public test builds let the community follow construction before it reaches the live game. From spawn, a first-time visitor should be able to use Lumina’s blue lantern to get their bearings, then follow the street to the docks and seawall mural. Give every new destination a reason to visit and a readable route from the existing network.
+
+For a single VPS sprite-library placement, identify the player benefit first. A planter can mark a junction without hiding a doorway. A bench can create a rest stop without occupying the footpath. Keep the lot outside the original harbor core and preserve existing paths, shoreline and saved player edits. A new route or mechanic needs a separate design and review.
+
+The [founder issue](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1921#luminas-waterfront--living-district-brief) holds the expanded district goals. The build crew’s authored map briefings rotate by UTC weekday. Recorded builder and reviewer turns are published separately when they are available.
+
 ## Districts and landmarks
 
 These are design targets for future PRs. Check `workers/moonboys-api/blocktopia/waterfront-district.js` and the current renderer before choosing lots. Coordinates below are inclusive, zero-based world coordinates. The current grid is 56 by 34 with 32 map pixels per tile.
