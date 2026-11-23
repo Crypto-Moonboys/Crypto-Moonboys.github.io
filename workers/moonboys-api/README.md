@@ -175,12 +175,14 @@ The Worker sends the question, up to two earlier questions, and public source
 excerpts to the model. Telegram auth and account IDs stay within the Worker.
 Only daily usage counts are saved to D1.
 
-Retrieval uses the current public Wiki index and sitemap plus the published
-canon Markdown references listed in `shared/clan-leader-lore.js`. Open questions
-can fetch pages across the site. Editorial records, drafts and unlisted paths
-stay outside the chat corpus. The Worker links only to references used in the
-request. Each signed player gets 10 questions per UTC day plus one question
-for each verified Clan Operation tier banked that day, up to three extras.
+The nine leaders have their own faction identity, voice and guiding values.
+They share a knowledge catalog built from the published site artifact, public
+Wiki index, sitemap and current canon references. Pages publishes the artifact's
+HTML and Markdown path index at `/js/leader-lore-sources.json`. The Worker reads
+short excerpts from relevant documents when a question is asked and links the
+sources it used. Editorial-only files, noindex pages and account routes stay out
+of model context. Each signed player gets 10 questions per UTC day plus one
+question for each verified Clan Operation tier banked that day, up to three extras.
 Set `CLAN_LEADER_LORE_SITE_LIMIT` only if needed to cap total model traffic by
 UTC day. It is unset by default. In Waterfront,
 select a leader for details and double-click or double-tap to ask. Send closes
