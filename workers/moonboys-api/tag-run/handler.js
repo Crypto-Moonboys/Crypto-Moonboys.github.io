@@ -155,6 +155,7 @@ export async function postTagRunGroupBulletin(env, options = {}) {
     '10 points per qualifying message.',
     'Bonus points for replies and daily streaks.',
     '29 ranks to unlock.',
+    'Accepted messages also earn 1 Grinder Point each, up to 15 per UTC day.',
     '',
     'COMMUNITY POT',
     'DAILY WAX TOKEN DRAWS',
