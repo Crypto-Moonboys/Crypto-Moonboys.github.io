@@ -1,35 +1,18 @@
 {
   "issue": 1930,
-  "round": 11,
+  "round": 12,
   "research": "research incomplete",
   "review": {
     "keyFindings": [
       {
-        "type": "Visual Risk",
-        "description": "The district layout includes water and roads that are not properly connected, which could lead to confusion for players navigating the area.",
-        "affectedAreas": [
-          "Row 1",
-          "Row 2"
-        ],
-        "suggestedFix": "Ensure all 'r' (road) tiles are correctly connected."
+        "type": "Navigation Risk",
+        "description": "The route [15,27,16,28,4,17,40,52,64,76,75,87] includes a potential loop or dead-end. The path from 75 to 87 might not be navigable as intended.",
+        "recommendation": "Review the route for any loops or ensure that all points are connected properly."
       },
       {
-        "type": "Navigation Risk",
-        "description": "The route path includes a sudden change in direction and length, which might be confusing for players.",
-        "affectedPath": [
-          15,
-          27,
-          16,
-          28,
-          4,
-          17,
-          40,
-          52,
-          64,
-          76,
-          75
-        ],
-        "suggestedFix": "Smooth out the path to make it more intuitive for players."
+        "type": "Visual Risk",
+        "description": "The water district layout shows a potential issue with the road and dock connections. The road 'r' at row 3, column 14 connects to the dock but does not seem to lead anywhere else.",
+        "recommendation": "Ensure that all roads are connected properly to other elements like houses or docks."
       }
     ]
   }
