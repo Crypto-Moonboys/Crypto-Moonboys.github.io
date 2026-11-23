@@ -1,4 +1,5 @@
 import { matchClanLeaderSlowdownQuestion, publicLeaderRoutes } from './clan-leader-presence.js';
+import { localClanCanonReply } from './clan-leader-canon-library.js';
 
 const SITE = 'https://cryptomoonboys.com';
 const MOONBOYS_OVERVIEW = { path: '/wiki/crypto-moonboys.html', title: 'Crypto Moonboys Wiki Overview' };
@@ -350,6 +351,8 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
   const local = LOCAL_REPLIES.find(([pattern]) => pattern.test(normal(question)))?.[1];
   if (typeof local === 'function') return { ok: true, ...local(leader) };
   if (local) return { ok: true, reply: local, sources: [] };
+  const canonReply = localClanCanonReply(normal(question));
+  if (canonReply) return canonReply;
   const history = Array.isArray(body.recent_turns) ? body.recent_turns : body.previous;
   const recentTurns = (Array.isArray(history) ? history.slice(-2) : []).flatMap(turn => {
     const prompt = typeof turn === 'string' ? turn : turn?.question;
