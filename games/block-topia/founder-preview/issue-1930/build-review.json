@@ -1,27 +1,27 @@
 {
   "issue": 1930,
-  "round": 7,
+  "round": 8,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Waterfront district has a large empty space which might look uninteresting.",
+          "description": "Waterfront district has a large empty space that might look uninteresting.",
           "suggestion": "Add more details or objects to the empty spaces."
         },
         {
-          "description": "The lighthouse is not easily noticeable due to its small size and color similarity with the ground.",
-          "suggestion": "Increase the size of the lighthouse or change its color for better visibility."
+          "description": "The route path crosses through areas without roads, which may be confusing for players.",
+          "suggestion": "Ensure routes are always on roads or consider adding a path overlay."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route path numbers are not clearly visible, especially in rows where they blend into the background.",
-          "suggestion": "Use a contrasting color for route numbers and ensure they stand out from the background."
+          "description": "Route points include non-existent cells (e.g., 27, 28, 16, etc.), which could lead to navigation errors.",
+          "suggestion": "Verify the route points against the district layout."
         },
         {
-          "description": "The route path 40 is missing, which could lead to confusion or errors in navigation.",
-          "suggestion": "Ensure all designated route paths are present and correctly placed."
+          "description": "The route does not have a clear starting or ending point, making it difficult for players to understand its purpose.",
+          "suggestion": "Define a start and end point for the route and ensure they are visually distinct."
         }
       ]
     }
