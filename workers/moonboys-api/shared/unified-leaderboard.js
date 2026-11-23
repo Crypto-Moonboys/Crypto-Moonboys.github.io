@@ -32,7 +32,9 @@ const factions = sqlList(CANONICAL_FACTION_KEYS);
 // The widened date predicates let D1 use source indexes. The final timestamp
 // filter enforces exact boundaries, including community seasons starting at midday.
 const rankedSql = `
-WITH raw(game, owner, earned, faction, points, cap, native_score, native_xp) AS (
+-- Production D1 permits five terms per compound SELECT. Keep independent
+-- receipt groups materialized so the planner cannot flatten the unions.
+WITH ranked_games(game, owner, earned, faction, points, cap, native_score, native_xp) AS MATERIALIZED (
   SELECT game, telegram_id, processed_at, NULL, 10, 30, raw_score, xp_awarded
   FROM arcade_progression_events
   WHERE status = 'accepted' AND game IN (${sqlList(arcadeGames)})
@@ -49,7 +51,8 @@ WITH raw(game, owner, earned, faction, points, cap, native_score, native_xp) AS 
   WHERE day_key >= date(?1,'-1 day') AND day_key <= date(?2)
     AND status = 'finished' AND ranked = 1 AND player_stats_applied = 1 AND arcade_xp_applied = 1
     AND horde_applied = 1 AND score > 0
-  UNION ALL
+),
+progression_games AS MATERIALIZED (
   SELECT 'blocktopia-rpg', telegram_id, created_at, NULL, 10, 30, score, xp_change
   FROM blocktopia_progression_events WHERE action = 'mini_game_win' AND xp_change > 0
     AND created_at >= date(?1) AND created_at < date(?2,'+1 day')
@@ -64,7 +67,8 @@ WITH raw(game, owner, earned, faction, points, cap, native_score, native_xp) AS 
   UNION ALL
   SELECT 'waterfront', telegram_id, awarded_at, faction_id, 10, 30, NULL, NULL
   FROM clan_operation_awards WHERE utc_day BETWEEN date(?1) AND date(?2)
-  UNION ALL
+),
+community_activity AS MATERIALIZED (
   SELECT 'wtf-signal', telegram_id, completed_at, NULL, 5, 30, NULL, NULL
   FROM daily_wtf_player_events WHERE status = 'completed' AND completed_at IS NOT NULL
     AND utc_day BETWEEN date(?1) AND date(?2)
@@ -77,7 +81,12 @@ WITH raw(game, owner, earned, faction, points, cap, native_score, native_xp) AS 
   SELECT 'tag-run', telegram_id, datetime(message_unix,'unixepoch'), NULL, 1, 15, NULL, NULL
   FROM tag_run_messages WHERE day_key BETWEEN date(?1) AND date(?2)
 ),
-credited AS (
+raw AS (
+  SELECT * FROM ranked_games
+  UNION ALL SELECT * FROM progression_games
+  UNION ALL SELECT * FROM community_activity
+),
+credited AS MATERIALIZED (
   SELECT raw.*, date(raw.earned) AS day,
     COALESCE(CASE WHEN raw.faction IN (${factions}) THEN raw.faction END,
       CASE WHEN roster.faction_id IN (${factions}) THEN roster.faction_id END, '') AS team
@@ -87,12 +96,12 @@ credited AS (
     AND roster.week_start = date(raw.earned,'-6 days','weekday 1')
   WHERE julianday(raw.earned) >= julianday(?1) AND julianday(raw.earned) < julianday(?2)
 ),
-daily AS (
+daily AS MATERIALIZED (
   SELECT owner, game, team, day, MIN(SUM(points),cap) AS points, COUNT(*) AS events,
     MAX(native_score) AS best_score, SUM(native_xp) AS source_xp
   FROM credited GROUP BY owner, game, team, day, cap
 ),
-members AS (
+members AS MATERIALIZED (
   SELECT 'global' AS scope, '' AS category, owner AS entrant, game, points, events, best_score, source_xp FROM daily
   UNION ALL
   SELECT 'games', game, owner, game, points, events, best_score, source_xp FROM daily
@@ -142,13 +151,13 @@ weekly_boosts AS (
   FROM perk_activity AS a JOIN clan_perk AS p ON p.faction=a.team AND p.start_day=date(a.day,'-6 days','weekday 1')
   GROUP BY a.team HAVING points>0
 ),
-per_source AS (
+per_source AS MATERIALIZED (
   SELECT scope, category, entrant, game, SUM(points) AS points, SUM(events) AS events,
     MAX(best_score) AS best_score, SUM(source_xp) AS source_xp
   FROM (SELECT * FROM members UNION ALL SELECT * FROM npc UNION ALL SELECT * FROM weekly_boosts)
   GROUP BY scope, category, entrant, game
 ),
-base AS (
+base AS MATERIALIZED (
   SELECT scope, category, entrant, SUM(points) AS base_points,
     json_group_object(game,json_object('points',points,'events',events,'best_score',best_score,'source_xp',source_xp)) AS breakdown
   FROM per_source GROUP BY scope, category, entrant
@@ -165,7 +174,7 @@ prior AS (
   SELECT 'global','',entrant,MIN(SUM(award_points),60) FROM prior_awards
   WHERE scope<>'factions' GROUP BY entrant
 ),
-combined AS (
+combined AS MATERIALIZED (
   SELECT base.*, COALESCE(prior.bonus_points,0) AS bonus_points
   FROM base LEFT JOIN prior USING(scope,category,entrant)
   UNION ALL
@@ -174,13 +183,13 @@ combined AS (
     SELECT 1 FROM base WHERE base.scope=prior.scope AND base.category=prior.category AND base.entrant=prior.entrant
   )
 ),
-all_entrants AS (
+all_entrants AS MATERIALIZED (
   SELECT * FROM combined
   UNION ALL
   SELECT 'factions','',key.value,0,'{}',0 FROM json_each(json_array(${factions})) AS key
   WHERE NOT EXISTS (SELECT 1 FROM combined WHERE scope='factions' AND category='' AND entrant=key.value)
 ),
-ranked AS (
+ranked AS MATERIALIZED (
   SELECT *, RANK() OVER (PARTITION BY scope,category ORDER BY base_points+bonus_points DESC) AS rank
   FROM all_entrants
 )
@@ -249,17 +258,18 @@ export async function readUnifiedLeaderboard(db, options, at = new Date()) {
   const source = isClosed
     ? 'SELECT * FROM unified_leaderboard_results WHERE kind=?3 AND starts_at=?1'
     : rankedRows;
-  const prefix = isClosed ? 'WITH board AS (' : rankedSql + ', board AS (';
+  const prefix = isClosed ? 'WITH board AS MATERIALIZED (' : rankedSql + ', board AS MATERIALIZED (';
   const sorted = await db.prepare(`${prefix}${source})
     SELECT r.rank, r.base_points, r.bonus_points, r.breakdown,
       CASE WHEN ?7=1 THEN r.award_points ELSE NULL END AS award_points,
       CASE WHEN r.scope='factions' THEN r.entrant ELSE
         COALESCE(NULLIF(u.username,''),NULLIF(u.first_name,''),'Moonboy') END AS name,
-      g.rank AS global_rank
-    FROM board AS r
+      CASE WHEN r.scope IN ('clan-players','no-clan','games') THEN r.global_rank END AS global_rank
+    FROM (
+      SELECT board.*, MAX(CASE WHEN scope='global' THEN rank END) OVER (PARTITION BY entrant) AS global_rank
+      FROM board WHERE scope='global' OR (scope=?4 AND category=?5)
+    ) AS r
     LEFT JOIN telegram_users AS u ON r.scope<>'factions' AND u.telegram_id=r.entrant
-    LEFT JOIN board AS g ON r.scope IN ('clan-players','no-clan','games') AND g.scope='global'
-      AND g.category='' AND g.entrant=r.entrant
     WHERE r.scope=?4 AND r.category=?5 AND (r.scope='factions' OR u.telegram_id IS NOT NULL)
     ORDER BY r.rank,r.entrant LIMIT ${MAX_PAGE_SIZE + 1} OFFSET ?6`)
     .bind(period.starts_at, activeEnd, kind, scope, category, (page - 1) * MAX_PAGE_SIZE, Number(isClosed)).all();
