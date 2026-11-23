@@ -186,10 +186,12 @@ following on the Worker. Keep both credentials in encrypted Worker secrets.
 | `CLAN_LEADER_GATEWAY_TOKEN` | Cloudflare AI Gateway Run token (secret) |
 | `CLAN_LEADER_GEMINI_MODEL` | Optional. Defaults to `gemini-3.8-flash` |
 
-Gemini uses the same published lore retrieval and nine faction profiles. Start a
-question with “Imagine if…” or “What if…” for longer, explicitly non-canon
-fiction. “Continue” or “What happens next” stays in that mode while the creative
-premise remains in the recent questions. Canon replies still require citations.
+Gemini uses the same published lore retrieval and nine faction profiles. It checks
+each question for canon relevance and can also hold a general conversation or
+invent new, explicitly non-canon lore without a trigger phrase. Canon replies still
+require citations. The chat sends the last two questions and replies so follow-up
+questions can build on the same scene. Standalone greetings are answered locally
+before retrieval or model quota reservation.
 Gemini defaults to 100 reserved questions per UTC day across the site unless
 `CLAN_LEADER_LORE_SITE_LIMIT` specifies a different positive limit. The gateway
 uses provider billing and disables prompt and response logging. Verify both chat
