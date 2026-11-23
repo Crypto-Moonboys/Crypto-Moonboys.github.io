@@ -4,7 +4,7 @@ The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a
 
 - `workers/moonboys-api/blocktopia/waterfront-district.js` defines the playable rows, spawn and tile properties. Every row must have the same width. Connect new docks and streets to the spawn. Keep tile IDs stable for browser saves.
 - `harbor-art.js` draws the terrain first, then objects and the player in row order. Building art is anchored to its ground tile and can extend upward. Collision uses the district data.
-- `entry.js` checks the seat and mounts the game. `map.js` handles routing, editor, browser saves and JSON export. Version 1 edits are carried into the central block by comparing them with the old default layout. Version 2 saves take precedence.
+- `entry.js` checks the seat and mounts the game. `map.js` handles routing, editor, browser saves and JSON export. The current browser save key is `block-topia.waterfront.v5`. The editor restores a valid v5 map first. For older saves it applies the player’s edits to the current layout using the corresponding old default.
 
 ## Faction leader chat
 
@@ -57,6 +57,6 @@ Start in [Clan Operations routes](../../../workers/moonboys-api/routes/clan-oper
 
 Keep the night-time harbor palette, original graffiti, and consistent top-down building fronts. For generated art, use transparent PNGs at a consistent pixel scale, place files under `assets/`, and record their source or generation job in the PR. Keep generation credentials on the runner.
 
-For map changes, check all walkable tiles are reachable from spawn. Check click and tap placement after scrolling, collisions, and existing saved edits. The NPC runner currently writes to its separate preview. Update it to target this district before resuming the live build loop.
+For map changes, check all walkable tiles are reachable from spawn. Check click and tap placement after scrolling, collisions, and existing saved edits. The build runner stages founder previews on `block-topia/integration` and uses `block-topia/waterfront-production-integration` for production-map proposals. The [city brief](CITY-BRIEF.md) and [sprite library](SPRITE-LIBRARY.md) define the production work.
 
 The six building sprites are AutoSprite originals. Their transparent game PNGs and source metadata are in `assets/night-harbor/`. The renderer keeps the base of each sprite inside its original tile footprint. Its fallback art is available while assets load or when an image fails.
