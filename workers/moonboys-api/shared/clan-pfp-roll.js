@@ -1,5 +1,7 @@
 import { AVATAR_PRESETS } from '../../../js/avatar-builder-homepage-presets.mjs';
 
+export const CLAN_PFP_DAILY_LIMIT = 5;
+
 const DAY_MS = 86_400_000;
 const ROTATION_EPOCH = Date.UTC(2026, 10, 21);
 const TRAITS = ['face', 'hat', 'chains', 'clothes'];
@@ -34,7 +36,7 @@ export async function buildPfpRound(day) {
     if (!second) throw new Error('pfp_target_missing_alternatives');
     return { category, choices: await order([correct, first, second], day + ':pool:' + category, trait => trait) };
   }));
-  return { presetId: target.id, target: target.stack, pools, limit: 5, rewards: [0, 5, 15, 50] };
+  return { presetId: target.id, target: target.stack, pools, limit: CLAN_PFP_DAILY_LIMIT, rewards: [0, 5, 15, 50] };
 }
 
 function drawIndex(bound) {

@@ -25,7 +25,7 @@ const ids = [...read('workers/moonboys-api/player-action-plan/sources.js')
 
 test('complete registry checklist exactly tracks every Action Plan source and remaining Saved Status limitation', () => {
   const guide = load();
-  assert.equal(ids.length, 33);
+  assert.equal(ids.length, 36);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(guide.sources.map(x=>x.key).join('|'), ids.join('|'));
   const gaps = parity.mappings.filter(x=>x.parity === 'gap').map(x=>x.saved_status);
@@ -302,8 +302,8 @@ test('saved claim and Wiki links have per-row stable focus keys despite sharing 
   assert.equal(new Set(saved).size, 3);
   assert.equal(wiki.length, 6);
   assert.equal(new Set(wiki).size, 6);
-  assert.equal(sources.length, 33);
-  assert.equal(new Set(sources).size, 33);
+  assert.equal(sources.length, ids.length);
+  assert.equal(new Set(sources).size, ids.length);
   assert.ok(saved.includes('weekly_bounty_claim'));
   assert.ok(wiki.includes('cite'));
   const guideSource = read('js/my-moonboy-mission-guide.js');
