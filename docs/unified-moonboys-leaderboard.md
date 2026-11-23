@@ -34,3 +34,32 @@ Expose native scores, XP, Gems, boosts and prizes in breakdowns. Compute the cro
 5. Test cross-source identity and deduplication, clan changes, NPC isolation, repeatable settlement, UTC rollover, season boundaries, and that a clan player remains eligible for Global.
 
 The current page uses `js/arcade-leaderboard.js` and `js/leaderboard-client.js`. Clan standings and leader support come from separate Worker modules. This document describes the target board. Points and source coverage must be verified before the Global Hardest Grinder rank goes live.
+
+## Grinder Points v1
+
+The unified chart reads the Moonboys D1 authorities and keeps the existing Arcade score tabs and Node Map below it.
+
+| Verified source | Points | Daily cap per player |
+| --- | ---: | ---: |
+| Shared Arcade, NBG London, ranked Dead Run and accepted Block Topia RPG wins | 10 per eligible record | 30 per game |
+| Battle Chamber banked tiers | 10 per bank | 30 |
+| MoonPet eligible gameplay or care receipt | 5 per record | 30 |
+| Completed Daily WTF Signals | 5 per completion | 30 |
+| Settled wiki missions | 5 per mission | 15 |
+| Accepted Tag Run messages | 1 per message | 15 |
+
+The game filters rank Grinder Points for that game. The breakdown shows accepted record counts, best native score, and source XP where the underlying receipts retain those values. NBG replay-verified finishes retain the completion receipt in the unified board. Its native scores, times, and prizes remain on the London board. Derived XP credits, prize receipts, Championship Clout effects and duplicated score mirrors do not earn additional points. Unverified, practice or client-only results stay outside the unified chart.
+
+For individual activity without a faction recorded on the source, the weekly crew roster assigns the points. Activity without either record is shown in No Clan. All individual activity appears once in Global. The nine faction rows include their attributed player totals, tracked NPC rounds, and existing weekly Supply Dock, Signal Relay or Crew Rally points. NPC rounds and clan perks do not enter any individual total.
+
+### Closing and bonuses
+
+Each closed chart preserves standings from receipts available at settlement. The existing five-minute scheduled Worker closes periods starting 15 minutes after their UTC or configured season boundary. It can catch up missed closes in chronological order. Places 1, 2 and 3 earn 30, 20 and 10 bonus points on each finalized chart. Exact ties share a rank and award. Bonus-only rows cannot earn another bonus. An award carries into the immediately following period of the same kind. Global includes up to 60 points from the combined individual chart bonuses. Factions and individual Games charts retain their own awards. Clan Players and No Clan bonuses appear on their origin chart when the player records eligible activity there again. Bonuses leave the settled order and XP wallets intact.
+
+Migration 132 sets the first eligible daily close at the end of the first full UTC day after migration. Weekly, monthly and seasonal closes begin at the first applicable boundary after that date. The current view can read verified activity from before migration if it falls inside the active period. Previously closed periods are not backfilled for bonuses.
+
+### Release order
+
+1. Apply `132_unified_leaderboard.sql` to the Moonboys API D1 database and verify the epoch and empty snapshot tables.
+2. Deploy the versioned `moonboys-api` Worker. Check `GET /leaderboard/unified?scope=global&period=weekly` and a game-filtered response.
+3. Confirm Pages serves the updated leaderboard and the native views load. Check the first completed period in Last finalized and verify its bonuses in Current. The project release policy governs migration, merge and deployment approval.

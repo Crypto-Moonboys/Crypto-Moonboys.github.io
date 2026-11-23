@@ -32,6 +32,7 @@ import { SELECTED_RUN_PET_SQL, requireRunMutationResults, recoverDeletedPetRunSt
 import { clampPetCareValue, applyPetCareDecay, readPetInstanceWithAtomicCareDecay } from './pets/care-decay.js';
 import { petSpaceOrderSql, petRankedSpaceCteSql } from './pets/space-order.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
+import { parseUnifiedQuery, readUnifiedLeaderboard, settleUnifiedLeaderboard } from './shared/unified-leaderboard.js';
 import { COMMUNITY_SEASON_DAYS, rollCommunitySeason, selectCommunitySeason, communitySeasonSql, communityReceiptTimestampSql } from './community-season-authority.js';
 import { awardCommunityXp, hasDailyCommunityClaim } from './community-xp-awards.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
@@ -12149,6 +12150,24 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
+    if (path === '/leaderboard/unified' && request.method === 'GET') {
+      const options = parseUnifiedQuery(url.searchParams);
+      if (!options) return err('invalid_leaderboard_filters', 400);
+      const limited = await enforcePublicRateLimit(request, env, path, null, corsHeaders, { ipLimit: 90 });
+      if (limited) return limited;
+      try {
+        const board = await readUnifiedLeaderboard(env.DB, options);
+        return new Response(JSON.stringify(board), { headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Cache-Control': options.window === 'closed' ? 'public, max-age=60' : 'public, max-age=30',
+        } });
+      } catch (error) {
+        logApiFailure('unified_leaderboard_read_failed', { message: error?.message });
+        return err('unified_leaderboard_unavailable', 503);
+      }
+    }
+
     // ── GET /health ────────────────────────────────────────────────────────
     if (path === '/health' && request.method === 'GET') {
       return json({ ok: true });
@@ -15606,6 +15625,16 @@ export default {
           logApiFailure(task + '_scheduled_failed', { message: error?.message });
           scheduledResults.push({ task, ok: false, error: error?.message || 'unknown_error' });
         }
+      }
+    }
+
+    if (shouldRunTimedEvents) {
+      try {
+        await settleUnifiedLeaderboard(env.DB, new Date(Number(event?.scheduledTime) || Date.now()));
+        scheduledResults.push({ task: 'unified_leaderboard', ok: true, error: null });
+      } catch (error) {
+        logApiFailure('unified_leaderboard_scheduled_failed', { message: error?.message });
+        scheduledResults.push({ task: 'unified_leaderboard', ok: false, error: error?.message || 'unknown_error' });
       }
     }
 
