@@ -124,6 +124,10 @@ clan_perk AS (
   FROM clan_period_results AS p, json_each(p.standings_json) AS team
   WHERE p.kind='weekly' AND p.ends_before BETWEEN date(?1,'-6 days') AND date(?2)
     AND json_extract(team.value,'$.rank') BETWEEN 1 AND 9
+    AND p.ends_before <= (SELECT date(starts_at) FROM unified_leaderboard_epoch WHERE singleton=1)
+  UNION ALL
+  SELECT faction,week_start,level,perk FROM unified_weekly_clan_perks
+  WHERE week_start BETWEEN date(?1,'-6 days') AND date(?2)
 ),
 perk_activity AS (
   SELECT owner, team, day,
@@ -275,8 +279,18 @@ async function closePeriod(db, kind, period, at) {
       VALUES (?,?,?,?,?,?) ON CONFLICT (kind,starts_at) DO NOTHING`).bind(kind, start, end, POLICY, at.toISOString(), token),
     db.prepare(`${rankedSql}
       INSERT INTO unified_leaderboard_results
-        (scope,category,entrant,base_points,bonus_points,rank,breakdown,award_points,kind,starts_at)
-      SELECT *,?3,?1 FROM (${rankedRows}) WHERE EXISTS (
+        (scope,category,entrant,base_points,bonus_points,rank,breakdown,award_points,kind,starts_at,clan_perk)
+      SELECT ranked_result.*,?3,?1,
+        CASE WHEN ?3='weekly' AND ranked_result.scope='factions' AND ranked_result.base_points>0 THEN
+          COALESCE((SELECT CASE
+            WHEN COALESCE(json_extract(crew.value,'$.active_members'),0)=0
+              OR json_extract(crew.value,'$.active_members')*3 < json_extract(crew.value,'$.roster_size')*2 THEN 'rally'
+            WHEN json_extract(crew.value,'$.scored_banks') >= 8*json_extract(crew.value,'$.active_members') THEN 'relay'
+            ELSE 'supply' END
+          FROM clan_period_results AS native, json_each(native.standings_json) AS crew
+          WHERE native.kind='weekly' AND native.period_key=date(?1) AND native.ends_before=date(?2)
+            AND json_extract(crew.value,'$.faction_id')=ranked_result.entrant LIMIT 1),'rally') END
+      FROM (${rankedRows}) AS ranked_result WHERE EXISTS (
         SELECT 1 FROM unified_leaderboard_periods WHERE kind=?3 AND starts_at=?1 AND close_token=?4
       )`).bind(start, end, kind, token),
   ]);
@@ -288,12 +302,25 @@ export async function settleUnifiedLeaderboard(db, at = new Date()) {
   if (!epoch) throw new Error('unified_leaderboard_epoch_missing');
   const cutoff = new Date(+at - CLOSE_DELAY).toISOString();
   if (cutoff <= epoch.starts_at) return;
-  for (const kind of KINDS.filter(kind => kind !== 'seasonal')) {
-    const previous = await db.prepare('SELECT MAX(ends_at) AS ends_at FROM unified_leaderboard_periods WHERE kind=?').bind(kind).first();
-    let period = calendarWindow(kind, previous?.ends_at ?? epoch.starts_at);
+  // Close weeks first so a delayed daily, monthly or seasonal close uses the
+  // same frozen boosts it would have received if every cron tick had run.
+  const lastClose = async kind => (await db.prepare(
+    'SELECT MAX(ends_at) AS ends_at FROM unified_leaderboard_periods WHERE kind=?'
+  ).bind(kind).first())?.ends_at;
+  let weeklyThrough = await lastClose('weekly');
+  const boostReady = period => {
+    const lastDay = new Date(Date.parse(period.ends_at) - 1);
+    const requiredWeek = calendarWindow('weekly', lastDay).starts_at;
+    return requiredWeek <= epoch.starts_at || requiredWeek <= weeklyThrough;
+  };
+  for (const kind of ['weekly', 'daily', 'monthly']) {
+    const previous = kind === 'weekly' ? weeklyThrough : await lastClose(kind);
+    let period = calendarWindow(kind, previous ?? epoch.starts_at);
     // Bounded catch-up preserves chronological bonus carryover after outages.
     for (let count = 0; count < 2 && period.ends_at <= cutoff; count++) {
+      if (!boostReady(period)) break;
       await closePeriod(db, kind, period, at);
+      if (kind === 'weekly') weeklyThrough = period.ends_at;
       period = calendarWindow(kind, period.ends_at);
     }
   }
@@ -305,5 +332,8 @@ export async function settleUnifiedLeaderboard(db, at = new Date()) {
       AND NOT EXISTS (SELECT 1 FROM unified_leaderboard_periods p WHERE p.kind='seasonal'
         AND p.starts_at=strftime('%Y-%m-%dT%H:%M:%fZ',s.start_date))
     ORDER BY julianday(s.end_date),s.id LIMIT 2`).bind(epoch.starts_at, cutoff).all());
-  for (const period of seasons) await closePeriod(db, 'seasonal', period, at);
+  for (const period of seasons) {
+    if (!boostReady(period)) break;
+    await closePeriod(db, 'seasonal', period, at);
+  }
 }

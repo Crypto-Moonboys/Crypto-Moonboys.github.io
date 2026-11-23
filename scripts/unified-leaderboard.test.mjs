@@ -183,3 +183,58 @@ test('weekly and monthly windows close once and changed rosters preserve histori
   assert.deepEqual(dec.rows.map(({bonus_points})=>bonus_points),[60,60,60]);
   assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM unified_leaderboard_periods WHERE kind='monthly'").get().n,1);
 });
+
+test('slowing a rival changes the frozen weekly faction rank and next Battle Chamber boost', async t => {
+  const { readFactionLeaders } = await import('../workers/moonboys-api/shared/clan-faction-leaders.js');
+  for (const paused of [false, true]) {
+    const { sql, db } = fixture();
+    t.after(() => sql.close());
+    const bulls = 'all-city-bulls';
+    const bears = 'nomad-bears';
+    sql.exec(`
+      INSERT INTO telegram_users (telegram_id,username) VALUES ('101','Bulls player'),('102','Bears player');
+      INSERT INTO clan_crew_roster_entries VALUES
+        ('2026-11-16','101','${bulls}'),
+        ('2026-11-23','101','${bulls}'), ('2026-11-23','102','${bears}');
+      INSERT INTO arcade_progression_events
+        (id,telegram_id,client_run_id,game,raw_score,normalized_points,processed_at)
+        VALUES ('r1','101','r1','snake',100,1,'2026-11-20T13:00:00Z');
+      INSERT INTO clan_leader_rounds VALUES
+        ('${bulls}',unixepoch('2026-11-20T13:00:00Z'),'/games/snake-run/'),
+        ('${bears}',unixepoch('2026-11-20T13:00:00Z'),'/games/forkfield/');
+      INSERT INTO daily_wtf_player_events (telegram_id,event_id,utc_day,status,completed_at)
+        VALUES ('101','n1','2026-11-23','completed','2026-11-23T12:30:00Z'),
+               ('102','n1','2026-11-23','completed','2026-11-23T12:30:00Z');
+    `);
+    const banking = [{ kind:'weekly', ends_before:'2026-11-23', crews: [
+      { faction_id:bulls, rank:1, active_members:2, roster_size:4, scored_banks:8 },
+      { faction_id:bears, rank:2, active_members:2, roster_size:4, scored_banks:4 },
+    ] }];
+    sql.prepare(`INSERT INTO clan_period_results VALUES
+      ('weekly','2026-11-16','2026-11-16','2026-11-23','2026-11-23T00:05:00Z',?)`)
+      .run(JSON.stringify(banking[0].crews));
+    if (paused) sql.exec(`
+      INSERT INTO clan_leader_slowdowns VALUES ('102','slow-bulls','${bulls}','talk','territory',
+        unixepoch('2026-11-20T12:58:00Z'),unixepoch('2026-11-20T13:03:00Z'),unixepoch('2026-11-20T14:03:00Z'),1,NULL,0);
+    `);
+    async function leaders() {
+      return readFactionLeaders(db,'2026-11-23','2026-11-23',banking);
+    }
+    const pending = await leaders();
+    assert.equal(pending.prior_week_final,false);
+    assert.ok(pending.crews.every(crew => crew.perk === null), 'do not grant the old banking perk before unified settlement');
+    await settleUnifiedLeaderboard(db,new Date('2026-11-23T00:16:00Z'));
+    const winner = paused ? bears : bulls;
+    const runnerUp = paused ? bulls : bears;
+    const finalized = await read(db,{period:'weekly',scope:'factions',window:'closed'},'2026-11-23T12:32:00Z');
+    assert.deepEqual(finalized.rows.slice(0,2).map(row => row.name),[winner,runnerUp]);
+    const after = await leaders();
+    const active = await read(db,{period:'weekly',scope:'factions'},'2026-11-23T12:32:00Z');
+    for (const [name, rank, boost] of [[winner,1,18],[runnerUp,2,16]]) {
+      const { perk, boost: leaderBoost } = after.crews.find(crew => crew.faction_id === name);
+      assert.deepEqual([perk.rank,perk.selected,perk.source,leaderBoost],[rank,'rally','unified',boost]);
+      assert.equal(active.rows.find(row => row.name === name).breakdown['weekly-clan-boost'].points,boost);
+    }
+    assert.equal(JSON.parse(sql.prepare("SELECT standings_json FROM clan_period_results").get().standings_json)[0].faction_id,bulls);
+  }
+});

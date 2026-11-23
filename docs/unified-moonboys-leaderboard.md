@@ -52,6 +52,12 @@ The game filters rank Grinder Points for that game. The breakdown shows accepted
 
 For individual activity without a faction recorded on the source, the weekly crew roster assigns the points. Activity without either record is shown in No Clan. All individual activity appears once in Global. The nine faction rows include their attributed player totals, tracked NPC rounds, and existing weekly Supply Dock, Signal Relay or Crew Rally points. NPC rounds and clan perks do not enter any individual total.
 
+### Battle Chamber weekly boosts
+
+The finalized unified weekly Factions chart sets the next Battle Chamber boost level as `10 - rank`. Slowing a rival suppresses the overlapping NPC round. If it changes the closing rank, it also changes the next boost level. A faction needs eligible activity in the closing week to earn a boost.
+
+At settlement, the existing bank and roster activity rules select Supply Dock, Signal Relay or Crew Rally. A faction without recorded active bankers receives Crew Rally. The selection and rank are frozen together. The Battle Chamber and unified board then read the same weekly perk. The native task-banking standings and collectible awards continue to follow their existing rules. Weeks before the first eligible unified close use finalized banking ranks for perks. From the first eligible close onward, the next perk waits for unified settlement.
+
 ### Closing and bonuses
 
 Each closed chart preserves standings from receipts available at settlement. The existing five-minute scheduled Worker closes periods starting 15 minutes after their UTC or configured season boundary. It can catch up missed closes in chronological order. Places 1, 2 and 3 earn 30, 20 and 10 bonus points on each finalized chart. Exact ties share a rank and award. Bonus-only rows cannot earn another bonus. An award carries into the immediately following period of the same kind. Global includes up to 60 points from the combined individual chart bonuses. Factions and individual Games charts retain their own awards. Clan Players and No Clan bonuses appear on their origin chart when the player records eligible activity there again. Bonuses leave the settled order and XP wallets intact.
