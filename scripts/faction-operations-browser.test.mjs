@@ -1806,6 +1806,8 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
       return progress?.previousElementSibling === document.querySelector('[data-clan-operation]');
     }, html), true, 'crew progress is a sibling card');
     await page.setContent('<main>' + panel + '</main>');
+    const shellCss = await readFile(path.join(ROOT, 'css/wiki.css'), 'utf8');
+    await page.addStyleTag({ content: shellCss.replace(/^@import[^;]*;/gm, '') });
     await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
     await page.addScriptTag({ path: path.join(ROOT, 'js/faction-profile-data.js') });
     await page.evaluate(() => {
@@ -1829,8 +1831,8 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await page.addScriptTag({ content: crewBoardScript });
 
     const board = page.getByRole('region', { name: 'Clan crew progress' });
-    const table = page.getByRole('table');
-    const bears = page.getByRole('row', { name: /Nomad Bears/ });
+    const standings = board.getByRole('list', { name: 'Crew standings' });
+    const bears = standings.locator('[data-faction="nomad-bears"]');
     const refresh = page.getByRole('button', { name: 'Refresh crew progress' });
     async function deliver(index, value, statusCode = 200) {
       await page.waitForFunction(index => window.crewRequests.length > index, index);
@@ -1853,10 +1855,10 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     assert.equal(await board.count(), 0);
     await banked();
     await deliver(1, counts(1, 4));
-    await table.waitFor();
-    assert.equal(await table.getByRole('row').count(), 10);
-    assert.match(await table.getByRole('row').nth(1).innerText(), /Hard Fork Rockers/);
-    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['1', '4']);
+    await standings.waitFor();
+    assert.equal(await standings.locator(':scope > li').count(), 9);
+    assert.match(await standings.locator(':scope > li').first().innerText(), /Hard Fork Rockers/);
+    assert.deepEqual(await bears.locator('dd:visible').allTextContents(), ['1', '4']);
     assert.equal(await bears.getByRole('link').getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 
@@ -1870,13 +1872,13 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await deliver(3, refreshed);
     await board.getByRole('status').filter({ hasText: 'Crew progress updated.' }).waitFor();
     await deliver(2, counts(1, 4));
-    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['2', '100', 'Trail network · Expanded · 100/300 banks']);
+    assert.deepEqual(await bears.locator('dd:visible').allTextContents(), ['2', '100', 'Trail network · Expanded · 100/300 banks']);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 
     await refresh.click();
     await deliver(4, { error: 'crew_progress_unavailable' }, 503);
     await board.getByRole('status').filter({ hasText: 'Crew progress is temporarily unavailable.' }).waitFor();
-    assert.equal(await table.count(), 0);
+    assert.equal(await standings.count(), 0);
     await refresh.click();
     await deliver(5, { ok: true, enabled: false });
     await board.waitFor({ state: 'hidden' });
@@ -1901,7 +1903,7 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
         next_week_start: '2026-11-23',
       },
     });
-    await bears.getByRole('cell', { name: /#1 · 66.7%/ }).waitFor();
+    await bears.getByText(/#1 · 66.7%/).waitFor();
     await board.getByLabel('Weekly score period').selectOption('previous');
     await board.getByText(/2026-11-09 UTC is unranked/).waitFor();
     await board.getByRole('button', { name: 'Enter week starting 2026-11-23 UTC' }).click();
@@ -1931,12 +1933,32 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     });
     await bears.getByText('15 power').waitFor();
     await bears.getByText('Lv 9 · Signal Relay', { exact: true }).click();
-    assert.deepEqual(await bears.locator('.clan-leader-cell li').allTextContents(), [
+    assert.deepEqual(await bears.locator('.clan-crew-leader li').allTextContents(), [
       'Supply Dock · +9 per banked task tier',
       'Signal Relay · +27 per completed signal (active)',
       'Crew Rally · +18 per active member per UTC day',
     ]);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    // A future image fills the right-hand half without pushing the details across the midpoint.
+    const artwork = bears.locator('.clan-crew-card-art');
+    const body = bears.locator('.clan-crew-card-body');
+    assert.equal(await artwork.count(), 1);
+    assert.equal(await artwork.isVisible(), false);
+    await artwork.evaluate(node => {
+      const img = document.createElement('img');
+      img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"/>';
+      img.alt = 'Nomad Bears artwork fixture';
+      node.append(img);
+    });
+    let [detailsBox, artBox] = await Promise.all([body.boundingBox(), artwork.boundingBox()]);
+    assert.ok(artBox.y >= detailsBox.y + detailsBox.height);
+    assert.equal(artBox.width, detailsBox.width);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    [detailsBox, artBox] = await Promise.all([body.boundingBox(), artwork.boundingBox()]);
+    assert.equal(artBox.x, detailsBox.x + detailsBox.width);
+    assert.equal(artBox.y, detailsBox.y);
+    assert.equal(artBox.width, detailsBox.width);
   } finally {
     await browser.close();
   }

@@ -267,39 +267,71 @@
 .clan-crew-progress {
   min-width: 0;
 }
-.clan-crew-table-scroll {
-  max-width: 100%;
-  overflow-x: auto;
-}
-.clan-crew-table-scroll:focus-visible {
-  outline: 2px solid #fff;
-}
-
-.clan-crew-progress table {
-  width: 100%;
-  max-width: 44rem;
-  border-collapse: collapse;
+.clan-crew-cards {
+  display: grid;
+  gap: 1rem;
+  max-width: none;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
 }
 
-.clan-crew-progress th,
-.clan-crew-progress td {
-  padding: .65rem .4rem;
-  border-bottom: 1px solid #755538;
-  text-align: right;
+.clan-crew-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--crew-accent, var(--mine-amber));
 }
 
-.clan-crew-progress th:first-child {
-  text-align: left;
+.clan-crew-card-body {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.75rem);
 }
 
-.clan-crew-progress th a {
-  color: var(--mine-amber);
+.clan-crew-card-body > h3 {
+  margin: 0 0 1rem;
 }
 
+.clan-crew-card-body > h3 a {
+  color: var(--crew-accent, var(--mine-amber));
+}
 
-.clan-crew-progress td[data-clan-city-project] {
-  text-align: left;
+.clan-crew-card-body > h3 a:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
+
+.clan-crew-card-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: .75rem 1rem;
+  margin: 0;
+}
+
+.clan-crew-card-stats dt {
+  color: var(--color-text-muted);
+  font-size: .85rem;
+}
+
+.clan-crew-card-stats dd {
+  margin: 0;
   overflow-wrap: anywhere;
+}
+
+.clan-crew-card-art:empty {
+  display: none;
+}
+
+.clan-crew-card-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 860px) {
+  .clan-crew-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .clan-campaign {
@@ -550,8 +582,20 @@
   .wall-studio > button { grid-column: 2; grid-row: 5; }
 }
 
-.clan-leader-cell {
-  min-width: 11rem;
+.clan-crew-leader {
+  margin-block-start: 1rem;
+  padding-block-start: .85rem;
+  border-block-start: 1px solid var(--shell-card-line);
+}
+
+.clan-crew-leader h4 {
+  margin: 0 0 .4rem;
+}
+
+.clan-crew-leader-status {
+  display: block;
+  margin-block-start: .4rem;
+  color: var(--color-text-muted);
 }
 
 .clan-leader-sprite {
@@ -564,10 +608,10 @@
   background: url("/games/block-topia/waterfront/assets/atlases/factions.png") no-repeat;
 }
 
-.clan-leader-cell summary {
+.clan-crew-leader summary {
   cursor: pointer;
 }
 
-.clan-leader-cell details ul {
+.clan-crew-leader details ul {
   padding-inline-start: 1.25rem;
 }
