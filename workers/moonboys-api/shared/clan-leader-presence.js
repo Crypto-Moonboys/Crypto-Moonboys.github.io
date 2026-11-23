@@ -95,7 +95,7 @@ export async function runClanLeaderRounds(db, start, at, fetchPage = fetch) {
     WHERE value NOT IN (SELECT faction_id FROM occupied)
   `).bind(slot, JSON.stringify(scheduled)).all());
   if (!roster.length) return;
-  const sitemap = await fetchPage(HOME + '/sitemap.xml', { redirect: 'error', cf: { cacheEverything: true, cacheTtl: 3600 } });
+  const sitemap = await fetchPage(HOME + '/sitemap.xml', { redirect: 'manual', cf: { cacheEverything: true, cacheTtl: 3600 } });
   if (!sitemap.ok) throw new Error('clan_leader_site_catalog_unavailable');
   const routes = publicLeaderRoutes(await sitemap.text());
   const games = routes.filter(path => /^\/games\/[^/]+\/$/.test(path));

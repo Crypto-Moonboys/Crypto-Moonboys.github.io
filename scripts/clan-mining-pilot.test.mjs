@@ -1919,7 +1919,10 @@ test('rival leader pauses debit once, protect recovery time, and skip only bot r
   assert.ok(!publicLeaderRoutes(sitemap).some(path => /admin|elsewhere/.test(path)));
   const visited = [];
   const fetchPage = async (url, options) => {
-    if (url.endsWith('/sitemap.xml')) return new Response(sitemap);
+    if (url.endsWith('/sitemap.xml')) {
+      assert.equal(options.redirect, 'manual');
+      return new Response(sitemap);
+    }
     assert.equal(options.method, 'HEAD');
     assert.equal(options.redirect, 'manual');
     visited.push(url);
@@ -2014,7 +2017,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const visits = [];
   const prompts = [];
   t.mock.method(globalThis, 'fetch', async (url, init) => {
-    assert.equal(init.redirect, 'error');
+    assert.equal(init.redirect, 'manual');
     assert.ok(url.startsWith(site + '/'));
     const path = url.slice(site.length);
     visits.push(path);
@@ -2028,7 +2031,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   let fakeResponse;
   settings.loreEnabled = 'true';
   settings.loreAi = { run: async (model, input) => {
-    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct');
+    assert.equal(model, '@cf/meta/llama-3.1-8b-fast-v2');
     assert.equal(input.response_format.json_schema.type, 'object');
     prompts.push(input.messages);
     const sources = JSON.parse(input.messages[1].content).publicReferences;

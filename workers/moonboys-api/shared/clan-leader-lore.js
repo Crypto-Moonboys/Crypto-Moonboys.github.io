@@ -1,7 +1,7 @@
 import { publicLeaderRoutes } from './clan-leader-presence.js';
 
 const SITE = 'https://cryptomoonboys.com';
-const MODEL = '@cf/meta/llama-3.1-8b-instruct';
+const MODEL = '@cf/meta/llama-3.1-8b-fast-v2';
 const FREE_QUESTIONS = 10;
 const MAX_TASK_QUESTIONS = 3;
 const UNKNOWN = 'I couldn’t verify that in the published Moonboys sources. Try a character, faction, place or story name.';
@@ -33,7 +33,6 @@ const canon = [
 ];
 const common = new Set('a an and are as at be but by can could did do does for from had has have he her here him how i in is it its me my of on or our she tell than that the their them then there they this to was were what when where which who why will with would you your about explain moonboy moonboys crypto wiki universe lore'.split(' '));
 let cachedCatalog;
-let pendingCatalog;
 
 export function clanLeaderLoreEnabled(env) {
   return env.CLAN_LEADER_LORE_ENABLED === 'true' && typeof env.CLAN_LEADER_AI?.run === 'function';
@@ -101,7 +100,7 @@ function bestSources(catalog, question, previous) {
 
 async function readPublic(path, maxBytes) {
   const response = await fetch(SITE + path, {
-    redirect: 'error', signal: AbortSignal.timeout(4000),
+    redirect: 'manual', signal: AbortSignal.timeout(4000),
     cf: { cacheEverything: true, cacheTtl: 300 },
   });
   if (!response.ok || !response.body || Number(response.headers.get('content-length')) > maxBytes) {
@@ -127,17 +126,16 @@ async function readPublic(path, maxBytes) {
 
 async function getCatalog() {
   if (cachedCatalog?.expires > Date.now()) return cachedCatalog.entries;
-  if (!pendingCatalog) pendingCatalog = (async () => {
-    const [indexText, sitemap] = await Promise.all([
-      readPublic('/js/wiki-index.json', 2_500_000), readPublic('/sitemap.xml', 600_000),
-    ]);
-    const index = JSON.parse(indexText);
-    if (!Array.isArray(index)) throw new Error('lore_index_unavailable');
-    const entries = makeLoreCatalog(index, sitemap);
-    cachedCatalog = { entries, expires: Date.now() + 600_000 };
-    return entries;
-  })().finally(() => { pendingCatalog = null; });
-  return pendingCatalog;
+  // Workers fetches belong to the request that started them. Cache only
+  // completed catalog data so concurrent requests do not share pending I/O.
+  const [indexText, sitemap] = await Promise.all([
+    readPublic('/js/wiki-index.json', 2_500_000), readPublic('/sitemap.xml', 600_000),
+  ]);
+  const index = JSON.parse(indexText);
+  if (!Array.isArray(index)) throw new Error('lore_index_unavailable');
+  const entries = makeLoreCatalog(index, sitemap);
+  cachedCatalog = { entries, expires: Date.now() + 600_000 };
+  return entries;
 }
 
 function entities(text) {
