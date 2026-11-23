@@ -36,7 +36,7 @@
     <section class="page-hero bc-community-hero" aria-labelledby="community-title">
       <div class="bc-community-hero-inner">
         <h1 id="community-title" class="swarmsy-title">BATTLE CHAMBER<br><span>FACTIONS. MISSIONS. CLOUT.</span></h1>
-        <p><a href="#clan-operation">Play today’s operation</a> · <a href="#clan-crew-progress-title">Crew progress</a> · <a href="#clan-season-campaign">Seasonal campaign</a> · <a href="/how-to-play.html#faction-boosts">How faction boosts work</a></p>
+        <p><a href="#clan-operation">Play today’s operation</a> · <a href="#clan-crew-progress-title">Crew progress</a> · <a href="#clan-season-campaign">Seasonal campaign</a> · <a href="/how-to-play.html#battle-chamber-rewards">Games and rewards guide</a></p>
         <p data-wtf-signal-summary role="status">Checking the Daily WTF schedule…</p>
       </div>
     </section>
@@ -65,7 +65,7 @@
       <span id="xp-drops-burn-path"></span>
     </details>
 
-    <div class="section bc-reward-vault">
+    <div class="section bc-reward-vault" id="battle-chamber-rewards">
       <div class="bc-join-layout">
         <img class="bc-join-art" src="/art/Reward%20Vault%20Showdown.jpg"
              srcset="/art/responsive/reward-vault-showdown-480.webp 480w, /art/Reward%20Vault%20Showdown.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Reward Vault Showdown" width="1254" height="1254" loading="lazy" decoding="async">
@@ -76,10 +76,10 @@
           </details>
 
           <details class="bc-disclosure">
-            <summary><span class="bc-disclosure-title" role="heading" aria-level="3">Faction Reward Unlocks</span></summary>
+            <summary><span class="bc-disclosure-title" role="heading" aria-level="3">Faction reward catalogue</span></summary>
             <details class="bc-more-info">
               <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about faction rewards</span></summary>
-              <p>Faction rewards are gameplay/status rewards only. They include clout, badges, stickers, titles and roguelite options.</p>
+              <p>Faction rewards are gameplay/status rewards only. This catalogue describes clout, badges, stickers, titles and roguelite options for your faction. See <a href="#battle-reward-receipts">Games and rewards</a> for where confirmed rewards appear.</p>
             </details>
             <div id="battle-faction-reward-unlocks"><div class="community-loading">Loading faction reward unlocks&#8230;</div></div>
           </details>
@@ -109,7 +109,7 @@
         <p>Bank each completed tier for 10,000 Clan Renown and a collectible.</p>
         <details class="bc-more-info">
           <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Clan Operations</span></summary>
-          <p>Bank up to three tiers for 30,000 Renown per day. The route resets at 00:00 UTC.</p>
+          <p>Bank up to three tiers for 30,000 Renown per day. The route resets at 00:00 UTC. Each accepted tier also earns 10 Grinder Points. <a href="/how-to-play.html#battle-chamber-rewards">See how game rewards are recorded</a>.</p>
         </details>
         <div data-mine-game hidden>
           <h3 data-mine-name></h3>
@@ -143,7 +143,7 @@
         <p>Match Moonboy traits to earn Community XP.</p>
         <details class="bc-more-info">
           <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Daily PFP Roll</span></summary>
-          <p>Each roll has a 1 in 27 chance of a full match.</p>
+          <p>You get five rolls each UTC day. Match zero, one, two or three traits for 0, 5, 15 or 50 Community XP. Each roll has a 1 in 27 chance of a full match.</p>
         </details>
         <canvas data-pfp-canvas width="1000" height="1000" aria-label="Moonboy portrait"></canvas>
         <p data-pfp-result role="status" aria-atomic="true"></p>
@@ -183,9 +183,9 @@
         <details class="bc-more-info">
           <summary><span aria-hidden="true">i</span><span class="bc-info-label">How faction leaders earn power</span></summary>
           <p>Bank a Clan Operation tier for 1 Leader Power. Each verified Daily WTF completion earns 2 Leader Power for the faction on your locked weekly roster.</p>
-          <p>After the final weekly standings are published, first place unlocks level 9 and ninth unlocks level 1. Each ranked faction leader automatically selects one of three perks for the new week. Tied factions earn the same level.</p>
-          <p>Leader Power is shown alongside the official weekly score. Official ranks and prizes use existing crew scoring.</p>
-          <p data-clan-leader-presence-rules hidden>Leaders can earn 12 power in one randomly scheduled five-minute game each hour. A weighted slowdown question or paid pause interrupts their games. Each account gets one free slowdown question per UTC day. Leaders recover before they can be paused again.</p>
+          <p>Once the unified weekly Factions chart settles, its final rank sets the following week’s leader boost. First place gets level 9 and ninth gets level 1. Tied factions get the same level. <a href="/how-to-play.html#faction-boosts">See the three boosts and how slowdowns affect them</a>.</p>
+          <p>Leader Power shows bank, signal, NPC and perk contributions. Crew banking ranks award their own collectibles. <a href="/games/leaderboard.html#unified-leaderboard">Open Unified Rankings</a> for faction Grinder Points.</p>
+          <p data-clan-leader-presence-rules hidden>Leaders can earn 12 power in one randomly scheduled five-minute game each hour. An overlapping slowdown question or paid pause cancels the rival’s round. Those missed points can change the faction’s final rank and next boost. Each account gets one free slowdown question per UTC day. Leaders recover before they can be paused again.</p>
         </details>
       </div>
       <ul class="clan-crew-cards" data-clan-crew-cards role="list" aria-label="Crew standings" hidden></ul>
@@ -261,8 +261,8 @@
       </div>
     </details>
 
-    <details class="section bc-disclosure">
-      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Clout Rewards Board</span></summary>
+    <details class="section bc-disclosure" id="battle-reward-receipts">
+      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Games and rewards</span></summary>
       <div id="battle-clout-rewards"><div class="community-loading">Loading rewards&#8230;</div></div>
     </details>
 
@@ -286,7 +286,7 @@
         <div class="bc-join-content">
           <details class="bc-more-info">
             <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about the weekly Faction War</span></summary>
-            <p>The weekly board resets Monday at 00:00 UTC. Top factions can unlock badges, roguelite options and XP prize pool eligibility.</p>
+            <p>The weekly Clout board resets Monday at 00:00 UTC. Check Clan Crew Progress for finalized banking rewards, or the unified Factions chart for Grinder Point bonuses and next week’s leader boost.</p>
           </details>
           <div id="battle-weekly-war"><div class="community-loading">Loading weekly war&#8230;</div></div>
         </div>
@@ -365,7 +365,7 @@
 <script data-cfasync="false" src="/js/battle-chamber-platform.js"></script>
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
 <script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js?wtf-clan=1"></script>
-<script data-cfasync="false" src="/js/battle-chamber-factions.js?battle-copy=1"></script>
+<script data-cfasync="false" src="/js/battle-chamber-factions.js?battle-copy=2"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=10"></script>

@@ -697,16 +697,12 @@
 
     container.innerHTML =
       '<div class="bc-rewards-grid">' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🏅</span><strong>Weekly Badges</strong><p>For top weekly factions.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🖼</span><strong>Monthly Profile Borders</strong><p>For top monthly factions.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🏆</span><strong>Seasonal Titles</strong><p>Permanent titles for seasonal winners.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🎨</span><strong>Faction Stickers</strong><p>Earned through missions and war activity.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">📋</span><strong>Battle Chamber Placement</strong><p>For top contributors.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🔦</span><strong>Faction Page Spotlight</strong><p>For leading factions.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🌿</span><strong>Bonus Roguelite Branches</strong><p>Extra paths for winning factions next period.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🎯</span><strong>XP Prize Pool Eligibility</strong><p>For active faction members.</p></div>' +
+        '<div class="bc-reward-item"><strong>Clan Operations</strong><p>Bank a tier for Clan Renown, a collectible and Grinder Points. <a href="#clan-operation">See your saved banks</a>.</p></div>' +
+        '<div class="bc-reward-item"><strong>Community XP</strong><p>Eligible live-signal banks and Daily PFP Rolls credit Community XP after settlement. <a href="/my-moonboy.html">Check your account</a>.</p></div>' +
+        '<div class="bc-reward-item"><strong>Crew and campaign collectibles</strong><p>Banking awards and clan campaign collectibles have their own receipts. <a href="#clan-crew-progress-title">See crew results</a> or <a href="#clan-season-campaign">open the campaign</a>.</p></div>' +
+        '<div class="bc-reward-item"><strong>Unified rankings and weekly boosts</strong><p>Top finishes add next-period Grinder Points. The finalized weekly Factions rank also sets the next leader boost. <a href="/games/leaderboard.html#unified-leaderboard">See the rankings</a>.</p></div>' +
       '</div>' +
-      '<p class="bc-rewards-disclaimer"><strong>In-game rewards only.</strong></p>';
+      '<p><a href="/how-to-play.html#battle-chamber-rewards">How Battle Chamber rewards work</a></p>';
   }
 
   // ── 9. Faction Reward Unlocks ─────────────────────────────────────────────
