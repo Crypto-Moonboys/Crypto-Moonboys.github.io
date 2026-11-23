@@ -2003,6 +2003,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const site = 'https://cryptomoonboys.com';
   const canonPath = '/about/latest-canon-and-brand-vision.md';
   const wikiPath = '/wiki/bitcoin-kid-army.html';
+  const overviewPath = '/wiki/crypto-moonboys.html';
   const editorial = '/brand-canon/story-bibles/gk-master-canon.md';
   const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
     { title: 'Editorial Only', url: editorial }, { title: 'Offsite', url: '//elsewhere.invalid/pub.html' }];
@@ -2023,7 +2024,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     visits.push(path);
     if (path === '/js/wiki-index.json') return Response.json(index);
     if (path === '/sitemap.xml') return new Response(sitemap);
-    if (path === canonPath || path === wikiPath) {
+    if (path === canonPath || path === wikiPath || path === overviewPath) {
       return new Response(readFileSync(new URL('..' + path, import.meta.url), 'utf8'));
     }
     return new Response(null, { status: 404 });
@@ -2034,7 +2035,11 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     assert.equal(model, '@cf/meta/llama-3.1-8b-fast-v2');
     assert.equal(input.response_format.json_schema.type, 'object');
     prompts.push(input.messages);
-    const sources = JSON.parse(input.messages[1].content).publicReferences;
+    const { question, publicReferences: sources } = JSON.parse(input.messages[1].content);
+    if (question === 'who are the crypto moonboys?') {
+      assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
+      return { response: { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] } };
+    }
     assert.ok(sources.some(source => /Alfie/i.test(source.excerpt)));
     return { response: fakeResponse ?? {
       reply: 'Alfie Blaze leads the Bitcoin Kid Army and takes his orders from GKniftyHEADS.',
@@ -2082,6 +2087,15 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.equal((await question({}, { id: '998' })).status, 200, 'there is no default shared question pool');
   settings.time = new Date('2026-11-21T00:00Z');
   assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
+  const overview = await question({
+    npc: 'blockstars', question: 'who are the crypto moonboys?',
+    previous: ['Who commands the Bitcoin Kid Army?'],
+  });
+  assert.equal(overview.status, 200);
+  assert.match(overview.data.reply, /characters in a shared fantasy world/);
+  assert.deepEqual(overview.data.sources.map(item => item.path), [overviewPath]);
+  const freshChat = await question({ npc: 'blockstars', question: 'who are the crypto moonboys?' });
+  assert.deepEqual(freshChat.data.sources.map(item => item.path), [overviewPath]);
   settings.loreEnabled = 'false';
   assert.equal((await question()).status, 404);
 });
