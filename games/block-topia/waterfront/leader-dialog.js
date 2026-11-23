@@ -1,6 +1,6 @@
 import {
   clanLeaderQuestionError, clanLeaderSourceLinks, getClanLeaderBoard, mountClanLeaderDialog, sendClanLeaderQuestion,
-} from '/js/clan-leader-dialog.js?lore=2';
+} from '/js/clan-leader-dialog.js?lore=3';
 
 const names = new Map([
   ['all-city-bulls', 'All City Bulls'],
@@ -199,9 +199,9 @@ questionBox.querySelector('form').addEventListener('submit', async event => {
   const previous = histories.get(historyKey) ?? [];
   questionBox.close();
   mapViewport.setAttribute('data-leader-question-pending', '');
-  showSpeech(key, 'Checking the wiki…');
+  showSpeech(key, 'Thinking…');
   const result = await sendClanLeaderQuestion(key, question, previous);
-  if (result.ok) histories.set(historyKey, [...previous, question].slice(-2));
+  if (result.ok) histories.set(historyKey, [...previous, { question, reply: result.reply }].slice(-2));
   if (ticket !== sequence) return;
   mapViewport.removeAttribute('data-leader-question-pending');
   if (result.ok) showSpeech(key, result.reply, result.sources);

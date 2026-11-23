@@ -48,3 +48,19 @@ AutoSprite generation currently runs on the owner’s PC. When new external art 
 4. Add street life and polish lighting, animations and transitions after the routes and landmarks work.
 
 For each PR, identify the district, user-visible change, asset reuse or AutoSprite requirements, and test results. Check open Waterfront PRs before starting. Exercise changed routes, sprite loading and desktop and portrait layouts when applicable. If the discussion feed is available, record the actual proposals, tradeoffs, review feedback when available and decision in build-discussion.json. Only attribute independent reviewer turns to a reviewer that actually participated. Leave merging and deployment to the owner.
+
+## VPS build worker
+
+The VPS runs the [Block Topia build queue](../../../scripts/block-topia-build-queue.cjs) as the `mooncity` user. Its systemd user timer checks for open issues labelled `block-topia-approved` every five minutes. The installed runner is `~/.local/share/block-topia-art/build-queue.cjs`. Updating the repository and updating that installed copy are separate steps.
+
+### Queue a sprite-library build
+
+1. Open a GitHub issue describing the district, desired prop and placement intent.
+2. Add `<!-- waterfront-production -->` to the issue body and apply both `block-topia-approved` and `block-topia-iterate`.
+3. Keep the issue open while the worker should continue. Closing it or removing `block-topia-approved` stops further work on that issue. Existing founder-preview issues use the original workflow.
+
+The worker reads the district, renderer, city brief and [sprite library](SPRITE-LIBRARY.md) from the integration base. Local Ollama proposes one registered flower or furniture sprite per round. The runner validates the sprite and coordinates, checks the modified renderer's JavaScript syntax, and places the prop on open ground beside a street or footpath outside the original harbor core. The renderer hides it if a saved map edit changes the lot or adjoining route. The production workflow leaves map geometry and routes intact.
+
+Each candidate gets a preview PR and a Codex review request. Review findings feed the next attempt. A clean review of the tested commit, continued issue approval and an unchanged base allow the worker to merge into `block-topia/waterfront-production-integration`. The branch starts from `main` when first created. The owner handles any merge to `main` and deployment. Production preview PRs still need a visual browser check.
+
+From the VPS, the `mooncity` user can inspect the schedule with `systemctl --user list-timers block-topia-build.timer` and recent runs with `journalctl --user -u block-topia-build.service -n 50 --no-pager`.

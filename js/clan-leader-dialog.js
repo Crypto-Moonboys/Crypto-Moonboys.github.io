@@ -29,7 +29,9 @@ export async function sendClanLeaderQuestion(npc, question, previous) {
     const response = await fetch(api + '/clan-operations/leader-lore', {
       method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(35000),
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_auth: auth, npc, question, previous }),
+      body: JSON.stringify({ telegram_auth: auth, npc, question,
+        previous: previous.map(turn => typeof turn === 'string' ? turn : turn.question), recent_turns: previous,
+      }),
     });
     const result = await response.json();
     if (gate.getTelegramId() !== owner) return { error: 'connect_telegram' };
@@ -93,7 +95,7 @@ function loreChat(target) {
     const question = input.value.trim();
     if (!question || button.disabled) return;
     input.disabled = button.disabled = true;
-    status.textContent = 'Checking the Moonboys sources…';
+    status.textContent = 'Thinking…';
     const result = await sendClanLeaderQuestion(target, question, previous);
     input.disabled = button.disabled = false;
     if (!result.ok) {
@@ -109,7 +111,7 @@ function loreChat(target) {
     if (result.sources?.length) turn.append(clanLeaderSourceLinks(result.sources));
     transcript.append(turn);
     transcript.scrollTop = transcript.scrollHeight;
-    previous.push(question);
+    previous.push({ question, reply: result.reply });
     if (previous.length > 2) previous.shift();
     input.value = '';
     status.textContent = '';
