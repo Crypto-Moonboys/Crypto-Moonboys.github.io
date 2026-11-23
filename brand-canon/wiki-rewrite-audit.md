@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 565 top-level `wiki/*.html` pages.
+- Scope: all 573 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,7 +21,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 565 |
+| Total pages audited | 573 |
 | Absent stub authorizations | 0 |
 | KEEP | 274 |
 | REWRITE_FULL | 0 |
@@ -29,7 +29,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | DEDUPE | 0 |
 | EXPAND | 0 |
 | ARCHIVE_STYLE | 0 |
-| GENERATED | 44 |
+| GENERATED | 52 |
 | NFT_SPECIALIST | 165 |
 | FIRST_WITNESS_LOCKED | 82 |
 | NEEDS_HUMAN_REVIEW | 0 |
@@ -46,7 +46,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | Policy | Pages | Meaning |
 |---|---:|---|
 | canon-locked | 349 | Automated article-body writes are rejected. |
-| metadata-only | 215 | Search, relationship, and metadata maintenance only; article prose is preserved. |
+| metadata-only | 223 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
 
@@ -605,6 +605,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Graffpunks 247 Blockchain Radio Station moved](../wiki/graffpunks-247-blockchain-radio-station.html) (`graffpunks-247-blockchain-radio-station`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Graffpunks 247 Radio moved](../wiki/graffpunks-247-radio.html) (`graffpunks-247-radio`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Page moved — Crypto Moonboys](../wiki/graffpunks-network.html) (`graffpunks-network`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/hard-fork-games-event.html) (`hard-fork-games-event`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Page moved — Crypto Moonboys](../wiki/hard-fork-games-game.html) (`hard-fork-games-game`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Page moved — Crypto Moonboys](../wiki/hodl-warriors-army.html) (`hodl-warriors-army`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Hodl Wars Game moved](../wiki/hodl-wars-game.html) (`hodl-wars-game`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
@@ -627,6 +628,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [NBGX moved](../wiki/nbgx.html) (`nbgx`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [NBGX Token](../wiki/nbgx-token.html) (`nbgx-token`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: nbgx-token |
 | [Page moved — Crypto Moonboys](../wiki/no-ball-games-nbg.html) (`no-ball-games-nbg`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/no-ball-games-nbg-collection.html) (`no-ball-games-nbg-collection`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Phygital Prints](../wiki/phygital-prints.html) (`phygital-prints`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: phygital-prints |
 | [Pixil Mini](../wiki/pixil-mini.html) (`pixil-mini`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [pmsl](../wiki/pmsl.html) (`pmsl`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: pmsl |
@@ -646,6 +648,8 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [CRYPTO STAKING How tokens help secure networks, earn protocol rewards and create new risks](../wiki/staking.html) (`staking`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [Street Artist BUSTER: Charlie Buster’s Project Portrait](../wiki/street-artist-buster-aka-charlie-buster.html) (`street-artist-buster-aka-charlie-buster`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Street Swarm: Making Beyond the Connection](../wiki/street-swarm-the-offline-first-tactical.html) (`street-swarm-the-offline-first-tactical`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/substack-posts-on-graffpunks-substack-com.html) (`substack-posts-on-graffpunks-substack-com`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/substack-posts-on-graffpunkssubstackcom.html) (`substack-posts-on-graffpunkssubstackcom`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [swap.nefty](../wiki/swap-nefty.html) (`swap-nefty`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
 | [TacoSwap](../wiki/tacoswap.html) (`tacoswap`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [TAGZcoin](../wiki/tagzcoin.html) (`tagzcoin`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
@@ -672,8 +676,12 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Web3](../wiki/web3.html) (`web3`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Why Creative Identity Matters in an AI World](../wiki/why-this-matters-now-ai-is-restructuring.html) (`why-this-matters-now-ai-is-restructuring`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [WUFFI / $WUF](../wiki/wuffi.html) (`wuffi`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/xrp.html) (`xrp`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [XRP Kids](../wiki/xrp-kids.html) (`xrp-kids`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Specialist archive: xrp-kids |
 | [XRP Ledger](../wiki/xrp-ledger.html) (`xrp-ledger`) | KEEP | NONE | LOW | Preserve article prose; allow metadata-only maintenance. | P4 | Existing public/reference source verification |
+| [Page moved — Crypto Moonboys](../wiki/xrpl-dex.html) (`xrpl-dex`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/xrpl-tokens.html) (`xrpl-tokens`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
+| [Page moved — Crypto Moonboys](../wiki/xrpl-trust-lines.html) (`xrpl-trust-lines`) | GENERATED | NONE | NOT_APPLICABLE | Maintain through its generator or stub/redirect workflow, not lore automation. | P4 | Generated page structure |
 | [Phase One, Two and Three: The Street Manifesto](../wiki/yo-listen-up-this-is-just-phase-one.html) (`yo-listen-up-this-is-just-phase-one`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 | [Phase One, Two and Three: The Extended Medium Edition](../wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html) (`yo-listen-up-this-is-just-phase-one-medium-edition`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Existing public/reference source verification |
 

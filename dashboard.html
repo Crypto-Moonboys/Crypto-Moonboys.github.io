@@ -72,6 +72,10 @@
     .dash-section {
       margin-bottom: 36px;
     }
+    .dash-section > div[id^="dash-"]:empty,
+    .dash-section > div[aria-busy="true"] {
+      min-height: 6rem;
+    }
     .dash-section-heading {
       display: flex;
       align-items: center;
@@ -190,7 +194,8 @@
 <body class="page-dashboard page-standard-shell" data-graph-default-mode="full">
 <main id="content" role="main">
 
-  <img class="page-hero-art" src="/art/Neon%20London%20Wiki%20Dashboard.jpg" alt="Wiki dashboard artwork" decoding="async" fetchpriority="high" width="1983" height="793">
+  <img class="page-hero-art" src="/art/Neon%20London%20Wiki%20Dashboard.jpg"
+       srcset="/art/responsive/dashboard-hero-480.webp 480w, /art/Neon%20London%20Wiki%20Dashboard.jpg 1983w" sizes="100vw" alt="Wiki dashboard artwork" decoding="async" fetchpriority="high" width="1983" height="793">
 
     <section class="wiki-living-hero dashboard-hero swarmsy-hero" aria-labelledby="dashboard-title">
       <div class="swarmsy-hero-inner">
@@ -396,8 +401,7 @@
 <!-- 7. Page-specific scripts -->
 
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/dashboard.js"></script>
-<script data-cfasync="false" src="/js/graph-visualization.js"></script>
+<script data-cfasync="false" src="/js/dashboard.js?v=compact-summary"></script>
+<script data-cfasync="false" src="/js/graph-visualization.js?v=worker-layout"></script>
 </body>
 </html>

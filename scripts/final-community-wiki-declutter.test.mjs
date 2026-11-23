@@ -36,7 +36,7 @@ assert.match(chamber, /<details class="section bc-disclosure" open>[\s\S]*?Activ
 assert.match(chamber, /<details class="section bc-disclosure" open>[\s\S]*?Faction War Standings/, 'Live standings remain initially visible');
 assert.match(chamber, /href="\/my-moonboy\.html\?tab=faction"/, 'Personal faction claims link to central account');
 assert.match(chamber, /Top Contributors &amp; XP Chart/, 'Actual Battle Chamber contributor chart remains');
-assert.match(chamber, /id="faction-chambers-live"><a href="\/battle-chamber\/factions\/index\.html"/);
+assert.match(chamber, /id="faction-chambers-live"><a href="\/battle-chamber\/factions\/"/);
 assert.match(chamber, /data-fop-crew data-fop-compact-directory/);
 const factionRenderer = read('js/battle-chamber-factions.js');
 assert.match(factionRenderer, /bc-join-grid/);
@@ -52,7 +52,7 @@ assert.equal(new Set(factionLinks).size, 9, 'All nine published faction chambers
 for (const x of [
   'function buildForm(pageId)', 'function wireForm(', 'function wireVotes(',
   "CustomEvent('moonboys:comment-posted'", "if (!email && !telegramAuth)",
-  'function injectTelegramWidget(container)', 'function updateCommentIdentityCopy(form)'
+  'function refreshCommentIdentity()', 'function updateCommentIdentityCopy(form)'
 ]) {
   assert.ok(comments.includes(x), 'Wiki comment action intact: ' + x);
 }

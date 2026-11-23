@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumina’s Waterfront | Block Topia</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=2">
+<style>
+:root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0}
+a{color:#91efe3}
+#bt-gate[hidden],#bt-gate [hidden],.viewport[hidden]{display:none}
+.viewport{position:relative;background:#101f34}
+.map-scroll{height:100vh;height:100dvh;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y}
+.viewport:fullscreen .map-scroll{height:100%}
+.map-controls{position:absolute;z-index:1;top:.65rem;right:.65rem;display:flex;gap:.35rem}
+.map-controls button{background:#13131cef}
+.map-controls button[hidden]{display:none}
+canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixelated;cursor:pointer}
+canvas[data-editing=true]{cursor:crosshair}
+canvas.is-panning{cursor:grabbing}
+#location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
+.tools{position:absolute;z-index:2;top:3.75rem;right:.65rem;width:min(25rem,calc(100% - 1.3rem));max-height:calc(100% - 4.4rem);overflow:auto;overscroll-behavior:contain;padding:1rem;background:#13131cf5;border:1px solid #658782;border-radius:.25rem}
+.tools .movement{margin-block:.8rem}
+.movement p,#status{margin:0;font-size:.85rem;color:#c1d4cc}
+button,select{font:inherit;min-height:44px;padding:.45rem .65rem;background:#1b2d33;color:inherit;border:1px solid #658782;border-radius:.25rem}
+button,summary{cursor:pointer}button[aria-pressed=true]{background:#356858}
+button:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid #ffdd90;outline-offset:3px}
+details{padding:.35rem 0}
+fieldset{border:0;padding:0;margin:.65rem 0 0;min-inline-size:0}
+fieldset p{max-width:42rem;margin:.4rem 0}
+fieldset button{margin:.2rem .15rem .2rem 0}
+</style>
+</head>
+<body>
+<main>
+<section id="bt-gate" aria-labelledby="waterfront-entry-title">
+<div class="bt-gate__fog" aria-hidden="true"></div>
+<div class="bt-gate__inner">
+<h1 id="waterfront-entry-title" class="bt-gate__gate-heading">Lumina’s Waterfront</h1>
+<p id="waterfront-entry-status" class="bt-gate__checking" role="status">Checking access…</p>
+<div class="bt-gate__actions">
+<button id="waterfront-login" class="bt-gate__btn bt-gate__btn--primary" type="button" data-telegram-login hidden>Sign in with Telegram</button>
+<a id="waterfront-join-faction" class="bt-gate__btn bt-gate__btn--primary" href="/community.html" hidden>Join a faction</a>
+<button id="waterfront-enter" class="bt-gate__btn bt-gate__btn--enter" type="button" hidden>Enter Waterfront</button>
+<button id="waterfront-retry" class="bt-gate__btn bt-gate__btn--primary" type="button" hidden>Check again</button>
+<a class="bt-gate__btn bt-gate__btn--secondary" href="../">Back to Block Topia</a>
+</div>
+</div>
+</section>
+<div class="viewport" id="waterfront-game" hidden inert>
+<div class="map-scroll">
+<canvas id="map" width="896" height="384" role="img" aria-describedby="movement-help" aria-label="Nighttime waterfront map with docks, a lighthouse, warehouses, graffiti walls and record shops"></canvas>
+</div>
+<div class="map-controls" role="group" aria-label="Map view">
+<button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+<button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+<button id="map-info" type="button" aria-controls="map-tools" aria-expanded="false">Info</button>
+<button id="map-fullscreen" type="button" hidden>Fullscreen</button>
+</div>
+<p id="location"></p>
+<div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
+<a href="../">← Block Topia</a>
+<section class="movement" aria-label="Explore the harbor">
+<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Select a faction leader for details, or double-click or double-tap to ask a question.</p>
+</section>
+<p id="player-faction"></p>
+<button id="waterfront-leave" type="button">Leave Waterfront</button>
+<div id="map-leader-controls" hidden>
+<label for="map-leader-faction">Faction leader</label>
+<select id="map-leader-faction"></select>
+<button id="map-leader-talk" type="button">Show details</button>
+</div>
+<details id="build-discussion" hidden><summary>Build discussion</summary><ol></ol></details>
+<details id="editor">
+<summary>Map editor</summary>
+<fieldset aria-label="Edit your map">
+<button id="edit" type="button" aria-pressed="false">Edit tiles</button>
+<label for="tile">Tile</label>
+<select id="tile"></select>
+<p><small>Turn on Edit tiles, then select a square inside the highlighted district. Edits save in this browser. Download the layout to share it.</small></p>
+<button id="download" type="button">Download map</button>
+<button id="reset" type="button">Reset map</button>
+<p id="status" role="status"></p>
+</fieldset>
+</details>
+</div>
+</div>
+</main>
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=2"></script>
+</body>
+</html>

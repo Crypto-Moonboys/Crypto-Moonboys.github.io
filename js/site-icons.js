@@ -224,6 +224,20 @@
     [/^(price|market price|price history)$/i, 'price'],
   ];
 
+  const headingSelector = 'h1,h2,h3,h4,h5,h6,[role="heading"],.section-heading,.logo-text,.gk-collection-about-kicker,.nft-template-about-kicker';
+
+  function styleHeadingText(text) {
+    const parent = text.parentElement;
+    if (!text.data.trim() || !parent || parent.closest('moonboys-heading-ink,[aria-hidden="true"]')) return;
+    const heading = parent.closest(headingSelector);
+    if (!heading?.closest('#content,main,#site-header')) return;
+
+    // Use an inline element distinct from the spans that style title accents.
+    const ink = document.createElement('moonboys-heading-ink');
+    text.replaceWith(ink);
+    ink.append(text);
+  }
+
   function renderText(text) {
     const parent = text.parentElement;
     if (!parent || parent.closest(skipped)) return;
@@ -239,7 +253,10 @@
         return;
       }
     }
-    if (!candidates.test(value)) return;
+    if (!candidates.test(value)) {
+      styleHeadingText(text);
+      return;
+    }
     let fragment;
     let offset = 0;
     for (const token of value.matchAll(legacyToken)) {
@@ -256,7 +273,11 @@
     }
     if (fragment) {
       fragment.append(value.slice(offset));
+      const runs = Array.from(fragment.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
       text.replaceWith(fragment);
+      runs.forEach(styleHeadingText);
+    } else {
+      styleHeadingText(text);
     }
   }
 
@@ -319,7 +340,7 @@
   function boot() {
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = '/css/site-icons.css?v=1';
+    stylesheet.href = '/css/site-icons.css?v=2';
     document.head.append(stylesheet);
     upgrade(document.body);
     const observer = new MutationObserver(records => {

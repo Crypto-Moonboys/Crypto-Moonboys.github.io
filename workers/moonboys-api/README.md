@@ -135,3 +135,90 @@ setting. The per-account request ID keys both the roll and its Community XP
 receipt. Roll persistence and XP settlement share one D1 batch. PFP rolls
 write to their own tables and Community XP, leaving Paint Wall banks on the
 existing operations ledger.
+
+### Faction leader rounds and rival slowdowns
+
+Apply `129_clan_leader_presence.sql` before setting `CLAN_LEADER_PLAY_FROM`
+to the agreed UTC start date (`YYYY-MM-DD`). Leave the variable unset while
+the feature is closed. Each hour the Worker assigns every faction one
+five-minute game window. Start times and groups vary while each window allows
+at most three leaders off the map. The Worker uses public arcade routes from
+the sitemap and the shared mining rules for unranked training. An uninterrupted
+round adds 12 Leader Power when its window closes, for the same daily ceiling
+of 288 per leader. Missed ticks are skipped. Training never writes player
+ledgers or arcade leaderboards.
+
+Signed members may interrupt a rival with one free preset question per UTC
+day (5, 10 or 20 minutes). A paid pause costs 100 Block Topia XP or 5 Block
+Topia gems for 1 hour, or 1,200 XP or 50 gems for 24 hours. There is a one-hour
+recovery interval after brief or hourly pauses, and six hours after a 24-hour
+pause. Slowdowns cannot overlap or accumulate during recovery. Paid actions
+atomically write a pause and a progression cost receipt. The feature only
+affects independent leader rounds, while members' banks and signals continue
+during the pause.
+
+### Faction leader lore chat
+
+Apply `130_clan_leader_lore.sql` and configure a dedicated Hermes API gateway
+on the VPS with its provider set to local Ollama. Use a game-only profile
+with all toolsets disabled and no access to the build runner’s credentials or
+private workspace. Keep Ollama and Hermes bound to loopback. Use an authenticated
+HTTPS proxy that forwards only `POST /v1/chat/completions` to that profile.
+Set `CLAN_LEADER_HERMES_URL` to the full HTTPS endpoint and store the bearer key
+as the `CLAN_LEADER_HERMES_TOKEN` Worker secret.
+`CLAN_LEADER_HERMES_MODEL` names the gateway profile and defaults to
+`hermes-agent`. The Ollama model itself is configured on the VPS.
+Set `CLAN_LEADER_LORE_ENABLED=true` when the connection is ready. Chat requires
+the configuration for the selected provider. Hermes is the default and has no hosted model fallback.
+Players sign in with Telegram and can ask any of the nine faction leaders.
+The Worker sends the question, up to two earlier questions, and public source
+excerpts to the model. Telegram auth and account IDs stay within the Worker.
+Only daily usage counts are saved to D1.
+
+To use your own Google AI Studio key through Cloudflare AI Gateway, configure the
+following on the Worker. Keep both credentials in encrypted Worker secrets.
+
+| Binding | Value |
+| --- | --- |
+| `CLAN_LEADER_LORE_PROVIDER` | `gemini` |
+| `CLAN_LEADER_GEMINI_GATEWAY` | `https://gateway.ai.cloudflare.com/v1/<account-id>/moonboys-lore` |
+| `CLAN_LEADER_GEMINI_KEY` | Google AI Studio API key (secret) |
+| `CLAN_LEADER_GATEWAY_TOKEN` | Cloudflare AI Gateway Run token (secret) |
+| `CLAN_LEADER_GEMINI_MODEL` | Optional. Defaults to `gemini-3.8-flash` |
+
+Gemini uses the same published lore retrieval and nine faction profiles. It checks
+each question for canon relevance and can also hold a general conversation or
+invent new, explicitly non-canon lore without a trigger phrase. Canon replies still
+require citations. The chat sends the last two questions and replies so follow-up
+questions can build on the same scene. Standalone greetings are answered locally
+before retrieval or model quota reservation.
+Gemini defaults to 100 reserved questions per UTC day across the site unless
+`CLAN_LEADER_LORE_SITE_LIMIT` specifies a different positive limit. The gateway
+uses provider billing and disables prompt and response logging. Verify both chat
+modes with a signed-in Waterfront session after deployment.
+
+The nine leaders have their own faction identity, voice and guiding values.
+They share a knowledge catalog built from the published site artifact, public
+Wiki index, sitemap and current canon references. Pages publishes the artifact's
+HTML and Markdown path index at `/js/leader-lore-sources.json`. The Worker reads
+short excerpts from relevant documents when a question is asked and links the
+sources it used. Editorial-only files, noindex pages and account routes stay out
+of model context. Each signed player gets 10 questions per UTC day plus one
+question for each verified Clan Operation tier banked that day, up to three extras.
+Set `CLAN_LEADER_LORE_SITE_LIMIT` only if needed to cap total model traffic by
+UTC day. It is unset by default. In Waterfront,
+select a leader for details and double-click or double-tap to ask. Send closes
+the composer and the reply appears above the leader. The info button opens
+the full reply and sources. Lore questions do not affect rounds, scores or
+player balances.
+
+### Waterfront faction seats
+
+Apply `131_waterfront_seats.sql` and deploy the Worker before publishing the
+Waterfront entry page. The entry endpoint verifies the same Telegram proof
+and canonical faction membership used by Block Topia. Entry depends on a
+free faction seat, with no XP threshold. Only a successful claim receives
+the live district layout. Each browser document renews its 75-second seat
+every 20 seconds, releases it when leaving where possible, and locks the
+map when it loses the seat. The database allows one seat per faction and
+one per account. Unrenewed seats expire on their own.

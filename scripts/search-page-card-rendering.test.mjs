@@ -37,8 +37,8 @@ assert.ok(
 );
 
 assert.ok(
-  wikiJs.includes('article-card-meta') && wikiJs.includes('article-card-path'),
-  'search cards must render metadata and subtle path classes',
+  renderSearchPageBlock.includes('article-card-meta-item') && !renderSearchPageBlock.includes('article-card-path'),
+  'public cards should show the result type without a raw path',
 );
 
 assert.ok(
@@ -116,5 +116,8 @@ assert.equal(
   'A readable lore summary.',
   'getArticleSummary should pick a readable preferred description field',
 );
+
+assert.equal(sandbox.highlightSearchText('<script>Moon boys & lore</script>', /(moon boys)/gi),
+  '&lt;script&gt;<mark>Moon boys</mark> &amp; lore&lt;/script&gt;');
 
 console.log('search-page-card-rendering.test: PASS');

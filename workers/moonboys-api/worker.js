@@ -16,7 +16,7 @@ import { checkTelegramGroupMember } from './telegram-group-membership.js';
 import { handleTelegramWebsiteAuth, isWebsiteCredential, verifyWebsiteCredential } from './telegram-website-auth.js';
 import { ensureTelegramGamesPinned } from './telegram-games-pin.js';
 import { moonboyTelegramMessageSeed, sendControlledMoonboyTelegram } from './telegram/moonboy-message-gateway.js';
-import { addMoonboysMessageEmoji, formatMoonboysAnnouncement } from './telegram/faction-emoji.js';
+import { addMoonboysMessageEmoji, formatMoonboysAnnouncement, telegramMessageLength } from './telegram/faction-emoji.js';
 import { createTelegramCommandMediaContext, unwrapTelegramBotToken } from './telegram/command-media-context.js';
 import { runTelegramChatMenuCleanup } from './telegram-chat-menu-cleanup.js';
 import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
@@ -47,8 +47,10 @@ import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-l
 import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
 import { clanOperationsEnabled, handleClanOperations } from './routes/clan-operations.js';
 import { handleClanPfpRoll } from './routes/clan-pfp-roll.js';
+import { handleWaterfrontSeat } from './routes/waterfront-seat.js';
 import { clanPeriodStart, closeClanPeriods } from './shared/clan-period-rewards.js';
 import { maintainClanCampaigns } from './shared/clan-campaigns.js';
+import { clanLeaderStart, runClanLeaderRounds } from './shared/clan-leader-presence.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart, settleClanSignalXp } from './shared/clan-signal-xp.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleRadioStream } from './routes/radio-stream.js';
@@ -744,10 +746,11 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}, requestOp
   // interactive command or callback replies. Preserve formatting/keyboards.
   botToken = unwrapTelegramBotToken(botToken);
   try {
-    const decoratedText = requestOptions.usePackEmoji !== false &&
-        (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && typeof text === 'string' && text.length < 4096
+    const branded = requestOptions.usePackEmoji !== false &&
+        (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && typeof text === 'string' && telegramMessageLength(text, 'HTML') < 4096
       ? await addMoonboysMessageEmoji(text, botToken)
       : text;
+    const decoratedText = branded !== text && telegramMessageLength(branded, 'HTML') <= 4096 ? branded : text;
     const send = messageText => fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -780,9 +783,10 @@ async function sendBaseWorkerMoonboyMessage(env, chatId, text, extra = {}, {
   let outcome;
   let caption = text;
   try {
-    if ((extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && !extra.caption_entities && typeof text === 'string' && text.length < 1024) {
+    if (requestOptions.usePackEmoji !== false && (extra.parse_mode ?? 'HTML') === 'HTML' && !extra.entities && !extra.caption_entities &&
+        typeof text === 'string' && telegramMessageLength(text, 'HTML') < 1024) {
       const branded = await addMoonboysMessageEmoji(text, env.TELEGRAM_BOT_TOKEN);
-      if (branded.length <= 1024) caption = branded;
+      if (telegramMessageLength(branded, 'HTML') <= 1024) caption = branded;
     }
     const seed = moonboyTelegramMessageSeed(messageKind, chatId, logicalId, sequence);
     outcome = await sendControlledMoonboyTelegram({
@@ -12259,11 +12263,13 @@ export default {
           return err('Grant cannot be applied at current cap', 409);
         }
 
-        await env.DB.prepare(`
+        const updated = await env.DB.prepare(`
           UPDATE blocktopia_progression
           SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP
-          WHERE telegram_id = ?
-        `).bind(nextXp, nextGems, telegramId).run();
+          WHERE telegram_id = ? AND xp = ? AND gems = ?
+          RETURNING telegram_id
+        `).bind(nextXp, nextGems, telegramId, row.xp, row.gems).first();
+        if (!updated) return err('Progression changed. Please retry.', 409);
 
         await writeBlockTopiaAdminGrantAudit(env.DB, {
           telegramId,
@@ -13386,8 +13392,19 @@ export default {
       }
     }
 
+    if (path === '/blocktopia/waterfront/seat') {
+      const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
+      return handleWaterfrontSeat(request, env, {
+        respond: makeJsonResponder(privateHeaders), verifyTelegramAuth, logApiFailure,
+        rateLimit: (owner) => enforcePublicRateLimit(request, env, path, null, privateHeaders, owner
+          ? { includeIp: false, telegramId: owner, telegramLimit: 16 }
+          : { includeTelegram: false, ipLimit: 120 }),
+      });
+    }
+
     const isClanPfpRoll = path === '/clan-operations/pfp/state' || path === '/clan-operations/pfp/roll';
-    if (isClanPfpRoll || path === '/clan-operations/state' || path === '/clan-operations/move') {
+    const isClanLeaderLore = path === '/clan-operations/leader-lore';
+    if (isClanPfpRoll || isClanLeaderLore || path === '/clan-operations/state' || path === '/clan-operations/move' || path === '/clan-operations/leader-slowdown') {
       const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
       const handle = isClanPfpRoll ? handleClanPfpRoll : handleClanOperations;
       return handle(request, env, {
@@ -13397,7 +13414,9 @@ export default {
         logApiFailure,
         rateLimit: (owner) => enforcePublicRateLimit(request, env, path, null, privateHeaders, {
           // The pre-auth guard allows shared networks to play. Verified accounts keep their own budget.
-          ...(owner ? { includeIp: false, telegramId: owner } : { includeTelegram: false, ipLimit: 120 }),
+          ...(owner
+            ? { includeIp: false, telegramId: owner, ...(isClanLeaderLore ? { telegramLimit: 4 } : {}) }
+            : { includeTelegram: false, ipLimit: isClanLeaderLore ? 24 : 120 }),
         }),
       });
     }
@@ -14246,6 +14265,64 @@ export default {
       } catch {
         return err('Failed to award faction XP', 500);
       }
+    }
+
+    if (path === '/wiki/story-proposals' && request.method === 'POST') {
+      const rate = enforcePublicRateLimit(request, env, path, null, corsHeaders, {
+        ipLimit: 12, includeTelegram: false,
+      });
+      if (rate) return rate;
+      const body = await request.json().catch(() => null);
+      if (!body || typeof body !== 'object' || Array.isArray(body)) return err('Invalid JSON', 400);
+      const identity = await verifyWebsiteCredential(body?.telegram_auth, env);
+      if (!identity || identity.error) {
+        return err(identity?.error || 'telegram_website_login_required', identity?.status || 401);
+      }
+
+      const pageId = typeof body.page_id === 'string' ? normalizeWikiPageId(body.page_id) : null;
+      const proposal = typeof body.proposal === 'string' ? body.proposal.trim() : '';
+      if (!pageId || proposal.length < 20 || proposal.length > 1500) {
+        return err('invalid_story_proposal', 400);
+      }
+      const group = getTelegramGroupConfig(env);
+      if (!/^-[1-9]\d{0,19}$/.test(group.chat_id || '') ||
+          (group.message_thread_id && !/^[1-9]\d{0,12}$/.test(group.message_thread_id)) ||
+          !env.TELEGRAM_BOT_TOKEN) {
+        return err('story_proposal_delivery_unavailable', 503);
+      }
+      const senderRate = enforcePublicRateLimit(request, env, path, null, corsHeaders, {
+        includeIp: false, telegramId: identity.telegramId, telegramLimit: 1,
+      });
+      if (senderRate) return senderRate;
+
+      const user = identity.user;
+      const username = String(user.username || '');
+      const author = /^[a-zA-Z0-9_]{1,32}$/.test(username) ? '@' + username
+        : normalizeTextField([user.first_name, user.last_name].filter(Boolean).join(' '), 80) || 'Telegram member';
+      const text = [
+        '<b>Wiki story change proposal</b>',
+        'Article: ' + SITE_URL + '/wiki/' + pageId + '.html',
+        'Submitted by: ' + escapeHtml(author),
+        '',
+        '<blockquote>' + escapeHtml(proposal) + '</blockquote>',
+        '',
+        'For editorial review.',
+      ].join('\n');
+      const sent = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, group.chat_id, text, {
+        disable_web_page_preview: true,
+        ...(group.message_thread_id ? { message_thread_id: Number(group.message_thread_id) } : {}),
+      }, { signal: AbortSignal.timeout(8000) });
+      if (!sent.ok) {
+        return sent.status >= 400 && sent.status < 500
+          ? err('story_proposal_delivery_failed', 502)
+          : err('story_proposal_delivery_unconfirmed', 503);
+      }
+      let receipt;
+      try { receipt = JSON.parse(sent.response); } catch { /* Telegram acknowledgement could not be read. */ }
+      if (receipt?.ok !== true || !Number.isSafeInteger(receipt?.result?.message_id) || receipt.result.message_id <= 0) {
+        return err('story_proposal_delivery_unconfirmed', 503);
+      }
+      return json({ ok: true }, 201);
     }
 
     // ── GET /player/state ─────────────────────────────────────────────────
@@ -15518,9 +15595,10 @@ export default {
         ['clan_signal_xp', signalStart, settleClanSignalXp],
         ['clan_period_rewards', periodStart, closeClanPeriods],
         ['clan_campaigns', periodStart, maintainClanCampaigns],
+        ['clan_leader_rounds', clanLeaderStart(env), runClanLeaderRounds],
       ];
       for (const [task, start, run] of tasks) {
-        if (!start) continue;
+        if (start == null) continue;
         try {
           await run(env.DB, start, now);
           scheduledResults.push({ task, ok: true, error: null });
@@ -16456,10 +16534,10 @@ async function sendTelegramPhoto(botToken, chatId, photo, extra = {}) {
     botToken = unwrapTelegramBotToken(botToken);
     const caption = extra.caption;
     const branded = extra.parse_mode === 'HTML' && !extra.caption_entities &&
-      typeof caption === 'string' && caption.length < 1024
+      typeof caption === 'string' && telegramMessageLength(caption, 'HTML') < 1024
       ? await addMoonboysMessageEmoji(caption, botToken)
       : caption;
-    const brandedCaption = branded?.length <= 1024 ? branded : caption;
+    const brandedCaption = branded !== caption && telegramMessageLength(branded, 'HTML') <= 1024 ? branded : caption;
     const send = value => fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

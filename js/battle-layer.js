@@ -20,7 +20,7 @@
     {
       id: 'engage',
       tag: 'Engage',
-      text: 'Leave a strategic comment on this page to influence the narrative.',
+      text: 'Join the discussion. Post a comment to complete Engage.',
       feature: 'COMMENTS',
       actionLabel: 'Comment'
     },
@@ -260,6 +260,11 @@
   function wireMissionEvents(pageId) {
     if (wireMissionEvents.bound) return;
     wireMissionEvents.bound = true;
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('a[href="#wiki-story-proposal"]')) return;
+      var proposal = document.getElementById('wiki-story-proposal');
+      if (proposal) proposal.open = true;
+    });
     document.addEventListener('moonboys:comment-posted', function (event) {
       var detail = event.detail || {};
       completeMission(detail.page_id || pageId, 'engage', 'comments', detail.mission);
@@ -320,6 +325,12 @@
   }
 
   function buildMissionHTML(pageId, engagement) {
+    var comments = window.MOONBOYS_COMMENTS;
+    var showProposalLink = comments && comments.isSignedIn && comments.isSignedIn();
+    var proposalLink = BASE && FEATURES.COMMENTS && document.location.pathname === '/wiki/' + pageId + '.html'
+      ? '<p class="battle-copy" data-story-proposal-link' + (showProposalLink ? '' : ' hidden') +
+        '><a href="#wiki-story-proposal">Suggest a story change</a></p>'
+      : '';
     return '<div class="battle-shell battle-shell--missions"><div class="battle-shell-inner">' +
       '<h3>Daily Missions</h3>' +
       (typeof engagement === 'number' ? buildBattleHeatSummary(engagement) : '') +
@@ -335,6 +346,7 @@
       }).join('') +
       '</div>' +
       '<p class="battle-copy">Rewards sync only for Telegram-linked users after supported actions are accepted by the live backend.</p>' +
+      proposalLink +
       '</div></div>';
   }
 

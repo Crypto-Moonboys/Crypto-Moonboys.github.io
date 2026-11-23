@@ -1,0 +1,44 @@
+[
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Crypto exchange, ticker boards and rooftop antenna.",
+    "name": "Block Topia HK Nightlife v1 - block-exchange",
+    "file": "block-exchange.png",
+    "assetId": "cmws5oolo0066na3c2fpsewrt"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Crypto vault, steel doors and rooftop CCTV.",
+    "name": "Block Topia HK Nightlife v1 - cold-vault",
+    "file": "cold-vault.png",
+    "assetId": "cmws5oznm011kp6eo8384er6z"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Mining hall, rooftop fans and orange loading bay.",
+    "name": "Block Topia HK Nightlife v1 - hash-house",
+    "file": "hash-house.png",
+    "assetId": "cmws5pd3d00895ccis7vjzimm"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Casino, gold marquee, neon chips and lit canopy.",
+    "name": "Block Topia HK Nightlife v1 - lucky-block-casino",
+    "file": "lucky-block-casino.png",
+    "assetId": "cmws5pqnd008o5cciq81wnx8c"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Violet casino, amber entry and rooftop jackpot sign.",
+    "name": "Block Topia HK Nightlife v1 - neon-ledger-casino",
+    "file": "neon-ledger-casino.png",
+    "assetId": "cmws5q4mr0078na3c9jhvv3r1"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Nightclub, rooftop speakers, magenta entry, cyan steps.",
+    "name": "Block Topia HK Nightlife v1 - afterblock-club",
+    "file": "afterblock-club.png",
+    "assetId": "cmws5qish007rna3cndhz8pkh"
+  }
+]

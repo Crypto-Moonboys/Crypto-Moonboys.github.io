@@ -70,17 +70,18 @@
     return String(value || '').trim().replace(/^@+/, '');
   }
 
-  function getLinkedTelegramProfile() {
+  function getLinkedTelegramProfile(auth) {
     var gate = getIdentityGate();
-    if (!gate || typeof gate.isTelegramLinked !== 'function' || !gate.isTelegramLinked()) return null;
-    var auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
-    var name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : '';
+    if (!auth && gate && gate.getSignedTelegramAuth) auth = gate.getSignedTelegramAuth();
+    if (!auth && !(gate && gate.isTelegramLinked && gate.isTelegramLinked())) return null;
+    if (!auth && gate && gate.getTelegramAuth) auth = gate.getTelegramAuth();
+    var name = gate && gate.getTelegramName ? gate.getTelegramName() : '';
     var username = auth && auth.username ? cleanTelegramUsername(auth.username) : '';
     var avatar = '';
-    if (typeof gate.getTelegramPhotoUrl === 'function') avatar = gate.getTelegramPhotoUrl() || '';
+    if (gate && gate.getTelegramPhotoUrl) avatar = gate.getTelegramPhotoUrl() || '';
     if (!avatar && auth && auth.photo_url) avatar = auth.photo_url;
     return {
-      name: String(name || '').trim(),
+      name: String(name || (auth && [auth.first_name, auth.last_name].filter(Boolean).join(' ')) || username || 'Telegram reader').trim(),
       telegram_username: username,
       avatar_url: String(avatar || '').trim(),
     };
@@ -100,15 +101,6 @@
     fillIfEmpty(form, 'avatar_url', profile.avatar_url);
   }
 
-  function applyLinkedTelegramIdentity(form) {
-    var linked = getLinkedTelegramProfile();
-    if (!linked) return null;
-    fillIfEmpty(form, 'name', linked.name);
-    fillIfEmpty(form, 'telegram_username', linked.telegram_username);
-    fillIfEmpty(form, 'avatar_url', linked.avatar_url);
-    return linked;
-  }
-
   function updateCommentIdentityCopy(form) {
     var tgStatus = form.querySelector('.cm-tg-status');
     var gravatarStatus = form.querySelector('.cm-gravatar-status');
@@ -117,11 +109,13 @@
     var linked = getLinkedTelegramProfile();
     var hasTelegramId = !!(gate && typeof gate.getTelegramId === 'function' && gate.getTelegramId());
 
+    form.closest('.wiki-comments').querySelectorAll('[data-comment-guest-only]').forEach(function (element) {
+      element.style.display = linked ? 'none' : '';
+    });
+    if (linked) return;
+
     if (tgStatus) {
-      if (linked) {
-        tgStatus.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + '. Email optional — Telegram identity will be used.';
-        tgStatus.className = 'cm-tg-status cm-success';
-      } else if (hasTelegramId) {
+      if (hasTelegramId) {
         tgStatus.textContent = 'Log in with Telegram to access eligible rewards.';
         tgStatus.className = 'cm-tg-status cm-warning';
       } else {
@@ -154,8 +148,7 @@
   // Inline account state is contextual to comments; global onboarding and
   // public contributor rankings belong on My Moonboy / Battle Chamber.
   function buildTelegramIdentityCard(pageId) {
-    return '<div class="cm-comment-account" aria-label="Comment identity status">' +
-      '<span class="cm-tg-login" id="cm-tg-login-' + pageId + '"></span>' +
+    return '<div class="cm-comment-account" data-comment-guest-only aria-label="Comment identity status">' +
       '<span class="cm-tg-status" id="cm-tg-status-' + pageId + '">Email comments work without Telegram.</span>' +
       '<a href="/my-moonboy.html" class="cm-comment-account-link">My Moonboy</a>' +
     '</div>';
@@ -205,7 +198,7 @@
 
   function buildForm(pageId) {
     return '<form class="comment-form" data-page-id="' + pageId + '" novalidate>' +
-      '<div class="comment-form-identity">' +
+      '<div class="comment-form-identity" data-comment-guest-only>' +
         '<div class="comment-form-field">' +
           '<label for="cm-name-' + pageId + '">Name / Handle <span class="cm-required">*</span></label>' +
           '<input type="text" id="cm-name-' + pageId + '" name="name" placeholder="Your display name" maxlength="60" required autocomplete="nickname">' +
@@ -237,7 +230,7 @@
             '<span class="comment-character-counter">0 / 2000</span>' +
           '</div>' +
           '<div class="comment-form-footer">' +
-            '<span class="comment-form-note">Add useful information or a source.</span>' +
+            '<span class="comment-form-note" data-comment-guest-only>Add useful information or a source.</span>' +
             '<button type="submit" class="swarmsy-form-button">Post Comment</button>' +
           '</div>' +
         '</div>' +
@@ -256,20 +249,8 @@
       counterEl.textContent = String(textEl.value || '').length + ' / ' + (textEl.getAttribute('maxlength') || '2000');
     };
     applyCommentProfile(form);
-    applyLinkedTelegramIdentity(form);
     updateCommentIdentityCopy(form);
     updateCounter();
-    var gate = getIdentityGate();
-    if (gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked() && typeof gate.getFreshTelegramAuth === 'function') {
-      Promise.resolve(gate.getFreshTelegramAuth())
-        .then(function (auth) {
-          if (!auth) return;
-          fillIfEmpty(form, 'telegram_username', cleanTelegramUsername(auth.username));
-          fillIfEmpty(form, 'avatar_url', auth.photo_url || '');
-          updateCommentIdentityCopy(form);
-        })
-        .catch(function () {});
-    }
 
     Array.prototype.forEach.call(form.querySelectorAll('input'), function (input) {
       input.addEventListener('input', function () {
@@ -280,6 +261,7 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (container.hidden) return;
       var status  = form.querySelector('.comment-form-status');
       var name    = form.querySelector('[name=name]').value.trim();
       var email   = form.querySelector('[name=email]').value.trim();
@@ -288,9 +270,10 @@
       var avatar  = (form.querySelector('[name=avatar_url]') || {}).value || '';
       avatar      = avatar.trim();
       var text    = form.querySelector('[name=text]').value.trim();
+      var linked  = getLinkedTelegramProfile();
 
-      if (!name || !text) {
-        status.textContent = 'Name and comment are required.';
+      if (!text || (!linked && !name)) {
+        status.textContent = linked ? 'Enter a comment.' : 'Name and comment are required.';
         status.className   = 'comment-form-status cm-error';
         return;
       }
@@ -304,27 +287,31 @@
       status.textContent = 'Posting...';
       status.className   = 'comment-form-status cm-loading';
 
-      var payload = { page_id: pageId, name: name, text: text };
-      if (email)   payload.email = email;
-      if (tg)      payload.telegram_username = tg;
-      if (discord) payload.discord_username  = discord;
-      if (avatar)  payload.avatar_url        = avatar;
-
       Promise.resolve(getFreshTelegramAuth())
         .then(function (telegramAuth) {
+          if (linked && (!telegramAuth || !getLinkedTelegramProfile())) {
+            throw new Error('Your Telegram session has expired. Sign in again to post your comment.');
+          }
           if (!email && !telegramAuth) {
             status.textContent = 'Email required for Gravatar avatar, never displayed.';
             status.className   = 'comment-form-status cm-error';
             throw { error: 'email_required' };
           }
-          saveCommentProfile({
-            name: name,
-            email: email,
-            telegram_username: tg,
-            discord_username: discord,
-            avatar_url: avatar,
-          });
-          if (telegramAuth) payload.telegram_auth = telegramAuth;
+          var payload = { page_id: pageId, text: text };
+          if (telegramAuth) {
+            var profile = getLinkedTelegramProfile(telegramAuth);
+            payload.name = profile.name;
+            if (profile.telegram_username) payload.telegram_username = profile.telegram_username;
+            if (profile.avatar_url) payload.avatar_url = profile.avatar_url;
+            payload.telegram_auth = telegramAuth;
+          } else {
+            payload.name = name;
+            payload.email = email;
+            if (tg) payload.telegram_username = tg;
+            if (discord) payload.discord_username = discord;
+            if (avatar) payload.avatar_url = avatar;
+            saveCommentProfile(payload);
+          }
           return fetch(BASE + '/comments', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -349,7 +336,6 @@
           }));
           form.reset();
           applyCommentProfile(form);
-          applyLinkedTelegramIdentity(form);
           updateCommentIdentityCopy(form);
           updateCounter();
           if (moderation === 'approved') {
@@ -366,21 +352,16 @@
     });
   }
 
-  // Telegram identity state. The comment form avoids embedding the Telegram
-  // Login Widget because domain errors can leak a broken widget message into
-  // the page. Rewards use the shared verified Telegram identity gate.
+  function refreshCommentIdentity() {
+    init();
+    var signedIn = isSignedIn();
+    document.querySelectorAll('[data-story-proposal-link]').forEach(function (link) {
+      link.hidden = !signedIn;
+    });
+  }
 
-  // The form owns the only Telegram status copy. Reuse it here instead of
-  // rendering a competing guest fallback over the just-initialized form.
-  function injectTelegramWidget(container) {
-    var widgetSlot = container.querySelector('.cm-tg-login');
-    var form = container.querySelector('.comment-form');
-    if (!widgetSlot) return;
-    widgetSlot.innerHTML = '';
-    if (form) {
-      applyLinkedTelegramIdentity(form);
-      updateCommentIdentityCopy(form);
-    }
+  function isSignedIn() {
+    return !!getLinkedTelegramProfile();
   }
 
   // ── Vote button delegation ───────────────────────────────────
@@ -451,7 +432,82 @@
       });
   }
 
+  function buildStoryProposal(pageId) {
+    if (!BASE || !FEATURES.COMMENTS || document.location.pathname !== '/wiki/' + pageId + '.html') return '';
+    return '<details id="wiki-story-proposal">' +
+      '<summary>Suggest a story change</summary>' +
+      '<form class="comment-form" data-story-proposal>' +
+        '<p data-comment-guest-only>Log in with Telegram to submit a suggestion. <a href="/my-moonboy.html">Telegram login</a></p>' +
+        '<p>Your suggestion and Telegram name go to the community group for editorial review.</p>' +
+        '<div class="comment-form-field">' +
+          '<label>What should change, and why?' +
+            '<textarea name="proposal" rows="5" minlength="20" maxlength="1500" required placeholder="Describe the change. Include the relevant passage or source if you have one."></textarea>' +
+          '</label>' +
+        '</div>' +
+        '<button type="submit" class="swarmsy-form-button">Send to Telegram</button>' +
+        '<div class="comment-form-status" role="status"></div>' +
+      '</form>' +
+    '</details>';
+  }
+
+  function wireStoryProposal(container, pageId) {
+    var form = container.querySelector('[data-story-proposal]');
+    if (!form) return;
+    var button = form.querySelector('button');
+    var status = form.querySelector('[role="status"]');
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if (container.hidden || button.disabled) return;
+      var proposal = form.elements.proposal.value.trim();
+      if (proposal.length < 20 || proposal.length > 1500) {
+        status.textContent = 'Use 20 to 1,500 characters.';
+        return;
+      }
+      button.disabled = true;
+      status.textContent = 'Preparing your proposal…';
+      try {
+        var auth = await getFreshTelegramAuth();
+        if (!auth || typeof auth.hash !== 'string' || !auth.hash.startsWith('s1_')) {
+          status.textContent = 'Log in with Telegram on My Moonboy, then return to send your proposal.';
+          return;
+        }
+        status.textContent = 'Sending to Telegram…';
+        var response = await fetch(BASE + '/wiki/story-proposals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page_id: pageId, proposal: proposal, telegram_auth: auth })
+        });
+        var result = await response.json();
+        if (response.ok && result.ok === true) {
+          form.reset();
+          status.textContent = 'Proposal sent to the Telegram group for review.';
+        } else if (response.status === 401) {
+          status.textContent = 'Your Telegram login expired. Log in again to send your proposal.';
+        } else if (response.status === 403) {
+          status.textContent = 'This Telegram account cannot submit a proposal.';
+        } else if (response.status === 429) {
+          status.textContent = 'Please wait a minute before sending another proposal.';
+        } else if (result.error === 'story_proposal_delivery_unconfirmed') {
+          status.textContent = 'Delivery could not be confirmed. Check the group before sending again.';
+        } else {
+          status.textContent = 'Could not send your proposal. Your draft is still here.';
+        }
+      } catch (_) {
+        status.textContent = 'Delivery could not be confirmed. Check the group before sending again.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
   function initSection(el) {
+    el.hidden = !isSignedIn();
+    if (el.hidden) return;
+    var existingForm = el.querySelector('.comment-form[data-page-id]');
+    if (existingForm) {
+      updateCommentIdentityCopy(existingForm);
+      return;
+    }
     var pageId = el.dataset.pageId ||
       document.location.pathname.split('/').pop().replace(/\.html$/, '');
 
@@ -467,6 +523,7 @@
           '</div>' +
         '</header>' +
         buildForm(pageId) +
+        buildStoryProposal(pageId) +
         '<div class="comments-list-panel">' +
           '<h3>Latest Collector Notes</h3>' +
           '<div class="comments-list" id="comments-list-' + pageId + '">' + listPlaceholder + '</div>' +
@@ -474,8 +531,8 @@
       '</section>';
 
     wireForm(el, pageId);
+    wireStoryProposal(el, pageId);
     wireVotes(el);
-    injectTelegramWidget(el);
 
     if (!BASE || !FEATURES.COMMENTS) return;
 
@@ -490,11 +547,13 @@
   }
 
   // Expose for battle-layer.js to call after dynamically injecting a container
-  window.MOONBOYS_COMMENTS = { initSection: initSection };
+  window.MOONBOYS_COMMENTS = { initSection: initSection, isSignedIn: isSignedIn };
+  window.addEventListener('moonboys:identity-change', refreshCommentIdentity);
+  window.addEventListener('moonboys:telegram-session', refreshCommentIdentity);
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', refreshCommentIdentity);
   } else {
-    init();
+    refreshCommentIdentity();
   }
 }());

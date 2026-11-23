@@ -193,7 +193,7 @@
             '<div class="battle-meter-meta"><span>' + esc(sourceLabel) + '</span></div>' +
           '</div>' +
           '<div class="mission-stack">' +
-            '<div class="mission-row" data-mission-id="engage"><div><span class="mission-tag">Engage</span><div class="mission-text">Leave a strategic comment on this page to influence the narrative.</div></div>' + missionStatus('COMMENTS') + '</div>' +
+            '<div class="mission-row" data-mission-id="engage"><div><span class="mission-tag">Engage</span><div class="mission-text">Join the discussion. Post a comment to complete Engage.</div></div>' + missionStatus('COMMENTS') + '</div>' +
             '<div class="mission-row" data-mission-id="signal"><div><span class="mission-tag">Signal</span><div class="mission-text">Like this article to boost its standing in the Moonboys ecosystem.</div></div>' + missionStatus('LIKES') + '</div>' +
             '<div class="mission-row" data-mission-id="cite"><div><span class="mission-tag">Cite</span><div class="mission-text">Vote on citations to strengthen the credibility of this intelligence file.</div></div>' + missionStatus('CITATION_VOTES') + '</div>' +
           '</div>' +

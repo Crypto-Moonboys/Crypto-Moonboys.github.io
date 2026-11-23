@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { compactWikiSearchIndex } from './publish-wiki-search-index.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '..');
@@ -303,7 +304,7 @@ const graffpunksStopwordOnly = {
     }
   };
   const { html, heading } = await renderSearchResults([onlyPartial], 'graffpunks radio');
-  assert.ok(html.includes('GraffPUNKS — Crypto Moonboys Wiki'),
+  assert.ok(html.includes('<mark>GraffPUNKS</mark> — Crypto Moonboys Wiki'),
     'Search page must render partial matches when no result matches all tokens');
   assert.equal(heading, 'Results for "graffpunks radio" (1)',
     'Fallback branch should still report the rendered partial result count');
@@ -325,6 +326,40 @@ const graffpunksStopwordOnly = {
     'Search page must render a clear failed-load message when wiki-index.json fails'
   );
   assert.equal(heading, 'All Articles', 'Failed-load search page keeps the all-articles heading');
+}
+
+{
+  const sandbox = makeSandbox();
+  let approach;
+  const heading = { textContent: '' };
+  const articles = { innerHTML: '' };
+  const elements = {
+    'search-page-input': { value: '', addEventListener() {} },
+    'search-heading': heading,
+    'search-results-page': articles,
+  };
+  sandbox.document.getElementById = id => elements[id] || null;
+  sandbox.IntersectionObserver = class {
+    constructor(callback) { approach = callback; }
+    observe(target) { assert.equal(target, heading); }
+    disconnect() {}
+  };
+  const requests = [];
+  sandbox.fetch = async url => {
+    requests.push(url);
+    return { ok: true, status: 200, json: async () => [graffpunksMain] };
+  };
+
+  sandbox.bindSearchControls();
+  approach([{ isIntersecting: false }]);
+  assert.deepEqual(requests, [], 'Category browsing does not download either index before the article list approaches');
+  approach([{ isIntersecting: true }]);
+  const request = sandbox.loadWikiIndex();
+  assert.equal(sandbox.loadWikiIndex(), request, 'Concurrent index consumers share the same request');
+  await request;
+  assert.deepEqual(requests, ['/js/wiki-index.json']);
+  assert.equal(heading.textContent, 'All Articles (1)');
+  assert.match(articles.innerHTML, /GraffPUNKS/);
 }
 
 // ── 11. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
@@ -494,6 +529,148 @@ const graffpunksStopwordOnly = {
   assert.equal(scored.length, 0, 'Nonsense query should return no header autocomplete suggestions');
 }
 
+// Official routes can rank above lore, and game discovery uses the public Arcade list.
+{
+  const index = JSON.parse(await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8'));
+  const catalog = await fs.readFile(path.join(ROOT, 'games', 'index.html'), 'utf8');
+  const links = [...catalog.matchAll(/<a href="([^"]+)" class="article-list-item">[^\n]*?<div class="ali-title">([^<]+)<\/div><div class="ali-desc">([^<]+)/g)];
+  const sandbox = makeSandbox();
+  const sections = [{ hidden: false }, { hidden: false }];
+  const controls = id => ({
+    dataset: { searchFilter: id },
+    count: { textContent: '' },
+    addEventListener(name, listener) { this[name] = listener; },
+    setAttribute(name, value) { this[name] = value; },
+    querySelector() { return this.count; },
+  });
+  const filters = Object.fromEntries(
+    ['all', 'games', 'lore', 'people', 'nfts'].map(id => [id, controls(id)])
+  );
+  const input = { value: '', addEventListener(name, listener) { this[name] = listener; } };
+  const loadMore = controls();
+  const shortcuts = { hidden: true };
+  const results = { innerHTML: '' };
+  const elements = {
+    'search-heading': { textContent: '' },
+    'search-results-page': results,
+    'search-page-input': input,
+    'search-filters': { querySelectorAll: () => Object.values(filters) },
+    'search-block-topia-shortcuts': shortcuts,
+    'search-load-more': loadMore,
+  };
+  sandbox.document.getElementById = id => elements[id] || null;
+  sandbox.document.querySelectorAll = selector => selector === '[data-search-browse]' ? sections : [];
+  sandbox.fetch = async url => url === '/games/'
+    ? { ok: true, text: async () => catalog }
+    : { ok: true, json: async () => index };
+  sandbox.DOMParser = class {
+    parseFromString(html, type) {
+      assert.equal(html, catalog);
+      assert.equal(type, 'text/html');
+      return {
+        querySelectorAll(selector) {
+          assert.equal(selector, 'a.article-list-item[href]');
+          return links.map(([, url, title, description]) => ({
+            getAttribute: () => url,
+            querySelector: name => ({ textContent: name === '.ali-title' ? title : description }),
+          }));
+        },
+      };
+    }
+  };
+  await sandbox.loadWikiIndex();
+  await sandbox.loadArcadeSearchEntries();
+  for (const [query, url, corrected] of [
+    ['Crypto Moonboys', '/wiki/crypto-moonboys.html'],
+    ['AI Creator Studio', '/ai-user.html'],
+    ['G.K. Nifty Heads', '/wiki/gkniftyheads.html'],
+    ['XRP', '/wiki/xrp-ledger.html'],
+    ['Faction Chambers', '/battle-chamber/factions/'],
+    ['Forkfield', '/games/forkfield/'],
+    ['Bullrun Brick Smash', '/games/bullrun-brick-smash/'],
+    ['Chain Maze', '/games/chain-maze/'],
+    ['NBG London Graffiti Run', '/games/nbg-london/'],
+    ['moongrils', '/wiki/the-crypto-moongirls.html', 'Moongirls'],
+    ['swarmsi', '/swarmsy.html', 'SWARMSY'],
+    ['Graffiti Kigns', '/wiki/graffiti-kings.html', 'Graffiti Kings'],
+  ]) {
+    const full = sandbox.selectSearchMatches(query);
+    const header = sandbox.selectSearchMatches(query, { limit: 5 });
+    assert.equal(full.scored[0]?.item.url, url, query);
+    assert.equal(header.scored[0]?.item.url, url, query);
+    assert.equal(full.scored.filter(result => result.item.url === url).length, 1);
+    assert.equal(full.correctedQuery, corrected, query);
+  }
+  assert.equal(sandbox.selectSearchMatches('moongrils', { allowPartialFallback: false }).scored.length, 0);
+  sandbox.renderSearchPage('Forkfield');
+  assert.ok(sections.every(section => section.hidden));
+  assert.match(elements['search-results-page'].innerHTML, /href="\/games\/forkfield\/"/);
+  sandbox.renderSearchPage('moongrils');
+  assert.match(elements['search-heading'].textContent, /Results for "Moongirls"/);
+  sandbox.renderSearchPage(' ');
+  assert.ok(sections.every(section => !section.hidden));
+  assert.equal(elements['search-heading'].textContent, `All Articles (${index.length})`);
+  assert.doesNotMatch(elements['search-results-page'].innerHTML, /href="\/games\/forkfield\/"/);
+
+  let sharedUrl;
+  sandbox.history.replaceState = (_state, _title, url) => { sharedUrl = new URL(url); };
+  sandbox.bindSearchControls();
+  const displayed = () => [...results.innerHTML.matchAll(/<a href="([^"]+)" class="article-card-title"/g)]
+    .map(([, href]) => href);
+  const search = value => { input.value = value; input.input(); };
+  assert.equal(displayed().length, 24, 'empty browse mode also paginates the article list');
+  search('Block Topia');
+  assert.equal(shortcuts.hidden, false);
+  const pageOne = displayed();
+  assert.equal(pageOne.length, 24);
+  assert.ok(Number(filters.all.count.textContent) > 48);
+  loadMore.click();
+  const pageTwo = displayed();
+  assert.equal(pageTwo.length, 48);
+  assert.deepEqual(pageTwo.slice(0, 24), pageOne);
+  assert.equal(new Set(pageTwo).size, 48);
+  filters.games.click();
+  assert.equal(filters.games['aria-pressed'], 'true');
+  assert.equal(sharedUrl.searchParams.get('type'), 'games');
+  assert.equal(sharedUrl.searchParams.get('q'), 'Block Topia');
+  assert.equal(shortcuts.hidden, true);
+  assert.ok(displayed().includes('/games/block-topia/'));
+  assert.ok(displayed().every(url => url.startsWith('/games/')));
+  assert.equal(displayed().length, Number(filters.games.count.textContent));
+  assert.equal(loadMore.hidden, true);
+  filters.lore.click();
+  assert.ok(Number(filters.lore.count.textContent) > 24);
+  assert.equal(displayed().length, 24);
+  assert.equal(filters.all.count.textContent, String(sandbox.selectSearchMatches('Block Topia').scored.length));
+  loadMore.click();
+  assert.equal(displayed().length, Math.min(48, Number(filters.lore.count.textContent)));
+  assert.equal(filters.lore['aria-pressed'], 'true');
+  search('Charlie Buster');
+  filters.people.click();
+  assert.equal(displayed()[0], '/wiki/charlie-buster.html');
+  search('GKniftyHEADS');
+  filters.nfts.click();
+  assert.ok(displayed().includes('/wiki/gkniftyheads-nft-collection.html'));
+  assert.equal(displayed().length, 24);
+  for (const [query, url] of [
+    ['Hodl Moonboys NFT Collection', '/wiki/hodlmoonboys-nft-collection.html'],
+    ['NoBallGames NFT Collection Tracker', '/wiki/noballgamess-nft-collection.html'],
+    ['AtomicHub Graffpunks Collection', '/wiki/atomichub-graffpunks-collection.html'],
+  ]) {
+    filters.all.click();
+    search(query);
+    assert.ok(displayed().includes(url), query);
+    assert.equal(filters.nfts.disabled, false, query);
+    filters.nfts.click();
+    assert.ok(displayed().includes(url), query);
+  }
+  search('');
+  assert.ok(!sharedUrl.searchParams.has('type') && !sharedUrl.searchParams.has('q'));
+  assert.ok(sections.every(section => !section.hidden));
+  assert.equal(elements['search-filters'].hidden, true);
+  assert.equal(displayed().length, 24);
+}
+
 // Wiki-index loading retries transient 503 responses without masking bad assets.
 {
   let callCount = 0;
@@ -636,21 +813,12 @@ const graffpunksStopwordOnly = {
     const rightKeys = new Set([right.canonical_title, ...right.aliases].map(entityKey));
     assert.deepEqual([...leftKeys].filter(key => rightKeys.has(key)), [], `${label} traditions share no canonical or alias lookup keys`);
   }
-  for (const entity of [kids, xKids, warriors, xWarriors]) {
-    for (const limit of [5, 10]) {
-      const result = await selectMatches(wikiIndex, entity.canonical_title, { allowPartialFallback: true, limit });
-      assert.equal(result.scored[0]?.item.url, entity.canonical_url,
-        `${entity.canonical_title} resolves first in autocomplete and full search without changing short-word rules`);
-    }
-  }
-  for (const ordered of [[kids, xKids, warriors, xWarriors], [xWarriors, warriors, xKids, kids]]) {
-    sb.entityFixtures = ordered;
-    vm.runInContext('ENTITY_MAP = Object.fromEntries(entityFixtures.map(entity => [entity.entity_id, entity])); buildEntityLookup();', sb);
-    for (const entity of ordered) {
-      for (const name of [entity.canonical_title, ...entity.aliases]) {
-        sb.entityQuery = name;
-        assert.equal(vm.runInContext('ENTITY_LOOKUP[normalizeEntityKey(entityQuery)].canonical_url', sb), entity.canonical_url,
-          `Entity lookup resolves ${name} independently of record order`);
+  for (const orderedIndex of [wikiIndex, [...wikiIndex].reverse()]) {
+    for (const entity of [kids, xKids, warriors, xWarriors]) {
+      for (const limit of [5, 10]) {
+        const result = await selectMatches(orderedIndex, entity.canonical_title, { allowPartialFallback: true, limit });
+        assert.equal(result.scored[0]?.item.url, entity.canonical_url,
+          `${entity.canonical_title} resolves first in autocomplete and full search independently of index order`);
       }
     }
   }
@@ -1483,7 +1651,7 @@ const graffpunksStopwordOnly = {
     search_index: { normalized_title: 'block topia', tokens: ['block', 'topia'], keyword_bag: ['air', 'ledger'] }
   };
   const matches = await selectMatches([repairLedger, airLedger], 'Air Ledger', { allowPartialFallback: true, limit: 5 });
-  assert.deepEqual(matches.scored.map(row => row.item.url), ['/wiki/block-topia.html']);
+  assert.deepEqual(Array.from(matches.scored, row => row.item.url), ['/wiki/block-topia.html']);
   assert.equal(scoreResult(repairLedger, 'air ledger').matchedTokenCount, 1, 'air must not match repair');
   assert.equal(scoreResult(repairLedger, 'repair ledger').matchedTokenCount, 2, 'whole corpus words remain searchable');
   const prefix = await selectMatches([airLedger], 'block top', { allowPartialFallback: true, limit: 5 });
@@ -1491,3 +1659,53 @@ const graffpunksStopwordOnly = {
 }
 
 console.log('wiki-search.test: PASS');
+
+// The Pages artifact sends only the fields the browser uses. Compare the
+// complete ranked rows and rendered results, including typo and browse paths.
+{
+  const editorial = JSON.parse(await fs.readFile(path.join(ROOT, 'js/wiki-index.json'), 'utf8'));
+  const compact = compactWikiSearchIndex(editorial);
+  assert.deepEqual(compact.map(entry => entry.url), editorial.map(entry => entry.url));
+  for (const [i, entry] of editorial.entries()) {
+    assert.equal(compact[i].rank_score, entry.rank_score);
+    assert.equal(sb.getArticleSummary(compact[i]), sb.getArticleSummary(entry), entry.url);
+    assert.equal(sb.searchResultType(compact[i]), sb.searchResultType(entry), entry.url);
+  }
+  const plainResults = ({ scored, usedPartialFallback, correctedQuery }) => JSON.stringify({
+    usedPartialFallback,
+    correctedQuery,
+    rows: scored.map(({ item, ...scores }) => ({ url: item.url, ...scores })),
+  });
+  for (const query of [
+    'waxp', 'bitcoin kid', 'HODL X Warriors', 'CharlIe Buster',
+    'moongrils', 'Graffiti Kigns', 'block topia', 'graffpunks radio',
+    'Swarmsy', 'NFT collections', 'explore fox', 'the a to', 'zzznomatchzz',
+  ]) {
+    const options = { allowPartialFallback: true };
+    assert.equal(plainResults(await selectMatches(compact, query, options)),
+      plainResults(await selectMatches(editorial, query, options)), query);
+  }
+  for (const query of ['', 'NFT collections', 'block topia', 'moongrils']) {
+    assert.deepEqual(await renderSearchResults(compact, query), await renderSearchResults(editorial, query), query);
+  }
+  console.log(`Compact Search matches full-index results, summaries and filters for ${editorial.length} entries`);
+}
+
+{
+  const sandbox = makeSandbox();
+  sandbox.document.querySelector = selector => selector === 'script[data-wiki-search-index]'
+    ? { getAttribute: () => 'wiki-search-index.json' }
+    : null;
+  const requests = [];
+  sandbox.fetch = async url => {
+    requests.push(url);
+    return requests.length === 1 ? { ok: false, status: 503 }
+      : requests.length === 2 ? { ok: false, status: 404 }
+        : { ok: true, status: 200, json: async () => [graffpunksMain] };
+  };
+  await sandbox.loadWikiIndex();
+  assert.deepEqual(requests, [
+    '/js/wiki-search-index.json', '/js/wiki-search-index.json', '/js/wiki-index.json',
+  ]);
+  assert.equal(sandbox.window.MOONBOYS_WIKI_SEARCH.getIndexLoadState(), 'loaded');
+}

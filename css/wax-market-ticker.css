@@ -3,7 +3,7 @@
   align-items: stretch;
   --ticker-accent: #f3bd25;
   --ticker-font-size: .875rem;
-  --ticker-height: calc(var(--ticker-font-size) + 2px);
+  --ticker-height: var(--wax-ticker-height, calc(var(--ticker-font-size) + 2px));
   block-size: var(--ticker-height);
   background: #000;
   box-shadow: inset 0 -1px #27313a;

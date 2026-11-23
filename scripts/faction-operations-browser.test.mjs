@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 import { buildSync } from 'esbuild';
+import waterfrontDistrict from '../workers/moonboys-api/blocktopia/waterfront-district.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
 import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
@@ -1805,6 +1806,8 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
       return progress?.previousElementSibling === document.querySelector('[data-clan-operation]');
     }, html), true, 'crew progress is a sibling card');
     await page.setContent('<main>' + panel + '</main>');
+    const shellCss = await readFile(path.join(ROOT, 'css/wiki.css'), 'utf8');
+    await page.addStyleTag({ content: shellCss.replace(/^@import[^;]*;/gm, '') });
     await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
     await page.addScriptTag({ path: path.join(ROOT, 'js/faction-profile-data.js') });
     await page.evaluate(() => {
@@ -1819,7 +1822,7 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
             ok: true, week_start: '2026-11-23', entered_faction: body.crew_entry === 'join' ? 'nomad-bears' : null,
           });
         }
-        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1&city=1' || options.credentials !== 'omit') {
+        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1&city=1&leaders=1' || options.credentials !== 'omit') {
           throw new Error('incorrect public request');
         }
         return new Promise(resolve => window.crewRequests.push(resolve));
@@ -1828,8 +1831,8 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await page.addScriptTag({ content: crewBoardScript });
 
     const board = page.getByRole('region', { name: 'Clan crew progress' });
-    const table = page.getByRole('table');
-    const bears = page.getByRole('row', { name: /Nomad Bears/ });
+    const standings = board.getByRole('list', { name: 'Crew standings' });
+    const bears = standings.locator('[data-faction="nomad-bears"]');
     const refresh = page.getByRole('button', { name: 'Refresh crew progress' });
     async function deliver(index, value, statusCode = 200) {
       await page.waitForFunction(index => window.crewRequests.length > index, index);
@@ -1852,10 +1855,10 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     assert.equal(await board.count(), 0);
     await banked();
     await deliver(1, counts(1, 4));
-    await table.waitFor();
-    assert.equal(await table.getByRole('row').count(), 10);
-    assert.match(await table.getByRole('row').nth(1).innerText(), /Hard Fork Rockers/);
-    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['1', '4']);
+    await standings.waitFor();
+    assert.equal(await standings.locator(':scope > li').count(), 9);
+    assert.match(await standings.locator(':scope > li').first().innerText(), /Hard Fork Rockers/);
+    assert.deepEqual(await bears.locator('dd:visible').allTextContents(), ['1', '4']);
     assert.equal(await bears.getByRole('link').getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 
@@ -1869,13 +1872,13 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
     await deliver(3, refreshed);
     await board.getByRole('status').filter({ hasText: 'Crew progress updated.' }).waitFor();
     await deliver(2, counts(1, 4));
-    assert.deepEqual(await bears.getByRole('cell').allTextContents(), ['2', '100', 'Trail network · Expanded · 100/300 banks']);
+    assert.deepEqual(await bears.locator('dd:visible').allTextContents(), ['2', '100', 'Trail network · Expanded · 100/300 banks']);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 
     await refresh.click();
     await deliver(4, { error: 'crew_progress_unavailable' }, 503);
     await board.getByRole('status').filter({ hasText: 'Crew progress is temporarily unavailable.' }).waitFor();
-    assert.equal(await table.count(), 0);
+    assert.equal(await standings.count(), 0);
     await refresh.click();
     await deliver(5, { ok: true, enabled: false });
     await board.waitFor({ state: 'hidden' });
@@ -1900,7 +1903,7 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
         next_week_start: '2026-11-23',
       },
     });
-    await bears.getByRole('cell', { name: /#1 · 66.7%/ }).waitFor();
+    await bears.getByText(/#1 · 66.7%/).waitFor();
     await board.getByLabel('Weekly score period').selectOption('previous');
     await board.getByText(/2026-11-09 UTC is unranked/).waitFor();
     await board.getByRole('button', { name: 'Enter week starting 2026-11-23 UTC' }).click();
@@ -1909,6 +1912,53 @@ test('crew progress handles older Workers, refreshes after a bank, and clears st
       telegram_auth: { id: '123' }, crew_entry: 'join', week_start: '2026-11-23',
     });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await banked();
+    await deliver(7, {
+      ...counts(1, 4),
+      leaders: {
+        week_start: '2026-11-16', prior_week_final: true,
+        crews: FACTIONS.map(faction_id => ({
+          faction_id, banks: 4, signals: 1, boost: 9, power: 15,
+          perk: faction_id === 'nomad-bears' ? {
+            rank: 1, level: 9, selected: 'relay',
+            options: [
+              { id: 'supply', name: 'Supply Dock', points: 9, unit: 'per banked task tier' },
+              { id: 'relay', name: 'Signal Relay', points: 27, unit: 'per completed signal' },
+              { id: 'rally', name: 'Crew Rally', points: 18, unit: 'per active member per UTC day' },
+            ],
+          } : null,
+        })),
+      },
+    });
+    await bears.getByText('15 power').waitFor();
+    await bears.getByText('Lv 9 · Signal Relay', { exact: true }).click();
+    assert.deepEqual(await bears.locator('.clan-crew-leader li').allTextContents(), [
+      'Supply Dock · +9 per banked task tier',
+      'Signal Relay · +27 per completed signal (active)',
+      'Crew Rally · +18 per active member per UTC day',
+    ]);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    // A future image fills the right-hand half without pushing the details across the midpoint.
+    const artwork = bears.locator('.clan-crew-card-art');
+    const body = bears.locator('.clan-crew-card-body');
+    assert.equal(await artwork.count(), 1);
+    assert.equal(await artwork.isVisible(), false);
+    await artwork.evaluate(node => {
+      const img = document.createElement('img');
+      img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"/>';
+      img.alt = 'Nomad Bears artwork fixture';
+      node.append(img);
+    });
+    let [detailsBox, artBox] = await Promise.all([body.boundingBox(), artwork.boundingBox()]);
+    assert.ok(artBox.y >= detailsBox.y + detailsBox.height);
+    assert.equal(artBox.width, detailsBox.width);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    [detailsBox, artBox] = await Promise.all([body.boundingBox(), artwork.boundingBox()]);
+    assert.equal(artBox.x, detailsBox.x + detailsBox.width);
+    assert.equal(artBox.y, detailsBox.y);
+    assert.equal(artBox.width, detailsBox.width);
   } finally {
     await browser.close();
   }
@@ -2058,6 +2108,175 @@ test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning por
     });
     await page.getByRole('link', { name: 'Connect Telegram' }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Download winning PNG' }).isVisible(), false);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Waterfront hides playing leaders and uses sprite details, double-click and a sourced reply bubble', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, hasTouch: true, reducedMotion: 'reduce' });
+    page.setDefaultTimeout(4_000);
+    const requestBodies = [];
+    const loreBodies = [];
+    const errors = [];
+    const entryActions = [];
+    const gameplayAssets = [];
+    let joinedFaction;
+    let occupied;
+    let seatLost;
+    page.on('pageerror', error => errors.push(error.message));
+    const start = '/games/block-topia/waterfront/';
+    const target = 'nomad-bears';
+    let paused;
+    const awayUntil = Math.floor(Date.now() / 1000) + 60;
+    const longReply = 'The Nomad Bears are one of the two market factions. ' + 'Their public wiki account explains how their travelling crews protect routes, trade information, and respond when the other market faction gains ground throughout the city.';
+    let releaseFirstReply;
+    const holdReply = new Promise(resolve => { releaseFirstReply = resolve; });
+    await page.clock.install();
+    await page.route('https://waterfront.test/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/js/api-config.js') return route.fulfill({
+        contentType: 'application/javascript', body: 'window.MOONBOYS_API={getApiBase:()=>location.origin}',
+      });
+      if (url.pathname === '/js/identity-gate.js') return route.fulfill({
+        contentType: 'application/javascript',
+        body: "window.MOONBOYS_IDENTITY={getTelegramId:()=>window.testOwner,getSignedTelegramAuth:()=>window.testOwner?{id:window.testOwner}:null}",
+      });
+      if (url.pathname === '/blocktopia/waterfront/seat') {
+        const { action, telegram_auth, lease_id } = route.request().postDataJSON();
+        assert.equal(telegram_auth.id, '123');
+        assert.match(lease_id, /^[0-9a-f-]{36}$/);
+        entryActions.push(action);
+        if (action === 'leave') return route.fulfill({ json: { ok: true } });
+        if (!joinedFaction) return route.fulfill({ status: 403, json: { error: 'join_faction' } });
+        if (action === 'status') return route.fulfill({ json: { ok: true, faction_id: joinedFaction, occupied } });
+        if (seatLost) return route.fulfill({ status: 409, json: { error: 'seat_lost' } });
+        return route.fulfill({ json: {
+          ok: true, faction_id: joinedFaction, expires_in: 75,
+          district: action === 'join' ? waterfrontDistrict : undefined,
+        } });
+      }
+      if (/\/(?:harbor-art|map|leader-dialog)\.js$/.test(url.pathname)) gameplayAssets.push(url.pathname);
+      if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
+        leaders: {
+          chat_enabled: true,
+          controls: {
+            questions: [{ id: 'defences', title: 'Which part of the city would you defend first?', minutes: 10 }],
+            paid: [{ id: 'hour', title: 'Pause for 1 hour', xp: 100, gems: 5 }],
+          },
+          crews: FACTIONS.map(faction_id => ({ faction_id, presence: faction_id === target && paused
+            ? { paused_until: paused, available_at: paused + 3600, talking: true }
+            : faction_id === 'graffpunks' ? { playing_until: awayUntil } : {} })),
+        },
+      } });
+      if (url.pathname === '/clan-operations/leader-lore') {
+        loreBodies.push(route.request().postDataJSON());
+        if (loreBodies.length === 1) await holdReply;
+        return route.fulfill({ json: {
+          ok: true, reply: longReply,
+          sources: [{ title: 'Crypto Moonboys', path: '/wiki/crypto-moonboys.html' }],
+        } });
+      }
+      if (url.pathname === '/clan-operations/leader-slowdown') {
+        requestBodies.push(route.request().postDataJSON());
+        paused = Math.floor(Date.now() / 1000) + 600;
+        return route.fulfill({ json: { ok: true, paused_until: paused, reply: 'Keep the supply lanes open.' } });
+      }
+      const file = path.join(ROOT, url.pathname === start ? start + 'index.html' : url.pathname);
+      return existsSync(file) ? route.fulfill({ path: file }) : route.fulfill({ status: 404 });
+    });
+    await page.goto('https://waterfront.test' + start);
+    await page.getByRole('button', { name: 'Sign in with Telegram' }).waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.deepEqual(gameplayAssets, [], 'signed-out browsers never load the game');
+    assert.deepEqual(entryActions, []);
+    await page.evaluate(() => {
+      window.testOwner = '123';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByRole('link', { name: 'Join a faction' }).waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.deepEqual(gameplayAssets, [], 'an unaligned account gets the faction gate');
+    occupied = true;
+    joinedFaction = target;
+    await page.evaluate(() => window.dispatchEvent(new Event('moonboys:identity-change')));
+    await page.getByText('Someone from your faction is already playing.').waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Enter Waterfront' }).isVisible(), false);
+    occupied = false;
+    await page.getByRole('button', { name: 'Check again' }).click();
+    await page.getByRole('button', { name: 'Enter Waterfront' }).click();
+    await page.locator('#map').waitFor();
+    assert.equal(await page.locator('#player-faction').textContent(), 'Your faction · The Nomad Bears');
+    await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
+    await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
+    const position = await page.evaluate(() => {
+      const hit = factionHits.find(item => item.index === 1);
+      const map = document.querySelector('#map');
+      const scroll = document.querySelector('.map-scroll');
+      const rect = map.getBoundingClientRect();
+      scroll.scrollLeft = hit.x * rect.width / mapWidth - scroll.clientWidth / 2;
+      scroll.scrollTop = (hit.y - 8) * rect.height / mapHeight - scroll.clientHeight / 2;
+      const shifted = map.getBoundingClientRect();
+      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
+    });
+    await page.mouse.click(position.x, position.y);
+    const details = page.getByRole('region', { name: 'The Nomad Bears', exact: true });
+    await details.waitFor();
+    assert.equal(await details.getByRole('link', { name: 'Faction page' }).getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await page.getByRole('dialog').count(), 0);
+    await page.mouse.dblclick(position.x, position.y);
+    const composer = page.getByRole('dialog', { name: 'Ask The Nomad Bears' });
+    await composer.getByLabel('Question').fill('Who are the Nomad Bears?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await composer.waitFor({ state: 'hidden' });
+    const bubble = page.locator('.leader-map-bubble');
+    await bubble.getByText('Checking the wiki…').waitFor();
+    releaseFirstReply();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.match(await bubble.locator('[data-speech]').innerText(), /…$/u);
+    await bubble.getByRole('button', { name: 'More info' }).click();
+    const full = page.getByRole('dialog', { name: 'The Nomad Bears · Reply' });
+    await full.getByText(longReply, { exact: true }).waitFor();
+    assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
+    await full.getByRole('button', { name: 'Close full reply' }).click();
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+
+    await details.getByRole('button', { name: 'Rival slowdowns' }).click();
+    const slowdown = page.getByRole('dialog', { name: 'The Nomad Bears', exact: true });
+    await slowdown.getByRole('button', { name: /defend first\? · 10 min/ }).click();
+    await slowdown.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
+    assert.equal(requestBodies.length, 1);
+    const [{ request_id, ...body }] = requestBodies;
+    assert.match(request_id, /^[0-9a-f-]{36}$/);
+    assert.deepEqual(body, { telegram_auth: { id: '123' }, target, option: 'defences', currency: null });
+    await page.waitForFunction(() => factionHits.find(hit => hit.index === 1)?.paused);
+    await slowdown.getByRole('button', { name: 'Close leader dialog' }).click();
+    await page.touchscreen.tap(position.x, position.y);
+    await page.touchscreen.tap(position.x, position.y);
+    await composer.getByLabel('Question').fill('Who are their rivals?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.deepEqual(loreBodies[1], {
+      telegram_auth: { id: '123' }, npc: target, question: 'Who are their rivals?', previous: ['Who are the Nomad Bears?'],
+    });
+    assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
+    await page.clock.fastForward(65_000);
+    await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
+    assert.ok(entryActions.includes('renew'), 'an active map renews its seat');
+
+    seatLost = true;
+    await page.clock.fastForward(21_000);
+    await page.getByText('Your Waterfront seat is no longer active.').waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.equal(await page.locator('.leader-map-bubble').isVisible(), false);
+    assert.ok(entryActions.includes('leave'));
+    assert.deepEqual(errors, []);
   } finally {
     await browser.close();
   }

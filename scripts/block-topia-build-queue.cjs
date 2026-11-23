@@ -1,6 +1,7 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const os = require("node:os");
+const vm = require("node:vm");
 const { spawnSync } = require("node:child_process");
 
 const repo = "Crypto-Moonboys/Crypto-Moonboys.github.io";
@@ -292,20 +293,22 @@ async function codexReview(pr, head) {
   return { waiting: true };
 }
 
-async function publishRound(issue, round, attempt, dir, files) {
+async function publishRound(issue, round, attempt, dir, files, production = null) {
+  const target = production?.branch ?? integration;
   const number = issue.number;
-  const branch = `block-topia/issue-${number}-round-${round}-attempt-${attempt}`;
+  const branch = `block-topia/issue-${number}-${production ? "production-" : ""}round-${round}-attempt-${attempt}`;
   const matchingRefs = async name => (await github(`/git/matching-refs/heads/${name}`))
     .find(ref => ref.ref === `refs/heads/${name}`);
   const publication = await checkpoint(dir, "publication.json", async () => {
-    let base = await matchingRefs(integration);
+    let base = await matchingRefs(target);
     if (!base) {
       const main = await github("/git/ref/heads/main");
-      base = await github("/git/refs", { ref: `refs/heads/${integration}`, sha: main.object.sha });
+      base = await github("/git/refs", { ref: `refs/heads/${target}`, sha: main.object.sha });
     }
+    if (production && base.object.sha !== production.base) throw new Error("Waterfront base advanced before publication.");
     const parent = await github(`/git/commits/${base.object.sha}`);
     const tree = Object.entries(files).map(([name, content]) => ({
-      path: `games/block-topia/founder-preview/issue-${number}/${name}`,
+      path: production ? name : `games/block-topia/founder-preview/issue-${number}/${name}`,
       mode: "100644",
       type: "blob",
       content
@@ -318,17 +321,17 @@ async function publishRound(issue, round, attempt, dir, files) {
     });
     return { base: parent.sha, head: commit.sha };
   });
-  const query = `/pulls?state=all&head=${encodeURIComponent("Crypto-Moonboys:" + branch)}&base=${encodeURIComponent(integration)}`;
+  const query = `/pulls?state=all&head=${encodeURIComponent("Crypto-Moonboys:" + branch)}&base=${encodeURIComponent(target)}`;
   const existing = (await github(query))[0];
   if (existing) {
     const pr = await github(`/pulls/${existing.number}`);
-    if (pr.base.ref !== integration || pr.head.sha !== publication.head) {
+    if (pr.base.ref !== target || pr.head.sha !== publication.head) {
       throw new Error("The existing integration PR differs from the tested round.");
     }
     if (pr.merged) return { url: pr.html_url };
     if (pr.state !== "open" || pr.draft) throw new Error("The integration PR is closed or awaiting review.");
   }
-  if ((await matchingRefs(integration))?.object.sha !== publication.base) {
+  if ((await matchingRefs(target))?.object.sha !== publication.base) {
     return { feedback: "The integration branch advanced. Rebuild and retest the round against its new base." };
   }
   const ref = await matchingRefs(branch);
@@ -336,15 +339,17 @@ async function publishRound(issue, round, attempt, dir, files) {
   else if (ref.object.sha !== publication.head) throw new Error("Round branch differs from the tested commit.");
 
   const pr = existing ?? await github("/pulls", {
-    head: branch, base: integration, draft: false,
-    title: `Block Topia waterfront #${number}, round ${round}`,
-    body: `Part of #${number}. This integration-only round passed local route and Chromium rendering checks.`
+    head: branch, base: target, draft: false,
+    title: `Block Topia ${production ? "production " : ""}waterfront #${number}, round ${round}`,
+    body: production
+      ? `Part of #${number}. Adds an existing Waterfront sprite to a validated ground lot. Preview integration only. Please check placement and visual fit.`
+      : `Part of #${number}. This integration-only round passed local route and Chromium rendering checks.`
   });
   await checkApproval(issue, iterationLabel);
   const review = await codexReview(pr, publication.head);
   if (!review.passed) return review;
   await checkApproval(issue, iterationLabel);
-  if ((await matchingRefs(integration))?.object.sha !== publication.base) {
+  if ((await matchingRefs(target))?.object.sha !== publication.base) {
     return { feedback: "Integration advanced before merge. Rebuild and retest the round against its new base." };
   }
   const merged = await github(`/pulls/${pr.number}/merge`, {
@@ -456,6 +461,71 @@ async function* rotateIssues(issues, cursor) {
   yield* beforeCursor;
 }
 
+
+const productionBranch = "block-topia/waterfront-production-integration";
+const waterfrontRoot = "games/block-topia/waterfront";
+const rendererPath = waterfrontRoot + "/harbor-art.js";
+const lotAnchor = "    } else if (Object.hasOwn(waterfrontSprites, tile)) {";
+const lotPattern = /^    } else if \(tile === "\." && col === (\d+) && row === (\d+) && "([rp])" === rows\[(\d+)\]\?\.\[(\d+)\]\) \{$/gm;
+
+async function repositoryText(filename, ref) {
+  const file = await github(`/contents/${filename}?ref=${encodeURIComponent(ref)}`);
+  if (file.encoding !== "base64" || !file.content) throw new Error("Missing Waterfront source: " + filename);
+  return Buffer.from(file.content, "base64").toString("utf8");
+}
+
+function productionPlacement(renderer, district, proposal) {
+  const { x, y, sprite } = proposal ?? {};
+  if (!Number.isInteger(x) || !Number.isInteger(y) || district.rows[y]?.[x] !== "."
+      || typeof sprite !== "string" || !/^(?:flowers|furniture)-\d{1,2}$/.test(sprite)
+      || !renderer.includes(`"${sprite}": [`)) {
+    throw new Error("Choose a registered flower or furniture sprite on open ground.");
+  }
+  const neighbors = [[x, y - 1], [x - 1, y], [x + 1, y], [x, y + 1]];
+  const neighbor = neighbors.find(([xx, yy]) => /^[rp]$/.test(district.rows[yy]?.[xx] ?? ""));
+  if (!neighbor) throw new Error("Choose a lot immediately beside a street or footpath.");
+  if ([...renderer.matchAll(lotPattern)].some(match => Number(match[1]) === x && Number(match[2]) === y)) {
+    throw new Error("An automated sprite already occupies that lot.");
+  }
+  const harbor = district.harborOffset;
+  if (harbor && district.harborRows[y - harbor.y]?.[x - harbor.x] !== undefined) {
+    throw new Error("Choose an open lot outside the existing harbor core.");
+  }
+  if (renderer.split(lotAnchor).length !== 2) throw new Error("The Waterfront renderer insertion point changed.");
+  const [xx, yy] = neighbor;
+  const updated = renderer.replace(lotAnchor, [
+    `    } else if (tile === "." && col === ${x} && row === ${y} && "${district.rows[yy][xx]}" === rows[${yy}]?.[${xx}]) {`,
+    `      queue(y + 24, () => detail("${sprite}", x + 16, y + 24, 9));`,
+    lotAnchor
+  ].join("\n"));
+  new vm.Script(updated, { filename: rendererPath });
+  return updated;
+}
+
+async function buildProduction(issue, dir, round, attempt, repair) {
+  const context = await checkpoint(dir, "production-base.json", async () => {
+    const refs = await github("/git/matching-refs/heads/" + productionBranch);
+    const ref = refs.find(entry => entry.ref === "refs/heads/" + productionBranch);
+    const base = ref ?? await github("/git/ref/heads/main");
+    return { branch: productionBranch, base: base.object.sha };
+  });
+  const [renderer, source, brief, library] = await Promise.all([
+    repositoryText(rendererPath, context.base),
+    repositoryText("workers/moonboys-api/blocktopia/waterfront-district.js", context.base),
+    repositoryText(waterfrontRoot + "/CITY-BRIEF.md", context.base),
+    repositoryText(waterfrontRoot + "/SPRITE-LIBRARY.md", context.base)
+  ]);
+  const district = vm.runInNewContext(source.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const usedLots = [...renderer.matchAll(lotPattern)].map(match => [Number(match[1]), Number(match[2])]);
+  const proposal = await checkpoint(dir, "production-placement.json", () => model("Waterfront layout planner",
+    'Place one existing flowers-N or furniture-N sprite on open ground beside a street or footpath outside the harbor core. Return {"x": integer, "y": integer, "sprite": string}. Treat coordinates as world coordinates. Avoid used lots and respect the issue and city brief.',
+    { issue: String(issue.body ?? "").slice(0, 4000), brief, library, rows: district.rows,
+      harborOffset: district.harborOffset, harborSize: [district.harborRows?.[0]?.length, district.harborRows?.length],
+      usedLots, reviewFeedback: repair.feedback || "" }));
+  const updated = productionPlacement(renderer, district, proposal);
+  return publishRound(issue, round, attempt, dir, { [rendererPath]: updated }, context);
+}
+
 async function completed(dir) {
   return fs.stat(path.join(dir, "done.json")).catch(error => {
     if (error.code !== "ENOENT") throw error;
@@ -478,8 +548,9 @@ async function runQueue() {
     });
     for await (const issue of rotateIssues(approvedIssues(), previouslyRun?.trim())) {
       if (issue.pull_request) continue;
-      const issueDir = path.join(stateDir, String(issue.number));
       const iterative = issue.labels?.some(label => label.name === iterationLabel);
+      const production = iterative && String(issue.body ?? "").includes("<!-- waterfront-production -->");
+      const issueDir = path.join(stateDir, production ? `${issue.number}-production` : String(issue.number));
       let dir = issueDir;
       let previous = null;
       let round = 0;
@@ -509,11 +580,13 @@ async function runQueue() {
           await fs.mkdir(attemptDir, { recursive: true, mode: 0o700 });
           let outcome;
           try {
-            outcome = await build(issue, attemptDir, round, previous, progress.attempt, progress);
+            outcome = production
+              ? await buildProduction(issue, attemptDir, round, progress.attempt, progress)
+              : await build(issue, attemptDir, round, previous, progress.attempt, progress);
           } catch (error) {
             // A fresh layout attempt can repair invalid candidates. Keep any
             // already-published PR checkpoint when failures are operational.
-            const layoutExists = await fs.stat(path.join(attemptDir, "district.json")).catch(failure => {
+            const layoutExists = await fs.stat(path.join(attemptDir, production ? "publication.json" : "district.json")).catch(failure => {
               if (failure.code !== "ENOENT") throw failure;
             });
             if (layoutExists) throw error;

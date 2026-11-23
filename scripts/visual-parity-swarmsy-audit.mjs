@@ -452,9 +452,9 @@ if (wikiCss) {
       selector: '.swarmsy-action-card',
       checks: [
         ['grid/flex layout', /display\s*:\s*(?:grid|flex|inline-flex)/i],
-        ['border', /border\s*:/i],
+        ['shared 1px border', /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i],
         ['background', /background\s*:/i],
-        ['rounded card radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['shared square card corners', /border-radius\s*:\s*var\(--shell-card-corner\)/i],
         ['padding', /padding\s*:/i],
       ],
     },
@@ -462,9 +462,9 @@ if (wikiCss) {
       className: 'swarmsy-card',
       selector: '.swarmsy-card',
       checks: [
-        ['border', /border\s*:/i],
+        ['shared 1px border', /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i],
         ['background', /background\s*:/i],
-        ['rounded card radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['shared square card corners', /border-radius\s*:\s*var\(--shell-card-corner\)/i],
         ['padding', /padding\s*:/i],
       ],
     },
@@ -472,9 +472,9 @@ if (wikiCss) {
       className: 'swarmsy-section',
       selector: '.swarmsy-section',
       checks: [
-        ['border', /border\s*:/i],
+        ['shared 1px border', /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i],
         ['background', /background\s*:/i],
-        ['rounded section radius', /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i],
+        ['shared square card corners', /border-radius\s*:\s*var\(--shell-card-corner\)/i],
         ['padding', /padding\s*:/i],
       ],
     },
@@ -627,7 +627,7 @@ if (!factionRendererJs.includes('swarmsy-hero-inner fcp-hero-card') || !factionR
 }
 if (livingHeroOk) pass('Living full-width hero contract is wired across search, dashboard, how-to-play, and faction routes');
 
-console.log('\n[10] Wiki article pages inherit the SWARMSY glowing card and font contract');
+console.log('\n[10] Wiki article pages inherit the shared card and font contract');
 let wikiArticleVisualOk = true;
 if (wikiCss) {
   const wikiContentBlock = selectorBlock(wikiCss, 'body.page-wiki .wiki-content,\nbody.page-wiki .wiki-page,\nbody.page-wiki .article-body')
@@ -639,8 +639,8 @@ if (wikiCss) {
     || selectorBlock(wikiCss, 'body.page-wiki .wiki-section h2,\r\nbody.page-wiki .wiki-section h3');
   const wikiFactBlock = selectorBlock(wikiCss, 'body.page-wiki .lore-fact-block,\nbody.page-wiki .wiki-card,\nbody.page-wiki .infobox,\nbody.page-wiki .notice,\nbody.page-wiki .related-wiki-paths li,\nbody.page-wiki .related-wiki-card,\nbody.page-wiki .citation-vote-panel')
     || selectorBlock(wikiCss, 'body.page-wiki .lore-fact-block,\r\nbody.page-wiki .wiki-card,\r\nbody.page-wiki .infobox,\r\nbody.page-wiki .notice,\r\nbody.page-wiki .related-wiki-paths li,\r\nbody.page-wiki .related-wiki-card,\r\nbody.page-wiki .citation-vote-panel');
-  const wikiMetaBlock = selectorBlock(wikiCss, 'body.page-wiki .article-badge,\nbody.page-wiki .meta-item')
-    || selectorBlock(wikiCss, 'body.page-wiki .article-badge,\r\nbody.page-wiki .meta-item');
+  const wikiMetaBlock = selectorBlock(wikiCss, 'body.page-wiki .article-badge,\nbody.page-wiki .meta-item,\nbody.page-wiki .article-meta .tag')
+    || selectorBlock(wikiCss, 'body.page-wiki .article-badge,\r\nbody.page-wiki .meta-item,\r\nbody.page-wiki .article-meta .tag');
   const wikiFactGridBlock = selectorBlock(wikiCss, 'body.page-wiki .lore-facts-stack');
 
   const cardChecks = [
@@ -651,12 +651,12 @@ if (wikiCss) {
   for (const [block, label] of cardChecks) {
     if (
       !blockHas(block, /background\s*:/i) ||
-      !blockHas(block, /border\s*:/i) ||
-      !blockHas(block, /border-radius\s*:\s*(?:var\(--radius-(?:md|lg)\)|1[4-9]px|[2-9]\dpx)/i) ||
-      !blockHas(block, /box-shadow\s*:/i) ||
+      !blockHas(block, /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i) ||
+      !blockHas(block, /border-radius\s*:\s*var\(--shell-card-corner\)/i) ||
+      !blockHas(block, /box-shadow\s*:\s*none/i) ||
       !blockHas(block, /padding\s*:/i)
     ) {
-      fail(`${GLOBAL_SHELL_CSS} - ${label} must use SWARMSY glass card background, border, glow, radius, and padding`);
+      fail(`${GLOBAL_SHELL_CSS} - ${label} must use a dark surface, 1px shared border, square corners, and padding without a shadow`);
       wikiArticleVisualOk = false;
     }
   }
@@ -668,16 +668,20 @@ if (wikiCss) {
     fail(`${GLOBAL_SHELL_CSS} - wiki titles must use SWARMSY glowing display typography`);
     wikiArticleVisualOk = false;
   }
-  if (!blockHas(wikiSectionHeadingBlock, /color\s*:\s*#00ffcc/i) || !blockHas(wikiSectionHeadingBlock, /text-shadow\s*:/i)) {
-    fail(`${GLOBAL_SHELL_CSS} - wiki section headings must use cyan SWARMSY glow`);
+  if (
+    !blockHas(wikiSectionHeadingBlock, /color\s*:\s*var\(--shell-neon-cyan\)/i) ||
+    !blockHas(wikiSectionHeadingBlock, /border-block-end\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i) ||
+    !blockHas(wikiSectionHeadingBlock, /border-radius\s*:\s*var\(--shell-card-corner\)/i)
+  ) {
+    fail(`${GLOBAL_SHELL_CSS} - wiki section headings must use cyan text, square corners, and a 1px divider`);
     wikiArticleVisualOk = false;
   }
   if (
-    !blockHas(wikiMetaBlock, /border-radius\s*:\s*999px/i) ||
+    !blockHas(wikiMetaBlock, /border-radius\s*:\s*var\(--shell-card-corner\)/i) ||
     !blockHas(wikiMetaBlock, /background\s*:/i) ||
-    !blockHas(wikiMetaBlock, /border\s*:/i)
+    !blockHas(wikiMetaBlock, /border\s*:\s*1px\s+solid\s+var\(--shell-card-line\)/i)
   ) {
-    fail(`${GLOBAL_SHELL_CSS} - wiki metadata must render as SWARMSY pills, not plain text`);
+    fail(`${GLOBAL_SHELL_CSS} - wiki metadata must render as square labels with a shared 1px border`);
     wikiArticleVisualOk = false;
   }
   if (!blockHas(wikiFactGridBlock, /display\s*:\s*grid/i)) {
@@ -687,7 +691,7 @@ if (wikiCss) {
 } else {
   wikiArticleVisualOk = false;
 }
-if (wikiArticleVisualOk) pass('Wiki article pages have SWARMSY glowing typography, cards, pills, and fact grids');
+if (wikiArticleVisualOk) pass('Wiki article pages have shared cards, display typography, metadata labels, and fact grids');
 
 console.log('\n--- Result ---');
 console.log(`  Normal public pages checked : ${normalPages.length}`);
