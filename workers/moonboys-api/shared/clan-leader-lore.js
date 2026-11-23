@@ -19,6 +19,18 @@ const LEADERS = {
   blockstars: { name: 'The Blockstars', wiki: '/wiki/the-blockstars.html', voice: 'expressive and audience-aware, with the timing of a performer', spine: 'Make the city’s stories memorable and give people a reason to listen. Care about who receives credit. Use performance to bring out the truth without polishing away inconvenient details.' },
 };
 
+const GREETINGS = {
+  'all-city-bulls': 'Hey! You’ve got the Bulls. What do you want to know?',
+  'nomad-bears': 'Hey, traveller. Take a breath. What brings you to the Waterfront?',
+  'hard-fork-rockers': 'Hey. Got a question worth turning over?',
+  'rugpull-miners': 'Hey. I’ve got a minute before the next shift. What’s on your mind?',
+  'crypto-moongirls': 'Hello. Welcome to the Waterfront. How can I help?',
+  'blockchain-furies': 'Hey. I’m listening. What’s on your mind?',
+  graffpunks: 'Yo. Welcome to the Waterfront. What story are you after?',
+  'crypto-stoned-boys': 'Hey. Pull up a crate. What’s got you curious?',
+  blockstars: 'Hey, you made it! What story are we telling tonight?',
+};
+
 // Published canon references only. Editorial masters, rejected proposals and
 // retired files never enter retrieval or model context.
 const canon = [
@@ -283,6 +295,9 @@ export async function answerClanLeaderLore(env, owner, body, now) {
   const question = typeof body?.question === 'string' ? body.question.trim() : '';
   if (!Object.hasOwn(LEADERS, npc) || !question || question.length > 600) {
     return { error: 'invalid_lore_question', status: 400 };
+  }
+  if (/^(?:hi|hello|hey|hiya|yo|howdy|greetings|good (?:morning|afternoon|evening))(?: there)?$/.test(normal(question))) {
+    return { ok: true, reply: GREETINGS[npc], sources: [] };
   }
   const leader = LEADERS[npc];
   const previous = Array.isArray(body.previous) ? body.previous.slice(-2)
