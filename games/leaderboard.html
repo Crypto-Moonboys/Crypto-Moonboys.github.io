@@ -278,6 +278,16 @@
 
     .lb-legend-item { display: flex; align-items: center; gap: 6px; }
     .lb-legend-dot { width: 10px; height: 10px; flex-shrink: 0; }
+    #lb-game-directory { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    #lb-game-directory :is(a, button) {
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      padding: 5px 9px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
     #lb-graph-reset { position: absolute; top: 10px; right: 10px; }
     #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
     .lb-presence-btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -383,6 +393,7 @@
             <canvas id="arcade-graph-canvas" aria-label="Interactive arcade score graph. Click a leaderboard row to see a player's breakdown."></canvas>
             <button id="lb-graph-reset" aria-label="Reset graph to overview">Reset</button>
           </div>
+          <div id="lb-game-directory" class="lb-graph-legend" aria-label="Game score sources"></div>
           <div class="lb-graph-legend" aria-label="Graph legend">
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>Global / Player</span>
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#2ec5ff"></span>Snake</span>
@@ -411,12 +422,34 @@
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script type="module">
-import { initLeaderboard } from '/js/arcade-leaderboard.js';
-import { initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';
+import { initLeaderboard, showGameLeaderboard } from '/js/arcade-leaderboard.js';
+import { ARCADE_MAP_GAMES, initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
 import { ArcadeRetentionEngine } from '/js/arcade-retention-engine.js';
 
-initGraph('arcade-graph-canvas');
+function openGameScores(game) {
+  if (game.href) {
+    window.location.assign(game.href);
+    return;
+  }
+  showGameLeaderboard(game.id).then(() => {
+    document.getElementById('lb-tab-bar').scrollIntoView({ block: 'nearest' });
+  });
+}
+
+const gameDirectory = document.getElementById('lb-game-directory');
+for (const game of ARCADE_MAP_GAMES) {
+  const control = document.createElement(game.href ? 'a' : 'button');
+  control.textContent = game.href ? game.label + ' ↗' : game.label;
+  if (game.href) {
+    control.href = game.href;
+  } else {
+    control.type = 'button';
+    control.addEventListener('click', () => openGameScores(game));
+  }
+  gameDirectory.append(control);
+}
+initGraph('arcade-graph-canvas', openGameScores);
 document.body.dataset.lbMode = 'raw';
 
 function updateMetaGraph() {
