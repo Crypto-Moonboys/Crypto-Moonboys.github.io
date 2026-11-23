@@ -44,6 +44,12 @@ const waterfrontGroves = new Map([
   ["20,11", [7, 2, 3]]
 ]);
 
+// World coordinates beside the existing Southwest Park footpath.
+const southwestParkDetails = new Map([
+  ["15,26", { file: "furniture-5", height: 10 }],
+  ["15,27", { file: "flowers-8", height: 10 }]
+]);
+
 const waterfrontCargoAtlas = { file: "cargo-frames" };
 const waterfrontFactionAtlas = { file: "faction-frames" };
 // Order matches the rows packed from the named source portraits.
@@ -557,7 +563,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const planter = planterLots.get(location);
     const furniture = furnitureLots.get(location);
     const grove = ground === "grass" && waterfrontGroves.get(location);
-    if (grove) {
+    const parkDetail = ground === "grass" && southwestParkDetails.get(col + "," + row);
+    if (parkDetail && tileAt(col + 1, row) === "p") {
+      queue(y + 24, () => detail(parkDetail.file, x + 22, y + 24, parkDetail.height));
+    } else if (grove) {
       const positions = [[-6, -10, 0.72], [5, -5, 0.9], [-6, 0, 0.63]];
       grove.forEach((variant, index) => {
         const [dx, dy, scale] = positions[index];
