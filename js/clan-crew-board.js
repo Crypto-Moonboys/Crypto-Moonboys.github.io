@@ -2,29 +2,25 @@ import { CLAN_REWARD_NAMES } from './clan-period-display.js';
 import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=2';
 
 const board = document.querySelector('[data-clan-crew-progress]');
+const cards = board?.querySelector('[data-clan-crew-cards]');
 const api = window.MOONBOYS_API?.getApiBase?.({ mode: 'write' });
 const profiles = window.MOONBOYS_FACTION_PROFILES;
 const factionOrder = window.MOONBOYS_FACTION_PROFILE_ORDER;
 
-if (board && api && profiles && factionOrder?.length) {
-  const table = board.querySelector('[data-clan-crew-table]');
-  const rows = table.querySelector('tbody');
+if (cards && api && profiles && factionOrder?.length) {
   const period = board.querySelector('[data-clan-crew-period]');
   const status = board.querySelector(':scope > [role="status"]');
   const refresh = board.querySelector('[data-clan-crew-refresh]');
   const competitionPanel = board.querySelector('[data-clan-crew-competition]');
   const week = board.querySelector('[data-clan-crew-week]');
   const ranking = board.querySelector('[data-clan-crew-ranking]');
-  const scoreHeader = board.querySelector('[data-clan-crew-score]');
   const join = board.querySelector('[data-clan-crew-join]');
   const entry = board.querySelector('[data-clan-crew-entry]');
   const cityRules = board.querySelector('[data-clan-city-rules]');
-  const cityHeader = board.querySelector('[data-clan-city]');
   const finals = board.querySelector('[data-clan-final-results]');
-  const leaderHeader = board.querySelector('[data-clan-leader-header]');
   const leaderRules = board.querySelector('[data-clan-leader-rules]');
   const presenceRules = board.querySelector('[data-clan-leader-presence-rules]');
-  const talkToLeader = leaderHeader && mountClanLeaderDialog(document.body, () => load());
+  const talkToLeader = leaderRules && mountClanLeaderDialog(document.body, () => load());
   // The front idle frame is first in each four-row group of the Waterfront atlas.
   const leaderSprites = [
     'all-city-bulls', 'nomad-bears', 'hard-fork-rockers', 'rugpull-miners',
@@ -91,19 +87,18 @@ if (board && api && profiles && factionOrder?.length) {
       ? `Ranked crew scores for the week starting ${results.week_start} UTC.`
       : `Week starting ${results.week_start} UTC is unranked. Ranking needs ${results.min_crews} crews with at least ${results.min_roster} signed-up members each.`;
     const scores = new Map(results.crews.map(row => [row.faction_id, row]));
-    const ordered = Array.from(rows.children).sort((a, b) =>
+    const ordered = Array.from(cards.children).sort((a, b) =>
       (scores.get(a.dataset.faction).rank ?? Infinity) - (scores.get(b.dataset.faction).rank ?? Infinity));
     for (const row of ordered) {
       const score = scores.get(row.dataset.faction);
-      const cell = row.querySelector('[data-clan-crew-score]');
+      const metric = row.querySelector('[data-clan-crew-score]');
       const place = score.rank == null ? '' : `#${score.rank} · `;
-      cell.textContent = score.possible_banks
+      metric.querySelector('dd').textContent = score.possible_banks
         ? `${place}${percent.format(score.scored_banks / score.possible_banks)} · ${score.active_members}/${score.roster_size} active`
         : 'No roster';
-      cell.hidden = false;
+      metric.hidden = false;
     }
-    for (const row of ordered) rows.append(row);
-    scoreHeader.hidden = false;
+    cards.append(...ordered);
   }
 
   async function refreshEntry(intent = 'status') {
@@ -150,9 +145,22 @@ if (board && api && profiles && factionOrder?.length) {
     }
   }
 
+  function renderMetric(label, value) {
+    const metric = document.createElement('div');
+    const term = document.createElement('dt');
+    term.textContent = label;
+    const description = document.createElement('dd');
+    description.textContent = value;
+    metric.append(term, description);
+    return metric;
+  }
+
   function renderLeader(leader, priorWeekFinal) {
-    const cell = document.createElement('td');
-    cell.className = 'clan-leader-cell';
+    const cell = document.createElement('div');
+    cell.className = 'clan-crew-leader';
+    const title = document.createElement('h4');
+    title.textContent = 'Faction leader this week';
+    cell.append(title);
     const power = document.createElement('strong');
     power.textContent = `${leader.power.toLocaleString()} power`;
     const portrait = document.createElement('span');
@@ -192,6 +200,7 @@ if (board && api && profiles && factionOrder?.length) {
     if (!leader.perk) {
       const status = document.createElement('small');
       status.textContent = priorWeekFinal ? 'Unranked last week' : 'Awaiting final weekly standings';
+      status.className = 'clan-crew-leader-status';
       cell.append(status);
       return cell;
     }
@@ -219,7 +228,7 @@ if (board && api && profiles && factionOrder?.length) {
     refresh.setAttribute('aria-disabled', 'true');
     if (!board.hidden && !automatic) status.textContent = 'Refreshing crew progress…';
     try {
-      const response = await fetch(`${api}/clan-operations/state?view=crew-progress${competitionPanel ? '&standings=1' : ''}${cityHeader ? '&city=1' : ''}${leaderHeader ? '&leaders=1' : ''}`, {
+      const response = await fetch(`${api}/clan-operations/state?view=crew-progress${competitionPanel ? '&standings=1' : ''}${cityRules ? '&city=1' : ''}${leaderRules ? '&leaders=1' : ''}`, {
         credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(12_000),
       });
       if (!response.ok) throw new Error('crew progress unavailable');
@@ -231,7 +240,8 @@ if (board && api && profiles && factionOrder?.length) {
       if (data.ok === true && (data.enabled === false || data.crews === undefined)) {
         // Older Workers only return the pilot flag. Wait for the published board contract.
         board.hidden = true;
-        rows.replaceChildren();
+        cards.hidden = true;
+        cards.replaceChildren();
         period.textContent = '';
         status.textContent = '';
         if (competitionPanel) {
@@ -244,73 +254,76 @@ if (board && api && profiles && factionOrder?.length) {
       if (data.ok !== true || data.enabled !== true || !date.test(data.utc_day) || !date.test(data.week_start) ||
           !Array.isArray(data.crews) || data.crews.length !== factionOrder.length) throw new Error('invalid crew progress');
       const byFaction = new Map(data.crews.map(row => [row.faction_id, row]));
-      const showCity = Boolean(cityHeader && data.crews.every(crew => crew.city));
+      const showCity = Boolean(cityRules && data.crews.every(crew => crew.city));
       if (cityRules) cityRules.hidden = !showCity;
-      if (cityHeader) cityHeader.hidden = !showCity;
       const leaders = new Map((data.leaders?.week_start === data.week_start ? data.leaders.crews ?? [] : [])
         .map(leader => [leader.faction_id, leader]));
-      const showLeaders = Boolean(leaderHeader && factionOrder.every(key => leaders.has(key)));
-      if (leaderHeader) leaderHeader.hidden = !showLeaders;
+      const showLeaders = Boolean(leaderRules && factionOrder.every(key => leaders.has(key)));
       if (leaderRules) leaderRules.hidden = !showLeaders;
       if (presenceRules) presenceRules.hidden = !showLeaders || !data.leaders?.controls;
-      const expanded = new Set(Array.from(rows.querySelectorAll('.clan-leader-cell details[open]'),
-        node => node.closest('tr').dataset.faction));
+      const expanded = new Set(Array.from(cards.querySelectorAll('.clan-crew-leader details[open]'),
+        node => node.closest('[data-faction]').dataset.faction));
       const content = factionOrder.map(key => {
         const counts = byFaction.get(key);
         if (!counts || !Number.isSafeInteger(counts.today_banks) || !Number.isSafeInteger(counts.week_banks) ||
             counts.today_banks < 0 || counts.week_banks < counts.today_banks) throw new Error('invalid crew totals');
 
-        const row = document.createElement('tr');
-        row.dataset.faction = key;
-        const name = document.createElement('th');
-        name.scope = 'row';
+        const card = document.createElement('li');
+        card.className = 'clan-crew-card';
+        card.dataset.faction = key;
+        card.style.setProperty('--crew-accent', profiles[key].chamberColor);
+
+        const body = document.createElement('div');
+        body.className = 'clan-crew-card-body';
+        const name = document.createElement('h3');
         const link = document.createElement('a');
         link.href = '/battle-chamber/factions/' + key + '.html';
         link.innerHTML = window.MOONBOYS_FACTION?.renderIcon?.(key, 20) || '';
         link.append(profiles[key].name);
         name.append(link);
-        row.append(name);
-        for (const value of [counts.today_banks, counts.week_banks]) {
-          const cell = document.createElement('td');
-          cell.textContent = value.toLocaleString();
-          row.append(cell);
-        }
+
+        const stats = document.createElement('dl');
+        stats.className = 'clan-crew-card-stats';
+        stats.append(
+          renderMetric('Today', counts.today_banks.toLocaleString()),
+          renderMetric('This week', counts.week_banks.toLocaleString()),
+        );
         if (showCity) {
-          const city = document.createElement('td');
-          city.setAttribute('data-clan-city-project', '');
           const next = counts.city.next === null ? '' : ` · ${counts.week_banks}/${counts.city.next} banks`;
-          city.textContent = `${cityProjects[key]} · ${cityStages[counts.city.stage]}${next}`;
-          row.append(city);
+          stats.append(renderMetric('City project', `${cityProjects[key]} · ${cityStages[counts.city.stage]}${next}`));
         }
-        const scoreCell = document.createElement('td');
-        scoreCell.setAttribute('data-clan-crew-score', '');
-        scoreCell.hidden = true;
-        row.append(scoreCell);
+        const score = renderMetric('Weekly score', '');
+        score.dataset.clanCrewScore = '';
+        score.hidden = true;
+        stats.append(score);
+        body.append(name, stats);
         if (showLeaders) {
-          const cell = renderLeader(leaders.get(key), data.leaders.prior_week_final);
-          const details = cell.querySelector('details');
+          const leader = renderLeader(leaders.get(key), data.leaders.prior_week_final);
+          const details = leader.querySelector('details');
           if (details) details.open = expanded.has(key);
-          row.append(cell);
+          body.append(leader);
         }
-        return row;
+        const art = document.createElement('div');
+        art.className = 'clan-crew-card-art';
+        card.append(body, art);
+        return card;
       });
-      rows.replaceChildren(...content);
+      cards.replaceChildren(...content);
       if (competitionPanel) {
         competitionPanel.hidden = !data.competition;
-        scoreHeader.hidden = true;
         renderCompetition();
         if (!automatic || previousEntryWeek !== data.competition?.next_week_start) refreshEntry();
       }
       period.textContent = `UTC today ${data.utc_day} · Week starting ${data.week_start}`;
-      table.hidden = false;
+      cards.hidden = false;
       const announce = !board.hidden;
       board.hidden = false;
       if (!automatic) status.textContent = announce ? 'Crew progress updated.' : '';
     } catch {
       if (current !== generation || (automatic && !board.hidden)) return;
-      rows.replaceChildren();
+      cards.replaceChildren();
       period.textContent = '';
-      table.hidden = true;
+      cards.hidden = true;
       data = undefined;
       renderRewards();
       if (cityRules) cityRules.hidden = true;
@@ -335,7 +348,7 @@ if (board && api && profiles && factionOrder?.length) {
   window.addEventListener('moonboys:faction-status', () => refreshEntry());
   window.addEventListener('moonboys:clan-operation-banked', load);
   load();
-  if (leaderHeader) {
+  if (leaderRules) {
     setInterval(() => {
       if (!document.hidden && !board.contains(document.activeElement)) load({ automatic: true });
     }, 60_000);
