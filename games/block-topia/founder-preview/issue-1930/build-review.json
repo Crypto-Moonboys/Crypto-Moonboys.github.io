@@ -1,33 +1,36 @@
 {
   "issue": 1930,
-  "round": 10,
+  "round": 11,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "type": "Isolation",
-          "description": "The lighthouse is isolated and not connected to any road or house, which might make it seem out of place.",
-          "suggestion": "Connect the lighthouse to a road or house for better integration."
-        },
-        {
-          "type": "Accessibility",
-          "description": "There are no direct paths from the water (top row) to the houses in the middle rows. This could be confusing for players trying to reach specific areas.",
-          "suggestion": "Add roads connecting the waterfront directly to at least one house."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "type": "Dead End",
-          "description": "Rows 6 and below are completely empty, which could lead to dead ends for players who might expect more content.",
-          "suggestion": "Add some elements (roads, houses) in rows 6-10 to avoid dead ends."
-        },
-        {
-          "type": "Complex Path",
-          "description": "The route [15,27,16,28,4,17,40,52,64] has a complex path that might be difficult for players to follow.",
-          "suggestion": "Simplify the route or provide clearer visual cues."
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Visual Risk",
+        "description": "The district layout includes water and roads that are not properly connected, which could lead to confusion for players navigating the area.",
+        "affectedAreas": [
+          "Row 1",
+          "Row 2"
+        ],
+        "suggestedFix": "Ensure all 'r' (road) tiles are correctly connected."
+      },
+      {
+        "type": "Navigation Risk",
+        "description": "The route path includes a sudden change in direction and length, which might be confusing for players.",
+        "affectedPath": [
+          15,
+          27,
+          16,
+          28,
+          4,
+          17,
+          40,
+          52,
+          64,
+          76,
+          75
+        ],
+        "suggestedFix": "Smooth out the path to make it more intuitive for players."
+      }
+    ]
   }
 }
