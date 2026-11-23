@@ -179,3 +179,14 @@ select a leader for details and double-click or double-tap to ask. Send closes
 the composer and the reply appears above the leader. The info button opens
 the full reply and sources. Lore questions do not affect rounds, scores or
 player balances.
+
+### Waterfront faction seats
+
+Apply `131_waterfront_seats.sql` and deploy the Worker before publishing the
+Waterfront entry page. The entry endpoint verifies the same Telegram proof
+and canonical faction membership used by Block Topia. Entry depends on a
+free faction seat, with no XP threshold. Only a successful claim receives
+the live district layout. Each browser document renews its 75-second seat
+every 20 seconds, releases it when leaving where possible, and locks the
+map when it loses the seat. The database allows one seat per faction and
+one per account. Unrenewed seats expire on their own.

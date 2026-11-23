@@ -138,8 +138,10 @@ function clearSelection() {
 }
 
 async function refresh() {
+  if (!window.waterfrontAccess.canPlay()) return;
   try {
     const next = await getClanLeaderBoard();
+    if (!window.waterfrontAccess.canPlay()) return;
     board = next;
     leaderStates = keys.map((key, index) => {
       const presence = lookup(key)?.presence;
@@ -228,5 +230,17 @@ bubble.querySelector('[data-more]').addEventListener('click', () => {
   replyBox.showModal();
 });
 
-refresh();
+window.addEventListener('waterfront:access', () => {
+  if (window.waterfrontAccess.canPlay()) {
+    refresh();
+  } else {
+    sequence++;
+    mapViewport.removeAttribute('data-leader-question-pending');
+    histories.clear();
+    clearSelection();
+    reply = null;
+    bubble.hidden = true;
+    announcement.textContent = '';
+  }
+});
 setInterval(() => { if (!document.hidden) refresh(); }, 30_000);

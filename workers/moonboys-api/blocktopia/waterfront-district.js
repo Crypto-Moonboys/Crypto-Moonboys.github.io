@@ -1,5 +1,5 @@
 // Coordinates are zero-based. Keep these tile IDs and the storage key compatible with existing saves.
-window.waterfrontDistrict = {
+const district = {
   name: "Lumina’s Waterfront",
   tileSize: 32,
   spawn: { x: 12, y: 6 },
@@ -99,7 +99,6 @@ window.waterfrontDistrict = {
 
 // The original harbor remains the only built-up district.
 {
-  const district = window.waterfrontDistrict;
   const harborRows = district.rows;
   const offset = { x: 10, y: 8 };
   const world = Array.from({length: 34}, () => Array(56).fill("~"));
@@ -140,3 +139,5 @@ window.waterfrontDistrict = {
   })), ...openZones,
   {material:"grass", bounds:[2,2,15,5]}, {material:"grass", bounds:[50,20,54,31]}];
 }
+
+export default district;

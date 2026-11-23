@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 import { buildSync } from 'esbuild';
+import waterfrontDistrict from '../workers/moonboys-api/blocktopia/waterfront-district.js';
 import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
 import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
 import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
@@ -2102,6 +2103,11 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     const requestBodies = [];
     const loreBodies = [];
     const errors = [];
+    const entryActions = [];
+    const gameplayAssets = [];
+    let joinedFaction;
+    let occupied;
+    let seatLost;
     page.on('pageerror', error => errors.push(error.message));
     const start = '/games/block-topia/waterfront/';
     const target = 'nomad-bears';
@@ -2118,8 +2124,23 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       });
       if (url.pathname === '/js/identity-gate.js') return route.fulfill({
         contentType: 'application/javascript',
-        body: "window.MOONBOYS_IDENTITY={getTelegramId:()=>'123',getSignedTelegramAuth:()=>({id:'123'})}",
+        body: "window.MOONBOYS_IDENTITY={getTelegramId:()=>window.testOwner,getSignedTelegramAuth:()=>window.testOwner?{id:window.testOwner}:null}",
       });
+      if (url.pathname === '/blocktopia/waterfront/seat') {
+        const { action, telegram_auth, lease_id } = route.request().postDataJSON();
+        assert.equal(telegram_auth.id, '123');
+        assert.match(lease_id, /^[0-9a-f-]{36}$/);
+        entryActions.push(action);
+        if (action === 'leave') return route.fulfill({ json: { ok: true } });
+        if (!joinedFaction) return route.fulfill({ status: 403, json: { error: 'join_faction' } });
+        if (action === 'status') return route.fulfill({ json: { ok: true, faction_id: joinedFaction, occupied } });
+        if (seatLost) return route.fulfill({ status: 409, json: { error: 'seat_lost' } });
+        return route.fulfill({ json: {
+          ok: true, faction_id: joinedFaction, expires_in: 75,
+          district: action === 'join' ? waterfrontDistrict : undefined,
+        } });
+      }
+      if (/\/(?:harbor-art|map|leader-dialog)\.js$/.test(url.pathname)) gameplayAssets.push(url.pathname);
       if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
         leaders: {
           chat_enabled: true,
@@ -2149,6 +2170,27 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       return existsSync(file) ? route.fulfill({ path: file }) : route.fulfill({ status: 404 });
     });
     await page.goto('https://waterfront.test' + start);
+    await page.getByRole('button', { name: 'Sign in with Telegram' }).waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.deepEqual(gameplayAssets, [], 'signed-out browsers never load the game');
+    assert.deepEqual(entryActions, []);
+    await page.evaluate(() => {
+      window.testOwner = '123';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByRole('link', { name: 'Join a faction' }).waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.deepEqual(gameplayAssets, [], 'an unaligned account gets the faction gate');
+    occupied = true;
+    joinedFaction = target;
+    await page.evaluate(() => window.dispatchEvent(new Event('moonboys:identity-change')));
+    await page.getByText('Someone from your faction is already playing.').waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Enter Waterfront' }).isVisible(), false);
+    occupied = false;
+    await page.getByRole('button', { name: 'Check again' }).click();
+    await page.getByRole('button', { name: 'Enter Waterfront' }).click();
+    await page.locator('#map').waitFor();
+    assert.equal(await page.locator('#player-faction').textContent(), 'Your faction · The Nomad Bears');
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     const position = await page.evaluate(() => {
@@ -2204,6 +2246,14 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
     await page.clock.fastForward(65_000);
     await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
+    assert.ok(entryActions.includes('renew'), 'an active map renews its seat');
+
+    seatLost = true;
+    await page.clock.fastForward(21_000);
+    await page.getByText('Your Waterfront seat is no longer active.').waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.equal(await page.locator('.leader-map-bubble').isVisible(), false);
+    assert.ok(entryActions.includes('leave'));
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

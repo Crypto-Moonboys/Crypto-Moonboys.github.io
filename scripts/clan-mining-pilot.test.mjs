@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
+import { handleWaterfrontSeat } from '../workers/moonboys-api/routes/waterfront-seat.js';
 import worker from '../workers/moonboys-api/worker.js';
 import { CANONICAL_FACTION_KEYS } from '../workers/moonboys-api/shared/faction-canon.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
@@ -2080,4 +2081,84 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
   settings.loreEnabled = 'false';
   assert.equal((await question()).status, 404);
+});
+
+test('Waterfront admission admits only verified members into nine exclusive, expiring faction seats', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  await db.prepare(newerMigration('131_waterfront_seats')).run();
+  await db.prepare('ALTER TABLE blocktopia_progression ADD COLUMN xp INTEGER NOT NULL DEFAULT 0').run();
+  await db.prepare("INSERT INTO blocktopia_progression (telegram_id, faction) VALUES ('106', 'unaligned')").run();
+  let at = Date.parse('2026-11-23T12:00:00Z');
+  const url = 'https://local.test/blocktopia/waterfront/seat';
+  function body(id, action, doc) {
+    return {
+      action, lease_id: '00000000-0000-4000-8000-' + String(doc).padStart(12, '0'),
+      telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
+      // An untrusted caller cannot assign a faction or provide their own layout.
+      faction_id: 'blockstars', district: { rows: ['bad'] },
+    };
+  }
+  const send = async (id, action, doc, signed = true) => {
+    const response = await handleWaterfrontSeat(new Request(url, { method: 'POST', body: JSON.stringify(body(id, action, doc)) }), { DB: db }, {
+      now: () => at, verifyTelegramAuth: async () => signed,
+      respond: (data, status = 200) => Response.json(data, { status }),
+    });
+    return { status: response.status, body: await response.json() };
+  };
+  const noAuth = await send('101', 'join', 101, false);
+  const unaligned = await send('106', 'join', 106);
+  assert.equal(noAuth.status, 401);
+  assert.equal(unaligned.status, 403);
+  assert.equal(noAuth.body.district, undefined);
+  assert.equal(unaligned.body.district, undefined);
+  const pending = await send('101', 'status', 101);
+  assert.deepEqual(pending.body, { ok: true, faction_id: 'rugpull-miners', occupied: false });
+
+  const race = await Promise.all([send('101', 'join', 101), send('103', 'join', 103)]);
+  assert.deepEqual(race.map(row => row.status).sort(), [200, 409]);
+  const winner = race[0].status === 200 ? '101' : '103';
+  const rival = winner === '101' ? '103' : '101';
+  const joined = race.find(row => row.status === 200);
+  assert.equal(joined.body.faction_id, 'rugpull-miners');
+  assert.equal(joined.body.district.rows.length, 34);
+  assert.equal(joined.body.district.rows[0].length, 56);
+  assert.equal(race.find(row => row.status === 409).body.district, undefined);
+  assert.equal((await send(winner, 'join', 9701)).status, 409, 'a second tab for the same account also needs a free seat');
+  await send(rival, 'leave', winner);
+  assert.equal((await send(rival, 'status', rival)).body.occupied, true, 'only the owning account can release the seat');
+
+  at += 60_000;
+  assert.equal((await send(winner, 'renew', winner)).body.district, undefined);
+  at += 16_000;
+  assert.equal((await send(rival, 'join', rival)).status, 409, 'a renewed seat outlives its original expiry');
+  at += 60_000;
+  assert.equal((await send(winner, 'renew', winner)).status, 409);
+  assert.equal((await send(rival, 'join', rival)).status, 200, 'an abandoned seat frees after expiry');
+  await send(winner, 'leave', winner);
+  assert.equal((await send(rival, 'renew', rival)).status, 200, 'an old release cannot remove the new seat');
+  await send(rival, 'leave', rival);
+  assert.equal((await send(winner, 'join', winner)).status, 200, 'leaving frees the seat immediately');
+
+  await db.prepare("UPDATE blocktopia_progression SET faction = 'nomad-bears' WHERE telegram_id = ?").bind(winner).run();
+  assert.equal((await send(winner, 'renew', winner)).status, 409, 'membership is rechecked on renew');
+  assert.equal((await send(winner, 'join', winner)).body.faction_id, 'nomad-bears');
+  assert.equal((await send(rival, 'join', rival)).status, 200, 'a faction swap vacates the old seat atomically');
+  await db.prepare('DELETE FROM waterfront_seats').run();
+  const owners = [rival, '102', '104', '105', '107', '108', '110', '111', '113'];
+  const nine = await Promise.all(owners.map(id => send(id, 'join', id)));
+  assert.ok(nine.every(entry => entry.status === 200));
+  assert.deepEqual(nine.map(entry => entry.body.faction_id).sort(), [...CANONICAL_FACTION_KEYS].sort());
+  assert.equal((await send(winner, 'join', winner)).status, 409, 'a tenth member cannot take a seat');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS occupied FROM waterfront_seats').first()).occupied, 9);
+
+  const token = '123456:local-waterfront-test';
+  const signed = body(winner, 'status', winner);
+  signed.telegram_auth.hash = createHmac('sha256', createHash('sha256').update(token).digest())
+    .update(`auth_date=${signed.telegram_auth.auth_date}\nid=${winner}`).digest('hex');
+  const response = await worker.fetch(new Request(url, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(signed),
+  }), { DB: db, TELEGRAM_BOT_TOKEN: token });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).faction_id, 'nomad-bears');
+  assert.match(response.headers.get('Cache-Control'), /private.*no-store/);
 });

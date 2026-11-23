@@ -47,6 +47,7 @@ import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-l
 import { handlePlayerActionPlanRoute } from './routes/player-action-plan.js';
 import { clanOperationsEnabled, handleClanOperations } from './routes/clan-operations.js';
 import { handleClanPfpRoll } from './routes/clan-pfp-roll.js';
+import { handleWaterfrontSeat } from './routes/waterfront-seat.js';
 import { clanPeriodStart, closeClanPeriods } from './shared/clan-period-rewards.js';
 import { maintainClanCampaigns } from './shared/clan-campaigns.js';
 import { clanLeaderStart, runClanLeaderRounds } from './shared/clan-leader-presence.js';
@@ -13389,6 +13390,16 @@ export default {
       } catch {
         return err('Failed to load user status', 500);
       }
+    }
+
+    if (path === '/blocktopia/waterfront/seat') {
+      const privateHeaders = { ...corsHeaders, 'Cache-Control': 'private, no-store' };
+      return handleWaterfrontSeat(request, env, {
+        respond: makeJsonResponder(privateHeaders), verifyTelegramAuth, logApiFailure,
+        rateLimit: (owner) => enforcePublicRateLimit(request, env, path, null, privateHeaders, owner
+          ? { includeIp: false, telegramId: owner, telegramLimit: 16 }
+          : { includeTelegram: false, ipLimit: 120 }),
+      });
     }
 
     const isClanPfpRoll = path === '/clan-operations/pfp/state' || path === '/clan-operations/pfp/roll';
