@@ -105,7 +105,8 @@ function requestFixture(db) {
     }) : undefined;
     const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') + (leaders ? '&leaders=1' : '') : ''}`, { method, body }),
       { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart, CLAN_LEADER_PLAY_FROM: settings.leaderStart,
-        CLAN_LEADER_LORE_ENABLED: settings.loreEnabled, CLAN_LEADER_AI: settings.loreAi,
+        CLAN_LEADER_LORE_ENABLED: settings.loreEnabled, CLAN_LEADER_HERMES_URL: settings.hermesUrl,
+        CLAN_LEADER_HERMES_TOKEN: settings.hermesToken,
         CLAN_LEADER_LORE_SITE_LIMIT: settings.loreSiteLimit }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
@@ -2015,11 +2016,43 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.equal(publishedLoreText(editorial, '# Editorial master'), '');
   assert.equal(publishedLoreText(wikiPath, '<head><meta name="robots" content="noindex"></head><main>Private listing</main>'), '');
 
+  const hermesUrl = 'https://game-ai.example.test/v1/chat/completions';
   const visits = [];
   const prompts = [];
+  let fakeResponse;
+  let hermesStatus = 200;
+  settings.loreEnabled = 'true';
+  settings.hermesUrl = hermesUrl;
+  settings.hermesToken = 'test-only-token';
   t.mock.method(globalThis, 'fetch', async (url, init) => {
     assert.equal(init.redirect, 'manual');
+    if (url === hermesUrl) {
+      assert.equal(init.method, 'POST');
+      assert.equal(init.headers.Authorization, 'Bearer test-only-token');
+      if (hermesStatus !== 200) return new Response(null, { status: hermesStatus });
+      const input = JSON.parse(init.body);
+      assert.equal(input.model, 'hermes-agent');
+      assert.equal(input.stream, false);
+      assert.deepEqual(Object.keys(input).sort(), ['messages', 'model', 'stream']);
+      prompts.push(input.messages);
+      const prompt = JSON.parse(input.messages[1].content);
+      assert.deepEqual(Object.keys(prompt).sort(), ['earlierQuestions', 'publicReferences', 'question']);
+      const { question, publicReferences: sources } = prompt;
+      let answer;
+      if (question === 'who are the crypto moonboys?') {
+        assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
+        answer = { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] };
+      } else {
+        assert.ok(sources.some(source => /Alfie/i.test(source.excerpt)));
+        answer = fakeResponse ?? {
+          reply: 'Alfie Blaze leads the Bitcoin Kid Army and takes his orders from GKniftyHEADS.',
+          sources: sources.map(source => source.id),
+        };
+      }
+      return Response.json({ choices: [{ message: { content: JSON.stringify(answer) } }] });
+    }
     assert.ok(url.startsWith(site + '/'));
+    assert.equal(init.headers?.Authorization, undefined);
     const path = url.slice(site.length);
     visits.push(path);
     if (path === '/js/wiki-index.json') return Response.json(index);
@@ -2029,23 +2062,6 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     }
     return new Response(null, { status: 404 });
   });
-  let fakeResponse;
-  settings.loreEnabled = 'true';
-  settings.loreAi = { run: async (model, input) => {
-    assert.equal(model, '@cf/meta/llama-3.1-8b-fast-v2');
-    assert.equal(input.response_format.json_schema.type, 'object');
-    prompts.push(input.messages);
-    const { question, publicReferences: sources } = JSON.parse(input.messages[1].content);
-    if (question === 'who are the crypto moonboys?') {
-      assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
-      return { response: { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] } };
-    }
-    assert.ok(sources.some(source => /Alfie/i.test(source.excerpt)));
-    return { response: fakeResponse ?? {
-      reply: 'Alfie Blaze leads the Bitcoin Kid Army and takes his orders from GKniftyHEADS.',
-      sources: sources.map(source => source.id),
-    } };
-  }};
   const question = (overrides = {}, options = {}) => request({
     id: '999', loreAction: { npc: 'graffpunks', question: 'Who commands the Bitcoin Kid Army?', ...overrides }, ...options,
   });
@@ -2096,6 +2112,14 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.deepEqual(overview.data.sources.map(item => item.path), [overviewPath]);
   const freshChat = await question({ npc: 'blockstars', question: 'who are the crypto moonboys?' });
   assert.deepEqual(freshChat.data.sources.map(item => item.path), [overviewPath]);
+  hermesStatus = 307;
+  assert.equal((await question()).status, 503, 'gateway redirects are not followed');
+  settings.hermesUrl = hermesUrl.replace('https:', 'http:');
+  assert.equal((await question()).status, 404, 'inference is disabled without HTTPS');
+  settings.hermesUrl = hermesUrl;
+  settings.hermesToken = '';
+  assert.equal((await question()).status, 404, 'inference is disabled without a gateway token');
+  settings.hermesToken = 'test-only-token';
   settings.loreEnabled = 'false';
   assert.equal((await question()).status, 404);
 });
