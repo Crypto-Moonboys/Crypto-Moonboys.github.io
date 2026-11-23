@@ -1,27 +1,21 @@
 {
   "issue": 1930,
-  "round": 8,
+  "round": 9,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Waterfront district has a large empty space that might look uninteresting.",
-          "suggestion": "Add more details or objects to the empty spaces."
-        },
-        {
-          "description": "The route path crosses through areas without roads, which may be confusing for players.",
-          "suggestion": "Ensure routes are always on roads or consider adding a path overlay."
+          "description": "Waterfront district has a potential navigation risk due to the lack of clear road markers or paths.",
+          "riskLevel": "High",
+          "recommendation": "Add more 'road' symbols (#667b8a) to guide players through the district."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route points include non-existent cells (e.g., 27, 28, 16, etc.), which could lead to navigation errors.",
-          "suggestion": "Verify the route points against the district layout."
-        },
-        {
-          "description": "The route does not have a clear starting or ending point, making it difficult for players to understand its purpose.",
-          "suggestion": "Define a start and end point for the route and ensure they are visually distinct."
+          "description": "The route [17, 16, 4, 28, 40, 27, 52, 64] may be confusing or difficult to follow due to the sparse layout of roads.",
+          "riskLevel": "Medium",
+          "recommendation": "Ensure that the route is well-marked and consider adding more 'road' symbols for better visibility."
         }
       ]
     }
