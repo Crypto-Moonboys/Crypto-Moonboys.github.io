@@ -57,7 +57,7 @@ The VPS runs the [Block Topia build queue](../../../scripts/block-topia-build-qu
 
 1. Open a GitHub issue describing the district, desired prop and placement intent.
 2. Add `<!-- waterfront-production -->` to the issue body and apply both `block-topia-approved` and `block-topia-iterate`.
-3. Keep the issue open while the worker should continue. Closing it or removing an approval label stops further work on that issue. Existing founder-preview issues use the original workflow.
+3. Keep the issue open while the worker should continue. Closing it or removing `block-topia-approved` stops further work on that issue. Existing founder-preview issues use the original workflow.
 
 The worker reads the district, renderer, city brief and [sprite library](SPRITE-LIBRARY.md) from the integration base. Local Ollama proposes one registered flower or furniture sprite per round. The runner validates the sprite and coordinates, checks the modified renderer's JavaScript syntax, and places the prop on open ground beside a street or footpath outside the original harbor core. The renderer hides it if a saved map edit changes the lot or adjoining route. The production workflow leaves map geometry and routes intact.
 
