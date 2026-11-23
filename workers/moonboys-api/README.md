@@ -169,11 +169,31 @@ as the `CLAN_LEADER_HERMES_TOKEN` Worker secret.
 `CLAN_LEADER_HERMES_MODEL` names the gateway profile and defaults to
 `hermes-agent`. The Ollama model itself is configured on the VPS.
 Set `CLAN_LEADER_LORE_ENABLED=true` when the connection is ready. Chat requires
-the Hermes configuration and uses no hosted model fallback.
+the configuration for the selected provider. Hermes is the default and has no hosted model fallback.
 Players sign in with Telegram and can ask any of the nine faction leaders.
 The Worker sends the question, up to two earlier questions, and public source
 excerpts to the model. Telegram auth and account IDs stay within the Worker.
 Only daily usage counts are saved to D1.
+
+To use your own Google AI Studio key through Cloudflare AI Gateway, configure the
+following on the Worker. Keep both credentials in encrypted Worker secrets.
+
+| Binding | Value |
+| --- | --- |
+| `CLAN_LEADER_LORE_PROVIDER` | `gemini` |
+| `CLAN_LEADER_GEMINI_GATEWAY` | `https://gateway.ai.cloudflare.com/v1/<account-id>/moonboys-lore` |
+| `CLAN_LEADER_GEMINI_KEY` | Google AI Studio API key (secret) |
+| `CLAN_LEADER_GATEWAY_TOKEN` | Cloudflare AI Gateway Run token (secret) |
+| `CLAN_LEADER_GEMINI_MODEL` | Optional. Defaults to `gemini-3.8-flash` |
+
+Gemini uses the same published lore retrieval and nine faction profiles. Start a
+question with “Imagine if…” or “What if…” for longer, explicitly non-canon
+fiction. “Continue” or “What happens next” stays in that mode while the creative
+premise remains in the recent questions. Canon replies still require citations.
+Gemini defaults to 100 reserved questions per UTC day across the site unless
+`CLAN_LEADER_LORE_SITE_LIMIT` specifies a different positive limit. The gateway
+uses provider billing and disables prompt and response logging. Verify both chat
+modes with a signed-in Waterfront session after deployment.
 
 The nine leaders have their own faction identity, voice and guiding values.
 They share a knowledge catalog built from the published site artifact, public
