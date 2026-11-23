@@ -63,6 +63,7 @@ async function generateLore(env, endpoint, messages, gemini, creative) {
   const headers = gemini ? {
     'x-goog-api-key': env.CLAN_LEADER_GEMINI_KEY.trim(),
     'cf-aig-authorization': 'Bearer ' + env.CLAN_LEADER_GATEWAY_TOKEN.trim(),
+    'cf-aig-collect-log': 'false',
     'cf-aig-skip-cache': 'true',
   } : { Authorization: 'Bearer ' + env.CLAN_LEADER_HERMES_TOKEN.trim() };
   const body = gemini ? {
