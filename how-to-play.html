@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Play Crypto Moonboys Arcade games, submit scores, understand XP and get game-specific help.">
+  <meta name="description" content="Learn how to play Moonboys Arcade, earn Grinder Points, read the leaderboards and compete for weekly faction boosts.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Arcade How to Play | Crypto Moonboys">
-  <meta property="og:description" content="Choose a game, submit scores and find your personal progress in My Moonboy.">
+  <meta property="og:description" content="Play games, earn Grinder Points and see how weekly faction boosts are decided.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/how-to-play.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -33,13 +33,16 @@
     .guide-table th{color:var(--guide-green);background:rgba(0,255,204,.07)}
     .guide-faq details{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12)}
     .guide-faq summary{cursor:pointer;font-weight:800;color:var(--guide-cyan)}
-    @media(max-width:700px){.howto-page .section{padding:26px 20px}.guide-table{display:block;overflow-x:auto}}
+    .guide-jumps{display:flex;flex-wrap:wrap;gap:.65rem 1.2rem}
+    .guide-table-scroll{overflow-x:auto}
+    .howto-page :is(section,h2)[id]{scroll-margin-top:5rem}
+    @media(max-width:700px){.howto-page .section{padding:26px 20px}.guide-table th,.guide-table td{padding:8px}}
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Arcade How to Play | Crypto Moonboys">
-<meta name="twitter:description" content="Play Crypto Moonboys Arcade games, submit scores, understand XP and get game-specific help.">
+<meta name="twitter:description" content="Learn how to play Moonboys Arcade, earn Grinder Points, read the leaderboards and compete for weekly faction boosts.">
 <meta name="twitter:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
 </head>
 <body class="page-how-to-play page-standard-shell">
@@ -51,7 +54,7 @@
         <h1 id="guide-title" class="guide-title swarmsy-title wiki-living-title">PLAY GAMES.<br><span>CHASE THE SCORE.</span></h1>
       </div>
       <div class="howto-hero-copy">
-        <p class="guide-lead">Pick a game, play a run and submit your score. Keep track of your own progress in My Moonboy.</p>
+        <p class="guide-lead">Pick a game, finish a run and check your score. See which activity earns Grinder Points and how faction play changes next week’s boost.</p>
       </div>
       <nav class="guide-actions" aria-label="Arcade actions">
         <a class="guide-btn" href="/games/">PLAY GAMES</a>
@@ -60,21 +63,83 @@
       </nav>
     </section>
 
+    <nav class="section guide-jumps" aria-label="On this page">
+      <a href="#arcade-loop-title">Getting started</a>
+      <a href="#grinder-points">Grinder Points</a>
+      <a href="#leaderboard-rules">Rankings and bonuses</a>
+      <a href="#faction-boosts">Faction boosts and slowdowns</a>
+      <a href="#game-help">Game-specific help</a>
+    </nav>
+
     <section class="section" aria-labelledby="arcade-loop-title">
       <h2 id="arcade-loop-title">The Game Loop</h2>
       <div class="guide-grid">
-        <div class="guide-card"><h3>1. Choose</h3><p>Pick any available game from the <a href="/games/">Arcade</a>.</p></div>
-        <div class="guide-card"><h3>2. Play</h3><p>Finish a run and submit a score where supported.</p></div>
-        <div class="guide-card"><h3>3. Track</h3><p>Check the <a href="/games/leaderboard.html">leaderboard</a> for accepted scores and <a href="/my-moonboy.html">My Moonboy</a> for verified personal tasks.</p></div>
+        <div class="guide-card"><h3>1. Choose</h3><p>Pick a game from the <a href="/games/">Arcade</a>. Link Telegram through <a href="/my-moonboy.html">My Moonboy</a> for competitive play.</p></div>
+        <div class="guide-card"><h3>2. Play</h3><p>Finish a run and submit a score where the game supports it. Check the game’s confirmation that the server accepted the result.</p></div>
+        <div class="guide-card"><h3>3. Track</h3><p>Open the <a href="/games/leaderboard.html">leaderboard</a>. Use its original scoreboards and Arcade Node Map for game records, or Unified Rankings for Grinder Points.</p></div>
       </div>
     </section>
 
     <section class="section">
       <h2>Score and XP are different</h2>
-      <p>Score determines rank. Eligible Arcade XP is recorded only when the server accepts the run. A high score does not automatically mean the same XP.</p>
+      <p>Each game uses its own score to rank runs. Eligible Arcade XP is recorded only when the server accepts the run. Grinder Points measure eligible activity across systems, with a cap for each source. Check your own XP and tasks in <a href="/my-moonboy.html">My Moonboy</a>.</p>
     </section>
 
-    <section class="section guide-faq">
+    <section class="section" id="grinder-points" aria-labelledby="grinder-title">
+      <h2 id="grinder-title">Earn Grinder Points</h2>
+      <p>Points come from recorded activity. A run can show its score and XP in the breakdown while counting once toward Grinder Points. Daily caps reward playing across games and activities after you reach a source’s limit.</p>
+      <div class="guide-table-scroll" tabindex="0" role="region" aria-label="Grinder Point rates and daily caps">
+        <table class="guide-table">
+          <thead><tr><th scope="col">Eligible activity</th><th scope="col">Points</th><th scope="col">UTC daily cap</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Shared Arcade, NBG London, ranked Dead Run, accepted Block Topia RPG wins</th><td>10 per result</td><td>30 per game</td></tr>
+            <tr><th scope="row">Battle Chamber banked task tiers</th><td>10 per bank</td><td>30</td></tr>
+            <tr><th scope="row">Eligible MoonPet gameplay or care</th><td>5 per record</td><td>30</td></tr>
+            <tr><th scope="row">Completed Daily WTF Signals</th><td>5 per signal</td><td>30</td></tr>
+            <tr><th scope="row">Settled Wiki missions</th><td>5 per mission</td><td>15</td></tr>
+            <tr><th scope="row">Accepted Tag Run messages</th><td>1 per message</td><td>15</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section guide-faq" id="leaderboard-rules" aria-labelledby="ranking-title">
+      <h2 id="ranking-title">Read the ranks and earn bonuses</h2>
+      <p>Open <a href="/games/leaderboard.html#unified-leaderboard">Unified Rankings</a>, pick a view, then choose Daily, Weekly, Monthly or Seasonal. Days and months use UTC calendar boundaries. Weeks start Monday at 00:00 UTC. Seasonal follows the configured community season dates.</p>
+      <ul>
+        <li><strong>Global · Hardest Grinder</strong> includes every eligible player, in or out of a faction.</li>
+        <li><strong>Factions</strong> adds member points, eligible NPC rounds and weekly leader boosts for each of the nine factions.</li>
+        <li><strong>Games</strong> ranks Grinder Points from the selected game alone and shows your Global rank alongside.</li>
+        <li><strong>Clan Players</strong> shows points credited to your selected faction. <strong>No Clan</strong> shows activity without a faction on its record or weekly crew roster. Both views still show the Global rank.</li>
+      </ul>
+      <details open>
+        <summary>What happens when a chart closes?</summary>
+        <p>Choose <strong>Last finalized</strong> to see the frozen standings and earned bonuses. First gets 30 points, second 20, third 10. Tied players or factions share the same rank and award. You need eligible activity in the period to earn another bonus. Allow at least 15 minutes after the reset for final results.</p>
+        <p>A bonus carries into the next matching period. For example, a weekly first place adds 30 to the next week’s matching chart. Global combines individual chart bonuses up to 60 points. Faction bonuses stay on the faction chart. These points affect rankings. Spendable XP and game prizes follow their own rules.</p>
+      </details>
+    </section>
+
+    <section class="section guide-faq" id="faction-boosts" aria-labelledby="faction-boost-title">
+      <h2 id="faction-boost-title">Help your faction climb</h2>
+      <p>Join a faction in the <a href="/community.html#clan-crew-progress-title">Battle Chamber</a> and enter its weekly crew roster to credit eligible activity without its own faction record. Bank task tiers and complete Daily WTF Signals to build your faction’s total. NPC leaders also earn 12 faction points per eligible completed round.</p>
+      <details open>
+        <summary>How the weekly boost level is decided</summary>
+        <p>Once unified weeks begin settling, the finalized weekly Factions chart sets the following week’s Battle Chamber leader boost level. First place gets level 9, second gets level 8, down to level 1 for ninth. The level applies to one perk chosen when the week closes. Crews with fewer than two-thirds of their roster banking get Crew Rally to reward active member-days. Otherwise, crews averaging at least eight banks per active banker get Signal Relay. The rest get Supply Dock.</p>
+        <ul>
+          <li><strong>Supply Dock</strong> adds the level in points per banked tier.</li>
+          <li><strong>Signal Relay</strong> adds three times the level per completed signal.</li>
+          <li><strong>Crew Rally</strong> adds twice the level per active member-day with a bank or signal.</li>
+        </ul>
+        <p>For example, level 9 Signal Relay adds 27 faction points per qualifying signal. This is a faction boost. The separate task-banking standings still decide banking collectible rewards.</p>
+      </details>
+      <details open>
+        <summary>Why slow a rival leader?</summary>
+        <p>An overlapping pause cancels the rival’s NPC round. If those lost points change the final weekly rank, they can also lower the rival’s next boost level. Look for rival leaders on the <a href="/games/block-topia/waterfront/">Waterfront</a> or through the Battle Chamber’s crew progress controls.</p>
+        <p>Use one free slowdown question per UTC day for 5, 10 or 20 minutes. Paid options pause a leader for one hour or 24 hours. The controls show the price and availability. A leader who is already paused or recovering cannot be slowed again yet.</p>
+      </details>
+    </section>
+
+    <section class="section guide-faq" id="game-help">
       <h2>Game-specific help</h2>
       <details><summary>Wiki participation — comments, article likes and citation votes</summary>
         <p>Engage (comment), Signal (article like) and Cite (citation vote) are separate eligible actions. Only accepted receipts count. My Moonboy currently shows only the total accepted Wiki receipts for today; check the article for individual results. <a href="/my-moonboy.html#mm-economy">Full Wiki reward rules</a>.</p>
@@ -90,7 +155,7 @@
     <section class="section guide-faq">
       <h2>Need help?</h2>
       <details><summary>My score is missing</summary>
-        <p>Check whether your game confirmed the submission. Only accepted scores appear in competitive rankings.</p>
+        <p>Check whether your game confirmed the submission and whether you are in the right chart and period. The Arcade Node Map takes you to each game or its original scoreboard. Unified Rankings show Grinder Points from eligible records.</p>
       </details>
       <details><summary>My XP hasn't updated</summary>
         <p>XP and score are separate. Check your verified account in <a href="/my-moonboy.html">My Moonboy</a> and the game's own result.</p>
