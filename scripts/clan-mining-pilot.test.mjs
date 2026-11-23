@@ -2004,6 +2004,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const site = 'https://cryptomoonboys.com';
   const canonPath = '/about/latest-canon-and-brand-vision.md';
   const wikiPath = '/wiki/bitcoin-kid-army.html';
+  const graffpunksPath = '/wiki/graffpunks.html';
   const overviewPath = '/wiki/crypto-moonboys.html';
   const editorial = '/brand-canon/story-bibles/gk-master-canon.md';
   const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
@@ -2048,6 +2049,10 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
       if (question === 'who are the crypto moonboys?') {
         assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
         answer = { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] };
+      } else if (question === 'Who are you?' || question === 'Introduce yourself') {
+        assert.equal(sources.length, 1);
+        assert.match(sources[0].excerpt, /fictional Year 3008 counterpart carries the Paint Path/);
+        answer = { reply: 'I represent GraffPUNKS. We carry the Paint Path through the Street Kingdoms.', sources: [1] };
       } else if (question.includes(publishedMd) || question.includes(artifactPage)) {
         assert.match(sources[0].excerpt, /waterfront/i);
         answer = { reply: 'This source describes the waterfront.', sources: [1] };
@@ -2068,7 +2073,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     if (path === '/sitemap.xml') return new Response(sitemap);
     if (path === '/js/leader-lore-sources.json') return Response.json(publicPaths);
     if (path === artifactPage) return new Response('<body><p>Read the public waterfront visitor guide here.</p></body>');
-    if ([canonPath, wikiPath, overviewPath, publishedMd].includes(path)) {
+    if ([canonPath, wikiPath, overviewPath, publishedMd, graffpunksPath].includes(path)) {
       return new Response(readFileSync(new URL('..' + path, import.meta.url), 'utf8'));
     }
     return new Response(null, { status: 404 });
@@ -2123,6 +2128,12 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.deepEqual(overview.data.sources.map(item => item.path), [overviewPath]);
   const freshChat = await question({ npc: 'blockstars', question: 'who are the crypto moonboys?' });
   assert.deepEqual(freshChat.data.sources.map(item => item.path), [overviewPath]);
+  for (const intro of ['Who are you?', 'Introduce yourself']) {
+    const response = await question({ npc: 'graffpunks', question: intro });
+    assert.equal(response.status, 200);
+    assert.match(response.data.reply, /Paint Path/);
+    assert.deepEqual(response.data.sources.map(source => source.path), [graffpunksPath]);
+  }
   const identities = new Set();
   for (const [index, npc] of CANONICAL_FACTION_KEYS.entries()) {
     const response = await question({ npc, question: 'What does ' + site + publishedMd + ' say?' }, { id: String(400 + index) });
