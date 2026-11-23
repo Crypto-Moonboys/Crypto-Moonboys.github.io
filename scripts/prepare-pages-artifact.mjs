@@ -191,8 +191,17 @@ async function main() {
   await publishWikiRelatedData(resolvedArtifactDir);
   await publishWikiSearchIndex(resolvedArtifactDir);
   await publishDashboardSummary(resolvedArtifactDir);
+  await publishLeaderLoreSources(resolvedArtifactDir);
   await verifyPublicDisclosure(resolvedArtifactDir);
   console.log(`Prepared GitHub Pages artifact: ${path.relative(repoRoot, resolvedArtifactDir)}`);
+}
+
+async function publishLeaderLoreSources(root) {
+  const entries = await readdir(root, { recursive: true, withFileTypes: true });
+  const routes = entries.filter(entry => entry.isFile()).map(entry =>
+    '/' + path.relative(root, path.join(entry.parentPath, entry.name)).split(path.sep).join('/')
+  ).filter(route => /^\/(?:[\w~-][\w.~-]*\/)*[\w~-][\w.~-]*\.(?:html|md)$/u.test(route)).sort();
+  await writeFile(path.join(root, 'js', 'leader-lore-sources.json'), JSON.stringify(routes) + '\n');
 }
 
 async function publishDashboardSummary(root) {
