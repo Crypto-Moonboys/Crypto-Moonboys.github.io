@@ -2009,7 +2009,13 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
     { title: 'Editorial Only', url: editorial }, { title: 'Offsite', url: '//elsewhere.invalid/pub.html' }];
   const sitemap = `<loc>${site}/games/chain-maze/</loc><loc>${site}${editorial}</loc>`;
-  const catalog = makeLoreCatalog(index, sitemap);
+  const publishedMd = '/games/block-topia/waterfront/CITY-BRIEF.md';
+  const artifactPage = '/guides/only-listed-in-the-artifact.html';
+  const publicPaths = [publishedMd, artifactPage, editorial, '/account/private.html', '/drafts/../private.md'];
+  const catalog = makeLoreCatalog(index, sitemap, publicPaths);
+  assert.ok(catalog.some(source => source.path === publishedMd));
+  assert.ok(catalog.some(source => source.path === artifactPage));
+  assert.ok(!catalog.some(source => source.path === '/account/private.html' || source.path.includes('..')));
   assert.ok(catalog.some(source => source.path === '/games/chain-maze/'));
   assert.ok(catalog.some(source => source.path === canonPath));
   assert.ok(!catalog.some(source => source.path === editorial || source.path.startsWith('//')));
@@ -2042,6 +2048,9 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
       if (question === 'who are the crypto moonboys?') {
         assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
         answer = { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] };
+      } else if (question.includes(publishedMd) || question.includes(artifactPage)) {
+        assert.match(sources[0].excerpt, /waterfront/i);
+        answer = { reply: 'This source describes the waterfront.', sources: [1] };
       } else {
         assert.ok(sources.some(source => /Alfie/i.test(source.excerpt)));
         answer = fakeResponse ?? {
@@ -2057,7 +2066,9 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     visits.push(path);
     if (path === '/js/wiki-index.json') return Response.json(index);
     if (path === '/sitemap.xml') return new Response(sitemap);
-    if (path === canonPath || path === wikiPath || path === overviewPath) {
+    if (path === '/js/leader-lore-sources.json') return Response.json(publicPaths);
+    if (path === artifactPage) return new Response('<body><p>Read the public waterfront visitor guide here.</p></body>');
+    if ([canonPath, wikiPath, overviewPath, publishedMd].includes(path)) {
       return new Response(readFileSync(new URL('..' + path, import.meta.url), 'utf8'));
     }
     return new Response(null, { status: 404 });
@@ -2112,6 +2123,20 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.deepEqual(overview.data.sources.map(item => item.path), [overviewPath]);
   const freshChat = await question({ npc: 'blockstars', question: 'who are the crypto moonboys?' });
   assert.deepEqual(freshChat.data.sources.map(item => item.path), [overviewPath]);
+  const identities = new Set();
+  for (const [index, npc] of CANONICAL_FACTION_KEYS.entries()) {
+    const response = await question({ npc, question: 'What does ' + site + publishedMd + ' say?' }, { id: String(400 + index) });
+    assert.equal(response.status, 200);
+    assert.deepEqual(response.data.sources.map(source => source.path), [publishedMd]);
+    const system = prompts.at(-1)[0].content;
+    assert.ok(system.includes('(' + npc + ')'));
+    assert.match(system, /Voice: .+ Guiding values:/);
+    identities.add(system.match(/Guiding values: (.+?) Treat these values/)[1]);
+  }
+  assert.equal(identities.size, 9);
+  const unlisted = await question({ question: 'Explain ' + site + artifactPage }, { id: '999' });
+  assert.deepEqual(unlisted.data.sources.map(source => source.path), [artifactPage]);
+  assert.ok(!visits.includes(editorial));
   hermesStatus = 307;
   assert.equal((await question()).status, 503, 'gateway redirects are not followed');
   settings.hermesUrl = hermesUrl.replace('https:', 'http:');
