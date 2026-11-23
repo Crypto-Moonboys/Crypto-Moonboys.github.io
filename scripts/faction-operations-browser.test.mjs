@@ -4,8 +4,22 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { buildSync } from 'esbuild';
+import waterfrontDistrict from '../workers/moonboys-api/blocktopia/waterfront-district.js';
+import { advanceTrail, describeTrail } from '../workers/moonboys-api/shared/clan-nomad-trail.js';
+import { advanceDistrict, describeDistrict } from '../workers/moonboys-api/shared/clan-bulls-district.js';
+import { advanceSignal, describeSignal } from '../workers/moonboys-api/shared/clan-moongirls-signal.js';
+import { advanceChaos, describeChaos, chaosFinds } from '../workers/moonboys-api/shared/clan-stoned-chaos.js';
+import { advanceSpotlight, describeSpotlight, spotlightFinds } from '../workers/moonboys-api/shared/clan-blockstars-spotlight.js';
+import { advanceBurst, describeBurst, burstFinds } from '../workers/moonboys-api/shared/clan-furies-burst.js';
+import { advanceFork, describeFork, forkFinds } from '../workers/moonboys-api/shared/clan-rockers-fork.js';
 
 const ROOT = process.cwd();
+function browserModule(filename) {
+  return buildSync({ entryPoints: [path.join(ROOT, 'js', filename)], bundle: true, write: false }).outputFiles[0].text;
+}
+const clanOperationScript = browserModule('clan-operation-v9.js');
+const crewBoardScript = browserModule('clan-crew-board.js');
 const FACTIONS = [
   'hard-fork-rockers','rugpull-miners','graffpunks','blockchain-furies',
   'crypto-moongirls','blockstars','all-city-bulls','nomad-bears','crypto-stoned-boys',
@@ -159,7 +173,7 @@ test('PR4 mounts exactly once in nine faction chambers and Community; preserves 
   assert.match(community,/\/js\/faction-profile-data\.js/u,
     'Community must load the same canonical faction names as the chambers');
   assert.ok(community.indexOf('src="/js/faction-profile-data.js"') <
-    community.indexOf('src="/js/faction-operations.js"'));
+    community.indexOf('src="/js/faction-operations.js?'));
   const editorial=await readFile(path.join(ROOT,'dashboard.html'),'utf8');
   assert.doesNotMatch(editorial,/data-fop-(crew|private)|faction-operations\.js/u);
   assert.doesNotMatch(SCRIPT,/\b(?:localStorage|sessionStorage)\.(?:getItem|setItem|removeItem|clear)\s*\(|\bfetch\s*\(|\bXMLHttpRequest\b|\bsendBeacon\s*\(/u,
@@ -1029,4 +1043,1241 @@ test('PR5 background accepted-action reconciliation preserves focused private co
     'background reconnect reconciliation preserves focused Retry control');
     assert.equal(f.errors.length,0,f.errors.join('\n'));
   }finally{await f.browser.close();}
+});
+
+test('the mural mounts into cached chamber HTML and Enter keeps the selected paint control', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent(panel
+      .replace(/        <div data-wall-game hidden>[\s\S]*?        <\/div>\n/, '')
+      .replace(' data-operation-collection-label', ''));
+    await page.addStyleTag({ content: await readFile(path.join(ROOT, 'css/clan-operation.css'), 'utf8') });
+    assert.equal(await page.locator('[data-wall-game]').count(), 0);
+    await page.evaluate(() => {
+      window.clanMoves = [];
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '101',
+        getSignedTelegramAuth: () => ({ id: '101' }),
+      };
+      window.fetch = async (_url, options) => {
+        const request = JSON.parse(options.body);
+        if (request.operation_ui !== 'wall-v1') return Response.json({}, { status: 409 });
+        if (request.action) {
+          window.clanMoves.push(request.action);
+          await new Promise(resolve => { window.releaseClanMove = resolve; });
+        }
+        const revision = window.clanMoves.length;
+        return Response.json({
+          ok: true, faction_id: 'graffpunks', status: 'ready', tier: 0, revision,
+          utc_day: '2026-11-20', resets_at: '2099-01-01T00:00:00Z',
+          renown_per_tier: 10000, renown_today: 0, renown_total: 0, crew_banks: 0, collection: [],
+          wall: {
+            name: 'Signal Wall', finds: ['Outline', 'Chrome', 'Pink'],
+            panels: ['Left', 'Centre', 'Right'].map(name => ({ name, shade: revision % 3, paint: String(revision), target: 'Chrome', matched: false })),
+            actions: [{ id: 'paint-0', label: 'Cycle left' }, { id: 'paint-2', label: 'Cycle right' }],
+          },
+        });
+      };
+    });
+    await page.addScriptTag({ content: clanOperationScript });
+    await page.locator('[data-wall-panels][data-mural="signal-wall"] .clan-mural-art').first().waitFor();
+    assert.equal(await page.locator('.clan-wall-prints [role="listitem"]').count(), 3);
+    assert.match(await page.locator('.clan-wall-prints [role="listitem"]').first().innerText(), /Unbanked/);
+    const slices = page.locator('.clan-mural-art');
+    for (const width of [390, 1920]) {
+      await page.setViewportSize({ width, height: 800 });
+      const bounds = await slices.evaluateAll(elements => elements.map(element => {
+        const rect = element.getBoundingClientRect();
+        return { x: rect.x, right: rect.right, width: rect.width, panelWidth: element.parentElement.clientWidth };
+      }));
+      assert.equal(bounds.length, 3);
+      for (const slice of bounds) assert.ok(Math.abs(slice.width - slice.panelWidth) < 1);
+      assert.equal(bounds[0].right, bounds[1].x);
+      assert.equal(bounds[1].right, bounds[2].x);
+    }
+    const right = page.getByRole('button', { name: 'Cycle right' });
+    await page.locator('[data-wall-controls] button[value="paint-2"]:not([aria-disabled]):enabled').waitFor();
+    await right.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => window.clanMoves.length === 1);
+    assert.equal(await right.evaluate(button => document.activeElement === button), true, 'focus stays on the pending move');
+    assert.equal(await right.getAttribute('aria-disabled'), 'true');
+    await page.keyboard.press('Enter');
+    assert.deepEqual(await page.evaluate(() => window.clanMoves), ['paint-2'], 'Enter cannot queue a second move while one is pending');
+    await page.evaluate(() => window.releaseClanMove());
+    await page.waitForFunction(() => document.querySelector('[data-wall-panels] li')?.dataset.shade === '1');
+    assert.equal(await right.getAttribute('aria-disabled'), null);
+    assert.equal(await right.evaluate(button => document.activeElement === button), true, 'focus stays on the action after repainting');
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => window.clanMoves.length === 2);
+    assert.deepEqual(await page.evaluate(() => window.clanMoves), ['paint-2', 'paint-2']);
+    await page.evaluate(() => window.releaseClanMove());
+    await page.waitForFunction(() => document.querySelector('[data-wall-panels] li')?.dataset.shade === '2');
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Underpass studio previews, undoes, restores and banks a layered piece on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    const css = await readFile(path.join(ROOT, 'css/clan-operation.css'), 'utf8');
+    let started = false;
+    let saved;
+    let reads = 0;
+    await page.route('https://studio.test/**', route =>
+      route.fulfill({ contentType: 'text/html', body: '<style>' + css + '</style>' + panel }));
+    await page.route('https://studio.test/clan-operations/**', async route => {
+      const body = route.request().postDataJSON();
+      assert.equal(body.wall_studio_ui, 'underpass-studio-v1');
+      reads += 1;
+      if (body.action === 'studio-start') started = true;
+      if (body.action === 'bank') saved = body.wall_recipe;
+      await route.fulfill({ json: {
+        ok: true, faction_id: 'graffpunks', status: 'ready', tier: saved ? 1 : 0, revision: reads,
+        utc_day: today(), resets_at: nextReset(), renown_per_tier: 10000, renown_today: saved ? 10000 : 0,
+        renown_total: saved ? 10000 : 0, crew_banks: saved ? 1 : 0,
+        collection: saved ? [{ name: 'Chalk Rubbing', collected: 1 }] : [],
+        wall: { name: 'Underpass Triptych', finds: ['Chalk Rubbing', 'UV Throwie', 'Lime Overprint'], panels: [],
+          studio: { started, complete: false },
+          actions: started ? [] : [{ id: 'studio-start', label: 'Start brief' }],
+          studio_prints: saved ? [{ name: 'Chalk Rubbing', utc_day: today(), recipe: saved }] : [] },
+      } });
+    });
+    await page.addInitScript(() => {
+      window.MOONBOYS_API = { getApiBase: () => 'https://studio.test' };
+      window.MOONBOYS_IDENTITY = { getTelegramId: () => '104', getSignedTelegramAuth: () => ({ id: '104' }) };
+    });
+    async function boot() {
+      await page.goto('https://studio.test/');
+      await page.addScriptTag({ content: clanOperationScript });
+    }
+    await boot();
+    await page.getByRole('button', { name: 'Start brief' }).click();
+    await page.getByText('Chalk Rubbing brief').waitFor();
+    const bank = page.getByRole('button', { name: /Bank wall print/ });
+    assert.equal(await bank.isEnabled(), false);
+    const canvas = page.locator('.wall-studio-canvas');
+    const initial = await canvas.evaluate(node => node.toDataURL());
+    const select = (label, value) => page.locator('.wall-studio').getByLabel(label, { exact: true }).selectOption(value);
+    await select('Letter style', 'throw-up');
+    await select('Fill style', 'chrome');
+    assert.ok(await canvas.evaluate(node => {
+      const pixels = node.getContext('2d').getImageData(0, 0, node.width, node.height).data;
+      const solidRedValues = new Set();
+      for (let i = 0; i < pixels.length; i += 4) if (pixels[i + 3] === 255) solidRedValues.add(pixels[i]);
+      return solidRedValues.size > 16;
+    }), 'chrome has visible light and dark bands across the painted letters');
+    await select('Placement', 'split');
+    await page.getByRole('checkbox', { name: /Lime keyline/ }).check();
+    assert.equal(await bank.isEnabled(), true);
+    assert.notEqual(await canvas.evaluate(node => node.toDataURL()), initial);
+    assert.equal(await canvas.evaluate(node =>
+      node.getContext('2d').getImageData(480, 0, 1, node.height).data.every(value => value === 0)), true);
+    await select('Cap', 'fat');
+    assert.equal(await bank.isEnabled(), true);
+    await select('Method', 'extrusion');
+    await page.getByText(/units over budget/).waitFor();
+    assert.equal(await bank.isEnabled(), false);
+    await page.getByRole('button', { name: 'Undo last edit' }).click();
+    assert.equal(await bank.isEnabled(), true);
+    assert.equal(reads, 2, 'editing and undo stay local');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const boardBounds = await canvas.boundingBox();
+    const toolBounds = await page.locator('.wall-studio-tools').boundingBox();
+    assert.ok(boardBounds.x + boardBounds.width <= toolBounds.x, 'desktop tools sit beside the canvas');
+    assert.equal(boardBounds.y, toolBounds.y);
+    await boot();
+    await page.getByText('Chalk Rubbing brief').waitFor();
+    assert.equal(await bank.isEnabled(), true, 'reload restores the unbanked recipe');
+    await bank.click();
+    await page.getByText('UV Throwie brief').waitFor();
+    assert.equal(saved.sketch, 'throw-up');
+    assert.equal(saved.outline, 'fat');
+    assert.equal(saved.depth, 'none');
+    assert.equal(await page.locator('.wall-studio-print').count(), 1);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Nomad Bears announce mobile travel and retain the map during a retry window', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    await page.clock.install({ time: new Date('2026-11-20T12:00:00Z') });
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/nomad-bears.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent(panel);
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const route = 2;
+    let state = { route_index: route, tier: 0, operationState: {} };
+    const view = (revision) => ({
+      ok: true, faction_id: 'nomad-bears', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', resets_at: '2026-11-21T00:00:00Z', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: 0, renown_total: 0, crew_banks: 0, collection: [],
+      trail: describeTrail(route, state.tier, state.operationState),
+    });
+    const states = [view(0)];
+    for (const action of ['travel-1', 'travel-2', 'travel-3']) {
+      state = { ...advanceTrail(state, action), route_index: route };
+      states.push(view(states.length));
+    }
+    await page.evaluate(snapshots => {
+      window.moveCount = 0;
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '105',
+        getSignedTelegramAuth: () => ({ id: '105' }),
+      };
+      window.fetch = async (_url, options) => {
+        const request = JSON.parse(options.body);
+        if (!request.action) return Response.json(snapshots[0]);
+        window.moveCount++;
+        if (window.moveCount === 3) {
+          return Response.json({ error: 'rate_limited', retry_after_seconds: 2 }, { status: 429 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+    }, states);
+    await page.addScriptTag({ content: clanOperationScript });
+    const feedback = page.getByRole('status');
+    const expectFeedback = pattern => feedback.filter({ hasText: pattern }).waitFor();
+    const travel = page.locator('[data-wall-controls]');
+    await page.getByRole('button', { name: 'Walk to Clock Steps' }).click();
+    await expectFeedback(/Arrived at Clock Steps.*0 of 2 landmarks surveyed.*Supplies left: 2/);
+    assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    const feedbackBox = await feedback.boundingBox();
+    const travelBox = await travel.boundingBox();
+    const travelGap = travelBox.y - feedbackBox.y - feedbackBox.height;
+    assert.ok(travelGap >= 0 && travelGap < 36, 'feedback is beside the mobile travel controls');
+    await page.getByRole('button', { name: 'Walk to Rooftop Garden' }).click();
+    await expectFeedback(/Arrived at Rooftop Garden and surveyed.*1 of 2 landmarks surveyed.*Supplies left: 2/);
+    const shortcut = page.getByRole('button', { name: /Shortcut to Antenna Deck/ });
+    await shortcut.click();
+    await expectFeedback(/Rooftop Garden.*Try again in 2 seconds/);
+    assert.equal(await shortcut.getAttribute('aria-disabled'), 'true');
+    assert.match(await page.locator('[data-current-stop]').innerText(), /Rooftop Garden/);
+    await shortcut.evaluate(button => button.click());
+    assert.equal(await page.evaluate(() => window.moveCount), 3, 'clicking during the wait sends no move');
+    await page.clock.runFor(2_000);
+    await expectFeedback(/You can try again now/);
+    assert.equal(await shortcut.getAttribute('aria-disabled'), null);
+    assert.equal(await page.evaluate(() => window.moveCount), 3, 'the rejected move was not replayed automatically');
+    await shortcut.click();
+    await expectFeedback(/Took a shortcut to Antenna Deck.*Supplies left: 0/);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('All City Bulls can read pressure, time a hold and bank a visible mark on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/all-city-bulls.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="all-city-bulls">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const pathToBank = ['push-1', 'hold-1', 'push-0', 'push-2', 'bank'];
+    let state = { route_index: 0, tier: 0, operationState: {} };
+    const view = revision => ({
+      ok: true, faction_id: 'all-city-bulls', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', resets_at: '2099-01-01T00:00:00Z', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: 'Market Gate Mark', collected: 1 }] : [],
+      district: describeDistrict(0, state.tier, state.operationState),
+    });
+    const snapshots = [view(0)];
+    for (const action of pathToBank) {
+      state = { ...advanceDistrict(state, action), route_index: 0 };
+      snapshots.push(view(snapshots.length));
+    }
+    await page.evaluate(({ snapshots, pathToBank }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.district_ui !== 'district-v1' || request.operation_faction !== 'all-city-bulls') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (pathToBank[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '102',
+        getSignedTelegramAuth: () => ({ id: '102' }),
+      };
+    }, { snapshots, pathToBank });
+
+    await page.addScriptTag({ content: clanOperationScript });
+    const feedback = page.getByRole('status');
+    await feedback.filter({ hasText: /Next pressure: Market Gate/ }).waitFor();
+    assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    assert.equal(await page.getByRole('button', { name: /^Hold / }).count(), 0);
+    await page.getByRole('button', { name: 'Push Exchange Steps' }).click();
+    await feedback.filter({ hasText: /1 of 3 points secured.*Next pressure: Exchange Steps/ }).waitFor();
+    assert.match(await page.locator('[data-pressure]').innerText(), /Exchange Steps[\s\S]*Control 2\/3/);
+    await page.getByRole('button', { name: 'Hold Exchange Steps' }).click();
+    await feedback.filter({ hasText: /Timed hold counted/ }).waitFor();
+    await page.getByRole('button', { name: 'Push Market Gate' }).click();
+    await page.getByRole('button', { name: 'Push Loading Court' }).click();
+    await feedback.filter({ hasText: /All three points secured/ }).waitFor();
+    await page.getByRole('button', { name: /Bank territory mark/ }).click();
+    await feedback.filter({ hasText: /Territory Mark banked/ }).waitFor();
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Market Gate Mark/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Crypto Moongirls can recover from a missed early lock and bank on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/crypto-moongirls.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="crypto-moongirls">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const day = '2026-11-20';
+    let state = { route_index: 0, tier: 0, utc_day: day, operationState: { target: 1 } };
+    const view = () => describeSignal(state.route_index, state.tier, day, state.operationState);
+    const snapshot = revision => ({
+      ok: true, faction_id: 'crypto-moongirls', status: 'ready', tier: state.tier, revision,
+      utc_day: day, resets_at: '2099-01-01T00:00:00Z', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: view().finds[0], collected: 1 }] : [],
+      signal: view(),
+    });
+    const snapshots = [snapshot(0)];
+    const moves = [];
+    const play = action => {
+      state = { ...state, ...advanceSignal(state, action) };
+      moves.push(action);
+      snapshots.push(snapshot(moves.length));
+    };
+    play('scan-band');
+    play('scan-pulse');
+    const full = advanceSignal(state, 'scan-phase');
+    const [target] = describeSignal(state.route_index, state.tier, day, full.operationState).candidates;
+    const missed = view().candidates.find(channel => channel.id !== target.id);
+    play('lock-' + missed.id);
+    play('recalibrate');
+    play('scan-phase');
+    play('lock-' + target.id);
+    play('bank');
+
+    await page.evaluate(({ snapshots, moves }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.signal_ui !== 'signal-v1' || request.operation_faction !== 'crypto-moongirls') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (moves[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '108',
+        getSignedTelegramAuth: () => ({ id: '108' }),
+      };
+    }, { snapshots, moves });
+
+    await page.addScriptTag({ content: clanOperationScript });
+    const feedback = page.getByRole('status');
+    await feedback.filter({ hasText: /8 matching channels/ }).waitFor();
+    assert.equal(await feedback.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByRole('button', { name: 'Scan band' }).click();
+    await feedback.filter({ hasText: /4 matching channels.*Band/ }).waitFor();
+    await page.getByRole('button', { name: 'Scan pulse' }).click();
+    await feedback.filter({ hasText: /2 matching channels.*Pulse/ }).waitFor();
+    await page.getByRole('button', { name: 'Lock ' + missed.name }).click();
+    await feedback.filter({ hasText: /Signal jammed/ }).waitFor();
+    await page.getByRole('button', { name: 'Recalibrate receiver' }).click();
+    await feedback.filter({ hasText: /Finish all three scans/ }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /^Lock / }).count(), 0);
+    await page.getByRole('button', { name: 'Scan phase' }).click();
+    await feedback.filter({ hasText: /1 matching channel.*Phase/ }).waitFor();
+    await page.getByRole('button', { name: 'Lock ' + target.name }).click();
+    await feedback.filter({ hasText: /verified. Bank this sweep/ }).waitFor();
+    await page.getByRole('button', { name: /Bank signal intel/ }).click();
+    await feedback.filter({ hasText: /Signal Intel banked/ }).waitFor();
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Transit Trace/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Hard Fork Rockers can recover a stalled Edge Fork and bank on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/hard-fork-rockers.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="hard-fork-rockers">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const moves = ['choose-edge', 'cross', 'brace', 'cross', 'choose-stable', 'cross', 'cross', 'cross', 'bank'];
+    const award = forkFinds(0, 'stable')[0];
+    let state = { route_index: 0, tier: 0, operationState: {} };
+    const snapshot = revision => ({
+      ok: true, faction_id: 'hard-fork-rockers', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', resets_at: '2099-01-01T00:00:00Z', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: award, collected: 1 }] : [],
+      fork: describeFork(0, state.tier, state.operationState),
+    });
+    const snapshots = [snapshot(0)];
+    for (const action of moves) {
+      const next = advanceFork(state, action);
+      assert.ok(next, action);
+      state = { ...state, ...next };
+      snapshots.push(snapshot(snapshots.length));
+    }
+
+    await page.evaluate(({ snapshots, moves }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.fork_ui !== 'fork-v1' || request.operation_faction !== 'hard-fork-rockers') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (moves[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '110',
+        getSignedTelegramAuth: () => ({ id: '110' }),
+      };
+    }, { snapshots, moves });
+
+    await page.addScriptTag({ content: clanOperationScript });
+    const status = page.getByRole('status');
+    await status.filter({ hasText: /Choose a fork/ }).waitFor();
+    assert.equal(await status.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    assert.match(await page.locator('[data-wall-panels]').innerText(), /Rail Edge Fragment/);
+    await page.getByRole('button', { name: 'Take Edge Fork' }).click();
+    const cross = page.getByRole('button', { name: /Cross section/ });
+    await cross.click();
+    await status.filter({ hasText: /Stability 3 of 4/ }).waitFor();
+    await page.getByRole('button', { name: /Brace.*\+1 stability/ }).click();
+    await status.filter({ hasText: /Stability 4 of 4/ }).waitFor();
+    await cross.click();
+    await status.filter({ hasText: /Edge Fork stalled/ }).waitFor();
+    assert.equal(await cross.count(), 0);
+    await page.getByRole('button', { name: 'Restart this run on Stable Fork' }).click();
+    for (const stability of [3, 2, 1]) {
+      await cross.click();
+      if (stability > 1) {
+        await status.filter({ hasText: new RegExp('Stability ' + stability + ' of 4') }).waitFor();
+      }
+    }
+    await status.filter({ hasText: /Stable Fork cleared/ }).waitFor();
+    await page.getByRole('button', { name: /Bank fork fragment/ }).click();
+    await status.filter({ hasText: /Fork fragment banked/ }).waitFor();
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Rail Anchor Fragment/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Blockchain Furies hide the sequence in play and guide the revenge chain on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/blockchain-furies.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="blockchain-furies">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+    const moves = ['prepare', 'start', 'pad-3', 'pad-2', 'pad-1', 'pad-0', 'bank'];
+    const award = burstFinds(0, 'comeback')[0];
+    let state = { route_index: 0, tier: 0, operationState: {} };
+    const snapshot = revision => ({
+      ok: true, faction_id: 'blockchain-furies', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: award, collected: 1 }] : [],
+      burst: describeBurst(0, state.tier, state.operationState),
+    });
+    const snapshots = [snapshot(0)];
+    for (const action of moves) {
+      const next = action === 'prepare'
+        ? { operationState: { phase: 'preview', pattern: [0, 1, 2] } }
+        : advanceBurst(state, action);
+      assert.ok(next, action);
+      state = { ...state, ...next };
+      snapshots.push(snapshot(snapshots.length));
+    }
+    await page.evaluate(({ moves, snapshots }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.burst_ui !== 'burst-v1' || request.operation_faction !== 'blockchain-furies') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (moves[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '111',
+        getSignedTelegramAuth: () => ({ id: '111' }),
+      };
+    }, { moves, snapshots });
+    await page.addScriptTag({ content: clanOperationScript });
+
+    const status = page.getByRole('status');
+    const board = page.getByRole('list', { name: 'Burst sequence' });
+    await page.getByRole('button', { name: 'Reveal burst sequence' }).click();
+    await status.filter({ hasText: 'Flare, Arc, Pulse' }).waitFor();
+    assert.deepEqual(await board.locator('strong').allTextContents(), ['Flare', 'Arc', 'Pulse']);
+    await page.getByRole('button', { name: 'Hide sequence and start' }).press('Enter');
+    await status.filter({ hasText: 'Replay the sequence from memory' }).waitFor();
+    assert.deepEqual(await board.locator('strong').allTextContents(), ['Hidden', 'Hidden', 'Hidden']);
+    await page.getByRole('button', { name: 'Echo', exact: true }).press('Enter');
+    await status.filter({ hasText: /Revenge chain opened.*Next: Pulse/ }).waitFor();
+    assert.equal(await page.locator(':focus').getAttribute('value'), 'pad-3');
+    assert.equal(await status.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    for (const [label, step] of [['Pulse', 1], ['Arc', 2], ['Flare', 3]]) {
+      await page.getByRole('button', { name: label, exact: true }).click();
+      await status.filter({ hasText: step < 3 ? `${step} of 3 pulses cleared` : 'Revenge chain cleared' }).waitFor();
+    }
+    await page.getByRole('button', { name: /Bank Fury emblem.*10,000 Renown/ }).click();
+    await status.filter({ hasText: 'Fury emblem banked' }).waitFor();
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Neon Reignite Emblem/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('The Blockstars can recover a missed set and bank a remix poster on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/blockstars.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="blockstars">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const moves = ['book-headliner', 'perform-2', 'perform-2', 'perform-2', 'perform-2', 'restart',
+      'book-freestyle', 'perform-0', 'perform-1', 'perform-1', 'perform-0', 'bank'];
+    const poster = spotlightFinds(0, 'freestyle')[0];
+    let state = { route_index: 0, tier: 0, operationState: {} };
+    const snapshot = revision => ({
+      ok: true, faction_id: 'blockstars', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: poster, collected: 1 }] : [],
+      spotlight: describeSpotlight(0, state.tier, state.operationState),
+    });
+    const snapshots = [snapshot(0)];
+    for (const action of moves) {
+      const next = advanceSpotlight(state, action);
+      assert.ok(next, action);
+      state = { ...state, ...next };
+      snapshots.push(snapshot(snapshots.length));
+    }
+    await page.evaluate(({ moves, snapshots }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.spotlight_ui !== 'spotlight-v1' || request.operation_faction !== 'blockstars') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (moves[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '113',
+        getSignedTelegramAuth: () => ({ id: '113' }),
+      };
+    }, { moves, snapshots });
+    await page.addScriptTag({ content: clanOperationScript });
+
+    const status = page.getByRole('status');
+    assert.equal(await page.getByRole('link', { name: /featured Arcade game.*Meme Swarm/ }).getAttribute('href'),
+      '/games/meme-swarm-3008/');
+    await page.getByRole('button', { name: 'Book Headliner' }).click();
+    await status.filter({ hasText: /Beat 1 of 4.*Bait/ }).waitFor();
+    const burst = page.getByRole('button', { name: 'Burst', exact: true });
+    for (let beat = 2; beat <= 5; beat++) {
+      await burst.press('Enter');
+      await status.filter({ hasText: beat === 5 ? 'The set fell short' : new RegExp('Beat ' + beat + ' of 4') }).waitFor();
+      if (beat < 5) assert.equal(await page.locator(':focus').getAttribute('value'), 'perform-2');
+    }
+    assert.equal(await page.getByRole('button', { name: /Bank poster/ }).count(), 0);
+    await page.getByRole('button', { name: 'Restart set' }).click();
+    await status.filter({ hasText: /Set reset/ }).waitFor();
+    await page.getByRole('button', { name: 'Book Freestyle' }).click();
+    assert.equal(await status.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    for (const [index, label] of ['Bait', 'Sweep', 'Sweep', 'Bait'].entries()) {
+      await page.getByRole('button', { name: label, exact: true }).click();
+      await status.filter({ hasText: index === 3 ? 'Curtain call' : new RegExp('Beat ' + (index + 2) + ' of 4') }).waitFor();
+    }
+    await page.getByRole('button', { name: /Bank poster panel.*10,000 Renown/ }).click();
+    await status.filter({ hasText: 'Poster panel banked' }).waitFor();
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Swarm Remix/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Crypto Stoned Boys can see the odds, spend their reroll and recover an artifact on mobile', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'battle-chamber/factions/crypto-stoned-boys.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-operation[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    await page.setContent('<body data-faction-page="crypto-stoned-boys">' + panel + '</body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+
+    const moves = ['shortcut', 'reroll', 'vent', 'salvage', 'bank', 'shortcut'];
+    const award = chaosFinds(0, 'salvage')[0];
+    let state = { route_index: 0, tier: 0, operationState: {} };
+    const snapshot = revision => ({
+      ok: true, faction_id: 'crypto-stoned-boys', status: 'ready', tier: state.tier, revision,
+      utc_day: '2026-11-20', last_outcome: state.outcome,
+      renown_per_tier: 10_000, renown_today: state.tier * 10_000, renown_total: state.tier * 10_000,
+      crew_banks: state.tier, collection: state.tier ? [{ name: award, collected: 1 }] : [],
+      chaos: describeChaos(0, state.tier, state.operationState),
+    });
+    const snapshots = [snapshot(0)];
+    for (const action of moves) {
+      const next = advanceChaos(state, action, 99);
+      assert.ok(next, action);
+      state = { ...state, ...next };
+      snapshots.push(snapshot(snapshots.length));
+    }
+    await page.evaluate(({ moves, snapshots }) => {
+      window.fetch = async (_url, { body }) => {
+        const request = JSON.parse(body);
+        if (request.chaos_ui !== 'chaos-v1' || request.operation_faction !== 'crypto-stoned-boys') {
+          return Response.json({ error: 'operation_unavailable' }, { status: 409 });
+        }
+        if (!request.action) return Response.json(snapshots[0]);
+        if (moves[request.revision] !== request.action) {
+          return Response.json({ error: 'refresh_operation' }, { status: 409 });
+        }
+        return Response.json(snapshots[request.revision + 1]);
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '107',
+        getSignedTelegramAuth: () => ({ id: '107' }),
+      };
+    }, { moves, snapshots });
+    await page.addScriptTag({ content: clanOperationScript });
+
+    const status = page.getByRole('status');
+    const shortcut = page.getByRole('button', { name: 'Try the chaos shortcut' });
+    const reroll = page.getByRole('button', { name: 'Spend daily reroll' });
+    await status.filter({ hasText: 'Choose your route' }).waitFor();
+    assert.match(await page.getByRole('list', { name: 'Chaos routes' }).innerText(), /50% chance/);
+    await shortcut.press('Enter');
+    await status.filter({ hasText: /Shortcut jammed.*daily reroll.*50%/ }).waitFor();
+    assert.equal(await status.evaluate(node => node.nextElementSibling?.hasAttribute('data-wall-controls')), true);
+    await reroll.press('Enter');
+    await status.filter({ hasText: 'The reroll jammed' }).waitFor();
+    assert.equal(await reroll.count(), 0);
+    await page.getByRole('button', { name: 'Vent the jam' }).click();
+    await status.filter({ hasText: 'Jam vented' }).waitFor();
+    await page.getByRole('button', { name: 'Extract the salvage' }).click();
+    await status.filter({ hasText: /lights settle.*Bank your artifact/ }).waitFor();
+    await page.evaluate(() => {
+      window.bankEvents = 0;
+      window.addEventListener('moonboys:clan-operation-banked', () => { window.bankEvents++; });
+    });
+    await page.getByRole('button', { name: /Bank chaos artifact.*10,000 Renown/ }).click();
+    await status.filter({ hasText: 'Artifact banked' }).waitFor();
+    assert.equal(await page.evaluate(() => window.bankEvents), 1);
+    assert.match(await page.locator('[data-mine-collection]').innerText(), /Neon Coil · Recovered/);
+    assert.match(await page.locator('[data-mine-stats]').innerText(), /10,000 Renown today/);
+    await shortcut.click();
+    await status.filter({ hasText: /Shortcut jammed.*Vent the jam/ }).waitFor();
+    assert.equal(await reroll.count(), 0);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('crew progress handles older Workers, refreshes after a bank, and clears stale totals', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 700 } });
+    page.setDefaultTimeout(5_000);
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const panel = html.match(/<section[^>]* data-clan-crew-progress[\s\S]*?<\/section>/)?.[0];
+    assert.ok(panel);
+    assert.equal(await page.evaluate(markup => {
+      const document = new DOMParser().parseFromString(markup, 'text/html');
+      const progress = document.querySelector('[data-clan-crew-progress]');
+      return progress?.previousElementSibling === document.querySelector('[data-clan-operation]');
+    }, html), true, 'crew progress is a sibling card');
+    await page.setContent('<main>' + panel + '</main>');
+    const shellCss = await readFile(path.join(ROOT, 'css/wiki.css'), 'utf8');
+    await page.addStyleTag({ content: shellCss.replace(/^@import[^;]*;/gm, '') });
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+    await page.addScriptTag({ path: path.join(ROOT, 'js/faction-profile-data.js') });
+    await page.evaluate(() => {
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid/base' };
+      window.crewRequests = [];
+      window.crewEntryRequests = [];
+      window.fetch = (url, options) => {
+        if (url === 'https://fixture.invalid/base/clan-operations/state' && options.method === 'POST') {
+          const body = JSON.parse(options.body);
+          window.crewEntryRequests.push(body);
+          return Response.json({
+            ok: true, week_start: '2026-11-23', entered_faction: body.crew_entry === 'join' ? 'nomad-bears' : null,
+          });
+        }
+        if (url !== 'https://fixture.invalid/base/clan-operations/state?view=crew-progress&standings=1&city=1&leaders=1' || options.credentials !== 'omit') {
+          throw new Error('incorrect public request');
+        }
+        return new Promise(resolve => window.crewRequests.push(resolve));
+      };
+    });
+    await page.addScriptTag({ content: crewBoardScript });
+
+    const board = page.getByRole('region', { name: 'Clan crew progress' });
+    const standings = board.getByRole('list', { name: 'Crew standings' });
+    const bears = standings.locator('[data-faction="nomad-bears"]');
+    const refresh = page.getByRole('button', { name: 'Refresh crew progress' });
+    async function deliver(index, value, statusCode = 200) {
+      await page.waitForFunction(index => window.crewRequests.length > index, index);
+      await page.evaluate(({ index, value, statusCode }) => {
+        window.crewRequests[index](Response.json(value, { status: statusCode }));
+      }, { index, value, statusCode });
+    }
+    const counts = (today, week) => ({
+      ok: true, enabled: true, utc_day: '2026-11-20', week_start: '2026-11-16',
+      crews: FACTIONS.map(faction_id => ({
+        faction_id,
+        today_banks: faction_id === 'nomad-bears' ? today : 0,
+        week_banks: faction_id === 'nomad-bears' ? week : 0,
+      })).reverse(),
+    });
+    const banked = () => page.evaluate(() => window.dispatchEvent(new Event('moonboys:clan-operation-banked')));
+
+    await deliver(0, { ok: true, enabled: true });
+    await page.locator('[data-clan-crew-refresh]:not([aria-disabled])').waitFor({ state: 'attached' });
+    assert.equal(await board.count(), 0);
+    await banked();
+    await deliver(1, counts(1, 4));
+    await standings.waitFor();
+    assert.equal(await standings.locator(':scope > li').count(), 9);
+    assert.match(await standings.locator(':scope > li').first().innerText(), /Hard Fork Rockers/);
+    assert.deepEqual(await bears.locator('dd:visible').allTextContents(), ['1', '4']);
+    assert.equal(await bears.getByRole('link').getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await refresh.click();
+    await page.waitForFunction(() => window.crewRequests.length === 3);
+    await banked();
+    const refreshed = counts(2, 100);
+    for (const crew of refreshed.crews) {
+      crew.city = crew.faction_id === 'nomad-bears' ? { stage: 2, next: 300 } : { stage: 0, next: 30 };
+    }
+    await deliver(3, refreshed);
+    await board.getByRole('status').filter({ hasText: 'Crew progress updated.' }).waitFor();
+    await deliver(2, counts(1, 4));
+    assert.deepEqual(await bears.locator('dd:visible').allTextContents(), ['2', '100', 'Trail network · Expanded · 100/300 banks']);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await refresh.click();
+    await deliver(4, { error: 'crew_progress_unavailable' }, 503);
+    await board.getByRole('status').filter({ hasText: 'Crew progress is temporarily unavailable.' }).waitFor();
+    assert.equal(await standings.count(), 0);
+    await refresh.click();
+    await deliver(5, { ok: true, enabled: false });
+    await board.waitFor({ state: 'hidden' });
+
+    await page.evaluate(() => {
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => '123', getSignedTelegramAuth: () => ({ id: '123' }),
+      };
+    });
+    const weekly = (start, ranked) => ({
+      week_start: start, ranked, min_crews: 2, min_roster: 3,
+      crews: FACTIONS.map(faction_id => ({
+        faction_id, roster_size: 3, active_members: 2, scored_banks: 30, possible_banks: 45,
+        rank: ranked && faction_id === 'nomad-bears' ? 1 : null,
+      })),
+    });
+    await banked();
+    await deliver(6, {
+      ...counts(1, 4),
+      competition: {
+        current: weekly('2026-11-16', true), previous: weekly('2026-11-09', false),
+        next_week_start: '2026-11-23',
+      },
+    });
+    await bears.getByText(/#1 · 66.7%/).waitFor();
+    await board.getByLabel('Weekly score period').selectOption('previous');
+    await board.getByText(/2026-11-09 UTC is unranked/).waitFor();
+    await board.getByRole('button', { name: 'Enter week starting 2026-11-23 UTC' }).click();
+    await board.getByText('Entered for Nomad Bears in the week starting 2026-11-23 UTC.').waitFor();
+    assert.deepEqual(await page.evaluate(() => window.crewEntryRequests.at(-1)), {
+      telegram_auth: { id: '123' }, crew_entry: 'join', week_start: '2026-11-23',
+    });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await banked();
+    await deliver(7, {
+      ...counts(1, 4),
+      leaders: {
+        week_start: '2026-11-16', prior_week_final: true,
+        crews: FACTIONS.map(faction_id => ({
+          faction_id, banks: 4, signals: 1, boost: 9, power: 15,
+          perk: faction_id === 'nomad-bears' ? {
+            rank: 1, level: 9, selected: 'relay',
+            options: [
+              { id: 'supply', name: 'Supply Dock', points: 9, unit: 'per banked task tier' },
+              { id: 'relay', name: 'Signal Relay', points: 27, unit: 'per completed signal' },
+              { id: 'rally', name: 'Crew Rally', points: 18, unit: 'per active member per UTC day' },
+            ],
+          } : null,
+        })),
+      },
+    });
+    await bears.getByText('15 power').waitFor();
+    await bears.getByText('Lv 9 · Signal Relay', { exact: true }).click();
+    assert.deepEqual(await bears.locator('.clan-crew-leader li').allTextContents(), [
+      'Supply Dock · +9 per banked task tier',
+      'Signal Relay · +27 per completed signal (active)',
+      'Crew Rally · +18 per active member per UTC day',
+    ]);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    // A future image fills the right-hand half without pushing the details across the midpoint.
+    const artwork = bears.locator('.clan-crew-card-art');
+    const body = bears.locator('.clan-crew-card-body');
+    assert.equal(await artwork.count(), 1);
+    assert.equal(await artwork.isVisible(), false);
+    await artwork.evaluate(node => {
+      const img = document.createElement('img');
+      img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"/>';
+      img.alt = 'Nomad Bears artwork fixture';
+      node.append(img);
+    });
+    let [detailsBox, artBox] = await Promise.all([body.boundingBox(), artwork.boundingBox()]);
+    assert.ok(artBox.y >= detailsBox.y + detailsBox.height);
+    assert.equal(artBox.width, detailsBox.width);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    [detailsBox, artBox] = await Promise.all([body.boundingBox(), artwork.boundingBox()]);
+    assert.equal(artBox.x, detailsBox.x + detailsBox.width);
+    assert.equal(artBox.y, detailsBox.y);
+    assert.equal(artBox.width, detailsBox.width);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('season campaign shows schedule, progress and account-owned collectibles at 390px', { timeout: 30_000 }, async () => {
+  const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
+  const browser = await chromium.launch({ executablePath, headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const html = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const section = html.match(/<details[^>]+id="clan-season-campaign"[\s\S]+?<\/section>/)?.[0];
+    assert.ok(section, 'seasonal campaign uses the real Battle Chamber mount');
+    await page.setContent('<body class="page-community">' + section + '</details></body>');
+    await page.addStyleTag({ path: path.join(ROOT, 'css/action-page-cards.css') });
+    await page.addStyleTag({ path: path.join(ROOT, 'css/clan-operation.css') });
+    await page.evaluate(() => {
+      const program = {
+        ok: true, utc_day: '2026-12-17', upcoming: null, previous: null,
+        campaign: {
+          seasonId: 13, startsOn: '2026-12-16', endsBefore: '2027-03-16',
+          theme: { title: 'The Clout War', description: 'Earn campaign progress from bank receipts.' },
+          acts: [{ title: 'Claim the Streets', startsOn: '2026-12-16', endsBefore: '2027-01-15' }],
+          windows: [
+            { id: 'objective-1', kind: 'objective', status: 'open', mode: 'crew', title: 'Full Shift',
+              startsOn: '2026-12-16', endsBefore: '2026-12-23', description: 'Bank three tiers.',
+              progress: { threshold: 70, rows: [{ faction_id: 'rugpull-miners', participants: 1, roster: 2, points: 5000 }], eligibleFactions: [] } },
+            { id: 'event-1', kind: 'event', status: 'upcoming', startsOn: '2026-12-19', endsBefore: '2026-12-23' },
+          ],
+          collectibles: [{ title: 'Chrome Flake', earnedFrom: 'objective-1' }],
+        },
+      };
+      window.MOONBOYS_API = { getApiBase: () => 'https://fixture.invalid' };
+      window.MOONBOYS_FACTION_PROFILES = { 'rugpull-miners': { name: 'Rugpull Miners' } };
+      window.__campaignOwner = '111';
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => window.__campaignOwner,
+        getFreshTelegramAuth: async () => ({ id: window.__campaignOwner }),
+      };
+      window.fetch = async (url, options) => {
+        if (options?.method === 'POST') {
+          const input = JSON.parse(options.body);
+          if (input.campaign_rewards_ui !== 1 || input.telegram_auth.id !== '111') throw new Error('unexpected account');
+          return Response.json({ ok: true, collectibles: [{ season_id: 13, collectible: 'Awarded Chrome Flake' }] });
+        }
+        if (!url.endsWith('?view=campaign')) throw new Error('unexpected campaign endpoint');
+        return Response.json(program);
+      };
+    });
+    await page.addScriptTag({ content: browserModule('clan-campaign.js') });
+    await page.getByText('Seasonal Campaign', { exact: true }).click();
+    await page.getByRole('heading', { name: 'Season 13 · The Clout War' }).waitFor();
+    assert.equal(await page.getByText(/Current act/).count(), 1);
+    assert.equal(await page.getByRole('table', { name: 'Full Shift' }).getByText('50%').count(), 1);
+    assert.equal(await page.getByText('Next event opens 19 Dec 2026 at 00:00 UTC.').count(), 1);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+
+    await page.getByText('My campaign collectibles', { exact: true }).click();
+    await page.getByText('Awarded Chrome Flake · Season 13').waitFor();
+    await page.evaluate(() => {
+      window.__campaignOwner = '';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByText('Connect Telegram to see your campaign collectibles.').waitFor();
+    assert.equal(await page.getByText('Awarded Chrome Flake · Season 13').count(), 0);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning portrait', { timeout: 30_000 }, async () => {
+  const { buildPfpRound } = await import('../workers/moonboys-api/shared/clan-pfp-roll.js');
+  const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
+  const browser = await chromium.launch({ executablePath, headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const community = await readFile(path.join(ROOT, 'community.html'), 'utf8');
+    const markup = community.match(/<section class="section clan-operation"[^>]*>[\s\S]*?<\/section>/)?.[0];
+    assert.ok(markup?.includes('data-pfp-download'));
+    const css = await readFile(path.join(ROOT, 'css/clan-operation.css'), 'utf8');
+    const round = await buildPfpRound('2026-11-21');
+    let latest = null;
+    let writes = 0;
+    await page.route('https://pfp.test/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/') {
+        await route.fulfill({ contentType: 'text/html', body: '<style>' + css + '</style>' + markup });
+      } else if (url.pathname.startsWith('/clan-operations/pfp/')) {
+        if (route.request().method() === 'GET') {
+          await route.fulfill({ json: { ok: true, enabled: true } });
+          return;
+        }
+        if (url.pathname.endsWith('/roll')) {
+          const body = route.request().postDataJSON();
+          assert.equal(body.telegram_auth.id, '111');
+          assert.match(body.request_id, /^[a-f0-9-]{36}$/);
+          writes++;
+          latest = { request_id: body.request_id, matched: round.pools.map(pool => pool.category), stack: round.target, xp: 50 };
+        }
+        await route.fulfill({ json: { ok: true, target: round.target, pools: round.pools, limit: 5, rolls_left: 5 - writes,
+          utc_day: today(), resets_at: nextReset(), latest, result: latest, winner: latest } });
+      } else if (url.pathname === '/data/avatar-builder-manifest.json' || url.pathname.startsWith('/img/avatar-builder/')) {
+        await route.fulfill({ path: path.join(ROOT, url.pathname.slice(1)) });
+      } else await route.abort();
+    });
+    await page.addInitScript(() => {
+      window.__pfpOwner = '111';
+      window.MOONBOYS_API = { getApiBase: () => location.origin };
+      window.MOONBOYS_IDENTITY = {
+        getTelegramId: () => window.__pfpOwner,
+        getFreshTelegramAuth: async () => ({ id: window.__pfpOwner }),
+      };
+    });
+    const boot = async () => {
+      await page.goto('https://pfp.test/');
+      await page.addScriptTag({ content: browserModule('clan-pfp-roll.js') });
+      await page.locator('[data-clan-operation]').evaluate(node => node.dataset.activeOperation = 'graffpunks');
+      await page.getByRole('button', { name: 'Paint Wall' }).waitFor();
+      await page.getByRole('button', { name: 'Daily PFP Roll' }).click();
+    };
+    await boot();
+    assert.equal(await page.locator('#clan-main-operation').isVisible(), false);
+    assert.equal(await page.locator('#clan-pfp-roll canvas').count(), 1);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByRole('button', { name: 'Randomize' }).click();
+    await page.getByText(/Full match.*50 Community XP/).waitFor();
+    assert.equal(writes, 1);
+    await page.getByText(/4 of 5 free rolls left/).waitFor();
+
+    await boot();
+    await page.getByText(/Full match.*50 Community XP/).waitFor();
+    assert.equal(writes, 1, 'refresh reads without spending another roll');
+    const downloadEvent = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download winning PNG' }).click();
+    const download = await downloadEvent;
+    const png = await readFile(await download.path());
+    assert.equal(png.readUInt32BE(16), 1000);
+    assert.equal(png.readUInt32BE(20), 1000);
+
+    await page.getByRole('button', { name: 'Paint Wall' }).click();
+    assert.equal(await page.locator('#clan-main-operation').isVisible(), true);
+    assert.equal(await page.locator('#clan-pfp-roll').isVisible(), false);
+    await page.getByRole('button', { name: 'Daily PFP Roll' }).click();
+    await page.evaluate(() => {
+      window.__pfpOwner = '';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByRole('link', { name: 'Connect Telegram' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Download winning PNG' }).isVisible(), false);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('Waterfront hides playing leaders and uses sprite details, double-click and a sourced reply bubble', { timeout: 30_000 }, async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
+      (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, hasTouch: true, reducedMotion: 'reduce' });
+    page.setDefaultTimeout(4_000);
+    const requestBodies = [];
+    const loreBodies = [];
+    const errors = [];
+    const entryActions = [];
+    const gameplayAssets = [];
+    let joinedFaction;
+    let occupied;
+    let seatLost;
+    page.on('pageerror', error => errors.push(error.message));
+    const start = '/games/block-topia/waterfront/';
+    const target = 'nomad-bears';
+    let paused;
+    const awayUntil = Math.floor(Date.now() / 1000) + 60;
+    const longReply = 'The Nomad Bears are one of the two market factions. ' + 'Their public wiki account explains how their travelling crews protect routes, trade information, and respond when the other market faction gains ground throughout the city.';
+    let releaseFirstReply;
+    const holdReply = new Promise(resolve => { releaseFirstReply = resolve; });
+    await page.clock.install();
+    await page.route('https://waterfront.test/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/js/api-config.js') return route.fulfill({
+        contentType: 'application/javascript', body: 'window.MOONBOYS_API={getApiBase:()=>location.origin}',
+      });
+      if (url.pathname === '/js/identity-gate.js') return route.fulfill({
+        contentType: 'application/javascript',
+        body: "window.MOONBOYS_IDENTITY={getTelegramId:()=>window.testOwner,getSignedTelegramAuth:()=>window.testOwner?{id:window.testOwner}:null}",
+      });
+      if (url.pathname === '/blocktopia/waterfront/seat') {
+        const { action, telegram_auth, lease_id } = route.request().postDataJSON();
+        assert.equal(telegram_auth.id, '123');
+        assert.match(lease_id, /^[0-9a-f-]{36}$/);
+        entryActions.push(action);
+        if (action === 'leave') return route.fulfill({ json: { ok: true } });
+        if (!joinedFaction) return route.fulfill({ status: 403, json: { error: 'join_faction' } });
+        if (action === 'status') return route.fulfill({ json: { ok: true, faction_id: joinedFaction, occupied } });
+        if (seatLost) return route.fulfill({ status: 409, json: { error: 'seat_lost' } });
+        return route.fulfill({ json: {
+          ok: true, faction_id: joinedFaction, expires_in: 75,
+          district: action === 'join' ? waterfrontDistrict : undefined,
+        } });
+      }
+      if (/\/(?:harbor-art|map|leader-dialog)\.js$/.test(url.pathname)) gameplayAssets.push(url.pathname);
+      if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
+        leaders: {
+          chat_enabled: true,
+          controls: {
+            questions: [{ id: 'defences', title: 'Which part of the city would you defend first?', minutes: 10 }],
+            paid: [{ id: 'hour', title: 'Pause for 1 hour', xp: 100, gems: 5 }],
+          },
+          crews: FACTIONS.map(faction_id => ({ faction_id, presence: faction_id === target && paused
+            ? { paused_until: paused, available_at: paused + 3600, talking: true }
+            : faction_id === 'graffpunks' ? { playing_until: awayUntil } : {} })),
+        },
+      } });
+      if (url.pathname === '/clan-operations/leader-lore') {
+        loreBodies.push(route.request().postDataJSON());
+        if (loreBodies.length === 1) await holdReply;
+        return route.fulfill({ json: {
+          ok: true, reply: longReply,
+          sources: [{ title: 'Crypto Moonboys', path: '/wiki/crypto-moonboys.html' }],
+        } });
+      }
+      if (url.pathname === '/clan-operations/leader-slowdown') {
+        requestBodies.push(route.request().postDataJSON());
+        paused = Math.floor(Date.now() / 1000) + 600;
+        return route.fulfill({ json: { ok: true, paused_until: paused, reply: 'Keep the supply lanes open.' } });
+      }
+      const file = path.join(ROOT, url.pathname === start ? start + 'index.html' : url.pathname);
+      return existsSync(file) ? route.fulfill({ path: file }) : route.fulfill({ status: 404 });
+    });
+    await page.goto('https://waterfront.test' + start);
+    await page.getByRole('button', { name: 'Sign in with Telegram' }).waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.deepEqual(gameplayAssets, [], 'signed-out browsers never load the game');
+    assert.deepEqual(entryActions, []);
+    await page.evaluate(() => {
+      window.testOwner = '123';
+      window.dispatchEvent(new Event('moonboys:identity-change'));
+    });
+    await page.getByRole('link', { name: 'Join a faction' }).waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.deepEqual(gameplayAssets, [], 'an unaligned account gets the faction gate');
+    occupied = true;
+    joinedFaction = target;
+    await page.evaluate(() => window.dispatchEvent(new Event('moonboys:identity-change')));
+    await page.getByText('Someone from your faction is already playing.').waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Enter Waterfront' }).isVisible(), false);
+    occupied = false;
+    await page.getByRole('button', { name: 'Check again' }).click();
+    await page.getByRole('button', { name: 'Enter Waterfront' }).click();
+    await page.locator('#map').waitFor();
+    assert.equal(await page.locator('#player-faction').textContent(), 'Your faction · The Nomad Bears');
+    await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
+    await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
+    const position = await page.evaluate(() => {
+      const hit = factionHits.find(item => item.index === 1);
+      const map = document.querySelector('#map');
+      const scroll = document.querySelector('.map-scroll');
+      const rect = map.getBoundingClientRect();
+      scroll.scrollLeft = hit.x * rect.width / mapWidth - scroll.clientWidth / 2;
+      scroll.scrollTop = (hit.y - 8) * rect.height / mapHeight - scroll.clientHeight / 2;
+      const shifted = map.getBoundingClientRect();
+      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
+    });
+    await page.mouse.click(position.x, position.y);
+    const details = page.getByRole('region', { name: 'The Nomad Bears', exact: true });
+    await details.waitFor();
+    assert.equal(await details.getByRole('link', { name: 'Faction page' }).getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await page.getByRole('dialog').count(), 0);
+    await page.mouse.dblclick(position.x, position.y);
+    const composer = page.getByRole('dialog', { name: 'Ask The Nomad Bears' });
+    await composer.getByLabel('Question').fill('Who are the Nomad Bears?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await composer.waitFor({ state: 'hidden' });
+    const bubble = page.locator('.leader-map-bubble');
+    await bubble.getByText('Checking the wiki…').waitFor();
+    releaseFirstReply();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.match(await bubble.locator('[data-speech]').innerText(), /…$/u);
+    await bubble.getByRole('button', { name: 'More info' }).click();
+    const full = page.getByRole('dialog', { name: 'The Nomad Bears · Reply' });
+    await full.getByText(longReply, { exact: true }).waitFor();
+    assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
+    await full.getByRole('button', { name: 'Close full reply' }).click();
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+
+    await details.getByRole('button', { name: 'Rival slowdowns' }).click();
+    const slowdown = page.getByRole('dialog', { name: 'The Nomad Bears', exact: true });
+    await slowdown.getByRole('button', { name: /defend first\? · 10 min/ }).click();
+    await slowdown.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
+    assert.equal(requestBodies.length, 1);
+    const [{ request_id, ...body }] = requestBodies;
+    assert.match(request_id, /^[0-9a-f-]{36}$/);
+    assert.deepEqual(body, { telegram_auth: { id: '123' }, target, option: 'defences', currency: null });
+    await page.waitForFunction(() => factionHits.find(hit => hit.index === 1)?.paused);
+    await slowdown.getByRole('button', { name: 'Close leader dialog' }).click();
+    await page.touchscreen.tap(position.x, position.y);
+    await page.touchscreen.tap(position.x, position.y);
+    await composer.getByLabel('Question').fill('Who are their rivals?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.deepEqual(loreBodies[1], {
+      telegram_auth: { id: '123' }, npc: target, question: 'Who are their rivals?', previous: ['Who are the Nomad Bears?'],
+    });
+    assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
+    await page.clock.fastForward(65_000);
+    await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
+    assert.ok(entryActions.includes('renew'), 'an active map renews its seat');
+
+    seatLost = true;
+    await page.clock.fastForward(21_000);
+    await page.getByText('Your Waterfront seat is no longer active.').waitFor();
+    assert.equal(await page.locator('#map').isVisible(), false);
+    assert.equal(await page.locator('.leader-map-bubble').isVisible(), false);
+    assert.ok(entryActions.includes('leave'));
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
 });

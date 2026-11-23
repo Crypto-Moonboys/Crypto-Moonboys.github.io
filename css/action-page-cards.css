@@ -1,14 +1,12 @@
-/* Crypto Moonboys action pages — SWARMSY-style card restore
+/* Crypto Moonboys action pages — shared angular cards
    Scope: Arcade + Battle Chamber pages only. */
 
 body.page-game,
 body.page-community {
-  --action-card-bg: rgba(0, 255, 204, 0.052);
-  --action-card-bg-strong: rgba(10, 10, 16, 0.76);
-  --action-card-border: rgba(0, 255, 204, 0.18);
-  --action-card-border-hot: rgba(0, 255, 204, 0.48);
-  --action-card-glow: 0 0 28px rgba(0, 255, 204, 0.055);
-  --action-card-shadow: 0 18px 54px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 255, 204, 0.035);
+  --action-card-bg: var(--shell-card-bg);
+  --action-card-bg-strong: var(--shell-card-deep);
+  --action-card-border: var(--shell-card-line);
+  --action-card-border-hot: var(--shell-neon-cyan);
   font-family: var(--font-sans);
 }
 
@@ -143,8 +141,7 @@ body.page-community #battle-todays-active-options,
 body.page-community #battle-missed-perks-history {
   background: var(--action-card-bg);
   border: 1px solid var(--action-card-border);
-  border-radius: 16px;
-  box-shadow: var(--action-card-glow);
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-game .category-header,
@@ -157,7 +154,7 @@ body.page-community .page-hero {
     radial-gradient(circle at 82% 0%, rgba(0, 255, 204, 0.15), transparent 30%),
     linear-gradient(135deg, rgba(8, 8, 13, 0.98) 0%, rgba(21, 0, 33, 0.92) 45%, rgba(10, 15, 13, 0.96) 100%);
   border-color: rgba(0, 255, 204, 0.24);
-  border-radius: 22px;
+  border-radius: var(--shell-card-corner);
   box-shadow: 0 0 48px rgba(0, 255, 204, 0.10), 0 22px 70px rgba(0, 0, 0, 0.34);
 }
 
@@ -235,9 +232,8 @@ body.page-community .section {
   margin: 18px clamp(20px, 3vw, 48px) 0;
   padding: 22px;
   background: var(--action-card-bg-strong);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  box-shadow: var(--action-card-shadow);
+  border: 1px solid var(--action-card-border);
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .bc-disclosure {
@@ -266,9 +262,22 @@ body.page-community .bc-disclosure > summary::after {
   color: var(--color-accent);
   background: rgba(247, 201, 72, 0.08);
   border: 1px solid rgba(247, 201, 72, 0.28);
-  border-radius: 999px;
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-mono);
   font-weight: 800;
+}
+
+body.page-community .bc-disclosure > summary:focus-visible {
+  outline: 2px solid var(--shell-neon-cyan);
+  outline-offset: -2px;
+}
+
+body.page-community .bc-disclosure:has(> #join-faction-section) {
+  --bc-section-accent: var(--shell-neon-pink);
+}
+
+body.page-community .bc-disclosure:has(#battle-active-missions) {
+  --bc-section-accent: var(--shell-neon-violet);
 }
 
 body.page-community .bc-disclosure[open] > summary::after {
@@ -279,25 +288,69 @@ body.page-community .bc-disclosure:not([open]) {
   padding-bottom: 22px;
 }
 
+body.page-community #join-faction-section {
+  scroll-margin-top: 7rem;
+}
+
+body.page-community .bc-join-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas: "content art";
+  align-items: start;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+body.page-community .bc-join-art {
+  grid-area: art;
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--shell-card-corner);
+  border: 1px solid var(--action-card-border);
+}
+
+body.page-community .bc-join-content {
+  grid-area: content;
+}
+
+body.page-community .bc-reward-vault .bc-join-layout {
+  margin-top: 0;
+}
+
+body.page-community .bc-reward-vault .bc-join-content {
+  display: grid;
+  gap: 12px;
+}
+
+body.page-community .bc-reward-vault .bc-disclosure:not([open]) {
+  padding-bottom: 0;
+}
+
+@media (max-width: 860px) {
+  body.page-community .bc-join-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "art" "content";
+  }
+}
+
 body.page-community .section h2 {
   margin: 0 0 18px;
   color: var(--color-accent);
-  background: rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-radius: 16px;
-  box-shadow: var(--action-card-glow);
+  background: var(--action-card-bg);
+  border: 1px solid var(--action-card-border);
+  border-inline-start-color: var(--bc-section-accent, var(--shell-neon-cyan));
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .bc-disclosure > summary .bc-disclosure-title {
   display: block;
   margin: 0;
   color: var(--color-accent);
-  background: rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-radius: 16px;
-  box-shadow: var(--action-card-glow);
+  background: var(--action-card-bg);
+  border: 1px solid var(--action-card-border);
+  border-inline-start-color: var(--bc-section-accent, var(--shell-neon-cyan));
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-heading);
   font-size: clamp(1.35rem, 2.7vw, 2rem);
   line-height: 1.15;
@@ -312,6 +365,11 @@ body.page-game .notice {
   gap: 12px;
 }
 
+body.page-community .bc-join-card-name {
+  color: var(--faction-accent);
+  font-weight: 800;
+}
+
 body.page-game .notice > div,
 body.page-game .roguelite-loop-content,
 body.page-game .roguelite-loop-copy,
@@ -321,14 +379,13 @@ body.page-game .article-list-item > div {
 
 body.page-game .notice strong,
 body.page-game .ali-title,
-body.page-community .bc-join-card-name,
 body.page-community .bc-perk-name,
 body.page-community .bc-frc-header,
 body.page-community .bc-weekly-leader strong,
 body.page-community .bc-faction-name,
 body.page-community .bc-missions-header,
 body.page-community .bc-reward-item strong {
-  color: #00ffcc;
+  color: var(--shell-neon-cyan);
   font-weight: 800;
 }
 
@@ -388,7 +445,7 @@ body.page-community .bc-reward-icon {
   color: var(--color-accent);
   background: rgba(247, 201, 72, 0.08);
   border: 1px solid rgba(247, 201, 72, 0.28);
-  border-radius: 14px;
+  border-radius: var(--shell-card-corner);
   box-shadow: 0 0 20px rgba(247, 201, 72, 0.06);
 }
 
@@ -406,7 +463,7 @@ body.page-game .roguelite-loop-image {
   min-width: 0;
   height: auto;
   border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
+  border-radius: var(--shell-card-corner);
   box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
 }
 
@@ -426,8 +483,7 @@ body.page-game .roguelite-branch-card,
 body.page-game .roguelite-task-card {
   background: var(--action-card-bg);
   border: 1px solid var(--action-card-border);
-  border-radius: 16px;
-  box-shadow: var(--action-card-glow);
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-game .roguelite-cycle-card,
@@ -483,8 +539,7 @@ body.page-community #tg-activity-feed .feed-item,
 body.page-community .tg-user-list > * {
   background: var(--action-card-bg);
   border: 1px solid var(--action-card-border);
-  border-radius: 16px;
-  box-shadow: var(--action-card-glow);
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .bc-faction-row {
@@ -493,13 +548,31 @@ body.page-community .bc-faction-row {
   align-items: center;
   gap: 10px 14px;
   padding: 14px 16px;
-  border-left: 3px solid var(--faction-color, #00ffcc);
+  border-left: 1px solid var(--faction-color, #00ffcc);
 }
 
 body.page-community .bc-faction-row > *,
 body.page-community .bc-weekly-row > *,
 body.page-community .bc-frc-row > * {
   min-width: 0;
+}
+
+body.page-community .bc-faction-row.bc-faction-row--with-art {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: stretch;
+}
+
+body.page-community .bc-faction-row-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+body.page-community .bc-faction-row-art {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 body.page-community .bc-faction-row--dominant {
@@ -551,10 +624,10 @@ body.page-community .bc-join-cancel-btn {
   max-width: 100%;
   min-height: 38px;
   padding: 8px 12px;
-  color: #00ffcc;
-  background: rgba(0, 255, 204, 0.08);
-  border: 1px solid rgba(0, 255, 204, 0.34);
-  border-radius: 12px;
+  color: var(--shell-neon-cyan);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--action-card-border);
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-sans);
   font-weight: 800;
   line-height: 1.25;
@@ -613,6 +686,40 @@ body.page-community #battle-missed-perks-history {
   padding: 14px 16px;
 }
 
+body.page-community .bc-reward-unlock-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+body.page-community .bc-reward-unlock {
+  padding: 10px 14px;
+  border: 1px solid var(--action-card-border);
+  border-radius: var(--shell-card-corner);
+  background: var(--action-card-bg);
+  overflow-wrap: anywhere;
+}
+
+body.page-community .bc-reward-unlock--options {
+  grid-column: 1 / -1;
+}
+
+body.page-community .bc-reward-unlock dt {
+  color: var(--color-text-muted, #a6bdcc);
+}
+
+body.page-community .bc-reward-unlock dd {
+  margin: 2px 0 0;
+  font-weight: 700;
+}
+
+body.page-community .bc-reward-unlock dd ul {
+  margin: 4px 0 0;
+  padding-inline-start: 20px;
+  font-weight: normal;
+}
+
 body.page-community .bc-weekly-row,
 body.page-community .bc-frc-row {
   display: grid;
@@ -640,7 +747,7 @@ body.page-community .bc-frc-row:last-of-type {
   grid-template-columns: minmax(0, 1fr);
   gap: 5px;
   align-items: start;
-  border-radius: 14px;
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .bc-frc-row:last-of-type strong {
@@ -659,7 +766,9 @@ body.page-community .bc-join-locked-panel {
   align-content: start;
   gap: 10px;
   padding: 18px 20px;
-  border-top: 3px solid var(--faction-color, #00ffcc);
+  --faction-accent: var(--faction-color, var(--shell-neon-cyan));
+  background: linear-gradient(var(--faction-accent), var(--faction-accent))
+    top left / 32px 1px no-repeat var(--action-card-bg);
   overflow: hidden;
 }
 
@@ -674,10 +783,11 @@ body.page-community .bc-mission-row {
   display: grid;
   gap: 6px;
   padding: 14px 16px;
+  border-inline-start-color: var(--bc-section-accent, var(--shell-neon-violet));
 }
 
 body.page-community .bc-mission-label {
-  color: #00ffcc;
+  color: var(--shell-neon-cyan);
   font-weight: 800;
 }
 
@@ -752,8 +862,7 @@ body.page-community .tg-sync-cta {
   color: var(--color-text);
   background: var(--action-card-bg-strong);
   border: 1px solid var(--action-card-border);
-  border-radius: 18px;
-  box-shadow: var(--action-card-shadow);
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .tg-sync-cta-icon {
@@ -764,7 +873,7 @@ body.page-community .tg-sync-cta-icon {
   color: var(--color-accent);
   background: rgba(247, 201, 72, 0.10);
   border: 1px solid rgba(247, 201, 72, 0.32);
-  border-radius: 14px;
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .tg-sync-cta-body {
@@ -811,7 +920,7 @@ body.page-community #tg-activity-feed .feed-icon {
   height: 28px;
   color: var(--color-accent);
   background: rgba(247, 201, 72, 0.10);
-  border-radius: 10px;
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community #tg-activity-feed .feed-text {
@@ -834,7 +943,7 @@ body.page-game .community-loading {
   color: var(--color-text-muted);
   background: rgba(0, 255, 204, 0.052);
   border: 1px solid var(--action-card-border);
-  border-radius: 16px;
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .bc-state-note,
@@ -844,7 +953,7 @@ body.page-community .bc-fallback-state {
   color: var(--color-text-muted);
   background: rgba(247, 201, 72, 0.08);
   border: 1px solid rgba(247, 201, 72, 0.22);
-  border-radius: 12px;
+  border-radius: var(--shell-card-corner);
 }
 
 body.page-community .bc-fallback-state {
@@ -863,10 +972,131 @@ body.page-community .bc-retry-btn {
   color: #00ffcc;
   background: rgba(0, 255, 204, 0.08);
   border: 1px solid rgba(0, 255, 204, 0.32);
-  border-radius: 10px;
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-heading);
   font-weight: 800;
   cursor: pointer;
+}
+
+body.page-community #battle-join-faction .bc-join-card-heading,
+body.page-community #battle-join-faction .bc-join-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.page-community #battle-join-faction .bc-join-card-icon {
+  flex: none;
+}
+
+body.page-community #battle-join-faction .bc-join-card-actions {
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+/* Keep the desktop frame independent of browser height and faction state. */
+@media (min-width: 1280px) {
+  body.page-community #join-faction-section + .bc-join-layout {
+    grid-template-rows: 580px;
+  }
+
+  body.page-community #join-faction-section + .bc-join-layout > .bc-join-art {
+    height: 100%;
+    object-fit: cover;
+  }
+
+  body.page-community #join-faction-section + .bc-join-layout > .bc-join-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  body.page-community #battle-join-faction:has(.bc-join-grid) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  body.page-community #battle-join-faction .bc-join-grid {
+    flex: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(min-content, 1fr));
+    gap: 7px;
+    margin-top: 8px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 7px 8px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--shell-card-corner);
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-icon img {
+    max-width: 24px;
+    max-height: 24px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-name,
+  body.page-community #battle-join-faction .bc-join-card-playstyle {
+    line-height: 1.2;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-name {
+    font-size: 15px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-playstyle {
+    font-size: 13px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-perk {
+    display: none;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-actions {
+    gap: 5px;
+    padding-top: 2px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-card-actions > * {
+    min-height: 27px;
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-season-notice {
+    padding: 6px 10px;
+  }
+
+  body.page-community #battle-join-faction .bc-join-season-notice p,
+  body.page-community #battle-join-faction .bc-join-intro,
+  body.page-community #faction-chambers-live {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  body.page-community #battle-join-faction .bc-join-intro,
+  body.page-community #faction-chambers-live {
+    margin-top: 5px;
+  }
+}
+
+@media (max-width: 860px) {
+  body.page-community .section:has(> #join-faction-section) {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 1180px) {
@@ -884,6 +1114,18 @@ body.page-community .bc-retry-btn {
 }
 
 @media (max-width: 720px) {
+  body.page-community .bc-reward-unlock-list {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-community .bc-faction-row.bc-faction-row--with-art {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.page-community .bc-faction-row-art {
+    order: -1;
+  }
+
   body.page-game .notice,
   body.page-game .roguelite-loop-content,
   body.page-game .article-list-item {
@@ -918,4 +1160,54 @@ body.page-community .bc-retry-btn {
     transition: none !important;
     transform: none !important;
   }
+}
+
+body.page-community .bc-more-info {
+  margin-block: .3rem .65rem;
+}
+
+body.page-community .bc-more-info > summary {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  cursor: pointer;
+  list-style: none;
+  color: var(--color-accent, #ffd779);
+}
+
+body.page-community .bc-more-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.page-community .bc-more-info > summary > [aria-hidden] {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font: bold .75rem/1 system-ui, sans-serif;
+}
+
+body.page-community .bc-more-info > summary:focus-visible {
+  outline: 2px solid currentColor;
+  border-radius: 4px;
+}
+
+body.page-community .bc-info-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+body.page-community .bc-more-info > p {
+  max-width: 58ch;
+  margin: .25rem 0 .5rem;
 }

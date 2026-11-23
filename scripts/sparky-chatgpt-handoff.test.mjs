@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const base = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => readFileSync(path.join(base,p),'utf8');
-const page = read('gpt-users.html');
+const page = read('ai-user.html');
 const wiki = read('wiki/create-your-moonboy.html');
 const guide = read('moonboy-ai-canon-guide.txt');
 const sourceIndex = JSON.parse(read('moonboy-canon-index.json'));
@@ -66,7 +66,7 @@ test('public source index contains only approved existing public sources',()=>{
   assert.match(guide,/NEW DRAFT/);
   assert.match(guide,/PUBLIC Final Fork outcome remains unresolved/i);
   assert.match(wiki,/<h1[^>]*>Create Your Moonboy<\/h1>/);
-  assert.match(wiki,/href="\/gpt-users\.html\?activity=moonboy"/);
+  assert.match(wiki,/href="\/ai-user\.html"/);
   const seen=new Set();
   for(const s of sourceIndex.sources){
     assert.ok(!seen.has(s.id),'duplicate source id '+s.id);seen.add(s.id);
@@ -98,103 +98,52 @@ test('Moonboy creator article remains a manually owned non-canon reference', () 
   assert.doesNotMatch(wiki, /data-canon-revision|data-canon-source-tier/);
 });
 
-test('catalogue has twelve clear sections and exactly the independently expected 107 routes',()=>{
-  const app=boot().SPARKY_CREATOR_APP;
-  assert.equal(app.catalog.categories.length,12);
-  assert.equal(app.all.length,107);
-  assert.equal(expected.length,107);
-  const seen=new Set();
-  const actual=app.all.map(a=>a.id);
-  assert.deepEqual([...actual].sort(),expected.map(e=>e.id).sort());
-  for(const e of expected){
-    const a=app.find(e.id);
-    assert.ok(!seen.has(e.id),'duplicate route '+e.id);seen.add(e.id);
-    assert.equal(a.title,e.title,'mismatched title for '+e.id);
-    assert.equal(a.guide,e.guide,'wrong guide for '+e.id);
-    assert.equal(fullGoalDigest(a.goal), e.goalDigest, 'full instructions changed for '+e.id);
-    assert.ok(a.goal.length>=55,'route has thin instructions '+e.id);
-    const guidePath=e.guide==='core'?'sparky-chatgpt-guide.txt':'guides/sparky/'+e.guide+'.txt';
-    assert.ok(existsSync(path.join(base,guidePath)),'missing guide for '+e.id);
-    assert.ok(read(guidePath).length>1200,'guide too thin for '+e.id);
-  }
-  for(const id of ['start','stickers','posters','walls','zines','merch','character','streetart','moonboy','grow','website','wiki','bible','site-seo'])assert.ok(seen.has(id),'missing primary route '+id);
+test('portable AI starter routes faction launches and general campaigns through the published brief', () => {
+  const starter = page.match(/<textarea id="ai-starter-text"[^>]*>([\s\S]*?)<\/textarea>/)?.[1];
+  assert.ok(starter, 'portable starter prompt missing');
+  assert.match(page, /id="copy-ai-starter"/);
+  assert.match(starter, /guides\/sparky\/creator-campaign\.md/);
+  assert.match(starter, /graffiti-kings-creative-guide\.html/);
+  assert.match(starter, /GK Moonboy or Fly Girl I own or an original character/);
+  assert.match(starter, /character and clan.*mark or mascot for each.*shock taglines/);
+  assert.match(starter, /fictional spoof posts for X.*editable wiki site files for GitHub Pages/);
+  assert.match(starter, /both links and explicitly request submission/);
+  assert.match(starter, /Never submit automatically/);
+  assert.match(starter, /general creator campaign.*exportable record/);
+  assert.match(page, /href="\/guides\/sparky\/creator-campaign\.md" download/);
+  assert.doesNotMatch(page, /id="gpt-activity-groups"|id="creator-memory-studio"|data-feature=|sparky-gpt-app\.js/);
 });
 
-test('all 107 ChatGPT prompts preserve the task without unrelated workspace instructions',()=>{
-  const app=boot().SPARKY_CREATOR_APP;
-  for(const e of expected){
-    const url=new URL(app.makeUrl(e.id));
-    assert.equal(url.origin,'https://chatgpt.com',e.id);
-    assert.equal(url.pathname,'/',e.id);
-    assert.deepEqual([...url.searchParams.keys()],['q'],e.id);
-    const prompt=url.searchParams.get('q');
-    assert.equal(prompt,app.makePrompt(e.id),'prompt and link drift: '+e.id);
-    assert.ok(prompt.startsWith(e.title+'.\n\n'),'wrong starter: '+e.id);
-    assert.ok(prompt.includes(app.find(e.id).goal),'incomplete or wrong goal in launch URL: '+e.id);
-    assert.match(prompt,/use plain language/i);
-    assert.match(prompt,/useful first draft/i);
-    assert.ok(prompt.length < 1400, 'starter is too long: '+e.id);
-    assert.ok(prompt.endsWith('\n\n' + app.contextPrompt), 'missing final creative context instruction: ' + e.id);
-    assert.equal(prompt.split(app.contextUrl).length, 2, 'context should appear exactly once: ' + e.id);
-    assert.match(app.contextPrompt, /Before creating, browse/);
-    assert.match(app.contextPrompt, /culture, voice and creative direction/);
-    assert.match(app.contextPrompt, /respecting my own identity and preferences/);
-    assert.match(app.contextPrompt, /If you cannot read it, say so and ask me to paste the page text/);
-    assert.doesNotMatch(prompt,/SWARMSY|AnythingLLM|workspace|PUBLIC INSTRUCTIONS|portable project record|Act as SPARKY/i,e.id);
-    if(e.id==='moonboy'){
-      assert.match(app.find(e.id).goal, /verified NFT image/);
-      assert.match(app.find(e.id).goal, /never invent traits, rights, faction or official approval/i);
-      assert.match(prompt,/moonboy-ai-canon-guide\.txt/);
-      assert.match(prompt,/moonboy-canon-index\.json/);
-      assert.match(prompt,/ask me to supply the relevant source text/i);
-    } else {
-      assert.doesNotMatch(prompt.replace(app.contextPrompt, ''),/cryptomoonboys\.com|canon claims|published canon|NFT ownership/i,e.id);
-    }
-    assert.doesNotMatch(prompt,/sparky-chatgpt-guide\.txt|guides\/sparky\//,e.id);
-  }
+test('campaign brief has both routes, original mascot continuity, real proof and canon gates', () => {
+  const brief = read('guides/sparky/creator-campaign.md');
+  assert.match(brief, /A\. Build with a GK character/);
+  assert.match(brief, /B\. Bring their own character or IP/);
+  assert.match(brief, /HODL Warriors, the united army/);
+  assert.match(brief, /GitHub Pages wiki together in the \[GKniftyHEADS Telegram group\]/);
+  assert.match(brief, /faction page and lead-character profile on the main Moonboys Wiki/);
+  assert.match(brief, /Do not change the mascot between formats/);
+  assert.match(brief, /permissioned offline action/);
+  assert.match(brief, /online echo/);
+  assert.match(brief, /project files or handoff/);
+  assert.match(brief, /pending community review/);
+  assert.match(brief, /political Forty/);
+  assert.match(brief, /Do not claim background posting, scheduled check-ins/);
+  assert.doesNotMatch(brief, /brand-canon\/story-bibles|final-fork-ending/i);
+  assert.match(page, /<link rel="canonical" href="https:\/\/cryptomoonboys\.com\/ai-user\.html">/);
+  assert.match(page, /href="\/wiki\/crypto-moonboys\.html"/);
 });
 
-test('website prompt asks for website deliverables without unrelated art or Moonboy rules',()=>{
-  const app = boot().SPARKY_CREATOR_APP;
-  const prompt = app.makePrompt('website').replace(app.contextPrompt, '');
-  assert.match(prompt,/one-page website/);
-  assert.match(prompt,/responsive design, usable files, preview and step-by-step hosting/);
-  assert.doesNotMatch(prompt,/street art|authorised locations|Moonboy|NFT|proof|record|licences/i);
-});
-
-test('no-JavaScript starter links and preview match the generated default prompt',()=>{
-  const app = boot().SPARKY_CREATOR_APP;
-  const links = [...page.matchAll(/href="(https:\/\/chatgpt\.com\/\?q=[^"]+)"/g)];
-  assert.equal(links.length,2);
-  for (const [,href] of links) assert.equal(new URL(href).searchParams.get('q'),app.makePrompt('start'));
-  const preview = page.match(/<textarea id="gpt-prompt-preview"[^>]*>([^<]+)<\/textarea>/)?.[1];
-  assert.equal(preview, app.makePrompt('start'));
-});
-
-test('shared creative brief is readable public HTML with valid public sources', () => {
-  const app = boot().SPARKY_CREATOR_APP;
-  assert.equal(app.contextUrl, 'https://cryptomoonboys.com/graffiti-kings-creative-guide.html');
-  const brief = read(new URL(app.contextUrl).pathname.slice(1));
-  const staticHTML = brief.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
-  assert.match(staticHTML, /data-page-kind="public-creative-brief"/);
-  assert.match(staticHTML, /<meta name="robots" content="index, follow">/);
-  assert.ok(staticHTML.includes('<link rel="canonical" href="' + app.contextUrl + '">'));
-  assert.match(staticHTML, /more than forty years of street culture/);
-  assert.match(staticHTML, /Two ways in\. Both count/);
-  assert.match(staticHTML, /The voice: conviction, wit and something to say/);
-  assert.match(staticHTML, /Stories with teeth, people with lives/);
-  assert.match(staticHTML, /new illustrative drafts, not official slogans or lore/);
-  assert.equal((staticHTML.match(/<h3>/g) || []).length, 12, 'all activity sections have creative direction');
-  assert.deepEqual([...staticHTML.matchAll(/<h3>([^<]+)<\/h3>/g)].map(match=>match[1]), Array.from(app.catalog.categories, category=>category.title));
-  assert.doesNotMatch(staticHTML, /story-bibles|reconciliation-decisions|issue-1458-proposals|w81-continuity-companion/);
-  for (const [, href] of staticHTML.matchAll(/href="(\/[^"#?]+)(?:[?#][^"]*)?"/g)) {
+test('shared creative guide is publicly linked and culturally grounded', () => {
+  const brief = read('graffiti-kings-creative-guide.html');
+  assert.match(brief, /data-page-kind="public-creative-brief"/);
+  assert.match(brief, /The voice: conviction, wit and something to say/);
+  assert.match(brief, /Stories with teeth, people with lives/);
+  assert.match(brief, /new illustrative drafts, not official slogans or lore/);
+  assert.doesNotMatch(brief, /story-bibles|reconciliation-decisions|issue-1458-proposals|w81-continuity-companion/);
+  for (const [, href] of brief.matchAll(/href="(\/[^"#?]+)(?:[?#][^"]*)?"/g)) {
     assert.ok(existsSync(path.join(base, href)), 'missing public resource ' + href);
   }
-  assert.match(page, /href="\/graffiti-kings-creative-guide\.html"/);
-  const workflow = read('.github/workflows/sparky-chatgpt-handoff.yml');
-  assert.match(workflow, /- 'graffiti-kings-creative-guide\.html'/, 'brief-only changes must trigger prompt and artifact validation');
 });
-
 test('creative context offers shock without requiring a new identity or claiming a live swarm', () => {
   const brief = read('graffiti-kings-creative-guide.html');
   const section = id => {
@@ -225,84 +174,14 @@ test('creative context offers shock without requiring a new identity or claiming
   }
 });
 
-test('interactive page selects exactly one activity, supports deep-link, search and copy fallback',async()=>{
-  const {w,nodes,features,findButtons}=ui('?activity=moonboy');
-  assert.equal(nodes['gpt-choice'].textContent,'Selected: Build a Moonboy or PFP');
-  assert.ok(nodes['gpt-open-link'].href.includes('chatgpt.com/?q='));
-  assert.equal(findButtons().length,107);
-  for(const e of expected){
-    const button=findButtons().find(b=>b.getAttribute('data-activity')===e.id);
-    assert.ok(button,'missing DOM button: '+e.id);
-    assert.ok(button.listeners.click,'route not clickable: '+e.id);
-    button.listeners.click();
-    const selected=findButtons().filter(b=>b.getAttribute('aria-pressed')==='true');
-    assert.equal(selected.length,1,'multiple pressed: '+e.id);
-    assert.equal(selected[0].getAttribute('data-activity'),e.id);
-    assert.equal(nodes['gpt-choice'].textContent,'Selected: '+e.title);
-    const query=new URL(nodes['gpt-open-link'].href).searchParams.get('q');
-    assert.equal(nodes['gpt-prompt-preview'].value,query,'copy/URL mismatch: '+e.id);
-    assert.ok(query.includes(w.SPARKY_CREATOR_APP.find(e.id).goal),'starter goal matches intended text: '+e.id);
-    assert.ok(query.startsWith(e.title+'.\n\n'));
-    assert.equal(nodes['gpt-guide-link'].href,w.SPARKY_CREATOR_APP.guideFor(e.guide),'optional guide matches activity: '+e.id);
-  }
-  nodes['gpt-search'].value='wiki';
-  nodes['gpt-search'].listeners.input();
-  assert.ok(findButtons().length>0&&findButtons().length<107);
-  assert.match(nodes['gpt-search-count'].textContent,/matching your search/);
-  const quick=features.find(x=>x.getAttribute('data-feature')==='website');
-  quick.listeners.click();
-  assert.equal(nodes['gpt-choice'].textContent,'Selected: Build my first website');
-  assert.equal(findButtons().length,107);
-  let written='';
-  w.navigator.clipboard.writeText=async text=>{written=text;};
-  await nodes['gpt-copy-prompt'].listeners.click();
-  assert.equal(written,nodes['gpt-prompt-preview'].value);
-  w.navigator.clipboard.writeText=async()=>{throw Error('denied');};
-  await nodes['gpt-copy-prompt'].listeners.click();
-  assert.equal(nodes['gpt-prompt-details'].open,true);
-  assert.equal(nodes['gpt-prompt-preview'].selected,true);
-  assert.match(nodes['gpt-copy-status'].textContent,/Copy the highlighted message/);
-});
 
-test('all twelve section headings switch the open section and scroll without choosing an activity',()=>{
-  const {nodes}=ui();
-  const sections=nodes['gpt-activity-groups'].children;
-  assert.equal(sections.length,12);
-  const starter=nodes['gpt-choice'].textContent;
-  for (const section of sections) {
-    const heading=section.children[0];
-    if (section.open) heading.listeners.click({preventDefault(){}});
-    heading.listeners.click({preventDefault(){}});
-    assert.equal(sections.filter(group=>group.open).length,1);
-    assert.equal(section.open,true);
-    assert.equal(section.scrolled,true);
-    assert.equal(heading.focused,true);
-    assert.equal(nodes['gpt-choice'].textContent,starter,'section selection must not choose an arbitrary activity');
-  }
-  sections.at(-1).children[0].listeners.click({preventDefault(){}});
-  assert.equal(sections.filter(group=>group.open).length,0,'active section remains collapsible');
-});
-
-test('optional ChatGPT reference does not require a separate app or workspace',()=>{
-  const reference = read('sparky-chatgpt-guide.txt');
-  assert.match(reference,/optional reference/i);
-  assert.match(reference,/do not require reading this guide first/i);
-  assert.doesNotMatch(reference,/SWARMSY|AnythingLLM|approved-truth|workspace/i);
-});
-
-test('HTML links to the actual dynamic application without hidden promises',()=>{
-  assert.match(page,/id="gpt-search"/);
-  assert.match(page,/id="gpt-activity-groups"/);
-  assert.match(page,/data-feature="wiki"/);
-  assert.match(page,/data-feature="website"/);
-  assert.match(page,/data-feature="moonboy"/);
-  assert.match(page,/id="gpt-guide-link" href="\/sparky-chatgpt-guide\.txt"/,'no-JavaScript default guide must exist');
-  assert.doesNotMatch(page,/href="\/guides\/sparky\/core\.txt"/,'missing static guide should never be linked');
-  for (const file of ['sparky-creator-activities', 'creator-memory', 'creator-memory-studio', 'sparky-gpt-app']) {
-    const digest = createHash('sha256').update(read('js/' + file + '.js')).digest('hex').slice(0, 12);
-    assert.ok(page.includes('<script data-cfasync="false" src="/js/' + file + '.js?v=' + digest + '"></script>'),
-      file + ': load directly with a version matching the current file contents');
-  }
-  assert.match(page,/swarm/i);
-  assert.match(page,/href="\/moonboy-ai-canon-guide\.txt">Moonboy public canon guide<\/a>/);
+test('SWARMSY continuity CTA points to the published brief, not the retired editor', () => {
+  const appPage = read('swarmsy.html');
+  const continuity = read('docs/portable-creator-memory.md');
+  assert.match(appPage, /href="\/guides\/sparky\/creator-campaign\.md" class="swarmsy-action-card"/);
+  assert.match(appPage, /Read the SPARKY campaign brief/);
+  assert.doesNotMatch(appPage, /#creator-memory-studio|SAVE YOUR PROJECT MEMORY|Export or import a portable project JSON file in the public Studio/);
+  assert.match(continuity, /website no longer contains a browser memory editor or JSON import\/export buttons/);
+  assert.match(continuity, /save those files and bring them back/i);
+  assert.match(continuity, /existing JSON record can attach it to another AI service/);
 });

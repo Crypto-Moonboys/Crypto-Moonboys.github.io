@@ -1,3 +1,4 @@
+import { runCareShadowTick } from './pets/care-shadow.js';
 import baseWorker from './worker.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { applyPetRuntimeCommandAward } from './worker.js';
@@ -524,6 +525,9 @@ export default {
 
   async scheduled(event, env, ctx) {
     const tasks = phase5CronTasks(event, env);
+    if (event?.cron === "*/30 * * * *") {
+      ctx.waitUntil(runCareShadowTick(event, env));
+    }
     // Do not run cleanup on every unrelated cron. The 5-minute base tick
     // remains untouched for timed events; GPS cleanup runs every 10 minutes
     // (falls back to every 5 if scheduledTime is unavailable).

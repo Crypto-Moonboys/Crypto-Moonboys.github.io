@@ -14,6 +14,7 @@ import {
   absentStubPage,
   articleContentHash,
   articleMarkupHash,
+  gitBlobOid,
   hasLegacyUnmarkedArticleContent,
 } from './generate-wiki-content-state.mjs';
 import {
@@ -420,6 +421,54 @@ try {
   if (priorGithubBaseSha === undefined) delete process.env.GITHUB_BASE_SHA;
   else process.env.GITHUB_BASE_SHA = priorGithubBaseSha;
   fs.rmSync(multiCommitRoot, { recursive: true, force: true });
+}
+
+// The manifest in the parent commit describes older prose than its own HTML.
+const staleRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-stale-inventory-'));
+try {
+  const slug = 'protected-article';
+  const sourcePath = path.join(staleRoot, 'wiki', `${slug}.html`);
+  const manifestPath = path.join(staleRoot, 'brand-canon', 'wiki-content-state.json');
+  const oldHtml = '<article><p>Old record.</p></article>';
+  const baseHtml = '<article><p>Already published.</p></article>';
+  function record(html) {
+    return {
+      summary: { total_pages_audited: 1 },
+      pages: [makePage(slug, {
+        legacy_unmarked_content: true,
+        article_content_hash: articleContentHash(html),
+        article_markup_hash: articleMarkupHash(html),
+        git_blob_oid: gitBlobOid(Buffer.from(html)),
+      })],
+    };
+  }
+  fs.mkdirSync(path.dirname(sourcePath));
+  fs.mkdirSync(path.dirname(manifestPath));
+  fs.writeFileSync(sourcePath, baseHtml);
+  fs.writeFileSync(manifestPath, JSON.stringify(record(oldHtml)));
+  git(staleRoot, ['init', '--quiet']);
+  git(staleRoot, ['add', '.']);
+  git(staleRoot, ['-c', 'user.name=CI Test', '-c', 'user.email=ci@example.invalid',
+    'commit', '--quiet', '--no-gpg-sign', '-m', 'base with stale inventory']);
+  process.env.BASE_SHA = git(staleRoot, ['rev-parse', 'HEAD']);
+
+  function auditHtml(html) {
+    const currentState = record(html);
+    fs.writeFileSync(sourcePath, html);
+    fs.writeFileSync(manifestPath, JSON.stringify(currentState));
+    return runContentOwnershipAudit({ rootDir: staleRoot, currentState, canonProseChangeApproved: false });
+  }
+  const unchanged = auditHtml(baseHtml);
+  assert.deepEqual(unchanged.failures, []);
+  assert.ok(unchanged.warnings.some(warning => warning.includes('stale baseline inventory')));
+  for (const html of [oldHtml, '<article><p>New edit.</p></article>', baseHtml.replace('<p>', '<p hidden>')]) {
+    assert.ok(auditHtml(html).failures.some(failure => failure.includes('Protected article prose changed')));
+  }
+  console.log('PASS stale Git inventory permits a refresh while rejecting new prose, hidden markup and reversions');
+} finally {
+  if (priorBaseSha === undefined) delete process.env.BASE_SHA;
+  else process.env.BASE_SHA = priorBaseSha;
+  fs.rmSync(staleRoot, { recursive: true, force: true });
 }
 
 const nearDuplicatePage = makePage('near-duplicate-report', {

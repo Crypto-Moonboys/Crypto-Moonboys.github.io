@@ -1,14 +1,20 @@
 import { clearOptionalStack, defaultStack, indexManifest } from './avatar-builder-core.mjs';
 import { createHomepagePresetCycle } from './avatar-builder-homepage-presets.mjs';
+import { downloadPortraitPng, loadAvatarImage, paintAvatarLayers } from './avatar-portrait.mjs';
 import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgrounds/registry.js';
 
 const PAGE_SIZE = 24;
-const ICONS_URL = '/img/avatar-builder/category-icons.svg';
+const categoryIcons = {
+  background: 'art', body: 'contributor', tattoos: 'graffiti', clothes: 'armor',
+  chains: 'chain', face: 'masks', hat: 'rank', 'left-arm': 'fist-shield', 'right-arm': 'fist-shield'
+};
 const host = document.querySelector('.avatar-builder-host');
 const isHomepage = host?.dataset.builderContext === 'homepage';
 const HOMEPAGE_INTRO_IMAGE = isHomepage ? (host?.dataset.introImage ?? null) : null;
 
 if (!host) throw new Error('Avatar builder host was not found.');
+
+const loreLink = host.querySelector('.builder-lore-link');
 
 host.innerHTML = `
   <div class="builder-shell">
@@ -52,6 +58,8 @@ host.innerHTML = `
   </div>
   <p class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></p>`;
 
+if (loreLink) host.querySelector('.selection-panel').appendChild(loreLink);
+
 const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
 let nextPreset = null;
 let layerRenderGeneration = 0;
@@ -82,7 +90,7 @@ const elements = {
 };
 
 function icon(categoryId, className = '') {
-  return `<svg class="${className}" aria-hidden="true" viewBox="0 0 48 48"><use href="${ICONS_URL}#${categoryId}"></use></svg>`;
+  return `<span class="builder-category-icon ${className}" data-site-icon="${categoryIcons[categoryId] || 'art'}" aria-hidden="true"></span>`;
 }
 
 function announce(message) {
@@ -95,15 +103,6 @@ function dismissHomepageIntro() {
   elements.homepageIntro.remove();
   elements.homepageIntro = null;
   elements.downloadPng.disabled = false;
-}
-
-function loadExportImage(trait) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`${trait.name} could not be loaded for export.`));
-    image.src = trait.layer;
-  });
 }
 
 function exportFilename(date = new Date()) {
@@ -140,33 +139,12 @@ async function downloadAvatarPng() {
     }
     const images = new Map(await Promise.all(snapshot
       .filter((trait) => !isAnimatedBackground(trait))
-      .map(async (trait) => [trait.id, await loadExportImage(trait)])));
+      .map(async (trait) => [trait.id, await loadAvatarImage(trait)])));
     const canvas = document.createElement('canvas');
     canvas.width = 1000;
     canvas.height = 1000;
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('PNG export is not supported by this browser.');
-    snapshot.forEach((trait) => {
-      if (isAnimatedBackground(trait)) {
-        context.drawImage(animatedFrame, 0, 0, 1000, 1000);
-      } else {
-        context.drawImage(images.get(trait.id), 0, 0, 1000, 1000);
-      }
-    });
-    const blob = await new Promise((resolve, reject) => {
-      canvas.toBlob((result) => {
-        if (result) resolve(result);
-        else reject(new Error('The browser could not create the PNG.'));
-      }, 'image/png');
-    });
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = exportFilename();
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    paintAvatarLayers(canvas, snapshot.map(trait => isAnimatedBackground(trait) ? animatedFrame : images.get(trait.id)));
+    await downloadPortraitPng(canvas, exportFilename());
     announce('Avatar PNG download ready.');
   } catch (error) {
     announce(error instanceof Error ? error.message : 'Avatar PNG could not be downloaded.');

@@ -1,3 +1,35 @@
+export const COMMUNITY_SEASON_DAYS = 90;
+
+const DAY_MS = 86_400_000;
+
+export async function rollCommunitySeason(db, now) {
+  const provisionThrough = new Date(+now + DAY_MS).toISOString();
+
+  // Each write selects the latest scheduled season inside the same statement.
+  // Concurrent ticks see the successor and cannot create a second one.
+  for (let attempted = 0; attempted < 8; attempted++) {
+    const result = await db.prepare(`
+      WITH latest AS (
+        SELECT start_date, end_date, is_active
+        FROM telegram_seasons ORDER BY julianday(start_date) DESC, id DESC LIMIT 1
+      )
+      INSERT INTO telegram_seasons (id, name, start_date, end_date, is_active)
+      SELECT next_id, 'Season ' || next_id,
+        strftime('%Y-%m-%dT%H:%M:%fZ', end_date),
+        strftime('%Y-%m-%dT%H:%M:%fZ', end_date, ?), 1
+      FROM latest CROSS JOIN (SELECT MAX(id) + 1 AS next_id FROM telegram_seasons)
+      WHERE is_active = 1
+        AND julianday(end_date) > julianday(start_date)
+        AND julianday(end_date) <= julianday(?)
+    `).bind('+' + COMMUNITY_SEASON_DAYS + ' days', provisionThrough).run();
+    const changes = result.meta?.changes ?? result.changes;
+    if (!result.success || ![0, 1].includes(changes)) {
+      throw new Error('community_season_rollover_failed');
+    }
+    if (changes === 0) break;
+  }
+}
+
 function readRows(result) {
   if (result?.success === false || !Array.isArray(result?.results)) {
     throw new Error('community_season_unavailable');

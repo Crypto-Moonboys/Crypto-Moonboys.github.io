@@ -15,6 +15,19 @@
     'crypto-stoned-boys',
   ]);
 
+  var FACTION_ICON_SRC = Object.freeze({
+    'hard-fork-rockers': '/art/Hard%20Fork%20Rockers%20ICON%201.png',
+    'rugpull-miners': '/art/RUGPULL%20MINER%20ICON%201.png',
+    'graffpunks': '/art/GRAFFPUNKS%20ICON%201%20CRYPTO%20MOONBOYS.png',
+    'blockchain-furies': '/art/THE%20BLOCKCHAIN%20FURIES%20%2810%29.png',
+    'crypto-moongirls': '/art/CRYPTO%20MOONGIRLS%20ICON%201.png',
+    'blockstars': '/art/The%20Blockstars%20ICON%201.png',
+    'all-city-bulls': '/art/ALLCITY%20BULLS%20CRYPTO%20MOONBOYS.png',
+    'nomad-bears': '/art/THE%20NOMAD%20BEARS%20ICON%201.png',
+    'crypto-stoned-boys': '/art/CRYPTO%20STINEDBOYS%20ICON%201.png',
+  });
+  var factionIconImages = new Map();
+
   var FACTIONS = {
     'hard-fork-rockers': { key: 'hard-fork-rockers', label: 'Hard Fork Rockers', icon: '🪨', color: '#56dcff', bonus: '+endurance stability and streak protection' },
     'rugpull-miners': { key: 'rugpull-miners', label: 'Rugpull Miners', icon: '⛏️', color: '#ff6ad5', bonus: '+defensive recovery and shield support' },
@@ -163,6 +176,7 @@
       faction: faction,
       faction_xp: Number(data.faction_xp) || 0,
       season_key: data.season_key || null,
+      can_choose_faction: data.can_choose_faction === true,
       bonuses: {
         icon: bonuses.icon || FACTIONS[faction].icon,
         color: bonuses.color || FACTIONS[faction].color,
@@ -194,6 +208,7 @@
       season_key: data.season_key || null,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms: cooldownMs,
+      can_choose_faction: false,
       cooldown_ms_remaining: 0,
     };
     setCachedStatus(payload);
@@ -216,6 +231,7 @@
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp_total) || 0,
       season_key: data.season_key || (priorStatus && priorStatus.season_key) || null,
+      can_choose_faction: priorStatus?.can_choose_faction === true && priorStatus.faction === normalizeFaction(data.faction),
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms_remaining: 0,
     };
@@ -237,6 +253,44 @@
     return FACTIONS[key] || FACTIONS.unaligned;
   }
 
+  function iconSrc(faction) {
+    var key = normalizeFaction(faction);
+    return FACTION_ICON_SRC[key] || '';
+  }
+
+  function renderIcon(faction, size) {
+    var key = normalizeFaction(faction);
+    var src = FACTION_ICON_SRC[key];
+    var pixels = Number.isInteger(size) && size > 0 ? size : 20;
+    return src
+      ? '<img class="faction-identity-icon" src="' + src + '" srcset="/art/responsive/faction-' + key +
+        '-128.png 128w, ' + src + ' 350w" sizes="' + pixels + 'px" alt="" width="' + pixels +
+        '" height="' + pixels + '" style="width:' + pixels + 'px;height:' + pixels +
+        'px;object-fit:contain;vertical-align:middle;flex:none" decoding="async"> '
+      : '';
+  }
+
+  function getIconImage(faction) {
+    var src = iconSrc(faction);
+    if (!src) return null;
+    if (!factionIconImages.has(src)) {
+      var image = new Image();
+      image.src = src;
+      factionIconImages.set(src, image);
+    }
+    return factionIconImages.get(src);
+  }
+
+  // Canvas banners use centered text with an alphabetic baseline.
+  function drawBannerText(ctx, text, x, y, image, size) {
+    if (image && image.complete && image.naturalWidth) {
+      var gap = 4;
+      ctx.drawImage(image, x - (ctx.measureText(text).width + size + gap) / 2, y - size + 3, size, size);
+      x += (size + gap) / 2;
+    }
+    ctx.fillText(text, x, y);
+  }
+
   function renderPlayerCard(status, opts) {
     var s = status || getCachedStatus() || { faction: 'unaligned', faction_xp: 0, bonuses: FACTIONS.unaligned };
     var faction = getVisualMeta(s.faction);
@@ -254,7 +308,7 @@
     return '' +
       '<div class="faction-player-card interactive ' + glowClass + (linked ? ' player-online' : ' player-offline') + '" style="--faction-color:' + esc(faction.color) + '">' +
         '<div class="faction-player-title">Player Alignment</div>' +
-        '<div class="faction-player-row"><span>Faction:</span><strong>' + (unaligned ? 'No faction selected yet' : esc(faction.icon + ' ' + faction.label)) + '</strong></div>' +
+        '<div class="faction-player-row"><span>Faction:</span><strong>' + (unaligned ? 'No faction selected yet' : renderIcon(faction.key) + esc(faction.label)) + '</strong></div>' +
         (unaligned ? '' : '<div class="faction-player-row"><span>Faction XP:</span><strong>' + (Number(s.faction_xp) || 0) + '</strong></div>') +
         '<div class="faction-player-row"><span>Bonus:</span><strong>' + esc((s.bonuses && s.bonuses.bonus) || faction.bonus) + '</strong></div>' +
         joinPrompt + actions +
@@ -264,6 +318,9 @@
   window.MOONBOYS_FACTION = {
     normalizeFaction: normalizeFaction,
     getVisualMeta: getVisualMeta,
+    renderIcon: renderIcon,
+    getIconImage: getIconImage,
+    drawBannerText: drawBannerText,
     getCachedStatus: getCachedStatus,
     clearCachedStatus: clearCachedStatus,
     loadStatus: loadStatus,

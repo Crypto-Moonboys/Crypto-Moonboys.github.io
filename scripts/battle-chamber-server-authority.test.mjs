@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { COMMUNITY_SEASON_DAYS } from '../workers/moonboys-api/community-season-authority.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -99,7 +100,13 @@ check(eventRouteBlock.includes('buildBattleEventText('), 'event route generates 
 console.log('\n[4] Period helper checks (daily/weekly/monthly/seasonal)');
 check(workerJs.includes('getBattleChamberPeriodKey'), 'worker defines period helper for daily/weekly/monthly');
 check(workerJs.includes('getBattleSeasonKey'), 'worker defines seasonal helper');
-check(workerJs.includes('BATTLE_CHAMBER_DAYS_PER_SEASON = 90'), 'worker includes deterministic 90-day season fallback');
+const seasonFallbackBlock = getRouteBlock(workerJs, 'function getBattleSeasonFallbackKey(', 'async function getBattleSeasonKey(');
+check(
+  COMMUNITY_SEASON_DAYS === 90 &&
+    /import \{[^}]*\bCOMMUNITY_SEASON_DAYS\b[^}]*\} from '\.\/community-season-authority\.js';/.test(workerJs) &&
+    seasonFallbackBlock.includes('const seasonLengthMs = COMMUNITY_SEASON_DAYS * 24 * 60 * 60 * 1000;'),
+  'worker uses the shared 90-day duration for the season fallback'
+);
 check(workerJs.includes('getBattlePeriodKey(periodType, db'), 'worker has async period key helper including seasonal');
 const cloutUpdateBlock = getRouteBlock(workerJs, 'async function applyBattleChamberCloutUpdate', 'async function _updateMissionStreak');
 check(cloutUpdateBlock.includes('if (safeDelta <= 0) return periodKeys;'), 'zero-delta updates short-circuit before member/faction writes');

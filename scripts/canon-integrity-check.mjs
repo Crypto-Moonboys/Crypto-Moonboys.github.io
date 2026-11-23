@@ -39,6 +39,33 @@ export function narrativeParagraphs(html) {
   return paragraphs;
 }
 
+export function legacyReviewedStoryPages(treeOutput) {
+  return treeOutput.split(/\r?\n/u)
+    .filter(filename => /^wiki\/[a-z0-9][a-z0-9-]*\.html$/u.test(filename));
+}
+
+export function reviewedStoryPullRequest(source = '') {
+  return /\bPR\s*#?(\d+)\b/iu.exec(source)?.[1] || null;
+}
+
+function resolveReviewedStoryBaseline(root, receipt) {
+  try {
+    execFileSync('git', ['cat-file', '-e', `${receipt.commit}^{commit}`], { cwd: root, stdio: 'ignore' });
+    return receipt.commit;
+  } catch {
+    const pullRequest = reviewedStoryPullRequest(receipt.source);
+    if (!pullRequest) return receipt.commit;
+    try {
+      const merged = execFileSync('git',
+        ['log', '--all', '--format=%H', '--fixed-strings', `--grep=(#${pullRequest})`, '-1'],
+        { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+      return merged || receipt.commit;
+    } catch {
+      return receipt.commit;
+    }
+  }
+}
+
 // A prose-approval label alone cannot authorise silently losing a scene or its
 // consequence. Revisions must identify the exact old and replacement evidence.
 export function checkNarrativePreservation(beforeHtml, afterHtml, decisions, filename) {
@@ -226,21 +253,54 @@ export function run(root = ROOT) {
     'sitemap.xml', 'sam-memory.json', 'about/w81-condensed-canon-digest.md', 'about/latest-canon-and-brand-vision.md']) {
     failures.push(...checkPublicDisclosure(fs.readFileSync(path.join(root, filename), 'utf8'), filename));
   }
-  const baselines = new Set([base, ...(locks.reviewed_story_baselines || []).map(b => b.commit)].filter(Boolean));
-  for (const baseline of baselines) {
+  const baselineReceipts = [...(base ? [{ commit: base }] : []), ...(locks.reviewed_story_baselines || [])];
+  const resolvedBaselines = new Set();
+  for (const receipt of baselineReceipts) {
+    const baseline = resolveReviewedStoryBaseline(root, receipt);
+    if (resolvedBaselines.has(baseline)) continue;
+    resolvedBaselines.add(baseline);
+    let pages, legacyBaseline = false, rawManifest;
     try {
-      const manifest = JSON.parse(execFileSync('git', ['show', `${baseline}:brand-canon/wiki-content-state.json`], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] }));
-      for (const page of manifest.pages) {
-        if (!page.page_exists || page.nft_template_generated_page || page.page_type === 'nft_specialist'
-          || !(page.first_witness_page || page.likely_lore_page || page.canonical_content_block_count)) continue;
-        const filename = page.path;
-        if (!/^wiki\/[a-z0-9][a-z0-9-]*\.html$/u.test(filename)) { failures.push('Invalid preservation page path'); continue; }
-        const currentPath = path.join(root, filename);
-        if (!fs.existsSync(currentPath)) { failures.push(`${filename}: reviewed narrative page removed`); continue; }
-        const before = execFileSync('git', ['show', `${baseline}:${filename}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
-        failures.push(...checkNarrativePreservation(before, fs.readFileSync(currentPath, 'utf8'), decisions, filename));
+      rawManifest = execFileSync('git', ['show', `${baseline}:brand-canon/wiki-content-state.json`],
+        { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (manifestError) {
+      try {
+        const tree = execFileSync('git', ['ls-tree', '-r', '--name-only', baseline, '--', 'wiki'],
+          { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+        pages = legacyReviewedStoryPages(tree).map(filename => ({ path: filename }));
+        legacyBaseline = true;
+      } catch (treeError) {
+        failures.push(`Reviewed-story baseline unavailable or invalid: ${baseline}: ${manifestError.message}; ${treeError.message}`);
+        continue;
       }
-    } catch (error) { failures.push(`Reviewed-story baseline unavailable or invalid: ${baseline}: ${error.message}`); }
+    }
+    if (!legacyBaseline) {
+      try {
+        pages = JSON.parse(rawManifest).pages;
+        if (!Array.isArray(pages)) throw new Error('baseline manifest pages are unavailable');
+      } catch (error) {
+        failures.push(`Reviewed-story baseline manifest is invalid: ${baseline}: ${error.message}`);
+        continue;
+      }
+    }
+    for (const page of pages) {
+      if (!legacyBaseline && (!page.page_exists || page.nft_template_generated_page || page.page_type === 'nft_specialist'
+        || !(page.first_witness_page || page.likely_lore_page || page.canonical_content_block_count))) continue;
+      const filename = page.path;
+      if (!/^wiki\/[a-z0-9][a-z0-9-]*\.html$/u.test(filename)) { failures.push('Invalid preservation page path'); continue; }
+      let before;
+      try {
+        before = execFileSync('git', ['show', `${baseline}:${filename}`],
+          { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+      } catch (error) {
+        failures.push(`Reviewed-story page unavailable at baseline: ${baseline}:${filename}: ${error.message}`);
+        continue;
+      }
+      if (legacyBaseline && narrativeParagraphs(before).size === 0) continue;
+      const currentPath = path.join(root, filename);
+      if (!fs.existsSync(currentPath)) { failures.push(`${filename}: reviewed narrative page removed`); continue; }
+      failures.push(...checkNarrativePreservation(before, fs.readFileSync(currentPath, 'utf8'), decisions, filename));
+    }
   }
   for (const d of decisions.decisions) for (const filename of d.affected_paths) {
     if (!fs.existsSync(path.join(root, filename))) failures.push(`Decision ${d.id}: missing dependency ${filename}`);

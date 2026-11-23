@@ -18,7 +18,7 @@
  */
 
 const APPROVED_ROOT_PAGES = [
-  { path: '/gpt-users.html', title: 'SPARKY Creator Studio', changefreq: 'weekly', priority: '0.9' },
+  { path: '/ai-user.html', title: 'SPARKY Creator Studio', changefreq: 'weekly', priority: '0.9' },
   { path: '/join-us-on-the-wax-blockchain.html', title: 'Join us on the WAX blockchain', changefreq: 'weekly', priority: '0.9' },
   { path: '/moonboy-builder.html', title: 'Moonboy Builder', changefreq: 'monthly', priority: '0.8' },
   { path: '/swarmsy.html', title: 'SWARMSY PC Beta', changefreq: 'monthly', priority: '0.7' },

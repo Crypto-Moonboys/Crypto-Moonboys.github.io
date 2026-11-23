@@ -151,9 +151,9 @@ function factionBadge(row) {
     ? api.getVisualMeta(key)
     : null;
   var safeLabel = escHtml((meta && meta.label) || toTitleCase(key));
-  var safeIcon = escHtml((meta && meta.icon) || '◈');
+  var icon = api?.renderIcon?.(key, 18) || '';
   var safeColor = escHtml((meta && meta.color) || '#8b949e');
-  return `<span class="lb-faction" style="--faction-color:${safeColor}">${safeIcon} ${safeLabel}</span>`;
+  return `<span class="lb-faction" style="--faction-color:${safeColor}">${icon}${safeLabel}</span>`;
 }
 
 function isPresenceHidden() {
@@ -464,15 +464,15 @@ const FACTION_COLORS = {
 };
 
 const FACTION_LABELS = {
-  'hard-fork-rockers': '🪨 Hard Fork Rockers',
-  'rugpull-miners': '⛏️ Rugpull Miners',
-  graffpunks: '🎨 GraffPUNKS',
-  'blockchain-furies': '🔥 Blockchain Furies',
-  'crypto-moongirls': '🌙 Crypto Moongirls',
-  blockstars: '⭐ The Blockstars',
-  'all-city-bulls': '🐂 All City Bulls',
-  'nomad-bears': '🐻 Nomad Bears',
-  'crypto-stoned-boys': '😶‍🌫️ Crypto Stoned Boys',
+  'hard-fork-rockers': 'Hard Fork Rockers',
+  'rugpull-miners': 'Rugpull Miners',
+  graffpunks: 'GraffPUNKS',
+  'blockchain-furies': 'Blockchain Furies',
+  'crypto-moongirls': 'Crypto Moongirls',
+  blockstars: 'The Blockstars',
+  'all-city-bulls': 'All City Bulls',
+  'nomad-bears': 'Nomad Bears',
+  'crypto-stoned-boys': 'Crypto Stoned Boys',
 };
 
 function renderFactionStandings() {
@@ -504,7 +504,7 @@ function renderFactionStandings() {
     for (var m = 0; m < (s.momentum || 0); m++) momentum += '🔥';
     return '<tr class="lb-fw-row">'
       + '<td class="lb-fw-rank">' + medal + '</td>'
-      + '<td class="lb-fw-name" style="color:' + escHtml(color) + '">' + escHtml(label) + '</td>'
+      + '<td class="lb-fw-name" style="color:' + escHtml(color) + '">' + (window.MOONBOYS_FACTION?.renderIcon?.(s.faction) || '') + escHtml(label) + '</td>'
       + '<td class="lb-fw-power">' + formatScore(s.power) + '</td>'
       + '<td class="lb-fw-daily">' + formatScore(s.daily) + '</td>'
       + '<td class="lb-fw-weekly">' + formatScore(s.weekly) + '</td>'
@@ -514,7 +514,7 @@ function renderFactionStandings() {
   }).join('');
 
   var rotationHtml = rotation
-    ? '<div class="lb-fw-rotation">📅 Today: ' + escHtml(rotation.label || '—') + '</div>'
+    ? '<div class="lb-fw-rotation">📅 Today: ' + (window.MOONBOYS_FACTION?.renderIcon?.(rotation.featuredFaction, 18) || '') + escHtml(rotation.label || '—') + '</div>'
     : '';
 
   var preSeasonCopy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)

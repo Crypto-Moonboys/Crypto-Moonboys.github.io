@@ -190,6 +190,10 @@
   }
 
   function factionDirectory() {
+    if (crewRoot.hasAttribute('data-fop-compact-directory')) {
+      return '<p><a href="#battle-join-faction">Choose a faction</a> · ' +
+        '<a href="/battle-chamber/factions/index.html">Browse faction missions</a></p>';
+    }
     return '<p>Choose a live faction to see its three published operation definitions. ' +
       'Each chamber is public; member progress is private.</p><nav class="fop-directory" aria-label="Nine faction chambers">' +
       ORDER.map(key => '<a href="' + profileLink(key) + '">' + esc(factionLabel(key)) + '</a>').join('') +

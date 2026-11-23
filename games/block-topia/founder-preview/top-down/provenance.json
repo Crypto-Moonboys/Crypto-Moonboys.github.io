@@ -1,0 +1,25 @@
+{
+  "character": "Lumina",
+  "characterId": "cmwriml8w00u1c2zesdafgm48",
+  "jobId": "wf_8ddf9acf-ca02-4be3-8018-53f745b57aa1",
+  "sheetId": "cmwrjymge00d2fi7n8nvsdr14",
+  "view": "top-down",
+  "direction": "south",
+  "source": "AutoSprite",
+  "frame_selection": {
+    "source_frame_indices": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "index_base": 0,
+    "reason": "Retain the forward-facing portion of the AutoSprite sheet and exclude the profile and turn."
+  }
+}

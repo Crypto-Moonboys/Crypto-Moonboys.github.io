@@ -203,9 +203,18 @@ check(read('js/components/live-activity-summary.js').includes('data-wtf-state="e
 check(read('js/components/live-activity-summary.js').includes('tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1))') && read('js/components/live-activity-summary.js').includes('nextFromTomorrow') && read('js/components/live-activity-summary.js').includes('Date.parse(next.start_at) - current.getTime()'), 'right-rail fallback uses tomorrow signal and non-zero countdown when today windows are exhausted');
 check(xpBurstJs.includes('prefers-reduced-motion'), 'reduced motion fallback exists');
 check(!xpBurstJs.includes('payload.title ||') || !xpBurstJs.includes('innerHTML'), 'xp burst does not inject payload.title via innerHTML');
-check(xpBurstJs.includes('textContent = String(payload.title ||'), 'xp burst dynamic title uses textContent');
+check(xpBurstJs.includes('textContent = awarded ? String(payload.title ||'), 'xp burst dynamic title uses textContent');
 check(xpBurstJs.includes('Base: ') && xpBurstJs.includes(' | Bonus: '), 'xp burst separator is stable and clean');
 
+check(xpBurstJs.includes('payload.persisted_xp_awarded === true') &&
+  xpBurstJs.includes('if (awarded && !reducedMotion)') &&
+  xpBurstJs.includes('Roguelite options unlocked. Signal bonus XP is preview only.'), 'only a persisted award can animate XP');
+check(communityHtml.includes('data-wtf-signal-summary') && communityHtml.includes('href="#clan-operation"') &&
+  communityHtml.includes('Bank each completed tier for 10,000 Clan Renown') &&
+  communityHtml.includes('XP shown for those objectives is a preview.') &&
+  communityHtml.includes('data-clan-signal-bonus hidden'), 'Battle Chamber gives the operation link and distinguishes preview objectives from settled bank bonuses');
+check(wtfSystemJs.includes('renderSignalSummary(window.MOONBOYS_WTF_EVENTS)') &&
+  wtfSystemJs.includes('Schedule preview'), 'visible signal summary labels fallback schedules as previews');
 check(communityHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'community loads timed event system');
 check(gamesHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'games hub loads timed event system');
 check(communityHtml.includes('/js/components/xp-burst-animation.js'), 'community loads xp burst animation');

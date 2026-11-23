@@ -187,7 +187,7 @@
       var missionCount = (getFactionMissions(key).daily || []).length;
       return '' +
         '<article class="fcp-card" style="--faction-color:' + esc(p.chamberColor) + '">' +
-          '<h3>' + esc(p.icon) + ' ' + esc(p.name) + '</h3>' +
+          '<h3>' + (window.MOONBOYS_FACTION?.renderIcon?.(key, 28) || '') + esc(p.name) + '</h3>' +
           '<p class="fcp-card-tagline">' + esc(p.tagline) + '</p>' +
           '<p>' + esc(p.playstyle) + '</p>' +
           '<p><strong>Current weekly rank:</strong> ' + esc(formatRankDisplay(rank)) + '</p>' +
@@ -244,7 +244,7 @@
     if (hero) {
       hero.innerHTML = '' +
         '<div class="swarmsy-hero-inner fcp-hero-card" style="--faction-color:' + esc(profile.chamberColor) + '">' +
-          '<div class="swarmsy-kicker wiki-alive-kicker">' + esc(profile.icon) + ' FACTION CHAMBER / BATTLE SIGNAL</div>' +
+          '<div class="swarmsy-kicker wiki-alive-kicker">' + (window.MOONBOYS_FACTION?.renderIcon?.(key, 24) || '') + 'FACTION CHAMBER / BATTLE SIGNAL</div>' +
           '<h1 class="swarmsy-title wiki-living-title">' + esc(profile.name) + '</h1>' +
           '<p class="swarmsy-lead fcp-hero-tagline">' + esc(profile.tagline) + '</p>' +
           '<p class="swarmsy-lead">' + esc(profile.joinCtaCopy) + '</p>' +
@@ -275,11 +275,11 @@
       perks.innerHTML = '' +
         '<p><strong>Perk summary:</strong> ' + esc(profile.perkSummary) + '</p>' +
         '<ul>' +
-          '<li><strong>Score style:</strong> ×' + esc(effects.scoreMultiplier != null ? effects.scoreMultiplier : '1.0') + '</li>' +
+          '<li><strong>Score modifier (supported arcade games):</strong> ×' + esc(effects.scoreMultiplier != null ? effects.scoreMultiplier : '1.0') + '</li>' +
           '<li><strong>Event / chaos modifier:</strong> ×' + esc(effects.chaosModifier != null ? effects.chaosModifier : '1.0') + '</li>' +
           '<li><strong>Shield / defense:</strong> +' + esc(effects.shieldBonus != null ? effects.shieldBonus : '0') + ' starting shield support where game modes allow</li>' +
           '<li><strong>Combo modifier:</strong> ×' + esc(effects.comboModifier != null ? effects.comboModifier : '1.0') + '</li>' +
-          '<li><strong>XP metadata note:</strong> xpModifier ×' + esc(effects.xpModifier != null ? effects.xpModifier : '1.0') + ' is display metadata only.</li>' +
+          '<li><strong>Arcade XP:</strong> No bonus from card metadata. Faction XP is a separate server track with its own rules.</li>' +
         '</ul>';
     }
 
@@ -468,7 +468,7 @@
     var related = byId('fcp-related-links');
     if (related) {
       var links = (profile.relatedLinks || []).concat([
-        { label: 'Faction directory', href: '/battle-chamber/factions/index.html' },
+        { label: 'Faction directory', href: '/battle-chamber/factions/' },
         { label: 'Battle Chamber hub', href: '/community.html' },
       ]);
       related.innerHTML = '<ul>' + links.map(function (item) {

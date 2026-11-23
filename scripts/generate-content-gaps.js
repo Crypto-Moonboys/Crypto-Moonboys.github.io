@@ -595,7 +595,12 @@ function main() {
   const underlinkedPages = detectUnderlinkedPages(wikiPages, inboundMap, injectionTargetCounts, pageLookup);
 
   // B. Over-isolated pages
-  const isolatedPages = detectIsolatedPages(wikiPages, strongPeerSets, inboundMap, outboundMap);
+  // Link and entity scanners cover wiki pages. Other indexed routes must not
+  // be counted as isolated simply because those scanners omit them.
+  const isolatedPages = detectIsolatedPages(
+    wikiPages.filter(page => page.url.startsWith('/wiki/')),
+    strongPeerSets, inboundMap, outboundMap
+  );
 
   // C. Cluster bridge gaps
   const bridgeOpportunities = detectBridgeGaps(wikiPages, entityGraph, pageLookup, tagFreq, tagPageMap);
@@ -627,6 +632,10 @@ function main() {
   }
   // Re-sort after merge
   underlinkedPages.sort((a, b) => b.score - a.score || a.url.localeCompare(b.url));
+  const lowInboundPages = underlinkedPages.filter(page =>
+    page.url.startsWith('/wiki/') &&
+    page.reasons.some(reason => reason.startsWith('low_inbound_links:'))
+  );
 
   // ---------------------------------------------------------------------------
   // Build output
@@ -635,7 +644,8 @@ function main() {
     generated_at: new Date().toISOString(),
     summary: {
       total_pages: wikiPages.length,
-      underlinked_targets: underlinkedPages.length,
+      underlinked_targets: lowInboundPages.length,
+      content_gap_signals: underlinkedPages.length,
       isolated_pages: isolatedPages.length,
       bridge_gaps: bridgeOpportunities.length,
       topic_gaps: topicExpansionOpportunities.length,

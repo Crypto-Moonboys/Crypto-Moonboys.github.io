@@ -61,7 +61,7 @@ The production `/deployment-info` endpoint matched this commit, deployed at
 | Standard Run | Up to 100 rooms; gear-aware previews and outcomes, extraction, final settlement and source-pet authority |
 | Contracts / Practice | Six-/ten-room saved Contracts with endings, rank and bounded daily Pet XP; unlimited local Practice with no official rewards |
 | Weekly Boss / raids / stories / districts | Existing attempts, choices, boss endings, rewards and recovery; no new reward amounts or cooldown bypasses |
-| Season | Existing tier claims and final evolution plus 60 Marks / 10 Crests; no separate season-final boss |
+| Season | Historical audited-build marker: existing tier claims and final evolution plus 60 Marks / 10 Crests (superseded for permanent completion by 365 days / 240 Marks / 44 Crests); no separate season-final boss |
 | Gear | Purchase → ownership → action use → mastery → paid upgrade → actual bonuses; rollback, replacement and replay cases |
 | Leaderboards / activity | Pet daily/weekly/seasonal/all-time totals, separate Community XP, source-pet display; upgrade activity without ranking inflation |
 

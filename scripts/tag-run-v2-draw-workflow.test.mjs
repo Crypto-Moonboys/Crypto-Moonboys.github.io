@@ -105,7 +105,10 @@ test('block racing a draw commit is rejected by the atomic insert guard',async t
 });
 
 test('commit stores exact 1% inputs before future entropy, without bundles or token debt',async t=>{
-  const f=fixture(t);const receipt=await f.commit();assert.equal(receipt.state,'committed');assert.equal(receipt.bundles,0);
+  const f=fixture(t);
+  f.env.TELEGRAM_GROUP_CHAT_ID='  '+GROUP+'\n';
+  const receipt=await f.commit();assert.equal(receipt.state,'committed');assert.equal(receipt.bundles,0);
+  assert.equal(f.sql.prepare('SELECT chat_id FROM tag_run_v2_draws').get().chat_id,GROUP);
   assert.equal(f.sql.prepare('SELECT count(*) n FROM tag_run_v2_bundles').get().n,0);
   assert.equal(f.sql.prepare('SELECT count(*) n FROM tag_run_v2_draw_weight_claims').get().n,0);
   assert.equal(f.sql.prepare('SELECT seed_reveal FROM tag_run_v2_draws').get().seed_reveal,null);

@@ -1092,6 +1092,7 @@ function renderPage(collection, data, stats, syncStatus) {
         <div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"></div>
       </section>
 <!-- SAM:END:article -->
+<p><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a></p>
 </main>
 ${bottomScripts()}
 </body>

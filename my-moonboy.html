@@ -8,184 +8,203 @@
   <link rel="canonical" href="https://cryptomoonboys.com/my-moonboy.html">
   <title>My Moonboy — Personal Mission Control | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/my-moonboy.css">
+  <link rel="stylesheet" href="/css/my-moonboy.css?v=mission-control-v3">
   <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="stylesheet" href="/css/page-hero-art.css">
-  <style>
-    /* Five original Bad Days panels form one continuous artwork, edge to edge. */
-    .mm-bad-days-gallery { width:calc(100% + 2 * var(--shell-gutter)); max-width:none; margin:0 0 0 calc(-1 * var(--shell-gutter)); padding:0; background:#000; overflow:hidden; }
-    .mm-bad-days-gallery img { display:block; width:100%; max-width:none; height:auto; margin:0; padding:0; border:0; }
-  </style>
 </head>
 <body class="page-my-moonboy page-standard-shell">
 <main id="content" role="main">
-  <img class="page-hero-art" src="/art/My%20Moonboy_%20Neon%20London%20Mission%20Control.jpg" alt="My Moonboy artwork" decoding="async" fetchpriority="high" width="1983" height="793">
-
   <div class="mm-page" id="my-moonboy">
-    <header class="mm-heading">
-      <p class="mm-kicker">MY MOONBOY / YOUR STARTING POINT</p>
-      <h1>MY MOONBOY</h1>
-      <p>Build your GK Moonboy or Flygirl sub-world, or bring your own IP and unique lore into the Crypto Moonboys universe. Create with AI and the community.</p>
+    <header class="mm-hero">
+      <picture class="mm-hero-art">
+        <source srcset="/art/my-moonboy-london-dossier.webp" type="image/webp" width="1536" height="1024">
+        <img src="/art/My%20Moonboy_%20Neon%20London%20Mission%20Control.jpg" alt="" decoding="async" fetchpriority="high" width="1983" height="793">
+      </picture>
+      <div class="mm-hero-reticle" aria-hidden="true">
+        <span class="mm-hero-grid"></span>
+        <span class="mm-hero-scan"></span>
+      </div>
+      <div class="mm-heading">
+        <p class="mm-kicker">Personal Mission Control</p>
+        <h1>My Moonboy</h1>
+        <p class="mm-intro">Your verified missions, claims and MoonPet progress in one place.</p>
+        <div class="mm-hero-links">
+          <a class="mm-button mm-button-primary mm-private-link" href="#mm-overview">Open mission dashboard</a>
+          <a class="mm-button" href="#mm-start-here">Explore routes</a>
+          <div class="mm-session-controls" data-telegram-session-controls>
+            <button type="button" class="mm-button" data-telegram-logout hidden>Log out / switch account</button>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <section class="mm-section mm-entry" id="mm-start-here" aria-labelledby="mm-start-title">
-      <h2 id="mm-start-title">Choose your route</h2>
-      <div class="mm-entry-grid">
-        <div class="mm-entry-route">
-          <nav class="mm-entry-links" aria-label="Games and community">
-            <a href="/games/">Play Games</a>
-            <a href="/battle-chamber/factions/index.html">Join a Faction</a>
-            <a href="/gkniftyheads-incubator.html">GKniftyHEADS Community</a>
-            <a href="/community.html#live-battle-chamber">Battle Chamber</a>
-          </nav>
+    <div class="mm-workspace">
+      <section class="mm-gate" id="mm-gate" aria-labelledby="mm-gate-title">
+        <div class="mm-gate-intro">
+          <p class="mm-kicker">Private dashboard</p>
+          <h2 id="mm-gate-title">Checking Telegram identity</h2>
+          <p id="mm-gate-description" role="status">Checking your verified account session. No personal information is loaded anonymously.</p>
         </div>
-        <div class="mm-entry-route">
-          <h3>BUILD A MOONBOY OR USE YOUR OWN IP</h3>
-          <nav class="mm-entry-links" aria-label="Create your world with SWARMSY">
-            <a href="/swarmsy.html">Build a Moonboy or use your own IP</a>
-          </nav>
+        <div class="mm-actions">
+          <a class="mm-button mm-button-primary" href="/gkniftyheads-incubator.html#telegram-login-help" data-telegram-login>Log in with Telegram</a>
+          <button class="mm-button" id="mm-gate-retry" type="button">Retry connection</button>
+          <a class="mm-button" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">Open Telegram Bot</a>
         </div>
-      </div>
-      <p class="mm-entry-more">Need details? <a href="/how-to-play.html">How to Play</a> · <a href="/wiki/hodl-warriors.html">HODL WARRIORS</a> · <a href="/wiki/crypto-moonboys.html">About the Universe</a></p>
-      <div class="mm-session-controls" data-telegram-session-controls>
-        <button type="button" class="mm-button" data-telegram-logout hidden>Log out / switch account</button>
-      </div>
-    </section>
-
-    <section class="mm-gate" id="mm-gate" aria-labelledby="mm-gate-title">
-      <h2 id="mm-gate-title">Checking Telegram identity</h2>
-      <p id="mm-gate-description" role="status">Checking your verified account session. No personal information is loaded anonymously.</p>
-      <p class="mm-actions">
-        <a class="mm-button mm-button-primary" href="/gkniftyheads-incubator.html#telegram-login-help" data-telegram-login>Log in with Telegram</a>
-        <button class="mm-button" id="mm-gate-retry" type="button">Retry verified read</button>
-        <a class="mm-button" href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">Open Telegram Bot</a>
-      </p>
-    </section>
-
-    <div id="mm-private" hidden>
-      <section class="mm-summary" aria-labelledby="mm-overview-title">
-        <div class="mm-summary-header">
-          <div>
-            <p class="mm-kicker">VERIFIED PERSONAL VIEW</p>
-            <h2 id="mm-overview-title">Mission overview</h2>
-            <p class="mm-muted">Player: <strong id="mm-player-name">Linked Moonboy</strong> · <span id="mm-link-state">Telegram credential required</span></p>
-          </div>
-          <button class="mm-button" type="button" id="mm-refresh">Refresh verified tasks</button>
-        </div>
-        <p class="mm-sync" id="mm-sync" role="status" aria-live="polite">No verified plan loaded.</p>
-        <div class="mm-stats" aria-label="Source-backed mission counts">
-          <div><strong id="mm-ready-count">—</strong><span>Ready</span></div>
-          <div><strong id="mm-claim-count">—</strong><span>Claims</span></div>
-          <div><strong id="mm-today-count">—</strong><span>Eligible today</span></div>
-          <div><strong id="mm-done-count">—</strong><span>Completed today</span></div>
-          <div><strong id="mm-unavailable-count">—</strong><span>Unavailable sources</span></div>
-        </div>
-        <div class="mm-units" aria-label="Separate progression measures">
-          <p><strong>Arcade XP (lifetime)</strong> <span id="mm-arcade-xp">Not confirmed</span></p>
-          <p><strong>Arcade XP (spendable)</strong> <span id="mm-arcade-spendable">Not confirmed</span></p>
-          <p><strong>Arcade XP (wallet earned)</strong> <span id="mm-arcade-earned">Not confirmed</span></p>
-          <p><strong>Arcade XP (wallet spent)</strong> <span id="mm-arcade-spent">Not confirmed</span></p>
-          <p><strong>Pet XP (selected MoonPet)</strong> <span id="mm-pet-xp">Not confirmed</span></p>
-          <p><strong>Moon Gold (account)</strong> <span id="mm-moon-gold">Not confirmed</span></p>
-          <p><strong>Moon Crystals (account)</strong> <span id="mm-moon-crystals">Not confirmed</span></p>
-          <p><strong>Style Tokens (account)</strong> <span id="mm-style-tokens">Not confirmed</span></p>
-          <p><strong>Community XP (account)</strong> <span id="mm-community-xp">Not confirmed</span></p>
-          <p><strong>BlockTopia XP (saved)</strong> <span id="mm-blocktopia-xp">Not confirmed</span></p>
-          <p><strong>BlockTopia Gems (saved)</strong> <span id="mm-blocktopia-gems">Not confirmed</span></p>
-          <p><strong>Faction XP (saved)</strong> <span id="mm-faction-xp">Not confirmed</span></p>
-          <p><strong>Wiki accepted missions (today, UTC)</strong> <span id="mm-wiki-today">Not confirmed</span></p>
-          <p><strong>Championship Clout</strong> <span id="mm-clout">Not confirmed</span></p>
-          <p><strong>Missed opportunities XP (all-time)</strong> <span id="mm-missed-xp">Not confirmed</span></p>
-        </div>
-        <p class="mm-muted" id="mm-faction">Faction: checking owner evidence</p>
       </section>
 
-      <section class="mm-section" aria-labelledby="mm-next-title">
-        <div class="mm-section-heading">
-          <div>
-            <p class="mm-kicker">IMMEDIATE / SERVER PRIORITISED</p>
+      <div id="mm-private" hidden>
+        <nav class="mm-console-nav" aria-label="Mission dashboard">
+          <a href="#mm-overview">Overview</a>
+          <a href="#mm-priority">Next actions</a>
+          <a href="#mm-progression">Balances</a>
+          <a href="#mm-pet-status">MoonPets</a>
+          <a href="#mm-ledger">Ledger</a>
+          <a href="#mm-complete-checklist">Checklist</a>
+        </nav>
+
+        <section class="mm-summary" id="mm-overview" aria-labelledby="mm-overview-title" tabindex="-1">
+          <div class="mm-summary-header">
+            <div>
+              <p class="mm-kicker">Verified account</p>
+              <h2 id="mm-overview-title">Mission overview</h2>
+              <p class="mm-muted">Player: <strong id="mm-player-name">Linked Moonboy</strong> · <span id="mm-link-state">Telegram credential required</span></p>
+            </div>
+            <button class="mm-button" type="button" id="mm-refresh">Refresh verified tasks</button>
+          </div>
+          <p class="mm-sync" id="mm-sync" role="status" aria-live="polite">No verified plan loaded.</p>
+          <div class="mm-stats" aria-label="Source-backed mission counts">
+            <div><strong id="mm-ready-count">—</strong><span>Ready</span></div>
+            <div><strong id="mm-claim-count">—</strong><span>Claims</span></div>
+            <div><strong id="mm-today-count">—</strong><span>Eligible today</span></div>
+            <div><strong id="mm-done-count">—</strong><span>Completed today</span></div>
+            <div><strong id="mm-unavailable-count">—</strong><span>Unavailable sources</span></div>
+          </div>
+          <p class="mm-muted" id="mm-faction">Faction: checking owner evidence</p>
+          <details data-clan-profile-awards>
+            <summary>Clan awards</summary>
+            <p role="status"></p>
+            <ul hidden></ul>
+          </details>
+        </section>
+
+        <section class="mm-section mm-priority" id="mm-priority" aria-labelledby="mm-next-title" tabindex="-1">
+          <div class="mm-section-heading">
             <h2 id="mm-next-title">Your next 3 actions</h2>
           </div>
-        </div>
-        <p class="mm-muted" id="mm-next-note">A source must be verified as actionable before it can appear here.</p>
-        <div id="mm-next" class="mm-task-grid"></div>
-      </section>
+          <p class="mm-muted" id="mm-next-note">Checking for verified actions…</p>
+          <div id="mm-next" class="mm-task-grid"></div>
+        </section>
 
-      <section class="mm-section" aria-labelledby="mm-pets-title">
-        <div class="mm-section-heading">
-          <div>
-            <p class="mm-kicker">OWNED / ORIGINAL PET ATTRIBUTION</p>
+        <section class="mm-section" id="mm-progression" aria-labelledby="mm-units-title" tabindex="-1">
+          <div class="mm-section-heading">
+            <h2 id="mm-units-title">Balances and progression</h2>
+          </div>
+          <div class="mm-units" aria-label="Separate progression measures">
+            <p><strong>Arcade XP (lifetime)</strong> <span id="mm-arcade-xp">Not confirmed</span></p>
+            <p><strong>Arcade XP (spendable)</strong> <span id="mm-arcade-spendable">Not confirmed</span></p>
+            <p><strong>Arcade XP (wallet earned)</strong> <span id="mm-arcade-earned">Not confirmed</span></p>
+            <p><strong>Arcade XP (wallet spent)</strong> <span id="mm-arcade-spent">Not confirmed</span></p>
+            <p><strong>Pet XP (selected MoonPet)</strong> <span id="mm-pet-xp">Not confirmed</span></p>
+            <p><strong>Moon Gold (account)</strong> <span id="mm-moon-gold">Not confirmed</span></p>
+            <p><strong>Moon Crystals (account)</strong> <span id="mm-moon-crystals">Not confirmed</span></p>
+            <p><strong>Style Tokens (account)</strong> <span id="mm-style-tokens">Not confirmed</span></p>
+            <p><strong>Community XP (account)</strong> <span id="mm-community-xp">Not confirmed</span></p>
+            <p><strong>BlockTopia XP (saved)</strong> <span id="mm-blocktopia-xp">Not confirmed</span></p>
+            <p><strong>BlockTopia Gems (saved)</strong> <span id="mm-blocktopia-gems">Not confirmed</span></p>
+            <p><strong>Faction XP (saved)</strong> <span id="mm-faction-xp">Not confirmed</span></p>
+            <p><strong>Wiki accepted missions (today, UTC)</strong> <span id="mm-wiki-today">Not confirmed</span></p>
+            <p><strong>Championship Clout</strong> <span id="mm-clout">Not confirmed</span></p>
+            <p><strong>Missed opportunities XP (all-time)</strong> <span id="mm-missed-xp">Not confirmed</span></p>
+          </div>
+        </section>
+
+        <section class="mm-section" id="mm-pet-status" aria-labelledby="mm-pets-title" tabindex="-1">
+          <div class="mm-section-heading">
             <h2 id="mm-pets-title">Your MoonPets</h2>
+            <a href="/moonpet-game.html" class="mm-button">Open MoonPet game</a>
           </div>
-          <a href="/moonpet-game.html" class="mm-button">Open MoonPet game</a>
-        </div>
-        <p class="mm-muted">Only the verified owner can see this panel. Archived original earners may appear for saved rewards; switching pets happens inside MoonPet.</p>
-        <div id="mm-pets" class="mm-pet-grid"></div>
-      </section>
+          <p class="mm-muted">Only the verified owner can see this panel. Archived original earners may appear for saved rewards; switching pets happens inside MoonPet.</p>
+          <p class="mm-muted"><a href="/moonpet-game.html?screen=home">Open MoonPet Home</a> to initialise or hatch a Secret Bot. After hatching, <a href="/moonpet-game.html?screen=missions&amp;focus=legendary-roadmap">open the Journey Dashboard</a> for the selected pet’s evolution requirements and gameplay routes.</p>
+          <div id="mm-journey" class="mm-journey-summary" aria-label="Selected MoonPet journey summary"><p class="mm-muted">Checking the selected MoonPet’s journey…</p></div>
+          <div id="mm-pets" class="mm-pet-grid"></div>
+        </section>
 
-      <section class="mm-section mm-complete-checklist" id="mm-complete-checklist" aria-labelledby="mm-complete-checklist-title">
-        <div class="mm-section-heading"><div>
-          <p class="mm-kicker">ALL KNOWN SOURCES / READ ONLY</p>
-          <h2 id="mm-complete-checklist-title">My complete mission and claims checklist</h2>
-        </div></div>
-        <p>All registered mission categories are listed, including unavailable or preview sources. Verified completion comes only from accepted receipts. A missing result or an unchecked row does not mean failed or incomplete. MoonPet Saved Status-only claims are included as separate check-ins, without invented readiness.</p>
-        <div id="mm-checklist"><p class="mm-muted">Checking your verified account and source tasks…</p></div>
-      </section>
-
-      <section class="mm-section" aria-labelledby="mm-all-title">
-        <div class="mm-section-heading">
-          <div>
-            <p class="mm-kicker">FULL SOURCE CATALOGUE</p>
+        <section class="mm-section" id="mm-ledger" aria-labelledby="mm-all-title" tabindex="-1">
+          <div class="mm-section-heading">
             <h2 id="mm-all-title">Mission ledger</h2>
+            <p class="mm-muted" id="mm-page-count">0 tasks loaded</p>
           </div>
-          <p class="mm-muted" id="mm-page-count">0 tasks loaded</p>
+          <div class="mm-tabs" role="tablist" aria-label="Mission categories">
+            <button type="button" role="tab" data-mm-tab="now" aria-selected="true" aria-controls="mm-results" tabindex="0">Now</button>
+            <button type="button" role="tab" data-mm-tab="today" aria-selected="false" aria-controls="mm-results" tabindex="-1">Today</button>
+            <button type="button" role="tab" data-mm-tab="claims" aria-selected="false" aria-controls="mm-results" tabindex="-1"><span>Claims</span><span class="mm-tab-badge" id="mm-claims-badge" aria-label="Action Plan verified claims ready" hidden></span></button>
+            <button type="button" role="tab" data-mm-tab="moonpet" aria-selected="false" aria-controls="mm-results" tabindex="-1">MoonPet</button>
+            <button type="button" role="tab" data-mm-tab="faction" aria-selected="false" aria-controls="mm-results" tabindex="-1">Faction</button>
+            <button type="button" role="tab" data-mm-tab="games" aria-selected="false" aria-controls="mm-results" tabindex="-1">Arcade &amp; Games</button>
+            <button type="button" role="tab" data-mm-tab="weekly" aria-selected="false" aria-controls="mm-results" tabindex="-1">Weekly</button>
+            <button type="button" role="tab" data-mm-tab="long-term" aria-selected="false" aria-controls="mm-results" tabindex="-1">Long-term</button>
+            <button type="button" role="tab" data-mm-tab="history" aria-selected="false" aria-controls="mm-results" tabindex="-1">History</button>
+          </div>
+          <div class="mm-filters">
+            <label for="mm-status-filter">Availability
+              <select id="mm-status-filter">
+                <option value="all">All statuses</option>
+                <option value="actionable">Ready / active / claims</option>
+                <option value="waiting">Waiting / in progress</option>
+                <option value="blocked">Blocked / unavailable / preview</option>
+                <option value="completed">Completed / claimed</option>
+              </select>
+            </label>
+            <label for="mm-search">Find a task
+              <input id="mm-search" type="search" autocomplete="off" placeholder="Source, action or goal">
+            </label>
+          </div>
+          <p class="mm-muted" id="mm-ledger-note">Source status and verification are shown per task. An unknown reward does not mean zero reward.</p>
+          <p class="mm-pet-filter" id="mm-pet-filter" hidden>
+            <span id="mm-pet-filter-label"></span>
+            <button type="button" class="mm-button" id="mm-clear-pet-filter">Show all MoonPets</button>
+          </p>
+          <div id="mm-results" class="mm-task-list" role="tabpanel" tabindex="0" aria-label="Filtered missions"></div>
+          <p class="mm-more"><button class="mm-button" id="mm-load-more" type="button" hidden>Load more verified tasks</button></p>
+        </section>
+        <section class="mm-section mm-complete-checklist" id="mm-complete-checklist" aria-labelledby="mm-complete-checklist-title" tabindex="-1">
+          <div class="mm-section-heading">
+            <h2 id="mm-complete-checklist-title">My complete mission and claims checklist</h2>
+          </div>
+          <p>All registered mission categories are listed, including unavailable or preview sources. Verified completion comes only from accepted receipts. A missing result or an unchecked row does not mean failed or incomplete. MoonPet Saved Status-only claims are included as separate check-ins, without invented readiness.</p>
+          <div id="mm-checklist"><p class="mm-muted">Checking your verified account and source tasks…</p></div>
+        </section>
+      </div>
+
+      <section class="mm-entry" id="mm-start-here" aria-labelledby="mm-start-title" tabindex="-1">
+        <h2 id="mm-start-title">Choose your route</h2>
+        <p class="mm-muted">Build a GK Moonboy or Flygirl sub-world, or bring your own IP and lore into the Crypto Moonboys universe.</p>
+        <nav class="mm-entry-links" aria-label="Games, community and creator routes">
+          <a href="/games/">Play Games</a>
+          <a href="/battle-chamber/factions/index.html">Join a Faction</a>
+          <a href="/gkniftyheads-incubator.html">GKniftyHEADS Community</a>
+          <a href="/community.html#live-battle-chamber">Battle Chamber</a>
+          <a href="/swarmsy.html">Build a Moonboy or use your own IP</a>
+        </nav>
+        <nav class="mm-entry-more" aria-label="Guides">
+          <a href="/how-to-play.html">How to Play</a>
+          <a href="/wiki/hodl-warriors.html">HODL Warriors</a>
+          <a href="/wiki/crypto-moonboys.html">About the Universe</a>
+        </nav>
+      </section>
+
+      <section class="mm-section mm-economy-manual" id="mm-economy" aria-labelledby="mm-economy-title">
+        <div class="mm-section-heading">
+          <h2 id="mm-economy-title">Rewards and economy guide</h2>
         </div>
-        <div class="mm-tabs" role="tablist" aria-label="Mission categories">
-          <button type="button" role="tab" data-mm-tab="now" aria-selected="true" aria-controls="mm-results" tabindex="0">Now</button>
-          <button type="button" role="tab" data-mm-tab="today" aria-selected="false" aria-controls="mm-results" tabindex="-1">Today</button>
-          <button type="button" role="tab" data-mm-tab="claims" aria-selected="false" aria-controls="mm-results" tabindex="-1"><span>Claims</span><span class="mm-tab-badge" id="mm-claims-badge" aria-label="Action Plan verified claims ready" hidden></span></button>
-          <button type="button" role="tab" data-mm-tab="moonpet" aria-selected="false" aria-controls="mm-results" tabindex="-1">MoonPet</button>
-          <button type="button" role="tab" data-mm-tab="faction" aria-selected="false" aria-controls="mm-results" tabindex="-1">Faction</button>
-          <button type="button" role="tab" data-mm-tab="games" aria-selected="false" aria-controls="mm-results" tabindex="-1">Arcade &amp; Games</button>
-          <button type="button" role="tab" data-mm-tab="weekly" aria-selected="false" aria-controls="mm-results" tabindex="-1">Weekly</button>
-          <button type="button" role="tab" data-mm-tab="long-term" aria-selected="false" aria-controls="mm-results" tabindex="-1">Long-term</button>
-          <button type="button" role="tab" data-mm-tab="history" aria-selected="false" aria-controls="mm-results" tabindex="-1">History</button>
-        </div>
-        <div class="mm-filters">
-          <label for="mm-status-filter">Availability
-            <select id="mm-status-filter">
-              <option value="all">All statuses</option>
-              <option value="actionable">Ready / active / claims</option>
-              <option value="waiting">Waiting / in progress</option>
-              <option value="blocked">Blocked / unavailable / preview</option>
-              <option value="completed">Completed / claimed</option>
-            </select>
-          </label>
-          <label for="mm-search">Find a task
-            <input id="mm-search" type="search" autocomplete="off" placeholder="Source, action or goal">
-          </label>
-        </div>
-        <p class="mm-muted" id="mm-ledger-note">Source status and verification are shown per task. An unknown reward does not mean zero reward.</p>
-        <p class="mm-pet-filter" id="mm-pet-filter" hidden>
-          <span id="mm-pet-filter-label"></span>
-          <button type="button" class="mm-button" id="mm-clear-pet-filter">Show all MoonPets</button>
-        </p>
-        <div id="mm-results" class="mm-task-list" role="tabpanel" tabindex="0" aria-label="Filtered missions"></div>
-        <p class="mm-more"><button class="mm-button" id="mm-load-more" type="button" hidden>Load more verified tasks</button></p>
+        <p>Different games have different balances. Arcade XP, Community XP, Pet XP, Moon Gold, Moon Crystals, Style Tokens and Block Topia Gems are <strong>not interchangeable</strong>. Rewards and costs shown here are source-rule guidance, <strong>not your personal balance, a verified reward or permission to spend</strong>. The original game confirms current eligibility, risk, price and receipt.</p>
+        <nav class="mm-entry-more" aria-label="Economy guides">
+          <a class="mm-private-link" href="#mm-complete-checklist">View my verified mission checklist</a>
+          <a href="/how-to-play-crypto-moonboy-pets.html">MoonPet full rules</a>
+          <a href="/how-to-play.html">Arcade How to Play</a>
+        </nav>
+        <div id="mm-economy-guide"><p class="mm-muted">Loading audited resource guidance…</p></div>
       </section>
     </div>
-    <section class="mm-section mm-economy-manual" id="mm-economy" aria-labelledby="mm-economy-title">
-      <div class="mm-section-heading">
-        <div>
-          <p class="mm-kicker">EXPLAINED / SOURCE RULES / NO FAKE BALANCES</p>
-          <h2 id="mm-economy-title">How to earn, spend or lose XP, points, Gold, Crystals and Gems</h2>
-        </div>
-      </div>
-      <p>Different games have different balances. Arcade XP, Community XP, Pet XP, Moon Gold, Moon Crystals, Style Tokens and Block Topia Gems are <strong>not interchangeable</strong>. Rewards and costs shown here are source-rule guidance, <strong>not your personal balance, a verified reward or permission to spend</strong>. The original game confirms current eligibility, risk, price and receipt.</p>
-      <p><a href="#mm-complete-checklist">View my verified mission checklist</a> · <a href="/how-to-play-crypto-moonboy-pets.html">MoonPet full rules</a> · <a href="/how-to-play.html">Arcade How to Play</a></p>
-      <div id="mm-economy-guide"><p class="mm-muted">Loading audited resource guidance…</p></div>
-    </section>
-
   </div>
   <section id="bad-days-artwork" class="mm-bad-days-gallery" aria-label="Crypto Moonboys Bad Days complete five-part artwork">
     <img src="/img/homepage/CRYPTO%20MOONBOYS%20BAD%20DAYS%20V1.jpg" alt="Crypto Moonboys Bad Days artwork panel 1 of 5" loading="lazy" decoding="async">
@@ -206,6 +225,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script data-cfasync="false" src="/js/my-moonboy-mission-guide.js"></script>
-<script data-cfasync="false" src="/js/my-moonboy.js"></script>
+<script data-cfasync="false" src="/js/my-moonboy.js?v=mission-control-v3"></script>
+<script data-cfasync="false" type="module" src="/js/clan-period-display.js"></script>
 </body>
 </html>

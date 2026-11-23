@@ -476,6 +476,7 @@
     // never accepted as proof of a ranked score.
     var runReplayFrames = [];
     var replayInvalid = false;
+    var replayInterrupted = false;
     var speedrunBonusXp = 0;
     var comboCount = 0;
     var comboExpiresAt = 0;
@@ -817,6 +818,7 @@
       if (!Number.isFinite(frameElapsedMs) || frameElapsedMs > 2000 ||
           runReplayFrames.length >= 600000) {
         replayInvalid = true;
+        replayInterrupted = frameElapsedMs > 2000;
         return;
       }
       var replay = initialInputReplay;
@@ -1489,6 +1491,7 @@
             bestTimeMs: Math.round(bestTimeMs),
             bestXp: bestXp,
             leaderboardReady: true,
+            replayInterrupted: replayInterrupted,
             replay: encodedRunReplay()
           }
         }));
@@ -2267,6 +2270,7 @@
     }
 
     function resetRun() {
+      if (complete && window.NBGLondonFinishPending?.()) return window.NBGLevel1State;
       runSequence += 1;
       pendingRunStartPromise = null;
       pendingRunOwner = null;
@@ -2290,6 +2294,7 @@
       nextJumpBoostAtMs = 0;
       runReplayFrames = [];
       replayInvalid = false;
+      replayInterrupted = false;
       runRandomState = 0x9e3779b9;
       speedrunBonusXp = 0;
       comboCount = 0;
@@ -2421,6 +2426,7 @@
       var sequence = runSequence;
       runReplayFrames = [];
       replayInvalid = false;
+      replayInterrupted = false;
       runRandomState = 0x9e3779b9;
       lastTime = 0;
       updateHud();

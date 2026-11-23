@@ -3,8 +3,10 @@ import test from 'node:test';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
+import { performanceFixture } from './moonpet-state-performance-fixture.mjs';
+import { sandboxPlayers } from './moonpet-sandbox-players.mjs';
 
-const { missionStatus, missionClaims, menuStatuses, menuBadge } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+const { missionStatus, missionClaims, menuStatuses, menuBadge, legendaryRoadmap } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
 const keys = ['pet-daily-feed', 'pet-daily-train', 'pet-daily-care', 'pet-daily-trade', 'pet-daily-shop', 'pet-daily-adventure', 'pet-daily-bank'];
 function snapshot(completed = 0) {
   return { adopted: true, pet: { pet_id: 'selected-pet' }, lifecycle: { phase: 'young' },
@@ -20,6 +22,270 @@ test('missing and deferred mission authority never renders a completed checklist
   }
   const missions = { ...snapshot(7), hydration: { full: false, modules: ['missions'] } };
   assert.equal(missionStatus(missions).status, 'COMPLETE');
+});
+
+test('Road to Legendary reads authoritative lifetime state and exposes navigation only', () => {
+  const state = snapshot(4);
+  state.pet = { pet_id: 'selected-pet', level: 27, pet_xp: 28942 };
+  state.season_slots = { slots: [{ active: true, pet: { progression: {
+    lifecycle: { current_stage: 2, total_stages: 6 },
+    growth_marks: { earned: 90, required: 240 },
+    weekly_crests: { earned: 13, required: 44 },
+  } } }] };
+  state.relics = [{ relic_id: 'one' }, { relic_id: 'two' }, { relic_id: 'two' }];
+  state.materials = [
+    { key: 'scrap_metal', quantity: 112 },
+    { key: 'evolution_fragment', quantity: 22 },
+  ];
+  state.guidance.jobs = [
+    { key: 'vault_guard', title: 'Vault Guard', pet_xp: 36, available: true },
+    { key: 'signal_hacker', title: 'Signal Hacker', pet_xp: 38, available: false },
+    { key: 'crystal_miner', title: 'Crystal Miner', pet_xp: 30, available: true },
+  ];
+  state.guidance.activity_options = [{ key: 'explore', cap_seconds: 28800 }];
+  state.guidance.evolution = {
+    name: 'Elite Moonpet', ready: false,
+    missing: [
+      { key: 'growth_marks', label: 'Growth Marks', current: 90, required: 120, source: 'Daily Journey' },
+      { key: 'weekly_crests', label: 'Weekly Crests', current: 13, required: 16, source: 'Weekly Journey' },
+    ],
+  };
+  state.daily_journey = { completed_objectives: 2, required_objectives: 3, growth_mark_awarded: false };
+  state.weekly_journey = { state: 'AVAILABLE', completed_objectives: 4, required_objectives: 5,
+    weekly_crest_awarded: false, authority_available: true };
+  state.guidance.daily_completion.pending = [{ utc_day: '2026-11-18', pet_id: 'selected-pet' }];
+  const road = legendaryRoadmap(state);
+  assert.equal(road.available, true);
+  assert.equal(road.status, 'IN PROGRESS');
+  assert.equal(road.stage, 1, 'older snapshots identify Stage 1 as the second form');
+  assert.equal(road.level, 27);
+  assert.equal(road.petXp, 28942);
+  assert.deepEqual(road.growthMarks, { earned: 90, required: 240 });
+  assert.deepEqual(road.weeklyCrests, { earned: 13, required: 44 });
+  assert.equal(road.relics, 2, 'duplicate relic IDs count once');
+  assert.deepEqual(road.materials, { scrapMetal: 112, evolutionFragments: 22 });
+  assert.deepEqual(road.bestJob, { key: 'vault_guard', title: 'Vault Guard', basePetXp: 36 });
+  assert.equal(road.exploreActivityAvailable, true);
+  assert.equal(road.routes[3].title, 'TIMED EXPLORE');
+  assert.equal(road.routes[4].title, 'BEST UNLOCKED JOB // Vault Guard');
+  assert.equal(road.nextEvolution.missing.length, 2);
+  assert.equal(road.journey.claimsReady, 1);
+  assert.equal(road.journey.claimsLowerBound, false);
+  assert.deepEqual(road.journey.today, {
+    available: true, journeyCurrent: 2, journeyTarget: 3, markAwarded: false,
+    missionsCurrent: 4, missionsTarget: 7,
+  });
+  assert.deepEqual(road.journey.week, { current: 4, target: 5, crestAwarded: false, available: true });
+  assert.match(road.journey.now.title, /DAILY 7\/7 BONUS|DAILY/);
+  assert.deepEqual(road.routes.map(route => route.screen + ':' + route.focus), [
+    'missions:daily-journey', 'missions:weekly-journey', 'explore:moon-run',
+    'work:timed-activity', 'work:jobs', 'economy:relics', 'profile:evolution'
+  ]);
+  assert.ok(road.routes.every(route => !Object.prototype.hasOwnProperty.call(route, 'action')),
+    'roadmap routes must navigate only and never submit gameplay');
+  state.guidance.weekly_boss = { pending_rewards: [{ week_key: '2026-W45', boss_id: 'weekly-boss', pet_id: 'selected-pet' }] };
+  const boundedClaims = legendaryRoadmap(state).journey;
+  assert.equal(boundedClaims.claimsReady, 2);
+  assert.equal(boundedClaims.claimsLowerBound, true);
+});
+
+test('the roadmap routes to the saved timed session before offering another activity', () => {
+  const state = snapshot();
+  state.season_slots = { slots: [{ active: true, pet: { progression: {
+    lifecycle: { current_stage: 2, total_stages: 6 },
+    growth_marks: { earned: 0, required: 240 },
+    weekly_crests: { earned: 0, required: 44 },
+  } } }] };
+  state.guidance.activity_options = [{ key: 'explore' }];
+
+  for (const [activity, title] of [
+    [{ activity_type: 'sleep', ready: false }, 'REVIEW CURRENT ACTIVITY'],
+    [{ activity_type: 'sleep', ready: true }, 'REVIEW ACTIVITY REWARD'],
+    [{ activity_type: 'explore', recovery_pending: true }, 'REVIEW ACTIVITY REWARD'],
+    [{ activity_type: 'explore', unavailable: true, ready: false }, 'REVIEW CURRENT ACTIVITY'],
+  ]) {
+    state.guidance.activity = activity;
+    const road = legendaryRoadmap(state);
+    const route = road.routes.find(route => route.focus === 'timed-activity');
+    assert.equal(road.exploreActivityAvailable, false);
+    assert.equal(route.title, title);
+    assert.equal(route.screen, 'work');
+    assert.equal(Object.hasOwn(route, 'action'), false);
+  }
+
+  state.guidance.activity = null;
+  assert.equal(legendaryRoadmap(state).exploreActivityAvailable, true);
+  assert.equal(legendaryRoadmap(state).routes.find(route => route.focus === 'timed-activity').title, 'TIMED EXPLORE');
+  state.guidance.activity_options = [{ key: 'sleep' }];
+  assert.equal(legendaryRoadmap(state).routes.find(route => route.focus === 'timed-activity').title, 'TIMED ACTIVITY');
+});
+
+test('the roadmap follows saved Worker stages, incubation and per-evolution Journey requirements', async () => {
+  const fixture = await performanceFixture();
+  try {
+    for (const stage of [0, 3, 4, 5]) {
+      await sandboxPlayers['stage-' + stage].prepare(fixture);
+      if (stage === 0) {
+        fixture.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=0, level=1 WHERE telegram_id=?').run(fixture.owner);
+        fixture.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=0, level=1 WHERE telegram_id=?').run(fixture.owner);
+      }
+      const { state } = await fixture.measureHttp();
+      const road = legendaryRoadmap(state);
+      assert.equal(road.stage, stage);
+      assert.equal(road.finalForm, stage === 5);
+      if (stage === 0) {
+        assert.equal(road.petXp, 0);
+        assert.equal(road.status, 'INCUBATING');
+        assert.equal(road.journey.today.available, false);
+        assert.equal(road.journey.week.available, false);
+        assert.deepEqual(road.routes, [{ screen: 'home', focus: 'incubation', title: state.next.title, detail: state.next.detail }]);
+      } else if (!road.finalForm) {
+        const req = state.season_slots.slots.find(slot => slot.active).pet.progression.lifecycle.requirements;
+        if (stage === 3) assert.ok(req.growth_marks.required < road.growthMarks.required);
+        for (const [key, label] of [['min_age_days', 'Pet age (days)'], ['growth_marks', 'Growth Marks'], ['weekly_crests', 'Weekly Crests']]) {
+          assert.equal(req[key].complete, false);
+          const rows = road.nextEvolution.missing.filter(row => row.label === label);
+          assert.deepEqual(rows.map(row => [row.current, row.required]), [[req[key].current, req[key].required]]);
+        }
+        assert.ok(state.guidance.evolution.missing.every(row => road.nextEvolution.missing.some(entry => entry.label === row.label)));
+        const daily = road.routes.find(route => route.focus === 'moon-run');
+        assert.match(daily.detail, /ends your one official Daily Run attempt for the UTC day/);
+        assert.match(daily.detail, /repeatable Moon Run banks its XP bag/);
+      } else {
+        assert.equal(road.nextEvolution, null);
+        const profile = road.routes.find(route => route.focus === 'evolution');
+        const collection = road.routes.find(route => route.focus === 'relics');
+        assert.equal(profile.title, 'LIFETIME PROGRESS');
+        assert.match(profile.detail, /Final evolution is complete/);
+        assert.doesNotMatch(profile.detail, /next saved evolution/i);
+        assert.match(collection.detail, /permanent relic and material collection/);
+        assert.doesNotMatch(collection.detail, /later evolutions/i);
+      }
+    }
+  } finally { fixture.close(); }
+});
+
+test('Road to Legendary fails closed on missing identity or partial hydration', () => {
+  assert.equal(legendaryRoadmap({}).available, false);
+  assert.equal(legendaryRoadmap({ adopted: true, pet: { pet_id: 'p' }, hydration: { full: false } }).status, 'SYNCING');
+});
+
+test('the roadmap distinguishes missing Worker data from saved zero counts', () => {
+  const state = { ...snapshot(), hydration: { full: true }, relics: [], relics_available: true };
+  const pet = {};
+  state.season_slots = { slots: [{ active: true, pet }] };
+  const saved = {
+    lifecycle: { current_stage: 1, total_stages: 6 },
+    growth_marks: { earned: 0, required: 240 },
+    weekly_crests: { earned: 0, required: 44 },
+  };
+  for (const missing of [null, {}, { ...saved, lifecycle: null }, { ...saved, growth_marks: { required: 240 } },
+    { ...saved, weekly_crests: { earned: 0, required: null } }]) {
+    pet.progression = missing;
+    assert.deepEqual(legendaryRoadmap(state), { available: false, status: 'SYNCING', routes: [] });
+  }
+  pet.progression = saved;
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const renderer = client.slice(client.indexOf('  function renderLegendaryRoadmap()'), client.indexOf('  function renderMissions()'));
+  const context = vm.createContext({ state, window: { MoonpetPlayOptions: { legendaryRoadmap } },
+    playOptionsReady: () => true, panelOpenState: {},
+    panel: (_, body) => body, routeButton: route => route, escapeHtml: String, number: String });
+  vm.runInContext(renderer, context);
+  assert.match(context.renderLegendaryRoadmap(), /UNIQUE RELICS<\/span><strong>0<\/strong>/);
+  state.relics_available = false;
+  assert.match(context.renderLegendaryRoadmap(), /UNIQUE RELICS<\/span><strong>UNAVAILABLE<\/strong>/);
+  assert.match(context.renderLegendaryRoadmap(), /GROWTH MARKS<\/span><strong>0\/240<\/strong>/);
+});
+
+test('legacy season_complete alone cannot label Road to Legendary complete', () => {
+  const state = snapshot();
+  state.pet = { pet_id: 'selected-pet', level: 20, pet_xp: 10000 };
+  state.season_slots = { slots: [{ active: true, pet: { progression: {
+    season_complete: true, lifetime_complete: false,
+    lifecycle: { current_stage: 3, total_stages: 6 },
+    growth_marks: { earned: 100, required: 240 },
+    weekly_crests: { earned: 14, required: 44 },
+  } } }] };
+  assert.equal(legendaryRoadmap(state).status, 'IN PROGRESS');
+});
+
+test('Missions renders Road to Legendary through navigation buttons only', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  assert.match(client, /panel\('YOUR JOURNEY \/\/ ROAD TO LEGENDARY'/);
+  const start = client.indexOf('function renderLegendaryRoadmap()');
+  const end = client.indexOf('function renderMissions()', start);
+  assert.ok(start >= 0 && end > start);
+  const body = client.slice(start, end);
+  assert.match(body, /legendaryRoadmap\(state\)/);
+  assert.match(body, /routeButton\(target\.title, target, target\.detail\)/);
+  assert.doesNotMatch(body, /\bbutton\(/, 'Road to Legendary must never emit an action button');
+  assert.doesNotMatch(body, /data-action=/, 'Road to Legendary must not submit an action directly');
+});
+
+test('progressive section visibility follows lifecycle unlocks without treating low resources as locks', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const source = client.slice(client.indexOf('  // TEST-EXPORT: progressiveVisibility:start'), client.indexOf('  // TEST-EXPORT: progressiveVisibility:end'));
+  const context = vm.createContext({ window: { MoonpetPlayOptions: { menuStatuses } } });
+  vm.runInContext(source, context);
+
+  const hatched = snapshot();
+  Object.assign(hatched.pet, { level: 1, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0, energy: 0 });
+  assert.deepEqual({ ...context.moonpetSectionVisibility(hatched) }, {
+    home: true, missions: true, explore: true, work: true, economy: true, profile: true,
+  }, 'zero resources must not hide sections that the pet has already unlocked');
+
+  const egg = snapshot();
+  egg.lifecycle = { phase: 'egg', incubation: { ready: false } };
+  assert.deepEqual({ ...context.moonpetSectionVisibility(egg) }, {
+    home: true, missions: false, explore: false, work: false, economy: false, profile: true,
+  });
+
+  const finale = { pet_id: 'older-pet', competition_season_key: 'prior-quarter', status: 'not_started', playable: true, eligible: false };
+  egg.season_finales = { available: true, pets: [finale] };
+  assert.equal(context.moonpetSectionVisibility(egg).missions, false);
+  for (const status of ['not_started', 'active', 'failed', 'won']) {
+    Object.assign(finale, { status, eligible: status === 'not_started', playable: status !== 'won', claimed: false });
+    assert.equal(context.visibleFinalePets(egg).length, 1, status);
+    assert.equal(context.moonpetSectionVisibility(egg).missions, true, status);
+  }
+  finale.claimed = true;
+  assert.equal(context.visibleFinalePets(egg).length, 1, 'paid wins from archived pets remain visible in history');
+  assert.equal(context.visibleFinalePets(egg, true).length, 0);
+  assert.equal(context.moonpetSectionVisibility(egg).missions, false, 'a settled prize alone does not reopen Missions for an egg');
+  finale.status = 'failed';
+  assert.equal(context.visibleFinalePets(egg).length, 0, 'a retired pet cannot retry its battle');
+  egg.season_finales = { available: true, pets: [{ ...finale, playable: true }, finale] };
+  assert.equal(context.visibleFinalePets(egg).length, 1, 'only the usable slot is rendered on a mixed board');
+  delete egg.season_finales;
+
+  egg.guidance.daily_completion.pending = [{ utc_day: 'saved-day', pet_id: 'earlier-pet' }];
+  egg.guidance.weekly_boss = { pending_rewards: [{ pet_id: 'earlier-pet', boss_id: 'boss', week_key: 'week' }] };
+  egg.guidance.activity = { activity_type: 'work', ready: false };
+  egg.guidance.economy = { bounties: [{ key: 'saved-bounty', complete: true, claimed: false }] };
+  assert.deepEqual({ ...context.moonpetSectionVisibility(egg) }, {
+    home: true, missions: true, explore: true, work: true, economy: true, profile: true,
+  }, 'saved claims and active sessions must remain reachable through an otherwise hidden section');
+});
+
+test('objective links match unlocked panels even with zero resources or a used weekly attack', () => {
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const gates = client.split('// TEST-EXPORT: objectivePanelGates:start')[1].split('// TEST-EXPORT: objectivePanelGates:end')[0];
+  const state = snapshot();
+  Object.assign(state.pet, { level: 1, energy: 0, moon_gold: 0, moon_crystals: 0 });
+  state.capabilities = { weekly_boss: { state: 'LOCKED', unlocked: false, message: 'Requires Level 5.' } };
+  state.live_systems = { seasonal_boss: { min_level: 8 } };
+  const ctx = vm.createContext({ state, escapeHtml: String, routeButton: (_,route) => '<button>' + route.focus + '</button>' });
+  vm.runInContext(gates,ctx);
+  const render = (...keys) => ctx.goalRouteMarkup(keys.map(focus => ({focus})),true);
+  assert.match(render('weekly-boss'), /Requires Level 5/);
+  assert.doesNotMatch(render('weekly-boss','seasonal-boss','equipment'), /<button>/);
+  assert.match(render('equipment','shop'), /<button>shop<\/button>/);
+  state.pet.level = 8;
+  state.capabilities.weekly_boss = { state: 'AVAILABLE', unlocked: true };
+  state.guidance.weekly_boss = { available: false, attempt_used: true };
+  state.gear = [{ item_key: 'lamp' }];
+  state.guidance.shop_items = [{ key: 'lamp', unlocked: true }];
+  for (const target of ['weekly-boss','seasonal-boss','equipment']) assert.match(render(target), /<button>/);
 });
 
 test('daily mission completion and bonus payment are distinct authoritative states', () => {

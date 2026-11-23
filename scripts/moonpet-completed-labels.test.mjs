@@ -10,7 +10,7 @@ const fn=(start,end)=>client.slice(client.indexOf('  function '+start),client.in
 const marker=name=>client.slice(client.indexOf('// TEST-EXPORT: '+name+':start'),client.indexOf('// TEST-EXPORT: '+name+':end'));
 const context=extra=>vm.createContext({state:null,number:Number,words:String,escapeHtml:String,window:{},petActionRefreshRequired:false,
  panel:(_title,body)=>body,objectiveRouteButton:()=>'',activePetProgression:()=>({}),weeklyJourneyMarkup:()=>'',dailyJourneyMarkup:()=>'',
- activePetSummary:()=>'',renderPlayNow:()=>'',renderContracts:()=>'',renderDailyCompletion:()=>'',renderSeasonFinales:()=>'',dailyObjectiveMarkup:()=>'',meter:()=>'',...extra});
+ activePetSummary:()=>'',renderLegendaryRoadmap:()=>'',renderPlayNow:()=>'',renderContracts:()=>'',renderDailyCompletion:()=>'',renderSeasonFinales:()=>'',dailyObjectiveMarkup:()=>'',meter:()=>'',...extra});
 
 test('signed saved mission evidence produces completion labels without changing balances or flags',async()=>{
  const f=await performanceFixture();
@@ -69,7 +69,7 @@ test('a partial daily bonus read shows Refresh instead of an unverified claim bu
   pet:{pet_id:'p'},lifecycle:{phase:'young'},
   guidance:{daily_completion:{ready:true,pending:[{utc_day:'2026-10-27'}]}}
  }});
- vm.runInContext(fn('renderDailyCompletion()','renderMissionStatus('),c);
+ vm.runInContext(fn('renderDailyCompletion(','renderMissionStatus('),c);
  const missingRewards=c.renderDailyCompletion();
  assert.match(missingRewards,/BONUS STATUS UNAVAILABLE \/\/ TAP REFRESH/);
  assert.doesNotMatch(missingRewards,/CLAIM BONUS|✅ Completed/);
@@ -120,7 +120,7 @@ test('all six menus suppress unverified completion and actions after uncertain r
 
 test('7/7 completion wording preserves pending claims and does not mark partial or unavailable bonuses',()=>{
  const c=context({button:()=>'<button>claim</button>',state:{pet:{pet_id:'p'},lifecycle:{phase:'young'}}});
- vm.runInContext(fn('renderDailyCompletion()','renderMissionStatus('),c);
+ vm.runInContext(fn('renderDailyCompletion(','renderMissionStatus('),c);
  for(const [bonus,complete] of [[{claimed:true,pending:[]},true],[{ready:true,pending:[{utc_day:'2026-10-21',pet_id:'p'}]},true],[{ready:false,pending:[]},false],[{available:false},false]]){
   c.state.guidance={daily_completion:{rewards:{pet_xp:0},...bonus}};const html=c.renderDailyCompletion();assert.equal(html.includes('✅ Completed'),complete);
   if(bonus.ready)assert.ok(html.includes('<button>claim</button>'),'completed checklist must retain its unpaid reward action');

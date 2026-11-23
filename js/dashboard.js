@@ -7,58 +7,109 @@
 (function () {
   'use strict';
 
-  const DATA = {
-    siteStats:              '/js/site-stats.json',
-    contentGaps:            '/js/content-gaps.json',
-    expansionPlan:          '/js/expansion-plan.json',
-    growthPriority:         '/js/growth-priority.json',
-    clusterHealth:          '/js/cluster-health.json',
-    authorityDrift:         '/js/authority-drift.json',
-    entityChangelog:        '/js/entity-changelog.json',
-    editorialChangelog:     '/js/editorial-changelog.json',
-    authorityTrust:         '/js/authority-trust.json',
-    timelineIntelligence:   '/js/timeline-intelligence.json',
-    predictiveGrowth:       '/js/predictive-growth.json',
-    governanceSignals:      '/js/governance-signals.json',
-    publishingReadiness:    '/js/publishing-readiness.json',
-  };
+  const reportRequests = new Map();
 
-  // ── Bootstrap ────────────────────────────────────────────────────────────
-  function init() {
-    Promise.allSettled(
-      Object.entries(DATA).map(([key, url]) =>
-        fetch(url)
-          .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-          .then(data => [key, data])
-          .catch(err => { console.warn(`Dashboard: failed to load ${url}: ${err.message}`); return [key, null]; })
-      )
-    ).then(results => {
-      const loaded = {};
-      for (const r of results) {
-        if (r.status === 'fulfilled') {
-          const [key, val] = r.value;
-          loaded[key] = val;
-        }
-      }
-      render(loaded);
-    });
+  function loadReport(name) {
+    if (!reportRequests.has(name)) {
+      reportRequests.set(name, fetch(`/js/${name}.json`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .catch(error => {
+          console.warn(`Dashboard: failed to load ${name}:`, error);
+          return null;
+        }));
+    }
+    return reportRequests.get(name);
   }
 
-  // ── Top-level render ─────────────────────────────────────────────────────
-  function render(d) {
-    renderSummaryMetrics(d.siteStats, d.contentGaps, d.authorityDrift);
-    renderClusterHealth(d.clusterHealth);
-    renderContentGaps(d.contentGaps);
-    renderAuthorityDrift(d.authorityDrift);
-    renderEntityChangelog(d.entityChangelog);
-    renderGrowthPriority(d.growthPriority);
-    renderExpansionPlan(d.expansionPlan);
-    renderAuthorityTrust(d.authorityTrust);
-    renderTimelineIntelligence(d.timelineIntelligence);
-    renderEditorialChangelog(d.editorialChangelog);
-    renderPredictiveGrowth(d.predictiveGrowth);
-    renderGovernanceSignals(d.governanceSignals);
-    renderPublishingReadiness(d.publishingReadiness);
+  function initReports() {
+    const embedded = document.getElementById('dashboard-summary-data');
+    if (embedded) {
+      const { stats, gaps, drift } = JSON.parse(embedded.textContent);
+      renderSummaryMetrics(stats, gaps, drift);
+    } else {
+      Promise.all(['site-stats', 'content-gaps', 'authority-drift'].map(loadReport))
+        .then(([stats, gaps, drift]) => renderSummaryMetrics(stats, gaps, drift));
+    }
+
+    const reports = [
+      ['blog-editions', renderBlogEditions],
+      ['cluster-health', renderClusterHealth],
+      ['content-gaps', renderContentGaps],
+      ['authority-drift', renderAuthorityDrift],
+      ['entity-changelog', renderEntityChangelog],
+      ['growth-priority', renderGrowthPriority],
+      ['expansion-plan', renderExpansionPlan],
+      ['authority-trust', renderAuthorityTrust],
+      ['timeline-intelligence', renderTimelineIntelligence],
+      ['editorial-changelog', renderEditorialChangelog],
+      ['predictive-growth', renderPredictiveGrowth],
+      ['governance-signals', renderGovernanceSignals],
+      ['publishing-readiness', renderPublishingReadiness],
+    ];
+
+    const loaders = new Map();
+    const observer = typeof IntersectionObserver === 'undefined' ? null :
+      new IntersectionObserver(entries => {
+        for (const { target, isIntersecting } of entries) {
+          if (isIntersecting) loadObservedReport(target);
+        }
+      }, { rootMargin: '200px 0px' });
+
+    function loadObservedReport(section) {
+      const load = loaders.get(section);
+      if (!load) return;
+      loaders.delete(section);
+      observer.unobserve(section);
+      load();
+    }
+
+    function loadLinkedReport() {
+      const linkedElement = document.getElementById(window.location.hash.slice(1));
+      loadObservedReport(linkedElement?.closest('.dash-section'));
+    }
+
+    for (const [name, renderReport] of reports) {
+      const target = qs(`#dash-${name}`);
+      if (!target) continue;
+      const load = async () => {
+        target.setAttribute('aria-busy', 'true');
+        try {
+          renderReport(await loadReport(name));
+        } finally {
+          target.removeAttribute('aria-busy');
+        }
+      };
+
+      const section = target.closest('.dash-section');
+      if (observer && section) {
+        loaders.set(section, load);
+        observer.observe(section);
+      } else {
+        load();
+      }
+    }
+    loadLinkedReport();
+    window.addEventListener('hashchange', loadLinkedReport);
+  }
+
+  function renderBlogEditions(data) {
+    const container = qs('#dash-blog-editions');
+    if (!container) return;
+    if (!data || !Array.isArray(data.editions)) {
+      container.textContent = 'Reading-library data is unavailable.';
+      return;
+    }
+    const pages = new Set(data.editions.map(entry => entry.url));
+    const categories = new Set(data.editions.map(entry => entry.category));
+    const duplicates = data.editions.filter(entry => entry.duplicate_of).length;
+    const paragraph = document.createElement('p');
+    paragraph.textContent = data.editions.length + ' source posts → ' + pages.size +
+      ' reading editions across ' + categories.size + ' categories. ' + duplicates +
+      ' exact duplicate shares its reading destination.';
+    container.replaceChildren(paragraph);
   }
 
   // ── Summary Metrics ──────────────────────────────────────────────────────
@@ -66,8 +117,8 @@
     const container = qs('#dash-summary');
     if (!container) return;
 
-    const totalEntities    = (stats && (stats.totalEntities || stats.entity_count))      || '—';
-    const totalWikiPages   = (stats && (stats.total_wiki_pages || stats.totalArticles || stats.article_count)) || '—';
+    const publishedPages   = stats?.published_pages ?? '—';
+    const indexedWikiPages = stats?.indexed_pages ?? '—';
     const totalArticles    = (stats && stats.total_articles) || '—';
     const nftTemplates     = (stats && stats.nft_template_pages) || 0;
     const totalCategories  = (stats && (stats.totalCategories || stats.category_count))   || '—';
@@ -77,12 +128,12 @@
 
     container.innerHTML = `
       <div class="dash-metric">
-        <span class="dash-metric-value">${totalEntities}</span>
-        <span class="dash-metric-label">Total Entities</span>
+        <span class="dash-metric-value">${publishedPages}</span>
+        <span class="dash-metric-label">Published Pages</span>
       </div>
       <div class="dash-metric">
-        <span class="dash-metric-value">${totalWikiPages}</span>
-        <span class="dash-metric-label">Wiki Pages</span>
+        <span class="dash-metric-value">${indexedWikiPages}</span>
+        <span class="dash-metric-label">Indexed Wiki Pages</span>
       </div>
       <div class="dash-metric">
         <span class="dash-metric-value">${totalArticles}</span>
@@ -98,7 +149,7 @@
       </div>
       <div class="dash-metric ${orphanCount > 0 ? 'dash-metric--warn' : ''}">
         <span class="dash-metric-value">${orphanCount}</span>
-        <span class="dash-metric-label">Orphan Pages</span>
+        <span class="dash-metric-label">Isolated Wiki Pages</span>
       </div>
       <div class="dash-metric ${gapCount > 0 ? 'dash-metric--warn' : ''}">
         <span class="dash-metric-value">${gapCount}</span>
@@ -106,7 +157,7 @@
       </div>
       <div class="dash-metric ${highDrift > 0 ? 'dash-metric--alert' : ''}">
         <span class="dash-metric-value">${highDrift}</span>
-        <span class="dash-metric-label">Authority Drift</span>
+        <span class="dash-metric-label">Authority / Link Gap</span>
       </div>
     `;
   }
@@ -167,12 +218,20 @@
     const container = qs('#dash-content-gaps');
     if (!container) return;
 
-    if (!data || !data.underlinked_pages || !data.underlinked_pages.length) {
+    if (!data || !data.underlinked_pages) {
       container.innerHTML = noData('Content gap data not available.');
       return;
     }
 
-    const pages = data.underlinked_pages.slice(0, 15);
+    const underlinked = data.underlinked_pages.filter(page =>
+      page.url.startsWith('/wiki/') &&
+      page.reasons.some(reason => reason.startsWith('low_inbound_links:'))
+    );
+    if (!underlinked.length) {
+      container.innerHTML = noData('No high-priority wiki pages have fewer than three inbound links.');
+      return;
+    }
+    const pages = underlinked.slice(0, 15);
     const rows = pages.map(p => {
       const slug = p.url.replace(/^\/wiki\//, '').replace(/\.html$/, '');
       const label = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -188,7 +247,7 @@
     }).join('');
 
     container.innerHTML = `
-      <p class="dash-section-note">Top ${pages.length} under-linked pages (out of ${data.underlinked_pages.length} total)</p>
+      <p class="dash-section-note">Top ${pages.length} under-linked wiki pages (out of ${underlinked.length} total). Content-planning signals are counted separately.</p>
       <table class="dash-table">
         <thead>
           <tr>
@@ -223,14 +282,14 @@
     const rows = highItems.map(e => {
       const title = e.title.replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim();
       const dirIcon =
-        e.drift_direction === 'authority_exceeds_centrality' ? '⬆️ Auth' :
-        e.drift_direction === 'centrality_exceeds_authority' ? '⬇️ Cent' : '⚖️';
+        e.drift_direction === 'authority_exceeds_links' ? '⬆️ Authority' :
+        e.drift_direction === 'links_exceed_authority' ? '⬆️ Links' : '⚖️';
       const driftPct = (e.drift * 100).toFixed(1);
       return `
         <tr>
           <td><a href="${e.url}">${title}</a></td>
           <td class="num">${e.authority_score}</td>
-          <td class="num">${e.graph_centrality}</td>
+          <td class="num">${e.inbound_links}</td>
           <td class="num drift-dir">${dirIcon}</td>
           <td class="num"><span class="badge badge-red">${driftPct}%</span></td>
         </tr>
@@ -241,16 +300,17 @@
       <p class="dash-section-note">
         <span class="badge badge-red">${data.summary.high_drift_count} high</span>
         <span class="badge badge-yellow">${data.summary.medium_drift_count} medium</span>
-        &nbsp;avg drift: ${(data.summary.avg_drift * 100).toFixed(1)}%
+        &nbsp;avg rank gap: ${(data.summary.avg_drift * 100).toFixed(1)}%
       </p>
+      <p class="dash-section-note">Editorial authority versus actual inbound wiki links, compared by percentile rank. This is an internal linking signal, not a Google ranking or penalty.</p>
       <table class="dash-table">
         <thead>
           <tr>
             <th>Entity</th>
             <th>Authority Score</th>
-            <th>Graph Centrality</th>
+            <th>Inbound Links</th>
             <th>Direction</th>
-            <th>Drift</th>
+            <th>Rank Gap</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -851,7 +911,36 @@
   function noData(msg) { return `<p style="color:var(--color-text-muted)">${msg}</p>`; }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
-  function initAll() { init(); }
+  function initAll() {
+    initReports();
+    const directory = qs('#dash-page-directory');
+    if (!directory) return;
+    const container = qs('#dash-page-links');
+    let requested = false;
+    directory.addEventListener('toggle', async () => {
+      if (!directory.open || requested) return;
+      requested = true;
+      container.textContent = 'Loading pages…';
+      try {
+        const response = await fetch('/js/graph-data.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const { nodes } = await response.json();
+        const list = document.createElement('ul');
+        for (const node of nodes.sort((a, b) => a.title.localeCompare(b.title) || a.url.localeCompare(b.url))) {
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = node.url;
+          link.textContent = node.title;
+          item.appendChild(link);
+          list.appendChild(item);
+        }
+        container.replaceChildren(list);
+      } catch {
+        requested = false;
+        container.textContent = 'Could not load the directory. Close and reopen it to try again.';
+      }
+    });
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);

@@ -215,9 +215,9 @@ if (!shellJs) {
   console.log('\n[2b] site-shell.js Sparky global marker');
   const sparkyCompatibilityChecks = [
     ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
-    ["sparkyAgent.href = '/gpt-users.html'", 'public ChatGPT Studio link target'],
+    ["sparkyAgent.href = '/ai-user.html'", 'public ChatGPT Studio link target'],
     ["/SPARKY%20FLOATING%20CLIP.png", 'SWARMSY/Sparky floating PNG asset'],
-    ["Start creating with ChatGPT via the SPARKY Creator Studio", 'ChatGPT Studio aria label'],
+    ["Start a campaign with the SPARKY AI Creator Studio", 'ChatGPT Studio aria label'],
   ];
   for (const [needle, label] of sparkyCompatibilityChecks) {
     if (shellJs.includes(needle)) {

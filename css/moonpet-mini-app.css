@@ -441,6 +441,60 @@ button, input, select, textarea {
   font-size: 11px;
 }
 
+.journey-overview {
+  display: grid;
+  gap: 7px;
+  margin: 8px 0 10px;
+}
+
+.journey-band {
+  display: grid;
+  grid-template-columns: minmax(78px, .34fr) minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(var(--section-missions), .18);
+  border-radius: var(--radius-small);
+  background: rgba(var(--section-missions), .045);
+}
+
+.journey-band > span {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.journey-band > div { min-width: 0; }
+.journey-band strong { color: var(--ui-text); font-size: 11px; overflow-wrap: anywhere; }
+.journey-band small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.journey-band .line { padding-inline: 0; }
+.journey-band .season-status-grid { margin-bottom: 0; }
+
+.journey-routes {
+  margin: 9px 0;
+  padding: 0 10px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-small);
+  background: rgba(255,255,255,.015);
+}
+
+.journey-routes > summary {
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.journey-routes[open] > summary { color: var(--ui-text); }
+
 .progression-split {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -639,7 +693,7 @@ button, input, select, textarea {
   display: grid;
   align-items: center;
   gap: 4px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--moonpet-nav-count, 6), minmax(0, 1fr));
   position: relative;
   z-index: 60;
   width: 100%;
@@ -1013,6 +1067,7 @@ button, input, select, textarea {
 
 [data-panel="daily-journey"],
 [data-panel="weekly-journey"],
+[data-panel="legendary-roadmap"],
 [data-panel="missions"],
 [data-panel="achievements"] {
   --section-rgb: var(--section-missions);

@@ -346,7 +346,12 @@ try {
       return route.abort();
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
-    await page.goto(url);
+    await page.goto(url + '?screen=missions&focus=legendary-roadmap');
+    await page.waitForSelector('[data-panel="entry"][data-route-selected]');
+    assert.equal(await page.locator('#nav [data-screen="missions"]').count(), 0, 'unavailable Missions is hidden before adoption');
+    assert.equal(await page.locator('[data-panel="legendary-roadmap"]').count(), 0, 'locked roadmap is not shown before adoption');
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(() => document.querySelector('#terminal-output').innerText === 'LIVE SAVE REFRESHED.');
     await page.waitForSelector('[data-panel="entry"]');
     const initialise = page.locator('[data-panel="entry"] [data-action="adopt"]');
     await initialise.waitFor();
@@ -354,7 +359,7 @@ try {
     assert.match(await page.locator('#screen').innerText(), /999 \/ 1,000 LIFETIME ARCADE XP/);
     assert.equal(await page.locator('a:has-text("PLAY WEBSITE ARCADE")').getAttribute('href'), '/games/');
     sqlite.prepare('UPDATE arcade_progression_state SET arcade_xp_total=1000 WHERE telegram_id=?').run(id);
-    await page.reload();
+    await page.goto(url);
     await page.waitForSelector('[data-panel="entry"]');
     await page.waitForSelector('[data-panel="entry"] [data-action="adopt"]:enabled');
     await initialise.click();
@@ -410,7 +415,7 @@ try {
     assert.equal(await page.locator('.mission-status [data-current-mission]').count(), 1);
     assert.equal(await page.locator('[data-panel="missions"] .mission-row-current').count(), 1);
     assert.equal(await page.locator('#screen').evaluate(node => node.scrollWidth <= node.clientWidth), true, 'mission status fits narrow Telegram controls');
-    for (const [tab, panel] of [['work','timed-activity'],['economy','equipment'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
+    for (const [tab, panel] of [['work','timed-activity'],['economy','shop'],['profile','pet-spaces'],['explore','districts'],['missions','contracts']]) {
       await page.locator(`[data-screen="${tab}"]`).click();
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${tab} renders immediately from the shared projection`);
       if(tab === 'profile') await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
@@ -426,7 +431,8 @@ try {
     await page.waitForFunction(node => !node.isConnected, renderedContracts, { timeout: 10000 });
     assert.deepEqual(modes, ['core','full','profile','full'], 'Missions Refresh retains full state instead of discarding other tabs');
     await page.locator('[data-screen="economy"]').click();
-    assert.equal(await page.locator('[data-panel="equipment"]').count(), 1);
+    assert.equal(await page.locator('[data-panel="shop"]').count(), 1);
+    assert.equal(await page.locator('[data-panel="equipment"]').count(), 0, 'the empty Equipment panel stays hidden');
     assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
     assert.deepEqual(modes, ['core','full','profile','full']); assert.deepEqual(errors, []);
     console.log(`Background tab readiness and Missions refresh browser flow passed at ${viewport.width}x${viewport.height}`);
@@ -551,77 +557,109 @@ try {
     console.log(`All-menu saved inbox, free review, responsive dock and real claim clearing passed at ${viewport.width}x${viewport.height}`);
     await context.close();
   }
-  // Exercise the partial response with the real renderer, including a delayed
-  // Missions deep link and subsequent navigation to a full-state screen.
+  // Delay full reads to exercise deep links, interrupted Home warmup and navigation.
   {
     const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const modes = [], errors = [];
-    let holdFullResponse = false, releaseFullResponse, fullRequestStarted;
-    let fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
-    let fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
-    let releaseMissions;
-    let missionsGate = new Promise(resolve => { releaseMissions = resolve; });
+    let nextFullGate;
+    let staleHelper;
+    const helperRetries = [];
+    let failLeaderboard = false, leaderboardFailures = 0;
+    let failWeeklyJourney = false;
+    const missionDb = { ...db, prepare(sql) {
+      if (failLeaderboard && sql.includes('FROM ranked r JOIN telegram_pet_profiles')) {
+        leaderboardFailures++;
+        throw Error('leaderboard unavailable');
+      }
+      if (failWeeklyJourney && sql.includes('FROM telegram_pet_weekly_journey_objectives o') &&
+          sql.includes('GROUP BY o.objective_id')) throw Error('weekly objectives unavailable');
+      return db.prepare(sql);
+    } };
+    function holdNextFullResponse() {
+      let release;
+      nextFullGate = new Promise(resolve => { release = resolve; });
+      return release;
+    }
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
       if (url.pathname === '/telegram/group-membership') return route.fulfill({ status: 200, json: { ok:true, member:true, status:'member', group:'@gkniftyheads' } });
+      if (staleHelper && url.pathname === '/js/moonpet-play-options.js') {
+        if (!url.searchParams.has('moonpet_retry')) return route.fulfill({ contentType: 'text/javascript', body: staleHelper });
+        helperRetries.push(url);
+      }
       if (url.pathname.endsWith('/telegram-pets/app/state')) {
         const body = route.request().postDataJSON();
         modes.push(body.mode || 'full');
-        if (body.mode === 'missions') await missionsGate;
-        const state = body.mode === 'core'
-          ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
-          : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(db, 'browser-missions') : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.state_mode || body.mode });
-        if (!body.mode && holdFullResponse) {
-          holdFullResponse = false;
-          fullRequestStarted();
-          await fullResponseGate;
+        if (!body.mode && nextFullGate) {
+          const gate = nextFullGate;
+          nextFullGate = null;
+          await gate;
         }
-        return route.fulfill({ json: { ok: true, state } });
+        try {
+          const state = body.mode === 'core'
+            ? await hooks.buildPetMiniAppCoreState(missionDb, 'browser-missions')
+            : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(missionDb, 'browser-missions') : await hooks.buildPetMiniAppState(missionDb, 'browser-missions', token, { mode: body.state_mode || body.mode });
+          return route.fulfill({ json: { ok: true, state } });
+        } catch (error) {
+          if (!failLeaderboard) throw error;
+          return route.fulfill({ status: 503, json: { error: 'mini_app_state_failed' } });
+        }
       }
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.hostname === '127.0.0.1') return route.continue();
       return route.abort();
     });
+    let releaseFullResponse = holdNextFullResponse();
     await page.goto(`http://127.0.0.1:${server.address().port}/moonpet-game.html?screen=missions&focus=contracts`);
     await page.waitForSelector('[data-panel="module-loading"]');
-    releaseMissions();
+    releaseFullResponse();
     await page.waitForSelector('[data-panel="contracts"][open]');
-    assert.deepEqual(modes, ['core', 'missions'], 'Missions deep link does not request full state');
-    for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','season-finale','achievements']) {
-      assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders from Missions-only data`);
+    assert.deepEqual(modes, ['core', 'full'], 'Missions deep link loads full roadmap data');
+    const roadmapRoutes = page.locator('[data-panel="legendary-roadmap"] [data-jump]');
+    assert.equal(await roadmapRoutes.count(), 8);
+    const journeyText = await page.locator('[data-panel="legendary-roadmap"]').textContent();
+    for (const band of ['NOW', 'TODAY', 'THIS WEEK', 'NEXT EVOLUTION', 'LIFETIME']) assert.match(journeyText, new RegExp(band));
+    assert.equal(await page.locator('[data-panel="legendary-roadmap"] .journey-routes').getAttribute('open'), null,
+      'secondary gameplay routes stay collapsed to avoid dashboard bloat');
+    for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','achievements']) {
+      assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders alongside the roadmap`);
     }
-    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-missions-partial.png') });
+    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-missions-roadmap.png') });
     await page.locator('[data-screen="home"]').click();
     await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="missions"]').click();
-    assert.deepEqual(modes, ['core', 'missions'], 'reopening Missions reuses its ready projection');
-    holdFullResponse = true;
-    await page.locator('[data-screen="explore"]').click();
-    await fullRequestGate;
+    assert.deepEqual(modes, ['core', 'full'], 'reopening Missions reuses its ready projection');
+    modes.length = 0;
+    releaseFullResponse = holdNextFullResponse();
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=explore`);
     await page.waitForSelector('[data-panel="module-loading"]');
     await page.locator('[data-utility="sync"]').click();
     await page.waitForSelector('[data-panel="moon-run"]');
-    assert.deepEqual(modes, ['core', 'missions', 'full', 'full'], 'Refresh while Explore is loading requests its full projection, not another core snapshot');
+    assert.deepEqual(modes, ['core', 'full', 'full'], 'Refresh while Explore is loading requests its full projection, not another core snapshot');
+    releaseFullResponse();
+    // Missions must finish even while the original Home warmup is still held.
+    modes.length = 0;
+    releaseFullResponse = holdNextFullResponse();
+    const warmup = page.waitForRequest(request => request.url().endsWith('/telegram-pets/app/state') && !request.postDataJSON()?.mode);
+    await page.goto(`${fixtureOrigin}/moonpet-game.html`);
+    await warmup;
+    await page.locator('[data-screen="missions"]').click();
+    await roadmapRoutes.first().waitFor({ state: 'attached' });
+    assert.equal(await roadmapRoutes.count(), 8);
+    assert.deepEqual(modes, ['core', 'full', 'full']);
     releaseFullResponse();
     // A shared request for a different module must not consume the new route's
     // panel focus before its own module exists.
     for (const leaveWhileLoading of [false, true]) {
-      missionsGate = new Promise(resolve => { releaseMissions = resolve; });
-      fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
-      fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
-      holdFullResponse = true;
-      await page.goto(`${fixtureOrigin}/moonpet-game.html`);
-      await page.waitForSelector('[data-panel="care"]');
-      await page.locator('[data-panel="recommended"] [data-jump="missions"]').click();
+      releaseFullResponse = holdNextFullResponse();
+      await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions`);
       await page.waitForSelector('[data-panel="module-loading"]');
       await page.locator('[data-screen="home"]').click();
       await page.locator('[data-panel="recommended"] [data-jump="explore"]').click();
-      releaseMissions();
-      await fullRequestGate;
       await page.waitForSelector('[data-panel="module-loading"]');
       if (leaveWhileLoading) await page.locator('[data-screen="home"]').click();
       const hydrated = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && !response.request().postDataJSON().mode);
@@ -637,7 +675,48 @@ try {
         await page.waitForSelector('[data-panel="moon-run"][open]', { timeout: 2000 });
       }
     }
-    assert.deepEqual(errors, [], 'partial-state navigation has no runtime exceptions');
+    modes.length = 0;
+    failLeaderboard = true;
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions&focus=daily-journey`);
+    await page.waitForSelector('[data-panel="daily-journey"][open]');
+    assert.ok(leaderboardFailures > 0);
+    assert.equal(modes.at(-1), 'missions');
+    assert.equal(await page.locator('[data-panel="module-loading"]').count(), 0);
+    await page.locator('[data-panel="contracts"] > summary').click();
+    assert.equal(await page.locator('[data-panel="contracts"][open]').count(), 1);
+    assert.match(await page.locator('[data-panel="legendary-roadmap"]').textContent(), /SYNCING/);
+    assert.equal(await roadmapRoutes.count(), 0);
+    failLeaderboard = false;
+    await page.locator('[data-utility="sync"]').click();
+    await roadmapRoutes.first().waitFor({ state: 'attached' });
+    assert.equal(await roadmapRoutes.count(), 8);
+
+    // Simulate the cached helper from before the compact journey fields existed.
+    staleHelper = await fs.readFile(path.join(root, 'js/moonpet-play-options.js'), 'utf8') +
+      '\ndelete window.MoonpetPlayOptions.journeyDashboardVersion;' +
+      '\nconst oldRoadmap = window.MoonpetPlayOptions.legendaryRoadmap;' +
+      '\nwindow.MoonpetPlayOptions.legendaryRoadmap = state => { const road = oldRoadmap(state); delete road.journey; return road; };';
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=missions&focus=legendary-roadmap`);
+    const roadmap = page.locator('[data-panel="legendary-roadmap"][open]');
+    await roadmap.waitFor();
+    assert.match(await roadmap.innerText(), /SYNCING/);
+    assert.equal(await page.evaluate(() => typeof window.MoonpetPlayOptions.runAvailability), 'function');
+    assert.equal(await page.evaluate(() => typeof window.MoonpetPlayOptions.legendaryRoadmap), 'function');
+    await page.locator('[data-utility="sync"]').click();
+    await roadmapRoutes.first().waitFor();
+    assert.equal(await roadmapRoutes.count(), 8);
+    assert.equal(helperRetries.length, 1);
+    assert.equal(helperRetries[0].searchParams.get('v'), '20261118-journey-dashboard-v1');
+
+    const routes = roadmap.locator('.journey-routes');
+    await routes.locator('summary').click();
+    await routes.locator('[data-jump]').first().waitFor();
+    failWeeklyJourney = true;
+    await page.locator('[data-utility="sync"]').click();
+    await roadmap.getByText('WEEKLY JOURNEY // SYNCING', { exact: true }).waitFor();
+    assert.equal(await routes.getAttribute('open'), '', 'refresh preserves the open routes disclosure');
+    assert.equal(await roadmap.getByText('0/5 OBJECTIVES', { exact: true }).count(), 0);
+    assert.deepEqual(errors, [], 'Missions remains usable after state and script recovery');
     await context.close();
   }
   // A locked PvP move is immutable while waiting for the opponent. Reloading
@@ -966,7 +1045,7 @@ try {
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().floor.mode), 'concrete', 'egg keeps its saved default Home floor');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.filter(action=>action !== 'guidance_ack').length;
-    for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+    for (const section of ['home', 'profile']) {
       await page.locator(`[data-screen="${section}"]`).click();
       if(section === 'profile') await page.waitForSelector('[data-panel="pet-house"] [data-action="house_place"]', {state:'attached'});
       const panels = page.locator('#screen > details.panel');
@@ -984,7 +1063,7 @@ try {
       })));
       assert.ok(controlGuidance.every(item => item.purpose && item.purpose.length > 30 && item.badge && item.label && item.description && item.descriptionRefsValid && item.requirementsDescribed), `${section} real action buttons explain purpose and consequence`);
       assert.ok(await page.locator('#screen [data-jump]').evaluateAll(nodes => nodes.every(node => node.textContent.includes('NO COST') && node.querySelector('.button-purpose'))), `${section} menu routes say they only navigate`);
-      assert.equal(await page.locator('#nav small').count(), 6, 'all dock tabs have a visible purpose label');
+      assert.equal(await page.locator('#nav small').count(), 2, 'an egg only shows the Home and Profile sections it can use');
       const expectedOpenPanels = section === 'home' ? ['pet-spaces','recommended'] : section === 'profile' ? ['pet-spaces'] : [];
       const openPanels = await page.locator('#screen > details[open]').evaluateAll(nodes=>nodes.map(node=>node.dataset.panel).sort());
       assert.deepEqual(openPanels,expectedOpenPanels,'pet selection is visible while unrelated detail panels start collapsed');
@@ -1014,7 +1093,7 @@ try {
     await page.waitForFunction(node => !node.isConnected, oldCare);
     assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), true, 'refresh preserves expansion');
     await page.locator('[data-panel="care"] > summary').click();
-    await page.locator('[data-screen="missions"]').click();
+    await page.locator('[data-screen="profile"]').click();
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), false, 'navigation preserves explicit collapse');
     await page.locator('[data-panel="recommended"] [data-jump]').first().click();
@@ -1093,7 +1172,7 @@ try {
     assert.equal(actions.length, helpActionsBefore, 'opening and dismissing help spends and writes nothing');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-canvas-tools-${viewport.width}.png`) });
     await page.locator('[data-screen="home"]').click();
-    assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
+    assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 2 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'the two egg navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
     const dancesBefore = actions.filter(action => action === 'dance').length;
     const radioAttemptsBefore=await page.evaluate(()=>window.radioTapChecks.length);
@@ -1105,10 +1184,8 @@ try {
     assert.equal(actions.filter(action => action === 'dance').length, dancesBefore + 1, 'Dance submits its gameplay mutation once');
     assert.equal(await page.evaluate(()=>window.radioTapChecks.length),radioAttemptsBefore,'rendered Dance button does not call media play');
     assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-radio-preference')), 'off', 'completed Dance keeps manual radio Off');
-    for (const screen of ['work', 'economy']) {
-      await page.locator(`[data-screen="${screen}"]`).click();
-      assert.equal(await page.locator('#screen [data-action]:not([disabled])').count(), 0, 'egg must not advertise actions that require hatching: ' + screen);
-      assert.ok((await page.locator('#screen').textContent()).includes('HATCH REQUIRED'));
+    for (const screen of ['missions', 'explore', 'work', 'economy']) {
+      assert.equal(await page.locator(`[data-screen="${screen}"]`).count(), 0, 'egg must hide sections that require hatching: ' + screen);
     }
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-panel="practice"], [data-focus="practice"], [data-practice-action]').count(), 0);
@@ -1793,7 +1870,8 @@ try {
     const savedPayload = JSON.parse(await savedButton.getAttribute('data-payload'));
     assert.equal(savedPayload.pet_id,sourcePetId); assert.equal(savedPayload.contract_id,savedContract.contract_id);
     assert.equal(await page.locator('[data-action="contract_start"]').count(),0);
-    assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('Hatch your Secret Bot to start new contracts'));
+    assert.doesNotMatch(await page.locator('[data-panel="contracts"]').textContent(), /Hatch your Secret Bot to start new contracts/);
+    assert.equal(await page.locator('[data-panel="daily-completion"], [data-panel="season-finale"]').count(),0);
     assert.ok(await savedButton.evaluate((button) => button.getBoundingClientRect().right <= innerWidth));
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png',`-contract-recovery-${viewport.width}.png`)});
     const [savedResponse] = await Promise.all([
@@ -2445,9 +2523,10 @@ try {
     assert.equal(shopProjection.length, 17);
     for (const item of shopProjection) {
       const card = page.locator('[data-panel="shop"] [data-action]').filter({ hasText: item.title });
-      assert.equal(await card.count(), 1);
+      assert.equal(await card.count(), item.unlocked ? 1 : 0, item.title + ' follows its shop unlock');
+      if (!item.unlocked) continue;
       assert.ok((await card.textContent()).includes('UNLOCK LEVEL ' + item.min_level));
-      assert.equal(await card.isDisabled(), !item.unlocked || (!item.owned && !item.affordable) || item.equipped);
+      assert.equal(await card.isDisabled(), (!item.owned && !item.affordable) || item.equipped);
       assert.equal(await card.locator('.fact-cost').count() >= 1, true);
     }
     const shoppingFacts = await page.locator('[data-panel="shop"] .action-facts').evaluateAll(nodes => nodes.every(node => node.clientWidth > 0 && node.scrollWidth <= node.clientWidth));
@@ -2640,7 +2719,10 @@ try {
     assert.equal(await page.locator('[data-action="daily_completion_claim"]').count(),0);
     assert.match(await page.locator('.mission-status-heading').textContent(), /7\/7 \/\/ BONUS CLAIMED/);
     assert.equal(await missionNav.locator('.dock-claim-badge').count(), 0);
-    assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/LOCKED/);
+    assert.equal(await page.locator('[data-panel="season-finale"]').count(),0);
+    await page.locator('#nav [data-screen="profile"]').click();
+    await page.waitForSelector('[data-panel="how-to-play"]',{state:'attached'});
+    assert.equal(await page.locator('[data-panel="finale-link"]').count(),0);
     sqlite.prepare(`INSERT INTO telegram_pet_season_completions
       (pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned)
       VALUES (?,?,?,'legendary_moon_guardian',60,10)`).run(finalePet.pet_id,currentUser,finalePet.season_key);

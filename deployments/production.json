@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_reviewed_at": "2026-10-16T13:57:49.206Z",
-  "repository_main_commit_at_review": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
+  "last_reviewed_at": "2026-11-21T23:24:05.669Z",
+  "repository_main_commit_at_review": "565a0f9527264ca5fa808a250c78c4889d9b9626",
   "surfaces": {
     "github-pages": {
       "readiness": "deployable",
@@ -20,14 +20,19 @@
     "workers/moonboys-api": {
       "readiness": "live-deployable",
       "deployment_status": "verified-live",
-      "deployed_commit": "ed03324dcfef0311a62ff3c31a36d8665a2d8421",
-      "deployed_at": "2026-10-16T13:08:04.162Z",
+      "deployed_commit": "565a0f9527264ca5fa808a250c78c4889d9b9626",
+      "deployed_at": "2026-11-21T23:22:19.548Z",
       "verification_urls": [
         "https://moonboys-api.sercullen.workers.dev/deployment-info",
         "https://api.cryptomoonboys.com/deployment-info",
         "https://api.cryptomoonboys.com/health"
       ],
       "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/daily-pfp-roll-2026-11-21.json",
+          "recorded_at": "2026-11-21T23:24:05.669Z"
+        },
         {
           "type": "retained-worker-provenance",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/worker-provenance-clout-pr2-2026-10-16.json",
@@ -39,7 +44,7 @@
           "recorded_at": "2026-08-31T22:34:40.251Z"
         }
       ],
-      "notes": "PR2 #1534 merged; owner-supplied production Wrangler deployment and custom-domain /health + /deployment-info show ed03324 at 2026-10-16T13:08:04.162Z, Wrangler version aa97f39c-95bd-4add-a8f1-20772a1305be. New retained evidence needs independent GitHub Actions live comparison before this PR merges. CHAMPIONSHIP_CLOUT_PILOT_ENABLED=false in deployment bindings; no live Clout award, source smoke test or ranking activation claimed."
+      "notes": "Daily PFP Roll is enabled. The public deployment, health and Clan Operations endpoints passed. The production smoke test did not use a signed Telegram account or award XP."
     },
     "workers/anti-cheat": {
       "readiness": "live-deployable",
@@ -204,19 +209,26 @@
         "108_tag_run_v2_allowlist_funding.sql",
         "109_tag_run_v2_full_automation.sql",
         "110_tag_run_admin_member_blocks.sql",
-        "111_tag_run_reward_only_blocks.sql"
+        "111_tag_run_reward_only_blocks.sql",
+        "128_clan_pfp_roll.sql"
       ],
       "verified_migrations": [
-        "100_championship_clout_foundation.sql"
+        "100_championship_clout_foundation.sql",
+        "128_clan_pfp_roll.sql"
       ],
       "evidence": [
+        {
+          "type": "cloudflare-d1-migration-ledger-and-schema",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/daily-pfp-roll-2026-11-21.json",
+          "recorded_at": "2026-11-21T23:24:05.669Z"
+        },
         {
           "type": "owner-supplied-wrangler-d1-command-summary",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/clout-pr2-d1-migration-2026-10-16.json",
           "recorded_at": "2026-10-16T13:15:41.328Z"
         }
       ],
-      "notes": "Owner-supplied 2026-10-16 Wrangler evidence: migration 100 applied, no pending migrations, four championship tables, D1 migrations ledger row, and PRAGMA foreign_key_check without reported violations. Full required-migration inventory has NOT been independently captured; status intentionally verification-pending. Two private SQL backups moved outside working tree; contents/restore not independently tested. Clout pilot remains disabled."
+      "notes": "Owner-supplied 2026-10-16 Wrangler evidence: migration 100 applied, no pending migrations, four championship tables, D1 migrations ledger row, and PRAGMA foreign_key_check without reported violations. Full required-migration inventory has NOT been independently captured; status intentionally verification-pending. Two private SQL backups moved outside working tree; contents/restore not independently tested. Clout pilot remains disabled. Cloudflare D1 independently confirmed migration 128 and both PFP tables on 2026-11-21."
     }
   }
 }

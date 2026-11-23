@@ -3,7 +3,15 @@
 /* Crypto Moonboys global SWARMSY shell */
 
 :root {
-  --color-bg: #070b12;
+  --color-bg: #080910;
+  --shell-card-bg: #10121c;
+  --shell-card-deep: #0b0d15;
+  --shell-card-hover: #171a29;
+  --shell-card-line: rgba(155, 167, 203, 0.24);
+  --shell-card-corner: 0px;
+  --shell-neon-cyan: #6eeaff;
+  --shell-neon-pink: #ff67ce;
+  --shell-neon-violet: #c3a4ff;
   --color-surface: rgba(10, 15, 24, 0.88);
   --color-surface-2: rgba(16, 24, 36, 0.82);
   --color-panel: rgba(255, 255, 255, 0.045);
@@ -18,7 +26,8 @@
   --color-good: #5ce0a8;
   --color-warn: #f7c948;
   --color-red: #ff7b72;
-  --shell-header-h: 68px;
+  --shell-header-h: 46px;
+  --wax-ticker-height: calc(.875rem + 2px);
   --shell-gutter: clamp(14px, 2vw, 28px);
   --font-sans: 'Rajdhani', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-display: 'Orbitron', 'Rajdhani', 'Segoe UI', sans-serif;
@@ -38,6 +47,7 @@
 html {
   min-height: 100%;
   scroll-behavior: smooth;
+  scroll-padding-top: var(--shell-top-height, 0px);
   overflow-x: hidden;
   background:
     radial-gradient(circle at top left, rgba(247, 201, 72, 0.10), transparent 36vw),
@@ -86,6 +96,29 @@ button {
   cursor: pointer;
 }
 
+#site-shell-top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 220;
+  /* Reserve the ticker row while its stylesheet and script load. */
+  padding-block-end: var(--wax-ticker-height);
+  background: linear-gradient(#000, #000) bottom / 100% var(--wax-ticker-height) no-repeat;
+}
+
+#site-shell-top > #site-header {
+  position: relative;
+  top: auto;
+}
+
+#site-shell-top-spacer {
+  block-size: var(--shell-top-height, calc(var(--shell-header-h) + var(--wax-ticker-height)));
+}
+
+#site-shell-top > [data-shell-market-ticker] {
+  position: absolute;
+  inset: auto 0 0;
+}
+
 #site-header {
   position: sticky;
   top: 0;
@@ -94,16 +127,16 @@ button {
   display: grid;
   grid-template-columns: minmax(180px, auto) minmax(220px, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px var(--shell-gutter);
-  background: rgba(7, 11, 18, 0.94);
-  border-bottom: 1px solid rgba(247, 201, 72, 0.22);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.26);
+  align-content: center;
+  gap: 6px 8px;
+  padding: 2px var(--shell-gutter);
+  background: var(--shell-card-deep);
+  border-bottom: 1px solid var(--shell-card-line);
   backdrop-filter: blur(16px);
 }
 
 body.page-onboarding-shell {
-  --shell-header-h: 68px;
+  --shell-header-h: 46px;
 }
 
 body.page-onboarding-shell #site-header {
@@ -136,7 +169,7 @@ body.page-onboarding-shell #site-header::after {
   background: linear-gradient(180deg, rgba(7, 11, 18, 0.12) 0%, rgba(7, 11, 18, 0.46) 100%);
 }
 
-body.page-onboarding-shell > #site-header > * {
+body.page-onboarding-shell #site-header > * {
   position: relative;
   z-index: 1;
 }
@@ -163,14 +196,18 @@ body.page-onboarding-shell #moonboys-global-status-badge {
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  gap: 10px;
+  gap: 8px;
   color: inherit;
   text-decoration: none;
 }
 
+.site-logo .site-logo-home > span {
+  min-width: 0;
+}
+
 .site-logo img {
-  width: 40px;
-  height: 40px;
+  width: 25px;
+  height: 25px;
   object-fit: cover;
   border: 1px solid rgba(247, 201, 72, 0.35);
   border-radius: 50%;
@@ -192,7 +229,7 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 
 .site-logo .logo-sub {
   display: block;
-  margin-top: 3px;
+  margin-top: 1px;
   color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -202,11 +239,12 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 }
 
 .site-logo .logo-live-feed {
-  font: inherit;
   display: flex;
   gap: 8px;
-  margin-top: 4px;
-  margin-left: 50px;
+  margin-top: 2px;
+  margin-left: 33px;
+  font-size: 0.65rem;
+  line-height: 1.1;
   letter-spacing: normal;
   text-transform: none;
 }
@@ -346,11 +384,11 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 #global-nav,
 .header-nav {
   display: flex;
-  justify-content: flex-end;
+  justify-content: safe flex-end;
   min-width: 0;
   gap: 6px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
 
 #global-nav a,
@@ -358,13 +396,14 @@ body.page-onboarding-shell #moonboys-global-status-badge {
 .header-nav a {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
-  gap: 6px;
-  padding: 7px 10px;
+  min-height: 28px;
+  gap: 5px;
+  padding: 3px 8px;
+  line-height: 1.2;
   color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 999px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
@@ -379,6 +418,13 @@ body.page-onboarding-shell #moonboys-global-status-badge {
   color: var(--color-accent);
   background: rgba(247, 201, 72, 0.10);
   border-color: rgba(247, 201, 72, 0.42);
+}
+
+#global-nav .nav-icon {
+  display: inline-flex;
+  flex: none;
+  inline-size: 1.15em;
+  block-size: 1.15em;
 }
 
 #layout {
@@ -457,10 +503,10 @@ body.sidebar-open #sidebar-overlay {
 .bc-monthly-rewards,
 .bc-season-rewards {
   color: var(--color-text);
-  background: var(--color-panel);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .wiki-page,
@@ -509,11 +555,11 @@ h2,
 .section-heading {
   margin: 28px 0 14px;
   padding: 10px 14px;
-  color: var(--color-accent-2);
-  background: rgba(86, 220, 255, 0.055);
-  border-left: 3px solid rgba(86, 220, 255, 0.55);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.18);
-  border-radius: var(--radius-sm);
+  color: var(--shell-heading-accent, var(--shell-neon-cyan));
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--shell-heading-accent, var(--shell-neon-cyan));
+  border-radius: var(--shell-card-corner);
   font-size: clamp(1.05rem, 2.1vw, 1.45rem);
   text-transform: uppercase;
 }
@@ -631,10 +677,10 @@ table {
   min-width: 0;
   overflow: hidden;
   color: var(--color-text);
-  background: rgba(7, 11, 18, 0.86);
-  border: 1px solid rgba(86, 220, 255, 0.22);
-  border-radius: 8px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28), 0 0 26px rgba(86, 220, 255, 0.06);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .gk-showcase-card:first-child {
@@ -859,9 +905,9 @@ table {
   min-width: 0;
   padding: 10px;
   color: var(--color-text);
-  background: rgba(7, 11, 18, 0.48);
-  border: 1px solid rgba(86, 220, 255, 0.12);
-  border-radius: 8px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
   box-shadow: none;
 }
 
@@ -1129,9 +1175,9 @@ table {
   gap: 12px;
   min-width: 0;
   padding: 12px;
-  background: rgba(7, 11, 18, 0.62);
-  border: 1px solid rgba(86, 220, 255, 0.14);
-  border-radius: 8px;
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
 }
 
 .gk-audit-card-image,
@@ -1523,18 +1569,15 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .swarmsy-card,
 .swarmsy-action-card {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .swarmsy-card {
   min-height: 150px;
   padding: 22px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
 }
 
 .swarmsy-card h3 {
@@ -1557,9 +1600,6 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
   gap: 8px;
   min-height: 108px;
   padding: 18px 20px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
   text-decoration: none;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
@@ -1567,7 +1607,7 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .swarmsy-action-card:hover,
 .swarmsy-action-card:focus-visible {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.09);
+  background: var(--shell-card-hover);
   border-color: rgba(0, 255, 204, 0.48);
   transform: translateY(-2px);
 }
@@ -1590,7 +1630,6 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 }
 
 .swarmsy-action-card--gold {
-  background: rgba(247, 201, 72, 0.08);
   border-color: rgba(247, 201, 72, 0.32);
 }
 
@@ -1599,7 +1638,6 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 }
 
 .swarmsy-action-card--magenta {
-  background: rgba(255, 0, 170, 0.07);
   border-color: rgba(255, 0, 170, 0.28);
 }
 
@@ -1610,15 +1648,53 @@ body.page-standard-shell .swarmsy-hero .swarmsy-title {
 .swarmsy-section {
   margin-top: 34px;
   padding: 28px;
-  background: rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 255, 204, 0.035);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .swarmsy-section h2 {
   margin-top: 0;
   color: var(--color-accent);
+}
+
+.page-swarmsy .swarmsy-more-info {
+  margin-top: 12px;
+}
+
+.page-swarmsy .swarmsy-more-info > summary {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.page-swarmsy .swarmsy-more-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-swarmsy .swarmsy-more-info > summary > span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font: bold .75rem/1 system-ui, sans-serif;
+}
+
+.page-swarmsy .swarmsy-more-info > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.page-swarmsy .swarmsy-more-info > p {
+  max-width: 65ch;
+  margin: .4rem 0;
 }
 
 body.page-search #content,
@@ -1645,6 +1721,10 @@ body.page-gkniftyheads-collection .nft-collection-article > template + section {
 
 body.page-search .section-heading {
   margin-top: 28px;
+}
+
+body.page-search #search-start-title {
+  --shell-heading-accent: var(--color-accent);
 }
 
 .wiki-living-hero {
@@ -1773,18 +1853,19 @@ body.page-how-to-play .swarmsy-lead {
   min-width: 0;
   padding: 16px 20px;
   color: var(--color-text);
-  background: rgba(3, 8, 15, 0.72);
-  border: 1px solid rgba(86, 220, 255, 0.30);
-  border-radius: 14px;
-  box-shadow: inset 0 0 0 1px rgba(0, 255, 204, 0.04), 0 0 24px rgba(0, 255, 204, 0.06);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
   font-size: 1rem;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: border-color 180ms ease;
 }
 
 .wiki-hero-search-input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 28px rgba(247, 201, 72, 0.14), inset 0 0 0 1px rgba(247, 201, 72, 0.08);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 @keyframes wikiHeroBreath {
@@ -1979,7 +2060,7 @@ body.page-gkniftyheads-collection .gk-collection-route {
   color: #f4ffff;
   background: linear-gradient(90deg, rgba(0, 255, 204, 0.12), rgba(86, 220, 255, 0.05));
   border: 1px solid rgba(0, 255, 204, 0.45);
-  border-left: 5px solid #00ffcc;
+  border-inline-start-color: var(--shell-neon-cyan);
   border-radius: 0;
   box-shadow: inset 0 0 24px rgba(0, 255, 204, 0.05);
   font-size: clamp(0.92rem, 1.08vw, 1.04rem);
@@ -2080,10 +2161,9 @@ body.page-gkniftyheads-collection .article-meta {
 .page-community .section {
   margin-top: 24px;
   padding: 22px;
-  background: rgba(10, 15, 24, 0.76);
-  border: 1px solid rgba(86, 220, 255, 0.18);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+  background: var(--shell-card-deep);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
 }
 
 .battle-page .section h2,
@@ -2094,9 +2174,10 @@ body.page-gkniftyheads-collection .article-meta {
 .swarmsy-callout {
   padding: 16px 18px;
   color: var(--color-text-muted);
-  background: rgba(247, 201, 72, 0.08);
-  border-left: 4px solid var(--color-accent);
-  border-radius: var(--radius-md);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--color-accent);
+  border-radius: var(--shell-card-corner);
   line-height: 1.7;
 }
 
@@ -2166,13 +2247,10 @@ body.page-wiki .article-body {
   overflow: hidden;
   margin-top: 24px;
   padding: clamp(24px, 2.7vw, 42px);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(247, 201, 72, 0.09), transparent 26%),
-    radial-gradient(circle at 100% 0%, rgba(0, 255, 204, 0.08), transparent 32%),
-    rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  box-shadow: 0 0 40px rgba(0, 255, 204, 0.07), var(--shadow-panel);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .lead-paragraph,
@@ -2188,17 +2266,19 @@ body.page-wiki .article-stats {
 }
 
 body.page-wiki .article-badge,
-body.page-wiki .meta-item {
+body.page-wiki .meta-item,
+body.page-wiki .article-meta .tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   width: max-content;
   max-width: 100%;
   padding: 7px 11px;
-  color: var(--color-text-muted);
-  background: rgba(247, 201, 72, 0.08);
-  border: 1px solid rgba(247, 201, 72, 0.24);
-  border-radius: 999px;
+  color: var(--color-accent);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-inline-start-color: var(--color-accent);
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-mono);
   line-height: 1.35;
 }
@@ -2206,35 +2286,31 @@ body.page-wiki .meta-item {
 body.page-wiki .wiki-section {
   margin: clamp(22px, 3vw, 38px) 0;
   padding: clamp(20px, 2.4vw, 32px);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 18px;
-  box-shadow: 0 0 30px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .wiki-section h2,
 body.page-wiki .wiki-section h3 {
   margin-top: 0;
-  color: #00ffcc;
-  background: rgba(86, 220, 255, 0.07);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.2);
-  border-radius: 10px;
+  color: var(--shell-neon-cyan);
+  background: var(--shell-card-deep);
+  border-block-end: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
   display: block;
   font-family: var(--font-display);
-  text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }
 
 body.page-wiki .wiki-section summary [role="heading"] {
   display: block;
   margin-top: 0;
-  color: #00ffcc;
-  background: rgba(86, 220, 255, 0.07);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-bottom: 1px solid rgba(86, 220, 255, 0.2);
-  border-radius: 10px;
+  color: var(--shell-neon-cyan);
+  background: var(--shell-card-deep);
+  border-block-end: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
   font-family: var(--font-display);
-  text-shadow: 0 0 18px rgba(0, 255, 204, 0.18);
 }
 
 body.page-wiki .lore-facts-stack {
@@ -2252,11 +2328,10 @@ body.page-wiki .related-wiki-card,
 body.page-wiki .citation-vote-panel {
   padding: 18px 20px;
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(247, 201, 72, 0.5);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .lore-paragraph,
@@ -2273,10 +2348,10 @@ body.page-wiki strong {
 
 body.page-wiki table {
   overflow: hidden;
-  background: rgba(0, 255, 204, 0.04);
-  border: 1px solid rgba(0, 255, 204, 0.16);
-  border-radius: 16px;
-  box-shadow: 0 0 24px rgba(0, 255, 204, 0.045);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .wiki-hero {
@@ -2370,6 +2445,12 @@ body.page-wiki .og-collapsible-data.is-expanded .gk-rarity-table {
   mask-image: none;
 }
 
+.wiki-comments:empty,
+.wiki-comments[hidden],
+[data-story-proposal-link][hidden] {
+  display: none;
+}
+
 body.page-wiki .citation-vote-panel,
 body.page-wiki .wiki-comments {
   width: min(100%, 1120px);
@@ -2379,11 +2460,11 @@ body.page-wiki .wiki-comments {
 
 body.page-wiki .wiki-comments {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-radius: 18px;
-  box-shadow: 0 0 30px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-left: 1px solid rgba(86, 220, 255, 0.62);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-wiki .citation-vote-panel-actions,
@@ -3108,10 +3189,10 @@ body.page-wiki .comments-list-panel {
 .hub-card,
 .collection-card {
   color: var(--color-text);
-  background: rgba(86, 220, 255, 0.045);
-  border: 1px solid rgba(86, 220, 255, 0.18);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 0 24px rgba(86, 220, 255, 0.04);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 .category-card,
@@ -3142,7 +3223,7 @@ body.page-wiki .comments-list-panel {
 .hub-card:hover,
 .collection-card:hover {
   color: var(--color-text);
-  background: rgba(86, 220, 255, 0.085);
+  background: var(--shell-card-hover);
   border-color: rgba(86, 220, 255, 0.45);
   transform: translateY(-2px);
 }
@@ -3392,7 +3473,7 @@ body.page-wiki .comments-list-panel {
 .bc-join-card,
 .bc-perk-card,
 .bc-faction-reward-card {
-  border-top: 3px solid var(--faction-color, #56dcff);
+  border-top-color: var(--faction-color, var(--shell-neon-cyan));
 }
 
 .bc-mission-row,
@@ -3400,9 +3481,9 @@ body.page-wiki .comments-list-panel {
   display: grid;
   gap: 8px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(86, 220, 255, 0.14);
-  border-radius: var(--radius-md);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
 }
 
 #site-footer {
@@ -4102,10 +4183,10 @@ body.page-home .home-widget ul {
 
 body.page-home .home-widget li {
   padding: 14px 16px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 22px rgba(0, 255, 204, 0.045);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-home .home-mission-panel .section-heading,
@@ -4128,10 +4209,10 @@ body.page-home .home-universe-card {
   gap: 10px;
   min-height: 150px;
   padding: 18px;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
 }
 
 body.page-home .home-proof-card strong,
@@ -4166,10 +4247,10 @@ body.page-home .home-cta-card {
   padding: 18px;
   color: var(--color-text);
   text-decoration: none;
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -4180,9 +4261,9 @@ body.page-home .home-cta-card {
 body.page-home .home-cta-card:hover,
 body.page-home .home-cta-card:focus-visible {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.09);
+  background: var(--shell-card-hover);
   border-color: rgba(247, 201, 72, 0.42);
-  box-shadow: 0 0 34px rgba(247, 201, 72, 0.12), 0 0 28px rgba(0, 255, 204, 0.085);
+  box-shadow: none;
   transform: translateY(-2px);
 }
 
@@ -4235,10 +4316,10 @@ body.page-home .home-dropdown-row {
 
 body.page-home .home-section-dropdown {
   color: var(--color-text);
-  background: rgba(0, 255, 204, 0.052);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  background: var(--shell-card-bg);
+  border: 1px solid var(--shell-card-line);
+  border-radius: var(--shell-card-corner);
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -4361,11 +4442,7 @@ body.page-home .section-heading {
   margin-right: clamp(20px, 3vw, 48px);
   margin-left: clamp(20px, 3vw, 48px);
   color: var(--color-accent);
-  background: rgba(10, 10, 16, 0.76);
-  border: 1px solid rgba(0, 255, 204, 0.18);
-  border-left: 3px solid rgba(86, 220, 255, 0.62);
-  border-radius: 16px;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.055);
+  --shell-heading-accent: var(--color-accent);
 }
 
 body.page-home .category-card,
@@ -4402,22 +4479,53 @@ body.page-home .article-card-cat {
   margin-top: 14px;
 }
 
+#site-header > #moonboys-global-status-badge {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+}
+
+#site-header > #moonboys-global-status-badge .csp-badge {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+
+#site-header > #moonboys-global-status-badge .csp-telegram-icon {
+  width: 28px;
+}
+
+@media (min-width: 1121px) {
+  body:not(.page-onboarding-shell) #site-header {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto minmax(0, auto);
+  }
+}
+
 @media (max-width: 1120px) {
+  :root {
+    --shell-header-h: 105px;
+  }
+
   #site-header {
-    grid-template-columns: minmax(140px, auto) 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  #site-shell-top #site-header > #moonboys-global-status-badge {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   #global-nav {
     grid-column: 1 / -1;
     justify-content: flex-start;
-    padding-bottom: 2px;
+  }
+
+  #global-nav a {
+    min-height: 34px;
   }
 }
 
 @media (max-width: 720px) {
-  :root {
-    --shell-header-h: 118px;
-  }
 
   #header-search {
     grid-column: 1 / -1;
@@ -4596,4 +4704,30 @@ body.page-wiki article[data-entity-slug="crypto-moonboys"] :is(p, .cm-lead) {
 body.page-wiki:has(article[data-entity-slug="crypto-moonboys"]) #content > .cm-page {
   max-width: 1480px !important;
   margin-inline: auto;
+}
+
+/* Older articles and page-local components still declare corner radii in
+   their own stylesheets. Normalize their surfaces at the shared shell level.
+   Match card, panel, and section classes by suffix to avoid inner icons,
+   badges, and controls. */
+#content :where(
+  h1, h2, h3, h4, h5, h6, [role="heading"], .section-heading,
+  [class$="-card"], [class*="-card "],
+  [class$="-panel"], [class*="-panel "],
+  [class$="-tile"], [class*="-tile "],
+  [class$="-box"], [class*="-box "],
+  [class$="-section"], [class*="-section "],
+  [class$="-hero"], [class*="-hero "],
+  .card, .panel, .tile, .infobox,
+  .article-contents, .character-contents, .faction-contents,
+  .wiki-contents, .canon-toc, .navigation-contents, .battle-page-media,
+  .battle-heat-summary, .related-wiki-paths
+) {
+  border-radius: var(--shell-card-corner) !important;
+}
+
+#content :where(.article-contents, .character-contents, .faction-contents,
+  .wiki-contents, .canon-toc, .navigation-contents) {
+  background: var(--shell-card-bg);
+  border-color: var(--shell-card-line);
 }

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const read = relative => readFileSync(new URL('../' + relative, import.meta.url), 'utf8');
 const home = read('index.html');
+const experience = read('join-us-on-the-wax-blockchain.html');
 const account = read('my-moonboy.html');
 const games = read('games/index.html');
 const chamber = read('community.html');
@@ -10,32 +11,36 @@ const manual = read('how-to-play.html');
 const community = read('gkniftyheads-incubator.html');
 const wiki = read('wiki/crypto-moonboys.html');
 
-// The current homepage leads with the inline builder and explains both IP routes
-// in its mission copy. The former simple-actions button bars were removed.
-assert.match(home, /<section\b[^>]*id="build-moonboy"[^>]*data-builder-context="homepage"/,
-  'Homepage provides the inline Moonboy identity builder');
-const mission = home.match(/<div class="home-core-mission"[^>]*>([\s\S]*?)<\/div>/)?.[1] || '';
+// The slim homepage leads into the full WAX experience. The builder, mission,
+// academy and community sections live on that destination page.
+assert.match(home, /href="\/join-us-on-the-wax-blockchain\.html"/,
+  'Homepage opens the full WAX experience');
+assert.match(experience, /<section\b[^>]*id="build-moonboy"[^>]*data-builder-context="homepage"/,
+  'WAX experience provides the inline Moonboy identity builder');
+const mission = experience.match(/<div class="home-core-mission"[^>]*>([\s\S]*?)<\/div>/)?.[1] || '';
 assert.match(mission, /GK Moonboy or Flygirl/,
   'Mission still explains the GK character route');
 assert.match(mission, /bring your own characters, artist identity, brand or project/,
   'Mission still explains the existing-IP route');
-const academy = home.match(/<section\b[^>]*id="open-creative-academy"[^>]*>([\s\S]*?)<\/section>/)?.[1] || '';
-assert.match(academy, /href="\/gpt-users\.html"/,
-  'Academy provides the public ChatGPT Creator Studio route');
+const academy = experience.match(/<section\b[^>]*id="open-creative-academy"[^>]*>([\s\S]*?)<\/section>/)?.[1] || '';
+assert.match(academy, /href="\/ai-user\.html"/,
+  'Academy provides the public AI Creator Studio route');
 assert.match(academy, /href="\/swarmsy\.html"/,
   'Academy provides the optional SWARMSY PC route');
-assert.match(home, /class="simple-community"[^>]*aria-label="Join the Crypto Moonboys community"/,
-  'Homepage retains its dedicated community entry');
-assert.match(home, /href="\/gkniftyheads-incubator\.html" class="simple-community"/,
+assert.match(experience, /class="simple-community"[^>]*aria-label="Join the Crypto Moonboys community"/,
+  'WAX experience retains its dedicated community entry');
+assert.match(experience, /href="\/gkniftyheads-incubator\.html" class="simple-community"/,
   'Community entry opens the live community page');
-assert.match(home, /id="build-moonboy"/);
-assert.match(home, /href="\/gpt-users\.html"/, 'Independent web AI route remains available');
-assert.doesNotMatch(home, /<h2>Choose how <span>you start/, 'Homepage no longer duplicates route instructions');
+assert.match(experience, /id="build-moonboy"/);
+assert.match(experience, /href="\/ai-user\.html"/, 'Independent web AI route remains available');
+assert.doesNotMatch(experience, /<h2>Choose how <span>you start/, 'WAX experience does not duplicate route instructions');
 
 const hub = account.indexOf('id="mm-start-here"');
 const gate = account.indexOf('id="mm-gate"');
 const privatePanel = account.indexOf('id="mm-private" hidden');
-assert.ok(hub > 0 && hub < gate && gate < privatePanel, 'Route directory is public, private data remains behind sign-in gate');
+const privatePanelEnd = account.indexOf('</div>\n\n      <section class="mm-entry"', privatePanel);
+assert.ok(gate > 0 && gate < privatePanel && privatePanel < privatePanelEnd && privatePanelEnd < hub,
+  'Sign-in and the route directory remain public around the hidden dashboard');
 assert.match(account, /data-telegram-session-controls[^>]*>[\s\S]*data-telegram-logout hidden/, 'My Moonboy keeps compact logout outside private account panel');
 const accountControls = read('js/components/telegram-sync-cta.js');
 assert.match(accountControls, /rememberedWebsite[\s\S]*data-telegram-session-controls/, 'Compact logout remains available for remembered website sessions after rollback');

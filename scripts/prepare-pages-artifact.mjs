@@ -1,8 +1,11 @@
 #!/usr/bin/env node
-import { cp, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isEditorialOnlyPath, checkPublicDisclosure } from './public-canon-disclosure.mjs';
 import { ensurePublishedCanonicals } from './seo-publish-canonicals.mjs';
+
+import { publishDirectWikiLinks, publishWikiRelatedData } from './publish-direct-wiki-links.mjs';
+import { publishWikiSearchIndex } from './publish-wiki-search-index.mjs';
 
 const artifactDir = process.argv[2] || 'public-site';
 const repoRoot = path.resolve('.');
@@ -184,8 +187,48 @@ async function main() {
       console.warn(warning.url + ': ' + warning.issues.join('; '));
     }
   }
+  await publishDirectWikiLinks(resolvedArtifactDir);
+  await publishWikiRelatedData(resolvedArtifactDir);
+  await publishWikiSearchIndex(resolvedArtifactDir);
+  await publishDashboardSummary(resolvedArtifactDir);
+  await publishLeaderLoreSources(resolvedArtifactDir);
   await verifyPublicDisclosure(resolvedArtifactDir);
   console.log(`Prepared GitHub Pages artifact: ${path.relative(repoRoot, resolvedArtifactDir)}`);
+}
+
+async function publishLeaderLoreSources(root) {
+  const entries = await readdir(root, { recursive: true, withFileTypes: true });
+  const routes = entries.filter(entry => entry.isFile()).map(entry =>
+    '/' + path.relative(root, path.join(entry.parentPath, entry.name)).split(path.sep).join('/')
+  ).filter(route => /^\/(?:[\w~-][\w.~-]*\/)*[\w~-][\w.~-]*\.(?:html|md)$/u.test(route)).sort();
+  await writeFile(path.join(root, 'js', 'leader-lore-sources.json'), JSON.stringify(routes) + '\n');
+}
+
+async function publishDashboardSummary(root) {
+  const filename = path.join(root, 'dashboard.html');
+  if (!await exists(filename)) return;
+  const html = await readFile(filename, 'utf8');
+  const summaryPlaceholder = '<div id="dash-summary" aria-label="Summary metrics"></div>';
+  if (!html.includes(summaryPlaceholder)) return;
+
+  const [stats, gaps, drift] = await Promise.all(['site-stats', 'content-gaps', 'authority-drift']
+    .map(async name => JSON.parse(await readFile(path.join(root, 'js', `${name}.json`), 'utf8'))));
+  const payload = JSON.stringify({
+    stats: {
+      published_pages: stats.published_pages,
+      indexed_pages: stats.indexed_pages,
+      total_articles: stats.total_articles,
+      nft_template_pages: stats.nft_template_pages,
+      totalCategories: stats.totalCategories || stats.category_count,
+    },
+    gaps: { summary: {
+      isolated_pages: gaps.summary?.isolated_pages,
+      underlinked_targets: gaps.summary?.underlinked_targets,
+    } },
+    drift: { summary: { high_drift_count: drift.summary?.high_drift_count } },
+  }).replace(/</gu, '\\u003c');
+  const markup = `<script type="application/json" id="dashboard-summary-data">${payload}</script>`;
+  await writeFile(filename, html.replace(summaryPlaceholder, () => summaryPlaceholder + '\n      ' + markup));
 }
 
 async function verifyPublicDisclosure(directory) {

@@ -390,7 +390,7 @@ test('real Shop renderer explains each gate and keeps owned free switches availa
   ctx.state.pet = { pet_id: 'guidance-pet', level: 1, moon_gold: 5 };
   ctx.panel = (_, body) => body; ctx.craftingGoalMarkup = () => '';
   ctx.window.MoonpetPlayOptions = createRequire(import.meta.url)('../js/moonpet-play-options.js');
-  vm.runInContext(between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
   ctx.state.guidance.shop_items = [
     { key: 'locked', title: 'Locked Item', min_level: 8, unlocked: false, affordable: false, cost: { moon_gold: 12 } },
     { key: 'poor', title: 'Poor Item', min_level: 1, unlocked: true, affordable: false, cost: { moon_gold: 12 } },
@@ -399,13 +399,27 @@ test('real Shop renderer explains each gate and keeps owned free switches availa
     { key: 'equipped', title: 'Equipped Item', min_level: 1, unlocked: true, owned: true, equipped: true },
   ];
   const html = ctx.renderEconomy();
-  const card = title => html.match(new RegExp('<button[^>]*aria-label="[^"\\n]*' + title + '[^"\\n]*"[^>]*>[\\s\\S]*?<\\/button>'))[0];
-  assert.match(card('Locked Item'), / disabled.*LEVEL 8 REQUIRED/);
+  const card = title => html.match(new RegExp('<button[^>]*aria-label="[^"\\n]*' + title + '[^"\\n]*"[^>]*>[\\s\\S]*?<\\/button>'))?.[0];
+  assert.equal(card('Locked Item'), undefined, 'future level items stay hidden');
   assert.match(card('Poor Item'), / disabled.*STILL NEED<\/b> 7 moon gold/);
   assert.doesNotMatch(card('Ready Item'), / disabled/); assert.match(card('Ready Item'), /CAN BUY NOW/);
   assert.doesNotMatch(card('Owned Item'), / disabled/); assert.match(card('Owned Item'), /COST<\/b> FREE/);
   assert.match(card('Equipped Item'), / disabled.*EQUIPPED/);
-  assert.match(html, /UNLOCK LEVEL 8 \/\/ YOUR LEVEL 1/);
+  assert.doesNotMatch(html, /UNLOCK LEVEL 8 \/\/ YOUR LEVEL 1/);
+});
+
+test('unlocked upgrades stay visible for gear the selected pet cannot equip', () => {
+  const ctx = context();
+  ctx.state.pet = { pet_id: 'guidance-pet', level: 20, moon_gold: 100 };
+  ctx.state.guidance.shop_items = [{ key: 'cyber_armor', unlocked: false, owned: true }];
+  ctx.state.gear = [{ item_key: 'cyber_armor', slot: 'armor', item_level: 1 }];
+  ctx.state.live_systems = { upgrades: [{ item_key: 'cyber_armor', unlocked: true, affordable: true,
+    target_level: 2, required_level: 15, quote_version: 'saved-quote', cost: { moon_gold: 80 } }] };
+  ctx.panel = (_, body) => body;
+  vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  const html = ctx.renderEconomy();
+  assert.match(html, /data-action="gear_upgrade"[^>]*saved-quote/);
+  assert.doesNotMatch(html, /data-action="equip"/);
 });
 
 test('real Market renderer discloses every cost and granted item/material/currency in all twelve templates', () => {
@@ -413,7 +427,7 @@ test('real Market renderer discloses every cost and granted item/material/curren
   ctx.panel = (_, body) => body; ctx.craftingGoalMarkup = () => '';
   ctx.window.MoonpetPlayOptions = createRequire(import.meta.url)('../js/moonpet-play-options.js');
   ctx.state.guidance.economy = { day_key: '2026-10-11', market_offers: PET_MARKET_OFFERS.map(offer => ({ ...offer, unlocked: true, affordable: true, available: true })) };
-  vm.runInContext(between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
   const html = ctx.renderEconomy();
   assert.equal(PET_MARKET_OFFERS.length, 12);
   for (const offer of PET_MARKET_OFFERS) {
@@ -442,7 +456,7 @@ test('meal cooldown affects cooked food only, never unrelated bag items', () => 
     { key: 'moon_snack', title: 'Moon Snack', kind: 'usable_item', count: 2 },
     { key: 'clean_wipe', title: 'Clean Wipe', kind: 'usable_item', count: 1 }
   ];
-  vm.runInContext(between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
   const html=ctx.renderEconomy();
   const card=(name)=>html.match(new RegExp('<button[^>]*aria-label="USE '+name+'"[^>]*>[\\s\\S]*?<\\/button>'))?.[0];
   assert.ok(card('Street Pizza') && card('Moon Burger') && card('Moon Snack') && card('Clean Wipe'));
@@ -456,7 +470,7 @@ test('real Egg Food Counter renders but never allows a pre-hatch meal', () => {
   ctx.state.lifecycle.phase = 'egg';
   ctx.stateNeedsFullHydration = () => false;
   ctx.state.inventory = [{ key: 'street_pizza', title: 'Street Pizza', kind: 'usable_item', count: 1 }];
-  vm.runInContext(between('  function renderFoodCounter()', '  function renderPetEmotes()'), ctx);
+  vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderFoodCounter()', '  function renderPetEmotes()'), ctx);
   const html=ctx.renderFoodCounter();
   assert.match(html, /FOOD COUNTER \/\/ CHOOSE A MEAL/, 'the food counter remains visible on Egg Home');
   assert.match(html, /Street Pizza/, 'saved food is not hidden');
@@ -464,6 +478,27 @@ test('real Egg Food Counter renders but never allows a pre-hatch meal', () => {
   assert.match(html, /data-action="use_item"[^>]* disabled/, 'a pre-hatch meal cannot spend a bag item');
 });
 
+
+test('food shortcut and workshop goals only surface unlocked recipes', () => {
+  const ctx = context();
+  ctx.panel = (_, body, id) => '<section data-panel="' + id + '">' + body + '</section>';
+  ctx.stateNeedsFullHydration = () => false;
+  ctx.window.MoonpetPlayOptions = createRequire(import.meta.url)('../js/moonpet-play-options.js');
+  ctx.state.live_systems = { crafting: [
+    { key: 'pizza', title: 'Pizza', unlocked: false, output: { item_key: 'street_pizza', quantity: 2 } },
+    { key: 'burgers', title: 'Burgers', unlocked: false, output: { item_key: 'moon_burger', quantity: 2 } },
+  ] };
+  vm.runInContext(block('unlockedCraftingRecipes') + between('  function renderFoodCounter()', '  function renderPetEmotes()') +
+    between('  var craftingGoalMemory', '  function renderContracts(') +
+    between('  function renderEconomy(', '  // TEST-EXPORT: notificationControls:start'), ctx);
+  assert.doesNotMatch(ctx.renderFoodCounter(), /COOK MORE MEALS/);
+  assert.doesNotMatch(ctx.renderEconomy(), /data-panel="crafting"/);
+  ctx.state.live_systems.crafting[0].unlocked = true;
+  assert.match(ctx.renderFoodCounter(), /COOK MORE MEALS/);
+  const workshop = ctx.renderEconomy();
+  assert.match(workshop, /<option value="pizza"/);
+  assert.doesNotMatch(workshop, /<option value="burgers"/);
+});
 
 test('PR2 navigation prioritizes verified Home readiness and new claim boards without spending rewards', () => {
   const play = createRequire(import.meta.url)('../js/moonpet-play-options.js');

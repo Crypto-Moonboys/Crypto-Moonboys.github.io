@@ -1,0 +1,92 @@
+.site-icon-inline {
+  object-fit: contain;
+  vertical-align: -0.15em;
+}
+
+.site-icon-glyph {
+  display: inline-grid;
+  position: relative;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.19em;
+  flex: none;
+}
+
+.site-icon-glyph > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.site-icon-original {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Clip the gradient and moving highlight to the letters. Heading surfaces,
+   links, icons and line breaks remain in the surrounding markup. */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  moonboys-heading-ink {
+    --heading-palette: linear-gradient(100deg,
+      #6eeaff 0%, #bea3ff 27%, #ff87d8 52%, #ffbb9c 68%, var(--color-accent, #f7c948) 88%, #ffe28b 100%);
+    color: transparent;
+    background-image:
+      linear-gradient(105deg, transparent 45%, rgba(255, 249, 223, .68) 50%, transparent 55%),
+      var(--heading-palette);
+    background-size: 250% 100%, 100% 100%;
+    background-position: 100% 0, 0 0;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    text-shadow: 0 0 .48em rgba(110, 234, 255, .23);
+    animation: moonboys-heading-sweep 9s linear infinite, moonboys-heading-glow 7s ease-in-out infinite;
+  }
+
+  @keyframes moonboys-heading-sweep {
+    0%, 48% { background-position: 100% 0, 0 0; }
+    76%, 100% { background-position: 0 0, 0 0; }
+  }
+
+  @keyframes moonboys-heading-glow {
+    0%, 100% { text-shadow: 0 0 .32em rgba(110, 234, 255, .23), 0 0 .66em rgba(190, 163, 255, .13); }
+    48% { text-shadow: 0 0 .38em rgba(255, 135, 216, .33), 0 0 .78em rgba(190, 163, 255, .19); }
+    76% { text-shadow: 0 0 .36em rgba(247, 201, 72, .29), 0 0 .68em rgba(255, 135, 216, .13); }
+  }
+
+  moonboys-heading-ink::selection {
+    color: HighlightText;
+    background: Highlight;
+    text-shadow: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    moonboys-heading-ink { animation: none; }
+  }
+
+  @media (forced-colors: active) {
+    moonboys-heading-ink {
+      color: CanvasText;
+      background: none;
+      text-shadow: none;
+      animation: none;
+    }
+
+    a moonboys-heading-ink { color: LinkText; }
+  }
+
+  @media print {
+    moonboys-heading-ink {
+      color: #000;
+      background: none;
+      text-shadow: none;
+      animation: none;
+    }
+  }
+}

@@ -115,7 +115,7 @@ function _buildPanelHTML(factionId, fxDef, modDef, missions, bestScore, gameId) 
 
   return '<div class="run-context-panel" aria-label="Run context">'
     + '<div class="rcp-faction">'
-    +   '<span class="rcp-faction-badge">' + _esc(factionLabel) + '</span>'
+    +   '<span class="rcp-faction-badge">' + (window.MOONBOYS_FACTION?.renderIcon?.(factionId, 18) || '') + _esc(factionLabel) + '</span>'
     +   '<span class="rcp-perk-text">' + _esc(perkText) + '</span>'
     + '</div>'
     + modLine

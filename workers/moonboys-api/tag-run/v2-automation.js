@@ -2,7 +2,7 @@
 // Unknown assets remain quarantined. Only explicitly approved, pinned standard
 // token contracts can reach the active-key signer.
 import { runTagRunEngagement } from './engagement.js';
-import { previousDay } from './core.js';
+import { authenticatedGroupId, previousDay } from './core.js';
 import { TIP_ACCOUNT, sha256Text } from './v2-core.js';
 import {
   saveYesterdayParticipation, createAutomaticSnapshot
@@ -30,6 +30,26 @@ import {
 
 const HEX = /^[0-9a-f]{64}$/;
 const fail = reason => { throw new Error('v2_automation_' + reason); };
+const SNAPSHOT_RELEASE_SETTINGS = Object.freeze({
+  TAG_RUN_ENABLED: 'true',
+  TAG_RUN_WEEKLY_REWARDS_ENABLED: 'false',
+  TAG_RUN_V2_OBSERVATION_ENABLED: 'false',
+  TAG_RUN_V2_POOL_ENABLED: 'true',
+  TAG_RUN_V2_AUTOMATION_ENABLED: 'true',
+  TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED: 'true',
+  TAG_RUN_V2_TIP_ACCOUNT: TIP_ACCOUNT
+});
+const DRAW_RELEASE_SETTINGS = Object.freeze({
+  ...SNAPSHOT_RELEASE_SETTINGS,
+  TAG_RUN_V2_DRAWS_ENABLED: 'true',
+  TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED: 'true'
+});
+const PAYOUT_RELEASE_SETTINGS = Object.freeze({
+  ...DRAW_RELEASE_SETTINGS,
+  TAG_RUN_V2_PAYOUTS_ENABLED: 'true',
+  TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED: 'true',
+  TAG_RUN_V2_SIGNER_PERMISSION: 'active'
+});
 
 function safeFailureReason(error) {
   const message = String(error?.message || '');
@@ -72,26 +92,77 @@ async function moveToReconciliationOnly(env, intent) {
   }
 }
 
-function assertMode(env) {
-  if (!env?.DB ||
-      env.TAG_RUN_ENABLED !== 'true' ||
-      env.TAG_RUN_WEEKLY_REWARDS_ENABLED !== 'false' ||
-      env.TAG_RUN_V2_OBSERVATION_ENABLED !== 'false' ||
-      env.TAG_RUN_V2_POOL_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_DRAWS_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_PAYOUTS_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_DRAW_REVIEW_RELEASE_APPROVED !== 'true' ||
-      env.TAG_RUN_V2_EXECUTOR_RELEASE_APPROVED !== 'true' ||
-      env.TAG_RUN_V2_AUTOMATION_ENABLED !== 'true' ||
-      env.TAG_RUN_V2_AUTOMATION_RELEASE_APPROVED !== 'true' ||
-      env.TAG_RUN_V2_SIGNER_PERMISSION !== 'active' ||
-      env.TAG_RUN_V2_TIP_ACCOUNT !== TIP_ACCOUNT ||
-      !/^-100[0-9]{5,20}$/.test(String(env.TELEGRAM_GROUP_CHAT_ID || '')) ||
-      typeof env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY !== 'string' ||
-      env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY.length < 40 ||
-      typeof env.TAG_RUN_V2_AUTOMATION_SEED_KEY !== 'string' ||
-      env.TAG_RUN_V2_AUTOMATION_SEED_KEY.length < 32) {
-    fail('release_not_authorized');
+function settingsBlocker(env, settings) {
+  if (!env?.DB) return 'db';
+  for (const [name, expected] of Object.entries(settings)) {
+    if (env[name] !== expected) return name.toLowerCase();
+  }
+  if (!authenticatedGroupId(env)) return 'telegram_group_chat_id';
+  return null;
+}
+
+function snapshotReleaseBlocker(env) {
+  return settingsBlocker(env, SNAPSHOT_RELEASE_SETTINGS);
+}
+
+function drawReleaseBlocker(env) {
+  const blocker = settingsBlocker(env, DRAW_RELEASE_SETTINGS);
+  if (blocker) return blocker;
+  if (typeof env.TAG_RUN_V2_AUTOMATION_SEED_KEY !== 'string' ||
+      env.TAG_RUN_V2_AUTOMATION_SEED_KEY.length < 32) return 'automation_seed_key';
+  return null;
+}
+
+function payoutReleaseBlocker(env) {
+  const blocker = settingsBlocker(env, PAYOUT_RELEASE_SETTINGS);
+  if (blocker) return blocker;
+  if (typeof env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY !== 'string' ||
+      env.TAG_RUN_V2_ACTIVE_PRIVATE_KEY.length < 40) return 'active_private_key';
+  return null;
+}
+
+function assertSnapshotMode(env) {
+  const blocker = snapshotReleaseBlocker(env);
+  if (blocker) fail('release_not_authorized_' + blocker);
+}
+
+function assertDrawMode(env) {
+  const blocker = drawReleaseBlocker(env);
+  if (blocker) fail('release_not_authorized_' + blocker);
+}
+
+function assertPayoutMode(env) {
+  const blocker = payoutReleaseBlocker(env);
+  if (blocker) fail('release_not_authorized_' + blocker);
+}
+
+export function automaticReleaseBlockers(env) {
+  return Object.freeze({
+    snapshot: snapshotReleaseBlocker(env),
+    draw: drawReleaseBlocker(env),
+    payout: payoutReleaseBlocker(env)
+  });
+}
+
+async function recordReleaseBlocker(env, scope, blocker, nowMs) {
+  if (!env?.DB || !['snapshot', 'draw', 'payout'].includes(scope) ||
+      !/^[a-z0-9_]+$/.test(String(blocker || ''))) return;
+  const day = new Date(nowMs).toISOString().slice(0, 10);
+  try {
+    const result = await env.DB.prepare(
+      'INSERT OR IGNORE INTO tag_run_v2_audit ' +
+      '(event_key,event_type,reason,reviewed_by) VALUES (?,?,?,?)'
+    ).bind(
+      'automation-release-blocked:' + scope + ':' + day + ':' + blocker,
+      'automation_release_blocked',
+      JSON.stringify({ scope, blocker }),
+      'automation:release-gate:v2'
+    ).run();
+    if (result?.success === false) throw new Error('audit_write_failed');
+  } catch (_) {
+    console.warn(JSON.stringify({
+      event: 'tag_run_automation_release_audit_failed', scope
+    }));
   }
 }
 
@@ -111,7 +182,7 @@ async function dailySeed(env, day) {
   const bytes = await crypto.subtle.sign(
     'HMAC', key,
     new TextEncoder().encode(
-      'tag-run-v2:automatic-draw:v1|' + env.TELEGRAM_GROUP_CHAT_ID + '|' + day
+      'tag-run-v2:automatic-draw:v1|' + authenticatedGroupId(env) + '|' + day
     )
   );
   return [...new Uint8Array(bytes)]
@@ -160,20 +231,25 @@ async function verifyPinned(env, {
 
 async function startDaily(env, { nowMs, fetchImpl, cryptoImpl }) {
   const day = previousDay(nowMs);
+  assertSnapshotMode(env);
   await saveYesterdayParticipation(env, { nowMs, maxDays: 7 });
   await quarantineInboundTipReceipts(env, { fetchImpl, cryptoImpl });
   await createAutomaticSnapshot(env, { day, fetchImpl, cryptoImpl, nowMs });
+  // Funding snapshots are independently useful and safe to persist even when
+  // draw entropy or payout signing is unavailable. The draw remains closed
+  // until its own release gate and secret pass.
+  assertDrawMode(env);
   const seed = await dailySeed(env, day);
   return commitDraw(env, {
     day, seedCommitment: await sha256Text(seed),
     committedBy: 'automation:commit:v1',
     chooseFutureBlock: () => chooseFutureWaxBlock({ fetchImpl }),
-    verifyRelease: async () => assertMode(env), nowMs
+    verifyRelease: async () => assertDrawMode(env), nowMs
   });
 }
 
 async function advanceOneDraw(env, row, { nowMs, fetchImpl }) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   if (row.state === 'committed') {
     const seed = await dailySeed(env, row.day_key);
     try {
@@ -181,7 +257,7 @@ async function advanceOneDraw(env, row, { nowMs, fetchImpl }) {
         day: row.day_key, seedHex: seed,
         readIrreversibleBlock: block =>
           readIrreversibleWaxBlock(block, { fetchImpl }),
-        verifyRelease: async () => assertMode(env), nowMs
+        verifyRelease: async () => assertDrawMode(env), nowMs
       });
     } catch (error) {
       if (String(error?.message || '').includes('entropy_unavailable') ||
@@ -201,14 +277,15 @@ async function advanceOneDraw(env, row, { nowMs, fetchImpl }) {
     await reviewDraw(env, {
       day: row.day_key, reviewedBy: 'automation:policy-review:v1',
       expectedInputsDigest: current.inputs_digest,
-      verifyRelease: async () => assertMode(env), nowMs
+      verifyRelease: async () => assertDrawMode(env), nowMs
     });
   }
   return { status: 'reviewed', day: row.day_key };
 }
 
 async function advanceDraw(env, { nowMs, fetchImpl }) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  assertDrawMode(env);
+  const chatId = authenticatedGroupId(env);
   const queue = await rows(env.DB,
     "SELECT day_key,state FROM tag_run_v2_draw_workflows WHERE chat_id=? " +
     "AND state IN ('committed','revealed') ORDER BY day_key",
@@ -247,7 +324,7 @@ async function advanceDraw(env, { nowMs, fetchImpl }) {
 }
 
 async function createOrOpenCap(env) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const missing = await env.DB.prepare(
     'SELECT s.day_key,s.asset_key,a.token_contract,a.token_symbol,a.token_precision ' +
     'FROM tag_run_v2_snapshots s JOIN tag_run_v2_assets a ON a.asset_key=s.asset_key ' +
@@ -330,7 +407,7 @@ async function createOrOpenCap(env) {
 }
 
 async function reserveOne(env) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const bundle = await env.DB.prepare(
     'SELECT b.*,a.token_contract,a.token_symbol,a.token_precision,w.wax_account ' +
     'FROM tag_run_v2_bundles b JOIN tag_run_v2_assets a ON a.asset_key=b.asset_key ' +
@@ -362,7 +439,7 @@ async function reserveOne(env) {
 }
 
 async function beforeBroadcast(env, intent, fetchImpl) {
-  assertMode(env);
+  assertPayoutMode(env);
   const pin = await pinForAsset(env, intent.asset_key);
   const cap = await env.DB.prepare(
     'SELECT paused FROM tag_run_v2_payout_caps WHERE chat_id=? AND day_key=? AND asset_key=?'
@@ -526,7 +603,7 @@ async function reconcileOne(env, fetchImpl) {
 }
 
 async function closeFinishedCap(env) {
-  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID);
+  const chatId = authenticatedGroupId(env);
   const cap = await env.DB.prepare(
     'SELECT c.chat_id,c.day_key,c.asset_key,c.revision FROM tag_run_v2_payout_caps c ' +
     "WHERE c.chat_id=? AND c.paused=0 " +
@@ -558,7 +635,30 @@ export async function runAutomaticCommunityPot(env, {
   dailyStart = false, nowMs = Date.now(), fetchImpl = fetch,
   cryptoImpl = globalThis.crypto
 } = {}) {
-  assertMode(env);
+  const blockers = automaticReleaseBlockers(env);
+  if (blockers.snapshot) {
+    // Keep the participation checkpoint moving on every scheduled retry even
+    // if snapshot authority is unavailable. Empty chat days still advance.
+    if (env?.DB && authenticatedGroupId(env) &&
+        env.TAG_RUN_WEEKLY_REWARDS_ENABLED === 'false') {
+      try {
+        await saveYesterdayParticipation(env, { nowMs, maxDays: 7 });
+      } catch {
+        console.warn(JSON.stringify({
+          event: 'tag_run_participation_capture_failed',
+          reason: 'capture_failed_while_snapshot_release_blocked'
+        }));
+      }
+    }
+    await recordReleaseBlocker(env, 'snapshot', blockers.snapshot, nowMs);
+    fail('release_not_authorized_' + blockers.snapshot);
+  }
+  if (blockers.draw) {
+    await recordReleaseBlocker(env, 'draw', blockers.draw, nowMs);
+  }
+  if (blockers.payout) {
+    await recordReleaseBlocker(env, 'payout', blockers.payout, nowMs);
+  }
   const result = { mode: 'automatic', dailyStart, steps: [] };
 
   // Existing submissions and caps are serviced before attempting any new-day
@@ -574,7 +674,7 @@ export async function runAutomaticCommunityPot(env, {
     const existingDaily = await env.DB.prepare(
       'SELECT 1 AS present FROM tag_run_v2_draw_workflows ' +
       'WHERE chat_id=? AND day_key=?'
-    ).bind(String(env.TELEGRAM_GROUP_CHAT_ID), targetDay).first();
+    ).bind(authenticatedGroupId(env), targetDay).first();
     // A transient midnight RPC/D1 failure must not skip the day forever.
     if (dailyStart || !existingDaily) {
       return startDaily(env, { nowMs, fetchImpl, cryptoImpl });
@@ -583,11 +683,18 @@ export async function runAutomaticCommunityPot(env, {
   });
   await runIsolatedStep(result, 'advance_draw', () =>
     advanceDraw(env, { nowMs, fetchImpl }));
-  await runIsolatedStep(result, 'create_or_open_cap', () =>
-    createOrOpenCap(env));
-  await runIsolatedStep(result, 'reserve', () => reserveOne(env));
-  await runIsolatedStep(result, 'broadcast', () =>
-    broadcastOne(env, fetchImpl, nowMs));
+  await runIsolatedStep(result, 'create_or_open_cap', () => {
+    assertPayoutMode(env);
+    return createOrOpenCap(env);
+  });
+  await runIsolatedStep(result, 'reserve', () => {
+    assertPayoutMode(env);
+    return reserveOne(env);
+  });
+  await runIsolatedStep(result, 'broadcast', () => {
+    assertPayoutMode(env);
+    return broadcastOne(env, fetchImpl, nowMs);
+  });
   await runIsolatedStep(result, 'engagement', () =>
     runTagRunEngagement(env, { nowMs, fetchImpl }));
   return Object.freeze(result);

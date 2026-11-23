@@ -420,15 +420,19 @@ function drawNode(n, hovered, selected) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
+  function drawLine(label, y, size, weight = '') {
+    ctx.font = `${weight}${size}px system-ui, sans-serif`;
+    const icons = window.MOONBOYS_SITE_ICONS;
+    if (icons) icons.drawLabel(ctx, label, n.x, y, size);
+    else ctx.fillText(label, n.x, y);
+  }
+
   if (lines.length === 1) {
-    ctx.font = `bold ${Math.max(10, n.radius * 0.6)}px system-ui, sans-serif`;
-    ctx.fillText(n.label, n.x, n.y + n.radius + 12);
+    drawLine(lines[0], n.y + n.radius + 12, Math.max(10, n.radius * 0.6), 'bold ');
   } else {
-    ctx.font = `bold ${Math.max(9, n.radius * 0.55)}px system-ui, sans-serif`;
-    ctx.fillText(lines[0], n.x, n.y + n.radius + 11);
+    drawLine(lines[0], n.y + n.radius + 11, Math.max(9, n.radius * 0.55), 'bold ');
     ctx.fillStyle = C.muted;
-    ctx.font = `${Math.max(8, n.radius * 0.45)}px system-ui, sans-serif`;
-    ctx.fillText(lines[1], n.x, n.y + n.radius + 22);
+    drawLine(lines[1], n.y + n.radius + 22, Math.max(8, n.radius * 0.45));
   }
 
   ctx.restore();

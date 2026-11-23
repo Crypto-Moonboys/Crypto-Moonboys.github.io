@@ -28,7 +28,7 @@ try {
     assert.match(await panel.textContent(), /optional locally run PC beta/);
     assert.match(await panel.textContent(), /not a hosted SWARMSY chat/);
     assert.equal(await panel.locator('.cm-role-card').count(), 4, `${width}: implementation cards render`);
-    assert.equal(await panel.locator('.cm-actions a').first().getAttribute('href'), '/gpt-users.html');
+    assert.equal(await panel.locator('.cm-actions a').first().getAttribute('href'), '/ai-user.html');
     assert.equal(await panel.locator('.cm-actions a').last().getAttribute('href'), 'https://github.com/Crypto-Moonboys/SWARMSY-Ai');
     assert.equal(await panel.evaluate(el => el.previousElementSibling?.querySelector('h2')?.id), 'swarmsy');
     await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));

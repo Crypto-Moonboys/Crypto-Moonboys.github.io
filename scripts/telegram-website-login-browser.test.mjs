@@ -183,10 +183,12 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
       const sessionCount = sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_website_sessions').get().n;
       await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      const accountLink = page.locator('.bc-hero-ctas a[href="/my-moonboy.html"]');
+      const contribution = page.locator('#battle-my-contribution-today');
+      await contribution.locator('summary').first().click();
+      const accountLink = contribution.locator('.bc-join-content > p > a[href="/my-moonboy.html?tab=faction"]');
       assert.equal(await accountLink.isVisible(), true, 'connected Community navigation leads to My Moonboy');
       await Promise.all([
-        page.waitForURL(SITE + '/my-moonboy.html'),
+        page.waitForURL(SITE + '/my-moonboy.html?tab=faction'),
         accountLink.click(),
       ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);

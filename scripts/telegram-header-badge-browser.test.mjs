@@ -41,12 +41,13 @@ async function expectBadge(page, text) {
     const rect = image.getBoundingClientRect();
     return { background: css.backgroundColor, border: css.borderWidth, shadow: css.boxShadow,
       animation: getComputedStyle(image).animationName, width: el.getBoundingClientRect().width,
+      height: el.getBoundingClientRect().height,
       fits: rect.left >= 0 && rect.right <= innerWidth };
   });
   assert.equal(style.background, 'rgba(0, 0, 0, 0)', 'no login panel background');
   assert.equal(style.border, '0px', 'no login panel border');
   assert.equal(style.shadow, 'none', 'no login panel shadow');
-  assert.ok(style.width >= 44, 'icon retains an accessible touch target');
+  assert.ok(style.width >= 44 && style.height >= 44, 'icon retains a 44 × 44 px touch target');
   assert.equal(style.fits, true, 'icon stays inside the viewport');
   assert.equal(style.animation, text === 'Log in with Telegram' ? 'cspTelegramLoginPulse' : 'none');
 
@@ -97,7 +98,12 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
 
       // 1. Guests see My Moonboy's central login and account controls.
       await page.goto(SITE + '/my-moonboy.html', { waitUntil: 'domcontentloaded' });
-      await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
+      await page.waitForFunction(async () => {
+        const identity = window.MOONBOYS_IDENTITY;
+        if (!identity) return false;
+        await identity.ready;
+        return identity.getIdentityTier() === 'guest';
+      }, undefined, { timeout: 10000 });
       await expectBadge(page, 'Log in with Telegram');
       await badge(page).screenshot({ path: path.join(screenshots, name + '-guest.png') });
       await page.locator('#site-header').screenshot({ path: path.join(screenshots, name + '-header.png') });
@@ -133,10 +139,12 @@ for (const [name, viewport] of [['desktop', { width: 1440, height: 900 }], ['mob
 
       await page.goto(SITE + '/community.html', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);
-      const moonboyCta = page.locator('.bc-hero-ctas a[href="/my-moonboy.html"]');
+      const contribution = page.locator('#battle-my-contribution-today');
+      await contribution.locator('summary').first().click();
+      const moonboyCta = contribution.locator('.bc-join-content > p > a[href="/my-moonboy.html?tab=faction"]');
       assert.equal(await moonboyCta.isVisible(), true, 'Battle Chamber routes account help to My Moonboy');
       await Promise.all([
-        page.waitForURL(SITE + '/my-moonboy.html'),
+        page.waitForURL(SITE + '/my-moonboy.html?tab=faction'),
         moonboyCta.click(),
       ]);
       await page.evaluate(() => window.MOONBOYS_IDENTITY.ready);

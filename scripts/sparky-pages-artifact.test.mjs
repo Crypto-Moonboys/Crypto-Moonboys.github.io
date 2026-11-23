@@ -15,7 +15,8 @@ function requirePublic(relative) {
 }
 
 test('real Pages artifact publishes every SPARKY guide and canon handoff URL', () => {
-  const rootPage = requirePublic('gpt-users.html');
+  const rootPage = requirePublic('ai-user.html');
+  assert.match(requirePublic('gpt-users.html'), /noindex, follow/);
   const app = requirePublic('js/sparky-gpt-app.js');
   const creativeGuide = requirePublic('graffiti-kings-creative-guide.html');
   assert.match(app, /graffiti-kings-creative-guide\.html/);
@@ -32,9 +33,13 @@ test('real Pages artifact publishes every SPARKY guide and canon handoff URL', (
   requirePublic('js/creator-memory.js');
   requirePublic('js/creator-memory-studio.js');
   requirePublic('docs/portable-creator-memory.md');
-  assert.match(rootPage, /creator-memory-studio/);
+  const campaignBrief = requirePublic('guides/sparky/creator-campaign.md');
+  assert.match(rootPage, /href="\/guides\/sparky\/creator-campaign\.md" download/);
+  assert.match(rootPage, /id="copy-ai-starter"/);
+  assert.match(campaignBrief, /Do not change the mascot between formats/);
+  assert.match(campaignBrief, /permissioned offline action/);
 
-  assert.match(rootPage, /js\/sparky-gpt-app\.js/);
+  assert.doesNotMatch(rootPage, /src="\/js\/sparky-gpt-app\.js/);
   assert.match(app, /moonboy-canon-index\.json/);
   assert.match(mainGuide, /SPARKY/i);
   assert.match(canonGuide, /PUBLIC Final Fork outcome remains unresolved/);
@@ -60,12 +65,12 @@ test('real Pages artifact publishes every SPARKY guide and canon handoff URL', (
 
 test('deployed discovery finds Moonboy creator route and restricted sources stay private', () => {
   const search = JSON.parse(requirePublic('js/wiki-index.json'));
-  assert.ok(search.some(entry=>entry.url==='/gpt-users.html'), 'Creator Studio missing from deployed search');
+  assert.ok(search.some(entry=>entry.url==='/ai-user.html'), 'Creator Studio missing from deployed search');
   assert.equal(existsSync(artifactFile('_article-template.html')), false, 'Raw authoring scaffold must not be published');
   const found = search.some(entry=>entry.url==='/wiki/create-your-moonboy.html');
   assert.ok(found,'Creator page not in deployed wiki search index');
   const sitemap = requirePublic('sitemap.xml');
-  assert.ok(sitemap.includes('https://cryptomoonboys.com/gpt-users.html'), 'Creator Studio missing from deployed sitemap');
+  assert.ok(sitemap.includes('https://cryptomoonboys.com/ai-user.html'), 'Creator Studio missing from deployed sitemap');
   assert.ok(search.some(entry=>entry.url==='/graffiti-kings-creative-guide.html'), 'Creative guide missing from deployed search');
   assert.ok(sitemap.includes('https://cryptomoonboys.com/graffiti-kings-creative-guide.html'));
   assert.ok(sitemap.includes('https://cryptomoonboys.com/wiki/create-your-moonboy.html'));

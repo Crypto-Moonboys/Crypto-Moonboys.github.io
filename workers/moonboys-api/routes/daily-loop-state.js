@@ -1,7 +1,7 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from '../shared/faction-canon.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection, canonicalFactionMetadataLookup } from '../shared/faction-projection.js';
-import { buildWtfPreviewSchedule, getWtfEventStatus } from '../shared/daily-wtf-schedule.js';
+import { buildWtfPreviewSchedule, getWtfEventStatus, WTF_REWARD_PREVIEW_LABEL } from '../shared/daily-wtf-schedule.js';
 import { inspectSchemaTables } from '../shared/schema-preflight.js';
 import {
   backfillMissedPerkGapsFromLastActiveDay,
@@ -254,7 +254,7 @@ export async function buildDailyLoopState(env, options = {}) {
           ends_at: row.ends_at,
           required_action: row.required_action,
           reward_preview: row.reward_key,
-          multiplier_display: row.xp_multiplier_display || null,
+          multiplier_display: WTF_REWARD_PREVIEW_LABEL,
           theme: row.theme || null,
           status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
           source_label: 'live',

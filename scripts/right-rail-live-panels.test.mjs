@@ -44,24 +44,24 @@ const moonboysState = read('js/core/moonboys-state.js');
 const retroTheme = read('css/retro-16bit-theme.css');
 const ensureInlineLiveStatsBlock = functionBlock(siteShell, 'ensureInlineLiveStats');
 
+function assetUrlPattern(src) {
+  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return `["']${escaped}(?:\\?[^"'<>#]*)?["']`;
+}
 function hasScript(html, src) {
-  return html.includes(`src="${src}"`) || html.includes(`src='${src}'`);
+  return new RegExp(`<script[^>]*\\s+src=${assetUrlPattern(src)}`).test(html);
 }
 function hasModuleScript(html, src) {
-  const re = new RegExp(`<script[^>]+type=["']module["'][^>]+src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
-  return re.test(html);
+  return new RegExp(`<script[^>]*type=["']module["'][^>]*\\s+src=${assetUrlPattern(src)}`).test(html);
 }
 function hasPreloadFor(html, href) {
-  const re = new RegExp(`<link[^>]+rel=["']preload["'][^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
-  return re.test(html);
+  return new RegExp(`<link[^>]*rel=["']preload["'][^>]*\\s+href=${assetUrlPattern(href)}`).test(html);
 }
 function hasModulePreloadFor(html, href) {
-  const re = new RegExp(`<link[^>]+rel=["']modulepreload["'][^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
-  return re.test(html);
+  return new RegExp(`<link[^>]*rel=["']modulepreload["'][^>]*\\s+href=${assetUrlPattern(href)}`).test(html);
 }
 function hasCfBypassedModuleScript(html, src) {
-  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`<script[^>]+data-cfasync=["']false["'][^>]+type=["']module["'][^>]+src=["']${escaped}["']`).test(html);
+  return new RegExp(`<script[^>]*data-cfasync=["']false["'][^>]*type=["']module["'][^>]*\\s+src=${assetUrlPattern(src)}`).test(html);
 }
 
 function functionBlock(src, name) {
@@ -420,7 +420,7 @@ check(!rightPanelAllowlist.includes('/community.html') && !community.includes('p
 check(!rightPanelAllowlist.includes('/games/index.html') && !rightPanelAllowlist.includes('/games/') && !games.includes('page-has-right-panel'), 'games/index.html uses inline live stats without right-rail allowlist/layout opt-in');
 check(ensureInlineLiveStatsBlock.includes("const legacy = content.querySelector('.inline-live-stats[data-live-stats-position=\"bottom\"]')") && ensureInlineLiveStatsBlock.includes('if (legacy) legacy.remove()') && !ensureInlineLiveStatsBlock.includes('content.appendChild(container)'), 'site-shell.js removes duplicate legacy player cards and does not inject new ones');
 check(!ensureInlineLiveStatsBlock.includes('content.insertBefore(container, content.firstChild)'), 'site-shell.js no longer inserts inline live stats at the top before later correction');
-check(community.includes('href="/css/action-page-cards.css"'), 'community.html loads action-page card CSS in the document head');
+check(new RegExp(`<link[^>]*rel=["']stylesheet["'][^>]*\\s+href=${assetUrlPattern('/css/action-page-cards.css')}`).test(community), 'community.html loads action-page card CSS in the document head');
 check(games.includes('href="/css/action-page-cards.css"'), 'games/index.html loads action-page card CSS in the document head');
 check(gamesLeaderboard.includes('href="/css/action-page-cards.css"'), 'games/leaderboard.html loads action-page card CSS in the document head');
 check(!nftTemplateExample.includes('page-has-right-panel'), 'NFT template example does not force page-has-right-panel');

@@ -383,8 +383,8 @@ function createLegacybootstrapInvaders(root) {
   }
 
   /** Show a brief floating text on screen (uses warningBanner for simplicity). */
-  function addFloatingText(text, color) {
-    warningBanner = { text, color: color || '#f7c948', timer: 1.8, maxTimer: 1.8 };
+  function addFloatingText(text, color, factionIcon) {
+    warningBanner = { text, factionIcon, color: color || '#f7c948', timer: 1.8, maxTimer: 1.8 };
   }
 
   /** Drop one random powerup from sky at random X. */
@@ -739,7 +739,7 @@ function createLegacybootstrapInvaders(root) {
     if (factionShieldedLives > lives) {
       lives = factionShieldedLives;
       const _fxEntry = getFactionEffects(_factionId);
-      if (_fxEntry && _fxEntry.bonusText) addFloatingText(_fxEntry.bonusText, '#ff6ad5');
+      if (_fxEntry && _fxEntry.bonusText) addFloatingText(_fxEntry.bonusText, '#ff6ad5', window.MOONBOYS_FACTION?.getIconImage?.(_factionId));
     }
     updateHud();
     draw();

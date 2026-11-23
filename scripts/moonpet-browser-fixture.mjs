@@ -80,7 +80,19 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
     blockedBrowserRequests.push(req.url());
     return route.abort();
   });
-  const open=async()=>{await page.goto(origin+'/moonpet-game.html');await page.waitForFunction(()=>document.getElementById('boot-layer').classList.contains('is-hidden'));await page.waitForFunction(()=>window.MoonpetBetaAppearance.isBotArtReady());};
+  const open=async({waitForArt=true}={})=>{
+    await page.goto(origin+'/moonpet-game.html');
+    await page.waitForFunction(
+      ()=>document.getElementById('boot-layer').classList.contains('is-hidden'),
+      undefined,
+      {timeout:20000},
+    );
+    if(waitForArt)await page.waitForFunction(
+      ()=>window.MoonpetBetaAppearance?.isBotArtReady?.(),
+      undefined,
+      {timeout:20000},
+    );
+  };
   const care=async action=>{
     // Use the player's disclosure control, and wait for its actual visible body.
     // A response event can precede JSON application and replace the old node.
@@ -102,5 +114,5 @@ async function setup({pets=1,recovery=false,website=false,delayMs=0,clock=false,
       await page.evaluate(v=>{window.fixtureAuth=v;},proof);
     },close:async()=>{releaseFull();await context.close();await Promise.allSettled([...inFlight]);f.close();}};
 }
-return {setup,origin,browser,blockedWorkerRequests,async close(){try{await browser.close();await new Promise(resolve=>server.close(resolve));}finally{globalThis.fetch=originalFetch;}}};
+return {setup,origin,browser,blockedWorkerRequests,async close(){try{await browser.close();await new Promise(resolve=>{server.close(resolve);server.closeAllConnections();});}finally{globalThis.fetch=originalFetch;}}};
 }

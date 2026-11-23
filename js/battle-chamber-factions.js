@@ -40,39 +40,39 @@
   // ── Faction roster ────────────────────────────────────────────────────────
 
   var LIVE_FACTIONS = [
-    { key: 'hard-fork-rockers',   label: 'Hard Fork Rockers',  icon: '🪨', color: '#56dcff',
+    { key: 'hard-fork-rockers',   label: 'Hard Fork Rockers',  color: '#56dcff',
       playstyle: 'Endurance · Stability · Streak Protection',
       perkTeaser: 'Reduced chaos exposure, long-run bonus branches, streak protection',
       rewardBias: 'endurance' },
-    { key: 'rugpull-miners',      label: 'Rugpull Miners',     icon: '⛏️', color: '#ff6ad5',
+    { key: 'rugpull-miners',      label: 'Rugpull Miners',     color: '#ff6ad5',
       playstyle: 'Defensive Recovery · Shield Support · Resource Pressure',
       perkTeaser: 'Shield bonus, comeback branches, resource-recovery quests',
       rewardBias: 'contribution' },
-    { key: 'graffpunks',          label: 'GraffPUNKS',         icon: '🎨', color: '#7dff72',
+    { key: 'graffpunks',          label: 'GraffPUNKS',         color: '#7dff72',
       playstyle: 'Chaos · Combos · High-Risk Clout',
       perkTeaser: 'Higher chaos bursts, bigger combo paths, high-risk rabbit holes',
       rewardBias: 'chaos' },
-    { key: 'blockchain-furies',   label: 'Blockchain Furies',  icon: '🔥', color: '#ff9f43',
+    { key: 'blockchain-furies',   label: 'Blockchain Furies',  color: '#ff9f43',
       playstyle: 'Speed · Aggression · Revenge Momentum',
       perkTeaser: 'Fast-run missions, burst windows, revenge bonuses after failed runs',
       rewardBias: 'chaos' },
-    { key: 'crypto-moongirls',    label: 'Crypto Moongirls',   icon: '🌙', color: '#b88dff',
+    { key: 'crypto-moongirls',    label: 'Crypto Moongirls',   color: '#b88dff',
       playstyle: 'Control · Precision · Signal Dominance',
       perkTeaser: 'Precision missions, leaderboard control, elite faction titles',
       rewardBias: 'contribution' },
-    { key: 'blockstars',          label: 'The Blockstars',     icon: '⭐', color: '#ffd166',
+    { key: 'blockstars',          label: 'The Blockstars',     color: '#ffd166',
       playstyle: 'Celebrity Clout · Spotlight Events · Public Ranking',
       perkTeaser: 'Featured player chances, clout multipliers, monthly fame tracks',
       rewardBias: 'contribution' },
-    { key: 'all-city-bulls',      label: 'All City Bulls',     icon: '🐂', color: '#ff6b6b',
+    { key: 'all-city-bulls',      label: 'All City Bulls',     color: '#ff6b6b',
       playstyle: 'Brute Force · High-Score Pressure · Territory Dominance',
       perkTeaser: 'Score target branches, weekly war contribution boosts',
       rewardBias: 'contribution' },
-    { key: 'nomad-bears',         label: 'Nomad Bears',        icon: '🐻', color: '#8ecf7a',
+    { key: 'nomad-bears',         label: 'Nomad Bears',        color: '#8ecf7a',
       playstyle: 'Exploration · Consistency · Multi-Game Variety',
       perkTeaser: 'Variety bonuses, multi-game rabbit holes, daily/weekly route bonuses',
       rewardBias: 'endurance' },
-    { key: 'crypto-stoned-boys',  label: 'Crypto Stoned Boys', icon: '😶‍🌫️', color: '#8fd3ff',
+    { key: 'crypto-stoned-boys',  label: 'Crypto Stoned Boys', color: '#8fd3ff',
       playstyle: 'Chill Grind · Weird Events · Randomizer Energy',
       perkTeaser: 'Random bonus branches, rare event chances, low-pressure XP paths',
       rewardBias: 'endurance' },
@@ -212,6 +212,10 @@
 
   // ── Faction meta lookup ───────────────────────────────────────────────────
 
+  function renderFactionIcon(key, size) {
+    return window.MOONBOYS_FACTION?.renderIcon?.(key, size) || '';
+  }
+
   function factionMeta(key) {
     for (var i = 0; i < LIVE_FACTIONS.length; i++) {
       if (LIVE_FACTIONS[i].key === key) return LIVE_FACTIONS[i];
@@ -254,6 +258,18 @@
 
   // ── 1. Faction War Standings ──────────────────────────────────────────────
 
+  var STANDINGS_ART = new Map([
+    ['crypto-moongirls', { src: '/art/crypto%20moongirls.jpg', alt: 'Crypto Moongirls artwork', size: 1254 }],
+    ['all-city-bulls', { src: '/art/London%20Allcity%20Bull%20Hero.jpg', alt: 'London All City Bull Hero', size: 800 }],
+    ['blockchain-furies', { src: '/art/Blockchain%20Furries%20Crypto%20Moonboys.jpg', alt: 'Blockchain Furies Crypto Moonboys artwork', size: 1254 }],
+    ['blockstars', { src: '/art/The%20Blockstars%20Crypto%20Moonboys.jpg', alt: 'The Blockstars Crypto Moonboys artwork', size: 1254 }],
+    ['crypto-stoned-boys', { src: '/art/crypto%20stonedboys.jpg', alt: 'Crypto Stoned Boys artwork', size: 1254 }],
+    ['graffpunks', { src: '/art/the%20GraffPUNKS%20Crypto%20Moonboys.jpg', alt: 'GraffPUNKS Crypto Moonboys artwork', size: 1254 }],
+    ['hard-fork-rockers', { src: '/art/crypto%20moonboys%20The%20Hard%20fork%20Rockers.jpg', alt: 'Hard Fork Rockers artwork', size: 1254 }],
+    ['nomad-bears', { src: '/art/crypto%20moonboys%20The%20Nomad%20Bears.jpg', alt: 'Nomad Bears artwork', size: 1254 }],
+    ['rugpull-miners', { src: '/art/Rugpull%20Miners%20by%20the%20Crypto%20Moonboys.jpg', alt: 'Rugpull Miners artwork', size: 1254 }],
+  ]);
+
   function renderStandings() {
     var container = el('battle-faction-standings');
     if (!container) return;
@@ -271,16 +287,24 @@
       var rank = idx + 1;
       var momentumLabel = MOMENTUM_LABELS[Math.min(3, row.momentum || 0)];
       var isDominant = row.faction === dominant;
-      return '<div class="bc-faction-row' + (isDominant ? ' bc-faction-row--dominant' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
+      var art = STANDINGS_ART.get(row.faction);
+      var content =
         '<span class="bc-faction-rank">#' + rank + '</span>' +
-        '<span class="bc-faction-icon">' + meta.icon + '</span>' +
+        '<span class="bc-faction-icon">' + renderFactionIcon(meta.key) + '</span>' +
         '<span class="bc-faction-name">' + esc(meta.label) + (isDominant ? ' <span class="bc-dominant-badge">⚔ LEADING</span>' : '') + '</span>' +
         '<span class="bc-faction-power">Power: <strong>' + (row.power || 0) + '</strong></span>' +
         '<span class="bc-faction-daily">Today: <strong>' + (row.daily || 0) + '</strong></span>' +
         '<span class="bc-faction-weekly">Week: <strong>' + (row.weekly || 0) + '</strong></span>' +
         '<span class="bc-faction-momentum">Momentum: <strong>' + esc(momentumLabel) + '</strong></span>' +
         '<span class="bc-faction-perk-teaser">' + esc(meta.perkTeaser) + '</span>' +
-        '<a class="bc-faction-chamber-link" href="' + esc(CHAMBER_ROUTES[row.faction] || '/battle-chamber/factions/index.html') + '" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>' +
+        '<a class="bc-faction-chamber-link" href="' + esc(CHAMBER_ROUTES[row.faction] || '/battle-chamber/factions/index.html') + '" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>';
+      return '<div class="bc-faction-row' + (isDominant ? ' bc-faction-row--dominant' : '') +
+        (art ? ' bc-faction-row--with-art' : '') + '" style="--faction-color:' + esc(meta.color) + '">' +
+        (art
+          ? '<div class="bc-faction-row-content">' + content + '</div>' +
+            '<img class="bc-faction-row-art" src="' + esc(art.src) + '" alt="' + esc(art.alt) +
+            '" width="' + art.size + '" height="' + art.size + '" loading="lazy" decoding="async">'
+          : content) +
         '</div>';
     }).join('');
 
@@ -309,7 +333,7 @@
       '<div class="bc-weekly-header">' +
         '<div class="bc-weekly-leader">' +
           (leaderMeta
-            ? '<span class="bc-weekly-icon">' + leaderMeta.icon + '</span> <strong>' + esc(leaderMeta.label) + '</strong> — Weekly Leader'
+            ? '<span class="bc-weekly-icon">' + renderFactionIcon(leaderMeta.key) + '</span> <strong>' + esc(leaderMeta.label) + '</strong> — Weekly Leader'
             : 'No weekly data yet') +
         '</div>' +
       '</div>' +
@@ -318,18 +342,12 @@
           var meta = factionMeta(row.faction);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Weekly contribution: <strong>' + (row.weekly || 0) + '</strong></span>' +
             '</div>';
         }).join('') +
       '</div>' +
-      '<div class="bc-weekly-reset-note">' + esc(usingServer
-        ? 'Weekly war reflects server-backed clout authority.'
-        : 'Weekly war resets every Monday at 00:00 UTC.') + '</div>' +
-      '<div class="bc-weekly-prizes">' +
-        '<strong>Weekly prizes (display):</strong> ' +
-        'Top weekly factions unlock stronger roguelite options, Battle Chamber badges, and XP prize pool eligibility.' +
-      '</div>';
+      '<div class="bc-weekly-reset-note">Resets Monday at 00:00 UTC.</div>';
   }
 
   // ── 3. Monthly Clout Chase ────────────────────────────────────────────────
@@ -353,7 +371,7 @@
           var meta = factionMeta(row.faction_id);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Monthly clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
             '</div>';
         }).join('');
@@ -366,19 +384,16 @@
           var meta = factionMeta(row.faction);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Monthly clout: <strong>0</strong></span>' +
             '</div>';
         }).join('');
     }
 
     container.innerHTML =
-      '<p class="bc-standings-note">' + esc(usingServer
-        ? 'Monthly clout standings are server-backed when available.'
-        : (serverStatus.message || 'Live server standings unavailable. Showing local display state.')) + '</p>' +
-      '<div class="bc-weekly-rows">' + rowsHtml + '</div>' +
-      '<div class="bc-monthly-target"><strong>' + (usingServer ? 'Live monthly source:' : 'Current monthly target:') + '</strong> ' +
-        esc(usingServer ? 'Battle Chamber authority layer' : 'Monthly standings update live — keep building faction clout.') + '</div>';
+      (usingServer ? '' : '<p class="bc-standings-note">' +
+        esc(serverStatus.message || 'Live server standings unavailable. Showing local display state.') + '</p>') +
+      '<div class="bc-weekly-rows">' + rowsHtml + '</div>';
   }
 
   // ── 4. Seasonal Campaign ──────────────────────────────────────────────────
@@ -402,7 +417,7 @@
           var meta = factionMeta(row.faction_id);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Seasonal clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
             '</div>';
         }).join('');
@@ -415,22 +430,16 @@
           var meta = factionMeta(row.faction);
           return '<div class="bc-weekly-row">' +
             '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
-            '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+            '<span class="bc-weekly-name">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + '</span>' +
             '<span class="bc-weekly-score">Seasonal clout: <strong>0</strong></span>' +
             '</div>';
         }).join('');
     }
 
     container.innerHTML =
-      '<p class="bc-standings-note">' + esc(usingServer
-        ? 'Seasonal campaign standings are server-backed when available.'
-        : (serverStatus.message || 'Live server standings unavailable. Showing local display state.')) + '</p>' +
-      '<div class="bc-weekly-rows">' + rowsHtml + '</div>' +
-      '<div class="bc-season-current">' +
-        '<strong>Season 1: The Clout War</strong>' +
-        '<p>Each season runs a full cross-faction campaign. Complete seasonal missions, build maximum clout, and secure your faction\'s place in the Battle Chamber record.</p>' +
-      '</div>' +
-      '<p class="bc-hall-of-fame">Seasonal winners become part of the Battle Chamber record. Hall of Fame placement is permanent.</p>';
+      (usingServer ? '' : '<p class="bc-standings-note">' +
+        esc(serverStatus.message || 'Live server standings unavailable. Showing local display state.') + '</p>') +
+      '<div class="bc-weekly-rows">' + rowsHtml + '</div>';
   }
 
   // ── 5. Join Faction Panel ─────────────────────────────────────────────────
@@ -440,11 +449,12 @@
     if (!container) return;
 
     var factionApi = window.MOONBOYS_FACTION;
-    var cached = status || (factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null);
+    var saved = factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null;
+    var cached = status && status.faction !== saved?.faction ? status : { ...saved, ...status };
     var currentFaction = (cached && cached.faction) ? cached.faction : 'unaligned';
     var isAligned = currentFaction !== 'unaligned';
 
-    if (isAligned) {
+    if (isAligned && cached.can_choose_faction !== true) {
       var meta = factionMeta(currentFaction);
       var chamberLink = CHAMBER_ROUTES[currentFaction] || '/battle-chamber/factions/index.html';
       var seasonKey = (cached && cached.season_key) ? cached.season_key : null;
@@ -453,37 +463,39 @@
         : '';
       container.innerHTML =
         '<div class="bc-aligned-panel" style="--faction-color:' + esc(meta.color) + '">' +
-          '<div class="bc-aligned-header">' + meta.icon + ' <strong>' + esc(meta.label) + '</strong></div>' +
+          '<div class="bc-aligned-header">' + renderFactionIcon(meta.key) + ' <strong>' + esc(meta.label) + '</strong></div>' +
           '<div class="bc-aligned-season-lock">You are locked to ' + esc(meta.label) + ' for this season.</div>' +
           '<div class="bc-aligned-row"><span>Faction XP:</span> <strong>' + (Number(cached.faction_xp) || 0) + '</strong></div>' +
           '<div class="bc-aligned-row"><span>Active bonus:</span> <strong>' + esc((cached.bonuses && cached.bonuses.bonus) || meta.perkTeaser) + '</strong></div>' +
           '<div class="bc-aligned-row"><span>Playstyle:</span> <strong>' + esc(meta.playstyle) + '</strong></div>' +
-          '<div class="bc-aligned-row bc-aligned-clout-note">Your runs, missions, and proof events now count toward this faction.</div>' +
           seasonDisplay +
           '<div class="bc-aligned-actions">' +
-            '<a class="bc-cta-btn" href="/games/index.html">Play Arcade</a>' +
             '<a class="bc-cta-btn bc-cta-secondary" href="#battle-active-missions">View Daily Missions</a>' +
             '<a class="bc-cta-btn bc-cta-chamber" href="' + esc(chamberLink) + '">View Faction Chamber</a>' +
           '</div>' +
         '</div>';
     } else {
       var cards = LIVE_FACTIONS.map(function (f) {
+        var action = currentFaction === f.key ? 'Stay with' : 'Join';
         return '<div class="bc-join-card" style="--faction-color:' + esc(f.color) + '">' +
-          '<div class="bc-join-card-icon">' + f.icon + '</div>' +
-          '<div class="bc-join-card-name">' + esc(f.label) + '</div>' +
+          '<div class="bc-join-card-heading"><div class="bc-join-card-icon">' + renderFactionIcon(f.key, 40) + '</div>' +
+          '<div class="bc-join-card-name">' + esc(f.label) + '</div></div>' +
           '<div class="bc-join-card-playstyle">' + esc(f.playstyle) + '</div>' +
           '<div class="bc-join-card-perk">' + esc(f.perkTeaser) + '</div>' +
-          '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '">Join ' + esc(f.label) + '</button>' +
+          '<div class="bc-join-card-actions">' +
+            '<button class="bc-join-btn faction-join-btn interactive" data-faction="' + esc(f.key) + '" aria-label="' +
+              action + ' ' + esc(f.label) + '">' + (action === 'Join' ? 'Join' : 'Stay') + '</button>' +
+            '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key]) + '" aria-label="View chamber for ' +
+              esc(f.label) + '">View chamber</a>' +
+          '</div>' +
           '</div>';
       }).join('');
 
       container.innerHTML =
         '<div class="bc-join-season-notice">' +
-          '<p class="bc-join-season-lock-copy">' + esc(CONTENT.factionLock || 'Choose carefully. Your faction is locked for the current season.') + '</p>' +
-          '<p class="bc-join-season-reset-copy">' + esc(CONTENT.factionReset || 'At season reset, your faction lock clears and you can join again or pick a new side.') + '</p>' +
-          '<p class="bc-join-link-copy">' + esc(CONTENT.factionIdentityRequired || 'Faction clout only counts when you are Telegram-linked. No faction, no faction clout.') + '</p>' +
+          (isAligned ? '<p>Season ' + esc(String(cached.season_key || '').replace(/^S/, '')) + ' is open. Stay with your faction or choose a new one.</p>' : '') +
+          '<p class="bc-join-season-lock-copy">Your choice lasts the season.</p>' +
         '</div>' +
-        '<p class="bc-join-intro">' + esc(CONTENT.joinIntro || 'Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.') + '</p>' +
         '<div class="bc-join-grid">' + cards + '</div>';
 
       // Wire join buttons
@@ -508,7 +520,7 @@
           var targetMeta = factionMeta(targetFaction);
           container.innerHTML =
             '<div class="bc-join-confirm-panel" style="--faction-color:' + esc(targetMeta.color) + '">' +
-              '<div class="bc-join-confirm-icon">' + targetMeta.icon + '</div>' +
+              '<div class="bc-join-confirm-icon">' + renderFactionIcon(targetMeta.key, 40) + '</div>' +
               '<div class="bc-join-confirm-title">Confirm faction choice</div>' +
               '<div class="bc-join-confirm-faction"><strong>' + esc(targetMeta.label) + '</strong></div>' +
               '<div class="bc-join-confirm-lock">You will be locked to this faction for the current season.</div>' +
@@ -544,7 +556,7 @@
                 // Show success message before re-rendering
                 container.innerHTML =
                   '<div class="bc-join-success-panel" style="--faction-color:' + esc(targetMeta.color) + '">' +
-                    '<div class="bc-join-success-icon">' + targetMeta.icon + '</div>' +
+                    '<div class="bc-join-success-icon">' + renderFactionIcon(targetMeta.key, 40) + '</div>' +
                     '<div class="bc-join-success-msg">You joined ' + esc(targetMeta.label) + '. Your faction clout now counts for this season.</div>' +
                   '</div>';
                 // Reload full status and re-render after brief delay.
@@ -625,7 +637,7 @@
     var currentFaction = (cached && cached.faction) ? cached.faction : 'unaligned';
 
     if (currentFaction === 'unaligned') {
-      container.innerHTML = '<p class="bc-missions-empty">Join a faction to unlock daily missions and build faction war contribution.</p>';
+      container.innerHTML = '<p class="bc-missions-empty">Join a faction to unlock missions.</p>';
       return;
     }
 
@@ -652,40 +664,29 @@
     }
 
     container.innerHTML =
-      '<div class="bc-missions-header">' + meta.icon + ' ' + esc(meta.label) + ' — Today\'s Missions</div>' +
-      '<div class="bc-missions-list">' + rows + '</div>' +
-      '<div class="bc-missions-note">' + esc(CONTENT.missionsNote || 'Mission rewards are clout/war contribution only. Linked identity users sync mission progress to server.') + '</div>';
+      '<div class="bc-missions-header">' + renderFactionIcon(meta.key) + ' ' + esc(meta.label) + ' — Today\'s Missions</div>' +
+      '<div class="bc-missions-list">' + rows + '</div>';
   }
 
   // ── 7. Faction Perks + Roguelite Options ─────────────────────────────────
 
-  function renderFactionPerks() {
+  function renderFactionPerks(status) {
     var container = el('battle-faction-perks');
     if (!container) return;
 
-    var cards = LIVE_FACTIONS.map(function (f) {
-      // Read effect metadata from FACTION_EFFECT_DEFS (set by bridge from FACTION_DEFS)
-      // Also accepts window.FACTION_DEFS directly for resilience
-      var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
-      var def = defs && defs[f.key];
-      var xpMeta = def != null ? def.xpModifier : null;
-      var scoreMulti = def != null ? def.scoreMultiplier : null;
-
-      return '<div class="bc-perk-card" style="--faction-color:' + esc(f.color) + '">' +
-        '<div class="bc-perk-icon">' + f.icon + '</div>' +
-        '<div class="bc-perk-name">' + esc(f.label) + '</div>' +
-        '<div class="bc-perk-playstyle">' + esc(f.playstyle) + '</div>' +
-        '<div class="bc-perk-text">' + esc(f.perkTeaser) + '</div>' +
-        '<div class="bc-perk-xp-meta">XP metadata: ' + (xpMeta != null ? '×' + esc(String(xpMeta)) + ' <em>display only</em>' : '<em>—</em>') + '</div>' +
-        '<div class="bc-perk-score-meta">Score modifier: ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '<em>—</em>') + '</div>' +
-        '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
-        '</div>';
-    }).join('');
+    var f = LIVE_FACTIONS.find(function (entry) { return entry.key === (status && status.faction); });
+    if (!f) {
+      container.innerHTML = '<p>Join a faction to see its perks.</p>';
+      return;
+    }
+    var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
+    var def = defs && defs[f.key];
+    var scoreMulti = def != null ? def.scoreMultiplier : null;
 
     container.innerHTML =
-      '<p class="bc-perks-intro">Each faction unlocks a specific gameplay playstyle and roguelite modifiers. Perks activate when you join and play arcade runs as that faction.</p>' +
-      '<div class="bc-perk-grid">' + cards + '</div>' +
-      '<p class="bc-perks-note">XP metadata is display-only and is not applied to XP base math unless the server explicitly backs it.</p>';
+      '<p><strong>' + esc(f.label) + '</strong> · ' + esc(f.perkTeaser) + '</p>' +
+      '<p>Score modifier in supported arcade games · ' + (scoreMulti != null ? '×' + esc(String(scoreMulti)) : '—') +
+      '. Faction XP is tracked separately.</p>';
   }
 
   // ── 8. Clout Rewards Board ────────────────────────────────────────────────
@@ -695,65 +696,51 @@
     if (!container) return;
 
     container.innerHTML =
-      '<p class="bc-rewards-intro">Weekly and monthly winners get visibility, badges, stickers, and roguelite advantages. No action, no proof. More action, more clout.</p>' +
       '<div class="bc-rewards-grid">' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🏅</span><strong>Weekly Badges</strong><p>Top weekly factions earn Battle Chamber badges.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🖼</span><strong>Monthly Profile Borders</strong><p>Monthly top performers unlock a profile border for their faction.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🏆</span><strong>Seasonal Titles</strong><p>Seasonal campaign winners earn permanent faction titles.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🎨</span><strong>Faction Stickers</strong><p>Unlock unique faction sticker packs through mission and war activity.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">📋</span><strong>Battle Chamber Placement</strong><p>Top contributors appear publicly on the Battle Chamber proof board.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🔦</span><strong>Faction Page Spotlight</strong><p>Leading factions get spotlight placement on the Battle Chamber hub.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🌿</span><strong>Bonus Roguelite Branches</strong><p>Winning factions unlock extra bonus roguelite branch paths for the next period.</p></div>' +
-        '<div class="bc-reward-item"><span class="bc-reward-icon">🎯</span><strong>XP Prize Pool Eligibility</strong><p>Active faction members become eligible for XP prize pool participation.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🏅</span><strong>Weekly Badges</strong><p>For top weekly factions.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🖼</span><strong>Monthly Profile Borders</strong><p>For top monthly factions.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🏆</span><strong>Seasonal Titles</strong><p>Permanent titles for seasonal winners.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🎨</span><strong>Faction Stickers</strong><p>Earned through missions and war activity.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">📋</span><strong>Battle Chamber Placement</strong><p>For top contributors.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🔦</span><strong>Faction Page Spotlight</strong><p>For leading factions.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🌿</span><strong>Bonus Roguelite Branches</strong><p>Extra paths for winning factions next period.</p></div>' +
+        '<div class="bc-reward-item"><span class="bc-reward-icon">🎯</span><strong>XP Prize Pool Eligibility</strong><p>For active faction members.</p></div>' +
       '</div>' +
-      '<p class="bc-rewards-disclaimer"><strong>Rewards stay focused on clout and gameplay status progression only.</strong> All rewards are clout, badges, stickers, titles, and roguelite options only.</p>';
+      '<p class="bc-rewards-disclaimer"><strong>In-game rewards only.</strong></p>';
   }
 
   // ── 9. Faction Reward Unlocks ─────────────────────────────────────────────
 
-  function getFactionRewardCopyHtml() {
-    var copyTemplate = el('battle-faction-reward-copy');
-    if (copyTemplate && 'innerHTML' in copyTemplate) {
-      return copyTemplate.innerHTML;
-    }
-    return '<p class="bc-rew-intro"><strong>Faction reward unlocks</strong></p>';
-  }
-
-  function renderFactionRewardUnlocks() {
+  function renderFactionRewardUnlocks(status) {
     var container = el('battle-faction-reward-unlocks');
     if (!container) return;
 
     var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
     var factions = rewardData && rewardData.factions ? rewardData.factions : null;
 
-    // Build per-faction reward status cards
-    var factionCards = '';
-    for (var fi = 0; fi < LIVE_FACTIONS.length; fi++) {
-      var f = LIVE_FACTIONS[fi];
-      var fReward = factions && factions[f.key] ? factions[f.key] : null;
-      var weeklyBadge = fReward && fReward.weekly && fReward.weekly.badge ? fReward.weekly.badge : '—';
-      var monthlyTitle = fReward && fReward.monthly && fReward.monthly.title ? fReward.monthly.title : '—';
-      var seasonalTrophy = fReward && fReward.seasonal && fReward.seasonal.trophy ? fReward.seasonal.trophy : '—';
-      var roguelitePerks = '—';
-      if (fReward && Array.isArray(fReward.roguelite)) {
-        var perks = fReward.roguelite.slice(0, 3);
-        var truncated = fReward.roguelite.length > 3;
-        roguelitePerks = perks.join(', ') + (truncated ? ', …' : '');
-      }
-
-      factionCards += '<div class="bc-faction-reward-card" style="--faction-color:' + esc(f.color) + '">' +
-        '<div class="bc-frc-header">' + f.icon + ' ' + esc(f.label) + '</div>' +
-        '<div class="bc-frc-row"><span>Weekly badge:</span> <strong>' + esc(weeklyBadge) + '</strong></div>' +
-        '<div class="bc-frc-row"><span>Monthly title:</span> <strong>' + esc(monthlyTitle) + '</strong></div>' +
-        '<div class="bc-frc-row"><span>Seasonal trophy:</span> <strong>' + esc(seasonalTrophy) + '</strong></div>' +
-        '<div class="bc-frc-row"><span>Roguelite options:</span> <strong>' + esc(roguelitePerks) + '</strong></div>' +
-        '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
-        '</div>';
+    var f = LIVE_FACTIONS.find(function (entry) { return entry.key === (status && status.faction); });
+    var fReward = f && factions && factions[f.key];
+    if (!fReward) {
+      container.innerHTML = '<p>Join a faction to see its rewards.</p>';
+      return;
     }
-
+    var perks = Array.isArray(fReward.roguelite) ? fReward.roguelite : [];
+    var rewardRows = [
+      ['Weekly badge', fReward.weekly && fReward.weekly.badge],
+      ['Monthly title', fReward.monthly && fReward.monthly.title],
+      ['Seasonal trophy', fReward.seasonal && fReward.seasonal.trophy]
+    ];
+    var options = perks.length
+      ? '<ul>' + perks.map(function (perk) {
+          var label = String(perk).replace(/_/g, ' ');
+          return '<li>' + esc(label.charAt(0).toUpperCase() + label.slice(1)) + '</li>';
+        }).join('') + '</ul>'
+      : '—';
     container.innerHTML =
-      getFactionRewardCopyHtml() +
-      '<div class="bc-faction-reward-grid">' + factionCards + '</div>';
+      '<dl class="bc-reward-unlock-list">' + rewardRows.map(function (row) {
+        return '<div class="bc-reward-unlock"><dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1] || '—') + '</dd></div>';
+      }).join('') +
+      '<div class="bc-reward-unlock bc-reward-unlock--options"><dt>Roguelite options</dt><dd>' + options + '</dd></div></dl>';
   }
 
   // ── 10. Faction Proof Feed headline ──────────────────────────────────────
@@ -764,15 +751,13 @@
     var activity = getServerActivity().slice(0, 8);
     if (activity.length) {
       container.innerHTML =
-        '<p class="bc-proof-intro">Server-backed Battle Chamber proof feed:</p>' +
         '<ul>' + activity.map(function (item) {
           return '<li>' + esc(item.event_text || '') + '</li>';
         }).join('') + '</ul>';
       return;
     }
     container.innerHTML =
-      '<p class="bc-proof-intro">Live server standings unavailable. Showing local display state.</p>' +
-      '<p class="bc-proof-intro">' + esc(CONTENT.proofFallback || 'Faction activity, XP movement, and public proof appear below where wired. Linked identity users sync activity to the server.') + '</p>';
+      '<p class="bc-proof-intro">No live faction proof available.</p>';
   }
 
   function renderTodaysActiveOptions(status) {
@@ -781,18 +766,13 @@
     var linked = isTelegramLinked();
     if (!linked) {
       container.innerHTML =
-        '<p>Today’s active opportunities reset at UTC midnight.</p>' +
-        '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
-        '<p>' + esc(CONTENT.identityRequired || 'Connect an identity provider to load linked account state.') + '</p>' +
-        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Identity</a></p>';
+        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Connect Telegram to see daily options</a></p>';
       return;
     }
     var dailyState = getRogueliteDailyState();
     if (!dailyState || !dailyState.today_active) {
       container.innerHTML =
-        '<p>Today’s active opportunities reset at UTC midnight.</p>' +
-        '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
-        '<p>Daily state is syncing. Refresh shortly.</p>';
+        '<p>Syncing daily options…</p>';
       return;
     }
     var active = dailyState.today_active || {};
@@ -805,16 +785,10 @@
         }).join('') + '</ul>'
       : '<p>No mission opportunities synced yet for today.</p>';
     container.innerHTML =
-      '<p><strong>Today’s active opportunities reset at UTC midnight.</strong></p>' +
-      '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
-      '<p><strong>UTC day:</strong> ' + esc(dailyState.utc_day || active.utc_day || '—') + '</p>' +
-      '<p><strong>Daily seed:</strong> ' + esc(active.daily_seed || '—') + '</p>' +
       '<p><strong>Chain depth:</strong> ' + esc(active.chain_depth == null ? 0 : active.chain_depth) + '</p>' +
       missionHtml +
       '<div class="bc-aligned-actions">' +
-        '<a class="bc-cta-btn" href="/community.html">Open Battle Chamber</a>' +
         '<a class="bc-cta-btn bc-cta-secondary" href="/games/index.html">Play Arcade</a>' +
-        '<a class="bc-cta-btn bc-cta-secondary" href="/battle-chamber/factions/index.html">View Faction Chamber</a>' +
       '</div>';
   }
 
@@ -824,11 +798,7 @@
     var linked = isTelegramLinked();
     if (!linked) {
       container.innerHTML =
-        '<p><strong>This does not reset.</strong></p>' +
-        '<p>The city kept moving while you were away.</p>' +
-        '<p>Missed perks history builds over time.</p>' +
-        '<p>Log in daily to stop the missed list growing.</p>' +
-        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Identity</a></p>';
+        '<p>Connect Telegram to see your history.</p>';
       return;
     }
     var dailyState = getRogueliteDailyState();
@@ -841,13 +811,9 @@
           return '<li><strong>' + esc(item.title || 'Missed chance') + '</strong> — ' +
             esc(item.utc_day || '') + (item.faction_id ? ' · ' + esc(item.faction_id) : '') + '</li>';
         }).join('')
-      : '<li>No missed entries yet. Keep checking in daily.</li>';
+      : '<li>No missed perks yet.</li>';
     container.innerHTML =
-      '<p><strong>This does not reset.</strong></p>' +
-      '<p>The city kept moving while you were away.</p>' +
-      '<p>Missed perks history builds over time.</p>' +
-      '<p>Log in daily to stop the missed list growing.</p>' +
-      '<p><strong>Total missed opportunities:</strong> ' + esc(total) + '</p>' +
+      '<p><strong>Total missed:</strong> ' + esc(total) + '</p>' +
       '<ul>' + previewRows + '</ul>';
   }
 

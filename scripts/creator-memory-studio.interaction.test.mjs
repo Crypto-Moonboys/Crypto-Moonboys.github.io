@@ -261,14 +261,8 @@ test("import and new project clear stale manual handoff; clipboard fallback stay
   assert.equal(s.nodes["memory-handoff-details"].open, false);
 });
 
-test("HTML add-rows use one label per input and a sibling button", () => {
-  const page = read("gpt-users.html");
-  for (const kind of ["decisions", "ideas", "sources", "assets", "proofs", "history"]) {
-    const row = page.match(new RegExp('<div class="memory-add-item">([\\s\\S]*?)</div>', "g"))
-      ?.find((html) => html.includes('id="memory-add-' + kind + '"'));
-    assert.ok(row, "Missing " + kind + " add-row");
-    assert.match(row, new RegExp('<label for="memory-add-' + kind + '">[^<]+</label>'));
-    assert.match(row, new RegExp('<button[^>]+data-memory-add="' + kind + '"'));
-    assert.doesNotMatch(row, /<label[^>]*>[^<]*<button/);
-  }
+test("portable creator page keeps the old memory editor retired", () => {
+  const page = read("ai-user.html");
+  assert.match(page, /id="copy-ai-starter"/);
+  assert.doesNotMatch(page, /class="memory-add-item"/);
 });

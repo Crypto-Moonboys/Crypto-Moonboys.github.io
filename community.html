@@ -15,7 +15,9 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/faction-operations.css">
-  <link rel="stylesheet" href="/css/action-page-cards.css">
+  <link rel="stylesheet" href="/css/clan-operation.css?crew-progress=2">
+  <link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=2">
+  <link rel="stylesheet" href="/css/action-page-cards.css?battle-copy=1">
 
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/css/page-hero-art.css">
@@ -27,20 +29,15 @@
 </head>
 <body class="page-community page-standard-shell">
 <main id="content" role="main">
-  <img class="page-hero-art" src="/art/Neon%20London%20Moonboys%20Battle%20Chamber.jpg" alt="Moonboys Battle Chamber community artwork" decoding="async" fetchpriority="high" width="1672" height="941">
+  <img class="page-hero-art" src="/art/Neon%20London%20Moonboys%20Battle%20Chamber.jpg"
+       srcset="/art/responsive/community-hero-480.webp 480w, /art/Neon%20London%20Moonboys%20Battle%20Chamber.jpg 1672w" sizes="100vw" alt="Moonboys Battle Chamber community artwork" decoding="async" fetchpriority="high" width="1672" height="941">
 
   <div class="battle-page">
     <section class="page-hero bc-community-hero" aria-labelledby="community-title">
       <div class="bc-community-hero-inner">
-        <div class="swarmsy-kicker">BATTLE CHAMBER / LIVE FACTION ACTIVITY</div>
         <h1 id="community-title" class="swarmsy-title">BATTLE CHAMBER<br><span>FACTIONS. MISSIONS. CLOUT.</span></h1>
-        <p class="swarmsy-lead">Join a crew, take on live missions and see who's moving.</p>
-        <div class="swarmsy-action-grid bc-hero-ctas" role="navigation" aria-label="Battle Chamber actions">
-          <a class="swarmsy-action-card swarmsy-action-card--gold" href="#battle-join-faction"><strong>JOIN A FACTION</strong></a>
-          <a class="swarmsy-action-card" href="#battle-active-missions"><strong>LIVE MISSIONS</strong></a>
-          <a class="swarmsy-action-card" href="#live-battle-chamber"><strong>STANDINGS</strong></a>
-          <a class="swarmsy-action-card" href="/my-moonboy.html"><strong>MY MOONBOY</strong></a>
-        </div>
+        <p><a href="#clan-operation">Play today’s operation</a> · <a href="#clan-crew-progress-title">Crew progress</a> · <a href="#clan-season-campaign">Seasonal campaign</a></p>
+        <p data-wtf-signal-summary role="status">Checking the Daily WTF schedule…</p>
       </div>
     </section>
     <div id="gklink-status" class="gklink-banner" style="display:none"></div>
@@ -52,44 +49,216 @@
     <span id="why-join-faction"></span>
 
     <details class="section bc-disclosure" open>
-      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Join a Faction</span></summary>
-      <div id="battle-join-faction"><div class="community-loading">Loading faction panel&#8230;</div></div>
+      <summary id="join-faction-section"><span class="bc-disclosure-title" role="heading" aria-level="2">Join a Faction</span></summary>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Faction%20War%20Over%20London.jpg"
+             srcset="/art/responsive/faction-war-over-london-480.webp 480w, /art/Faction%20War%20Over%20London.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Faction War Over London" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <details class="bc-more-info">
+            <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about joining a faction</span></summary>
+            <p>You can choose again next season. With Telegram linked, your runs, missions and proof events count toward your faction.</p>
+          </details>
+          <div id="battle-join-faction"><div class="community-loading">Loading faction panel&#8230;</div></div>
+          <p id="faction-chambers-live"><a href="/battle-chamber/factions/">Browse all faction chambers</a></p>
+        </div>
+      </div>
+      <span id="xp-drops-burn-path"></span>
     </details>
+
+    <div class="section bc-reward-vault">
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Reward%20Vault%20Showdown.jpg"
+             srcset="/art/responsive/reward-vault-showdown-480.webp 480w, /art/Reward%20Vault%20Showdown.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Reward Vault Showdown" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <details class="bc-disclosure">
+            <summary><span class="bc-disclosure-title" role="heading" aria-level="3">Faction Perks + Roguelite Options</span></summary>
+            <div id="battle-faction-perks"><div class="community-loading">Loading faction perks&#8230;</div></div>
+          </details>
+
+          <details class="bc-disclosure">
+            <summary><span class="bc-disclosure-title" role="heading" aria-level="3">Faction Reward Unlocks</span></summary>
+            <details class="bc-more-info">
+              <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about faction rewards</span></summary>
+              <p>Faction rewards are gameplay/status rewards only. They include clout, badges, stickers, titles and roguelite options.</p>
+            </details>
+            <div id="battle-faction-reward-unlocks"><div class="community-loading">Loading faction reward unlocks&#8230;</div></div>
+          </details>
+        </div>
+      </div>
+    </div>
 
     <span id="tasks-quests-and-xp" class="bc-deeplink-anchor"></span>
     <details class="section bc-disclosure fop-community" id="battle-crew-operations-today" aria-labelledby="battle-crew-operations-title">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2" id="battle-crew-operations-title">Crew Operations Today</span></summary>
-      <p>Public crew missions and standings. Select a chamber for its details.</p>
-      <div data-fop-crew aria-live="polite"><p>Loading public faction operations…</p></div>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Faction%20Charge%20Over%20London.jpg"
+             srcset="/art/responsive/faction-charge-over-london-480.webp 480w, /art/Faction%20Charge%20Over%20London.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Faction Charge Over London" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <p>Choose a crew to see its missions.</p>
+          <div data-fop-crew data-fop-compact-directory aria-live="polite"><p>Loading public faction operations…</p></div>
+        </div>
+      </div>
     </details>
+    <section class="section clan-operation" id="clan-operation" data-clan-operation aria-labelledby="clan-operation-title">
+      <h2 id="clan-operation-title">Clan Operations</h2>
+      <div class="clan-controls pfp-roll-switch" data-pfp-switch role="group" aria-label="Clan Operations game" hidden>
+        <button type="button" aria-controls="clan-main-operation" aria-pressed="true" data-pfp-mode="clan">Faction operation</button>
+        <button type="button" aria-controls="clan-pfp-roll" aria-pressed="false" data-pfp-mode="pfp">Daily PFP Roll</button>
+      </div>
+      <div id="clan-main-operation">
+        <p>Bank a tier for 10,000 Clan Renown and a collectible.</p>
+        <details class="bc-more-info">
+          <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Clan Operations</span></summary>
+          <p>Bank up to three tiers for 30,000 Renown per day. The route resets at 00:00 UTC.</p>
+        </details>
+        <div data-mine-game hidden>
+          <h3 data-mine-name></h3>
+          <p data-mine-stats></p>
+          <ol class="clan-strata" aria-label="Operation tier rewards">
+            <li data-mine-tier></li>
+            <li data-mine-tier></li>
+            <li data-mine-tier></li>
+          </ol>
+          <div class="clan-controls" data-mine-controls>
+            <button type="button" value="safe">Mine surface · +1 ore</button>
+            <button type="button" value="brace">Brace shaft</button>
+            <button type="button" value="deep">Cut deep</button>
+            <button type="button" value="recover">Clear cave-in</button>
+            <button type="button" value="bank">Bank tier</button>
+          </div>
+          <div data-wall-game hidden>
+            <ol class="clan-strata clan-wall" data-wall-panels aria-label="Mural panels"></ol>
+            <div class="clan-controls" data-wall-controls aria-label="Paint moves"></div>
+          </div>
+          <p><strong data-operation-collection-label>Collection</strong></p>
+          <p data-mine-collection></p>
+        </div>
+        <p role="status">Checking pilot availability…</p>
+        <p data-mine-connect hidden><a href="/gkniftyheads-incubator.html">Connect Telegram</a></p>
+        <p data-mine-join hidden><a href="#battle-join-faction">Choose a faction</a></p>
+        <button type="button" data-mine-refresh>Refresh operation</button>
+      </div>
+      <section id="clan-pfp-roll" class="clan-pfp-roll" aria-labelledby="clan-pfp-roll-title" hidden>
+        <h3 id="clan-pfp-roll-title">Daily PFP Roll</h3>
+        <p>Match Moonboy traits to earn Community XP.</p>
+        <details class="bc-more-info">
+          <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Daily PFP Roll</span></summary>
+          <p>Each roll has a 1 in 27 chance of a full match.</p>
+        </details>
+        <canvas data-pfp-canvas width="1000" height="1000" aria-label="Moonboy portrait"></canvas>
+        <p data-pfp-result role="status" aria-atomic="true"></p>
+        <p data-pfp-count></p>
+        <div class="clan-controls">
+          <button type="button" data-pfp-randomize disabled>Randomize</button>
+          <button type="button" data-pfp-download hidden>Download winning PNG</button>
+          <a href="/gkniftyheads-incubator.html" data-pfp-connect hidden>Connect Telegram</a>
+          <a href="#battle-join-faction" data-pfp-join hidden>Choose a faction</a>
+        </div>
+      </section>
+    </section>
+    <section class="section clan-crew-progress" aria-labelledby="clan-crew-progress-title" data-clan-crew-progress hidden>
+      <h2 id="clan-crew-progress-title">Clan crew progress</h2>
+      <p data-clan-crew-period></p>
+      <details class="bc-more-info">
+        <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about crew progress</span></summary>
+        <p>One bank equals one completed tier. The week resets Monday at 00:00 UTC.</p>
+        <p data-clan-city-rules hidden>City projects advance at 30, 100 and 300 weekly banks.</p>
+      </details>
+      <div data-clan-crew-competition hidden>
+        <details class="bc-more-info">
+          <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about weekly scoring</span></summary>
+          <p>Each entrant’s best five days count. Rosters lock Monday at 00:00 UTC. All entrants count toward the crew’s possible score and stay with the faction they signed up for.</p>
+        </details>
+        <label>Weekly score period
+          <select data-clan-crew-week>
+            <option value="current">This week</option>
+            <option value="previous">Last week</option>
+          </select>
+        </label>
+        <p data-clan-crew-ranking role="status"></p>
+        <button type="button" data-clan-crew-join hidden></button>
+        <p data-clan-crew-entry role="status"></p>
+      </div>
+      <div data-clan-leader-rules hidden>
+        <details class="bc-more-info">
+          <summary><span aria-hidden="true">i</span><span class="bc-info-label">How faction leaders earn power</span></summary>
+          <p>Bank a Clan Operation tier for 1 Leader Power. Each verified Daily WTF completion earns 2 Leader Power for the faction on your locked weekly roster.</p>
+          <p>After the final weekly standings are published, first place unlocks level 9 and ninth unlocks level 1. Each ranked faction leader automatically selects one of three perks for the new week. Tied factions earn the same level.</p>
+          <p>Leader Power is shown alongside the official weekly score. Official ranks and prizes use existing crew scoring.</p>
+          <p data-clan-leader-presence-rules hidden>Leaders can earn 12 power in one randomly scheduled five-minute game each hour. A weighted slowdown question or paid pause interrupts their games. Each account gets one free slowdown question per UTC day. Leaders recover before they can be paused again.</p>
+        </details>
+      </div>
+      <ul class="clan-crew-cards" data-clan-crew-cards role="list" aria-label="Crew standings" hidden></ul>
+      <p role="status"></p>
+      <div data-clan-final-results hidden>
+        <h3>Final clan results and Hall of Fame</h3>
+        <details class="bc-more-info">
+          <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about final clan results</span></summary>
+          <p>Monthly and seasonal results combine roster scores within the period. Crews need three entrants and at least one bank to place. At least two crews must qualify. Ties share first place. Entrants who banked for a winning crew earn the in-game award.</p>
+        </details>
+        <ul></ul>
+      </div>
+      <button type="button" data-clan-crew-refresh>Refresh crew progress</button>
+    </section>
     <details class="section bc-disclosure fop-community" id="battle-my-contribution-today" aria-labelledby="battle-my-contribution-title">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2" id="battle-my-contribution-title">My Faction Contribution</span></summary>
-      <div data-fop-private aria-live="polite"><p>Checking your verified faction status…</p></div>
-      <p><a href="/my-moonboy.html?tab=faction">Full personal missions and claims in My Moonboy</a></p>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Command%20Fortress%20Infiltration.jpg"
+             srcset="/art/responsive/command-fortress-infiltration-480.webp 480w, /art/Command%20Fortress%20Infiltration.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Command Fortress Infiltration" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <div data-fop-private aria-live="polite"><p>Checking your verified faction status…</p></div>
+          <p><a href="/my-moonboy.html?tab=faction">Open My Moonboy</a></p>
+        </div>
+      </div>
     </details>
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Active Faction Missions</span></summary>
-      <div id="battle-active-missions"><div class="community-loading">Loading missions&#8230;</div></div>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Rooftop%20Siege%20Before%20Dawn.jpg"
+             srcset="/art/responsive/rooftop-siege-before-dawn-480.webp 480w, /art/Rooftop%20Siege%20Before%20Dawn.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Rooftop Siege Before Dawn" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <details class="bc-more-info">
+            <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about active missions</span></summary>
+            <p>Missions earn Faction Clout. Link Telegram to sync progress.</p>
+          </details>
+          <div id="battle-active-missions"><div class="community-loading">Loading missions&#8230;</div></div>
+        </div>
+      </div>
     </details>
 
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Today's Active Options</span></summary>
-      <div id="battle-todays-active-options">
-        <p>Today’s active opportunities reset at UTC midnight. Daily WTF signals open every 4 hours at 00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC. Each signal runs for 90 minutes. The live system below is the source of truth for what is active now.</p>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Power%20Station%20Arcade%20Showdown.jpg"
+             srcset="/art/responsive/power-station-arcade-showdown-480.webp 480w, /art/Power%20Station%20Arcade%20Showdown.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Power Station Arcade Showdown" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <div id="battle-wtf-signal">
+            <p data-clan-signal-bonus hidden></p>
+            <details class="bc-more-info">
+              <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Daily WTF signals</span></summary>
+              <p>Signals open every four hours from 00:00 UTC and run for 90 minutes. Timed objectives unlock roguelite options. The XP shown for those objectives is a preview.</p>
+            </details>
+          </div>
+          <div id="battle-todays-active-options">
+            <p>Loading daily options…</p>
+          </div>
+        </div>
       </div>
     </details>
 
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Missed Days / Missed Perks</span></summary>
-      <div id="battle-missed-perks-history">
-        <p>Daily options reset. Missed perks history builds over time. Missed history does not reset.</p>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Losers%20in%20Londons%20Aftermath.jpg"
+             srcset="/art/responsive/losers-in-londons-aftermath-480.webp 480w, /art/Losers%20in%20Londons%20Aftermath.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Losers in London’s Aftermath" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <div id="battle-missed-perks-history"><p>Loading missed perks…</p></div>
+          <details class="bc-more-info">
+            <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about missed perks</span></summary>
+            <p>Daily options reset at 00:00 UTC. Your missed perks history carries forward.</p>
+          </details>
+        </div>
       </div>
-    </details>
-
-    <span id="xp-drops-burn-path"></span>
-    <details class="section bc-disclosure">
-      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction Perks + Roguelite Options</span></summary>
-      <div id="battle-faction-perks"><div class="community-loading">Loading faction perks&#8230;</div></div>
     </details>
 
     <details class="section bc-disclosure">
@@ -97,37 +266,66 @@
       <div id="battle-clout-rewards"><div class="community-loading">Loading rewards&#8230;</div></div>
     </details>
 
-    <details class="section bc-disclosure">
-      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction Reward Unlocks</span></summary>
-      <template id="battle-faction-reward-copy">
-        <p class="bc-rew-intro"><strong>Win the week. Own the chamber.</strong> Monthly clout puts your faction on the board. Seasonal winners become part of the Battle Chamber record. Badges, stickers, titles, and roguelite options prove your faction moved.</p>
-        <p class="bc-rew-disclaimer"><strong>Faction rewards are gameplay/status rewards only.</strong> These are clout, badges, stickers, titles, and roguelite branch eligibility only.</p>
-      </template>
-      <div id="battle-faction-reward-unlocks"><div class="community-loading">Loading faction reward unlocks&#8230;</div></div>
-    </details>
-
     <span id="one-of-one-hodl-warrior"></span>
     <span id="live-battle-chamber" class="bc-deeplink-anchor"></span>
 
     <details class="section bc-disclosure" open>
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction War Standings</span></summary>
-      <p class="bc-standings-note">Battle Chamber loads server-backed standings when available. Current standings and status are shown below.</p>
+      <details class="bc-more-info">
+        <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Faction War standings</span></summary>
+        <p>This board ranks Faction Clout. Operation banks earn Clan Renown, and eligible banks also count toward seasonal campaign progress.</p>
+      </details>
       <div id="battle-faction-standings"><div class="community-loading">Loading faction standings&#8230;</div></div>
     </details>
 
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Weekly Faction War</span></summary>
-      <div id="battle-weekly-war"><div class="community-loading">Loading weekly war&#8230;</div></div>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/London%20Control%20Point.jpg"
+             srcset="/art/responsive/london-control-point-480.webp 480w, /art/London%20Control%20Point.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="London Control Point" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <details class="bc-more-info">
+            <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about the weekly Faction War</span></summary>
+            <p>The weekly board resets Monday at 00:00 UTC. Top factions can unlock badges, roguelite options and XP prize pool eligibility.</p>
+          </details>
+          <div id="battle-weekly-war"><div class="community-loading">Loading weekly war&#8230;</div></div>
+        </div>
+      </div>
     </details>
 
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Monthly Clout Chase</span></summary>
-      <div id="battle-monthly-clout"><div class="community-loading">Loading monthly clout&#8230;</div></div>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Rolling%20Convoy%20Battle.jpg"
+             srcset="/art/responsive/rolling-convoy-battle-480.webp 480w, /art/Rolling%20Convoy%20Battle.jpg 1254w" sizes="auto, (max-width: 860px) 100vw, 50vw" alt="Rolling Convoy Battle" width="1254" height="1254" loading="lazy" decoding="async">
+        <div id="battle-monthly-clout" class="bc-join-content"><div class="community-loading">Loading monthly clout&#8230;</div></div>
+      </div>
     </details>
 
-    <details class="section bc-disclosure">
+    <details class="section bc-disclosure" id="clan-season-campaign">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Seasonal Campaign</span></summary>
-      <div id="battle-seasonal-campaign"><div class="community-loading">Loading seasonal campaign&#8230;</div></div>
+      <div class="bc-join-layout">
+        <img class="bc-join-art" src="/art/Four-Season%20Campaign%20Across%20London.jpg" alt="" data-campaign-art width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="bc-join-content">
+          <details class="bc-more-info">
+            <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about seasonal scoring</span></summary>
+            <p>Missions earn Seasonal Faction Clout. Eligible operation banks count toward the clan campaign. Seasonal winners join the Battle Chamber record.</p>
+          </details>
+          <div id="battle-seasonal-campaign"><div class="community-loading">Loading seasonal campaign&#8230;</div></div>
+        </div>
+      </div>
+      <section class="clan-campaign" aria-labelledby="clan-campaign-title" data-clan-campaign>
+        <h3 id="clan-campaign-title">Clan campaign</h3>
+        <p role="status" data-campaign-status></p>
+        <div aria-live="polite" data-campaign-eligibility></div>
+        <div data-campaign-content></div>
+        <button type="button" data-campaign-refresh>Refresh campaign</button>
+        <details data-campaign-personal>
+          <summary>My campaign collectibles</summary>
+          <p role="status"></p>
+          <ul></ul>
+        </details>
+      </section>
     </details>
 
     <details class="section bc-disclosure">
@@ -138,31 +336,17 @@
 
     <details class="section bc-disclosure">
       <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Top Contributors &amp; XP Chart</span></summary>
-      <p>Community XP rankings and chart, including accepted pet rewards and synced Arcade progression. The board labels its Community season or all-time period; pet seasons have their own leaderboard.</p>
+      <details class="bc-more-info">
+        <summary><span aria-hidden="true">i</span><span class="bc-info-label">More info about Community XP rankings</span></summary>
+        <p>Rankings include accepted pet rewards and synced Arcade progress. The board shows its Community season or all-time period. Pet seasons have a separate leaderboard.</p>
+      </details>
       <div class="tg-user-list" id="tg-community-leaderboard"><div class="community-loading">Loading community leaderboard&#8230;</div></div>
     </details>
 
     
 
-    <details class="section bc-disclosure" id="faction-chambers-live">
-      <summary><span class="bc-disclosure-title" role="heading" aria-level="2">Faction Chambers are open</span></summary>
-      <div class="bc-coming-next">
-        <p>Each current live faction has a dedicated chamber for identity, missions, status and participation.</p>
-        <ul>
-          <li><a href="/battle-chamber/factions/hard-fork-rockers.html">Hard Fork Rockers Chamber</a></li>
-          <li><a href="/battle-chamber/factions/rugpull-miners.html">Rugpull Miners Chamber</a></li>
-          <li><a href="/battle-chamber/factions/graffpunks.html">GraffPUNKS Chamber</a></li>
-          <li><a href="/battle-chamber/factions/blockchain-furies.html">Blockchain Furies Chamber</a></li>
-          <li><a href="/battle-chamber/factions/crypto-moongirls.html">Crypto Moongirls Chamber</a></li>
-          <li><a href="/battle-chamber/factions/blockstars.html">The Blockstars Chamber</a></li>
-          <li><a href="/battle-chamber/factions/all-city-bulls.html">All City Bulls Chamber</a></li>
-          <li><a href="/battle-chamber/factions/nomad-bears.html">Nomad Bears Chamber</a></li>
-          <li><a href="/battle-chamber/factions/crypto-stoned-boys.html">Crypto Stoned Boys Chamber</a></li>
-        </ul>
-        <p><a href="/battle-chamber/factions/index.html">Open the full faction directory</a></p>
-      </div>
-    </details>
   </div>
+<p><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a></p>
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
@@ -174,16 +358,19 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
-<script data-cfasync="false" src="/js/components/xp-burst-animation.js"></script>
-<script data-cfasync="false" src="/js/faction-alignment.js"></script>
-<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/components/xp-burst-animation.js?wtf-clan=1"></script>
+<script data-cfasync="false" src="/js/faction-alignment.js?season-choice=1"></script>
 <script data-cfasync="false" src="/js/telegram-community.js"></script>
 
 <script data-cfasync="false" src="/js/battle-chamber-platform.js"></script>
 <script data-cfasync="false" type="module" src="/js/battle-chamber-faction-bridge.js"></script>
-<script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js"></script>
-<script data-cfasync="false" src="/js/battle-chamber-factions.js"></script>
+<script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js?wtf-clan=1"></script>
+<script data-cfasync="false" src="/js/battle-chamber-factions.js?battle-copy=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
-<script data-cfasync="false" src="/js/faction-operations.js"></script>
+<script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=9"></script>
+<script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?wall-studio=1"></script>
+<script data-cfasync="false" type="module" src="/js/clan-campaign.js?opening-week=1"></script>
+<script data-cfasync="false" type="module" src="/js/clan-pfp-roll.js"></script>
 </body>
 </html>

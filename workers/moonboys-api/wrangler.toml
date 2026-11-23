@@ -2,7 +2,8 @@ name = "moonboys-api"
 main = "deployment-entry.js"
 compatibility_date = "2026-04-12"
 workers_dev = true
-preview_urls = true
+# Older version previews must stay closed after the Workers AI removal.
+preview_urls = false
 
 [triggers]
 # Existing 5-minute timed events and 09:00 Telegram digest stay unchanged.

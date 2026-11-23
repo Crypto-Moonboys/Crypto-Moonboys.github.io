@@ -173,8 +173,8 @@ function createLegacybootstrapPacChain(root) {
   let _pacEventRateMult  = 1; // faction chaos modifier × cross-game pressureRate
   let _pacGoldenBoost    = 0; // goldenSpawnBoost modifier — boosts goldenPellet event weight
 
-  function addBanner(s, text, kind) {
-    s.bannerQueue.push({ text, kind: kind || 'event', ttl: 2.1 });
+  function addBanner(s, text, kind, faction) {
+    s.bannerQueue.push({ text, faction, kind: kind || 'event', ttl: 2.1 });
     if (kind === 'warning') cue('warning');
     else if (kind === 'risk') cue('event');
   }
@@ -210,7 +210,20 @@ function createLegacybootstrapPacChain(root) {
     if (ui.level) ui.level.textContent = String(state.level);
   }
 
-  function setBanner(text, kind) { if (bannerEl) { bannerEl.textContent = text; bannerEl.className = 'pc-banner show ' + (kind || 'event'); } }
+  function setBanner(text, kind, faction) {
+    if (!bannerEl) return;
+    bannerEl.textContent = text;
+    const icon = window.MOONBOYS_FACTION?.getIconImage?.(faction);
+    if (icon) {
+      const image = icon.cloneNode();
+      image.alt = '';
+      image.width = 18;
+      image.height = 18;
+      image.style.verticalAlign = 'middle';
+      bannerEl.prepend(image, ' ');
+    }
+    bannerEl.className = 'pc-banner show ' + (kind || 'event');
+  }
   function clearBanner() { if (bannerEl) { bannerEl.className = 'pc-banner'; bannerEl.textContent = ''; } }
 
   function addScore(baseValue, x, y, reason) {
@@ -327,7 +340,7 @@ function createLegacybootstrapPacChain(root) {
       const _fx = getFactionEffects(_pacFactionId);
       state.run.shieldCharges = applyFactionStartingShield(state.run.shieldCharges, _pacFactionId, { supportsShield: true });
       _pacEventRateMult = applyFactionEventRate(1, _pacFactionId) * modPressureRate;
-      if (_fx.bonusText) addBanner(state, _fx.bonusText, 'event');
+      if (_fx.bonusText) addBanner(state, _fx.bonusText, 'event', _pacFactionId);
     } catch (_) { _pacFactionId = 'unaligned'; _pacEventRateMult = modPressureRate; }
   }
   function buildLevelState() {
@@ -666,7 +679,7 @@ function createLegacybootstrapPacChain(root) {
     if (state.screenPulse > 0) state.screenPulse = Math.max(0, state.screenPulse - dt * 0.4);
   }
   function updateBanners(dt) {
-    if (!state.activeBanner && state.bannerQueue.length) { state.activeBanner = state.bannerQueue.shift(); state.bannerTimer = state.activeBanner.ttl; setBanner(state.activeBanner.text, state.activeBanner.kind); }
+    if (!state.activeBanner && state.bannerQueue.length) { state.activeBanner = state.bannerQueue.shift(); state.bannerTimer = state.activeBanner.ttl; setBanner(state.activeBanner.text, state.activeBanner.kind, state.activeBanner.faction); }
     if (!state.activeBanner) return;
     state.bannerTimer -= dt;
     if (state.bannerTimer <= 0) { state.activeBanner = null; clearBanner(); if (!state.bannerQueue.length) state.feedback.chaosRecovery = 1.8; }

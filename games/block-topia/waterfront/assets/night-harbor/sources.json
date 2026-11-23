@@ -1,0 +1,51 @@
+[
+  {
+    "file": "apartments.png",
+    "assetId": "cmws16t1000f1lvuvf248pmwe",
+    "name": "Block Topia Night Harbor v1 - apartments",
+    "prompt": "Compact dockside apartment block with dark red brick, roof vents, teal trim and stacked amber windows. 16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.",
+    "pixelArt": true
+  },
+  {
+    "file": "graffiti-wall.png",
+    "assetId": "cmws1761w00fblvuv0b5z9pjm",
+    "name": "Block Topia Night Harbor v1 - graffiti-wall",
+    "prompt": "Standalone weathered brick wall with original cyan and pink wildstyle graffiti, chipped mortar and a lit concrete cap. 16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.",
+    "pixelArt": true
+  },
+  {
+    "file": "lighthouse.png",
+    "assetId": "cmws15bg800tbl3u16ygb5xtz",
+    "name": "Block Topia Night Harbor v1 - lighthouse",
+    "prompt": "Tall weathered brick lighthouse with copper cap, turquoise beacon and warm amber service door. 16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.",
+    "pixelArt": true
+  },
+  {
+    "file": "record-shop.png",
+    "assetId": "cmws1627a00uml3u1vjeh5sog",
+    "name": "Block Topia Night Harbor v1 - record-shop",
+    "prompt": "Late-night record shop with charcoal brick, teal awning, magenta vinyl sign and amber display window. 16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.",
+    "pixelArt": true
+  },
+  {
+    "file": "warehouse.png",
+    "assetId": "cmws15ow100twl3u1phajqnk0",
+    "name": "Block Topia Night Harbor v1 - warehouse",
+    "prompt": "Dark dock warehouse with ribbed metal roof, brick front, rolling door and original hot-pink wildstyle graffiti. 16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.",
+    "pixelArt": true
+  },
+  {
+    "file": "workshop.png",
+    "assetId": "cmws16fjw00v1l3u1kt8q60pu",
+    "name": "Block Topia Night Harbor v1 - workshop",
+    "prompt": "Dock mechanic workshop with rusted roof vents, roll-up steel shutter and warm light under a metal canopy. 16-bit game sprite, elevated top-down view, roof and front visible, crisp pixel clusters, deep violet shadows and warm amber rim light.",
+    "pixelArt": true
+  },
+  {
+    "assetId": "cmws1npvg00n514ubemnmd7ul",
+    "file": "graffiti-wall-front.png",
+    "name": "Block Topia Night Harbor v2 - graffiti-wall",
+    "prompt": "Straight horizontal brick wall, cyan and pink wildstyle. 16-bit pixel art. Straight-on orthographic front from slightly above, horizontal roof edges, front only, no side wall or diagonals. Same scale: single door 16 px high, window 10 px high. Violet shadows, amber light.",
+    "pixelArt": true
+  }
+]

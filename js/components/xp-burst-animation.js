@@ -24,12 +24,13 @@
     var card = document.createElement('div');
     card.className = 'xp-burst-card';
 
+    var awarded = payload.persisted_xp_awarded === true;
     var total = Math.max(0, Math.floor(Number(payload.total_xp) || 0));
     var start = reducedMotion ? total : 0;
 
     var title = document.createElement('h3');
     title.className = 'xp-burst-title';
-    title.textContent = String(payload.title || 'XP BURST');
+    title.textContent = awarded ? String(payload.title || 'XP BURST') : 'DAILY WTF SIGNAL CLEARED';
 
     var totalNode = document.createElement('div');
     totalNode.className = 'xp-burst-total';
@@ -45,16 +46,20 @@
 
     var note = document.createElement('div');
     note.className = 'xp-burst-meta';
-    note.textContent = 'Signal cleared. Chain options unlocked.';
+    note.textContent = awarded
+      ? 'Signal cleared. Chain options unlocked.'
+      : 'Roguelite options unlocked. Signal bonus XP is preview only.';
 
     card.appendChild(title);
-    card.appendChild(totalNode);
-    card.appendChild(meta);
+    if (awarded) {
+      card.appendChild(totalNode);
+      card.appendChild(meta);
+    }
     card.appendChild(note);
     overlay.appendChild(card);
     document.body.appendChild(overlay);
 
-    if (!reducedMotion) {
+    if (awarded && !reducedMotion) {
       var node = totalNode;
       var current = 0;
       var step = Math.max(1, Math.ceil(total / 30));

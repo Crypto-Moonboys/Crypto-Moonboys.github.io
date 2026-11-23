@@ -211,6 +211,64 @@ for (const width of [360, 390, 1280]) {
   });
 }
 
+for (const [width, reducedMotion] of [[390, 'reduce'], [1440, 'no-preference']]) {
+  test('Mission dashboard anchors stay clear of the pinned controls at ' + width + 'px', async () => {
+    const f = await setup({width, height: 900}, false);
+    try {
+      const {page} = f;
+      await page.emulateMedia({reducedMotion});
+      await page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+      const dashboard = page.getByRole('navigation', {name:'Mission dashboard'});
+      const openDashboard = page.getByRole('link', {name:'Open mission dashboard'});
+      assert.equal(await dashboard.count(), 0);
+      assert.equal(await openDashboard.count(), 0);
+      await page.getByRole('link', {name:'Explore routes'}).press('Enter');
+      await page.waitForURL(url => url.hash === '#mm-start-here');
+      assert.ok(await page.locator('#mm-start-here').isVisible());
+      const animation = await page.locator('.mm-hero-scan').evaluate(element => getComputedStyle(element).animationName);
+      assert.equal(animation, reducedMotion === 'reduce' ? 'none' : 'mm-hero-sweep');
+
+      await page.evaluate(() => {
+        window.__mmTest.linked = true;
+        window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      });
+      await dashboard.waitFor();
+      await openDashboard.press('Enter');
+      await page.waitForURL(url => url.hash === '#mm-overview');
+      await dashboard.getByRole('link', {name:'Ledger', exact:true}).press('Enter');
+      await page.waitForFunction(() => {
+        const header = document.getElementById('site-shell-top').getBoundingClientRect();
+        const menu = document.querySelector('.mm-console-nav').getBoundingClientRect();
+        const ledger = document.getElementById('mm-ledger').getBoundingClientRect();
+        return location.hash === '#mm-ledger' && Math.abs(menu.top - header.bottom) <= 1 &&
+          Math.abs(ledger.top - menu.bottom - 12) <= 2;
+      });
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'mm-ledger');
+      await page.locator('[data-mm-tab="claims"]').click();
+      assert.equal(new URL(page.url()).searchParams.get('tab'), 'claims');
+      assert.equal(new URL(page.url()).hash, '#mm-ledger');
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
+      assert.equal(f.errors.length, 0, f.errors.join('\n'));
+    } finally { await f.browser.close(); }
+  });
+}
+
+test('A shared ledger link scrolls only after the private dashboard is available', async () => {
+  const f = await setup({width:390, height:900}, true, '', {authDelayMs:750});
+  try {
+    await f.page.emulateMedia({reducedMotion:'reduce'});
+    await f.page.goto(SITE + '/my-moonboy.html?tab=claims#mm-ledger', {waitUntil:'domcontentloaded'});
+    await f.page.waitForFunction(() => {
+      const panel = document.getElementById('mm-private');
+      const menu = panel.querySelector('.mm-console-nav').getBoundingClientRect();
+      const ledger = document.getElementById('mm-ledger').getBoundingClientRect();
+      return !panel.hidden && Math.abs(ledger.top - menu.bottom - 12) <= 2;
+    });
+    assert.equal(await f.page.locator('[data-mm-tab="claims"]').getAttribute('aria-selected'), 'true');
+    assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
 test('Claims tab retains blocked saved season-tier and Finale payouts without presenting them as claim-ready', async () => {
   const f = await setup({width:390,height:844}, true);
   f.setPlanFactory((owner, cursor) => {
@@ -714,7 +772,20 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     });
     const second = { ...payload.tasks[0],
       task_id: 'moonpet.jobs:another-immutable-session', source_pet_ref: secondRef };
-    payload.tasks.push(second);
+    const accountMission = { ...payload.tasks[0], source_key: 'moonpet.daily-seven-missions',
+      owner_scope: 'account', source_pet_ref: null, status: 'in_progress' };
+    const journeyTasks = [
+      ['moonpet.daily-journey', 2, 3, 'objectives'],
+      ['moonpet.weekly-journey', 3, 5, 'objectives'],
+      ['moonpet.evolution', 1, 5, 'evolution_stage'],
+    ].map(([source_key,current,target,unit]) => ({ ...payload.tasks[0], source_key,
+      task_id: source_key + ':journey-summary', status: 'in_progress',
+      progress: { current, target, unit } }));
+    payload.tasks.push(second, ...journeyTasks,
+      { ...accountMission, task_id: 'moonpet.daily-seven-missions:flag-1',
+        progress: { current: 1, target: 1, unit: 'accepted_source_flag' } },
+      { ...accountMission, task_id: 'moonpet.daily-seven-missions:current',
+        progress: { current: 5, target: 8, unit: 'source_flags' } });
     payload.top_actions.push(second);
     return payload;
   });
@@ -725,6 +796,17 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
     assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 1/);
     assert.match(await f.page.locator('#mm-next').innerText(), /MoonPet slot 2/);
     assert.match(await f.page.locator('#mm-pets').innerText(), /Lifecycle phase: adult/);
+    const hatchLink = f.page.getByRole('link', {name:'Open MoonPet Home',exact:true});
+    assert.equal(await hatchLink.getAttribute('href'), '/moonpet-game.html?screen=home');
+    const roadmapLink = f.page.getByRole('link', {name:'open the Journey Dashboard',exact:true});
+    assert.equal(await roadmapLink.isVisible(), true);
+    assert.equal(await roadmapLink.getAttribute('href'), '/moonpet-game.html?screen=missions&focus=legendary-roadmap');
+    const journey = await f.page.locator('#mm-journey').innerText();
+    assert.match(journey, /NOW[\s\S]*Alpha saved job claim/);
+    assert.match(journey, /TODAY[\s\S]*Journey 2\/3 objectives[\s\S]*Missions 5\/8 completion conditions/);
+    assert.match(journey, /THIS WEEK[\s\S]*3\/5 objectives/);
+    assert.match(journey, /NEXT EVOLUTION[\s\S]*1\/5 evolution stage/);
+    assert.match(journey, /LIFETIME[\s\S]*Level 2 · 25 Pet XP/);
     assert.doesNotMatch(await f.page.locator('#my-moonboy').getAttribute('data-pet-ref') || '', /pap_/);
     assert.doesNotMatch(await f.page.locator('#my-moonboy').evaluate(node => node.innerHTML), /pap_[a-f0-9]{24}/);
 
@@ -738,8 +820,65 @@ test('PR3 duplicate pet titles are attributed and pet buttons filter only one op
       '/moonpet-game.html', 'no raw pet selectors in gameplay links');
     await f.page.locator('#mm-clear-pet-filter').click();
     assert.equal(await f.page.locator('#mm-pet-filter').isHidden(), true);
-    assert.equal(await f.page.locator('#mm-results .mm-task').count(),2);
+    assert.equal(await f.page.locator('#mm-results .mm-task').count(),7);
     assert.equal(f.errors.length,0,f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('Journey summary separates paginated progress from failed and missing reads', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const payload = plan(owner, cursor);
+    const task = payload.top_actions[0];
+    const journeyTask = (source_key, progress, extra) => ({ ...task, source_key,
+      task_id: source_key + ':current', status: 'in_progress', progress, ...extra });
+    payload.source_status['moonpet.weekly-journey'] = {state:'query_failed'};
+    if (cursor) {
+      payload.tasks.push(journeyTask('moonpet.daily-journey', {current:0,target:3,unit:'objectives'}));
+    } else {
+      payload.tasks.push(
+        journeyTask('moonpet.weekly-journey', {current:0,target:5,unit:'objectives'},
+          {status:'sync_unavailable',source_health:'query_failed'}),
+        journeyTask('moonpet.evolution', {current:null,target:5,unit:'evolution_stage'}),
+      );
+    }
+    return payload;
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    const summary = f.page.locator('#mm-journey .mm-journey-row');
+    await summary.first().waitFor();
+    assert.match(await summary.nth(0).innerText(), /1 verified MoonPet claim ready in loaded results/);
+    assert.match(await summary.nth(1).innerText(), /Journey Load more verified tasks to check progress/);
+    assert.match(await summary.nth(2).innerText(), /Progress unavailable/);
+    assert.match(await summary.nth(3).innerText(), /Progress unavailable/);
+    assert.doesNotMatch(await f.page.locator('#mm-journey').innerText(), /0\/5/);
+    await f.page.locator('#mm-load-more').click();
+    await f.page.locator('#mm-journey').getByText(/Journey 0\/3 objectives/).waitFor();
+    assert.match(await summary.nth(2).innerText(), /Progress unavailable/);
+    assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
+test('Journey summary ends evolution guidance when the selected MoonPet reaches final form', async () => {
+  const f = await setup({width:390,height:844}, true);
+  f.setPlanFactory((owner, cursor) => {
+    const payload = plan(owner, cursor);
+    if (cursor) return payload;
+    payload.owner.pets[0].evolution_stage = 5;
+    payload.source_status['moonpet.evolution'] = {state:'live'};
+    payload.tasks.push({ ...payload.tasks[0], source_key:'moonpet.evolution',
+      task_id:'moonpet.evolution:final-form', status:'complete', source_health:'live',
+      progress:{current:5,target:5,unit:'evolution_stage'} });
+    return payload;
+  });
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    const summary = f.page.locator('#mm-journey');
+    await summary.getByText('FINAL EVOLUTION', {exact:true}).waitFor();
+    assert.match(await summary.innerText(), /FINAL EVOLUTION[\s\S]*5\/5 evolution stage[\s\S]*Final evolution complete; lifetime progression continues/);
+    assert.doesNotMatch(await summary.innerText(), /NEXT EVOLUTION|exact blockers/);
+    assert.deepEqual(f.errors, []);
   } finally { await f.browser.close(); }
 });
 
@@ -1150,7 +1289,7 @@ test('PR5 My Moonboy shell loads the global action sync before private dashboard
   assert.match(shell,/\/js\/player-action-sync\.js/u);
   assert.match(shell,/data-player-action-sync/u);
   assert.match(html,/src="\/js\/site-shell\.js"/u);
-  assert.ok(html.indexOf('src="/js/site-shell.js"')<html.indexOf('src="/js/my-moonboy.js"'));
+  assert.ok(html.indexOf('src="/js/site-shell.js"')<html.indexOf('/js/my-moonboy.js'));
   assert.match(moonpet,/src="\/js\/player-action-sync\.js"/u,
     'standalone Moonpet page cannot rely on site-shell loader');
   assert.ok(moonpet.indexOf('src="/js/player-action-sync.js"')<

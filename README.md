@@ -1,6 +1,6 @@
 # Crypto Moonboys
 
-> **Agent and GitHub Actions policy (27 October 2026):** Read [AGENTS.md](AGENTS.md) and [docs/ci-workflow-policy.md](docs/ci-workflow-policy.md) before work. Routine validation workflows are manual-only; small image/page edits should not queue broad checks. GitHub Pages deployment and its Worker compatibility safety gate remain separate.
+> **Agent and protected-area policy:** Before work, read [AGENTS.md](AGENTS.md), [the protected areas compliance checklist](docs/protected-areas-checklist.md), and [the CI workflow policy](docs/ci-workflow-policy.md). Routine validation workflows are manual-only, but protected contracts and their focused checks remain mandatory. Every PR must report what ran, what did not run, and why. GitHub Pages deployment and its Worker compatibility safety gate remain separate.
 
 ## Current fictional canon — GK direction, 16 November 2026
 
@@ -26,7 +26,7 @@ The real-world qualifying-1/1 creator-builder use of “HODL Warrior” remains 
 
 Both routes build creator-owned worlds within the Crypto Moonboys universe: develop a GK Moonboy or Flygirl sub-world, or bring your own IP and develop its unique lore and connections to the shared universe. SWARMSY is the creator and storyteller helping develop characters, stories and links between worlds, with creators directing and approving their work.
 
-The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public ChatGPT Creator Studio; the SWARMSY PC beta remains an optional separate installation.
+The existing-IP route joins the same universe; it is not a separate route for unrelated projects. A Moonboy, NFT or Arcade progression is optional for creators bringing their own IP. Both routes can begin through the public AI Creator Studio; the SWARMSY PC beta remains an optional separate installation.
 
 Creators retain their own IP and the rights they bring; GK character use follows the published creator licence. A story connection does not transfer ownership or automatically make new lore official canon. Shared-world publication and canon inclusion follow community review. This mission does not imply automatic publishing, private-workspace sync or an always-on hosted AI.
 
@@ -46,11 +46,11 @@ This README is the top-level repository guide for current product/brand truth an
 
 ### Public AI versus the SWARMSY PC application (current delivery)
 
-- **Use AI on the website:** [SPARKY Creator Studio](https://cryptomoonboys.com/gpt-users.html) provides public, beginner-friendly activities through **ChatGPT**. It opens ChatGPT; the website does not host the SWARMSY model, run a live SPARKY chatbot, proxy private workspace messages or require Telegram login for this experience. ChatGPT features and access depend on the user's ChatGPT account, plan and available tools.
+- **Use AI on the website:** [SPARKY Creator Studio](https://cryptomoonboys.com/ai-user.html) offers a copyable SPARKY campaign starter and a public Markdown brief for the visitor's chosen browser AI. Copy the starter into your chosen AI; the website does not host the SWARMSY model, run a live SPARKY chatbot, proxy private workspace messages or require Telegram login for this experience. AI features and access depend on the service and account the visitor chooses.
 - **Use SWARMSY on a PC:** [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate **beta desktop/local application** built on an AnythingLLM fork, with the SPARKY project guide, local-model support and optional configured model-provider APIs. Users must install/run it themselves; API providers may charge. Source code and build workflows do not imply that an installer or hosted service is currently available.
-- **Keep project continuity manually:** the website's Creator Studio can **download/import** `sparky-creator-memory` v1 JSON and export Markdown or a handoff to an AI chat. A compatible SWARMSY PC build can import/export the format. This is **not automatic account sync**; it does not transmit private SWARMSY workspaces to ChatGPT, attach artwork files, confer canon rights, or prove that a planned action happened.
-- **Retired website chatbot:** `/sparky.html` redirects to `/gpt-users.html`. The old Telegram-gated browser SPARKY chat is retired. **The legacy Cloudflare Worker `/public/npc-chat` route has not yet been disabled;** its secure retirement requires a separate dependency review and Worker deployment. Telegram login, the WIKICOMSBOT and game systems remain separate.
-- **Navigation rule:** links inviting a visitor to **start creating with AI now** must open `/gpt-users.html`. Links describing, installing or building the **optional PC app** must open `/swarmsy.html` or its GitHub repository. No page may describe the PC app as free hosted 24/7 AI or a public website chat.
+- **Keep project continuity manually:** the public campaign brief asks the chosen AI to organise editable project files when its tools allow; the user brings those files back in a later chat. The previous browser memory editor has been removed from the public page. A compatible SWARMSY PC build can still import/export the separate `sparky-creator-memory` v1 format. There is **no automatic account sync** between browser AI sessions and private SWARMSY workspaces.
+- **Retired website chatbot:** `/sparky.html` redirects to `/ai-user.html`. The old Telegram-gated browser SPARKY chat is retired. **The legacy Cloudflare Worker `/public/npc-chat` route has not yet been disabled;** its secure retirement requires a separate dependency review and Worker deployment. Telegram login, the WIKICOMSBOT and game systems remain separate.
+- **Navigation rule:** links inviting a visitor to **start creating with AI now** must open `/ai-user.html`. Links describing, installing or building the **optional PC app** must open `/swarmsy.html` or its GitHub repository. No page may describe the PC app as free hosted 24/7 AI or a public website chat.
 
 
 
@@ -58,9 +58,9 @@ The complete model is:
 
 - **Graffiti Kings** — the cultural origin and real-world foundation.
 - **Crypto Moonboys** — the public creator umbrella, community, knowledge world and shared cultural network.
-- **SWARMSY PC beta** — the optional locally run creator operating environment, distinct from the website and the public GPT experience.
+- **SWARMSY PC beta** — the optional locally run creator operating environment, distinct from the website and the public AI starter.
 - **AnythingLLM** — the general intelligence, retrieval and advanced workspace foundation beneath SWARMSY.
-- **SPARKY** — the in-app guide/project-context manager in SWARMSY; SPARKY-labelled website activities are prompts handed to ChatGPT, not the same running process.
+- **SPARKY** — the in-app guide/project-context manager in SWARMSY; the website offers a portable campaign brief for browser AI, separate from the PC process.
 - **Selected AI provider** — the local or API-backed reasoning engine helping SPARKY think.
 - **Starter Wiki Packs** — small situational guides that keep SPARKY focused, responsible and aware that the user may be preparing to act.
 - **User-grown project intelligence** — the user’s developing rules, documents, laws, sources, contacts, proof, methods and experience.
@@ -73,7 +73,7 @@ The complete model is:
 
 The public world and private creator system are separate but connected:
 
-> **Crypto Moonboys is where the movement, community and public record live. Its website starts creator projects with ChatGPT; the optional SWARMSY PC beta offers local or API-backed project continuity for users who install it.**
+> **Crypto Moonboys is where the movement, community and public record live. Its website offers a portable starter for creator projects in the visitor's chosen browser AI; the optional SWARMSY PC beta offers local or API-backed project continuity for users who install it.**
 
 ## Cultural Succession
 
@@ -197,7 +197,7 @@ This route is for people who already have something real to build around, includ
 
 No Moonboy, NFT, faction, Arcade activity or blockchain knowledge is required.
 
-The user keeps their existing name, face, business, product, art or alter ego and builds a world around it within the Crypto Moonboys universe, with its own lore and creator-approved story connections. They can begin free of any SWARMSY installation using the public ChatGPT Creator Studio, or optionally use a locally installed SWARMSY PC beta to:
+The user keeps their existing name, face, business, product, art or alter ego and builds a world around it within the Crypto Moonboys universe, with its own lore and creator-approved story connections. They can begin free of any SWARMSY installation using the public AI Creator Studio, or optionally use a locally installed SWARMSY PC beta to:
 
 - define identity and positioning;
 - clarify what they represent;
@@ -222,7 +222,7 @@ Path 2 must remain a credible and attractive route, not a footnote.
 | Crypto Moonboys | Public creator umbrella, onboarding world and shared cultural network |
 | Graffiti Kings / GKniftyHEADS | Cultural foundation and primary Moonboy identity architecture |
 | Moonboys and factions | Original creator identities and character worlds |
-| ChatGPT Creator Studio (website) | Public AI creation starting point; opens ChatGPT, no SWARMSY server account or private record sync |
+| AI Creator Studio (website) | Public AI creation starting point; copy starter for any browser AI, no SWARMSY server account or private record sync |
 | SWARMSY PC beta | Optional separately installed private planning/workspace environment; local models or user-configured APIs |
 | AnythingLLM | General intelligence, retrieval and advanced workspace foundation beneath SWARMSY |
 | SPARKY | Permanent guide, operator and project-context manager |
@@ -281,7 +281,7 @@ Do not use mockups that imply a live product, partnership, licence or retail ava
 
 SWARMSY is not a new language model, public website chat or generic chatbot skin.
 
-It is an optional **PC beta** creator operating layer built on AnythingLLM. Its features work only when an appropriate local installation and selected models or provider APIs are configured. The website's public SPARKY Creator Studio is a separate ChatGPT handoff experience.
+It is an optional **PC beta** creator operating layer built on AnythingLLM. Its features work only when an appropriate local installation and selected models or provider APIs are configured. The website's public SPARKY Creator Studio provides a portable brief for browser AI.
 
 AnythingLLM provides broad model connectivity, document retrieval, workspace capability and advanced general-purpose AI tools.
 
@@ -408,7 +408,7 @@ HODL Warriors are not passive holders. They are the creator army inside the umbr
 
 They:
 
-- build their own character worlds through the public ChatGPT Creator Studio or, optionally, the separately installed SWARMSY PC beta;
+- build their own character worlds through the public AI Creator Studio or, optionally, the separately installed SWARMSY PC beta;
 - support other 1/1 holders;
 - share work;
 - amplify launches;
@@ -444,7 +444,7 @@ Use these statements:
 - **Qualifying 1/1 holders keep 100% of their royalties; Crypto Moonboys and Graffiti Kings take nothing.**
 - **Ownership is automatic under the qualifying 1/1 creator terms. Canon status is community-governed.**
 - **Every qualifying 1/1 holder is a HODL Warrior.**
-- **Both routes build within the same universe and can start in the public ChatGPT Creator Studio; SWARMSY is the creator and storyteller helping connect worlds, delivered as an optional PC beta.**
+- **Both routes build within the same universe and can start in the public AI Creator Studio; SWARMSY is the creator and storyteller helping connect worlds, delivered as an optional PC beta.**
 - **Games and NFTs are tools inside the system, not the mission.**
 - **GK provides the floor. The community builds on top.**
 
@@ -459,7 +459,7 @@ Never describe reward drops, burns, evolution, forging, creator-world publishing
 ### Live now in this repository
 
 - public homepage and Wiki;
-- public ChatGPT Creator Studio at `/gpt-users.html` with manual portable creator-memory JSON export/import; no hosted SWARMSY chat;
+- public AI Creator Studio at `/ai-user.html` with one campaign brief handoff and user-managed project files; no hosted SWARMSY chat;
 - Telegram identity linking;
 - current faction selection;
 - Battle Chamber activity, missions and boards where wired;
@@ -517,7 +517,7 @@ Every page must answer **why this matters** before explaining **how it works**.
 
 1. Explain the Moonboy identity route.
 2. Visually show what a Moonboy is and what it can become.
-3. Show the existing-identity route and the optional SWARMSY PC app briefly; offer the public ChatGPT Creator Studio as the no-install starting point.
+3. Show the existing-identity route and the optional SWARMSY PC app briefly; offer the public AI Creator Studio as the no-install starting point.
 4. Link Telegram.
 5. Choose a live faction.
 6. Explain tasks, quests, missions and Arcade activity.
@@ -533,8 +533,8 @@ Every page must answer **why this matters** before explaining **how it works**.
 1. Identify the existing identity, business, product or project.
 2. Show the desired outcome.
 3. Explain the identity, visibility or momentum problem.
-4. Present `/gpt-users.html` as the website's AI starting point and explain SWARMSY as an optional, separate PC environment.
-5. Explain that the website uses ChatGPT with SPARKY guidance, while a local SWARMSY installation can use configured local or API-backed models.
+4. Present `/ai-user.html` as the website's AI starting point and explain SWARMSY as an optional, separate PC environment.
+5. Explain that the website offers a portable starter for the visitor's chosen browser AI with SPARKY guidance, while a local SWARMSY installation can use configured local or API-backed models.
 6. Explain local versus API-backed intelligence honestly.
 7. Explain starter packs as minimum context.
 8. Explain Memory Locks, approval states and Proof Review.
@@ -552,9 +552,9 @@ The homepage must communicate within one viewing cycle:
 - a Moonboy can become a brand, products, content, story, community and creator world;
 - progression supports the identity rather than defining it;
 - qualifying 1/1 rights are governed by published creator terms;
-- Option 2 brings existing IP into the same universe with unique lore and can begin through the public ChatGPT Creator Studio;
+- Option 2 brings existing IP into the same universe with unique lore and can begin through the public AI Creator Studio;
 - SWARMSY is an optional PC creator operating environment, **not an always-on website chatbot**;
-- SPARKY is an in-app operator for SWARMSY; the website sends ChatGPT a short starter for the selected creative task, ending with an instruction to browse the public [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html). This shared page supplies the project's culture, voice and creative direction without repeating a large brief in every prompt. Website project handoffs include the same instruction; JSON exports stay portable. Activity guides are optional references on the page; Moonboy starters also include the relevant public canon guide and source index;
+- SPARKY is an in-app operator for SWARMSY; the website offers one copyable campaign starter for any browser AI that asks it to read the public [SPARKY campaign brief](guides/sparky/creator-campaign.md) and [Graffiti Kings creative guide](https://cryptomoonboys.com/graffiti-kings-creative-guide.html). Project continuity depends on the user's saved files and available tools in the chosen AI; the website does not sync private PC workspace records.
 - both paths belong to one movement.
 
 The homepage must not force a first-time visitor to understand every mechanic before choosing a route.
@@ -578,7 +578,7 @@ This repository includes:
 Important repository references:
 
 - [`docs/nft-rarity-methodology.md`](docs/nft-rarity-methodology.md) — GKniftyHEADS and NoBallGames NFT rarity tracker methodology.
-- `wiki/crypto-moonboys.html` — heart of the public lore: a substantial story-led entrance covering the cast, market factions, command, wider realms, mythology and timeline. Keep the prose open and continuous rather than converting it into a product directory. Its retained creator reference links to the two entry paths, rights and live features without making NFT progression mandatory. Use `about/` and `gpt-users.html` for creator onboarding.
+- `wiki/crypto-moonboys.html` — heart of the public lore: a substantial story-led entrance covering the cast, market factions, command, wider realms, mythology and timeline. Keep the prose open and continuous rather than converting it into a product directory. Its retained creator reference links to the two entry paths, rights and live features without making NFT progression mandatory. Use `about/` and `ai-user.html` for creator onboarding.
 - `Crypto_Moonboys_Master_Source_of_Truth_v1.md` — detailed mission and agent truth despite the legacy filename.
 - `AGENT_EDITING_RULES.md` — editing and runtime safety rules.
 - `.copilot-instructions.md` — repository agent instructions.
@@ -594,7 +594,7 @@ Source-of-truth order:
 6. Relevant current public-page copy.
 7. Older planning and lore material.
 
-The [SWARMSY-Ai repository](https://github.com/Crypto-Moonboys/SWARMSY-Ai) remains authoritative for SWARMSY PC beta source, model providers, persistence, build/installer and release status. This website is authoritative for the public GPT Creator Studio. The two do not automatically sync.
+The [SWARMSY-Ai repository](https://github.com/Crypto-Moonboys/SWARMSY-Ai) remains authoritative for SWARMSY PC beta source, model providers, persistence, build/installer and release status. This website is authoritative for the public AI Creator Studio. The two do not automatically sync.
 
 ## Active Arcade Routes
 
@@ -619,7 +619,7 @@ The two onboarding paths are not the same as the two runtime tracks.
 
 ### Own-IP Worldbuilding / Connected Stories
 
-**Your own IP → public ChatGPT Creator Studio or optional SWARMSY PC beta → world and unique lore → creator-approved story connections → community collaboration → shared universe**
+**Your own IP → public AI Creator Studio or optional SWARMSY PC beta → world and unique lore → creator-approved story connections → community collaboration → shared universe**
 
 A Moonboy and a SWARMSY installation are not required for the existing-identity path.
 
@@ -714,7 +714,7 @@ Before publishing copy, verify:
 - Do not make the Moonboy route mandatory.
 - Do not make SWARMSY appear separate from the umbrella.
 - Do not describe SWARMSY as a generic chat wrapper or claim it is a hosted website feature.
-- Send public AI chat CTAs to `/gpt-users.html` and optional PC app/installation CTAs to `/swarmsy.html`.
+- Send public AI chat CTAs to `/ai-user.html` and optional PC app/installation CTAs to `/swarmsy.html`.
 - Do not imply packs contain every answer.
 - Do not imply identical quality or tools across models.
 - Do not present NFTs as the mission.
@@ -737,7 +737,7 @@ Crypto Moonboys is the Graffiti Kings public creator umbrella and shared cultura
 
 A person can build a sub-world around a GK Moonboy or Flygirl, or bring their own IP and create a world with unique lore within the same Crypto Moonboys universe. SWARMSY helps tie these creator-directed worlds together through stories.
 
-Visitors can start publicly through the ChatGPT Creator Studio without installing SWARMSY. The optional SWARMSY PC beta provides a private creator workspace using AnythingLLM and a configured local or API model. Within that installation, SPARKY guides the project, packs add situational context, user-approved records help protect direction and Proof Review separates claims from evidence. Portable project-memory exports may be moved manually between tools; the website does not maintain or silently sync those private records.
+Visitors can start publicly through the AI Creator Studio without installing SWARMSY. The optional SWARMSY PC beta provides a private creator workspace using AnythingLLM and a configured local or API model. Within that installation, SPARKY guides the project, packs add situational context, user-approved records help protect direction and Proof Review separates claims from evidence. Portable project-memory exports may be moved manually between tools; the website does not maintain or silently sync those private records.
 
 Games, XP, NFTs, burns, factions, the Wiki, Battle Chamber and Block Topia support the movement. They are not the reason it exists.
 

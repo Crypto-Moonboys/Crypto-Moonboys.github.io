@@ -652,7 +652,7 @@ console.log('\n[16] sparky.html redirects to GPT Studio without loading legacy c
 const sparkyHtmlSrc = await read('sparky.html');
 
 await test('/sparky.html retires public chat and points visitors to the GPT Creator Studio', () => {
-  assert.ok(sparkyHtmlSrc.includes('/gpt-users.html'), 'retired chat page must point to GPT Creator Studio');
+  assert.ok(sparkyHtmlSrc.includes('/ai-user.html'), 'retired chat page must point to GPT Creator Studio');
   assert.ok(!sparkyHtmlSrc.includes('/js/sparky-chat.js'), 'retired chat page must not boot legacy chat client');
   assert.ok(!sparkyHtmlSrc.includes('data-sparky-chat'), 'retired chat page must not contain chat form');
 });

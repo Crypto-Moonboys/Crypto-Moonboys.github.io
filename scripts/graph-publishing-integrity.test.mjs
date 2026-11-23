@@ -74,6 +74,23 @@ for (const edge of graphData.edges) {
   fullEdgeKeys.add(key);
 }
 
+// Full Graph and the dashboard directory share every canonical sitemap URL.
+const sitemap = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]).pathname);
+assertSameValues([...allNodeIdSet], sitemapPaths, 'Published sitemap versus dashboard and full graph');
+assert.equal(readJson('js/site-stats.json').published_pages, allNodeIdSet.size, 'Dashboard published-page count');
+const categoryMembers = new Set();
+for (const url of sitemapPaths.filter(url => url.startsWith('/categories/') && !url.endsWith('/index.html'))) {
+  const categoryHtml = fs.readFileSync(path.join(ROOT, url.slice(1)), 'utf8');
+  const main = categoryHtml.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1];
+  assert.ok(main, `Missing category content: ${url}`);
+  for (const [, target] of main.matchAll(/<a\b[^>]*?\shref=["'](\/wiki\/[^"'?#]+\.html)["']/gi)) {
+    assert.ok(fullEdgeKeys.has(`${url}||${target}`), `Missing category link: ${url} -> ${target}`);
+    categoryMembers.add(target);
+  }
+}
+assertSameValues([...categoryMembers], indexedWikiUrls, 'Graph category membership versus indexed wiki pages');
+
 const indexedWikiUrlSet = new Set(indexedWikiUrls);
 for (const [sourceUrl, entry] of Object.entries(entityGraph)) {
   assert.ok(indexedWikiUrlSet.has(sourceUrl), `Entity graph contains an unindexed source: ${sourceUrl}`);

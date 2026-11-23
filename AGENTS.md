@@ -19,6 +19,12 @@ The main `/wiki/crypto-moonboys.html` page is the story-led heart of the lore, i
 - Retain branch/PR review and GK sign-off. No merge, production deployment, D1 migration, payout or irreversible action without explicit GK approval.
 
 
+## Protected areas remain enforced when Actions are manual
+
+Before changing any protected area, read and follow [the protected areas compliance checklist](docs/protected-areas-checklist.md). Disabling or not triggering a workflow disables automation only; it does not disable the underlying contract or the agent's duty to validate affected behavior.
+
+Every agent must map all changed paths to the checklist, run the union of applicable focused checks, and state exactly what ran, what did not run, and why. Never weaken a guard to make a branch pass. Cross-domain, release, auth, security, scoring, reward, payout, migration, deployment-gate, or CI-harness changes require the manual Full Linux suite when the checklist says so.
+
 Read `AGENT_EDITING_RULES.md` for branch, product and release rules. For any lore,
 wiki, scripture, canon generator or source-research work, also read
 `brand-canon/CANON_POLICY.md`, `brand-canon/canon-locks.json`, and

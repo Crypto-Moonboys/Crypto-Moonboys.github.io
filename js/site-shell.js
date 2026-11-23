@@ -19,12 +19,12 @@ window.__HUD_CONSOLIDATED__ = true;
   let siteStatsPromise = null;
 
   const links = [
-    { label: 'WIKI', href: '/search.html', icon: '◫', title: 'Wiki' },
-    { label: 'GAMES', href: '/games/', icon: '◆', title: 'Games' },
-    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: '◇', title: 'My Moonboy — public start and personal account' },
-    { label: 'BATTLE CHAMBER', href: '/community.html', icon: '⚔', title: 'Battle Chamber' },
-    { label: 'SWARMSY', href: '/swarmsy.html', icon: '✦', title: 'SWARMSY' },
-    { label: 'SYSTEM HUB', href: '/dashboard.html', icon: '◎', title: 'System Hub' }
+    { label: 'WIKI', href: '/search.html', icon: 'wiki', title: 'Wiki' },
+    { label: 'GAMES', href: '/games/', icon: 'games', title: 'Games' },
+    { label: 'MY MOONBOY', href: '/my-moonboy.html', icon: 'moon', title: 'My Moonboy — public start and personal account' },
+    { label: 'BATTLE CHAMBER', href: '/community.html', icon: 'battle', title: 'Battle Chamber' },
+    { label: 'SWARMSY', href: '/swarmsy.html', icon: 'sparks', title: 'SWARMSY' },
+    { label: 'SYSTEM HUB', href: '/dashboard.html', icon: 'system', title: 'System Hub' }
   ];
 
   // Public route discovery never authenticates a player: My Moonboy itself
@@ -38,19 +38,19 @@ window.__HUD_CONSOLIDATED__ = true;
     {
       heading: 'Wiki Routes',
       items: [
-        { label: 'Crypto Moonboys', href: '/wiki/crypto-moonboys.html', icon: '☾', title: 'Crypto Moonboys' },
-        { label: 'All Articles', href: '/search.html', icon: '⌕', title: 'All Articles' },
-        { label: 'Categories', href: '/categories/index.html', icon: '▦', title: 'Categories' },
-        { label: 'Timeline', href: '/timeline.html', icon: '⌁', title: 'Timeline' },
-        { label: 'Graph', href: '/graph.html', icon: '✣', title: 'Graph' }
+        { label: 'Crypto Moonboys', href: '/wiki/crypto-moonboys.html', icon: 'moon', title: 'Crypto Moonboys' },
+        { label: 'All Articles', href: '/search.html', icon: 'search', title: 'All Articles' },
+        { label: 'Categories', href: '/categories/index.html', icon: 'categories', title: 'Categories' },
+        { label: 'Timeline', href: '/timeline.html', icon: 'timeline', title: 'Timeline' },
+        { label: 'Graph', href: '/graph.html', icon: 'graph', title: 'Graph' }
       ]
     },
     {
       heading: 'Build Layers',
       items: [
-        { label: 'Factions', href: '/battle-chamber/factions/', icon: '◉', title: 'Factions' },
-        { label: 'Block Topia', href: '/games/block-topia/', icon: '▣', title: 'Block Topia' },
-        { label: 'How To Play', href: '/how-to-play.html', icon: '?', title: 'How To Play' }
+        { label: 'Factions', href: '/battle-chamber/factions/', icon: 'factions', title: 'Factions' },
+        { label: 'Block Topia', href: '/games/block-topia/', icon: 'block-topia', title: 'Block Topia' },
+        { label: 'How To Play', href: '/how-to-play.html', icon: 'help', title: 'How To Play' }
       ]
     }
   ];
@@ -89,7 +89,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (p.startsWith('/games/')) return '/wiki/games-graffpunks.html';
     if (p.startsWith('/battle-chamber/') || p === '/community.html') return '/search.html?q=Battle%20Chamber';
     if (p === '/swarmsy.html') return '/search.html?q=SWARMSY';
-    if (p === '/sparky.html' || p === '/gpt-users.html') return '/search.html?q=SPARKY%20Creator%20Studio';
+    if (p === '/sparky.html' || p === '/ai-user.html') return '/search.html?q=SPARKY%20Creator%20Studio';
     if (p === '/dashboard.html' || p === '/admin-tools.html') return '/search.html?q=System%20Hub';
     return '/search.html';
   }
@@ -115,7 +115,7 @@ window.__HUD_CONSOLIDATED__ = true;
 
   function navLinkHtml(item, className) {
     const active = isActiveRoute(item.href) ? ' active' : '';
-    const icon = item.icon ? `<span class="nav-icon" aria-hidden="true">${escapeHtml(item.icon)}</span>` : '';
+    const icon = item.icon ? `<span class="nav-icon" data-site-icon="${escapeHtml(item.icon)}" aria-hidden="true"></span>` : '';
     return `<a class="${className}${active}" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title || item.label)}" data-shell-link="${escapeHtml(item.label)}">${icon}<span>${escapeHtml(item.label)}</span></a>`;
   }
 
@@ -150,7 +150,7 @@ window.__HUD_CONSOLIDATED__ = true;
     return `
         <div class="site-logo">
           <a class="site-logo-home" href="/index.html" aria-label="Crypto Moonboys home">
-            <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" width="36" height="36" loading="eager" decoding="async">
+            <img src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" srcset="/art/responsive/shell-moonboys-logo-72.png 72w, /art/responsive/shell-moonboys-logo-144.png 144w, /CRYPTO-MOONBOYS-BITCOIN-LOGO.png 476w" sizes="36px" alt="" width="36" height="36" loading="eager" decoding="async">
             <span>
               <span class="logo-text">THE CRYPTO MOONBOYS GK WIKI</span>
               <span class="logo-sub">LIVE KNOWLEDGE NETWORK</span>
@@ -355,7 +355,7 @@ window.__HUD_CONSOLIDATED__ = true;
         if (node.nodeType !== Node.ELEMENT_NODE) return false;
         const tag = node.tagName.toLowerCase();
         return !['script', 'style', 'link', 'header', 'nav'].includes(tag)
-          && !['site-header', 'sidebar', 'sidebar-overlay', 'layout'].includes(node.id);
+          && !['site-header', 'site-shell-top', 'site-shell-top-spacer', 'sidebar', 'sidebar-overlay', 'layout'].includes(node.id);
       });
       for (const node of movable) content.appendChild(node);
       document.body.insertBefore(content, document.querySelector('script'));
@@ -368,6 +368,7 @@ window.__HUD_CONSOLIDATED__ = true;
   function ensureLayout() {
     const header = ensureHeader();
     const content = ensureMainContent();
+    const spacer = ensurePinnedTop(header);
 
     // Remove stale page-has-right-panel class from HTML source (no global right panel).
     document.body.classList.remove('page-has-right-panel');
@@ -376,7 +377,7 @@ window.__HUD_CONSOLIDATED__ = true;
     if (!layout) {
       layout = document.createElement('div');
       layout.id = 'layout';
-      header.insertAdjacentElement('afterend', layout);
+      spacer.after(layout);
     }
 
     let mainWrapper = document.getElementById('main-wrapper');
@@ -388,7 +389,49 @@ window.__HUD_CONSOLIDATED__ = true;
     if (content.parentElement !== mainWrapper) mainWrapper.insertBefore(content, mainWrapper.firstChild);
 
     ensureFooter(mainWrapper);
+    ensureMarketTicker(header);
     return { layout, mainWrapper, content };
+  }
+
+  function ensurePinnedTop(header) {
+    let top = document.getElementById('site-shell-top');
+    if (!top) {
+      top = document.createElement('div');
+      top.id = 'site-shell-top';
+      document.body.prepend(top);
+      new ResizeObserver(() => {
+        const height = top.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--shell-top-height', `${height}px`);
+      }).observe(top);
+    }
+
+    if (header.parentElement !== top) top.prepend(header);
+
+    let spacer = document.getElementById('site-shell-top-spacer');
+    if (!spacer) {
+      spacer = document.createElement('div');
+      spacer.id = 'site-shell-top-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+    }
+    if (top.nextElementSibling !== spacer) top.after(spacer);
+    return spacer;
+  }
+
+  function ensureMarketTicker(header) {
+    const ticker = document.querySelector('[data-shell-market-ticker]');
+    if (ticker && header.nextElementSibling !== ticker) header.after(ticker);
+    if (document.getElementById('wax-market-ticker-script')) return;
+
+    const stylesheet = document.createElement('link');
+    stylesheet.id = 'wax-market-ticker-style';
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = '/css/wax-market-ticker.css?v=1';
+    document.head.appendChild(stylesheet);
+
+    const script = document.createElement('script');
+    script.id = 'wax-market-ticker-script';
+    script.src = '/js/wax-market-caps.js?v=8';
+    document.head.appendChild(script);
   }
 
   function ensureFooter(mainWrapper) {
@@ -465,7 +508,7 @@ window.__HUD_CONSOLIDATED__ = true;
       const photo = getTelegramPhotoUrl(gate);
       avatar.innerHTML = photo
         ? `<img src="${escapeHtml(photo)}" alt="" loading="lazy" decoding="async">`
-        : '<span class="hud-avatar-icon" aria-hidden="true">☾</span>';
+        : '<span class="hud-avatar-icon" data-site-icon="moon" aria-hidden="true"></span>';
     }
     if (nameEl) {
       if (!nameEl.firstChild || nameEl.firstChild.nodeType !== Node.TEXT_NODE) nameEl.textContent = 'Telegram not linked';
@@ -505,10 +548,10 @@ window.__HUD_CONSOLIDATED__ = true;
     if (document.getElementById('site-paperclip-agent')) return;
     const sparkyAgent = document.createElement('a');
     sparkyAgent.id = 'site-paperclip-agent';
-    sparkyAgent.href = '/gpt-users.html';
-    sparkyAgent.setAttribute('aria-label', 'Start creating with ChatGPT via the SPARKY Creator Studio');
-    sparkyAgent.title = 'Open ChatGPT Creator Studio';
-    sparkyAgent.innerHTML = '<img src="/SPARKY%20FLOATING%20CLIP.png" alt="" loading="lazy" decoding="async"><span>CREATE WITH GPT</span>';
+    sparkyAgent.href = '/ai-user.html';
+    sparkyAgent.setAttribute('aria-label', 'Start a campaign with the SPARKY AI Creator Studio');
+    sparkyAgent.title = 'Open AI Creator Studio';
+    sparkyAgent.innerHTML = '<img src="/SPARKY%20FLOATING%20CLIP.png" srcset="/art/responsive/shell-sparky-72.png 72w, /art/responsive/shell-sparky-144.png 144w, /SPARKY%20FLOATING%20CLIP.png 213w" sizes="36px" alt="" loading="lazy" decoding="async"><span>CREATE WITH AI</span>';
     document.body.appendChild(sparkyAgent);
   }
 
@@ -610,6 +653,22 @@ window.__HUD_CONSOLIDATED__ = true;
   }
 
   function bootShell() {
+    if (!document.querySelector('script[data-moonboys-site-icons]')) {
+      const icons = document.createElement('script');
+      icons.src = '/js/site-icons.js?v=2';
+      icons.dataset.moonboysSiteIcons = '1';
+      document.head.appendChild(icons);
+    }
+    // Lightweight website easter egg; never inject the game runtime into a game route.
+    if (!window.location.pathname.startsWith('/games/') &&
+        !window.location.pathname.startsWith('/game/') &&
+        !document.querySelector('script[data-nbg-roamer]')) {
+      const runner = document.createElement('script');
+      runner.src = '/js/nbg-roamer.js';
+      runner.async = true;
+      runner.dataset.nbgRoamer = '1';
+      document.head.appendChild(runner);
+    }
     ensurePlayerActionSync();
     ensureNav();
     startRecoveryObserver();

@@ -1,10 +1,13 @@
 {
   "collection": "gkniftyheads",
   "batch_size": 20,
-  "last_template_batch_index": 20,
-  "last_run_at": "2026-11-14T10:35:41.264Z",
+  "last_template_batch_index": 17,
+  "last_run_at": "2026-11-22T11:35:30.966Z",
   "mode": "daily_rotating_backfill",
   "last_template_batch": [
+    784419,
+    788015,
+    904071,
     773225,
     775997,
     775999,
@@ -21,10 +24,7 @@
     776057,
     776058,
     776059,
-    776063,
-    776065,
-    776066,
-    776074
+    776063
   ],
   "failed_template_ids": []
 }

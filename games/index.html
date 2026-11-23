@@ -31,13 +31,14 @@
 </head>
 <body class="page-game page-standard-shell">
 <main id="content" role="main">
-  <img class="page-hero-art" src="/art/Moonboys%20Arcade_%20Neon%20London%20Night.jpg" alt="Moonboys Arcade artwork" decoding="async" fetchpriority="high" width="1983" height="793">
+  <img class="page-hero-art" src="/art/Moonboys%20Arcade_%20Neon%20London%20Night.jpg"
+       srcset="/art/responsive/arcade-hero-480.webp 480w, /art/Moonboys%20Arcade_%20Neon%20London%20Night.jpg 1983w" sizes="100vw" alt="Moonboys Arcade artwork" decoding="async" fetchpriority="high" width="1983" height="793">
 
   <section class="arcade-hero swarmsy-hero" aria-labelledby="arcade-title">
     <div class="arcade-hero-inner swarmsy-hero-inner">
       <div class="swarmsy-kicker">&#10022; MOONBOYS ARCADE / XP SYSTEM</div>
       <h1 id="arcade-title" class="swarmsy-title">CHOOSE A GAME.<br><span>CHASE THE SCORE.</span><br>BUILD VERIFIED XP.</h1>
-      <p class="swarmsy-lead">Pick a game. Play for score. Your verified progress lives in <a href="/my-moonboy.html">My Moonboy</a>.</p>
+      <p class="swarmsy-lead">Pick a game. Play for score. Your verified progress lives in <a href="/my-moonboy.html">My Moonboy</a>. Explore the <a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a>.</p>
       <div class="swarmsy-action-grid" role="navigation" aria-label="Arcade actions">
   <a href="#arcade-games" class="swarmsy-action-card swarmsy-action-card--gold"><strong>PLAY A GAME</strong></a>
   <a href="#telegram-games" class="swarmsy-action-card"><strong>FEATURED GAMES</strong></a>
@@ -59,7 +60,7 @@
     <div class="games-launch-grid" aria-label="Telegram games and live systems">
       <a href="/wiki/crypto-moonboy-pets.html" class="games-launch-card games-launch-card--primary"><div class="games-launch-icon">🐾</div><div><div class="games-launch-title">Play Crypto Moonboy Pets</div><div class="games-launch-desc">Adopt, grow and upgrade a Crypto Moonboys pet inside Telegram. </div><div class="games-launch-meta">Telegram Game · Pets · Seasons</div></div></a>
       <a href="/games/dead-run/" class="games-launch-card games-launch-card--danger"><div class="games-launch-icon">☣</div><div><div class="games-launch-title">Play Dead Run</div><div class="games-launch-desc">Real-GPS zombie survival. Run outdoors, collect pickups, survive waves and use the server-authoritative Dead Run system.</div><div class="games-launch-meta">Telegram Mini App · GPS Survival</div></div></a>
-      <a href="/community.html" class="games-launch-card"><div class="games-launch-icon">⚔</div><div><div class="games-launch-title">Battle Chamber</div><div class="games-launch-desc">Choose a faction, follow live daily signals and complete mission loops tied into the shared progression layer.</div><div class="games-launch-meta">Faction Missions · Daily WTF</div></div></a>
+      <a href="/community.html#battle-wtf-signal" class="games-launch-card"><div class="games-launch-icon">⚔</div><div><div class="games-launch-title">Battle Chamber</div><div class="games-launch-desc">Choose a faction, follow live daily signals and complete mission loops tied into the shared progression layer.</div><div class="games-launch-meta">Faction Missions · Daily WTF</div></div></a>
       <a href="/games/nbg-london/" class="games-launch-card"><div class="games-launch-icon">NBG</div><div><div class="games-launch-title">NBG London Runner</div><div class="games-launch-desc">Run, tag, collect XP and clear the London wall before the bots box you in.</div><div class="games-launch-meta">Arcade · Runner · Graffiti</div></div></a>
     </div>
   </section>
@@ -97,7 +98,7 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
-<script data-cfasync="false" src="/js/components/xp-burst-animation.js"></script>
+<script data-cfasync="false" src="/js/components/xp-burst-animation.js?wtf-clan=1"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" type="module" src="/js/arcade/systems/daily-wtf-event-system.js"></script>

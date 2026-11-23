@@ -36,17 +36,23 @@ assert.match(chamber, /<details class="section bc-disclosure" open>[\s\S]*?Activ
 assert.match(chamber, /<details class="section bc-disclosure" open>[\s\S]*?Faction War Standings/, 'Live standings remain initially visible');
 assert.match(chamber, /href="\/my-moonboy\.html\?tab=faction"/, 'Personal faction claims link to central account');
 assert.match(chamber, /Top Contributors &amp; XP Chart/, 'Actual Battle Chamber contributor chart remains');
-const factionLinks = [...chamber.matchAll(/href="(\/battle-chamber\/factions\/[^"]+\.html)"/g)]
+assert.match(chamber, /id="faction-chambers-live"><a href="\/battle-chamber\/factions\/"/);
+assert.match(chamber, /data-fop-crew data-fop-compact-directory/);
+const factionRenderer = read('js/battle-chamber-factions.js');
+assert.match(factionRenderer, /bc-join-grid/);
+assert.doesNotMatch(factionRenderer, /bc-perk-grid|bc-faction-reward-grid/);
+const directory = read('battle-chamber/factions/index.html');
+const factionLinks = [...directory.matchAll(/href="(\/battle-chamber\/factions\/[^"]+\.html)"/g)]
   .map(match => match[1])
   .filter(href => !href.endsWith('/index.html'));
-assert.equal(new Set(factionLinks).size, 9, 'All nine published faction chambers remain alongside the directory link');
+assert.equal(new Set(factionLinks).size, 9, 'All nine published faction chambers remain in the linked directory');
 
 // Article comment widgets keep direct, optional interaction and one tiny
 // contextual account state. No legacy mock top-five scores or signup cards.
 for (const x of [
   'function buildForm(pageId)', 'function wireForm(', 'function wireVotes(',
   "CustomEvent('moonboys:comment-posted'", "if (!email && !telegramAuth)",
-  'function injectTelegramWidget(container)', 'function updateCommentIdentityCopy(form)'
+  'function refreshCommentIdentity()', 'function updateCommentIdentityCopy(form)'
 ]) {
   assert.ok(comments.includes(x), 'Wiki comment action intact: ' + x);
 }

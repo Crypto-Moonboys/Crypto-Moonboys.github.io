@@ -15,10 +15,37 @@
   <link rel="stylesheet" href="/css/wiki.css">
 <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/css/page-hero-art.css">
+<style>
+/* Keep search first, followed by category discovery and the existing results. */
+.page-search .wiki-living-hero { min-height:0; padding:clamp(24px,4vw,48px); }
+.page-search.page-standard-shell .wiki-living-hero .wiki-living-title { font-size:clamp(2rem,4vw,3.2rem); line-height:1.1; }
+.page-search .swarmsy-lead { margin-bottom:1.25rem; }
+.search-category-browser { padding:clamp(20px,4vw,48px); }
+.search-category-browser > section { margin-top:2rem; }
+.search-category-browser h3 { margin-bottom:1rem; }
+.search-category-browser .category-grid { margin-block:1rem 2rem; }
+.search-library-link { margin-block:1rem; line-height:1.7; }
+[data-search-browse][hidden] { display:none; }
+.search-controls { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; margin-block:1rem; }
+.search-controls[hidden], .search-control[hidden] { display:none; }
+.search-control {
+  display:inline-flex; align-items:center; gap:.45rem; min-height:44px; padding:.45rem .75rem;
+  border:1px solid var(--color-border,#4b4b5b); border-radius:0; background:var(--color-bg,#10101a);
+  color:var(--color-text,#fff); font:inherit; text-decoration:none; cursor:pointer;
+}
+.search-control[aria-pressed="true"] { border-color:var(--color-accent,#f7c65c); color:var(--color-accent,#f7c65c); }
+.search-control:focus-visible { outline:2px solid var(--color-accent,#f7c65c); outline-offset:2px; }
+.search-control:disabled { opacity:.58; cursor:default; }
+.search-filter-count { font-variant-numeric:tabular-nums; }
+#search-load-more, #search-show-all { margin-block:1rem; }
+.article-card mark { background:var(--color-accent,#f7c65c); color:#141018; }
+</style>
 </head>
 <body class="page-search page-standard-shell">
 <main id="content" role="main">
-  <img class="page-hero-art" src="/art/Neon%20Cyberpunk%20Wiki%20Search-2.jpg" alt="Search articles artwork" decoding="async" fetchpriority="high" width="1983" height="793">
+  <img class="page-hero-art" src="/art/Neon%20Cyberpunk%20Wiki%20Search-2.jpg"
+       srcset="/art/responsive/search-hero-480.webp 480w, /art/Neon%20Cyberpunk%20Wiki%20Search-2.jpg 1983w"
+       sizes="100vw" alt="Search articles artwork" decoding="async" fetchpriority="high" width="1983" height="793">
 
       <section class="wiki-living-hero swarmsy-hero" aria-labelledby="search-title">
         <div class="swarmsy-hero-inner">
@@ -27,32 +54,103 @@
             <span class="sep">&rsaquo;</span>
             <span aria-current="page">Search / All Articles</span>
           </nav>
-          <div class="swarmsy-kicker wiki-alive-kicker">THE WIKI IS ALIVE</div>
-          <h1 id="search-title" class="swarmsy-title wiki-living-title">SEARCH<br><span>ARTICLES</span></h1>
+          <h1 id="search-title" class="swarmsy-title wiki-living-title">SEARCH <span>THE SITE</span></h1>
           <p class="swarmsy-lead">
-            This is the canonical article hub for the site. All searchable wiki content routes through this page.
+            Find stories, people, guides and Arcade games.
           </p>
           <div class="wiki-hero-search">
           <input
             type="search"
             id="search-page-input"
-            placeholder="Search by topic, keyword, coin name…"
-            aria-label="Search articles"
+            placeholder="Search by name, topic or game…"
+            aria-label="Search the site"
             class="wiki-hero-search-input"
             onfocus="this.style.borderColor='var(--color-accent)'"
             onblur="this.style.borderColor='var(--color-border)'"
           >
           </div>
+          <div id="search-filters" class="search-controls" role="group" aria-label="Filter search results" hidden>
+            <button class="search-control" type="button" data-search-filter="all" aria-pressed="true">All <span class="search-filter-count"></span></button>
+            <button class="search-control" type="button" data-search-filter="games" aria-pressed="false">Games <span class="search-filter-count"></span></button>
+            <button class="search-control" type="button" data-search-filter="lore" aria-pressed="false">Lore <span class="search-filter-count"></span></button>
+            <button class="search-control" type="button" data-search-filter="people" aria-pressed="false">People <span class="search-filter-count"></span></button>
+            <button class="search-control" type="button" data-search-filter="nfts" aria-pressed="false">NFTs &amp; Collections <span class="search-filter-count"></span></button>
+          </div>
         </div>
       </section>
+<section class="search-category-browser" data-search-browse aria-labelledby="search-categories-title"><h2 id="search-categories-title">Browse by category</h2><p>Choose a subject, or enter a search above to find something specific.</p><p class="search-library-link"><a href="/wiki/graffpunks-reading-library.html">Open the stories and information library</a> · <a href="/categories/index.html">View all categories</a></p>
+<section aria-labelledby="search-category-group-0"><h3 id="search-category-group-0">Read the worlds</h3><div class="category-grid"><a href="/categories/lore.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">⚔️</span>
+          <div><div class="cat-name">Lore</div><div class="cat-desc">Characters, histories, factions and realms from the Year 3008 saga and its earlier narrative traditions.</div></div>
+        </a><a href="/categories/media-publishing.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">📻</span>
+          <div><div class="cat-name">Media &amp; Publishing</div><div class="cat-desc">GraffPUNKS Radio, podcasts, articles, and community media that carry the Moonboys message.</div></div>
+        </a><a href="/categories/community-people.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">👥</span>
+          <div><div class="cat-name">Community &amp; People</div><div class="cat-desc">The writers — boneidolink, jilliangodsil, iangharrison, iamcharliebuster — real people in the universe.</div></div>
+        </a><a href="/categories/gkniftyheads.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">GK</span>
+          <div><div class="cat-name">GKniftyHEADS</div><div class="cat-desc">The GKniftyHEADS hub, collection index, NFT templates, and related GraffPUNKS context.</div></div>
+        </a></div></section>
+<section aria-labelledby="search-category-group-1"><h3 id="search-category-group-1">Explore culture and making</h3><div class="category-grid"><a href="/categories/graffiti-street-art.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🎨</span>
+          <div><div class="cat-name">Graffiti &amp; Street Art</div><div class="cat-desc">Street art culture, Graffiti Kings, and the founding philosophy of Crypto Moonboys.</div></div>
+        </a><a href="/categories/art-creativity.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🎭</span>
+          <div><div class="cat-name">Art &amp; Creativity</div><div class="cat-desc">Visual art, illustration, and the creative forces shaping the Crypto Moonboys aesthetic.</div></div>
+        </a><a href="/categories/music.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🎧</span>
+          <div><div class="cat-name">Music</div><div class="cat-desc">GraffPUNKS Radio, DJs, pirate radio and underground club culture.</div></div>
+        </a>
+        <a href="/categories/punk-culture.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">⚡️</span>
+          <div><div class="cat-name">Punk Culture</div><div class="cat-desc">GraffPUNKS Radio, The Squeaky Pinks, BanksyPunks — punk music, ethos, anti-establishment.</div></div>
+        </a><a href="/categories/activism-counter-culture.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">✊</span>
+          <div><div class="cat-name">Activism &amp; Counter-Culture</div><div class="cat-desc">The rebellious spirit behind the project — challenging norms, institutions, and the status quo.</div></div>
+        </a><a href="/categories/guerilla-marketing.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🎨</span>
+          <div><div class="cat-name">Guerilla Marketing</div><div class="cat-desc">Street-level promotions, sticker drops, and unconventional tactics used to grow the community.</div></div>
+        </a></div></section>
+<section aria-labelledby="search-category-group-2"><h3 id="search-category-group-2">Discover art and play</h3><div class="category-grid"><a href="/categories/nfts-digital-art.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🖼️</span>
+          <div><div class="cat-name">NFTs &amp; Digital Art</div><div class="cat-desc">GKniftyHEADS, NFTBUSTER, boneidolink — NFT creation, culture, and digital collections.</div></div>
+        </a><a href="/categories/nfts.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">NFT</span>
+          <div><div class="cat-name">NFTs</div><div class="cat-desc">Collection and template pages for NFT projects documented in the Crypto Moonboys wiki.</div></div>
+        </a><a href="/categories/wax-nfts.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">WAX</span>
+          <div><div class="cat-name">WAX NFTs</div><div class="cat-desc">WAX AtomicAssets collection and template pages, including GKniftyHEADS.</div></div>
+        </a><a href="/categories/designer-toys.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🧸</span>
+          <div><div class="cat-name">Crypto Designer Toys</div><div class="cat-desc">Physical and digital collectible toys inspired by the Moonboys — art meets Web3 merchandise.</div></div>
+        </a><a href="/categories/gaming.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🎮</span>
+          <div><div class="cat-name">Gaming</div><div class="cat-desc">No Ball Games, games4punks — blockchain gaming, indie crypto games, GameFi.</div></div>
+        </a></div></section>
+<section aria-labelledby="search-category-group-3"><h3 id="search-category-group-3">Understand ideas and tools</h3><div class="category-grid"><a href="/categories/concepts.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">💡</span>
+          <div><div class="cat-name">Concepts</div><div class="cat-desc">Core ideas behind Web3, decentralisation, tokenomics, and the philosophy that drives the project.</div></div>
+        </a><a href="/categories/technology.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">⚙️</span>
+          <div><div class="cat-name">Technology</div><div class="cat-desc">Blockchain infrastructure, smart contracts, and the tech stack underpinning Crypto Moonboys.</div></div>
+        </a><a href="/categories/tools.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🛠️</span>
+          <div><div class="cat-name">Tools &amp; Platforms</div><div class="cat-desc">Marketplaces, wallets, and platforms used by the community — from AtomicHub to OpenSea.</div></div>
+        </a><a href="/categories/cryptocurrencies.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">&#x1FA99;</span>
+          <div><div class="cat-name">Cryptocurrencies</div><div class="cat-desc">Bitcoin, WAX, and the coins powering the Crypto Moonboys universe — from blue-chips to indie tokens.</div></div>
+        </a></div></section>
+</section>
 
-      <section class="swarmsy-section" aria-labelledby="search-start-title">
+
+      <section class="swarmsy-section" data-search-browse aria-labelledby="search-start-title">
         <h2 id="search-start-title">Start with the project and its people</h2>
         <p>Read the project records, explore the artist background, or start making your own work.</p>
         <nav aria-label="Featured project guides">
           <ul>
-            <li><a href="/wiki/crypto-moonboys.html">Crypto Moonboys — the creator umbrella</a></li>
-            <li><a href="/gpt-users.html">ChatGPT Creator Studio — start a creative project</a></li>
+            <li><a href="/wiki/crypto-moonboys.html">Crypto Moonboys — the story, realms and timeline</a></li>
+            <li><a href="/ai-user.html">AI Creator Studio — start a creative project</a></li>
             <li><a href="/join-us-on-the-wax-blockchain.html">Join us on the WAX blockchain</a></li>
             <li><a href="/wiki/waxp.html">WAXP — the WAX blockchain token</a></li>
             <li><a href="/wiki/graffiti-kings.html">Graffiti Kings</a> and <a href="/wiki/darren-cullen.html">Darren Cullen / SER</a></li>
@@ -64,6 +162,11 @@
           </ul>
         </nav>
       </section>
+
+      <nav id="search-block-topia-shortcuts" class="search-controls" aria-label="Block Topia destinations" hidden>
+        <a class="search-control" href="/games/block-topia/">Play Block Topia</a>
+        <a class="search-control" href="/wiki/block-topia.html">Read the Block Topia lore</a>
+      </nav>
 
       <h2 class="section-heading" id="search-heading">All Articles</h2>
 
@@ -83,10 +186,10 @@
             <thead>
               <tr>
                 <th>Title</th>
+                <th>URL</th>
                 <th>Query score</th>
                 <th>Rank score</th>
                 <th>Final score</th>
-                <th>Rank signals</th>
               </tr>
             </thead>
             <tbody id="ranking-debug-table"></tbody>
@@ -102,6 +205,13 @@
       >
         <!-- Populated by wiki.js -->
       </div>
+      <button id="search-show-all" class="search-control" type="button" hidden>Show all results</button>
+      <nav id="search-empty-browse" class="search-controls" aria-label="Browse when search has no matches" hidden>
+        <a class="search-control" href="/games/">Browse Arcade</a>
+        <a class="search-control" href="/categories/lore.html">Browse Lore</a>
+        <a class="search-control" href="/categories/nfts.html">Browse NFTs</a>
+      </nav>
+      <button id="search-load-more" class="search-control" type="button" aria-controls="search-results-page" hidden>Load more</button>
     </main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
@@ -124,7 +234,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 7. Page-specific scripts -->
 
-<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/wiki.js?v=compact-search-index" data-wiki-search-index="wiki-index.json"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 </body>
 </html>

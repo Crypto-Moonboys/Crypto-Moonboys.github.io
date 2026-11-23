@@ -1,0 +1,44 @@
+[
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Dense flats, balcony cages, AC units, lit windows.",
+    "name": "Block Topia HK Night v1 - apartments",
+    "file": "apartments.png",
+    "assetId": "cmws55i8k000w5ccirwgu86bu"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Vinyl shop, magenta disc sign, teal awning.",
+    "name": "Block Topia HK Night v1 - record-shop",
+    "file": "record-shop.png",
+    "assetId": "cmws55vok00s6p6eowvxfezh1"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Dock repair garage, corrugated roof, orange work bay.",
+    "name": "Block Topia HK Night v1 - workshop",
+    "file": "workshop.png",
+    "assetId": "cmws569ay00tap6eonaql50yi"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Cargo depot, roof vents, tagged steel shutter.",
+    "name": "Block Topia HK Night v1 - warehouse",
+    "file": "warehouse.png",
+    "assetId": "cmws56kl300tdp6eok9y35g6z"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Tall harbor beacon, teal lamp, ribbed metal tower.",
+    "name": "Block Topia HK Night v1 - lighthouse",
+    "file": "lighthouse.png",
+    "assetId": "cmws56xw100tmp6eohnav02w0"
+  },
+  {
+    "pixelArt": true,
+    "prompt": "16-bit pixel art, cyberpunk Hong Kong harbor at night. Elevated top-down view, visible roof and front facade, horizontal eaves, no side faces. Wet concrete, teal and amber neon, deep violet shadows. Isolated asset, no ground or border. Long flat-on floodlit seawall, layered wildstyle.",
+    "name": "Block Topia HK Night v1 - graffiti-wall",
+    "file": "graffiti-wall.png",
+    "assetId": "cmws57brc00uhp6eotnbtvifr"
+  }
+]

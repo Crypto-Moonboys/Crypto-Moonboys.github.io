@@ -108,15 +108,21 @@ export const REAL_ROOT_SYNC_STEPS = [
   { surface: 'SAM page', script: 'scripts/generate-entity-map.js' },
   { surface: 'graph', script: 'scripts/generate-entity-graph.js' },
   { surface: 'graph', script: 'scripts/generate-graph-data.js' },
+  { surface: 'graph', script: 'scripts/generate-entity-graph-lite.js' },
   { surface: 'timeline', script: 'scripts/generate-timeline-data.js' },
   { surface: 'timeline', script: 'scripts/generate-timeline-intelligence.js' },
   { surface: 'dashboard', script: 'scripts/generate-authority-trust.js' },
   { surface: 'dashboard', script: 'scripts/generate-cluster-health.js' },
+  { surface: 'dashboard', script: 'scripts/generate-authority-drift.js' },
+  { surface: 'dashboard', script: 'scripts/generate-entity-changelog.js' },
   { surface: 'dashboard', script: 'scripts/generate-content-gaps.js' },
+  { surface: 'dashboard', script: 'scripts/generate-expansion-plan.js' },
   { surface: 'dashboard', script: 'scripts/generate-growth-priority.js' },
+  { surface: 'dashboard', script: 'scripts/generate-predictive-growth.js' },
+  { surface: 'dashboard', script: 'scripts/generate-governance-signals.js' },
   { surface: 'dashboard', script: 'scripts/generate-publishing-readiness.js' },
-  { surface: 'dashboard', script: 'scripts/generate-site-stats.js' },
   { surface: 'sitemap', script: 'scripts/generate-sitemap.js' },
+  { surface: 'dashboard', script: 'scripts/generate-site-stats.js' },
 ];
 
 const REAL_ROOT_GENERATED_FILES = Object.freeze([
@@ -128,12 +134,18 @@ const REAL_ROOT_GENERATED_FILES = Object.freeze([
   'sam-memory.json',
   'js/entity-graph.json',
   'js/graph-data.json',
+  'js/entity-graph-lite.json',
   'js/timeline-data.json',
   'js/timeline-intelligence.json',
   'js/authority-trust.json',
   'js/cluster-health.json',
+  'js/authority-drift.json',
+  'js/entity-changelog.json',
   'js/content-gaps.json',
+  'js/expansion-plan.json',
   'js/growth-priority.json',
+  'js/predictive-growth.json',
+  'js/governance-signals.json',
   'js/publishing-readiness.json',
   'js/site-stats.json',
   'index_stats.json',
@@ -3203,28 +3215,7 @@ function expectedSyncFiles(rootDir, payloads) {
     categoryFiles.add(`categories/${categorySlug(payload.category)}.html`);
   }
 
-  return [
-    ...categoryFiles,
-    'js/wiki-publish-audit.json',
-    'js/wiki-index.json',
-    RELATIONSHIP_HINTS_FILE,
-    'js/link-map.json',
-    'js/link-graph.json',
-    'js/entity-map.json',
-    'sam-memory.json',
-    'js/entity-graph.json',
-    'js/graph-data.json',
-    'js/timeline-data.json',
-    'js/timeline-intelligence.json',
-    'js/authority-trust.json',
-    'js/cluster-health.json',
-    'js/content-gaps.json',
-    'js/growth-priority.json',
-    'js/publishing-readiness.json',
-    'js/site-stats.json',
-    'index_stats.json',
-    'sitemap.xml',
-  ];
+  return [...categoryFiles, RELATIONSHIP_HINTS_FILE, ...REAL_ROOT_GENERATED_FILES];
 }
 
 function upsertByUrl(existingEntries, newEntries) {
@@ -3240,7 +3231,7 @@ function upsertByUrl(existingEntries, newEntries) {
   );
 }
 
-function renderCategoryPage(category, entries) {
+export function renderCategoryPage(category, entries) {
   const catSlug = categorySlug(category);
   const items = entries
     .map((entry) => `        <a href="${escapeHtml(entry.url)}" class="article-list-item">
@@ -3262,7 +3253,7 @@ function renderCategoryPage(category, entries) {
 </head>
 <body class="page-category page-standard-shell">
 <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(category)}</span></nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(category)}</span></nav>
       <h1 class="page-title">${escapeHtml(category)}</h1>
       <div class="page-title-line" aria-hidden="true"></div>
       <div class="article-list" aria-label="Articles in ${escapeHtml(category)}">
@@ -3295,34 +3286,22 @@ function renderCategoryCard(category) {
   return `        <a href="/categories/${escapeHtml(categorySlug(category))}.html" class="category-card"><span class="cat-icon" aria-hidden="true">&bull;</span><div><div class="cat-name">${escapeHtml(category)}</div><div class="cat-desc">Browse ${escapeHtml(category)} articles.</div></div></a>`;
 }
 
-function upsertIntoExistingCategoryPage(filePath, category, entries, resetUrls = []) {
-  if (!fs.existsSync(filePath)) {
-    atomicWriteFilePathSync(filePath, renderCategoryPage(category, entries), 'utf8');
-    return;
-  }
+function updateCategoryPage(html, category, entries, resetUrls) {
+  if (html === null) return renderCategoryPage(category, entries);
 
-  let html = fs.readFileSync(filePath, 'utf8');
-  let changed = false;
   for (const resetUrl of resetUrls) {
     const escapedUrl = String(resetUrl).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const staleItem = new RegExp(
       `<a\\b(?=[^>]*\\bclass\\s*=\\s*["'][^"']*\\barticle-list-item\\b[^"']*["'])(?=[^>]*\\bhref\\s*=\\s*["']${escapedUrl}["'])[^>]*>[\\s\\S]*?<\\/a>\\s*`,
       'gi'
     );
-    const cleaned = html.replace(staleItem, '');
-    if (cleaned !== html) {
-      html = cleaned;
-      changed = true;
-    }
+    html = html.replace(staleItem, '');
   }
   const missingItems = entries
     .filter((entry) => !html.includes(`href="${entry.url}"`) && !html.includes(`href='${entry.url}'`))
     .map(renderCategoryListItem);
 
-  if (missingItems.length === 0) {
-    if (changed) atomicWriteFilePathSync(filePath, html, 'utf8');
-    return;
-  }
+  if (missingItems.length === 0) return html;
 
   if (html.includes('class="article-list"')) {
     html = html.replace(/(\s*<\/div>\s*<\/main>)/, `\n${missingItems.join('\n')}$1`);
@@ -3330,30 +3309,26 @@ function upsertIntoExistingCategoryPage(filePath, category, entries, resetUrls =
     html = html.replace(/(\s*<\/main>)/, `\n      <div class="article-list" aria-label="Articles in ${escapeHtml(category)}">\n${missingItems.join('\n')}\n      </div>$1`);
   }
 
-  atomicWriteFilePathSync(filePath, html, 'utf8');
+  return html;
 }
 
-function upsertCategoryIndex(indexPath, wikiIndex) {
-  const categories = Array.from(new Set(wikiIndex.map((entry) => entry.category || 'Lore')))
-    .sort((a, b) => String(a).localeCompare(String(b)));
+function updateCategoryIndex(html, categories) {
   const cards = categories.map(renderCategoryCard);
 
-  if (!fs.existsSync(indexPath)) {
-    atomicWriteFilePathSync(indexPath, `<!DOCTYPE html>
+  if (html === null) {
+    return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>All Categories - Crypto Moonboys Wiki</title><link rel="stylesheet" href="/css/wiki.css"></head>
 <body class="page-categories page-standard-shell"><main id="content" role="main"><h1 class="page-title">All Categories</h1><div class="category-grid" aria-label="All categories">
 ${cards.join('\n')}
 </div></main><script data-cfasync="false" src="/js/core/daily-loop-state.js"></script><script data-cfasync="false" src="/js/site-shell.js"></script></body></html>
-`, 'utf8');
-    return;
+`;
   }
 
-  let html = fs.readFileSync(indexPath, 'utf8');
   const missingCards = categories
     .filter((category) => !html.includes(`/categories/${categorySlug(category)}.html`))
     .map(renderCategoryCard);
 
-  if (missingCards.length === 0) return;
+  if (missingCards.length === 0) return html;
 
   if (html.includes('class="category-grid"')) {
     html = html.replace(/(\s*<\/div>\s*<\/main>)/, `\n${missingCards.join('\n')}$1`);
@@ -3361,30 +3336,44 @@ ${cards.join('\n')}
     html = html.replace(/(\s*<\/main>)/, `\n      <div class="category-grid" aria-label="All categories">\n${missingCards.join('\n')}\n      </div>$1`);
   }
 
-  atomicWriteFilePathSync(indexPath, html, 'utf8');
+  return html;
 }
 
-function syncCategories(rootDir, wikiIndex, payloads) {
-  const categoriesDir = path.join(rootDir, 'categories');
-  ensureSafeWorkspaceParent(rootDir, 'categories/.publish-directory-anchor');
-
-  const incomingUrls = payloads.map((payload) => `/wiki/${payload.slug}.html`);
-  for (const relativePath of existingCategoryHtmlFiles(rootDir)) {
-    upsertIntoExistingCategoryPage(path.join(rootDir, relativePath), '', [], incomingUrls);
+function syncCategories(rootDir, wikiIndex, payloads, stagePage) {
+  if (!stagePage) ensureSafeWorkspaceParent(rootDir, 'categories/.publish-directory-anchor');
+  const categoryByUrl = new Map(payloads.map(payload => [`/wiki/${payload.slug}.html`, categorySlug(payload.category)]));
+  const touched = new Map(payloads.map(payload => [categorySlug(payload.category), payload.category]));
+  const existing = existingCategoryHtmlFiles(rootDir);
+  const paths = new Set([...existing, ...[...touched.keys()].map(slug => `categories/${slug}.html`), 'categories/index.html']);
+  const pages = new Map();
+  for (const relativePath of paths) {
+    const original = readWorkspaceFileNoFollow(rootDir, relativePath)?.toString('utf8') ?? null;
+    pages.set(relativePath, { original, html: original });
+  }
+  function setPage(relativePath, html) {
+    const page = pages.get(relativePath);
+    if (page.html === html) return;
+    if (!stagePage) atomicWriteFilePathSync(resolveSafeWorkspacePath(rootDir, relativePath), html, 'utf8');
+    page.html = html;
   }
 
-  const touchedCategories = Array.from(new Set(payloads.map((payload) => payload.category))).sort();
-  for (const category of touchedCategories) {
-    const catSlug = categorySlug(category);
-    const entries = wikiIndex.filter((entry) => categorySlug(entry.category) === catSlug);
-    upsertIntoExistingCategoryPage(
-      path.join(categoriesDir, `${catSlug}.html`),
-      category,
-      entries
-    );
+  for (const relativePath of existing) {
+    setPage(relativePath, updateCategoryPage(pages.get(relativePath).html, '', [], categoryByUrl.keys()));
   }
+  for (const [slug, category] of touched) {
+    const relativePath = `categories/${slug}.html`;
+    const entries = wikiIndex.filter(entry => (categoryByUrl.get(entry.url) ?? categorySlug(entry.category)) === slug);
+    setPage(relativePath, updateCategoryPage(pages.get(relativePath).html, category, entries, []));
+  }
+  const categories = [...paths].filter(p => p !== 'categories/index.html')
+    .map(p => { const slug = path.basename(p, '.html'); return touched.get(slug) || slug; })
+    .sort((a, b) => a.localeCompare(b));
+  const index = 'categories/index.html';
+  setPage(index, updateCategoryIndex(pages.get(index).html, categories));
 
-  upsertCategoryIndex(path.join(categoriesDir, 'index.html'), wikiIndex);
+  if (stagePage) {
+    for (const [relativePath, { html, original }] of pages) stagePage(relativePath, html, html !== original);
+  }
 }
 
 function syncPortableSurfaces(rootDir, payloads, logger) {
@@ -3453,9 +3442,15 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
 
   const entityGraph = Object.fromEntries(wikiIndex.map((entry) => [entry.url, { related_pages: [] }]));
   writeJson(path.join(jsDir, 'entity-graph.json'), entityGraph);
+  const homeHtml = readWorkspaceFileNoFollow(rootDir, 'index.html')?.toString('utf8') || '';
+  const indexedHome = wikiIndex.find(entry => entry.url === '/' || entry.url === '/index.html');
+  const publishedPages = [
+    { ...indexedHome, url: '/', title: titleFromHtml(homeHtml, indexedHome?.title || 'Home'), category: 'site' },
+    ...wikiIndex.filter(entry => entry.url !== '/' && entry.url !== '/index.html'),
+  ];
   writeJson(path.join(jsDir, 'graph-data.json'), {
     generated_at: new Date().toISOString(),
-    nodes: wikiIndex.map((entry) => ({
+    nodes: publishedPages.map((entry) => ({
       id: entry.url,
       title: entry.title,
       url: entry.url,
@@ -3501,6 +3496,8 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
   });
 
   writeJson(path.join(jsDir, 'site-stats.json'), {
+    published_pages: publishedPages.length,
+    indexed_pages: wikiIndex.filter(entry => entry.url.startsWith('/wiki/') && entry.url !== '/wiki/index.html').length,
     article_count: wikiIndex.length,
     entity_count: entityMap.length,
     category_count: new Set(wikiIndex.map((entry) => entry.category)).size,
@@ -3521,7 +3518,7 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
     entries: wikiIndex.map((entry) => ({ url: entry.url, readable_title: cleanTitle(entry.title), readiness_score: 0 })),
   });
 
-  const sitemapUrls = ['https://cryptomoonboys.com/', ...wikiIndex.map((entry) => `https://cryptomoonboys.com${entry.url}`)];
+  const sitemapUrls = publishedPages.map(entry => `https://cryptomoonboys.com${entry.url}`);
   atomicWriteFilePathSync(path.join(rootDir, 'sitemap.xml'), [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -3550,7 +3547,7 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
   };
 }
 
-function runScriptStep(rootDir, step, logger, stagingDescriptor = null) {
+function runScriptStep(rootDir, step, logger, stagingDescriptor, stagedOutputs) {
   const scriptPath = path.join(rootDir, step.script);
   if (!fs.existsSync(scriptPath)) {
     throw new FeedSyncError(step.surface, `feed sync not implemented for ${step.surface}`);
@@ -3575,7 +3572,7 @@ function runScriptStep(rootDir, step, logger, stagingDescriptor = null) {
           ...process.env,
           WIKI_PUBLISH_ROOT: path.resolve(rootDir),
           WIKI_PUBLISH_STAGE_FD: '3',
-          WIKI_PUBLISH_STAGED_OUTPUTS: JSON.stringify(REAL_ROOT_GENERATED_FILES),
+          WIKI_PUBLISH_STAGED_OUTPUTS: JSON.stringify(stagedOutputs),
         }
       : process.env,
   });
@@ -3649,6 +3646,8 @@ function syncRealRootSurfaces(rootDir, payloads, logger) {
   );
   const noFollow = fs.constants.O_NOFOLLOW || 0;
   let stagingDescriptor;
+  const stagedOutputs = [...REAL_ROOT_GENERATED_FILES];
+  const publishOutputs = [...REAL_ROOT_GENERATED_FILES];
   try {
     stagingDescriptor = fs.openSync(
       stagingDirPath,
@@ -3657,11 +3656,22 @@ function syncRealRootSurfaces(rootDir, payloads, logger) {
     const stagingAnchorPath = `/proc/self/fd/${stagingDescriptor}`;
 
     for (const step of REAL_ROOT_SYNC_STEPS) {
-      runScriptStep(rootDir, step, logger, stagingDescriptor);
+      // The first search pass discovers incoming articles. Stage their directory pages
+      // before readers derive links, rank, the graph, sitemap or counts from them.
+      if (step.script === 'scripts/generate-link-map.js') {
+        fs.mkdirSync(path.join(stagingAnchorPath, 'categories'), { mode: 0o700 });
+        const index = loadJsonArray(path.join(stagingAnchorPath, 'js/wiki-index.json'));
+        syncCategories(rootDir, index, payloads, (relativePath, html, changed) => {
+          stagedOutputs.push(relativePath);
+          fs.writeFileSync(path.join(stagingAnchorPath, relativePath), html, { flag: 'wx', mode: 0o600 });
+          if (changed) publishOutputs.push(relativePath);
+        });
+      }
+      runScriptStep(rootDir, step, logger, stagingDescriptor, stagedOutputs);
     }
 
     const stagedStates = new Map();
-    for (const relativePath of REAL_ROOT_GENERATED_FILES) {
+    for (const relativePath of publishOutputs) {
       const stagedPath = path.join(
         stagingAnchorPath,
         ...relativePath.split('/')
@@ -3679,7 +3689,7 @@ function syncRealRootSurfaces(rootDir, payloads, logger) {
       }
     }
 
-    for (const relativePath of REAL_ROOT_GENERATED_FILES) {
+    for (const relativePath of publishOutputs) {
       atomicWriteFilePathSync(
         resolveSafeWorkspacePath(rootDir, relativePath),
         stagedStates.get(relativePath).content
@@ -3688,7 +3698,7 @@ function syncRealRootSurfaces(rootDir, payloads, logger) {
   } finally {
     if (stagingDescriptor !== undefined) {
       const stagingAnchorPath = `/proc/self/fd/${stagingDescriptor}`;
-      for (const relativePath of REAL_ROOT_GENERATED_FILES) {
+      for (const relativePath of stagedOutputs) {
         try {
           fs.unlinkSync(path.join(stagingAnchorPath, ...relativePath.split('/')));
         } catch (error) {
@@ -3698,7 +3708,7 @@ function syncRealRootSurfaces(rootDir, payloads, logger) {
           }
         }
       }
-      for (const relativeDirectory of ['js']) {
+      for (const relativeDirectory of ['js', 'categories']) {
         try {
           fs.rmdirSync(path.join(stagingAnchorPath, relativeDirectory));
         } catch (error) {
@@ -3715,8 +3725,6 @@ function syncRealRootSurfaces(rootDir, payloads, logger) {
     closeAnchoredDirectory(rootAnchor);
   }
 
-  const wikiIndex = loadJsonArray(path.join(rootDir, 'js', 'wiki-index.json'));
-  syncCategories(rootDir, wikiIndex, payloads);
   assertPayloadUrlsSynced(rootDir, payloads);
 
   logger(`Synced website feed surfaces: ${AFFECTED_SYNC_SURFACES.join(', ')}`);

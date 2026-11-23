@@ -1116,7 +1116,7 @@ for (const job of ['street_artist', 'courier', 'crystal_miner', 'vault_guard']) 
 const dailyChest = asyncBlock('processPetDailyChest');
 assert.ok(dailyChest.includes('duplicate'), 'daily chest must short-circuit duplicate event keys');
 assert.ok(dailyChest.includes("daily_chest"), 'daily chest must write daily_chest events');
-assert.match(dailyChest, /MIN\(40,MAX\(0,\?[-]\(SELECT COALESCE\(SUM\(pet_xp_awarded\),0\)/, 'Daily Cache must clamp against accepted account/day XP inside the transaction');
+assert.match(dailyChest, /MIN\(40,MAX\(0,\?[-]\(SELECT COALESCE\(SUM\(pet_xp_awarded\+pet_xp_withheld\),0\)/, 'Daily Cache must clamp against accepted account/day XP inside the transaction');
 assert.match(dailyChest, /pet_xp \+ \(SELECT pet_xp_awarded FROM daily_award\)/, 'Daily Cache must add the actual event award to current instance XP');
 assert.ok(dailyChest.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'daily chest must freeze wallet credits while historical recovery is pending');
 assert.ok(dailyChest.includes('const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id)'), 'Daily Cache must return its captured source pet');
@@ -1146,7 +1146,7 @@ assert.ok(goldTrade.includes('PETS_DAILY_PET_XP_CAP'), 'gold trades must apply t
 assert.ok(goldTrade.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'gold trades must read daily totals before awarding pet XP');
 assert.ok(goldTrade.includes("reason: 'invalid_trade_wager'"), 'gold trades must reject malformed wagers');
 assert.ok(goldTrade.includes('/^\\d+$/'), 'gold trades must validate wager shape before clamping or spending');
-assert.ok(goldTrade.includes('pet_xp_awarded: petXp'), 'gold trades must persist the capped pet XP amount');
+assert.ok(goldTrade.includes('pet_xp_awarded: tradeReceipt.pet_xp_awarded'), 'gold trades must persist the capped pet XP amount');
 assert.ok(goldTrade.includes('telegram_pet_season_state'), 'gold trades must update season state');
 assert.ok(goldTrade.includes("xp_awarded: 0"), 'gold trades must not award Community XP');
 assert.ok(!goldTrade.includes('awardCommunityXp'), 'gold trades must not call the shared Community XP helper');
@@ -1308,7 +1308,7 @@ assert.ok(runStep.indexOf('applyPetRunStatRewards(pet, outcome.rewards);') < run
 assert.ok(runStep.includes("AND depth = ?") && runStep.includes('AND EXISTS (SELECT 1 FROM telegram_pet_run_steps WHERE id = ?)') && runStep.includes('runPetInstanceUpdateStatement(db, run.pet_id, pet,') && runStep.includes("status = 'extractable'") && runStep.includes('RETURNING run_id'), 'run-step receipt, wallet cost, run state, and pet state must be conditionally claimed in one atomic batch');
 assert.ok(runStep.includes("if (!stepResults?.[2]?.results?.[0] || Number(stepResults?.[3]?.meta?.changes || 0) !== 1)") && runStep.includes("reason: 'run_closed'"),
   'a run step that loses a terminal-state race must be rejected without applying pet changes');
-assert.ok(runStep.includes('runFailEventId') && runStep.includes("SELECT ?, ?, ?, 'run_fail'") && runStep.includes("WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted')"),
+assert.ok(runStep.includes('runFailEventId') && runStep.includes("SELECT 1,?, ?, ?, 'run_fail'") && runStep.includes("FROM telegram_pet_events WHERE id=? AND status='accepted'"),
   'failed run-step receipt, season state, wallet cost, run state, and pet state must be one atomic outcome');
 assert.ok(runStep.includes('inventory_authority: true'), 'authority-owned run item consumption must bypass the temporary legacy cutover bridge');
 

@@ -100,7 +100,7 @@ export function emitRankUnlock(factionId, rankLabel) {
 
 /**
  * Emit a rotation change event (called when a new daily rotation begins).
- * @param {string} rotationLabel  — e.g. '⚡ High chaos · 🎨 GraffPUNKS featured'
+ * @param {string} rotationLabel  — e.g. '⚡ High chaos · GraffPUNKS featured'
  */
 export function emitRotationChange(rotationLabel) {
   _emit('rotation_change', {
@@ -189,15 +189,15 @@ export function unsubscribeActivityFeed(handler) {
 
 function _factionLabel(id) {
   var labels = {
-    'hard-fork-rockers': '🪨 Hard Fork Rockers',
-    'rugpull-miners': '⛏️ Rugpull Miners',
-    graffpunks: '🎨 GraffPUNKS',
-    'blockchain-furies': '🔥 Blockchain Furies',
-    'crypto-moongirls': '🌙 Crypto Moongirls',
-    blockstars: '⭐ The Blockstars',
-    'all-city-bulls': '🐂 All City Bulls',
-    'nomad-bears': '🐻 Nomad Bears',
-    'crypto-stoned-boys': '😶‍🌫️ Crypto Stoned Boys',
+    'hard-fork-rockers': 'Hard Fork Rockers',
+    'rugpull-miners': 'Rugpull Miners',
+    graffpunks: 'GraffPUNKS',
+    'blockchain-furies': 'Blockchain Furies',
+    'crypto-moongirls': 'Crypto Moongirls',
+    blockstars: 'The Blockstars',
+    'all-city-bulls': 'All City Bulls',
+    'nomad-bears': 'Nomad Bears',
+    'crypto-stoned-boys': 'Crypto Stoned Boys',
   };
   return labels[String(id || '')] || String(id || 'Faction');
 }

@@ -8,6 +8,7 @@ import { personalTagRun } from './engagement.js';
 import { leaderboardPeriods } from './v2-leaderboard.js';
 import { V2_COMMANDS, V2_ADMIN_COMMANDS, handleTagRunV2Command } from './v2-service.js';
 import { checkWaxDestination } from './wallet-destination.js';
+import { sendMoonboysPlainTelegramPost } from '../telegram/faction-emoji.js';
 import { sendControlledMoonboyTelegram, moonboyTelegramMessageSeed } from '../telegram/moonboy-message-gateway.js';
 
 const TAG_COMMANDS = new Set([
@@ -75,10 +76,11 @@ async function messageReply(env, chatId, message, fetchImpl = fetch, useGroupTop
       return media.status === 'sent';
     }
   }
-  const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
+  const response = await sendMoonboysPlainTelegramPost(token, payload, body =>
+    fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload), signal: AbortSignal.timeout(8000)
-  });
+    body: JSON.stringify(body), signal: AbortSignal.timeout(8000)
+  }), fetchImpl);
   return response.ok;
 }
 function recentWeekText(score, posts) {
@@ -939,11 +941,12 @@ async function sendRankAnnouncement(env, row, fetchImpl) {
     // must never fall through to a second text message.
     return null;
   }
-  const response = await fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
+  const response = await sendMoonboysPlainTelegramPost(token, payload, body =>
+    fetchImpl('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+    body: JSON.stringify(body)
+  }), fetchImpl);
   if (!response.ok) return null;
   const body = await response.json();
   const messageId = Number(body?.result?.message_id);

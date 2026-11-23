@@ -5108,6 +5108,27 @@
         "source_note": "The current conversation supplies the instruction; URL is the implementing page, not a public approval comment.",
         "quote": "THIS PAGE IS MAIN LORE, THE HEART OF THE STORY AND ALL KEYS PARTS NEED TO BE LIKE A BACK BOOK COVER WITH GOOD CHUNK OF WHO WHY WHEN THEN A BIGGER PIECE WITH BROADER WIDE WORLD VIEW MYTHOLOGY OF MANY REALMS... TIME LINE. SO AUDIT MANY OR ALL PAGES TO MAGE MAIN WEBPAGE PULL THE WHOLE WIKI TOGETHER, DONT TREAT THIS PAGE LIKE A WIKI PAGE IN MANY SECTIONS BUT LIKE A BIG BACK BOOK X10 - ALMOST A BOOK."
       }
+    },
+    {
+      "id": "GK-20261116-CANONICAL-DOMAIN-WHALE-LORDS",
+      "status": "implemented",
+      "sources": [
+        "Production canonical domain: https://cryptomoonboys.com/",
+        "scripts/anti-drift-check.mjs canonical-domain guard"
+      ],
+      "old": "Whale Lords source note names the retired crypto-moonboys.github.io host.",
+      "new": "The same source note points to the identical Whale Lords path on cryptomoonboys.com.",
+      "reason": "This is an exact host migration correction required by the canonical-domain guard; the narrative wording, attribution and destination path are otherwise unchanged.",
+      "affected_paths": [
+        "wiki/the-chronicles-of-the-whale-lords.html"
+      ],
+      "paragraph_changes": [
+        {
+          "old_sha256": "sha256:48e5469d1d8e792f04d53da4f8c1fac96a65d4991444b892cf690bf777c053cb",
+          "new_sha256": "sha256:3285a71a86548a69f9ebbabb991b0b757f575b47adebe80ba746691f1219128f",
+          "reason": "Replace only the retired GitHub Pages host with the production canonical host."
+        }
+      ]
     }
   ],
   "updated": "2026-11-16"

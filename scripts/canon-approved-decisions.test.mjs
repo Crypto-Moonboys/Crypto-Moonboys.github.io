@@ -110,10 +110,14 @@ test('the actual Pages builder excludes all ending records and retains public co
     // scanning public disclosure. Keep the fixture's module dependency and
     // minimal real-page sitemap in sync with that publishing contract.
     for (const p of ['scripts/prepare-pages-artifact.mjs', 'scripts/public-canon-disclosure.mjs',
-      'scripts/seo-publish-canonicals.mjs']) write(p, read(p));
+      'scripts/wiki-html-structure.mjs', 'scripts/publish-direct-wiki-links.mjs',
+      'scripts/publish-wiki-search-index.mjs', 'scripts/seo-publish-canonicals.mjs']) write(p, read(p));
     for (const p of EDITORIAL_ONLY_PATHS) write(p, read(p));
     for (const p of ['index.html', 'js/wiki.js', 'css/wiki.css', 'games/index.html', 'sam-memory.json',
       'wiki/agent-sam.html', 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md']) write(p, read(p));
+    write('wiki/alias.html', '<meta http-equiv="refresh" content="0; url=/wiki/agent-sam.html">');
+    const archive = `<a title='example href="/wiki/alias.html"' href=/wiki/alias.html>Read</a>`;
+    write('wiki/archive.html', archive);
     write('sitemap.xml', [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -122,6 +126,9 @@ test('the actual Pages builder excludes all ending records and retains public co
       '</urlset>',
     ].join('\n'));
     execFileSync(process.execPath, ['scripts/prepare-pages-artifact.mjs', 'public-site'], { cwd: fixture });
+    assert.equal(fs.readFileSync(path.join(fixture, 'wiki/archive.html'), 'utf8'), archive);
+    assert.equal(fs.readFileSync(path.join(fixture, 'public-site/wiki/archive.html'), 'utf8'),
+      `<a title='example href="/wiki/alias.html"' href=/wiki/agent-sam.html>Read</a>`);
     for (const p of EDITORIAL_ONLY_PATHS) assert.equal(fs.existsSync(path.join(fixture, 'public-site', p)), false, p);
     for (const p of ['js/wiki.js', 'wiki/agent-sam.html', 'games/index.html', 'brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md']) {
       assert.equal(fs.readFileSync(path.join(fixture, 'public-site', p), 'utf8'), read(p));

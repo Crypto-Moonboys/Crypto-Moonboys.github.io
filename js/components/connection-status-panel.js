@@ -963,7 +963,7 @@
     return '' +
       '<div class="csp-section-rows" role="status" aria-label="Faction daily ops">' +
         '<a class="csp-ops-arcade-cta" href="/games/">Play Arcade</a>' +
-        '<div class="csp-ops-row"><span class="csp-ops-label">Faction</span><span class="csp-ops-val">' + esc((shared.faction.faction === 'unaligned' ? 'No faction selected' : (shared.faction.icon + ' ' + shared.faction.label))) + '</span></div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Faction</span><span class="csp-ops-val">' + (shared.faction.faction === 'unaligned' ? 'No faction selected' : (window.MOONBOYS_FACTION?.renderIcon?.(shared.faction.faction) || '') + esc(shared.faction.label)) + '</span></div>' +
         '<div class="csp-ops-row"><span class="csp-ops-label">Faction XP</span><span class="csp-ops-val">' + esc(String(shared.faction.faction_xp)) + '</span></div>' +
         '<div class="csp-ops-row"><span class="csp-ops-label">Contribution</span><span class="csp-ops-val">' + esc(contributionDisplay) + '</span></div>' +
         '<div class="csp-ops-row"><span class="csp-ops-label">Daily Ops Status</span><span class="csp-ops-val">' + esc(shared.dailyOpsStatus ? shared.dailyOpsStatus.value : 'syncing…') + '</span></div>' +

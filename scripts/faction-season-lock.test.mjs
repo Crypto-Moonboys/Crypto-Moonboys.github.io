@@ -43,6 +43,7 @@ function read(relPath) {
 
 // ── Source files ──────────────────────────────────────────────────────────────
 
+const community    = read('community.html');
 const bcFactions   = read('js/battle-chamber-factions.js');
 const alignment    = read('js/faction-alignment.js');
 const worker       = read('workers/moonboys-api/worker.js');
@@ -158,8 +159,8 @@ check(
 );
 
 check(
-  bcFactions.includes('Your runs, missions, and proof events'),
-  'Aligned user sees clout contribution note',
+  community.includes('your runs, missions and proof events count toward your faction'),
+  'Join information explains what counts toward the faction',
 );
 
 check(
@@ -168,23 +169,18 @@ check(
 );
 
 check(
-  bcFactions.includes('Choose carefully. Your faction is locked for the current season'),
+  bcFactions.includes('Your choice lasts the season.'),
   'Unaligned panel shows season lock warning copy',
 );
 
 check(
-  bcFactions.includes('At season reset') || bcFactions.includes('season lock clears'),
-  'Unaligned panel shows season reset copy',
+  community.includes('You can choose again next season.'),
+  'Join information explains when players can choose again',
 );
 
 check(
-  bcFactions.includes('Faction clout only counts when you are Telegram-linked'),
-  'Unaligned panel shows Telegram-link requirement',
-);
-
-check(
-  bcFactions.includes('No faction, no faction clout'),
-  'Unaligned panel shows no-faction warning',
+  community.includes('With Telegram linked, your runs, missions and proof events count toward your faction.'),
+  'Join information explains the Telegram-link requirement',
 );
 
 // season_key merged into dispatched status when loadStatus() doesn't return it
@@ -241,7 +237,7 @@ check(
 );
 
 check(
-  worker.includes("'telegram_faction_season_locks'"),
+  worker.includes("FROM telegram_faction_season_locks"),
   'Worker: /faction/join checks telegram_faction_season_locks table',
 );
 
@@ -257,7 +253,7 @@ check(
 );
 
 check(
-  worker.includes('existingLock.faction_id === requestedFaction') ||
+  worker.includes('storedLock.faction_id !== requestedFaction') ||
   worker.includes("existingLock?.faction_id === requestedFaction"),
   'Worker: same faction join is idempotent (allowed)',
 );
@@ -310,41 +306,16 @@ check(
   'Worker: if stored lock faction differs from requested, returns 409 (race detection)',
 );
 
-// ── Backfill: existing non-unaligned users are locked to their current faction ─
 check(
-  worker.includes('existingFaction') &&
-  worker.includes('existingFaction !== FACTION_UNALIGNED'),
-  'Worker: checks existing progression faction for backfill (non-unaligned users)',
+  worker.includes('!firstJoin && !knownLocks.results.length ? existingFaction : requestedFaction'),
+  'Worker: only legacy accounts without any season history inherit their existing faction',
 );
 
 check(
-  (function () {
-    // Backfill: INSERT DO NOTHING for existingFaction when existingFaction != UNALIGNED
-    const backfillBlock = worker.indexOf('Backfill');
-    return backfillBlock !== -1 && worker.indexOf('DO NOTHING', backfillBlock) !== -1;
-  })(),
-  'Worker: backfills lock for existing non-unaligned faction before allowing fresh join',
-);
-
-check(
-  (function () {
-    // After backfill, if requestedFaction !== storedFaction → 409
-    const backfillIdx = worker.indexOf('Backfill');
-    const block = worker.slice(backfillIdx, backfillIdx + 2500);
-    return block.includes('faction_locked_for_season') &&
-           (block.includes('storedFaction') || block.includes('storedFactionId'));
-  })(),
-  'Worker: existing user cannot switch faction during season (backfill path returns 409)',
-);
-
-check(
-  (function () {
-    // After backfill, if requestedFaction === storedFaction → idempotent 200
-    const backfillIdx = worker.indexOf('Backfill');
-    const block = worker.slice(backfillIdx, backfillIdx + 1500);
-    return block.includes('ok: true') && block.includes('storedFaction');
-  })(),
-  'Worker: existing user re-joining same faction is idempotent (backfill path)',
+  worker.includes('const result = await env.DB.batch([') &&
+  worker.includes('AND faction IS NOT ?') &&
+  worker.includes('WHERE telegram_id = ? AND season_key = ? AND faction_id = ?'),
+  'Worker: the season lock and guarded progression update commit together',
 );
 
 // ── Progression update after lock confirmed ────────────────────────────────
