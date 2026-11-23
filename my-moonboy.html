@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://cryptomoonboys.com/my-moonboy.html">
   <title>My Moonboy — Personal Mission Control | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/my-moonboy.css?v=mission-control-v3">
+  <link rel="stylesheet" href="/css/my-moonboy.css?v=battle-history-v1">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-my-moonboy page-standard-shell">
@@ -55,6 +55,7 @@
         <nav class="mm-console-nav" aria-label="Mission dashboard">
           <a href="#mm-overview">Overview</a>
           <a href="#mm-priority">Next actions</a>
+          <a href="#mm-battle-history">Daily WTF Signals</a>
           <a href="#mm-progression">Balances</a>
           <a href="#mm-pet-status">MoonPets</a>
           <a href="#mm-ledger">Ledger</a>
@@ -92,6 +93,21 @@
           </div>
           <p class="mm-muted" id="mm-next-note">Checking for verified actions…</p>
           <div id="mm-next" class="mm-task-grid"></div>
+        </section>
+
+        <section class="mm-section" id="mm-battle-history" aria-labelledby="mm-battle-title" tabindex="-1">
+          <div class="mm-section-heading">
+            <h2 id="mm-battle-title">Daily WTF Signals</h2>
+            <a class="mm-button" href="/community.html#battle-wtf-signal">Open Battle Chamber</a>
+          </div>
+          <p class="mm-muted">Check the group announcements, see which signals you completed, and review the rewards you missed.</p>
+          <label class="mm-battle-date">History date (UTC) <input type="date" id="mm-battle-day" disabled></label>
+          <p class="mm-muted" id="mm-battle-status" role="status">Sign in to view your Battle Chamber checklist.</p>
+          <ul class="mm-battle-list" id="mm-battle-signals"></ul>
+          <h3>Recorded missed opportunities</h3>
+          <p class="mm-muted">These are potential rewards you missed. Your earned balances keep their full value.</p>
+          <ul class="mm-battle-list" id="mm-battle-missed"></ul>
+          <p><a href="/games/leaderboard.html">View Grinder Point rankings</a> · <a href="/community.html#clan-season-campaign">View the seasonal campaign</a> · <a href="/games/block-topia/waterfront/">Explore Lumina’s Waterfront</a></p>
         </section>
 
         <section class="mm-section" id="mm-progression" aria-labelledby="mm-units-title" tabindex="-1">
@@ -224,8 +240,8 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
-<script data-cfasync="false" src="/js/my-moonboy-mission-guide.js"></script>
-<script data-cfasync="false" src="/js/my-moonboy.js?v=mission-control-v3"></script>
+<script data-cfasync="false" src="/js/my-moonboy-mission-guide.js?v=battle-history-v1"></script>
+<script data-cfasync="false" src="/js/my-moonboy.js?v=battle-history-v1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-period-display.js"></script>
 </body>
 </html>

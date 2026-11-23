@@ -142,11 +142,11 @@
       "source_marker": "daily_wtf_status",
       "owner_scope": "account",
       "period": "event_window",
-      "evidence_class": "schedule_preview",
+      "evidence_class": "server_projection",
       "adapter_gate": "readiness_adapter",
       "example_task": "Join confirmed time-limited WTF window",
-      "known_gap": "Preview schedule is not persisted player attendance",
-      "route_hint": "/community.html#tasks-quests-and-xp",
+      "known_gap": "Completion requires a saved owner record. Telegram group posts do not prove individual delivery.",
+      "route_hint": "/community.html#battle-wtf-signal",
       "requires_verified_identity": true
     },
     {
@@ -161,6 +161,34 @@
       "example_task": "Review missed event history",
       "known_gap": "Do not treat never-eligible opportunities as missed",
       "route_hint": "/community.html#tasks-quests-and-xp",
+      "requires_verified_identity": true
+    },
+    {
+      "key": "battle.clan-operations",
+      "group": "battle",
+      "source_file": "workers/moonboys-api/migrations/116_clan_operations.sql",
+      "source_marker": "CREATE TABLE clan_operation_awards",
+      "owner_scope": "faction_member",
+      "period": "utc_day",
+      "evidence_class": "server_receipt",
+      "adapter_gate": "readiness_adapter",
+      "example_task": "Bank the next available tier",
+      "known_gap": "Requires enabled operations and a verified faction.",
+      "route_hint": "/community.html#clan-operation",
+      "requires_verified_identity": true
+    },
+    {
+      "key": "battle.pfp-roll",
+      "group": "battle",
+      "source_file": "workers/moonboys-api/migrations/128_clan_pfp_roll.sql",
+      "source_marker": "CREATE TABLE clan_pfp_rolls",
+      "owner_scope": "faction_member",
+      "period": "utc_day",
+      "evidence_class": "server_receipt",
+      "adapter_gate": "readiness_adapter",
+      "example_task": "Play an available Daily PFP Roll",
+      "known_gap": "Requires an active faction and enabled rolls. Rewards are Community XP.",
+      "route_hint": "/community.html#clan-pfp-roll",
       "requires_verified_identity": true
     },
     {
@@ -469,6 +497,20 @@
       "example_task": "Track verified personal Championship Clout only from admitted adapters",
       "known_gap": "Do not collapse Battle Chamber faction clout or count unverified browser scores",
       "route_hint": "/community.html",
+      "requires_verified_identity": true
+    },
+    {
+      "key": "games.block-topia-rpg",
+      "group": "external_game",
+      "source_file": "workers/moonboys-api/schema.sql",
+      "source_marker": "CREATE TABLE IF NOT EXISTS blocktopia_progression_events",
+      "owner_scope": "account",
+      "period": "utc_day",
+      "evidence_class": "server_receipt",
+      "adapter_gate": "readiness_adapter",
+      "example_task": "Review accepted Block Topia RPG wins",
+      "known_gap": "Only rewarded mini-game wins count. Access is checked in the game.",
+      "route_hint": "/games/block-topia/",
       "requires_verified_identity": true
     },
     {

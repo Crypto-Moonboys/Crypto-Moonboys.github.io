@@ -224,6 +224,15 @@ if (panel) {
     for (const control of switcher.querySelectorAll('button')) control.setAttribute('aria-pressed', String(control === button));
     if (active) play();
   });
+  function openLinkedRoll() {
+    if (location.hash !== '#clan-pfp-roll' || !panel.hidden || switcher.hidden) return;
+    const rollButton = switcher.querySelector('[data-pfp-mode="pfp"]');
+    if (!rollButton.hidden && !rollButton.disabled) {
+      rollButton.click();
+      panel.scrollIntoView();
+    }
+  }
+  window.addEventListener('hashchange', openLinkedRoll);
   randomize.addEventListener('click', () => play(true));
   download.addEventListener('click', async () => {
     if (!state?.winner || busy) return;
@@ -278,6 +287,7 @@ if (panel) {
     new MutationObserver(nameOperation).observe(root, { attributes: true, attributeFilter: ['data-active-operation'] });
     nameOperation();
     switcher.hidden = false;
+    openLinkedRoll();
     document.addEventListener('visibilitychange', checkDay);
     window.setInterval(checkDay, 30_000);
   }).catch(() => {});

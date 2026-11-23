@@ -41,7 +41,7 @@
   const state = {
     epoch: 0, plan: null, tasks: [], nextCursor: null, ownerKey: null,
     requestKey: null, pending: null, paging: null, pagingController: null, controllers: new Set(),
-    lastSuccess: 0, lastFailure: null, stale: false, missedXpGeneration: 0,
+    lastSuccess: 0, lastFailure: null, stale: false, missedXpGeneration: 0, battleController: null,
     serverTime: NaN, clockStart: 0, tab: 'now', status: 'all', search: '',
     refreshTimer: 0, petFilterRef: null, lastUtcDay: new Date().toISOString().slice(0, 10),
     offline: typeof navigator !== 'undefined' && navigator.onLine === false,
@@ -430,6 +430,8 @@
     byId('mm-pet-xp').textContent = 'Not confirmed';
     byId('mm-clout').textContent = 'Not confirmed';
     byId('mm-missed-xp').textContent = 'Not confirmed';
+    byId('mm-battle-day').value = '';
+    clearBattleHistory('Sign in to view your Battle Chamber checklist.');
     byId('mm-faction').textContent = 'Faction: sign in to view';
     byId('mm-sync').textContent = 'No verified plan loaded.';
     byId('mm-page-count').textContent = '0 tasks loaded';
@@ -451,10 +453,11 @@
     return identity.getFreshTelegramAuth();
   }
 
-  async function postPlan(auth, cursor, controller, snapshot) {
+  async function postPlan(auth, cursor, controller, snapshot, historyDay) {
     const base = getApiBase();
     if (!base) throw new Error('Action-plan API not configured for this website');
-    const body = { telegram_auth: auth, view: 'tasks', limit: PAGE_SIZE };
+    const body = historyDay ? { telegram_auth: auth, view: 'battle-history', day: historyDay }
+      : { telegram_auth: auth, view: 'tasks', limit: PAGE_SIZE };
     if (cursor) {
       if (!/^pap2_[a-f0-9]{32}$/u.test(String(snapshot || '')))
         throw new Error('Missing verified pagination snapshot — refresh first page');
@@ -480,6 +483,13 @@
         failure.status = response.status;
         failure.code = changed ? 'action_plan_snapshot_changed' : null;
         throw failure;
+      }
+      if (historyDay) {
+        const history = data?.battle_history;
+        if (data?.ok !== true || history?.utc_day !== historyDay ||
+          !Array.isArray(history.signals) || !Array.isArray(history.missed) || !history.available)
+          throw new Error('Battle Chamber history is unavailable.');
+        return history;
       }
       if (!data || data.ok !== true || data.schema_version !== 1 ||
         !/^pap2_[a-f0-9]{32}$/u.test(String(data.snapshot || '')) ||
@@ -591,6 +601,7 @@
         applyPlan(payload, ownerId, false);
         if (isRequestCurrent(epoch, ownerId, day) && !state.stale && !state.offline) {
           refreshMissedXp(missedGeneration);
+          refreshBattleHistory(auth);
         }
       } catch (error) {
         if (!isRequestCurrent(epoch, ownerId, day)) return;
@@ -803,6 +814,110 @@
   // Only a successful signed plan reconciliation schedules this secondary
   // Worker read. Search, status filtering, tab switches and pagination render
   // from state without generating extra requests.
+  function clearBattleHistory(message) {
+    state.battleController?.abort();
+    state.battleController = null;
+    byId('mm-battle-day').disabled = true;
+    byId('mm-battle-status').textContent = message;
+    byId('mm-battle-signals').replaceChildren();
+    byId('mm-battle-missed').replaceChildren();
+  }
+
+  function battleHistoryItem(title, details) {
+    const row = document.createElement('li');
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const notes = document.createElement('span');
+    notes.textContent = details.filter(Boolean).join(' · ');
+    row.append(heading, notes);
+    return row;
+  }
+
+  function renderBattleHistory(history) {
+    const labels = {
+      scheduled: 'Scheduled', open: 'Open now', checked_in: 'Checked in · finish the action',
+      completed: '✓ Completed', missed: 'Missed', closed: 'Closed · no completion saved',
+      unconfirmed: 'Completion unconfirmed',
+    };
+    const actions = {
+      play_any_accepted_arcade_run: 'Submit an accepted Arcade run',
+      complete_faction_or_battle_action: 'Complete the qualifying faction or Battle Chamber action',
+      score_target_any_game: 'Reach the signal’s score target in an accepted Arcade run',
+      choose_and_complete_chaos_path: 'Complete the qualifying Chaos Path or Arcade run',
+    };
+    const utcTime = value => {
+      if (!value) return '';
+      const date = value.slice(0, 10);
+      return (date === history.utc_day ? '' : date + ' ') + value.slice(11, 16) + ' UTC';
+    };
+    byId('mm-battle-signals').replaceChildren(...history.signals.map(signal =>
+      battleHistoryItem(signal.title || 'Daily WTF Signal', [
+        labels[signal.status] || labels.unconfirmed,
+        signal.starts_at && signal.ends_at ? utcTime(signal.starts_at) + ' to ' + utcTime(signal.ends_at) : '',
+        ['scheduled', 'open', 'checked_in'].includes(signal.status) ? actions[signal.required_action] : '',
+        signal.sent_at ? 'Posted to the Telegram group at ' + utcTime(signal.sent_at) : '',
+        signal.status === 'completed' ? '5 Grinder Points (30 daily cap)' : '',
+        signal.bank_community_xp > 0 ? niceCount(signal.bank_community_xp) + ' Community XP from a signal bank' : '',
+        ['missed', 'closed'].includes(signal.status) ? 'Up to 5 missed Grinder Points if eligible' : '',
+      ])));
+    byId('mm-battle-missed').replaceChildren(...history.missed.map(item =>
+      battleHistoryItem(item.title || 'Missed opportunity', [
+        item.xp == null ? 'XP value unavailable' : niceCount(item.xp) + ' potential XP',
+        item.missed_at ? 'Recorded at ' + utcTime(item.missed_at) : '',
+      ])));
+    const coverage = [
+      !history.available.signals ? 'Saved signal status unavailable.' : '',
+      !history.available.delivery ? 'Telegram posting history unavailable.' : '',
+      !history.available.bank_rewards ? 'Signal bank XP history unavailable.' : '',
+      !history.available.missed ? 'Missed rewards unavailable.'
+        : !history.missed.length ? 'No missed rewards recorded for this date.' : '',
+    ].filter(Boolean);
+    const summary = history.signals.length
+      ? history.signals.filter(signal => signal.status === 'completed').length + ' completed · ' +
+        history.signals.filter(signal => signal.sent_at).length + ' posted to Telegram'
+      : history.available.signals && history.available.delivery ? 'No signal records for this date.' : '';
+    byId('mm-battle-status').textContent = [summary, ...coverage].filter(Boolean).join(' ');
+  }
+
+  async function refreshBattleHistory(auth) {
+    if (!state.plan || state.stale || state.offline) return;
+    const ownerId = state.ownerKey;
+    const epoch = state.epoch;
+    const today = state.plan.period.utc_day;
+    const picker = byId('mm-battle-day');
+    const wasToday = picker.value === picker.max;
+    picker.max = today;
+    if (!picker.value || wasToday) picker.value = today;
+    const day = picker.value;
+    clearBattleHistory('Reading verified signal and reward history…');
+    picker.disabled = false;
+    const controller = new AbortController();
+    state.battleController = controller;
+    state.controllers.add(controller);
+    const current = () => state.battleController === controller && picker.value === day &&
+      isRequestCurrent(epoch, ownerId, today) && !state.stale && !state.offline;
+    try {
+      const credential = auth || await getFreshAuth();
+      if (!current()) return;
+      if (!credential || String(credential.id || '') !== ownerId) {
+        clearPrivate('Fresh Telegram login required', 'Log in again to view private history.');
+        return;
+      }
+      const result = await postPlan(credential, null, controller, null, day);
+      if (current()) renderBattleHistory(result);
+    } catch (error) {
+      if (!current()) return;
+      if (error.status === 401 || error.status === 403) {
+        clearPrivate('Telegram login expired', 'Log in again to view private history.');
+      } else {
+        byId('mm-battle-status').textContent = 'Battle Chamber history is unavailable. Refresh verified tasks to retry.';
+      }
+    } finally {
+      state.controllers.delete(controller);
+      if (state.battleController === controller) state.battleController = null;
+    }
+  }
+
   function refreshMissedXp(generation) {
     const target = byId('mm-missed-xp');
     if (!target || !state.plan || !identityKey() || state.stale || state.offline) return;
@@ -932,6 +1047,7 @@
     renderSummary();
     if (state.stale || state.offline) {
       byId('mm-missed-xp').textContent = 'Previous snapshot only — refresh';
+      clearBattleHistory('Refresh verified tasks to see current signal history.');
     }
     const plan = state.plan;
     const directory = petDirectory();
@@ -1084,6 +1200,7 @@
       } finally { button.disabled = false; }
     });
     byId('mm-load-more').addEventListener('click', loadMore);
+    byId('mm-battle-day').addEventListener('change', () => refreshBattleHistory());
     const hintedTab = new URLSearchParams(window.location.search).get('tab');
     if (TABS.has(hintedTab)) selectTab(hintedTab, false);
     window.addEventListener('moonboys:identity-change', onIdentityChanged);

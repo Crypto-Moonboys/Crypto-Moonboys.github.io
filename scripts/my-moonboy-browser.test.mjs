@@ -127,6 +127,16 @@ async function setup(viewport, initiallyLinked, apiPrefix = '', identityOptions 
       }
       if (url.pathname === apiPrefix + '/player/action-plan') {
         const body = request.postDataJSON();
+        if (body.view === 'battle-history') {
+          const prefix = body.telegram_auth.id === '111' ? 'Alpha' : 'Beta';
+          return route.fulfill({status:200,headers:{'access-control-allow-origin':SITE,'content-type':'application/json'},
+            body:JSON.stringify({ok:true,battle_history:{
+              utc_day:body.day,
+              signals:[{title:prefix + ' signal on ' + body.day,status:'completed',sent_at:body.day + 'T10:50:00Z'}],
+              missed:[{title:prefix + ' missed reward',xp:25}],
+              available:{signals:true,delivery:true,missed:true,bank_rewards:true},
+            }})});
+        }
         requests.push({url:request.url(),method:request.method(),body});
         if (delayOwner === body.telegram_auth.id) await new Promise(resolve => setTimeout(resolve, 250));
         const current = currentPlan(body.telegram_auth.id, body.cursor);
@@ -1490,5 +1500,25 @@ test('missed XP refresh is owner scoped, recomputed per signed reconciliation an
     assert.doesNotMatch(await f.page.locator('#my-moonboy').textContent(),
       /57 potential XP missed/u,'private XP must purge on identity switch');
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('My Moonboy shows dated signal evidence and clears history synchronously when the owner changes', async () => {
+  const f = await setup({width:390,height:850}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.getByText(/Alpha signal on/u).waitFor();
+    assert.match(await f.page.locator('#mm-battle-signals').innerText(), /✓ Completed.*Posted to the Telegram group/su);
+    assert.match(await f.page.locator('#mm-battle-missed').innerText(), /25 potential XP/u);
+    await f.page.locator('#mm-battle-day').fill('2026-10-16');
+    await f.page.getByText('Alpha signal on 2026-10-16').waitFor();
+    const cleared = await f.page.evaluate(() => {
+      window.__mmTest.id = '222';
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      return document.getElementById('mm-battle-signals').childElementCount === 0;
+    });
+    assert.equal(cleared, true);
+    await f.page.getByText(/Beta signal on/u).waitFor();
+    assert.doesNotMatch(await f.page.locator('#mm-battle-missed').innerText(), /Alpha/u);
   } finally { await f.browser.close(); }
 });
