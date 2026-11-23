@@ -135,3 +135,58 @@ setting. The per-account request ID keys both the roll and its Community XP
 receipt. Roll persistence and XP settlement share one D1 batch. PFP rolls
 write to their own tables and Community XP, leaving Paint Wall banks on the
 existing operations ledger.
+
+### Faction leader rounds and rival slowdowns
+
+Apply `129_clan_leader_presence.sql` before setting `CLAN_LEADER_PLAY_FROM`
+to the agreed UTC start date (`YYYY-MM-DD`). Leave the variable unset while
+the feature is closed. Each hour the Worker assigns every faction one
+five-minute game window. Start times and groups vary while each window allows
+at most three leaders off the map. The Worker uses public arcade routes from
+the sitemap and the shared mining rules for unranked training. An uninterrupted
+round adds 12 Leader Power when its window closes, for the same daily ceiling
+of 288 per leader. Missed ticks are skipped. Training never writes player
+ledgers or arcade leaderboards.
+
+Signed members may interrupt a rival with one free preset question per UTC
+day (5, 10 or 20 minutes). A paid pause costs 100 Block Topia XP or 5 Block
+Topia gems for 1 hour, or 1,200 XP or 50 gems for 24 hours. There is a one-hour
+recovery interval after brief or hourly pauses, and six hours after a 24-hour
+pause. Slowdowns cannot overlap or accumulate during recovery. Paid actions
+atomically write a pause and a progression cost receipt. The feature only
+affects independent leader rounds, while members' banks and signals continue
+during the pause.
+
+### Faction leader lore chat
+
+Apply `130_clan_leader_lore.sql` and deploy the `CLAN_LEADER_AI` Workers AI
+binding. Set `CLAN_LEADER_LORE_ENABLED=true` when ready to open chat. These
+controls can run independently of the paid pause and training-round cutover.
+Players sign in with Telegram and can ask any of the nine faction leaders.
+The Worker sends the question, up to two earlier questions, and public source
+excerpts to the model. Telegram auth and account IDs stay within the Worker.
+Only daily usage counts are saved to D1.
+
+Retrieval uses the current public Wiki index and sitemap plus the published
+canon Markdown references listed in `shared/clan-leader-lore.js`. Open questions
+can fetch pages across the site. Editorial records, drafts and unlisted paths
+stay outside the chat corpus. The Worker links only to references used in the
+request. Each signed player gets 10 questions per UTC day plus one question
+for each verified Clan Operation tier banked that day, up to three extras.
+Set `CLAN_LEADER_LORE_SITE_LIMIT` only if needed to cap total model traffic by
+UTC day. It is unset by default. In Waterfront,
+select a leader for details and double-click or double-tap to ask. Send closes
+the composer and the reply appears above the leader. The info button opens
+the full reply and sources. Lore questions do not affect rounds, scores or
+player balances.
+
+### Waterfront faction seats
+
+Apply `131_waterfront_seats.sql` and deploy the Worker before publishing the
+Waterfront entry page. The entry endpoint verifies the same Telegram proof
+and canonical faction membership used by Block Topia. Entry depends on a
+free faction seat, with no XP threshold. Only a successful claim receives
+the live district layout. Each browser document renews its 75-second seat
+every 20 seconds, releases it when leaving where possible, and locks the
+map when it loses the seat. The database allows one seat per faction and
+one per account. Unrenewed seats expire on their own.

@@ -15,7 +15,8 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/faction-operations.css">
-  <link rel="stylesheet" href="/css/clan-operation.css?crew-card=1">
+  <link rel="stylesheet" href="/css/clan-operation.css?crew-card=1&leaders=1">
+  <link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=2">
   <link rel="stylesheet" href="/css/action-page-cards.css?battle-copy=1">
 
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -178,9 +179,18 @@
         <button type="button" data-clan-crew-join hidden></button>
         <p data-clan-crew-entry role="status"></p>
       </div>
+      <div data-clan-leader-rules hidden>
+        <details class="bc-more-info">
+          <summary><span aria-hidden="true">i</span><span class="bc-info-label">How faction leaders earn power</span></summary>
+          <p>Bank a Clan Operation tier for 1 Leader Power. Each verified Daily WTF completion earns 2 Leader Power for the faction on your locked weekly roster.</p>
+          <p>After the final weekly standings are published, first place unlocks level 9 and ninth unlocks level 1. Each ranked faction leader automatically selects one of three perks for the new week. Tied factions earn the same level.</p>
+          <p>Leader Power is shown alongside the official weekly score. Official ranks and prizes use existing crew scoring.</p>
+          <p data-clan-leader-presence-rules hidden>Leaders can earn 12 power in one randomly scheduled five-minute game each hour. A weighted slowdown question or paid pause interrupts their games. Each account gets one free slowdown question per UTC day. Leaders recover before they can be paused again.</p>
+        </details>
+      </div>
       <div class="clan-crew-table-scroll" role="region" aria-label="Crew standings" tabindex="0">
         <table data-clan-crew-table aria-labelledby="clan-crew-progress-title">
-          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th><th scope="col" data-clan-city hidden>City project</th><th scope="col" data-clan-crew-score hidden>Weekly score</th></tr></thead>
+          <thead><tr><th scope="col">Crew</th><th scope="col">Today</th><th scope="col">This week</th><th scope="col" data-clan-city hidden>City project</th><th scope="col" data-clan-crew-score hidden>Weekly score</th><th scope="col" data-clan-leader-header hidden>Faction leader this week</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -363,7 +373,7 @@
 <script data-cfasync="false" src="/js/battle-chamber-factions.js?battle-copy=1"></script>
 <script data-cfasync="false" src="/js/faction-profile-data.js"></script>
 <script data-cfasync="false" src="/js/faction-operations.js?one-clan-section=1"></script>
-<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=3"></script>
+<script data-cfasync="false" type="module" src="/js/clan-crew-board.js?standings=7"></script>
 <script data-cfasync="false" type="module" src="/js/clan-operation-v9.js?wall-studio=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-campaign.js?opening-week=1"></script>
 <script data-cfasync="false" type="module" src="/js/clan-pfp-roll.js"></script>

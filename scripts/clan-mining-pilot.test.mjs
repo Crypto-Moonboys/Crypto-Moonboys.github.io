@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { handleClanOperations } from '../workers/moonboys-api/routes/clan-operations.js';
+import { handleWaterfrontSeat } from '../workers/moonboys-api/routes/waterfront-seat.js';
 import worker from '../workers/moonboys-api/worker.js';
 import { CANONICAL_FACTION_KEYS } from '../workers/moonboys-api/shared/faction-canon.js';
 import { RENOWN_PER_TIER, advanceMine, dailyRouteIndex, describeMine } from '../workers/moonboys-api/shared/clan-mining.js';
@@ -29,6 +30,8 @@ import { buildClanCampaign } from '../workers/moonboys-api/shared/clan-campaign-
 import { evaluateCampaignWindow } from '../workers/moonboys-api/shared/clan-campaign-scoring.js';
 import { maintainClanCampaigns } from '../workers/moonboys-api/shared/clan-campaigns.js';
 import { crewWeek } from '../workers/moonboys-api/shared/clan-crew-standings.js';
+import { clanLeaderStart, clanLeadersForSlot, LEADER_POINTS_PER_ROUND, publicLeaderRoutes, runClanLeaderRounds } from '../workers/moonboys-api/shared/clan-leader-presence.js';
+import { makeLoreCatalog, publishedLoreText } from '../workers/moonboys-api/shared/clan-leader-lore.js';
 
 const newerMigration = number => readFileSync(new URL(`../workers/moonboys-api/migrations/${number}.sql`, import.meta.url), 'utf8');
 const rosterMigration = readFileSync(new URL('../workers/moonboys-api/migrations/125_clan_crew_rosters.sql', import.meta.url), 'utf8');
@@ -90,18 +93,20 @@ function fixture(t) {
 function requestFixture(db) {
   const settings = { time: new Date('2026-11-20T12:00:00Z'), chance: 0, enabled: 'true' };
   async function request({
-    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, crewEntry, weekStart, campaignRewards, campaignEligibility,
-    wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
+    action, revision, day = '2026-11-20', id = '101', signed = true, method = 'POST', faction, view, rateLimit, standings, leaders, crewEntry, weekStart, campaignRewards, campaignEligibility,
+    leaderAction, loreAction, wallStudio, wallRecipe, operation_ui = 'wall-v1', expedition_ui = 'trail-v1', district_ui = 'district-v1', signal_ui = 'signal-v1', fork_ui = 'fork-v1', burst_ui = 'burst-v1', spotlight_ui = 'spotlight-v1', chaos_ui = 'chaos-v1',
   } = {}) {
-    const path = `/clan-operations/${action ? 'move' : 'state'}`;
+    const path = `/clan-operations/${loreAction ? 'leader-lore' : leaderAction ? 'leader-slowdown' : action ? 'move' : 'state'}`;
     const body = method === 'POST' ? JSON.stringify({
       telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
       action, revision, operation_ui, wall_studio_ui: wallStudio, wall_recipe: wallRecipe, expedition_ui, district_ui, signal_ui, fork_ui, burst_ui, spotlight_ui, chaos_ui, operation_faction: faction,
       utc_day: day, crew_entry: crewEntry, week_start: weekStart, campaign_rewards_ui: campaignRewards, campaign_eligibility: campaignEligibility,
-      renown: 99_999_999, telegram_id: '102', ore: 99,
+      renown: 99_999_999, telegram_id: '102', ore: 99, ...leaderAction, ...loreAction,
     }) : undefined;
-    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') : ''}`, { method, body }),
-      { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart }, {
+    const response = await handleClanOperations(new Request(`https://local.test${path}${view ? '?view=' + view + (standings ? '&standings=1' : '') + (leaders ? '&leaders=1' : '') : ''}`, { method, body }),
+      { DB: db, CLAN_OPERATIONS_ENABLED: settings.enabled, CLAN_PERIOD_REWARDS_FROM: settings.periodStart, CLAN_LEADER_PLAY_FROM: settings.leaderStart,
+        CLAN_LEADER_LORE_ENABLED: settings.loreEnabled, CLAN_LEADER_AI: settings.loreAi,
+        CLAN_LEADER_LORE_SITE_LIMIT: settings.loreSiteLimit }, {
         path,
         respond: (data, status = 200) => Response.json(data, { status }),
         verifyTelegramAuth: async () => signed,
@@ -1810,4 +1815,350 @@ test('a signed returning player gets one new faction choice at the UTC season bo
   assert.equal(status.faction, 'all-city-bulls');
   assert.equal(status.can_choose_faction, false);
   assert.equal((await send('join', 'all-city-bulls', '1802')).status, 409, 'legacy faction remains locked');
+});
+
+test('faction leaders use verified activity and one perk from each finalized weekly tier', async t => {
+  const { sql, settings, request } = fixture(t);
+  sql.exec("CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY); INSERT INTO telegram_users VALUES ('1'), ('2'), ('3'), ('99');");
+  sql.exec(`${newerMigration('019_daily_wtf_timed_events')}
+    ${newerMigration('126_clan_period_rewards')}`);
+  settings.periodStart = '2026-11-16';
+  settings.time = new Date('2026-11-24T16:30Z');
+  const at = '2026-11-24T16:15:00.000Z';
+  const first = CANONICAL_FACTION_KEYS[0];
+  const second = CANONICAL_FACTION_KEYS[1];
+  const third = CANONICAL_FACTION_KEYS[2];
+  const standings = CANONICAL_FACTION_KEYS.map((faction_id, index) => ({
+    faction_id, rank: index + 1, roster_size: 4, possible_banks: 60,
+    active_members: index === 0 ? 2 : 3,
+    scored_banks: index === 1 ? 24 : 9,
+  }));
+  const saveResult = sql.prepare(`INSERT INTO clan_period_results
+    VALUES ('weekly', '2026-11-16', '2026-11-16', '2026-11-23', '2026-11-23T00:05:00Z', ?)`);
+  const enter = sql.prepare('INSERT INTO clan_crew_roster_entries VALUES (?, ?, ?)');
+  const signal = sql.prepare(`INSERT INTO daily_wtf_player_events
+    (telegram_id, event_id, utc_day, status, completed_at) VALUES (?, ?, ?, ?, ?)`);
+  for (const [index, faction] of [first, second, third].entries()) {
+    const owner = String(index + 1);
+    enter.run('2026-11-23', owner, faction);
+    bankReceipt(sql, owner, faction, at);
+    bankReceipt(sql, owner, faction, at, 2);
+    signal.run(owner, 'accepted', '2026-11-24', 'completed', at);
+    signal.run(owner, 'check-in-only', '2026-11-24', 'checked_in', null);
+    signal.run(owner, 'old-signal', '2026-11-22', 'completed', '2026-11-22T16:15:00Z');
+  }
+  signal.run('99', 'not-on-roster', '2026-11-24', 'completed', at);
+
+  const get = () => request({ method: 'GET', view: 'crew-progress', standings: true, leaders: true });
+  const prior = (await get()).data;
+  assert.equal(prior.leaders.prior_week_final, false);
+  assert.equal(prior.leaders.crews[0].power, 4);
+  saveResult.run(JSON.stringify(standings));
+  const result = (await get()).data;
+  assert.equal(result.leaders.week_start, '2026-11-23');
+  assert.equal(result.leaders.prior_week_final, true);
+  assert.deepEqual(result.leaders.crews.map(crew => crew.perk?.level), [9, 8, 7, 6, 5, 4, 3, 2, 1]);
+  for (const crew of result.leaders.crews) {
+    assert.equal(new Set(crew.perk.options.map(option => option.metric)).size, 3);
+  }
+  assert.deepEqual(result.leaders.crews.slice(0, 3).map(({ perk, base, boost, power, member_days }) =>
+    [perk.selected, base, boost, power, member_days]), [
+    ['rally', 4, 18, 22, 1], ['relay', 4, 24, 28, 1], ['supply', 4, 14, 18, 1],
+  ]);
+  assert.deepEqual(result.competition, prior.competition);
+
+  bankReceipt(sql, '1', first, '2026-11-25T16:15:00.000Z');
+  settings.time = new Date('2026-11-25T17:00Z');
+  const nextDay = (await get()).data.leaders.crews[0];
+  assert.deepEqual(nextDay.perk, result.leaders.crews[0].perk);
+  assert.equal(nextDay.power, 41);
+
+  settings.time = new Date('2026-11-30T00:00Z');
+  const nextWeek = (await get()).data.leaders;
+  assert.equal(nextWeek.prior_week_final, false);
+  assert.ok(nextWeek.crews.every(({ power, perk }) => !power && perk === null));
+});
+
+test('rival leader pauses debit once, protect recovery time, and skip only bot rounds', async t => {
+  const { sql, settings, db, request } = fixture(t);
+  sql.exec(`
+    DROP TABLE blocktopia_progression;
+    ${newerMigration('010_blocktopia_progression_repair')}
+    ${newerMigration('129_clan_leader_presence')}
+    CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);
+    ${newerMigration('019_daily_wtf_timed_events')}
+    INSERT INTO blocktopia_progression (telegram_id, faction, xp, gems)
+    VALUES ('101', 'graff-punks', 2000, 100), ('102', 'all-city-bulls', 0, 0), ('103', 'graffpunks', 0, 0);
+  `);
+  settings.leaderStart = '2026-11-23';
+
+  const start = clanLeaderStart({ CLAN_LEADER_PLAY_FROM: settings.leaderStart });
+  assert.equal(clanLeaderStart({ CLAN_LEADER_PLAY_FROM: '2026-02-31' }), null);
+  const rival = 'nomad-bears';
+  const slotFloor = Array.from({ length: 288 }, (_, index) => start + index * 300);
+  const draws = slotFloor.map(clanLeadersForSlot);
+  assert.ok(draws.every(group => group.length <= 3), 'at least six walkers remain in Waterfront');
+  assert.equal(draws.at(-1).length, 0, 'all scheduled points can settle before midnight');
+  for (const faction of CANONICAL_FACTION_KEYS) {
+    assert.equal(draws.filter(group => group.includes(faction)).length, 24);
+  }
+  assert.notDeepEqual(draws, slotFloor.map(slot => clanLeadersForSlot(slot + 86400)));
+  const rivalSlot = slotFloor.find(slot => clanLeadersForSlot(slot).includes(rival));
+  const other = clanLeadersForSlot(rivalSlot).find(faction => faction !== rival);
+  const at = seconds => { settings.time = new Date(seconds * 1000); };
+  at(rivalSlot);
+
+  const publicPage = '/wiki/crypto-moonboys.html';
+  const game = '/games/chain-maze/';
+  const sitemap = `<urlset>
+    <loc>https://cryptomoonboys.com${game}</loc><loc>https://cryptomoonboys.com${publicPage}</loc>
+    <loc>https://elsewhere.invalid/page</loc><loc>https://cryptomoonboys.com/admin/balances</loc>
+    <loc>https://cryptomoonboys.com/%2f%2felsewhere.invalid</loc></urlset>`;
+  assert.ok(publicLeaderRoutes(sitemap).includes(publicPage));
+  assert.ok(publicLeaderRoutes(sitemap).includes(game));
+  assert.ok(!publicLeaderRoutes(sitemap).some(path => /admin|elsewhere/.test(path)));
+  const visited = [];
+  const fetchPage = async (url, options) => {
+    if (url.endsWith('/sitemap.xml')) return new Response(sitemap);
+    assert.equal(options.method, 'HEAD');
+    assert.equal(options.redirect, 'manual');
+    visited.push(url);
+    return new Response(null);
+  };
+  const tick = () => runClanLeaderRounds(db, start, settings.time, fetchPage);
+  await tick();
+  await tick();
+  assert.equal(visited.length, 3, 'a repeated tick does not open duplicate game sessions');
+  assert.ok(visited.some(url => url.endsWith('/games/chain-maze/')));
+  const get = async target => (await request({ method: 'GET', view: 'crew-progress', leaders: true }))
+    .data.leaders.crews.find(crew => crew.faction_id === target);
+  const initial = await get(rival);
+  assert.equal(initial.presence.rounds, 0);
+  assert.equal(initial.presence.playing_until, rivalSlot + 300);
+  assert.equal(initial.power, 0);
+  const interact = (target, option, currency, sequence, id = '101', signed = true) => request({
+    id, signed, leaderAction: {
+      target, option, currency, request_id: '00000000-0000-4000-8000-' + String(sequence).padStart(12, '0'),
+      minutes: 9999, cost: 0,
+    },
+  });
+  assert.equal((await interact(rival, 'territory', null, 1, '101', false)).status, 401);
+  assert.equal((await interact('graffpunks', 'hour', 'xp', 2)).status, 403);
+  assert.equal((await interact(rival, 'hour', 'xp', 3, '102')).status, 402);
+
+  at(rivalSlot + 60);
+  const ask = await interact(rival, 'alliance', null, 4);
+  assert.equal(ask.status, 200);
+  assert.equal(ask.data.paused_until, rivalSlot + 1260);
+  assert.match(ask.data.reply, /verify/);
+  assert.equal((await interact('blockstars', 'territory', null, 5)).data.error, 'daily_question_used');
+  assert.equal((await interact(rival, 'hour', 'xp', 6)).data.error, 'leader_unavailable');
+  at(rivalSlot + 300);
+  bankReceipt(sql, '103', rival, settings.time.toISOString());
+  await tick();
+  const paused = await get(rival);
+  assert.equal(paused.presence.talking, true);
+  assert.equal(paused.presence.playing_until, null);
+  assert.equal(paused.presence.rounds, 0);
+  assert.equal(paused.power, 1, 'a bank still counts during the pause');
+  assert.equal((await get(other)).presence.rounds, 1, 'other leaders still play');
+
+  at(rivalSlot + 1260);
+  assert.equal((await interact(rival, 'hour', 'xp', 7)).status, 409);
+  const nextSlot = slotFloor.find(slot => slot >= rivalSlot + 1260 && clanLeadersForSlot(slot).includes(rival));
+  at(nextSlot);
+  await tick();
+  assert.equal((await get(rival)).presence.playing_until, nextSlot + 300, 'training resumes during recovery');
+  at(nextSlot + 300);
+  assert.equal((await get(rival)).power, 1 + LEADER_POINTS_PER_ROUND);
+  const boughtAt = settings.time.getTime() / 1000;
+  const purchases = await Promise.all([
+    interact('blockstars', 'day', 'gems', 8), interact('blockstars', 'day', 'gems', 8),
+  ]);
+  assert.deepEqual(purchases[0], purchases[1]);
+  assert.equal(purchases[0].status, 200);
+  assert.equal(purchases[0].data.paused_until, boughtAt + 86400);
+  assert.equal((await interact('blockstars', 'hour', 'xp', 8)).data.error, 'request_conflict');
+  assert.equal((await interact('rugpull-miners', 'hour', 'xp', 9)).status, 200);
+  const wallet = sql.prepare("SELECT xp, gems FROM blocktopia_progression WHERE telegram_id = '101'").get();
+  assert.deepEqual([wallet.xp, wallet.gems], [1900, 50]);
+  const costs = sql.prepare('SELECT xp_change, gems_change FROM blocktopia_progression_events ORDER BY action_type').all();
+  assert.deepEqual(costs.map(row => [row.xp_change, row.gems_change]), [[0, -50], [-100, 0]]);
+
+  sql.exec(`CREATE TRIGGER reject_audit BEFORE INSERT ON blocktopia_progression_events
+    BEGIN SELECT RAISE(ABORT, 'test audit outage'); END;`);
+  assert.equal((await interact('hard-fork-rockers', 'hour', 'xp', 10)).status, 503);
+  assert.equal(sql.prepare("SELECT xp FROM blocktopia_progression WHERE telegram_id = '101'").get().xp, 1900);
+  assert.equal((await get('hard-fork-rockers')).presence.paused_until, null);
+});
+
+test('leader lore uses public wiki and current canon evidence, verifies citations and budgets AI calls', async t => {
+  const { sql, settings, request } = fixture(t);
+  sql.exec(`${newerMigration('130_clan_leader_lore')}
+    CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);
+    ${newerMigration('019_daily_wtf_timed_events')}`);
+  const site = 'https://cryptomoonboys.com';
+  const canonPath = '/about/latest-canon-and-brand-vision.md';
+  const wikiPath = '/wiki/bitcoin-kid-army.html';
+  const editorial = '/brand-canon/story-bibles/gk-master-canon.md';
+  const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
+    { title: 'Editorial Only', url: editorial }, { title: 'Offsite', url: '//elsewhere.invalid/pub.html' }];
+  const sitemap = `<loc>${site}/games/chain-maze/</loc><loc>${site}${editorial}</loc>`;
+  const catalog = makeLoreCatalog(index, sitemap);
+  assert.ok(catalog.some(source => source.path === '/games/chain-maze/'));
+  assert.ok(catalog.some(source => source.path === canonPath));
+  assert.ok(!catalog.some(source => source.path === editorial || source.path.startsWith('//')));
+  assert.equal(publishedLoreText(editorial, '# Editorial master'), '');
+  assert.equal(publishedLoreText(wikiPath, '<head><meta name="robots" content="noindex"></head><main>Private listing</main>'), '');
+
+  const visits = [];
+  const prompts = [];
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    assert.equal(init.redirect, 'error');
+    assert.ok(url.startsWith(site + '/'));
+    const path = url.slice(site.length);
+    visits.push(path);
+    if (path === '/js/wiki-index.json') return Response.json(index);
+    if (path === '/sitemap.xml') return new Response(sitemap);
+    if (path === canonPath || path === wikiPath) {
+      return new Response(readFileSync(new URL('..' + path, import.meta.url), 'utf8'));
+    }
+    return new Response(null, { status: 404 });
+  });
+  let fakeResponse;
+  settings.loreEnabled = 'true';
+  settings.loreAi = { run: async (model, input) => {
+    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct');
+    assert.equal(input.response_format.json_schema.type, 'object');
+    prompts.push(input.messages);
+    const sources = JSON.parse(input.messages[1].content).publicReferences;
+    assert.ok(sources.some(source => /Alfie/i.test(source.excerpt)));
+    return { response: fakeResponse ?? {
+      reply: 'Alfie Blaze leads the Bitcoin Kid Army and takes his orders from GKniftyHEADS.',
+      sources: sources.map(source => source.id),
+    } };
+  }};
+  const question = (overrides = {}, options = {}) => request({
+    id: '999', loreAction: { npc: 'graffpunks', question: 'Who commands the Bitcoin Kid Army?', ...overrides }, ...options,
+  });
+  assert.equal((await question({}, { signed: false })).status, 401);
+  assert.equal((await question({ npc: 'not-a-faction' })).status, 400);
+  assert.equal(visits.length, 0, 'auth and valid roster required before fetching');
+  const reply = await question();
+  assert.equal(reply.status, 200);
+  assert.match(reply.data.reply, /Alfie Blaze/);
+  assert.deepEqual(new Set(reply.data.sources.map(item => item.path)), new Set([wikiPath, canonPath]));
+  assert.match(prompts[0][0].content, /graffpunks/);
+  assert.ok(!visits.includes(editorial));
+  fakeResponse = { reply: 'This links to the private material right here.', sources: [99] };
+  assert.deepEqual((await question({ npc: 'nomad-bears' })).data.sources, []);
+  assert.match(prompts[1][0].content, /nomad-bears/);
+  fakeResponse = { reply: 'Open gk-master-canon now.', sources: [1] };
+  assert.deepEqual((await question()).data.sources, []);
+  fakeResponse = undefined;
+  sql.exec("UPDATE clan_leader_lore_usage SET questions = 9 WHERE telegram_id = '999'");
+  const competing = await Promise.all([question(), question()]);
+  assert.deepEqual(competing.map(result => result.status).sort(), [200, 429]);
+  assert.equal(prompts.length, 4, 'only one call reserved the final account question');
+  assert.equal((await question()).data.error, 'lore_task_required');
+  bankReceipt(sql, '998', 'nomad-bears', '2026-11-20T10:00:00.000Z');
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-19T10:00:00.000Z');
+  assert.equal((await question()).data.error, 'lore_task_required', 'other players and past banks give no credits');
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:00:00.000Z');
+  const bonus = await Promise.all([question(), question()]);
+  assert.deepEqual(bonus.map(result => result.status).sort(), [200, 429], 'one verified bank unlocks one question');
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:01:00.000Z', 2);
+  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:02:00.000Z', 3);
+  assert.equal((await question()).status, 200);
+  assert.equal((await question()).status, 200);
+  assert.equal((await question()).data.error, 'lore_daily_limit');
+  sql.exec(`INSERT INTO clan_leader_lore_usage VALUES ('2026-11-20', '1', 187)`);
+  settings.loreSiteLimit = '200';
+  assert.equal((await question({}, { id: '998' })).data.error, 'lore_site_limit', 'the shared daily budget is also enforced');
+  settings.loreSiteLimit = undefined;
+  assert.equal((await question({}, { id: '998' })).status, 200, 'there is no default shared question pool');
+  settings.time = new Date('2026-11-21T00:00Z');
+  assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
+  settings.loreEnabled = 'false';
+  assert.equal((await question()).status, 404);
+});
+
+test('Waterfront admission admits only verified members into nine exclusive, expiring faction seats', { timeout: 30_000 }, async t => {
+  const db = await localD1(t);
+  await db.prepare(newerMigration('131_waterfront_seats')).run();
+  await db.prepare('ALTER TABLE blocktopia_progression ADD COLUMN xp INTEGER NOT NULL DEFAULT 0').run();
+  await db.prepare("INSERT INTO blocktopia_progression (telegram_id, faction) VALUES ('106', 'unaligned')").run();
+  let at = Date.parse('2026-11-23T12:00:00Z');
+  const url = 'https://local.test/blocktopia/waterfront/seat';
+  function body(id, action, doc) {
+    return {
+      action, lease_id: '00000000-0000-4000-8000-' + String(doc).padStart(12, '0'),
+      telegram_auth: { id, auth_date: Math.floor(Date.now() / 1000), hash: 'a'.repeat(64) },
+      // An untrusted caller cannot assign a faction or provide their own layout.
+      faction_id: 'blockstars', district: { rows: ['bad'] },
+    };
+  }
+  const send = async (id, action, doc, signed = true) => {
+    const response = await handleWaterfrontSeat(new Request(url, { method: 'POST', body: JSON.stringify(body(id, action, doc)) }), { DB: db }, {
+      now: () => at, verifyTelegramAuth: async () => signed,
+      respond: (data, status = 200) => Response.json(data, { status }),
+    });
+    return { status: response.status, body: await response.json() };
+  };
+  const noAuth = await send('101', 'join', 101, false);
+  const unaligned = await send('106', 'join', 106);
+  assert.equal(noAuth.status, 401);
+  assert.equal(unaligned.status, 403);
+  assert.equal(noAuth.body.district, undefined);
+  assert.equal(unaligned.body.district, undefined);
+  const pending = await send('101', 'status', 101);
+  assert.deepEqual(pending.body, { ok: true, faction_id: 'rugpull-miners', occupied: false });
+
+  const race = await Promise.all([send('101', 'join', 101), send('103', 'join', 103)]);
+  assert.deepEqual(race.map(row => row.status).sort(), [200, 409]);
+  const winner = race[0].status === 200 ? '101' : '103';
+  const rival = winner === '101' ? '103' : '101';
+  const joined = race.find(row => row.status === 200);
+  assert.equal(joined.body.faction_id, 'rugpull-miners');
+  assert.equal(joined.body.district.rows.length, 34);
+  assert.equal(joined.body.district.rows[0].length, 56);
+  assert.equal(race.find(row => row.status === 409).body.district, undefined);
+  assert.equal((await send(winner, 'join', 9701)).status, 409, 'a second tab for the same account also needs a free seat');
+  await send(rival, 'leave', winner);
+  assert.equal((await send(rival, 'status', rival)).body.occupied, true, 'only the owning account can release the seat');
+
+  at += 60_000;
+  assert.equal((await send(winner, 'renew', winner)).body.district, undefined);
+  at += 16_000;
+  assert.equal((await send(rival, 'join', rival)).status, 409, 'a renewed seat outlives its original expiry');
+  at += 60_000;
+  assert.equal((await send(winner, 'renew', winner)).status, 409);
+  assert.equal((await send(rival, 'join', rival)).status, 200, 'an abandoned seat frees after expiry');
+  await send(winner, 'leave', winner);
+  assert.equal((await send(rival, 'renew', rival)).status, 200, 'an old release cannot remove the new seat');
+  await send(rival, 'leave', rival);
+  assert.equal((await send(winner, 'join', winner)).status, 200, 'leaving frees the seat immediately');
+
+  await db.prepare("UPDATE blocktopia_progression SET faction = 'nomad-bears' WHERE telegram_id = ?").bind(winner).run();
+  assert.equal((await send(winner, 'renew', winner)).status, 409, 'membership is rechecked on renew');
+  assert.equal((await send(winner, 'join', winner)).body.faction_id, 'nomad-bears');
+  assert.equal((await send(rival, 'join', rival)).status, 200, 'a faction swap vacates the old seat atomically');
+  await db.prepare('DELETE FROM waterfront_seats').run();
+  const owners = [rival, '102', '104', '105', '107', '108', '110', '111', '113'];
+  const nine = await Promise.all(owners.map(id => send(id, 'join', id)));
+  assert.ok(nine.every(entry => entry.status === 200));
+  assert.deepEqual(nine.map(entry => entry.body.faction_id).sort(), [...CANONICAL_FACTION_KEYS].sort());
+  assert.equal((await send(winner, 'join', winner)).status, 409, 'a tenth member cannot take a seat');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS occupied FROM waterfront_seats').first()).occupied, 9);
+
+  const token = '123456:local-waterfront-test';
+  const signed = body(winner, 'status', winner);
+  signed.telegram_auth.hash = createHmac('sha256', createHash('sha256').update(token).digest())
+    .update(`auth_date=${signed.telegram_auth.auth_date}\nid=${winner}`).digest('hex');
+  const response = await worker.fetch(new Request(url, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(signed),
+  }), { DB: db, TELEGRAM_BOT_TOKEN: token });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).faction_id, 'nomad-bears');
+  assert.match(response.headers.get('Cache-Control'), /private.*no-store/);
 });

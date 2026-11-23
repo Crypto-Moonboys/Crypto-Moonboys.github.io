@@ -1,6 +1,9 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
 import { crewWeek, readCrewStandings } from '../shared/clan-crew-standings.js';
+import { readFactionLeaders } from '../shared/clan-faction-leaders.js';
+import { clanLeaderStart, LEADER_POINTS_PER_ROUND, readClanLeaderPresence, slowClanLeader } from '../shared/clan-leader-presence.js';
+import { answerClanLeaderLore, clanLeaderLoreEnabled } from '../shared/clan-leader-lore.js';
 import { clanPeriodStart, readClanPeriodResults, readClanPeriodRewards } from '../shared/clan-period-rewards.js';
 import { clanCampaignReversesRoute, readClanCampaign, readClanCampaignCollectibles, readClanCampaignEligibility } from '../shared/clan-campaigns.js';
 import { CLAN_SIGNAL_XP, clanSignalXpStart } from '../shared/clan-signal-xp.js';
@@ -244,6 +247,10 @@ export async function handleClanOperations(request, env, helpers) {
     roll = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32 * 100,
   } = helpers;
   const actionRequest = path === '/clan-operations/move';
+  const slowdownRequest = path === '/clan-operations/leader-slowdown';
+  const loreRequest = path === '/clan-operations/leader-lore';
+  if ((slowdownRequest || loreRequest) && request.method !== 'POST') return respond({ error: 'method_not_allowed' }, 405);
+  if (loreRequest && !clanLeaderLoreEnabled(env)) return respond({ error: 'leader_lore_closed' }, 404);
   if (request.method === 'GET' && !actionRequest) {
     const enabled = clanOperationsEnabled(env);
     const params = new URL(request.url).searchParams;
@@ -290,6 +297,24 @@ export async function handleClanOperations(request, env, helpers) {
           logApiFailure?.('clan_period_results_unavailable', { message: error?.message });
         }
       }
+      if (params.get('leaders') === '1') {
+        try {
+          progress.leaders = await readFactionLeaders(env.DB, progress.week_start, progress.utc_day,
+            progress.final_results ?? []);
+          if (clanLeaderLoreEnabled(env)) progress.leaders.chat_enabled = true;
+          const start = clanLeaderStart(env);
+          if (start !== null && time.getTime() / 1000 >= start) {
+            const presence = await readClanLeaderPresence(env.DB, progress.week_start, time);
+            progress.leaders.controls = presence.controls;
+            for (const leader of progress.leaders.crews) {
+              leader.presence = presence.byFaction.get(leader.faction_id);
+              leader.power += leader.presence.rounds * LEADER_POINTS_PER_ROUND;
+            }
+          }
+        } catch (error) {
+          logApiFailure?.('clan_faction_leaders_unavailable', { message: error?.message });
+        }
+      }
       return respond(progress);
     } catch (error) {
       logApiFailure?.('clan_crew_progress_unavailable', { message: error?.message });
@@ -308,7 +333,11 @@ export async function handleClanOperations(request, env, helpers) {
   const ownerLimited = rateLimit?.(owner);
   if (ownerLimited) return ownerLimited;
   try {
-    if (!actionRequest && body.campaign_rewards_ui === 1) {
+    if (loreRequest) {
+      const { status, ...result } = await answerClanLeaderLore(env, owner, body, now());
+      return respond(result, status ?? 200);
+    }
+    if (!actionRequest && !slowdownRequest && body.campaign_rewards_ui === 1) {
       if (!clanPeriodStart(env)) return respond({ error: 'campaigns_unavailable' }, 404);
       if (body.campaign_eligibility === true) {
         const membership = canonicalFactionProjection(await env.DB.prepare(CANONICAL_FACTION_READ_SQL).bind(owner).first());
@@ -320,7 +349,7 @@ export async function handleClanOperations(request, env, helpers) {
       }
       return respond({ ok: true, collectibles: await readClanCampaignCollectibles(env.DB, owner) });
     }
-    if (!actionRequest && body.period_rewards_ui === 'profile') {
+    if (!actionRequest && !slowdownRequest && body.period_rewards_ui === 'profile') {
       const rewards = clanPeriodStart(env) ? await readClanPeriodRewards(env.DB, owner) : [];
       return respond({ ok: true, period_rewards: rewards });
     }
@@ -329,6 +358,13 @@ export async function handleClanOperations(request, env, helpers) {
     );
     if (!membership.joined) return respond({ error: 'join_faction' }, 403);
     const factionId = membership.faction_id;
+    if (slowdownRequest) {
+      const time = now();
+      const start = clanLeaderStart(env);
+      if (start === null || time.getTime() / 1000 < start) return respond({ error: 'leader_play_closed' }, 404);
+      const { status, ...result } = await slowClanLeader(env.DB, owner, factionId, body, time);
+      return respond(result, status ?? 200);
+    }
     const operation = operations.get(factionId);
     if (!operation) return respond({ error: 'faction_not_in_pilot' }, 403);
 
@@ -437,6 +473,10 @@ export async function handleClanOperations(request, env, helpers) {
     }
     return respond(state, state.error ? 409 : 200);
   } catch (error) {
+    if (loreRequest) {
+      logApiFailure?.('clan_leader_lore_unavailable', {});
+      return respond({ error: 'leader_lore_unavailable' }, 503);
+    }
     logApiFailure?.('clan_operations_unavailable', { message: error?.message });
     return respond({ error: 'operation_unavailable' }, 503);
   }

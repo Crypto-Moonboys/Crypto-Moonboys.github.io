@@ -4,7 +4,7 @@ Lumina’s Waterfront is Block Topia’s walkable island district. Build a dense
 
 ## Districts and landmarks
 
-These are design targets for future PRs. Check district.js and the current renderer before choosing lots. Coordinates below are inclusive, zero-based world coordinates. The current grid is 56 by 34 with 32 map pixels per tile.
+These are design targets for future PRs. Check `workers/moonboys-api/blocktopia/waterfront-district.js` and the current renderer before choosing lots. Coordinates below are inclusive, zero-based world coordinates. The current grid is 56 by 34 with 32 map pixels per tile.
 
 | Area | Build direction |
 | --- | --- |

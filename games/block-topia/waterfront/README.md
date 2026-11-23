@@ -1,10 +1,10 @@
 # Lumina’s Waterfront
 
-The public entry is `/games/block-topia/waterfront/`. Serve the repository over HTTP and open that route. Click or tap a street or dock to move. On narrow screens the canvas scrolls horizontally at a readable tile size.
+The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a faction can reserve their faction’s one seat. The signed Worker response supplies the live map layout. On narrow screens the canvas scrolls horizontally at a readable tile size.
 
-- `district.js` defines the playable rows, spawn and tile properties. Every row must have the same width. Connect new docks and streets to the spawn. Keep tile IDs stable for browser saves.
+- `workers/moonboys-api/blocktopia/waterfront-district.js` defines the playable rows, spawn and tile properties. Every row must have the same width. Connect new docks and streets to the spawn. Keep tile IDs stable for browser saves.
 - `harbor-art.js` draws the terrain first, then objects and the player in row order. Building art is anchored to its ground tile and can extend upward. Collision uses the district data.
-- `index.html` handles routing, editor, browser saves and JSON export. Version 1 edits are carried into the central block by comparing them with the old default layout. Version 2 saves take precedence.
+- `entry.js` checks the seat and mounts the game. `map.js` handles routing, editor, browser saves and JSON export. Version 1 edits are carried into the central block by comparing them with the old default layout. Version 2 saves take precedence.
 
 ## NPC handover
 
