@@ -252,6 +252,43 @@ function patrolPosition(route, distance, start, reverse) {
   return { x: from.x + dx * blend, y: from.y + dy * blend, dx, dy };
 }
 
+function waterTileSeed(col, row) {
+  return (col * 73856093 ^ row * 19349663) >>> 0;
+}
+
+function paintWaterBase(rect, x, y, size, seed) {
+  rect("#0b192d", x, y, size, size);
+  for (let i = 0; i < 8; i++) {
+    rect(i % 2 ? "#569fc157" : "#142b47", x + (seed + i * 7) % 27,
+      y + ((seed >>> 7) + i * 11) % 30, 3 + i % 3, 1);
+  }
+}
+
+const waterPatterns = new Map();
+function waterPattern(ctx, size) {
+  if (waterPatterns.has(size)) return waterPatterns.get(size);
+  const texture = document.createElement("canvas");
+  const tiles = 8;
+  texture.width = texture.height = tiles * size;
+  const source = texture.getContext("2d");
+  const rect = (color, x, y, width, height) => {
+    source.fillStyle = color;
+    source.fillRect(x, y, width, height);
+  };
+  for (let row = 0; row < tiles; row++) {
+    for (let col = 0; col < tiles; col++) {
+      const x = col * size;
+      const y = row * size;
+      const seed = waterTileSeed(col, row);
+      paintWaterBase(rect, x, y, size, seed);
+      if (seed % 3 === 0) rect("#54888566", x + 2 + seed % 22, y + 11, 6, 1);
+    }
+  }
+  const pattern = ctx.createPattern(texture, "repeat");
+  waterPatterns.set(size, pattern);
+  return pattern;
+}
+
 const factionMotion = [];
 window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null, inspection = null) {
   const { tileSize: size, tiles } = district;
@@ -570,19 +607,42 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function terrain(tile, col, row) {
     const x = col * size;
     const y = row * size;
-    const seed = (col * 73856093 ^ row * 19349663) >>> 0;
-    const water = tile === "~";
-    const dock = tile === "d";
+    if (tile === "~") {
+      // The natural coastline draws its own banks on the adjoining land tiles.
+      const south = tileAt(col, row + 1);
+      if ((!district.natureIsland || (col < district.harborWidth && row < district.harborHeight)) &&
+          south !== "~" && south !== "d") {
+        rect("#252334", x, y + 24, size, 8);
+        rect("#6c667b", x, y + 24, size, 3);
+        rect("#43787f", x, y + 21, size, 1);
+        rect("#3a5157", x + (col % 2 ? 8 : 20), y + 27, 2, 5);
+      }
+      return;
+    }
+
+    const seed = waterTileSeed(col, row);
+    if (tile === "d") {
+      paintWaterBase(rect, x, y, size, seed);
+      rect("#392c2b", x + 3, y, 26, size);
+      for (let i = 0; i < 8; i++) {
+        rect(i % 2 ? "#a17552" : "#906244", x + 4, y + i * 4, 24, 3);
+        rect("#c69864", x + 5, y + i * 4, 21, 1);
+      }
+      for (const post of [3, 25]) {
+        rect("#3d2929", x + post, y + 5, 5, 9);
+        rect("#e0b37b", x + post, y + 4, 5, 3);
+      }
+      return;
+    }
 
     const ground = tile === "." ? (row === quayRow ? "concrete" : groundAt(col, row)) : undefined;
     const base = ground === "grass" ? grassPattern || "#283b39" : ground === "gravel" ? "#342f3c" : ground === "concrete" ? "#30323e" : "#1b1d2a";
-    rect(water || dock ? "#0b192d" : base, x, y, size, size);
+    rect(base, x, y, size, size);
     for (let i = 0; i < 8; i++) {
       const a = (seed + i * 7) % 27;
       const b = ((seed >>> 7) + i * 11) % 30;
       const shade = i % 2 ? "#ffffff16" : "#091d2740";
-      if (water || dock) rect(i % 2 ? "#569fc157" : "#142b47", x + a, y + b, 3 + i % 3, 1);
-      else if (ground === "concrete") {
+      if (ground === "concrete") {
         rect(i % 2 ? "#454655" : "#252833", x + a, y + b, 2, 1);
         if (i % 3 === 0) rect("#596366", x + a + 1, y + b + 1, 1, 1);
       } else if (ground === "grass") {
@@ -594,34 +654,6 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         rect(i % 2 ? "#514752" : "#312c35", x + a, y + b, 3, 1);
         rect("#53484a", x + a + 1, y + b + 1, 1, 1);
       } else rect(shade, x + a, y + b, 2 + i % 3, 2);
-    }
-
-    if (water) {
-      // Short, horizontal glints stay in the water and drift in the night light.
-      const glint = (seed + Math.floor((time ?? 0) * 2)) % 22;
-      if (seed % 3 === 0) rect("#54888566", x + 2 + glint, y + 11, 6, 1);
-      // The natural coastline draws its own banks on the adjoining land tiles.
-      if ((!district.natureIsland || (col < district.harborWidth && row < district.harborHeight)) &&
-          tileAt(col, row + 1) !== "~" && tileAt(col, row + 1) !== "d") {
-        rect("#252334", x, y + 24, size, 8);
-        rect("#6c667b", x, y + 24, size, 3);
-        rect("#43787f", x, y + 21, size, 1);
-        rect("#3a5157", x + (col % 2 ? 8 : 20), y + 27, 2, 5);
-      }
-      return;
-    }
-
-    if (dock) {
-      rect("#392c2b", x + 3, y, 26, size);
-      for (let i = 0; i < 8; i++) {
-        rect(i % 2 ? "#a17552" : "#906244", x + 4, y + i * 4, 24, 3);
-        rect("#c69864", x + 5, y + i * 4, 21, 1);
-      }
-      for (const post of [3, 25]) {
-        rect("#3d2929", x + post, y + 5, 5, 9);
-        rect("#e0b37b", x + post, y + 4, 5, 3);
-      }
-      return;
     }
 
     if (tile === "r" || tile === "p") {
@@ -1142,6 +1174,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   ctx.beginPath();
   ctx.rect(left * size, top * size, (right - left) * size, (bottom - top) * size);
   ctx.clip();
+  rect(waterPattern(ctx, size), left * size, top * size, (right - left) * size, (bottom - top) * size);
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
       const tile = tileAt(x, y);
