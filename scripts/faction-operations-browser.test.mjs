@@ -2216,6 +2216,39 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
     assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
+    const island = await page.evaluate(() => {
+      const regions = new Set();
+      const key = (x, y) => Math.floor(x / 8) + ',' + Math.floor(y / 8);
+      let land = 0;
+      for (const [y, row] of district.rows.entries()) for (const [x, tile] of [...row].entries()) {
+        if (tile !== '~') { land++; regions.add(key(x, y)); }
+      }
+      const frontier = [spawn];
+      const reachable = new Set([spawn.y * columns + spawn.x]);
+      for (const point of frontier) for (const [dx, dy] of Object.values(directions)) {
+        const x = point.x + dx, y = point.y + dy;
+        const cell = y * columns + x;
+        if (walkable(rows[y]?.[x]) && !reachable.has(cell)) {
+          reachable.add(cell);
+          frontier.push({ x, y });
+        }
+      }
+      const loop = natureRoute(rows, district);
+      return {
+        width: columns, height: initial.length, land, tiles: Object.keys(district.tiles).sort(),
+        allLandReachable: reachable.size === land,
+        allRegionsVisited: new Set(loop.map(({x, y}) => key(x, y))).size === regions.size,
+        loopWalkable: loop.every(({x,y}, i) => {
+          const next = loop[(i + 1) % loop.length];
+          return walkable(rows[y][x]) && Math.abs(x - next.x) + Math.abs(y - next.y) === 1;
+        }),
+      };
+    });
+    const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
+    assert.deepEqual(island, {
+      width: 112, height: 85, land: previousLand * 5, tiles: ['.', 'f', 'p', 't', '~'],
+      allLandReachable: true, allRegionsVisited: true, loopWalkable: true,
+    });
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     const position = await page.evaluate(() => {
@@ -2309,12 +2342,38 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
     await full.getByRole('button', { name: 'Close full reply' }).click();
 
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+    await page.getByText('Map editor', { exact: true }).click();
+    await page.getByRole('button', { name: 'Edit tiles' }).click();
+    const editedTile = await page.evaluate(() => {
+      const y = spawn.y + 2;
+      const x = [...initial[y]].findIndex((tile, index) =>
+        Math.abs(index - spawn.x) <= 6 && tile !== 'p' && tile !== '~');
+      const canvas = document.querySelector('#map');
+      const rect = canvas.getBoundingClientRect();
+      canvas.dispatchEvent(new MouseEvent('click', {
+        clientX: rect.left + (x + 0.5) * rect.width / columns,
+        clientY: rect.top + (y + 0.5) * rect.height / initial.length,
+      }));
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      return { x, y, tile: saved?.[y]?.[x], width: saved?.[y]?.length };
+    });
+    assert.equal(editedTile.tile, 'p');
+    assert.equal(editedTile.width, 112);
+
     seatLost = true;
     await page.clock.fastForward(21_000);
     await page.getByText('Your Waterfront seat is no longer active.').waitFor();
     assert.equal(await page.locator('#map').isVisible(), false);
     assert.equal(await page.locator('.leader-map-bubble').isVisible(), false);
     assert.ok(entryActions.includes('leave'));
+
+    seatLost = false;
+    await page.addInitScript(() => { window.testOwner = '123'; });
+    await page.reload();
+    await page.getByRole('button', { name: 'Enter Waterfront' }).click();
+    await page.locator('#map').waitFor();
+    assert.equal(await page.evaluate(({ x, y }) => rows[y][x], editedTile), 'p');
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

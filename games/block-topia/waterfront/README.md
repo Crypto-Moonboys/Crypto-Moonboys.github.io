@@ -1,10 +1,10 @@
 # Lumina’s Waterfront
 
-The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a faction can reserve their faction’s one seat. The signed Worker response supplies the live map layout. On narrow screens the canvas scrolls horizontally at a readable tile size.
+The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a faction can reserve their faction’s one seat. The signed Worker response supplies the original district dimensions and tile size. After entry, the browser opens an island with five times the original map area and five times its land area.
 
-- `workers/moonboys-api/blocktopia/waterfront-district.js` defines the playable rows, spawn and tile properties. Every row must have the same width. Connect new docks and streets to the spawn. Keep tile IDs stable for browser saves.
-- `harbor-art.js` draws the terrain first, then objects and the player in row order. Building art is anchored to its ground tile and can extend upward. Collision uses the district data.
-- `entry.js` checks the seat and mounts the game. `map.js` handles routing, editor, browser saves and JSON export. The current browser save key is `block-topia.waterfront.v5`. The editor restores a valid v5 map first. For older saves it applies the player’s edits to the current layout using the corresponding old default.
+- [nature-island.mjs](nature-island.mjs) defines the connected 112 × 85 island, its trails, groves and wildflower meadows. Water blocks walking. Vegetation leaves the land passable.
+- [harbor-art.js](harbor-art.js) draws visible terrain and depth-sorts the plants and actors. Its island patrol visits every reachable 8 × 8 region. Faction leaders and background robots begin at different points along the route.
+- [map.js](map.js) handles walking, camera and the terrain editor. Island edits use `block-topia.waterfront.v6`. Older harbor edits remain in their own browser save slots.
 
 ## Faction leader chat
 

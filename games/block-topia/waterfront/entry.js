@@ -87,17 +87,20 @@ function script(url) {
 }
 
 function bootMap(district) {
-  window.waterfrontDistrict = district;
   if (!mapStartup) {
     mapStartup = (async () => {
+      const { makeNatureIsland, islandPatrol, islandSeed } = await import('./nature-island.mjs');
+      window.waterfrontDistrict = makeNatureIsland(district);
+      window.waterfrontIslandPatrol = islandPatrol;
+      window.waterfrontIslandSeed = islandSeed;
       if (!window.createWaterfrontFactionConversations) {
         const { createFactionConversations } = await import('./faction-conversations.mjs?v=2');
         window.createWaterfrontFactionConversations = createFactionConversations;
       }
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=39');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=40');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=4');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=6');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
       await import('./leader-dialog.js?lore=7');
     })().catch(error => {

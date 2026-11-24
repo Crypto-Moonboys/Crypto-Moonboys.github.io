@@ -5,10 +5,7 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const storageKey = "block-topia.waterfront.v5";
-const doorstepStorageKey = "block-topia.waterfront.v3";
-const previousStorageKey = "block-topia.waterfront.v2";
-const legacyStorageKey = "block-topia.waterfront.v1";
+const storageKey = "block-topia.waterfront.v6";
 const viewport = document.querySelector(".viewport");
 const mapScroll = document.querySelector(".map-scroll");
 const canvas = document.querySelector("#map");
@@ -26,18 +23,20 @@ const avatar = document.querySelector("#waterfront-avatar");
 waterfrontCharacterNames.forEach((name, index) => avatar.add(new Option(name, String(index))));
 let selectedAvatar = null;
 let avatarIdleSince = performance.now();
-let idleStep = 0;
-let lastIdlePosition;
-viewport.addEventListener("pointerdown", () => { avatarIdleSince = performance.now(); }, { passive: true });
-viewport.addEventListener("keydown", () => { avatarIdleSince = performance.now(); });
+let idleRouteIndex = null;
+function resetIdleWalk() {
+  avatarIdleSince = performance.now();
+  idleRouteIndex = null;
+}
+viewport.addEventListener("pointerdown", resetIdleWalk, { passive: true });
+viewport.addEventListener("keydown", resetIdleWalk);
 let browserStorage;
 try { browserStorage = window.localStorage; } catch { /* Private browsing can disable storage. */ }
 const factionConversations = window.createWaterfrontFactionConversations(browserStorage);
 avatar.addEventListener("change", () => {
   if (!window.waterfrontAccess.canPlay()) return;
   selectedAvatar = avatar.value === "" ? null : Number(avatar.value);
-  avatarIdleSince = performance.now();
-  lastIdlePosition = null;
+  resetIdleWalk();
   canvas.dispatchEvent(new Event("waterfront:leader-clear"));
   draw();
 });
@@ -48,51 +47,11 @@ function walkable(tile) {
   return Boolean(tiles[tile]?.walkable);
 }
 
-function validLayout(candidate, baseline, startX, startY = spawn.y) {
-  return Array.isArray(candidate) && candidate.length === baseline.length &&
-    candidate.every((row, y) => typeof row === "string" && row.length === baseline[y].length &&
-      [...row].every(tile => Object.hasOwn(tiles, tile))) &&
-    walkable(candidate[startY][startX]);
-}
-
-function restoreLayout() {
-  const saved = JSON.parse(localStorage.getItem(storageKey));
-  if (validLayout(saved, initial, spawn.x)) return saved;
-
-  const { x: offsetX, y: offsetY } = district.harborOffset;
-  const harborX = spawn.x - offsetX;
-  const harborY = spawn.y - offsetY;
-  const previousHarbor = JSON.parse(localStorage.getItem("block-topia.waterfront.v4"));
-  if (validLayout(previousHarbor, district.harborRows, harborX, harborY)) {
-    return applyEdits(previousHarbor, district.harborRows, offsetX);
-  }
-  const doorstep = JSON.parse(localStorage.getItem(doorstepStorageKey));
-  if (validLayout(doorstep, district.previousDoorstepRows, harborX, harborY)) {
-    return applyEdits(doorstep, district.previousDoorstepRows, offsetX);
-  }
-  const wide = JSON.parse(localStorage.getItem(previousStorageKey));
-  if (validLayout(wide, district.previousWideRows, harborX, harborY)) {
-    return applyEdits(wide, district.previousWideRows, offsetX);
-  }
-  const { rows: previous, columnOffset } = district.previousLayout;
-  const legacy = JSON.parse(localStorage.getItem(legacyStorageKey));
-  if (!validLayout(legacy, previous, harborX - columnOffset, harborY)) return [...initial];
-  return applyEdits(legacy, previous, offsetX + columnOffset);
-}
-
-function applyEdits(legacy, previous, columnOffset) {
-
-  // Carry over player edits while keeping the new street connections in untouched tiles.
-  return initial.map((row, y) => [...row].map((tile, x) => {
-    const oldX = x - columnOffset;
-    const oldY = y - district.harborOffset.y;
-    const edited = legacy[oldY]?.[oldX];
-    return edited !== undefined && edited !== previous[oldY]?.[oldX] ? edited : tile;
-  }).join(""));
-}
-
 try {
-  rows = restoreLayout();
+  const saved = JSON.parse(localStorage.getItem(storageKey));
+  if (Array.isArray(saved) && saved.length === initial.length &&
+      saved.every(row => typeof row === "string" && row.length === columns &&
+        [...row].every(tile => Object.hasOwn(tiles, tile))) && walkable(saved[spawn.y][spawn.x])) rows = saved;
 } catch {
   status.textContent = "The saved layout could not be loaded.";
 }
@@ -100,7 +59,7 @@ try {
 for (const [tile, { name }] of Object.entries(tiles)) {
   select.add(new Option(name, tile));
 }
-select.value = "r";
+select.value = "p";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
@@ -161,7 +120,7 @@ function paintMap() {
   const faction = selectedAvatar ?? factionIds.indexOf(window.waterfrontAccess.faction());
   factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
-    editing || document.hidden ? null : factionConversations) ?? [];
+    editing || document.hidden ? null : factionConversations, visibleTiles()) ?? [];
   canvas.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
@@ -271,11 +230,17 @@ canvas.addEventListener("click", event => {
     walkTo(x, y);
     return;
   }
-  if (x === spawn.x && y === spawn.y && !walkable(select.value)) {
+  const tile = select.value;
+  if (!Object.hasOwn(tiles, tile)) {
+    status.textContent = "Choose a terrain tile first.";
+    return;
+  }
+  if (x === spawn.x && y === spawn.y && !walkable(tile)) {
     status.textContent = "Keep the starting square walkable.";
     return;
   }
-  rows[y] = rows[y].slice(0, x) + select.value + rows[y].slice(x+1);
+  rows[y] = rows[y].slice(0, x) + tile + rows[y].slice(x+1);
+  resetIdleWalk();
   if (!walkable(rows[player.y][player.x])) player = { ...spawn };
   save();
   draw();
@@ -293,12 +258,13 @@ document.querySelector("#reset").addEventListener("click", () => {
   clearTimeout(walkTimer);
   rows = [...initial];
   player = { ...spawn };
+  resetIdleWalk();
   save();
   draw();
 });
 let renderScale = 0;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
-let zoom = compactMap ? 1.35 : 1.85;
+let zoom = compactMap ? 2.8 : 3.5;
 let pinch = null;
 let mapTouchActive = false;
 let ignoreTapUntil = 0;
@@ -311,26 +277,43 @@ function applyZoomSize() {
   // Match the height to the rounded width so even the last row covers the viewport.
   canvas.style.height = Math.max(mapScroll.clientHeight, Math.ceil(displayWidth * mapHeight / mapWidth)) + "px";
   // Keep the overview cheap and retain source sprite detail at close range.
-  const nextScale = displayWidth * window.devicePixelRatio > mapWidth ? 2 : 1;
+  const nextScale = Math.max(mapWidth, mapHeight) <= 2048 &&
+    displayWidth * window.devicePixelRatio > mapWidth ? 2 : 1;
   if (renderScale !== nextScale) {
     renderScale = nextScale;
     canvas.width = mapWidth * renderScale;
     canvas.height = mapHeight * renderScale;
     ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
     ctx.imageSmoothingEnabled = false;
-    paintMap();
   }
+  paintMap();
 }
+
+function visibleTiles() {
+  const tileWidth = canvas.clientWidth / columns;
+  const tileHeight = canvas.clientHeight / initial.length;
+  return {
+    left: Math.max(0, Math.floor(mapScroll.scrollLeft / tileWidth) - 2),
+    top: Math.max(0, Math.floor(mapScroll.scrollTop / tileHeight) - 2),
+    right: Math.min(columns, Math.ceil((mapScroll.scrollLeft + mapScroll.clientWidth) / tileWidth) + 2),
+    bottom: Math.min(initial.length, Math.ceil((mapScroll.scrollTop + mapScroll.clientHeight) / tileHeight) + 2),
+  };
+}
+
+mapScroll.addEventListener("scroll", () => {
+  if (reducedMotion.matches) paintMap();
+}, { passive: true });
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
   const before = canvas.getBoundingClientRect();
   const mapX = (fromX - before.left) / before.width;
   const mapY = (fromY - before.top) / before.height;
-  zoom = Math.max(1, Math.min(5, scale));
+  zoom = Math.max(1, Math.min(10, scale));
   applyZoomSize();
   const after = canvas.getBoundingClientRect();
   mapScroll.scrollLeft += after.left + mapX * after.width - toX;
   mapScroll.scrollTop += after.top + mapY * after.height - toY;
+  if (reducedMotion.matches) paintMap();
 }
 
 const infoButton = document.querySelector("#map-info");
@@ -493,13 +476,15 @@ setInterval(() => {
       player.frame || factionConversations.holds(selectedAvatar) || !infoPanel.hidden ||
       viewport.querySelector("dialog[open], .leader-map-details:not([hidden])") ||
       viewport.hasAttribute("data-leader-question-pending")) return;
-  const neighbors = Object.values(directions).map(([dx, dy]) => ({ x: player.x + dx, y: player.y + dy }))
-    .filter(({ x, y }) => /^[rp]$/.test(rows[y]?.[x] ?? ""));
-  if (!neighbors.length) return;
-  const forward = neighbors.filter(({ x, y }) => x !== lastIdlePosition?.x || y !== lastIdlePosition?.y);
-  const options = forward.length ? forward : neighbors;
-  const target = options[idleStep++ % options.length];
-  lastIdlePosition = { x: player.x, y: player.y };
+  const route = natureRoute(rows, district);
+  if (idleRouteIndex === null) {
+    const distance = point => Math.abs(player.x - point.x) + Math.abs(player.y - point.y);
+    idleRouteIndex = route.reduce((nearest, point, index) =>
+      distance(point) < distance(route[nearest]) ? index : nearest, 0);
+  }
+  const next = route[idleRouteIndex];
+  if (next.x === player.x && next.y === player.y) idleRouteIndex = (idleRouteIndex + 1) % route.length;
+  const target = route[idleRouteIndex];
   walkTo(target.x, target.y);
 }, 1_800);
 document.addEventListener("visibilitychange", syncAnimation);

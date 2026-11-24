@@ -128,7 +128,10 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas, waterfrontFactionAtlas]
       .map(sprite => [sprite.file, sprite])
   );
-  return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
+  const atlases = window.waterfrontDistrict?.natureIsland
+    ? Object.entries(waterfrontAtlases).filter(([name]) => ["factions", "bots", "trees", "street-detail"].includes(name))
+    : Object.entries(waterfrontAtlases);
+  return Promise.all(atlases.map(([group, frames]) => new Promise(resolve => {
     const atlas = new Image();
     atlas.onload = () => {
       for (const [file, [x, y, width, height]] of Object.entries(frames)) {
@@ -212,8 +215,30 @@ function factionRoutes(rows, district) {
   return routes;
 }
 
+let naturePatrol;
+function natureRoute(rows, district) {
+  const layout = rows.join("\n");
+  if (naturePatrol?.layout !== layout) {
+    naturePatrol = { layout, route: window.waterfrontIslandPatrol(rows, district, findRoute) };
+  }
+  return naturePatrol.route;
+}
+
+function patrolPosition(route, distance, start, reverse) {
+  const step = Math.floor(distance);
+  const direction = reverse ? -1 : 1;
+  const length = route.length;
+  const index = (start + direction * (step % length) + length) % length;
+  const from = route[index];
+  const to = route[(index + direction + length) % length];
+  const blend = distance - step;
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  return { x: from.x + dx * blend, y: from.y + dy * blend, dx, dy };
+}
+
 const factionMotion = [];
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null) {
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -230,7 +255,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const tileAt = (x, y) => rows[y]?.[x] ?? (y < 2 ? "~" : ".");
   const roadAt = (x, y) => Boolean(tiles[tileAt(x, y)].walkable);
   // The mural reserves the promenade between the middle and east docks.
-  const harbor = district.harborOffset;
+  const harbor = district.harborOffset ?? { x: 0, y: 0 };
   const quayRow = harbor.y + 2;
   const wallStart = harbor.x + 13;
   const wallEnd = harbor.x + 24;
@@ -495,6 +520,31 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ["0,2", 0], ["5,2", 4], ["7,2", 5], ["10,2", 1],
     ["25,2", 2], ["27,2", 6], ["4,10", 3], ["19,10", 7]
   ]);
+  function parkTerrain(tile, col, row) {
+    const x = col * size;
+    const y = row * size;
+    const seed = window.waterfrontIslandSeed(col, row);
+    if (tile === "~") {
+      rect("#10243a", x, y, size, size);
+      if (seed % 3 === 0) rect("#294a60", x + seed % 22, y + 10, 6, 1);
+      return;
+    }
+    const coast = [tileAt(col - 1, row), tileAt(col + 1, row), tileAt(col, row - 1), tileAt(col, row + 1)];
+    rect("#827257", x, y, size, size);
+    const [left, right, top, bottom] = coast.map(neighbor => neighbor === "~" ? 3 : 0);
+    rect(tile === "p" ? "#71634d" : grassPattern || "#244337", x + left, y + top,
+      size - left - right, size - top - bottom);
+    if (tile === "p") {
+      rect("#8b795d", x + 6 + seed % 19, y + 5 + (seed >>> 8) % 19, 3, 1);
+    } else if (tile === "t") {
+      const variant = (seed >>> 8) % waterfrontTrees.length;
+      queue(y + 28, () => tree(x + seed % 8 - 4, y, variant, 0.78 + (seed % 5) * 0.07));
+    } else if (tile === "f") {
+      const variant = (seed >>> 8) % 12;
+      queue(y + 24, () => detail("flowers-" + variant, x + 9 + seed % 15, y + 22, 8 + seed % 6));
+    }
+  }
+
   let treeIndex = 0;
   function terrain(tile, col, row) {
     const x = col * size;
@@ -941,16 +991,17 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
+  const islandLoop = district.natureIsland ? natureRoute(rows, district) : null;
   let nearestFaction;
   const factionHits = [];
   function drawFactionWalkers() {
     if (!waterfrontFactionAtlas.image) return;
-    const routes = factionRoutes(rows, district);
+    const routes = islandLoop ? null : factionRoutes(rows, district);
     const now = Date.now();
     waterfrontCharacterNames.forEach((name, index) => {
       const state = leaderStates[index];
       if (index === selectedAvatar || state?.playingUntil > now) return;
-      const route = routes[index];
+      const route = islandLoop ?? routes[index];
       const paused = state?.pausedUntil > now;
       const motion = factionMotion[index] ??= { previous: time, elapsed: time ?? 0 };
       const holding = conversations?.holds(index);
@@ -958,16 +1009,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         motion.elapsed += Math.min(0.2, Math.max(0, time - motion.previous));
       }
       motion.previous = time;
-      const walkerTime = time === null ? 0 : motion.elapsed;
-      const progress = ((walkerTime ?? 0) / (1.05 + index * 0.045)) % route.length;
-      const step = Math.floor(progress);
-      const from = route[step];
-      const to = route[(step + 1) % route.length];
-      const blend = progress - step;
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-      const x = Math.round((from.x + dx * blend) * size + 16);
-      const y = Math.round((from.y + dy * blend) * size + 22);
+      const elapsed = time === null ? 0 : motion.elapsed;
+      const startingPoint = islandLoop ? Math.floor(index * route.length / waterfrontCharacterNames.length) : 0;
+      const position = patrolPosition(route, elapsed / (1.05 + index * 0.045), startingPoint,
+        Boolean(islandLoop && index % 2));
+      const { dx, dy } = position;
+      const x = Math.round(position.x * size + 16);
+      const y = Math.round(position.y * size + 22);
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const frame = paused || holding || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
       queue(y, () => factionCharacter(index, x, y, facing, frame, 20));
@@ -994,6 +1042,36 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   const crew = window.waterfrontBuildDiscussion ?? [];
   const turn = crew.length ? crew[discussionElapsed === null ? 0 : Math.floor(discussionElapsed / 12) % crew.length] : null;
+  function drawIslandBots() {
+    if (!islandLoop) return;
+    const models = [0, 1, ...residentBots];
+    models.forEach((model, index) => {
+      const leg = index < 2 ? islandLoop.length * 0.54 + index * 1.2 : islandLoop.length * (index + 1) / 8;
+      const pace = index < 2 ? 0.89 : 0.68 + index * 0.051;
+      const { x, y, dx, dy } = patrolPosition(islandLoop, (time ?? 0) / pace, Math.floor(leg), index >= 2 && index % 2 === 0);
+      const px = Math.round(x * size + 16);
+      const py = Math.round(y * size + 22);
+      const frame = time === null || (!dx && !dy) ? 0 : 1 + Math.floor(time * 7) % 3;
+      queue(py, () => {
+        bot(model, px, py, dx, dy, frame);
+        if (turn?.speaker === index && index < 2) drawCrewBubble(px, py);
+      });
+    });
+  }
+
+  function drawCrewBubble(x, y) {
+    const top = y - 27;
+    const left = Math.max(2, Math.min(x - 76, width * size - 154));
+    rect("#16303b", left - 1, top - 1, 154, 16);
+    rect("#eaf2e5", left, top, 152, 14);
+    polygon("#eaf2e5", [[x - 3, top + 14], [x + 3, top + 14], [x, top + 18]]);
+    ctx.save();
+    ctx.font = "6px system-ui";
+    ctx.fillStyle = "#152831";
+    ctx.fillText(String(turn.text).slice(0, 76), left + 4, top + 9, 144);
+    ctx.restore();
+  }
+
   function drawCrew() {
     const speakers = [
       { col: district.spawn.x - 2 },
@@ -1008,35 +1086,37 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const facing = time === null ? 0 : Math.cos(time * 0.9 + index * Math.PI);
       bot(index, x, y, facing, 0, time === null ? 0 : 1 + Math.floor(time * 6) % 3);
       if (!turn || turn.speaker !== index) return;
-      const top = y - 27;
-      const left = Math.max(2, Math.min(x - 76, width * size - 154));
-      rect("#16303b", left - 1, top - 1, 154, 16);
-      rect("#eaf2e5", left, top, 152, 14);
-      polygon("#eaf2e5", [[x - 3, top + 14], [x + 3, top + 14], [x, top + 18]]);
-      ctx.save();
-      ctx.font = "6px system-ui";
-      ctx.fillStyle = "#152831";
-      ctx.fillText(String(turn.text).slice(0, 76), left + 4, top + 9, 144);
-      ctx.restore();
+      drawCrewBubble(x, y);
     });
   }
 
-  rows.forEach((_, y) => {
-    for (let x = 0; x < width; x++) terrain(tileAt(x, y), x, y);
-  });
-  rect("#080a1c32", 0, 0, width * size, rows.length * size);
+  const { left, top, right, bottom } = visible ?? { left: 0, top: 0, right: width, bottom: rows.length };
+  const renderTile = islandLoop ? parkTerrain : terrain;
+  ctx.save();
+  // Clip tall sprites at the edge of the repainted area, so offscreen sprites
+  // cannot leave stale pixels when the player pans back.
+  ctx.beginPath();
+  ctx.rect(left * size, top * size, (right - left) * size, (bottom - top) * size);
+  ctx.clip();
+  for (let y = top; y < bottom; y++) {
+    for (let x = left; x < right; x++) renderTile(tileAt(x, y), x, y);
+  }
+  rect("#080a1c32", left * size, top * size, (right - left) * size, (bottom - top) * size);
   for (const [left, right, base] of buildingShadows) {
     polygon("#080b1890", [[left, base - 8], [right, base - 8], [right + 14, base + 5], [left + 12, base + 5]]);
     polygon("#080b184d", [[left + 12, base + 5], [right + 14, base + 5], [right + 20, base + 9], [left + 19, base + 9]]);
   }
   beacons.forEach(([x, y]) => beacon(x, y, false));
-  graffitiSeawall();
-  drawFreight();
+  if (islandLoop) drawIslandBots();
+  else {
+    graffitiSeawall();
+    drawFreight();
+  }
   drawFactionWalkers();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));
-  drawCrew();
+  if (!islandLoop) drawCrew();
   drawFactionLabel();
   for (const { x, y, paused, talking } of factionHits) {
     if (!paused) continue;
@@ -1081,5 +1161,6 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       ctx.restore();
     }
   }
+  ctx.restore();
   return factionHits;
 };
