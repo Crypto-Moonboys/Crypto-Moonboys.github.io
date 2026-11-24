@@ -243,6 +243,22 @@ function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
 }
 
 const landfallAtlas = { file: "harbor-kaiju-landfall.webp?v=1" };
+const landfallFireAtlas = { file: "harbor-kaiju-fire.webp?v=1" };
+// Mouth offsets from the body frame's waterline anchor for each side pose.
+const landfallMouth = {
+  1: [[-42, -70], [-41, -69], [-41, -70], [-43, -69]],
+  2: [[43, -69], [42, -68], [42, -68], [43, -69]],
+};
+
+function drawLandfallFire(ctx, x, y, scale, facing, gait, frame) {
+  const [mouthX, mouthY] = landfallMouth[facing][gait];
+  ctx.translate(x + mouthX * scale, y + mouthY * scale);
+  if (facing === 2) ctx.scale(-1, 1);
+  // The sheet points left, with its nozzle at (122, 36).
+  ctx.drawImage(landfallFireAtlas.image, frame * 128, 0, 128, 72,
+    -122 * scale, -36 * scale, 128 * scale, 72 * scale);
+}
+
 const landfallX = 43;
 const landfallRoute = [
   // Duration, destination x/y, atlas row, walking on land.
@@ -284,9 +300,11 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
   if (!landfallSummoned) return;
   loadDetailedAtlas(harborKaijuAtlas, "low", repaint);
   loadDetailedAtlas(landfallAtlas, "low", repaint);
+  loadDetailedAtlas(landfallFireAtlas, "low", repaint);
   if (!harborKaijuAtlas.image || !landfallAtlas.image) return;
 
   let x = landfallX, y = 6, column = 3, row = 1, atlas = harborKaijuAtlas;
+  let flameFrame = null;
   if (time !== null) {
     landfallStarted ??= time;
     const elapsed = Math.max(0, time - landfallStarted);
@@ -308,6 +326,9 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
           row = facing;
           atlas = onLand ? landfallAtlas : harborKaijuAtlas;
           column = facing === 0 && onLand ? Math.floor(fraction * 4) : Math.floor(walkTime * 6) % 4;
+          if (onLand && Object.hasOwn(landfallMouth, facing) && walkTime >= 0.75 && walkTime < 1.55) {
+            flameFrame = Math.min(3, Math.floor((walkTime - 0.75) * 5));
+          }
           break;
         }
         walkTime -= duration;
@@ -324,6 +345,9 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(atlas.image, column * 144, row * 128, 144, 128,
       anchorX - 72 * scale, anchorY - 110 * scale, 144 * scale, 128 * scale);
+    if (flameFrame !== null && landfallFireAtlas.image) {
+      drawLandfallFire(ctx, anchorX, anchorY, scale, row, column, flameFrame);
+    }
     ctx.restore();
   });
 }
