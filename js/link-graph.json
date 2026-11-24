@@ -743,7 +743,7 @@
     ]
   },
   "/wiki/allcity-bulls-mech.html": {
-    "outbound_count": 28,
+    "outbound_count": 29,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/blockstars-mech.html",
@@ -763,6 +763,7 @@
       "/wiki/first-witness-family-children-elders.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -1819,7 +1820,7 @@
   },
   "/wiki/block-topia.html": {
     "outbound_count": 82,
-    "inbound_count": 95,
+    "inbound_count": 97,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
@@ -1945,6 +1946,8 @@
       "/wiki/green-electric-bot.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hex-tagger-prime.html",
       "/wiki/hodl-warriors.html",
@@ -2005,7 +2008,7 @@
     ]
   },
   "/wiki/blockchain-furies-mech.html": {
-    "outbound_count": 49,
+    "outbound_count": 50,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -2044,6 +2047,7 @@
       "/wiki/gkniftyheads-present-world-war-3-the-blockchain-uprising-this-isnt-a-drill.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -2129,7 +2133,7 @@
     ]
   },
   "/wiki/blockstars-mech.html": {
-    "outbound_count": 25,
+    "outbound_count": 26,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/allcity-bulls-mech.html",
@@ -2146,6 +2150,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -2166,7 +2171,7 @@
     ]
   },
   "/wiki/blue-electric-bot.html": {
-    "outbound_count": 20,
+    "outbound_count": 21,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -2182,6 +2187,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -2250,7 +2256,7 @@
     ]
   },
   "/wiki/burglar-bear.html": {
-    "outbound_count": 32,
+    "outbound_count": 33,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -2271,6 +2277,7 @@
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/graff-bear.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/in-the-year-3008-truth-became-encrypted.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -2359,7 +2366,7 @@
     ]
   },
   "/wiki/camo-bear.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -2379,6 +2386,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/gentleman-bear.html",
       "/wiki/graff-bear.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/posh-bear.html",
@@ -2436,7 +2444,7 @@
     "inbound_from": []
   },
   "/wiki/chada-boi.html": {
-    "outbound_count": 15,
+    "outbound_count": 16,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -2448,6 +2456,7 @@
       "/wiki/the-ninth-berth.html"
     ],
     "suggested_outbound": [
+      "/wiki/harbor-nessie.html",
       "/wiki/the-bally-boys-digital-entrepreneurs.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -2726,7 +2735,7 @@
     "inbound_from": []
   },
   "/wiki/crypto-moonboy-pets.html": {
-    "outbound_count": 21,
+    "outbound_count": 22,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -2742,6 +2751,7 @@
       "/wiki/games4punks-telegram.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/graffpunks.html",
+      "/wiki/harbor-kaiju.html",
       "/wiki/legacy-over-hype-gk-turned-the-waxp.html",
       "/wiki/massive-lore-discovered-this-changes.html",
       "/wiki/moon-mission.html",
@@ -2912,7 +2922,7 @@
   },
   "/wiki/crypto-moonboys.html": {
     "outbound_count": 158,
-    "inbound_count": 551,
+    "inbound_count": 553,
     "existing_outbound": [
       "/wiki/agent-sam.html",
       "/wiki/aleema-child-of-the-shard.html",
@@ -3400,6 +3410,8 @@
       "/wiki/green-electric-bot.html",
       "/wiki/grit.html",
       "/wiki/grit42.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/harrison-rift.html",
@@ -3695,7 +3707,7 @@
     ]
   },
   "/wiki/danny-rankz.html": {
-    "outbound_count": 23,
+    "outbound_count": 24,
     "inbound_count": 8,
     "existing_outbound": [
       "/wiki/chada-boi.html",
@@ -3718,6 +3730,7 @@
       "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "/wiki/gkniftyheads-present-world-war-3-the-blockchain-uprising-this-isnt-a-drill.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/the-blockchain-furies-digital-vigilantes.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-signal-from-3008.html",
@@ -4159,7 +4172,7 @@
     ]
   },
   "/wiki/eddie-stax.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 9,
     "existing_outbound": [
       "/wiki/chada-boi.html",
@@ -4184,6 +4197,7 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks-mech.html",
       "/wiki/graffpunks-reading-library.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-graffpunks-digital-renegades.html",
@@ -14209,7 +14223,7 @@
     ]
   },
   "/wiki/gentleman-bear.html": {
-    "outbound_count": 30,
+    "outbound_count": 31,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/burglar-bear.html",
@@ -14228,6 +14242,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/graff-bear.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
@@ -23142,7 +23157,7 @@
     ]
   },
   "/wiki/graff-bear.html": {
-    "outbound_count": 48,
+    "outbound_count": 49,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23180,6 +23195,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks-reading-library.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/sailor-bear.html",
@@ -23243,7 +23259,7 @@
     ]
   },
   "/wiki/graffiti-kings-mech.html": {
-    "outbound_count": 37,
+    "outbound_count": 38,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23267,6 +23283,7 @@
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -23942,7 +23959,7 @@
     ]
   },
   "/wiki/graffpunks-mech.html": {
-    "outbound_count": 37,
+    "outbound_count": 39,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23968,6 +23985,8 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks-reading-library.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -24662,7 +24681,7 @@
     ]
   },
   "/wiki/green-electric-bot.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -24676,6 +24695,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -24779,6 +24799,54 @@
     ],
     "inbound_from": [
       "/wiki/grit.html"
+    ]
+  },
+  "/wiki/harbor-kaiju.html": {
+    "outbound_count": 13,
+    "inbound_count": 3,
+    "existing_outbound": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/harbor-nessie.html",
+      "/wiki/nine-toes-joe.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/jonny-laurence-nelson-tag-records.html",
+      "/wiki/nobby.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-signal-from-3008.html",
+      "/wiki/waterfront-roamers.html"
+    ],
+    "inbound_from": [
+      "/wiki/harbor-nessie.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/waterfront-roamers.html"
+    ]
+  },
+  "/wiki/harbor-nessie.html": {
+    "outbound_count": 9,
+    "inbound_count": 3,
+    "existing_outbound": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/sailor-bear.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/nobby.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-signal-from-3008.html",
+      "/wiki/waterfront-roamers.html"
+    ],
+    "inbound_from": [
+      "/wiki/harbor-kaiju.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/waterfront-roamers.html"
     ]
   },
   "/wiki/hard-fork-games-event.html": {
@@ -25028,7 +25096,7 @@
     ]
   },
   "/wiki/hard-fork-rockers-mech.html": {
-    "outbound_count": 35,
+    "outbound_count": 36,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -25052,6 +25120,7 @@
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/it-was-about-becoming-something-more.html",
@@ -25420,7 +25489,7 @@
     "inbound_from": []
   },
   "/wiki/hodl-wars-mech.html": {
-    "outbound_count": 34,
+    "outbound_count": 35,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/blockchain-furies-mech.html",
@@ -25442,6 +25511,7 @@
       "/wiki/gk-factions-to-collect-and-hodl.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hodl-warriors-the-calling.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
@@ -26094,7 +26164,7 @@
     ]
   },
   "/wiki/jack-the-bull.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -26110,6 +26180,7 @@
     "suggested_outbound": [
       "/wiki/allcity-bulls-mech.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/it-was-about-becoming-something-more.html",
       "/wiki/the-allcity-bulls-the-hyper-competitive.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -26126,7 +26197,7 @@
     ]
   },
   "/wiki/jamaican-bear.html": {
-    "outbound_count": 31,
+    "outbound_count": 32,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -26148,6 +26219,7 @@
       "/wiki/first-witness-concordance.html",
       "/wiki/gentleman-bear.html",
       "/wiki/graff-bear.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/nomad-bears-mech.html",
@@ -26210,7 +26282,7 @@
     ]
   },
   "/wiki/jimmy-rugpull.html": {
-    "outbound_count": 13,
+    "outbound_count": 14,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/chada-boi.html",
@@ -26222,6 +26294,7 @@
       "/wiki/the-rugpull-miners.html"
     ],
     "suggested_outbound": [
+      "/wiki/harbor-nessie.html",
       "/wiki/it-was-about-becoming-something-more.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -27536,7 +27609,7 @@
     ]
   },
   "/wiki/moongirls-mech.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -27558,6 +27631,7 @@
       "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -28147,8 +28221,8 @@
     ]
   },
   "/wiki/nine-toes-joe.html": {
-    "outbound_count": 19,
-    "inbound_count": 7,
+    "outbound_count": 20,
+    "inbound_count": 8,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/crypto-moonboys.html",
@@ -28161,6 +28235,7 @@
     ],
     "suggested_outbound": [
       "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
       "/wiki/nomad-bears-mech.html",
@@ -28174,6 +28249,7 @@
     ],
     "inbound_from": [
       "/wiki/eddie-stax.html",
+      "/wiki/harbor-kaiju.html",
       "/wiki/jack-the-bull.html",
       "/wiki/nomad-bears-mech.html",
       "/wiki/sailor-bear.html",
@@ -28183,7 +28259,7 @@
     ]
   },
   "/wiki/no-ball-games-mech.html": {
-    "outbound_count": 28,
+    "outbound_count": 29,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/allcity-bulls-mech.html",
@@ -28201,6 +28277,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
@@ -28270,7 +28347,7 @@
     ]
   },
   "/wiki/nobby.html": {
-    "outbound_count": 18,
+    "outbound_count": 19,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/chada-boi.html",
@@ -28285,6 +28362,7 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -28305,7 +28383,7 @@
     ]
   },
   "/wiki/nomad-bears-mech.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/camo-bear.html",
@@ -28325,6 +28403,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -28940,7 +29019,7 @@
     ]
   },
   "/wiki/police-bike.html": {
-    "outbound_count": 16,
+    "outbound_count": 17,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -28954,6 +29033,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -28971,7 +29051,7 @@
     ]
   },
   "/wiki/police-car.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -28985,6 +29065,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -29002,7 +29083,7 @@
     ]
   },
   "/wiki/police-robot.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -29017,6 +29098,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
       "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -29034,7 +29116,7 @@
     ]
   },
   "/wiki/posh-bear.html": {
-    "outbound_count": 36,
+    "outbound_count": 37,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/burglar-bear.html",
@@ -29060,6 +29142,7 @@
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/it-was-about-becoming-something-more.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -29947,8 +30030,8 @@
     ]
   },
   "/wiki/sailor-bear.html": {
-    "outbound_count": 29,
-    "inbound_count": 5,
+    "outbound_count": 31,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/nine-toes-joe.html",
@@ -29969,6 +30052,8 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/gentleman-bear.html",
       "/wiki/graff-bear.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/posh-bear.html",
@@ -29983,6 +30068,7 @@
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
+      "/wiki/harbor-nessie.html",
       "/wiki/jamaican-bear.html",
       "/wiki/nomad-bears-mech.html",
       "/wiki/police-bike.html",
@@ -30673,7 +30759,7 @@
     ]
   },
   "/wiki/st-patricks-day-bear.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/camo-bear.html",
@@ -30694,6 +30780,7 @@
       "/wiki/gentleman-bear.html",
       "/wiki/graff-bear.html",
       "/wiki/green-electric-bot.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
       "/wiki/nomad-bears-mech.html",
@@ -30946,7 +31033,7 @@
     "inbound_from": []
   },
   "/wiki/straight-outta-ghetto-bear.html": {
-    "outbound_count": 29,
+    "outbound_count": 30,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -30966,6 +31053,7 @@
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/gentleman-bear.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-games.html",
       "/wiki/jamaican-bear.html",
       "/wiki/journal-entry-jodie-zoom-2000-the-games.html",
@@ -31359,7 +31447,7 @@
     "inbound_from": []
   },
   "/wiki/teddy-boi-jones.html": {
-    "outbound_count": 12,
+    "outbound_count": 13,
     "inbound_count": 6,
     "existing_outbound": [
       "/wiki/chada-boi.html",
@@ -31372,6 +31460,7 @@
     ],
     "suggested_outbound": [
       "/wiki/blockstars-mech.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/the-blockstars-digital-celebrities.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-signal-from-3008.html",
@@ -35918,7 +36007,7 @@
     ]
   },
   "/wiki/the-ninth-berth.html": {
-    "outbound_count": 62,
+    "outbound_count": 70,
     "inbound_count": 12,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -35926,6 +36015,8 @@
       "/wiki/crypto-moonboys.html",
       "/wiki/danny-rankz.html",
       "/wiki/eddie-stax.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/jack-the-bull.html",
       "/wiki/jimmy-rugpull.html",
       "/wiki/nine-toes-joe.html",
@@ -35942,10 +36033,16 @@
       "/wiki/burglar-bear.html",
       "/wiki/camo-bear.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html",
       "/wiki/gentleman-bear.html",
-      "/wiki/gk-factions-to-collect-and-hodl.html",
       "/wiki/graff-bear.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffiti-kings.html",
@@ -35958,7 +36055,6 @@
       "/wiki/it-was-about-becoming-something-more.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
-      "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/moongirls-mech.html",
       "/wiki/no-ball-games-mech.html",
       "/wiki/nomad-bears-mech.html",
@@ -35976,6 +36072,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-crypto-stoned-boys.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
@@ -38018,7 +38115,7 @@
     ]
   },
   "/wiki/walking-boombox.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/blue-electric-bot.html",
@@ -38039,6 +38136,7 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks-mech.html",
       "/wiki/graffpunks-reading-library.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -38118,7 +38216,7 @@
     ]
   },
   "/wiki/waterfront-roamers.html": {
-    "outbound_count": 41,
+    "outbound_count": 43,
     "inbound_count": 26,
     "existing_outbound": [
       "/wiki/allcity-bulls-mech.html",
@@ -38134,6 +38232,8 @@
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
       "/wiki/green-electric-bot.html",
+      "/wiki/harbor-kaiju.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/jamaican-bear.html",
@@ -38195,7 +38295,7 @@
     ]
   },
   "/wiki/waterfront-samurai.html": {
-    "outbound_count": 18,
+    "outbound_count": 19,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -38211,6 +38311,7 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
@@ -39058,7 +39159,7 @@
     ]
   },
   "/wiki/zarah8.html": {
-    "outbound_count": 22,
+    "outbound_count": 23,
     "inbound_count": 8,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -39075,6 +39176,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/harbor-nessie.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
       "/wiki/moongirls-mech.html",

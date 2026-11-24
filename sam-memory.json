@@ -9110,6 +9110,42 @@
         "wiki"
       ]
     },
+    "harbor_kaiju": {
+      "alias_candidates": [],
+      "aliases": [
+        "Harbor Kaiju"
+      ],
+      "canonical_title": "The Harbor Kaiju",
+      "canonical_url": "/wiki/harbor-kaiju.html",
+      "category": "concepts",
+      "source_urls": [
+        "/wiki/harbor-kaiju.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "harbor",
+        "kaiju"
+      ]
+    },
+    "harbor_nessie": {
+      "alias_candidates": [],
+      "aliases": [
+        "harbor nessie",
+        "nessie lumina waterfront"
+      ],
+      "canonical_title": "Nessie of Lumina’s Waterfront",
+      "canonical_url": "/wiki/harbor-nessie.html",
+      "category": "concepts",
+      "source_urls": [
+        "/wiki/harbor-nessie.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "nessie",
+        "lumina",
+        "waterfront"
+      ]
+    },
     "hard_fork_games": {
       "alias_candidates": [],
       "aliases": [],
@@ -13920,5 +13956,5 @@
       ]
     }
   },
-  "updated_at": "2026-11-24T04:43:45Z"
+  "updated_at": "2026-11-24T17:29:15Z"
 }

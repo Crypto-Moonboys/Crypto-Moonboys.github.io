@@ -9151,6 +9151,42 @@
     "brand": null
   },
   {
+    "entity_id": "harbor_kaiju",
+    "canonical_title": "The Harbor Kaiju",
+    "canonical_url": "/wiki/harbor-kaiju.html",
+    "category": "concepts",
+    "aliases": [
+      "Harbor Kaiju"
+    ],
+    "tags": [
+      "harbor",
+      "kaiju"
+    ],
+    "source_urls": [
+      "/wiki/harbor-kaiju.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "harbor_nessie",
+    "canonical_title": "Nessie of Lumina’s Waterfront",
+    "canonical_url": "/wiki/harbor-nessie.html",
+    "category": "concepts",
+    "aliases": [
+      "harbor nessie",
+      "nessie lumina waterfront"
+    ],
+    "tags": [
+      "nessie",
+      "lumina",
+      "waterfront"
+    ],
+    "source_urls": [
+      "/wiki/harbor-nessie.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "hard_fork_games",
     "canonical_title": "Hard Fork Games",
     "canonical_url": "/wiki/hard-fork-games.html",

@@ -22,6 +22,12 @@ The static route check found all ten pages in the Lore directory, search index, 
 
 GK requested a continuation of the existing double-tide story and expanded life histories for the 26 published Waterfront roamers. The first paid trial after the hearing is authored Year 3008 district fiction. Seven scenes cover the upper landing, garden exit, shutter, repair bay, claims table, broadcast and closing game. Each scene links to the involved roamers’ accounts of what happened next. The existing double-tide story and its unresolved repair claims remain the starting point. The Waterfront pages and the linked faction and city articles provide the setting for the new character work.
 
+## Waterfront creature continuation — 24 November 2026
+
+GK requested new Year 3008 mythology for Nessie and the Harbor Kaiju and identified The Ninth Berth as the ongoing home for Waterfront stories. After the paid trial, the black tow and north-cut landfall give the two creatures separate events and claims. Their companion profiles follow the older dock records, the incidents, and the ensuing watch, claims and route disputes. The original double-tide account still attributes the repeated bell and gauge reading to the power interruption. The creatures’ names and movement come from the Waterfront encounter and sprite work, including the regular and angry Nessie sightings and the Kaiju’s offshore walk, north-bank landfall and sideways fire. The historical records, witnesses and aftermath are original fiction. The loch and foundry stories are attributed traditions with unresolved origins.
+
+For future Waterfront additions, use the published Ninth Berth events and the corresponding game asset or NPC as starting points. Give each substantial addition an owning article with an earlier history, a link to its precise Ninth Berth scene, and consequences that continue on its own page. Link that scene back to the owning article and add the published route to the relevant Waterfront directory and discovery surfaces.
+
 ## Approved final implementation — 9 October 2026
 
 Base: `e393177b07793d992e883a8073ad416a2e65f84e` (merged #1460). Backup: `backup/gk-final-decisions-base-20261009`. Working branch: `codex/gk-final-decisions-20261009`. [Exact GK approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).
