@@ -88,11 +88,15 @@ function bootMap(district) {
   window.waterfrontDistrict = district;
   if (!mapStartup) {
     mapStartup = (async () => {
-      if (!window.drawWaterfront) await script('harbor-art.js?v=37');
+      if (!window.createWaterfrontFactionConversations) {
+        const { createFactionConversations } = await import('./faction-conversations.mjs?v=1');
+        window.createWaterfrontFactionConversations = createFactionConversations;
+      }
+      if (!window.drawWaterfront) await script('harbor-art.js?v=38');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=2');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=3');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
-      await import('./leader-dialog.js?lore=4');
+      await import('./leader-dialog.js?lore=5');
     })().catch(error => {
       mapStartup = null;
       throw error;

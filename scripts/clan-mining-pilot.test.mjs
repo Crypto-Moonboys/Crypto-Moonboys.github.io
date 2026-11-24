@@ -2134,7 +2134,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     const response = await question({ npc: 'graffpunks', question: intro });
     assert.equal(response.status, 200);
     assert.match(response.data.reply, /I represent GraffPUNKS here on the Waterfront/);
-    assert.deepEqual(response.data.sources, [{ title: 'GraffPUNKS Wiki', path: graffpunksPath }]);
+    assert.deepEqual(response.data.sources.map(source => source.path), [graffpunksPath, '/battle-chamber/factions/graffpunks.html']);
   }
   assert.equal(prompts.length, callsBeforeIntroduction, 'local introductions skip the provider');
   assert.equal(visits.length, visitsBeforeIntroduction, 'local introductions skip source fetches');

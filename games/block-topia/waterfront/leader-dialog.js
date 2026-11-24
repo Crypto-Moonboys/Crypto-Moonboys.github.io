@@ -1,18 +1,9 @@
+import { LEADERS } from '/js/waterfront-faction-identities.mjs';
 import {
   clanLeaderQuestionError, clanLeaderSourceLinks, getClanLeaderBoard, mountClanLeaderDialog, sendClanLeaderQuestion,
 } from '/js/clan-leader-dialog.js?lore=3';
 
-const names = new Map([
-  ['all-city-bulls', 'All City Bulls'],
-  ['nomad-bears', 'The Nomad Bears'],
-  ['hard-fork-rockers', 'Hard Fork Rockers'],
-  ['rugpull-miners', 'Rugpull Miners'],
-  ['crypto-moongirls', 'Crypto Moongirls'],
-  ['blockchain-furies', 'The Blockchain Furies'],
-  ['graffpunks', 'GraffPunks'],
-  ['crypto-stoned-boys', 'Crypto Stinedboys'],
-  ['blockstars', 'The Blockstars'],
-]);
+const names = new Map(Object.entries(LEADERS).map(([id, profile]) => [id, profile.name]));
 const keys = Array.from(names.keys());
 const pick = document.querySelector('#map-leader-faction');
 const controls = document.querySelector('#map-leader-controls');
@@ -85,7 +76,7 @@ function lookup(key) {
 function showDetails(key) {
   selected = key;
   const presence = lookup(key)?.presence;
-  details.querySelector('h2').textContent = names.get(key);
+  details.querySelector('h2').textContent = LEADERS[key].callSign + ' · ' + names.get(key);
   const playing = presence?.playing_until * 1000 > Date.now();
   const paused = presence?.paused_until * 1000 > Date.now();
   details.querySelector('[data-activity]').textContent = playing ? '· Playing a game' : paused ? '· Paused' : '· In Waterfront';

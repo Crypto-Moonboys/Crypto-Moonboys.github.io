@@ -14,6 +14,14 @@ The Waterfront sends signed player questions to the `moonboys-api` Worker at `PO
 2. The [local canon library](../../../workers/moonboys-api/shared/clan-leader-canon-library.js) answers recognized lore questions from an approved catalog of public wiki sources. PR #2003 shipped 44 answers and 140 aliases. Lookup matches the whole normalized question, with limited greeting and question-prefix handling. Matches skip source fetches, Gemini, and the model question quota.
 3. Remaining questions use the [lore handler](../../../workers/moonboys-api/shared/clan-leader-lore.js). With `CLAN_LEADER_LORE_PROVIDER=gemini`, it sends the prompt and relevant public excerpts through Cloudflare AI Gateway. Gemini handles conversation, sourced canon, and creative requests in each leader’s voice. Fiction replies are labeled **Non-canon fiction**. A lore question with insufficient evidence should return uncertainty. Recent turns help resolve follow-ups.
 
+### Faction identities and street conversations
+
+The [shared profiles](../../../js/waterfront-faction-identities.mjs) define the nine playable Waterfront representatives, their role names and their values. Local introductions pair those profiles with the canon library. Gemini receives live excerpts from the speaker’s wiki and Battle Chamber pages alongside relevant matches from the published site index. The public-site allowlist and the existing search pipeline still govern retrieval.
+
+Nearby representatives can start a conversation, pass with a quick remark or return to their last topic. The browser composes 240 available starters per faction from published-world topics and local dialogue patterns. It seeds each pair’s new topics using the UTC day and remembers the last completed exchange in browser storage. NPC street conversations make no model requests.
+
+The avatar picker swaps a selected representative into the player’s place in the local scene. Other leaders recognize the same faction ID, so the conversation memory follows that identity. After 25 seconds of inactivity the selected avatar can walk and talk nearby. The signed faction seat, access and rewards continue to use the account’s verified faction. Browser-local conversation memory is specific to the installation.
+
 ### Slowdown and scheduled play
 
 Leaders leave the map for scheduled five-minute game slots. The [presence module](../../../workers/moonboys-api/shared/clan-leader-presence.js) owns the schedule and slowdown rules. It matches the entire slowdown question or an explicit alias and checks eligibility on the server.

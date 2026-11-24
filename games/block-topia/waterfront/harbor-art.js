@@ -56,7 +56,7 @@ const waterfrontFactionAtlas = { file: "faction-frames" };
 const waterfrontFactions = [
   "All City Bulls", "The Nomad Bears", "Hard Fork Rockers",
   "Rugpull Miners", "Crypto Moongirls", "The Blockchain Furies",
-  "GraffPunks", "Crypto Stinedboys", "The Blockstars"
+  "GraffPUNKS", "Crypto Stoned Boys", "The Blockstars"
 ];
 const waterfrontBotAtlas = { file: "bot-frames" };
 const residentBots = [3, 4, 5, 6, 7];
@@ -216,7 +216,8 @@ function factionRoutes(rows, district) {
   return routes;
 }
 
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = []) {
+const factionMotion = [];
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -952,10 +953,16 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const now = Date.now();
     waterfrontFactions.forEach((name, index) => {
       const state = leaderStates[index];
-      if (state?.playingUntil > now) return;
+      if (index === selectedAvatar || state?.playingUntil > now) return;
       const route = routes[index];
       const paused = state?.pausedUntil > now;
-      const walkerTime = paused ? state.sceneTime : time;
+      const motion = factionMotion[index] ??= { previous: time, elapsed: time ?? 0 };
+      const holding = conversations?.holds(index);
+      if (!paused && !holding && time !== null && motion.previous !== null) {
+        motion.elapsed += Math.min(0.2, Math.max(0, time - motion.previous));
+      }
+      motion.previous = time;
+      const walkerTime = time === null ? 0 : motion.elapsed;
       const progress = ((walkerTime ?? 0) / (1.05 + index * 0.045)) % route.length;
       const step = Math.floor(progress);
       const from = route[step];
@@ -966,7 +973,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const x = Math.round((from.x + dx * blend) * size + 16);
       const y = Math.round((from.y + dy * blend) * size + 22);
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
-      const frame = paused || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
+      const frame = paused || holding || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
       queue(y, () => factionCharacter(index, x, y, facing, frame, 20));
       factionHits.push({ index, x, y, paused, talking: state?.talking });
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
@@ -1043,6 +1050,40 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.textAlign = 'center';
     ctx.fillText(talking ? 'Talking' : 'Paused', x, y - 34);
     ctx.restore();
+  }
+  if (conversations && time !== null) {
+    const participants = factionHits.filter(hit => !hit.talking);
+    if (selectedAvatar !== null) participants.push({
+      index: selectedAvatar, x: player.x * size + 16, y: player.y * size + 22,
+    });
+    const line = conversations.tick(participants, Date.now());
+    const speaker = line && participants.find(actor => actor.index === line.actor);
+    if (speaker) {
+      ctx.save();
+      ctx.font = '8px system-ui';
+      ctx.textAlign = 'left';
+      const lines = [];
+      let next = '';
+      for (const word of line.text.split(' ')) {
+        if (next && ctx.measureText(next + ' ' + word).width > 170) {
+          lines.push(next);
+          next = '';
+        }
+        next += (next ? ' ' : '') + word;
+      }
+      lines.push(next);
+      const boxWidth = Math.ceil(Math.max(...lines.map(text => ctx.measureText(text).width))) + 12;
+      const left = Math.max(2, Math.min(speaker.x - boxWidth / 2, width * size - boxWidth - 2));
+      const boxHeight = lines.length * 11 + 6;
+      const top = Math.max(2, speaker.y - 37 - boxHeight);
+      rect('#0e151f', left - 1, top - 1, boxWidth + 2, boxHeight + 2);
+      rect('#d9efea', left, top, boxWidth, boxHeight);
+      const tail = Math.max(left + 4, Math.min(speaker.x, left + boxWidth - 4));
+      polygon('#d9efea', [[tail - 3, top + boxHeight], [tail + 3, top + boxHeight], [tail, top + boxHeight + 5]]);
+      ctx.fillStyle = '#131926';
+      lines.forEach((text, index) => ctx.fillText(text, left + 6, top + 10 + index * 11));
+      ctx.restore();
+    }
   }
   return factionHits;
 };
