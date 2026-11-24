@@ -1200,14 +1200,15 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       }
       const { x, y, dx, dy } = patrolPosition(islandLoop, patrolClock / (pace ?? 1.05 + index % 5 * 0.09),
         start, index % 2 === 0);
-      const px = Math.round(x * size + 16);
-      const py = Math.round(y * size + 22);
-      streetHits.push({ id, x: px, y: py, spriteSize: height, spriteReady: Boolean(atlas.image) });
-      if (x < left || x >= right || y < top || y >= bottom) return;
+      const inView = x >= left && x < right && y >= top && y < bottom;
       if (!atlas.image) {
-        loadDetailedAtlas(atlas, "auto", repaintArt);
+        if (inView) loadDetailedAtlas(atlas, "auto", repaintArt);
         return;
       }
+      const px = Math.round(x * size + 16);
+      const py = Math.round(y * size + 22);
+      streetHits.push({ id, x: px, y: py, spriteSize: height });
+      if (!inView) return;
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const moving = time !== null && (dx || dy) && !inspection?.held(id) && !street?.holds(id);
       const frame = moving ? 1 + Math.floor(clock * 7 + index) % 3 : 0;
@@ -1315,8 +1316,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const cast = [...streetHits, ...leaders.map(hit => ({ ...hit, id: "leader:" + hit.index, spriteSize: factionSpriteSize }))];
       const byId = new Map(cast.map(hit => [hit.id, hit]));
       for (const line of street.tick(cast, now, id => conversations.holds(leaderIds.get(id)))) {
-        const speaker = byId.get(line.id);
-        if (speaker?.spriteReady !== false) bubbles.push({ text: line.text, speaker });
+        bubbles.push({ text: line.text, speaker: byId.get(line.id) });
       }
     }
     for (const { speaker, text } of bubbles) {

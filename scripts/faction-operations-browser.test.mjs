@@ -2234,6 +2234,25 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       'the compact harbor paint and NPC hit targets work while detailed downloads are pending');
     assert.ok(detailArtRequests.filter(file => file.includes('/roamers-')).length < 3,
       'the opening camera does not request every roamer group');
+    const pendingEncounterCast = await page.evaluate(() => {
+      const render = document.createElement('canvas').getContext('2d');
+      let cast;
+      window.drawWaterfront(render, rows, player, district, 0, 0, [], null, {
+        holds: () => false,
+        tick: () => [],
+        street: {
+          holds: () => false,
+          tick: actors => {
+            cast = actors.map(({ id }) => id);
+            return [];
+          },
+        },
+      });
+      return cast;
+    });
+    assert.ok(pendingEncounterCast.some(id => id.startsWith('leader:')));
+    assert.ok(pendingEncounterCast.every(id => !id.startsWith('roamer:')),
+      'roamers with pending art cannot stop or start conversations with visible NPCs');
     await page.evaluate(() => {
       function afterPaint() {
         if (!waterfrontDetailedFactions.image || !waterfrontDetailedBots.image) return;
