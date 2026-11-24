@@ -3,6 +3,8 @@ export const width = 72;
 export const height = 68;
 export const spawn = { x: 24, y: 23 };
 export const miningSites = [
+  { x: 24, y: 14, name: 'Bitcoin Cash Mining Tower', file: 'bitcoin-cash-tower.webp', anchorY: 234, scale: 1.0625,
+    info: 'Green reactor bands pulse up the tower while its mining rigs run.' },
   { x: 28, y: 20, name: 'Zcash Mining Fortress', file: 'zcash-fortress.webp', anchorY: 247,
     info: 'Mining rigs are online. Four cooling fans vent heat from the gold-lit reactor stacks.' },
   { x: 19, y: 27, name: 'WAX Bee Node', file: 'wax-bee.webp', anchorY: 234,

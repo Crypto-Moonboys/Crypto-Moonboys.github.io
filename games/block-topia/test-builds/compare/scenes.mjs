@@ -37,11 +37,11 @@ export async function createScene(mode, canvas, viewport) {
   if (mode === 'survival') {
     const survival = await import('./survival-terrain.mjs');
     return {
-      start:[10,10], bounds:{left:-640,right:640,top:0,bottom:640},
+      start:[10,10], bounds:{left:-640,right:640,top:-112,bottom:640},
       project:survival.projectSurvival,
       unproject:(x,y) => [(x/32+(y-16)/16)/2, ((y-16)/16-x/32)/2],
       walkable:survival.survivalWalkable,
-      initial:() => Math.max(.35, Math.min(1.25, viewport.width*.84/1280, viewport.height*.84/640)),
+      initial:() => Math.max(.35, Math.min(1.25, viewport.width*.84/1280, viewport.height*.84/752)),
       zoomRange:() => [.35, 3],
       background:survival.drawBackground,
       ground:survival.drawTiles,
@@ -74,7 +74,7 @@ export async function createScene(mode, canvas, viewport) {
   window.waterfrontIslandSeed = island.islandSeed;
   await new Promise((resolve,reject) => {
     const script = document.createElement('script');
-    script.src = block+'waterfront/harbor-art.js?v=74-wax-miner';
+    script.src = block+'waterfront/harbor-art.js?v=75-mining-tower';
     script.onload = resolve;
     script.onerror = reject;
     document.head.append(script);
