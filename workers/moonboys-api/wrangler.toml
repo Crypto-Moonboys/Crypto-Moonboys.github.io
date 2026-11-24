@@ -64,6 +64,7 @@ CHAMPIONSHIP_CLOUT_DEAD_RUN_ENABLED = "false"
 [observability]
 enabled = true
 head_sampling_rate = 0.1
+redact_query_string = true
 
 # Public deployment provenance: version tag must be the full repository commit.
 [version_metadata]

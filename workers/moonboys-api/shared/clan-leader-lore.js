@@ -62,7 +62,6 @@ export function clanLeaderLoreEnabled(env) {
 async function generateLore(env, endpoint, messages, gemini, search) {
   const [system, user] = messages;
   const headers = gemini ? {
-    'x-goog-api-key': env.CLAN_LEADER_GEMINI_KEY.trim(),
     'cf-aig-authorization': 'Bearer ' + env.CLAN_LEADER_GATEWAY_TOKEN.trim(),
     'cf-aig-collect-log': 'false',
     'cf-aig-skip-cache': 'true',
@@ -87,6 +86,8 @@ async function generateLore(env, endpoint, messages, gemini, search) {
     },
   } : { model: env.CLAN_LEADER_HERMES_MODEL?.trim() || 'hermes-agent', stream: false, messages };
   const requestUrl = new URL(endpoint);
+  // AI Gateway detects BYOK for native Google generation via the key query parameter.
+  if (gemini) requestUrl.searchParams.set('key', env.CLAN_LEADER_GEMINI_KEY.trim());
   let response;
   try {
     response = await fetch(requestUrl.href, {
