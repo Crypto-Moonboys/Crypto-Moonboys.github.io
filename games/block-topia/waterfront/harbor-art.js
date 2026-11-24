@@ -180,6 +180,8 @@ const kaijuLegs = [[24, 34, 30, 34, 4], [30, 34, 30, 38, 2],
   [30, 38, 24, 38, 3], [24, 38, 24, 34, 5]];
 
 let kaijuSummoned = false;
+let kaijuRequestedAt;
+const kaijuDuration = 32;
 
 function hasKaijuWater(rows) {
   const { left, top, right, bottom } = kaijuWater;
@@ -193,16 +195,26 @@ window.summonHarborKaiju = function summonHarborKaiju(rows) {
   kaijuSummoned = hasKaijuWater(rows);
   if (kaijuSummoned) landfallSummoned = false;
   harborKaijuAtlas.started = undefined;
+  kaijuRequestedAt = undefined;
   if (!kaijuSummoned) return null;
   const [x, y] = kaijuLegs[0];
   return { x: x + 0.5, y: y - 1 };
 };
 
 function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
+  if (!kaijuSummoned) return;
+  // Expire even when the patrol is offscreen or the atlas never decoded.
+  if (time !== null) {
+    kaijuRequestedAt ??= time;
+    if (time - (harborKaijuAtlas.started ?? kaijuRequestedAt) >= kaijuDuration) {
+      kaijuSummoned = false;
+      return;
+    }
+  }
   const { left, top, right, bottom } = kaijuWater;
   if (visible && (visible.right <= left || visible.left >= right ||
       visible.bottom <= top || visible.top >= bottom)) return;
-  if (!kaijuSummoned || !hasKaijuWater(rows)) return;
+  if (!hasKaijuWater(rows)) return;
   loadDetailedAtlas(harborKaijuAtlas, "low", repaint);
   if (!harborKaijuAtlas.image) return;
 
@@ -212,12 +224,8 @@ function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
   if (time !== null) {
     harborKaijuAtlas.started ??= time;
     const elapsed = Math.max(0, time - harborKaijuAtlas.started);
-    if (elapsed >= 32) {
-      kaijuSummoned = false;
-      return;
-    }
     if (elapsed < 2 || elapsed >= 29) {
-      const frame = Math.min(7, Math.floor((elapsed < 2 ? elapsed : 32 - elapsed) * 4));
+      const frame = Math.min(7, Math.floor((elapsed < 2 ? elapsed : kaijuDuration - elapsed) * 4));
       row = Math.floor(frame / 4);
       column = frame % 4;
     } else if (elapsed < 29) {
