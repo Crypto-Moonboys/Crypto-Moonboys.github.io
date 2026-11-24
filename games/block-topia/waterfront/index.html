@@ -17,9 +17,10 @@ a{color:#91efe3}
 .map-controls{position:absolute;z-index:1;top:.65rem;right:.65rem;display:flex;gap:.35rem}
 .map-controls button{background:#13131cef}
 .map-controls button[hidden]{display:none}
-canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixelated;cursor:pointer}
-canvas[data-editing=true]{cursor:crosshair}
-canvas.is-panning{cursor:grabbing}
+#map{cursor:pointer}
+#map-view{position:absolute;top:0;left:0;pointer-events:none;display:block}
+#map[data-editing=true]{cursor:crosshair}
+#map.is-panning{cursor:grabbing}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
 .tools{position:absolute;z-index:2;top:3.75rem;right:.65rem;width:min(25rem,calc(100% - 1.3rem));max-height:calc(100% - 4.4rem);overflow:auto;overscroll-behavior:contain;padding:1rem;background:#13131cf5;border:1px solid #658782;border-radius:.25rem}
 .tools .movement{margin-block:.8rem}
@@ -51,8 +52,9 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </section>
 <div class="viewport" id="waterfront-game" hidden inert>
 <div class="map-scroll">
-<canvas id="map" width="896" height="384" role="img" aria-describedby="movement-help" aria-label="Waterfront harbor and island trails through tree groves and wildflower meadows"></canvas>
+<div id="map" role="img" aria-describedby="movement-help" aria-label="Waterfront harbor and island trails through tree groves and wildflower meadows"></div>
 </div>
+<canvas id="map-view" aria-hidden="true"></canvas>
 <div class="map-controls" role="group" aria-label="Map view">
 <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
 <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
@@ -100,6 +102,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" type="module" src="entry.js?v=11"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=12"></script>
 </body>
 </html>
