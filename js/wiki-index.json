@@ -4444,11 +4444,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 551,
+      "inbound_count": 553,
       "outbound_count": 158,
       "existing_outbound_count": 63,
       "suggested_outbound_count": 95,
-      "authority": 1133.5
+      "authority": 1137.5
     },
     "brand": null
   },
@@ -5431,11 +5431,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 95,
+      "inbound_count": 97,
       "outbound_count": 82,
       "existing_outbound_count": 19,
       "suggested_outbound_count": 63,
-      "authority": 199.5
+      "authority": 203.5
     },
     "brand": null
   },
@@ -15973,6 +15973,108 @@
     "brand": null
   },
   {
+    "title": "The Ninth Berth",
+    "desc": "The Ninth Berth follows Lumina’s Waterfront through the double tide, the first paid trial, Nessie’s black tow and the Harbor Kaiju’s north-shore landfall.",
+    "url": "/wiki/the-ninth-berth.html",
+    "tags": [
+      "ninth",
+      "berth"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "Ninth Berth"
+      }
+    ],
+    "rank_score": 299,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 3604,
+      "keyword_bag_size": 25,
+      "heading_count": 18,
+      "list_count": 1,
+      "internal_link_count": 57,
+      "paragraph_count": 49,
+      "section_count": 16,
+      "lore_paragraph_count": 40,
+      "content_quality_score": 105,
+      "authority_score": 28
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 110,
+      "authority_points": 59,
+      "final_rank_score": 299,
+      "authority_graph_points": 31
+    },
+    "search_index": {
+      "normalized_title": "the ninth berth crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "ninth",
+        "berth",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "ninth",
+        "berth",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "follows",
+        "lumina",
+        "s",
+        "waterfront",
+        "through",
+        "double",
+        "tide",
+        "first",
+        "paid",
+        "trial",
+        "nessie",
+        "black",
+        "tow",
+        "and",
+        "harbor",
+        "kaiju",
+        "north",
+        "shore",
+        "landfall",
+        "block",
+        "topia",
+        "night",
+        "came",
+        "in",
+        "twice",
+        "characters",
+        "year",
+        "3008",
+        "cut"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 12,
+      "outbound_count": 70,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 57,
+      "authority": 30.5
+    },
+    "brand": null
+  },
+  {
     "title": "The OG PIXEL SAINTS",
     "desc": "Year 3008 OG Pixel Saints: cultural memory, restoration, arcade ritual, Last Credit workshop, artistic disputes and the unresolved Final High Score.",
     "url": "/wiki/the-og-pixel-saints.html",
@@ -16622,106 +16724,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 41,
       "authority": 7.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The Ninth Berth",
-    "desc": "The Ninth Berth is a working dock on Lumina’s Waterfront. Meet nine faction representatives whose lives cross on the night of the double tide.",
-    "url": "/wiki/the-ninth-berth.html",
-    "tags": [
-      "ninth",
-      "berth"
-    ],
-    "category": "concepts",
-    "aliases": [
-      {
-        "title": "Ninth Berth"
-      }
-    ],
-    "rank_score": 298,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 2,
-      "mention_count": 0,
-      "category": "concepts",
-      "category_priority": 5,
-      "has_description": true,
-      "article_word_count": 2788,
-      "keyword_bag_size": 25,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 55,
-      "paragraph_count": 39,
-      "section_count": 13,
-      "lore_paragraph_count": 30,
-      "content_quality_score": 105,
-      "authority_score": 28
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 25,
-      "word_count_points": 50,
-      "keyword_bag_points": 25,
-      "content_quality_points": 110,
-      "authority_points": 58,
-      "final_rank_score": 298,
-      "authority_graph_points": 30
-    },
-    "search_index": {
-      "normalized_title": "the ninth berth crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "ninth",
-        "berth",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "ninth",
-        "berth",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "working",
-        "dock",
-        "on",
-        "lumina",
-        "s",
-        "waterfront",
-        "meet",
-        "nine",
-        "faction",
-        "representatives",
-        "whose",
-        "lives",
-        "cross",
-        "night",
-        "of",
-        "double",
-        "tide",
-        "block",
-        "topia",
-        "came",
-        "in",
-        "twice",
-        "characters",
-        "year",
-        "3008"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 12,
-      "outbound_count": 62,
-      "existing_outbound_count": 11,
-      "suggested_outbound_count": 51,
-      "authority": 29.5
     },
     "brand": null
   },
@@ -20425,9 +20427,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 3,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 19,
       "authority": 1.5
     },
     "brand": null,
@@ -29308,9 +29310,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 27,
+      "outbound_count": 28,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 21.5
     },
     "brand": null
@@ -31037,6 +31039,101 @@
     "brand": null
   },
   {
+    "title": "Nine Toes Joe",
+    "desc": "Nine Toes Joe is a Nomad Bears guide who keeps an independent way home open for the crews of Lumina’s Waterfront.",
+    "url": "/wiki/nine-toes-joe.html",
+    "tags": [
+      "nine",
+      "toes",
+      "joe"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 278,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 1249,
+      "keyword_bag_size": 25,
+      "heading_count": 10,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 15,
+      "section_count": 8,
+      "lore_paragraph_count": 13,
+      "content_quality_score": 89,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 92,
+      "authority_points": 41,
+      "final_rank_score": 278,
+      "authority_graph_points": 20
+    },
+    "search_index": {
+      "normalized_title": "nine toes joe crypto moonboys wiki",
+      "tokens": [
+        "nine",
+        "toes",
+        "joe",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nine",
+        "toes",
+        "joe",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "a",
+        "nomad",
+        "bears",
+        "guide",
+        "who",
+        "keeps",
+        "an",
+        "independent",
+        "way",
+        "home",
+        "open",
+        "for",
+        "the",
+        "crews",
+        "of",
+        "lumina",
+        "s",
+        "waterfront",
+        "toe",
+        "high",
+        "quiet",
+        "return",
+        "year",
+        "3008"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 8,
+      "outbound_count": 20,
+      "existing_outbound_count": 8,
+      "suggested_outbound_count": 12,
+      "authority": 20
+    },
+    "brand": null
+  },
+  {
     "title": "Sector Seven: The Tactical Incident and Deletion Certificate | Crypto Moonboys",
     "desc": "The Sector Seven report speaks through identifiers, authorisations and a deletion certificate.",
     "url": "/wiki/cryptographic-tactical-incident-report.html",
@@ -32268,9 +32365,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 22,
+      "outbound_count": 23,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 20.5
     },
     "brand": null
@@ -32381,101 +32478,6 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 26,
       "authority": 8.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Nine Toes Joe",
-    "desc": "Nine Toes Joe is a Nomad Bears guide who keeps an independent way home open for the crews of Lumina’s Waterfront.",
-    "url": "/wiki/nine-toes-joe.html",
-    "tags": [
-      "nine",
-      "toes",
-      "joe"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 276,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 3,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1249,
-      "keyword_bag_size": 25,
-      "heading_count": 10,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 15,
-      "section_count": 8,
-      "lore_paragraph_count": 13,
-      "content_quality_score": 89,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 50,
-      "keyword_bag_points": 25,
-      "content_quality_points": 92,
-      "authority_points": 39,
-      "final_rank_score": 276,
-      "authority_graph_points": 18
-    },
-    "search_index": {
-      "normalized_title": "nine toes joe crypto moonboys wiki",
-      "tokens": [
-        "nine",
-        "toes",
-        "joe",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "nine",
-        "toes",
-        "joe",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "nomad",
-        "bears",
-        "guide",
-        "who",
-        "keeps",
-        "an",
-        "independent",
-        "way",
-        "home",
-        "open",
-        "for",
-        "the",
-        "crews",
-        "of",
-        "lumina",
-        "s",
-        "waterfront",
-        "toe",
-        "high",
-        "quiet",
-        "return",
-        "year",
-        "3008"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 7,
-      "outbound_count": 19,
-      "existing_outbound_count": 8,
-      "suggested_outbound_count": 11,
-      "authority": 18
     },
     "brand": null
   },
@@ -33739,9 +33741,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 15,
       "authority": 20.5
     },
     "brand": null
@@ -33836,9 +33838,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 17.5
     },
     "brand": null
@@ -33935,9 +33937,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 12,
+      "outbound_count": 13,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 15.5
     },
     "brand": null
@@ -37152,9 +37154,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 14.5
     },
     "brand": null
@@ -37450,9 +37452,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 15,
+      "outbound_count": 16,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 17.5
     },
     "brand": null
@@ -38262,9 +38264,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 13,
+      "outbound_count": 14,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 15.5
     },
     "brand": null
@@ -43044,6 +43046,104 @@
     "brand": null
   },
   {
+    "title": "The Harbor Kaiju",
+    "desc": "The Harbor Kaiju’s offshore patrol, north-shore landfall and fire at Lumina’s Waterfront, from the old yard records to the Ninth Berth hearing.",
+    "url": "/wiki/harbor-kaiju.html",
+    "tags": [
+      "harbor",
+      "kaiju"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "Harbor Kaiju"
+      }
+    ],
+    "rank_score": 249,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 1233,
+      "keyword_bag_size": 25,
+      "heading_count": 9,
+      "list_count": 1,
+      "internal_link_count": 7,
+      "paragraph_count": 16,
+      "section_count": 7,
+      "lore_paragraph_count": 16,
+      "content_quality_score": 89,
+      "authority_score": 17
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 25,
+      "content_quality_points": 94,
+      "authority_points": 25,
+      "final_rank_score": 249,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "the harbor kaiju crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "harbor",
+        "kaiju",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "harbor",
+        "kaiju",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "s",
+        "offshore",
+        "patrol",
+        "north",
+        "shore",
+        "landfall",
+        "and",
+        "fire",
+        "at",
+        "lumina",
+        "waterfront",
+        "from",
+        "old",
+        "yard",
+        "records",
+        "to",
+        "ninth",
+        "berth",
+        "hearing",
+        "harbour",
+        "breaker",
+        "king",
+        "cut",
+        "year",
+        "3008"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 13,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 9,
+      "authority": 8
+    },
+    "brand": null
+  },
+  {
     "title": "The Wiki, SAM and the Shape of Public Memory | Crypto Moonboys",
     "desc": "The Wiki, SAM and the Shape of Public Memory. Read the full account and its wider context.",
     "url": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
@@ -44131,6 +44231,108 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 55,
       "authority": 13
+    },
+    "brand": null
+  },
+  {
+    "title": "Nessie of Lumina’s Waterfront",
+    "desc": "Nessie’s channel sightings, the Black Tow, and the lives left in her wake at the Ninth Berth.",
+    "url": "/wiki/harbor-nessie.html",
+    "tags": [
+      "nessie",
+      "lumina",
+      "waterfront"
+    ],
+    "category": "concepts",
+    "aliases": [
+      {
+        "title": "harbor nessie"
+      },
+      {
+        "title": "nessie lumina waterfront"
+      }
+    ],
+    "rank_score": 244,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "concepts",
+      "category_priority": 5,
+      "has_description": true,
+      "article_word_count": 1167,
+      "keyword_bag_size": 23,
+      "heading_count": 9,
+      "list_count": 1,
+      "internal_link_count": 7,
+      "paragraph_count": 15,
+      "section_count": 7,
+      "lore_paragraph_count": 15,
+      "content_quality_score": 85,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 25,
+      "word_count_points": 50,
+      "keyword_bag_points": 23,
+      "content_quality_points": 94,
+      "authority_points": 22,
+      "final_rank_score": 244,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "nessie of lumina s waterfront crypto moonboys wiki",
+      "tokens": [
+        "nessie",
+        "of",
+        "lumina",
+        "s",
+        "waterfront",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nessie",
+        "of",
+        "lumina",
+        "s",
+        "waterfront",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "channel",
+        "sightings",
+        "the",
+        "black",
+        "tow",
+        "and",
+        "lives",
+        "left",
+        "in",
+        "her",
+        "wake",
+        "at",
+        "ninth",
+        "berth",
+        "harbor",
+        "angry",
+        "loch",
+        "ness",
+        "monster",
+        "year",
+        "3008"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 9,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 5,
+      "authority": 8
     },
     "brand": null
   },
@@ -46367,6 +46569,96 @@
     "brand": null
   },
   {
+    "title": "Waterfront Roamers",
+    "desc": "Meet 26 NPCs who roam Lumina’s Waterfront, from the harbor patrol and electric orbs to the mechs and visiting bears.",
+    "url": "/wiki/waterfront-roamers.html",
+    "tags": [
+      "waterfront",
+      "roamers"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 234,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 375,
+      "keyword_bag_size": 23,
+      "heading_count": 8,
+      "list_count": 0,
+      "internal_link_count": 34,
+      "paragraph_count": 5,
+      "section_count": 6,
+      "lore_paragraph_count": 3,
+      "content_quality_score": 55,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 19,
+      "keyword_bag_points": 23,
+      "content_quality_points": 57,
+      "authority_points": 70,
+      "final_rank_score": 234,
+      "authority_graph_points": 50
+    },
+    "search_index": {
+      "normalized_title": "waterfront roamers crypto moonboys wiki",
+      "tokens": [
+        "waterfront",
+        "roamers",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "waterfront",
+        "roamers",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "meet",
+        "26",
+        "npcs",
+        "who",
+        "roam",
+        "lumina",
+        "s",
+        "from",
+        "the",
+        "harbor",
+        "patrol",
+        "and",
+        "electric",
+        "orbs",
+        "to",
+        "mechs",
+        "visiting",
+        "bears",
+        "npc",
+        "directory",
+        "block",
+        "topia",
+        "police"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 26,
+      "outbound_count": 43,
+      "existing_outbound_count": 31,
+      "suggested_outbound_count": 12,
+      "authority": 67.5
+    },
+    "brand": null
+  },
+  {
     "title": "👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️",
     "desc": "👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
@@ -46659,96 +46951,6 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 19,
       "authority": 7
-    },
-    "brand": null
-  },
-  {
-    "title": "Waterfront Roamers",
-    "desc": "Meet 26 NPCs who roam Lumina’s Waterfront, from the harbor patrol and electric orbs to the mechs and visiting bears.",
-    "url": "/wiki/waterfront-roamers.html",
-    "tags": [
-      "waterfront",
-      "roamers"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 232,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 2,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 336,
-      "keyword_bag_size": 23,
-      "heading_count": 7,
-      "list_count": 0,
-      "internal_link_count": 31,
-      "paragraph_count": 4,
-      "section_count": 5,
-      "lore_paragraph_count": 2,
-      "content_quality_score": 55,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 17,
-      "keyword_bag_points": 23,
-      "content_quality_points": 57,
-      "authority_points": 70,
-      "final_rank_score": 232,
-      "authority_graph_points": 50
-    },
-    "search_index": {
-      "normalized_title": "waterfront roamers crypto moonboys wiki",
-      "tokens": [
-        "waterfront",
-        "roamers",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "waterfront",
-        "roamers",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "meet",
-        "26",
-        "npcs",
-        "who",
-        "roam",
-        "lumina",
-        "s",
-        "from",
-        "the",
-        "harbor",
-        "patrol",
-        "and",
-        "electric",
-        "orbs",
-        "to",
-        "mechs",
-        "visiting",
-        "bears",
-        "npc",
-        "directory",
-        "block",
-        "topia",
-        "police"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 26,
-      "outbound_count": 41,
-      "existing_outbound_count": 29,
-      "suggested_outbound_count": 12,
-      "authority": 66.5
     },
     "brand": null
   },
@@ -47311,9 +47513,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 34,
+      "outbound_count": 35,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 28,
+      "suggested_outbound_count": 29,
       "authority": 9
     },
     "brand": null
@@ -48012,9 +48214,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 37,
+      "outbound_count": 39,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 31,
+      "suggested_outbound_count": 33,
       "authority": 9
     },
     "brand": null
@@ -51582,9 +51784,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 32,
+      "outbound_count": 33,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 28,
       "authority": 8.5
     },
     "brand": null
@@ -52042,9 +52244,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 48,
+      "outbound_count": 49,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 41,
+      "suggested_outbound_count": 42,
       "authority": 13.5
     },
     "brand": null
@@ -52403,9 +52605,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 12.5
     },
     "brand": null
@@ -52692,9 +52894,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 29,
+      "outbound_count": 30,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 7
     },
     "brand": null
@@ -52971,9 +53173,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 31,
+      "outbound_count": 32,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 27,
       "authority": 8.5
     },
     "brand": null
@@ -53420,9 +53622,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 29,
+      "outbound_count": 30,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 25,
       "authority": 10.5
     },
     "brand": null
@@ -53879,9 +54081,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 36,
+      "outbound_count": 37,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 30,
+      "suggested_outbound_count": 31,
       "authority": 9
     },
     "brand": null
@@ -54159,9 +54361,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 15,
       "authority": 9
     },
     "brand": null
@@ -54261,9 +54463,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 29,
+      "suggested_outbound_count": 30,
       "authority": 7
     },
     "brand": null
@@ -55251,9 +55453,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 28,
+      "outbound_count": 29,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 8.5
     },
     "brand": null
@@ -55963,9 +56165,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 11
     },
     "brand": null
@@ -56055,9 +56257,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 14,
       "authority": 6.5
     },
     "brand": null
@@ -56521,9 +56723,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 28,
+      "outbound_count": 29,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 8.5
     },
     "brand": null
@@ -56613,10 +56815,98 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 37,
+      "outbound_count": 38,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 32,
+      "suggested_outbound_count": 33,
       "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Sailor Bear",
+    "desc": "Sailor Bear worked on broad harbor decks before taking a route on foot.",
+    "url": "/wiki/sailor-bear.html",
+    "tags": [
+      "sailor",
+      "bear"
+    ],
+    "category": "misc",
+    "aliases": [],
+    "rank_score": 195,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 694,
+      "keyword_bag_size": 15,
+      "heading_count": 9,
+      "list_count": 1,
+      "internal_link_count": 10,
+      "paragraph_count": 12,
+      "section_count": 7,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 64,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 35,
+      "keyword_bag_points": 15,
+      "content_quality_points": 66,
+      "authority_points": 34,
+      "final_rank_score": 195,
+      "authority_graph_points": 16
+    },
+    "search_index": {
+      "normalized_title": "sailor bear crypto moonboys wiki",
+      "tokens": [
+        "sailor",
+        "bear",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "sailor",
+        "bear",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "worked",
+        "on",
+        "broad",
+        "harbor",
+        "decks",
+        "before",
+        "taking",
+        "a",
+        "route",
+        "foot",
+        "lookout",
+        "waterfront",
+        "npc",
+        "lumina",
+        "s",
+        "block",
+        "topia",
+        "year",
+        "3008",
+        "nomad",
+        "bears"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 31,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 24,
+      "authority": 15.5
     },
     "brand": null
   },
@@ -56864,9 +57154,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 22,
       "authority": 12.5
     },
     "brand": null
@@ -57159,94 +57449,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 41,
       "authority": 12
-    },
-    "brand": null
-  },
-  {
-    "title": "Sailor Bear",
-    "desc": "Sailor Bear worked on broad harbor decks before taking a route on foot.",
-    "url": "/wiki/sailor-bear.html",
-    "tags": [
-      "sailor",
-      "bear"
-    ],
-    "category": "misc",
-    "aliases": [],
-    "rank_score": 193,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 2,
-      "mention_count": 0,
-      "category": "misc",
-      "category_priority": 3,
-      "has_description": true,
-      "article_word_count": 694,
-      "keyword_bag_size": 15,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 10,
-      "paragraph_count": 12,
-      "section_count": 7,
-      "lore_paragraph_count": 9,
-      "content_quality_score": 64,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 15,
-      "word_count_points": 35,
-      "keyword_bag_points": 15,
-      "content_quality_points": 66,
-      "authority_points": 32,
-      "final_rank_score": 193,
-      "authority_graph_points": 14
-    },
-    "search_index": {
-      "normalized_title": "sailor bear crypto moonboys wiki",
-      "tokens": [
-        "sailor",
-        "bear",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "sailor",
-        "bear",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "worked",
-        "on",
-        "broad",
-        "harbor",
-        "decks",
-        "before",
-        "taking",
-        "a",
-        "route",
-        "foot",
-        "lookout",
-        "waterfront",
-        "npc",
-        "lumina",
-        "s",
-        "block",
-        "topia",
-        "year",
-        "3008",
-        "nomad",
-        "bears"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 29,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 22,
-      "authority": 13.5
     },
     "brand": null
   },
@@ -58364,9 +58566,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 29,
+      "outbound_count": 30,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 25,
       "authority": 6.5
     },
     "brand": null
@@ -58623,9 +58825,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 30,
+      "outbound_count": 31,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 26,
       "authority": 16.5
     },
     "brand": null
@@ -58981,9 +59183,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 27,
+      "outbound_count": 28,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 22,
       "authority": 11
     },
     "brand": null
@@ -59247,9 +59449,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 13
     },
     "brand": null
@@ -60114,9 +60316,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 17,
+      "outbound_count": 18,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 11
     },
     "brand": null
@@ -60633,9 +60835,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 49,
+      "outbound_count": 50,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 42,
+      "suggested_outbound_count": 43,
       "authority": 7.5
     },
     "brand": null
@@ -61054,9 +61256,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 29,
+      "outbound_count": 30,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 23,
       "authority": 5.5
     },
     "brand": null
@@ -62532,9 +62734,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 25,
+      "outbound_count": 26,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 6.5
     },
     "brand": null

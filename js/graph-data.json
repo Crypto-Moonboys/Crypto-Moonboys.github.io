@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-24T07:54:23.124Z",
-  "verified_at": "2026-11-24T07:54:23.124Z",
+  "generated_at": "2026-11-24T17:29:17.011Z",
+  "verified_at": "2026-11-24T17:29:17.011Z",
   "nodes": [
     {
       "id": "/",
@@ -2927,6 +2927,22 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/harbor-kaiju.html",
+      "title": "The Harbor Kaiju",
+      "url": "/wiki/harbor-kaiju.html",
+      "category": "concepts",
+      "rank_score": 249,
+      "authority_score": 17
+    },
+    {
+      "id": "/wiki/harbor-nessie.html",
+      "title": "Nessie of Lumina’s Waterfront",
+      "url": "/wiki/harbor-nessie.html",
+      "category": "concepts",
+      "rank_score": 244,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/hard-fork-games.html",
       "title": "Hard Fork Games",
       "url": "/wiki/hard-fork-games.html",
@@ -3363,7 +3379,7 @@
       "title": "Nine Toes Joe",
       "url": "/wiki/nine-toes-joe.html",
       "category": "characters",
-      "rank_score": 276,
+      "rank_score": 278,
       "authority_score": 21
     },
     {
@@ -3595,7 +3611,7 @@
       "title": "Sailor Bear",
       "url": "/wiki/sailor-bear.html",
       "category": "misc",
-      "rank_score": 193,
+      "rank_score": 195,
       "authority_score": 18
     },
     {
@@ -4331,7 +4347,7 @@
       "title": "The Ninth Berth",
       "url": "/wiki/the-ninth-berth.html",
       "category": "concepts",
-      "rank_score": 298,
+      "rank_score": 299,
       "authority_score": 28
     },
     {
@@ -4595,7 +4611,7 @@
       "title": "Waterfront Roamers",
       "url": "/wiki/waterfront-roamers.html",
       "category": "factions",
-      "rank_score": 232,
+      "rank_score": 234,
       "authority_score": 20
     },
     {
@@ -7411,6 +7427,18 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/grit42.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/harbor-kaiju.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/harbor-nessie.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -20285,6 +20313,66 @@
       "weight": 0.81
     },
     {
+      "source": "/wiki/harbor-kaiju.html",
+      "target": "/wiki/the-ninth-berth.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/harbor-kaiju.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/harbor-kaiju.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/harbor-kaiju.html",
+      "target": "/wiki/crypto-moonboys-is-deliberately-a.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/harbor-kaiju.html",
+      "target": "/wiki/crypto-moonboys-universe-comprehensive.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/harbor-nessie.html",
+      "target": "/wiki/the-ninth-berth.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/harbor-nessie.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/harbor-nessie.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/harbor-nessie.html",
+      "target": "/wiki/crypto-moonboys-is-deliberately-a.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/harbor-nessie.html",
+      "target": "/wiki/crypto-moonboys-universe-comprehensive.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/first-witness-concordance.html",
       "score": 132,
@@ -25542,6 +25630,18 @@
     },
     {
       "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/harbor-kaiju.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/harbor-nessie.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/the-ninth-berth.html",
       "target": "/wiki/40-year-old-graffiti-movement-launches.html",
       "score": 55,
       "weight": 0.55
@@ -25549,18 +25649,6 @@
     {
       "source": "/wiki/the-ninth-berth.html",
       "target": "/wiki/crypto-moonboys-is-deliberately-a.html",
-      "score": 55,
-      "weight": 0.55
-    },
-    {
-      "source": "/wiki/the-ninth-berth.html",
-      "target": "/wiki/crypto-moonboys-universe-comprehensive.html",
-      "score": 55,
-      "weight": 0.55
-    },
-    {
-      "source": "/wiki/the-ninth-berth.html",
-      "target": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
       "score": 55,
       "weight": 0.55
     },

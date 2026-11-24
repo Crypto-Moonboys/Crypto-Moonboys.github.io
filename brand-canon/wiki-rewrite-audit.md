@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 610 top-level `wiki/*.html` pages.
+- Scope: all 612 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,7 +21,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 610 |
+| Total pages audited | 612 |
 | Absent stub authorizations | 0 |
 | KEEP | 274 |
 | REWRITE_FULL | 0 |
@@ -32,7 +32,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | GENERATED | 52 |
 | NFT_SPECIALIST | 165 |
 | FIRST_WITNESS_LOCKED | 82 |
-| NEEDS_HUMAN_REVIEW | 35 |
+| NEEDS_HUMAN_REVIEW | 37 |
 | Pages with multiple SAM blocks | 0 |
 | Pages with multiple canonical blocks | 0 |
 | Pages with legacy unmarked content | 6 |
@@ -46,7 +46,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | Policy | Pages | Meaning |
 |---|---:|---|
 | canon-locked | 349 | Automated article-body writes are rejected. |
-| metadata-only | 260 | Search, relationship, and metadata maintenance only; article prose is preserved. |
+| metadata-only | 262 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
 
@@ -326,6 +326,8 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [Green Electric Bot](../wiki/green-electric-bot.html) (`green-electric-bot`) | NEEDS_HUMAN_REVIEW | NONE | UNKNOWN_REVIEW | Resolve classification/source ambiguity before any prose write. | P2 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [GRIT](../wiki/grit.html) (`grit`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: grit |
 | [Grit42](../wiki/grit42.html) (`grit42`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources); Specialist archive: grit42 |
+| [The Harbor Kaiju](../wiki/harbor-kaiju.html) (`harbor-kaiju`) | NEEDS_HUMAN_REVIEW | NONE | UNKNOWN_REVIEW | Resolve classification/source ambiguity before any prose write. | P2 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
+| [Nessie of Lumina’s Waterfront](../wiki/harbor-nessie.html) (`harbor-nessie`) | NEEDS_HUMAN_REVIEW | NONE | UNKNOWN_REVIEW | Resolve classification/source ambiguity before any prose write. | P2 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [Hard Fork Rockers Mech](../wiki/hard-fork-rockers-mech.html) (`hard-fork-rockers-mech`) | NEEDS_HUMAN_REVIEW | NONE | UNKNOWN_REVIEW | Resolve classification/source ambiguity before any prose write. | P2 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [HODL Warriors: The Calling](../wiki/hodl-warriors-the-calling.html) (`hodl-warriors-the-calling`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [HODL WARS Mech](../wiki/hodl-wars-mech.html) (`hodl-wars-mech`) | NEEDS_HUMAN_REVIEW | NONE | UNKNOWN_REVIEW | Resolve classification/source ambiguity before any prose write. | P2 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
