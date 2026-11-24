@@ -2409,7 +2409,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         return district.tiles[rows[tileY][tileX]].walkable;
       });
       return {
-        actors: new Set(idle.hits.map(({ id }) => id)).size,
+        actors: idle.hits.map(({ id }) => id),
         frames,
         harborActors: harbor.hits.length,
         routeRegions: new Set(route.map(({ x, y }) => Math.floor(x / 8) + ',' + Math.floor(y / 8))).size,
@@ -2423,9 +2423,12 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         walkFrames: walking.frames.some(frame => frame > 0),
       };
     });
-    assert.equal(roaming.actors, 27);
-    assert.equal(roaming.frames, 27 * 16);
-    assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors, 'cast spans both map areas');
+    assert.equal(roaming.actors.length, 26);
+    assert.equal(new Set(roaming.actors).size, 26);
+    assert.ok(roaming.actors.includes('roamer:nomad-bears-block-mech'));
+    assert.ok(!roaming.actors.includes('roamer:nomad-bears-mech'));
+    assert.equal(roaming.frames, 26 * 16);
+    assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors.length, 'cast spans both map areas');
     assert.ok(roaming.routeRegions > 50 && roaming.onPath && roaming.advances, 'cast roams the full connected island loop');
     assert.ok(roaming.idleFrames && roaming.heldFrames && roaming.walkFrames);
     const harborLife = await page.evaluate(() => {
