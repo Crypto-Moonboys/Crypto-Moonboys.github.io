@@ -18,6 +18,10 @@ GK assigned nine original NPC identities and requested their biographies. The te
 
 The static route check found all ten pages in the Lore directory, search index, graph and sitemap, and verified the faction or city backlinks and article fragments. The Pages artifact contains all ten routes in the compact search and Waterfront lore source inventory. Wiki structure, the canon guard and the SEO metadata checks passed. The site-wide shell parity check reports the founder-preview shell omission already present on main. The site-wide graph parity check reports the same seven absent non-wiki routes as main. PR checks record the final branch verification and remaining review.
 
+## The Ninth Berth roamer continuation — 24 November 2026
+
+GK requested a continuation of the existing double-tide story and expanded life histories for the 26 published Waterfront roamers. The first paid trial after the hearing is authored Year 3008 district fiction. Seven scenes cover the upper landing, garden exit, shutter, repair bay, claims table, broadcast and closing game. Each scene links to the involved roamers’ accounts of what happened next. The existing double-tide story and its unresolved repair claims remain the starting point. The Waterfront pages and the linked faction and city articles provide the setting for the new character work.
+
 ## Approved final implementation — 9 October 2026
 
 Base: `e393177b07793d992e883a8073ad416a2e65f84e` (merged #1460). Backup: `backup/gk-final-decisions-base-20261009`. Working branch: `codex/gk-final-decisions-20261009`. [Exact GK approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).
