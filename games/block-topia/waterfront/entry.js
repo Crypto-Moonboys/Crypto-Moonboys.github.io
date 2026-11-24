@@ -117,7 +117,7 @@ function bootMap(district) {
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
       if (!window.waterfrontMapLoaded) await script('map.js?v=15-npc-dialogue');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
-      await import('./leader-dialog.js?lore=12');
+      await import('./leader-dialog.js?lore=13');
     })().catch(error => {
       mapStartup = null;
       throw error;

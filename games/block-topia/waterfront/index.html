@@ -18,6 +18,8 @@ a{color:#91efe3}
 .map-controls{position:absolute;z-index:1;top:.65rem;right:.65rem;display:flex;gap:.35rem}
 .map-controls button{background:#13131cef}
 .map-controls button[hidden]{display:none}
+#leader-presence-notices{position:absolute;z-index:3;top:3.75rem;right:.65rem;width:min(21rem,calc(100% - 1.3rem));display:grid;gap:.35rem;pointer-events:none}
+#leader-presence-notices p{margin:0;padding:.55rem .75rem;background:#13131cfa;color:#eaf5f2;border:1px solid #658782;border-radius:.25rem;font-size:.875rem}
 #map{cursor:pointer}
 #map-view{position:absolute;top:0;left:0;pointer-events:none;display:block}
 #map[data-editing=true]{cursor:crosshair}
@@ -63,6 +65,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <button id="map-info" type="button" aria-controls="map-tools" aria-expanded="false">Info</button>
 <button id="map-fullscreen" type="button" hidden>Fullscreen</button>
 </div>
+<div id="leader-presence-notices" role="status" aria-live="polite" aria-atomic="false"></div>
 <p id="location"></p>
 <div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
 <a href="../">← Block Topia</a>
@@ -105,6 +108,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" type="module" src="entry.js?v=33-south-point"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=34-south-point"></script>
 </body>
 </html>
