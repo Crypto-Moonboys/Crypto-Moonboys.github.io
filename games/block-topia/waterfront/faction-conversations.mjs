@@ -24,37 +24,74 @@ const topics = [
   ['crew receipts', 'A banked tier gives a crew a result it can check'],
   ['the Final Fork', 'There’s room to argue about the Final Fork while its outcome is unresolved'],
 ];
-const openers = [
-  topic => `What’s your crew’s first concern about ${topic}?`,
-  topic => `Who gets heard first when the crews discuss ${topic}?`,
-  topic => `What do people miss when they talk about ${topic}?`,
-  topic => `Where would your crew start a disagreement over ${topic}?`,
-  topic => `What would change your mind about ${topic}?`,
-  topic => `What would you ask a newcomer to notice about ${topic}?`,
-  topic => `What promise about ${topic} would you put on the record?`,
-  topic => `Who ends up carrying the work when we talk about ${topic}?`,
-  topic => `If the crews could agree on one thing about ${topic}, what would it be?`,
-  topic => `What has to be checked before we make a claim about ${topic}?`,
-  topic => `What should your crew remember next time ${topic} comes up?`,
-  topic => `What would you tell someone hearing about ${topic} for the first time?`,
-];
-const farewells = [
-  name => `Yo, ${name}. I’ll catch you soon.`,
-  () => 'Easy. I’m working on it. I’ll holla soon.',
-  name => `Hiya, ${name}. I’m busy. I’ll DM you.`,
-  () => 'On the clock right now. Save me the good bit.',
-  () => 'I’ve got a stop to make. Catch me on the way back.',
-];
-const total = topics.length * openers.length;
+// Each leader writes their own questions, follow-up and exits. Keep the saved topic slots stable.
+const dialogue = {
+  'all-city-bulls': {
+    openers: ["Who’s doing the lifting when it comes to", "What result would convince your whole crew about", "Who gets left off the results board when people talk about", "What could we put to a fair test about"],
+    resume: "Give me one result we can check on",
+    passing: "I’m due back with the crew. We’ll talk after the last load.",
+    finishes: ["I’ll leave you to it. Bring me something the whole crew can check.", "I’ll put that to the crew. Everybody who did the work gets a say."],
+  },
+  'nomad-bears': {
+    openers: ["Where would you send a new guide to learn about", "Who knows a second way through when it comes to", "What would you mark on a scout’s map about", "Who should we ask before we lead anyone into a decision about"],
+    resume: "What did we miss on the first pass about",
+    passing: "I’ve got a route to check. I’ll find you on the way back.",
+    finishes: ["I’ll walk it again before I send anyone that way.", "I’ll take the long way back and see what we missed."],
+  },
+  'hard-fork-rockers': {
+    openers: ["What’s the smallest thing we could try about", "What breaks first if we get clever about", "Who could keep things running if we changed our approach to", "Is there a working alternative nobody has tried for"],
+    resume: "Could we try a smaller version of your idea about",
+    passing: "I’ve got a repair waiting. Tell me the short version next time.",
+    finishes: ["I’ll try it on a small scale. You’ll hear if it works.", "Leave it with me. I’ll see whether I can get a test running."],
+  },
+  'rugpull-miners': {
+    openers: ["Who’s covering the next shift when it comes to", "What would the night crew tell us about", "Who’d sign for the work if we changed anything about", "Would the people on the clock get a fair deal out of"],
+    resume: "Have you worked out who’s on the hook for",
+    passing: "My shift’s starting. Save it for the break.",
+    finishes: ["I’m off to clock in. We’ll talk when the handover’s done.", "I’ll check with the next shift. They’re the ones who’ll have to make it work."],
+  },
+  'crypto-moongirls': {
+    openers: ["Who depends on things staying steady when we talk about", "What would you measure twice before changing anything about", "Whose service would feel it first if we got this wrong about", "What would the people keeping the lights on tell us about"],
+    resume: "What would a second reading tell us about",
+    passing: "I need to check a reading. I’ll find you when I’m done.",
+    finishes: ["I’ll take another reading before we decide.", "I’ll ask the people who rely on it. They’ll spot what we missed."],
+  },
+  'blockchain-furies': {
+    openers: ["Whose account is missing when it comes to", "What could we actually put on the record about", "Who would have to make it right if we got things wrong about", "What evidence would you want before taking a side on"],
+    resume: "Can you back up what you said about",
+    passing: "I’ve got someone waiting to be heard. Catch me afterwards.",
+    finishes: ["I’ll keep a chair free if there’s more to put on the record.", "I’ll keep the details straight. Bring anything you can put on the record."],
+  },
+  'graffpunks': {
+    openers: ["Whose name should be on the wall when people talk about", "What would you paint so people remember the truth about", "Who did the work before anyone started talking about", "What’s the bit nobody gets credit for when it comes to"],
+    resume: "Who should get the credit for that idea about",
+    passing: "I’ve got ink drying. Find me when the print’s pulled.",
+    finishes: ["I’ll leave space for the names. Catch you by the wall.", "I’ll sketch it out. The people who made it get their names on it."],
+  },
+  'crypto-stoned-boys': {
+    openers: ["What’s the quietest thing people miss about", "What would we hear if everyone stopped talking for a minute about", "What’s worth listening for when people bring up", "What detail would you keep for the night library about"],
+    resume: "Did anything else come to you after we talked about",
+    passing: "I’m following a sound. We can pick this up when I’m back.",
+    finishes: ["I’ll sit with that a bit. Catch you when the water’s quiet.", "Bring it to the listening table sometime. I’d like to hear the whole thing."],
+  },
+  'blockstars': {
+    openers: ["Who should have the mic when we talk about", "What would we hear from backstage about", "Who ought to get a line in the programme about", "If the person who lived it took the stage, what would they say about"],
+    resume: "Who would you put on stage to tell our side of",
+    passing: "I’ve got a cue coming up. Tell me after the show.",
+    finishes: ["I’m due at rehearsal. I’ll save you a seat.", "I’ll find the person who lived it. They should tell it in their own words."],
+  },
+};
+const topicSlots = 12;
+const total = topics.length * topicSlots;
 const dayNumber = now => Math.floor(now / 86_400_000);
 const keyFor = (left, right) => [left, right].sort((a, b) => a - b).join(':');
 const turn = (actor, text) => ({ actor, text });
 
 export function factionQuestion(actor, index) {
   const offset = (index * 47 + actor * 17) % total;
-  const [topic, observation] = topics[Math.floor(offset / openers.length)];
-  const voice = LEADERS[ids[actor]];
-  return { topic, observation, text: voice.motto + '. ' + openers[offset % openers.length](topic) };
+  const [topic, observation] = topics[Math.floor(offset / topicSlots)];
+  const { openers } = dialogue[ids[actor]];
+  return { topic, observation, text: `${openers[offset % openers.length]} ${topic}?` };
 }
 
 // Browser-local pair memory follows the faction ID when it becomes the player avatar.
@@ -112,21 +149,22 @@ export function createFactionConversations(storage) {
       const mode = !previous ? 'new' : count % 3 === 2 ? 'passing' : count % 3 === 0 ? 'resume' : 'new';
       const speaker = count % 2 ? a : b;
       const listener = speaker === a ? b : a;
-      const voice = LEADERS[ids[speaker]], other = LEADERS[ids[listener]];
+      const voice = dialogue[ids[speaker]], other = LEADERS[ids[listener]];
+      const finish = voice.finishes[day % voice.finishes.length];
       const index = sameDay ? (previous.index + (mode === 'new' ? 1 : 0)) % total
         : ((day % total) * 13 + a * 9 + b) % total;
       const question = factionQuestion(speaker, index);
       const last = previous && factionQuestion(previous.speaker, previous.index);
-      const lines = mode === 'passing' ? [turn(speaker, farewells[count % farewells.length](other.character))]
+      const lines = mode === 'passing' ? [turn(speaker, voice.passing)]
         : mode === 'resume' ? [
-          turn(speaker, `About ${last.topic}, would you start in the same place next time?`),
+          turn(speaker, `${voice.resume} ${last.topic}?`),
           turn(listener, `I’d still ${other.approach}. ${other.agenda}`),
-          turn(speaker, `I’d ${voice.approach}. Let’s pick it up later.`),
+          turn(speaker, finish),
         ] : [
           turn(speaker, question.text),
           turn(listener, question.observation + '.'),
           turn(listener, index % 2 === 0 ? other.intro : other.agenda),
-          turn(speaker, farewells[count % farewells.length](other.character)),
+          turn(speaker, finish),
         ];
       active = { a, b, pair: arrival, since: now, lines,
         record: { day: mode === 'new' ? day : previous.day, count, index: mode === 'new' ? index : previous.index,

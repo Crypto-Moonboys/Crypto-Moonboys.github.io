@@ -5,22 +5,24 @@ import { LEADERS } from '../../../js/waterfront-faction-identities.mjs';
 import { createFactionConversations, factionQuestion } from '../waterfront/faction-conversations.mjs';
 import { localClanCanonReply } from '../../../workers/moonboys-api/shared/clan-leader-canon-library.js';
 
-test('the nine representatives each have distinct identities, owning pages and 240 local questions', () => {
+test('the nine representatives each have distinct identities, owning pages and 80 unique local questions', () => {
   const roster = Object.entries(LEADERS);
   assert.deepEqual(roster.map(([, voice]) => voice.character), [
     'Jack the Bull', 'Nine Toes Joe', 'Nobby', 'Jimmy Rugpull', 'ZARAH8',
     'Danny Rankz', 'Eddie Stax', 'Chada Boi', 'Teddy Boi Jones',
   ]);
   assert.equal(new Set(roster.map(([, voice]) => voice.callSign)).size, 9);
+  const allQuestions = new Set();
   for (const [index, [id, voice]] of roster.entries()) {
     assert.ok(existsSync(new URL('../../..' + voice.wiki, import.meta.url)), voice.wiki);
     assert.ok(existsSync(new URL('../../..' + voice.bio, import.meta.url)), voice.bio);
     assert.ok(existsSync(new URL('../../../battle-chamber/factions/' + id + '.html', import.meta.url)), id);
     assert.equal(localClanCanonReply(voice.name.toLowerCase())?.sources[0].path, voice.wiki);
     const lines = Array.from({ length: 240 }, (_, i) => factionQuestion(index, i).text);
-    assert.equal(new Set(lines).size, 240);
-    assert.ok(lines.every(line => line.startsWith(voice.motto + '.')));
+    assert.equal(new Set(lines).size, 80);
+    for (const line of lines) allQuestions.add(line);
   }
+  assert.equal(allQuestions.size, 720);
 });
 
 test('a pair can start, pass and resume across reloads and an avatar handoff', () => {
@@ -36,15 +38,17 @@ test('a pair can start, pass and resume across reloads and an avatar handoff', (
   assert.match(engine.tick(actors, now + 4500).text, /\.$/);
   const joe = LEADERS['nomad-bears'];
   assert.ok([joe.intro, joe.agenda].includes(engine.tick(actors, now + 9000).text));
+  assert.match(engine.tick(actors, now + 13500).text, /whole crew|gets a say/);
   assert.equal(engine.tick(actors, now + 18000), null);
   assert.equal(engine.tick(actors, now + 20001), null, 'stationary pairs do not retrigger');
   const restored = createFactionConversations(storage);
   const withAvatar = [{ ...actors[0], controlled: true }, actors[1]];
   const passing = restored.tick(withAvatar, now + 21000);
-  assert.match(passing.text, /DM|catch you|holla|clock|stop to make/i);
+  assert.deepEqual(passing, { actor: 1, text: 'I’ve got a route to check. I’ll find you on the way back.' });
   assert.equal(restored.tick(withAvatar, now + 25501), null);
   restored.tick([], now + 27502);
-  assert.match(restored.tick(withAvatar, now + 29000).text, new RegExp(topic));
+  const resumed = restored.tick(withAvatar, now + 29000);
+  assert.equal(resumed.text, `Give me one result we can check on ${topic}?`);
   restored.tick(withAvatar, now + 43000);
   const tomorrow = createFactionConversations(storage).tick(actors, now + 86_400_000);
   assert.notEqual(tomorrow.text, first.text);
