@@ -1,5 +1,5 @@
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=5';
-import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=3';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=6';
+import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=4';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('view');

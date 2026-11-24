@@ -74,7 +74,7 @@ export async function createScene(mode, canvas, viewport) {
   window.waterfrontIslandSeed = island.islandSeed;
   await new Promise((resolve,reject) => {
     const script = document.createElement('script');
-    script.src = block+'waterfront/harbor-art.js?v=75-mining-tower';
+    script.src = block+'waterfront/harbor-art.js?v=76-miner-detail';
     script.onload = resolve;
     script.onerror = reject;
     document.head.append(script);

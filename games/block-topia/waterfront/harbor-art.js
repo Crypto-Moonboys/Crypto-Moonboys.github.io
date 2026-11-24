@@ -1,10 +1,10 @@
 // Resolve atlas URLs from this script so it can render on the comparison route too.
 const harborMiningSites = [
-  { id: "bitcoin-cash-tower", col: 42, row: 11, heightScale: 1.7, atlas: { file: "bitcoin-cash-tower-overhead.webp?v=1" },
+  { id: "bitcoin-cash-tower", col: 42, row: 11, heightScale: 1.7, atlas: { file: "bitcoin-cash-tower-overhead.webp?v=2-detail" },
     profile: { name: "Bitcoin Cash Mining Tower", role: "Mining rigs online" } },
-  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=1" },
+  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=2-detail" },
     profile: { name: "Zcash Mining Fortress", role: "Cooling fans and reactors online" } },
-  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=1" },
+  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=2-detail" },
     profile: { name: "WAX Bee Node", role: "Honeycomb circuits online" } },
 ];
 const waterfrontAtlasBase = new URL("assets/atlases/", document.currentScript?.src || document.baseURI);
@@ -1677,8 +1677,15 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     loadDetailedAtlas(atlas, "low", repaintArt);
     if (!atlas.image) continue;
     const frame = time === null ? 0 : Math.floor(time * 12) % 12;
-    queue(y, () => drawHarborCreature(ctx, atlas, frame % 4, Math.floor(frame / 4),
-      224, 280, left, top, scale, inspection, id, profile));
+    const resolution = atlas.image.naturalWidth / (4 * 224);
+    queue(y, () => {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      drawHarborCreature(ctx, atlas, frame % 4, Math.floor(frame / 4),
+        224 * resolution, 280 * resolution, left, top, scale / resolution, inspection, id, profile);
+      ctx.restore();
+    });
   }
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
