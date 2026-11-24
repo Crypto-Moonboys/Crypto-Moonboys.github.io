@@ -1222,7 +1222,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
       const tile = tileAt(x, y);
-      if (islandLoop && tile !== "~" && (x >= district.harborWidth || y >= district.harborHeight || "mtf".includes(tile))) {
+      if (islandLoop && tile !== "~" && tile !== "d" && (x >= district.harborWidth || y >= district.harborHeight || "mtf".includes(tile))) {
         parkTerrain(tile, x, y);
       } else terrain(tile, x, y);
     }
