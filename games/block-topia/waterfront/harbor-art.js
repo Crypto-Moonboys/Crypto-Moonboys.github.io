@@ -334,6 +334,7 @@ function waterPattern(ctx, size) {
 }
 
 const factionMotion = [];
+const roamerMotion = new Map();
 window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null, inspection = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
@@ -1111,6 +1112,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const islandLoop = district.natureIsland ? natureRoute(rows, district) : null;
   let nearestFaction;
   const factionHits = [];
+  const streetHits = [];
+  const street = conversations?.street;
   function drawFactionWalkers() {
     if (!waterfrontDetailedFactions.image && !waterfrontFactionAtlas.image) return;
     const routes = islandLoop ? null : factionRoutes(rows, district);
@@ -1122,7 +1125,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const paused = state?.pausedUntil > now;
       const motion = factionMotion[index] ??= { previous: time, elapsed: time ?? 0 };
       const id = "leader:" + index;
-      const holding = inspection?.held(id) || conversations?.holds(index);
+      const holding = inspection?.held(id) || conversations?.holds(index) || street?.holds(id);
       if (!paused && !holding && time !== null && motion.previous !== null) {
         motion.elapsed += Math.min(0.2, Math.max(0, time - motion.previous));
       }
@@ -1183,13 +1186,22 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       if (!atlas.image) return;
       const start = Math.floor(islandLoop.length * (index + 0.5) / waterfrontRoamers.length);
       const clock = inspection?.time(id, time) ?? time ?? 0;
-      const { x, y, dx, dy } = patrolPosition(islandLoop, clock / (pace ?? 1.05 + index % 5 * 0.09),
+      let patrolClock = clock;
+      if (street && time !== null) {
+        const motion = roamerMotion.get(id) ?? { previous: clock, stopped: 0 };
+        if (street.holds(id)) motion.stopped += Math.max(0, clock - motion.previous);
+        motion.previous = clock;
+        roamerMotion.set(id, motion);
+        patrolClock = clock - motion.stopped;
+      }
+      const { x, y, dx, dy } = patrolPosition(islandLoop, patrolClock / (pace ?? 1.05 + index % 5 * 0.09),
         start, index % 2 === 0);
-      if (x < left || x >= right || y < top || y >= bottom) return;
       const px = Math.round(x * size + 16);
       const py = Math.round(y * size + 22);
+      streetHits.push({ id, x: px, y: py, spriteSize: height });
+      if (x < left || x >= right || y < top || y >= bottom) return;
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
-      const moving = time !== null && (dx || dy) && !inspection?.held(id);
+      const moving = time !== null && (dx || dy) && !inspection?.held(id) && !street?.holds(id);
       const frame = moving ? 1 + Math.floor(clock * 7 + index) % 3 : 0;
       queue(py, () => {
         markNpc(id, px, py, height, { profile });
@@ -1278,19 +1290,31 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.restore();
   }
   if (conversations && time !== null) {
-    const participants = factionHits.filter(hit => !hit.talking);
+    const leaders = factionHits.filter(hit => !hit.talking);
+    const participants = leaders.filter(hit => !street?.holds("leader:" + hit.index));
     if (selectedAvatar !== null && !player.frame) participants.push({
       index: selectedAvatar, x: player.x * size + 16, y: player.y * size + 22,
     });
-    for (const line of conversations.tick(participants, Date.now())) {
-      const speaker = participants.find(actor => actor.index === line.actor);
+    const now = Date.now();
+    const bubbles = conversations.tick(participants, now).map(line => ({
+      text: line.text, speaker: participants.find(actor => actor.index === line.actor),
+    }));
+    if (street) {
+      const leaderIds = new Map(leaders.map(hit => ["leader:" + hit.index, hit.index]));
+      const cast = [...streetHits, ...leaders.map(hit => ({ ...hit, id: "leader:" + hit.index, spriteSize: factionSpriteSize }))];
+      const byId = new Map(cast.map(hit => [hit.id, hit]));
+      for (const line of street.tick(cast, now, id => conversations.holds(leaderIds.get(id)))) {
+        bubbles.push({ text: line.text, speaker: byId.get(line.id) });
+      }
+    }
+    for (const { speaker, text } of bubbles) {
       if (!speaker) continue;
       ctx.save();
       ctx.font = '8px system-ui';
       ctx.textAlign = 'left';
       const lines = [];
       let next = '';
-      for (const word of line.text.split(' ')) {
+      for (const word of text.split(' ')) {
         if (next && ctx.measureText(next + ' ' + word).width > 170) {
           lines.push(next);
           next = '';
@@ -1301,13 +1325,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const boxWidth = Math.ceil(Math.max(...lines.map(text => ctx.measureText(text).width))) + 12;
       const left = Math.max(2, Math.min(speaker.x - boxWidth / 2, width * size - boxWidth - 2));
       const boxHeight = lines.length * 11 + 6;
-      const top = Math.max(2, speaker.y - factionSpriteSize - 8 - boxHeight);
+      const top = Math.max(2, speaker.y - (speaker.spriteSize ?? factionSpriteSize) - 8 - boxHeight);
       rect('#0e151f', left - 1, top - 1, boxWidth + 2, boxHeight + 2);
       rect('#d9efea', left, top, boxWidth, boxHeight);
       const tail = Math.max(left + 4, Math.min(speaker.x, left + boxWidth - 4));
       polygon('#d9efea', [[tail - 3, top + boxHeight], [tail + 3, top + boxHeight], [tail, top + boxHeight + 5]]);
       ctx.fillStyle = '#131926';
-      lines.forEach((text, index) => ctx.fillText(text, left + 6, top + 10 + index * 11));
+      lines.forEach((segment, index) => ctx.fillText(segment, left + 6, top + 10 + index * 11));
       ctx.restore();
     }
   }

@@ -97,10 +97,14 @@ function bootMap(district) {
       window.waterfrontIslandSeed = islandSeed;
       if (!window.createWaterfrontFactionConversations) {
         const { createFactionConversations } = await import('./faction-conversations.mjs?v=4');
-        window.createWaterfrontFactionConversations = createFactionConversations;
+        const { createStreetEncounters } = await import('./street-encounters.mjs?v=1');
+        window.createWaterfrontFactionConversations = storage => ({
+          ...createFactionConversations(storage),
+          street: createStreetEncounters(),
+        });
       }
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=54-roamer-info');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=55-street-encounters');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
       if (!window.waterfrontMapLoaded) await script('map.js?v=13-roamer-info');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
