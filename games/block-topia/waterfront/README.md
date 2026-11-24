@@ -1,10 +1,10 @@
 # Lumina’s Waterfront
 
-The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a faction can reserve their faction’s one seat. The signed Worker response supplies the original district dimensions and tile size. After entry, the browser opens an island with five times the original map area and five times its land area.
+The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a faction can reserve their faction’s one seat. The signed Worker response supplies the original harbor. The browser extends it east and south into a 112 × 85 map with five times the original map area and land area.
 
-- [nature-island.mjs](nature-island.mjs) defines the connected 112 × 85 island, its trails, groves and wildflower meadows. Water blocks walking. Vegetation leaves the land passable.
-- [harbor-art.js](harbor-art.js) draws visible terrain and depth-sorts the plants and actors. Its island patrol visits every reachable 8 × 8 region. Faction leaders and background robots begin at different points along the route.
-- [map.js](map.js) handles walking, camera and the terrain editor. Island edits use `block-topia.waterfront.v6`. Older harbor edits remain in their own browser save slots.
+- [nature-island.mjs](nature-island.mjs) preserves the harbor footprint and adds two crossings to new trails, groves and wildflower meadows. Water blocks walking. Vegetation on the extension leaves land passable.
+- [harbor-art.js](harbor-art.js) draws the original harbor scenery and new forest terrain in the visible area. Its island patrol visits every reachable 8 × 8 region. Faction leaders and roaming robots start at different points on the route. Harbor residents come out of their buildings, freight robots move cargo and the briefing crew speaks near the original spawn.
+- [map.js](map.js) handles walking, camera and terrain edits. The joined map saves to `block-topia.waterfront.v7`. It restores valid older harbor edits and carries forward changes from the nature-only map where they fall outside the original harbor footprint. Earlier saves remain in their original slots.
 
 ## Faction leader chat
 
