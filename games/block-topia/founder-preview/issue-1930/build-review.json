@@ -1,19 +1,29 @@
 {
   "issue": 1930,
-  "round": 21,
+  "round": 22,
   "research": "research incomplete",
   "review": {
-    "keyFindings": [
-      {
-        "type": "Visual Risk",
-        "description": "The district layout contains water and road tiles that are not properly connected, which might confuse players. For example, the 'water' tile at row 3, column 15 is adjacent to a 'road' tile but does not form a natural flow.",
-        "suggestion": "Ensure that water tiles are surrounded by appropriate road or dock tiles for better visual continuity."
-      },
-      {
-        "type": "Navigation Risk",
-        "description": "The route provided (3, 15, 4, 27, 16, 28, 17, 40, 52, 64, 76, 75, 87, 99, 111, 123) includes jumps that may be too large for players to navigate intuitively. Players might get lost or frustrated if they cannot see the path clearly.",
-        "suggestion": "Break down long routes into smaller segments and ensure there are clear visual cues guiding the player."
-      }
-    ]
+    "keyFindings": {
+      "visualRisks": [
+        {
+          "description": "Potential water overflow at row 3, column 15",
+          "riskLevel": "High"
+        },
+        {
+          "description": "Unclear path from house to dock (row 4, column 27 to row 52, column 64)",
+          "riskLevel": "Medium"
+        }
+      ],
+      "navigationRisks": [
+        {
+          "description": "Route path does not follow the intended layout",
+          "riskLevel": "High"
+        },
+        {
+          "description": "House and lighthouse placement may confuse players due to similar colors (#aa5149 and #dbc69c)",
+          "riskLevel": "Low"
+        }
+      ]
+    }
   }
 }
