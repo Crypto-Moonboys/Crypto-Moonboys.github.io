@@ -1,32 +1,21 @@
 {
   "issue": 1930,
-  "round": 18,
+  "round": 19,
   "research": "research incomplete",
   "review": {
-    "keyFindings": [
-      {
-        "type": "Visual Risk",
-        "description": "The district layout contains a potential navigation issue. The route path does not follow the water bodies or roads consistently, which might confuse players.",
-        "affectedAreas": [
-          4,
-          17,
-          28,
-          3,
-          52,
-          64,
-          76,
-          99
-        ],
-        "suggestion": "Ensure that the route follows the road and water features more logically."
-      },
-      {
-        "type": "Navigation Risk",
-        "description": "The route path includes some cells that do not seem to be roads or part of a navigable path. This could lead to player frustration.",
-        "affectedCells": [
-          "...rr......."
-        ],
-        "suggestion": "Verify all cells in the route are valid and accessible."
-      }
-    ]
+    "keyFindings": {
+      "visualRisks": [
+        {
+          "description": "Waterfront district has an incomplete or misleading representation.",
+          "details": "The row data for 'Lumina’s Waterfront' district is cut off, making it difficult to understand the full layout. The last row is not fully visible."
+        }
+      ],
+      "navigationRisks": [
+        {
+          "description": "Potential navigation issues with route markers.",
+          "details": "The route markers seem to be placed in a way that might confuse users or lead them astray, as some steps are far apart and the path is not clearly defined. For instance, the transition from step 16 to 28 seems abrupt."
+        }
+      ]
+    }
   }
 }
