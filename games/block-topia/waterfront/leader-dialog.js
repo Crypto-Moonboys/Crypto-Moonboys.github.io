@@ -85,7 +85,9 @@ function showDetails(key) {
   const playing = presence?.playing_until * 1000 > Date.now();
   const paused = presence?.paused_until * 1000 > Date.now();
   details.querySelector('[data-activity]').textContent = playing ? '· Playing a game' : paused ? '· Paused' : '· In Waterfront';
-  details.querySelector('[data-character-page]').href = LEADERS[key].bio;
+  const characterPage = details.querySelector('[data-character-page]');
+  characterPage.href = LEADERS[key].bio;
+  characterPage.hidden = false;
   details.querySelector('[data-ask]').hidden = !board?.chat_enabled || playing;
   details.querySelector('[data-slow]').hidden = !board?.controls;
   details.hidden = false;
@@ -94,7 +96,10 @@ function showDetails(key) {
 function showRoamerDetails({ name, wiki, role }) {
   selected = null;
   details.querySelector('h2').textContent = name;
-  details.querySelector('[data-character-page]').href = wiki;
+  const characterPage = details.querySelector('[data-character-page]');
+  characterPage.hidden = !wiki;
+  if (wiki) characterPage.href = wiki;
+  else characterPage.removeAttribute('href');
   details.querySelector('[data-leader-status]').hidden = !role;
   details.querySelector('[data-role]').textContent = role ?? '';
   details.querySelector('[data-activity]').textContent = '';
