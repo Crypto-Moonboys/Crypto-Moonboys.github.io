@@ -2213,15 +2213,26 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     assert.equal(await page.getByRole('button', { name: 'Enter Waterfront' }).isVisible(), false);
     occupied = false;
     await page.getByRole('button', { name: 'Check again' }).click();
+    await page.evaluate(original => {
+      const edited = [...original];
+      edited[14] = edited[14].slice(0, 19) + 'p' + edited[14].slice(20);
+      localStorage.setItem('block-topia.waterfront.v5', JSON.stringify(edited));
+    }, waterfrontDistrict.rows);
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
     assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
     const island = await page.evaluate(() => {
       const regions = new Set();
       const key = (x, y) => Math.floor(x / 8) + ',' + Math.floor(y / 8);
-      let land = 0;
+      let land = 0, walkableLand = 0;
+      const harborChanges = [];
+      let islandTerrainOnly = true;
       for (const [y, row] of district.rows.entries()) for (const [x, tile] of [...row].entries()) {
-        if (tile !== '~') { land++; regions.add(key(x, y)); }
+        if (tile !== '~') land++;
+        if (walkable(tile)) { walkableLand++; regions.add(key(x, y)); }
+        if (x < district.harborWidth && y < district.harborHeight) {
+          if (tile !== district.originalRows[y][x]) harborChanges.push({ x, y, tile });
+        } else if (!'~pmtf'.includes(tile)) islandTerrainOnly = false;
       }
       const frontier = [spawn];
       const reachable = new Set([spawn.y * columns + spawn.x]);
@@ -2235,8 +2246,9 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       }
       const loop = natureRoute(rows, district);
       return {
-        width: columns, height: initial.length, land, tiles: Object.keys(district.tiles).sort(),
-        allLandReachable: reachable.size === land,
+        width: columns, height: initial.length, land, islandTerrainOnly, harborChanges,
+        allLandReachable: reachable.size === walkableLand,
+        restoredEdit: rows[14][19], spawn,
         allRegionsVisited: new Set(loop.map(({x, y}) => key(x, y))).size === regions.size,
         loopWalkable: loop.every(({x,y}, i) => {
           const next = loop[(i + 1) % loop.length];
@@ -2245,10 +2257,14 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       };
     });
     const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
-    assert.deepEqual(island, {
-      width: 112, height: 85, land: previousLand * 5, tiles: ['.', 'f', 'p', 't', '~'],
+    const { harborChanges, ...layout } = island;
+    assert.deepEqual(layout, {
+      width: 112, height: 85, land: previousLand * 5, islandTerrainOnly: true,
       allLandReachable: true, allRegionsVisited: true, loopWalkable: true,
+      restoredEdit: 'p', spawn: waterfrontDistrict.spawn,
     });
+    assert.ok(harborChanges.length > 0 && harborChanges.every(({ x, y, tile }) =>
+      ('pd'.includes(tile) && ((y === 24 && x >= 45) || (x === 36 && y >= 29)))));
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     const position = await page.evaluate(() => {

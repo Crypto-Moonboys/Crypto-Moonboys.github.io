@@ -5,7 +5,7 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const storageKey = "block-topia.waterfront.v6";
+const storageKey = "block-topia.waterfront.v7";
 const viewport = document.querySelector(".viewport");
 const mapScroll = document.querySelector(".map-scroll");
 const canvas = document.querySelector("#map");
@@ -47,14 +47,7 @@ function walkable(tile) {
   return Boolean(tiles[tile]?.walkable);
 }
 
-try {
-  const saved = JSON.parse(localStorage.getItem(storageKey));
-  if (Array.isArray(saved) && saved.length === initial.length &&
-      saved.every(row => typeof row === "string" && row.length === columns &&
-        [...row].every(tile => Object.hasOwn(tiles, tile))) && walkable(saved[spawn.y][spawn.x])) rows = saved;
-} catch {
-  status.textContent = "The saved layout could not be loaded.";
-}
+rows = window.restoreWaterfrontLayout(browserStorage, district);
 
 for (const [tile, { name }] of Object.entries(tiles)) {
   select.add(new Option(name, tile));
@@ -233,6 +226,10 @@ canvas.addEventListener("click", event => {
   const tile = select.value;
   if (!Object.hasOwn(tiles, tile)) {
     status.textContent = "Choose a terrain tile first.";
+    return;
+  }
+  if ((x >= district.harborWidth || y >= district.harborHeight) && !"~pmtf".includes(tile)) {
+    status.textContent = "Choose water, a trail, meadow, trees or flowers for the island.";
     return;
   }
   if (x === spawn.x && y === spawn.y && !walkable(tile)) {

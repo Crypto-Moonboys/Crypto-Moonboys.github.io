@@ -128,10 +128,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas, waterfrontFactionAtlas]
       .map(sprite => [sprite.file, sprite])
   );
-  const atlases = window.waterfrontDistrict?.natureIsland
-    ? Object.entries(waterfrontAtlases).filter(([name]) => ["factions", "bots", "trees", "street-detail"].includes(name))
-    : Object.entries(waterfrontAtlases);
-  return Promise.all(atlases.map(([group, frames]) => new Promise(resolve => {
+  return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
     const atlas = new Image();
     atlas.onload = () => {
       for (const [file, [x, y, width, height]] of Object.entries(frames)) {
@@ -164,14 +161,16 @@ const cargoDesigns = [
 
 let harborFreight;
 function freightFor(rows, district) {
-  const layout = rows.join("\n");
+  const harborRows = district.harborWidth
+    ? rows.slice(0, district.harborHeight).map(row => row.slice(0, district.harborWidth)) : rows;
+  const layout = harborRows.join("\n");
   if (harborFreight?.layout === layout) return harborFreight;
-  const canWalk = (x, y) => Boolean(district.tiles[rows[y]?.[x]]?.walkable);
+  const canWalk = (x, y) => Boolean(district.tiles[harborRows[y]?.[x]]?.walkable);
   const stores = [];
   const yards = [];
-  rows.forEach((row, y) => [...row].forEach((tile, x) => {
+  harborRows.forEach((row, y) => [...row].forEach((tile, x) => {
     if (!canWalk(x, y)) return;
-    if ("bwHEVcLsNA".includes(rows[y - 1]?.[x] ?? "~")) stores.push({ x, y });
+    if ("bwHEVcLsNA".includes(harborRows[y - 1]?.[x] ?? "~")) stores.push({ x, y });
     else if (tile !== "p" && (x * 7 + y * 13) % 5 === 0) yards.push({ x, y });
   }));
   const reachable = point => findRoute(district.spawn, point, canWalk) !== null;
@@ -634,7 +633,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
           ? [bounds.left + bounds.drawWidth / 2, bounds.top + bounds.drawHeight * 0.17]
           : [x + 16, y - 17]);
       }
-      if (time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed, entranceCenter(tile, col, bounds));
+      if (!district.natureIsland && time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed, entranceCenter(tile, col, bounds));
     } else if (tile === "." && row === quayRow) {
       if (hasSeawall && col >= wallStart && col < wallEnd) return;
       if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
@@ -910,7 +909,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       worker.started = now;
       worker.due = now + (worker.route.length - 1) * 0.6 + 0.6;
     };
-    for (const worker of bots) {
+    for (const worker of district.natureIsland ? [] : bots) {
       if (time !== null && now >= worker.due) {
         if (worker.route) worker.point = worker.route.at(-1);
         worker.route = null;
@@ -1091,7 +1090,6 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   const { left, top, right, bottom } = visible ?? { left: 0, top: 0, right: width, bottom: rows.length };
-  const renderTile = islandLoop ? parkTerrain : terrain;
   ctx.save();
   // Clip tall sprites at the edge of the repainted area, so offscreen sprites
   // cannot leave stale pixels when the player pans back.
@@ -1099,7 +1097,12 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   ctx.rect(left * size, top * size, (right - left) * size, (bottom - top) * size);
   ctx.clip();
   for (let y = top; y < bottom; y++) {
-    for (let x = left; x < right; x++) renderTile(tileAt(x, y), x, y);
+    for (let x = left; x < right; x++) {
+      const tile = tileAt(x, y);
+      if (islandLoop && (x >= district.harborWidth || y >= district.harborHeight || "mtf".includes(tile))) {
+        parkTerrain(tile, x, y);
+      } else terrain(tile, x, y);
+    }
   }
   rect("#080a1c32", left * size, top * size, (right - left) * size, (bottom - top) * size);
   for (const [left, right, base] of buildingShadows) {
@@ -1107,11 +1110,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     polygon("#080b184d", [[left + 12, base + 5], [right + 14, base + 5], [right + 20, base + 9], [left + 19, base + 9]]);
   }
   beacons.forEach(([x, y]) => beacon(x, y, false));
+  graffitiSeawall();
+  drawFreight();
   if (islandLoop) drawIslandBots();
-  else {
-    graffitiSeawall();
-    drawFreight();
-  }
   drawFactionWalkers();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
