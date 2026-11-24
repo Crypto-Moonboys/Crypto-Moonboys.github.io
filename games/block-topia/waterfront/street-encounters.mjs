@@ -1,4 +1,5 @@
-import { streetExchange, streetProfiles, STREET_VARIANTS, BEAR_VARIANTS } from './street-dialogue.mjs?v=2';
+import { streetExchange, streetProfiles } from './street-dialogue.mjs?v=3';
+import { createNpcDialogue } from './npc-dialogue.mjs?v=1';
 
 const PAIR_DISTANCE = 34;
 const TURN_MS = 2_700;
@@ -7,11 +8,10 @@ const near = (a, b, distance) => Math.hypot(a.x - b.x, a.y - b.y) < distance;
 export const streetProfileId = id => id.replace(/^roamer:/, '');
 
 // Entirely local. Chance is evaluated once per eligible approach, not per frame.
-export function createStreetEncounters(random = Math.random) {
+export function createStreetEncounters(random = Math.random, dialogue = createNpcDialogue()) {
   let nearby = new Set();
   const active = new Map();
   const rests = new Map();
-  const variants = new Map();
 
   return {
     holds: id => active.has(id) || [...active.values()].some(exchange => exchange.listener === id),
@@ -36,29 +36,30 @@ export function createStreetEncounters(random = Math.random) {
 
       const close = new Set();
       const free = id => !held.has(id) && !busy?.(id) && now >= (rests.get(id) ?? 0);
-      for (const a of actors) {
-        const speaker = streetProfileId(a.id);
-        const profile = streetProfiles[speaker];
-        if (profile?.role !== 'police' && profile?.role !== 'bear') continue;
-        for (const b of actors) {
+      const characters = actors.filter(actor => Object.hasOwn(streetProfiles, streetProfileId(actor.id)));
+      // Give police and bear approaches first use of nearby neighbors.
+      const role = id => streetProfiles[streetProfileId(id)];
+      const priority = actor => Number(role(actor.id) === 'neighbor');
+      const starters = characters.toSorted((a, b) => priority(a) - priority(b));
+      for (const a of starters) {
+        const profile = role(a.id);
+        for (const b of characters) {
           if (a.id === b.id || !near(a, b, PAIR_DISTANCE)) continue;
-          const listener = streetProfileId(b.id);
-          const other = streetProfiles[listener];
-          if (!other || (profile.role === 'police' && other.role === 'police')) continue;
+          const other = role(b.id);
+          if (profile === 'police' && other === 'police') continue;
+          if (a.id.startsWith('leader:') && b.id.startsWith('leader:')) continue;
           const pair = [a.id, b.id].sort().join('|');
           if (close.has(pair)) continue;
+          if (profile === 'neighbor' && other !== 'neighbor') continue;
           close.add(pair);
           if (nearby.has(pair) || !free(a.id) || !free(b.id)) continue;
-          const reverse = (other.role === 'bear' || other.role === 'police') && random() >= 0.5;
+          const reverse = profile === other || other !== 'neighbor' ? random() >= 0.5 : false;
           const [starter, target] = reverse ? [b.id, a.id] : [a.id, b.id];
-          const starterId = streetProfileId(starter);
-          const isBear = streetProfiles[starterId].role === 'bear';
-          if (random() >= (isBear ? 0.7 : 0.6)) continue;
+          const starterRole = role(starter);
+          if (random() >= (starterRole === 'bear' ? 0.7 : starterRole === 'police' ? 0.6 : 0.28)) continue;
 
-          const length = isBear ? BEAR_VARIANTS : STREET_VARIANTS;
-          const index = variants.get(starterId) ?? Math.floor(random() * length);
-          variants.set(starterId, (index + 37) % length);
-          const turns = streetExchange(starterId, streetProfileId(target), index);
+          const scene = starterRole === 'bear' ? (random() < 0.5 ? 'offer' : 'watch') : starterRole === 'police' ? 'patrol' : 'lore';
+          const turns = streetExchange(dialogue, streetProfileId(starter), streetProfileId(target), scene);
           active.set(starter, { listener: target, since: now, lines: turns });
           held.add(a.id);
           held.add(b.id);
