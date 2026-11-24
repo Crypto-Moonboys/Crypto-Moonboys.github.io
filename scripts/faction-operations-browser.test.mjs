@@ -2560,6 +2560,38 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     await details.waitFor({ state: 'hidden' });
     assert.equal(await page.getByRole('dialog').count(), 0, 'a robot without a profile leaves the details blank');
     await page.getByRole('button', { name: 'Info', exact: true }).click();
+    const avatarChecks = await page.evaluate(() => {
+      const original = window.drawWaterfront;
+      const checks = [];
+      window.drawWaterfront = (ctx, rows, player, district, time, discussion, states, selected, encounters, visible, inspection) => {
+        let participants;
+        const hits = original(ctx, rows, player, district, 0, discussion, [], selected, {
+          holds: () => false,
+          tick: actors => { participants = actors; return []; },
+        }, visible, inspection);
+        checks.push({ selected, skin: player.faction, walkers: hits.map(hit => hit.index),
+          participants: participants.map(actor => actor.index) });
+        return hits;
+      };
+      try {
+        const picker = document.querySelector('#waterfront-avatar');
+        for (const option of picker.options) {
+          picker.value = option.value;
+          picker.dispatchEvent(new Event('change'));
+        }
+        picker.value = '';
+        picker.dispatchEvent(new Event('change'));
+      } finally {
+        window.drawWaterfront = original;
+      }
+      return checks;
+    });
+    assert.equal(avatarChecks.length, 11);
+    for (const { selected, skin, walkers, participants } of avatarChecks) {
+      assert.equal(skin, selected);
+      assert.deepEqual(walkers, Array.from({ length: 9 }, (_, index) => index).filter(index => index !== selected));
+      assert.deepEqual(participants.sort((a, b) => a - b), Array.from({ length: 9 }, (_, index) => index));
+    }
     await page.locator('#waterfront-avatar').selectOption({ label: 'Nine Toes Joe' });
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 1));
     await page.evaluate(() => {
