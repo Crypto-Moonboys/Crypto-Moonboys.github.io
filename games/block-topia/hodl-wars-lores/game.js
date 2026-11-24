@@ -1,4 +1,4 @@
-import { tile, width, height, spawn, stations, directions, noise, onMoon, route } from './lunar-world.mjs';
+import { tile, width, height, spawn, stations, directions, noise, onMoon, route } from './lunar-world.mjs?v=2';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -10,6 +10,9 @@ terrain.height = height * tile;
 const soil = terrain.getContext('2d');
 const sprite = new Image();
 sprite.src = '../waterfront/assets/atlases/factions.png';
+const detailedSprite = new Image();
+detailedSprite.src = '../waterfront/assets/atlases/factions-detail.webp';
+const detailCell = 192;
 const craters = [[35,31,8],[23,38,5],[46,23,4],[36,49,5],[17,24,3],[52,40,3],[32,13,3]];
 const trails = stations.map((station, i) => [station, stations[(i+1) % stations.length]]);
 trails.push([stations[0], stations[3]], [stations[2], stations[5]]);
@@ -27,14 +30,15 @@ for (let y = 0; y < height; y++) {
     const crater = craters.find(([cx,cy,r]) => Math.hypot(x-cx,(y-cy)*1.15) < r);
     const trail = trails.some(([a,b]) => trailDistance(x,y,a,b) < .78);
     const rim = !onMoon(x,y+1) || !onMoon(x+1,y);
-    const palette = trail ? ['#60596a','#6b6271','#756979'] : rim ? ['#353348','#454054','#534c62']
-      : crater ? ['#2c2b41','#363248','#3e384c'] : ['#554e64','#5e556c','#665e73'];
+    const palette = trail ? ['#655e6e','#686171','#6b6474'] : rim ? ['#353348','#454054','#534c62']
+      : crater ? ['#343146','#373449','#3a374c'] : ['#575065','#5a5368','#5d566b'];
     soil.fillStyle = palette[Math.floor(variation*3)];
     soil.fillRect(x*tile,y*tile,tile,tile);
     soil.fillStyle = variation > .5 ? '#c2b3d026' : '#1516293b';
-    for (let n = 0; n < 5; n++) {
-      const px = Math.floor(noise(x*7+n,y)*21), py = Math.floor(noise(x,y*9+n)*21);
-      soil.fillRect(x*tile+px,y*tile+py,2+n%3,2);
+    for (let n = 0; n < 17; n++) {
+      const px = Math.floor(noise(x*7+n,y)*(tile-3));
+      const py = Math.floor(noise(x,y*9+n)*(tile-3));
+      soil.fillRect(x*tile+px,y*tile+py,1+n%3,1+n%2);
     }
     if (!trail && variation > .96) {
       soil.fillStyle = '#363347';
@@ -53,9 +57,14 @@ const crew = [
   { name: 'Rook Quartz', faction: 7, station: 5, line: 'When a light goes down into the crater, count the seconds. When it comes back, count the people.' },
 ];
 
-const actorSize = 38;
+const actorSize = 34;
+const maxZoom = 3;
 const player = { ...spawn, facing: 0 };
-const camera = { x: terrain.width/2, y: terrain.height/2, zoom: 1 };
+const camera = {
+  x: (spawn.x + .5)*tile,
+  y: (spawn.y + .5)*tile,
+  zoom: matchMedia('(max-width: 739px)').matches ? 1.1 : 1.6,
+};
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const recovered = new Set();
 try {
@@ -123,14 +132,14 @@ function constrainCamera() {
   camera.y = Math.max(padY,Math.min(terrain.height-padY,camera.y));
 }
 function minZoom() {
-  return Math.min(.9, Math.min(viewWidth,viewHeight)/(tile*64));
+  return Math.min(1, Math.max(.45, viewWidth/terrain.width, viewHeight/terrain.height));
 }
 function worldAt(x,y) {
   return { x: camera.x+(x-viewWidth/2)/camera.zoom, y: camera.y+(y-viewHeight/2)/camera.zoom };
 }
 function zoomAt(factor,x=viewWidth/2,y=viewHeight/2) {
   const before = worldAt(x,y);
-  camera.zoom = Math.max(minZoom(),Math.min(2.75,camera.zoom*factor));
+  camera.zoom = Math.max(minZoom(),Math.min(maxZoom,camera.zoom*factor));
   camera.x = before.x-(x-viewWidth/2)/camera.zoom;
   camera.y = before.y-(y-viewHeight/2)/camera.zoom;
   constrainCamera();
@@ -163,7 +172,16 @@ function drawStation(station,index) {
 function drawActor({x,y,facing,faction,frame}) {
   ctx.fillStyle = '#141623a8';
   ctx.fillRect(x-9,y-4,18,5);
-  if (sprite.complete && sprite.naturalWidth) {
+  if (detailedSprite.complete && detailedSprite.naturalWidth) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    const col = faction % 3 * 4 + frame;
+    const row = Math.floor(faction / 3) * 4 + facing;
+    ctx.drawImage(detailedSprite, col*detailCell, row*detailCell, detailCell, detailCell,
+      x-actorSize/2, y-actorSize, actorSize, actorSize);
+    ctx.restore();
+  } else if (sprite.complete && sprite.naturalWidth) {
     ctx.drawImage(sprite, frame*36,(faction*4+facing)*36,36,36,x-actorSize/2,y-actorSize,actorSize,actorSize);
   } else {
     ctx.fillStyle = '#b5d7dc';
@@ -198,7 +216,7 @@ function paint(now) {
   walkers.sort((a,b) => a.y-b.y);
   for (const walker of walkers) {
     drawActor(walker);
-    if (walker.name) hits.push({minX:walker.x-19,maxX:walker.x+19,minY:walker.y-38,maxY:walker.y,npc:walker});
+    if (walker.name) hits.push({minX:walker.x-actorSize/2,maxX:walker.x+actorSize/2,minY:walker.y-actorSize,maxY:walker.y,npc:walker});
   }
 }
 function selectAt(x,y) {
@@ -240,7 +258,9 @@ function endPointer(e) {
 for (const event of ['pointerup','pointercancel','lostpointercapture']) canvas.addEventListener(event,endPointer);
 canvas.addEventListener('wheel',e => {
   e.preventDefault();
-  zoomAt(Math.exp(-e.deltaY*.002),e.offsetX,e.offsetY);
+  const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? viewHeight : 1;
+  const delta = Math.max(-160, Math.min(160, e.deltaY * unit));
+  zoomAt(Math.exp(-delta*.0025),e.offsetX,e.offsetY);
 },{passive:false});
 const keyDirections = {ArrowUp:3,w:3,ArrowDown:0,s:0,ArrowLeft:1,a:1,ArrowRight:2,d:2};
 canvas.addEventListener('keydown',e => {
@@ -279,7 +299,5 @@ stations.forEach((station,index) => {
 });
 new ResizeObserver(resize).observe(canvas);
 resize();
-camera.zoom = minZoom();
-constrainCamera();
 updateProgress();
 requestAnimationFrame(paint);
