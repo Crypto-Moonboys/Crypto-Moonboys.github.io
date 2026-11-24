@@ -68,3 +68,20 @@ The 24 additional guests use sheets supplied or generated in GK’s Waterfront s
 | [roamers-guest-curios.webp](assets/atlases/roamers-guest-curios.webp) | WAX Builder (`2aa55eaa`), Muscle Mascot (`84942711`), Gold-Winged Eyeball (`fea4de8d`), Purple-Winged Eyeball (`a7d01cb5`) |
 
 The guest atlases load in groups as the camera approaches. Selecting one of these guests opens the same NPC info panel with the guest’s name. Guests have no dialogue entry.
+
+## Bot fish
+
+Ten local WebP atlases use eight 96 × 112 frames in a 4 × 2 grid with a waterline anchor at (48, 86). The sprites face right and each fish has one open-water route. They surface, breach, dive and reset under water. Only nearby atlases are loaded. Clicking or tapping a fish opens the NPC name panel.
+
+| Name | Sprite |
+| --- | --- |
+| Rivets | Armoured fish with an amber eye |
+| Glint | Ceramic manta ray |
+| Drillbit | Yellow salvage swordfish |
+| Boiler | Spiny pufferbot |
+| Nightlight | Lantern-jawed anglerbot |
+| Coppercoil | Segmented eel |
+| Redline | Hammerhead survey bot |
+| Zipfin | Monogram lionfish |
+| Chaincurl | Quilted seahorse |
+| Buckletail | Trenchcoat stingray |
