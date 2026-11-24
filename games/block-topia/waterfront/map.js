@@ -59,7 +59,7 @@ try {
 for (const [tile, { name }] of Object.entries(tiles)) {
   select.add(new Option(name, tile));
 }
-select.value = "r";
+select.value = "p";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
@@ -230,11 +230,16 @@ canvas.addEventListener("click", event => {
     walkTo(x, y);
     return;
   }
-  if (x === spawn.x && y === spawn.y && !walkable(select.value)) {
+  const tile = select.value;
+  if (!Object.hasOwn(tiles, tile)) {
+    status.textContent = "Choose a terrain tile first.";
+    return;
+  }
+  if (x === spawn.x && y === spawn.y && !walkable(tile)) {
     status.textContent = "Keep the starting square walkable.";
     return;
   }
-  rows[y] = rows[y].slice(0, x) + select.value + rows[y].slice(x+1);
+  rows[y] = rows[y].slice(0, x) + tile + rows[y].slice(x+1);
   resetIdleWalk();
   if (!walkable(rows[player.y][player.x])) player = { ...spawn };
   save();

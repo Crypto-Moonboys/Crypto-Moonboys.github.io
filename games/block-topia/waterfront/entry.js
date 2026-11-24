@@ -100,7 +100,7 @@ function bootMap(district) {
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
       if (!window.drawWaterfront) await script('harbor-art.js?v=40');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=5');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=6');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
       await import('./leader-dialog.js?lore=7');
     })().catch(error => {
