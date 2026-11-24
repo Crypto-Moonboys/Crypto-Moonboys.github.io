@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, follow">
+  <title>HODL Wars Lores · Block Topia Map Comparison</title>
+  <link rel="stylesheet" href="/games/block-topia/test-builds/compare/comparison.css">
+  <script type="module" src="/games/block-topia/test-builds/compare/comparison.mjs"></script>
+</head>
+<body data-map="moon">
+<main>
+  <canvas id="view" tabindex="0" aria-label="HODL Wars Lores test map" aria-describedby="status"></canvas>
+  <header>
+    <div><h1>HODL Wars Lores</h1><nav aria-label="Compare maps"><a href="/games/block-topia/test-builds/compare/node-city/">Original Node City</a> <a href="/games/block-topia/test-builds/compare/survival/">Survival Grid</a> <a href="/games/block-topia/test-builds/compare/waterfront/">Lumina’s Waterfront</a> <a href="/games/block-topia/test-builds/compare/moon/" aria-current="page">HODL Wars Lores</a></nav></div>
+    <div class="controls">
+      <button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">+</button>
+      <button id="home">Recenter</button><button id="full" hidden>Fullscreen</button>
+    </div>
+  </header>
+  <footer>
+    <output id="status">Tilted moon · Click to walk · Drag to pan</output>
+    <section id="details" class="panel" aria-label="Sprite details" hidden>
+      <strong id="name"></strong><button id="close" aria-label="Close details">×</button><p id="kind"></p>
+    </section>
+  </footer>
+</main>
+</body>
+</html>
