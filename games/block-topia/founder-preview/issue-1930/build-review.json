@@ -1,33 +1,24 @@
 {
   "issue": 1930,
-  "round": 35,
+  "round": 36,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "description": "Potential water overflow at row 3, columns 1 to 5.",
-          "riskLevel": "High",
-          "suggestion": "Ensure the water boundary is correctly defined."
-        },
-        {
-          "description": "House placement seems inconsistent with other structures in rows 4 and 5.",
-          "riskLevel": "Medium",
-          "suggestion": "Align house placements for a uniform look."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "description": "Route path from row 3, column 15 to row 123 may be too long or inefficient.",
-          "riskLevel": "High",
-          "suggestion": "Optimize the route for shorter and more direct paths."
-        },
-        {
-          "description": "The route includes non-sequential rows which might confuse players.",
-          "riskLevel": "Medium",
-          "suggestion": "Ensure all route steps are sequential or provide clear instructions."
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Navigation Risk",
+        "description": "The route [3,15,4,27,16,28,17,40,52,41,64,51,76,88,75,77,87,78,99] includes a potential loop or dead-end. The path from 99 back to the start might not be feasible.",
+        "recommendation": "Review the route for any loops and ensure it is navigable."
+      },
+      {
+        "type": "Visual Risk",
+        "description": "The district layout contains multiple rows with 'r' characters, which could represent roads. However, there are no clear visual indicators or patterns that help in understanding the overall structure of the waterfront.",
+        "recommendation": "Add more visual cues such as different colors for various elements (e.g., water, road) to enhance clarity."
+      },
+      {
+        "type": "Visual Risk",
+        "description": "The 'lighthouse' element is not visually distinct in the provided layout. It might be hard to identify without a specific color or symbol.",
+        "recommendation": "Ensure that lighthouses are clearly marked with a unique visual identifier."
+      }
+    ]
   }
 }
