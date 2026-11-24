@@ -2234,6 +2234,27 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       'the compact harbor paint and NPC hit targets work while detailed downloads are pending');
     assert.ok(detailArtRequests.filter(file => file.includes('/roamers-')).length < 3,
       'the opening camera does not request every roamer group');
+    const offlineDialogue = await page.evaluate(() => {
+      const make = () => window.createWaterfrontFactionConversations();
+      const nativeFetch = window.fetch;
+      const random = Math.random;
+      let requests = 0;
+      window.fetch = () => { requests++; throw new Error('Autonomous dialogue must be offline'); };
+      try {
+        const leaders = [{ index: 0, x: 0, y: 0 }, { index: 1, x: 8, y: 0 }];
+        const roamers = [{ id: 'roamer:police-bike', x: 0, y: 0 }, { id: 'roamer:boombox', x: 8, y: 0 }];
+        Math.random = () => 0;
+        const dialogue = make();
+        const streetStart = dialogue.street.tick(roamers, 0)[0];
+        const leaderLines = [0, 4500, 9000, 13500].map(now => dialogue.tick(leaders, now)[0].text);
+        const crewLines = [0, 12, 24].map(now => dialogue.crewSpeech(now).text);
+        return { requests, street: streetStart.text, leaderLines, crewLines };
+      } finally { window.fetch = nativeFetch; Math.random = random; }
+    });
+    assert.equal(offlineDialogue.requests, 0);
+    assert.match(offlineDialogue.street, /\?$/);
+    assert.equal(new Set(offlineDialogue.leaderLines).size, 4);
+    assert.equal(new Set(offlineDialogue.crewLines).size, 3);
     const pendingEncounterCast = await page.evaluate(() => {
       const render = document.createElement('canvas').getContext('2d');
       let cast;
@@ -2505,17 +2526,19 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         }
         drawImage(image, ...args);
       };
-      const crewBriefs = [];
-      context.fillText = text => crewBriefs.push(text);
+      const crewLines = [];
+      context.fillText = text => crewLines.push(text);
+      const { crewSpeech } = window.createWaterfrontFactionConversations();
+      const crew = { tick: () => [], holds: () => false, crewSpeech };
       const extent = { left: 0, top: 0, right: district.harborWidth, bottom: district.harborHeight };
       let maxRobots = 0;
       for (let time = 1; time <= 20; time++) {
         sprites = 0;
-        window.drawWaterfront(context, rows, player, district, time, 0, [], null, null, extent);
+        window.drawWaterfront(context, rows, player, district, time, 0, [], null, crew, extent);
         maxRobots = Math.max(sprites, maxRobots);
       }
       const delivered = harborFreight.bots.some(bot => bot.carrying || bot.point !== district.spawn && bot.started > 1);
-      return { maxRobots, delivered, crewBrief: crewBriefs.includes(window.waterfrontBuildDiscussion[0].text),
+      return { maxRobots, delivered, crewSpoke: crewLines.join(' ').includes(crewSpeech(0).text),
         botSizes: [...botSizes], factionSizes: [...factionSizes],
         detailedSourceSizes: [...detailedSourceSizes], assertDetailedSampling };
     });
@@ -2525,7 +2548,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     assert.deepEqual(harborLife.factionSizes, [34], 'leaders and the player use the same larger frame');
     assert.ok(harborLife.maxRobots > 11, 'building residents join the crew, freight and patrol robots');
     assert.equal(harborLife.delivered, true, 'freight robots run their original delivery routes');
-    assert.equal(harborLife.crewBrief, true, 'the original briefing crew speaks near spawn');
+    assert.equal(harborLife.crewSpoke, true, 'the build crew’s local dialogue is rendered near spawn');
     const position = await page.evaluate(() => {
       const hit = factionHits.find(item => item.index === 1);
       const map = document.querySelector('#map');

@@ -2,53 +2,54 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { LEADERS } from '../../../js/waterfront-faction-identities.mjs';
-import { createFactionConversations, factionQuestion } from '../waterfront/faction-conversations.mjs';
+import { createFactionConversations } from '../waterfront/faction-conversations.mjs';
+import { createCrewSpeech, createNpcDialogue, DIALOGUE_VARIANTS, loreTopics, npcLine } from '../waterfront/npc-dialogue.mjs';
+import { npcVoices } from '../waterfront/npc-voices.mjs';
+import { createStreetEncounters } from '../waterfront/street-encounters.mjs';
+import { streetProfiles } from '../waterfront/street-dialogue.mjs';
 import { localClanCanonReply } from '../../../workers/moonboys-api/shared/clan-leader-canon-library.js';
 
-test('the nine representatives each have distinct identities, owning pages and 80 unique local questions', () => {
+test('the nine representatives each have distinct identities, owning pages', () => {
   const roster = Object.entries(LEADERS);
   assert.deepEqual(roster.map(([, voice]) => voice.character), [
     'Jack the Bull', 'Nine Toes Joe', 'Nobby', 'Jimmy Rugpull', 'ZARAH8',
     'Danny Rankz', 'Eddie Stax', 'Chada Boi', 'Teddy Boi Jones',
   ]);
   assert.equal(new Set(roster.map(([, voice]) => voice.callSign)).size, 9);
-  const allQuestions = new Set();
-  for (const [index, [id, voice]] of roster.entries()) {
+  for (const [id, voice] of roster) {
     assert.ok(existsSync(new URL('../../..' + voice.wiki, import.meta.url)), voice.wiki);
     assert.ok(existsSync(new URL('../../..' + voice.bio, import.meta.url)), voice.bio);
     assert.ok(existsSync(new URL('../../../battle-chamber/factions/' + id + '.html', import.meta.url)), id);
     assert.equal(localClanCanonReply(voice.name.toLowerCase())?.sources[0].path, voice.wiki);
-    const lines = Array.from({ length: 240 }, (_, i) => factionQuestion(index, i).text);
-    assert.equal(new Set(lines).size, 80);
-    for (const line of lines) allQuestions.add(line);
   }
-  assert.equal(allQuestions.size, 720);
 });
 
 test('a pair can start, pass and resume across reloads and an avatar handoff', () => {
-  let json;
-  const storage = { getItem: () => json, setItem: (_, value) => { json = value; } };
+  const data = new Map();
+  const storage = { getItem: key => data.get(key), setItem: (key, value) => data.set(key, value) };
   const now = Date.UTC(2026, 10, 24);
   const actors = [{ index: 0, x: 2, y: 3 }, { index: 1, x: 9, y: 3 }];
   const engine = createFactionConversations(storage);
   const first = engine.tick(actors, now)[0];
-  const topic = factionQuestion(0, ((Math.floor(now / 86400000) % 240) * 13 + 1) % 240).topic;
-  assert.ok(first.text.includes(topic));
+  const topic = loreTopics.findLast(topic => first.text.includes(topic));
+  assert.ok(topic);
   assert.ok(engine.holds(0) && engine.holds(1));
   assert.match(engine.tick(actors, now + 4500)[0].text, /\.$/);
-  const joe = LEADERS['nomad-bears'];
-  assert.ok([joe.intro, joe.agenda].includes(engine.tick(actors, now + 9000)[0].text));
-  assert.match(engine.tick(actors, now + 13500)[0].text, /whole crew|gets a say/);
+  assert.equal(engine.tick(actors, now + 9000)[0].actor, 0);
+  assert.ok(engine.tick(actors, now + 13500)[0].text.includes(topic));
   assert.equal(engine.tick(actors, now + 18000)[0], undefined);
   assert.equal(engine.tick(actors, now + 20001)[0], undefined, 'stationary pairs do not retrigger');
   const restored = createFactionConversations(storage);
   const withAvatar = [{ ...actors[0], controlled: true }, actors[1]];
   const passing = restored.tick(withAvatar, now + 21000)[0];
-  assert.deepEqual(passing, { actor: 1, text: 'I’ve got a route to check. I’ll find you on the way back.' });
+  assert.equal(passing.actor, 1);
+  assert.ok(passing.text.includes(topic));
+  assert.match(passing.text, /\.$/);
   assert.equal(restored.tick(withAvatar, now + 25501)[0], undefined);
   restored.tick([], now + 27502);
   const resumed = restored.tick(withAvatar, now + 29000)[0];
-  assert.equal(resumed.text, `Give me one result we can check on ${topic}?`);
+  assert.ok(resumed.text.includes(topic));
+  assert.notEqual(resumed.text, first.text);
   restored.tick(withAvatar, now + 43000);
   const tomorrow = createFactionConversations(storage).tick(actors, now + 86_400_000)[0];
   assert.notEqual(tomorrow.text, first.text);
@@ -56,7 +57,7 @@ test('a pair can start, pass and resume across reloads and an avatar handoff', (
 
 test('a conversation aborted by a departing actor does not create a remembered exchange', () => {
   let writes = 0;
-  const engine = createFactionConversations({ getItem: () => '{bad', setItem: () => { writes++; } });
+  const engine = createFactionConversations({ getItem: () => '{bad', setItem: key => { if (key === 'waterfront.faction-encounters.v1') writes++; } });
   const actors = [{ index: 5, x: 2, y: 3 }, { index: 7, x: 9, y: 3 }];
   assert.ok(engine.tick(actors, 0)[0]);
   assert.deepEqual(engine.tick(actors.slice(1), 1000), []);
@@ -137,60 +138,67 @@ test('Gemini receives the character bio, faction pages and a named page while lo
   assert.ok(calls.includes(home) && calls.includes(leader.wiki) && calls.includes(guide));
 });
 
-test('street cast gets 100 distinct voiced variants and its own local question and reply', async () => {
-  const { streetExchange, streetProfiles, STREET_VARIANTS } = await import('../waterfront/street-dialogue.mjs');
-  assert.equal(STREET_VARIANTS, 100);
+test('all 37 voices have 240 distinct lines per phase, with no repeated sentences between phases or speakers', () => {
   assert.equal(Object.keys(streetProfiles).length, 35);
-  const answers = new Set();
-  const questions = new Set();
-  const counters = new Set();
-  for (const [id, profile] of Object.entries(streetProfiles)) {
-    if (profile.wiki) assert.ok(existsSync(new URL('../../..' + profile.wiki, import.meta.url)), id);
-    const initiator = profile.role === 'police' ? id : 'police-robot';
-    const listener = profile.role === 'police' ? 'burglar-bear' : id;
-    const lines = Array.from({ length: STREET_VARIANTS }, (_, i) => streetExchange(initiator, listener, i));
-    assert.equal(new Set(lines.map(turns => turns[0].text)).size, 100, id);
-    assert.equal(new Set(lines.map(turns => turns[1].text)).size, 100, id);
-    assert.equal(new Set(lines.map(turns => turns[2].text)).size, 100, id);
-    if (profile.role === 'police') {
-      questions.add(lines[0][0].text);
-      assert.equal(new Set(lines.map(turns => turns[3].text)).size, 100, id);
-    }
-    else {
-      answers.add(lines[0][1].text);
-      counters.add(lines[0][2].text);
+  assert.equal(Object.keys(npcVoices).length, 37);
+  assert.equal(DIALOGUE_VARIANTS, 240);
+  const all = new Set();
+  for (const id of Object.keys(npcVoices)) {
+    assert.equal(npcVoices[id].length, 6, id);
+    for (const phase of ['open', 'middle', 'end']) {
+      const lines = Array.from({ length: DIALOGUE_VARIANTS }, (_, i) => npcLine(id, phase, i));
+      assert.equal(new Set(lines).size, 240, id + ' ' + phase);
+      for (const line of lines) {
+        assert.match(line, phase === 'open' ? /^[^.!?]+\?$/u : /^[^.!?]+\.$/u, id + ' ' + phase);
+        assert.ok(!all.has(line), 'Repeated line: ' + line);
+        all.add(line);
+      }
     }
   }
-  assert.equal(questions.size, 3);
-  assert.equal(answers.size, 32);
-  assert.equal(counters.size, 32);
 });
 
-test('bear approaches have two intents and 240 voiced questions and replies', async () => {
-  const { streetExchange, streetProfiles, BEAR_VARIANTS } = await import('../waterfront/street-dialogue.mjs');
-  const bearIds = Object.keys(streetProfiles).filter(id => streetProfiles[id].role === 'bear');
-  assert.equal(BEAR_VARIANTS, 240);
-  const questions = new Set();
-  const replies = new Set();
-  for (const speaker of bearIds) {
-    for (let i = 0; i < BEAR_VARIANTS; i++) {
-      const [opening] = streetExchange(speaker, 'boombox', i);
-      assert.match(opening.text, i % 2 ? /police|coppers/i : /buy|looking to buy/i);
-      questions.add(opening.text);
+test('police checks, bear deals, and lookout questions also have 240 distinct lines per role', () => {
+  for (const [id, role] of Object.entries(streetProfiles)) {
+    const scenes = role === 'bear' ? ['offer', 'watch'] : role === 'police' ? ['patrol'] : [];
+    for (const scene of scenes) {
+      const lines = Array.from({ length: DIALOGUE_VARIANTS }, (_, index) => npcLine(id, 'open', index, scene));
+      assert.equal(new Set(lines).size, 240, id + ' ' + scene);
+      assert.ok(lines.every(line => (scene === 'offer' ? /buy|buying/i : scene === 'watch' ? /police|coppers/i : /\?$/).test(line)));
     }
   }
-  for (const listener of Object.keys(streetProfiles)) {
-    const speaker = bearIds.find(id => id !== listener);
-    for (let i = 0; i < BEAR_VARIANTS; i++) {
-      replies.add(streetExchange(speaker, listener, i)[1].text);
-    }
-  }
-  assert.equal(questions.size, 9 * 240);
-  assert.equal(replies.size, 35 * 240);
 });
 
-test('local patrol stops and bear chats obey pairing, chance and release', async () => {
-  const { createStreetEncounters } = await import('../waterfront/street-encounters.mjs');
+test('the local dialogue library rotates every opening and each reply on a shared topic across reloads', () => {
+  const data = new Map();
+  const storage = { getItem: key => data.get(key), setItem: (key, value) => data.set(key, value) };
+  let dialogue = createNpcDialogue(storage);
+  const opening = dialogue.take('leader:1', 'open', 'lore');
+  const reply = dialogue.take('leader:1', 'middle', 'lore', opening.topic);
+  dialogue.save();
+  dialogue = createNpcDialogue(storage);
+  const openings = new Set([opening.text]);
+  for (let i = 1; i < DIALOGUE_VARIANTS; i++) openings.add(dialogue.take('leader:1', 'open', 'lore').text);
+  assert.equal(openings.size, DIALOGUE_VARIANTS);
+  const replySet = new Set([reply.text]);
+  for (let i = 1; i < 10; i++) replySet.add(dialogue.take('leader:1', 'middle', 'lore', opening.topic).text);
+  assert.equal(replySet.size, 10);
+  assert.equal(dialogue.take('leader:1', 'open', 'lore').text, opening.text);
+});
+
+test('build crew alternates who starts and ends, pauses, and keeps its dialogue local', t => {
+  t.mock.method(globalThis, 'fetch', () => { throw Error('NPCs must not make network requests'); });
+  const speech = createCrewSpeech(createNpcDialogue());
+  assert.equal(speech(null).speaker, 0);
+  const first = speech(0);
+  assert.equal(speech(1), first);
+  assert.equal(speech(12).speaker, 1);
+  assert.equal(speech(24).speaker, 0);
+  assert.equal(speech(36), null);
+  assert.equal(speech(48).speaker, 1);
+  assert.notEqual(speech(96).text, first.text);
+});
+
+test('local patrol stops and bear chats obey pairing, chance and release', () => {
   const actor = (id, x = 0) => ({ id, x, y: 0 });
   const bear = actor('roamer:graff-bear');
   const witness = actor('roamer:boombox');
@@ -200,8 +208,8 @@ test('local patrol stops and bear chats obey pairing, chance and release', async
   assert.deepEqual(engine.tick([bear, actor('patrol:0'), actor('crew:1'), actor('freight:0')], 0), []);
   assert.equal(engine.tick([bear, witness], 1)[0].id, bear.id);
   assert.ok(engine.holds(witness.id));
-  assert.match(engine.tick([bear, witness], 2701)[0].text, /putain/);
-  assert.deepEqual(engine.tick([bear, witness], 8101), []);
+  assert.match(engine.tick([bear, witness], 2701)[0].text, /passing on the deal/);
+  assert.deepEqual(engine.tick([bear, witness], 10801), []);
   assert.equal(engine.holds(bear.id), false);
   engine.tick([], 27000);
   assert.deepEqual(engine.tick([cop, witness], 27001, () => true), []);
@@ -212,7 +220,17 @@ test('local patrol stops and bear chats obey pairing, chance and release', async
   const values = [0.8, 0, 0];
   const reversed = createStreetEncounters(() => values.shift());
   assert.equal(reversed.tick([cop, bear], 0)[0].id, bear.id);
-  assert.match(reversed.tick([cop, bear], 2700)[0].text, /police rider/);
-  assert.equal(reversed.tick([cop, bear], 5400)[0].id, cop.id);
+  assert.match(reversed.tick([cop, bear], 2700)[0].text, /logging that offer/);
+  assert.equal(reversed.tick([cop, bear], 8100)[0].id, cop.id);
   assert.equal(createStreetEncounters(() => 0).tick([bear, otherBear], 0)[0].id, bear.id);
+});
+
+test('civilian roamers can start their own exchanges while NPC dialogue never fetches', t => {
+  t.mock.method(globalThis, 'fetch', () => { throw Error('NPCs must not make network requests'); });
+  const actors = [{ id: 'roamer:samurai', x: 0, y: 0 }, { id: 'roamer:electric-green', x: 4, y: 0 }];
+  const engine = createStreetEncounters(() => 0);
+  assert.equal(engine.tick(actors, 0)[0].id, actors[0].id);
+  assert.equal(engine.tick(actors, 2700)[0].id, actors[1].id);
+  assert.equal(engine.tick(actors, 8100)[0].id, actors[0].id);
+  assert.equal(engine.tick(actors, 10800).length, 0);
 });

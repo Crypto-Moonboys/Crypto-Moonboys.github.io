@@ -69,8 +69,6 @@ function updateBuildDiscussion(now = new Date()) {
   if (current === publishedDiscussion) return;
   publishedDiscussion = current;
   window.waterfrontBuildDiscussion = turns;
-  discussionElapsed = 0;
-  previousDiscussionFrame = null;
 
   const panel = document.querySelector("#build-discussion");
   panel.hidden = false;

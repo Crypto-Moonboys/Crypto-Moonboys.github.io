@@ -1169,8 +1169,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.restore();
   }
 
-  const crew = window.waterfrontBuildDiscussion ?? [];
-  const turn = crew.length ? crew[discussionElapsed === null ? 0 : Math.floor(discussionElapsed / 12) % crew.length] : null;
+  const turn = conversations?.crewSpeech?.(discussionElapsed);
   function drawIslandBots() {
     if (!islandLoop) return;
     residentBots.forEach((model, index) => {
@@ -1220,18 +1219,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     });
   }
 
-  function drawCrewBubble(x, y) {
-    const top = y - botSpriteSize - 20;
-    const left = Math.max(2, Math.min(x - 76, width * size - 154));
-    rect("#16303b", left - 1, top - 1, 154, 16);
-    rect("#eaf2e5", left, top, 152, 14);
-    polygon("#eaf2e5", [[x - 3, top + 14], [x + 3, top + 14], [x, top + 18]]);
-    ctx.save();
-    ctx.font = "6px system-ui";
-    ctx.fillStyle = "#152831";
-    ctx.fillText(String(turn.text).slice(0, 76), left + 4, top + 9, 144);
-    ctx.restore();
-  }
+  let crewBubble;
 
   function drawCrew() {
     const speakers = [
@@ -1249,7 +1237,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const facing = clock === null ? 0 : Math.cos(clock * 0.9 + index * Math.PI);
       bot(index, x, y, facing, 0, clock === null ? 0 : 1 + Math.floor(clock * 6) % 3, id);
       if (!turn || turn.speaker !== index) return;
-      drawCrewBubble(x, y);
+      crewBubble = { text: turn.text, speaker: { x, y, spriteSize: botSpriteSize } };
     });
   }
 
@@ -1319,6 +1307,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         bubbles.push({ text: line.text, speaker: byId.get(line.id) });
       }
     }
+    if (crewBubble) bubbles.push(crewBubble);
     for (const { speaker, text } of bubbles) {
       if (!speaker) continue;
       ctx.save();

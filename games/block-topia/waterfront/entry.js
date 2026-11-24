@@ -93,23 +93,29 @@ function bootMap(district) {
         { extendWaterfront, restoreIslandLayout, islandPatrol, islandSeed },
         { createFactionConversations },
         { createStreetEncounters },
+        { createNpcDialogue, createCrewSpeech },
       ] = await Promise.all([
         import('./nature-island.mjs?v=3'),
-        import('./faction-conversations.mjs?v=4'),
-        import('./street-encounters.mjs?v=2'),
+        import('./faction-conversations.mjs?v=5'),
+        import('./street-encounters.mjs?v=3'),
+        import('./npc-dialogue.mjs?v=1'),
       ]);
       window.waterfrontDistrict = extendWaterfront(district);
       window.restoreWaterfrontLayout = restoreIslandLayout;
       window.waterfrontIslandPatrol = islandPatrol;
       window.waterfrontIslandSeed = islandSeed;
-      window.createWaterfrontFactionConversations ??= storage => ({
-        ...createFactionConversations(storage),
-        street: createStreetEncounters(),
-      });
+      window.createWaterfrontFactionConversations ??= storage => {
+        const dialogue = createNpcDialogue(storage);
+        return {
+          ...createFactionConversations(storage, dialogue),
+          street: createStreetEncounters(Math.random, dialogue),
+          crewSpeech: createCrewSpeech(dialogue),
+        };
+      };
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=57-stream-art');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=58-npc-dialogue');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=14-stream-art');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=15-npc-dialogue');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
       await import('./leader-dialog.js?lore=12');
     })().catch(error => {
