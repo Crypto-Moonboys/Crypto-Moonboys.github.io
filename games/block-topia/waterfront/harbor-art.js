@@ -550,11 +550,6 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const x = col * size;
     const y = row * size;
     const seed = window.waterfrontIslandSeed(col, row);
-    if (tile === "~") {
-      rect("#10243a", x, y, size, size);
-      if (seed % 3 === 0) rect("#294a60", x + seed % 22, y + 10, 6, 1);
-      return;
-    }
     const coast = [tileAt(col - 1, row), tileAt(col + 1, row), tileAt(col, row - 1), tileAt(col, row + 1)];
     rect("#827257", x, y, size, size);
     const [left, right, top, bottom] = coast.map(neighbor => neighbor === "~" ? 3 : 0);
@@ -605,7 +600,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       // Short, horizontal glints stay in the water and drift in the night light.
       const glint = (seed + Math.floor((time ?? 0) * 2)) % 22;
       if (seed % 3 === 0) rect("#54888566", x + 2 + glint, y + 11, 6, 1);
-      if (tileAt(col, row + 1) !== "~" && tileAt(col, row + 1) !== "d") {
+      // The natural coastline draws its own banks on the adjoining land tiles.
+      if ((!district.natureIsland || (col < district.harborWidth && row < district.harborHeight)) &&
+          tileAt(col, row + 1) !== "~" && tileAt(col, row + 1) !== "d") {
         rect("#252334", x, y + 24, size, 8);
         rect("#6c667b", x, y + 24, size, 3);
         rect("#43787f", x, y + 21, size, 1);
@@ -1148,7 +1145,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
       const tile = tileAt(x, y);
-      if (islandLoop && (x >= district.harborWidth || y >= district.harborHeight || "mtf".includes(tile))) {
+      if (islandLoop && tile !== "~" && (x >= district.harborWidth || y >= district.harborHeight || "mtf".includes(tile))) {
         parkTerrain(tile, x, y);
       } else terrain(tile, x, y);
     }
