@@ -49,6 +49,35 @@ for (let y = 0; y < height; y++) {
   }
 }
 
+// Rotate the ground slightly and foreshorten it, like a tilted orthographic camera.
+const yaw = -Math.PI / 9;
+const cosine = Math.cos(yaw), sine = Math.sin(yaw);
+const tilt = .57;
+
+function project(x,y) {
+  return { x: x*cosine-y*sine, y: (x*sine+y*cosine)*tilt };
+}
+
+function unproject(x,y) {
+  return { x: x*cosine+(y/tilt)*sine, y: -x*sine+(y/tilt)*cosine };
+}
+
+const corners = [project(0,0), project(terrain.width,0),
+  project(0,terrain.height), project(terrain.width,terrain.height)];
+const left = Math.min(...corners.map(p => p.x));
+const right = Math.max(...corners.map(p => p.x));
+const top = Math.min(...corners.map(p => p.y));
+const bottom = Math.max(...corners.map(p => p.y)) + 12;
+
+const rimSilhouette = document.createElement('canvas');
+rimSilhouette.width = terrain.width;
+rimSilhouette.height = terrain.height;
+const rimContext = rimSilhouette.getContext('2d');
+rimContext.drawImage(terrain,0,0);
+rimContext.globalCompositeOperation = 'source-in';
+rimContext.fillStyle = '#29263c';
+rimContext.fillRect(0,0,terrain.width,terrain.height);
+
 const crew = [
   { name: 'Mara Coil', faction: 4, station: 1, line: 'Relay Nine is still broadcasting. If you hear your own voice come back late, walk uphill.' },
   { name: 'Latch', faction: 1, station: 2, line: 'They wrote off the drill first. Took another week to write down who was standing by it.' },
@@ -61,8 +90,7 @@ const actorSize = 34;
 const maxZoom = 3;
 const player = { ...spawn, facing: 0 };
 const camera = {
-  x: (spawn.x + .5)*tile,
-  y: (spawn.y + .5)*tile,
+  ...project((spawn.x + .5)*tile,(spawn.y + .5)*tile),
   zoom: matchMedia('(max-width: 739px)').matches ? 1.1 : 1.6,
 };
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -116,8 +144,9 @@ function updatePlayer(now) {
   byId('location').textContent = nearest?.name ?? `Lunar surface · ${player.x+1}, ${player.y+1}`;
   const edgeX = Math.max(0,viewWidth/(2*camera.zoom)-tile*2);
   const edgeY = Math.max(0,viewHeight/(2*camera.zoom)-tile*2);
-  camera.x = Math.max(player.x*tile-edgeX, Math.min(camera.x,player.x*tile+edgeX));
-  camera.y = Math.max(player.y*tile-edgeY, Math.min(camera.y,player.y*tile+edgeY));
+  const feet = project((player.x+.5)*tile,(player.y+.65)*tile);
+  camera.x = Math.max(feet.x-edgeX, Math.min(camera.x,feet.x+edgeX));
+  camera.y = Math.max(feet.y-edgeY, Math.min(camera.y,feet.y+edgeY));
   constrainCamera();
   if (!steps.length && arriving !== null) {
     arrive(arriving);
@@ -126,19 +155,19 @@ function updatePlayer(now) {
 }
 
 function constrainCamera() {
-  const padX = Math.min(terrain.width/2,viewWidth/(2*camera.zoom));
-  const padY = Math.min(terrain.height/2,viewHeight/(2*camera.zoom));
-  camera.x = Math.max(padX,Math.min(terrain.width-padX,camera.x));
-  camera.y = Math.max(padY,Math.min(terrain.height-padY,camera.y));
+  const padX = Math.min((right-left)/2,viewWidth/(2*camera.zoom));
+  const padY = Math.min((bottom-top)/2,viewHeight/(2*camera.zoom));
+  camera.x = Math.max(left+padX,Math.min(right-padX,camera.x));
+  camera.y = Math.max(top+padY,Math.min(bottom-padY,camera.y));
 }
 function minZoom() {
-  return Math.min(1, Math.max(.45, viewWidth/terrain.width, viewHeight/terrain.height));
+  return Math.min(1, Math.max(.45, viewWidth/(right-left), viewHeight/(bottom-top)));
 }
-function worldAt(x,y) {
+function planeAt(x,y) {
   return { x: camera.x+(x-viewWidth/2)/camera.zoom, y: camera.y+(y-viewHeight/2)/camera.zoom };
 }
 function zoomAt(factor,x=viewWidth/2,y=viewHeight/2) {
-  const before = worldAt(x,y);
+  const before = planeAt(x,y);
   camera.zoom = Math.max(minZoom(),Math.min(maxZoom,camera.zoom*factor));
   camera.x = before.x-(x-viewWidth/2)/camera.zoom;
   camera.y = before.y-(y-viewHeight/2)/camera.zoom;
@@ -153,7 +182,7 @@ function resize() {
   zoomAt(1);
 }
 function drawStation(station,index) {
-  const x = (station.x+.5)*tile, y = (station.y+.5)*tile;
+  const {x,y} = project((station.x+.5)*tile,(station.y+.5)*tile);
   ctx.fillStyle = '#181b2a';
   ctx.fillRect(x-19,y-16,38,29);
   ctx.fillStyle = '#80859d';
@@ -201,7 +230,15 @@ function paint(now) {
   ctx.setTransform(pixelRatio*camera.zoom,0,0,pixelRatio*camera.zoom,
     pixelRatio*(viewWidth/2-camera.x*camera.zoom),pixelRatio*(viewHeight/2-camera.y*camera.zoom));
   ctx.imageSmoothingEnabled = false;
+  ctx.save();
+  ctx.translate(0,12);
+  ctx.transform(cosine,sine*tilt,-sine,cosine*tilt,0,0);
+  ctx.drawImage(rimSilhouette,0,0);
+  ctx.restore();
+  ctx.save();
+  ctx.transform(cosine,sine*tilt,-sine,cosine*tilt,0,0);
   ctx.drawImage(terrain,0,0);
+  ctx.restore();
   hits = [];
   stations.forEach(drawStation);
   const walkers = crew.map((npc,index) => {
@@ -213,6 +250,7 @@ function paint(now) {
   });
   walkers.push({x:(player.x+.5)*tile,y:(player.y+.65)*tile,faction:0,facing:player.facing,
     frame:!reduced.matches && now < movingUntil ? 1+Math.floor(now/95)%3 : 0});
+  for (const walker of walkers) Object.assign(walker,project(walker.x,walker.y));
   walkers.sort((a,b) => a.y-b.y);
   for (const walker of walkers) {
     drawActor(walker);
@@ -220,12 +258,13 @@ function paint(now) {
   }
 }
 function selectAt(x,y) {
-  const at = worldAt(x,y);
+  const at = planeAt(x,y);
   const hit = hits.findLast(h => at.x >= h.minX && at.x <= h.maxX && at.y >= h.minY && at.y <= h.maxY);
   if (hit?.npc) { show(hit.npc.name,hit.npc.line); return; }
   if (hit) { const s = stations[hit.station]; visit(s.x,s.y,hit.station); return; }
   byId('details').hidden = true;
-  visit(Math.floor(at.x/tile),Math.floor(at.y/tile));
+  const ground = unproject(at.x,at.y);
+  visit(Math.floor(ground.x/tile),Math.floor(ground.y/tile));
 }
 
 canvas.addEventListener('pointerdown',e => {
@@ -272,8 +311,7 @@ canvas.addEventListener('keydown',e => {
 byId('in').onclick = () => zoomAt(1.25);
 byId('out').onclick = () => zoomAt(.8);
 byId('home').onclick = () => {
-  camera.x = (player.x+.5)*tile;
-  camera.y = (player.y+.5)*tile;
+  Object.assign(camera,project((player.x+.5)*tile,(player.y+.65)*tile));
   constrainCamera();
 };
 byId('info').onclick = () => {
