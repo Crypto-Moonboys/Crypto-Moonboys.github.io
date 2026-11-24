@@ -96,7 +96,7 @@ function bootMap(district) {
       window.waterfrontIslandPatrol = islandPatrol;
       window.waterfrontIslandSeed = islandSeed;
       if (!window.createWaterfrontFactionConversations) {
-        const { createFactionConversations } = await import('./faction-conversations.mjs?v=2');
+        const { createFactionConversations } = await import('./faction-conversations.mjs?v=3');
         window.createWaterfrontFactionConversations = createFactionConversations;
       }
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
