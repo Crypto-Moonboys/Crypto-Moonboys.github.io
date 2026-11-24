@@ -15,7 +15,7 @@ detailedSprite.src = '../waterfront/assets/atlases/factions-detail.webp';
 const detailCell = 192;
 const miningBuildings = miningSites.map(site => {
   const image = new Image();
-  image.src = './assets/' + site.file;
+  image.src = './assets/' + site.file + '?v=2-detail';
   return { scale: .625, ...site, image };
 });
 const fortressFrame = { width: 224, height: 280, columns: 4, count: 12, fps: 12 };
@@ -234,8 +234,14 @@ function drawFortress(x, y, now, building) {
   const { scale } = building;
   const left = x - fortressAnchorX * scale;
   const top = y - building.anchorY * scale;
-  ctx.drawImage(building.image, frame % columns * width, Math.floor(frame / columns) * height,
-    width, height, left, top, width * scale, height * scale);
+  const frameWidth = building.image.naturalWidth / columns;
+  const frameHeight = building.image.naturalHeight / (count / columns);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(building.image, frame % columns * frameWidth, Math.floor(frame / columns) * frameHeight,
+    frameWidth, frameHeight, left, top, width * scale, height * scale);
+  ctx.restore();
   hits.push({
     minX: left, maxX: left + width * scale, minY: top, maxY: top + height * scale,
     building,
@@ -250,7 +256,9 @@ function onFortressSprite(hit, point) {
     mask.width = width;
     mask.height = height;
     const context = mask.getContext('2d');
-    context.drawImage(building.image, 0, 0, width, height, 0, 0, width, height);
+    const { columns, count } = fortressFrame;
+    context.drawImage(building.image, 0, 0, building.image.naturalWidth / columns,
+      building.image.naturalHeight / (count / columns), 0, 0, width, height);
     building.mask = context.getImageData(0, 0, width, height).data;
   }
   const x = Math.floor((point.x - hit.minX) / building.scale);
