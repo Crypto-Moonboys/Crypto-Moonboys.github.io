@@ -115,6 +115,8 @@ let hoverPoint;
 let hoveredNpc;
 let tappedNpc;
 let inspectionTimer;
+let compactArtReady = false;
+let streamDetailArt = false;
 const inspection = {
   hit(actor) { npcHits.push(actor); },
   held(id) { return (npcPauses.get(id)?.until ?? 0) > performance.now(); },
@@ -185,7 +187,12 @@ function paintMap() {
   npcHits = [];
   factionHits = window.drawWaterfront(ctx, rows, { ...player, faction: selectedAvatar }, district, sceneTime,
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
-    editing || document.hidden ? null : factionConversations, visibleTiles(), inspection) ?? [];
+    editing || document.hidden ? null : factionConversations, visibleTiles(), inspection,
+    streamDetailArt ? requestMapPaint : null) ?? [];
+  if (compactArtReady && !streamDetailArt) {
+    streamDetailArt = true;
+    requestMapPaint();
+  }
   updateHover();
   mapSurface.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
@@ -539,7 +546,10 @@ window.addEventListener("waterfront:access", () => {
   }
   syncAnimation();
 });
-window.loadWaterfrontSprites().then(paintMap);
+window.loadWaterfrontSprites().then(() => {
+  compactArtReady = true;
+  requestMapPaint();
+});
 
 let frameId;
 function animateHarbor(now) {

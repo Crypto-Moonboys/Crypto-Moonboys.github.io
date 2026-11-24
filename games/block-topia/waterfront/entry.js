@@ -89,24 +89,27 @@ function script(url) {
 function bootMap(district) {
   if (!mapStartup) {
     mapStartup = (async () => {
-      const { extendWaterfront, restoreIslandLayout, islandPatrol, islandSeed } =
-        await import('./nature-island.mjs?v=3');
+      const [
+        { extendWaterfront, restoreIslandLayout, islandPatrol, islandSeed },
+        { createFactionConversations },
+        { createStreetEncounters },
+      ] = await Promise.all([
+        import('./nature-island.mjs?v=3'),
+        import('./faction-conversations.mjs?v=4'),
+        import('./street-encounters.mjs?v=2'),
+      ]);
       window.waterfrontDistrict = extendWaterfront(district);
       window.restoreWaterfrontLayout = restoreIslandLayout;
       window.waterfrontIslandPatrol = islandPatrol;
       window.waterfrontIslandSeed = islandSeed;
-      if (!window.createWaterfrontFactionConversations) {
-        const { createFactionConversations } = await import('./faction-conversations.mjs?v=4');
-        const { createStreetEncounters } = await import('./street-encounters.mjs?v=2');
-        window.createWaterfrontFactionConversations = storage => ({
-          ...createFactionConversations(storage),
-          street: createStreetEncounters(),
-        });
-      }
+      window.createWaterfrontFactionConversations ??= storage => ({
+        ...createFactionConversations(storage),
+        street: createStreetEncounters(),
+      });
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=55-street-encounters');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=56-stream-art');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=13-roamer-info');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=14-stream-art');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
       await import('./leader-dialog.js?lore=12');
     })().catch(error => {

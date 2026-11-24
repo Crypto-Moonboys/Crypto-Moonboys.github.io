@@ -2127,6 +2127,9 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     const errors = [];
     const entryActions = [];
     const gameplayAssets = [];
+    const detailArtRequests = [];
+    let releaseDetailArt;
+    const holdDetailArt = new Promise(resolve => { releaseDetailArt = resolve; });
     let joinedFaction;
     let occupied;
     let seatLost;
@@ -2165,6 +2168,10 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         } });
       }
       if (/\/(?:harbor-art|map|leader-dialog)\.js$/.test(url.pathname)) gameplayAssets.push(url.pathname);
+      if (/\/atlases\/(?:roamers-[\w-]+|bots-detail|factions-detail)\.webp$/.test(url.pathname)) {
+        detailArtRequests.push(url.pathname);
+        await holdDetailArt;
+      }
       if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
         leaders: {
           chat_enabled: true,
@@ -2221,6 +2228,22 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
     assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
+    await page.waitForFunction(() => factionHits.length > 0 && waterfrontFactionAtlas.image &&
+      waterfrontDetailedFactions.requested && waterfrontDetailedBots.requested);
+    assert.equal(await page.evaluate(() => !waterfrontDetailedFactions.image && !waterfrontDetailedBots.image), true,
+      'the compact harbor paint and NPC hit targets work while detailed downloads are pending');
+    assert.ok(detailArtRequests.filter(file => file.includes('/roamers-')).length < 3,
+      'the opening camera does not request every roamer group');
+    await page.evaluate(() => {
+      function afterPaint() {
+        if (!waterfrontDetailedFactions.image || !waterfrontDetailedBots.image) return;
+        mapSurface.removeEventListener('waterfront:map-painted', afterPaint);
+        window.testDetailedArtPainted = true;
+      }
+      mapSurface.addEventListener('waterfront:map-painted', afterPaint);
+    });
+    releaseDetailArt();
+    await page.waitForFunction(() => window.testDetailedArtPainted);
     const camera = await page.evaluate(() => {
       const view = document.querySelector('#map-view');
       const scroll = document.querySelector('.map-scroll');
@@ -2372,6 +2395,9 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     });
     assert.deepEqual(detailedFrames, [[192, 144], [192, 128]]);
     await page.waitForFunction(() => waterfrontRoamers.every(({ atlas }) => atlas.image?.complete));
+    const roamerRequests = detailArtRequests.filter(file => file.includes('/roamers-'));
+    assert.equal(roamerRequests.length, 3, 'the overview loads all three roamer atlases once');
+    assert.equal(new Set(roamerRequests).size, 3);
     const roaming = await page.evaluate(() => {
       const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
       const cell = roamingAtlasCell;
