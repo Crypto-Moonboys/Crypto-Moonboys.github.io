@@ -1,4 +1,4 @@
-import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, miningSites } from './lunar-world.mjs?v=4';
+import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, miningSites } from './lunar-world.mjs?v=5';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');

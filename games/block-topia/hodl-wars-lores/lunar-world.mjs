@@ -5,7 +5,7 @@ export const spawn = { x: 24, y: 23 };
 export const miningSites = [
   { x: 28, y: 20, name: 'Zcash Mining Fortress', file: 'zcash-fortress.webp', anchorY: 247,
     info: 'Mining rigs are online. Four cooling fans vent heat from the gold-lit reactor stacks.' },
-  { x: 22, y: 26, name: 'WAX Bee Node', file: 'wax-bee.webp', anchorY: 234,
+  { x: 19, y: 27, name: 'WAX Bee Node', file: 'wax-bee.webp', anchorY: 234,
     info: 'The honeycomb circuits pulse as the node synchronizes.' },
 ];
 
