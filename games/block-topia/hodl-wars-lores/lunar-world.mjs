@@ -2,6 +2,7 @@ export const tile = 32;
 export const width = 72;
 export const height = 68;
 export const spawn = { x: 24, y: 23 };
+export const fortress = { x: 28, y: 20, name: 'Zcash Mining Fortress' };
 
 export const stations = [
   { x: 24, y: 23, name: 'Landing Pad', log: 'The last lift left with six empty seats. The manifest still charges all six passengers for the trip.' },
@@ -26,8 +27,12 @@ export function onMoon(x, y) {
   return Math.hypot(dx, dy) < 1 + ridge + (noise(x,y) - .5) * .06;
 }
 
+export function walkable(x, y) {
+  return onMoon(x, y) && (Math.abs(x - fortress.x) > 1 || Math.abs(y - fortress.y) > 1);
+}
+
 export function route(start, end) {
-  if (!onMoon(end.x, end.y)) return [];
+  if (!walkable(end.x, end.y)) return [];
   const queue = [{ ...start, previous: null }];
   const seen = new Set([start.y * width + start.x]);
   for (const current of queue) {
@@ -39,7 +44,7 @@ export function route(start, end) {
     for (const [dx, dy] of directions) {
       const x = current.x + dx, y = current.y + dy;
       const key = y * width + x;
-      if (!onMoon(x, y) || seen.has(key)) continue;
+      if (!walkable(x, y) || seen.has(key)) continue;
       seen.add(key);
       queue.push({ x, y, previous: current });
     }

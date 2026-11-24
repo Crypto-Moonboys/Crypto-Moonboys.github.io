@@ -1,4 +1,4 @@
-import { tile, width, height, spawn, stations, directions, noise, onMoon, route } from './lunar-world.mjs?v=2';
+import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, fortress } from './lunar-world.mjs?v=3';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -13,6 +13,13 @@ sprite.src = '../waterfront/assets/atlases/factions.png';
 const detailedSprite = new Image();
 detailedSprite.src = '../waterfront/assets/atlases/factions-detail.webp';
 const detailCell = 192;
+const fortressAtlas = new Image();
+fortressAtlas.src = './assets/zcash-fortress.webp';
+const fortressFrame = { width: 224, height: 280, columns: 4, count: 12, fps: 12 };
+// The ground anchor is inside the rock base. Sort from the forward edge of its footprint.
+const fortressAnchor = { x: 112, y: 247 };
+const fortressScale = .625;
+let fortressMask;
 const craters = [[35,31,8],[23,38,5],[46,23,4],[36,49,5],[17,24,3],[52,40,3],[32,13,3]];
 const trails = stations.map((station, i) => [station, stations[(i+1) % stations.length]]);
 trails.push([stations[0], stations[3]], [stations[2], stations[5]]);
@@ -124,7 +131,7 @@ function arrive(index) {
 }
 
 function visit(x,y,station = null) {
-  if (!onMoon(x,y)) return;
+  if (!walkable(x,y)) return;
   steps = route(player,{x,y});
   arriving = station;
   if (!steps.length && station !== null && x === player.x && y === player.y) {
@@ -219,6 +226,34 @@ function drawActor({x,y,facing,faction,frame}) {
     ctx.fillRect(x-5,y-21,10,6);
   }
 }
+function drawFortress(x, y, now) {
+  const { width, height, columns, count, fps } = fortressFrame;
+  const frame = reduced.matches ? 0 : Math.floor(now * fps / 1000) % count;
+  const left = x - fortressAnchor.x * fortressScale;
+  const top = y - fortressAnchor.y * fortressScale;
+  ctx.drawImage(fortressAtlas, frame % columns * width, Math.floor(frame / columns) * height,
+    width, height, left, top, width * fortressScale, height * fortressScale);
+  hits.push({
+    minX: left, maxX: left + width * fortressScale, minY: top, maxY: top + height * fortressScale,
+    building: fortress,
+  });
+}
+
+function onFortressSprite(hit, point) {
+  const { width, height } = fortressFrame;
+  if (!fortressMask) {
+    const mask = document.createElement('canvas');
+    mask.width = width;
+    mask.height = height;
+    const context = mask.getContext('2d');
+    context.drawImage(fortressAtlas, 0, 0, width, height, 0, 0, width, height);
+    fortressMask = context.getImageData(0, 0, width, height).data;
+  }
+  const x = Math.floor((point.x - hit.minX) / fortressScale);
+  const y = Math.floor((point.y - hit.minY) / fortressScale);
+  return x < width && y < height && fortressMask[(y * width + x) * 4 + 3] >= 128;
+}
+
 let previousPaint = 0;
 function paint(now) {
   requestAnimationFrame(paint);
@@ -250,16 +285,33 @@ function paint(now) {
   });
   walkers.push({x:(player.x+.5)*tile,y:(player.y+.65)*tile,faction:0,facing:player.facing,
     frame:!reduced.matches && now < movingUntil ? 1+Math.floor(now/95)%3 : 0});
-  for (const walker of walkers) Object.assign(walker,project(walker.x,walker.y));
-  walkers.sort((a,b) => a.y-b.y);
   for (const walker of walkers) {
+    Object.assign(walker, project(walker.x, walker.y));
+    walker.depth = walker.y;
+  }
+  if (fortressAtlas.complete && fortressAtlas.naturalWidth) {
+    const anchor = project((fortress.x + .5) * tile, (fortress.y + .5) * tile);
+    const front = project((fortress.x - .5) * tile, (fortress.y + 1.5) * tile);
+    walkers.push({ ...anchor, depth: front.y, fortress: true });
+  }
+  walkers.sort((a,b) => a.depth-b.depth);
+  for (const walker of walkers) {
+    if (walker.fortress) {
+      drawFortress(walker.x, walker.y, now);
+      continue;
+    }
     drawActor(walker);
     if (walker.name) hits.push({minX:walker.x-actorSize/2,maxX:walker.x+actorSize/2,minY:walker.y-actorSize,maxY:walker.y,npc:walker});
   }
 }
 function selectAt(x,y) {
   const at = planeAt(x,y);
-  const hit = hits.findLast(h => at.x >= h.minX && at.x <= h.maxX && at.y >= h.minY && at.y <= h.maxY);
+  const hit = hits.findLast(h => at.x >= h.minX && at.x < h.maxX && at.y >= h.minY && at.y < h.maxY &&
+    (!h.building || onFortressSprite(h, at)));
+  if (hit?.building) {
+    show(hit.building.name, 'Mining rigs are online. Four cooling fans vent heat from the gold-lit reactor stacks.');
+    return;
+  }
   if (hit?.npc) { show(hit.npc.name,hit.npc.line); return; }
   if (hit) { const s = stations[hit.station]; visit(s.x,s.y,hit.station); return; }
   byId('details').hidden = true;
