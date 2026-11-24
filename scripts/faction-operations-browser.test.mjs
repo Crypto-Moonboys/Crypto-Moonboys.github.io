@@ -2366,6 +2366,68 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       });
     });
     assert.deepEqual(detailedFrames, [[192, 144], [192, 128]]);
+    await page.waitForFunction(() => waterfrontRoamers.every(({ atlas }) => atlas.image?.complete));
+    const roaming = await page.evaluate(() => {
+      const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+      const cell = roamingAtlasCell;
+      context.canvas.width = context.canvas.height = cell;
+      const route = natureRoute(rows, district);
+      let frames = 0;
+      for (const { atlas, model } of waterfrontRoamers) {
+        for (let facing = 0; facing < 4; facing++) for (let frame = 0; frame < 4; frame++) {
+          context.clearRect(0, 0, cell, cell);
+          context.drawImage(atlas.image, (model % 3 * 4 + frame) * cell,
+            (Math.floor(model / 3) * 4 + facing) * cell, cell, cell, 0, 0, cell, cell);
+          const pixels = context.getImageData(0, 0, cell, cell).data;
+          if (pixels.some((value, channel) => channel % 4 === 3 && value > 128)) frames++;
+        }
+      }
+      const sample = (time, held = false, visible = null) => {
+        const hits = [];
+        const frames = [];
+        const render = document.createElement('canvas').getContext('2d');
+        const drawImage = render.drawImage.bind(render);
+        const atlases = new Set(waterfrontRoamers.map(({ atlas }) => atlas.image));
+        render.drawImage = (image, ...args) => {
+          if (atlases.has(image)) frames.push(args[0] / cell % 4);
+          drawImage(image, ...args);
+        };
+        window.drawWaterfront(render, rows, player, district, time, 0, [], null, null, visible, {
+          hit: actor => { if (actor.id.startsWith('roamer:')) hits.push(actor); },
+          held: id => held && id.startsWith('roamer:'),
+          time: (_, clock) => held ? 0 : clock,
+        });
+        return { hits, frames };
+      };
+      const idle = sample(null);
+      const walking = sample(20);
+      const held = sample(20, true);
+      const harbor = sample(null, false, { left: 0, top: 0, right: district.harborWidth, bottom: district.harborHeight });
+      const onPath = walking.hits.every(({ x, y }) => {
+        const tileX = Math.floor(x / district.tileSize);
+        const tileY = Math.floor(y / district.tileSize);
+        return district.tiles[rows[tileY][tileX]].walkable;
+      });
+      return {
+        actors: new Set(idle.hits.map(({ id }) => id)).size,
+        frames,
+        harborActors: harbor.hits.length,
+        routeRegions: new Set(route.map(({ x, y }) => Math.floor(x / 8) + ',' + Math.floor(y / 8))).size,
+        onPath,
+        advances: walking.hits.every(actor => {
+          const before = idle.hits.find(({ id }) => id === actor.id);
+          return actor.x !== before.x || actor.y !== before.y;
+        }),
+        idleFrames: idle.frames.every(frame => frame === 0),
+        heldFrames: held.frames.every(frame => frame === 0),
+        walkFrames: walking.frames.some(frame => frame > 0),
+      };
+    });
+    assert.equal(roaming.actors, 27);
+    assert.equal(roaming.frames, 27 * 16);
+    assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors, 'cast spans both map areas');
+    assert.ok(roaming.routeRegions > 50 && roaming.onPath && roaming.advances, 'cast roams the full connected island loop');
+    assert.ok(roaming.idleFrames && roaming.heldFrames && roaming.walkFrames);
     const harborLife = await page.evaluate(() => {
       const display = document.createElement('canvas');
       const context = display.getContext('2d');

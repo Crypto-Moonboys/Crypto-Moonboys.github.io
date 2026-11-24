@@ -1,6 +1,6 @@
 # Waterfront sprite library
 
-The production PNGs are in [assets/atlases](assets/atlases). Use the existing atlas loader and the frame rectangles in [harbor-art.js](harbor-art.js) as the source of truth. These are the sprites already available to any agent with repository access.
+The production atlases are in [assets/atlases](assets/atlases). Use the existing atlas loader and the frame rectangles in [harbor-art.js](harbor-art.js) as the source of truth. These are the sprites already available to any agent with repository access.
 
 | Atlas | Registered sprite IDs |
 | --- | --- |
@@ -15,6 +15,18 @@ The production PNGs are in [assets/atlases](assets/atlases). Use the existing at
 ## Detailed character atlases
 
 [Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) use the original animation sheets, packed into 192 × 192 WebP frames. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The browser uses filtered scaling for these detailed frames and can fall back to the original compact atlases if a file fails to load.
+
+## Island roamers
+
+These 27 guest sprites come from GK’s November 24 Waterfront sheet batch. Every model uses a 4 × 4 block of 112 × 112 frames, packed three models across. Frames are cropped to the sprite and placed on a shared bottom-center anchor per model. Directions run south, west, east, north, with idle first in each row. Vehicles use travel frames and slightly faster patrol speeds.
+
+| Atlas | Models in packing order with source job prefixes |
+| --- | --- |
+| [roamers-patrol.webp](assets/atlases/roamers-patrol.webp) | Police Robot (`c3a815e0`), Police Car (`8c3fd763`), Police Bike (`598578f2`), Blue Electric Bot (`fe4ae92b`), Green Electric Bot (`2d5f8e2e`), Walking Boombox (`2371547a`), Samurai (`d956997a`), Burglar Bear (`74cd153d`), Sailor Bear (`6e6d5634`) |
+| [roamers-mechs.webp](assets/atlases/roamers-mechs.webp) | Allcity Bulls (`47412f05`), Blockstars (`8ad42761`), Blockchain Furies (`3194eb57`), GraffPunks (`84b01c4c`), Nomad Bears (`e317ac85`), HODL (`73c8e85b`), Hard Fork Rockers (`1064da43`), Moongirls (`2b60a2f3`), Nomad Bears block variant (`da6af566`), No Ball Games (`411f5153`), Graffiti Kings (`d1cdf6a8`) |
+| [roamers-bears.webp](assets/atlases/roamers-bears.webp) | Jamaican Bear (`37961231`), Camo Bear (`55230f31`), Gentleman Bear (`73defe77`), Graff Bear (`533cbd83`), Posh Bear (`11e64d44`), St Patrick’s Day Bear (`2446ae85`), Straight Outta Ghetto Bear (`546d0448`) |
+
+The Nomad Bears block variant’s source shows the front in all four rows. It uses that sheet for the front and the first Nomad Bears mech sheet for the side and rear views. The roamers share the existing walkable island loop at staggered starting points. The renderer skips offscreen roamers, shows idle frames while paused or in reduced-motion mode, and skips any guest atlas that fails to load so the rest of the map can still run.
 
 ## Multi-frame atlases
 

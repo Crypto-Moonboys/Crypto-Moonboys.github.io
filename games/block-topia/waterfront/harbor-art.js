@@ -59,6 +59,28 @@ const waterfrontBotAtlas = { file: "bot-frames" };
 const characterDetailCell = 192;
 const waterfrontDetailedFactions = { file: "factions-detail.webp" };
 const waterfrontDetailedBots = { file: "bots-detail.webp" };
+const roamingAtlasCell = 112;
+// Order within each atlas matches SPRITE-LIBRARY.md.
+const waterfrontRoamers = [
+  { file: "roamers-patrol.webp", cell: roamingAtlasCell, cast: [
+    ["police-robot", 34], ["police-car", 50, 0.58], ["police-bike", 42, 0.64],
+    ["electric-blue", 30], ["electric-green", 30], ["boombox", 33],
+    ["samurai", 36], ["burglar-bear", 34], ["sailor-bear", 34],
+  ] },
+  { file: "roamers-mechs.webp", cell: roamingAtlasCell, cast: [
+    ["allcity-bulls-mech", 53], ["blockstars-mech", 53], ["blockchain-furies-mech", 53],
+    ["graffpunks-mech", 53], ["nomad-bears-mech", 53], ["hodl-mech", 53],
+    ["hard-fork-rockers-mech", 53], ["moongirls-mech", 53], ["nomad-bears-block-mech", 53],
+    ["no-ball-games-mech", 53], ["graffiti-kings-mech", 53],
+  ] },
+  { file: "roamers-bears.webp", cell: roamingAtlasCell, cast: [
+    ["jamaican-bear", 34], ["camo-bear", 34], ["gentleman-bear", 34],
+    ["graff-bear", 34], ["posh-bear", 34], ["st-patricks-bear", 34],
+    ["straight-outta-ghetto-bear", 34],
+  ] },
+].flatMap(({ cast, ...atlas }) =>
+  cast.map(([id, size, pace], model) => ({ atlas, model, id: "roamer:" + id, size, pace }))
+);
 const factionSpriteSize = 34;
 const botSpriteSize = 32;
 const residentBots = [3, 4, 5, 6, 7];
@@ -156,7 +178,8 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     atlas.onerror = resolve;
     atlas.src = "assets/atlases/" + group + ".png";
   }));
-  const loadSources = [waterfrontDetailedFactions, waterfrontDetailedBots].map(sprite => new Promise(resolve => {
+  const roamingAtlases = new Set(waterfrontRoamers.map(({ atlas }) => atlas));
+  const loadSources = [waterfrontDetailedFactions, waterfrontDetailedBots, ...roamingAtlases].map(sprite => new Promise(resolve => {
     const image = new Image();
     image.onload = () => {
       sprite.image = image;
@@ -903,7 +926,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function drawDetailedCharacter(atlas, model, facing, frame, x, feet, size) {
-    const cell = characterDetailCell;
+    const cell = atlas.cell ?? characterDetailCell;
     ctx.save();
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
@@ -1134,6 +1157,27 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     });
   }
 
+  function drawIslandRoamers() {
+    waterfrontRoamers.forEach(({ atlas, model, id, size: height, pace }, index) => {
+      if (!atlas.image) return;
+      const start = Math.floor(islandLoop.length * (index + 0.5) / waterfrontRoamers.length);
+      const clock = inspection?.time(id, time) ?? time ?? 0;
+      const { x, y, dx, dy } = patrolPosition(islandLoop, clock / (pace ?? 1.05 + index % 5 * 0.09),
+        start, index % 2 === 0);
+      if (x < left || x >= right || y < top || y >= bottom) return;
+      const px = Math.round(x * size + 16);
+      const py = Math.round(y * size + 22);
+      const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
+      const moving = time !== null && (dx || dy) && !inspection?.held(id);
+      const frame = moving ? 1 + Math.floor(clock * 7 + index) % 3 : 0;
+      queue(py, () => {
+        markNpc(id, px, py, height);
+        rect("#080f1cad", px - height / 4, py - 1, height / 2, 3);
+        drawDetailedCharacter(atlas, model, facing, frame, px, py + 1, height);
+      });
+    });
+  }
+
   function drawCrewBubble(x, y) {
     const top = y - botSpriteSize - 20;
     const left = Math.max(2, Math.min(x - 76, width * size - 154));
@@ -1191,7 +1235,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   beacons.forEach(([x, y]) => beacon(x, y, false));
   graffitiSeawall();
   drawFreight();
-  if (islandLoop) drawIslandBots();
+  if (islandLoop) {
+    drawIslandBots();
+    drawIslandRoamers();
+  }
   drawFactionWalkers();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
