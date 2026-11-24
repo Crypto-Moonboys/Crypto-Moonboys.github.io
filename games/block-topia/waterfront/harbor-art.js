@@ -1262,7 +1262,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
   if (conversations && time !== null) {
     const participants = factionHits.filter(hit => !hit.talking);
-    if (selectedAvatar !== null) participants.push({
+    if (selectedAvatar !== null && !player.frame) participants.push({
       index: selectedAvatar, x: player.x * size + 16, y: player.y * size + 22,
     });
     for (const line of conversations.tick(participants, Date.now())) {

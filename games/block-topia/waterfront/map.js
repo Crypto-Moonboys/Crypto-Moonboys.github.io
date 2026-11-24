@@ -182,9 +182,8 @@ function paintMap() {
     -mapScroll.scrollLeft * scaleX, -mapScroll.scrollTop * scaleY);
   ctx.imageSmoothingEnabled = false;
 
-  const faction = selectedAvatar ?? factionIds.indexOf(window.waterfrontAccess.faction());
   npcHits = [];
-  factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
+  factionHits = window.drawWaterfront(ctx, rows, { ...player, faction: selectedAvatar }, district, sceneTime,
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
     editing || document.hidden ? null : factionConversations, visibleTiles(), inspection) ?? [];
   updateHover();
