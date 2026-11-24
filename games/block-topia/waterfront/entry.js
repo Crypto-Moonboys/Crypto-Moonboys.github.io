@@ -100,11 +100,11 @@ function bootMap(district) {
         window.createWaterfrontFactionConversations = createFactionConversations;
       }
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=43');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=44');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=9');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=10');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
-      await import('./leader-dialog.js?lore=8');
+      await import('./leader-dialog.js?lore=9');
     })().catch(error => {
       mapStartup = null;
       throw error;

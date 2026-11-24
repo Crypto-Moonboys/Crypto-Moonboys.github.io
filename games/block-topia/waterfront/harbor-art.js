@@ -239,7 +239,7 @@ function patrolPosition(route, distance, start, reverse) {
 }
 
 const factionMotion = [];
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null) {
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null, inspection = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -267,6 +267,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const buildingShadows = [];
   const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
+  function markNpc(id, x, y, spriteSize, index) {
+    if (!inspection) return;
+    inspection.hit({ id, x, y, spriteSize, index });
+    if (!inspection.held(id)) return;
+    rect("#97e7d4", x - spriteSize / 3, y + 3, spriteSize * 2 / 3, 1.5);
+  }
+
 
   function glow(x, y, radius, color) {
     const light = ctx.createRadialGradient(x, y, 0, x, y, radius);
@@ -338,7 +345,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const panelWidth = (width - 12) / 3;
     for (let panel = 0; panel < 3; panel++) {
       const left = x + 6 + panel * panelWidth;
-      const elapsed = (time ?? 0) + panel * 4;
+      const id = "artist:" + panel;
+      const clock = inspection?.time(id, time) ?? time;
+      const elapsed = (clock ?? 0) + panel * 4;
       const pass = Math.floor(elapsed / 16) + 2;
       const progress = time === null ? 1 : (elapsed % 16) / 16;
       paintMural(left, y + 6, panelWidth, pass - 2, 1);
@@ -349,13 +358,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const hand = Math.round(left + panelWidth * (direction === 1 ? progress : 1 - progress));
       const artist = hand - direction * 3;
       const feet = y + 26;
-      const step = Math.floor(time * 6) % 2;
+      const step = Math.floor(clock * 6) % 2;
       queue(feet, () => {
-        bot(2, artist, feet, direction, 0, step + 1);
+        bot(2, artist, feet, direction, 0, step + 1, id);
         const color = muralPasses[pass % muralPasses.length].color;
         rect(color, hand, feet - 8, 1, 2);
         for (let speck = 0; speck < 3; speck++) {
-          const drift = (Math.floor(time * 12) + speck * 2) % 5;
+          const drift = (Math.floor(clock * 12) + speck * 2) % 5;
           rect(color, hand + direction * (speck - 1), feet - 9 - drift, 1, 1);
         }
       });
@@ -395,7 +404,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
     const steps = points.length - 1;
     if (!steps) return;
-    const age = (time + seed % 19) % 20;
+    const id = "resident:" + col + ":" + row;
+    const clock = inspection?.time(id, time) ?? time;
+    const age = (clock + seed % 19) % 20;
     const trip = steps * 0.75;
     if (age >= 2 * trip + 2) return;
     const progress = Math.min(age, trip, 2 * trip + 2 - age) / 0.75;
@@ -408,9 +419,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const y = Math.round((ay + (by - ay) * blend) * size + 24);
     const moving = age < trip || age > trip + 2;
     const direction = age > trip + 2 ? -1 : 1;
-    const frame = moving ? 1 + Math.floor(time * 7) % 3 : 0;
+    const frame = moving ? 1 + Math.floor(clock * 7) % 3 : 0;
     queue(y, () => bot(residentBots[seed % residentBots.length], x, y,
-      (bx - ax) * direction, (by - ay) * direction, frame));
+      (bx - ax) * direction, (by - ay) * direction, frame, id));
   }
   const groundAt = (col, row) => district.groundZones.find(({ bounds: [left, top, right, bottom] }) =>
     col >= left && col <= right && row >= top && row <= bottom)?.material;
@@ -848,8 +859,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     rect("#ffe19a", x - 1, y - 12, 4, 3);
   }
 
-  function bot(model, x, y, dx = 0, dy = 1, frame = 0) {
+  function bot(model, x, y, dx, dy, frame, id) {
+    markNpc(id, x, y, botSpriteSize);
     const image = waterfrontBotAtlas.image;
+    if (inspection?.held(id)) frame = 0;
     const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
     rect("#080f1cad", x - 8, y - 1, 16, 4);
     if (image) {
@@ -902,8 +915,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   function drawFreight() {
     const { canWalk, stops, cargo, bots } = freightFor(rows, district);
-    const now = time ?? 0;
-    const go = (worker, point) => {
+    const go = (worker, point, now) => {
       worker.route = findRoute(worker.point, point, canWalk) ?? [];
       const start = worker.point;
       worker.route = [start, ...worker.route];
@@ -911,7 +923,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       worker.due = now + (worker.route.length - 1) * 0.6 + 0.6;
     };
     for (const worker of bots) {
-      if (time !== null && now >= worker.due) {
+      const id = "freight:" + worker.model;
+      const now = inspection?.time(id, time) ?? time ?? 0;
+      if (time !== null && !inspection?.held(id) && now >= worker.due) {
         if (worker.route) worker.point = worker.route.at(-1);
         worker.route = null;
         if (worker.carrying) {
@@ -929,7 +943,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
             worker.load.indoors = false;
             worker.load.point = null;
             worker.carrying = true;
-            go(worker, worker.destination);
+            go(worker, worker.destination, now);
           }
         } else {
           const open = cargo.filter(item => !item.reserved);
@@ -941,7 +955,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
             worker.load = load;
             load.reserved = true;
             worker.destination = destinations[Math.floor(Math.random() * destinations.length)];
-            go(worker, load.point);
+            go(worker, load.point, now);
           } else worker.due = now + 3;
         }
       }
@@ -964,7 +978,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       queue(y, () => {
         const atDoor = entering > 0 || exiting > 0;
         bot(worker.model, x, y, atDoor ? 0 : worker.dx, entering > 0 ? -1 : exiting > 0 ? 1 : worker.dy,
-          moving || atDoor ? 1 + Math.floor(now * 7) % 3 : 0);
+          moving || atDoor ? 1 + Math.floor(now * 7) % 3 : 0, id);
         if (load) freightObject(load.kind, x + worker.dx * 6, y - 9);
       });
     }
@@ -1004,7 +1018,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const route = islandLoop ?? routes[index];
       const paused = state?.pausedUntil > now;
       const motion = factionMotion[index] ??= { previous: time, elapsed: time ?? 0 };
-      const holding = conversations?.holds(index);
+      const id = "leader:" + index;
+      const holding = inspection?.held(id) || conversations?.holds(index);
       if (!paused && !holding && time !== null && motion.previous !== null) {
         motion.elapsed += Math.min(0.2, Math.max(0, time - motion.previous));
       }
@@ -1018,7 +1033,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const y = Math.round(position.y * size + 22);
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const frame = paused || holding || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
-      queue(y, () => factionCharacter(index, x, y, facing, frame));
+      queue(y, () => {
+        markNpc(id, x, y, factionSpriteSize, index);
+        factionCharacter(index, x, y, facing, frame);
+      });
       factionHits.push({ index, x, y, paused, talking: state?.talking });
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
       if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
@@ -1047,11 +1065,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     residentBots.forEach((model, index) => {
       const start = Math.floor(islandLoop.length * (index + 1) / (residentBots.length + 1));
       const pace = 0.78 + index * 0.051;
-      const { x, y, dx, dy } = patrolPosition(islandLoop, (time ?? 0) / pace, start, index % 2 === 0);
+      const id = "patrol:" + index;
+      const clock = inspection?.time(id, time) ?? time ?? 0;
+      const { x, y, dx, dy } = patrolPosition(islandLoop, clock / pace, start, index % 2 === 0);
       const px = Math.round(x * size + 16);
       const py = Math.round(y * size + 22);
       const frame = time === null || (!dx && !dy) ? 0 : 1 + Math.floor(time * 7) % 3;
-      queue(py, () => bot(model, px, py, dx, dy, frame));
+      queue(py, () => bot(model, px, py, dx, dy, frame, id));
     });
   }
 
@@ -1076,11 +1096,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     const row = district.spawn.y;
     speakers.forEach(({ col }, index) => {
       if (!roadAt(col, row)) return;
-      const pace = time === null ? 0 : Math.sin(time * 0.9 + index * Math.PI);
+      const id = "crew:" + index;
+      const clock = inspection?.time(id, time) ?? time;
+      const pace = clock === null ? 0 : Math.sin(clock * 0.9 + index * Math.PI);
       const x = col * size + 16 + Math.round(pace * 5);
       const y = row * size + 13;
-      const facing = time === null ? 0 : Math.cos(time * 0.9 + index * Math.PI);
-      bot(index, x, y, facing, 0, time === null ? 0 : 1 + Math.floor(time * 6) % 3);
+      const facing = clock === null ? 0 : Math.cos(clock * 0.9 + index * Math.PI);
+      bot(index, x, y, facing, 0, clock === null ? 0 : 1 + Math.floor(clock * 6) % 3, id);
       if (!turn || turn.speaker !== index) return;
       drawCrewBubble(x, y);
     });

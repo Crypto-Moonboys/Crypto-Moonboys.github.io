@@ -20,6 +20,7 @@ a{color:#91efe3}
 #map{cursor:pointer}
 #map-view{position:absolute;top:0;left:0;pointer-events:none;display:block}
 #map[data-editing=true]{cursor:crosshair}
+#map.is-npc{cursor:help}
 #map.is-panning{cursor:grabbing}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
 .tools{position:absolute;z-index:2;top:3.75rem;right:.65rem;width:min(25rem,calc(100% - 1.3rem));max-height:calc(100% - 4.4rem);overflow:auto;overscroll-behavior:contain;padding:1rem;background:#13131cf5;border:1px solid #658782;border-radius:.25rem}
@@ -65,7 +66,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
 <a href="../">← Block Topia</a>
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Select a faction leader for details, or double-click or double-tap to ask a question.</p>
+<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Hover over an NPC or tap once to pause it for 30 seconds. Click or tap again for character details when available.</p>
 </section>
 <p id="player-faction"></p>
 <label for="waterfront-avatar">Explore as a faction leader</label>
@@ -102,6 +103,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" type="module" src="entry.js?v=13"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=14"></script>
 </body>
 </html>

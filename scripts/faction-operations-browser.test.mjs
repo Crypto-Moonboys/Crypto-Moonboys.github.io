@@ -2113,7 +2113,7 @@ test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning por
   }
 });
 
-test('Waterfront hides playing leaders and uses sprite details, double-click and a sourced reply bubble', { timeout: 30_000 }, async () => {
+test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens details and shows a sourced reply bubble', { timeout: 30_000 }, async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
       (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
@@ -2352,13 +2352,18 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       const shifted = map.getBoundingClientRect();
       return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 26) * rect.height / mapHeight };
     });
-    await page.mouse.click(position.x, position.y);
     const details = page.getByRole('region', { name: 'Nine Toes Joe', exact: true });
+    await page.mouse.move(position.x, position.y);
+    await page.waitForFunction(() => inspection.held('leader:1'));
+    assert.equal(await details.isVisible(), false, 'hover pauses without opening details');
+    const remaining = await page.evaluate(() => npcPauses.get('leader:1').until - performance.now());
+    assert.ok(remaining > 29_000 && remaining <= 30_000);
+    await page.mouse.click(position.x, position.y);
     await details.waitFor();
     assert.equal(await details.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
     assert.match(await details.locator('[data-role]').innerText(), /Bears scout/);
     assert.equal(await page.getByRole('dialog').count(), 0);
-    await page.mouse.dblclick(position.x, position.y);
+    await details.getByRole('button', { name: 'Ask a question' }).click();
     const composer = page.getByRole('dialog', { name: 'Ask Nine Toes Joe' });
     await composer.getByLabel('Question').fill('Who are the Nomad Bears?');
     assert.equal(await composer.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
@@ -2388,7 +2393,10 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.waitForFunction(() => factionHits.find(hit => hit.index === 1)?.paused);
     await slowdown.getByRole('button', { name: 'Close leader dialog' }).click();
     await page.touchscreen.tap(position.x, position.y);
+    await details.waitFor({ state: 'hidden' });
+    assert.equal(await page.evaluate(() => tappedNpc), 'leader:1');
     await page.touchscreen.tap(position.x, position.y);
+    await details.getByRole('button', { name: 'Ask a question' }).click();
     await composer.getByLabel('Question').fill('Who are their rivals?');
     await composer.getByRole('button', { name: 'Send' }).click();
     await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
@@ -2400,8 +2408,24 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.clock.fastForward(65_000);
     await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
     assert.ok(entryActions.includes('renew'), 'an active map renews its seat');
+    assert.equal(await page.evaluate(() => inspection.held('leader:1')), false, 'inspection expires automatically');
 
     await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+    const robot = await page.evaluate(() => {
+      const hit = npcHits.find(item => item.id === 'crew:0');
+      const canvas = document.querySelector('#map');
+      const scroller = document.querySelector('.map-scroll');
+      const { width, height } = canvas.getBoundingClientRect();
+      scroller.scrollLeft = hit.x * width / mapWidth - scroller.clientWidth / 2;
+      scroller.scrollTop = (hit.y - 20) * height / mapHeight - scroller.clientHeight / 2;
+      const rect = canvas.getBoundingClientRect();
+      return { x: rect.left + hit.x * width / mapWidth, y: rect.top + (hit.y - 20) * height / mapHeight };
+    });
+    await page.mouse.move(robot.x, robot.y);
+    await page.waitForFunction(() => inspection.held('crew:0'));
+    await page.mouse.click(robot.x, robot.y);
+    await details.waitFor({ state: 'hidden' });
+    assert.equal(await page.getByRole('dialog').count(), 0, 'a robot without a profile leaves the details blank');
     await page.getByRole('button', { name: 'Info', exact: true }).click();
     await page.locator('#waterfront-avatar').selectOption({ label: 'Nine Toes Joe' });
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 1));
