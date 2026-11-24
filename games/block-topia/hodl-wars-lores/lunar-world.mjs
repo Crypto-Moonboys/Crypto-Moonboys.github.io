@@ -1,4 +1,4 @@
-export const tile = 24;
+export const tile = 32;
 export const width = 72;
 export const height = 68;
 export const spawn = { x: 24, y: 23 };
