@@ -11031,11 +11031,11 @@
       ]
     },
     "st_patricks_day_bear": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "st patrick day bear",
         "st patricks day bear"
       ],
-      "aliases": [],
       "canonical_title": "St Patrick’s Day Bear",
       "canonical_url": "/wiki/st-patricks-day-bear.html",
       "category": "misc",
@@ -13558,10 +13558,10 @@
       ]
     },
     "waterfront_samurai": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "waterfront samurai"
       ],
-      "aliases": [],
       "canonical_title": "Samurai",
       "canonical_url": "/wiki/waterfront-samurai.html",
       "category": "misc",
@@ -13920,5 +13920,5 @@
       ]
     }
   },
-  "updated_at": "2026-11-24T04:30:52Z"
+  "updated_at": "2026-11-24T04:43:45Z"
 }

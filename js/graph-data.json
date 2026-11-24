@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-24T04:30:53.247Z",
-  "verified_at": "2026-11-24T04:30:53.247Z",
+  "generated_at": "2026-11-24T04:43:46.694Z",
+  "verified_at": "2026-11-24T04:43:46.694Z",
   "nodes": [
     {
       "id": "/",
@@ -451,7 +451,7 @@
       "title": "Allcity Bulls Mech",
       "url": "/wiki/allcity-bulls-mech.html",
       "category": "misc",
-      "rank_score": 143,
+      "rank_score": 146,
       "authority_score": 12
     },
     {
@@ -587,7 +587,7 @@
       "title": "Blockchain Furies Mech",
       "url": "/wiki/blockchain-furies-mech.html",
       "category": "misc",
-      "rank_score": 128,
+      "rank_score": 131,
       "authority_score": 12
     },
     {
@@ -603,7 +603,7 @@
       "title": "Blockstars Mech",
       "url": "/wiki/blockstars-mech.html",
       "category": "misc",
-      "rank_score": 136,
+      "rank_score": 138,
       "authority_score": 12
     },
     {
@@ -611,7 +611,7 @@
       "title": "Blue Electric Bot",
       "url": "/wiki/blue-electric-bot.html",
       "category": "misc",
-      "rank_score": 150,
+      "rank_score": 153,
       "authority_score": 12
     },
     {
@@ -627,7 +627,7 @@
       "title": "Burglar Bear",
       "url": "/wiki/burglar-bear.html",
       "category": "misc",
-      "rank_score": 157,
+      "rank_score": 159,
       "authority_score": 12
     },
     {
@@ -643,7 +643,7 @@
       "title": "Camo Bear",
       "url": "/wiki/camo-bear.html",
       "category": "misc",
-      "rank_score": 148,
+      "rank_score": 150,
       "authority_score": 12
     },
     {
@@ -1603,7 +1603,7 @@
       "title": "Gentleman Bear",
       "url": "/wiki/gentleman-bear.html",
       "category": "misc",
-      "rank_score": 126,
+      "rank_score": 128,
       "authority_score": 8
     },
     {
@@ -2795,7 +2795,7 @@
       "title": "Graff Bear",
       "url": "/wiki/graff-bear.html",
       "category": "misc",
-      "rank_score": 155,
+      "rank_score": 157,
       "authority_score": 16
     },
     {
@@ -2811,7 +2811,7 @@
       "title": "Graffiti Kings Mech",
       "url": "/wiki/graffiti-kings-mech.html",
       "category": "misc",
-      "rank_score": 143,
+      "rank_score": 146,
       "authority_score": 12
     },
     {
@@ -2875,7 +2875,7 @@
       "title": "GraffPunks Mech",
       "url": "/wiki/graffpunks-mech.html",
       "category": "core",
-      "rank_score": 179,
+      "rank_score": 181,
       "authority_score": 16
     },
     {
@@ -2907,7 +2907,7 @@
       "title": "Green Electric Bot",
       "url": "/wiki/green-electric-bot.html",
       "category": "misc",
-      "rank_score": 145,
+      "rank_score": 148,
       "authority_score": 12
     },
     {
@@ -2939,7 +2939,7 @@
       "title": "Hard Fork Rockers Mech",
       "url": "/wiki/hard-fork-rockers-mech.html",
       "category": "misc",
-      "rank_score": 148,
+      "rank_score": 152,
       "authority_score": 12
     },
     {
@@ -2987,7 +2987,7 @@
       "title": "HODL WARS Mech",
       "url": "/wiki/hodl-wars-mech.html",
       "category": "core",
-      "rank_score": 179,
+      "rank_score": 182,
       "authority_score": 12
     },
     {
@@ -3067,7 +3067,7 @@
       "title": "Jamaican Bear",
       "url": "/wiki/jamaican-bear.html",
       "category": "misc",
-      "rank_score": 150,
+      "rank_score": 152,
       "authority_score": 12
     },
     {
@@ -3275,7 +3275,7 @@
       "title": "Moongirls Mech",
       "url": "/wiki/moongirls-mech.html",
       "category": "misc",
-      "rank_score": 129,
+      "rank_score": 131,
       "authority_score": 12
     },
     {
@@ -3371,7 +3371,7 @@
       "title": "No Ball Games Mech",
       "url": "/wiki/no-ball-games-mech.html",
       "category": "misc",
-      "rank_score": 145,
+      "rank_score": 149,
       "authority_score": 12
     },
     {
@@ -3395,7 +3395,7 @@
       "title": "Nomad Bears Mech",
       "url": "/wiki/nomad-bears-mech.html",
       "category": "misc",
-      "rank_score": 134,
+      "rank_score": 137,
       "authority_score": 12
     },
     {
@@ -3475,7 +3475,7 @@
       "title": "Police Bike",
       "url": "/wiki/police-bike.html",
       "category": "misc",
-      "rank_score": 133,
+      "rank_score": 135,
       "authority_score": 12
     },
     {
@@ -3483,7 +3483,7 @@
       "title": "Police Car",
       "url": "/wiki/police-car.html",
       "category": "misc",
-      "rank_score": 133,
+      "rank_score": 135,
       "authority_score": 12
     },
     {
@@ -3491,7 +3491,7 @@
       "title": "Police Robot",
       "url": "/wiki/police-robot.html",
       "category": "misc",
-      "rank_score": 154,
+      "rank_score": 156,
       "authority_score": 12
     },
     {
@@ -3499,7 +3499,7 @@
       "title": "Posh Bear",
       "url": "/wiki/posh-bear.html",
       "category": "misc",
-      "rank_score": 148,
+      "rank_score": 150,
       "authority_score": 12
     },
     {
@@ -3595,7 +3595,7 @@
       "title": "Sailor Bear",
       "url": "/wiki/sailor-bear.html",
       "category": "misc",
-      "rank_score": 134,
+      "rank_score": 136,
       "authority_score": 12
     },
     {
@@ -3699,7 +3699,7 @@
       "title": "St Patrick’s Day Bear",
       "url": "/wiki/st-patricks-day-bear.html",
       "category": "misc",
-      "rank_score": 142,
+      "rank_score": 153,
       "authority_score": 12
     },
     {
@@ -3739,7 +3739,7 @@
       "title": "Straight Outta Ghetto Bear",
       "url": "/wiki/straight-outta-ghetto-bear.html",
       "category": "misc",
-      "rank_score": 131,
+      "rank_score": 135,
       "authority_score": 12
     },
     {
@@ -4579,7 +4579,7 @@
       "title": "Walking Boombox",
       "url": "/wiki/walking-boombox.html",
       "category": "misc",
-      "rank_score": 142,
+      "rank_score": 144,
       "authority_score": 12
     },
     {
@@ -4595,7 +4595,7 @@
       "title": "Waterfront Roamers",
       "url": "/wiki/waterfront-roamers.html",
       "category": "factions",
-      "rank_score": 207,
+      "rank_score": 209,
       "authority_score": 20
     },
     {
@@ -4603,7 +4603,7 @@
       "title": "Samurai",
       "url": "/wiki/waterfront-samurai.html",
       "category": "misc",
-      "rank_score": 143,
+      "rank_score": 148,
       "authority_score": 12
     },
     {
@@ -6654,6 +6654,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/ava-chen.html",
       "kind": "page-link",
       "weight": 0.5
@@ -6703,6 +6709,36 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/block-topia.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/blockstars-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/blue-electric-bot.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/burglar-bear.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/camo-bear.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7302,6 +7338,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/gentleman-bear.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/gk-factions-to-collect-and-hodl.html",
       "kind": "page-link",
       "weight": 0.5
@@ -7309,6 +7351,18 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/gkniftyheads.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/graff-bear.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/graffiti-kings-mech.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7326,6 +7380,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/graffpunks-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/graffpunks-reading-library.html",
       "kind": "page-link",
       "weight": 0.5
@@ -7333,6 +7393,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/great-consensus.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/green-electric-bot.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7351,6 +7417,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/hard-fork-games.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7386,6 +7458,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/hodl-wars-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/hodl-wars.html",
       "kind": "page-link",
       "weight": 0.5
@@ -7411,6 +7489,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/jack-the-bull.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/jamaican-bear.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7488,6 +7572,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/moongirls-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/ngmi-chronicles.html",
       "kind": "page-link",
       "weight": 0.5
@@ -7500,7 +7590,19 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/no-ball-games-mech.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/nobby.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/nomad-bears-mech.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7519,6 +7621,30 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/patchwork.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/police-bike.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/police-car.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/police-robot.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/posh-bear.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7555,6 +7681,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/sacred-chain.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/sailor-bear.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7620,7 +7752,19 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/st-patricks-day-bear.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/stikfamwars.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/straight-outta-ghetto-bear.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -8160,7 +8304,19 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/walking-boombox.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/waterfront-roamers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/waterfront-samurai.html",
       "kind": "page-link",
       "weight": 0.5
     },

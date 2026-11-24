@@ -11119,7 +11119,10 @@
     "canonical_title": "St Patrick’s Day Bear",
     "canonical_url": "/wiki/st-patricks-day-bear.html",
     "category": "misc",
-    "aliases": [],
+    "aliases": [
+      "st patrick day bear",
+      "st patricks day bear"
+    ],
     "tags": [
       "st",
       "patrick",
@@ -11129,11 +11132,7 @@
     "source_urls": [
       "/wiki/st-patricks-day-bear.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "st patrick day bear",
-      "st patricks day bear"
-    ]
+    "brand": null
   },
   {
     "entity_id": "stake_is_a_community_powered_web3",
@@ -13676,17 +13675,16 @@
     "canonical_title": "Samurai",
     "canonical_url": "/wiki/waterfront-samurai.html",
     "category": "misc",
-    "aliases": [],
+    "aliases": [
+      "waterfront samurai"
+    ],
     "tags": [
       "samurai"
     ],
     "source_urls": [
       "/wiki/waterfront-samurai.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "waterfront samurai"
-    ]
+    "brand": null
   },
   {
     "entity_id": "wax_blockchain",

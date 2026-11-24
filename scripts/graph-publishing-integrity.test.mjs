@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { sitemapOnlyPlayRoutes } from './generate-sitemap.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -74,11 +75,16 @@ for (const edge of graphData.edges) {
   fullEdgeKeys.add(key);
 }
 
-// Full Graph and the dashboard directory share every canonical sitemap URL.
+// The sitemap includes public play routes that are outside the wiki graph.
 const sitemap = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
 const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]).pathname);
-assertSameValues([...allNodeIdSet], sitemapPaths, 'Published sitemap versus dashboard and full graph');
-assert.equal(readJson('js/site-stats.json').published_pages, allNodeIdSet.size, 'Dashboard published-page count');
+const playRoutes = sitemapOnlyPlayRoutes();
+for (const route of playRoutes) {
+  assert.ok(sitemapPaths.includes(route), `Missing public play route in sitemap: ${route}`);
+  assert.ok(!allNodeIdSet.has(route), `Public play route entered the wiki graph: ${route}`);
+}
+assertSameValues([...allNodeIdSet, ...playRoutes], sitemapPaths, 'Published sitemap versus full graph and play routes');
+assert.equal(readJson('js/site-stats.json').published_pages, new Set(sitemapPaths).size, 'Dashboard published-page count');
 const categoryMembers = new Set();
 for (const url of sitemapPaths.filter(url => url.startsWith('/categories/') && !url.endsWith('/index.html'))) {
   const categoryHtml = fs.readFileSync(path.join(ROOT, url.slice(1)), 'utf8');
