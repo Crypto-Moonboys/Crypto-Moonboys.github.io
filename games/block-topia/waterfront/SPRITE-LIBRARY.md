@@ -12,6 +12,10 @@ The production PNGs are in [assets/atlases](assets/atlases). Use the existing at
 | [street-detail.png](assets/atlases/street-detail.png) | `flowers-0`, `flowers-1`, `flowers-2`, `flowers-3`, `flowers-4`, `flowers-5`, `flowers-6`, `flowers-7`, `flowers-8`, `flowers-9`, `flowers-10`, `flowers-11`, `furniture-0`, `furniture-1`, `furniture-2`, `furniture-3`, `furniture-4`, `furniture-5`, `furniture-6`, `furniture-7`, `furniture-8`, `furniture-9`, `furniture-10`, `furniture-11`, `grass` |
 | [terrain.png](assets/atlases/terrain.png) | `curb-corner`, `curb-straight`, `footpath-pavers` |
 
+## Original character sheets
+
+[Jimmy Rugpull](assets/atlases/jimmy-rugpull.webp) uses the supplied 1199 × 1312 transparent sheet, encoded losslessly. The renderer crops the 16 poses directly at draw time. The shared faction atlas supplies the other leaders and acts as a fallback if Jimmy’s sheet fails to load.
+
 ## Multi-frame atlases
 
 - **Cargo:** 24 static objects, eight 32 × 32 cells per row. The first 12 are harbor freight and the next 12 are construction freight. Inspect the sheet when selecting a specific object.

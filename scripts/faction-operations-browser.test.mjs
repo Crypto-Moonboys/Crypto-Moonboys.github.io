@@ -2312,6 +2312,36 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees,
         ...Object.values(waterfrontDetails), waterfrontFactionAtlas, waterfrontBotAtlas, waterfrontCargoAtlas]
         .every(sprite => sprite.image));
+    await page.waitForFunction(() => waterfrontSourceSprites['rugpull-miners'].image?.complete);
+    const sourceArt = await page.evaluate(() => {
+      const source = waterfrontSourceSprites['rugpull-miners'];
+      const jimmy = factionIds.indexOf('rugpull-miners');
+      const context = document.createElement('canvas').getContext('2d');
+      const drawImage = context.drawImage.bind(context);
+      const frames = [];
+      context.drawImage = (image, ...args) => {
+        if (image === source.image) frames.push({
+          crop: args.slice(0, 4),
+          smooth: context.imageSmoothingEnabled,
+          sameFeet: Math.abs(args[5] + args[7] - (player.y * tileSize + 23)) < 0.001,
+        });
+        drawImage(image, ...args);
+      };
+      const bounds = { left: spawn.x - 2, top: spawn.y - 2, right: spawn.x + 2, bottom: spawn.y + 2 };
+      for (let facing = 0; facing < 4; facing++) for (let frame = 0; frame < 4; frame++) {
+        window.drawWaterfront(context, rows, { ...player, faction: jimmy, facing, frame }, district,
+          null, null, [], jimmy, null, bounds);
+      }
+      return {
+        frames, expected: source.frames,
+        width: source.image.naturalWidth, height: source.image.naturalHeight,
+      };
+    });
+    assert.equal(sourceArt.width, 1199);
+    assert.equal(sourceArt.height, 1312);
+    assert.deepEqual(sourceArt.frames.map(item => item.crop), sourceArt.expected);
+    assert.ok(sourceArt.frames.every(({ crop, smooth, sameFeet }) => crop[3] > 270 && smooth && sameFeet),
+      'all 16 original poses are drawn with filtered scaling and the same ground anchor');
     const harborLife = await page.evaluate(() => {
       const display = document.createElement('canvas');
       const context = display.getContext('2d');

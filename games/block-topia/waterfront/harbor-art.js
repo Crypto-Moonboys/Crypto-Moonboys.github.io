@@ -55,6 +55,20 @@ const waterfrontFactionAtlas = { file: "faction-frames" };
 // Order matches the rows packed from the named source portraits.
 const waterfrontCharacterNames = window.waterfrontCharacterNames;
 const waterfrontBotAtlas = { file: "bot-frames" };
+// Keep the original art's frame detail. The shared fallback atlas uses 36 × 36 cells.
+const waterfrontSourceSprites = {
+  "rugpull-miners": {
+    file: "jimmy-rugpull.webp",
+    // South, west, east, north. Each row is idle followed by three walk frames.
+    frames: [
+    [74, 5, 194, 303], [349, 5, 194, 303], [624, 6, 195, 302], [898, 7, 194, 303],
+    [90, 329, 142, 288], [358, 331, 159, 282], [650, 331, 144, 283], [915, 331, 158, 282],
+    [86, 640, 149, 284], [359, 642, 156, 277], [636, 642, 154, 282], [910, 640, 158, 279],
+    [60, 953, 182, 301], [338, 953, 182, 301], [612, 955, 181, 299], [888, 954, 182, 300],
+    ],
+    height: 303,
+  },
+};
 const factionSpriteSize = 34;
 const botSpriteSize = 32;
 const residentBots = [3, 4, 5, 6, 7];
@@ -130,7 +144,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas, waterfrontFactionAtlas]
       .map(sprite => [sprite.file, sprite])
   );
-  return Promise.all(Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
+  const loadAtlases = Object.entries(waterfrontAtlases).map(([group, frames]) => new Promise(resolve => {
     const atlas = new Image();
     atlas.onload = () => {
       for (const [file, [x, y, width, height]] of Object.entries(frames)) {
@@ -151,7 +165,17 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     };
     atlas.onerror = resolve;
     atlas.src = "assets/atlases/" + group + ".png";
-  })));
+  }));
+  const loadSources = Object.values(waterfrontSourceSprites).map(sprite => new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => {
+      sprite.image = image;
+      resolve();
+    };
+    image.onerror = resolve;
+    image.src = "assets/atlases/" + sprite.file;
+  }));
+  return Promise.all([...loadAtlases, ...loadSources]);
 };
 
 /* Original pixel art. Terrain draws first, then objects and actors by ground position. */
@@ -991,6 +1015,19 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   function factionCharacter(faction, x, y, facing = 0, frame = 0) {
     rect("#080f1cad", x - factionSpriteSize / 3.6, y - 1, factionSpriteSize / 1.8, 3);
+    const source = waterfrontSourceSprites[window.waterfrontFactionKeys[faction]];
+    const sourceFrame = source?.frames[facing * 4 + frame];
+    if (source?.image && sourceFrame) {
+      const [sx, sy, width, height] = sourceFrame;
+      const scale = factionSpriteSize / source.height;
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(source.image, sx, sy, width, height,
+        x - width * scale / 2, y + 1 - height * scale, width * scale, height * scale);
+      ctx.restore();
+      return;
+    }
     ctx.drawImage(waterfrontFactionAtlas.image, frame * 36, (faction * 4 + facing) * 36, 36, 36,
       x - factionSpriteSize / 2, y + 1 - factionSpriteSize, factionSpriteSize, factionSpriteSize);
   }
