@@ -440,8 +440,8 @@ const nessieVariants = [
   { atlas: { file: "harbor-nessie.webp?v=1" }, profile: harborNessieProfiles[0], minDelay: 45, delayRange: 55, nextWave: null },
   { atlas: { file: "harbor-nessie-angry.webp?v=1" }, profile: harborNessieProfiles[1], minDelay: 110, delayRange: 75, nextWave: null },
 ];
-const nessieSites = [[21, 3], [61, 9], [93, 15], [101, 27], [21, 33],
-  [13, 51], [21, 69], [85, 75], [53, 81]];
+const nessieSites = [[21, 3], [61, 9], [76, 18], [76, 25], [21, 33],
+  [13, 51], [26, 55], [72, 55], [49, 56]];
 const nessieSightings = new Map();
 const nessieDuration = 9;
 let nextNessieSite = 0;
@@ -518,12 +518,12 @@ const harborBotFish = [
   ["rivets", "Rivets", 17, 7],
   ["glint", "Glint", 45, 7],
   ["drillbit", "Drillbit", 72, 10],
-  ["boiler", "Boiler", 106, 30],
-  ["nightlight", "Nightlight", 106, 66],
-  ["coppercoil", "Coppercoil", 90, 71],
-  ["redline", "Redline", 63, 80],
-  ["zipfin", "Zipfin", 36, 76],
-  ["chaincurl", "Chaincurl", 21, 61],
+  ["boiler", "Boiler", 79, 23],
+  ["nightlight", "Nightlight", 79, 54],
+  ["coppercoil", "Coppercoil", 70, 56],
+  ["redline", "Redline", 58, 56],
+  ["zipfin", "Zipfin", 38, 55],
+  ["chaincurl", "Chaincurl", 22, 49],
   ["buckletail", "Buckletail", 7, 32],
 ].map(([slug, name, col, row]) => ({
   id: "bot-fish-" + slug, profile: { name }, col, row,

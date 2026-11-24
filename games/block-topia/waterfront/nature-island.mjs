@@ -5,14 +5,14 @@ export function islandSeed(x, y) {
   return Math.imul((Math.imul(x + 1, 73856093) ^ Math.imul(y + 1, 19349663)) >>> 0, 2654435761) >>> 0;
 }
 
-function natureRows(harbor, extended = false) {
-  const width = harbor.rows[0].length * 2;
-  const height = harbor.rows.length * 5 / 2;
+function natureRows(harbor, extended = false, compact = false) {
+  const width = harbor.rows[0].length * (compact ? 1.5 : 2);
+  const height = compact ? harbor.rows.length + 26 : harbor.rows.length * 5 / 2;
   const formerLand = harbor.rows.reduce((count, row) => count + row.replaceAll("~", "").length, 0);
   const rows = Array.from({ length: height }, () => Array(width).fill("~"));
   const harborWidth = harbor.rows[0].length;
   const harborHeight = harbor.rows.length;
-  const spawn = extended ? { x: 69, y: 46 } :
+  const spawn = extended ? (compact ? { x: 60, y: 37 } : { x: 69, y: 46 }) :
     { x: Math.floor(width / 2), y: Math.floor(height / 2) };
   let connectionLand = 0;
   if (extended) {
@@ -24,6 +24,10 @@ function natureRows(harbor, extended = false) {
     };
     for (let x = 45; x <= 60; x++) connect(x, 24);
     for (let y = 29; y <= 37; y++) connect(36, y);
+    if (compact) {
+      for (let y = 19; y <= 23; y++) connect(56, y);
+      for (let x = 37; x <= 44; x++) connect(x, 37);
+    }
   }
   const coast = [];
   for (let y = 2; y < height - 2; y++) {
@@ -38,12 +42,13 @@ function natureRows(harbor, extended = false) {
     }
   }
   coast.sort((a, b) => a.distance - b.distance);
-  for (const { x, y } of coast.slice(0, extended ? formerLand * 4 - connectionLand : formerLand * 5)) {
+  const trailScale = compact ? 0.5 : 1;
+  for (const { x, y } of coast.slice(0, extended ? formerLand * (compact ? 1 : 4) - connectionLand : formerLand * 5)) {
     const east = x - spawn.x;
     const south = y - spawn.y;
-    const path = Math.abs(east - 6 * Math.sin(south / 8)) < 1.1 ||
-      Math.abs(south - 4 * Math.sin(east / 7)) < 1.1 ||
-      Math.abs(Math.hypot(east, south * 1.2) - 23) < 1.05;
+    const path = Math.abs(east - 6 * trailScale * Math.sin(south / (8 * trailScale))) < 1.1 ||
+      Math.abs(south - 4 * trailScale * Math.sin(east / (7 * trailScale))) < 1.1 ||
+      Math.abs(Math.hypot(east, south * 1.2) - 23 * trailScale) < 1.05;
     const seed = islandSeed(x, y) % 100;
     const grove = Math.sin(x / 6) + Math.cos(y / 5) > 0.2;
     rows[y][x] = path ? "p" : seed < (grove ? 28 : 8) ? "t" : seed < 55 ? "f" : extended ? "m" : ".";
@@ -57,17 +62,21 @@ const natureTiles = {
   f: { name: "Wildflowers", walkable: true },
 };
 
-export function extendWaterfront(harbor) {
-  const rows = natureRows(harbor, true);
+function joinedRows(harbor, compact) {
+  const rows = natureRows(harbor, true, compact);
   const { row, west, east } = bridge;
   rows[row] = rows[row].slice(0, west + 1) + "p" + "d".repeat(east - west - 2) + rows[row].slice(east);
+  return rows;
+}
+
+export function extendWaterfront(harbor) {
   return {
     ...harbor,
     natureIsland: true,
     harborWidth: harbor.rows[0].length,
     harborHeight: harbor.rows.length,
     originalRows: harbor.rows,
-    rows,
+    rows: joinedRows(harbor, true),
     tiles: { ...harbor.tiles, ...natureTiles },
   };
 }
@@ -82,14 +91,21 @@ export function restoreIslandLayout(storage, district) {
       saved.every((row, i) => typeof row === "string" && row.length === baseline[i].length &&
         [...row].every(tile => version === 6 ? "~.ptf".includes(tile) : Object.hasOwn(tiles, tile))) && (tiles[saved[y]?.[x]]?.walkable || (version === 6 && saved[y]?.[x] === ".")) ? saved : null;
   };
-  const current = load(8, rows, spawn.x, spawn.y);
+  const current = load(9, rows, spawn.x, spawn.y);
   if (current) return current;
-  const previous = load(7, rows, spawn.x, spawn.y);
+
+  // Keep older edits at their original coordinates where the compact map still has land.
+  const oldJoined = joinedRows({ rows: originalRows }, false);
+  const wideSave = load(8, oldJoined, spawn.x, spawn.y);
+  const previous = wideSave ?? load(7, oldJoined, spawn.x, spawn.y);
   if (previous) {
     const { row, west, east } = bridge;
-    return previous.map((line, y) => y === row
-      ? [...line].map((tile, x) => x > west && x < east && tile === (x === west + 1 ? "." : "~") ? rows[y][x] : tile).join("")
-      : line);
+    return rows.map((line, y) => [...line].map((tile, x) => {
+      const edit = previous[y][x];
+      if (tile === "~" && (x >= harborWidth || y >= harborHeight)) return tile;
+      if (!wideSave && y === row && x > west && x < east && edit === (x === west + 1 ? "." : "~")) return tile;
+      return edit === oldJoined[y][x] ? tile : edit;
+    }).join(""));
   }
 
   const oldIsland = natureRows({ rows: originalRows });
@@ -113,6 +129,7 @@ export function restoreIslandLayout(storage, district) {
       const edit = harborSave.saved[oldY]?.[oldX];
       return edit !== undefined && edit !== harborSave.baseline[oldY]?.[oldX] ? edit : tile;
     }
+    if (tile === "~") return tile;
     const edit = islandSave?.[y]?.[x];
     return edit === undefined || edit === oldIsland[y][x] ? tile : edit === "." ? "m" : edit;
   }).join(""));
