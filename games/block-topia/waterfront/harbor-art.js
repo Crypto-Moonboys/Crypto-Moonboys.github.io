@@ -95,13 +95,52 @@ const waterfrontRoamers = [
     ["st-patricks-bear", "St Patrick’s Day Bear", 34, { wikiSlug: "st-patricks-day-bear" }],
     ["straight-outta-ghetto-bear", "Straight Outta Ghetto Bear", 34],
   ] },
+  { file: "roamers-guest-street.webp", cell: roamingAtlasCell, guest: true, cast: [
+    ["captain", "Police Captain", 36],
+    ["riot-cop", "Riot Cop", 36],
+    ["shamrock-cat", "Shamrock Cat", 34],
+    ["basketball-cat", "Basketball Cat", 34],
+  ] },
+  { file: "roamers-guest-night.webp", cell: roamingAtlasCell, guest: true, cast: [
+    ["red-mask-cat", "Red Mask Cat", 34],
+    ["gk-niftyhead", "GK Niftyhead", 38],
+    ["joker", "Joker", 36],
+    ["higher-purpose", "Higher Purpose", 40],
+  ] },
+  { file: "roamers-guest-artists.webp", cell: roamingAtlasCell, guest: true, cast: [
+    ["charlie-buster", "Charlie Buster", 36],
+    ["bone-idol-ink", "Bone Idol Ink", 36],
+    ["delicious-again-peter", "Delicious Again Peter", 36],
+    ["dude-got-game", "Dude Got Game", 35],
+  ] },
+  { file: "roamers-guest-mascots.webp?v=2", cell: roamingAtlasCell, guest: true, cast: [
+    ["gregz-robot-chef", "GREGZ Robot Chef", 36],
+    ["graffiti-kings-crowned-robot", "Graffiti Kings Crowned Robot", 38],
+    ["mypetspace-mascot", "Mypetspace Mascot", 34],
+    ["sticker-bot", "Sticker Bot", 36],
+  ] },
+  { file: "roamers-guest-pets.webp", cell: roamingAtlasCell, guest: true, cast: [
+    ["wuffi", "Wuffi", 32],
+    ["wuffi-companion", "Wuffi’s Companion", 32],
+    ["laughing-rat", "Laughing Rat", 30],
+    ["bratty", "Bratty", 30],
+  ] },
+  { file: "roamers-guest-curios.webp", cell: roamingAtlasCell, guest: true, cast: [
+    ["wax-builder", "WAX Builder", 36],
+    ["muscle-mascot", "Muscle Mascot", 36],
+    ["gold-winged-eyeball", "Gold-Winged Eyeball", 35, { flying: true }],
+    ["purple-winged-eyeball", "Purple-Winged Eyeball", 35, { flying: true }],
+  ] },
 ].flatMap(({ cast, ...atlas }) =>
   cast.flatMap((entry, model) => {
     if (!entry) return [];
-    const [id, name, size, { wikiSlug = id, pace } = {}] = entry;
-    return [{ atlas, model, id: "roamer:" + id, profile: { name, wiki: "/wiki/" + wikiSlug + ".html" }, size, pace }];
+    const [id, name, size, { wikiSlug = id, pace, flying = false } = {}] = entry;
+    const profile = atlas.guest ? { name } : { name, wiki: "/wiki/" + wikiSlug + ".html" };
+    return [{ atlas, model, id: "roamer:" + id, profile, size, pace, flying }];
   })
 );
+const guestRoamers = waterfrontRoamers.filter(({ atlas }) => atlas.guest);
+const residentRoamers = waterfrontRoamers.filter(({ atlas }) => !atlas.guest);
 const factionSpriteSize = 34;
 const botSpriteSize = 32;
 const residentBots = [3, 4, 5, 6, 7];
@@ -1478,9 +1517,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     });
   }
 
-  function drawIslandRoamers() {
-    waterfrontRoamers.forEach(({ atlas, model, id, profile, size: height, pace }, index) => {
-      const start = Math.floor(islandLoop.length * (index + 0.5) / waterfrontRoamers.length);
+  function drawIslandRoamers(roamers) {
+    roamers.forEach(({ atlas, model, id, profile, size: height, pace, flying }, index) => {
+      const start = Math.floor(islandLoop.length * (index + 0.5) / roamers.length);
       const clock = inspection?.time(id, time) ?? time ?? 0;
       let patrolClock = clock;
       if (street && time !== null) {
@@ -1499,15 +1538,17 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       }
       const px = Math.round(x * size + 16);
       const py = Math.round(y * size + 22);
-      streetHits.push({ id, x: px, y: py, spriteSize: height });
+      if (!atlas.guest) streetHits.push({ id, x: px, y: py, spriteSize: height });
       if (!inView) return;
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const moving = time !== null && (dx || dy) && !inspection?.held(id) && !street?.holds(id);
-      const frame = moving ? 1 + Math.floor(clock * 7 + index) % 3 : 0;
+      const phase = Math.floor(clock * 7 + index);
+      const frame = moving ? (atlas.guest ? phase % 4 : 1 + phase % 3) : 0;
+      const lift = flying ? 12 + (moving ? Math.round(Math.sin(clock * 6) * 2) : 0) : 0;
       queue(py, () => {
-        markNpc(id, px, py, height, { profile });
+        markNpc(id, px, py - lift, height, { profile });
         rect("#080f1cad", px - height / 4, py - 1, height / 2, 3);
-        drawDetailedCharacter(atlas, model, facing, frame, px, py + 1, height);
+        drawDetailedCharacter(atlas, model, facing, frame, px, py + 1 - lift, height);
       });
     });
   }
@@ -1566,7 +1607,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   drawFreight();
   if (islandLoop) {
     drawIslandBots();
-    drawIslandRoamers();
+    drawIslandRoamers(residentRoamers);
+    drawIslandRoamers(guestRoamers);
   }
   // Let nearby roamers request their art before upgrading compact characters.
   loadDetailedAtlas(waterfrontDetailedFactions, "low", repaintArt);

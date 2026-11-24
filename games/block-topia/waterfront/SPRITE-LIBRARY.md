@@ -53,3 +53,18 @@ After the first compact harbor paint, a roamer atlas loads when a member of its 
 [Landfall fire atlas](assets/atlases/harbor-kaiju-fire.webp) has four 128 × 72 frames with a nozzle anchor at (122, 36). The landfall animation attaches one brief flame burst to each horizontal leg. Right-facing breath mirrors the effect at the right-facing mouth.
 
 [Harbor Nessie atlas](assets/atlases/harbor-nessie.webp) contains eight 128 × 72 frames, read row-major for surfacing, swimming and diving. [Angry Nessie atlas](assets/atlases/harbor-nessie-angry.webp) uses the same frame grid and swim cycle. Regular waves recur after 45–100 seconds and angry waves after 110–185 seconds. Each random wave chooses one to three distinct open-water locations and waits for any active Nessies to dive. Each tap of L shows one Nessie, replacing any current sighting, alternating variants and advancing through the nine map locations. Nessie sightings never trigger the kaiju warning.
+
+## November 24 guest characters
+
+The 24 additional guests use sheets supplied or generated in GK’s Waterfront sprite session. Each model is packed as a 4 × 4 block of 112 × 112 frames, three models across per atlas. Direction rows are south, west, east and north. All four columns are used for movement. The first pose also serves as the still frame for inspection and reduced motion. Each guest starts once at a staggered point on the reachable island loop. The two eyeballs flap above the route.
+
+| Atlas | Models in packing order with source job prefixes |
+| --- | --- |
+| [roamers-guest-street.webp](assets/atlases/roamers-guest-street.webp) | Police Captain (`50aba9af`), Riot Cop (`7e7dde5c`), Shamrock Cat (`cd2ba4be`), Basketball Cat (`7bdb3c68`) |
+| [roamers-guest-night.webp](assets/atlases/roamers-guest-night.webp) | Red Mask Cat (`57b98a72`), GK Niftyhead (`773aad35`), Joker (`71f5d1d3`), Higher Purpose (`19869d73`) |
+| [roamers-guest-artists.webp](assets/atlases/roamers-guest-artists.webp) | Charlie Buster (`016e6c5f`), Bone Idol Ink (`448135aa`), Delicious Again Peter (`562f7167`), Dude Got Game (`28f9fbd0`) |
+| [roamers-guest-mascots.webp](assets/atlases/roamers-guest-mascots.webp) | GREGZ Robot Chef (`0be4df7e`), Graffiti Kings Crowned Robot (`0ec0b565`), Mypetspace Mascot (`40ff3bb1`), Sticker Bot (`f2e92ac0`) |
+| [roamers-guest-pets.webp](assets/atlases/roamers-guest-pets.webp) | Wuffi (`caa541de`), Wuffi’s Companion (`3a034f64`), Laughing Rat (`a886db60`), Bratty (`bb482b4a`) |
+| [roamers-guest-curios.webp](assets/atlases/roamers-guest-curios.webp) | WAX Builder (`2aa55eaa`), Muscle Mascot (`84942711`), Gold-Winged Eyeball (`fea4de8d`), Purple-Winged Eyeball (`a7d01cb5`) |
+
+The guest atlases load in groups as the camera approaches. Selecting one of these guests opens the same NPC info panel with the guest’s name. Guests have no dialogue entry.
