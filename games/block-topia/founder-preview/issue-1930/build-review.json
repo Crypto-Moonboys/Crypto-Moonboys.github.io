@@ -1,31 +1,31 @@
 {
   "issue": 1930,
-  "round": 35,
+  "round": 36,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Potential water overflow at row 3, columns 1 to 5.",
-          "riskLevel": "High",
-          "suggestion": "Ensure the water boundary is correctly defined."
+          "type": "Isolation",
+          "description": "The house at row 5, column 6 is isolated and not connected to any road or dock. This could make it difficult for players to access the house.",
+          "suggestion": "Connect the house to a road or dock."
         },
         {
-          "description": "House placement seems inconsistent with other structures in rows 4 and 5.",
-          "riskLevel": "Medium",
-          "suggestion": "Align house placements for a uniform look."
+          "type": "Accessibility",
+          "description": "The lighthouse at row 1, column 2 is not easily accessible from the main roads. Players might find it hard to reach this landmark.",
+          "suggestion": "Place the lighthouse closer to a major road for better accessibility."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route path from row 3, column 15 to row 123 may be too long or inefficient.",
-          "riskLevel": "High",
-          "suggestion": "Optimize the route for shorter and more direct paths."
+          "type": "Dead End",
+          "description": "There are several dead ends in the district, such as at row 8, column 10 and row 9, column 12. Players might get stuck or confused.",
+          "suggestion": "Ensure there is a clear path from one part of the district to another."
         },
         {
-          "description": "The route includes non-sequential rows which might confuse players.",
-          "riskLevel": "Medium",
-          "suggestion": "Ensure all route steps are sequential or provide clear instructions."
+          "type": "Loop",
+          "description": "The route includes a loop starting at row 3, column 15 and ending at row 9, column 40. This could confuse players who might get stuck in an endless loop.",
+          "suggestion": "Remove or modify the loop to create a more linear path."
         }
       ]
     }
