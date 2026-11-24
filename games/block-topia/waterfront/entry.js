@@ -90,7 +90,7 @@ function bootMap(district) {
   if (!mapStartup) {
     mapStartup = (async () => {
       const { extendWaterfront, restoreIslandLayout, islandPatrol, islandSeed } =
-        await import('./nature-island.mjs?v=2');
+        await import('./nature-island.mjs?v=3');
       window.waterfrontDistrict = extendWaterfront(district);
       window.restoreWaterfrontLayout = restoreIslandLayout;
       window.waterfrontIslandPatrol = islandPatrol;
@@ -100,9 +100,9 @@ function bootMap(district) {
         window.createWaterfrontFactionConversations = createFactionConversations;
       }
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=51-water-encounters');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=52-bridge');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=10');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=11-bridge');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
       await import('./leader-dialog.js?lore=9');
     })().catch(error => {

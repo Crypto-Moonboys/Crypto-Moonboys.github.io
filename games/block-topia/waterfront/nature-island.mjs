@@ -1,3 +1,4 @@
+const bridge = { row: 19, west: 46, east: 56 };
 const neighbors = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
 export function islandSeed(x, y) {
@@ -57,13 +58,16 @@ const natureTiles = {
 };
 
 export function extendWaterfront(harbor) {
+  const rows = natureRows(harbor, true);
+  const { row, west, east } = bridge;
+  rows[row] = rows[row].slice(0, west + 1) + "p" + "d".repeat(east - west - 2) + rows[row].slice(east);
   return {
     ...harbor,
     natureIsland: true,
     harborWidth: harbor.rows[0].length,
     harborHeight: harbor.rows.length,
     originalRows: harbor.rows,
-    rows: natureRows(harbor, true),
+    rows,
     tiles: { ...harbor.tiles, ...natureTiles },
   };
 }
@@ -78,8 +82,15 @@ export function restoreIslandLayout(storage, district) {
       saved.every((row, i) => typeof row === "string" && row.length === baseline[i].length &&
         [...row].every(tile => version === 6 ? "~.ptf".includes(tile) : Object.hasOwn(tiles, tile))) && (tiles[saved[y]?.[x]]?.walkable || (version === 6 && saved[y]?.[x] === ".")) ? saved : null;
   };
-  const current = load(7, rows, spawn.x, spawn.y);
+  const current = load(8, rows, spawn.x, spawn.y);
   if (current) return current;
+  const previous = load(7, rows, spawn.x, spawn.y);
+  if (previous) {
+    const { row, west, east } = bridge;
+    return previous.map((line, y) => y === row
+      ? [...line].map((tile, x) => x > west && x < east && tile === (x === west + 1 ? "." : "~") ? rows[y][x] : tile).join("")
+      : line);
+  }
 
   const oldIsland = natureRows({ rows: originalRows });
   const islandSave = load(6, oldIsland, oldIsland[0].length >> 1, oldIsland.length >> 1);
@@ -139,6 +150,11 @@ export function islandPatrol(rows, district, findRoute) {
   const stops = [...regions.values()]
     .sort((a, b) => a.ry - b.ry || (a.ry % 2 ? b.rx - a.rx : a.rx - b.rx))
     .map(({ point }) => point);
+  const { row, west, east } = bridge;
+  if (Array.from({ length: east - west + 1 }, (_, i) => west + i)
+      .every(x => visited.has(row * width + x) && canWalk(x, row))) {
+    stops.unshift({ x: west, y: row }, { x: east, y: row });
+  }
   return stops.flatMap((stop, index) => {
     const segment = findRoute(stop, stops[(index + 1) % stops.length], canWalk);
     return [stop, ...segment.slice(0, -1).map(({ x, y }) => ({ x, y }))];

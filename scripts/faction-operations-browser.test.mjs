@@ -2290,6 +2290,8 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         width: columns, height: initial.length, land, islandTerrainOnly, harborChanges,
         allLandReachable: reachable.size === walkableLand,
         restoredEdit: rows[14][19], spawn,
+        bridgePatrolled: Array.from({ length: 8 }, (_, i) => 48 + i).every(x =>
+          loop.some(point => point.x === x && point.y === 19)),
         allRegionsVisited: new Set(loop.map(({x, y}) => key(x, y))).size === regions.size,
         loopWalkable: loop.every(({x,y}, i) => {
           const next = loop[(i + 1) % loop.length];
@@ -2300,12 +2302,12 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
     const { harborChanges, ...layout } = island;
     assert.deepEqual(layout, {
-      width: 112, height: 85, land: previousLand * 5, islandTerrainOnly: true,
-      allLandReachable: true, allRegionsVisited: true, loopWalkable: true,
+      width: 112, height: 85, land: previousLand * 5 + 8, islandTerrainOnly: true,
+      allLandReachable: true, bridgePatrolled: true, allRegionsVisited: true, loopWalkable: true,
       restoredEdit: 'p', spawn: waterfrontDistrict.spawn,
     });
     assert.ok(harborChanges.length > 0 && harborChanges.every(({ x, y, tile, previous }) =>
-      ('.~'.includes(previous) && 'pd'.includes(tile) && ((y === 24 && x >= 45) || (x === 36 && y >= 29)))));
+      ('.~'.includes(previous) && 'pd'.includes(tile) && ((y === 19 && x >= 47 && x <= 55) || (y === 24 && x >= 45) || (x === 36 && y >= 29)))));
     const waterArt = await page.evaluate(() => {
       function sample(x, y, time) {
         const size = district.tileSize;
