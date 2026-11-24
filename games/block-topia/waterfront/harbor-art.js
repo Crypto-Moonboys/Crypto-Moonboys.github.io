@@ -279,6 +279,8 @@ const landfallRoute = [
 ];
 let landfallSummoned = false;
 let landfallStarted;
+let landfallRequestedAt;
+const landfallDuration = 21;
 let naturalLandfallDue;
 let naturalLandfallUsed = false;
 
@@ -292,11 +294,21 @@ window.summonHarborLandfall = function summonHarborLandfall(rows) {
   kaijuSummoned = false;
   landfallSummoned = true;
   landfallStarted = undefined;
+  landfallRequestedAt = undefined;
   return { x: landfallX + 0.5, y: 6.5 };
 };
 
+window.harborKaijuActive = rows =>
+  (kaijuSummoned && hasKaijuWater(rows)) || (landfallSummoned && hasLandfallRoute(rows));
+
 function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
-  if (time !== null) naturalLandfallDue ??= time + 1200 + Math.random() * 1200;
+  if (time !== null) {
+    naturalLandfallDue ??= time + 1200 + Math.random() * 1200;
+    if (landfallSummoned) {
+      landfallRequestedAt ??= time;
+      if (time - (landfallStarted ?? landfallRequestedAt) >= landfallDuration) landfallSummoned = false;
+    }
+  }
   if (visible && (visible.right <= 41 || visible.left >= 48 ||
       visible.bottom <= 3 || visible.top >= 12)) return;
   if (!hasLandfallRoute(rows)) return;
@@ -316,13 +328,9 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
   if (time !== null) {
     landfallStarted ??= time;
     const elapsed = Math.max(0, time - landfallStarted);
-    if (elapsed >= 21) {
-      landfallSummoned = false;
-      return;
-    }
     let walkTime = elapsed - 2;
     if (walkTime < 0 || elapsed >= 19) {
-      const frame = Math.min(7, Math.floor((walkTime < 0 ? elapsed : 21 - elapsed) * 4));
+      const frame = Math.min(7, Math.floor((walkTime < 0 ? elapsed : landfallDuration - elapsed) * 4));
       row = Math.floor(frame / 4);
       column = frame % 4;
     } else {

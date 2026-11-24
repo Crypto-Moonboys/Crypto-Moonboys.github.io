@@ -14,6 +14,7 @@ const ctx = mapView.getContext("2d");
 const edit = document.querySelector("#edit");
 const select = document.querySelector("#tile");
 const status = document.querySelector("#status");
+const kaijuWarning = document.querySelector("#kaiju-warning");
 const locationLabel = document.querySelector("#location");
 let rows = [...initial];
 let player = { ...spawn };
@@ -187,6 +188,7 @@ function paintMap() {
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
     editing || document.hidden ? null : factionConversations, visibleTiles(), inspection,
     streamDetailArt ? requestMapPaint : null) ?? [];
+  kaijuWarning.hidden = !window.harborKaijuActive(rows);
   if (compactArtReady && !streamDetailArt) {
     streamDetailArt = true;
     requestMapPaint();
