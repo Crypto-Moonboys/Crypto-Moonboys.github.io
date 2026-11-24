@@ -1,5 +1,5 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep map-specific landmark art, fixture anchors, and rear tower placement.
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=7';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=9';
 import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=4';
 
 const byId = id => document.getElementById(id);
@@ -131,6 +131,21 @@ try {
     objects.push({...player,frame:steps.length && !reduced.matches ? 1+Math.floor(time*8)%3 : 0,
       point:project(player.x,player.y)});
     objects.sort((a,b) => a.point.y-b.point.y);
+    if (mode === 'node-city') {
+      surface.save();
+      surface.fillStyle = 'rgba(14, 14, 24, .30)';
+      for (const { point, fortress, rect, width, scale } of objects) {
+        const buildingWidth = fortress?.naturalWidth ? fortressSize.width * (scale ?? 1)
+          : rect && buildings.naturalWidth ? width : 0;
+        if (!buildingWidth) continue;
+        const radius = buildingWidth * .34;
+        surface.beginPath();
+        surface.ellipse(point.x + radius * .4, point.y + radius * .2,
+          radius, radius * .35, Math.atan(.5), 0, 2 * Math.PI);
+        surface.fill();
+      }
+      surface.restore();
+    }
     for (const object of objects) {
       const {x,y} = object.point;
       let w = 34, h = 34;

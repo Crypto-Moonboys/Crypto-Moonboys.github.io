@@ -304,7 +304,7 @@ function createLayerCanvas(width, height) {
   return layer;
 }
 
-export function createIsoRenderer(canvas) {
+export function createIsoRenderer(canvas, { floor } = {}) {
   const ctx = canvas.getContext('2d');
   const imageRegistry = Object.create(null);
   const renderLayers = [];
@@ -329,10 +329,12 @@ export function createIsoRenderer(canvas) {
   window.addEventListener('resize', resize);
   resize();
 
-  Object.values(TILE_ASSETS).forEach((path) => loadImage(path, imageRegistry));
-  Object.values(BUILDING_ASSETS).forEach((path) => loadImage(path, imageRegistry));
-  Object.values(PROP_ASSETS).forEach((path) => loadImage(path, imageRegistry));
-  Object.values(NPC_ASSETS).forEach((path) => loadImage(path, imageRegistry));
+  if (!floor) {
+    Object.values(TILE_ASSETS).forEach((path) => loadImage(path, imageRegistry));
+    Object.values(BUILDING_ASSETS).forEach((path) => loadImage(path, imageRegistry));
+    Object.values(PROP_ASSETS).forEach((path) => loadImage(path, imageRegistry));
+    Object.values(NPC_ASSETS).forEach((path) => loadImage(path, imageRegistry));
+  }
 
   function getCameraFrame(state) {
     if (!state.camera) {
@@ -402,6 +404,7 @@ export function createIsoRenderer(canvas) {
   }
 
   function isTileBlocked(col, row, metrics) {
+    if (floor) return false;
     const terrain = classifyTerrain(col, row, metrics);
     return terrain === 'water' || terrain === 'coast';
   }
@@ -1273,7 +1276,41 @@ export function createIsoRenderer(canvas) {
     return nearest;
   }
 
+  function renderLunarFloor(state, drawComparison) {
+    const frame = getCameraFrame(state);
+    const { zoom, originX, originY, translateX, translateY } = frame;
+
+    ctx.fillStyle = '#080a13';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(translateX, translateY);
+    ctx.scale(zoom, zoom);
+
+    ctx.save();
+    // Map the texture axes to the same vectors as toIso. Light from
+    // the left of the texture becomes upper-left light in the scene.
+    ctx.transform(HALF_TILE_W, HALF_TILE_H, -HALF_TILE_W, HALF_TILE_H, originX, originY);
+    ctx.fillStyle = '#50515b';
+    ctx.fillRect(0, 0, state.map.width, state.map.height);
+    if (floor.naturalWidth) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(floor, 0, 0, state.map.width, state.map.height);
+    }
+    ctx.restore();
+
+    drawComparison?.(ctx, (col, row) => {
+      const p = toIso(col, row);
+      return { x: originX + p.x, y: originY + p.y + HALF_TILE_H };
+    }, frame);
+    ctx.restore();
+  }
+
   function render(state, drawComparison) {
+    if (floor) {
+      renderLunarFloor(state, drawComparison);
+      return;
+    }
     const now = Date.now();
     const metrics = getSceneMetrics(state);
 
