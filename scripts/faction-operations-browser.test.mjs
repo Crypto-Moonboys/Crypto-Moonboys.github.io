@@ -2312,46 +2312,43 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees,
         ...Object.values(waterfrontDetails), waterfrontFactionAtlas, waterfrontBotAtlas, waterfrontCargoAtlas]
         .every(sprite => sprite.image));
-    await page.waitForFunction(() => waterfrontSourceSprites['rugpull-miners'].image?.complete);
-    const sourceArt = await page.evaluate(() => {
-      const source = waterfrontSourceSprites['rugpull-miners'];
-      const jimmy = factionIds.indexOf('rugpull-miners');
-      const context = document.createElement('canvas').getContext('2d');
-      const drawImage = context.drawImage.bind(context);
-      const frames = [];
-      context.drawImage = (image, ...args) => {
-        if (image === source.image) frames.push({
-          crop: args.slice(0, 4),
-          smooth: context.imageSmoothingEnabled,
-          sameFeet: Math.abs(args[5] + args[7] - (player.y * tileSize + 23)) < 0.001,
-        });
-        drawImage(image, ...args);
-      };
-      const bounds = { left: spawn.x - 2, top: spawn.y - 2, right: spawn.x + 2, bottom: spawn.y + 2 };
-      for (let facing = 0; facing < 4; facing++) for (let frame = 0; frame < 4; frame++) {
-        window.drawWaterfront(context, rows, { ...player, faction: jimmy, facing, frame }, district,
-          null, null, [], jimmy, null, bounds);
-      }
-      return {
-        frames, expected: source.frames,
-        width: source.image.naturalWidth, height: source.image.naturalHeight,
-      };
+    await page.waitForFunction(() => waterfrontDetailedFactions.image?.complete && waterfrontDetailedBots.image?.complete);
+    const detailedFrames = await page.evaluate(() => {
+      const cell = characterDetailCell;
+      return [waterfrontDetailedFactions, waterfrontDetailedBots].map(({ image }, index) => {
+        const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+        context.canvas.width = cell;
+        context.canvas.height = cell;
+        let populated = 0;
+        for (let model = 0; model < (index === 0 ? 9 : 8); model++) {
+          for (let facing = 0; facing < 4; facing++) for (let frame = 0; frame < 4; frame++) {
+            context.clearRect(0, 0, cell, cell);
+            context.drawImage(image, (model % 3 * 4 + frame) * cell,
+              (Math.floor(model / 3) * 4 + facing) * cell, cell, cell, 0, 0, cell, cell);
+            const data = context.getImageData(0, 0, cell, cell).data;
+            if (data.some((value, channel) => channel % 4 === 3 && value > 128)) populated++;
+          }
+        }
+        return [cell, populated];
+      });
     });
-    assert.equal(sourceArt.width, 1199);
-    assert.equal(sourceArt.height, 1312);
-    assert.deepEqual(sourceArt.frames.map(item => item.crop), sourceArt.expected);
-    assert.ok(sourceArt.frames.every(({ crop, smooth, sameFeet }) => crop[3] > 270 && smooth && sameFeet),
-      'all 16 original poses are drawn with filtered scaling and the same ground anchor');
+    assert.deepEqual(detailedFrames, [[192, 144], [192, 128]]);
     const harborLife = await page.evaluate(() => {
       const display = document.createElement('canvas');
       const context = display.getContext('2d');
       const drawImage = context.drawImage.bind(context);
       let sprites = 0;
+      let assertDetailedSampling = true;
       const botSizes = new Set();
       const factionSizes = new Set();
+      const detailedSourceSizes = new Set();
       context.drawImage = (image, ...args) => {
-        if (image === waterfrontBotAtlas.image) { sprites++; botSizes.add(args[7]); }
-        if (image === waterfrontFactionAtlas.image) factionSizes.add(args[7]);
+        if (image === waterfrontDetailedBots.image) { sprites++; botSizes.add(args[7]); }
+        if (image === waterfrontDetailedFactions.image) factionSizes.add(args[7]);
+        if (image === waterfrontDetailedBots.image || image === waterfrontDetailedFactions.image) {
+          detailedSourceSizes.add(args[2]);
+          assertDetailedSampling &&= context.imageSmoothingEnabled;
+        }
         drawImage(image, ...args);
       };
       const crewBriefs = [];
@@ -2365,9 +2362,12 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       }
       const delivered = harborFreight.bots.some(bot => bot.carrying || bot.point !== district.spawn && bot.started > 1);
       return { maxRobots, delivered, crewBrief: crewBriefs.includes(window.waterfrontBuildDiscussion[0].text),
-        botSizes: [...botSizes], factionSizes: [...factionSizes] };
+        botSizes: [...botSizes], factionSizes: [...factionSizes],
+        detailedSourceSizes: [...detailedSourceSizes], assertDetailedSampling };
     });
-    assert.deepEqual(harborLife.botSizes, [32], 'robot frames retain their original 32-pixel size');
+    assert.deepEqual(harborLife.detailedSourceSizes, [192], 'NPC drawing uses the detailed source frames');
+    assert.equal(harborLife.assertDetailedSampling, true);
+    assert.deepEqual(harborLife.botSizes, [32], 'robots retain their size on the map');
     assert.deepEqual(harborLife.factionSizes, [34], 'leaders and the player use the same larger frame');
     assert.ok(harborLife.maxRobots > 11, 'building residents join the crew, freight and patrol robots');
     assert.equal(harborLife.delivered, true, 'freight robots run their original delivery routes');

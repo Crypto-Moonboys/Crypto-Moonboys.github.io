@@ -12,9 +12,9 @@ The production PNGs are in [assets/atlases](assets/atlases). Use the existing at
 | [street-detail.png](assets/atlases/street-detail.png) | `flowers-0`, `flowers-1`, `flowers-2`, `flowers-3`, `flowers-4`, `flowers-5`, `flowers-6`, `flowers-7`, `flowers-8`, `flowers-9`, `flowers-10`, `flowers-11`, `furniture-0`, `furniture-1`, `furniture-2`, `furniture-3`, `furniture-4`, `furniture-5`, `furniture-6`, `furniture-7`, `furniture-8`, `furniture-9`, `furniture-10`, `furniture-11`, `grass` |
 | [terrain.png](assets/atlases/terrain.png) | `curb-corner`, `curb-straight`, `footpath-pavers` |
 
-## Original character sheets
+## Detailed character atlases
 
-[Jimmy Rugpull](assets/atlases/jimmy-rugpull.webp) uses the supplied 1199 × 1312 transparent sheet, encoded losslessly. The renderer crops the 16 poses directly at draw time. The shared faction atlas supplies the other leaders and acts as a fallback if Jimmy’s sheet fails to load.
+[Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) use the original animation sheets, packed into 192 × 192 WebP frames. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The browser uses filtered scaling for these detailed frames and can fall back to the original compact atlases if a file fails to load.
 
 ## Multi-frame atlases
 

@@ -99,9 +99,8 @@ function bootMap(district) {
         const { createFactionConversations } = await import('./faction-conversations.mjs?v=2');
         window.createWaterfrontFactionConversations = createFactionConversations;
       }
-      window.waterfrontFactionKeys = Object.keys(LEADERS);
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=45');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=46');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
       if (!window.waterfrontMapLoaded) await script('map.js?v=10');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');

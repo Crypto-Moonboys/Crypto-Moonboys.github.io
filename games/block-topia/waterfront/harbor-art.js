@@ -55,20 +55,10 @@ const waterfrontFactionAtlas = { file: "faction-frames" };
 // Order matches the rows packed from the named source portraits.
 const waterfrontCharacterNames = window.waterfrontCharacterNames;
 const waterfrontBotAtlas = { file: "bot-frames" };
-// Keep the original art's frame detail. The shared fallback atlas uses 36 × 36 cells.
-const waterfrontSourceSprites = {
-  "rugpull-miners": {
-    file: "jimmy-rugpull.webp",
-    // South, west, east, north. Each row is idle followed by three walk frames.
-    frames: [
-    [74, 5, 194, 303], [349, 5, 194, 303], [624, 6, 195, 302], [898, 7, 194, 303],
-    [90, 329, 142, 288], [358, 331, 159, 282], [650, 331, 144, 283], [915, 331, 158, 282],
-    [86, 640, 149, 284], [359, 642, 156, 277], [636, 642, 154, 282], [910, 640, 158, 279],
-    [60, 953, 182, 301], [338, 953, 182, 301], [612, 955, 181, 299], [888, 954, 182, 300],
-    ],
-    height: 303,
-  },
-};
+// Three models across. Each model has four directions and four animation frames.
+const characterDetailCell = 192;
+const waterfrontDetailedFactions = { file: "factions-detail.webp" };
+const waterfrontDetailedBots = { file: "bots-detail.webp" };
 const factionSpriteSize = 34;
 const botSpriteSize = 32;
 const residentBots = [3, 4, 5, 6, 7];
@@ -166,7 +156,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     atlas.onerror = resolve;
     atlas.src = "assets/atlases/" + group + ".png";
   }));
-  const loadSources = Object.values(waterfrontSourceSprites).map(sprite => new Promise(resolve => {
+  const loadSources = [waterfrontDetailedFactions, waterfrontDetailedBots].map(sprite => new Promise(resolve => {
     const image = new Image();
     image.onload = () => {
       sprite.image = image;
@@ -883,13 +873,25 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     rect("#ffe19a", x - 1, y - 12, 4, 3);
   }
 
+  function drawDetailedCharacter(atlas, model, facing, frame, x, feet, size) {
+    const cell = characterDetailCell;
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(atlas.image, (model % 3 * 4 + frame) * cell, (Math.floor(model / 3) * 4 + facing) * cell,
+      cell, cell, x - size / 2, feet - size, size, size);
+    ctx.restore();
+  }
+
   function bot(model, x, y, dx, dy, frame, id) {
     markNpc(id, x, y, botSpriteSize);
     const image = waterfrontBotAtlas.image;
     if (inspection?.held(id)) frame = 0;
     const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
     rect("#080f1cad", x - 8, y - 1, 16, 4);
-    if (image) {
+    if (waterfrontDetailedBots.image) {
+      drawDetailedCharacter(waterfrontDetailedBots, model, facing, frame, x, y, botSpriteSize);
+    } else if (image) {
       ctx.drawImage(image, frame * 32, (model * 4 + facing) * 32, 32, 32,
         x - botSpriteSize / 2, y - botSpriteSize, botSpriteSize, botSpriteSize);
     } else {
@@ -1015,17 +1017,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   function factionCharacter(faction, x, y, facing = 0, frame = 0) {
     rect("#080f1cad", x - factionSpriteSize / 3.6, y - 1, factionSpriteSize / 1.8, 3);
-    const source = waterfrontSourceSprites[window.waterfrontFactionKeys[faction]];
-    const sourceFrame = source?.frames[facing * 4 + frame];
-    if (source?.image && sourceFrame) {
-      const [sx, sy, width, height] = sourceFrame;
-      const scale = factionSpriteSize / source.height;
-      ctx.save();
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(source.image, sx, sy, width, height,
-        x - width * scale / 2, y + 1 - height * scale, width * scale, height * scale);
-      ctx.restore();
+    if (waterfrontDetailedFactions.image) {
+      drawDetailedCharacter(waterfrontDetailedFactions, faction, facing, frame, x, y + 1, factionSpriteSize);
       return;
     }
     ctx.drawImage(waterfrontFactionAtlas.image, frame * 36, (faction * 4 + facing) * 36, 36, 36,
@@ -1035,7 +1028,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function actor() {
     const x = player.x * size + 16;
     const y = player.y * size + 22;
-    if (waterfrontFactionAtlas.image && Number.isInteger(player.faction) && waterfrontCharacterNames[player.faction]) {
+    if ((waterfrontDetailedFactions.image || waterfrontFactionAtlas.image) && Number.isInteger(player.faction) && waterfrontCharacterNames[player.faction]) {
       factionCharacter(player.faction, x, y, player.facing, player.frame);
     } else {
       person(x, y, "#c17362", "#39778c", 0, true);
@@ -1046,7 +1039,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   let nearestFaction;
   const factionHits = [];
   function drawFactionWalkers() {
-    if (!waterfrontFactionAtlas.image) return;
+    if (!waterfrontDetailedFactions.image && !waterfrontFactionAtlas.image) return;
     const routes = islandLoop ? null : factionRoutes(rows, district);
     const now = Date.now();
     waterfrontCharacterNames.forEach((name, index) => {
