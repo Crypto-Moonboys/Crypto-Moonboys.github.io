@@ -1,3 +1,5 @@
+import { LEADERS } from '/js/waterfront-faction-identities.mjs?v=2';
+
 const identity = window.MOONBOYS_IDENTITY;
 const gate = document.querySelector('#bt-gate');
 const game = document.querySelector('#waterfront-game');
@@ -89,14 +91,15 @@ function bootMap(district) {
   if (!mapStartup) {
     mapStartup = (async () => {
       if (!window.createWaterfrontFactionConversations) {
-        const { createFactionConversations } = await import('./faction-conversations.mjs?v=1');
+        const { createFactionConversations } = await import('./faction-conversations.mjs?v=2');
         window.createWaterfrontFactionConversations = createFactionConversations;
       }
-      if (!window.drawWaterfront) await script('harbor-art.js?v=38');
+      window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
+      if (!window.drawWaterfront) await script('harbor-art.js?v=39');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=3');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=4');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
-      await import('./leader-dialog.js?lore=5');
+      await import('./leader-dialog.js?lore=6');
     })().catch(error => {
       mapStartup = null;
       throw error;

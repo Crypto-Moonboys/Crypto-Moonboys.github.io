@@ -1,4 +1,4 @@
-import { LEADERS } from '../../../js/waterfront-faction-identities.mjs';
+import { LEADERS } from '../../../js/waterfront-faction-identities.mjs?v=2';
 
 const ids = Object.keys(LEADERS);
 // Topics draw on the published world. Dialogue is a character's opinion or question.
@@ -117,16 +117,16 @@ export function createFactionConversations(storage) {
         : ((day % total) * 13 + a * 9 + b) % total;
       const question = factionQuestion(speaker, index);
       const last = previous && factionQuestion(previous.speaker, previous.index);
-      const lines = mode === 'passing' ? [turn(speaker, farewells[count % farewells.length](other.callSign))]
+      const lines = mode === 'passing' ? [turn(speaker, farewells[count % farewells.length](other.character))]
         : mode === 'resume' ? [
           turn(speaker, `About ${last.topic}, would you start in the same place next time?`),
-          turn(listener, `I’d still ${other.approach}. What would your crew do first?`),
+          turn(listener, `I’d still ${other.approach}. ${other.agenda}`),
           turn(speaker, `I’d ${voice.approach}. Let’s pick it up later.`),
         ] : [
           turn(speaker, question.text),
           turn(listener, question.observation + '.'),
-          turn(listener, `My first move? I’d ${other.approach}.`),
-          turn(speaker, farewells[count % farewells.length](other.callSign)),
+          turn(listener, index % 2 === 0 ? other.intro : other.agenda),
+          turn(speaker, farewells[count % farewells.length](other.character)),
         ];
       active = { a, b, pair: arrival, since: now, lines,
         record: { day: mode === 'new' ? day : previous.day, count, index: mode === 'new' ? index : previous.index,

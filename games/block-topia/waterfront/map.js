@@ -23,7 +23,7 @@ const playerFaction = document.querySelector("#player-faction");
 const factionIds = ["all-city-bulls", "nomad-bears", "hard-fork-rockers", "rugpull-miners",
   "crypto-moongirls", "blockchain-furies", "graffpunks", "crypto-stoned-boys", "blockstars"];
 const avatar = document.querySelector("#waterfront-avatar");
-waterfrontFactions.forEach((name, index) => avatar.add(new Option(name, String(index))));
+waterfrontCharacterNames.forEach((name, index) => avatar.add(new Option(name, String(index))));
 let selectedAvatar = null;
 let avatarIdleSince = performance.now();
 let idleStep = 0;
@@ -445,8 +445,8 @@ document.addEventListener("fullscreenchange", applyZoomSize);
 let centered = false;
 window.addEventListener("waterfront:access", () => {
   if (window.waterfrontAccess.canPlay()) {
-    const name = waterfrontFactions[factionIds.indexOf(window.waterfrontAccess.faction())];
-    playerFaction.textContent = "Your faction · " + name;
+    const name = waterfrontCharacterNames[factionIds.indexOf(window.waterfrontAccess.faction())];
+    playerFaction.textContent = "Your representative · " + name;
     applyZoomSize();
     if (!centered) {
       const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;

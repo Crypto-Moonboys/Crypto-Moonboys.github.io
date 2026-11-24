@@ -662,6 +662,21 @@
     "brand": null
   },
   {
+    "entity_id": "chada_boi",
+    "canonical_title": "Chada Boi",
+    "canonical_url": "/wiki/chada-boi.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "chada",
+      "boi"
+    ],
+    "source_urls": [
+      "/wiki/chada-boi.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "charlie_buster",
     "canonical_title": "charlie-buster",
     "canonical_url": "/wiki/charlie-buster.html",
@@ -895,6 +910,21 @@
     "brand": null
   },
   {
+    "entity_id": "danny_rankz",
+    "canonical_title": "Danny Rankz",
+    "canonical_url": "/wiki/danny-rankz.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "danny",
+      "rankz"
+    ],
+    "source_urls": [
+      "/wiki/danny-rankz.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "darren_cullen",
     "canonical_title": "Darren Cullen (SER)",
     "canonical_url": "/wiki/darren-cullen.html",
@@ -1032,6 +1062,21 @@
     ],
     "source_urls": [
       "/wiki/dream-sovereign.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "eddie_stax",
+    "canonical_title": "Eddie Stax",
+    "canonical_url": "/wiki/eddie-stax.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "eddie",
+      "stax"
+    ],
+    "source_urls": [
+      "/wiki/eddie-stax.html"
     ],
     "brand": null
   },
@@ -9249,6 +9294,23 @@
     "brand": null
   },
   {
+    "entity_id": "jack_the_bull",
+    "canonical_title": "Jack the Bull",
+    "canonical_url": "/wiki/jack-the-bull.html",
+    "category": "characters",
+    "aliases": [
+      "jack bull"
+    ],
+    "tags": [
+      "jack",
+      "bull"
+    ],
+    "source_urls": [
+      "/wiki/jack-the-bull.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "jillian_godsil",
     "canonical_title": "Jillian Godsil",
     "canonical_url": "/wiki/jillian-godsil.html",
@@ -9265,6 +9327,21 @@
     ],
     "source_urls": [
       "/wiki/jillian-godsil.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "jimmy_rugpull",
+    "canonical_title": "Jimmy Rugpull",
+    "canonical_url": "/wiki/jimmy-rugpull.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "jimmy",
+      "rugpull"
+    ],
+    "source_urls": [
+      "/wiki/jimmy-rugpull.html"
     ],
     "brand": null
   },
@@ -9989,6 +10066,22 @@
     "brand": null
   },
   {
+    "entity_id": "nine_toes_joe",
+    "canonical_title": "Nine Toes Joe",
+    "canonical_url": "/wiki/nine-toes-joe.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "nine",
+      "toes",
+      "joe"
+    ],
+    "source_urls": [
+      "/wiki/nine-toes-joe.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "noballgamess_nft_collection",
     "canonical_title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
     "canonical_url": "/wiki/noballgamess-nft-collection.html",
@@ -10007,6 +10100,20 @@
     ],
     "source_urls": [
       "/wiki/noballgamess-nft-collection.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "nobby",
+    "canonical_title": "Nobby",
+    "canonical_url": "/wiki/nobby.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "nobby"
+    ],
+    "source_urls": [
+      "/wiki/nobby.html"
     ],
     "brand": null
   },
@@ -10881,6 +10988,22 @@
     ],
     "source_urls": [
       "/wiki/tagzcoin.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "teddy_boi_jones",
+    "canonical_title": "Teddy Boi Jones",
+    "canonical_url": "/wiki/teddy-boi-jones.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "teddy",
+      "boi",
+      "jones"
+    ],
+    "source_urls": [
+      "/wiki/teddy-boi-jones.html"
     ],
     "brand": null
   },
@@ -12423,6 +12546,23 @@
     "brand": null
   },
   {
+    "entity_id": "the_ninth_berth",
+    "canonical_title": "The Ninth Berth",
+    "canonical_url": "/wiki/the-ninth-berth.html",
+    "category": "concepts",
+    "aliases": [
+      "Ninth Berth"
+    ],
+    "tags": [
+      "ninth",
+      "berth"
+    ],
+    "source_urls": [
+      "/wiki/the-ninth-berth.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "the_nomad_bears",
     "canonical_title": "The Nomad Bears",
     "canonical_url": "/wiki/the-nomad-bears.html",
@@ -13453,6 +13593,20 @@
     ],
     "source_urls": [
       "/wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "zarah8",
+    "canonical_title": "ZARAH8",
+    "canonical_url": "/wiki/zarah8.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "zarah8"
+    ],
+    "source_urls": [
+      "/wiki/zarah8.html"
     ],
     "brand": null
   }

@@ -53,11 +53,7 @@ const southwestParkDetails = new Map([
 const waterfrontCargoAtlas = { file: "cargo-frames" };
 const waterfrontFactionAtlas = { file: "faction-frames" };
 // Order matches the rows packed from the named source portraits.
-const waterfrontFactions = [
-  "All City Bulls", "The Nomad Bears", "Hard Fork Rockers",
-  "Rugpull Miners", "Crypto Moongirls", "The Blockchain Furies",
-  "GraffPUNKS", "Crypto Stoned Boys", "The Blockstars"
-];
+const waterfrontCharacterNames = window.waterfrontCharacterNames;
 const waterfrontBotAtlas = { file: "bot-frames" };
 const residentBots = [3, 4, 5, 6, 7];
 
@@ -205,7 +201,7 @@ function factionRoutes(rows, district) {
       }
     }
   }
-  const routes = waterfrontFactions.map((_, index) => {
+  const routes = waterfrontCharacterNames.map((_, index) => {
     const stops = Array.from({ length: 9 }, (_, leg) =>
       points[(index * 37 + leg * 53 + leg * leg * 7) % points.length]);
     return stops.flatMap((stop, leg) => [
@@ -938,7 +934,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function actor() {
     const x = player.x * size + 16;
     const y = player.y * size + 22;
-    if (waterfrontFactionAtlas.image && Number.isInteger(player.faction) && waterfrontFactions[player.faction]) {
+    if (waterfrontFactionAtlas.image && Number.isInteger(player.faction) && waterfrontCharacterNames[player.faction]) {
       factionCharacter(player.faction, x, y, player.facing, player.frame);
     } else {
       person(x, y, "#c17362", "#39778c", 0, true);
@@ -951,7 +947,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     if (!waterfrontFactionAtlas.image) return;
     const routes = factionRoutes(rows, district);
     const now = Date.now();
-    waterfrontFactions.forEach((name, index) => {
+    waterfrontCharacterNames.forEach((name, index) => {
       const state = leaderStates[index];
       if (index === selectedAvatar || state?.playingUntil > now) return;
       const route = routes[index];

@@ -7,10 +7,14 @@ import { localClanCanonReply } from '../../../workers/moonboys-api/shared/clan-l
 
 test('the nine representatives each have distinct identities, owning pages and 240 local questions', () => {
   const roster = Object.entries(LEADERS);
-  assert.equal(roster.length, 9);
+  assert.deepEqual(roster.map(([, voice]) => voice.character), [
+    'Jack the Bull', 'Nine Toes Joe', 'Nobby', 'Jimmy Rugpull', 'ZARAH8',
+    'Danny Rankz', 'Eddie Stax', 'Chada Boi', 'Teddy Boi Jones',
+  ]);
   assert.equal(new Set(roster.map(([, voice]) => voice.callSign)).size, 9);
   for (const [index, [id, voice]] of roster.entries()) {
     assert.ok(existsSync(new URL('../../..' + voice.wiki, import.meta.url)), voice.wiki);
+    assert.ok(existsSync(new URL('../../..' + voice.bio, import.meta.url)), voice.bio);
     assert.ok(existsSync(new URL('../../../battle-chamber/factions/' + id + '.html', import.meta.url)), id);
     assert.equal(localClanCanonReply(voice.name.toLowerCase())?.sources[0].path, voice.wiki);
     const lines = Array.from({ length: 240 }, (_, i) => factionQuestion(index, i).text);
@@ -30,6 +34,8 @@ test('a pair can start, pass and resume across reloads and an avatar handoff', (
   assert.ok(first.text.includes(topic));
   assert.ok(engine.holds(0) && engine.holds(1));
   assert.match(engine.tick(actors, now + 4500).text, /\.$/);
+  const joe = LEADERS['nomad-bears'];
+  assert.ok([joe.intro, joe.agenda].includes(engine.tick(actors, now + 9000).text));
   assert.equal(engine.tick(actors, now + 18000), null);
   assert.equal(engine.tick(actors, now + 20001), null, 'stationary pairs do not retrigger');
   const restored = createFactionConversations(storage);
@@ -54,7 +60,7 @@ test('a conversation aborted by a departing actor does not create a remembered e
   assert.ok(engine.tick(actors, 4000).text.endsWith('?'));
 });
 
-test('Gemini receives both owning pages plus a named published page, while local identities spend no fetches', async t => {
+test('Gemini receives the character bio, faction pages and a named page while local biographies spend no fetches', async t => {
   const { answerClanLeaderLore } = await import('../../../workers/moonboys-api/shared/clan-leader-lore.js');
   const leader = LEADERS['nomad-bears'];
   const home = '/battle-chamber/factions/nomad-bears.html';
@@ -71,11 +77,12 @@ test('Gemini receives both owning pages plus a named published page, while local
     calls.push(pathname);
     if (origin === 'https://gateway.ai.cloudflare.com') {
       const payload = JSON.parse(init.body);
-      assert.match(payload.systemInstruction.parts[0].text, /Bears scout/);
+      assert.match(payload.systemInstruction.parts[0].text, /Nine Toes Joe, the Bears scout/);
       const refs = JSON.parse(payload.contents[0].parts[0].text).publicReferences;
-      for (const title of ['Nomad Bears Wiki', 'Nomad Bears Faction Chamber', 'community']) {
+      for (const title of ['Nine Toes Joe Wiki', 'Nomad Bears Wiki', 'Nomad Bears Faction Chamber', 'community']) {
         assert.ok(refs.some(ref => ref.title === title), title);
       }
+      assert.match(refs.find(ref => ref.title === 'Nine Toes Joe Wiki').excerpt, /repairs small boats/);
       return Response.json({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text:
         JSON.stringify({ mode: 'canon', reply: 'The guide explains the Battle Chamber.', sources: [1] }) }] } }] });
     }
@@ -83,13 +90,24 @@ test('Gemini receives both owning pages plus a named published page, while local
     if (pathname === '/js/wiki-index.json') return Response.json([]);
     if (pathname === '/sitemap.xml') return new Response('<urlset></urlset>');
     if (pathname === '/js/leader-lore-sources.json') return Response.json([guide]);
+    if (pathname === leader.bio) return new Response('<main><p>Nine Toes Joe repairs small boats and keeps a way home open.</p></main>');
     assert.ok([guide, home, leader.wiki].includes(pathname));
     return new Response('<main><p>The guide explains the Battle Chamber and how the crew can find its next destination.</p></main>');
   });
   const answer = question => answerClanLeaderLore(env, '1', { npc: 'nomad-bears', question }, new Date('2026-11-24'));
   const identity = await answer('Tell me about your clan');
   assert.match(identity.reply, /Bears scout.*wanderers/);
-  assert.deepEqual(identity.sources.map(source => source.path), [leader.wiki, home]);
+  assert.deepEqual(identity.sources.map(source => source.path), [leader.bio, leader.wiki, home]);
+  for (const [npc, profile] of Object.entries(LEADERS)) {
+    const ask = question => answerClanLeaderLore(env, '1', { npc, question }, new Date('2026-11-24'));
+    const intro = await ask("What's your name?");
+    assert.ok(intro.reply.includes(profile.character));
+    assert.ok(intro.reply.includes(profile.intro));
+    assert.equal(intro.sources[0].path, profile.bio);
+    const plan = await ask('What are you working on?');
+    assert.ok(plan.reply.includes(profile.agenda));
+    assert.equal(plan.sources[0].path, profile.bio);
+  }
   assert.deepEqual(calls, []);
   assert.equal((await answer('What is explained at /community.html?')).ok, true);
   assert.ok(calls.includes(home) && calls.includes(leader.wiki) && calls.includes(guide));

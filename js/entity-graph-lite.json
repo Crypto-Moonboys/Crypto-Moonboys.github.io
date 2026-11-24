@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-19T19:10:05.894Z",
-  "verified_at": "2026-11-19T19:10:05.894Z",
+  "generated_at": "2026-11-24T01:10:38.542Z",
+  "verified_at": "2026-11-24T01:10:38.542Z",
   "lite": true,
   "nodes": [
     {
@@ -476,6 +476,14 @@
       "authority_score": 27
     },
     {
+      "id": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls",
+      "url": "/wiki/the-allcity-bulls.html",
+      "category": "factions",
+      "rank_score": 322,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-parables.html",
       "title": "Parables of the First Witness",
       "url": "/wiki/first-witness-parables.html",
@@ -490,6 +498,14 @@
       "category": "core",
       "rank_score": 321,
       "authority_score": 30
+    },
+    {
+      "id": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears",
+      "url": "/wiki/the-nomad-bears.html",
+      "category": "factions",
+      "rank_score": 321,
+      "authority_score": 28
     },
     {
       "id": "/wiki/stikfamwars.html",
@@ -524,14 +540,6 @@
       "authority_score": 27
     },
     {
-      "id": "/wiki/the-allcity-bulls.html",
-      "title": "The AllCity Bulls",
-      "url": "/wiki/the-allcity-bulls.html",
-      "category": "factions",
-      "rank_score": 318,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/first-witness-street-kingdoms-reading.html",
       "title": "Street Kingdoms and the Living Reading",
       "url": "/wiki/first-witness-street-kingdoms-reading.html",
@@ -546,14 +554,6 @@
       "category": "core",
       "rank_score": 317,
       "authority_score": 18
-    },
-    {
-      "id": "/wiki/the-nomad-bears.html",
-      "title": "The Nomad Bears",
-      "url": "/wiki/the-nomad-bears.html",
-      "category": "factions",
-      "rank_score": 317,
-      "authority_score": 28
     },
     {
       "id": "/wiki/first-witness-world-chain-error.html",
@@ -774,13 +774,13 @@
       "weight": 1
     },
     {
-      "source": "/wiki/bitcoin-x-kids.html",
+      "source": "/wiki/block-topia.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 126,
+      "score": 129,
       "weight": 1
     },
     {
-      "source": "/wiki/block-topia.html",
+      "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 126,
       "weight": 1
