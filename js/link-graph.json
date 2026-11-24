@@ -955,7 +955,7 @@
     ]
   },
   "/wiki/battlemech-blast.html": {
-    "outbound_count": 36,
+    "outbound_count": 37,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -986,6 +986,7 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/ngmi-chronicles.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/null-the-prophet.html",
       "/wiki/patchwork.html",
       "/wiki/rug-pull-wars.html",
@@ -1205,8 +1206,8 @@
     "inbound_from": []
   },
   "/wiki/bitcoin-kid-army.html": {
-    "outbound_count": 78,
-    "inbound_count": 21,
+    "outbound_count": 79,
+    "inbound_count": 23,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/billy-the-goat-kid.html",
@@ -1266,6 +1267,7 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/in-the-year-3008-truth-became-encrypted.html",
+      "/wiki/jimmy-rugpull.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-28th-century-began-with-godlike.html",
       "/wiki/the-allcity-bulls-the-hyper-competitive.html",
@@ -1302,6 +1304,8 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/satoshi-scroll.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-bitcoin-kid-army-the-1-rebels.html",
@@ -1730,8 +1734,8 @@
     ]
   },
   "/wiki/block-topia.html": {
-    "outbound_count": 79,
-    "inbound_count": 86,
+    "outbound_count": 80,
+    "inbound_count": 88,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
@@ -1749,6 +1753,7 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sylas-the-unbroken.html",
       "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-princess.html",
       "/wiki/veyra-nyx.html"
     ],
@@ -1896,12 +1901,14 @@
       "/wiki/the-high-hats.html",
       "/wiki/the-moonlords.html",
       "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/thera-9.html",
       "/wiki/triple-fork-event.html",
       "/wiki/veyra-nyx.html",
       "/wiki/wallets.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/blockchain-technology.html": {
@@ -2114,6 +2121,37 @@
       "/wiki/the-squeaky-pinks.html"
     ],
     "inbound_from": []
+  },
+  "/wiki/chada-boi.html": {
+    "outbound_count": 14,
+    "inbound_count": 7,
+    "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/nobby.html",
+      "/wiki/the-crypto-stoned-boys.html",
+      "/wiki/the-ninth-berth.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/the-bally-boys-digital-entrepreneurs.html",
+      "/wiki/the-bally-boys.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-crypto-stoned-boys-digital-philosophers.html",
+      "/wiki/the-ducky-boys-the-digital-fixers.html",
+      "/wiki/the-ducky-boys.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/nobby.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-crypto-stoned-boys.html",
+      "/wiki/the-ninth-berth.html"
+    ]
   },
   "/wiki/charlie-buster.html": {
     "outbound_count": 42,
@@ -2553,8 +2591,8 @@
     ]
   },
   "/wiki/crypto-moonboys.html": {
-    "outbound_count": 153,
-    "inbound_count": 514,
+    "outbound_count": 154,
+    "inbound_count": 524,
     "existing_outbound": [
       "/wiki/agent-sam.html",
       "/wiki/aleema-child-of-the-shard.html",
@@ -2607,6 +2645,7 @@
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-crypto-moongirls.html",
       "/wiki/the-first-witness.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/the-princess.html",
       "/wiki/the-squeaky-pinks.html",
@@ -2747,6 +2786,7 @@
       "/wiki/bone-idol-ink.html",
       "/wiki/burn-to-earn.html",
       "/wiki/canvas-clash.html",
+      "/wiki/chada-boi.html",
       "/wiki/charlie-buster.html",
       "/wiki/collect-free-nft-crypto-coin-phigital.html",
       "/wiki/create-your-moonboy.html",
@@ -2756,6 +2796,7 @@
       "/wiki/crypto-moonboys-universe-comprehensive.html",
       "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
       "/wiki/cryptographic-tactical-incident-report.html",
+      "/wiki/danny-rankz.html",
       "/wiki/darren-cullen.html",
       "/wiki/defi-mining.html",
       "/wiki/defi.html",
@@ -2763,6 +2804,7 @@
       "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
       "/wiki/dream-sovereign.html",
+      "/wiki/eddie-stax.html",
       "/wiki/elder-codex-7.html",
       "/wiki/ethereum-ecosystem.html",
       "/wiki/ethereum.html",
@@ -3037,7 +3079,9 @@
       "/wiki/in-the-year-3008-truth-became-encrypted.html",
       "/wiki/iris-7.html",
       "/wiki/it-was-about-becoming-something-more.html",
+      "/wiki/jack-the-bull.html",
       "/wiki/jillian-godsil.html",
+      "/wiki/jimmy-rugpull.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/journal-entry-jodie-zoom-2000-the-games.html",
@@ -3071,7 +3115,9 @@
       "/wiki/ngmi-chronicles.html",
       "/wiki/nifty-crowns.html",
       "/wiki/nifty-wizards.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/noballgamess-nft-collection.html",
+      "/wiki/nobby.html",
       "/wiki/null-the-prophet.html",
       "/wiki/paper-hands.html",
       "/wiki/patchwork.html",
@@ -3115,6 +3161,7 @@
       "/wiki/sylas-the-unbroken.html",
       "/wiki/tacoswap.html",
       "/wiki/tagzcoin.html",
+      "/wiki/teddy-boi-jones.html",
       "/wiki/the-28th-century-began-with-godlike.html",
       "/wiki/the-allcity-bulls-the-hyper-competitive.html",
       "/wiki/the-allcity-bulls.html",
@@ -3180,6 +3227,7 @@
       "/wiki/the-moonlords.html",
       "/wiki/the-nice-and-easy-bois-the-digital.html",
       "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/the-null-protocol-collapse-of-digital.html",
@@ -3226,7 +3274,8 @@
       "/wiki/xrp-kids.html",
       "/wiki/xrp-ledger.html",
       "/wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html",
-      "/wiki/yo-listen-up-this-is-just-phase-one.html"
+      "/wiki/yo-listen-up-this-is-just-phase-one.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/crypto-wallets.html": {
@@ -3291,6 +3340,44 @@
     ],
     "inbound_from": [
       "/wiki/graffpunks-reading-library.html"
+    ]
+  },
+  "/wiki/danny-rankz.html": {
+    "outbound_count": 21,
+    "inbound_count": 7,
+    "existing_outbound": [
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-blockchain-furies.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/blockchain.html",
+      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/gkniftyheads-present-world-war-3-the-blockchain-uprising-this-isnt-a-drill.html",
+      "/wiki/the-blockchain-furies-digital-vigilantes.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-signal-from-3008.html",
+      "/wiki/wax-blockchain.html"
+    ],
+    "inbound_from": [
+      "/wiki/chada-boi.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-blockchain-furies.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/darren-cullen-ser-real.html": {
@@ -3710,6 +3797,48 @@
     "inbound_from": [
       "/wiki/crypto-moonboys.html",
       "/wiki/the-eternal-pulse-the-war-that-forged.html"
+    ]
+  },
+  "/wiki/eddie-stax.html": {
+    "outbound_count": 25,
+    "inbound_count": 7,
+    "existing_outbound": [
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffpunks.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/gkniftyheads-paint-patriot-783295.html",
+      "/wiki/graffiti-themed-substack-publication.html",
+      "/wiki/graffpunks-24-7-radio.html",
+      "/wiki/graffpunks-collection.html",
+      "/wiki/graffpunks-ecosystem.html",
+      "/wiki/graffpunks-reading-library.html",
+      "/wiki/mega-white-paper-the-gk-brain.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-graffpunks-digital-renegades.html",
+      "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
+      "/wiki/the-graffpunks-rise.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/chada-boi.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/graffpunks.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/elder-codex-7.html": {
@@ -4425,7 +4554,7 @@
     ]
   },
   "/wiki/first-witness-apocrypha-disputed-passages.html": {
-    "outbound_count": 86,
+    "outbound_count": 87,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -4499,6 +4628,7 @@
       "/wiki/in-the-year-3008-truth-became-encrypted.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-artists-awakening-the-call-from.html",
@@ -13292,7 +13422,7 @@
     ]
   },
   "/wiki/genesis-kernel.html": {
-    "outbound_count": 93,
+    "outbound_count": 94,
     "inbound_count": 18,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -13364,6 +13494,7 @@
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
       "/wiki/moonboy-bible-entry-agent-sam.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/null-the-prophet.html",
       "/wiki/street-artist-buster-aka-charlie-buster.html",
       "/wiki/the-bitcoin-kid-army-the-1-rebels.html",
@@ -22765,7 +22896,7 @@
     "inbound_from": []
   },
   "/wiki/graffpunks-24-7-radio.html": {
-    "outbound_count": 74,
+    "outbound_count": 75,
     "inbound_count": 28,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -22787,6 +22918,7 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/blockchain.html",
+      "/wiki/danny-rankz.html",
       "/wiki/fgl-token.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-relics-manuscripts-lost-editions.html",
@@ -23059,7 +23191,7 @@
   },
   "/wiki/graffpunks-reading-library.html": {
     "outbound_count": 151,
-    "inbound_count": 93,
+    "inbound_count": 95,
     "existing_outbound": [
       "/wiki/40-year-old-graffiti-movement-launches.html",
       "/wiki/alfie-the-bitcoin-kid-blaze-reading.html",
@@ -23248,6 +23380,8 @@
       "/wiki/stake-is-a-community-powered-web3.html",
       "/wiki/street-artist-buster-aka-charlie-buster.html",
       "/wiki/street-swarm-the-offline-first-tactical.html",
+      "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-28th-century-began-with-godlike.html",
       "/wiki/the-allcity-bulls-the-hyper-competitive.html",
       "/wiki/the-artists-awakening-the-call-from.html",
@@ -23312,13 +23446,14 @@
     ]
   },
   "/wiki/graffpunks.html": {
-    "outbound_count": 98,
-    "inbound_count": 227,
+    "outbound_count": 100,
+    "inbound_count": 228,
     "existing_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/eddie-stax.html",
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
@@ -23401,6 +23536,7 @@
       "/wiki/the-information-mercenaries-the-digital.html",
       "/wiki/the-master-codex-the-triple-tier.html",
       "/wiki/the-nice-and-easy-bois-the-digital.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-null-protocol-collapse-of-digital.html",
       "/wiki/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials.html",
@@ -23432,6 +23568,7 @@
       "/wiki/darren-cullen.html",
       "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
+      "/wiki/eddie-stax.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/forklord-you.html",
@@ -23780,6 +23917,17 @@
       "/wiki/grit.html"
     ]
   },
+  "/wiki/hard-fork-games-event.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/hard-fork-games.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/hard-fork-games-game.html": {
     "outbound_count": 2,
     "inbound_count": 0,
@@ -23792,8 +23940,8 @@
     "inbound_from": []
   },
   "/wiki/hard-fork-games.html": {
-    "outbound_count": 107,
-    "inbound_count": 100,
+    "outbound_count": 108,
+    "inbound_count": 101,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -23868,6 +24016,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/in-the-year-3008-truth-became-encrypted.html",
+      "/wiki/jack-the-bull.html",
       "/wiki/jodie-zoom-2000.html",
       "/wiki/journal-entry-jodie-zoom-2000-the-games.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -23941,6 +24090,7 @@
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games-event.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/harrison-rift.html",
       "/wiki/hodl-warriors.html",
@@ -24351,7 +24501,7 @@
     "inbound_from": []
   },
   "/wiki/hodl-wars.html": {
-    "outbound_count": 118,
+    "outbound_count": 119,
     "inbound_count": 95,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -24430,6 +24580,7 @@
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/lorewars-white-paper-the-signal-is.html",
       "/wiki/moonboy-bible-entry-agent-sam.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/paper-hands.html",
       "/wiki/potential-crypto-moonboys-game-trilogy.html",
       "/wiki/punk-is-the-utility-token-behind.html",
@@ -24574,7 +24725,7 @@
     ]
   },
   "/wiki/hodl-x-warriors.html": {
-    "outbound_count": 58,
+    "outbound_count": 59,
     "inbound_count": 32,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -24625,6 +24776,7 @@
       "/wiki/iris-7.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/noballgamess-nft-collection.html",
       "/wiki/seeding-rights.html",
       "/wiki/the-artists-awakening-the-call-from.html",
@@ -24965,6 +25117,36 @@
       "/wiki/graffpunks-reading-library.html"
     ]
   },
+  "/wiki/jack-the-bull.html": {
+    "outbound_count": 15,
+    "inbound_count": 5,
+    "existing_outbound": [
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-nomad-bears.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/gkniftyheads.html",
+      "/wiki/it-was-about-becoming-something-more.html",
+      "/wiki/the-allcity-bulls-the-hyper-competitive.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/danny-rankz.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-ninth-berth.html"
+    ]
+  },
   "/wiki/jillian-godsil.html": {
     "outbound_count": 27,
     "inbound_count": 2,
@@ -25002,6 +25184,34 @@
     "inbound_from": [
       "/wiki/charlie-buster.html",
       "/wiki/delicious-again-pete.html"
+    ]
+  },
+  "/wiki/jimmy-rugpull.html": {
+    "outbound_count": 12,
+    "inbound_count": 6,
+    "existing_outbound": [
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/nobby.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-rugpull-miners.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/it-was-about-becoming-something-more.html",
+      "/wiki/rug-pull-wars.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-rugpull-miners-digital-parasites.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/chada-boi.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/nobby.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-rugpull-miners.html"
     ]
   },
   "/wiki/jodie-zoom-2000.html": {
@@ -25227,7 +25437,7 @@
     ]
   },
   "/wiki/lady-ink.html": {
-    "outbound_count": 53,
+    "outbound_count": 54,
     "inbound_count": 7,
     "existing_outbound": [
       "/wiki/bitcoin-x-kids.html",
@@ -25263,6 +25473,7 @@
       "/wiki/house-of-rackinsats.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/street-artist-buster-aka-charlie-buster.html",
       "/wiki/the-artists-awakening-the-call-from.html",
@@ -25416,7 +25627,7 @@
     ]
   },
   "/wiki/level-9-cosmological-overdrive-metaphysics.html": {
-    "outbound_count": 35,
+    "outbound_count": 36,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -25445,6 +25656,7 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
       "/wiki/lfgk-token-is-a-100-circulating-non.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-chain-scribes-the-stoic-archivists.html",
@@ -26844,6 +27056,49 @@
       "/wiki/nifty-crowns.html"
     ]
   },
+  "/wiki/nine-toes-joe.html": {
+    "outbound_count": 17,
+    "inbound_count": 5,
+    "existing_outbound": [
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/the-allcity-bulls.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/zarah8.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/first-witness-prisons-punishment-return.html",
+      "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "/wiki/mega-white-paper-the-gk-brain.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-high-hats-the-digital-aristocrats.html",
+      "/wiki/the-high-hats.html",
+      "/wiki/the-nomad-bears-solitude-in-the-digital.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/eddie-stax.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/zarah8.html"
+    ]
+  },
+  "/wiki/no-ball-games-nbg-collection.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/noballgamess-nft-collection.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/no-ball-games-nbg.html": {
     "outbound_count": 2,
     "inbound_count": 0,
@@ -26857,7 +27112,7 @@
   },
   "/wiki/noballgamess-nft-collection.html": {
     "outbound_count": 12,
-    "inbound_count": 1,
+    "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-nft-collection.html"
@@ -26875,7 +27130,39 @@
       "/wiki/nfthive.html"
     ],
     "inbound_from": [
-      "/wiki/hodlmoonboys-nft-collection.html"
+      "/wiki/hodlmoonboys-nft-collection.html",
+      "/wiki/no-ball-games-nbg-collection.html"
+    ]
+  },
+  "/wiki/nobby.html": {
+    "outbound_count": 16,
+    "inbound_count": 5,
+    "existing_outbound": [
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
+      "/wiki/the-hard-fork-rockers-digital-revolutionaries.html",
+      "/wiki/the-signal-from-3008.html",
+      "/wiki/triple-fork-event.html"
+    ],
+    "inbound_from": [
+      "/wiki/chada-boi.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/null-the-prophet.html": {
@@ -27732,7 +28019,7 @@
   },
   "/wiki/queen-sarah-p-fly.html": {
     "outbound_count": 84,
-    "inbound_count": 37,
+    "inbound_count": 38,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -27858,7 +28145,8 @@
       "/wiki/the-infiltration-of-block-topia-part.html",
       "/wiki/the-master-codex-the-triple-tier.html",
       "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-signal-from-3008.html"
+      "/wiki/the-signal-from-3008.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/queen-sarah-pfly.html": {
@@ -29266,7 +29554,7 @@
     ]
   },
   "/wiki/street-kingdoms.html": {
-    "outbound_count": 43,
+    "outbound_count": 44,
     "inbound_count": 18,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -29305,6 +29593,7 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/noballgamess-nft-collection.html",
       "/wiki/street-artist-buster-aka-charlie-buster.html",
       "/wiki/street-swarm-the-offline-first-tactical.html",
@@ -29391,6 +29680,30 @@
     "inbound_from": [
       "/wiki/graffpunks-reading-library.html"
     ]
+  },
+  "/wiki/substack-posts-on-graffpunks-substack-com.html": {
+    "outbound_count": 3,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-reading-library.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/substack-posts-on-graffpunkssubstackcom.html": {
+    "outbound_count": 3,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/graffpunks-reading-library.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/graffpunks.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/swap-nefty.html": {
     "outbound_count": 34,
@@ -29567,6 +29880,32 @@
     ],
     "inbound_from": []
   },
+  "/wiki/teddy-boi-jones.html": {
+    "outbound_count": 10,
+    "inbound_count": 6,
+    "existing_outbound": [
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/the-blockstars.html",
+      "/wiki/the-ninth-berth.html",
+      "/wiki/zarah8.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/the-blockstars-digital-celebrities.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/nobby.html",
+      "/wiki/the-blockstars.html",
+      "/wiki/the-ninth-berth.html"
+    ]
+  },
   "/wiki/the-28th-century-began-with-godlike.html": {
     "outbound_count": 41,
     "inbound_count": 1,
@@ -29662,8 +30001,8 @@
     ]
   },
   "/wiki/the-allcity-bulls.html": {
-    "outbound_count": 40,
-    "inbound_count": 14,
+    "outbound_count": 42,
+    "inbound_count": 16,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
@@ -29682,6 +30021,7 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/jack-the-bull.html",
       "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-blockchain-furies.html",
@@ -29704,6 +30044,7 @@
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-protocol-of-ascension-why-the.html",
       "/wiki/the-signal-from-3008.html",
       "/wiki/thera-9.html"
@@ -29716,6 +30057,8 @@
       "/wiki/first-witness-forty-paths.html",
       "/wiki/gkniftyheads.html",
       "/wiki/hodl-wars.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/the-allcity-bulls-the-hyper-competitive.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
@@ -29838,7 +30181,7 @@
     ]
   },
   "/wiki/the-aztec-raiders.html": {
-    "outbound_count": 61,
+    "outbound_count": 63,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
@@ -29873,10 +30216,12 @@
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/jack-the-bull.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
       "/wiki/lfgk-token-is-a-100-circulating-non.html",
       "/wiki/metaverse-battles.html",
       "/wiki/moonboy-bible-entry-agent-sam.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/the-aztec-raiders-the-digital-conquerors.html",
       "/wiki/the-bally-boys-digital-entrepreneurs.html",
       "/wiki/the-blockchain-furies-digital-vigilantes.html",
@@ -30306,13 +30651,14 @@
     ]
   },
   "/wiki/the-blockchain-furies.html": {
-    "outbound_count": 84,
-    "inbound_count": 9,
+    "outbound_count": 86,
+    "inbound_count": 10,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/hodl-warriors.html",
@@ -30387,6 +30733,7 @@
       "/wiki/the-high-hats-the-digital-aristocrats.html",
       "/wiki/the-information-mercenaries-the-digital.html",
       "/wiki/the-nice-and-easy-bois-the-digital.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-null-protocol-collapse-of-digital.html",
       "/wiki/the-rugpull-miners-digital-parasites.html",
@@ -30397,6 +30744,7 @@
       "/wiki/wax-blockchain.html"
     ],
     "inbound_from": [
+      "/wiki/danny-rankz.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-bally-boys.html",
@@ -30464,8 +30812,8 @@
     ]
   },
   "/wiki/the-blockstars.html": {
-    "outbound_count": 70,
-    "inbound_count": 3,
+    "outbound_count": 72,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -30474,6 +30822,7 @@
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/hard-fork-games.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/teddy-boi-jones.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
@@ -30531,6 +30880,7 @@
       "/wiki/the-information-mercenaries-the-digital.html",
       "/wiki/the-information-mercenaries.html",
       "/wiki/the-nice-and-easy-bois-the-digital.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-null-protocol-collapse-of-digital.html",
       "/wiki/the-rugpull-miners-digital-parasites.html",
@@ -30541,6 +30891,7 @@
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
+      "/wiki/teddy-boi-jones.html",
       "/wiki/the-blockstars-digital-celebrities.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-high-hats.html"
@@ -31278,8 +31629,8 @@
     ]
   },
   "/wiki/the-crypto-moongirls.html": {
-    "outbound_count": 51,
-    "inbound_count": 23,
+    "outbound_count": 53,
+    "inbound_count": 24,
     "existing_outbound": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -31301,7 +31652,8 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
-      "/wiki/thera-9.html"
+      "/wiki/thera-9.html",
+      "/wiki/zarah8.html"
     ],
     "suggested_outbound": [
       "/wiki/bitcoin-kid-army.html",
@@ -31329,6 +31681,7 @@
       "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
       "/wiki/the-hard-fork-rockers-digital-revolutionaries.html",
       "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/the-signal-from-3008.html",
@@ -31358,7 +31711,8 @@
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-crypto-moongirls-cosmic-dreamers.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/zarah8.html"
     ]
   },
   "/wiki/the-crypto-protocol-the-gkniftyheads-chronicle.html": {
@@ -31473,9 +31827,10 @@
     ]
   },
   "/wiki/the-crypto-stoned-boys.html": {
-    "outbound_count": 49,
-    "inbound_count": 1,
+    "outbound_count": 51,
+    "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/chada-boi.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
@@ -31521,6 +31876,7 @@
       "/wiki/the-gk-protocol-the-eastern-hemisphere-is-kool.html",
       "/wiki/the-hodl-warriors-the-protocol-of.html",
       "/wiki/the-master-codex-the-triple-tier.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/the-null-protocol-collapse-of-digital.html",
       "/wiki/the-protocol-of-ascension-why-the.html",
@@ -31529,6 +31885,7 @@
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
+      "/wiki/chada-boi.html",
       "/wiki/the-crypto-stoned-boys-digital-philosophers.html"
     ]
   },
@@ -33120,8 +33477,8 @@
     ]
   },
   "/wiki/the-hard-fork-rockers.html": {
-    "outbound_count": 63,
-    "inbound_count": 3,
+    "outbound_count": 65,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/crypto-moonboys.html",
@@ -33130,6 +33487,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/nobby.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-blockstars.html",
       "/wiki/the-chain-scribes.html",
@@ -33180,6 +33538,7 @@
       "/wiki/the-high-hats-the-digital-aristocrats.html",
       "/wiki/the-information-mercenaries-the-digital.html",
       "/wiki/the-nice-and-easy-bois-the-digital.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-null-protocol-collapse-of-digital.html",
       "/wiki/the-rugpull-miners-digital-parasites.html",
@@ -33192,6 +33551,7 @@
     "inbound_from": [
       "/wiki/block-node-defenders.html",
       "/wiki/games-graffpunks.html",
+      "/wiki/nobby.html",
       "/wiki/the-hard-fork-rockers-digital-revolutionaries.html"
     ]
   },
@@ -34002,6 +34362,59 @@
       "/wiki/wax-dexs-defi.html"
     ]
   },
+  "/wiki/the-ninth-berth.html": {
+    "outbound_count": 32,
+    "inbound_count": 11,
+    "existing_outbound": [
+      "/wiki/block-topia.html",
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/nobby.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/zarah8.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/block-node-defenders.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/gk-factions-to-collect-and-hodl.html",
+      "/wiki/graffpunks.html",
+      "/wiki/it-was-about-becoming-something-more.html",
+      "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
+      "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "/wiki/the-artists-awakening-the-call-from.html",
+      "/wiki/the-blockchain-furies.html",
+      "/wiki/the-blockstars.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-crypto-stoned-boys.html",
+      "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
+      "/wiki/the-hard-fork-rockers.html",
+      "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-nomad-bears.html",
+      "/wiki/the-rugpull-miners.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/block-topia.html",
+      "/wiki/chada-boi.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/jimmy-rugpull.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/nobby.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/zarah8.html"
+    ]
+  },
   "/wiki/the-nomad-bears-solitude-in-the-digital.html": {
     "outbound_count": 51,
     "inbound_count": 1,
@@ -34065,8 +34478,8 @@
     ]
   },
   "/wiki/the-nomad-bears.html": {
-    "outbound_count": 63,
-    "inbound_count": 13,
+    "outbound_count": 64,
+    "inbound_count": 15,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
@@ -34087,6 +34500,7 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-allcity-bulls.html",
@@ -34142,6 +34556,8 @@
       "/wiki/first-witness-forty-paths.html",
       "/wiki/gkniftyheads.html",
       "/wiki/hodl-wars.html",
+      "/wiki/jack-the-bull.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-first-witness.html",
@@ -34523,7 +34939,7 @@
     ]
   },
   "/wiki/the-rugpull-miners-digital-parasites.html": {
-    "outbound_count": 55,
+    "outbound_count": 56,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -34548,6 +34964,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/jimmy-rugpull.html",
       "/wiki/lfgk-token-is-a-100-circulating-non.html",
       "/wiki/null-the-prophet.html",
       "/wiki/street-kingdoms.html",
@@ -34589,13 +35006,14 @@
     ]
   },
   "/wiki/the-rugpull-miners.html": {
-    "outbound_count": 62,
-    "inbound_count": 7,
+    "outbound_count": 64,
+    "inbound_count": 8,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/jimmy-rugpull.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-blockchain-furies.html",
@@ -34623,6 +35041,7 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
+      "/wiki/jack-the-bull.html",
       "/wiki/mega-white-paper-the-gk-brain.html",
       "/wiki/moonboy-bible-entry-agent-sam.html",
       "/wiki/punk-is-the-utility-token-behind.html",
@@ -34658,6 +35077,7 @@
       "/wiki/the-tuskon-ogs-the-digital-loyalists.html"
     ],
     "inbound_from": [
+      "/wiki/jimmy-rugpull.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-allcity-bulls.html",
       "/wiki/the-bally-boys.html",
@@ -36675,7 +37095,7 @@
   },
   "/wiki/xrp-ledger.html": {
     "outbound_count": 29,
-    "inbound_count": 5,
+    "inbound_count": 9,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -36714,8 +37134,56 @@
       "/wiki/pmsl-token.html",
       "/wiki/pmsl.html",
       "/wiki/tagzcoin.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
+  },
+  "/wiki/xrp.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/xrpl-dex.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/xrpl-tokens.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
+  },
+  "/wiki/xrpl-trust-lines.html": {
+    "outbound_count": 2,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "inbound_from": []
   },
   "/wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html": {
     "outbound_count": 27,
@@ -36808,6 +37276,43 @@
     ],
     "inbound_from": [
       "/wiki/graffpunks-reading-library.html"
+    ]
+  },
+  "/wiki/zarah8.html": {
+    "outbound_count": 20,
+    "inbound_count": 7,
+    "existing_outbound": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/nobby.html",
+      "/wiki/queen-sarah-p-fly.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-ninth-berth.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/block-node-defenders.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
+      "/wiki/mega-white-paper-the-gk-brain.html",
+      "/wiki/the-artists-awakening-the-call-from.html",
+      "/wiki/the-bonnet-prophecy-the-true-signal.html",
+      "/wiki/the-crypto-moongirls-cosmic-dreamers.html",
+      "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
+      "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-signal-from-3008.html"
+    ],
+    "inbound_from": [
+      "/wiki/danny-rankz.html",
+      "/wiki/eddie-stax.html",
+      "/wiki/nine-toes-joe.html",
+      "/wiki/nobby.html",
+      "/wiki/teddy-boi-jones.html",
+      "/wiki/the-crypto-moongirls.html",
+      "/wiki/the-ninth-berth.html"
     ]
   }
 }

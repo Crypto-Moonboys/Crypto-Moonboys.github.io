@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-19T19:10:05.894Z",
-  "verified_at": "2026-11-19T19:10:05.894Z",
+  "generated_at": "2026-11-24T01:10:38.542Z",
+  "verified_at": "2026-11-24T01:10:38.542Z",
   "nodes": [
     {
       "id": "/",
@@ -69,6 +69,14 @@
       "url": "/about/what-is-crypto-moonboys.html",
       "title": "What Is Crypto Moonboys? | Creator Umbrella and Public Knowledge Layer",
       "category": "about"
+    },
+    {
+      "id": "/ai-user.html",
+      "title": "Build Your Creator World | SPARKY",
+      "url": "/ai-user.html",
+      "category": "characters",
+      "rank_score": 162,
+      "authority_score": 4
     },
     {
       "id": "/block-topia.html",
@@ -207,8 +215,8 @@
       "title": "Battle Chamber | Factions & Missions | Crypto Moonboys",
       "url": "/community.html",
       "category": "factions",
-      "rank_score": 132,
-      "authority_score": 4
+      "rank_score": 194,
+      "authority_score": 12
     },
     {
       "id": "/gkniftyheads-incubator.html",
@@ -217,14 +225,6 @@
       "category": "characters",
       "rank_score": 123,
       "authority_score": 4
-    },
-    {
-      "id": "/ai-user.html",
-      "title": "Build Your Creator World | SPARKY",
-      "url": "/ai-user.html",
-      "category": "characters",
-      "rank_score": 212,
-      "authority_score": 10
     },
     {
       "id": "/graffiti-kings-creative-guide.html",
@@ -253,8 +253,8 @@
       "title": "Arcade How to Play | Crypto Moonboys",
       "url": "/how-to-play.html",
       "category": "factions",
-      "rank_score": 149,
-      "authority_score": 8
+      "rank_score": 226,
+      "authority_score": 15
     },
     {
       "id": "/hubs.html",
@@ -336,11 +336,11 @@
     },
     {
       "id": "/swarmsy.html",
-      "title": "SWARMSY | Private Creator Operating Environment",
+      "title": "SWARMSY | Creator Workspace",
       "url": "/swarmsy.html",
       "category": "characters",
-      "rank_score": 243,
-      "authority_score": 13
+      "rank_score": 164,
+      "authority_score": 8
     },
     {
       "id": "/timeline.html",
@@ -607,6 +607,14 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/chada-boi.html",
+      "title": "Chada Boi",
+      "url": "/wiki/chada-boi.html",
+      "category": "characters",
+      "rank_score": 268,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/charlie-buster.html",
       "title": "charlie-buster",
       "url": "/wiki/charlie-buster.html",
@@ -627,7 +635,7 @@
       "title": "Create Your Moonboy | Crypto Moonboys Wiki",
       "url": "/wiki/create-your-moonboy.html",
       "category": "characters",
-      "rank_score": 241,
+      "rank_score": 243,
       "authority_score": 18
     },
     {
@@ -687,6 +695,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/danny-rankz.html",
+      "title": "Danny Rankz",
+      "url": "/wiki/danny-rankz.html",
+      "category": "characters",
+      "rank_score": 272,
+      "authority_score": 18
+    },
+    {
       "id": "/wiki/darren-cullen.html",
       "title": "Darren Cullen (SER)",
       "url": "/wiki/darren-cullen.html",
@@ -741,6 +757,14 @@
       "category": "concepts",
       "rank_score": 246,
       "authority_score": 20
+    },
+    {
+      "id": "/wiki/eddie-stax.html",
+      "title": "Eddie Stax",
+      "url": "/wiki/eddie-stax.html",
+      "category": "characters",
+      "rank_score": 275,
+      "authority_score": 21
     },
     {
       "id": "/wiki/elder-codex-7.html",
@@ -2927,12 +2951,28 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/jack-the-bull.html",
+      "title": "Jack the Bull",
+      "url": "/wiki/jack-the-bull.html",
+      "category": "characters",
+      "rank_score": 269,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/jillian-godsil.html",
       "title": "Jillian Godsil",
       "url": "/wiki/jillian-godsil.html",
       "category": "misc",
       "rank_score": 205,
       "authority_score": 18
+    },
+    {
+      "id": "/wiki/jimmy-rugpull.html",
+      "title": "Jimmy Rugpull",
+      "url": "/wiki/jimmy-rugpull.html",
+      "category": "characters",
+      "rank_score": 267,
+      "authority_score": 21
     },
     {
       "id": "/wiki/jodie-zoom-2000.html",
@@ -3199,12 +3239,28 @@
       "authority_score": 20
     },
     {
+      "id": "/wiki/nine-toes-joe.html",
+      "title": "Nine Toes Joe",
+      "url": "/wiki/nine-toes-joe.html",
+      "category": "characters",
+      "rank_score": 272,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/noballgamess-nft-collection.html",
       "title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
       "url": "/wiki/noballgamess-nft-collection.html",
       "category": "core",
-      "rank_score": 247,
+      "rank_score": 249,
       "authority_score": 13
+    },
+    {
+      "id": "/wiki/nobby.html",
+      "title": "Nobby",
+      "url": "/wiki/nobby.html",
+      "category": "characters",
+      "rank_score": 270,
+      "authority_score": 21
     },
     {
       "id": "/wiki/null-the-prophet.html",
@@ -3551,6 +3607,14 @@
       "authority_score": 18
     },
     {
+      "id": "/wiki/teddy-boi-jones.html",
+      "title": "Teddy Boi Jones",
+      "url": "/wiki/teddy-boi-jones.html",
+      "category": "characters",
+      "rank_score": 274,
+      "authority_score": 21
+    },
+    {
       "id": "/wiki/the-28th-century-began-with-godlike.html",
       "title": "The Lattice, the Crimson Protocol and the Eternal Loop | Crypto Moonboys",
       "url": "/wiki/the-28th-century-began-with-godlike.html",
@@ -3571,7 +3635,7 @@
       "title": "The AllCity Bulls",
       "url": "/wiki/the-allcity-bulls.html",
       "category": "factions",
-      "rank_score": 318,
+      "rank_score": 322,
       "authority_score": 28
     },
     {
@@ -3643,7 +3707,7 @@
       "title": "The BLOCKCHAIN FURIES",
       "url": "/wiki/the-blockchain-furies.html",
       "category": "factions",
-      "rank_score": 302,
+      "rank_score": 304,
       "authority_score": 28
     },
     {
@@ -3659,7 +3723,7 @@
       "title": "The BLOCKSTARS",
       "url": "/wiki/the-blockstars.html",
       "category": "factions",
-      "rank_score": 291,
+      "rank_score": 293,
       "authority_score": 28
     },
     {
@@ -3795,8 +3859,8 @@
       "title": "The CRYPTO STONED BOYS",
       "url": "/wiki/the-crypto-stoned-boys.html",
       "category": "factions",
-      "rank_score": 291,
-      "authority_score": 24
+      "rank_score": 297,
+      "authority_score": 28
     },
     {
       "id": "/wiki/the-ducky-boys-the-digital-fixers.html",
@@ -3979,7 +4043,7 @@
       "title": "The HARD FORK ROCKERS",
       "url": "/wiki/the-hard-fork-rockers.html",
       "category": "factions",
-      "rank_score": 301,
+      "rank_score": 303,
       "authority_score": 28
     },
     {
@@ -4071,6 +4135,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/the-ninth-berth.html",
+      "title": "The Ninth Berth",
+      "url": "/wiki/the-ninth-berth.html",
+      "category": "concepts",
+      "rank_score": 274,
+      "authority_score": 22
+    },
+    {
       "id": "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "title": "The Nomad Bears (Solitude in the Digital Wilds) | Crypto Moonboys",
       "url": "/wiki/the-nomad-bears-solitude-in-the-digital.html",
@@ -4083,7 +4155,7 @@
       "title": "The Nomad Bears",
       "url": "/wiki/the-nomad-bears.html",
       "category": "factions",
-      "rank_score": 317,
+      "rank_score": 321,
       "authority_score": 28
     },
     {
@@ -4147,7 +4219,7 @@
       "title": "The RUGPULL MINERS",
       "url": "/wiki/the-rugpull-miners.html",
       "category": "factions",
-      "rank_score": 298,
+      "rank_score": 301,
       "authority_score": 28
     },
     {
@@ -4427,7 +4499,7 @@
       "title": "XRP Ledger",
       "url": "/wiki/xrp-ledger.html",
       "category": "factions",
-      "rank_score": 219,
+      "rank_score": 227,
       "authority_score": 18
     },
     {
@@ -4445,6 +4517,14 @@
       "category": "concepts",
       "rank_score": 287,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/zarah8.html",
+      "title": "ZARAH8",
+      "url": "/wiki/zarah8.html",
+      "category": "characters",
+      "rank_score": 275,
+      "authority_score": 21
     }
   ],
   "edges": [
@@ -4456,13 +4536,13 @@
     },
     {
       "source": "/",
-      "target": "/gkniftyheads-incubator.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/",
-      "target": "/ai-user.html",
+      "target": "/gkniftyheads-incubator.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -4522,13 +4602,13 @@
     },
     {
       "source": "/about.html",
-      "target": "/community.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/about.html",
-      "target": "/ai-user.html",
+      "target": "/community.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -4960,6 +5040,12 @@
     },
     {
       "source": "/about/what-is-crypto-moonboys.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/ai-user.html",
       "target": "/wiki/crypto-moonboys.html",
       "kind": "page-link",
       "weight": 0.5
@@ -6412,6 +6498,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/chada-boi.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/crypto-moonboys.html",
       "kind": "page-link",
       "weight": 0.5
@@ -6419,6 +6511,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/cryptographic-tactical-incident-report.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/danny-rankz.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -6437,6 +6535,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/dream-sovereign.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/eddie-stax.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7090,6 +7194,18 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/jack-the-bull.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/jimmy-rugpull.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/jodie-zoom-2000.html",
       "kind": "page-link",
       "weight": 0.5
@@ -7157,6 +7273,18 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/ngmi-chronicles.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/nine-toes-joe.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/nobby.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7289,6 +7417,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/sylas-the-unbroken.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/teddy-boi-jones.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -7648,6 +7782,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/the-ninth-berth.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "kind": "page-link",
       "weight": 0.5
@@ -7817,6 +7957,12 @@
     {
       "source": "/categories/lore.html",
       "target": "/wiki/whisper-codex.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
+      "target": "/wiki/zarah8.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9358,13 +9504,13 @@
     },
     {
       "source": "/categories/tools.html",
-      "target": "/categories/index.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/categories/tools.html",
-      "target": "/ai-user.html",
+      "target": "/categories/index.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9592,6 +9738,18 @@
     },
     {
       "source": "/community.html",
+      "target": "/gkniftyheads-incubator.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/community.html",
+      "target": "/how-to-play.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/community.html",
       "target": "/wiki/crypto-moonboys.html",
       "kind": "page-link",
       "weight": 0.5
@@ -9611,30 +9769,6 @@
     {
       "source": "/gkniftyheads-incubator.html",
       "target": "/wiki/gkniftyheads.html",
-      "kind": "page-link",
-      "weight": 0.5
-    },
-    {
-      "source": "/ai-user.html",
-      "target": "/graffiti-kings-creative-guide.html",
-      "kind": "page-link",
-      "weight": 0.5
-    },
-    {
-      "source": "/ai-user.html",
-      "target": "/swarmsy.html",
-      "kind": "page-link",
-      "weight": 0.5
-    },
-    {
-      "source": "/ai-user.html",
-      "target": "/wiki/create-your-moonboy.html",
-      "kind": "page-link",
-      "weight": 0.5
-    },
-    {
-      "source": "/ai-user.html",
-      "target": "/wiki/crypto-moonboys.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9694,6 +9828,12 @@
     },
     {
       "source": "/how-to-play.html",
+      "target": "/community.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/how-to-play.html",
       "target": "/how-to-play-crypto-moonboy-pets.html",
       "kind": "page-link",
       "weight": 0.5
@@ -9724,13 +9864,13 @@
     },
     {
       "source": "/join-us-on-the-wax-blockchain.html",
-      "target": "/gkniftyheads-incubator.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/join-us-on-the-wax-blockchain.html",
-      "target": "/ai-user.html",
+      "target": "/gkniftyheads-incubator.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -9874,6 +10014,12 @@
     },
     {
       "source": "/search.html",
+      "target": "/ai-user.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/search.html",
       "target": "/categories/activism-counter-culture.html",
       "kind": "page-link",
       "weight": 0.5
@@ -9994,13 +10140,13 @@
     },
     {
       "source": "/search.html",
-      "target": "/ai-user.html",
+      "target": "/join-us-on-the-wax-blockchain.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/search.html",
-      "target": "/join-us-on-the-wax-blockchain.html",
+      "target": "/wiki/block-topia.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -10072,13 +10218,13 @@
     },
     {
       "source": "/swarmsy.html",
-      "target": "/community.html",
+      "target": "/ai-user.html",
       "kind": "page-link",
       "weight": 0.5
     },
     {
       "source": "/swarmsy.html",
-      "target": "/ai-user.html",
+      "target": "/community.html",
       "kind": "page-link",
       "weight": 0.5
     },
@@ -10913,7 +11059,7 @@
     {
       "source": "/wiki/block-topia.html",
       "target": "/wiki/crypto-moonboys.html",
-      "score": 126,
+      "score": 129,
       "weight": 1
     },
     {
@@ -10985,8 +11131,8 @@
     {
       "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 78,
-      "weight": 0.78
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/bone-idol-ink.html",
@@ -11059,6 +11205,36 @@
       "target": "/wiki/spirit-borns.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/chada-boi.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/chada-boi.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/chada-boi.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/chada-boi.html",
+      "target": "/wiki/teddy-boi-jones.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/chada-boi.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/charlie-buster.html",
@@ -11303,7 +11479,7 @@
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/block-topia.html",
-      "score": 118,
+      "score": 121,
       "weight": 1
     },
     {
@@ -11359,6 +11535,36 @@
       "target": "/wiki/hard-fork-games.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/danny-rankz.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/danny-rankz.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/danny-rankz.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/danny-rankz.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/danny-rankz.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -11569,6 +11775,36 @@
       "target": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
       "score": 55,
       "weight": 0.55
+    },
+    {
+      "source": "/wiki/eddie-stax.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/eddie-stax.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/eddie-stax.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/eddie-stax.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/eddie-stax.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -14200,13 +14436,13 @@
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 81,
       "weight": 0.81
     },
@@ -19625,8 +19861,8 @@
     {
       "source": "/wiki/house-of-rackinsats.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/house-of-rackinsats.html",
@@ -19761,6 +19997,36 @@
       "weight": 0.67
     },
     {
+      "source": "/wiki/jack-the-bull.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/jack-the-bull.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/jack-the-bull.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/jack-the-bull.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/jack-the-bull.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
       "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/darren-cullen.html",
       "score": 54,
@@ -19789,6 +20055,36 @@
       "target": "/wiki/trevor-fung.html",
       "score": 52,
       "weight": 0.52
+    },
+    {
+      "source": "/wiki/jimmy-rugpull.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/jimmy-rugpull.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/jimmy-rugpull.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/jimmy-rugpull.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/jimmy-rugpull.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
@@ -20781,6 +21077,36 @@
       "weight": 0.76
     },
     {
+      "source": "/wiki/nine-toes-joe.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/nine-toes-joe.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/nine-toes-joe.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/nine-toes-joe.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/nine-toes-joe.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 80,
@@ -20809,6 +21135,36 @@
       "target": "/wiki/hard-fork-games.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/nobby.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/nobby.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/nobby.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/nobby.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/nobby.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -21478,13 +21834,13 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 87,
-      "weight": 0.87
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
     },
@@ -22101,6 +22457,36 @@
       "weight": 0.78
     },
     {
+      "source": "/wiki/teddy-boi-jones.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/teddy-boi-jones.html",
+      "target": "/wiki/block-topia.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/teddy-boi-jones.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/teddy-boi-jones.html",
+      "target": "/wiki/chada-boi.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/teddy-boi-jones.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
       "source": "/wiki/the-28th-century-began-with-godlike.html",
       "target": "/wiki/hodl-wars.html",
       "score": 95,
@@ -22264,13 +22650,13 @@
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 97,
-      "weight": 0.97
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-bally-boys.html",
       "score": 97,
       "weight": 0.97
     },
@@ -22631,8 +23017,8 @@
     {
       "source": "/wiki/the-chain-scribes.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 81,
-      "weight": 0.81
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-chain-scribes.html",
@@ -22744,13 +23130,13 @@
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-code-alchemists.html",
       "score": 81,
       "weight": 0.81
     },
@@ -22798,13 +23184,13 @@
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 87,
-      "weight": 0.87
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
     },
@@ -23171,8 +23557,8 @@
     {
       "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-evm-punks.html",
@@ -23356,7 +23742,7 @@
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
-      "target": "/wiki/the-information-mercenaries.html",
+      "target": "/wiki/the-blockchain-furies.html",
       "score": 91,
       "weight": 0.91
     },
@@ -23590,13 +23976,13 @@
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/fomo-plague.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/fomo-plague.html",
       "score": 81,
       "weight": 0.81
     },
@@ -23705,8 +24091,8 @@
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-blockchain-furies.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
@@ -23890,15 +24276,15 @@
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-gasless-ghosts.html",
+      "target": "/wiki/the-blockchain-furies.html",
       "score": 91,
       "weight": 0.91
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 90,
-      "weight": 0.9
+      "target": "/wiki/the-gasless-ghosts.html",
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/the-master-codex-the-triple-tier.html",
@@ -24051,6 +24437,36 @@
       "weight": 0.81
     },
     {
+      "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/40-year-old-graffiti-movement-launches.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/crypto-moonboys-is-deliberately-a.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/crypto-moonboys-universe-comprehensive.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/the-ninth-berth.html",
+      "target": "/wiki/crypto-moonboys-wiki-sam-intelligence.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
       "source": "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 83,
@@ -24190,13 +24606,13 @@
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 87,
-      "weight": 0.87
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-og-pixel-saints.html",
-      "target": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
     },
@@ -24334,6 +24750,12 @@
     },
     {
       "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 88,
       "weight": 0.88
@@ -24341,12 +24763,6 @@
     {
       "source": "/wiki/the-rugpull-miners.html",
       "target": "/wiki/the-bally-boys.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-blockchain-furies.html",
       "score": 87,
       "weight": 0.87
     },
@@ -24454,6 +24870,12 @@
     },
     {
       "source": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 88,
       "weight": 0.88
@@ -24461,12 +24883,6 @@
     {
       "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-hard-fork-rockers.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-og-pixel-saints.html",
       "score": 88,
       "weight": 0.88
     },
@@ -24515,8 +24931,8 @@
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-rugpull-miners.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -24664,21 +25080,21 @@
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
+      "target": "/wiki/the-blockchain-furies.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-tuskon-ogs.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 84,
-      "weight": 0.84
-    },
-    {
-      "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-whisper-codex-tales-of-the-darkside.html",
@@ -25459,6 +25875,36 @@
       "target": "/wiki/the-gkniftyheads-manifesto-this-is-your-early-warning.html",
       "score": 77,
       "weight": 0.77
+    },
+    {
+      "source": "/wiki/zarah8.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/zarah8.html",
+      "target": "/wiki/block-topia.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/zarah8.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/zarah8.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/zarah8.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
     }
   ]
 }
