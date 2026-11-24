@@ -1595,6 +1595,12 @@ export function createRenderer(ctx, W, H) {
    * @param {object} s  full game snapshot (read-only from renderer's perspective)
    */
   function draw(s) {
+    // Optional page-level visual/audio layer hook (see meme-visual-hotfix.js).
+    // Read-only: it inspects the frame state, never mutates gameplay.
+    const frameHook = typeof window !== 'undefined' ? window.__INVADERS_FRAME_HOOK__ : null;
+    if (typeof frameHook === 'function') {
+      try { frameHook(s); } catch (_) {}
+    }
     ctx.save();
     if (s.shakeTime > 0 && s.shakeIntensity > 0) {
       ctx.translate(
