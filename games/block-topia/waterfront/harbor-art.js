@@ -191,6 +191,7 @@ function hasKaijuWater(rows) {
 
 window.summonHarborKaiju = function summonHarborKaiju(rows) {
   kaijuSummoned = hasKaijuWater(rows);
+  if (kaijuSummoned) landfallSummoned = false;
   harborKaijuAtlas.started = undefined;
   if (!kaijuSummoned) return null;
   const [x, y] = kaijuLegs[0];
@@ -239,6 +240,92 @@ function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
     (x + 0.5) * size - 72 * scale, (y + 0.5) * size - 110 * scale,
     144 * scale, 128 * scale);
   ctx.restore();
+}
+
+const landfallAtlas = { file: "harbor-kaiju-landfall.webp?v=1" };
+const landfallX = 43;
+const landfallRoute = [
+  // Duration, destination x/y, atlas row, walking on land.
+  [3, 43, 8, 2, false],
+  [2, 43, 10.5, 0, true],
+  [3, 45.5, 10.5, 2, true],
+  [3, 43, 10.5, 1, true],
+  [3, 43, 8.5, 3, true],
+  [3, 43, 6, 5, false],
+];
+let landfallSummoned = false;
+let landfallStarted;
+let naturalLandfallDue;
+let naturalLandfallUsed = false;
+
+function hasLandfallRoute(rows) {
+  return [6, 7, 8].every(y => rows[y]?.[landfallX] === "~") &&
+    rows[9]?.[landfallX] === "." && [10, 11].every(y => rows[y]?.slice(43, 47) === "....");
+}
+
+window.summonHarborLandfall = function summonHarborLandfall(rows) {
+  if (!hasLandfallRoute(rows)) return null;
+  kaijuSummoned = false;
+  landfallSummoned = true;
+  landfallStarted = undefined;
+  return { x: landfallX + 0.5, y: 6.5 };
+};
+
+function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
+  if (time !== null) naturalLandfallDue ??= time + 1200 + Math.random() * 1200;
+  if (visible && (visible.right <= 41 || visible.left >= 48 ||
+      visible.bottom <= 3 || visible.top >= 12)) return;
+  if (!hasLandfallRoute(rows)) return;
+  if (!landfallSummoned && !kaijuSummoned && !naturalLandfallUsed &&
+      time !== null && time >= naturalLandfallDue) {
+    window.summonHarborLandfall(rows);
+    naturalLandfallUsed = true;
+  }
+  if (!landfallSummoned) return;
+  loadDetailedAtlas(harborKaijuAtlas, "low", repaint);
+  loadDetailedAtlas(landfallAtlas, "low", repaint);
+  if (!harborKaijuAtlas.image || !landfallAtlas.image) return;
+
+  let x = landfallX, y = 6, column = 3, row = 1, atlas = harborKaijuAtlas;
+  if (time !== null) {
+    landfallStarted ??= time;
+    const elapsed = Math.max(0, time - landfallStarted);
+    if (elapsed >= 21) {
+      landfallSummoned = false;
+      return;
+    }
+    let walkTime = elapsed - 2;
+    if (walkTime < 0 || elapsed >= 19) {
+      const frame = Math.min(7, Math.floor((walkTime < 0 ? elapsed : 21 - elapsed) * 4));
+      row = Math.floor(frame / 4);
+      column = frame % 4;
+    } else {
+      for (const [duration, endX, endY, facing, onLand] of landfallRoute) {
+        if (walkTime < duration) {
+          const fraction = walkTime / duration;
+          x += (endX - x) * fraction;
+          y += (endY - y) * fraction;
+          row = facing;
+          atlas = onLand ? landfallAtlas : harborKaijuAtlas;
+          column = facing === 0 && onLand ? Math.floor(fraction * 4) : Math.floor(walkTime * 6) % 4;
+          break;
+        }
+        walkTime -= duration;
+        x = endX;
+        y = endY;
+      }
+    }
+  }
+  const anchorX = (x + 0.5) * size;
+  const anchorY = (y + 0.5) * size;
+  const scale = size / 32;
+  queue(anchorY, () => {
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(atlas.image, column * 144, row * 128, 144, 128,
+      anchorX - 72 * scale, anchorY - 110 * scale, 144 * scale, 128 * scale);
+    ctx.restore();
+  });
 }
 
 function loadDetailedAtlas(atlas, priority, repaint) {
@@ -1347,6 +1434,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   loadDetailedAtlas(waterfrontDetailedFactions, "low", repaintArt);
   loadDetailedAtlas(waterfrontDetailedBots, "low", repaintArt);
   drawFactionWalkers();
+  if (district.natureIsland) drawHarborLandfall(ctx, rows, size, time, visible, repaintArt, queue);
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));

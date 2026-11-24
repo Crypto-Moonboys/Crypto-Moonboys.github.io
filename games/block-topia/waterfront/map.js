@@ -382,18 +382,33 @@ function requestMapPaint() {
     paintMap();
   });
 }
+let kaijuKeyTimer;
+function triggerKaiju(landfall) {
+  if (!window.waterfrontAccess.canPlay() || editing || viewport.querySelector("dialog[open]")) return;
+  const location = landfall ? window.summonHarborLandfall(rows) : window.summonHarborKaiju(rows);
+  if (!location) return;
+  mapScroll.scrollLeft = location.x * mapSurface.clientWidth / columns - mapScroll.clientWidth / 2;
+  mapScroll.scrollTop = location.y * mapSurface.clientHeight / initial.length - mapScroll.clientHeight / 2;
+  requestMapPaint();
+}
+
 window.addEventListener("keydown", event => {
   if (event.key.toLowerCase() !== "k" || event.defaultPrevented || event.repeat || event.isComposing ||
       event.ctrlKey || event.altKey || event.metaKey || editing || !window.waterfrontAccess.canPlay() ||
       viewport.querySelector("dialog[open]") ||
       event.target instanceof Element && (event.target.isContentEditable ||
         event.target.closest("input, textarea, select, [role='textbox']"))) return;
-  const location = window.summonHarborKaiju(rows);
-  if (!location) return;
   event.preventDefault();
-  mapScroll.scrollLeft = location.x * mapSurface.clientWidth / columns - mapScroll.clientWidth / 2;
-  mapScroll.scrollTop = location.y * mapSurface.clientHeight / initial.length - mapScroll.clientHeight / 2;
-  requestMapPaint();
+  if (kaijuKeyTimer !== undefined) {
+    clearTimeout(kaijuKeyTimer);
+    kaijuKeyTimer = undefined;
+    triggerKaiju(true);
+  } else {
+    kaijuKeyTimer = setTimeout(() => {
+      kaijuKeyTimer = undefined;
+      triggerKaiju(false);
+    }, 300);
+  }
 });
 mapScroll.addEventListener("scroll", requestMapPaint, { passive: true });
 
@@ -548,6 +563,8 @@ window.addEventListener("waterfront:access", () => {
     loadBuildDiscussion();
   } else {
     clearTimeout(walkTimer);
+    clearTimeout(kaijuKeyTimer);
+    kaijuKeyTimer = undefined;
     selectedAvatar = null;
     avatar.value = "";
     clearHover();
