@@ -1,4 +1,4 @@
-import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, miningSites } from './lunar-world.mjs?v=5';
+import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, miningSites } from './lunar-world.mjs?v=6';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -16,12 +16,11 @@ const detailCell = 192;
 const miningBuildings = miningSites.map(site => {
   const image = new Image();
   image.src = './assets/' + site.file;
-  return { ...site, image };
+  return { scale: .625, ...site, image };
 });
 const fortressFrame = { width: 224, height: 280, columns: 4, count: 12, fps: 12 };
 // The ground anchor is inside the rock base. Sort from the forward edge of its footprint.
 const fortressAnchorX = 112;
-const fortressScale = .625;
 
 const craters = [[35,31,8],[23,38,5],[46,23,4],[36,49,5],[17,24,3],[52,40,3],[32,13,3]];
 const trails = stations.map((station, i) => [station, stations[(i+1) % stations.length]]);
@@ -232,12 +231,13 @@ function drawActor({x,y,facing,faction,frame}) {
 function drawFortress(x, y, now, building) {
   const { width, height, columns, count, fps } = fortressFrame;
   const frame = reduced.matches ? 0 : Math.floor(now * fps / 1000) % count;
-  const left = x - fortressAnchorX * fortressScale;
-  const top = y - building.anchorY * fortressScale;
+  const { scale } = building;
+  const left = x - fortressAnchorX * scale;
+  const top = y - building.anchorY * scale;
   ctx.drawImage(building.image, frame % columns * width, Math.floor(frame / columns) * height,
-    width, height, left, top, width * fortressScale, height * fortressScale);
+    width, height, left, top, width * scale, height * scale);
   hits.push({
-    minX: left, maxX: left + width * fortressScale, minY: top, maxY: top + height * fortressScale,
+    minX: left, maxX: left + width * scale, minY: top, maxY: top + height * scale,
     building,
   });
 }
@@ -253,8 +253,8 @@ function onFortressSprite(hit, point) {
     context.drawImage(building.image, 0, 0, width, height, 0, 0, width, height);
     building.mask = context.getImageData(0, 0, width, height).data;
   }
-  const x = Math.floor((point.x - hit.minX) / fortressScale);
-  const y = Math.floor((point.y - hit.minY) / fortressScale);
+  const x = Math.floor((point.x - hit.minX) / building.scale);
+  const y = Math.floor((point.y - hit.minY) / building.scale);
   return x < width && y < height && building.mask[(y * width + x) * 4 + 3] >= 128;
 }
 

@@ -2,6 +2,9 @@ const GRID_SIZE = 20;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
+// An existing blocked tile at the rear keeps the tower clear of Survival routes.
+const MINING_TOWER_TILE = { x: 1, y: 4 };
+const MINING_TOWER_HEADROOM = 112;
 const ATTACK_RANGE = 1.3;
 // Minimum client-side input debounce for attack (ms).
 // The actual cooldown applied is runtime.localPlayer.attackCooldownMs (server-authoritative,
@@ -359,6 +362,7 @@ function computeIsoBounds(scale) {
     }
   }
 
+  if (drawFortress) minY -= MINING_TOWER_HEADROOM * scale;
   return { minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY };
 }
 
@@ -841,6 +845,8 @@ function render() {
   drawBackground();
   drawTiles();
   if (drawFortress) {
+    const [towerX, towerY] = tileToScreen(MINING_TOWER_TILE.x, MINING_TOWER_TILE.y);
+    drawFortress(ctx, towerX, towerY + TILE_HEIGHT * cameraScale / 2, cameraScale, "tower");
     const [x, y] = tileToScreen(3, 2);
     drawFortress(ctx, x, y + TILE_HEIGHT * cameraScale / 2, cameraScale);
     const [beeX, beeY] = tileToScreen(7, 2);
@@ -881,7 +887,7 @@ function resize() {
   const safeMarginY = viewHeight * MAP_SAFE_MARGIN_RATIO;
   const fitWidth = Math.max(64, viewWidth - safeMarginX * 2);
   const fitHeight = Math.max(64, viewHeight - safeMarginY * 2);
-  cameraScale = clamp(Math.min(fitWidth / baseBounds.width, fitHeight / baseBounds.height), 0.35, 1.25);
+  cameraScale = clamp(Math.min(fitWidth / baseBounds.width, fitHeight / baseBounds.height), drawFortress ? 0.25 : 0.35, 1.25);
 
   const scaledBounds = computeIsoBounds(cameraScale);
   cameraX = Math.floor((viewWidth - scaledBounds.width) / 2 - scaledBounds.minX);

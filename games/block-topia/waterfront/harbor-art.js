@@ -1,5 +1,7 @@
 // Resolve atlas URLs from this script so it can render on the comparison route too.
 const harborMiningSites = [
+  { id: "bitcoin-cash-tower", col: 42, row: 11, heightScale: 1.7, atlas: { file: "bitcoin-cash-tower-overhead.webp?v=1" },
+    profile: { name: "Bitcoin Cash Mining Tower", role: "Mining rigs online" } },
   { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=1" },
     profile: { name: "Zcash Mining Fortress", role: "Cooling fans and reactors online" } },
   { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=1" },
@@ -1664,18 +1666,19 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   loadDetailedAtlas(waterfrontDetailedBots, "low", repaintArt);
   drawFactionWalkers();
   if (district.natureIsland) drawHarborLandfall(ctx, rows, size, time, visible, repaintArt, queue, inspection);
-  // The West Meadow keeps the mining buildings off streets and paths.
-  if (district.natureIsland) for (const { id, col, row, atlas, profile } of harborMiningSites) {
+  // Open lots keep the mining buildings off streets and paths.
+  if (district.natureIsland) for (const { id, col, row, atlas, profile, heightScale = 1 } of harborMiningSites) {
     if (rows[row]?.[col] !== ".") continue;
-    if (visible && (col + 2 < visible.left || col - 2 >= visible.right ||
-        row + 1 < visible.top || row - 4 >= visible.bottom)) continue;
+    const x = (col + .5) * size, y = (row + .75) * size;
+    const scale = size / 64 * heightScale;
+    const left = x - 112 * scale, top = y - 233 * scale;
+    if (visible && (left + 224 * scale < visible.left * size || left >= visible.right * size ||
+        top + 280 * scale < visible.top * size || top >= visible.bottom * size)) continue;
     loadDetailedAtlas(atlas, "low", repaintArt);
     if (!atlas.image) continue;
-    const scale = size / 64;
-    const x = (col + .5) * size, y = (row + .75) * size;
     const frame = time === null ? 0 : Math.floor(time * 12) % 12;
     queue(y, () => drawHarborCreature(ctx, atlas, frame % 4, Math.floor(frame / 4),
-      224, 280, x - 112 * scale, y - 233 * scale, scale, inspection, id, profile));
+      224, 280, left, top, scale, inspection, id, profile));
   }
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());

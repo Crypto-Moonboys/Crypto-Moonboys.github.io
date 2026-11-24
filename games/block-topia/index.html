@@ -411,7 +411,7 @@
         // Dynamic imports — main.js and network.js are only loaded after the
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
-        await import("./main.js?v=miners-2");
+        await import("./main.js?v=miners-3");
         const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady, sendRestartRun, sendChooseUpgrade } = await import("./network.js?v=20260929-colyseus17");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
@@ -419,16 +419,18 @@
         if (!api || typeof api.mount !== "function") {
           throw new Error("BlockTopiaMap API unavailable after import");
         }
-        // The fortress sits on an existing blocked tile. Keep it independent of match state.
-        const { drawZcashFortress, loadZcashFortress } = await import("./zcash-fortress.mjs?v=2");
+        // Mining landmarks sit on existing blocked tiles and are independent of match state.
+        const { drawZcashFortress, loadZcashFortress, towerScale } = await import("./zcash-fortress.mjs?v=3");
         const fortressImage = loadZcashFortress();
         const waxImage = loadZcashFortress("./assets/miners/wax-bee-iso.webp");
+        const towerImage = loadZcashFortress("./assets/miners/bitcoin-cash-tower-iso.webp");
         const fortressMotion = matchMedia('(prefers-reduced-motion: reduce)');
         api.mount({
           ...mountOptions,
           drawFortress(ctx, x, y, zoom, kind) {
-            const image = kind === "wax" ? waxImage : fortressImage;
-            if (image.naturalWidth) drawZcashFortress(ctx, image, x, y, zoom,
+            const image = kind === "tower" ? towerImage : kind === "wax" ? waxImage : fortressImage;
+            const scale = kind === "tower" ? zoom * towerScale : zoom;
+            if (image.naturalWidth) drawZcashFortress(ctx, image, x, y, scale,
               fortressMotion.matches ? null : performance.now() / 1000);
           },
         });

@@ -1,5 +1,7 @@
-// Isometric 12-frame atlas shared by the survival game and comparison maps.
+// Mining landmark sprites shared by the survival game and comparison maps.
 export const fortressSize = { width: 112, height: 140, anchorY: 117 };
+
+export const towerScale = 1.7;
 
 export function loadZcashFortress(file = "./assets/miners/zcash-fortress-iso.webp") {
   const image = new Image();
