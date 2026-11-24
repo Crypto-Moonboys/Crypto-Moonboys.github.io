@@ -1,0 +1,22 @@
+.waterfront-wiki-portrait {
+  inline-size: min(100%, 17rem);
+  margin: 0 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid #60809265;
+  border-radius: 0.75rem;
+  background: #182630;
+  color: #d8e5ec;
+  text-align: center;
+}
+
+.waterfront-wiki-sprite {
+  aspect-ratio: 1;
+  inline-size: min(100%, 11rem);
+  margin-inline: auto;
+  background-repeat: no-repeat;
+}
+
+.waterfront-wiki-portrait figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-24T01:10:38.542Z",
-  "verified_at": "2026-11-24T01:10:38.542Z",
+  "generated_at": "2026-11-24T04:30:53.247Z",
+  "verified_at": "2026-11-24T04:30:53.247Z",
   "nodes": [
     {
       "id": "/",
@@ -447,6 +447,14 @@
       "authority_score": 20
     },
     {
+      "id": "/wiki/allcity-bulls-mech.html",
+      "title": "Allcity Bulls Mech",
+      "url": "/wiki/allcity-bulls-mech.html",
+      "category": "misc",
+      "rank_score": 143,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/altcoins.html",
       "title": "Altcoins",
       "url": "/wiki/altcoins.html",
@@ -575,12 +583,36 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/blockchain-furies-mech.html",
+      "title": "Blockchain Furies Mech",
+      "url": "/wiki/blockchain-furies-mech.html",
+      "category": "misc",
+      "rank_score": 128,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/blockchain.html",
       "title": "Blockchain Technology",
       "url": "/wiki/blockchain.html",
       "category": "factions",
       "rank_score": 291,
       "authority_score": 30
+    },
+    {
+      "id": "/wiki/blockstars-mech.html",
+      "title": "Blockstars Mech",
+      "url": "/wiki/blockstars-mech.html",
+      "category": "misc",
+      "rank_score": 136,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/blue-electric-bot.html",
+      "title": "Blue Electric Bot",
+      "url": "/wiki/blue-electric-bot.html",
+      "category": "misc",
+      "rank_score": 150,
+      "authority_score": 12
     },
     {
       "id": "/wiki/bone-idol-ink.html",
@@ -591,12 +623,28 @@
       "authority_score": 28
     },
     {
+      "id": "/wiki/burglar-bear.html",
+      "title": "Burglar Bear",
+      "url": "/wiki/burglar-bear.html",
+      "category": "misc",
+      "rank_score": 157,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/burn-to-earn.html",
       "title": "Burn-to-Earn",
       "url": "/wiki/burn-to-earn.html",
       "category": "characters",
       "rank_score": 315,
       "authority_score": 22
+    },
+    {
+      "id": "/wiki/camo-bear.html",
+      "title": "Camo Bear",
+      "url": "/wiki/camo-bear.html",
+      "category": "misc",
+      "rank_score": 148,
+      "authority_score": 12
     },
     {
       "id": "/wiki/canvas-clash.html",
@@ -763,7 +811,7 @@
       "title": "Eddie Stax",
       "url": "/wiki/eddie-stax.html",
       "category": "characters",
-      "rank_score": 275,
+      "rank_score": 279,
       "authority_score": 21
     },
     {
@@ -1549,6 +1597,14 @@
       "category": "factions",
       "rank_score": 290,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/gentleman-bear.html",
+      "title": "Gentleman Bear",
+      "url": "/wiki/gentleman-bear.html",
+      "category": "misc",
+      "rank_score": 126,
+      "authority_score": 8
     },
     {
       "id": "/wiki/gk-factions-to-collect-and-hodl.html",
@@ -2735,6 +2791,14 @@
       "authority_score": 30
     },
     {
+      "id": "/wiki/graff-bear.html",
+      "title": "Graff Bear",
+      "url": "/wiki/graff-bear.html",
+      "category": "misc",
+      "rank_score": 155,
+      "authority_score": 16
+    },
+    {
       "id": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
       "title": "Graffiti, Resilience and the Human Mark | Crypto Moonboys",
       "url": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
@@ -2743,11 +2807,19 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/graffiti-kings-mech.html",
+      "title": "Graffiti Kings Mech",
+      "url": "/wiki/graffiti-kings-mech.html",
+      "category": "misc",
+      "rank_score": 143,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/graffiti-kings.html",
       "title": "Graffiti Kings",
       "url": "/wiki/graffiti-kings.html",
       "category": "core",
-      "rank_score": 321,
+      "rank_score": 323,
       "authority_score": 30
     },
     {
@@ -2799,6 +2871,14 @@
       "authority_score": 30
     },
     {
+      "id": "/wiki/graffpunks-mech.html",
+      "title": "GraffPunks Mech",
+      "url": "/wiki/graffpunks-mech.html",
+      "category": "core",
+      "rank_score": 179,
+      "authority_score": 16
+    },
+    {
       "id": "/wiki/graffpunks-reading-library.html",
       "title": "GraffPUNKS: Stories and Information Library | Crypto Moonboys",
       "url": "/wiki/graffpunks-reading-library.html",
@@ -2823,6 +2903,14 @@
       "authority_score": 20
     },
     {
+      "id": "/wiki/green-electric-bot.html",
+      "title": "Green Electric Bot",
+      "url": "/wiki/green-electric-bot.html",
+      "category": "misc",
+      "rank_score": 145,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/grit.html",
       "title": "GRIT",
       "url": "/wiki/grit.html",
@@ -2845,6 +2933,14 @@
       "category": "core",
       "rank_score": 368,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/hard-fork-rockers-mech.html",
+      "title": "Hard Fork Rockers Mech",
+      "url": "/wiki/hard-fork-rockers-mech.html",
+      "category": "misc",
+      "rank_score": 148,
+      "authority_score": 12
     },
     {
       "id": "/wiki/harrison-rift.html",
@@ -2885,6 +2981,14 @@
       "category": "core",
       "rank_score": 341,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/hodl-wars-mech.html",
+      "title": "HODL WARS Mech",
+      "url": "/wiki/hodl-wars-mech.html",
+      "category": "core",
+      "rank_score": 179,
+      "authority_score": 12
     },
     {
       "id": "/wiki/hodl-wars.html",
@@ -2957,6 +3061,14 @@
       "category": "characters",
       "rank_score": 269,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/jamaican-bear.html",
+      "title": "Jamaican Bear",
+      "url": "/wiki/jamaican-bear.html",
+      "category": "misc",
+      "rank_score": 150,
+      "authority_score": 12
     },
     {
       "id": "/wiki/jillian-godsil.html",
@@ -3159,6 +3271,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/moongirls-mech.html",
+      "title": "Moongirls Mech",
+      "url": "/wiki/moongirls-mech.html",
+      "category": "misc",
+      "rank_score": 129,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/nbg-token.html",
       "title": "nbg token",
       "url": "/wiki/nbg-token.html",
@@ -3171,7 +3291,7 @@
       "title": "$NBG — NoBallGames Token | Crypto Moonboys Wiki",
       "url": "/wiki/nbg.html",
       "category": "characters",
-      "rank_score": 268,
+      "rank_score": 272,
       "authority_score": 23
     },
     {
@@ -3247,6 +3367,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/no-ball-games-mech.html",
+      "title": "No Ball Games Mech",
+      "url": "/wiki/no-ball-games-mech.html",
+      "category": "misc",
+      "rank_score": 145,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/noballgamess-nft-collection.html",
       "title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
       "url": "/wiki/noballgamess-nft-collection.html",
@@ -3261,6 +3389,14 @@
       "category": "characters",
       "rank_score": 270,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/nomad-bears-mech.html",
+      "title": "Nomad Bears Mech",
+      "url": "/wiki/nomad-bears-mech.html",
+      "category": "misc",
+      "rank_score": 134,
+      "authority_score": 12
     },
     {
       "id": "/wiki/null-the-prophet.html",
@@ -3333,6 +3469,38 @@
       "category": "factions",
       "rank_score": 270,
       "authority_score": 18
+    },
+    {
+      "id": "/wiki/police-bike.html",
+      "title": "Police Bike",
+      "url": "/wiki/police-bike.html",
+      "category": "misc",
+      "rank_score": 133,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/police-car.html",
+      "title": "Police Car",
+      "url": "/wiki/police-car.html",
+      "category": "misc",
+      "rank_score": 133,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/police-robot.html",
+      "title": "Police Robot",
+      "url": "/wiki/police-robot.html",
+      "category": "misc",
+      "rank_score": 154,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/posh-bear.html",
+      "title": "Posh Bear",
+      "url": "/wiki/posh-bear.html",
+      "category": "misc",
+      "rank_score": 148,
+      "authority_score": 12
     },
     {
       "id": "/wiki/potential-crypto-moonboys-game-trilogy.html",
@@ -3421,6 +3589,14 @@
       "category": "core",
       "rank_score": 360,
       "authority_score": 28
+    },
+    {
+      "id": "/wiki/sailor-bear.html",
+      "title": "Sailor Bear",
+      "url": "/wiki/sailor-bear.html",
+      "category": "misc",
+      "rank_score": 134,
+      "authority_score": 12
     },
     {
       "id": "/wiki/samaelexe.html",
@@ -3519,6 +3695,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/st-patricks-day-bear.html",
+      "title": "St Patrick’s Day Bear",
+      "url": "/wiki/st-patricks-day-bear.html",
+      "category": "misc",
+      "rank_score": 142,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/stake-is-a-community-powered-web3.html",
       "title": "STAKE: A Community-Powered Proposal | Crypto Moonboys",
       "url": "/wiki/stake-is-a-community-powered-web3.html",
@@ -3549,6 +3733,14 @@
       "category": "factions",
       "rank_score": 271,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/straight-outta-ghetto-bear.html",
+      "title": "Straight Outta Ghetto Bear",
+      "url": "/wiki/straight-outta-ghetto-bear.html",
+      "category": "misc",
+      "rank_score": 131,
+      "authority_score": 12
     },
     {
       "id": "/wiki/street-artist-buster-aka-charlie-buster.html",
@@ -3635,7 +3827,7 @@
       "title": "The AllCity Bulls",
       "url": "/wiki/the-allcity-bulls.html",
       "category": "factions",
-      "rank_score": 322,
+      "rank_score": 324,
       "authority_score": 28
     },
     {
@@ -3707,7 +3899,7 @@
       "title": "The BLOCKCHAIN FURIES",
       "url": "/wiki/the-blockchain-furies.html",
       "category": "factions",
-      "rank_score": 304,
+      "rank_score": 306,
       "authority_score": 28
     },
     {
@@ -3723,7 +3915,7 @@
       "title": "The BLOCKSTARS",
       "url": "/wiki/the-blockstars.html",
       "category": "factions",
-      "rank_score": 293,
+      "rank_score": 295,
       "authority_score": 28
     },
     {
@@ -4043,7 +4235,7 @@
       "title": "The HARD FORK ROCKERS",
       "url": "/wiki/the-hard-fork-rockers.html",
       "category": "factions",
-      "rank_score": 303,
+      "rank_score": 305,
       "authority_score": 28
     },
     {
@@ -4139,7 +4331,7 @@
       "title": "The Ninth Berth",
       "url": "/wiki/the-ninth-berth.html",
       "category": "concepts",
-      "rank_score": 274,
+      "rank_score": 276,
       "authority_score": 22
     },
     {
@@ -4155,7 +4347,7 @@
       "title": "The Nomad Bears",
       "url": "/wiki/the-nomad-bears.html",
       "category": "factions",
-      "rank_score": 321,
+      "rank_score": 328,
       "authority_score": 28
     },
     {
@@ -4383,12 +4575,36 @@
       "authority_score": 30
     },
     {
+      "id": "/wiki/walking-boombox.html",
+      "title": "Walking Boombox",
+      "url": "/wiki/walking-boombox.html",
+      "category": "misc",
+      "rank_score": 142,
+      "authority_score": 12
+    },
+    {
       "id": "/wiki/wallets.html",
       "title": "Crypto Wallets",
       "url": "/wiki/wallets.html",
       "category": "characters",
       "rank_score": 274,
       "authority_score": 27
+    },
+    {
+      "id": "/wiki/waterfront-roamers.html",
+      "title": "Waterfront Roamers",
+      "url": "/wiki/waterfront-roamers.html",
+      "category": "factions",
+      "rank_score": 207,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/waterfront-samurai.html",
+      "title": "Samurai",
+      "url": "/wiki/waterfront-samurai.html",
+      "category": "misc",
+      "rank_score": 143,
+      "authority_score": 12
     },
     {
       "id": "/wiki/wax-blockchain.html",
@@ -7944,6 +8160,12 @@
     },
     {
       "source": "/categories/lore.html",
+      "target": "/wiki/waterfront-roamers.html",
+      "kind": "page-link",
+      "weight": 0.5
+    },
+    {
+      "source": "/categories/lore.html",
       "target": "/wiki/whale-lords-moonboys-war-arc.html",
       "kind": "page-link",
       "weight": 0.5
@@ -10465,8 +10687,8 @@
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
@@ -10488,13 +10710,13 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 86,
       "weight": 0.86
     },
@@ -10596,15 +10818,45 @@
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/allcity-bulls-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/allcity-bulls-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/allcity-bulls-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/allcity-bulls-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/allcity-bulls-mech.html",
+      "target": "/wiki/moongirls-mech.html",
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/altcoins.html",
@@ -10656,15 +10908,15 @@
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/atomicassets.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/atomichub-graffpunks-collection.html",
@@ -10746,15 +10998,15 @@
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/ava-chen.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/battlemech-blast.html",
@@ -10795,8 +11047,8 @@
     {
       "source": "/wiki/bear-market-siege.html",
       "target": "/wiki/block-topia.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/bear-market-siege.html",
@@ -10866,15 +11118,15 @@
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/block-topia.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -10885,8 +11137,8 @@
     {
       "source": "/wiki/bit-cap-5000.html",
       "target": "/wiki/block-topia.html",
-      "score": 90,
-      "weight": 0.9
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/bit-cap-5000.html",
@@ -10951,8 +11203,8 @@
     {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/block-topia.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -10981,8 +11233,8 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/block-topia.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/bitcoin-x-kids.html",
@@ -11087,6 +11339,36 @@
       "weight": 0.87
     },
     {
+      "source": "/wiki/blockchain-furies-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/blockchain-furies-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/blockchain-furies-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/blockchain-furies-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/blockchain-furies-mech.html",
+      "target": "/wiki/moongirls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
       "source": "/wiki/blockchain.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 70,
@@ -11106,15 +11388,75 @@
     },
     {
       "source": "/wiki/blockchain.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/blockchain.html",
       "target": "/wiki/rave-relics.html",
       "score": 67,
       "weight": 0.67
     },
     {
-      "source": "/wiki/blockchain.html",
-      "target": "/wiki/ethereum.html",
-      "score": 66,
-      "weight": 0.66
+      "source": "/wiki/blockstars-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/blockstars-mech.html",
+      "target": "/wiki/no-ball-games-mech.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/blockstars-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/blockstars-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/blockstars-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/blue-electric-bot.html",
+      "target": "/wiki/green-electric-bot.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/blue-electric-bot.html",
+      "target": "/wiki/police-robot.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/blue-electric-bot.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/blue-electric-bot.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/blue-electric-bot.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/bone-idol-ink.html",
@@ -11147,6 +11489,36 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/burglar-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/burglar-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/burglar-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/burglar-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/burglar-bear.html",
+      "target": "/wiki/sailor-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 98,
@@ -11161,8 +11533,8 @@
     {
       "source": "/wiki/burn-to-earn.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -11175,6 +11547,36 @@
       "target": "/wiki/hodl-x-warriors.html",
       "score": 71,
       "weight": 0.71
+    },
+    {
+      "source": "/wiki/camo-bear.html",
+      "target": "/wiki/sailor-bear.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/camo-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/camo-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/camo-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/camo-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 61,
+      "weight": 0.61
     },
     {
       "source": "/wiki/canvas-clash.html",
@@ -11215,8 +11617,8 @@
     {
       "source": "/wiki/chada-boi.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/chada-boi.html",
@@ -11311,8 +11713,8 @@
     {
       "source": "/wiki/create-your-moonboy.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/create-your-moonboy.html",
@@ -11479,7 +11881,7 @@
     {
       "source": "/wiki/crypto-moonboys.html",
       "target": "/wiki/block-topia.html",
-      "score": 121,
+      "score": 122,
       "weight": 1
     },
     {
@@ -11545,8 +11947,8 @@
     {
       "source": "/wiki/danny-rankz.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/danny-rankz.html",
@@ -11707,8 +12109,8 @@
     {
       "source": "/wiki/diamond-hands.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -11742,9 +12144,9 @@
     },
     {
       "source": "/wiki/dragan-volkov.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/block-topia.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/dream-sovereign.html",
@@ -11791,8 +12193,8 @@
     {
       "source": "/wiki/eddie-stax.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/eddie-stax.html",
@@ -11815,8 +12217,8 @@
     {
       "source": "/wiki/elder-codex-7.html",
       "target": "/wiki/block-topia.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -14436,15 +14838,15 @@
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-blockstars.html",
       "score": 82,
       "weight": 0.82
     },
     {
       "source": "/wiki/fomo-plague.html",
-      "target": "/wiki/the-code-alchemists.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-rugpull-miners.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/forkborn-collective.html",
@@ -14496,15 +14898,15 @@
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/forklord-you.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/forksplit.html",
@@ -14527,8 +14929,8 @@
     {
       "source": "/wiki/forksplit.html",
       "target": "/wiki/block-topia.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/forksplit.html",
@@ -14712,7 +15114,7 @@
     },
     {
       "source": "/wiki/genesis-spray-drop.html",
-      "target": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
@@ -14742,9 +15144,39 @@
     },
     {
       "source": "/wiki/genesis-spray.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/gentleman-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/gentleman-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/gentleman-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/gentleman-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/gentleman-bear.html",
+      "target": "/wiki/sailor-bear.html",
+      "score": 61,
+      "weight": 0.61
     },
     {
       "source": "/wiki/gk-factions-to-collect-and-hodl.html",
@@ -19187,6 +19619,36 @@
       "weight": 1
     },
     {
+      "source": "/wiki/graff-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graff-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graff-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graff-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graff-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
       "source": "/wiki/graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
       "target": "/wiki/40-year-old-graffiti-movement-launches.html",
       "score": 79,
@@ -19215,6 +19677,36 @@
       "target": "/wiki/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials.html",
       "score": 72,
       "weight": 0.72
+    },
+    {
+      "source": "/wiki/graffiti-kings-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graffiti-kings-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graffiti-kings-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graffiti-kings-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/graffiti-kings-mech.html",
+      "target": "/wiki/moongirls-mech.html",
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/graffiti-kings.html",
@@ -19427,6 +19919,36 @@
       "weight": 1
     },
     {
+      "source": "/wiki/graffpunks-mech.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/graffpunks-mech.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/graffpunks-mech.html",
+      "target": "/wiki/graffpunks-reading-library.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/graffpunks-mech.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/graffpunks-mech.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
       "source": "/wiki/graffpunks-reading-library.html",
       "target": "/wiki/graffpunks.html",
       "score": 87,
@@ -19500,6 +20022,12 @@
     },
     {
       "source": "/wiki/great-consensus.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/great-consensus.html",
       "target": "/wiki/midevilpunks.html",
       "score": 66,
       "weight": 0.66
@@ -19511,10 +20039,34 @@
       "weight": 0.66
     },
     {
-      "source": "/wiki/great-consensus.html",
-      "target": "/wiki/house-of-rackinsats.html",
-      "score": 65,
-      "weight": 0.65
+      "source": "/wiki/green-electric-bot.html",
+      "target": "/wiki/blue-electric-bot.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/green-electric-bot.html",
+      "target": "/wiki/police-robot.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/green-electric-bot.html",
+      "target": "/wiki/walking-boombox.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/green-electric-bot.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/green-electric-bot.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/grit.html",
@@ -19536,13 +20088,13 @@
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/forksplit.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/grit.html",
-      "target": "/wiki/grit42.html",
+      "target": "/wiki/forksplit.html",
       "score": 81,
       "weight": 0.81
     },
@@ -19566,13 +20118,13 @@
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/forksplit.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/grit42.html",
-      "target": "/wiki/grit.html",
+      "target": "/wiki/forksplit.html",
       "score": 81,
       "weight": 0.81
     },
@@ -19605,6 +20157,36 @@
       "target": "/wiki/first-witness-forty-paths.html",
       "score": 117,
       "weight": 1
+    },
+    {
+      "source": "/wiki/hard-fork-rockers-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/hard-fork-rockers-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/hard-fork-rockers-mech.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/hard-fork-rockers-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/hard-fork-rockers-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -19687,8 +20269,8 @@
     {
       "source": "/wiki/hex-tagger-prime.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/hex-tagger-prime.html",
@@ -19757,6 +20339,36 @@
       "weight": 1
     },
     {
+      "source": "/wiki/hodl-wars-mech.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 105,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/hodl-wars-mech.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/hodl-wars-mech.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/hodl-wars-mech.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/hodl-wars-mech.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 160,
@@ -19807,8 +20419,8 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/block-topia.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/hodl-x-warriors.html",
@@ -19848,6 +20460,12 @@
     },
     {
       "source": "/wiki/house-of-rackinsats.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/house-of-rackinsats.html",
       "target": "/wiki/queen-sarah-p-fly.html",
       "score": 73,
       "weight": 0.73
@@ -19867,12 +20485,6 @@
     {
       "source": "/wiki/house-of-rackinsats.html",
       "target": "/wiki/the-crypto-moongirls.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/house-of-rackinsats.html",
-      "target": "/wiki/the-nomad-bears.html",
       "score": 70,
       "weight": 0.7
     },
@@ -19897,8 +20509,8 @@
     {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/ian-harrison.html",
@@ -19945,8 +20557,8 @@
     {
       "source": "/wiki/iris-7.html",
       "target": "/wiki/block-topia.html",
-      "score": 93,
-      "weight": 0.93
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/iris-7.html",
@@ -20005,8 +20617,8 @@
     {
       "source": "/wiki/jack-the-bull.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/jack-the-bull.html",
@@ -20025,6 +20637,36 @@
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 70,
       "weight": 0.7
+    },
+    {
+      "source": "/wiki/jamaican-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/jamaican-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/jamaican-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/jamaican-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/jamaican-bear.html",
+      "target": "/wiki/sailor-bear.html",
+      "score": 61,
+      "weight": 0.61
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -20065,8 +20707,8 @@
     {
       "source": "/wiki/jimmy-rugpull.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/jimmy-rugpull.html",
@@ -20191,8 +20833,8 @@
     {
       "source": "/wiki/kael-voss.html",
       "target": "/wiki/block-topia.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/kael-voss.html",
@@ -20214,13 +20856,13 @@
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/bitcoin-x-kids.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/block-topia.html",
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/lady-ink.html",
-      "target": "/wiki/block-topia.html",
+      "target": "/wiki/bitcoin-x-kids.html",
       "score": 86,
       "weight": 0.86
     },
@@ -20412,7 +21054,7 @@
     },
     {
       "source": "/wiki/loopfiend.html",
-      "target": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
@@ -20466,15 +21108,15 @@
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/m1ntr-k1ll.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/maidstone-base.html",
@@ -20682,9 +21324,9 @@
     },
     {
       "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -20777,6 +21419,36 @@
       "weight": 0.78
     },
     {
+      "source": "/wiki/moongirls-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/moongirls-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/moongirls-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/moongirls-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/moongirls-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
       "source": "/wiki/nbg-token.html",
       "target": "/wiki/nbgx-token.html",
       "score": 112,
@@ -20815,8 +21487,8 @@
     {
       "source": "/wiki/nbg.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/nbg.html",
@@ -20977,8 +21649,8 @@
     {
       "source": "/wiki/nfts.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/nfts.html",
@@ -21085,8 +21757,8 @@
     {
       "source": "/wiki/nine-toes-joe.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/nine-toes-joe.html",
@@ -21105,6 +21777,36 @@
       "target": "/wiki/bitcoin-x-kids.html",
       "score": 70,
       "weight": 0.7
+    },
+    {
+      "source": "/wiki/no-ball-games-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/no-ball-games-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/no-ball-games-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/no-ball-games-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/no-ball-games-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
@@ -21145,8 +21847,8 @@
     {
       "source": "/wiki/nobby.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/nobby.html",
@@ -21167,6 +21869,36 @@
       "weight": 0.67
     },
     {
+      "source": "/wiki/nomad-bears-mech.html",
+      "target": "/wiki/allcity-bulls-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/nomad-bears-mech.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/nomad-bears-mech.html",
+      "target": "/wiki/blockstars-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/nomad-bears-mech.html",
+      "target": "/wiki/graffiti-kings-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/nomad-bears-mech.html",
+      "target": "/wiki/hard-fork-rockers-mech.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 113,
@@ -21175,8 +21907,8 @@
     {
       "source": "/wiki/null-the-prophet.html",
       "target": "/wiki/block-topia.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -21336,15 +22068,15 @@
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/pixil-mini.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/playable-nft-murals.html",
@@ -21437,6 +22169,126 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/police-bike.html",
+      "target": "/wiki/police-robot.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/police-bike.html",
+      "target": "/wiki/police-car.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/police-bike.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/police-bike.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/police-bike.html",
+      "target": "/wiki/blue-electric-bot.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/police-car.html",
+      "target": "/wiki/police-robot.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/police-car.html",
+      "target": "/wiki/police-bike.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/police-car.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/police-car.html",
+      "target": "/wiki/blue-electric-bot.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/police-car.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/police-robot.html",
+      "target": "/wiki/police-bike.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/police-robot.html",
+      "target": "/wiki/police-car.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/police-robot.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/police-robot.html",
+      "target": "/wiki/blockchain-furies-mech.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/police-robot.html",
+      "target": "/wiki/blue-electric-bot.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/posh-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/posh-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/posh-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/posh-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/posh-bear.html",
+      "target": "/wiki/sailor-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
       "source": "/wiki/potential-crypto-moonboys-game-trilogy.html",
       "target": "/wiki/40-year-old-graffiti-movement-launches.html",
       "score": 74,
@@ -21511,8 +22363,8 @@
     {
       "source": "/wiki/punk-token.html",
       "target": "/wiki/block-topia.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/punk-token.html",
@@ -21546,15 +22398,21 @@
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/queen-sarah-p-fly.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
@@ -21565,12 +22423,6 @@
     {
       "source": "/wiki/queen-sarah-p-fly.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/the-nomad-bears.html",
       "score": 86,
       "weight": 0.86
     },
@@ -21606,15 +22458,15 @@
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/thera-9.html",
+      "target": "/wiki/block-topia.html",
       "score": 81,
       "weight": 0.81
     },
     {
       "source": "/wiki/quell.html",
-      "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "target": "/wiki/thera-9.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/rave-relics.html",
@@ -21697,8 +22549,8 @@
     {
       "source": "/wiki/rune-tag.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/rune-tag.html",
@@ -21767,6 +22619,36 @@
       "weight": 1
     },
     {
+      "source": "/wiki/sailor-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/sailor-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/sailor-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/sailor-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/sailor-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 94,
@@ -21781,8 +22663,8 @@
     {
       "source": "/wiki/samaelexe.html",
       "target": "/wiki/block-topia.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/samaelexe.html",
@@ -21840,6 +22722,12 @@
     },
     {
       "source": "/wiki/satoshi-scroll.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/satoshi-scroll.html",
       "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
@@ -21849,12 +22737,6 @@
       "target": "/wiki/the-code-alchemists.html",
       "score": 87,
       "weight": 0.87
-    },
-    {
-      "source": "/wiki/satoshi-scroll.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
-      "score": 86,
-      "weight": 0.86
     },
     {
       "source": "/wiki/seeding-rights.html",
@@ -21930,6 +22812,12 @@
     },
     {
       "source": "/wiki/six-pillars.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/six-pillars.html",
       "target": "/wiki/midevilpunks.html",
       "score": 66,
       "weight": 0.66
@@ -21939,12 +22827,6 @@
       "target": "/wiki/the-chain-scribes.html",
       "score": 66,
       "weight": 0.66
-    },
-    {
-      "source": "/wiki/six-pillars.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 64,
-      "weight": 0.64
     },
     {
       "source": "/wiki/sneakar.html",
@@ -22127,6 +23009,36 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/st-patricks-day-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/st-patricks-day-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/st-patricks-day-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/st-patricks-day-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/st-patricks-day-bear.html",
+      "target": "/wiki/posh-bear.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
       "source": "/wiki/stake-is-a-community-powered-web3.html",
       "target": "/wiki/punk-is-the-utility-token-behind.html",
       "score": 74,
@@ -22171,8 +23083,8 @@
     {
       "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/staking.html",
@@ -22247,6 +23159,36 @@
       "weight": 0.75
     },
     {
+      "source": "/wiki/straight-outta-ghetto-bear.html",
+      "target": "/wiki/burglar-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/straight-outta-ghetto-bear.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/straight-outta-ghetto-bear.html",
+      "target": "/wiki/gentleman-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/straight-outta-ghetto-bear.html",
+      "target": "/wiki/graff-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/straight-outta-ghetto-bear.html",
+      "target": "/wiki/jamaican-bear.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
       "source": "/wiki/street-artist-buster-aka-charlie-buster.html",
       "target": "/wiki/crypto-moonboys.html",
       "score": 85,
@@ -22273,8 +23215,8 @@
     {
       "source": "/wiki/street-artist-buster-aka-charlie-buster.html",
       "target": "/wiki/block-topia.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/street-kingdoms.html",
@@ -22375,8 +23317,8 @@
     {
       "source": "/wiki/sylas-the-unbroken.html",
       "target": "/wiki/block-topia.html",
-      "score": 80,
-      "weight": 0.8
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/sylas-the-unbroken.html",
@@ -22465,8 +23407,8 @@
     {
       "source": "/wiki/teddy-boi-jones.html",
       "target": "/wiki/block-topia.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/teddy-boi-jones.html",
@@ -22549,7 +23491,7 @@
     {
       "source": "/wiki/the-allcity-bulls.html",
       "target": "/wiki/the-nomad-bears.html",
-      "score": 117,
+      "score": 121,
       "weight": 1
     },
     {
@@ -22645,8 +23587,8 @@
     {
       "source": "/wiki/the-aztec-raiders.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 101,
+      "weight": 1
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
@@ -22662,9 +23604,9 @@
     },
     {
       "source": "/wiki/the-aztec-raiders.html",
-      "target": "/wiki/the-moonlords.html",
-      "score": 96,
-      "weight": 0.96
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-bally-boys-digital-entrepreneurs.html",
@@ -22705,7 +23647,7 @@
     {
       "source": "/wiki/the-bally-boys.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 102,
+      "score": 104,
       "weight": 1
     },
     {
@@ -22824,25 +23766,25 @@
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/the-blockchain-furies.html",
       "target": "/wiki/the-bally-boys.html",
       "score": 90,
       "weight": 0.9
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 89,
-      "weight": 0.89
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 90,
+      "weight": 0.9
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
       "target": "/wiki/the-ducky-boys.html",
-      "score": 89,
-      "weight": 0.89
-    },
-    {
-      "source": "/wiki/the-blockchain-furies.html",
-      "target": "/wiki/the-high-hats.html",
       "score": 89,
       "weight": 0.89
     },
@@ -23130,6 +24072,12 @@
     },
     {
       "source": "/wiki/the-cleanupcentr.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-cleanupcentr.html",
       "target": "/wiki/the-rugpull-miners.html",
       "score": 82,
       "weight": 0.82
@@ -23139,12 +24087,6 @@
       "target": "/wiki/the-code-alchemists.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-cleanupcentr.html",
-      "target": "/wiki/satoshi-scroll.html",
-      "score": 80,
-      "weight": 0.8
     },
     {
       "source": "/wiki/the-code-alchemists-the-technical.html",
@@ -23190,6 +24132,12 @@
     },
     {
       "source": "/wiki/the-code-alchemists.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-code-alchemists.html",
       "target": "/wiki/the-aztec-raiders.html",
       "score": 87,
       "weight": 0.87
@@ -23197,12 +24145,6 @@
     {
       "source": "/wiki/the-code-alchemists.html",
       "target": "/wiki/queen-sarah-p-fly.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/the-code-alchemists.html",
-      "target": "/wiki/satoshi-scroll.html",
       "score": 86,
       "weight": 0.86
     },
@@ -23298,13 +24240,13 @@
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
-      "target": "/wiki/the-allcity-bulls.html",
-      "score": 105,
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 109,
       "weight": 1
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "target": "/wiki/the-allcity-bulls.html",
       "score": 105,
       "weight": 1
     },
@@ -23401,8 +24343,8 @@
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/the-crypto-stoned-boys.html",
@@ -23454,15 +24396,15 @@
     },
     {
       "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-aztec-raiders.html",
-      "score": 100,
+      "target": "/wiki/the-blockstars.html",
+      "score": 101,
       "weight": 1
     },
     {
       "source": "/wiki/the-ducky-boys.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 99,
-      "weight": 0.99
+      "target": "/wiki/the-aztec-raiders.html",
+      "score": 100,
+      "weight": 1
     },
     {
       "source": "/wiki/the-ducky-boys.html",
@@ -23550,6 +24492,12 @@
     },
     {
       "source": "/wiki/the-evm-punks.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-evm-punks.html",
       "target": "/wiki/the-og-pixel-saints.html",
       "score": 85,
       "weight": 0.85
@@ -23559,12 +24507,6 @@
       "target": "/wiki/the-rugpull-miners.html",
       "score": 85,
       "weight": 0.85
-    },
-    {
-      "source": "/wiki/the-evm-punks.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/the-finance-guild-the-digital-ledger.html",
@@ -23622,9 +24564,9 @@
     },
     {
       "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/the-blockstars.html",
+      "score": 82,
+      "weight": 0.82
     },
     {
       "source": "/wiki/the-first-witness.html",
@@ -23731,8 +24673,8 @@
     {
       "source": "/wiki/the-gasless-ghosts.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
@@ -23970,6 +24912,12 @@
     },
     {
       "source": "/wiki/the-great-dip.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/the-great-dip.html",
       "target": "/wiki/the-evm-punks.html",
       "score": 82,
       "weight": 0.82
@@ -23979,12 +24927,6 @@
       "target": "/wiki/the-rugpull-miners.html",
       "score": 82,
       "weight": 0.82
-    },
-    {
-      "source": "/wiki/the-great-dip.html",
-      "target": "/wiki/fomo-plague.html",
-      "score": 81,
-      "weight": 0.81
     },
     {
       "source": "/wiki/the-great-reset-and-the-global-grid.html",
@@ -24097,8 +25039,8 @@
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 91,
+      "weight": 0.91
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
@@ -24156,15 +25098,15 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/the-bally-boys.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/the-blockstars.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/queen-sarah-p-fly.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/the-bally-boys.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-hodl-warriors-the-protocol-of.html",
@@ -24259,8 +25201,8 @@
     {
       "source": "/wiki/the-information-mercenaries.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 92,
-      "weight": 0.92
+      "score": 94,
+      "weight": 0.94
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
@@ -24355,8 +25297,8 @@
     {
       "source": "/wiki/the-moonlords.html",
       "target": "/wiki/the-blockstars.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 98,
+      "weight": 0.98
     },
     {
       "source": "/wiki/the-moonlords.html",
@@ -24864,6 +25806,12 @@
     },
     {
       "source": "/wiki/the-salvagers.html",
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/the-salvagers.html",
       "target": "/wiki/the-ducky-boys.html",
       "score": 89,
       "weight": 0.89
@@ -24876,13 +25824,7 @@
     },
     {
       "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-chain-scribes.html",
-      "score": 88,
-      "weight": 0.88
-    },
-    {
-      "source": "/wiki/the-salvagers.html",
-      "target": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/the-blockstars.html",
       "score": 88,
       "weight": 0.88
     },
@@ -24924,6 +25866,12 @@
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
+      "target": "/wiki/the-blockstars.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/the-shard-mothers-of-manhattan.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 85,
       "weight": 0.85
@@ -24933,12 +25881,6 @@
       "target": "/wiki/the-rugpull-miners.html",
       "score": 85,
       "weight": 0.85
-    },
-    {
-      "source": "/wiki/the-shard-mothers-of-manhattan.html",
-      "target": "/wiki/the-blockstars.html",
-      "score": 83,
-      "weight": 0.83
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -25008,6 +25950,12 @@
     },
     {
       "source": "/wiki/the-squeaky-pinks.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 87,
+      "weight": 0.87
+    },
+    {
+      "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/the-allcity-bulls.html",
       "score": 83,
       "weight": 0.83
@@ -25015,12 +25963,6 @@
     {
       "source": "/wiki/the-squeaky-pinks.html",
       "target": "/wiki/the-crypto-moongirls.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/the-squeaky-pinks.html",
-      "target": "/wiki/the-nomad-bears.html",
       "score": 83,
       "weight": 0.83
     },
@@ -25086,13 +26028,13 @@
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-chain-scribes.html",
+      "target": "/wiki/the-blockstars.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/the-tuskon-ogs.html",
-      "target": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-chain-scribes.html",
       "score": 85,
       "weight": 0.85
     },
@@ -25153,8 +26095,8 @@
     {
       "source": "/wiki/the-whitewasher.html",
       "target": "/wiki/block-topia.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/thera-9.html",
@@ -25176,15 +26118,15 @@
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/snipey-d-man-sirus.html",
+      "target": "/wiki/block-topia.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/thera-9.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/snipey-d-man-sirus.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/thorne-the-architect.html",
@@ -25207,8 +26149,8 @@
     {
       "source": "/wiki/thorne-the-architect.html",
       "target": "/wiki/block-topia.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/thorne-the-architect.html",
@@ -25315,8 +26257,8 @@
     {
       "source": "/wiki/veyra-nyx.html",
       "target": "/wiki/block-topia.html",
-      "score": 86,
-      "weight": 0.86
+      "score": 87,
+      "weight": 0.87
     },
     {
       "source": "/wiki/veyra-nyx.html",
@@ -25356,15 +26298,45 @@
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/thorne-the-architect.html",
+      "target": "/wiki/block-topia.html",
       "score": 84,
       "weight": 0.84
     },
     {
       "source": "/wiki/wagmi-prophecy.html",
-      "target": "/wiki/block-topia.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/thorne-the-architect.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/walking-boombox.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/walking-boombox.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/walking-boombox.html",
+      "target": "/wiki/graff-bear.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/walking-boombox.html",
+      "target": "/wiki/green-electric-bot.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/walking-boombox.html",
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/wallets.html",
@@ -25386,15 +26358,75 @@
     },
     {
       "source": "/wiki/wallets.html",
+      "target": "/wiki/block-topia.html",
+      "score": 84,
+      "weight": 0.84
+    },
+    {
+      "source": "/wiki/wallets.html",
       "target": "/wiki/bitcoin-kids.html",
       "score": 83,
       "weight": 0.83
     },
     {
-      "source": "/wiki/wallets.html",
-      "target": "/wiki/block-topia.html",
-      "score": 83,
-      "weight": 0.83
+      "source": "/wiki/waterfront-roamers.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/waterfront-roamers.html",
+      "target": "/wiki/stikfamwars.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/waterfront-roamers.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/waterfront-roamers.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/waterfront-roamers.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/waterfront-samurai.html",
+      "target": "/wiki/police-robot.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/waterfront-samurai.html",
+      "target": "/wiki/darren-cullen.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
+      "source": "/wiki/waterfront-samurai.html",
+      "target": "/wiki/blue-electric-bot.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/waterfront-samurai.html",
+      "target": "/wiki/camo-bear.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/waterfront-samurai.html",
+      "target": "/wiki/charlie-buster.html",
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/wax-blockchain.html",
@@ -25638,6 +26670,12 @@
     },
     {
       "source": "/wiki/whale-lords.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 90,
+      "weight": 0.9
+    },
+    {
+      "source": "/wiki/whale-lords.html",
       "target": "/wiki/the-crypto-moongirls.html",
       "score": 89,
       "weight": 0.89
@@ -25645,12 +26683,6 @@
     {
       "source": "/wiki/whale-lords.html",
       "target": "/wiki/the-allcity-bulls.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/whale-lords.html",
-      "target": "/wiki/the-nomad-bears.html",
       "score": 86,
       "weight": 0.86
     },
@@ -25680,6 +26712,12 @@
     },
     {
       "source": "/wiki/whisper-codex.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/whisper-codex.html",
       "target": "/wiki/midevilpunks.html",
       "score": 66,
       "weight": 0.66
@@ -25689,12 +26727,6 @@
       "target": "/wiki/the-chain-scribes.html",
       "score": 66,
       "weight": 0.66
-    },
-    {
-      "source": "/wiki/whisper-codex.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 64,
-      "weight": 0.64
     },
     {
       "source": "/wiki/why-this-matters-now-ai-is-restructuring.html",
@@ -25885,8 +26917,8 @@
     {
       "source": "/wiki/zarah8.html",
       "target": "/wiki/block-topia.html",
-      "score": 83,
-      "weight": 0.83
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/zarah8.html",

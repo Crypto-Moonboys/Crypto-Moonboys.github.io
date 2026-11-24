@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-11-24T01:09:51.481Z",
+  "_generated": "2026-11-24T04:30:45.351Z",
   "summary": {
-    "total": 583,
-    "approved": 583,
+    "total": 610,
+    "approved": 610,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -128,6 +128,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 916
+    },
+    {
+      "slug": "allcity-bulls-mech",
+      "file": "allcity-bulls-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 272
     },
     {
       "slug": "altcoins",
@@ -277,11 +284,32 @@
       "word_count": 2380
     },
     {
+      "slug": "blockchain-furies-mech",
+      "file": "blockchain-furies-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 251
+    },
+    {
       "slug": "blockchain-technology",
       "file": "blockchain-technology.html",
       "status": "APPROVED_ALIAS_REDIRECT",
       "reason": "http-equiv refresh or data-wiki-stub redirect page.",
       "word_count": 0
+    },
+    {
+      "slug": "blockstars-mech",
+      "file": "blockstars-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 247
+    },
+    {
+      "slug": "blue-electric-bot",
+      "file": "blue-electric-bot.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 261
     },
     {
       "slug": "bone-idol-ink",
@@ -291,11 +319,25 @@
       "word_count": 2494
     },
     {
+      "slug": "burglar-bear",
+      "file": "burglar-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 260
+    },
+    {
       "slug": "burn-to-earn",
       "file": "burn-to-earn.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 2407
+    },
+    {
+      "slug": "camo-bear",
+      "file": "camo-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 262
     },
     {
       "slug": "canvas-clash",
@@ -1178,6 +1220,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 2294
+    },
+    {
+      "slug": "gentleman-bear",
+      "file": "gentleman-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 274
     },
     {
       "slug": "gk",
@@ -2230,6 +2279,13 @@
       "word_count": 532
     },
     {
+      "slug": "graff-bear",
+      "file": "graff-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 272
+    },
+    {
       "slug": "graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human",
       "file": "graffiti-art-will-forever-remain-a-beacon-of-creativity-resilience-and-the-indomitable-human.html",
       "status": "APPROVED_CANON_PAGE",
@@ -2242,6 +2298,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 2613
+    },
+    {
+      "slug": "graffiti-kings-mech",
+      "file": "graffiti-kings-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 260
     },
     {
       "slug": "graffiti-nexus",
@@ -2342,6 +2405,13 @@
       "word_count": 2507
     },
     {
+      "slug": "graffpunks-mech",
+      "file": "graffpunks-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 258
+    },
+    {
       "slug": "graffpunks-network",
       "file": "graffpunks-network.html",
       "status": "APPROVED_ALIAS_REDIRECT",
@@ -2368,6 +2438,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1125
+    },
+    {
+      "slug": "green-electric-bot",
+      "file": "green-electric-bot.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 267
     },
     {
       "slug": "grit",
@@ -2403,6 +2480,13 @@
       "status": "APPROVED_ALIAS_REDIRECT",
       "reason": "http-equiv refresh or data-wiki-stub redirect page.",
       "word_count": 0
+    },
+    {
+      "slug": "hard-fork-rockers-mech",
+      "file": "hard-fork-rockers-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 271
     },
     {
       "slug": "harrison-rift",
@@ -2461,6 +2545,13 @@
       "word_count": 0
     },
     {
+      "slug": "hodl-wars-mech",
+      "file": "hodl-wars-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 264
+    },
+    {
       "slug": "hodl-x-warriors",
       "file": "hodl-x-warriors.html",
       "status": "APPROVED_CANON_PAGE",
@@ -2515,6 +2606,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1154
+    },
+    {
+      "slug": "jamaican-bear",
+      "file": "jamaican-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 269
     },
     {
       "slug": "jillian-godsil",
@@ -2713,6 +2811,13 @@
       "word_count": 1724
     },
     {
+      "slug": "moongirls-mech",
+      "file": "moongirls-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 258
+    },
+    {
       "slug": "nbg",
       "file": "nbg.html",
       "status": "APPROVED_CANON_PAGE",
@@ -2804,6 +2909,13 @@
       "word_count": 1197
     },
     {
+      "slug": "no-ball-games-mech",
+      "file": "no-ball-games-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 266
+    },
+    {
       "slug": "no-ball-games-nbg",
       "file": "no-ball-games-nbg.html",
       "status": "APPROVED_ALIAS_REDIRECT",
@@ -2830,6 +2942,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1168
+    },
+    {
+      "slug": "nomad-bears-mech",
+      "file": "nomad-bears-mech.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 271
     },
     {
       "slug": "null-the-prophet",
@@ -2900,6 +3019,34 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 596
+    },
+    {
+      "slug": "police-bike",
+      "file": "police-bike.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 266
+    },
+    {
+      "slug": "police-car",
+      "file": "police-car.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 254
+    },
+    {
+      "slug": "police-robot",
+      "file": "police-robot.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 275
+    },
+    {
+      "slug": "posh-bear",
+      "file": "posh-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 256
     },
     {
       "slug": "potential-crypto-moonboys-game-trilogy",
@@ -3000,6 +3147,13 @@
       "word_count": 8581
     },
     {
+      "slug": "sailor-bear",
+      "file": "sailor-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 251
+    },
+    {
       "slug": "samaelexe",
       "file": "samaelexe.html",
       "status": "APPROVED_CANON_PAGE",
@@ -3098,6 +3252,13 @@
       "word_count": 3621
     },
     {
+      "slug": "st-patricks-day-bear",
+      "file": "st-patricks-day-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 271
+    },
+    {
       "slug": "stake-is-a-community-powered-web3",
       "file": "stake-is-a-community-powered-web3.html",
       "status": "APPROVED_CANON_PAGE",
@@ -3124,6 +3285,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1191
+    },
+    {
+      "slug": "straight-outta-ghetto-bear",
+      "file": "straight-outta-ghetto-bear.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 285
     },
     {
       "slug": "street-artist-buster-aka-charlie-buster",
@@ -3938,11 +4106,32 @@
       "word_count": 2436
     },
     {
+      "slug": "walking-boombox",
+      "file": "walking-boombox.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 261
+    },
+    {
       "slug": "wallets",
       "file": "wallets.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1514
+    },
+    {
+      "slug": "waterfront-roamers",
+      "file": "waterfront-roamers.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 270
+    },
+    {
+      "slug": "waterfront-samurai",
+      "file": "waterfront-samurai.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 254
     },
     {
       "slug": "wax-blockchain",
