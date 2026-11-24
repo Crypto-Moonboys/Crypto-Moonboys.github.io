@@ -8,17 +8,23 @@ import { chromium } from 'playwright';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pages = ['alfie-bitcoin-kid-blaze', 'queen-sarah-p-fly', 'the-squeaky-pinks', 'maidstone-base', 'whale-lords'];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+const unexpectedApiMethods = [];
 const server = http.createServer(async (req, res) => {
-  try {
-    const name = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-    if (name.startsWith('/__citation-test-api/')) {
-      assert.equal(req.method, 'GET', 'unlinked browser must never submit a vote');
-      res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ score: 7 }));
+  const pathname = new URL(req.url, 'http://localhost').pathname;
+  if (pathname.startsWith('/__citation-test-api/')) {
+    if (req.method !== 'GET') {
+      unexpectedApiMethods.push(req.method);
+      res.writeHead(405).end();
       return;
     }
-    const filename = path.resolve(root, `.${name}`);
+    res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ score: 7 }));
+    return;
+  }
+  try {
+    const filename = path.resolve(root, `.${decodeURIComponent(pathname)}`);
     if (!filename.startsWith(`${root}${path.sep}`)) throw Error('Invalid path');
-    res.writeHead(200, { 'Content-Type': types[path.extname(filename)] || 'application/octet-stream' }).end(await fs.readFile(filename));
+    const content = await fs.readFile(filename);
+    res.writeHead(200, { 'Content-Type': types[path.extname(filename)] || 'application/octet-stream' }).end(content);
   } catch { res.writeHead(404).end(); }
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -57,6 +63,7 @@ try {
     assert.ok(await panel.isVisible(), `${slug}: no-JavaScript credibility section remains readable`);
     await page.close();
   }
+  assert.deepEqual(unexpectedApiMethods, [], 'unlinked browser must never submit a vote');
   console.log('Citation preservation passed: 10 desktop/mobile views, public scores/account gate and 5 no-JavaScript views; only local mock API used.');
 } finally {
   await browser?.close();

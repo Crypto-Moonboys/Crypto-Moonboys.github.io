@@ -139,13 +139,17 @@ function render(district, colors) {
   const embedded = JSON.stringify({ district, colors }).replaceAll("<", "\\u003c");
   return `<!doctype html>
 <html lang="en">
+<head>
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Block Topia waterfront</title>
 <style>
 body{margin:2rem;background:#101722;color:#e1eef4;font:1rem system-ui}
 canvas{max-width:100%;image-rendering:pixelated;border:1px solid #39515d}
 </style>
+</head>
+<body class="page-standalone-tool">
 <h1 id="title"></h1>
 <p>Block Topia · Founder waterfront layout</p>
 <canvas id="map" width="384" height="384" aria-label="Top-down waterfront map"></canvas>
@@ -173,6 +177,7 @@ if (district.rows.length === 12 && district.route.length > 1 &&
   document.body.dataset.previewReady = "true";
 }
 </script>
+</body>
 </html>
 `;
 }
