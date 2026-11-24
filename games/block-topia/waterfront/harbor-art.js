@@ -201,7 +201,23 @@ window.summonHarborKaiju = function summonHarborKaiju(rows) {
   return { x: x + 0.5, y: y - 1 };
 };
 
-function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
+const harborKaijuProfile = { name: "Harbor Kaiju", wiki: "/wiki/harbor-kaiju.html" };
+const harborNessieProfiles = [
+  { name: "Nessie", role: "Open-water sighting", wiki: "/wiki/harbor-nessie.html" },
+  { name: "Angry Nessie", role: "Open-water sighting", wiki: "/wiki/harbor-nessie.html" },
+];
+
+function drawHarborCreature(ctx, atlas, column, row, frameWidth, frameHeight,
+  left, top, scale, inspection, id, profile) {
+  const width = frameWidth * scale;
+  const height = frameHeight * scale;
+  ctx.drawImage(atlas.image, column * frameWidth, row * frameHeight, frameWidth, frameHeight,
+    left, top, width, height);
+  inspection?.hit({ id, bounds: { left, top, right: left + width, bottom: top + height },
+    profile, pausable: false });
+}
+
+function drawHarborKaiju(ctx, rows, size, time, visible, repaint, inspection) {
   if (!kaijuSummoned) return;
   // Expire even when the patrol is offscreen or the atlas never decoded.
   if (time !== null) {
@@ -244,9 +260,9 @@ function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
   const scale = size / 32;
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(harborKaijuAtlas.image, column * 144, row * 128, 144, 128,
-    (x + 0.5) * size - 72 * scale, (y + 0.5) * size - 110 * scale,
-    144 * scale, 128 * scale);
+  drawHarborCreature(ctx, harborKaijuAtlas, column, row, 144, 128,
+    (x + 0.5) * size - 72 * scale, (y + 0.5) * size - 110 * scale, scale,
+    inspection, "harbor-kaiju", { ...harborKaijuProfile, role: "Offshore patrol" });
   ctx.restore();
 }
 
@@ -301,7 +317,7 @@ window.summonHarborLandfall = function summonHarborLandfall(rows) {
 window.harborKaijuActive = rows =>
   (kaijuSummoned && hasKaijuWater(rows)) || (landfallSummoned && hasLandfallRoute(rows));
 
-function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
+function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue, inspection) {
   if (time !== null) {
     naturalLandfallDue ??= time + 1200 + Math.random() * 1200;
     if (landfallSummoned) {
@@ -359,8 +375,9 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
   queue(anchorY, () => {
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(atlas.image, column * 144, row * 128, 144, 128,
-      anchorX - 72 * scale, anchorY - 110 * scale, 144 * scale, 128 * scale);
+    drawHarborCreature(ctx, atlas, column, row, 144, 128,
+      anchorX - 72 * scale, anchorY - 110 * scale, scale,
+      inspection, "harbor-kaiju-landfall", { ...harborKaijuProfile, role: "North-shore landfall" });
     if (flameFrame !== null && landfallFireAtlas.image) {
       drawLandfallFire(ctx, anchorX, anchorY, scale, row, column, flameFrame);
     }
@@ -369,8 +386,8 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
 }
 
 const nessieVariants = [
-  { atlas: { file: "harbor-nessie.webp?v=1" }, minDelay: 45, delayRange: 55, nextWave: null },
-  { atlas: { file: "harbor-nessie-angry.webp?v=1" }, minDelay: 110, delayRange: 75, nextWave: null },
+  { atlas: { file: "harbor-nessie.webp?v=1" }, profile: harborNessieProfiles[0], minDelay: 45, delayRange: 55, nextWave: null },
+  { atlas: { file: "harbor-nessie-angry.webp?v=1" }, profile: harborNessieProfiles[1], minDelay: 110, delayRange: 75, nextWave: null },
 ];
 const nessieSites = [[21, 3], [61, 9], [93, 15], [101, 27], [21, 33],
   [13, 51], [21, 69], [85, 75], [53, 81]];
@@ -397,7 +414,7 @@ window.summonHarborNessie = function summonHarborNessie(rows, time) {
   return null;
 };
 
-function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
+function drawHarborNessies(ctx, rows, size, time, visible, repaint, inspection) {
   if (time !== null) {
     for (const [index, { started }] of nessieSightings) {
       if (time - started >= nessieDuration) nessieSightings.delete(index);
@@ -418,7 +435,7 @@ function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
     }
   }
 
-  for (const [index, { started, variant: { atlas } }] of nessieSightings) {
+  for (const [index, { started, variant: { atlas, profile } }] of nessieSightings) {
     const site = nessieSites[index];
     const [col, row] = site;
     if (!hasNessieWater(rows, site)) {
@@ -439,8 +456,9 @@ function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
     const scale = size / 32;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(atlas.image, frame % 4 * 128, Math.floor(frame / 4) * 72, 128, 72,
-      x - 52 * scale, y - 42 * scale, 104 * scale, 58.5 * scale);
+    drawHarborCreature(ctx, atlas, frame % 4, Math.floor(frame / 4), 128, 72,
+      x - 52 * scale, y - 42 * scale, scale * 104 / 128,
+      inspection, "harbor-nessie-" + index, profile);
     ctx.restore();
   }
 }
@@ -1521,8 +1539,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const waterBounds = [-offsetX / scaleX, -offsetY / scaleY, ctx.canvas.width / scaleX, ctx.canvas.height / scaleY];
   rect(waterPattern(ctx, size), ...waterBounds);
   if (district.natureIsland) {
-    drawHarborKaiju(ctx, rows, size, time, visible, repaintArt);
-    drawHarborNessies(ctx, rows, size, time, visible, repaintArt);
+    drawHarborKaiju(ctx, rows, size, time, visible, repaintArt, inspection);
+    drawHarborNessies(ctx, rows, size, time, visible, repaintArt, inspection);
   }
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
@@ -1554,7 +1572,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   loadDetailedAtlas(waterfrontDetailedFactions, "low", repaintArt);
   loadDetailedAtlas(waterfrontDetailedBots, "low", repaintArt);
   drawFactionWalkers();
-  if (district.natureIsland) drawHarborLandfall(ctx, rows, size, time, visible, repaintArt, queue);
+  if (district.natureIsland) drawHarborLandfall(ctx, rows, size, time, visible, repaintArt, queue, inspection);
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));

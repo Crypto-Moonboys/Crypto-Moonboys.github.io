@@ -146,7 +146,9 @@ function scheduleInspectionPaint() {
 }
 
 function npcAt(x, y) {
-  return npcHits.findLast(actor => Math.abs(actor.x - x) <= actor.spriteSize / 2 &&
+  return npcHits.findLast(actor => actor.bounds
+    ? x >= actor.bounds.left && x <= actor.bounds.right && y >= actor.bounds.top && y <= actor.bounds.bottom
+    : Math.abs(actor.x - x) <= actor.spriteSize / 2 &&
     y >= actor.y - actor.spriteSize && y <= actor.y + 3);
 }
 
@@ -158,7 +160,7 @@ function updateHover() {
   mapSurface.classList.toggle("is-npc", Boolean(hit));
   if (hit?.id === hoveredNpc) return;
   hoveredNpc = hit?.id;
-  if (hit) pauseNpc(hit.id);
+  if (hit && hit.pausable !== false) pauseNpc(hit.id);
 }
 function paintMap() {
   if (!window.waterfrontAccess.canPlay()) return;
@@ -292,7 +294,7 @@ mapSurface.addEventListener("click", event => {
     if (hit) {
       const touch = event.pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents;
       const open = !touch || (tappedNpc === hit.id && inspection.held(hit.id));
-      pauseNpc(hit.id);
+      if (hit.pausable !== false) pauseNpc(hit.id);
       tappedNpc = touch ? hit.id : null;
       if (hit.profile) {
         mapSurface.dispatchEvent(new CustomEvent("waterfront:roamer-select", { detail: hit.profile }));

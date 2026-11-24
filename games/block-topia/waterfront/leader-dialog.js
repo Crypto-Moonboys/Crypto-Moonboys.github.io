@@ -91,11 +91,13 @@ function showDetails(key) {
   details.hidden = false;
 }
 
-function showRoamerDetails({ name, wiki }) {
+function showRoamerDetails({ name, wiki, role }) {
   selected = null;
   details.querySelector('h2').textContent = name;
   details.querySelector('[data-character-page]').href = wiki;
-  details.querySelector('[data-leader-status]').hidden = true;
+  details.querySelector('[data-leader-status]').hidden = !role;
+  details.querySelector('[data-role]').textContent = role ?? '';
+  details.querySelector('[data-activity]').textContent = '';
   details.querySelector('[data-ask]').hidden = true;
   details.querySelector('[data-slow]').hidden = true;
   details.hidden = false;
