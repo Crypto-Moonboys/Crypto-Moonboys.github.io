@@ -50,6 +50,14 @@ class MockStatement {
       const row = this.db.blocktopiaProgression.get(telegramId);
       return row ? { telegram_id: telegramId, xp: row.xp, gems: row.gems, tier: 1 } : null;
     }
+    if (sql === 'UPDATE blocktopia_progression SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ? AND xp = ? AND gems = ? RETURNING telegram_id') {
+      const [xp, gems, telegramIdRaw, expectedXp, expectedGems] = this.args;
+      const telegramId = String(telegramIdRaw);
+      const row = this.db.blocktopiaProgression.get(telegramId);
+      if (!row || row.xp !== expectedXp || row.gems !== expectedGems) return null;
+      this.db.blocktopiaProgression.set(telegramId, { ...row, xp: Number(xp), gems: Number(gems) });
+      return { telegram_id: telegramId };
+    }
     throw new Error(`Unhandled first SQL: ${sql}`);
   }
 
@@ -69,13 +77,6 @@ class MockStatement {
       if (!this.db.blocktopiaProgression.has(telegramId)) {
         this.db.blocktopiaProgression.set(telegramId, { xp: 0, gems: 0 });
       }
-      return { success: true, meta: { changes: 1 } };
-    }
-
-    if (sql.startsWith('UPDATE blocktopia_progression SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?')) {
-      const [xp, gems, telegramIdRaw] = this.args;
-      const telegramId = String(telegramIdRaw);
-      this.db.blocktopiaProgression.set(telegramId, { xp: Number(xp), gems: Number(gems) });
       return { success: true, meta: { changes: 1 } };
     }
 
