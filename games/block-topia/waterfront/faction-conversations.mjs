@@ -110,11 +110,11 @@ export function createFactionConversations(storage) {
     }
   }
   let nearby = new Set();
-  let active;
-  let cooldown = 0;
+  const active = new Map();
+  let waiting = new Set();
 
   return {
-    holds: index => Boolean(active && (index === active.a || index === active.b)),
+    holds: index => waiting.has(index) || [...active.values()].some(exchange => index === exchange.a || index === exchange.b),
     tick(actors, now) {
       const visible = new Map(actors.map(actor => [actor.index, actor]));
       const close = new Set();
@@ -123,53 +123,68 @@ export function createFactionConversations(storage) {
           close.add(keyFor(left.index, right.index));
         }
       }
-      const arrival = [...close].find(pair => !nearby.has(pair));
-      // Keep an eligible arrival pending until the current exchange/cooldown ends.
       nearby = new Set([...nearby].filter(pair => close.has(pair)));
-
-      if (active) {
-        const line = active.lines[Math.floor((now - active.since) / 4_500)];
-        const a = visible.get(active.a), b = visible.get(active.b);
-        if (line && a && b && Math.hypot(a.x - b.x, a.y - b.y) < 84) return line;
-        if (!line) {
-          memory[active.pair] = active.record;
+      const linesNow = [];
+      const occupied = new Set();
+      for (const [pair, exchange] of active) {
+        const line = exchange.lines[Math.floor((now - exchange.since) / 4_500)];
+        const a = visible.get(exchange.a), b = visible.get(exchange.b);
+        if (line && a && b && Math.hypot(a.x - b.x, a.y - b.y) < 84) {
+          linesNow.push(line);
+          occupied.add(exchange.a);
+          occupied.add(exchange.b);
+          continue;
+        }
+        if (!line && a && b && Math.hypot(a.x - b.x, a.y - b.y) < 84) {
+          memory[pair] = exchange.record;
           try { storage?.setItem(key, JSON.stringify(memory)); } catch { /* The current session still remembers. */ }
         }
-        active = null;
-        cooldown = now + 2_000;
+        active.delete(pair);
       }
-      if (!arrival || now < cooldown) return null;
 
-      nearby.add(arrival);
-      const [a, b] = arrival.split(':').map(Number);
-      const day = dayNumber(now);
-      const previous = memory[arrival];
-      const count = (previous?.count ?? 0) + 1;
-      const sameDay = previous?.day === day;
-      const mode = !previous ? 'new' : count % 3 === 2 ? 'passing' : count % 3 === 0 ? 'resume' : 'new';
-      const speaker = count % 2 ? a : b;
-      const listener = speaker === a ? b : a;
-      const voice = dialogue[ids[speaker]], other = LEADERS[ids[listener]];
-      const finish = voice.finishes[day % voice.finishes.length];
-      const index = sameDay ? (previous.index + (mode === 'new' ? 1 : 0)) % total
-        : ((day % total) * 13 + a * 9 + b) % total;
-      const question = factionQuestion(speaker, index);
-      const last = previous && factionQuestion(previous.speaker, previous.index);
-      const lines = mode === 'passing' ? [turn(speaker, voice.passing)]
-        : mode === 'resume' ? [
-          turn(speaker, `${voice.resume} ${last.topic}?`),
-          turn(listener, `I’d still ${other.approach}. ${other.agenda}`),
-          turn(speaker, finish),
-        ] : [
-          turn(speaker, question.text),
-          turn(listener, question.observation + '.'),
-          turn(listener, index % 2 === 0 ? other.intro : other.agenda),
-          turn(speaker, finish),
-        ];
-      active = { a, b, pair: arrival, since: now, lines,
-        record: { day: mode === 'new' ? day : previous.day, count, index: mode === 'new' ? index : previous.index,
-          speaker: mode === 'new' ? speaker : previous.speaker } };
-      return lines[0];
+      waiting = new Set();
+      for (const arrival of close) {
+        if (nearby.has(arrival)) continue;
+        const [a, b] = arrival.split(':').map(Number);
+        if (occupied.has(a) || occupied.has(b)) {
+          // Keep nearby walkers in range until both participants are available.
+          waiting.add(a);
+          waiting.add(b);
+          continue;
+        }
+        nearby.add(arrival);
+        occupied.add(a);
+        occupied.add(b);
+        const day = dayNumber(now);
+        const previous = memory[arrival];
+        const count = (previous?.count ?? 0) + 1;
+        const sameDay = previous?.day === day;
+        const mode = !previous ? 'new' : count % 3 === 2 ? 'passing' : count % 3 === 0 ? 'resume' : 'new';
+        const speaker = count % 2 ? a : b;
+        const listener = speaker === a ? b : a;
+        const voice = dialogue[ids[speaker]], other = LEADERS[ids[listener]];
+        const finish = voice.finishes[day % voice.finishes.length];
+        const index = sameDay ? (previous.index + (mode === 'new' ? 1 : 0)) % total
+          : ((day % total) * 13 + a * 9 + b) % total;
+        const question = factionQuestion(speaker, index);
+        const last = previous && factionQuestion(previous.speaker, previous.index);
+        const lines = mode === 'passing' ? [turn(speaker, voice.passing)]
+          : mode === 'resume' ? [
+            turn(speaker, `${voice.resume} ${last.topic}?`),
+            turn(listener, `I’d still ${other.approach}. ${other.agenda}`),
+            turn(speaker, finish),
+          ] : [
+            turn(speaker, question.text),
+            turn(listener, question.observation + '.'),
+            turn(listener, index % 2 === 0 ? other.intro : other.agenda),
+            turn(speaker, finish),
+          ];
+        active.set(arrival, { a, b, since: now, lines,
+          record: { day: mode === 'new' ? day : previous.day, count, index: mode === 'new' ? index : previous.index,
+            speaker: mode === 'new' ? speaker : previous.speaker } });
+        linesNow.push(lines[0]);
+      }
+      return linesNow;
     },
   };
 }

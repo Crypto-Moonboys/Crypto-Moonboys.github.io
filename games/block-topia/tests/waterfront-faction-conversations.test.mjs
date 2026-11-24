@@ -31,26 +31,26 @@ test('a pair can start, pass and resume across reloads and an avatar handoff', (
   const now = Date.UTC(2026, 10, 24);
   const actors = [{ index: 0, x: 2, y: 3 }, { index: 1, x: 9, y: 3 }];
   const engine = createFactionConversations(storage);
-  const first = engine.tick(actors, now);
+  const first = engine.tick(actors, now)[0];
   const topic = factionQuestion(0, ((Math.floor(now / 86400000) % 240) * 13 + 1) % 240).topic;
   assert.ok(first.text.includes(topic));
   assert.ok(engine.holds(0) && engine.holds(1));
-  assert.match(engine.tick(actors, now + 4500).text, /\.$/);
+  assert.match(engine.tick(actors, now + 4500)[0].text, /\.$/);
   const joe = LEADERS['nomad-bears'];
-  assert.ok([joe.intro, joe.agenda].includes(engine.tick(actors, now + 9000).text));
-  assert.match(engine.tick(actors, now + 13500).text, /whole crew|gets a say/);
-  assert.equal(engine.tick(actors, now + 18000), null);
-  assert.equal(engine.tick(actors, now + 20001), null, 'stationary pairs do not retrigger');
+  assert.ok([joe.intro, joe.agenda].includes(engine.tick(actors, now + 9000)[0].text));
+  assert.match(engine.tick(actors, now + 13500)[0].text, /whole crew|gets a say/);
+  assert.equal(engine.tick(actors, now + 18000)[0], undefined);
+  assert.equal(engine.tick(actors, now + 20001)[0], undefined, 'stationary pairs do not retrigger');
   const restored = createFactionConversations(storage);
   const withAvatar = [{ ...actors[0], controlled: true }, actors[1]];
-  const passing = restored.tick(withAvatar, now + 21000);
+  const passing = restored.tick(withAvatar, now + 21000)[0];
   assert.deepEqual(passing, { actor: 1, text: 'I’ve got a route to check. I’ll find you on the way back.' });
-  assert.equal(restored.tick(withAvatar, now + 25501), null);
+  assert.equal(restored.tick(withAvatar, now + 25501)[0], undefined);
   restored.tick([], now + 27502);
-  const resumed = restored.tick(withAvatar, now + 29000);
+  const resumed = restored.tick(withAvatar, now + 29000)[0];
   assert.equal(resumed.text, `Give me one result we can check on ${topic}?`);
   restored.tick(withAvatar, now + 43000);
-  const tomorrow = createFactionConversations(storage).tick(actors, now + 86_400_000);
+  const tomorrow = createFactionConversations(storage).tick(actors, now + 86_400_000)[0];
   assert.notEqual(tomorrow.text, first.text);
 });
 
@@ -58,10 +58,30 @@ test('a conversation aborted by a departing actor does not create a remembered e
   let writes = 0;
   const engine = createFactionConversations({ getItem: () => '{bad', setItem: () => { writes++; } });
   const actors = [{ index: 5, x: 2, y: 3 }, { index: 7, x: 9, y: 3 }];
-  assert.ok(engine.tick(actors, 0));
-  assert.equal(engine.tick(actors.slice(1), 1000), null);
+  assert.ok(engine.tick(actors, 0)[0]);
+  assert.deepEqual(engine.tick(actors.slice(1), 1000), []);
   assert.equal(writes, 0);
-  assert.ok(engine.tick(actors, 4000).text.endsWith('?'));
+  assert.ok(engine.tick(actors, 4000)[0].text.endsWith('?'));
+});
+
+test('separate pairs start and finish encounters at the same time', () => {
+  const engine = createFactionConversations();
+  const actors = [{ index: 0, x: 0, y: 0 }, { index: 1, x: 2, y: 0 },
+    { index: 6, x: 150, y: 0 }, { index: 8, x: 152, y: 0 }];
+  assert.deepEqual(engine.tick(actors.slice(0, 2), 0).map(line => line.actor), [0]);
+  assert.deepEqual(engine.tick(actors, 1000).map(line => line.actor), [0, 6]);
+  assert.ok(actors.every(actor => engine.holds(actor.index)));
+  assert.deepEqual(engine.tick(actors, 19000), []);
+});
+
+test('a third leader waits for a busy pair and gets its own encounter', () => {
+  const engine = createFactionConversations();
+  const actors = [{ index: 0, x: 0, y: 0 }, { index: 1, x: 30, y: 0 },
+    { index: 2, x: 60, y: 0 }];
+  engine.tick(actors.slice(0, 2), 0);
+  assert.deepEqual(engine.tick(actors, 1000).map(line => line.actor), [0]);
+  assert.ok(engine.holds(2));
+  assert.deepEqual(engine.tick(actors, 18000).map(line => line.actor), [1]);
 });
 
 test('Gemini receives the character bio, faction pages and a named page while local biographies spend no fetches', async t => {

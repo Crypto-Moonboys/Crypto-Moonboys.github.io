@@ -1216,13 +1216,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   const { left, top, right, bottom } = visible ?? { left: 0, top: 0, right: width, bottom: rows.length };
-  ctx.save();
-  // Clip tall sprites at the edge of the repainted area, so offscreen sprites
-  // cannot leave stale pixels when the player pans back.
-  ctx.beginPath();
-  ctx.rect(left * size, top * size, (right - left) * size, (bottom - top) * size);
-  ctx.clip();
-  rect(waterPattern(ctx, size), left * size, top * size, (right - left) * size, (bottom - top) * size);
+  const {a: scaleX, d: scaleY, e: offsetX, f: offsetY} = ctx.getTransform();
+  const waterBounds = [-offsetX / scaleX, -offsetY / scaleY, ctx.canvas.width / scaleX, ctx.canvas.height / scaleY];
+  rect(waterPattern(ctx, size), ...waterBounds);
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
       const tile = tileAt(x, y);
@@ -1231,7 +1227,13 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       } else terrain(tile, x, y);
     }
   }
-  rect("#080a1c32", left * size, top * size, (right - left) * size, (bottom - top) * size);
+  rect("#080a1c32", ...waterBounds);
+  ctx.save();
+  // Clip tall sprites at the edge of the repainted area, so offscreen sprites
+  // cannot leave stale pixels when the player pans back.
+  ctx.beginPath();
+  ctx.rect(left * size, top * size, (right - left) * size, (bottom - top) * size);
+  ctx.clip();
   for (const [left, right, base] of buildingShadows) {
     polygon("#080b1890", [[left, base - 8], [right, base - 8], [right + 14, base + 5], [left + 12, base + 5]]);
     polygon("#080b184d", [[left + 12, base + 5], [right + 14, base + 5], [right + 20, base + 9], [left + 19, base + 9]]);
@@ -1263,9 +1265,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     if (selectedAvatar !== null) participants.push({
       index: selectedAvatar, x: player.x * size + 16, y: player.y * size + 22,
     });
-    const line = conversations.tick(participants, Date.now());
-    const speaker = line && participants.find(actor => actor.index === line.actor);
-    if (speaker) {
+    for (const line of conversations.tick(participants, Date.now())) {
+      const speaker = participants.find(actor => actor.index === line.actor);
+      if (!speaker) continue;
       ctx.save();
       ctx.font = '8px system-ui';
       ctx.textAlign = 'left';
