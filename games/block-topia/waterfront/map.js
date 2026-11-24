@@ -382,6 +382,19 @@ function requestMapPaint() {
     paintMap();
   });
 }
+window.addEventListener("keydown", event => {
+  if (event.key.toLowerCase() !== "k" || event.defaultPrevented || event.repeat || event.isComposing ||
+      event.ctrlKey || event.altKey || event.metaKey || editing || !window.waterfrontAccess.canPlay() ||
+      viewport.querySelector("dialog[open]") ||
+      event.target instanceof Element && (event.target.isContentEditable ||
+        event.target.closest("input, textarea, select, [role='textbox']"))) return;
+  const location = window.summonHarborKaiju(rows);
+  if (!location) return;
+  event.preventDefault();
+  mapScroll.scrollLeft = location.x * mapSurface.clientWidth / columns - mapScroll.clientWidth / 2;
+  mapScroll.scrollTop = location.y * mapSurface.clientHeight / initial.length - mapScroll.clientHeight / 2;
+  requestMapPaint();
+});
 mapScroll.addEventListener("scroll", requestMapPaint, { passive: true });
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {

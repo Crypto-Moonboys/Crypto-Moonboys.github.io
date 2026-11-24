@@ -172,6 +172,75 @@ const waterfrontDetails = Object.fromEntries(
   Object.keys(waterfrontAtlases["street-detail"]).map(file => [file, { file }])
 );
 
+const harborKaijuAtlas = { file: "harbor-kaiju.webp?v=1" };
+// Open water west of the southern crossing. The padding keeps the sprite
+// and its wake off land, including when a player edits nearby tiles.
+const kaijuWater = { left: 22, top: 30, right: 33, bottom: 40 };
+const kaijuLegs = [[24, 34, 30, 34, 4], [30, 34, 30, 38, 2],
+  [30, 38, 24, 38, 3], [24, 38, 24, 34, 5]];
+
+let kaijuSummoned = false;
+
+function hasKaijuWater(rows) {
+  const { left, top, right, bottom } = kaijuWater;
+  for (let row = top; row < bottom; row++) {
+    if (rows[row]?.slice(left, right) !== "~".repeat(right - left)) return false;
+  }
+  return true;
+}
+
+window.summonHarborKaiju = function summonHarborKaiju(rows) {
+  kaijuSummoned = hasKaijuWater(rows);
+  harborKaijuAtlas.started = undefined;
+  if (!kaijuSummoned) return null;
+  const [x, y] = kaijuLegs[0];
+  return { x: x + 0.5, y: y - 1 };
+};
+
+function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
+  const { left, top, right, bottom } = kaijuWater;
+  if (visible && (visible.right <= left || visible.left >= right ||
+      visible.bottom <= top || visible.top >= bottom)) return;
+  if (!kaijuSummoned || !hasKaijuWater(rows)) return;
+  loadDetailedAtlas(harborKaijuAtlas, "low", repaint);
+  if (!harborKaijuAtlas.image) return;
+
+  // Stay at the final emergence pose when motion is reduced.
+  let [x, y] = kaijuLegs[0];
+  let column = 3, row = 1;
+  if (time !== null) {
+    harborKaijuAtlas.started ??= time;
+    const elapsed = Math.max(0, time - harborKaijuAtlas.started);
+    if (elapsed >= 32) {
+      kaijuSummoned = false;
+      return;
+    }
+    if (elapsed < 2 || elapsed >= 29) {
+      const frame = Math.min(7, Math.floor((elapsed < 2 ? elapsed : 32 - elapsed) * 4));
+      row = Math.floor(frame / 4);
+      column = frame % 4;
+    } else if (elapsed < 29) {
+      const progress = Math.min(3.999999, (elapsed - 2) / 6.75);
+      const leg = Math.floor(progress);
+      const fraction = progress - leg;
+      const [startX, startY, endX, endY, facing] = kaijuLegs[leg];
+      x = startX + (endX - startX) * fraction;
+      y = startY + (endY - startY) * fraction;
+      row = facing;
+      column = Math.floor((elapsed - 2) * 6) % 4;
+    }
+  }
+
+  // Every registered frame has its water anchor at (72, 110).
+  const scale = size / 32;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(harborKaijuAtlas.image, column * 144, row * 128, 144, 128,
+    (x + 0.5) * size - 72 * scale, (y + 0.5) * size - 110 * scale,
+    144 * scale, 128 * scale);
+  ctx.restore();
+}
+
 function loadDetailedAtlas(atlas, priority, repaint) {
   if (!repaint || atlas.requested) return;
   atlas.requested = true;
@@ -1247,6 +1316,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const {a: scaleX, d: scaleY, e: offsetX, f: offsetY} = ctx.getTransform();
   const waterBounds = [-offsetX / scaleX, -offsetY / scaleY, ctx.canvas.width / scaleX, ctx.canvas.height / scaleY];
   rect(waterPattern(ctx, size), ...waterBounds);
+  if (district.natureIsland) drawHarborKaiju(ctx, rows, size, time, visible, repaintArt);
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
       const tile = tileAt(x, y);

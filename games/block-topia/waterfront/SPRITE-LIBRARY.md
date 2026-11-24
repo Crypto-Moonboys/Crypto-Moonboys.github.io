@@ -43,3 +43,7 @@ After the first compact harbor paint, a roamer atlas loads when a member of its 
 2. Use existing art for layout, route, bot activity, cargo and streetscape work. Keep the existing scale, ground anchors and animation order. Avoid duplicating PNGs or repacking an atlas just to reuse an existing frame.
 3. If a change genuinely needs new art, describe the gap and supply the AutoSprite prompt, references, intended dimensions and acceptance checks. Keep the current PR playable with approved assets. Raw AutoSprite outputs and alternate drafts may exist outside this repository and are outside this catalog.
 4. Update this catalog when adding an atlas group or changing its layout. Describe new assets and verification in the same PR.
+
+## Harbor kaiju
+
+[Harbor kaiju atlas](assets/atlases/harbor-kaiju.webp) packs the two GK-approved generated sheets into 144 × 128 frames with a waterline anchor at (72, 110). Rows 0–1 contain the eight emergence frames. Rows 2–5 loop the four south, west, east and north walk frames with footstep splashes. The final emergence frame and walk rows share a nominal 104-pixel crown-to-waterline height. The renderer loads the atlas when the hidden K shortcut summons it near its offshore patrol. The patrol is visual and uses the static final emergence pose with reduced motion.
