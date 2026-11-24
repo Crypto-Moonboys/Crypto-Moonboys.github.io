@@ -179,13 +179,29 @@ const kaijuWater = { left: 22, top: 30, right: 33, bottom: 40 };
 const kaijuLegs = [[24, 34, 30, 34, 4], [30, 34, 30, 38, 2],
   [30, 38, 24, 38, 3], [24, 38, 24, 34, 5]];
 
+let kaijuSummoned = false;
+
+function hasKaijuWater(rows) {
+  const { left, top, right, bottom } = kaijuWater;
+  for (let row = top; row < bottom; row++) {
+    if (rows[row]?.slice(left, right) !== "~".repeat(right - left)) return false;
+  }
+  return true;
+}
+
+window.summonHarborKaiju = function summonHarborKaiju(rows) {
+  kaijuSummoned = hasKaijuWater(rows);
+  harborKaijuAtlas.started = undefined;
+  if (!kaijuSummoned) return null;
+  const [x, y] = kaijuLegs[0];
+  return { x: x + 0.5, y: y - 1 };
+};
+
 function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
   const { left, top, right, bottom } = kaijuWater;
   if (visible && (visible.right <= left || visible.left >= right ||
       visible.bottom <= top || visible.top >= bottom)) return;
-  for (let row = top; row < bottom; row++) {
-    if (rows[row]?.slice(left, right) !== "~".repeat(right - left)) return;
-  }
+  if (!kaijuSummoned || !hasKaijuWater(rows)) return;
   loadDetailedAtlas(harborKaijuAtlas, "low", repaint);
   if (!harborKaijuAtlas.image) return;
 
@@ -194,7 +210,11 @@ function drawHarborKaiju(ctx, rows, size, time, visible, repaint) {
   let column = 3, row = 1;
   if (time !== null) {
     harborKaijuAtlas.started ??= time;
-    const elapsed = Math.max(0, time - harborKaijuAtlas.started) % 32;
+    const elapsed = Math.max(0, time - harborKaijuAtlas.started);
+    if (elapsed >= 32) {
+      kaijuSummoned = false;
+      return;
+    }
     if (elapsed < 2 || elapsed >= 29) {
       const frame = Math.min(7, Math.floor((elapsed < 2 ? elapsed : 32 - elapsed) * 4));
       row = Math.floor(frame / 4);
