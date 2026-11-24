@@ -4,7 +4,7 @@ The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a
 
 - [nature-island.mjs](nature-island.mjs) preserves the harbor footprint and adds two crossings to new trails, groves and wildflower meadows. Water blocks walking. Vegetation on the extension leaves land passable.
 - [harbor-art.js](harbor-art.js) draws the original harbor scenery and new forest terrain in the visible area. Its island patrol visits every reachable 8 × 8 region. Faction leaders and roaming robots start at different points on the route. Harbor residents come out of their buildings, freight robots move cargo and the briefing crew speaks near the original spawn.
-- [map.js](map.js) handles walking, camera and terrain edits. The joined map saves to `block-topia.waterfront.v7`. It restores valid older harbor edits and carries forward changes from the nature-only map where they fall outside the original harbor footprint. Earlier saves remain in their original slots.
+- [map.js](map.js) handles walking, camera and terrain edits. The camera renders the visible area at display resolution and lets players zoom from a full-island overview to a bounded close-up. The joined map saves to `block-topia.waterfront.v7`. It restores valid older harbor edits and carries forward changes from the nature-only map where they fall outside the original harbor footprint. Earlier saves remain in their original slots.
 
 ## Faction leader chat
 

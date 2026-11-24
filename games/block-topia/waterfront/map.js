@@ -8,8 +8,9 @@ const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
 const storageKey = "block-topia.waterfront.v7";
 const viewport = document.querySelector(".viewport");
 const mapScroll = document.querySelector(".map-scroll");
-const canvas = document.querySelector("#map");
-const ctx = canvas.getContext("2d");
+const mapSurface = document.querySelector("#map");
+const mapView = document.querySelector("#map-view");
+const ctx = mapView.getContext("2d");
 const edit = document.querySelector("#edit");
 const select = document.querySelector("#tile");
 const status = document.querySelector("#status");
@@ -37,7 +38,7 @@ avatar.addEventListener("change", () => {
   if (!window.waterfrontAccess.canPlay()) return;
   selectedAvatar = avatar.value === "" ? null : Number(avatar.value);
   resetIdleWalk();
-  canvas.dispatchEvent(new Event("waterfront:leader-clear"));
+  mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
   draw();
 });
 let editing = false;
@@ -110,11 +111,32 @@ let leaderStates = [];
 let previousLeaderTap;
 function paintMap() {
   if (!window.waterfrontAccess.canPlay()) return;
+  const width = mapScroll.clientWidth;
+  const height = mapScroll.clientHeight;
+  if (!width || !height || !mapSurface.clientWidth || !mapSurface.clientHeight) return;
+  // Render the visible window, not a magnified bitmap of the entire island.
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 4096 / Math.max(width, height),
+    Math.sqrt(8_000_000 / (width * height)));
+  const pixelWidth = Math.round(width * pixelRatio);
+  const pixelHeight = Math.round(height * pixelRatio);
+  if (mapView.width !== pixelWidth || mapView.height !== pixelHeight) {
+    mapView.width = pixelWidth;
+    mapView.height = pixelHeight;
+  }
+  const scaleX = pixelWidth / width;
+  const scaleY = pixelHeight / height;
+  ctx.resetTransform();
+  ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+  ctx.setTransform(mapSurface.clientWidth / mapWidth * scaleX, 0, 0,
+    mapSurface.clientHeight / mapHeight * scaleY,
+    -mapScroll.scrollLeft * scaleX, -mapScroll.scrollTop * scaleY);
+  ctx.imageSmoothingEnabled = false;
+
   const faction = selectedAvatar ?? factionIds.indexOf(window.waterfrontAccess.faction());
   factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
     editing || document.hidden ? null : factionConversations, visibleTiles()) ?? [];
-  canvas.dispatchEvent(new Event('waterfront:map-painted'));
+  mapSurface.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -188,7 +210,7 @@ function save() {
 function setEditing(enabled) {
   clearTimeout(walkTimer);
   editing = enabled;
-  canvas.dataset.editing = String(editing);
+  mapSurface.dataset.editing = String(editing);
   edit.setAttribute("aria-pressed", String(editing));
   status.textContent = editing ? "Select a square to place a tile." : "Tile editing is off.";
   draw();
@@ -197,9 +219,9 @@ edit.addEventListener("click", () => setEditing(!editing));
 document.querySelector("#editor").addEventListener("toggle", event => {
   if (!event.currentTarget.open && editing) setEditing(false);
 });
-canvas.addEventListener("click", event => {
+mapSurface.addEventListener("click", event => {
   if (!window.waterfrontAccess.canPlay() || performance.now() < ignoreTapUntil) return;
-  const rect = canvas.getBoundingClientRect();
+  const rect = mapSurface.getBoundingClientRect();
   const mapX = (event.clientX - rect.left) * mapWidth / rect.width;
   const mapY = (event.clientY - rect.top) * mapHeight / rect.height;
   const x = Math.floor(mapX / tileSize);
@@ -215,11 +237,11 @@ canvas.addEventListener("click", event => {
     if (leader) {
       const ask = Boolean(nearFirstTap && previousLeaderTap.index === leader.index);
       previousLeaderTap = ask ? null : { index: leader.index, time, x: event.clientX, y: event.clientY };
-      canvas.dispatchEvent(new CustomEvent('waterfront:leader-select', { detail: { index: leader.index, ask } }));
+      mapSurface.dispatchEvent(new CustomEvent('waterfront:leader-select', { detail: { index: leader.index, ask } }));
       return;
     }
     previousLeaderTap = null;
-    canvas.dispatchEvent(new Event('waterfront:leader-clear'));
+    mapSurface.dispatchEvent(new Event('waterfront:leader-clear'));
     walkTo(x, y);
     return;
   }
@@ -259,36 +281,32 @@ document.querySelector("#reset").addEventListener("click", () => {
   save();
   draw();
 });
-let renderScale = 0;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
-let zoom = compactMap ? 2.8 : 3.5;
+const maxZoom = 3;
+let zoom = compactMap ? 1.1 : 1.6;
 let pinch = null;
 let mapTouchActive = false;
 let ignoreTapUntil = 0;
 
+function minimumZoom() {
+  return Math.min(1, mapScroll.clientWidth / mapWidth, mapScroll.clientHeight / mapHeight);
+}
+
 function applyZoomSize() {
-  const cover = Math.max(mapScroll.clientWidth, mapScroll.clientHeight * mapWidth / mapHeight);
-  const displayWidth = Math.ceil(cover * zoom);
-  canvas.style.width = displayWidth + "px";
-  canvas.style.minWidth = "0";
-  // Match the height to the rounded width so even the last row covers the viewport.
-  canvas.style.height = Math.max(mapScroll.clientHeight, Math.ceil(displayWidth * mapHeight / mapWidth)) + "px";
-  // Keep the overview cheap and retain source sprite detail at close range.
-  const nextScale = Math.max(mapWidth, mapHeight) <= 2048 &&
-    displayWidth * window.devicePixelRatio > mapWidth ? 2 : 1;
-  if (renderScale !== nextScale) {
-    renderScale = nextScale;
-    canvas.width = mapWidth * renderScale;
-    canvas.height = mapHeight * renderScale;
-    ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-    ctx.imageSmoothingEnabled = false;
-  }
+  const width = mapScroll.clientWidth;
+  const height = mapScroll.clientHeight;
+  if (!width || !height) return;
+  zoom = Math.max(minimumZoom(), Math.min(maxZoom, zoom));
+  mapSurface.style.width = Math.round(mapWidth * zoom) + "px";
+  mapSurface.style.height = Math.round(mapHeight * zoom) + "px";
+  mapView.style.width = mapScroll.clientWidth + "px";
+  mapView.style.height = mapScroll.clientHeight + "px";
   paintMap();
 }
 
 function visibleTiles() {
-  const tileWidth = canvas.clientWidth / columns;
-  const tileHeight = canvas.clientHeight / initial.length;
+  const tileWidth = mapSurface.clientWidth / columns;
+  const tileHeight = mapSurface.clientHeight / initial.length;
   return {
     left: Math.max(0, Math.floor(mapScroll.scrollLeft / tileWidth) - 2),
     top: Math.max(0, Math.floor(mapScroll.scrollTop / tileHeight) - 2),
@@ -297,20 +315,25 @@ function visibleTiles() {
   };
 }
 
+let scrollPaint;
 mapScroll.addEventListener("scroll", () => {
-  if (reducedMotion.matches) paintMap();
+  if (scrollPaint) return;
+  scrollPaint = requestAnimationFrame(() => {
+    scrollPaint = null;
+    paintMap();
+  });
 }, { passive: true });
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
-  const before = canvas.getBoundingClientRect();
+  const before = mapSurface.getBoundingClientRect();
   const mapX = (fromX - before.left) / before.width;
   const mapY = (fromY - before.top) / before.height;
-  zoom = Math.max(1, Math.min(10, scale));
+  zoom = scale;
   applyZoomSize();
-  const after = canvas.getBoundingClientRect();
+  const after = mapSurface.getBoundingClientRect();
   mapScroll.scrollLeft += after.left + mapX * after.width - toX;
   mapScroll.scrollTop += after.top + mapY * after.height - toY;
-  if (reducedMotion.matches) paintMap();
+  paintMap();
 }
 
 const infoButton = document.querySelector("#map-info");
@@ -393,30 +416,30 @@ for (const name of ["touchend", "touchcancel"]) {
 }
 
 let mousePan = null;
-canvas.addEventListener("pointerdown", event => {
+mapSurface.addEventListener("pointerdown", event => {
   if (!window.waterfrontAccess.canPlay() || event.pointerType !== "mouse" || event.button !== 0 || editing) return;
   mousePan = {
     id: event.pointerId, x: event.clientX, y: event.clientY,
     left: mapScroll.scrollLeft, top: mapScroll.scrollTop, active: false
   };
-  canvas.setPointerCapture(event.pointerId);
+  mapSurface.setPointerCapture(event.pointerId);
 });
-canvas.addEventListener("pointermove", event => {
+mapSurface.addEventListener("pointermove", event => {
   if (!mousePan || mousePan.id !== event.pointerId) return;
   const dx = event.clientX - mousePan.x;
   const dy = event.clientY - mousePan.y;
   if (!mousePan.active && Math.hypot(dx, dy) < 6) return;
   mousePan.active = true;
-  canvas.classList.add("is-panning");
+  mapSurface.classList.add("is-panning");
   mapScroll.scrollLeft = mousePan.left - dx;
   mapScroll.scrollTop = mousePan.top - dy;
 });
 for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) {
-  canvas.addEventListener(name, event => {
+  mapSurface.addEventListener(name, event => {
     if (mousePan?.id !== event.pointerId) return;
     if (mousePan.active) ignoreTapUntil = performance.now() + 150;
     mousePan = null;
-    canvas.classList.remove("is-panning");
+    mapSurface.classList.remove("is-panning");
   });
 }
 
@@ -429,9 +452,9 @@ window.addEventListener("waterfront:access", () => {
     playerFaction.textContent = "Your representative · " + name;
     applyZoomSize();
     if (!centered) {
-      const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
+      const spawnCenter = (spawn.x + 0.5) * mapSurface.clientWidth / columns;
       mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
-      const waterfrontCenter = (spawn.y - 1) * canvas.clientHeight / initial.length;
+      const waterfrontCenter = (spawn.y - 1) * mapSurface.clientHeight / initial.length;
       mapScroll.scrollTop = Math.max(0, waterfrontCenter - mapScroll.clientHeight / 2);
       centered = true;
     }

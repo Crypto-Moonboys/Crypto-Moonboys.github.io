@@ -2120,7 +2120,7 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     headless: true,
   });
   try {
-    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, hasTouch: true, reducedMotion: 'reduce' });
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2, hasTouch: true, reducedMotion: 'reduce' });
     page.setDefaultTimeout(4_000);
     const requestBodies = [];
     const loreBodies = [];
@@ -2221,6 +2221,46 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
     assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
+    const camera = await page.evaluate(() => {
+      const view = document.querySelector('#map-view');
+      const scroll = document.querySelector('.map-scroll');
+      const map = document.querySelector('#map');
+      const context = view.getContext('2d');
+      const frame = scroll.getBoundingClientRect();
+      const x = frame.left + scroll.clientWidth / 2;
+      const y = frame.top + scroll.clientHeight / 2;
+      const worldAtCenter = () => {
+        const { left, top, width, height } = map.getBoundingClientRect();
+        return { x: (x - left) * mapWidth / width, y: (y - top) * mapHeight / height };
+      };
+      const anchor = worldAtCenter();
+      const initialZoom = map.clientWidth / mapWidth;
+      const initialBacking = view.width;
+      zoomMap(20, x, y);
+      const after = worldAtCenter();
+      const camera = {
+        initialZoom, maxZoom: map.clientWidth / mapWidth,
+        backingWidth: view.width, backingHeight: view.height,
+        viewportWidth: scroll.clientWidth, viewportHeight: scroll.clientHeight,
+        stableBacking: view.width === initialBacking,
+        drawingScale: context.getTransform().a, nearestNeighbor: !context.imageSmoothingEnabled,
+        anchorError: Math.hypot(after.x - anchor.x, after.y - anchor.y),
+      };
+      zoomMap(0, x, y);
+      camera.overviewFits = map.clientWidth <= scroll.clientWidth && map.clientHeight <= scroll.clientHeight;
+      zoomMap(initialZoom, x, y);
+      return camera;
+    });
+    assert.ok(camera.initialZoom < 1.25);
+    assert.equal(camera.maxZoom, 3);
+    assert.equal(camera.backingWidth, camera.viewportWidth * 2);
+    assert.equal(camera.backingHeight, camera.viewportHeight * 2);
+    assert.equal(camera.stableBacking, true);
+    assert.equal(camera.drawingScale, 6);
+    assert.equal(camera.nearestNeighbor, true);
+    assert.ok(camera.anchorError < 1, 'zoom keeps the world point under the pointer');
+    assert.equal(camera.overviewFits, true);
+
     const island = await page.evaluate(() => {
       const regions = new Set();
       const key = (x, y) => Math.floor(x / 8) + ',' + Math.floor(y / 8);
