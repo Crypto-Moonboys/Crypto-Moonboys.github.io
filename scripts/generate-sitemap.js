@@ -155,14 +155,18 @@ function publicSitePages() {
   return [...pages.values()];
 }
 
+function sitemapOnlyPlayRoutes() {
+  return SITEMAP_ONLY_PLAY_ROUTES.filter(route => {
+    const file = route.endsWith('/') ? route + 'index.html' : route;
+    return fs.existsSync(path.join(ROOT, file.slice(1)));
+  });
+}
+
 function writeSitemap() {
   const entries = publicSitePages().map(({ route, changefreq, priority }) =>
     url(BASE_URL + route, changefreq, priority));
-  for (const route of SITEMAP_ONLY_PLAY_ROUTES) {
-    const file = route.endsWith('/') ? route + 'index.html' : route;
-    if (fs.existsSync(path.join(ROOT, file.slice(1)))) {
-      entries.push(url(BASE_URL + route, 'monthly', '0.6'));
-    }
+  for (const route of sitemapOnlyPlayRoutes()) {
+    entries.push(url(BASE_URL + route, 'monthly', '0.6'));
   }
   for (const file of wikiPageFiles()) {
     entries.push(url(`${BASE_URL}/wiki/${file}`, 'weekly', '0.7'));
@@ -180,4 +184,4 @@ function writeSitemap() {
 }
 
 if (require.main === module) writeSitemap();
-module.exports = { publicSitePages, BASE_URL };
+module.exports = { publicSitePages, sitemapOnlyPlayRoutes, BASE_URL };
