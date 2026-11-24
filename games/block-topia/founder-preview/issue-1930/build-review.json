@@ -1,19 +1,31 @@
 {
   "issue": 1930,
-  "round": 19,
+  "round": 20,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Waterfront district has an incomplete or misleading representation.",
-          "details": "The row data for 'Lumina’s Waterfront' district is cut off, making it difficult to understand the full layout. The last row is not fully visible."
+          "description": "Waterfront district has disconnected road segments.",
+          "details": "The path from row 3, column 15 to row 4, column 27 is not continuous due to missing roads (indicated by 'r' characters).",
+          "suggestion": "Ensure all intended paths are connected."
+        },
+        {
+          "description": "Some areas in the waterfront district appear isolated.",
+          "details": "There are large sections of ground ('.') that do not connect to any road or dock, which might confuse players.",
+          "suggestion": "Connect isolated areas to the main path or remove them if they serve no purpose."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Potential navigation issues with route markers.",
-          "details": "The route markers seem to be placed in a way that might confuse users or lead them astray, as some steps are far apart and the path is not clearly defined. For instance, the transition from step 16 to 28 seems abrupt."
+          "description": "Potential navigation errors due to missing roads.",
+          "details": "The route includes jumps over large gaps in the road network, which could lead to player confusion or frustration.",
+          "suggestion": "Review and ensure that all route points are accessible via a continuous path."
+        },
+        {
+          "description": "Route may be too complex for casual players.",
+          "details": "The route involves many steps (12 in total) and includes several turns, which might be overwhelming for some users.",
+          "suggestion": "Simplify the route if possible to make navigation more intuitive."
         }
       ]
     }
