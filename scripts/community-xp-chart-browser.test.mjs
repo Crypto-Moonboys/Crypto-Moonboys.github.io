@@ -40,9 +40,10 @@ try {
     await page.goto(`http://127.0.0.1:${server.address().port}/community.html`);
     const panel = page.locator('#tg-community-leaderboard');
     const refresh = panel.locator('[data-community-refresh]');
+    const chartSummary = page.locator('details.bc-disclosure').filter({ has: panel }).locator(':scope > summary');
     const settled = () => page.waitForFunction(() => document.getElementById('tg-community-leaderboard').getAttribute('aria-busy') === 'false');
     await settled();
-    await page.locator('details').filter({ has: panel }).locator('summary').click();
+    await chartSummary.click();
     assert.equal(requests, 1, 'chart and list use one shared fetch');
     assert.equal(await panel.locator('.tg-lb-row').count(), 2);
     assert.equal(await panel.locator('script').count(), 0, 'player names are escaped');
@@ -73,7 +74,7 @@ try {
     assert.match(await panel.textContent(), /All-time Community XP/);
     assert.equal(await panel.locator('.tg-lb-bar > span').evaluate(bar => bar.style.width), '0%');
     offline = true; await page.reload(); await settled();
-    await page.locator('details').filter({ has: panel }).locator('summary').click();
+    await chartSummary.click();
     assert.equal(await panel.locator('.tg-lb-row').count(), 0);
     assert.match(await panel.textContent(), /Community XP unavailable/);
     assert.doesNotMatch(await panel.textContent(), /No Community XP recorded/);

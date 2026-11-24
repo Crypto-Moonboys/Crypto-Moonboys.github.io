@@ -4,6 +4,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { ACTION_PLAN_SOURCE_REGISTRY } from '../workers/moonboys-api/player-action-plan/sources.js';
 
 const ROOT = process.cwd();
 const SITE = 'https://cryptomoonboys.com';
@@ -1369,7 +1370,9 @@ test('My Moonboy signed checklist includes all registered sources and remaining 
   try {
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
-    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 33);
+    const sourceKeys = await f.page.locator('#mm-checklist .mm-checklist-source')
+      .evaluateAll(rows => rows.map(row => row.dataset.mmChecklistKey).sort());
+    assert.deepEqual(sourceKeys, ACTION_PLAN_SOURCE_REGISTRY.map(({key}) => 'source:' + key).sort());
     assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 3);
     assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"] .mm-checklist-gaps li').count(), 6);
     assert.match(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"]').textContent(),
@@ -1508,7 +1511,7 @@ test('My Moonboy shows dated signal evidence and clears history synchronously wh
   try {
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.getByText(/Alpha signal on/u).waitFor();
-    assert.match(await f.page.locator('#mm-battle-signals').innerText(), /✓ Completed.*Posted to the Telegram group/su);
+    assert.match(await f.page.locator('#mm-battle-signals').innerText(), /✓\s+Completed.*Posted to the Telegram group/su);
     assert.match(await f.page.locator('#mm-battle-missed').innerText(), /25 potential XP/u);
     await f.page.locator('#mm-battle-day').fill('2026-10-16');
     await f.page.getByText('Alpha signal on 2026-10-16').waitFor();

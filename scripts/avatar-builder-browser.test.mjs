@@ -50,7 +50,7 @@ const installedBrowser = process.platform === 'win32'
       'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     ].find(existsSync)
   : undefined;
-const browser = await chromium.launch({ headless: true, executablePath: installedBrowser });
+const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE_PATH || installedBrowser });
 
 async function openAt(viewport, url = standaloneUrl) {
   const page = await browser.newPage({ viewport });
@@ -224,7 +224,9 @@ async function assertHomepageLayout(page, label, mode) {
 }
 
 async function assertCategoryRow(page, label, pageScrollbarHidden = true) {
-  const categoryLayout = await page.locator('.category-tabs').evaluate((tabs) => {
+  const tabs = page.locator('.category-tabs');
+  await tabs.locator('.category-button .builder-category-icon img').nth(8).waitFor();
+  const categoryLayout = await tabs.evaluate((tabs) => {
     const buttons = [...tabs.querySelectorAll('.category-button')];
     const visibleButtons = buttons.filter((button) => {
       const style = getComputedStyle(button);
@@ -232,7 +234,8 @@ async function assertCategoryRow(page, label, pageScrollbarHidden = true) {
       return style.visibility !== 'hidden' && style.display !== 'none' && box.width > 0 && box.height > 0;
     });
     const buttonBoxes = visibleButtons.map((button) => button.getBoundingClientRect());
-    const iconBoxes = visibleButtons.map((button) => button.querySelector('svg').getBoundingClientRect());
+    const iconBoxes = visibleButtons.flatMap((button) =>
+      [...button.querySelectorAll('.builder-category-icon img')].map(icon => icon.getBoundingClientRect()));
     return {
       buttonCount: buttons.length,
       visibleButtonCount: visibleButtons.length,
@@ -249,6 +252,7 @@ async function assertCategoryRow(page, label, pageScrollbarHidden = true) {
 
   assert.equal(categoryLayout.buttonCount, 9, `${label}: category row must contain exactly nine buttons`);
   assert.equal(categoryLayout.visibleButtonCount, 9, `${label}: all nine category buttons must be visible`);
+  assert.equal(categoryLayout.iconWidths.length, 9, `${label}: all nine category icons must render`);
   assert(categoryLayout.scrollWidth <= categoryLayout.clientWidth + 1, `${label}: category row must not overflow horizontally: ${JSON.stringify(categoryLayout)}`);
   const compactPhone = await page.evaluate(() => matchMedia('(orientation: portrait) and (max-width: 699px)').matches);
   if (compactPhone) {
