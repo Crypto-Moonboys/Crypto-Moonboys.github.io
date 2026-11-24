@@ -1,4 +1,5 @@
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=2';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=3';
+import { drawZcashFortress, fortressSize, loadZcashFortress } from '../../zcash-fortress.mjs';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('view');
@@ -14,6 +15,7 @@ const atlas = file => {
   return image;
 };
 const buildings = atlas('hk-night.png');
+const fortress = mode === 'node-city' || mode === 'survival' ? loadZcashFortress() : null;
 const people = atlas('factions-detail.webp');
 const viewport = {width:0,height:0};
 const camera = {x:0,y:0,zoom:1};
@@ -58,11 +60,15 @@ try {
   const items = fixtures.map(item => ({
     ...item, ...spot(scene.walkable, scene.start.map((value,i) => value+item.offset[i]), occupied),
   }));
-  const blocked = new Set(items.filter(item => item.rect).map(item => `${item.x},${item.y}`));
+  if (fortress) items.push({
+    name: 'Zcash Mining Fortress', fortress: true,
+    ...spot(scene.walkable, [scene.start[0]-1, scene.start[1]-5], occupied),
+  });
+  const blocked = new Set(items.filter(item => item.rect || item.fortress).map(item => `${item.x},${item.y}`));
   const canWalk = (x,y) => scene.walkable(x,y) && !blocked.has(`${x},${y}`);
   const player = {x:scene.start[0],y:scene.start[1],model:2,facing:0};
   for (const item of items) {
-    if (item.rect) continue;
+    if (item.rect || item.fortress) continue;
     item.patrol = [item.x-1,item.x+1].find(x => canWalk(x,item.y)) ?? item.x;
   }
 
@@ -100,7 +106,7 @@ try {
   function drawSprites(surface, project, frame, time) {
     hits = [];
     const objects = items.map((item,index) => {
-      if (item.rect) return {...item,point:project(item.x,item.y)};
+      if (item.rect || item.fortress) return {...item,point:project(item.x,item.y)};
       const phase = reduced.matches ? 0 : (time*.66 + index*.31)%2;
       const progress = phase < 1 ? phase : 2-phase;
       const x = item.x+(item.patrol-item.x)*progress;
@@ -113,10 +119,18 @@ try {
     for (const object of objects) {
       const {x,y} = object.point;
       let w = 34, h = 34;
-      if (object.rect) {
+      let top = y - h, bottom = y;
+      if (object.fortress) {
+        if (!fortress.naturalWidth) continue;
+        w = fortressSize.width;
+        top = y - fortressSize.anchorY;
+        bottom = top + fortressSize.height;
+        drawZcashFortress(surface, fortress, x, y, 1, time);
+      } else if (object.rect) {
         const [sx,sy,sw,sh] = object.rect;
         w = object.width;
         h = Math.min(object.maxHeight,w*sh/sw);
+        top = y - h;
         surface.imageSmoothingEnabled = false;
         if (buildings.naturalWidth) surface.drawImage(buildings,sx,sy,sw,sh,x-w/2,y-h,w,h);
       } else if (people.naturalWidth) {
@@ -128,8 +142,8 @@ try {
       }
       if (object.name) {
         const factor = frame.zoom;
-        hits.push({object,left:(x-w/2)*factor+frame.translateX,top:(y-h)*factor+frame.translateY,
-          right:(x+w/2)*factor+frame.translateX,bottom:y*factor+frame.translateY});
+        hits.push({object,left:(x-w/2)*factor+frame.translateX,top:top*factor+frame.translateY,
+          right:(x+w/2)*factor+frame.translateX,bottom:bottom*factor+frame.translateY});
       }
     }
   }
@@ -182,7 +196,7 @@ try {
     const selected = hits.findLast(h => x>=h.left && x<=h.right && y>=h.top && y<=h.bottom)?.object;
     if (selected) {
       byId('name').textContent = selected.name;
-      byId('kind').textContent = selected.rect ? 'Waterfront building' : 'Waterfront NPC';
+      byId('kind').textContent = selected.fortress ? 'Animated mining fortress' : selected.rect ? 'Waterfront building' : 'Waterfront NPC';
       byId('details').hidden = false;
       return;
     }

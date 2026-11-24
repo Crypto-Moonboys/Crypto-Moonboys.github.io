@@ -33,6 +33,7 @@ let viewHeight = 0;
 let cameraX = 0;
 let cameraY = 0;
 let cameraScale = 1;
+let drawFortress;
 
 const runtime = {
   localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, maxHp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false, attackDamage: 20, attackCooldownMs: 750, armorPct: 0, runLevel: 1, upgrades: [], upgradeChoices: [], upgradeChoicesMeta: [], upgradeState: '', objectiveProgress: 0 },
@@ -839,6 +840,10 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
   drawTiles();
+  if (drawFortress) {
+    const [x, y] = tileToScreen(3, 2);
+    drawFortress(ctx, x, y + TILE_HEIGHT * cameraScale / 2, cameraScale);
+  }
   drawNpcs();
   drawPlayers();
   drawHud();
@@ -902,6 +907,7 @@ function resolveMountCanvas(options = {}) {
 function mount(options = {}) {
   if (mounted) destroy();
 
+  drawFortress = options.drawFortress;
   canvas = resolveMountCanvas(options);
   ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('BlockTopiaMap mount failed: 2D context unavailable');
@@ -926,6 +932,7 @@ function destroy() {
   if (canvas) canvas.removeEventListener('pointerdown', onPointerDown);
 
   mounted = false;
+  drawFortress = undefined;
   ctx = null;
   canvas = null;
 }
