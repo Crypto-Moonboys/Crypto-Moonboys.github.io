@@ -1,31 +1,19 @@
 {
   "issue": 1930,
-  "round": 31,
+  "round": 32,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "row": 3,
-          "column": 15,
-          "description": "Potential road or dock misalignment. The 'r' character, representing a road or dock, is isolated and may not align with expected patterns."
-        },
-        {
-          "row": 8,
-          "column": 42,
-          "description": "Isolated 'r' characters. These could represent roads or docks that are not properly connected to other elements in the district layout."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "routeIndex": 0,
-          "description": "Starting point of the route is at an unexpected location, which might confuse players and affect the overall flow of navigation."
-        },
-        {
-          "routeIndex": 9,
-          "description": "The route has a sudden jump from column 42 to column 76, which could be disorienting for players navigating through the district."
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Navigation Risk",
+        "description": "The route includes a path that might be confusing or non-existent. For example, moving from row 3 to row 15 and then to row 4 could be difficult for users to follow.",
+        "suggestion": "Consider simplifying the route or providing clearer instructions."
+      },
+      {
+        "type": "Visual Risk",
+        "description": "The water district layout contains a mix of road types (e.g., 'r', 'dr') which might not be easily distinguishable. The use of different characters for roads could lead to confusion.",
+        "suggestion": "Use consistent symbols or colors for similar types of roads."
+      }
+    ]
   }
 }
