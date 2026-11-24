@@ -69,7 +69,6 @@ let board;
 let selected;
 let asking;
 let reply;
-let pendingSelection;
 let sequence = 0;
 let returnTimer;
 
@@ -112,7 +111,7 @@ function positionBubble() {
   const frame = mapScroller.getBoundingClientRect();
   const parent = mapViewport.getBoundingClientRect();
   const x = gameBounds.left + hit.x * gameBounds.width / mapWidth;
-  const y = gameBounds.top + (hit.y - 20) * gameBounds.height / mapHeight;
+  const y = gameBounds.top + (hit.y - factionSpriteSize) * gameBounds.height / mapHeight;
   bubble.hidden = x < frame.left || x > frame.right || y < frame.top || y > frame.bottom;
   if (bubble.hidden) return;
   const half = bubble.offsetWidth / 2;
@@ -135,7 +134,6 @@ function showSpeech(key, text, sources = [], error) {
 }
 
 function clearSelection() {
-  clearTimeout(pendingSelection);
   selected = null;
   details.hidden = true;
 }
@@ -169,16 +167,7 @@ async function refresh() {
   }
 }
 
-map.addEventListener('waterfront:leader-select', ({ detail: { index, ask } }) => {
-  clearTimeout(pendingSelection);
-  const key = keys[index];
-  if (ask && board?.chat_enabled) {
-    showDetails(key);
-    openQuestion(key);
-  } else {
-    pendingSelection = setTimeout(() => showDetails(key), 365);
-  }
-});
+map.addEventListener('waterfront:leader-select', ({ detail: { index } }) => showDetails(keys[index]));
 map.addEventListener('waterfront:leader-clear', clearSelection);
 map.addEventListener('waterfront:map-painted', positionBubble);
 mapScroller.addEventListener('scroll', positionBubble, { passive: true });

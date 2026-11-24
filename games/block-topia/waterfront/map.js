@@ -108,7 +108,57 @@ let previousDiscussionFrame = null;
 
 let factionHits = [];
 let leaderStates = [];
-let previousLeaderTap;
+const npcPauseSeconds = 30;
+const npcPauses = new Map();
+let npcHits = [];
+let hoverPoint;
+let hoveredNpc;
+let tappedNpc;
+let inspectionTimer;
+const inspection = {
+  hit(actor) { npcHits.push(actor); },
+  held(id) { return (npcPauses.get(id)?.until ?? 0) > performance.now(); },
+  time(id, time) {
+    const pause = npcPauses.get(id);
+    if (time === null || !pause) return time;
+    return Math.max(0, time - pause.previous - Math.min(npcPauseSeconds, Math.max(0, time - pause.scene)));
+  },
+};
+
+function pauseNpc(id) {
+  if (inspection.held(id)) return;
+  const previous = npcPauses.has(id) ? npcPauses.get(id).previous + npcPauseSeconds : 0;
+  const until = performance.now() + npcPauseSeconds * 1000;
+  npcPauses.set(id, { until, scene: sceneTime ?? performance.now() / 1000, previous });
+  requestMapPaint();
+  scheduleInspectionPaint();
+}
+
+function scheduleInspectionPaint() {
+  clearTimeout(inspectionTimer);
+  const now = performance.now();
+  const next = Math.min(...[...npcPauses.values()].map(pause => pause.until).filter(until => until > now));
+  if (Number.isFinite(next)) inspectionTimer = setTimeout(() => {
+    paintMap();
+    scheduleInspectionPaint();
+  }, next - now + 5);
+}
+
+function npcAt(x, y) {
+  return npcHits.findLast(actor => Math.abs(actor.x - x) <= actor.spriteSize / 2 &&
+    y >= actor.y - actor.spriteSize && y <= actor.y + 3);
+}
+
+function updateHover() {
+  if (!hoverPoint || mousePan || editing) return;
+  const rect = mapSurface.getBoundingClientRect();
+  const hit = npcAt((hoverPoint.x - rect.left) * mapWidth / rect.width,
+    (hoverPoint.y - rect.top) * mapHeight / rect.height);
+  mapSurface.classList.toggle("is-npc", Boolean(hit));
+  if (hit?.id === hoveredNpc) return;
+  hoveredNpc = hit?.id;
+  if (hit) pauseNpc(hit.id);
+}
 function paintMap() {
   if (!window.waterfrontAccess.canPlay()) return;
   const width = mapScroll.clientWidth;
@@ -133,9 +183,11 @@ function paintMap() {
   ctx.imageSmoothingEnabled = false;
 
   const faction = selectedAvatar ?? factionIds.indexOf(window.waterfrontAccess.faction());
+  npcHits = [];
   factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
-    editing || document.hidden ? null : factionConversations, visibleTiles()) ?? [];
+    editing || document.hidden ? null : factionConversations, visibleTiles(), inspection) ?? [];
+  updateHover();
   mapSurface.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
@@ -210,6 +262,8 @@ function save() {
 function setEditing(enabled) {
   clearTimeout(walkTimer);
   editing = enabled;
+  clearHover();
+  tappedNpc = null;
   mapSurface.dataset.editing = String(editing);
   edit.setAttribute("aria-pressed", String(editing));
   status.textContent = editing ? "Select a square to place a tile." : "Tile editing is off.";
@@ -228,20 +282,19 @@ mapSurface.addEventListener("click", event => {
   const y = Math.floor(mapY / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
   if (!editing) {
-    const time = performance.now();
-    const nearFirstTap = previousLeaderTap && time - previousLeaderTap.time <= 360 &&
-      Math.hypot(event.clientX - previousLeaderTap.x, event.clientY - previousLeaderTap.y) <= 16;
-    const leader = (nearFirstTap && factionHits.find(hit => hit.index === previousLeaderTap.index)) ||
-      factionHits.findLast(hit =>
-      Math.abs(hit.x - mapX) <= 11 && mapY >= hit.y - 20 && mapY <= hit.y + 2);
-    if (leader) {
-      const ask = Boolean(nearFirstTap && previousLeaderTap.index === leader.index);
-      previousLeaderTap = ask ? null : { index: leader.index, time, x: event.clientX, y: event.clientY };
-      mapSurface.dispatchEvent(new CustomEvent('waterfront:leader-select', { detail: { index: leader.index, ask } }));
+    const hit = npcAt(mapX, mapY);
+    if (hit) {
+      const touch = event.pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents;
+      const open = !touch || (tappedNpc === hit.id && inspection.held(hit.id));
+      pauseNpc(hit.id);
+      tappedNpc = touch ? hit.id : null;
+      if (open && hit.index !== undefined) {
+        mapSurface.dispatchEvent(new CustomEvent("waterfront:leader-select", { detail: { index: hit.index } }));
+      } else mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
       return;
     }
-    previousLeaderTap = null;
-    mapSurface.dispatchEvent(new Event('waterfront:leader-clear'));
+    tappedNpc = null;
+    mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
     walkTo(x, y);
     return;
   }
@@ -316,13 +369,14 @@ function visibleTiles() {
 }
 
 let scrollPaint;
-mapScroll.addEventListener("scroll", () => {
+function requestMapPaint() {
   if (scrollPaint) return;
   scrollPaint = requestAnimationFrame(() => {
     scrollPaint = null;
     paintMap();
   });
-}, { passive: true });
+}
+mapScroll.addEventListener("scroll", requestMapPaint, { passive: true });
 
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
   const before = mapSurface.getBoundingClientRect();
@@ -424,12 +478,25 @@ mapSurface.addEventListener("pointerdown", event => {
   };
   mapSurface.setPointerCapture(event.pointerId);
 });
+function clearHover() {
+  hoverPoint = null;
+  hoveredNpc = null;
+  mapSurface.classList.remove("is-npc");
+}
+mapSurface.addEventListener("pointerleave", clearHover);
 mapSurface.addEventListener("pointermove", event => {
-  if (!mousePan || mousePan.id !== event.pointerId) return;
+  if (!mousePan || mousePan.id !== event.pointerId) {
+    if (event.pointerType === "mouse" && window.waterfrontAccess.canPlay() && !editing) {
+      hoverPoint = { x: event.clientX, y: event.clientY };
+      updateHover();
+    }
+    return;
+  }
   const dx = event.clientX - mousePan.x;
   const dy = event.clientY - mousePan.y;
   if (!mousePan.active && Math.hypot(dx, dy) < 6) return;
   mousePan.active = true;
+  clearHover();
   mapSurface.classList.add("is-panning");
   mapScroll.scrollLeft = mousePan.left - dx;
   mapScroll.scrollTop = mousePan.top - dy;
@@ -464,6 +531,10 @@ window.addEventListener("waterfront:access", () => {
     clearTimeout(walkTimer);
     selectedAvatar = null;
     avatar.value = "";
+    clearHover();
+    tappedNpc = null;
+    npcPauses.clear();
+    clearTimeout(inspectionTimer);
   }
   syncAnimation();
 });
