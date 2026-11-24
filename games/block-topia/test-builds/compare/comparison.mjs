@@ -1,5 +1,5 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep map-specific landmark art, fixture anchors, and rear tower placement.
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=6';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=7';
 import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=4';
 
 const byId = id => document.getElementById(id);
@@ -19,7 +19,7 @@ const buildings = atlas('hk-night.png');
 const isIso = mode === 'node-city' || mode === 'survival';
 const fortress = isIso ? loadZcashFortress() : null;
 const waxBee = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
-  ? './hodl-wars-lores/assets/wax-bee.webp' : './assets/miners/wax-bee-iso.webp');
+  ? './hodl-wars-lores/assets/wax-bee.webp?view=moon-grid' : './assets/miners/wax-bee-iso.webp');
 const tower = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
   ? './hodl-wars-lores/assets/bitcoin-cash-tower.webp' : './assets/miners/bitcoin-cash-tower-iso.webp');
 const people = atlas('factions-detail.webp');

@@ -16,7 +16,7 @@ detailedSprite.src = '../waterfront/assets/atlases/factions-detail.webp';
 const detailCell = 192;
 const miningBuildings = miningSites.map(site => {
   const image = new Image();
-  image.src = './assets/' + site.file + '?v=2-detail';
+  image.src = './assets/' + site.file + (site.file === 'wax-bee.webp' ? '?view=moon-grid&v=2-detail' : '?v=2-detail');
   return { scale: .625, ...site, image };
 });
 const fortressFrame = { width: 224, height: 280, columns: 4, count: 12, fps: 12 };

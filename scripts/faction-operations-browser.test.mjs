@@ -2365,7 +2365,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
     const { harborChanges, ...layout } = island;
     assert.deepEqual(layout, {
-      width: 112, height: 85, land: previousLand * 5 + 8, islandTerrainOnly: true,
+      width: 84, height: 60, land: previousLand * 2 + 8, islandTerrainOnly: true,
       allLandReachable: true, bridgePatrolled: true, allRegionsVisited: true, loopWalkable: true,
       restoredEdit: 'p', spawn: waterfrontDistrict.spawn,
     });
@@ -2392,7 +2392,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       const harborWater = sample(6, 0, 0);
       const beyondMap = sample(district.rows[0].length + 6, 0, 0);
       const later = sample(62, 0, 1);
-      const coast = sample(61, 14, 0);
+      const coast = sample(64, 22, 0);
       return {
         beyondMapMatchesWater: beyondMap.pixels.every((value, i) => value === harborWater.pixels[i]),
         matchesHarborWater: openWater.pixels.every((value, i) => value === harborWater.pixels[i]),
@@ -2749,7 +2749,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       return { x, y, tile: saved?.[y]?.[x], width: saved?.[y]?.length };
     });
     assert.equal(editedTile.tile, 'p');
-    assert.equal(editedTile.width, 112);
+    assert.equal(editedTile.width, 84);
 
     seatLost = true;
     await page.clock.fastForward(21_000);

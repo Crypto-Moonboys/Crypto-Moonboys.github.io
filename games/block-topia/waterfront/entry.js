@@ -95,7 +95,7 @@ function bootMap(district) {
         { createStreetEncounters },
         { createNpcDialogue, createCrewSpeech },
       ] = await Promise.all([
-        import('./nature-island.mjs?v=3'),
+        import('./nature-island.mjs?v=4'),
         import('./faction-conversations.mjs?v=5'),
         import('./street-encounters.mjs?v=3'),
         import('./npc-dialogue.mjs?v=1'),
@@ -113,9 +113,9 @@ function bootMap(district) {
         };
       };
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=76-miner-detail');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=77-compact-island');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=21-zoom-floor');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=22-compact-island');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
       await import('./leader-dialog.js?lore=15');
     })().catch(error => {

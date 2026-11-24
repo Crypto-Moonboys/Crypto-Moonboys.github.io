@@ -66,7 +66,7 @@ export async function createScene(mode, canvas, viewport) {
   }
 
   const [{ default: base }, island] = await Promise.all([
-    import('./waterfront-district.mjs'), import(block+'waterfront/nature-island.mjs?v=3'),
+    import('./waterfront-district.mjs'), import(block+'waterfront/nature-island.mjs?v=4'),
   ]);
   const district = island.extendWaterfront(base);
   window.findRoute = findRoute;
@@ -75,7 +75,7 @@ export async function createScene(mode, canvas, viewport) {
   window.waterfrontIslandSeed = island.islandSeed;
   await new Promise((resolve,reject) => {
     const script = document.createElement('script');
-    script.src = block+'waterfront/harbor-art.js?v=76-miner-detail';
+    script.src = block+'waterfront/harbor-art.js?v=77-compact-island';
     script.onload = resolve;
     script.onerror = reject;
     document.head.append(script);
