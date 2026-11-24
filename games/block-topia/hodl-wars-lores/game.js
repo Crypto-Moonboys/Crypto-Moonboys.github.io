@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the tilted projection, high-detail miner rendering, and ground registration.
 import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, miningSites } from './lunar-world.mjs?v=6';
 
 const byId = id => document.getElementById(id);

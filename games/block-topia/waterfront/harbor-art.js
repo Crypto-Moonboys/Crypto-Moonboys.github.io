@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep these miner lots, rear tower scale, and overhead close-zoom artwork.
 // Resolve atlas URLs from this script so it can render on the comparison route too.
 const harborMiningSites = [
   { id: "bitcoin-cash-tower", col: 42, row: 11, heightScale: 1.7, atlas: { file: "bitcoin-cash-tower-overhead.webp?v=2-detail" },

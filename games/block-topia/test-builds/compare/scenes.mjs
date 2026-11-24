@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the four comparison camera setups and Survival tower headroom.
 const block = '/games/block-topia/';
 const compact = () => matchMedia('(max-width: 739px)').matches;
 const fromTopDown = (x,y) => ({x:(x+.5)*32, y:(y+.5)*32});

@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the 20 × 20 Survival Grid and its 2:1 tile projection.
 // Terrain snapshot from Block Topia survival main.js at 05ab717.
 const GRID_SIZE = 20;
 const TILE_WIDTH = 64;
