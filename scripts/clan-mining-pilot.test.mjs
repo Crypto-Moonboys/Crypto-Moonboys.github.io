@@ -2279,7 +2279,7 @@ test('Gemini lore routes confident site lookups locally and refunds unsuccessful
   sql.exec(newerMigration('130_clan_leader_lore'));
   const env = {
     DB: db, CLAN_LEADER_LORE_ENABLED: 'true', CLAN_LEADER_LORE_PROVIDER: 'gemini',
-    CLAN_LEADER_GEMINI_KEY: 'test-key', CLAN_LEADER_GATEWAY_TOKEN: 'test-gateway',
+    CLAN_LEADER_GEMINI_KEY: 'test+key=fixture', CLAN_LEADER_GATEWAY_TOKEN: 'test-gateway',
     CLAN_LEADER_GEMINI_GATEWAY: 'https://gateway.ai.cloudflare.com/v1/' + '1'.repeat(32) + '/test',
   };
   const now = new Date('2026-11-24T00:00:00Z');
@@ -2287,24 +2287,27 @@ test('Gemini lore routes confident site lookups locally and refunds unsuccessful
   const ask = (question, recent_turns) => answerClanLeaderLore(env, '101', { npc: 'graffpunks', question, recent_turns }, now);
   let calls = 0;
   let response = 'failed';
-  const uri = 'https://support.example.org/computer';
+  const uri = 'https://example.org/reference';
   const excerpt = 'Posh Bear works around the Waterfront as an assessor of recycled parts, workshop fixtures and recovered signs.';
   t.mock.method(globalThis, 'fetch', async (url, init) => {
     const target = new URL(url);
     if (target.hostname === 'gateway.ai.cloudflare.com') {
       calls++;
-      assert.equal(target.search, '');
-      assert.equal(init.headers['x-goog-api-key'], 'test-key');
+      assert.deepEqual([...target.searchParams], [['key', 'test+key=fixture']]);
+      assert.equal(init.headers['x-goog-api-key'], undefined);
+      assert.equal(init.headers['cf-aig-authorization'], 'Bearer test-gateway');
+      assert.equal(init.headers['cf-aig-collect-log'], 'false');
       const request = JSON.parse(init.body);
       assert.deepEqual(request.tools, [{ googleSearch: {} }]);
       const prompt = JSON.parse(request.contents[0].parts[0].text);
-      assert.match(prompt.question, /computer/);
-      if (response === 'failed') return new Response(null, { status: 503 });
+      assert.match(prompt.question, /computer|Steve Davis/);
+      if (response === 'failed') return new Response(null, { status: 400 });
+      const reply = prompt.question.includes('Steve Davis') ? 'Steve Davis is a six-time world snooker champion.' : 'Check the monitor connection first.';
       return Response.json({ candidates: [{
         finishReason: 'STOP', content: { parts: [{ text: response === 'invalid' ? 'bad JSON' :
-          JSON.stringify({ mode: 'chat', reply: 'Check the monitor connection first.', sources: [] }) }] },
+          JSON.stringify({ mode: 'chat', reply, sources: [] }) }] },
         groundingMetadata: {
-          groundingChunks: [{ web: { title: 'Support', uri } }, { web: { title: 'Ignore', uri: 'javascript:alert(1)' } }],
+          groundingChunks: [{ web: { title: 'Reference', uri } }, { web: { title: 'Ignore', uri: 'javascript:alert(1)' } }],
           groundingSupports: [{ groundingChunkIndices: [0, 1] }],
           searchEntryPoint: { renderedContent: '<p>Search suggestions</p>' },
         },
@@ -2322,8 +2325,9 @@ test('Gemini lore routes confident site lookups locally and refunds unsuccessful
   await assert.rejects(ask('How can I fix a computer with a blank screen?'), /lore_gemini_unavailable/);
   assert.equal(usage(), 1, 'a failed provider call preserves the earlier local charge');
   response = 'success';
-  const answer = await ask('How can I fix a computer with a blank screen?');
-  assert.deepEqual(answer.sources, [{ url: uri, title: 'Support' }]);
+  const answer = await ask('Who is Steve Davis?');
+  assert.match(answer.reply, /six-time world snooker champion/);
+  assert.deepEqual(answer.sources, [{ url: uri, title: 'Reference' }]);
   assert.equal(answer.search_suggestions, '<p>Search suggestions</p>');
   assert.equal(usage(), 2);
   response = 'invalid';
