@@ -1,3 +1,6 @@
+// Resolve atlas URLs from this script so it can render on the comparison route too.
+const waterfrontAtlasBase = new URL("assets/atlases/", document.currentScript?.src || document.baseURI);
+
 const muralPasses = [
   { color: "#56d9cf", strokes: [[[1,6],[5,1],[11,1],[8,6],[4,6],[2,10],[11,10]],[[13,10],[18,1],[22,1],[20,6],[15,6],[24,10]],[[26,10],[29,2],[34,1],[36,4],[30,9],[26,10]]] },
   { color: "#e66eaa", strokes: [[[1,10],[5,1],[8,7],[12,1],[16,2],[13,10]],[[19,1],[17,10],[23,9],[25,1]],[[29,1],[26,10],[35,10],[37,7],[30,5],[36,2]]] },
@@ -547,7 +550,7 @@ function loadDetailedAtlas(atlas, priority, repaint) {
   const image = new Image();
   image.decoding = "async";
   image.fetchPriority = priority;
-  image.src = "assets/atlases/" + atlas.file;
+  image.src = new URL(atlas.file, waterfrontAtlasBase).href;
   image.decode().then(() => {
     atlas.image = image;
     repaint();
@@ -581,7 +584,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
       resolve();
     };
     atlas.onerror = resolve;
-    atlas.src = "assets/atlases/" + group + ".png";
+    atlas.src = new URL(group + ".png", waterfrontAtlasBase).href;
   }));
   return Promise.all(loadAtlases);
 };

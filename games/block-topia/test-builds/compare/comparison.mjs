@@ -1,4 +1,4 @@
-import { createScene, findRoute, neighbors } from './scenes.mjs';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=2';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('view');
