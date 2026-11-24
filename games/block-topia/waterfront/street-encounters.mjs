@@ -1,4 +1,4 @@
-import { streetExchange, streetProfiles, STREET_VARIANTS } from './street-dialogue.mjs?v=1';
+import { streetExchange, streetProfiles, STREET_VARIANTS, BEAR_VARIANTS } from './street-dialogue.mjs?v=2';
 
 const PAIR_DISTANCE = 34;
 const TURN_MS = 2_700;
@@ -44,19 +44,25 @@ export function createStreetEncounters(random = Math.random) {
           if (a.id === b.id || !near(a, b, PAIR_DISTANCE)) continue;
           const listener = streetProfileId(b.id);
           const other = streetProfiles[listener];
-          if (!other || other.role === 'police' || (profile.role === 'bear' && other.role !== 'bear')) continue;
+          if (!other || (profile.role === 'police' && other.role === 'police')) continue;
           const pair = [a.id, b.id].sort().join('|');
           if (close.has(pair)) continue;
           close.add(pair);
-          if (nearby.has(pair) || !free(a.id) || !free(b.id) || random() >= (profile.role === 'police' ? 0.6 : 0.7)) continue;
+          if (nearby.has(pair) || !free(a.id) || !free(b.id)) continue;
+          const reverse = (other.role === 'bear' || other.role === 'police') && random() >= 0.5;
+          const [starter, target] = reverse ? [b.id, a.id] : [a.id, b.id];
+          const starterId = streetProfileId(starter);
+          const isBear = streetProfiles[starterId].role === 'bear';
+          if (random() >= (isBear ? 0.7 : 0.6)) continue;
 
-          const index = variants.get(speaker) ?? Math.floor(random() * STREET_VARIANTS);
-          variants.set(speaker, (index + 37) % STREET_VARIANTS);
-          const turns = streetExchange(speaker, listener, index);
-          active.set(a.id, { listener: b.id, since: now, lines: turns });
+          const length = isBear ? BEAR_VARIANTS : STREET_VARIANTS;
+          const index = variants.get(starterId) ?? Math.floor(random() * length);
+          variants.set(starterId, (index + 37) % length);
+          const turns = streetExchange(starterId, streetProfileId(target), index);
+          active.set(starter, { listener: target, since: now, lines: turns });
           held.add(a.id);
           held.add(b.id);
-          lines.push({ ...turns[0], id: a.id });
+          lines.push({ ...turns[0], id: starter });
         }
       }
       nearby = close;

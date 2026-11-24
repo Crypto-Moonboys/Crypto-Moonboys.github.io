@@ -160,14 +160,33 @@ test('street cast gets 100 distinct voiced variants and its own local question a
       answers.add(lines[0][1].text);
       counters.add(lines[0][2].text);
     }
-    if (profile.role !== 'bear') continue;
-    const partner = id === 'sailor-bear' ? 'camo-bear' : 'sailor-bear';
-    const bearLines = Array.from({ length: STREET_VARIANTS }, (_, i) => streetExchange(partner, id, i));
-    assert.equal(new Set(bearLines.map(turns => turns[1].text)).size, 100, id);
   }
   assert.equal(questions.size, 3);
   assert.equal(answers.size, 32);
   assert.equal(counters.size, 32);
+});
+
+test('bear approaches have two intents and 240 voiced questions and replies', async () => {
+  const { streetExchange, streetProfiles, BEAR_VARIANTS } = await import('../waterfront/street-dialogue.mjs');
+  const bearIds = Object.keys(streetProfiles).filter(id => streetProfiles[id].role === 'bear');
+  assert.equal(BEAR_VARIANTS, 240);
+  const questions = new Set();
+  const replies = new Set();
+  for (const speaker of bearIds) {
+    for (let i = 0; i < BEAR_VARIANTS; i++) {
+      const [opening] = streetExchange(speaker, 'boombox', i);
+      assert.match(opening.text, i % 2 ? /police|coppers/i : /buy|looking to buy/i);
+      questions.add(opening.text);
+    }
+  }
+  for (const listener of Object.keys(streetProfiles)) {
+    const speaker = bearIds.find(id => id !== listener);
+    for (let i = 0; i < BEAR_VARIANTS; i++) {
+      replies.add(streetExchange(speaker, listener, i)[1].text);
+    }
+  }
+  assert.equal(questions.size, 9 * 240);
+  assert.equal(replies.size, 35 * 240);
 });
 
 test('local patrol stops and bear chats obey pairing, chance and release', async () => {
@@ -178,11 +197,11 @@ test('local patrol stops and bear chats obey pairing, chance and release', async
   const otherBear = actor('roamer:camo-bear', 10);
   const cop = actor('roamer:police-bike', 10);
   const engine = createStreetEncounters(() => 0);
-  assert.deepEqual(engine.tick([bear, witness], 0), []);
-  assert.equal(engine.tick([bear, otherBear], 1)[0].id, bear.id);
-  assert.ok(engine.holds(otherBear.id));
-  assert.match(engine.tick([bear, otherBear], 2701)[0].text, /sell weed/);
-  assert.deepEqual(engine.tick([bear, otherBear], 10801), []);
+  assert.deepEqual(engine.tick([bear, actor('patrol:0'), actor('crew:1'), actor('freight:0')], 0), []);
+  assert.equal(engine.tick([bear, witness], 1)[0].id, bear.id);
+  assert.ok(engine.holds(witness.id));
+  assert.match(engine.tick([bear, witness], 2701)[0].text, /putain/);
+  assert.deepEqual(engine.tick([bear, witness], 8101), []);
   assert.equal(engine.holds(bear.id), false);
   engine.tick([], 27000);
   assert.deepEqual(engine.tick([cop, witness], 27001, () => true), []);
@@ -190,4 +209,10 @@ test('local patrol stops and bear chats obey pairing, chance and release', async
   assert.equal(engine.tick([cop, witness], 27003)[0].id, cop.id);
   assert.equal(engine.tick([cop, witness], 29703)[0].id, witness.id);
   assert.deepEqual(createStreetEncounters(() => 0.99).tick([cop, witness], 0), []);
+  const values = [0.8, 0, 0];
+  const reversed = createStreetEncounters(() => values.shift());
+  assert.equal(reversed.tick([cop, bear], 0)[0].id, bear.id);
+  assert.match(reversed.tick([cop, bear], 2700)[0].text, /police rider/);
+  assert.equal(reversed.tick([cop, bear], 5400)[0].id, cop.id);
+  assert.equal(createStreetEncounters(() => 0).tick([bear, otherBear], 0)[0].id, bear.id);
 });
