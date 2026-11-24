@@ -113,7 +113,7 @@ function bootMap(district) {
         };
       };
       window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
-      if (!window.drawWaterfront) await script('harbor-art.js?v=66-nessie');
+      if (!window.drawWaterfront) await script('harbor-art.js?v=67-nessie');
       if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
       if (!window.waterfrontMapLoaded) await script('map.js?v=19-nessie');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');

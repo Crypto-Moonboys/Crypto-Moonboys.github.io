@@ -368,13 +368,16 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
   });
 }
 
-const nessieAtlas = { file: "harbor-nessie.webp?v=1" };
+const nessieVariants = [
+  { atlas: { file: "harbor-nessie.webp?v=1" }, minDelay: 45, delayRange: 55, nextWave: null },
+  { atlas: { file: "harbor-nessie-angry.webp?v=1" }, minDelay: 110, delayRange: 75, nextWave: null },
+];
 const nessieSites = [[21, 3], [61, 9], [93, 15], [101, 27], [21, 33],
   [13, 51], [21, 69], [85, 75], [53, 81]];
 const nessieSightings = new Map();
 const nessieDuration = 9;
 let nextNessieSite = 0;
-let nextNessieWave;
+let nextNessieVariant = 0;
 
 function hasNessieWater(rows, [x, y]) {
   return [y - 1, y, y + 1].every(row => rows[row]?.slice(x - 4, x + 5) === "~~~~~~~~~");
@@ -386,7 +389,9 @@ window.summonHarborNessie = function summonHarborNessie(rows, time) {
     nextNessieSite = (index + 1) % nessieSites.length;
     const site = nessieSites[index];
     if (!hasNessieWater(rows, site)) continue;
-    nessieSightings.set(index, time);
+    nessieSightings.clear();
+    nessieSightings.set(index, { started: time, variant: nessieVariants[nextNessieVariant] });
+    nextNessieVariant = (nextNessieVariant + 1) % nessieVariants.length;
     return { x: site[0] + 0.5, y: site[1] - 0.25 };
   }
   return null;
@@ -394,24 +399,26 @@ window.summonHarborNessie = function summonHarborNessie(rows, time) {
 
 function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
   if (time !== null) {
-    nextNessieWave ??= time + 45 + Math.random() * 55;
-    for (const [index, started] of nessieSightings) {
+    for (const [index, { started }] of nessieSightings) {
       if (time - started >= nessieDuration) nessieSightings.delete(index);
     }
-    if (time >= nextNessieWave) {
-      nextNessieWave = time + 45 + Math.random() * 55;
+    for (const variant of nessieVariants) {
+      variant.nextWave ??= time + variant.minDelay + Math.random() * variant.delayRange;
+      // Finish the current sighting before allowing another variant's wave.
+      if (time < variant.nextWave || nessieSightings.size) continue;
+      variant.nextWave = time + variant.minDelay + Math.random() * variant.delayRange;
       const available = nessieSites.map((site, index) => ({ site, index }))
-        .filter(({ site, index }) => !nessieSightings.has(index) && hasNessieWater(rows, site));
+        .filter(({ site }) => hasNessieWater(rows, site));
       const roll = Math.random();
       const count = Math.min(available.length, roll < 0.60 ? 1 : roll < 0.90 ? 2 : 3);
       for (let i = 0; i < count; i++) {
         const [pick] = available.splice(Math.floor(Math.random() * available.length), 1);
-        nessieSightings.set(pick.index, time);
+        nessieSightings.set(pick.index, { started: time, variant });
       }
     }
   }
 
-  for (const [index, started] of nessieSightings) {
+  for (const [index, { started, variant: { atlas } }] of nessieSightings) {
     const site = nessieSites[index];
     const [col, row] = site;
     if (!hasNessieWater(rows, site)) {
@@ -420,8 +427,8 @@ function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
     }
     if (visible && (visible.right <= col - 4 || visible.left >= col + 5 ||
         visible.bottom <= row - 2 || visible.top >= row + 2)) continue;
-    loadDetailedAtlas(nessieAtlas, "low", repaint);
-    if (!nessieAtlas.image) continue;
+    loadDetailedAtlas(atlas, "low", repaint);
+    if (!atlas.image) continue;
     const elapsed = time === null ? 4.5 : Math.max(0, time - started);
     // Surface, undulate through the middle two frames, then dive.
     const frame = elapsed < 1.5 ? Math.floor(elapsed * 2)
@@ -432,7 +439,7 @@ function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
     const scale = size / 32;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(nessieAtlas.image, frame % 4 * 128, Math.floor(frame / 4) * 72, 128, 72,
+    ctx.drawImage(atlas.image, frame % 4 * 128, Math.floor(frame / 4) * 72, 128, 72,
       x - 52 * scale, y - 42 * scale, 104 * scale, 58.5 * scale);
     ctx.restore();
   }
