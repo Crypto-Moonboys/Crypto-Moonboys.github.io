@@ -1406,7 +1406,9 @@ body.conflict-active #game-overlay {
   background: radial-gradient(circle at 20% 12%, rgba(255,0,80,.07), transparent 50%), #090c16;
 }
 
-/* Meme Swarm's radio is controlled from the toolbar, never the playfield. */
-#game-overlay.overlay-meme-swarm-game #arcade-radio-panel { display:none !important; }
-#game-overlay.overlay-meme-swarm-game #overlay-btn-radio .btn-label { display:none; }
-#game-overlay.overlay-meme-swarm-game #overlay-btn-radio[aria-pressed="true"] { color:#7dff72; border-color:#7dff72; }
+/* GraffPUNKS Radio is controlled from the toolbar speaker, never the playfield. */
+#game-overlay #arcade-radio-panel { display:none !important; }
+#game-overlay #overlay-btn-radio .btn-label { display:none; }
+#game-overlay #overlay-btn-radio .overlay-radio-icon { width:18px; height:18px; display:block; object-fit:contain; }
+#game-overlay #overlay-btn-radio[aria-pressed="false"] .overlay-radio-icon { opacity:.75; }
+#game-overlay #overlay-btn-radio[aria-pressed="true"] { color:#7dff72; border-color:#7dff72; box-shadow:0 0 8px rgba(125,255,114,.35); }
