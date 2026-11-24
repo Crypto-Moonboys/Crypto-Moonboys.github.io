@@ -53,3 +53,21 @@ After the first compact harbor paint, a roamer atlas loads when a member of its 
 [Landfall fire atlas](assets/atlases/harbor-kaiju-fire.webp) has four 128 × 72 frames with a nozzle anchor at (122, 36). The landfall animation attaches one brief flame burst to each horizontal leg. Right-facing breath mirrors the effect at the right-facing mouth.
 
 [Harbor Nessie atlas](assets/atlases/harbor-nessie.webp) contains eight 128 × 72 frames, read row-major for surfacing, swimming and diving. [Angry Nessie atlas](assets/atlases/harbor-nessie-angry.webp) uses the same frame grid and swim cycle. Regular waves recur after 45–100 seconds and angry waves after 110–185 seconds. Each random wave chooses one to three distinct open-water locations and waits for any active Nessies to dive. Each tap of L shows one Nessie, replacing any current sighting, alternating variants and advancing through the nine map locations. Nessie sightings never trigger the kaiju warning.
+
+
+## Bot fish
+
+Ten local WebP atlases use eight 96 × 112 frames in a 4 × 2 grid with a waterline anchor at (48, 86). The sprites face right and each fish has one open-water route. They surface, breach, dive and reset under water. Only nearby atlases are loaded. Clicking or tapping a fish opens the NPC name panel.
+
+| Name | Sprite |
+| --- | --- |
+| Rivets | Armoured fish with an amber eye |
+| Glint | Ceramic manta ray |
+| Drillbit | Yellow salvage swordfish |
+| Boiler | Spiny pufferbot |
+| Nightlight | Lantern-jawed anglerbot |
+| Coppercoil | Segmented eel |
+| Redline | Hammerhead survey bot |
+| Zipfin | Monogram lionfish |
+| Chaincurl | Quilted seahorse |
+| Buckletail | Trenchcoat stingray |

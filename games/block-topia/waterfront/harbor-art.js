@@ -463,6 +463,45 @@ function drawHarborNessies(ctx, rows, size, time, visible, repaint, inspection) 
   }
 }
 
+const harborBotFish = [
+  ["rivets", "Rivets", 17, 7],
+  ["glint", "Glint", 45, 7],
+  ["drillbit", "Drillbit", 72, 10],
+  ["boiler", "Boiler", 106, 30],
+  ["nightlight", "Nightlight", 106, 66],
+  ["coppercoil", "Coppercoil", 90, 71],
+  ["redline", "Redline", 63, 80],
+  ["zipfin", "Zipfin", 36, 76],
+  ["chaincurl", "Chaincurl", 21, 61],
+  ["buckletail", "Buckletail", 7, 32],
+].map(([slug, name, col, row]) => ({
+  id: "bot-fish-" + slug, profile: { name }, col, row,
+  atlas: { file: "bot-fish-" + slug + ".webp?v=1" },
+}));
+const botFishSurfaceSeconds = 4.8;
+const botFishCycleSeconds = 7.5;
+
+function drawHarborBotFish(ctx, rows, size, time, visible, repaint, inspection) {
+  const scale = size / 64;
+  for (const [index, { id, profile, col, row, atlas }] of harborBotFish.entries()) {
+    if (visible && (visible.right <= col - 3 || visible.left >= col + 4 ||
+        visible.bottom <= row - 2 || visible.top >= row + 2)) continue;
+    // Keep the full path and sprite in open water, even after a local map edit.
+    if (![row - 2, row - 1, row, row + 1].every(y =>
+      rows[y]?.slice(col - 3, col + 4) === "~~~~~~~")) continue;
+    loadDetailedAtlas(atlas, "low", repaint);
+    if (!atlas.image) continue;
+    const elapsed = time === null ? 2.75 : (time + index * 1.37) % botFishCycleSeconds;
+    if (elapsed >= botFishSurfaceSeconds) continue;
+    const progress = elapsed / botFishSurfaceSeconds;
+    const frame = Math.floor(progress * 8);
+    const x = (col - 1 + 3 * progress) * size;
+    const y = (row + 0.5) * size;
+    drawHarborCreature(ctx, atlas, frame % 4, Math.floor(frame / 4), 96, 112,
+      x - 48 * scale, y - 86 * scale, scale, frame < 7 ? inspection : null, id, profile);
+  }
+}
+
 function loadDetailedAtlas(atlas, priority, repaint) {
   if (!repaint || atlas.requested) return;
   atlas.requested = true;
@@ -1541,6 +1580,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   if (district.natureIsland) {
     drawHarborKaiju(ctx, rows, size, time, visible, repaintArt, inspection);
     drawHarborNessies(ctx, rows, size, time, visible, repaintArt, inspection);
+    drawHarborBotFish(ctx, rows, size, time, visible, repaintArt, inspection);
   }
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
