@@ -63,26 +63,43 @@ const roamingAtlasCell = 112;
 // Order within each atlas matches SPRITE-LIBRARY.md.
 const waterfrontRoamers = [
   { file: "roamers-patrol.webp", cell: roamingAtlasCell, cast: [
-    ["police-robot", 34], ["police-car", 50, 0.58], ["police-bike", 42, 0.64],
-    ["electric-blue", 30], ["electric-green", 30], ["boombox", 33],
-    ["samurai", 36], ["burglar-bear", 34], ["sailor-bear", 34],
+    ["police-robot", "Police Robot", 34],
+    ["police-car", "Police Car", 50, { pace: 0.58 }],
+    ["police-bike", "Police Bike", 42, { pace: 0.64 }],
+    ["electric-blue", "Blue Electric Bot", 30, { wikiSlug: "blue-electric-bot" }],
+    ["electric-green", "Green Electric Bot", 30, { wikiSlug: "green-electric-bot" }],
+    ["boombox", "Walking Boombox", 33, { wikiSlug: "walking-boombox" }],
+    ["samurai", "Samurai", 36, { wikiSlug: "waterfront-samurai" }],
+    ["burglar-bear", "Burglar Bear", 34],
+    ["sailor-bear", "Sailor Bear", 34],
   ] },
   { file: "roamers-mechs.webp?v=2", cell: roamingAtlasCell, cast: [
-    ["allcity-bulls-mech", 53], ["blockstars-mech", 53], ["blockchain-furies-mech", 53],
-    ["graffpunks-mech", 53], null, ["hodl-mech", 53], // Retired rounded mech atlas slot.
-    ["hard-fork-rockers-mech", 53], ["moongirls-mech", 53], ["nomad-bears-block-mech", 53],
-    ["no-ball-games-mech", 53], ["graffiti-kings-mech", 53],
+    ["allcity-bulls-mech", "Allcity Bulls Mech", 53],
+    ["blockstars-mech", "Blockstars Mech", 53],
+    ["blockchain-furies-mech", "Blockchain Furies Mech", 53],
+    ["graffpunks-mech", "GraffPunks Mech", 53],
+    null, // Retired rounded mech atlas slot.
+    ["hodl-mech", "HODL WARS Mech", 53, { wikiSlug: "hodl-wars-mech" }],
+    ["hard-fork-rockers-mech", "Hard Fork Rockers Mech", 53],
+    ["moongirls-mech", "Moongirls Mech", 53],
+    ["nomad-bears-block-mech", "Nomad Bears Mech", 53, { wikiSlug: "nomad-bears-mech" }],
+    ["no-ball-games-mech", "No Ball Games Mech", 53],
+    ["graffiti-kings-mech", "Graffiti Kings Mech", 53],
   ] },
   { file: "roamers-bears.webp", cell: roamingAtlasCell, cast: [
-    ["jamaican-bear", 34], ["camo-bear", 34], ["gentleman-bear", 34],
-    ["graff-bear", 34], ["posh-bear", 34], ["st-patricks-bear", 34],
-    ["straight-outta-ghetto-bear", 34],
+    ["jamaican-bear", "Jamaican Bear", 34],
+    ["camo-bear", "Camo Bear", 34],
+    ["gentleman-bear", "Gentleman Bear", 34],
+    ["graff-bear", "Graff Bear", 34],
+    ["posh-bear", "Posh Bear", 34],
+    ["st-patricks-bear", "St Patrick’s Day Bear", 34, { wikiSlug: "st-patricks-day-bear" }],
+    ["straight-outta-ghetto-bear", "Straight Outta Ghetto Bear", 34],
   ] },
 ].flatMap(({ cast, ...atlas }) =>
   cast.flatMap((entry, model) => {
     if (!entry) return [];
-    const [id, size, pace] = entry;
-    return [{ atlas, model, id: "roamer:" + id, size, pace }];
+    const [id, name, size, { wikiSlug = id, pace } = {}] = entry;
+    return [{ atlas, model, id: "roamer:" + id, profile: { name, wiki: "/wiki/" + wikiSlug + ".html" }, size, pace }];
   })
 );
 const factionSpriteSize = 34;
@@ -345,9 +362,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const buildingShadows = [];
   const beacons = [];
   const queue = (depth, draw) => objects.push({ depth, draw });
-  function markNpc(id, x, y, spriteSize, index) {
+  function markNpc(id, x, y, spriteSize, details) {
     if (!inspection) return;
-    inspection.hit({ id, x, y, spriteSize, index });
+    inspection.hit({ id, x, y, spriteSize, ...details });
     if (!inspection.held(id)) return;
     rect("#97e7d4", x - spriteSize / 3, y + 3, spriteSize * 2 / 3, 1.5);
   }
@@ -1120,7 +1137,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const frame = paused || holding || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
       queue(y, () => {
-        markNpc(id, x, y, factionSpriteSize, index);
+        markNpc(id, x, y, factionSpriteSize, { index });
         factionCharacter(index, x, y, facing, frame);
       });
       factionHits.push({ index, x, y, paused, talking: state?.talking });
@@ -1162,7 +1179,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function drawIslandRoamers() {
-    waterfrontRoamers.forEach(({ atlas, model, id, size: height, pace }, index) => {
+    waterfrontRoamers.forEach(({ atlas, model, id, profile, size: height, pace }, index) => {
       if (!atlas.image) return;
       const start = Math.floor(islandLoop.length * (index + 0.5) / waterfrontRoamers.length);
       const clock = inspection?.time(id, time) ?? time ?? 0;
@@ -1175,7 +1192,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const moving = time !== null && (dx || dy) && !inspection?.held(id);
       const frame = moving ? 1 + Math.floor(clock * 7 + index) % 3 : 0;
       queue(py, () => {
-        markNpc(id, px, py, height);
+        markNpc(id, px, py, height, { profile });
         rect("#080f1cad", px - height / 4, py - 1, height / 2, 3);
         drawDetailedCharacter(atlas, model, facing, frame, px, py + 1, height);
       });

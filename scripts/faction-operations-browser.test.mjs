@@ -2415,6 +2415,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       });
       return {
         actors: idle.hits.map(({ id }) => id),
+        profiles: idle.hits.map(({ profile }) => profile),
         frames,
         harborActors: harbor.hits.length,
         routeRegions: new Set(route.map(({ x, y }) => Math.floor(x / 8) + ',' + Math.floor(y / 8))).size,
@@ -2432,6 +2433,11 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     assert.equal(new Set(roaming.actors).size, 26);
     assert.ok(roaming.actors.includes('roamer:nomad-bears-block-mech'));
     assert.ok(!roaming.actors.includes('roamer:nomad-bears-mech'));
+    assert.equal(new Set(roaming.profiles.map(({ wiki }) => wiki)).size, 26);
+    for (const { name, wiki } of roaming.profiles) {
+      const pageHtml = await readFile(path.join(ROOT, wiki), 'utf8');
+      assert.ok(pageHtml.includes(`<h1 class="page-title">${name}</h1>`), wiki);
+    }
     assert.equal(roaming.frames, 26 * 16);
     assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors.length, 'cast spans both map areas');
     assert.ok(roaming.routeRegions > 50 && roaming.onPath && roaming.advances, 'cast roams the full connected island loop');
@@ -2544,6 +2550,37 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     assert.equal(await page.evaluate(() => inspection.held('leader:1')), false, 'inspection expires automatically');
 
     await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+    const roamer = await page.evaluate(() => {
+      const surface = document.querySelector('#map');
+      const scroller = document.querySelector('.map-scroll');
+      const { width, height } = surface.getBoundingClientRect();
+      const candidates = [];
+      const render = document.createElement('canvas').getContext('2d');
+      window.drawWaterfront(render, rows, player, district, null, 0, [], null, null, null, {
+        ...inspection,
+        hit: actor => { if (actor.profile) candidates.push(actor); },
+      });
+      for (const hit of candidates) {
+        const hitY = hit.y - hit.spriteSize / 2;
+        scroller.scrollLeft = hit.x * width / mapWidth - scroller.clientWidth / 2;
+        scroller.scrollTop = hitY * height / mapHeight - scroller.clientHeight / 2;
+        paintMap();
+        if (npcAt(hit.x, hitY)?.id !== hit.id) continue;
+        const rect = surface.getBoundingClientRect();
+        const x = rect.left + hit.x * width / mapWidth;
+        const y = rect.top + hitY * height / mapHeight;
+        if (surface.contains(document.elementFromPoint(x, y))) return { x, y, ...hit.profile };
+      }
+    });
+    assert.ok(roamer, 'a profiled roamer is visible and selectable');
+    await page.touchscreen.tap(roamer.x, roamer.y);
+    const roamerDetails = page.getByRole('region', { name: roamer.name, exact: true });
+    await roamerDetails.waitFor();
+    assert.equal(await roamerDetails.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), roamer.wiki);
+    assert.equal(await roamerDetails.getByRole('button').count(), 1, 'the only button closes the panel');
+    assert.equal(await roamerDetails.locator('[data-leader-status]').isVisible(), false);
+    await roamerDetails.getByRole('button', { name: 'Close character details' }).click();
+    await roamerDetails.waitFor({ state: 'hidden' });
     const robot = await page.evaluate(() => {
       const hit = npcHits.find(item => item.id === 'crew:0');
       const canvas = document.querySelector('#map');

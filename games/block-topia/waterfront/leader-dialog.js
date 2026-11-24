@@ -20,9 +20,9 @@ details.className = 'leader-map-details';
 details.setAttribute('aria-labelledby', 'leader-map-name');
 details.hidden = true;
 details.innerHTML = `
-  <button type="button" data-close aria-label="Close leader details">×</button>
+  <button type="button" data-close aria-label="Close character details">×</button>
   <h2 id="leader-map-name"></h2>
-  <p><span data-role></span> <span data-activity></span></p>
+  <p data-leader-status><span data-role></span> <span data-activity></span></p>
   <a data-character-page>Character wiki</a>
   <button type="button" data-ask>Ask a question</button>
   <button type="button" data-slow>Leader slowdowns</button>`;
@@ -80,6 +80,7 @@ function showDetails(key) {
   selected = key;
   const presence = lookup(key)?.presence;
   details.querySelector('h2').textContent = names.get(key);
+  details.querySelector('[data-leader-status]').hidden = false;
   details.querySelector('[data-role]').textContent = LEADERS[key].callSign;
   const playing = presence?.playing_until * 1000 > Date.now();
   const paused = presence?.paused_until * 1000 > Date.now();
@@ -87,6 +88,16 @@ function showDetails(key) {
   details.querySelector('[data-character-page]').href = LEADERS[key].bio;
   details.querySelector('[data-ask]').hidden = !board?.chat_enabled || playing;
   details.querySelector('[data-slow]').hidden = !board?.controls;
+  details.hidden = false;
+}
+
+function showRoamerDetails({ name, wiki }) {
+  selected = null;
+  details.querySelector('h2').textContent = name;
+  details.querySelector('[data-character-page]').href = wiki;
+  details.querySelector('[data-leader-status]').hidden = true;
+  details.querySelector('[data-ask]').hidden = true;
+  details.querySelector('[data-slow]').hidden = true;
   details.hidden = false;
 }
 
@@ -168,6 +179,7 @@ async function refresh() {
 }
 
 map.addEventListener('waterfront:leader-select', ({ detail: { index } }) => showDetails(keys[index]));
+map.addEventListener('waterfront:roamer-select', ({ detail }) => showRoamerDetails(detail));
 map.addEventListener('waterfront:leader-clear', clearSelection);
 map.addEventListener('waterfront:map-painted', positionBubble);
 mapScroller.addEventListener('scroll', positionBubble, { passive: true });

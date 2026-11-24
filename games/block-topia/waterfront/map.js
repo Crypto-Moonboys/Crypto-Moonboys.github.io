@@ -287,7 +287,9 @@ mapSurface.addEventListener("click", event => {
       const open = !touch || (tappedNpc === hit.id && inspection.held(hit.id));
       pauseNpc(hit.id);
       tappedNpc = touch ? hit.id : null;
-      if (open && hit.index !== undefined) {
+      if (hit.profile) {
+        mapSurface.dispatchEvent(new CustomEvent("waterfront:roamer-select", { detail: hit.profile }));
+      } else if (open && hit.index !== undefined) {
         mapSurface.dispatchEvent(new CustomEvent("waterfront:leader-select", { detail: { index: hit.index } }));
       } else mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
       return;
