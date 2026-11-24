@@ -2306,6 +2306,39 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     });
     assert.ok(harborChanges.length > 0 && harborChanges.every(({ x, y, tile, previous }) =>
       ('.~'.includes(previous) && 'pd'.includes(tile) && ((y === 24 && x >= 45) || (x === 36 && y >= 29)))));
+    const waterArt = await page.evaluate(() => {
+      function sample(x, y, time) {
+        const size = district.tileSize;
+        const context = document.createElement('canvas').getContext('2d');
+        context.canvas.width = context.canvas.height = size;
+        context.translate(-x * size, -y * size);
+        const colors = new Set();
+        const fill = context.fillRect.bind(context);
+        context.fillRect = (...args) => {
+          colors.add(context.fillStyle);
+          fill(...args);
+        };
+        window.drawWaterfront(context, district.rows, player, district, time, 0, [], null, null,
+          { left: x, top: y, right: x + 1, bottom: y + 1 });
+        return { colors: [...colors], pixels: Array.from(context.getImageData(0, 0, size, size).data) };
+      }
+      const openWater = sample(62, 0, 0);
+      const harborWater = sample(6, 0, 0);
+      const later = sample(62, 0, 1);
+      const coast = sample(61, 14, 0);
+      return {
+        matchesHarborWater: openWater.pixels.every((value, i) => value === harborWater.pixels[i]),
+        waterStaysStatic: openWater.pixels.every((value, i) => value === later.pixels[i]),
+        newCoastKeepsWater: coast.colors.some(color => color instanceof CanvasPattern),
+        cachedTexture: openWater.colors[0] === coast.colors[0],
+        newCoastHasSeawall: coast.colors.includes('#6c667b'),
+        harborHasSeawall: sample(4, 1, 0).colors.includes('#6c667b'),
+      };
+    });
+    assert.deepEqual(waterArt, {
+      matchesHarborWater: true, waterStaysStatic: true, newCoastKeepsWater: true, cachedTexture: true,
+      newCoastHasSeawall: false, harborHasSeawall: true,
+    });
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     await page.waitForFunction(() =>
