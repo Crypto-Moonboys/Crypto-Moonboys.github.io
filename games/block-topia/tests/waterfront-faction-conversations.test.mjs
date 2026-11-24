@@ -136,3 +136,58 @@ test('Gemini receives the character bio, faction pages and a named page while lo
   assert.equal((await answer('What is explained at /community.html?')).ok, true);
   assert.ok(calls.includes(home) && calls.includes(leader.wiki) && calls.includes(guide));
 });
+
+test('street cast gets 100 distinct voiced variants and its own local question and reply', async () => {
+  const { streetExchange, streetProfiles, STREET_VARIANTS } = await import('../waterfront/street-dialogue.mjs');
+  assert.equal(STREET_VARIANTS, 100);
+  assert.equal(Object.keys(streetProfiles).length, 35);
+  const answers = new Set();
+  const questions = new Set();
+  const counters = new Set();
+  for (const [id, profile] of Object.entries(streetProfiles)) {
+    if (profile.wiki) assert.ok(existsSync(new URL('../../..' + profile.wiki, import.meta.url)), id);
+    const initiator = profile.role === 'police' ? id : 'police-robot';
+    const listener = profile.role === 'police' ? 'burglar-bear' : id;
+    const lines = Array.from({ length: STREET_VARIANTS }, (_, i) => streetExchange(initiator, listener, i));
+    assert.equal(new Set(lines.map(turns => turns[0].text)).size, 100, id);
+    assert.equal(new Set(lines.map(turns => turns[1].text)).size, 100, id);
+    assert.equal(new Set(lines.map(turns => turns[2].text)).size, 100, id);
+    if (profile.role === 'police') {
+      questions.add(lines[0][0].text);
+      assert.equal(new Set(lines.map(turns => turns[3].text)).size, 100, id);
+    }
+    else {
+      answers.add(lines[0][1].text);
+      counters.add(lines[0][2].text);
+    }
+    if (profile.role !== 'bear') continue;
+    const partner = id === 'sailor-bear' ? 'camo-bear' : 'sailor-bear';
+    const bearLines = Array.from({ length: STREET_VARIANTS }, (_, i) => streetExchange(partner, id, i));
+    assert.equal(new Set(bearLines.map(turns => turns[1].text)).size, 100, id);
+  }
+  assert.equal(questions.size, 3);
+  assert.equal(answers.size, 32);
+  assert.equal(counters.size, 32);
+});
+
+test('local patrol stops and bear chats obey pairing, chance and release', async () => {
+  const { createStreetEncounters } = await import('../waterfront/street-encounters.mjs');
+  const actor = (id, x = 0) => ({ id, x, y: 0 });
+  const bear = actor('roamer:graff-bear');
+  const witness = actor('roamer:boombox');
+  const otherBear = actor('roamer:camo-bear', 10);
+  const cop = actor('roamer:police-bike', 10);
+  const engine = createStreetEncounters(() => 0);
+  assert.deepEqual(engine.tick([bear, witness], 0), []);
+  assert.equal(engine.tick([bear, otherBear], 1)[0].id, bear.id);
+  assert.ok(engine.holds(otherBear.id));
+  assert.match(engine.tick([bear, otherBear], 2701)[0].text, /sell weed/);
+  assert.deepEqual(engine.tick([bear, otherBear], 10801), []);
+  assert.equal(engine.holds(bear.id), false);
+  engine.tick([], 27000);
+  assert.deepEqual(engine.tick([cop, witness], 27001, () => true), []);
+  engine.tick([], 27002);
+  assert.equal(engine.tick([cop, witness], 27003)[0].id, cop.id);
+  assert.equal(engine.tick([cop, witness], 29703)[0].id, witness.id);
+  assert.deepEqual(createStreetEncounters(() => 0.99).tick([cop, witness], 0), []);
+});
