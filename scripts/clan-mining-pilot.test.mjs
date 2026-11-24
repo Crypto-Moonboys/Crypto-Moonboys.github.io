@@ -2263,3 +2263,61 @@ test('Waterfront admission admits only verified members into nine exclusive, exp
   assert.equal((await response.json()).faction_id, 'nomad-bears');
   assert.match(response.headers.get('Cache-Control'), /private.*no-store/);
 });
+
+test('Gemini lore routes confident site lookups locally and refunds unsuccessful upstream replies', async t => {
+  const { answerClanLeaderLore } = await import('../workers/moonboys-api/shared/clan-leader-lore.js?gemini-grounding-test');
+  const { db, sql } = fixture(t);
+  sql.exec(newerMigration('130_clan_leader_lore'));
+  const env = {
+    DB: db, CLAN_LEADER_LORE_ENABLED: 'true', CLAN_LEADER_LORE_PROVIDER: 'gemini',
+    CLAN_LEADER_GEMINI_KEY: 'test-key', CLAN_LEADER_GATEWAY_TOKEN: 'test-gateway',
+    CLAN_LEADER_GEMINI_GATEWAY: 'https://gateway.ai.cloudflare.com/v1/' + '1'.repeat(32) + '/test',
+  };
+  const now = new Date('2026-11-24T00:00:00Z');
+  const usage = () => sql.prepare('SELECT questions FROM clan_leader_lore_usage').get()?.questions ?? 0;
+  const ask = (question, recent_turns) => answerClanLeaderLore(env, '101', { npc: 'graffpunks', question, recent_turns }, now);
+  let calls = 0;
+  let response = 'failed';
+  const uri = 'https://support.example.org/computer';
+  const excerpt = 'Posh Bear works around the Waterfront as an assessor of recycled parts, workshop fixtures and recovered signs.';
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    const target = new URL(url);
+    if (target.hostname === 'gateway.ai.cloudflare.com') {
+      calls++;
+      assert.equal(target.search, '');
+      assert.equal(init.headers['x-goog-api-key'], 'test-key');
+      const request = JSON.parse(init.body);
+      assert.deepEqual(request.tools, [{ googleSearch: {} }]);
+      const prompt = JSON.parse(request.contents[0].parts[0].text);
+      assert.match(prompt.question, /computer/);
+      if (response === 'failed') return new Response(null, { status: 503 });
+      return Response.json({ candidates: [{
+        finishReason: 'STOP', content: { parts: [{ text: response === 'invalid' ? 'bad JSON' :
+          JSON.stringify({ mode: 'chat', reply: 'Check the monitor connection first.', sources: [] }) }] },
+        groundingMetadata: {
+          groundingChunks: [{ web: { title: 'Support', uri } }, { web: { title: 'Ignore', uri: 'javascript:alert(1)' } }],
+          groundingSupports: [{ groundingChunkIndices: [0, 1] }],
+          searchEntryPoint: { renderedContent: '<p>Search suggestions</p>' },
+        },
+      }] });
+    }
+    if (target.pathname === '/js/wiki-index.json') return Response.json([{ url: '/wiki/posh-bear.html', title: 'Posh Bear' }]);
+    if (target.pathname === '/sitemap.xml') return new Response('');
+    if (target.pathname === '/js/leader-lore-sources.json') return Response.json([]);
+    if (target.pathname === '/wiki/posh-bear.html') return new Response('<main><p>' + excerpt + '</p></main>');
+    return new Response(null, { status: 404 });
+  });
+  assert.equal((await ask('Who is Posh Bear?')).reply, excerpt);
+  assert.equal(calls, 0);
+  assert.equal(usage(), 0);
+  await assert.rejects(ask('How can I fix a computer with a blank screen?'), /lore_gemini_unavailable/);
+  assert.equal(usage(), 0, 'last reservation is removed');
+  response = 'success';
+  const answer = await ask('How can I fix a computer with a blank screen?');
+  assert.deepEqual(answer.sources, [{ url: uri, title: 'Support' }]);
+  assert.equal(answer.search_suggestions, '<p>Search suggestions</p>');
+  assert.equal(usage(), 1);
+  response = 'invalid';
+  await ask('How does a computer boot?');
+  assert.equal(usage(), 1, 'invalid replies refund exactly one question');
+});

@@ -52,27 +52,40 @@ export function clanLeaderQuestionError(error) {
   return messages[error] ?? 'Lore chat is temporarily unavailable. Try again shortly.';
 }
 
-export function clanLeaderSourceLinks(entries) {
+export function clanLeaderSourceLinks(entries, suggestions) {
+  const result = document.createDocumentFragment();
   const sources = document.createElement('ul');
-  for (const { title, path } of entries ?? []) {
-    if (typeof path !== 'string' || !/^\/(?!\/)[\w/.~-]*$/.test(path)) continue;
+  for (const { title, path, url } of entries ?? []) {
+    const external = typeof url === 'string' ? URL.parse(url) : null;
+    const local = typeof path === 'string' && /^\/(?!\/)[\w/.~-]*$/.test(path);
+    if (!local && (external?.protocol !== 'https:' || external.username || external.password)) continue;
     const item = document.createElement('li');
     const link = document.createElement('a');
-    link.href = path;
+    link.href = local ? path : external.href;
     link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = title;
+    link.rel = 'noopener noreferrer';
+    link.textContent = local ? title : 'Web source · ' + title;
     item.append(link);
     sources.append(item);
   }
-  return sources;
+  if (sources.childElementCount) result.append(sources);
+  if (typeof suggestions === 'string' && suggestions.length > 0 && suggestions.length <= 24000) {
+    const frame = document.createElement('iframe');
+    frame.title = 'Google Search suggestions';
+    frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+    frame.srcdoc = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: https://www.google.com https://www.gstatic.com; base-uri 'none'; form-action 'none'">` + suggestions;
+    frame.style.width = '100%';
+    frame.style.border = '0';
+    result.append(frame);
+  }
+  return result;
 }
 
 function loreChat(target) {
   const section = document.createElement('section');
   section.className = 'clan-leader-lore';
   section.innerHTML = `
-    <h3>Ask about the Moonboys universe</h3>
+    <h3>Ask about Moonboys or anything else</h3>
     <div role="log" aria-label="Lore conversation"></div>
     <form>
       <label>Question <textarea rows="2" maxlength="600" required></textarea></label>
@@ -108,7 +121,7 @@ function loreChat(target) {
     const answer = document.createElement('p');
     answer.textContent = result.reply;
     turn.append(prompt, answer);
-    if (result.sources?.length) turn.append(clanLeaderSourceLinks(result.sources));
+    if (result.sources?.length || result.search_suggestions) turn.append(clanLeaderSourceLinks(result.sources, result.search_suggestions));
     transcript.append(turn);
     transcript.scrollTop = transcript.scrollHeight;
     previous.push({ question, reply: result.reply });
