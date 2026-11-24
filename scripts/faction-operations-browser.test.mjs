@@ -2317,8 +2317,11 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       const context = display.getContext('2d');
       const drawImage = context.drawImage.bind(context);
       let sprites = 0;
+      const botSizes = new Set();
+      const factionSizes = new Set();
       context.drawImage = (image, ...args) => {
-        if (image === waterfrontBotAtlas.image) sprites++;
+        if (image === waterfrontBotAtlas.image) { sprites++; botSizes.add(args[7]); }
+        if (image === waterfrontFactionAtlas.image) factionSizes.add(args[7]);
         drawImage(image, ...args);
       };
       const crewBriefs = [];
@@ -2331,8 +2334,11 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
         maxRobots = Math.max(sprites, maxRobots);
       }
       const delivered = harborFreight.bots.some(bot => bot.carrying || bot.point !== district.spawn && bot.started > 1);
-      return { maxRobots, delivered, crewBrief: crewBriefs.includes(window.waterfrontBuildDiscussion[0].text) };
+      return { maxRobots, delivered, crewBrief: crewBriefs.includes(window.waterfrontBuildDiscussion[0].text),
+        botSizes: [...botSizes], factionSizes: [...factionSizes] };
     });
+    assert.deepEqual(harborLife.botSizes, [32], 'robot frames retain their original 32-pixel size');
+    assert.deepEqual(harborLife.factionSizes, [34], 'leaders and the player use the same larger frame');
     assert.ok(harborLife.maxRobots > 11, 'building residents join the crew, freight and patrol robots');
     assert.equal(harborLife.delivered, true, 'freight robots run their original delivery routes');
     assert.equal(harborLife.crewBrief, true, 'the original briefing crew speaks near spawn');
@@ -2342,9 +2348,9 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       const scroll = document.querySelector('.map-scroll');
       const rect = map.getBoundingClientRect();
       scroll.scrollLeft = hit.x * rect.width / mapWidth - scroll.clientWidth / 2;
-      scroll.scrollTop = (hit.y - 8) * rect.height / mapHeight - scroll.clientHeight / 2;
+      scroll.scrollTop = (hit.y - 26) * rect.height / mapHeight - scroll.clientHeight / 2;
       const shifted = map.getBoundingClientRect();
-      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
+      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 26) * rect.height / mapHeight };
     });
     await page.mouse.click(position.x, position.y);
     const details = page.getByRole('region', { name: 'Nine Toes Joe', exact: true });

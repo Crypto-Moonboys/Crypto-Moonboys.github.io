@@ -55,6 +55,8 @@ const waterfrontFactionAtlas = { file: "faction-frames" };
 // Order matches the rows packed from the named source portraits.
 const waterfrontCharacterNames = window.waterfrontCharacterNames;
 const waterfrontBotAtlas = { file: "bot-frames" };
+const factionSpriteSize = 34;
+const botSpriteSize = 32;
 const residentBots = [3, 4, 5, 6, 7];
 
 const waterfrontAtlases = {
@@ -849,11 +851,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   function bot(model, x, y, dx = 0, dy = 1, frame = 0) {
     const image = waterfrontBotAtlas.image;
     const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
-    const size = 20;
-    rect("#080f1cad", x - 6, y - 1, 12, 4);
+    rect("#080f1cad", x - 8, y - 1, 16, 4);
     if (image) {
       ctx.drawImage(image, frame * 32, (model * 4 + facing) * 32, 32, 32,
-        x - size / 2, y - size, size, size);
+        x - botSpriteSize / 2, y - botSpriteSize, botSpriteSize, botSpriteSize);
     } else {
       rect("#384a58", x - 4, y - 9, 8, 8);
       rect("#7de8df", x - 2, y - 7, 4, 2);
@@ -974,10 +975,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     }
   }
 
-  function factionCharacter(faction, x, y, facing = 0, frame = 0, spriteSize = 18) {
-    rect("#080f1cad", x - spriteSize / 3.6, y - 1, spriteSize / 1.8, 3);
+  function factionCharacter(faction, x, y, facing = 0, frame = 0) {
+    rect("#080f1cad", x - factionSpriteSize / 3.6, y - 1, factionSpriteSize / 1.8, 3);
     ctx.drawImage(waterfrontFactionAtlas.image, frame * 36, (faction * 4 + facing) * 36, 36, 36,
-      x - spriteSize / 2, y + 1 - spriteSize, spriteSize, spriteSize);
+      x - factionSpriteSize / 2, y + 1 - factionSpriteSize, factionSpriteSize, factionSpriteSize);
   }
 
   function actor() {
@@ -1017,7 +1018,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const y = Math.round(position.y * size + 22);
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const frame = paused || holding || time === null || !(dx || dy) ? 0 : 1 + Math.floor(time * 7 + index) % 3;
-      queue(y, () => factionCharacter(index, x, y, facing, frame, 20));
+      queue(y, () => factionCharacter(index, x, y, facing, frame));
       factionHits.push({ index, x, y, paused, talking: state?.talking });
       const separation = Math.hypot(x - (player.x * size + 16), y - (player.y * size + 22));
       if (separation < size && (!nearestFaction || separation < nearestFaction.separation)) {
@@ -1032,10 +1033,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.save();
     ctx.font = "7px system-ui";
     const width = Math.ceil(ctx.measureText(name).width) + 8;
-    rect("#131926ed", x - width / 2, y - 32, width, 11);
+    rect("#131926ed", x - width / 2, y - factionSpriteSize - 14, width, 11);
     ctx.fillStyle = "#eaf2e5";
     ctx.textAlign = "center";
-    ctx.fillText(name, x, y - 24);
+    ctx.fillText(name, x, y - factionSpriteSize - 6);
     ctx.restore();
   }
 
@@ -1055,7 +1056,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   }
 
   function drawCrewBubble(x, y) {
-    const top = y - 27;
+    const top = y - botSpriteSize - 20;
     const left = Math.max(2, Math.min(x - 76, width * size - 154));
     rect("#16303b", left - 1, top - 1, 154, 16);
     rect("#eaf2e5", left, top, 152, 14);
@@ -1121,7 +1122,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.fillStyle = '#eaf2e5';
     ctx.font = '7px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(talking ? 'Talking' : 'Paused', x, y - 34);
+    ctx.fillText(talking ? 'Talking' : 'Paused', x, y - factionSpriteSize - 17);
     ctx.restore();
   }
   if (conversations && time !== null) {
@@ -1148,7 +1149,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       const boxWidth = Math.ceil(Math.max(...lines.map(text => ctx.measureText(text).width))) + 12;
       const left = Math.max(2, Math.min(speaker.x - boxWidth / 2, width * size - boxWidth - 2));
       const boxHeight = lines.length * 11 + 6;
-      const top = Math.max(2, speaker.y - 37 - boxHeight);
+      const top = Math.max(2, speaker.y - factionSpriteSize - 8 - boxHeight);
       rect('#0e151f', left - 1, top - 1, boxWidth + 2, boxHeight + 2);
       rect('#d9efea', left, top, boxWidth, boxHeight);
       const tail = Math.max(left + 4, Math.min(speaker.x, left + boxWidth - 4));

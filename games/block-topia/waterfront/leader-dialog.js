@@ -112,7 +112,7 @@ function positionBubble() {
   const frame = mapScroller.getBoundingClientRect();
   const parent = mapViewport.getBoundingClientRect();
   const x = gameBounds.left + hit.x * gameBounds.width / mapWidth;
-  const y = gameBounds.top + (hit.y - 20) * gameBounds.height / mapHeight;
+  const y = gameBounds.top + (hit.y - factionSpriteSize) * gameBounds.height / mapHeight;
   bubble.hidden = x < frame.left || x > frame.right || y < frame.top || y > frame.bottom;
   if (bubble.hidden) return;
   const half = bubble.offsetWidth / 2;

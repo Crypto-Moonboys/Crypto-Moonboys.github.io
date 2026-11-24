@@ -233,7 +233,7 @@ mapSurface.addEventListener("click", event => {
       Math.hypot(event.clientX - previousLeaderTap.x, event.clientY - previousLeaderTap.y) <= 16;
     const leader = (nearFirstTap && factionHits.find(hit => hit.index === previousLeaderTap.index)) ||
       factionHits.findLast(hit =>
-      Math.abs(hit.x - mapX) <= 11 && mapY >= hit.y - 20 && mapY <= hit.y + 2);
+      Math.abs(hit.x - mapX) <= factionSpriteSize / 2 && mapY >= hit.y - factionSpriteSize && mapY <= hit.y + 2);
     if (leader) {
       const ask = Boolean(nearFirstTap && previousLeaderTap.index === leader.index);
       previousLeaderTap = ask ? null : { index: leader.index, time, x: event.clientX, y: event.clientY };
