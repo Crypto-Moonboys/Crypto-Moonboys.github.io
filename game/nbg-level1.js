@@ -108,6 +108,14 @@
   var SKYLINE_Y = 40;
   var SKYLINE_WIDTH = 640;
   var SKYLINE_HEIGHT = 160;
+  // Bridge layer — tiled in front of skyline, parallax slightly faster.
+  // The bridge PNG is 1632x408 (4:1) with ~60% whitespace above the bridge structure.
+  // We render only the bottom 50% of the source image (the actual bridge) so it
+  // sits flush above the street without a large blank gap.
+  var BRIDGE_PARALLAX = 0.45;
+  var BRIDGE_TILE_WIDTH = 640;   // rendered width per tile (4:1 ratio preserved)
+  var BRIDGE_TILE_HEIGHT = 80;   // rendered height (half of 160, bottom of image)
+  var BRIDGE_Y = HEIGHT - STREET_BAND_HEIGHT - BRIDGE_TILE_HEIGHT + 8; // just above street
   var STREET_BAND_HEIGHT = 28;
   var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
@@ -343,6 +351,7 @@
     var layerKeyMap = {
       sky: 'sky',
       'london-skyline': 'skyline',
+      'london-bridge': 'bridge',
       'graffiti-wall': 'wall',
       street: 'street'
     };
@@ -1628,6 +1637,28 @@
       }
     }
 
+    function drawBridgeLayer() {
+      var img = images.bridge;
+      if (!img) return;
+      // Draw only the bottom half of the source image (actual bridge structure,
+      // excluding the large white/sky region above it).
+      var srcW = img.naturalWidth;
+      var srcH = img.naturalHeight;
+      var srcY = Math.floor(srcH * 0.5); // start halfway down the source
+      var srcCropH = srcH - srcY;         // bottom 50% of source pixels
+
+      var offset = -cameraX * BRIDGE_PARALLAX;
+      var start = Math.floor(offset % BRIDGE_TILE_WIDTH) - BRIDGE_TILE_WIDTH;
+      for (var x = start; x < WIDTH + BRIDGE_TILE_WIDTH; x += BRIDGE_TILE_WIDTH) {
+        ctx.drawImage(
+          img,
+          0, srcY, srcW, srcCropH,          // source: full width, bottom half
+          Math.round(x), BRIDGE_Y,           // destination position
+          BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT  // destination size
+        );
+      }
+    }
+
     function assertRequiredAssetsLoaded() {
       var missing = requiredAssets.filter(function (key) {
         return !assetStatus[key] || !assetStatus[key].loaded;
@@ -1680,6 +1711,7 @@
     function drawWorld() {
       drawSkyWallpaper();
       drawSkylineLayer();
+      drawBridgeLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
       // Looking below shifts the road upward; extend the painted roadbed
