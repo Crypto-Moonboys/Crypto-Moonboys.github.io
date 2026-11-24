@@ -18,12 +18,12 @@ The production atlases are in [assets/atlases](assets/atlases). Use the existing
 
 ## Island roamers
 
-These 27 guest sprites come from GK’s November 24 Waterfront sheet batch. Every model uses a 4 × 4 block of 112 × 112 frames, packed three models across. Frames are cropped to the sprite and placed on a shared bottom-center anchor per model. Directions run south, west, east, north, with idle first in each row. Vehicles use travel frames and slightly faster patrol speeds.
+These 26 roaming guests come from GK’s November 24 Waterfront sheet batch. Every model uses a 4 × 4 block of 112 × 112 frames, packed three models across. Frames are cropped to the sprite and placed on a shared bottom-center anchor per model. Directions run south, west, east, north, with idle first in each row. Vehicles use travel frames and slightly faster patrol speeds.
 
 | Atlas | Models in packing order with source job prefixes |
 | --- | --- |
 | [roamers-patrol.webp](assets/atlases/roamers-patrol.webp) | Police Robot (`c3a815e0`), Police Car (`8c3fd763`), Police Bike (`598578f2`), Blue Electric Bot (`fe4ae92b`), Green Electric Bot (`2d5f8e2e`), Walking Boombox (`2371547a`), Samurai (`d956997a`), Burglar Bear (`74cd153d`), Sailor Bear (`6e6d5634`) |
-| [roamers-mechs.webp](assets/atlases/roamers-mechs.webp) | Allcity Bulls (`47412f05`), Blockstars (`8ad42761`), Blockchain Furies (`3194eb57`), GraffPunks (`84b01c4c`), Nomad Bears (`e317ac85`), HODL (`73c8e85b`), Hard Fork Rockers (`1064da43`), Moongirls (`2b60a2f3`), Nomad Bears block variant (`Nomad Bear waterfront mech sprites(1).png`), No Ball Games (`411f5153`), Graffiti Kings (`d1cdf6a8`) |
+| [roamers-mechs.webp](assets/atlases/roamers-mechs.webp) | Allcity Bulls (`47412f05`), Blockstars (`8ad42761`), Blockchain Furies (`3194eb57`), GraffPunks (`84b01c4c`), Retired rounded Nomad Bears slot (`e317ac85`), HODL (`73c8e85b`), Hard Fork Rockers (`1064da43`), Moongirls (`2b60a2f3`), Nomad Bears block variant (`Nomad Bear waterfront mech sprites(1).png`), No Ball Games (`411f5153`), Graffiti Kings (`d1cdf6a8`) |
 | [roamers-bears.webp](assets/atlases/roamers-bears.webp) | Jamaican Bear (`37961231`), Camo Bear (`55230f31`), Gentleman Bear (`73defe77`), Graff Bear (`533cbd83`), Posh Bear (`11e64d44`), St Patrick’s Day Bear (`2446ae85`), Straight Outta Ghetto Bear (`546d0448`) |
 
 The Nomad Bears block variant’s source arranges directions in columns and poses in rows. Its own 16 frames are transposed to the atlas layout. The roamers share the existing walkable island loop at staggered starting points. The renderer skips offscreen roamers, shows idle frames while paused or in reduced-motion mode, and skips any guest atlas that fails to load so the rest of the map can still run.

@@ -69,7 +69,7 @@ const waterfrontRoamers = [
   ] },
   { file: "roamers-mechs.webp?v=2", cell: roamingAtlasCell, cast: [
     ["allcity-bulls-mech", 53], ["blockstars-mech", 53], ["blockchain-furies-mech", 53],
-    ["graffpunks-mech", 53], ["nomad-bears-mech", 53], ["hodl-mech", 53],
+    ["graffpunks-mech", 53], null, ["hodl-mech", 53], // Retired rounded mech atlas slot.
     ["hard-fork-rockers-mech", 53], ["moongirls-mech", 53], ["nomad-bears-block-mech", 53],
     ["no-ball-games-mech", 53], ["graffiti-kings-mech", 53],
   ] },
@@ -79,7 +79,11 @@ const waterfrontRoamers = [
     ["straight-outta-ghetto-bear", 34],
   ] },
 ].flatMap(({ cast, ...atlas }) =>
-  cast.map(([id, size, pace], model) => ({ atlas, model, id: "roamer:" + id, size, pace }))
+  cast.flatMap((entry, model) => {
+    if (!entry) return [];
+    const [id, size, pace] = entry;
+    return [{ atlas, model, id: "roamer:" + id, size, pace }];
+  })
 );
 const factionSpriteSize = 34;
 const botSpriteSize = 32;
