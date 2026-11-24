@@ -191,8 +191,8 @@ each question for canon relevance and can also hold a general conversation or
 invent new, explicitly non-canon lore without a trigger phrase. Canon replies still
 require citations. The chat sends the last two questions and replies so follow-up
 questions can build on the same scene. Standalone greetings are answered locally
-before retrieval or model quota reservation.
-Gemini defaults to 100 reserved questions per UTC day across the site unless
+before retrieval or any model call, and count towards the player’s chat allowance.
+Gemini defaults to 100 provider calls per UTC day across the site unless
 `CLAN_LEADER_LORE_SITE_LIMIT` specifies a different positive limit. The gateway
 uses provider billing and disables prompt and response logging. Verify both chat
 modes with a signed-in Waterfront session after deployment.
@@ -203,10 +203,11 @@ Wiki index, sitemap and current canon references. Pages publishes the artifact's
 HTML and Markdown path index at `/js/leader-lore-sources.json`. The Worker reads
 short excerpts from relevant documents when a question is asked and links the
 sources it used. Editorial-only files, noindex pages and account routes stay out
-of model context. Each signed player gets 10 questions per UTC day plus one
-question for each verified Clan Operation tier banked that day, up to three extras.
+of model context. Each signed player gets 10 chat questions per UTC day shared across all nine leaders.
+Local replies and model replies use that same allowance. Faction members also get
+one separate free slowdown each UTC day, shared across the same leaders.
 Set `CLAN_LEADER_LORE_SITE_LIMIT` only if needed to cap total model traffic by
-UTC day. It is unset by default. In Waterfront,
+UTC day. In Waterfront,
 select a leader for details and double-click or double-tap to ask. Send closes
 the composer and the reply appears above the leader. The info button opens
 the full reply and sources. Lore questions do not affect rounds, scores or

@@ -2001,7 +2001,12 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const { sql, settings, request } = fixture(t);
   sql.exec(`${newerMigration('130_clan_leader_lore')}
     CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);
-    ${newerMigration('019_daily_wtf_timed_events')}`);
+    ${newerMigration('019_daily_wtf_timed_events')}
+    DROP TABLE blocktopia_progression;
+    ${newerMigration('010_blocktopia_progression_repair')}
+    ${newerMigration('129_clan_leader_presence')}
+    INSERT INTO blocktopia_progression (telegram_id, faction) VALUES ('999', 'graffpunks');`);
+  settings.leaderStart = '2026-11-20';
   const site = 'https://cryptomoonboys.com';
   const canonPath = '/about/latest-canon-and-brand-vision.md';
   const wikiPath = '/wiki/bitcoin-kid-army.html';
@@ -2095,29 +2100,33 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   fakeResponse = { reply: 'Open gk-master-canon now.', sources: [1] };
   assert.deepEqual((await question()).data.sources, []);
   fakeResponse = undefined;
-  sql.exec("UPDATE clan_leader_lore_usage SET questions = 9 WHERE telegram_id = '999'");
-  const competing = await Promise.all([question(), question()]);
+  for (const npc of CANONICAL_FACTION_KEYS.slice(0, 8)) {
+    assert.equal((await question({ npc, question: 'Hello' })).status, 200);
+  }
+  const competing = await Promise.all([question(), question({ npc: 'nomad-bears' })]);
   assert.deepEqual(competing.map(result => result.status).sort(), [200, 429]);
-  assert.equal(prompts.length, 4, 'only one call reserved the final account question');
-  assert.equal((await question()).data.error, 'lore_task_required');
-  bankReceipt(sql, '998', 'nomad-bears', '2026-11-20T10:00:00.000Z');
-  bankReceipt(sql, '999', 'graffpunks', '2026-11-19T10:00:00.000Z');
-  assert.equal((await question()).data.error, 'lore_task_required', 'other players and past banks give no credits');
+  assert.equal(prompts.length, 4, 'only one model call reserved the final shared chat question');
+  assert.equal((await question({ npc: 'blockstars', question: 'Who are you?' })).data.error, 'lore_daily_limit');
   bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:00:00.000Z');
-  const bonus = await Promise.all([question(), question()]);
-  assert.deepEqual(bonus.map(result => result.status).sort(), [200, 429], 'one verified bank unlocks one question');
-  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:01:00.000Z', 2);
-  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:02:00.000Z', 3);
-  assert.equal((await question()).status, 200);
-  assert.equal((await question()).status, 200);
-  assert.equal((await question()).data.error, 'lore_daily_limit');
-  sql.exec(`INSERT INTO clan_leader_lore_usage VALUES ('2026-11-20', '1', 187)`);
-  settings.loreSiteLimit = '200';
-  assert.equal((await question({}, { id: '998' })).data.error, 'lore_site_limit', 'the shared daily budget is also enforced');
+  assert.equal((await question()).data.error, 'lore_daily_limit', 'operation tiers cannot extend chat quota');
+  const slowdown = await question({ question: 'What is your faction working on today?' });
+  assert.equal(slowdown.data.paused_until, settings.time.getTime() / 1000 + 300, 'free slowdown works on your own leader after chat is used: ' + JSON.stringify(slowdown.data));
+  assert.match((await question({ npc: 'nomad-bears', question: 'Which part of the city would you defend first?' })).data.reply,
+    /free slowdown is used/);
+  assert.equal((await request({ id: '999', leaderAction: {
+    target: 'nomad-bears', option: 'territory', request_id: '00000000-0000-4000-8000-000000000011',
+  } })).data.error, 'daily_question_used', 'the slowdown button shares the same daily use as chat');
+  settings.loreSiteLimit = '1';
+  assert.equal((await question({ question: 'Hello' }, { id: '998' })).status, 200);
+  assert.equal((await question({}, { id: '998' })).status, 200, 'local chats leave the model budget available');
+  assert.equal((await question({}, { id: '998' })).data.error, 'lore_site_limit');
+  assert.equal((await question({ question: 'Hello' }, { id: '998' })).status, 200, 'local chat works after model budget is spent');
   settings.loreSiteLimit = undefined;
-  assert.equal((await question({}, { id: '998' })).status, 200, 'there is no default shared question pool');
+  assert.equal((await question({}, { id: '998' })).status, 200, 'Hermes has no default site limit');
   settings.time = new Date('2026-11-21T00:00Z');
   assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
+  assert.ok((await question({ npc: 'nomad-bears', question: 'Which part of the city would you defend first?' })).data.paused_until,
+    'the slowdown also resets at midnight UTC');
   const overview = await question({
     npc: 'blockstars', question: providerOverview,
     previous: [detailedCommand],
@@ -2139,7 +2148,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   }
   assert.equal(prompts.length, callsBeforeIntroduction, 'local introductions skip the provider');
   assert.equal(visits.length, visitsBeforeIntroduction, 'local introductions skip source fetches');
-  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction, 'local introductions do not spend question quota');
+  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction + 2, 'local introductions spend the shared chat quota');
   // The exact overview matches locally while the preceding variant exercises the provider.
   assert.match(freshChat.data.reply, /Year 3008/);
   const callsBeforeCanon = prompts.length;
@@ -2156,7 +2165,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   }
   assert.equal(prompts.length, callsBeforeCanon, 'local canon answers skip the provider');
   assert.equal(visits.length, visitsBeforeIntroduction, 'local canon answers skip source fetches');
-  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction, 'local canon answers do not spend question quota');
+  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction + 6, 'local canon answers spend the shared chat quota');
   const identities = new Set();
   for (const [index, npc] of CANONICAL_FACTION_KEYS.entries()) {
     const response = await question({ npc, question: 'What does ' + site + publishedMd + ' say?' }, { id: String(400 + index) });
@@ -2173,7 +2182,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.deepEqual(unlisted.data.sources.map(source => source.path), [artifactPage]);
   assert.ok(!visits.includes(editorial));
   hermesStatus = 307;
-  assert.equal((await question()).status, 503, 'gateway redirects are not followed');
+  assert.equal((await question({}, { id: '998' })).status, 503, 'gateway redirects are not followed');
   settings.hermesUrl = hermesUrl.replace('https:', 'http:');
   assert.equal((await question()).status, 404, 'inference is disabled without HTTPS');
   settings.hermesUrl = hermesUrl;
@@ -2274,7 +2283,7 @@ test('Gemini lore routes confident site lookups locally and refunds unsuccessful
     CLAN_LEADER_GEMINI_GATEWAY: 'https://gateway.ai.cloudflare.com/v1/' + '1'.repeat(32) + '/test',
   };
   const now = new Date('2026-11-24T00:00:00Z');
-  const usage = () => sql.prepare('SELECT questions FROM clan_leader_lore_usage').get()?.questions ?? 0;
+  const usage = () => sql.prepare("SELECT questions FROM clan_leader_lore_usage WHERE telegram_id = '101'").get()?.questions ?? 0;
   const ask = (question, recent_turns) => answerClanLeaderLore(env, '101', { npc: 'graffpunks', question, recent_turns }, now);
   let calls = 0;
   let response = 'failed';
@@ -2309,15 +2318,15 @@ test('Gemini lore routes confident site lookups locally and refunds unsuccessful
   });
   assert.equal((await ask('Who is Posh Bear?')).reply, excerpt);
   assert.equal(calls, 0);
-  assert.equal(usage(), 0);
+  assert.equal(usage(), 1);
   await assert.rejects(ask('How can I fix a computer with a blank screen?'), /lore_gemini_unavailable/);
-  assert.equal(usage(), 0, 'last reservation is removed');
+  assert.equal(usage(), 1, 'a failed provider call preserves the earlier local charge');
   response = 'success';
   const answer = await ask('How can I fix a computer with a blank screen?');
   assert.deepEqual(answer.sources, [{ url: uri, title: 'Support' }]);
   assert.equal(answer.search_suggestions, '<p>Search suggestions</p>');
-  assert.equal(usage(), 1);
+  assert.equal(usage(), 2);
   response = 'invalid';
   await ask('How does a computer boot?');
-  assert.equal(usage(), 1, 'invalid replies refund exactly one question');
+  assert.equal(usage(), 2, 'invalid replies refund exactly one question');
 });

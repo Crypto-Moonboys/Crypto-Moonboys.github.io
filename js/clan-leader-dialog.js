@@ -1,6 +1,6 @@
 const errorMessages = {
   connect_telegram: 'Connect Telegram to interact with faction leaders.',
-  join_faction: 'Join a faction in Battle Chamber to interact with a rival leader.',
+  join_faction: 'Join a faction in Battle Chamber to use a leader slowdown.',
   rival_required: 'Choose a leader from a rival faction.',
   daily_question_used: 'You’ve used your free question today. It resets at midnight UTC.',
   insufficient_balance: 'Your Block Topia balance is too low for this slowdown.',
@@ -44,8 +44,8 @@ export async function sendClanLeaderQuestion(npc, question, previous) {
 export function clanLeaderQuestionError(error) {
   const messages = {
     connect_telegram: 'Connect Telegram in Battle Chamber to ask a question.',
-    lore_task_required: 'You’ve used your 10 free questions. Bank a Clan Operation tier today to unlock another.',
-    lore_daily_limit: 'You’ve used all your free and task-earned questions for today. They reset at midnight UTC.',
+    lore_task_required: 'You’ve used your 10 chat questions across all leaders. They reset at midnight UTC.',
+    lore_daily_limit: 'You’ve used your 10 chat questions across all leaders. They reset at midnight UTC.',
     lore_site_limit: 'The site has used its AI allowance for today. It resets at midnight UTC.',
     rate_limited: 'Too many questions at once. Try again in a minute.',
   };
@@ -89,6 +89,7 @@ function loreChat(target) {
     <div role="log" aria-label="Lore conversation"></div>
     <form>
       <label>Question <textarea rows="2" maxlength="600" required></textarea></label>
+      <p>10 chat questions total across all faction leaders per UTC day, plus one free slowdown.</p>
       <button type="submit">Ask the leader</button>
       <p role="status"></p>
     </form>`;
@@ -173,7 +174,7 @@ export function mountClanLeaderDialog(parent, onChange) {
       state.textContent = `Available for another interaction at ${date}.`;
       return;
     }
-    state.textContent = 'Choose a question or spend Block Topia XP or gems to pause a rival leader.';
+    state.textContent = 'Use your free slowdown on any faction leader. Paid slowdowns are for rival leaders.';
     if (!window.MOONBOYS_IDENTITY?.getTelegramId?.()) {
       reply.textContent = errorMessages.connect_telegram;
       return;
@@ -236,7 +237,7 @@ export function mountClanLeaderDialog(parent, onChange) {
       });
     }
 
-    const talk = group('Talk · one free question per day');
+    const talk = group('Talk · one free slowdown per UTC day across all leaders');
     for (const question of controls.questions) button(talk, question, `${question.title} · ${question.minutes} min`);
     const spend = group('Paid slowdown');
     for (const offer of controls.paid) {
