@@ -19,7 +19,7 @@ const buildings = atlas('hk-night.png');
 const isIso = mode === 'node-city' || mode === 'survival';
 const fortress = isIso ? loadZcashFortress() : null;
 const waxBee = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
-  ? './hodl-wars-lores/assets/wax-bee.webp' : './assets/miners/wax-bee-iso.webp');
+  ? './hodl-wars-lores/assets/wax-bee.webp?view=moon-grid' : './assets/miners/wax-bee-iso.webp');
 const tower = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
   ? './hodl-wars-lores/assets/bitcoin-cash-tower.webp' : './assets/miners/bitcoin-cash-tower-iso.webp');
 const people = atlas('factions-detail.webp');
