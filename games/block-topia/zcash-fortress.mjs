@@ -1,9 +1,9 @@
 // Isometric 12-frame atlas shared by the survival game and comparison maps.
 export const fortressSize = { width: 112, height: 140, anchorY: 117 };
 
-export function loadZcashFortress() {
+export function loadZcashFortress(file = "./assets/miners/zcash-fortress-iso.webp") {
   const image = new Image();
-  image.src = new URL('./assets/miners/zcash-fortress-iso.webp', import.meta.url).href;
+  image.src = new URL(file, import.meta.url).href;
   return image;
 }
 
