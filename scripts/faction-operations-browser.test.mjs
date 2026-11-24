@@ -2216,6 +2216,39 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
     assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
+    const island = await page.evaluate(() => {
+      const regions = new Set();
+      const key = (x, y) => Math.floor(x / 8) + ',' + Math.floor(y / 8);
+      let land = 0;
+      for (const [y, row] of district.rows.entries()) for (const [x, tile] of [...row].entries()) {
+        if (tile !== '~') { land++; regions.add(key(x, y)); }
+      }
+      const frontier = [spawn];
+      const reachable = new Set([spawn.y * columns + spawn.x]);
+      for (const point of frontier) for (const [dx, dy] of Object.values(directions)) {
+        const x = point.x + dx, y = point.y + dy;
+        const cell = y * columns + x;
+        if (walkable(rows[y]?.[x]) && !reachable.has(cell)) {
+          reachable.add(cell);
+          frontier.push({ x, y });
+        }
+      }
+      const loop = natureRoute(rows, district);
+      return {
+        width: columns, height: initial.length, land, tiles: Object.keys(district.tiles).sort(),
+        allLandReachable: reachable.size === land,
+        allRegionsVisited: new Set(loop.map(({x, y}) => key(x, y))).size === regions.size,
+        loopWalkable: loop.every(({x,y}, i) => {
+          const next = loop[(i + 1) % loop.length];
+          return walkable(rows[y][x]) && Math.abs(x - next.x) + Math.abs(y - next.y) === 1;
+        }),
+      };
+    });
+    const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
+    assert.deepEqual(island, {
+      width: 112, height: 85, land: previousLand * 5, tiles: ['.', 'f', 'p', 't', '~'],
+      allLandReachable: true, allRegionsVisited: true, loopWalkable: true,
+    });
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     const position = await page.evaluate(() => {
