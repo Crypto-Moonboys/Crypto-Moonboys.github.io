@@ -97,7 +97,7 @@ function bootMap(district) {
       window.waterfrontIslandSeed = islandSeed;
       if (!window.createWaterfrontFactionConversations) {
         const { createFactionConversations } = await import('./faction-conversations.mjs?v=4');
-        const { createStreetEncounters } = await import('./street-encounters.mjs?v=1');
+        const { createStreetEncounters } = await import('./street-encounters.mjs?v=2');
         window.createWaterfrontFactionConversations = storage => ({
           ...createFactionConversations(storage),
           street: createStreetEncounters(),

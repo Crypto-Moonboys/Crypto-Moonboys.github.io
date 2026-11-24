@@ -20,19 +20,6 @@ const bears = {
   'straight-outta-ghetto-bear': ['What’s good? Keep it moving by the old yards.', 'I chalked that line before your lot showed up. Don’t rewrite the game because you’ve got a radio.', 'I’ve got lines to chalk. Show up before kick-off this time.'],
 };
 
-// The dealing is new game-scene fiction. Their day jobs and habits come from their bios.
-const bearBusiness = {
-  'burglar-bear': 'I’ve sold weed and fixed your bloody shutters. Somehow the second thing is always left out.',
-  'sailor-bear': 'I’ve peddled enough weed to know the money goes fast and the shit it starts lingers.',
-  'jamaican-bear': 'I’ve dealt weed, sure. Those records are borrowed. I give a damn about bringing them back.',
-  'camo-bear': 'I sell weed, and I spend my mornings clearing the actual weeds. I’d rather people noticed the work.',
-  'gentleman-bear': 'I’ve sold pills. I still remember the people who came looking for a mate who never showed.',
-  'graff-bear': 'Dealing paid for paint once. It also paid for a fight that took months to get out of my head.',
-  'posh-bear': 'I’ve sold coke in a better suit than this. It made me rich for about five bloody minutes.',
-  'st-patricks-bear': 'I’ve sold weed on rough nights. I still clear the procession route when the bakery shift gets out.',
-  'straight-outta-ghetto-bear': 'I’ve dealt weed. I’ve also chalked a pitch for a crew that could barely afford boots. I’m both those things.',
-};
-
 const others = {
   'electric-blue': 'Blue charge light means I’m checking the load. You can ask without grabbing the damn cable.',
   'electric-green': 'I check the return path before I close a circuit. I wish your patrol did the same.',
@@ -99,19 +86,6 @@ const cases = [
   ['the handover at the eastern crossing', 'what happened at the crossing'],
 ];
 
-const streetTopics = [
-  ['the weed rumours following us past the lantern', 'Everybody’s got an opinion about weed once a blue light turns up.'],
-  ['the pills and dodgy debts people keep pinning on us', 'Pills and debts don’t make anybody ten feet tall. I’ve watched them ruin a mate.'],
-  ['the coke talk outside the Berth', 'Half the quay is talking shit about coke and the other half is pretending it never heard a word.'],
-  ['the heat on the docks', 'That patrol has got the whole night shift walking on eggshells.'],
-  ['the old South Point route', 'Keep the bridge open. People have to live here after we’ve all fucked off.'],
-  ['the Paint Path wall', 'The wall remembers a lot more than that station notebook does.'],
-  ['the Hard Fork Games crowd', 'Once the whistle goes, everyone’s brave enough to tell you what really happened.'],
-  ['the drama down Southwest Park', 'I’m sick of burying good evenings under somebody else’s drama.'],
-  ['the repair bench at the Ninth Berth', 'The bench will still be there when the big mouths have gone home.'],
-  ['the questions at the east crossing', 'I’ll answer for what I saw. The rest of the street can speak for itself.'],
-];
-
 const patrolQuestions = [
   'What did you see around', 'When did you first hear about', 'Who else saw',
   'What were you doing near', 'Can anyone confirm your account of', 'Did anyone get hurt around',
@@ -131,29 +105,121 @@ const witnessAngles = [
   'That’s all I can put my name to about',
 ];
 
-const bearAngles = [
-  'Listen.', 'You want my take?', 'I’ll tell you this much.', 'I had to think about it.',
-  'I heard enough last night.', 'Somebody needed to say it.', 'I’ve got one thing to add.',
-  'It’s been on my mind since the lights came on.', 'Keep this between us.', 'Here’s where I stand.',
+// Opening lines belong to the bear, regardless of who happens to pass.
+const bearApproaches = {
+  'burglar-bear': ['Fancy buying some weed, or am I talking to a fucking shutter?', 'Did you see the police? Got a bad feeling in my gut.'],
+  'sailor-bear': ['Want to buy some weed before you piss off for the night, mate?', 'You seen any coppers, or was that just a light off the water?'],
+  'jamaican-bear': ['You buying weed tonight? Say so before the next record goes on.', 'Did you see the police, or is somebody talking shit over the bass again?'],
+  'camo-bear': ['Want to buy some weed? Mind the bloody seedlings while you decide.', 'Any police about? I’m trying to get through one fucking shift in peace.'],
+  'gentleman-bear': ['Would you care to buy some weed? You may say no without making a bloody speech.', 'Have you seen the police this evening? I’ve had enough of their bureaucratic bollocks.'],
+  'graff-bear': ['You want to buy weed or just stand there watching the fucking paint dry?', 'You seen the police looking at the wall? Merde, I’ve only just got the colour right.'],
+  'posh-bear': ['Looking to buy coke, darling? Don’t make me stand here like a spare prick.', 'Did you see the police? I refuse to spend another evening listening to that cabrón on the radio.'],
+  'st-patricks-bear': ['Are you buying weed tonight, or have I just interrupted a perfectly good piss-up?', 'Seen the police? Shite, I hope they leave the bakers a way home this time.'],
+  'straight-outta-ghetto-bear': ['You buying weed or just wasting my fucking time?', 'You clock the police anywhere? I’ve had enough of that bullshit today.'],
+};
+
+const bearReplies = {
+  'police-robot': ['I am the patrol you just offered drugs to. This is now a stop.', 'Look at the lamp, then look at my badge. Yes, you have seen the police.'],
+  'police-car': ['Dispatch, log that. I just heard a drug offer through the window.', 'You’re talking to the Waiting Room. Pull back from the kerb while I check in.'],
+  'police-bike': ['You just offered drugs to a police rider. I’ll be handing those exact fucking words over.', 'You’re looking at a rider on duty. I can carry that question to dispatch myself.'],
+  'burglar-bear': ['I’ve had enough weed talk. I’d rather get paid for fixing one bloody lock.', 'I saw a badge reflected in a shutter. Could’ve been the same bastard twice.'],
+  'sailor-bear': ['No. I’ve got deck work and I need my head on straight.', 'I saw lights over the rail. Don’t ask me to swear they were police.'],
+  'jamaican-bear': ['Pass. I’m trying to return borrowed records without another load of shit kicking off.', 'I heard a radio cut across the music. The record was louder.'],
+  'camo-bear': ['Leave it. People already think every damned plant I touch is weed.', 'Someone in uniform came by. I asked them to watch the beds. They didn’t.'],
+  'gentleman-bear': ['That is a generous offer and a bloody terrible idea. I decline.', 'A badge asked for a lost bag. I asked him to describe it first.'],
+  'graff-bear': ['Merde, I’ve spent enough on paint tonight. Forget the weed.', 'They asked who signed the wall. I gave them the makers’ names and fuck all else.'],
+  'posh-bear': ['I’ve done enough coke to know the hangover costs more than the suit. No, darling.', 'I saw somebody flash a badge. It was tarnished as hell.'],
+  'st-patricks-bear': ['Feck, I’ve got a procession to clear. Put me down for a clean head.', 'A patrol asked about the parade. I told them which people still needed to get home.'],
+  'straight-outta-ghetto-bear': ['Nah. I’ve got a game to get ready and I’m done with that shit tonight.', 'One patrol came through and stood on my fucking touchline. Hard to miss.'],
+  'electric-blue': ['I run on charge. Get that shit away from my contacts.', 'I caught a lamp spike. My meter doesn’t read insignia.'],
+  'electric-green': ['I’m checking a moisture post. Whatever that is, keep it off the circuit.', 'Saw a blue glare in the garden lights. Could’ve been anything.'],
+  boombox: ['Non, putain. I’m carrying records. Ask somebody who takes requests.', 'I heard a siren in the mix. That’s all I’m putting on tape.'],
+  samurai: ['No. My job is to walk somebody home with their freight intact.', 'I passed a patrol. My attention was on the carrier I was escorting.'],
+  'allcity-bulls-mech': ['Tell the crew why the timer stopped if you’re going to pitch that shit here.', 'Check the board. I time loads and clearances, not cops.'],
+  'blockstars-mech': ['Fuck that. I’ve got a show to light and a crew to pay.', 'A radio interrupted rehearsal. Ask the stage crew what they actually heard.'],
+  'blockchain-furies-mech': ['Leave me out of it. A shit deal turns into paperwork for people who never agreed to it.', 'Put what you witnessed on record. Guessing at a uniform won’t help anybody.'],
+  'graffpunks-mech': ['Scheiße, I asked for paint. Take the rest off the platform.', 'I saw a lamp from the lift. I was busy keeping the wall crew safe.'],
+  'hodl-mech': ['I’m carrying relief supplies. Get your shit out of the way.', 'If it mattered to the relief shift, someone will have put it on the order sheet.'],
+  'hard-fork-rockers-mech': ['Nah. I need a working bearing, not another bloody problem.', 'I heard a buzz by the bench. Half the tools here make the same racket.'],
+  'moongirls-mech': ['No. I’m bringing clean containers to the service crew. Keep your drugs to yourself.', 'I logged who received the supplies. I didn’t log every badge that walked past.'],
+  'nomad-bears-block-mech': ['No thanks. This thing’s heavy enough without a pilot making stupid decisions.', 'I saw lights above the trail. Let me set the load down and I’ll think.'],
+  'no-ball-games-mech': ['Fuck off with that. Ask me about a fixture if you want me to stop.', 'Somebody in uniform crossed after the whistle. Ask the ref.'],
+  'graffiti-kings-mech': ['Joder, I’m here with signwriters. Give the damn lettering some room.', 'I saw lights over the mural supplies. The people working at ground level saw more.'],
+  'leader:0': ['No. If I can’t put it on the results board, don’t pitch it to my crew.', 'I kept time on the work. I didn’t keep a tally of every bloody patrol.'],
+  'leader:1': ['No. I need a clear head and a way home.', 'I saw lights off the water. Walk it twice before you swear what they were.'],
+  'leader:2': ['Fuck that. I’ve got a repair bench to run.', 'A radio cut into Thursday noise. Might’ve been through the wall.'],
+  'leader:3': ['Nah. I’ve got wages to sign off and no time for your shit.', 'Somebody with a badge asked for a receipt. I asked whose shift they were covering.'],
+  'leader:4': ['No. I still have a waterline reading to take.', 'I saw a flash. I’ll call it a patrol when I’ve checked it twice.'],
+  'leader:5': ['Keep that off my table. I use it to hear people who actually need something.', 'I can tell you what was put on record. The rest is hearsay.'],
+  'leader:6': ['Merde, I asked who painted the wall. I didn’t ask for a bag.', 'They could’ve asked who signed it. Instead I heard a radio and a load of bullshit.'],
+  'leader:7': ['Nah. I’m listening for something quieter tonight.', 'I heard the tyres before I saw any lights. That’s all I know.'],
+  'leader:8': ['I’m running rehearsal, darling. I don’t need another fucking scene.', 'If you want the whole story, ask whoever was working backstage.'],
+};
+
+const approachSettings = [
+  'by the lantern', 'at the east crossing', 'at the seawall', 'on the South Point bridge',
+  'outside the Ninth Berth', 'around East Common', 'near the old yards', 'by Southwest Park',
+  'near the cargo carts', 'along the meadow path', 'by the match entrance', 'down at the quay',
 ];
+
+const offerFollowups = [
+  'Are you interested', 'Should I take that look as a no', 'Have I got the wrong person',
+  'Are you actually buying', 'Should I leave it', 'Are you just here to talk',
+  'Have you already had enough', 'Have you got your hands full', 'Am I interrupting your shift',
+  'Are you trying to get home',
+];
+const watchFollowups = [
+  'Did anybody in uniform come through', 'Did a patrol hang about', 'Anyone flash a badge',
+  'Did you hear a radio', 'Did you see a roof lamp', 'Was that noise a siren',
+  'Did the rider stop', 'Did the bot come past', 'Did the police car pull up',
+  'Did anybody wearing a badge stop to talk',
+];
+const offerReplies = [
+  'I’ve got work to finish', 'People are trying to get home', 'You’ve got the wrong fucking person',
+  'I don’t need the drama', 'I’ve already got enough shit to carry', 'I’ve got people waiting',
+  'I’m done talking about that', 'You can give it a bloody rest', 'I need my head straight',
+  'Verdammt, let me get on with my night',
+];
+const watchReplies = [
+  'There’s been enough rumour for one night', 'Half the street heard it differently',
+  'I only noticed the noise', 'Ask someone who was there the whole time', 'I wasn’t the only one there',
+  'Putain, I’ve heard three versions already', 'I was looking the other way', 'Someone else was there before me',
+  'I was busy with my own shit', 'That’s as much as I’m willing to say',
+];
+
+export const BEAR_VARIANTS = approachSettings.length * offerFollowups.length * 2;
+
+function bearApproach(speaker, listener, index) {
+  const mode = index % 2;
+  const setting = approachSettings[Math.floor(index / 2) % approachSettings.length];
+  const pattern = Math.floor(index / (approachSettings.length * 2));
+  const followup = (mode ? watchFollowups : offerFollowups)[pattern];
+  const reply = (mode ? watchReplies : offerReplies)[pattern];
+  const stopped = !mode && streetProfiles[listener].role === 'police';
+
+  return [
+    { actor: speaker, text: bearApproaches[speaker][mode] + ' ' + followup + ' ' + setting + '?' },
+    { actor: listener, text: bearReplies[listener][mode] + ' ' + reply + ' ' + setting + '.' },
+    { actor: stopped ? listener : speaker, text: streetProfiles[stopped ? listener : speaker].bye },
+  ];
+}
 
 export const STREET_VARIANTS = cases.length * patrolQuestions.length;
 
 export function streetExchange(speaker, listener, index) {
   const voice = streetProfiles[speaker];
+  if (voice.role === 'bear') return bearApproach(speaker, listener, index);
   const other = streetProfiles[listener];
-  const patrol = voice.role === 'police';
-  const [subject, detail] = (patrol ? cases : streetTopics)[index % cases.length];
+  const [subject, detail] = cases[index % cases.length];
   const variation = Math.floor(index / cases.length);
-  const question = (patrol ? patrolQuestions : bearQuestions)[variation] + ' ' + subject + '?';
-  const reply = patrol ? witnessAngles[variation] + ' ' + detail + '.' : bearAngles[variation] + ' ' + detail;
+  const question = patrolQuestions[variation] + ' ' + subject + '?';
+  const reply = witnessAngles[variation] + ' ' + detail + '.';
   const counter = (other.question ?? speakingPoints[listener] + '.') + ' ' +
     bearQuestions[(variation + 3) % bearQuestions.length] + ' ' + subject + '?';
-  const response = patrol ? other.answer : bearBusiness[listener];
   return [
     { actor: speaker, text: voice.hello + ' ' + question },
-    { actor: listener, text: response + ' ' + reply },
+    { actor: listener, text: other.answer + ' ' + reply },
     { actor: listener, text: counter },
-    { actor: speaker, text: (patrol ? voice.answer + ' ' + witnessAngles[variation] + ' ' + detail + '. ' : '') + voice.bye },
+    { actor: speaker, text: voice.answer + ' ' + reply + ' ' + voice.bye },
   ];
 }
