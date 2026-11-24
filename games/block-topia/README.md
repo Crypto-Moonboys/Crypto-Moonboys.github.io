@@ -2,6 +2,8 @@
 
 `/games/block-topia/` is the current live gated 2-player Colyseus survival/mission prototype.
 
+The [Lumina’s Waterfront handover](waterfront/README.md#preserve-the-restored-harbor) records the production map baseline and the checks for harbor geometry, assets, NPCs and saved edits. Read it before working on `/games/block-topia/waterfront/`.
+
 ## Live now
 
 - Telegram-linked account required

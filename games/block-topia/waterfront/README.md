@@ -6,6 +6,30 @@ The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a
 - [harbor-art.js](harbor-art.js) draws the original harbor scenery and new forest terrain in the visible area. Its island patrol visits every reachable 8 × 8 region. Faction leaders and roaming robots start at different points on the route. Harbor residents come out of their buildings, freight robots move cargo and the briefing crew speaks near the original spawn.
 - [map.js](map.js) handles walking, camera and terrain edits. The camera renders the visible area at display resolution and lets players zoom from a full-island overview to a bounded close-up. The joined map saves to `block-topia.waterfront.v7`. It restores valid older harbor edits and carries forward changes from the nature-only map where they fall outside the original harbor footprint. Earlier saves remain in their original slots.
 
+## Preserve the restored harbor
+
+The last pre-expansion harbor is commit `f28a360ac3b3d5d8a3ffaf7616b83a629631592e` (#2021). PR #2028 restored it after the nature-only map in #2027. Review production changes against current `main`, which includes the restoration and later camera, NPC inspection and character-art fixes. Use the pre-expansion commit to verify the harbor, and #2028 to locate the restoration. Apply later work on top of the current production map.
+
+| Preserve | Verified against `f28a360ac` on `f65987562` |
+| --- | --- |
+| Harbor geometry | The signed [Worker district file](../../../workers/moonboys-api/blocktopia/waterfront-district.js) is byte-identical. The 56 × 34 harbor stays at its existing coordinates, with spawn at `(22,14)`. Only 16 tiles inside that footprint change in the browser for the east crossing at `y=24, x=45–55` and the south crossing at `x=36, y=29–33`. Those crossings convert only open ground and water to paths and dock tiles. |
+| Built scenery and assets | All 40 original files under `assets/` retain their original Git blobs. Buildings, roads, doors, docks, graffiti, lights, terrain, vegetation and street props keep their original tile and renderer references. |
+| Harbor life | Preserve building residents, mural artists, operational cargo bots, and the briefing crew and its dialogue near spawn. Keep the nine faction identities, local street conversations, player-controlled avatar behavior, and signed chat and seat access. Faction walkers and island patrol robots explore reachable regions across the enlarged map. |
+| Latest character art | Keep the two detailed WebP atlases for the nine faction characters and eight robot designs. The renderer uses 192 × 192 source frames and the original low-resolution atlases as fallbacks. Keep ground anchors, facing and animation order consistent. |
+| Previous player edits | `block-topia.waterfront.v7` is the current browser layout key. First use a valid v7 save. Otherwise restore edits from the latest valid v1–v5 harbor save and carry v6 nature-only edits forward outside the original footprint. Keep all legacy keys available. |
+
+Before changing the production map or preparing a VPS preview, check the candidate base against current `main`. The founder-preview branch `block-topia/integration` is a separate map workflow. At its audited tip `65a411490`, it lacks the nature extension, briefing and faction conversation modules, and the detailed character atlases. Carry only the intended patch from an older branch. For an island extension, add land, trails, trees and flowers around the harbor and preserve existing buildings, roads, NPC roles, and art unless GK has approved a specific change. Explain any deliberate changes inside the old footprint in the PR.
+
+Use these manual checks to review drift:
+
+```sh
+git diff --name-status f28a360ac HEAD -- games/block-topia/waterfront/assets workers/moonboys-api/blocktopia/waterfront-district.js
+git diff --name-status origin/main HEAD -- games/block-topia/waterfront workers/moonboys-api/blocktopia/waterfront-district.js
+node --test --test-name-pattern='Waterfront hides playing' scripts/faction-operations-browser.test.mjs
+```
+
+Fetch the baseline commit if the checkout is shallow. The first command should show only the two detailed atlases added in #2033 plus explicitly approved asset or district changes. The browser check covers harbor crossings, a legacy saved edit, island reachability, patrols, cargo, briefing, NPC rendering, inspection and signed chat flow. For visual changes also check the old harbor and the extension at normal and close zoom, where screenshots can reveal placement or depth problems that a file comparison misses.
+
 ## Faction leader chat
 
 The Waterfront sends signed player questions to the `moonboys-api` Worker at `POST /clan-operations/leader-lore`. The Worker checks that lore chat is enabled and the selected provider is configured before it handles questions, including local replies.
