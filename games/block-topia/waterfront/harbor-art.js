@@ -1289,6 +1289,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     ctx.fillText(talking ? 'Talking' : 'Paused', x, y - factionSpriteSize - 17);
     ctx.restore();
   }
+  const bubbles = [];
+  if (crewBubble) bubbles.push(crewBubble);
   if (conversations && time !== null) {
     const leaders = factionHits.filter(hit => !hit.talking);
     const participants = leaders.filter(hit => !street?.holds("leader:" + hit.index));
@@ -1296,9 +1298,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       index: selectedAvatar, x: player.x * size + 16, y: player.y * size + 22,
     });
     const now = Date.now();
-    const bubbles = conversations.tick(participants, now).map(line => ({
-      text: line.text, speaker: participants.find(actor => actor.index === line.actor),
-    }));
+    for (const line of conversations.tick(participants, now)) {
+      bubbles.push({ text: line.text, speaker: participants.find(actor => actor.index === line.actor) });
+    }
     if (street) {
       const leaderIds = new Map(leaders.map(hit => ["leader:" + hit.index, hit.index]));
       const cast = [...streetHits, ...leaders.map(hit => ({ ...hit, id: "leader:" + hit.index, spriteSize: factionSpriteSize }))];
@@ -1307,34 +1309,33 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
         bubbles.push({ text: line.text, speaker: byId.get(line.id) });
       }
     }
-    if (crewBubble) bubbles.push(crewBubble);
-    for (const { speaker, text } of bubbles) {
-      if (!speaker) continue;
-      ctx.save();
-      ctx.font = '8px system-ui';
-      ctx.textAlign = 'left';
-      const lines = [];
-      let next = '';
-      for (const word of text.split(' ')) {
-        if (next && ctx.measureText(next + ' ' + word).width > 170) {
-          lines.push(next);
-          next = '';
-        }
-        next += (next ? ' ' : '') + word;
+  }
+  for (const { speaker, text } of bubbles) {
+    if (!speaker) continue;
+    ctx.save();
+    ctx.font = '8px system-ui';
+    ctx.textAlign = 'left';
+    const lines = [];
+    let next = '';
+    for (const word of text.split(' ')) {
+      if (next && ctx.measureText(next + ' ' + word).width > 170) {
+        lines.push(next);
+        next = '';
       }
-      lines.push(next);
-      const boxWidth = Math.ceil(Math.max(...lines.map(text => ctx.measureText(text).width))) + 12;
-      const left = Math.max(2, Math.min(speaker.x - boxWidth / 2, width * size - boxWidth - 2));
-      const boxHeight = lines.length * 11 + 6;
-      const top = Math.max(2, speaker.y - (speaker.spriteSize ?? factionSpriteSize) - 8 - boxHeight);
-      rect('#0e151f', left - 1, top - 1, boxWidth + 2, boxHeight + 2);
-      rect('#d9efea', left, top, boxWidth, boxHeight);
-      const tail = Math.max(left + 4, Math.min(speaker.x, left + boxWidth - 4));
-      polygon('#d9efea', [[tail - 3, top + boxHeight], [tail + 3, top + boxHeight], [tail, top + boxHeight + 5]]);
-      ctx.fillStyle = '#131926';
-      lines.forEach((segment, index) => ctx.fillText(segment, left + 6, top + 10 + index * 11));
-      ctx.restore();
+      next += (next ? ' ' : '') + word;
     }
+    lines.push(next);
+    const boxWidth = Math.ceil(Math.max(...lines.map(text => ctx.measureText(text).width))) + 12;
+    const left = Math.max(2, Math.min(speaker.x - boxWidth / 2, width * size - boxWidth - 2));
+    const boxHeight = lines.length * 11 + 6;
+    const top = Math.max(2, speaker.y - (speaker.spriteSize ?? factionSpriteSize) - 8 - boxHeight);
+    rect('#0e151f', left - 1, top - 1, boxWidth + 2, boxHeight + 2);
+    rect('#d9efea', left, top, boxWidth, boxHeight);
+    const tail = Math.max(left + 4, Math.min(speaker.x, left + boxWidth - 4));
+    polygon('#d9efea', [[tail - 3, top + boxHeight], [tail + 3, top + boxHeight], [tail, top + boxHeight + 5]]);
+    ctx.fillStyle = '#131926';
+    lines.forEach((segment, index) => ctx.fillText(segment, left + 6, top + 10 + index * 11));
+    ctx.restore();
   }
   ctx.restore();
   return factionHits;

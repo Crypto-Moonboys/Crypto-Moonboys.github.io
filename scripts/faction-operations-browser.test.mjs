@@ -2538,7 +2538,11 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         maxRobots = Math.max(sprites, maxRobots);
       }
       const delivered = harborFreight.bots.some(bot => bot.carrying || bot.point !== district.spawn && bot.started > 1);
-      return { maxRobots, delivered, crewSpoke: crewLines.join(' ').includes(crewSpeech(0).text),
+      const crewSpoke = crewLines.join(' ').includes(crewSpeech(0).text);
+      crewLines.length = 0;
+      window.drawWaterfront(context, rows, player, district, null, null, [], null, crew, extent);
+      const staticCrewSpoke = crewLines.join(' ').includes(crewSpeech(null).text);
+      return { maxRobots, delivered, crewSpoke, staticCrewSpoke,
         botSizes: [...botSizes], factionSizes: [...factionSizes],
         detailedSourceSizes: [...detailedSourceSizes], assertDetailedSampling };
     });
@@ -2549,6 +2553,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     assert.ok(harborLife.maxRobots > 11, 'building residents join the crew, freight and patrol robots');
     assert.equal(harborLife.delivered, true, 'freight robots run their original delivery routes');
     assert.equal(harborLife.crewSpoke, true, 'the build crew’s local dialogue is rendered near spawn');
+    assert.equal(harborLife.staticCrewSpoke, true, 'reduced-motion users retain a static crew speech bubble');
     const position = await page.evaluate(() => {
       const hit = factionHits.find(item => item.index === 1);
       const map = document.querySelector('#map');
