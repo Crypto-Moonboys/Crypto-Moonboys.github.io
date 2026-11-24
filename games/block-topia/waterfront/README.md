@@ -106,3 +106,7 @@ Keep the night-time harbor palette, original graffiti, and consistent top-down b
 For map changes, check all walkable tiles are reachable from spawn. Check click and tap placement after scrolling, collisions, and existing saved edits. The build runner stages founder previews on `block-topia/integration` and uses `block-topia/waterfront-production-integration` for production-map proposals. The [city brief](CITY-BRIEF.md) and [sprite library](SPRITE-LIBRARY.md) define the production work.
 
 The six building sprites are AutoSprite originals. Their transparent game PNGs and source metadata are in `assets/night-harbor/`. The renderer keeps the base of each sprite inside its original tile footprint. Its fallback art is available while assets load or when an image fails.
+
+### Production PR conflicts
+
+Follow the [production conflict-recovery rule](CITY-BRIEF.md) if an open Waterfront PR can no longer merge into `main`. Reapply the scoped change on current `main`, rerun the affected checks, and get Codex clearance on the updated head before an authorised merge.
