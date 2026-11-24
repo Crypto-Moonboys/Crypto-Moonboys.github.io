@@ -19,11 +19,14 @@
       "street"
     ],
     "layers": [
-      "world/clouds.jpg",
+      "world/london/london-sky.png",
       [
-        "world/LONDON BACKGROUND1.png",
-        "world/LONDON BACKGROUND2.png",
-        "world/LONDON BACKGROUND3.png"
+        "world/london/london-scene-1-westminster.png",
+        "world/london/london-scene-2-tower-bridge.png",
+        "world/london/london-scene-3-the-city.png",
+        "world/london/london-scene-4-canary-wharf.png",
+        "world/london/london-scene-5-greenwich.png",
+        "world/london/london-scene-6-camden-shoreditch.png"
       ],
       "art-production/wall-one.png",
       "world/street-tiles.svg"

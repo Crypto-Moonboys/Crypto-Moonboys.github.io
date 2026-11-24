@@ -236,10 +236,16 @@ const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimat
 ]));
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
+// Six seamless London scene panels, cut from one wrap-around panorama by
+// scripts/art/generate-nbg-london-backdrops.py. Each fills the same 480x160
+// logical slot but is stored at 4x (1920x640) so it stays sharp at zoom.
 const expectedSkylineLayers = [
-  'world/LONDON BACKGROUND1.png',
-  'world/LONDON BACKGROUND2.png',
-  'world/LONDON BACKGROUND3.png'
+  'world/london/london-scene-1-westminster.png',
+  'world/london/london-scene-2-tower-bridge.png',
+  'world/london/london-scene-3-the-city.png',
+  'world/london/london-scene-4-canary-wharf.png',
+  'world/london/london-scene-5-greenwich.png',
+  'world/london/london-scene-6-camden-shoreditch.png'
 ];
 
 assert.equal(
@@ -256,7 +262,7 @@ assert.deepEqual(
 assert.deepEqual(
   assetManifest.world.layers[1],
   expectedSkylineLayers,
-  'asset-manifest.json must reference the three direct skyline PNG panels'
+  'asset-manifest.json must reference the six direct skyline PNG scene panels'
 );
 assert.equal(
   JSON.stringify(assetManifest).includes('london-skyline-stitched.svg'),
@@ -267,8 +273,8 @@ for (const skylineLayer of expectedSkylineLayers) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', skylineLayer);
   assert.equal(fs.existsSync(assetPath), true, `skyline PNG panel must exist: ${skylineLayer}`);
   const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
-  assert.equal(pngHeader.readUInt32BE(0), 480, `skyline PNG panel width must remain 480px: ${skylineLayer}`);
-  assert.equal(pngHeader.readUInt32BE(4), 160, `skyline PNG panel height must remain 160px: ${skylineLayer}`);
+  assert.equal(pngHeader.readUInt32BE(0), 1920, `skyline PNG panel must be 4x of the 480px slot: ${skylineLayer}`);
+  assert.equal(pngHeader.readUInt32BE(4), 640, `skyline PNG panel must be 4x of the 160px slot: ${skylineLayer}`);
 }
 assert.deepEqual(
   playerAnimationManifest.animations,
@@ -294,26 +300,13 @@ for (const animation of Object.values(expectedAnimations)) {
   assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
-// The uploaded clouds.jpg is exactly one 480x270 game viewport. Its
-// opposite edges do not match, so ordinary same-direction repetition makes
-// the rectangular seam reported in the game screenshot.
-const cloudBytes = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/world/clouds.jpg'));
-let cloudDimension = null;
-for (let i = 2; i < cloudBytes.length - 9;) {
-  if (cloudBytes[i] !== 0xff) { i++; continue; }
-  const marker = cloudBytes[i + 1];
-  if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-    cloudDimension = { width: cloudBytes.readUInt16BE(i + 7),
-      height: cloudBytes.readUInt16BE(i + 5) };
-    break;
-  }
-  if (marker === 0xd8 || marker === 0xd9 || marker === 0x01) { i += 2; continue; }
-  const segmentLength = cloudBytes.readUInt16BE(i + 2);
-  if (segmentLength < 2) break;
-  i += 2 + segmentLength;
-}
-assert.deepEqual(cloudDimension, { width: 480, height: 270 },
-  'uploaded sky JPEG must retain native 480x270 full-viewport dimensions');
+// The sky is one 480x270 game viewport stored at 4x (1920x1080). Its
+// opposite edges need not match: the runtime alternates mirrored tiles.
+assert.equal(assetManifest.world.layers[0], 'world/london/london-sky.png',
+  'asset-manifest.json must use the generated London sky PNG');
+const skyHeader = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/world/london/london-sky.png')).subarray(16, 24);
+assert.deepEqual({ width: skyHeader.readUInt32BE(0), height: skyHeader.readUInt32BE(4) }, { width: 1920, height: 1080 },
+  'London sky PNG must be exactly 4x the 480x270 full viewport');
 
 // The user-supplied flying pig is a 5-column x 4-row (20-frame) 700x560
 // sheet. The pigeon remains the same 28x22 collision/score entity; only its

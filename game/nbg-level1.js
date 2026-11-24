@@ -1604,9 +1604,22 @@
       }
     }
 
+    // The skyline is a loop of London scene panels (skyline1..skylineN from
+    // asset-manifest.json). Each 480x160 logical panel is a high-resolution
+    // PNG that the 2x backing canvas downsamples, so it stays sharp at zoom.
+    var skylineKeys = null;
+    function getSkylineImages() {
+      if (!skylineKeys) {
+        var keys = Object.keys(images).filter(function (key) { return /^skyline\d+$/.test(key); });
+        if (!keys.length) return [];
+        skylineKeys = keys.sort(function (a, b) { return Number(a.slice(7)) - Number(b.slice(7)); });
+      }
+      return skylineKeys.map(function (key) { return images[key]; });
+    }
+
     function drawSkylineLayer() {
-      var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
-      if (skylineImages.some(function (image) { return !image; })) {
+      var skylineImages = getSkylineImages();
+      if (!skylineImages.length || skylineImages.some(function (image) { return !image; })) {
         ctx.fillStyle = '#18203a';
         ctx.fillRect(0, SKYLINE_Y, WIDTH, SKYLINE_HEIGHT);
         return;
