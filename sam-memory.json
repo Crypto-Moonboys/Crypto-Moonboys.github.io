@@ -253,6 +253,22 @@
         "wiki"
       ]
     },
+    "allcity_bulls_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Allcity Bulls Mech",
+      "canonical_url": "/wiki/allcity-bulls-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/allcity-bulls-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "allcity",
+        "bulls",
+        "mech"
+      ]
+    },
     "altcoins": {
       "alias_candidates": [],
       "aliases": [
@@ -590,6 +606,53 @@
         "wiki"
       ]
     },
+    "blockchain_furies_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Blockchain Furies Mech",
+      "canonical_url": "/wiki/blockchain-furies-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/blockchain-furies-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "blockchain",
+        "furies",
+        "mech"
+      ]
+    },
+    "blockstars_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Blockstars Mech",
+      "canonical_url": "/wiki/blockstars-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/blockstars-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "blockstars",
+        "mech"
+      ]
+    },
+    "blue_electric_bot": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Blue Electric Bot",
+      "canonical_url": "/wiki/blue-electric-bot.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/blue-electric-bot.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "blue",
+        "electric",
+        "bot"
+      ]
+    },
     "bone_idol_ink": {
       "alias_candidates": [],
       "aliases": [],
@@ -607,6 +670,21 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "burglar_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Burglar Bear",
+      "canonical_url": "/wiki/burglar-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/burglar-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "burglar",
+        "bear"
       ]
     },
     "burn_to_earn": {
@@ -629,6 +707,21 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "camo_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Camo Bear",
+      "canonical_url": "/wiki/camo-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/camo-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "camo",
+        "bear"
       ]
     },
     "canvas_clash": {
@@ -5480,6 +5573,21 @@
         "wiki"
       ]
     },
+    "gentleman_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Gentleman Bear",
+      "canonical_url": "/wiki/gentleman-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/gentleman-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "gentleman",
+        "bear"
+      ]
+    },
     "gk": {
       "alias_candidates": [],
       "aliases": [
@@ -8660,6 +8768,21 @@
         "wiki"
       ]
     },
+    "graff_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Graff Bear",
+      "canonical_url": "/wiki/graff-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/graff-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graff",
+        "bear"
+      ]
+    },
     "graffiti_art_will_forever_remain_a_beacon_of_creativity_resilience_and_the_indomitable_human": {
       "alias_candidates": [],
       "aliases": [
@@ -8699,6 +8822,22 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "graffiti_kings_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Graffiti Kings Mech",
+      "canonical_url": "/wiki/graffiti-kings-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/graffiti-kings-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graffiti",
+        "kings",
+        "mech"
       ]
     },
     "graffiti_nexus": {
@@ -8864,6 +9003,21 @@
         "wiki"
       ]
     },
+    "graffpunks_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "GraffPunks Mech",
+      "canonical_url": "/wiki/graffpunks-mech.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/graffpunks-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graffpunks",
+        "mech"
+      ]
+    },
     "graffpunks_reading_library": {
       "alias_candidates": [],
       "aliases": [
@@ -8900,6 +9054,22 @@
       "tags": [
         "great",
         "consensus"
+      ]
+    },
+    "green_electric_bot": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Green Electric Bot",
+      "canonical_url": "/wiki/green-electric-bot.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/green-electric-bot.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "green",
+        "electric",
+        "bot"
       ]
     },
     "grit": {
@@ -8967,6 +9137,23 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "hard_fork_rockers_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Hard Fork Rockers Mech",
+      "canonical_url": "/wiki/hard-fork-rockers-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/hard-fork-rockers-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "hard",
+        "fork",
+        "rockers",
+        "mech"
       ]
     },
     "harrison_rift": {
@@ -9091,6 +9278,22 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "hodl_wars_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "HODL WARS Mech",
+      "canonical_url": "/wiki/hodl-wars-mech.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/hodl-wars-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "hodl",
+        "wars",
+        "mech"
       ]
     },
     "hodl_x_warriors": {
@@ -9254,6 +9457,21 @@
       "tags": [
         "jack",
         "bull"
+      ]
+    },
+    "jamaican_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Jamaican Bear",
+      "canonical_url": "/wiki/jamaican-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/jamaican-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "jamaican",
+        "bear"
       ]
     },
     "jillian_godsil": {
@@ -9779,6 +9997,21 @@
         "moonboys"
       ]
     },
+    "moongirls_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Moongirls Mech",
+      "canonical_url": "/wiki/moongirls-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/moongirls-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "moongirls",
+        "mech"
+      ]
+    },
     "nbg": {
       "alias_candidates": [],
       "aliases": [
@@ -10001,6 +10234,23 @@
         "joe"
       ]
     },
+    "no_ball_games_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "No Ball Games Mech",
+      "canonical_url": "/wiki/no-ball-games-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/no-ball-games-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "no",
+        "ball",
+        "games",
+        "mech"
+      ]
+    },
     "noballgamess_nft_collection": {
       "alias_candidates": [],
       "aliases": [
@@ -10035,6 +10285,22 @@
       "status": "canonical",
       "tags": [
         "nobby"
+      ]
+    },
+    "nomad_bears_mech": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Nomad Bears Mech",
+      "canonical_url": "/wiki/nomad-bears-mech.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/nomad-bears-mech.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "nomad",
+        "bears",
+        "mech"
       ]
     },
     "null_the_prophet": {
@@ -10212,6 +10478,66 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "police_bike": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Police Bike",
+      "canonical_url": "/wiki/police-bike.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/police-bike.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "police",
+        "bike"
+      ]
+    },
+    "police_car": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Police Car",
+      "canonical_url": "/wiki/police-car.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/police-car.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "police",
+        "car"
+      ]
+    },
+    "police_robot": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Police Robot",
+      "canonical_url": "/wiki/police-robot.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/police-robot.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "police",
+        "robot"
+      ]
+    },
+    "posh_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Posh Bear",
+      "canonical_url": "/wiki/posh-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/posh-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "posh",
+        "bear"
       ]
     },
     "potential_crypto_moonboys_game_trilogy": {
@@ -10445,6 +10771,21 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "sailor_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Sailor Bear",
+      "canonical_url": "/wiki/sailor-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/sailor-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "sailor",
+        "bear"
       ]
     },
     "samaelexe": {
@@ -10689,6 +11030,26 @@
         "wiki"
       ]
     },
+    "st_patricks_day_bear": {
+      "alias_candidates": [
+        "st patrick day bear",
+        "st patricks day bear"
+      ],
+      "aliases": [],
+      "canonical_title": "St Patrick’s Day Bear",
+      "canonical_url": "/wiki/st-patricks-day-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/st-patricks-day-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "st",
+        "patrick",
+        "day",
+        "bear"
+      ]
+    },
     "stake_is_a_community_powered_web3": {
       "alias_candidates": [],
       "aliases": [
@@ -10767,6 +11128,23 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "straight_outta_ghetto_bear": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Straight Outta Ghetto Bear",
+      "canonical_url": "/wiki/straight-outta-ghetto-bear.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/straight-outta-ghetto-bear.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "straight",
+        "outta",
+        "ghetto",
+        "bear"
       ]
     },
     "street_artist_buster_aka_charlie_buster": {
@@ -13129,6 +13507,21 @@
         "wiki"
       ]
     },
+    "walking_boombox": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Walking Boombox",
+      "canonical_url": "/wiki/walking-boombox.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/walking-boombox.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "walking",
+        "boombox"
+      ]
+    },
     "wallets": {
       "alias_candidates": [],
       "aliases": [
@@ -13147,6 +13540,37 @@
         "wallets",
         "moonboys",
         "wiki"
+      ]
+    },
+    "waterfront_roamers": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Waterfront Roamers",
+      "canonical_url": "/wiki/waterfront-roamers.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/waterfront-roamers.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "waterfront",
+        "roamers"
+      ]
+    },
+    "waterfront_samurai": {
+      "alias_candidates": [
+        "waterfront samurai"
+      ],
+      "aliases": [],
+      "canonical_title": "Samurai",
+      "canonical_url": "/wiki/waterfront-samurai.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/waterfront-samurai.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "samurai"
       ]
     },
     "wax_blockchain": {
@@ -13496,5 +13920,5 @@
       ]
     }
   },
-  "updated_at": "2026-11-24T01:10:37Z"
+  "updated_at": "2026-11-24T04:30:52Z"
 }

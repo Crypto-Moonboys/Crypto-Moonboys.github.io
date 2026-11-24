@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-24T01:10:38.542Z",
-  "verified_at": "2026-11-24T01:10:38.542Z",
+  "generated_at": "2026-11-24T04:30:53.247Z",
+  "verified_at": "2026-11-24T04:30:53.247Z",
   "lite": true,
   "nodes": [
     {
@@ -380,6 +380,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears",
+      "url": "/wiki/the-nomad-bears.html",
+      "category": "factions",
+      "rank_score": 328,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/first-witness-great-concord-2030.html",
       "title": "The Great Concord of 2030",
       "url": "/wiki/first-witness-great-concord-2030.html",
@@ -460,6 +468,22 @@
       "authority_score": 16
     },
     {
+      "id": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls",
+      "url": "/wiki/the-allcity-bulls.html",
+      "category": "factions",
+      "rank_score": 324,
+      "authority_score": 28
+    },
+    {
+      "id": "/wiki/graffiti-kings.html",
+      "title": "Graffiti Kings",
+      "url": "/wiki/graffiti-kings.html",
+      "category": "core",
+      "rank_score": 323,
+      "authority_score": 30
+    },
+    {
       "id": "/wiki/first-witness-book-6-the-fork.html",
       "title": "Book VI — The Fork",
       "url": "/wiki/first-witness-book-6-the-fork.html",
@@ -476,36 +500,12 @@
       "authority_score": 27
     },
     {
-      "id": "/wiki/the-allcity-bulls.html",
-      "title": "The AllCity Bulls",
-      "url": "/wiki/the-allcity-bulls.html",
-      "category": "factions",
-      "rank_score": 322,
-      "authority_score": 28
-    },
-    {
       "id": "/wiki/first-witness-parables.html",
       "title": "Parables of the First Witness",
       "url": "/wiki/first-witness-parables.html",
       "category": "core",
       "rank_score": 321,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/graffiti-kings.html",
-      "title": "Graffiti Kings",
-      "url": "/wiki/graffiti-kings.html",
-      "category": "core",
-      "rank_score": 321,
-      "authority_score": 30
-    },
-    {
-      "id": "/wiki/the-nomad-bears.html",
-      "title": "The Nomad Bears",
-      "url": "/wiki/the-nomad-bears.html",
-      "category": "factions",
-      "rank_score": 321,
-      "authority_score": 28
     },
     {
       "id": "/wiki/stikfamwars.html",
@@ -798,6 +798,12 @@
       "weight": 1
     },
     {
+      "source": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 121,
+      "weight": 1
+    },
+    {
       "source": "/wiki/triple-fork-event.html",
       "target": "/wiki/first-witness-triple-fork-chainfire.html",
       "score": 121,
@@ -828,26 +834,20 @@
       "weight": 1
     },
     {
-      "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 117,
-      "weight": 1
-    },
-    {
       "source": "/wiki/the-nomad-bears.html",
       "target": "/wiki/the-allcity-bulls.html",
       "score": 117,
       "weight": 1
     },
     {
-      "source": "/wiki/the-allcity-bulls.html",
-      "target": "/wiki/the-crypto-moongirls.html",
-      "score": 105,
+      "source": "/wiki/the-crypto-moongirls.html",
+      "target": "/wiki/the-nomad-bears.html",
+      "score": 109,
       "weight": 1
     },
     {
-      "source": "/wiki/the-crypto-moongirls.html",
-      "target": "/wiki/the-nomad-bears.html",
+      "source": "/wiki/the-allcity-bulls.html",
+      "target": "/wiki/the-crypto-moongirls.html",
       "score": 105,
       "weight": 1
     },
@@ -884,8 +884,8 @@
     {
       "source": "/wiki/hodl-x-warriors.html",
       "target": "/wiki/block-topia.html",
-      "score": 96,
-      "weight": 0.96
+      "score": 97,
+      "weight": 0.97
     },
     {
       "source": "/wiki/the-crypto-moongirls.html",
@@ -1000,12 +1000,6 @@
       "target": "/wiki/midevilpunks.html",
       "score": 78,
       "weight": 0.78
-    },
-    {
-      "source": "/wiki/midevilpunks.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 73,
-      "weight": 0.73
     },
     {
       "source": "/wiki/burn-to-earn.html",
