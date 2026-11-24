@@ -172,6 +172,21 @@ const waterfrontDetails = Object.fromEntries(
   Object.keys(waterfrontAtlases["street-detail"]).map(file => [file, { file }])
 );
 
+function loadDetailedAtlas(atlas, priority, repaint) {
+  if (!repaint || atlas.requested) return;
+  atlas.requested = true;
+  const image = new Image();
+  image.decoding = "async";
+  image.fetchPriority = priority;
+  image.src = "assets/atlases/" + atlas.file;
+  image.decode().then(() => {
+    atlas.image = image;
+    repaint();
+  }, () => {
+    // Keep compact sprites or skip unavailable guest art for this visit.
+  });
+}
+
 window.loadWaterfrontSprites = function loadWaterfrontSprites() {
   const sprites = Object.fromEntries(
     [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees, ...Object.values(waterfrontDetails), waterfrontBotAtlas, waterfrontCargoAtlas, waterfrontFactionAtlas]
@@ -199,17 +214,7 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
     atlas.onerror = resolve;
     atlas.src = "assets/atlases/" + group + ".png";
   }));
-  const roamingAtlases = new Set(waterfrontRoamers.map(({ atlas }) => atlas));
-  const loadSources = [waterfrontDetailedFactions, waterfrontDetailedBots, ...roamingAtlases].map(sprite => new Promise(resolve => {
-    const image = new Image();
-    image.onload = () => {
-      sprite.image = image;
-      resolve();
-    };
-    image.onerror = resolve;
-    image.src = "assets/atlases/" + sprite.file;
-  }));
-  return Promise.all([...loadAtlases, ...loadSources]);
+  return Promise.all(loadAtlases);
 };
 
 /* Original pixel art. Terrain draws first, then objects and actors by ground position. */
@@ -335,7 +340,7 @@ function waterPattern(ctx, size) {
 
 const factionMotion = [];
 const roamerMotion = new Map();
-window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null, inspection = null) {
+window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, time = null, discussionElapsed = null, leaderStates = [], selectedAvatar = null, conversations = null, visible = null, inspection = null, repaintArt = null) {
   const { tileSize: size, tiles } = district;
   const width = rows[0].length;
   const rect = (color, x, y, w, h) => {
@@ -1183,7 +1188,6 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
 
   function drawIslandRoamers() {
     waterfrontRoamers.forEach(({ atlas, model, id, profile, size: height, pace }, index) => {
-      if (!atlas.image) return;
       const start = Math.floor(islandLoop.length * (index + 0.5) / waterfrontRoamers.length);
       const clock = inspection?.time(id, time) ?? time ?? 0;
       let patrolClock = clock;
@@ -1196,10 +1200,15 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       }
       const { x, y, dx, dy } = patrolPosition(islandLoop, patrolClock / (pace ?? 1.05 + index % 5 * 0.09),
         start, index % 2 === 0);
+      const inView = x >= left && x < right && y >= top && y < bottom;
+      if (!atlas.image) {
+        if (inView) loadDetailedAtlas(atlas, "auto", repaintArt);
+        return;
+      }
       const px = Math.round(x * size + 16);
       const py = Math.round(y * size + 22);
       streetHits.push({ id, x: px, y: py, spriteSize: height });
-      if (x < left || x >= right || y < top || y >= bottom) return;
+      if (!inView) return;
       const facing = dx < 0 ? 1 : dx > 0 ? 2 : dy < 0 ? 3 : 0;
       const moving = time !== null && (dx || dy) && !inspection?.held(id) && !street?.holds(id);
       const frame = moving ? 1 + Math.floor(clock * 7 + index) % 3 : 0;
@@ -1274,6 +1283,9 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
     drawIslandBots();
     drawIslandRoamers();
   }
+  // Let nearby roamers request their art before upgrading compact characters.
+  loadDetailedAtlas(waterfrontDetailedFactions, "low", repaintArt);
+  loadDetailedAtlas(waterfrontDetailedBots, "low", repaintArt);
   drawFactionWalkers();
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());

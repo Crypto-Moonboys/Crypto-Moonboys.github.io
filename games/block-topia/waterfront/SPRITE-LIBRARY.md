@@ -14,7 +14,7 @@ The production atlases are in [assets/atlases](assets/atlases). Use the existing
 
 ## Detailed character atlases
 
-[Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) use the original animation sheets, packed into 192 × 192 WebP frames. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The browser uses filtered scaling for these detailed frames and can fall back to the original compact atlases if a file fails to load.
+[Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) use the original animation sheets, packed into 192 × 192 WebP frames. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The harbor paints with compact sprites first. The detailed frames load at low priority and replace the compact sprites when decoded. The renderer uses filtered scaling for detailed frames.
 
 ## Island roamers
 
@@ -27,6 +27,8 @@ These 26 roaming guests come from GK’s November 24 Waterfront sheet batch. Eve
 | [roamers-bears.webp](assets/atlases/roamers-bears.webp) | Jamaican Bear (`37961231`), Camo Bear (`55230f31`), Gentleman Bear (`73defe77`), Graff Bear (`533cbd83`), Posh Bear (`11e64d44`), St Patrick’s Day Bear (`2446ae85`), Straight Outta Ghetto Bear (`546d0448`) |
 
 The Nomad Bears block variant’s source arranges directions in columns and poses in rows. Its own 16 frames are transposed to the atlas layout. The roamers share the existing walkable island loop at staggered starting points. The renderer skips offscreen roamers, shows idle frames while paused or in reduced-motion mode, and skips any guest atlas that fails to load so the rest of the map can still run.
+
+After the first compact harbor paint, a roamer atlas loads when a member of its group approaches the visible area. The camera's two-tile margin gives the group time to load before coming into view. Each group is requested once per visit, with the original art and frame rectangles. The map repaints as each group becomes available, including when reduced motion is enabled.
 
 ## Multi-frame atlases
 
