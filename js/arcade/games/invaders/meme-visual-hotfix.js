@@ -39,17 +39,38 @@
   const ALIEN_DROP_SOUND_SRC = '/games/invaders-3008/shit%20drop.mp3';
   const RARE_SHIP_SOUND_SRC = '/games/invaders-3008/rare%20ships.mp3';
 
-  const memeImages = MEME_FILES.map((file) => {
+  // Perf: create the Image objects up front but only start downloading the
+  // sprites a wave actually needs (current + next wave). The rest trickle in
+  // at low priority once the page and game modules have finished loading, so
+  // ~3 MB of meme art no longer competes with the game's own scripts.
+  function assetUrl(file) {
+    return `${ASSET_BASE}${encodeURIComponent(file)}?v=${ASSET_VERSION}`;
+  }
+  function startImageLoad(image, url, priority) {
+    if (!image || image.__invadersLoadStarted) return;
+    image.__invadersLoadStarted = true;
+    try { image.fetchPriority = priority || 'auto'; } catch (_) {}
+    image.src = url;
+  }
+  const memeImages = MEME_FILES.map(() => {
     const image = new Image();
     image.decoding = 'async';
-    image.src = `${ASSET_BASE}${encodeURIComponent(file)}?v=${ASSET_VERSION}`;
     return image;
   });
+  function ensureMemeImage(index, priority) {
+    const i = ((index % MEME_FILES.length) + MEME_FILES.length) % MEME_FILES.length;
+    startImageLoad(memeImages[i], assetUrl(MEME_FILES[i]), priority);
+    return memeImages[i];
+  }
+  function ensureWaveMemes(wave, priority) {
+    const start = ((Math.max(1, Number(wave) || 1) - 1) * MEME_WAVE_SIZE) % MEME_FILES.length;
+    for (let k = 0; k < MEME_WAVE_SIZE; k++) ensureMemeImage(start + k, priority);
+  }
   const bossColors = ['#56f0ff', '#ff9b2f', '#ff3fd4', '#f7c948', '#ad5cff'];
   const bossImages = BOSS_FILES.map((file, index) => {
     const image = new Image();
     image.decoding = 'async';
-    image.src = `${ASSET_BASE}${encodeURIComponent(file)}?v=${ASSET_VERSION}`;
+    image.__invadersUrl = assetUrl(file);
     return {
       image,
       color: bossColors[index % bossColors.length],
@@ -58,6 +79,27 @@
       height: index === 0 ? 102 : 96,
     };
   });
+
+  ensureWaveMemes(1, 'high');
+  ensureWaveMemes(2, 'low');
+
+  function loadRemainingArtWhenIdle() {
+    const queue = [];
+    bossImages.forEach((boss) => queue.push(() => startImageLoad(boss.image, boss.image.__invadersUrl, 'low')));
+    MEME_FILES.forEach((_, i) => queue.push(() => ensureMemeImage(i, 'low')));
+    const idle = window.requestIdleCallback || function (cb) { return setTimeout(() => cb({ timeRemaining: () => 8 }), 120); };
+    function pump(deadline) {
+      let n = 0;
+      while (queue.length && (n < 2 || (deadline && deadline.timeRemaining && deadline.timeRemaining() > 4))) {
+        queue.shift()();
+        n += 1;
+      }
+      if (queue.length) idle(pump, { timeout: 1500 });
+    }
+    idle(pump, { timeout: 1500 });
+  }
+  if (document.readyState === 'complete') setTimeout(loadRemainingArtWhenIdle, 600);
+  else window.addEventListener('load', () => setTimeout(loadRemainingArtWhenIdle, 600), { once: true });
 
   const sourceSlots = new Map();
   const recentHitKeys = new Map();
@@ -144,6 +186,8 @@
     const next = Math.max(1, Number(wave) || 1);
     if (next === currentWave) return;
     currentWave = next;
+    ensureWaveMemes(currentWave, 'high');
+    ensureWaveMemes(currentWave + 1, 'low');
     killedSoundSlots = shuffleSlots(currentWave);
     recentHitKeys.clear();
   }
@@ -171,8 +215,20 @@
     return String(image && (image.currentSrc || image.src) || '');
   }
 
+  // Perf: drawImage runs hundreds of times per frame; classify each image once
+  // per src instead of lower-casing and scanning its URL on every call.
+  const spriteClassCache = new WeakMap();
   function isGeneratedInvaderSprite(image) {
-    const src = generatedAssetSrc(image).toLowerCase();
+    if (!image || (typeof image !== 'object' && typeof image !== 'function')) return false;
+    const rawSrc = generatedAssetSrc(image);
+    const cached = spriteClassCache.get(image);
+    if (cached && cached.src === rawSrc) return cached.value;
+    const value = classifyGeneratedInvaderSrc(rawSrc.toLowerCase());
+    spriteClassCache.set(image, { src: rawSrc, value });
+    return value;
+  }
+
+  function classifyGeneratedInvaderSrc(src) {
     return src.includes('/art/invaders/generated/') &&
       !src.includes('boss') &&
       !src.includes('bitcoin') &&
@@ -247,12 +303,15 @@
     }
   }
 
+  let cachedCanvasH = 0;
+
   function looksLikeEnemyDropBullet(item) {
     if (!item || typeof item !== 'object') return false;
     const vy = Number(item.vy), y = Number(item.y), w = Number(item.w), h = Number(item.h);
     if (!Number.isFinite(vy) || !Number.isFinite(y) || !Number.isFinite(w) || !Number.isFinite(h)) return false;
     if (vy <= 0 || w > 6 || h < 8 || h > 16) return false;
-    const canvasH = Number(document.getElementById('invCanvas')?.height) || 960;
+    if (!cachedCanvasH) cachedCanvasH = Number(document.getElementById('invCanvas')?.height) || 0;
+    const canvasH = cachedCanvasH || 960;
     return y < canvasH - 95;
   }
 
@@ -271,11 +330,12 @@
       typeof ctx.fillStyle !== 'string';
   }
 
+  const HEAVY_EXPLOSION_COLORS = new Set(['#ff6b2b','#f7c948','#ffd43b','#ff4fd1','#ff4444','#ff3333','#ff8888','#80d8ff','#2ec5ff']);
+
   function isHeavyExplosionParticleFill(ctx, w, h) {
     if (!ctx || !ctx.canvas || ctx.canvas.id !== 'invCanvas') return false;
     if (Number(ctx.globalAlpha) >= 0.99 || Number(w) > 8 || Number(h) > 8) return false;
-    const color = String(ctx.fillStyle || '').toLowerCase();
-    return ['#ff6b2b','#f7c948','#ffd43b','#ff4fd1','#ff4444','#ff3333','#ff8888','#80d8ff','#2ec5ff'].includes(color);
+    return HEAVY_EXPLOSION_COLORS.has(String(ctx.fillStyle || '').toLowerCase());
   }
 
   function shouldAllowHeavyExplosionLayer() {
@@ -333,6 +393,7 @@
 
   function drawBossPng(ctx, config, cx, labelY, drawImage) {
     const image = config && config.image;
+    if (image) startImageLoad(image, image.__invadersUrl, 'high');
     if (!image || !image.complete || image.naturalWidth <= 0) return;
     const time = performance.now() * 0.001;
     const pulse = 1 + Math.sin(time * 5.5 + cx * 0.01) * 0.055;
@@ -360,13 +421,49 @@
 
   installInvadersAudioScale();
 
-  const previousArrayPush = Array.prototype.push;
-  Array.prototype.push = function (...items) {
-    const result = previousArrayPush.apply(this, items);
-    if (items.some(looksLikeEnemyDropBullet)) playAlienDropSound();
-    if (items.some(looksLikeRareShip)) playRareShipSound();
-    return result;
+  // Perf: this layer used to replace Array.prototype.push for the whole page so
+  // it could hear new enemy bullets / rare ships. That de-optimised every push
+  // in every script (particles alone push ~30 objects per kill). The renderer
+  // now hands us each frame's state instead, and we only look at objects we
+  // have not seen before.
+  const seenFrameObjects = new WeakSet();
+  function scanNewObjects(list, test) {
+    if (!list || !list.length) return false;
+    let found = false;
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      if (!item || typeof item !== 'object' || seenFrameObjects.has(item)) continue;
+      seenFrameObjects.add(item);
+      if (!found && test(item)) found = true;
+    }
+    return found;
+  }
+  window.__INVADERS_FRAME_HOOK__ = function (state) {
+    if (!state) return;
+    if (scanNewObjects(state.invBullets, looksLikeEnemyDropBullet)) playAlienDropSound();
+    if (scanNewObjects(state.miniEnemies, looksLikeRareShip)) playRareShipSound();
   };
+
+  // Perf: pre-create one <audio> per short effect on the first gesture so the
+  // first kill / drop sound is already downloaded when it is needed.
+  function warmEffectAudio() {
+    window.removeEventListener('pointerdown', warmEffectAudio, true);
+    window.removeEventListener('keydown', warmEffectAudio, true);
+    window.removeEventListener('touchstart', warmEffectAudio, true);
+    if (typeof Audio === 'undefined') return;
+    const warm = (src, pool) => {
+      if (pool.length) return;
+      const audio = new Audio(src);
+      audio.preload = 'auto';
+      pool.push(audio);
+    };
+    KILLED_SOUND_SRCS.forEach((src, index) => warm(src, killedSoundPools[index]));
+    warm(ALIEN_DROP_SOUND_SRC, alienDropSoundPool);
+    warm(RARE_SHIP_SOUND_SRC, rareShipSoundPool);
+  }
+  window.addEventListener('pointerdown', warmEffectAudio, true);
+  window.addEventListener('keydown', warmEffectAudio, true);
+  window.addEventListener('touchstart', warmEffectAudio, { capture: true, passive: true });
 
   document.addEventListener('arcade-mute-change', (event) => {
     if (event?.detail?.muted) stopRareShipSoundLoop(false);
