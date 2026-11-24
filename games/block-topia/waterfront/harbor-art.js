@@ -633,7 +633,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
           ? [bounds.left + bounds.drawWidth / 2, bounds.top + bounds.drawHeight * 0.17]
           : [x + 16, y - 17]);
       }
-      if (!district.natureIsland && time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed, entranceCenter(tile, col, bounds));
+      if (time !== null && "cswELNA".includes(tile) && seed % 3 !== 1) resident(col, row, seed, entranceCenter(tile, col, bounds));
     } else if (tile === "." && row === quayRow) {
       if (hasSeawall && col >= wallStart && col < wallEnd) return;
       if (roadAt(col - 1, row) || roadAt(col + 1, row)) queue(y + 28, () => lamp(x + 16, y + 21));
@@ -909,7 +909,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       worker.started = now;
       worker.due = now + (worker.route.length - 1) * 0.6 + 0.6;
     };
-    for (const worker of district.natureIsland ? [] : bots) {
+    for (const worker of bots) {
       if (time !== null && now >= worker.due) {
         if (worker.route) worker.point = worker.route.at(-1);
         worker.route = null;
@@ -1043,18 +1043,14 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const turn = crew.length ? crew[discussionElapsed === null ? 0 : Math.floor(discussionElapsed / 12) % crew.length] : null;
   function drawIslandBots() {
     if (!islandLoop) return;
-    const models = [0, 1, ...residentBots];
-    models.forEach((model, index) => {
-      const leg = index < 2 ? islandLoop.length * 0.54 + index * 1.2 : islandLoop.length * (index + 1) / 8;
-      const pace = index < 2 ? 0.89 : 0.68 + index * 0.051;
-      const { x, y, dx, dy } = patrolPosition(islandLoop, (time ?? 0) / pace, Math.floor(leg), index >= 2 && index % 2 === 0);
+    residentBots.forEach((model, index) => {
+      const start = Math.floor(islandLoop.length * (index + 1) / (residentBots.length + 1));
+      const pace = 0.78 + index * 0.051;
+      const { x, y, dx, dy } = patrolPosition(islandLoop, (time ?? 0) / pace, start, index % 2 === 0);
       const px = Math.round(x * size + 16);
       const py = Math.round(y * size + 22);
       const frame = time === null || (!dx && !dy) ? 0 : 1 + Math.floor(time * 7) % 3;
-      queue(py, () => {
-        bot(model, px, py, dx, dy, frame);
-        if (turn?.speaker === index && index < 2) drawCrewBubble(px, py);
-      });
+      queue(py, () => bot(model, px, py, dx, dy, frame));
     });
   }
 
@@ -1117,7 +1113,7 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());
   beacons.forEach(([x, y]) => beacon(x, y, true));
-  if (!islandLoop) drawCrew();
+  drawCrew();
   drawFactionLabel();
   for (const { x, y, paused, talking } of factionHits) {
     if (!paused) continue;

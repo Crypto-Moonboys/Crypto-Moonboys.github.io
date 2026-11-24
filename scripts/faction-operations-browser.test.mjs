@@ -2231,7 +2231,8 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
         if (tile !== '~') land++;
         if (walkable(tile)) { walkableLand++; regions.add(key(x, y)); }
         if (x < district.harborWidth && y < district.harborHeight) {
-          if (tile !== district.originalRows[y][x]) harborChanges.push({ x, y, tile });
+          const previous = district.originalRows[y][x];
+          if (tile !== previous) harborChanges.push({ x, y, tile, previous });
         } else if (!'~pmtf'.includes(tile)) islandTerrainOnly = false;
       }
       const frontier = [spawn];
@@ -2263,10 +2264,38 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       allLandReachable: true, allRegionsVisited: true, loopWalkable: true,
       restoredEdit: 'p', spawn: waterfrontDistrict.spawn,
     });
-    assert.ok(harborChanges.length > 0 && harborChanges.every(({ x, y, tile }) =>
-      ('pd'.includes(tile) && ((y === 24 && x >= 45) || (x === 36 && y >= 29)))));
+    assert.ok(harborChanges.length > 0 && harborChanges.every(({ x, y, tile, previous }) =>
+      ('.~'.includes(previous) && 'pd'.includes(tile) && ((y === 24 && x >= 45) || (x === 36 && y >= 29)))));
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
+    await page.waitForFunction(() =>
+      [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees,
+        ...Object.values(waterfrontDetails), waterfrontFactionAtlas, waterfrontBotAtlas, waterfrontCargoAtlas]
+        .every(sprite => sprite.image));
+    const harborLife = await page.evaluate(() => {
+      const display = document.createElement('canvas');
+      const context = display.getContext('2d');
+      const drawImage = context.drawImage.bind(context);
+      let sprites = 0;
+      context.drawImage = (image, ...args) => {
+        if (image === waterfrontBotAtlas.image) sprites++;
+        drawImage(image, ...args);
+      };
+      const crewBriefs = [];
+      context.fillText = text => crewBriefs.push(text);
+      const extent = { left: 0, top: 0, right: district.harborWidth, bottom: district.harborHeight };
+      let maxRobots = 0;
+      for (let time = 1; time <= 20; time++) {
+        sprites = 0;
+        window.drawWaterfront(context, rows, player, district, time, 0, [], null, null, extent);
+        maxRobots = Math.max(sprites, maxRobots);
+      }
+      const delivered = harborFreight.bots.some(bot => bot.carrying || bot.point !== district.spawn && bot.started > 1);
+      return { maxRobots, delivered, crewBrief: crewBriefs.includes(window.waterfrontBuildDiscussion[0].text) };
+    });
+    assert.ok(harborLife.maxRobots > 11, 'building residents join the crew, freight and patrol robots');
+    assert.equal(harborLife.delivered, true, 'freight robots run their original delivery routes');
+    assert.equal(harborLife.crewBrief, true, 'the original briefing crew speaks near spawn');
     const position = await page.evaluate(() => {
       const hit = factionHits.find(item => item.index === 1);
       const map = document.querySelector('#map');
