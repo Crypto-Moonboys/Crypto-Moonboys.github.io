@@ -79,6 +79,7 @@
   border-top-color: #658782;
   pointer-events: none;
 }
+.leader-map-bubble [data-character-page] { display: block; margin-bottom: .15rem; }
 .leader-map-bubble button { min-height: 32px; min-width: 32px; padding: .1rem; margin-inline-start: .15rem; }
 .leader-map-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 #leader-question-title + form textarea {

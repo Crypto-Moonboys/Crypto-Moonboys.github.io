@@ -22,6 +22,25 @@ let player = { ...spawn };
 const playerFaction = document.querySelector("#player-faction");
 const factionIds = ["all-city-bulls", "nomad-bears", "hard-fork-rockers", "rugpull-miners",
   "crypto-moongirls", "blockchain-furies", "graffpunks", "crypto-stoned-boys", "blockstars"];
+const avatar = document.querySelector("#waterfront-avatar");
+waterfrontCharacterNames.forEach((name, index) => avatar.add(new Option(name, String(index))));
+let selectedAvatar = null;
+let avatarIdleSince = performance.now();
+let idleStep = 0;
+let lastIdlePosition;
+viewport.addEventListener("pointerdown", () => { avatarIdleSince = performance.now(); }, { passive: true });
+viewport.addEventListener("keydown", () => { avatarIdleSince = performance.now(); });
+let browserStorage;
+try { browserStorage = window.localStorage; } catch { /* Private browsing can disable storage. */ }
+const factionConversations = window.createWaterfrontFactionConversations(browserStorage);
+avatar.addEventListener("change", () => {
+  if (!window.waterfrontAccess.canPlay()) return;
+  selectedAvatar = avatar.value === "" ? null : Number(avatar.value);
+  avatarIdleSince = performance.now();
+  lastIdlePosition = null;
+  canvas.dispatchEvent(new Event("waterfront:leader-clear"));
+  draw();
+});
 let editing = false;
 let walkTimer;
 
@@ -139,9 +158,10 @@ let leaderStates = [];
 let previousLeaderTap;
 function paintMap() {
   if (!window.waterfrontAccess.canPlay()) return;
-  const faction = factionIds.indexOf(window.waterfrontAccess.faction());
+  const faction = selectedAvatar ?? factionIds.indexOf(window.waterfrontAccess.faction());
   factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
-    reducedMotion.matches ? null : discussionElapsed, leaderStates) ?? [];
+    reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
+    editing || document.hidden ? null : factionConversations) ?? [];
   canvas.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
@@ -425,8 +445,8 @@ document.addEventListener("fullscreenchange", applyZoomSize);
 let centered = false;
 window.addEventListener("waterfront:access", () => {
   if (window.waterfrontAccess.canPlay()) {
-    const name = waterfrontFactions[factionIds.indexOf(window.waterfrontAccess.faction())];
-    playerFaction.textContent = "Your faction · " + name;
+    const name = waterfrontCharacterNames[factionIds.indexOf(window.waterfrontAccess.faction())];
+    playerFaction.textContent = "Your representative · " + name;
     applyZoomSize();
     if (!centered) {
       const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
@@ -439,6 +459,8 @@ window.addEventListener("waterfront:access", () => {
     loadBuildDiscussion();
   } else {
     clearTimeout(walkTimer);
+    selectedAvatar = null;
+    avatar.value = "";
   }
   syncAnimation();
 });
@@ -465,6 +487,21 @@ function syncAnimation() {
   }
   frameId = requestAnimationFrame(animateHarbor);
 }
+setInterval(() => {
+  if (selectedAvatar === null || !window.waterfrontAccess.canPlay() || document.hidden || editing ||
+      reducedMotion.matches || performance.now() - avatarIdleSince < 25_000 ||
+      player.frame || factionConversations.holds(selectedAvatar) || !infoPanel.hidden ||
+      viewport.querySelector("dialog[open], .leader-map-details:not([hidden])") ||
+      viewport.hasAttribute("data-leader-question-pending")) return;
+  const neighbors = Object.values(directions).map(([dx, dy]) => ({ x: player.x + dx, y: player.y + dy }))
+    .filter(({ x, y }) => /^[rp]$/.test(rows[y]?.[x] ?? ""));
+  if (!neighbors.length) return;
+  const forward = neighbors.filter(({ x, y }) => x !== lastIdlePosition?.x || y !== lastIdlePosition?.y);
+  const options = forward.length ? forward : neighbors;
+  const target = options[idleStep++ % options.length];
+  lastIdlePosition = { x: player.x, y: player.y };
+  walkTo(target.x, target.y);
+}, 1_800);
 document.addEventListener("visibilitychange", syncAnimation);
 reducedMotion.addEventListener("change", syncAnimation);
 syncAnimation();

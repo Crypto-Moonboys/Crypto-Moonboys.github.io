@@ -1,18 +1,9 @@
+import { LEADERS } from '/js/waterfront-faction-identities.mjs?v=2';
 import {
   clanLeaderQuestionError, clanLeaderSourceLinks, getClanLeaderBoard, mountClanLeaderDialog, sendClanLeaderQuestion,
 } from '/js/clan-leader-dialog.js?lore=3';
 
-const names = new Map([
-  ['all-city-bulls', 'All City Bulls'],
-  ['nomad-bears', 'The Nomad Bears'],
-  ['hard-fork-rockers', 'Hard Fork Rockers'],
-  ['rugpull-miners', 'Rugpull Miners'],
-  ['crypto-moongirls', 'Crypto Moongirls'],
-  ['blockchain-furies', 'The Blockchain Furies'],
-  ['graffpunks', 'GraffPunks'],
-  ['crypto-stoned-boys', 'Crypto Stinedboys'],
-  ['blockstars', 'The Blockstars'],
-]);
+const names = new Map(Object.entries(LEADERS).map(([id, profile]) => [id, profile.character]));
 const keys = Array.from(names.keys());
 const pick = document.querySelector('#map-leader-faction');
 const controls = document.querySelector('#map-leader-controls');
@@ -31,8 +22,8 @@ details.hidden = true;
 details.innerHTML = `
   <button type="button" data-close aria-label="Close leader details">×</button>
   <h2 id="leader-map-name"></h2>
-  <p>Faction leader <span data-activity></span></p>
-  <a data-faction-page>Faction page</a>
+  <p><span data-role></span> <span data-activity></span></p>
+  <a data-character-page>Character wiki</a>
   <button type="button" data-ask>Ask a question</button>
   <button type="button" data-slow>Rival slowdowns</button>`;
 
@@ -42,6 +33,7 @@ questionBox.setAttribute('aria-labelledby', 'leader-question-title');
 questionBox.innerHTML = `
   <h2 id="leader-question-title"></h2>
   <form>
+    <p><a data-character-page>Character wiki</a></p>
     <label>Question <textarea rows="3" maxlength="600" required></textarea></label>
     <p>10 free questions per UTC day. Each Clan Operation tier banked today earns one more.</p>
     <button type="submit">Send</button>
@@ -53,6 +45,7 @@ const bubble = document.createElement('div');
 bubble.className = 'leader-map-bubble';
 bubble.hidden = true;
 bubble.innerHTML = `
+  <a data-character-page></a>
   <span data-speech></span>
   <button type="button" data-more aria-label="More info">ⓘ</button>
   <button type="button" data-dismiss aria-label="Dismiss reply">×</button>`;
@@ -62,7 +55,9 @@ replyBox.className = 'clan-leader-dialog';
 replyBox.setAttribute('aria-labelledby', 'leader-reply-title');
 replyBox.innerHTML = `
   <form method="dialog"><button type="submit" aria-label="Close full reply">Close</button></form>
-  <h2 id="leader-reply-title"></h2><div data-full-reply></div>`;
+  <h2 id="leader-reply-title"></h2>
+  <p><a data-character-page>Character wiki</a></p>
+  <div data-full-reply></div>`;
 
 const announcement = document.createElement('p');
 announcement.className = 'leader-map-announcement';
@@ -86,10 +81,11 @@ function showDetails(key) {
   selected = key;
   const presence = lookup(key)?.presence;
   details.querySelector('h2').textContent = names.get(key);
+  details.querySelector('[data-role]').textContent = LEADERS[key].callSign;
   const playing = presence?.playing_until * 1000 > Date.now();
   const paused = presence?.paused_until * 1000 > Date.now();
   details.querySelector('[data-activity]').textContent = playing ? '· Playing a game' : paused ? '· Paused' : '· In Waterfront';
-  details.querySelector('[data-faction-page]').href = '/battle-chamber/factions/' + key + '.html';
+  details.querySelector('[data-character-page]').href = LEADERS[key].bio;
   details.querySelector('[data-ask]').hidden = !board?.chat_enabled || playing;
   details.querySelector('[data-slow]').hidden = !board?.controls;
   details.hidden = false;
@@ -99,6 +95,7 @@ function openQuestion(key) {
   if (!board?.chat_enabled || lookup(key)?.presence?.playing_until * 1000 > Date.now()) return;
   asking = key;
   questionBox.querySelector('h2').textContent = 'Ask ' + names.get(key);
+  questionBox.querySelector('[data-character-page]').href = LEADERS[key].bio;
   input.value = '';
   if (!questionBox.open) questionBox.showModal();
   input.focus();
@@ -106,7 +103,10 @@ function openQuestion(key) {
 
 function positionBubble() {
   if (!reply) return;
-  const hit = factionHits.find(actor => keys[actor.index] === reply.key);
+  const index = keys.indexOf(reply.key);
+  const hit = index === selectedAvatar
+    ? { x: player.x * tileSize + 16, y: player.y * tileSize + 22 }
+    : factionHits.find(actor => actor.index === index);
   if (!hit) { bubble.hidden = true; return; }
   const gameBounds = map.getBoundingClientRect();
   const frame = mapScroller.getBoundingClientRect();
@@ -125,6 +125,9 @@ function showSpeech(key, text, sources = [], error) {
   const clipped = text.length > 145;
   const cut = text.slice(0, 140);
   const short = clipped ? (cut.replace(/\s+\S*$/u, '') || cut) + '…' : text;
+  const profileLink = bubble.querySelector('[data-character-page]');
+  profileLink.href = LEADERS[key].bio;
+  profileLink.textContent = names.get(key);
   bubble.querySelector('[data-speech]').textContent = short;
   bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || error === 'lore_task_required');
   announcement.textContent = names.get(key) + ': ' + text;
@@ -216,6 +219,7 @@ bubble.querySelector('[data-dismiss]').addEventListener('click', () => {
 bubble.querySelector('[data-more]').addEventListener('click', () => {
   if (!reply) return;
   replyBox.querySelector('h2').textContent = names.get(reply.key) + ' · Reply';
+  replyBox.querySelector('[data-character-page]').href = LEADERS[reply.key].bio;
   const full = replyBox.querySelector('[data-full-reply]');
   const text = document.createElement('p');
   text.textContent = reply.text;

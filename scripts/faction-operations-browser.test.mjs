@@ -2138,6 +2138,8 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     const longReply = 'The Nomad Bears are one of the two market factions. ' + 'Their public wiki account explains how their travelling crews protect routes, trade information, and respond when the other market faction gains ground throughout the city.';
     let releaseFirstReply;
     const holdReply = new Promise(resolve => { releaseFirstReply = resolve; });
+    let releaseAvatarReply;
+    const holdAvatarReply = new Promise(resolve => { releaseAvatarReply = resolve; });
     await page.clock.install();
     await page.route('https://waterfront.test/**', async route => {
       const url = new URL(route.request().url());
@@ -2178,6 +2180,7 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       if (url.pathname === '/clan-operations/leader-lore') {
         loreBodies.push(route.request().postDataJSON());
         if (loreBodies.length === 1) await holdReply;
+        if (loreBodies.length === 3) await holdAvatarReply;
         return route.fulfill({ json: {
           ok: true, reply: longReply,
           sources: [{ title: 'Crypto Moonboys', path: '/wiki/crypto-moonboys.html' }],
@@ -2212,7 +2215,7 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.getByRole('button', { name: 'Check again' }).click();
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
-    assert.equal(await page.locator('#player-faction').textContent(), 'Your faction · The Nomad Bears');
+    assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
     const position = await page.evaluate(() => {
@@ -2226,29 +2229,32 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
     });
     await page.mouse.click(position.x, position.y);
-    const details = page.getByRole('region', { name: 'The Nomad Bears', exact: true });
+    const details = page.getByRole('region', { name: 'Nine Toes Joe', exact: true });
     await details.waitFor();
-    assert.equal(await details.getByRole('link', { name: 'Faction page' }).getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await details.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
+    assert.match(await details.locator('[data-role]').innerText(), /Bears scout/);
     assert.equal(await page.getByRole('dialog').count(), 0);
     await page.mouse.dblclick(position.x, position.y);
-    const composer = page.getByRole('dialog', { name: 'Ask The Nomad Bears' });
+    const composer = page.getByRole('dialog', { name: 'Ask Nine Toes Joe' });
     await composer.getByLabel('Question').fill('Who are the Nomad Bears?');
+    assert.equal(await composer.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
     await composer.getByRole('button', { name: 'Send' }).click();
     await composer.waitFor({ state: 'hidden' });
     const bubble = page.locator('.leader-map-bubble');
-    await bubble.getByText('Checking the wiki…').waitFor();
+    await bubble.getByText('Thinking…').waitFor();
+    assert.equal(await bubble.getByRole('link', { name: 'Nine Toes Joe' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
     releaseFirstReply();
     await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
     assert.match(await bubble.locator('[data-speech]').innerText(), /…$/u);
     await bubble.getByRole('button', { name: 'More info' }).click();
-    const full = page.getByRole('dialog', { name: 'The Nomad Bears · Reply' });
+    const full = page.getByRole('dialog', { name: 'Nine Toes Joe · Reply' });
     await full.getByText(longReply, { exact: true }).waitFor();
     assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
     await full.getByRole('button', { name: 'Close full reply' }).click();
     await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
 
     await details.getByRole('button', { name: 'Rival slowdowns' }).click();
-    const slowdown = page.getByRole('dialog', { name: 'The Nomad Bears', exact: true });
+    const slowdown = page.getByRole('dialog', { name: 'Nine Toes Joe', exact: true });
     await slowdown.getByRole('button', { name: /defend first\? · 10 min/ }).click();
     await slowdown.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
     assert.equal(requestBodies.length, 1);
@@ -2264,11 +2270,44 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
     assert.deepEqual(loreBodies[1], {
       telegram_auth: { id: '123' }, npc: target, question: 'Who are their rivals?', previous: ['Who are the Nomad Bears?'],
+      recent_turns: [{ question: 'Who are the Nomad Bears?', reply: longReply }],
     });
     assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
     await page.clock.fastForward(65_000);
     await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
     assert.ok(entryActions.includes('renew'), 'an active map renews its seat');
+
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+    await page.getByRole('button', { name: 'Info', exact: true }).click();
+    await page.locator('#waterfront-avatar').selectOption({ label: 'Nine Toes Joe' });
+    await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 1));
+    await page.evaluate(() => {
+      const map = document.querySelector('#map');
+      const scroll = document.querySelector('.map-scroll');
+      const rect = map.getBoundingClientRect();
+      scroll.scrollLeft = (player.x * tileSize + 16) * rect.width / mapWidth - scroll.clientWidth / 2;
+      scroll.scrollTop = (player.y * tileSize + 22) * rect.height / mapHeight - scroll.clientHeight / 2;
+    });
+    await page.locator('#map-leader-faction').selectOption(target);
+    await page.getByRole('button', { name: 'Show details' }).click();
+    await details.getByRole('button', { name: 'Ask a question' }).click();
+    await composer.getByLabel('Question').fill('What are you working on?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await bubble.getByText('Thinking…').waitFor();
+    const anchorOffset = await bubble.evaluate(element => {
+      const map = document.querySelector('#map').getBoundingClientRect();
+      const avatarX = map.left + (player.x * tileSize + 16) * map.width / mapWidth;
+      const bounds = element.getBoundingClientRect();
+      return Math.abs(bounds.left + bounds.width / 2 - avatarX);
+    });
+    assert.ok(anchorOffset < 2, 'the reply is centered above the player sprite');
+    releaseAvatarReply();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.equal(loreBodies[2].npc, target);
+    await bubble.getByRole('button', { name: 'More info' }).click();
+    await full.getByText(longReply, { exact: true }).waitFor();
+    assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
+    await full.getByRole('button', { name: 'Close full reply' }).click();
 
     seatLost = true;
     await page.clock.fastForward(21_000);

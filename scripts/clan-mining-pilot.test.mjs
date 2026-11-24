@@ -1,3 +1,4 @@
+import { LEADERS } from '../js/waterfront-faction-identities.mjs';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -2086,11 +2087,11 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.equal(reply.status, 200);
   assert.match(reply.data.reply, /Alfie Blaze/);
   assert.deepEqual(new Set(reply.data.sources.map(item => item.path)), new Set([wikiPath, canonPath]));
-  assert.match(prompts[0][0].content, /graffpunks/);
+  assert.match(prompts[0][0].content, /Eddie Stax, the GraffPUNKS wall keeper/);
   assert.ok(!visits.includes(editorial));
   fakeResponse = { reply: 'This links to the private material right here.', sources: [99] };
   assert.deepEqual((await question({ npc: 'nomad-bears' })).data.sources, []);
-  assert.match(prompts[1][0].content, /nomad-bears/);
+  assert.match(prompts[1][0].content, /Nine Toes Joe, the Bears scout/);
   fakeResponse = { reply: 'Open gk-master-canon now.', sources: [1] };
   assert.deepEqual((await question()).data.sources, []);
   fakeResponse = undefined;
@@ -2133,8 +2134,8 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   for (const intro of ['Who are you?', 'Introduce yourself']) {
     const response = await question({ npc: 'graffpunks', question: intro });
     assert.equal(response.status, 200);
-    assert.match(response.data.reply, /I represent GraffPUNKS here on the Waterfront/);
-    assert.deepEqual(response.data.sources, [{ title: 'GraffPUNKS Wiki', path: graffpunksPath }]);
+    assert.match(response.data.reply, /Eddie Stax, the GraffPUNKS wall keeper.*paint murals/);
+    assert.deepEqual(response.data.sources.map(source => source.path), ['/wiki/eddie-stax.html', graffpunksPath, '/battle-chamber/factions/graffpunks.html']);
   }
   assert.equal(prompts.length, callsBeforeIntroduction, 'local introductions skip the provider');
   assert.equal(visits.length, visitsBeforeIntroduction, 'local introductions skip source fetches');
@@ -2162,7 +2163,8 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     assert.equal(response.status, 200);
     assert.deepEqual(response.data.sources.map(source => source.path), [publishedMd]);
     const system = prompts.at(-1)[0].content;
-    assert.ok(system.includes('(' + npc + ')'));
+    const { character, callSign } = LEADERS[npc];
+    assert.ok(system.startsWith(`You are ${character}, the ${callSign}`));
     assert.match(system, /Voice: .+ Guiding values:/);
     identities.add(system.match(/Guiding values: (.+?) Treat these values/)[1]);
   }

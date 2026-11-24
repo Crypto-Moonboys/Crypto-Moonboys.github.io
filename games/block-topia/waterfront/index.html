@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina’s Waterfront | Block Topia</title>
 <link rel="stylesheet" href="../styles.css">
-<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=2">
+<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=3">
 <style>
 :root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0}
@@ -66,6 +66,8 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Select a faction leader for details, or double-click or double-tap to ask a question.</p>
 </section>
 <p id="player-faction"></p>
+<label for="waterfront-avatar">Explore as a faction leader</label>
+<select id="waterfront-avatar"><option value="">Your faction avatar</option></select>
 <button id="waterfront-leave" type="button">Leave Waterfront</button>
 <div id="map-leader-controls" hidden>
 <label for="map-leader-faction">Faction leader</label>
@@ -98,6 +100,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" type="module" src="entry.js?v=4"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=7"></script>
 </body>
 </html>
