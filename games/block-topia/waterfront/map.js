@@ -14,6 +14,7 @@ const ctx = mapView.getContext("2d");
 const edit = document.querySelector("#edit");
 const select = document.querySelector("#tile");
 const status = document.querySelector("#status");
+const kaijuWarning = document.querySelector("#kaiju-warning");
 const locationLabel = document.querySelector("#location");
 let rows = [...initial];
 let player = { ...spawn };
@@ -187,6 +188,7 @@ function paintMap() {
     reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
     editing || document.hidden ? null : factionConversations, visibleTiles(), inspection,
     streamDetailArt ? requestMapPaint : null) ?? [];
+  kaijuWarning.hidden = !window.harborKaijuActive(rows);
   if (compactArtReady && !streamDetailArt) {
     streamDetailArt = true;
     requestMapPaint();
@@ -387,18 +389,28 @@ function triggerKaiju(landfall) {
   if (!window.waterfrontAccess.canPlay() || editing || viewport.querySelector("dialog[open]")) return;
   const location = landfall ? window.summonHarborLandfall(rows) : window.summonHarborKaiju(rows);
   if (!location) return;
+  centerWaterEncounter(location);
+}
+
+function centerWaterEncounter(location) {
   mapScroll.scrollLeft = location.x * mapSurface.clientWidth / columns - mapScroll.clientWidth / 2;
   mapScroll.scrollTop = location.y * mapSurface.clientHeight / initial.length - mapScroll.clientHeight / 2;
   requestMapPaint();
 }
 
 window.addEventListener("keydown", event => {
-  if (event.key.toLowerCase() !== "k" || event.defaultPrevented || event.repeat || event.isComposing ||
+  const key = event.key.toLowerCase();
+  if ((key !== "k" && key !== "l") || event.defaultPrevented || event.repeat || event.isComposing ||
       event.ctrlKey || event.altKey || event.metaKey || editing || !window.waterfrontAccess.canPlay() ||
       viewport.querySelector("dialog[open]") ||
       event.target instanceof Element && (event.target.isContentEditable ||
         event.target.closest("input, textarea, select, [role='textbox']"))) return;
   event.preventDefault();
+  if (key === "l") {
+    const location = window.summonHarborNessie(rows, performance.now() / 1000);
+    if (location) centerWaterEncounter(location);
+    return;
+  }
   if (kaijuKeyTimer !== undefined) {
     clearTimeout(kaijuKeyTimer);
     kaijuKeyTimer = undefined;

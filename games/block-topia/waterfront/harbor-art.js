@@ -279,6 +279,8 @@ const landfallRoute = [
 ];
 let landfallSummoned = false;
 let landfallStarted;
+let landfallRequestedAt;
+const landfallDuration = 21;
 let naturalLandfallDue;
 let naturalLandfallUsed = false;
 
@@ -292,11 +294,21 @@ window.summonHarborLandfall = function summonHarborLandfall(rows) {
   kaijuSummoned = false;
   landfallSummoned = true;
   landfallStarted = undefined;
+  landfallRequestedAt = undefined;
   return { x: landfallX + 0.5, y: 6.5 };
 };
 
+window.harborKaijuActive = rows =>
+  (kaijuSummoned && hasKaijuWater(rows)) || (landfallSummoned && hasLandfallRoute(rows));
+
 function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
-  if (time !== null) naturalLandfallDue ??= time + 1200 + Math.random() * 1200;
+  if (time !== null) {
+    naturalLandfallDue ??= time + 1200 + Math.random() * 1200;
+    if (landfallSummoned) {
+      landfallRequestedAt ??= time;
+      if (time - (landfallStarted ?? landfallRequestedAt) >= landfallDuration) landfallSummoned = false;
+    }
+  }
   if (visible && (visible.right <= 41 || visible.left >= 48 ||
       visible.bottom <= 3 || visible.top >= 12)) return;
   if (!hasLandfallRoute(rows)) return;
@@ -316,13 +328,9 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
   if (time !== null) {
     landfallStarted ??= time;
     const elapsed = Math.max(0, time - landfallStarted);
-    if (elapsed >= 21) {
-      landfallSummoned = false;
-      return;
-    }
     let walkTime = elapsed - 2;
     if (walkTime < 0 || elapsed >= 19) {
-      const frame = Math.min(7, Math.floor((walkTime < 0 ? elapsed : 21 - elapsed) * 4));
+      const frame = Math.min(7, Math.floor((walkTime < 0 ? elapsed : landfallDuration - elapsed) * 4));
       row = Math.floor(frame / 4);
       column = frame % 4;
     } else {
@@ -358,6 +366,83 @@ function drawHarborLandfall(ctx, rows, size, time, visible, repaint, queue) {
     }
     ctx.restore();
   });
+}
+
+const nessieVariants = [
+  { atlas: { file: "harbor-nessie.webp?v=1" }, minDelay: 45, delayRange: 55, nextWave: null },
+  { atlas: { file: "harbor-nessie-angry.webp?v=1" }, minDelay: 110, delayRange: 75, nextWave: null },
+];
+const nessieSites = [[21, 3], [61, 9], [93, 15], [101, 27], [21, 33],
+  [13, 51], [21, 69], [85, 75], [53, 81]];
+const nessieSightings = new Map();
+const nessieDuration = 9;
+let nextNessieSite = 0;
+let nextNessieVariant = 0;
+
+function hasNessieWater(rows, [x, y]) {
+  return [y - 1, y, y + 1].every(row => rows[row]?.slice(x - 4, x + 5) === "~~~~~~~~~");
+}
+
+window.summonHarborNessie = function summonHarborNessie(rows, time) {
+  for (let attempt = 0; attempt < nessieSites.length; attempt++) {
+    const index = nextNessieSite;
+    nextNessieSite = (index + 1) % nessieSites.length;
+    const site = nessieSites[index];
+    if (!hasNessieWater(rows, site)) continue;
+    nessieSightings.clear();
+    nessieSightings.set(index, { started: time, variant: nessieVariants[nextNessieVariant] });
+    nextNessieVariant = (nextNessieVariant + 1) % nessieVariants.length;
+    return { x: site[0] + 0.5, y: site[1] - 0.25 };
+  }
+  return null;
+};
+
+function drawHarborNessies(ctx, rows, size, time, visible, repaint) {
+  if (time !== null) {
+    for (const [index, { started }] of nessieSightings) {
+      if (time - started >= nessieDuration) nessieSightings.delete(index);
+    }
+    for (const variant of nessieVariants) {
+      variant.nextWave ??= time + variant.minDelay + Math.random() * variant.delayRange;
+      // Finish the current sighting before allowing another variant's wave.
+      if (time < variant.nextWave || nessieSightings.size) continue;
+      variant.nextWave = time + variant.minDelay + Math.random() * variant.delayRange;
+      const available = nessieSites.map((site, index) => ({ site, index }))
+        .filter(({ site }) => hasNessieWater(rows, site));
+      const roll = Math.random();
+      const count = Math.min(available.length, roll < 0.60 ? 1 : roll < 0.90 ? 2 : 3);
+      for (let i = 0; i < count; i++) {
+        const [pick] = available.splice(Math.floor(Math.random() * available.length), 1);
+        nessieSightings.set(pick.index, { started: time, variant });
+      }
+    }
+  }
+
+  for (const [index, { started, variant: { atlas } }] of nessieSightings) {
+    const site = nessieSites[index];
+    const [col, row] = site;
+    if (!hasNessieWater(rows, site)) {
+      nessieSightings.delete(index);
+      continue;
+    }
+    if (visible && (visible.right <= col - 4 || visible.left >= col + 5 ||
+        visible.bottom <= row - 2 || visible.top >= row + 2)) continue;
+    loadDetailedAtlas(atlas, "low", repaint);
+    if (!atlas.image) continue;
+    const elapsed = time === null ? 4.5 : Math.max(0, time - started);
+    // Surface, undulate through the middle two frames, then dive.
+    const frame = elapsed < 1.5 ? Math.floor(elapsed * 2)
+      : elapsed < 6.5 ? 3 + Math.floor((elapsed - 1.5) * 2) % 2
+      : Math.min(7, 5 + Math.floor((elapsed - 6.5) * 1.2));
+    const x = (col + 0.5 + 1.5 - elapsed / 3) * size;
+    const y = (row + 0.5) * size;
+    const scale = size / 32;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(atlas.image, frame % 4 * 128, Math.floor(frame / 4) * 72, 128, 72,
+      x - 52 * scale, y - 42 * scale, 104 * scale, 58.5 * scale);
+    ctx.restore();
+  }
 }
 
 function loadDetailedAtlas(atlas, priority, repaint) {
@@ -1435,7 +1520,10 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   const {a: scaleX, d: scaleY, e: offsetX, f: offsetY} = ctx.getTransform();
   const waterBounds = [-offsetX / scaleX, -offsetY / scaleY, ctx.canvas.width / scaleX, ctx.canvas.height / scaleY];
   rect(waterPattern(ctx, size), ...waterBounds);
-  if (district.natureIsland) drawHarborKaiju(ctx, rows, size, time, visible, repaintArt);
+  if (district.natureIsland) {
+    drawHarborKaiju(ctx, rows, size, time, visible, repaintArt);
+    drawHarborNessies(ctx, rows, size, time, visible, repaintArt);
+  }
   for (let y = top; y < bottom; y++) {
     for (let x = left; x < right; x++) {
       const tile = tileAt(x, y);
