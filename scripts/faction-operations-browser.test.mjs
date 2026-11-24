@@ -2319,14 +2319,17 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
           fill(...args);
         };
         window.drawWaterfront(context, district.rows, player, district, time, 0, [], null, null,
-          { left: x, top: y, right: x + 1, bottom: y + 1 });
+          { left: Math.min(x, district.rows[0].length), top: y,
+            right: Math.min(x + 1, district.rows[0].length), bottom: y + 1 });
         return { colors: [...colors], pixels: Array.from(context.getImageData(0, 0, size, size).data) };
       }
       const openWater = sample(62, 0, 0);
       const harborWater = sample(6, 0, 0);
+      const beyondMap = sample(district.rows[0].length + 6, 0, 0);
       const later = sample(62, 0, 1);
       const coast = sample(61, 14, 0);
       return {
+        beyondMapMatchesWater: beyondMap.pixels.every((value, i) => value === harborWater.pixels[i]),
         matchesHarborWater: openWater.pixels.every((value, i) => value === harborWater.pixels[i]),
         waterStaysStatic: openWater.pixels.every((value, i) => value === later.pixels[i]),
         newCoastKeepsWater: coast.colors.some(color => color instanceof CanvasPattern),
@@ -2336,7 +2339,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       };
     });
     assert.deepEqual(waterArt, {
-      matchesHarborWater: true, waterStaysStatic: true, newCoastKeepsWater: true, cachedTexture: true,
+      beyondMapMatchesWater: true, matchesHarborWater: true, waterStaysStatic: true, newCoastKeepsWater: true, cachedTexture: true,
       newCoastHasSeawall: false, harborHasSeawall: true,
     });
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
