@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the top-down camera, zoom behavior, and original harbor framing.
 "use strict";
 const district = window.waterfrontDistrict;
 const { rows: initial, spawn, tiles, tileSize } = district;

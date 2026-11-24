@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the original Node City 2:1 isometric projection and framing.
 // April 20 node-city renderer (dda2b813). The local hook adds comparison sprites.
 import { CONTROL_LINKS as NETWORK_LINES } from './classic-controls.mjs';
 

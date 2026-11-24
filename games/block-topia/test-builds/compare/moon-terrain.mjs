@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the Moon comparison projection and terrain silhouette.
 // Ground-only snapshot from HODL Wars Lores at 05ab717.
 import { tile, width, height, stations, noise, onMoon } from '../../hodl-wars-lores/lunar-world.mjs';
 

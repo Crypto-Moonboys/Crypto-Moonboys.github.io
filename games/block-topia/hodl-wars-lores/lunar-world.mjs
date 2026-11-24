@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the rear tower lot and existing miner footprints and lore-station routes.
 export const tile = 32;
 export const width = 72;
 export const height = 68;

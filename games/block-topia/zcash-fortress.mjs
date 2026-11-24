@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep native 672 × 840 miner frames, high-quality filtering, and the existing draw size and anchors.
 // Mining landmark sprites shared by the survival game and comparison maps.
 export const fortressSize = { width: 112, height: 140, anchorY: 117 };
 

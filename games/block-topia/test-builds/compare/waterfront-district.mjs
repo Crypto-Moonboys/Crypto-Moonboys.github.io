@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the harbor geometry and the shared overhead miner lots.
 // Coordinates are zero-based. Keep these tile IDs and the storage key compatible with existing saves.
 const district = {
   name: "Lumina’s Waterfront",
