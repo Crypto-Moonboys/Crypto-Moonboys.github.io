@@ -35,12 +35,12 @@
     123
   ],
   "colors": {
-    "water": "#00bfff",
-    "road": "#ff4500",
-    "ground": "#d2691e",
-    "dock": "#008000",
-    "house": "#8a2be2",
-    "lighthouse": "#f0e68c"
+    "water": "#143950",
+    "road": "#667b8a",
+    "ground": "#283e35",
+    "dock": "#98734e",
+    "house": "#aa5149",
+    "lighthouse": "#dbc69c"
   },
   "layoutSource": "model-edits"
 }
