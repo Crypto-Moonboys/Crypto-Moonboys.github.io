@@ -743,7 +743,7 @@
     ]
   },
   "/wiki/allcity-bulls-mech.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/blockstars-mech.html",
@@ -774,6 +774,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -2004,10 +2005,12 @@
     ]
   },
   "/wiki/blockchain-furies-mech.html": {
-    "outbound_count": 46,
+    "outbound_count": 49,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
+      "/wiki/danny-rankz.html",
+      "/wiki/gentleman-bear.html",
       "/wiki/hodl-wars-mech.html",
       "/wiki/police-car.html",
       "/wiki/the-blockchain-furies.html",
@@ -2053,6 +2056,7 @@
       "/wiki/the-first-witness.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html",
       "/wiki/wax-blockchain.html"
     ],
@@ -2125,7 +2129,7 @@
     ]
   },
   "/wiki/blockstars-mech.html": {
-    "outbound_count": 24,
+    "outbound_count": 25,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/allcity-bulls-mech.html",
@@ -2153,6 +2157,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -2161,12 +2166,13 @@
     ]
   },
   "/wiki/blue-electric-bot.html": {
-    "outbound_count": 18,
+    "outbound_count": 20,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/green-electric-bot.html",
+      "/wiki/nobby.html",
       "/wiki/walking-boombox.html",
       "/wiki/waterfront-roamers.html"
     ],
@@ -2183,6 +2189,7 @@
       "/wiki/the-infiltration-of-block-topia-part.html",
       "/wiki/the-nice-and-easy-bois-the-digital.html",
       "/wiki/the-nice-easy-bois.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -2243,7 +2250,7 @@
     ]
   },
   "/wiki/burglar-bear.html": {
-    "outbound_count": 31,
+    "outbound_count": 32,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -2277,6 +2284,7 @@
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-gkniftyheads-manifesto-this-is-your-early-warning.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
@@ -2351,8 +2359,8 @@
     ]
   },
   "/wiki/camo-bear.html": {
-    "outbound_count": 28,
-    "inbound_count": 3,
+    "outbound_count": 29,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/green-electric-bot.html",
@@ -2382,12 +2390,14 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
       "/wiki/green-electric-bot.html",
       "/wiki/nomad-bears-mech.html",
+      "/wiki/st-patricks-day-bear.html",
       "/wiki/waterfront-roamers.html"
     ]
   },
@@ -3686,7 +3696,7 @@
   },
   "/wiki/danny-rankz.html": {
     "outbound_count": 23,
-    "inbound_count": 7,
+    "inbound_count": 8,
     "existing_outbound": [
       "/wiki/chada-boi.html",
       "/wiki/crypto-moonboys.html",
@@ -3715,6 +3725,7 @@
       "/wiki/wax-blockchain.html"
     ],
     "inbound_from": [
+      "/wiki/blockchain-furies-mech.html",
       "/wiki/chada-boi.html",
       "/wiki/jack-the-bull.html",
       "/wiki/jimmy-rugpull.html",
@@ -14198,8 +14209,8 @@
     ]
   },
   "/wiki/gentleman-bear.html": {
-    "outbound_count": 29,
-    "inbound_count": 3,
+    "outbound_count": 30,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/burglar-bear.html",
       "/wiki/crypto-moonboys.html",
@@ -14229,12 +14240,17 @@
       "/wiki/the-finance-guild-the-digital-ledger.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html",
       "/wiki/xrp-ledger.html"
     ],
     "inbound_from": [
+      "/wiki/blockchain-furies-mech.html",
       "/wiki/burglar-bear.html",
+      "/wiki/hodl-wars-mech.html",
+      "/wiki/moongirls-mech.html",
+      "/wiki/police-car.html",
       "/wiki/posh-bear.html",
       "/wiki/waterfront-roamers.html"
     ]
@@ -23126,14 +23142,15 @@
     ]
   },
   "/wiki/graff-bear.html": {
-    "outbound_count": 47,
-    "inbound_count": 4,
+    "outbound_count": 48,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/eddie-stax.html",
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
       "/wiki/graffpunks.html",
+      "/wiki/posh-bear.html",
       "/wiki/waterfront-roamers.html"
     ],
     "suggested_outbound": [
@@ -23165,7 +23182,6 @@
       "/wiki/graffpunks-reading-library.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
-      "/wiki/posh-bear.html",
       "/wiki/sailor-bear.html",
       "/wiki/st-patricks-day-bear.html",
       "/wiki/straight-outta-ghetto-bear.html",
@@ -23177,11 +23193,13 @@
       "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
       "/wiki/the-graffpunks-rise.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
       "/wiki/graffiti-kings-mech.html",
       "/wiki/graffpunks-mech.html",
+      "/wiki/posh-bear.html",
       "/wiki/straight-outta-ghetto-bear.html",
       "/wiki/waterfront-roamers.html"
     ]
@@ -23225,7 +23243,7 @@
     ]
   },
   "/wiki/graffiti-kings-mech.html": {
-    "outbound_count": 36,
+    "outbound_count": 37,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23262,6 +23280,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials.html",
       "/wiki/the-sacred-expansion-the-great-consensus.html",
       "/wiki/the-signal-from-3008.html",
@@ -23923,7 +23942,7 @@
     ]
   },
   "/wiki/graffpunks-mech.html": {
-    "outbound_count": 36,
+    "outbound_count": 37,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -23963,6 +23982,7 @@
       "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
       "/wiki/the-graffpunks-rise.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -24642,13 +24662,14 @@
     ]
   },
   "/wiki/green-electric-bot.html": {
-    "outbound_count": 15,
+    "outbound_count": 17,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/blue-electric-bot.html",
       "/wiki/camo-bear.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/st-patricks-day-bear.html",
       "/wiki/waterfront-roamers.html"
     ],
     "suggested_outbound": [
@@ -24660,6 +24681,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-og-pixel-saints-warriors-of-light.html",
       "/wiki/the-signal-from-3008.html"
     ],
@@ -25006,11 +25028,12 @@
     ]
   },
   "/wiki/hard-fork-rockers-mech.html": {
-    "outbound_count": 33,
+    "outbound_count": 35,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/hodl-wars-mech.html",
+      "/wiki/nobby.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/walking-boombox.html",
       "/wiki/waterfront-roamers.html"
@@ -25042,6 +25065,7 @@
       "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
       "/wiki/the-hard-fork-rockers-digital-revolutionaries.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html",
       "/wiki/triple-fork-event.html"
     ],
@@ -25396,11 +25420,12 @@
     "inbound_from": []
   },
   "/wiki/hodl-wars-mech.html": {
-    "outbound_count": 32,
+    "outbound_count": 34,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/blockchain-furies-mech.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/gentleman-bear.html",
       "/wiki/hard-fork-rockers-mech.html",
       "/wiki/hodl-wars.html",
       "/wiki/waterfront-roamers.html"
@@ -25432,6 +25457,7 @@
       "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
       "/wiki/the-hodl-warriors-the-protocol-of.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -26100,7 +26126,7 @@
     ]
   },
   "/wiki/jamaican-bear.html": {
-    "outbound_count": 30,
+    "outbound_count": 31,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -26133,6 +26159,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
@@ -27509,14 +27536,16 @@
     ]
   },
   "/wiki/moongirls-mech.html": {
-    "outbound_count": 26,
+    "outbound_count": 29,
     "inbound_count": 1,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
+      "/wiki/gentleman-bear.html",
       "/wiki/green-electric-bot.html",
       "/wiki/police-robot.html",
       "/wiki/the-crypto-moongirls.html",
-      "/wiki/waterfront-roamers.html"
+      "/wiki/waterfront-roamers.html",
+      "/wiki/zarah8.html"
     ],
     "suggested_outbound": [
       "/wiki/allcity-bulls-mech.html",
@@ -27539,6 +27568,7 @@
       "/wiki/the-crypto-moongirls-cosmic-dreamers.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -28118,7 +28148,7 @@
   },
   "/wiki/nine-toes-joe.html": {
     "outbound_count": 19,
-    "inbound_count": 5,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/crypto-moonboys.html",
@@ -28145,13 +28175,15 @@
     "inbound_from": [
       "/wiki/eddie-stax.html",
       "/wiki/jack-the-bull.html",
+      "/wiki/nomad-bears-mech.html",
+      "/wiki/sailor-bear.html",
       "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/zarah8.html"
     ]
   },
   "/wiki/no-ball-games-mech.html": {
-    "outbound_count": 27,
+    "outbound_count": 28,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/allcity-bulls-mech.html",
@@ -28182,6 +28214,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -28238,7 +28271,7 @@
   },
   "/wiki/nobby.html": {
     "outbound_count": 18,
-    "inbound_count": 5,
+    "inbound_count": 7,
     "existing_outbound": [
       "/wiki/chada-boi.html",
       "/wiki/crypto-moonboys.html",
@@ -28262,7 +28295,9 @@
       "/wiki/waterfront-roamers.html"
     ],
     "inbound_from": [
+      "/wiki/blue-electric-bot.html",
       "/wiki/chada-boi.html",
+      "/wiki/hard-fork-rockers-mech.html",
       "/wiki/jimmy-rugpull.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-ninth-berth.html",
@@ -28270,11 +28305,12 @@
     ]
   },
   "/wiki/nomad-bears-mech.html": {
-    "outbound_count": 25,
+    "outbound_count": 27,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/camo-bear.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/sailor-bear.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/waterfront-roamers.html"
@@ -28298,6 +28334,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
@@ -28903,13 +28940,14 @@
     ]
   },
   "/wiki/police-bike.html": {
-    "outbound_count": 14,
-    "inbound_count": 4,
+    "outbound_count": 16,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/police-car.html",
       "/wiki/police-robot.html",
+      "/wiki/sailor-bear.html",
       "/wiki/waterfront-roamers.html"
     ],
     "suggested_outbound": [
@@ -28921,21 +28959,24 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
       "/wiki/police-car.html",
       "/wiki/police-robot.html",
+      "/wiki/sailor-bear.html",
       "/wiki/st-patricks-day-bear.html",
       "/wiki/waterfront-roamers.html"
     ]
   },
   "/wiki/police-car.html": {
-    "outbound_count": 14,
+    "outbound_count": 17,
     "inbound_count": 4,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/gentleman-bear.html",
       "/wiki/police-bike.html",
       "/wiki/police-robot.html",
       "/wiki/waterfront-roamers.html"
@@ -28948,7 +28989,9 @@
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
+      "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -28959,7 +29002,7 @@
     ]
   },
   "/wiki/police-robot.html": {
-    "outbound_count": 16,
+    "outbound_count": 17,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -28979,6 +29022,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -28990,12 +29034,13 @@
     ]
   },
   "/wiki/posh-bear.html": {
-    "outbound_count": 35,
-    "inbound_count": 2,
+    "outbound_count": 36,
+    "inbound_count": 3,
     "existing_outbound": [
       "/wiki/burglar-bear.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gentleman-bear.html",
+      "/wiki/graff-bear.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/waterfront-roamers.html"
     ],
@@ -29015,7 +29060,6 @@
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
-      "/wiki/graff-bear.html",
       "/wiki/it-was-about-becoming-something-more.html",
       "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
@@ -29028,11 +29072,13 @@
       "/wiki/the-first-witness.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
       "/wiki/gentleman-bear.html",
+      "/wiki/graff-bear.html",
       "/wiki/waterfront-roamers.html"
     ]
   },
@@ -29901,11 +29947,13 @@
     ]
   },
   "/wiki/sailor-bear.html": {
-    "outbound_count": 26,
-    "inbound_count": 4,
+    "outbound_count": 29,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
+      "/wiki/nine-toes-joe.html",
       "/wiki/nomad-bears-mech.html",
+      "/wiki/police-bike.html",
       "/wiki/the-nomad-bears.html",
       "/wiki/waterfront-roamers.html",
       "/wiki/waterfront-samurai.html"
@@ -29930,12 +29978,14 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
       "/wiki/jamaican-bear.html",
       "/wiki/nomad-bears-mech.html",
+      "/wiki/police-bike.html",
       "/wiki/waterfront-roamers.html",
       "/wiki/waterfront-samurai.html"
     ]
@@ -30623,9 +30673,10 @@
     ]
   },
   "/wiki/st-patricks-day-bear.html": {
-    "outbound_count": 28,
-    "inbound_count": 1,
+    "outbound_count": 29,
+    "inbound_count": 2,
     "existing_outbound": [
+      "/wiki/camo-bear.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/jamaican-bear.html",
       "/wiki/police-bike.html",
@@ -30638,7 +30689,6 @@
       "/wiki/block-node-defenders.html",
       "/wiki/block-topia.html",
       "/wiki/burglar-bear.html",
-      "/wiki/camo-bear.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/gentleman-bear.html",
@@ -30654,10 +30704,12 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-nomad-bears-solitude-in-the-digital.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
+      "/wiki/green-electric-bot.html",
       "/wiki/waterfront-roamers.html"
     ]
   },
@@ -30894,7 +30946,7 @@
     "inbound_from": []
   },
   "/wiki/straight-outta-ghetto-bear.html": {
-    "outbound_count": 28,
+    "outbound_count": 29,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
@@ -30926,6 +30978,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -35865,7 +35918,7 @@
     ]
   },
   "/wiki/the-ninth-berth.html": {
-    "outbound_count": 33,
+    "outbound_count": 62,
     "inbound_count": 12,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -35881,15 +35934,42 @@
       "/wiki/zarah8.html"
     ],
     "suggested_outbound": [
+      "/wiki/allcity-bulls-mech.html",
       "/wiki/block-node-defenders.html",
+      "/wiki/blockchain-furies-mech.html",
+      "/wiki/blockstars-mech.html",
+      "/wiki/blue-electric-bot.html",
+      "/wiki/burglar-bear.html",
+      "/wiki/camo-bear.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/gentleman-bear.html",
       "/wiki/gk-factions-to-collect-and-hodl.html",
+      "/wiki/graff-bear.html",
+      "/wiki/graffiti-kings-mech.html",
+      "/wiki/graffiti-kings.html",
+      "/wiki/graffpunks-mech.html",
       "/wiki/graffpunks.html",
+      "/wiki/green-electric-bot.html",
+      "/wiki/hard-fork-rockers-mech.html",
+      "/wiki/hodl-wars-mech.html",
+      "/wiki/hodl-wars.html",
       "/wiki/it-was-about-becoming-something-more.html",
+      "/wiki/jamaican-bear.html",
       "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
       "/wiki/level-9-cosmological-overdrive-metaphysics.html",
+      "/wiki/moongirls-mech.html",
+      "/wiki/no-ball-games-mech.html",
+      "/wiki/nomad-bears-mech.html",
+      "/wiki/police-bike.html",
+      "/wiki/police-car.html",
+      "/wiki/police-robot.html",
+      "/wiki/posh-bear.html",
+      "/wiki/sailor-bear.html",
+      "/wiki/st-patricks-day-bear.html",
+      "/wiki/straight-outta-ghetto-bear.html",
+      "/wiki/the-allcity-bulls.html",
       "/wiki/the-artists-awakening-the-call-from.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-blockstars.html",
@@ -35902,7 +35982,9 @@
       "/wiki/the-nomad-bears.html",
       "/wiki/the-rugpull-miners.html",
       "/wiki/the-signal-from-3008.html",
-      "/wiki/waterfront-roamers.html"
+      "/wiki/walking-boombox.html",
+      "/wiki/waterfront-roamers.html",
+      "/wiki/waterfront-samurai.html"
     ],
     "inbound_from": [
       "/wiki/block-topia.html",
@@ -37936,7 +38018,7 @@
     ]
   },
   "/wiki/walking-boombox.html": {
-    "outbound_count": 25,
+    "outbound_count": 26,
     "inbound_count": 5,
     "existing_outbound": [
       "/wiki/blue-electric-bot.html",
@@ -37965,6 +38047,7 @@
       "/wiki/the-graffpunks-manifesto-the-era-of-the-unbuffable.html",
       "/wiki/the-graffpunks-rise.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -38112,7 +38195,7 @@
     ]
   },
   "/wiki/waterfront-samurai.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -38133,6 +38216,7 @@
       "/wiki/the-bonnet-prophecy-the-true-signal.html",
       "/wiki/the-flesh-fade-autopsy-of-the-zero.html",
       "/wiki/the-infiltration-of-block-topia-part.html",
+      "/wiki/the-ninth-berth.html",
       "/wiki/the-signal-from-3008.html"
     ],
     "inbound_from": [
@@ -38975,7 +39059,7 @@
   },
   "/wiki/zarah8.html": {
     "outbound_count": 22,
-    "inbound_count": 7,
+    "inbound_count": 8,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -39005,6 +39089,7 @@
     "inbound_from": [
       "/wiki/danny-rankz.html",
       "/wiki/eddie-stax.html",
+      "/wiki/moongirls-mech.html",
       "/wiki/nine-toes-joe.html",
       "/wiki/nobby.html",
       "/wiki/teddy-boi-jones.html",
