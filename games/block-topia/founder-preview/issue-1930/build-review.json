@@ -1,19 +1,29 @@
 {
   "issue": 1930,
-  "round": 16,
+  "round": 17,
   "research": "research incomplete",
   "review": {
-    "keyFindings": [
-      {
-        "type": "Navigation Risk",
-        "description": "The route [15,27,16,28,4,17,40,52,64,76,75,87,99] includes a potential navigation loop or dead-end. The path from 75 to 87 and then back to 76 might create confusion for players.",
-        "suggestion": "Review the route to ensure it leads to all districts without loops."
-      },
-      {
-        "type": "Visual Risk",
-        "description": "District 'Lumina’s Waterfront' contains a large empty space that could be visually uninteresting. The bottom rows are mostly empty, which might not engage players.",
-        "suggestion": "Consider adding more elements or activities in the lower sections of the district."
-      }
-    ]
+    "keyFindings": {
+      "visualRisks": [
+        {
+          "description": "The district layout includes water and roads that may not be clearly distinguishable.",
+          "details": "Water is represented by '#143950' and roads by '#667b8a', which have a similar color scheme. This could lead to confusion for players."
+        },
+        {
+          "description": "Some areas of the district are not well-defined, potentially leading to navigation issues.",
+          "details": "The layout contains long stretches of ground without clear landmarks or distinguishing features."
+        }
+      ],
+      "navigationRisks": [
+        {
+          "description": "Route markers may be too close together or too far apart, affecting player experience.",
+          "details": "The route includes points that are closely spaced (e.g., 15 to 16) and others that are more spread out (e.g., 76 to 87). This could make the path difficult to follow."
+        },
+        {
+          "description": "There may be missing or unclear directions for certain areas of the district.",
+          "details": "The layout does not provide clear visual cues for all areas, which can lead to disorientation when navigating through the district."
+        }
+      ]
+    }
   }
 }
