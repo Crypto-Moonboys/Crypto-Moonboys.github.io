@@ -202,7 +202,7 @@ export async function slowClanLeader(db, owner, faction, body, at) {
     }
     return receipt(prior);
   }
-  if (target === faction) return { error: 'rival_required', status: 403 };
+  if (paid && target === faction) return { error: 'rival_required', status: 403 };
 
   const time = utcSecond(at);
   const ends = time + (question ?? paid).minutes * 60;

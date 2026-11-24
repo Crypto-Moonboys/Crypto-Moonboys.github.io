@@ -1,5 +1,5 @@
 import { CLAN_REWARD_NAMES } from './clan-period-display.js';
-import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=4';
+import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=5';
 
 const board = document.querySelector('[data-clan-crew-progress]');
 const cards = board?.querySelector('[data-clan-crew-cards]');

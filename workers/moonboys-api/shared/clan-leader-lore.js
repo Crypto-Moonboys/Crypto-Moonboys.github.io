@@ -5,8 +5,8 @@ import { localClanCanonReply } from './clan-leader-canon-library.js';
 const SITE = 'https://cryptomoonboys.com';
 const MOONBOYS_OVERVIEW = { path: '/wiki/crypto-moonboys.html', title: 'Crypto Moonboys Wiki Overview' };
 const LORE_MODEL_TIMEOUT_MS = 20_000;
-const FREE_QUESTIONS = 10;
-const MAX_TASK_QUESTIONS = 3;
+const DAILY_CHAT_QUESTIONS = 10;
+const SITE_MODEL_BUDGET = 'site-model-budget';
 const UNKNOWN = 'I couldn’t verify that in the published Moonboys sources. Try a character, faction, place or story name.';
 const GREETINGS = {
   'all-city-bulls': 'Hey! You’ve got the Bulls. What do you want to know?',
@@ -305,30 +305,14 @@ function webSources(grounding) {
   }).slice(0, 4);
 }
 
-async function reserveQuestion(db, owner, utcDay, siteLimit) {
+async function reserveQuestion(db, owner, utcDay, limit) {
   return db.prepare(`
     INSERT INTO clan_leader_lore_usage (utc_day, telegram_id, questions)
-    SELECT ?1, ?2, 1 WHERE ?3 IS NULL OR (
-      SELECT COALESCE(SUM(questions), 0) FROM clan_leader_lore_usage WHERE utc_day = ?1
-    ) < ?3
+    VALUES (?1, ?2, 1)
     ON CONFLICT (utc_day, telegram_id) DO UPDATE SET questions = questions + 1
-    WHERE questions < ?4 + (
-      SELECT MIN(COUNT(*), ?5) FROM clan_operation_awards WHERE telegram_id = ?2 AND utc_day = ?1
-    )
+    WHERE questions < ?3
     RETURNING questions
-  `).bind(utcDay, owner, siteLimit, FREE_QUESTIONS, MAX_TASK_QUESTIONS).first();
-}
-
-async function questionLimitError(db, owner, utcDay) {
-  const { used, earned } = await db.prepare(`
-    SELECT COALESCE((
-      SELECT questions FROM clan_leader_lore_usage WHERE utc_day = ?1 AND telegram_id = ?2
-    ), 0) AS used, (
-      SELECT MIN(COUNT(*), ?3) FROM clan_operation_awards WHERE utc_day = ?1 AND telegram_id = ?2
-    ) AS earned
-  `).bind(utcDay, owner, MAX_TASK_QUESTIONS).first();
-  if (used < FREE_QUESTIONS + earned) return 'lore_site_limit';
-  return earned === MAX_TASK_QUESTIONS ? 'lore_daily_limit' : 'lore_task_required';
+  `).bind(utcDay, owner, limit).first();
 }
 
 function factionSources(npc, leader) {
@@ -348,12 +332,12 @@ const LOCAL_REPLIES = [
   [/^(?:where are we|where am i|what (?:place|map) is this|what is the waterfront)$/, 'You’re on Lumina’s Waterfront in Block Topia. The streets connect the docks, parks and faction hangouts.'],
   [/^(?:how do i|how can i|can i) (?:join|pick|choose) (?:a |your )?(?:clan|faction)$/, 'Open Battle Chamber on the Community page and choose your faction there.'],
   [/^(?:where is|where s|how do i find) (?:the )?(?:battle chamber|community page)$/, 'You’ll find Battle Chamber on the Community page.'],
-  [/^(?:how do i|how can i|can i) (?:slow|pause|distract)(?: down)? (?:a |the )?(?:rival |clan |faction )?(?:leader|npc|bot)$/, 'Ask a rival leader a slowdown question. The free options last 5, 10 or 20 minutes, and you can use one per UTC day.'],
-  [/^(?:how long (?:does|is) (?:a |the )?(?:slowdown|pause)(?: last)?|what (?:are|s) (?:the )?slowdown (?:options|times))$/, 'Free slowdown questions pause a rival for 5, 10 or 20 minutes. Paid options run for one hour or 24 hours.'],
+  [/^(?:how do i|how can i|can i) (?:slow|pause|distract)(?: down)? (?:a |the )?(?:rival |clan |faction )?(?:leader|npc|bot)$/, 'Ask any faction leader a slowdown question. The free options last 5, 10 or 20 minutes, and you can use one per UTC day.'],
+  [/^(?:how long (?:does|is) (?:a |the )?(?:slowdown|pause)(?: last)?|what (?:are|s) (?:the )?slowdown (?:options|times))$/, 'Free slowdown questions pause a leader for 5, 10 or 20 minutes. Paid options run for one hour or 24 hours.'],
   [/^(?:can (?:we|i) stack (?:slowdowns|pauses)|do (?:slowdowns|pauses) stack|how long is (?:the )?(?:free slowdown )?(?:cooldown|recovery))$/, 'A leader can have only one slowdown at a time. A free talk leaves one hour of recovery after the pause ends.'],
   [/^(?:when (?:does|do) (?:my |the )?(?:free )?(?:slowdown|slowdowns|slowdown questions?) reset|how many free slowdown questions (?:do i get|can i ask))$/, 'You get one free slowdown question per UTC day. It resets at midnight UTC.'],
-  [/^(?:why (?:do|did) (?:the )?(?:leaders|npcs) leave the map|where (?:do|did) (?:the )?(?:leaders|npcs) go|how long (?:are you|are leaders) away)$/, 'Leaders step away for scheduled five-minute game slots and return afterwards. An active slowdown keeps a rival on the map.'],
-  [/^(?:how many (?:chat |lore )?questions (?:do i get|can i ask)|what is (?:my |the )?(?:chat|lore) limit)$/, 'You get 10 free lore questions per UTC day. Bank Clan Operation tiers today to unlock up to three more.'],
+  [/^(?:why (?:do|did) (?:the )?(?:leaders|npcs) leave the map|where (?:do|did) (?:the )?(?:leaders|npcs) go|how long (?:are you|are leaders) away)$/, 'Leaders step away for scheduled five-minute game slots and return afterwards. An active slowdown keeps a leader on the map.'],
+  [/^(?:how many (?:chat |lore )?questions (?:do i get|can i ask)|what is (?:my |the )?(?:chat|lore) limit)$/, 'You get 10 chat questions total across all faction leaders per UTC day, plus one free slowdown.'],
   [/^(?:thanks|thank you|cheers|much appreciated)(?: mate| friend)?$/, 'Anytime. See you on the Waterfront.'],
   [/^(?:bye|goodbye|see you|see ya|later)(?: mate| friend)?$/, 'Take care out there.'],
   [/^(?:what can you do|what can i ask|how does (?:this |npc )?chat work)$/, 'Ask me about Moonboys lore, talk about whatever’s on your mind, or ask me to imagine a new story.'],
@@ -368,11 +352,6 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
   if (!Object.hasOwn(LEADERS, npc) || !question || question.length > 600) {
     return { error: 'invalid_lore_question', status: 400 };
   }
-  if (/^(?:hi|hello|hey|hiya|yo|howdy|greetings|good (?:morning|afternoon|evening))(?: there)?$/.test(normal(question))) {
-    return { ok: true, reply: GREETINGS[npc], sources: [] };
-  }
-  const leader = LEADERS[npc];
-  const normalized = normal(question);
   const slowdown = matchClanLeaderSlowdownQuestion(question);
   if (slowdown && applyTalk) {
     const result = await applyTalk(npc, slowdown.id);
@@ -381,15 +360,38 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
         sources: [], paused_until: result.paused_until };
     }
     const notices = {
-      join_faction: 'Join a faction to use a rival slowdown.',
-      rival_required: 'Only a rival leader can be slowed down.',
+      join_faction: 'Join a faction to use your free slowdown.',
       daily_question_used: 'Your free slowdown is used for this UTC day.',
       leader_unavailable: 'This leader is already paused or recovering.',
       leader_play_closed: 'Leader slowdowns are currently closed.',
     };
     const notice = notices[result.error];
-    if (notice) return { ok: true, reply: slowdown.answer + ' ' + notice, sources: [] };
+    if (notice) return { ok: true, reply: notice, sources: [] };
     return result;
+  }
+  const day = now.toISOString().slice(0, 10);
+  if (!await reserveQuestion(env.DB, owner, day, DAILY_CHAT_QUESTIONS)) {
+    return { error: 'lore_daily_limit', status: 429 };
+  }
+  const history = Array.isArray(body.recent_turns) ? body.recent_turns : body.previous;
+  let accepted = false;
+  try {
+    const answer = await answerChat(env, npc, question, history, day, gemini, endpoint);
+    accepted = answer?.ok === true;
+    return answer ?? { ok: true, reply: UNKNOWN, sources: [] };
+  } finally {
+    if (!accepted) {
+      try { await releaseQuestion(env.DB, owner, day); }
+      catch { console.error('Clan leader chat quota release failed'); }
+    }
+  }
+}
+
+async function answerChat(env, npc, question, history, day, gemini, endpoint) {
+  const leader = LEADERS[npc];
+  const normalized = normal(question);
+  if (/^(?:hi|hello|hey|hiya|yo|howdy|greetings|good (?:morning|afternoon|evening))(?: there)?$/.test(normalized)) {
+    return { ok: true, reply: GREETINGS[npc], sources: [] };
   }
   if (identityQuestion.test(normalized)) {
     return { ok: true, reply: `I’m ${leader.character}, the ${leader.callSign} here on the Waterfront. ${leader.intro}`,
@@ -407,7 +409,6 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
   if (local) return { ok: true, reply: local, sources: [] };
   const canonReply = localClanCanonReply(normalized);
   if (canonReply) return canonReply;
-  const history = Array.isArray(body.recent_turns) ? body.recent_turns : body.previous;
   const recentTurns = (Array.isArray(history) ? history.slice(-2) : []).flatMap(turn => {
     const prompt = typeof turn === 'string' ? turn : turn?.question;
     if (typeof prompt !== 'string' || !prompt.trim()) return [];
@@ -469,11 +470,11 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
       publicReferences: excerpts.map(({ title, excerpt }, index) => ({ id: index + 1, title, excerpt })),
     }) },
   ];
-  const day = now.toISOString().slice(0, 10);
   const configuredLimit = Number(env.CLAN_LEADER_LORE_SITE_LIMIT);
   const siteLimit = Number.isSafeInteger(configuredLimit) && configuredLimit > 0 ? configuredLimit : gemini ? 100 : null;
-  if (!await reserveQuestion(env.DB, owner, day, siteLimit)) {
-    return { error: await questionLimitError(env.DB, owner, day), status: 429 };
+  // The site budget covers provider calls only and uses a key outside Telegram IDs.
+  if (siteLimit !== null && !await reserveQuestion(env.DB, SITE_MODEL_BUDGET, day, siteLimit)) {
+    return { error: 'lore_site_limit', status: 429 };
   }
   const search = gemini && env.CLAN_LEADER_GEMINI_SEARCH !== 'false' &&
     /^gemini-[34]\./.test(env.CLAN_LEADER_GEMINI_MODEL?.trim() || 'gemini-3.8-flash');
@@ -494,7 +495,7 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
     if (!reply || !['chat', 'canon', 'fiction'].includes(mode) || reply.length > (gemini ? 4000 : 1500) ||
         ((mode === 'canon' || overview) && (mode !== 'canon' || !ids.length)) || ids.some(id => !Number.isInteger(id) || id < 1 || id > excerpts.length) ||
         EDITORIAL_REFERENCE.test(reply) || UNPUBLISHED_OUTCOME.test(reply) || /https?:\/\//i.test(reply)) {
-      return { ok: true, reply: UNKNOWN, sources: [] };
+      return null;
     }
     const visibleReply = mode === 'fiction' ? 'Non-canon fiction\n\n' + reply : reply;
     const answer = { ok: true, reply: visibleReply, sources: ids.slice(0, 4).map(id => {
@@ -508,10 +509,6 @@ export async function answerClanLeaderLore(env, owner, body, now, applyTalk) {
     return answer;
   } finally {
     if (gemini) {
-      if (!accepted) {
-        try { await releaseQuestion(env.DB, owner, day); }
-        catch { console.error('Clan leader Gemini quota release failed'); }
-      }
       const usage = generated?.usage;
       console.info('Clan leader Gemini result', {
         accepted, duration_ms: Date.now() - started, search,

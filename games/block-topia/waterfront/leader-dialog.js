@@ -1,7 +1,7 @@
 import { LEADERS } from '/js/waterfront-faction-identities.mjs?v=2';
 import {
   clanLeaderQuestionError, clanLeaderSourceLinks, getClanLeaderBoard, mountClanLeaderDialog, sendClanLeaderQuestion,
-} from '/js/clan-leader-dialog.js?lore=4';
+} from '/js/clan-leader-dialog.js?lore=5';
 
 const names = new Map(Object.entries(LEADERS).map(([id, profile]) => [id, profile.character]));
 const keys = Array.from(names.keys());
@@ -25,7 +25,7 @@ details.innerHTML = `
   <p><span data-role></span> <span data-activity></span></p>
   <a data-character-page>Character wiki</a>
   <button type="button" data-ask>Ask a question</button>
-  <button type="button" data-slow>Rival slowdowns</button>`;
+  <button type="button" data-slow>Leader slowdowns</button>`;
 
 const questionBox = document.createElement('dialog');
 questionBox.className = 'clan-leader-dialog';
@@ -35,7 +35,7 @@ questionBox.innerHTML = `
   <form>
     <p><a data-character-page>Character wiki</a></p>
     <label>Question <textarea rows="3" maxlength="600" required></textarea></label>
-    <p>10 free questions per UTC day. Each Clan Operation tier banked today earns one more.</p>
+    <p>10 chat questions total across all faction leaders per UTC day, plus one free slowdown.</p>
     <button type="submit">Send</button>
     <button type="button" data-cancel>Cancel</button>
   </form>`;
@@ -119,8 +119,8 @@ function positionBubble() {
   bubble.style.top = Math.round(Math.max(bubble.offsetHeight + 5, y - parent.top - 8)) + 'px';
 }
 
-function showSpeech(key, text, sources = [], error, suggestions) {
-  reply = { key, text, sources, error, suggestions };
+function showSpeech(key, text, sources = [], suggestions) {
+  reply = { key, text, sources, suggestions };
   const clipped = text.length > 145;
   const cut = text.slice(0, 140);
   const short = clipped ? (cut.replace(/\s+\S*$/u, '') || cut) + '…' : text;
@@ -128,7 +128,7 @@ function showSpeech(key, text, sources = [], error, suggestions) {
   profileLink.href = LEADERS[key].bio;
   profileLink.textContent = names.get(key);
   bubble.querySelector('[data-speech]').textContent = short;
-  bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || suggestions || error === 'lore_task_required');
+  bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || suggestions);
   announcement.textContent = names.get(key) + ': ' + text;
   positionBubble();
 }
@@ -196,8 +196,8 @@ questionBox.querySelector('form').addEventListener('submit', async event => {
   if (result.ok) histories.set(historyKey, [...previous, { question, reply: result.reply }].slice(-2));
   if (ticket !== sequence) return;
   mapViewport.removeAttribute('data-leader-question-pending');
-  if (result.ok) showSpeech(key, result.reply, result.sources, undefined, result.search_suggestions);
-  else showSpeech(key, clanLeaderQuestionError(result.error), [], result.error);
+  if (result.ok) showSpeech(key, result.reply, result.sources, result.search_suggestions);
+  else showSpeech(key, clanLeaderQuestionError(result.error));
 });
 bubble.querySelector('[data-dismiss]').addEventListener('click', () => {
   sequence++;
@@ -214,12 +214,6 @@ bubble.querySelector('[data-more]').addEventListener('click', () => {
   text.textContent = reply.text;
   full.replaceChildren(text);
   if (reply.sources.length || reply.suggestions) full.append(clanLeaderSourceLinks(reply.sources, reply.suggestions));
-  if (reply.error === 'lore_task_required') {
-    const link = document.createElement('a');
-    link.href = '/community.html#clan-operation-title';
-    link.textContent = 'Open Clan Operations';
-    full.append(link);
-  }
   replyBox.showModal();
 });
 

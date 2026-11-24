@@ -2515,7 +2515,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     await full.getByRole('button', { name: 'Close full reply' }).click();
     await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
 
-    await details.getByRole('button', { name: 'Rival slowdowns' }).click();
+    await details.getByRole('button', { name: 'Leader slowdowns' }).click();
     const slowdown = page.getByRole('dialog', { name: 'Nine Toes Joe', exact: true });
     await slowdown.getByRole('button', { name: /defend first\? · 10 min/ }).click();
     await slowdown.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
