@@ -1,29 +1,32 @@
 {
   "issue": 1930,
-  "round": 17,
+  "round": 18,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "description": "The district layout includes water and roads that may not be clearly distinguishable.",
-          "details": "Water is represented by '#143950' and roads by '#667b8a', which have a similar color scheme. This could lead to confusion for players."
-        },
-        {
-          "description": "Some areas of the district are not well-defined, potentially leading to navigation issues.",
-          "details": "The layout contains long stretches of ground without clear landmarks or distinguishing features."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "description": "Route markers may be too close together or too far apart, affecting player experience.",
-          "details": "The route includes points that are closely spaced (e.g., 15 to 16) and others that are more spread out (e.g., 76 to 87). This could make the path difficult to follow."
-        },
-        {
-          "description": "There may be missing or unclear directions for certain areas of the district.",
-          "details": "The layout does not provide clear visual cues for all areas, which can lead to disorientation when navigating through the district."
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Visual Risk",
+        "description": "The district layout contains a potential navigation issue. The route path does not follow the water bodies or roads consistently, which might confuse players.",
+        "affectedAreas": [
+          4,
+          17,
+          28,
+          3,
+          52,
+          64,
+          76,
+          99
+        ],
+        "suggestion": "Ensure that the route follows the road and water features more logically."
+      },
+      {
+        "type": "Navigation Risk",
+        "description": "The route path includes some cells that do not seem to be roads or part of a navigable path. This could lead to player frustration.",
+        "affectedCells": [
+          "...rr......."
+        ],
+        "suggestion": "Verify all cells in the route are valid and accessible."
+      }
+    ]
   }
 }
