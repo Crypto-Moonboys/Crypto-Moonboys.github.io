@@ -1,6 +1,10 @@
 // Resolve atlas URLs from this script so it can render on the comparison route too.
-const zcashHarborFortress = { file: "zcash-fortress-overhead.webp?v=1" };
-const zcashHarborProfile = { name: "Zcash Mining Fortress", role: "Cooling fans and reactors online" };
+const harborMiningSites = [
+  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=1" },
+    profile: { name: "Zcash Mining Fortress", role: "Cooling fans and reactors online" } },
+  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=1" },
+    profile: { name: "WAX Bee Node", role: "Honeycomb circuits online" } },
+];
 const waterfrontAtlasBase = new URL("assets/atlases/", document.currentScript?.src || document.baseURI);
 
 const muralPasses = [
@@ -1660,19 +1664,18 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
   loadDetailedAtlas(waterfrontDetailedBots, "low", repaintArt);
   drawFactionWalkers();
   if (district.natureIsland) drawHarborLandfall(ctx, rows, size, time, visible, repaintArt, queue, inspection);
-  // The West Meadow keeps the fortress off streets, paths and dock tiles.
-  const col = 16, row = 21;
-  if (district.natureIsland && rows[row]?.[col] === "." &&
-      (!visible || (col + 2 >= visible.left && col - 2 < visible.right &&
-        row + 1 >= visible.top && row - 4 < visible.bottom))) {
-    loadDetailedAtlas(zcashHarborFortress, "low", repaintArt);
-    if (zcashHarborFortress.image) {
-      const scale = size / 64;
-      const x = (col + .5) * size, y = (row + .75) * size;
-      const frame = time === null ? 0 : Math.floor(time * 12) % 12;
-      queue(y, () => drawHarborCreature(ctx, zcashHarborFortress, frame % 4, Math.floor(frame / 4),
-        224, 280, x - 112 * scale, y - 233 * scale, scale, inspection, "zcash-fortress", zcashHarborProfile));
-    }
+  // The West Meadow keeps the mining buildings off streets and paths.
+  if (district.natureIsland) for (const { id, col, row, atlas, profile } of harborMiningSites) {
+    if (rows[row]?.[col] !== ".") continue;
+    if (visible && (col + 2 < visible.left || col - 2 >= visible.right ||
+        row + 1 < visible.top || row - 4 >= visible.bottom)) continue;
+    loadDetailedAtlas(atlas, "low", repaintArt);
+    if (!atlas.image) continue;
+    const scale = size / 64;
+    const x = (col + .5) * size, y = (row + .75) * size;
+    const frame = time === null ? 0 : Math.floor(time * 12) % 12;
+    queue(y, () => drawHarborCreature(ctx, atlas, frame % 4, Math.floor(frame / 4),
+      224, 280, x - 112 * scale, y - 233 * scale, scale, inspection, id, profile));
   }
   queue(player.y * size + 22, actor);
   objects.sort((a, b) => a.depth - b.depth).forEach(({ draw }) => draw());

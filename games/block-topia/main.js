@@ -843,6 +843,8 @@ function render() {
   if (drawFortress) {
     const [x, y] = tileToScreen(3, 2);
     drawFortress(ctx, x, y + TILE_HEIGHT * cameraScale / 2, cameraScale);
+    const [beeX, beeY] = tileToScreen(7, 2);
+    drawFortress(ctx, beeX, beeY + TILE_HEIGHT * cameraScale / 2, cameraScale, "wax");
   }
   drawNpcs();
   drawPlayers();

@@ -1,5 +1,5 @@
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=3';
-import { drawZcashFortress, fortressSize, loadZcashFortress } from '../../zcash-fortress.mjs';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=4';
+import { drawZcashFortress, fortressSize, loadZcashFortress } from '../../zcash-fortress.mjs?v=2';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('view');
@@ -15,7 +15,10 @@ const atlas = file => {
   return image;
 };
 const buildings = atlas('hk-night.png');
-const fortress = mode === 'node-city' || mode === 'survival' ? loadZcashFortress() : null;
+const isIso = mode === 'node-city' || mode === 'survival';
+const fortress = isIso ? loadZcashFortress() : null;
+const waxBee = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
+  ? './hodl-wars-lores/assets/wax-bee.webp' : './assets/miners/wax-bee-iso.webp');
 const people = atlas('factions-detail.webp');
 const viewport = {width:0,height:0};
 const camera = {x:0,y:0,zoom:1};
@@ -61,8 +64,12 @@ try {
     ...item, ...spot(scene.walkable, scene.start.map((value,i) => value+item.offset[i]), occupied),
   }));
   if (fortress) items.push({
-    name: 'Zcash Mining Fortress', fortress: true,
+    name: 'Zcash Mining Fortress', fortress,
     ...spot(scene.walkable, [scene.start[0]-1, scene.start[1]-5], occupied),
+  });
+  if (waxBee) items.push({
+    name: 'WAX Bee Node', fortress: waxBee,
+    ...spot(scene.walkable, [scene.start[0]+4, scene.start[1]+3], occupied),
   });
   const blocked = new Set(items.filter(item => item.rect || item.fortress).map(item => `${item.x},${item.y}`));
   const canWalk = (x,y) => scene.walkable(x,y) && !blocked.has(`${x},${y}`);
@@ -121,11 +128,11 @@ try {
       let w = 34, h = 34;
       let top = y - h, bottom = y;
       if (object.fortress) {
-        if (!fortress.naturalWidth) continue;
+        if (!object.fortress.naturalWidth) continue;
         w = fortressSize.width;
         top = y - fortressSize.anchorY;
         bottom = top + fortressSize.height;
-        drawZcashFortress(surface, fortress, x, y, 1, time);
+        drawZcashFortress(surface, object.fortress, x, y, 1, time);
       } else if (object.rect) {
         const [sx,sy,sw,sh] = object.rect;
         w = object.width;

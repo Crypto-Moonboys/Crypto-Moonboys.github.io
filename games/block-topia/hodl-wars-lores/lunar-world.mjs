@@ -2,7 +2,12 @@ export const tile = 32;
 export const width = 72;
 export const height = 68;
 export const spawn = { x: 24, y: 23 };
-export const fortress = { x: 28, y: 20, name: 'Zcash Mining Fortress' };
+export const miningSites = [
+  { x: 28, y: 20, name: 'Zcash Mining Fortress', file: 'zcash-fortress.webp', anchorY: 247,
+    info: 'Mining rigs are online. Four cooling fans vent heat from the gold-lit reactor stacks.' },
+  { x: 22, y: 26, name: 'WAX Bee Node', file: 'wax-bee.webp', anchorY: 234,
+    info: 'The honeycomb circuits pulse as the node synchronizes.' },
+];
 
 export const stations = [
   { x: 24, y: 23, name: 'Landing Pad', log: 'The last lift left with six empty seats. The manifest still charges all six passengers for the trip.' },
@@ -28,7 +33,7 @@ export function onMoon(x, y) {
 }
 
 export function walkable(x, y) {
-  return onMoon(x, y) && (Math.abs(x - fortress.x) > 1 || Math.abs(y - fortress.y) > 1);
+  return onMoon(x, y) && !miningSites.some(site => Math.abs(x - site.x) <= 1 && Math.abs(y - site.y) <= 1);
 }
 
 export function route(start, end) {
