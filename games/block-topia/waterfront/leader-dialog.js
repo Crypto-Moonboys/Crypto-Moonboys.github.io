@@ -103,7 +103,10 @@ function openQuestion(key) {
 
 function positionBubble() {
   if (!reply) return;
-  const hit = factionHits.find(actor => keys[actor.index] === reply.key);
+  const index = keys.indexOf(reply.key);
+  const hit = index === selectedAvatar
+    ? { x: player.x * tileSize + 16, y: player.y * tileSize + 22 }
+    : factionHits.find(actor => actor.index === index);
   if (!hit) { bubble.hidden = true; return; }
   const gameBounds = map.getBoundingClientRect();
   const frame = mapScroller.getBoundingClientRect();
