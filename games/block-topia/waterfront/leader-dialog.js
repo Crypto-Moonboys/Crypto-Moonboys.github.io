@@ -1,7 +1,7 @@
 import { LEADERS } from '/js/waterfront-faction-identities.mjs?v=2';
 import {
   clanLeaderQuestionError, clanLeaderSourceLinks, getClanLeaderBoard, mountClanLeaderDialog, sendClanLeaderQuestion,
-} from '/js/clan-leader-dialog.js?lore=3';
+} from '/js/clan-leader-dialog.js?lore=4';
 
 const names = new Map(Object.entries(LEADERS).map(([id, profile]) => [id, profile.character]));
 const keys = Array.from(names.keys());
@@ -119,8 +119,8 @@ function positionBubble() {
   bubble.style.top = Math.round(Math.max(bubble.offsetHeight + 5, y - parent.top - 8)) + 'px';
 }
 
-function showSpeech(key, text, sources = [], error) {
-  reply = { key, text, sources, error };
+function showSpeech(key, text, sources = [], error, suggestions) {
+  reply = { key, text, sources, error, suggestions };
   const clipped = text.length > 145;
   const cut = text.slice(0, 140);
   const short = clipped ? (cut.replace(/\s+\S*$/u, '') || cut) + '…' : text;
@@ -128,7 +128,7 @@ function showSpeech(key, text, sources = [], error) {
   profileLink.href = LEADERS[key].bio;
   profileLink.textContent = names.get(key);
   bubble.querySelector('[data-speech]').textContent = short;
-  bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || error === 'lore_task_required');
+  bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || suggestions || error === 'lore_task_required');
   announcement.textContent = names.get(key) + ': ' + text;
   positionBubble();
 }
@@ -196,7 +196,7 @@ questionBox.querySelector('form').addEventListener('submit', async event => {
   if (result.ok) histories.set(historyKey, [...previous, { question, reply: result.reply }].slice(-2));
   if (ticket !== sequence) return;
   mapViewport.removeAttribute('data-leader-question-pending');
-  if (result.ok) showSpeech(key, result.reply, result.sources);
+  if (result.ok) showSpeech(key, result.reply, result.sources, undefined, result.search_suggestions);
   else showSpeech(key, clanLeaderQuestionError(result.error), [], result.error);
 });
 bubble.querySelector('[data-dismiss]').addEventListener('click', () => {
@@ -213,7 +213,7 @@ bubble.querySelector('[data-more]').addEventListener('click', () => {
   const text = document.createElement('p');
   text.textContent = reply.text;
   full.replaceChildren(text);
-  if (reply.sources.length) full.append(clanLeaderSourceLinks(reply.sources));
+  if (reply.sources.length || reply.suggestions) full.append(clanLeaderSourceLinks(reply.sources, reply.suggestions));
   if (reply.error === 'lore_task_required') {
     const link = document.createElement('a');
     link.href = '/community.html#clan-operation-title';
