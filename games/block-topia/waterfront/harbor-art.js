@@ -113,7 +113,7 @@ const waterfrontRoamers = [
     ["delicious-again-peter", "Delicious Again Peter", 36],
     ["dude-got-game", "Dude Got Game", 35],
   ] },
-  { file: "roamers-guest-mascots.webp", cell: roamingAtlasCell, guest: true, cast: [
+  { file: "roamers-guest-mascots.webp?v=2", cell: roamingAtlasCell, guest: true, cast: [
     ["gregz-robot-chef", "GREGZ Robot Chef", 36],
     ["graffiti-kings-crowned-robot", "Graffiti Kings Crowned Robot", 38],
     ["mypetspace-mascot", "Mypetspace Mascot", 34],

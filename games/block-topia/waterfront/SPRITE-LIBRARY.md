@@ -63,7 +63,7 @@ The 24 additional guests use sheets supplied or generated in GK’s Waterfront s
 | [roamers-guest-street.webp](assets/atlases/roamers-guest-street.webp) | Police Captain (`50aba9af`), Riot Cop (`7e7dde5c`), Shamrock Cat (`cd2ba4be`), Basketball Cat (`7bdb3c68`) |
 | [roamers-guest-night.webp](assets/atlases/roamers-guest-night.webp) | Red Mask Cat (`57b98a72`), GK Niftyhead (`773aad35`), Joker (`71f5d1d3`), Higher Purpose (`19869d73`) |
 | [roamers-guest-artists.webp](assets/atlases/roamers-guest-artists.webp) | Charlie Buster (`016e6c5f`), Bone Idol Ink (`448135aa`), Delicious Again Peter (`562f7167`), Dude Got Game (`28f9fbd0`) |
-| [roamers-guest-mascots.webp](assets/atlases/roamers-guest-mascots.webp) | GREGZ Robot Chef (`0be4df7e`), Graffiti Kings Crowned Robot (`3949153f`), Mypetspace Mascot (`40ff3bb1`), Sticker Bot (`f2e92ac0`) |
+| [roamers-guest-mascots.webp](assets/atlases/roamers-guest-mascots.webp) | GREGZ Robot Chef (`0be4df7e`), Graffiti Kings Crowned Robot (`0ec0b565`), Mypetspace Mascot (`40ff3bb1`), Sticker Bot (`f2e92ac0`) |
 | [roamers-guest-pets.webp](assets/atlases/roamers-guest-pets.webp) | Wuffi (`caa541de`), Wuffi’s Companion (`3a034f64`), Laughing Rat (`a886db60`), Bratty (`bb482b4a`) |
 | [roamers-guest-curios.webp](assets/atlases/roamers-guest-curios.webp) | WAX Builder (`2aa55eaa`), Muscle Mascot (`84942711`), Gold-Winged Eyeball (`fea4de8d`), Purple-Winged Eyeball (`a7d01cb5`) |
 
