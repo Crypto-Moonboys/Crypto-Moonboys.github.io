@@ -651,6 +651,21 @@
         "wiki"
       ]
     },
+    "chada_boi": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Chada Boi",
+      "canonical_url": "/wiki/chada-boi.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/chada-boi.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "chada",
+        "boi"
+      ]
+    },
     "charlie_buster": {
       "alias_candidates": [
         "charlie buster"
@@ -883,6 +898,21 @@
         "moonboys"
       ]
     },
+    "danny_rankz": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Danny Rankz",
+      "canonical_url": "/wiki/danny-rankz.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/danny-rankz.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "danny",
+        "rankz"
+      ]
+    },
     "darren_cullen": {
       "alias_candidates": [],
       "aliases": [
@@ -1022,6 +1052,21 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "eddie_stax": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Eddie Stax",
+      "canonical_url": "/wiki/eddie-stax.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/eddie-stax.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "eddie",
+        "stax"
       ]
     },
     "elder_codex_7": {
@@ -9194,6 +9239,23 @@
         "moonboys"
       ]
     },
+    "jack_the_bull": {
+      "alias_candidates": [],
+      "aliases": [
+        "jack bull"
+      ],
+      "canonical_title": "Jack the Bull",
+      "canonical_url": "/wiki/jack-the-bull.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/jack-the-bull.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "jack",
+        "bull"
+      ]
+    },
     "jillian_godsil": {
       "alias_candidates": [],
       "aliases": [
@@ -9212,6 +9274,21 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "jimmy_rugpull": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Jimmy Rugpull",
+      "canonical_url": "/wiki/jimmy-rugpull.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/jimmy-rugpull.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "jimmy",
+        "rugpull"
       ]
     },
     "jodie_zoom_2000": {
@@ -9908,6 +9985,22 @@
         "wiki"
       ]
     },
+    "nine_toes_joe": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Nine Toes Joe",
+      "canonical_url": "/wiki/nine-toes-joe.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/nine-toes-joe.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "nine",
+        "toes",
+        "joe"
+      ]
+    },
     "noballgamess_nft_collection": {
       "alias_candidates": [],
       "aliases": [
@@ -9928,6 +10021,20 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "nobby": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Nobby",
+      "canonical_url": "/wiki/nobby.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/nobby.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "nobby"
       ]
     },
     "null_the_prophet": {
@@ -10797,6 +10904,22 @@
         "crypto",
         "moonboys",
         "wiki"
+      ]
+    },
+    "teddy_boi_jones": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "Teddy Boi Jones",
+      "canonical_url": "/wiki/teddy-boi-jones.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/teddy-boi-jones.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "teddy",
+        "boi",
+        "jones"
       ]
     },
     "the_28th_century_began_with_godlike": {
@@ -12320,6 +12443,23 @@
         "wiki"
       ]
     },
+    "the_ninth_berth": {
+      "alias_candidates": [],
+      "aliases": [
+        "Ninth Berth"
+      ],
+      "canonical_title": "The Ninth Berth",
+      "canonical_url": "/wiki/the-ninth-berth.html",
+      "category": "concepts",
+      "source_urls": [
+        "/wiki/the-ninth-berth.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "ninth",
+        "berth"
+      ]
+    },
     "the_nomad_bears": {
       "alias_candidates": [
         "nomad bears crypto moonboys wiki"
@@ -13340,7 +13480,21 @@
         "crypto",
         "moonboys"
       ]
+    },
+    "zarah8": {
+      "alias_candidates": [],
+      "aliases": [],
+      "canonical_title": "ZARAH8",
+      "canonical_url": "/wiki/zarah8.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/zarah8.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "zarah8"
+      ]
     }
   },
-  "updated_at": "2026-11-18T20:32:07Z"
+  "updated_at": "2026-11-24T01:10:37Z"
 }

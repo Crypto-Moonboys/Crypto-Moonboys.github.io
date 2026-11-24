@@ -12,6 +12,12 @@ snapshot created before changes and remote backup verified.
 Working branch: `codex/sandbox-issue-1458-20261008-090000`.
 No direct push to main, merge, issue closure or production deployment.
 
+## Lumina’s Waterfront character series — 24 November 2026
+
+GK assigned nine original NPC identities and requested their biographies. The ten new wiki routes cover ZARAH8, Eddie Stax, Chada Boi, Nobby, Jimmy Rugpull, Danny Rankz, Teddy Boi Jones, Jack the Bull, Nine Toes Joe and their shared Ninth Berth story. The faction pages and the Waterfront chat persona table supplied the setting and character motivations. The names, local histories, jobs, relationships and double-tide incident are authored Year 3008 fiction. The nine roles operate at the district level. The current political count, market protection and Block Topia command decisions continue to govern the surrounding world.
+
+The static route check found all ten pages in the Lore directory, search index, graph and sitemap, and verified the faction or city backlinks and article fragments. The Pages artifact contains all ten routes in the compact search and Waterfront lore source inventory. Wiki structure, the canon guard and the SEO metadata checks passed. The site-wide shell parity check reports the founder-preview shell omission already present on main. The site-wide graph parity check reports the same seven absent non-wiki routes as main. PR checks record the final branch verification and remaining review.
+
 ## Approved final implementation — 9 October 2026
 
 Base: `e393177b07793d992e883a8073ad416a2e65f84e` (merged #1460). Backup: `backup/gk-final-decisions-base-20261009`. Working branch: `codex/gk-final-decisions-20261009`. [Exact GK approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).
