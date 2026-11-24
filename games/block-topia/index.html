@@ -411,7 +411,7 @@
         // Dynamic imports — main.js and network.js are only loaded after the
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
-        await import("./main.js");
+        await import("./main.js?v=zcash-1");
         const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady, sendRestartRun, sendChooseUpgrade } = await import("./network.js?v=20260929-colyseus17");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
@@ -419,7 +419,17 @@
         if (!api || typeof api.mount !== "function") {
           throw new Error("BlockTopiaMap API unavailable after import");
         }
-        api.mount(mountOptions);
+        // The fortress sits on an existing blocked tile. Keep it independent of match state.
+        const { drawZcashFortress, loadZcashFortress } = await import("./zcash-fortress.mjs");
+        const fortressImage = loadZcashFortress();
+        const fortressMotion = matchMedia('(prefers-reduced-motion: reduce)');
+        api.mount({
+          ...mountOptions,
+          drawFortress(ctx, x, y, zoom) {
+            if (fortressImage.naturalWidth) drawZcashFortress(ctx, fortressImage, x, y, zoom,
+              fortressMotion.matches ? null : performance.now() / 1000);
+          },
+        });
         keepCompatMountHidden();
         api.pushFeedback?.("Survive the patrol and hold the city line.");
         api.setInputEnabled?.(false);
