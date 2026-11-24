@@ -149,6 +149,30 @@ function clearSelection() {
   details.hidden = true;
 }
 
+const presenceNotices = document.querySelector('#leader-presence-notices');
+const lastPlaying = new Map();
+const activeNotices = new Map();
+
+function updatePresenceNotices(now) {
+  if (!window.waterfrontAccess.canPlay()) return;
+  for (const [index, key] of keys.entries()) {
+    if (!lookup(key)?.presence) continue;
+    const playing = leaderStates[index].playingUntil > now;
+    const previous = lastPlaying.get(key);
+    lastPlaying.set(key, playing);
+    if (previous === undefined || previous === playing) continue;
+    activeNotices.get(key)?.remove();
+    const notice = document.createElement('p');
+    notice.textContent = names.get(key) + (playing ? ' has left the room.' : ' is back in the game.');
+    presenceNotices.append(notice);
+    activeNotices.set(key, notice);
+    setTimeout(() => {
+      notice.remove();
+      if (activeNotices.get(key) === notice) activeNotices.delete(key);
+    }, 6000);
+  }
+}
+
 async function refresh() {
   if (!window.waterfrontAccess.canPlay()) return;
   try {
@@ -166,8 +190,10 @@ async function refresh() {
     });
     clearTimeout(returnTimer);
     const now = Date.now();
+    updatePresenceNotices(now);
     const ends = leaderStates.flatMap(state => [state.playingUntil, state.pausedUntil]).filter(time => time > now);
     if (ends.length) returnTimer = setTimeout(() => {
+      updatePresenceNotices(Date.now());
       if (selected) showDetails(selected);
       paintMap();
     }, Math.min(...ends) - now + 30);
@@ -233,6 +259,10 @@ window.addEventListener('waterfront:access', () => {
   if (window.waterfrontAccess.canPlay()) {
     refresh();
   } else {
+    clearTimeout(returnTimer);
+    lastPlaying.clear();
+    activeNotices.clear();
+    presenceNotices.replaceChildren();
     sequence++;
     mapViewport.removeAttribute('data-leader-question-pending');
     histories.clear();
