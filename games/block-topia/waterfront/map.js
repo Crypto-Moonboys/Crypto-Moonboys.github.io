@@ -352,7 +352,8 @@ let mapTouchActive = false;
 let ignoreTapUntil = 0;
 
 function minimumZoom() {
-  return Math.min(1, mapScroll.clientWidth / mapWidth, mapScroll.clientHeight / mapHeight);
+  // Keep the map filling the viewport while either axis can still be panned.
+  return Math.min(1, Math.max(0.45, mapScroll.clientWidth / mapWidth, mapScroll.clientHeight / mapHeight));
 }
 
 function applyZoomSize() {
