@@ -45,6 +45,11 @@
       "world/street-tiles.svg"
     ]
   },
+  "trains": {
+    "trainWuf": "world/train-wuf.png",
+    "trainAlcor": "world/train-alcor.png",
+    "trainNbg": "world/train-nbg.png"
+  },
   "objects": {
     "xpCoin": "objects/2300-spritesheet.png",
     "mysteryBox": "objects/RANDOMBOX.png",

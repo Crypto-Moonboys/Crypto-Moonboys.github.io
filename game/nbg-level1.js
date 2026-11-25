@@ -131,6 +131,15 @@
   // Bridge layer — tiled in front of skyline, parallax slightly faster.
   // Bridge PNG is 1632x408; actual bridge structure starts at ~75% down (row 305).
   // We render only the bottom 25% of source, sitting just above the street.
+  // Trains running on the bridge — always animate independently of camera
+  var TRAIN_SPEED = 180;         // pixels per second (world units)
+  var TRAIN_HEIGHT = 36;         // rendered height on screen
+  var TRAIN_ASPECT = 3.5;        // width:height ratio of the car images
+  var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
+  var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
+  var TRAIN_SPACING = 900;       // gap between trains in the loop
+  var TRAIN_LOOP = TRAIN_SPACING * 3; // total loop length (3 trains)
+
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
   var BRIDGE_SRC_CROP_START = 0.748;  // skip top 75% (transparent sky)
@@ -410,6 +419,12 @@
       if (manifest.objects.floatingRock) assets.floatingRock = resolveAssetPath(manifest.objects.floatingRock);
       if (manifest.objects.checkpoint) assets.checkpoint = resolveAssetPath(manifest.objects.checkpoint);
       if (manifest.objects.finishFlag) assets.finish = resolveAssetPath(manifest.objects.finishFlag);
+    }
+
+    if (manifest.trains) {
+      if (manifest.trains.trainWuf) assets.trainWuf = resolveAssetPath(manifest.trains.trainWuf);
+      if (manifest.trains.trainAlcor) assets.trainAlcor = resolveAssetPath(manifest.trains.trainAlcor);
+      if (manifest.trains.trainNbg) assets.trainNbg = resolveAssetPath(manifest.trains.trainNbg);
     }
 
     if (manifest.enemies) {
@@ -1749,6 +1764,64 @@
       }
     }
 
+    function drawTrains(time) {
+      var trainImages = [images.trainWuf, images.trainAlcor, images.trainNbg];
+      if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
+
+      // Trains sit just above the bridge girder top
+      var trainY = BRIDGE_Y - TRAIN_HEIGHT + 4;
+
+      // Time-based position independent of camera — always moving
+      var t = (time / 1000) * TRAIN_SPEED;
+
+      var sparks = [];
+
+      for (var i = 0; i < 3; i += 1) {
+        var img = trainImages[i];
+        if (!img) continue;
+
+        // Each train starts at a different offset in the loop
+        var rawX = (t + i * TRAIN_SPACING) % TRAIN_LOOP;
+        // Scroll from right to left: start off right edge, exit left edge
+        var screenX = WIDTH - rawX;
+
+        // Only draw if on screen
+        if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
+
+        ctx.drawImage(img, Math.round(screenX), trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+
+        // Collect spark positions at wheel contact points (bottom of train)
+        var wheelY = trainY + TRAIN_HEIGHT - 2;
+        // Two wheels per car: ~15% and ~85% along the width
+        sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
+        sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
+      }
+
+      // Draw sparks
+      for (var s = 0; s < sparks.length; s += 1) {
+        var sp = sparks[s];
+        // Flicker: only show sparks ~60% of frames
+        if (Math.random() > 0.6) continue;
+
+        var numParticles = 4 + Math.floor(Math.random() * 4);
+        for (var p = 0; p < numParticles; p += 1) {
+          var angle = Math.PI + (Math.random() - 0.5) * Math.PI * 0.8; // spray downward/sideways
+          var dist = 2 + Math.random() * 6;
+          var px = sp.x + Math.cos(angle) * dist;
+          var py = sp.y + Math.sin(angle) * dist;
+          var size = 0.5 + Math.random() * 1.5;
+          // Orange/yellow spark colour
+          var colours = ['#ffe066', '#ffaa00', '#ff6600', '#ffffff'];
+          ctx.fillStyle = colours[Math.floor(Math.random() * colours.length)];
+          ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+          ctx.beginPath();
+          ctx.arc(px, py, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
     function assertRequiredAssetsLoaded() {
       var missing = requiredAssets.filter(function (key) {
         return !assetStatus[key] || !assetStatus[key].loaded;
@@ -1798,12 +1871,13 @@
       });
     }
 
-    function drawWorld() {
+    function drawWorld(time) {
       drawSkyWallpaper();
       drawBehindLayer();
       drawMidLayer();
       drawSkylineLayer();
       drawBridgeLayer();
+      drawTrains(time);
       drawImageLayer(images.wall, 0.58, 158, 88, '#2d2033');
       drawStreetLayer();
       // Looking below shifts the road upward; extend the painted roadbed
@@ -2254,7 +2328,7 @@
       ctx.translate(0, CAMERA_ZOOM_ANCHOR_Y);
       ctx.scale(cameraZoom, cameraZoom);
       ctx.translate(0, Math.round(cameraY) - CAMERA_ZOOM_ANCHOR_Y);
-      drawWorld();
+      drawWorld(time);
       drawCoins(time);
       drawSecretCoins(time);
       drawObjects();
