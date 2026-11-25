@@ -1804,7 +1804,7 @@
       drawMidLayer();
       drawSkylineLayer();
       drawBridgeLayer();
-      drawImageLayer(images.wall, 0.58, 159, 88, '#2d2033');
+      drawImageLayer(images.wall, 0.58, 164, 88, '#2d2033');
       drawStreetLayer();
       // Looking below shifts the road upward; extend the painted roadbed
       // beneath its existing 28px street strip instead of exposing blue clear.
