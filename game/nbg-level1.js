@@ -1618,8 +1618,9 @@
     }
 
     function drawSkylineLayer() {
-      var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
-      if (skylineImages.some(function (image) { return !image; })) {
+      var skylineImages = [];
+      for (var si = 1; images['skyline' + si]; si += 1) { skylineImages.push(images['skyline' + si]); }
+      if (!skylineImages.length) {
         ctx.fillStyle = '#18203a';
         ctx.fillRect(0, SKYLINE_Y, WIDTH, SKYLINE_HEIGHT);
         return;
