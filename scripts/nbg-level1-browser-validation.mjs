@@ -3737,6 +3737,21 @@ assert.equal(resumedTo.running, true,
 assert.ok(resumedTo.x > resumedFrom.x,
   'ArrowRight must move the player with focus left on the closed Scores button');
 
+// A running game takes Space back from closed toolbar controls.
+for (const selector of ['#nbg-open-records', '#nbg-zoom-control']) {
+  await page.waitForFunction(() => window.NBGLevel1State.player.grounded);
+  const zoomBeforeJump = await page.evaluate(() => window.NBGLevel1State.cameraZoom);
+  await page.locator(selector).focus();
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.NBGLevel1State.jumpsUsed === 1);
+  assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
+    'Space during play must not reopen Scores');
+  assert.equal(await page.evaluate(() => window.NBGLevel1State.cameraZoom), zoomBeforeJump,
+    'Space during play must not change zoom');
+}
+await page.waitForFunction(() => window.NBGLevel1State.player.grounded);
+
+
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
   const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;

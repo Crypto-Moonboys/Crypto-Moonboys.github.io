@@ -869,11 +869,12 @@
       var scoresOpen = drawer && !drawer.hidden;
       var scoresControl = e.target && e.target.closest &&
         e.target.closest('#nbg-record-drawer, #nbg-open-records, #nbg-zoom-control');
-      // Once Scores closes, focus returns to its toolbar button. Preserve
-      // native Enter/Space activation there, but allow gameplay movement,
-      // jump (ArrowUp/W) and spray even while that button retains focus.
+      // Preserve native toolbar activation before play, and Enter at all
+      // times. During active play Space must jump even if toolbar focus
+      // remains after a click or after closing Scores.
       if (down && (scoresOpen ||
-          (scoresControl && (e.code === 'Space' || e.code === 'Enter')))) return;
+          (scoresControl && (e.code === 'Enter' ||
+            (e.code === 'Space' && (!running || complete || gameOver)))))) return;
       if (!down && (scoresOpen || scoresControl)) {
         keys[e.code] = false;
         return;
