@@ -1,6 +1,9 @@
 import { fortressSize } from '../../../zcash-fortress.mjs?v=5';
 import { createMinerMechanics } from './miner-motion.mjs?v=4';
 
+// Files that use the standard 12-frame 4×3 animated sheet (drawZcashFortress path).
+const STANDARD_SHEET = new Set(['zcash-miner']);
+
 // Reserve blocked tiles or open ground away from the existing road network.
 export const survivalMinerLots = [
   { name: 'DigiByte Industrial Tower', file: 'digibyte-tower', x: 3, y: 2, scale: 1.46 },
@@ -28,7 +31,9 @@ export const survivalZcashTower = { x: 1, y: 9, scale: 1.35 };
 export function loadSurvivalMiners() {
   return survivalMinerLots.map(({ file, ...lot }) => {
     const fortress = new Image();
-    fortress.src = new URL(`./miners/${file}.webp?v=2-neon`, import.meta.url).href;
+    fortress.src = new URL(`./miners/${file}.webp?v=3`, import.meta.url).href;
+    // Standard 12-frame sheet uses drawZcashFortress in comparison.mjs (no drawMiner needed).
+    if (STANDARD_SHEET.has(file)) return { ...lot, fortress };
     const mechanics = createMinerMechanics(file);
     const phase = (lot.x + lot.y * 2) * .47;
     return { ...lot, fortress, drawMiner: (ctx, image, x, y, scale, time) =>
