@@ -1,6 +1,7 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep map-specific landmark art, fixture anchors, and rear tower placement.
 import { createScene, findRoute, neighbors } from './scenes.mjs?v=14';
 import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=5';
+import { loadSurvivalMiners } from './survival/miners.mjs?v=3';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('view');
@@ -81,7 +82,13 @@ try {
     const location = spot(scene.walkable, mode === 'moon' ? [24,14] : [18,20], occupied);
     items.push({name:'Bitcoin Cash Mining Tower', fortress:tower, scale:towerScale, ...location});
   }
-  const blocked = new Set(items.filter(item => item.rect || item.fortress).map(item => `${item.x},${item.y}`));
+  if (mode === 'survival') {
+    const survivalMiners = loadSurvivalMiners();
+    // Only show the zcash-miner (the new animated building)
+    const zcashMiner = survivalMiners.find(m => m.file === 'zcash-miner' || m.name === 'Zcash Mining Fortress');
+    if (zcashMiner) items.push(zcashMiner);
+  }
+  const blocked = new Set(items.filter(item => item.rect || item.fortress || item.drawMiner).map(item => `${item.x},${item.y}`));
   const canWalk = (x,y) => scene.walkable(x,y) && !blocked.has(`${x},${y}`);
   const player = {x:scene.start[0],y:scene.start[1],model:2,facing:0};
   for (const item of items) {
@@ -123,7 +130,7 @@ try {
   function drawSprites(surface, project, frame, time) {
     hits = [];
     const objects = items.map((item,index) => {
-      if (item.rect || item.fortress) return {...item,point:project(item.x,item.y)};
+      if (item.rect || item.fortress || item.drawMiner) return {...item,point:project(item.x,item.y)};
       const phase = reduced.matches ? 0 : (time*.66 + index*.31)%2;
       const progress = phase < 1 ? phase : 2-phase;
       const x = item.x+(item.patrol-item.x)*progress;
@@ -152,7 +159,14 @@ try {
       const {x,y} = object.point;
       let w = 34, h = 34;
       let top = y - h, bottom = y;
-      if (object.fortress) {
+      if (object.drawMiner) {
+        if (!object.fortress?.naturalWidth) continue;
+        const scale = object.scale ?? 1;
+        w = fortressSize.width * scale;
+        top = y - fortressSize.anchorY * scale;
+        bottom = top + fortressSize.height * scale;
+        object.drawMiner(surface, object.fortress, x, y, scale, time);
+      } else if (object.fortress) {
         if (!object.fortress.naturalWidth) continue;
         const scale = object.scale ?? 1;
         w = fortressSize.width * scale;
