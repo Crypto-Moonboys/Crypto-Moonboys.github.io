@@ -14,6 +14,7 @@
     style-src 'self' https://unpkg.com 'unsafe-inline';
     img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
     connect-src 'self' https://api.cryptomoonboys.com https://cryptomoonboys.com https://www.cryptomoonboys.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
+    media-src https://api.cryptomoonboys.com/radio/stream;
     worker-src blob:;
     font-src 'self';
     frame-src 'none';
@@ -47,6 +48,7 @@
       <div class="stat"><strong id="timeText">01:00</strong><span id="timeLabel">HEAD START</span></div>
       <div class="stat"><strong id="distanceText">0 m</strong><span>DISTANCE</span></div>
       <div class="stat"><strong id="nearestText">—</strong><span>NEAREST</span></div>
+      <div data-arcade-audio-controls style="grid-column:1/-1;pointer-events:auto"></div>
     </header>
 
     <aside class="right-rail">
@@ -75,9 +77,9 @@
         <strong>Safety rule:</strong> stay on legal pedestrian routes. The route line is only an advisory game corridor. Ignore any waypoint that would take you near roads, rail, water, private property or unsafe terrain.
       </div>
       <label class="ack"><input id="safetyAck" type="checkbox" /> I will only play in a safe pedestrian area.</label>
-      <button id="resumeBtn" class="secondary-btn hidden">RESUME ACTIVE RUN</button>
-      <button id="startBtn" class="primary-btn" disabled>START REAL GPS RUN</button>
-      <button id="demoBtn" class="secondary-btn" disabled>DEMO MODE</button>
+      <button id="resumeBtn" data-arcade-radio-start data-arcade-enter-start class="secondary-btn hidden">RESUME ACTIVE RUN</button>
+      <button id="startBtn" data-arcade-radio-start data-arcade-enter-start class="primary-btn" disabled>START REAL GPS RUN</button>
+      <button id="demoBtn" data-arcade-radio-start class="secondary-btn" disabled>DEMO MODE</button>
       <div class="mini-grid">
         <div><strong>60s</strong><span>head start</span></div>
         <div><strong>3</strong><span>bullets</span></div>
@@ -115,6 +117,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
   <script src="/js/api-config.js?v=20261029-members-only-v1"></script>
   <script src="app.js?v=20261029-members-only-v1"></script>
+  <script type="module" src="/js/arcade/core/radio.js?v=arcade-audio-20261125"></script>
 <script data-cfasync="false" data-moonboys-site-icons="1" src="/js/site-icons.js?v=1" defer></script>
 </body>
 </html>

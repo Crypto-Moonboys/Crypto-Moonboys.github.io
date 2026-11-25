@@ -466,7 +466,13 @@
   window.addEventListener('touchstart', warmEffectAudio, { capture: true, passive: true });
 
   document.addEventListener('arcade-mute-change', (event) => {
-    if (event?.detail?.muted) stopRareShipSoundLoop(false);
+    if (!event.detail?.muted) return;
+    stopRareShipSoundLoop(false);
+    for (const pool of [...killedSoundPools, alienDropSoundPool]) {
+      for (const audio of pool) {
+        try { audio.pause(); audio.currentTime = 0; } catch (_) {}
+      }
+    }
   });
   document.addEventListener('arcade-pause-change', (event) => {
     if (event?.detail?.paused) stopRareShipSoundLoop(false);

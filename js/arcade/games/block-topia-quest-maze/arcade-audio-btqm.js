@@ -56,12 +56,23 @@ export function createBtqmAudio() {
     currentLayer = layer;
     stopHandles(musicHandles);
     if (!layer || isMuted()) return;
-    const specs = MUSIC_SPECS[layer] || [];
+    playMusicLayer();
+  }
+
+  function playMusicLayer() {
+    const specs = MUSIC_SPECS[currentLayer] || [];
     specs.forEach(({ id, spec }) => {
       const handle = playSound(id, spec);
       if (handle) musicHandles.push(handle);
     });
   }
+
+  function onMuteChange(event) {
+    stopHandles(musicHandles);
+    if (!event.detail?.muted && currentLayer) playMusicLayer();
+  }
+
+  document.addEventListener('arcade-mute-change', onMuteChange);
 
   function playSfx(name, overrides) {
     if (destroyed || isMuted()) return null;
@@ -77,6 +88,7 @@ export function createBtqmAudio() {
 
   function destroy() {
     destroyed = true;
+    document.removeEventListener('arcade-mute-change', onMuteChange);
     stopAll();
     currentLayer = null;
   }

@@ -11,7 +11,7 @@
   var ENEMY_LOOP_RETRY_MS = 3000;
   var ENEMY_LOOP_MIN_VOLUME = 0.035;
   var ENEMY_LOOP_MAX_VOLUME = 0.24;
-  var DEFAULT_SETTINGS = { muted: false, musicMuted: false, sfxMuted: false, musicLevel: 0.70, sfxLevel: 0.45 };
+  var DEFAULT_SETTINGS = { muted: true, musicMuted: false, sfxMuted: false, musicLevel: 0.70, sfxLevel: 0.45 };
   var PRIORITY = {
     game_over: 100, level_complete: 100, record_saved: 95, record_rejected: 95,
     player_hurt: 90, player_fall: 90, health_low: 88, checkpoint: 80,
@@ -86,7 +86,6 @@
     try {
       var stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
       if (stored && typeof stored === 'object') {
-        if (typeof stored.muted === 'boolean') next.muted = stored.muted;
         if (typeof stored.musicMuted === 'boolean') next.musicMuted = stored.musicMuted;
         if (typeof stored.sfxMuted === 'boolean') next.sfxMuted = stored.sfxMuted;
         // Migrate only untouched old default levels. Respect user-selected values.
@@ -94,12 +93,8 @@
         var oldEffects = clampLevel(stored.sfxLevel, 0.78);
         next.musicLevel = oldMusic === 0.42 ? DEFAULT_SETTINGS.musicLevel : oldMusic;
         next.sfxLevel = oldEffects === 0.78 ? DEFAULT_SETTINGS.sfxLevel : oldEffects;
-      } else if (typeof window._arcadeMuted === 'boolean') {
-        next.muted = window._arcadeMuted;
       }
-    } catch (_) {
-      if (typeof window._arcadeMuted === 'boolean') next.muted = window._arcadeMuted;
-    }
+    } catch (_) {}
     return next;
   }
 
@@ -228,6 +223,7 @@
   }
 
   function unlockFromInteraction() {
+    if (settings.muted) return;
     primeMusicFromGesture();
     resumeContext();
   }
@@ -623,6 +619,7 @@
 
   function setMuted(muted, options) {
     var opts = options || {};
+    var changed = settings.muted !== Boolean(muted);
     settings.muted = !!muted;
     window._arcadeMuted = settings.muted;
     saveSettings();
@@ -630,8 +627,8 @@
     if (settings.muted) {
       stopVoices();
       pauseMusicSource();
-    } else if (unlocked && !settings.musicMuted) {
-      resumeContext().then(startMusicSource);
+    } else if (changed) {
+      unlockFromInteraction();
     }
     if (opts.emitEvent !== false) {
       document.dispatchEvent(new CustomEvent('arcade-mute-change', {

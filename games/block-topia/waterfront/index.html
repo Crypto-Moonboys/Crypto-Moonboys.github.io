@@ -63,7 +63,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <div class="bt-gate__actions">
 <button id="waterfront-login" class="bt-gate__btn bt-gate__btn--primary" type="button" data-telegram-login hidden>Sign in with Telegram</button>
 <a id="waterfront-join-faction" class="bt-gate__btn bt-gate__btn--primary" href="/community.html" hidden>Join a faction</a>
-<button id="waterfront-enter" class="bt-gate__btn bt-gate__btn--enter" type="button" hidden>Enter Waterfront</button>
+<button id="waterfront-enter" data-arcade-radio-start data-arcade-enter-start class="bt-gate__btn bt-gate__btn--enter" type="button" hidden>Enter Waterfront</button>
 <button id="waterfront-retry" class="bt-gate__btn bt-gate__btn--primary" type="button" hidden>Check again</button>
 <a class="bt-gate__btn bt-gate__btn--secondary" href="../">Back to Block Topia</a>
 </div>
@@ -81,6 +81,7 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <button id="map-info" type="button" aria-controls="map-tools" aria-expanded="false">Info</button>
 <button id="map-fullscreen" type="button" hidden>Fullscreen</button>
 </div>
+<div data-arcade-audio-controls style="position:absolute;z-index:1;top:.65rem;left:.65rem;max-width:53%"></div>
 <div id="leader-presence-notices" role="status" aria-live="polite" aria-atomic="false"></div>
 <p id="location"></p>
 <div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
@@ -125,5 +126,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <script data-cfasync="false" type="module" src="entry.js?v=53-regolith"></script>
+<script type="module" src="/js/arcade/core/radio.js?v=arcade-audio-20261125"></script>
 </body>
 </html>

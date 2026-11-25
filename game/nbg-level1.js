@@ -846,6 +846,15 @@
       pendingInitialInput = { control: control };
     }
 
+    function playFromInput(control) {
+      if (!running && !complete && !gameOver) {
+        var gate = document.getElementById('nbg-access-gate');
+        if (!gate || gate.hidden) window.__ARCADE_RADIO__?.startForGame();
+      }
+      queueInitialInput(control);
+      beginGameplay(control);
+    }
+
     function onKey(e, down) {
       // Scores drawer is a normal keyboard-accessible UI, not a game input.
       // Keep key-up cleanup for keys pressed before opening the drawer.
@@ -862,6 +871,16 @@
         keys[e.code] = false;
         return;
       }
+      if (e.key === 'Enter') {
+        var interactive = e.target && e.target.closest &&
+          e.target.closest('button, input, select, textarea, a[href], summary, [contenteditable], [role="button"]');
+        if (down && !e.defaultPrevented && !e.repeat && !interactive &&
+            !e.metaKey && !e.ctrlKey && !e.altKey && !running && !complete && !gameOver) {
+          e.preventDefault();
+          playFromInput();
+        }
+        return;
+      }
       var wasDown = !!keys[e.code];
       keys[e.code] = down;
       if (down && !wasDown && getControlForCode(e.code) === 'jump') {
@@ -870,10 +889,7 @@
       if (e.code === 'ArrowDown') e.preventDefault();
       if (isStartInputCode(e.code)) {
         e.preventDefault();
-        if (down) {
-          queueInitialInput(getControlForCode(e.code));
-          beginGameplay(getControlForCode(e.code));
-        }
+        if (down) playFromInput(getControlForCode(e.code));
       }
     }
 
@@ -2818,10 +2834,7 @@
           touch[control] = active;
           if (active) {
             if (control === 'jump') pendingJumpPresses = Math.min(Math.max(0, 3 - jumpsUsed), pendingJumpPresses + 1);
-            if (control !== 'look') {
-              queueInitialInput(control);
-              beginGameplay(control);
-            }
+            if (control !== 'look') playFromInput(control);
           }
         }
       }
