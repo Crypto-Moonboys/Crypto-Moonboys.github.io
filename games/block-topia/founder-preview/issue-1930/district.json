@@ -10,7 +10,7 @@
     "...rrr_.~~..",
     "...rrrrrr...",
     "....r.drr...",
-    ".......r....",
+    ".......rr...",
     "............",
     "............"
   ],
@@ -39,15 +39,16 @@
     103,
     92,
     115,
-    104
+    104,
+    116
   ],
   "colors": {
-    "water": "#007fff",
-    "road": "#ff6347",
-    "ground": "#996600",
-    "dock": "#87cefa",
-    "house": "#ff69b4",
-    "lighthouse": "#f0e68c"
+    "water": "#143950",
+    "road": "#667b8a",
+    "ground": "#283e35",
+    "dock": "#98734e",
+    "house": "#aa5149",
+    "lighthouse": "#dbc69c"
   },
   "layoutSource": "model-edits"
 }
