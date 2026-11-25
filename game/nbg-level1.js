@@ -1,6 +1,18 @@
 (function () {
   'use strict';
 
+  // London-only keyboard policy: block Return (including numpad Enter)
+  // before shared shell listeners, focused buttons and native activation.
+  function blockReturnKey(event) {
+    if (event.key !== 'Enter' && event.key !== 'Return' &&
+        event.code !== 'Enter' && event.code !== 'NumpadEnter') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+  ['keydown', 'keypress', 'keyup'].forEach(function (type) {
+    window.addEventListener(type, blockReturnKey, true);
+  });
+
   var ASSET_ROOT = '/game/assets/';
   var ASSET_MANIFEST = ASSET_ROOT + 'asset-manifest.json';
   // All physics, positions, cameras and gameplay remain in 480x270 units.
@@ -882,24 +894,12 @@
       var scoresOpen = drawer && !drawer.hidden;
       var scoresControl = e.target && e.target.closest &&
         e.target.closest('#nbg-record-drawer, #nbg-open-records, #nbg-zoom-control');
-      // Preserve native toolbar activation before play, and Enter at all
-      // times. During active play Space must jump even if toolbar focus
-      // remains after a click or after closing Scores.
+      // Preserve native Space activation before play. During active play
+      // Space must jump even when Scores or Zoom retains focus.
       if (down && (scoresOpen ||
-          (scoresControl && (e.code === 'Enter' ||
-            (e.code === 'Space' && (!running || complete || gameOver)))))) return;
+          (scoresControl && e.code === 'Space' && (!running || complete || gameOver)))) return;
       if (!down && (scoresOpen || scoresControl)) {
         keys[e.code] = false;
-        return;
-      }
-      if (e.key === 'Enter') {
-        var interactive = e.target && e.target.closest &&
-          e.target.closest('button, input, select, textarea, a[href], summary, [contenteditable], [role="button"]');
-        if (down && !e.defaultPrevented && !e.repeat && !interactive &&
-            !e.metaKey && !e.ctrlKey && !e.altKey && !running && !complete && !gameOver) {
-          e.preventDefault();
-          playFromInput();
-        }
         return;
       }
       var wasDown = !!keys[e.code];
