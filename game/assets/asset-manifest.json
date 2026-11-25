@@ -61,7 +61,15 @@
     "trainAichunks": "world/train-aichunks.png",
     "trainNfthive": "world/train-nfthive.png",
     "trainCharliebuster": "world/train-charliebuster.png",
-    "trainHodlwars": "world/train-hodlwars.png"
+    "trainHodlwars": "world/train-hodlwars.png",
+    "trainCronx": "world/train-cronx.png",
+    "trainJacksback": "world/train-jacksback.png",
+    "trainAtomichub": "world/train-atomichub.png",
+    "trainRickyc": "world/train-rickyc.png",
+    "trainAflieblaze": "world/train-aflieblaze.png",
+    "trainSarahpfly": "world/train-sarahpfly.png",
+    "trainJodiezoom": "world/train-jodiezoom.png",
+    "trainSavannah": "world/train-savannah.png"
   },
   "objects": {
     "xpCoin": "objects/2300-spritesheet.png",
