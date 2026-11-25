@@ -1778,7 +1778,8 @@
       var totalW = carW * 6;
 
       // Time-based offset — always moves regardless of player state
-      var t = (time / 1000) * TRAIN_SPEED;
+      // Add half a loop so trains are already visible on screen from the start
+      var t = (time / 1000) * TRAIN_SPEED + totalW * 0.5;
       // Offset within one loop, never jumps — tile two sets to cover screen
       var offset = t % totalW;
 
