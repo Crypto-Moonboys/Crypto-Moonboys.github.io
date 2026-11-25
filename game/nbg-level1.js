@@ -1769,7 +1769,7 @@
 
     function drawTrains(time) {
       // Order front-to-back: NBG COIN (leads) → WUF (middle) → ALCOR (tail)
-      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor, images.trainSwaxp, images.trainWpixal, images.trainPxjking];
+      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor, images.trainSwaxp, images.trainPxjking, images.trainWpixal];
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
