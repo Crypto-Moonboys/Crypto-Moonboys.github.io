@@ -1,5 +1,6 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep native 672 × 840 miner frames, high-quality filtering, and the existing draw size and anchors.
 // Mining landmark sprites shared by the survival game and comparison maps.
+// Moon foundation stone palette (see games/block-topia/AGENTS.md): #585858, shadows #242424, highlights #8E8E8E.
 export const fortressSize = { width: 112, height: 140, anchorY: 117 };
 
 export const towerScale = 1.7;
@@ -7,7 +8,7 @@ export const towerScale = 1.7;
 export function loadZcashFortress(file = "./assets/miners/zcash-fortress-iso.webp") {
   const image = new Image();
   const url = new URL(file, import.meta.url);
-  url.searchParams.set("v", "2-detail");
+  url.searchParams.set("v", "3-regolith");
   image.src = url.href;
   return image;
 }

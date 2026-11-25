@@ -421,7 +421,7 @@
           throw new Error("BlockTopiaMap API unavailable after import");
         }
         // Mining landmarks sit on existing blocked tiles and are independent of match state.
-        const { drawZcashFortress, loadZcashFortress, towerScale } = await import("./zcash-fortress.mjs?v=4");
+        const { drawZcashFortress, loadZcashFortress, towerScale } = await import("./zcash-fortress.mjs?v=5");
         const fortressImage = loadZcashFortress();
         const waxImage = loadZcashFortress("./assets/miners/wax-bee-iso.webp");
         const towerImage = loadZcashFortress("./assets/miners/bitcoin-cash-tower-iso.webp");

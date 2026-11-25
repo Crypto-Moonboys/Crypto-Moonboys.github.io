@@ -1,11 +1,12 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep these miner lots, rear tower scale, and overhead close-zoom artwork.
 // Resolve atlas URLs from this script so it can render on the comparison route too.
+// Moon foundation stone palette (see games/block-topia/AGENTS.md): #585858, shadows #242424, highlights #8E8E8E.
 const harborMiningSites = [
   { id: "bitcoin-cash-tower", col: 42, row: 11, heightScale: 1.7, atlas: { file: "bitcoin-cash-tower-overhead.webp?v=2-detail" },
     profile: { name: "Bitcoin Cash Mining Tower", role: "Mining rigs online" } },
-  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=2-detail" },
+  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=3-regolith" },
     profile: { name: "Zcash Mining Fortress", role: "Cooling fans and reactors online" } },
-  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=2-detail" },
+  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=3-regolith" },
     profile: { name: "WAX Bee Node", role: "Honeycomb circuits online" } },
 ];
 const waterfrontAtlasBase = new URL("assets/atlases/", document.currentScript?.src || document.baseURI);

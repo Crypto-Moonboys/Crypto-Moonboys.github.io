@@ -78,7 +78,7 @@ export async function createScene(mode, canvas, viewport) {
   window.waterfrontIslandSeed = island.islandSeed;
   await new Promise((resolve,reject) => {
     const script = document.createElement('script');
-    script.src = block+'waterfront/harbor-art.js?v=77-compact-island';
+    script.src = block+'waterfront/harbor-art.js?v=78-regolith';
     script.onload = resolve;
     script.onerror = reject;
     document.head.append(script);
