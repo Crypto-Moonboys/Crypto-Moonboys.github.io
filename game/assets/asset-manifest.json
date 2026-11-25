@@ -69,7 +69,10 @@
     "trainAflieblaze": "world/train-aflieblaze.png",
     "trainSarahpfly": "world/train-sarahpfly.png",
     "trainJodiezoom": "world/train-jodiezoom.png",
-    "trainSavannah": "world/train-savannah.png"
+    "trainSavannah": "world/train-savannah.png",
+    "trainJust4uldn": "world/train-just4uldn.png",
+    "trainTlm": "world/train-tlm.png",
+    "trainBoneidolink": "world/train-boneidolink.png"
   },
   "objects": {
     "xpCoin": "objects/2300-spritesheet.png",
