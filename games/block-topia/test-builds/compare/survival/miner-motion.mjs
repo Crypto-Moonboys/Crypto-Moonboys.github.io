@@ -75,17 +75,17 @@ const rigs = {
   'zcash-miner': {
     // Large cooling fans on building face (3 main + 2 side)
     fans: [
-      [90, 577, 17, 19, 0], [245, 592, 17, 19, 0], [360, 577, 16, 18, 0],
-      [44, 545, 12, 14, 0], [414, 545, 12, 14, 0],
+      [90, 593, 17, 19, 0], [245, 608, 17, 19, 0], [360, 593, 16, 18, 0],
+      [44, 561, 12, 14, 0], [414, 561, 12, 14, 0],
     ],
     // Satellite dish – upper right
-    dish: [413, 331, 81, 75],
+    dish: [413, 347, 81, 75],
     // Devil face jaw – the golden demon mask mouth
-    jaw: [152, 414, 173, 128],
+    jaw: [152, 430, 173, 128],
     // Steam rising from left and right vents
-    steam: [[88, 241, 35, 76], [372, 284, 32, 76]],
+    steam: [[88, 257, 35, 76], [372, 300, 32, 76]],
     // Top glowing spires / coin
-    topGlow: [214, 127, 152, 90],
+    topGlow: [214, 143, 152, 90],
   },
 };
 
