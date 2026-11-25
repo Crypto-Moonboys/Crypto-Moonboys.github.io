@@ -21,7 +21,7 @@ assert.match(html, /Kaiju<\/span>/u, 'graph legend must include Kaiju');
 // Exercise graph builders rather than merely matching their source text.
 const script = graphSource.replace(/^export\s+/gmu, '') +
   '\nglobalThis.__graphTest = {' +
-  'overview: () => ({ nodes: makeOverviewNodes(300,200,100), edges: OVERVIEW_EDGES }),' +
+  'overview: () => ({ nodes: makeOverviewNodes(300,200,100), edges: OVERVIEW_EDGES, games: ARCADE_MAP_GAMES }),' +
   'player: entry => { canvas = { width:600, height:400 }; setPlayerState(entry);' +
   'return { nodes, edges, activeEdges: [...activeEdges] }; } };';
 const context = {};
@@ -29,10 +29,21 @@ vm.runInNewContext(script, context, { filename: 'arcade-graph.js' });
 const make = context.__graphTest;
 const overview = make.overview();
 const overviewIds = overview.nodes.map(n => n.id);
-assert.equal(overviewIds.filter(x => x !== 'global').join('|'), workerGames.join('|'));
+const nativeDestinations = {
+  'dead-run-native': '/games/dead-run/',
+  'nbg-london-native': '/games/nbg-london/#nbg-record-board',
+  'blocktopia-rpg': '/games/block-topia/',
+  'moonpet-native': '/crypto-moonboy-pets-leaderboard.html',
+  'waterfront-native': '/games/block-topia/waterfront/',
+};
+assert.deepEqual(Array.from(overview.games.filter(game => !game.href), game => game.id), workerGames);
+assert.deepEqual(Object.fromEntries(overview.games.filter(game => game.href).map(game => [game.id, game.href])),
+  nativeDestinations, 'native games must retain their separate score or game destinations');
+const expectedOverviewIds = [...workerGames, ...Object.keys(nativeDestinations)];
+assert.deepEqual(Array.from(overviewIds), ['global', ...expectedOverviewIds]);
 assert.equal(new Set(overviewIds).size, overviewIds.length);
-assert.equal(overview.edges.length, 8);
-assert.equal(overview.edges.map(e => e.target).join('|'), workerGames.join('|'));
+assert.equal(overview.edges.length, expectedOverviewIds.length);
+assert.deepEqual(Array.from(overview.edges, edge => edge.target), expectedOverviewIds);
 assert.ok(overview.edges.every(e => e.source === 'global'));
 assert.ok(overview.nodes.some(n => n.id === 'kaiju' && n.label.includes('Kaiju')));
 
@@ -59,4 +70,4 @@ assert.ok(player.edges.every(e => playerIds.includes(e.source) && playerIds.incl
 const noKaiju = make.player({ player:'No Kaiju Score', score:100, breakdown:{snake:100} });
 assert.equal(noKaiju.nodes.find(n => n.id === 'kaiju').score, null);
 assert.ok(!noKaiju.nodes.find(n => n.id === 'kaiju').label.includes('0'));
-console.log('Arcade graph source parity: all eight Worker games, Kaiju nodes and edges PASS.');
+console.log('Arcade graph source parity: eight Worker games, five native destinations, and verified breakdowns PASS.');

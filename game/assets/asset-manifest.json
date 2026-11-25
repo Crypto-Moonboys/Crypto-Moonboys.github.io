@@ -14,17 +14,33 @@
     "width": 22000,
     "layerNames": [
       "sky",
+      "london-behind",
+      "london-mid",
       "london-skyline",
+      "london-bridge",
       "graffiti-wall",
       "street"
     ],
     "layers": [
       "world/clouds.jpg",
       [
+        "world/LONDON BEHIND1.png",
+        "world/LONDON BEHIND2.png"
+      ],
+      [
+        "world/LONDON BEHIND3.png",
+        "world/LONDON BEHIND4.png"
+      ],
+      [
         "world/LONDON BACKGROUND1.png",
         "world/LONDON BACKGROUND2.png",
-        "world/LONDON BACKGROUND3.png"
+        "world/LONDON BACKGROUND3.png",
+        "world/LONDON BACKGROUND4.png",
+        "world/LONDON BACKGROUND5.png",
+        "world/LONDON BACKGROUND6.png",
+        "world/LONDON BACKGROUND7.png"
       ],
+      "world/london-bridge.png",
       "art-production/wall-one.png",
       "world/street-tiles.svg"
     ]

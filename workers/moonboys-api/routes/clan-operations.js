@@ -334,7 +334,17 @@ export async function handleClanOperations(request, env, helpers) {
   if (ownerLimited) return ownerLimited;
   try {
     if (loreRequest) {
-      const { status, ...result } = await answerClanLeaderLore(env, owner, body, now());
+      const time = now();
+      const applyTalk = async (target, option) => {
+        const start = clanLeaderStart(env);
+        if (start === null || time.getTime() / 1000 < start) return { error: 'leader_play_closed', status: 404 };
+        const membership = canonicalFactionProjection(await env.DB.prepare(CANONICAL_FACTION_READ_SQL).bind(owner).first());
+        if (!membership.joined) return { error: 'join_faction', status: 403 };
+        return slowClanLeader(env.DB, owner, membership.faction_id, {
+          target, option, request_id: crypto.randomUUID(),
+        }, time);
+      };
+      const { status, ...result } = await answerClanLeaderLore(env, owner, body, time, applyTalk);
       return respond(result, status ?? 200);
     }
     if (!actionRequest && !slowdownRequest && body.campaign_rewards_ui === 1) {

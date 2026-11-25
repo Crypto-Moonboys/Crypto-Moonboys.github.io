@@ -12,6 +12,22 @@ snapshot created before changes and remote backup verified.
 Working branch: `codex/sandbox-issue-1458-20261008-090000`.
 No direct push to main, merge, issue closure or production deployment.
 
+## Lumina’s Waterfront character series — 24 November 2026
+
+GK assigned nine original NPC identities and requested their biographies. The ten new wiki routes cover ZARAH8, Eddie Stax, Chada Boi, Nobby, Jimmy Rugpull, Danny Rankz, Teddy Boi Jones, Jack the Bull, Nine Toes Joe and their shared Ninth Berth story. The faction pages and the Waterfront chat persona table supplied the setting and character motivations. The names, local histories, jobs, relationships and double-tide incident are authored Year 3008 fiction. The nine roles operate at the district level. The current political count, market protection and Block Topia command decisions continue to govern the surrounding world.
+
+The static route check found all ten pages in the Lore directory, search index, graph and sitemap, and verified the faction or city backlinks and article fragments. The Pages artifact contains all ten routes in the compact search and Waterfront lore source inventory. Wiki structure, the canon guard and the SEO metadata checks passed. The site-wide shell parity check reports the founder-preview shell omission already present on main. The site-wide graph parity check reports the same seven absent non-wiki routes as main. PR checks record the final branch verification and remaining review.
+
+## The Ninth Berth roamer continuation — 24 November 2026
+
+GK requested a continuation of the existing double-tide story and expanded life histories for the 26 published Waterfront roamers. The first paid trial after the hearing is authored Year 3008 district fiction. Seven scenes cover the upper landing, garden exit, shutter, repair bay, claims table, broadcast and closing game. Each scene links to the involved roamers’ accounts of what happened next. The existing double-tide story and its unresolved repair claims remain the starting point. The Waterfront pages and the linked faction and city articles provide the setting for the new character work.
+
+## Waterfront creature continuation — 24 November 2026
+
+GK requested new Year 3008 mythology for Nessie and the Harbor Kaiju and identified The Ninth Berth as the ongoing home for Waterfront stories. After the paid trial, the black tow and north-cut landfall give the two creatures separate events and claims. Their companion profiles follow the older dock records, the incidents, and the ensuing watch, claims and route disputes. The original double-tide account still attributes the repeated bell and gauge reading to the power interruption. The creatures’ names and movement come from the Waterfront encounter and sprite work, including the regular and angry Nessie sightings and the Kaiju’s offshore walk, north-bank landfall and sideways fire. The historical records, witnesses and aftermath are original fiction. The loch and foundry stories are attributed traditions with unresolved origins.
+
+For future Waterfront additions, use the published Ninth Berth events and the corresponding game asset or NPC as starting points. Give each substantial addition an owning article with an earlier history, a link to its precise Ninth Berth scene, and consequences that continue on its own page. Link that scene back to the owning article and add the published route to the relevant Waterfront directory and discovery surfaces.
+
 ## Approved final implementation — 9 October 2026
 
 Base: `e393177b07793d992e883a8073ad416a2e65f84e` (merged #1460). Backup: `backup/gk-final-decisions-base-20261009`. Working branch: `codex/gk-final-decisions-20261009`. [Exact GK approval receipt](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1458#issuecomment-6077443666).

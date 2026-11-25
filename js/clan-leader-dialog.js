@@ -1,6 +1,6 @@
 const errorMessages = {
   connect_telegram: 'Connect Telegram to interact with faction leaders.',
-  join_faction: 'Join a faction in Battle Chamber to interact with a rival leader.',
+  join_faction: 'Join a faction in Battle Chamber to use a leader slowdown.',
   rival_required: 'Choose a leader from a rival faction.',
   daily_question_used: 'You’ve used your free question today. It resets at midnight UTC.',
   insufficient_balance: 'Your Block Topia balance is too low for this slowdown.',
@@ -44,38 +44,52 @@ export async function sendClanLeaderQuestion(npc, question, previous) {
 export function clanLeaderQuestionError(error) {
   const messages = {
     connect_telegram: 'Connect Telegram in Battle Chamber to ask a question.',
-    lore_task_required: 'You’ve used your 10 free questions. Bank a Clan Operation tier today to unlock another.',
-    lore_daily_limit: 'You’ve used all your free and task-earned questions for today. They reset at midnight UTC.',
+    lore_task_required: 'You’ve used your 10 chat questions across all leaders. They reset at midnight UTC.',
+    lore_daily_limit: 'You’ve used your 10 chat questions across all leaders. They reset at midnight UTC.',
     lore_site_limit: 'The site has used its AI allowance for today. It resets at midnight UTC.',
     rate_limited: 'Too many questions at once. Try again in a minute.',
   };
   return messages[error] ?? 'Lore chat is temporarily unavailable. Try again shortly.';
 }
 
-export function clanLeaderSourceLinks(entries) {
+export function clanLeaderSourceLinks(entries, suggestions) {
+  const result = document.createDocumentFragment();
   const sources = document.createElement('ul');
-  for (const { title, path } of entries ?? []) {
-    if (typeof path !== 'string' || !/^\/(?!\/)[\w/.~-]*$/.test(path)) continue;
+  for (const { title, path, url } of entries ?? []) {
+    const external = typeof url === 'string' ? URL.parse(url) : null;
+    const local = typeof path === 'string' && /^\/(?!\/)[\w/.~-]*$/.test(path);
+    if (!local && (external?.protocol !== 'https:' || external.username || external.password)) continue;
     const item = document.createElement('li');
     const link = document.createElement('a');
-    link.href = path;
+    link.href = local ? path : external.href;
     link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = title;
+    link.rel = 'noopener noreferrer';
+    link.textContent = local ? title : 'Web source · ' + title;
     item.append(link);
     sources.append(item);
   }
-  return sources;
+  if (sources.childElementCount) result.append(sources);
+  if (typeof suggestions === 'string' && suggestions.length > 0 && suggestions.length <= 24000) {
+    const frame = document.createElement('iframe');
+    frame.title = 'Google Search suggestions';
+    frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+    frame.srcdoc = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: https://www.google.com https://www.gstatic.com; base-uri 'none'; form-action 'none'">` + suggestions;
+    frame.style.width = '100%';
+    frame.style.border = '0';
+    result.append(frame);
+  }
+  return result;
 }
 
 function loreChat(target) {
   const section = document.createElement('section');
   section.className = 'clan-leader-lore';
   section.innerHTML = `
-    <h3>Ask about the Moonboys universe</h3>
+    <h3>Ask about Moonboys or anything else</h3>
     <div role="log" aria-label="Lore conversation"></div>
     <form>
       <label>Question <textarea rows="2" maxlength="600" required></textarea></label>
+      <p>10 chat questions total across all faction leaders per UTC day, plus one free slowdown.</p>
       <button type="submit">Ask the leader</button>
       <p role="status"></p>
     </form>`;
@@ -108,7 +122,7 @@ function loreChat(target) {
     const answer = document.createElement('p');
     answer.textContent = result.reply;
     turn.append(prompt, answer);
-    if (result.sources?.length) turn.append(clanLeaderSourceLinks(result.sources));
+    if (result.sources?.length || result.search_suggestions) turn.append(clanLeaderSourceLinks(result.sources, result.search_suggestions));
     transcript.append(turn);
     transcript.scrollTop = transcript.scrollHeight;
     previous.push({ question, reply: result.reply });
@@ -160,7 +174,7 @@ export function mountClanLeaderDialog(parent, onChange) {
       state.textContent = `Available for another interaction at ${date}.`;
       return;
     }
-    state.textContent = 'Choose a question or spend Block Topia XP or gems to pause a rival leader.';
+    state.textContent = 'Use your free slowdown on any faction leader. Paid slowdowns are for rival leaders.';
     if (!window.MOONBOYS_IDENTITY?.getTelegramId?.()) {
       reply.textContent = errorMessages.connect_telegram;
       return;
@@ -223,7 +237,7 @@ export function mountClanLeaderDialog(parent, onChange) {
       });
     }
 
-    const talk = group('Talk · one free question per day');
+    const talk = group('Talk · one free slowdown per UTC day across all leaders');
     for (const question of controls.questions) button(talk, question, `${question.title} · ${question.minutes} min`);
     const spend = group('Paid slowdown');
     for (const offer of controls.paid) {

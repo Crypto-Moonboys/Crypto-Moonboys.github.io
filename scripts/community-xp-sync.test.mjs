@@ -9,8 +9,9 @@ import { selectCommunitySeason } from '../workers/moonboys-api/community-season-
 const source = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const commandSource = source.slice(source.indexOf('async function cmdGkLeaderboard('), source.indexOf('\nasync function cmdGkQuests('));
 const messages = [];
-const command = new Function('readCommunityLeaderboard', 'sendTelegramMessage', 'escapeHtml', 'displayNameFromRow', commandSource + ';return cmdGkLeaderboard;')(
+const command = new Function('readCommunityLeaderboard', 'sendTelegramMessage', 'escapeHtml', 'displayNameFromRow', 'SITE_URL', commandSource + ';return cmdGkLeaderboard;')(
   readCommunityLeaderboard, async (_token, _chat, message) => messages.push(message), value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;'), row => row.first_name || row.telegram_id,
+  'https://cryptomoonboys.com',
 );
 
 const sql = new DatabaseSync(':memory:');
@@ -44,7 +45,9 @@ assert.equal((await get(-3)).data.entries.length, 1);
 assert.equal((await get('NaN')).data.entries.length, 3);
 assert.equal((await get('1.9')).data.entries.length, 1);
 await command(db, 'fixture-token', 'fixture-chat');
-assert.match(messages.pop(), /All-time Community XP[\s\S]*1\. 100 — 400 Community XP/);
+const allTimeMessage = messages.pop();
+assert.match(allTimeMessage, /All-time Community XP[\s\S]*1\. 100 — 400 Community XP/);
+assert.ok(allTimeMessage.includes('https://cryptomoonboys.com/games/leaderboard.html#unified-leaderboard'));
 
 for (const table of ['telegram_seasons', 'telegram_users']) {
   for (const kind of ['throw', 'resolved', 'malformed']) {

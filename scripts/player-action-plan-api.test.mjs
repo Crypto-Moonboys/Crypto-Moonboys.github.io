@@ -88,7 +88,7 @@ function fakeDb(options = {}) {
               if (/FROM telegram_faction_members/u.test(sql)) return { success: true, results: [
                 { faction_id: 2, name: 'hard-fork-rockers' },
               ] };
-              if (/FROM blocktopia_progression/u.test(sql)) {
+              if (/FROM blocktopia_progression\b/u.test(sql)) {
                 if (options.failFactionRead) throw new Error('simulated_canonical_faction_read_failure');
                 return { success: true, results: options.noFactionProgression ? [] : [{
                   faction: options.canonicalFaction ?? 'graffpunks',
@@ -155,8 +155,14 @@ function fakeDb(options = {}) {
                 }] : [] };
               }
               if (/daily_opportunity_state/u.test(sql)) return { success: true, results: [{ chain_depth: 2, updated_at: '2026-10-17T01:00:00Z' }] };
+              if (options.battleActivity) {
+                const last = '2026-10-17T11:00:00Z';
+                if (/FROM clan_operation_awards/u.test(sql)) return { success: true, results: [{ total: 2, earned: 20000, last }] };
+                if (/FROM clan_pfp_rolls/u.test(sql)) return { success: true, results: [{ total: 5, earned: 70, last }] };
+                if (/FROM blocktopia_progression_events/u.test(sql)) return { success: true, results: [{ wins: 1, xp: 15, last }] };
+              }
               if (/FROM daily_wtf_events e/u.test(sql)) return { success: true, results: [{
-                event_id: 'hidden-event', starts_at: '2026-10-17T11:00:00Z', ends_at: '2026-10-17T13:00:00Z',
+                event_id: 'hidden-event', title: 'Faction Signal', starts_at: '2026-10-17T11:00:00Z', ends_at: '2026-10-17T13:00:00Z',
                 player_status: options.wtfState || null,
                 checked_in_at: options.wtfState === 'checked_in' ? '2026-10-17T11:30:00Z' : null,
                 completed_at: options.wtfState === 'completed' ? '2026-10-17T11:45:00Z' : null,
@@ -391,7 +397,7 @@ test('unidentified job session is never advertised as a claimable new task', asy
   assert.ok(!payload.top_actions.some(item => item.task_id === task.task_id));
 });
 
-test('runtime source manifest exactly matches the reviewed 33-source registry', () => {
+test('runtime source manifest exactly matches the reviewed source registry', () => {
   const registry = JSON.parse(fs.readFileSync(new URL('../data/player-action-plan-source-registry.v1.json', import.meta.url), 'utf8'));
   assert.deepEqual(ACTION_PLAN_SOURCE_REGISTRY.map((source) => source.key), registry.sources.map((source) => source.key));
 });
@@ -400,7 +406,7 @@ test('all targeted source queries compile against the current D1 schema', async 
   const database = new DatabaseSync(':memory:');
   database.exec(fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
   database.exec(`
-    CREATE TABLE daily_wtf_events (event_id TEXT, utc_day TEXT, starts_at TEXT, ends_at TEXT);
+    CREATE TABLE daily_wtf_events (event_id TEXT, utc_day TEXT, title TEXT, starts_at TEXT, ends_at TEXT, required_action TEXT);
     CREATE TABLE daily_wtf_player_events (
       telegram_id TEXT, utc_day TEXT, event_id TEXT, status TEXT,
       checked_in_at TEXT, completed_at TEXT, missed_at TEXT, reward_status TEXT
@@ -635,8 +641,8 @@ test('authenticated endpoint covers every source, scopes pets opaquely, and is c
   const payload = await response.json();
   assert.equal(payload.ok, true);
   assert.equal(payload.read_only, true);
-  assert.equal(payload.source_coverage.registered, 33);
-  assert.equal(payload.source_coverage.represented, 33);
+  assert.equal(payload.source_coverage.registered, ACTION_PLAN_SOURCE_REGISTRY.length);
+  assert.equal(payload.source_coverage.represented, ACTION_PLAN_SOURCE_REGISTRY.length);
   assert.ok(payload.query_budget.statement_count <= 80);
   assert.ok(payload.top_actions.length <= 3);
   assert.ok(payload.top_actions.every((entry) => ['ready', 'claim_ready', 'active'].includes(entry.status) && ['live','live_empty'].includes(entry.source_health) && !entry.blocking_reason_code));
@@ -668,7 +674,7 @@ test('PR3 owner roster is redacted, stage-aware, selected, and read-only with no
   assert.equal(body.owner.pets[0].evolution_stage, null, 'unknown evolution stages stay unknown');
   assert.equal(body.owner.faction.joined, true);
   assert.equal(body.owner.faction.name, 'graffpunks');
-  assert.ok(db.calls.some(call => /FROM blocktopia_progression/u.test(call.sql)),
+  assert.ok(db.calls.some(call => /FROM blocktopia_progression\b/u.test(call.sql)),
     'Action Plan faction must come from the same authority as /faction/status');
   assert.ok(!db.calls.some(call => /FROM telegram_faction_members/u.test(call.sql)),
     'old community membership table cannot overrule seasonal faction progression');
@@ -710,7 +716,7 @@ test('faction projection uses Battle Chamber progression even with conflicting o
     assert.deepEqual(body.owner.faction, { joined, name });
     const onboarding = body.tasks.find(task => task.source_key === 'onboarding.faction');
     assert.equal(onboarding.status, joined ? 'complete' : 'ready');
-    assert.ok(db.calls.some(call => /FROM blocktopia_progression/u.test(call.sql)));
+    assert.ok(db.calls.some(call => /FROM blocktopia_progression\b/u.test(call.sql)));
     assert.ok(!db.calls.some(call => /FROM telegram_faction_members/u.test(call.sql)),
       'legacy community membership may not override a seasonal faction');
     assert.ok(db.calls.every(call => /^\s*(SELECT|WITH)\b/iu.test(call.sql)));
@@ -967,7 +973,7 @@ test('zero-pet response stays complete and blocks pet work without fabricating s
   const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: fakeDb({ noPets: true }), TELEGRAM_BOT_TOKEN: 'test' }, options());
   const payload = await response.json();
   assert.equal(payload.owner.pet_count, 0);
-  assert.equal(payload.source_coverage.represented, 33);
+  assert.equal(payload.source_coverage.represented, ACTION_PLAN_SOURCE_REGISTRY.length);
   assert.ok(payload.tasks.filter((entry) => entry.source_key.startsWith('moonpet.') && entry.source_key !== 'moonpet.seven-of-seven-claim')
     .some((entry) => entry.blocking_reason_code === 'moonpet_required'));
 });
@@ -1709,15 +1715,15 @@ test('earlier same-ISO-week boss win does not complete a new pet ownership week'
 
 test('WTF windows use owner event truth for active, checked in and completed status', async () => {
   for (const [playerState, expected] of [
-    [null, 'active'], ['upcoming', 'active'], ['checked_in', 'in_progress'], ['completed', 'complete'],
+    [null, 'active'], ['upcoming', 'active'], ['checked_in', 'active'], ['completed', 'complete'],
   ]) {
     const db = fakeDb({ wtfState: playerState });
     const result = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })),
       { DB: db, TELEGRAM_BOT_TOKEN: 'test' }, options())).json();
     const window = result.tasks.find(t => t.source_key === 'battle.wtf-windows');
     assert.equal(window.status, expected, String(playerState));
-    if (playerState && playerState !== 'upcoming')
-      assert.ok(!result.top_actions.some(t => t.task_id === window.task_id));
+    assert.equal(isVerifiedCompletion(window), playerState === 'completed');
+    assert.equal(isImmediateAction(window), playerState !== 'completed');
     const wtfQuery = db.calls.find(t => /FROM daily_wtf_events e/u.test(t.sql));
     assert.match(wtfQuery.sql, /LEFT JOIN daily_wtf_player_events p/u);
     assert.equal(wtfQuery.params[0], '123456', 'signed owner must filter player participation');
@@ -1956,4 +1962,93 @@ test('source-specific UTC clocks survive BST/GMT rollover and pagination is boun
   assert.equal(paginateActionPlan(items, null, 500).tasks.length, 100);
   assert.equal(paginateActionPlan(items, 'pap1-100', 100).tasks.length, 50);
   assert.throws(() => paginateActionPlan(items, 'pap2-0', 10), /cursor_invalid/u);
+});
+
+test('Battle history returns retained group sends and only the signed account’s signal and XP records', async () => {
+  const database = new DatabaseSync(':memory:');
+  try {
+    database.exec('CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY); CREATE TABLE telegram_seasons (id INTEGER PRIMARY KEY)');
+    for (const migration of ['018_daily_digest_missed_perks', '019_daily_wtf_timed_events',
+      '020_telegram_group_event_announcements', '021_missed_xp_value', '089_community_xp_award_receipts']) {
+      database.exec(fs.readFileSync(new URL(
+        `../workers/moonboys-api/migrations/${migration}.sql`, import.meta.url), 'utf8'));
+    }
+    database.exec(`
+      INSERT INTO telegram_users VALUES ('123456'), ('other-account');
+      INSERT INTO daily_wtf_events (event_id,utc_day,event_type,title,starts_at,ends_at,required_action,reward_key)
+      VALUES ('first','2026-10-16','win','First Signal','2026-10-16T11:00:00Z','2026-10-16T12:00:00Z','play_any_accepted_arcade_run','bonus'),
+        ('second','2026-10-16','win','Second Signal','2026-10-16T12:00:00Z','2026-10-16T13:00:00Z','play_any_accepted_arcade_run','bonus'),
+        ('third','2026-10-16','win','Third Signal','2026-10-16T13:00:00Z','2026-10-16T14:00:00Z','play_any_accepted_arcade_run','bonus');
+      INSERT INTO daily_wtf_player_events (telegram_id,event_id,utc_day,status,completed_at,missed_at)
+      VALUES ('123456','first','2026-10-16','completed','2026-10-16T11:10:00Z',NULL),
+        ('other-account','second','2026-10-16','completed','2026-10-16T12:10:00Z',NULL),
+        ('123456','third','2026-10-16','expired',NULL,'2026-10-16T14:00:00Z');
+      INSERT INTO telegram_group_announcement_log
+        (announcement_key,utc_day,event_id,announcement_type,scheduled_for,sent_at,status,metadata_json)
+      VALUES ('sent-1','2026-10-16','first','wtf_pre_event_minus_10','2026-10-16T10:50:00Z','2026-10-16T10:51:00Z','sent',NULL),
+        ('failed-2','2026-10-16','second','wtf_pre_event_minus_10','2026-10-16T11:50:00Z',NULL,'failed',NULL),
+        ('orphan-4','2026-10-16','fourth','wtf_pre_event_minus_10','2026-10-16T14:50:00Z','2026-10-16T14:51:00Z','sent','{"title":"Posted before persistence"}');
+      INSERT INTO telegram_community_xp_awards (telegram_id,action,claim_key,xp_change,earned_at,settlement_token)
+      VALUES ('123456','clan_daily_wtf_bank','2026-10-16:first',100,'2026-10-16T11:12:00Z','a'),
+        ('other-account','clan_daily_wtf_bank','2026-10-16:second',100,'2026-10-16T12:12:00Z','b');
+      INSERT INTO daily_missed_perks (telegram_id,utc_day,title,missed_xp_value)
+      VALUES ('123456','2026-10-16','My missed reward',25),
+        ('other-account','2026-10-16','Another account’s reward',99),
+        ('123456','2026-10-17','Different day',10);
+    `);
+    const env = { DB: sqliteD1(database) };
+    const view = { view: 'battle-history', day: '2026-10-16' };
+    assert.equal((await handlePlayerActionPlanRoute(request(view), env, options())).status, 401);
+    assert.equal((await handlePlayerActionPlanRoute(request(auth({ ...view, ownerId: 'other-account' })), env, options())).status, 400);
+    for (const day of ['2026-10-18', '2026-02-30', '2026-10-1']) {
+      assert.equal((await handlePlayerActionPlanRoute(request(auth({ ...view, day })), env, options())).status, 400);
+    }
+    const response = await handlePlayerActionPlanRoute(request(auth(view)), env, options());
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'no-store, private');
+    const { battle_history: history } = await response.json();
+    assert.deepEqual(history.available, { signals: true, delivery: true, missed: true, bank_rewards: true });
+    assert.deepEqual(history.signals.map(({ title, status, sent_at }) => [title, status, Boolean(sent_at)]), [
+      ['First Signal', 'completed', true], ['Second Signal', 'closed', false],
+      ['Third Signal', 'missed', false], ['Posted before persistence', 'unconfirmed', true],
+    ]);
+    assert.equal(history.signals[0].bank_community_xp, 100);
+    assert.equal(history.signals[1].bank_community_xp, null);
+    assert.deepEqual(history.missed.map(({ title, xp }) => [title, xp]), [['My missed reward', 25]]);
+    assert.doesNotMatch(JSON.stringify(history), /other-account|Different day|Another account|sent-1/u);
+    database.exec('DROP TABLE telegram_group_announcement_log');
+    const { battle_history: partial } = await (await handlePlayerActionPlanRoute(request(auth(view)), env, options())).json();
+    assert.deepEqual(partial.available, { signals: true, delivery: false, missed: true, bank_rewards: true });
+    assert.equal(partial.signals[0].status, 'completed');
+    assert.equal(partial.missed[0].xp, 25);
+  } finally { database.close(); }
+});
+
+test('Battle Chamber recommendations use only the owner’s saved banks and PFP roll results', async () => {
+  const db = fakeDb({ battleActivity: true });
+  const flags = { CLAN_OPERATIONS_ENABLED: 'true', CLAN_PFP_ROLL_ENABLED: 'true' };
+  const response = await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), { DB: db, ...flags }, options());
+  const plan = await response.json();
+  const source = key => plan.tasks.find(task => task.source_key === key);
+  const bank = source('battle.clan-operations');
+  const roll = source('battle.pfp-roll');
+  assert.equal(response.status, 200);
+  assert.equal(isImmediateAction(bank), true);
+  assert.equal(bank.progress.current, 2);
+  assert.match(bank.what, /20,000 Clan Renown/u);
+  assert.equal(isVerifiedCompletion(roll), true);
+  assert.equal(roll.progress.current, 5);
+  assert.match(roll.what, /70 Community XP/u);
+  const rpg = source('games.block-topia-rpg');
+  assert.equal(rpg.progress.current, 1);
+  assert.equal(isImmediateAction(rpg), true);
+  assert.match(rpg.what, /15 Block Topia XP/u);
+  for (const sql of ['clan_operation_awards', 'clan_pfp_rolls', 'blocktopia_progression_events']) {
+    assert.deepEqual(db.calls.find(call => call.sql.includes('FROM ' + sql)).params.slice(0, 2),
+      ['123456', '2026-10-17']);
+  }
+  for (const env of [{ DB: db }, { DB: fakeDb({ noFactionProgression: true }), ...flags }]) {
+    const { top_actions } = await (await handlePlayerActionPlanRoute(request(auth({ limit: 100 })), env, options())).json();
+    assert.equal(top_actions.some(task => task.source_key === bank.source_key || task.source_key === roll.source_key), false);
+  }
 });

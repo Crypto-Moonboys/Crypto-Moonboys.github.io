@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- GK-approved baseline: tilted Moon map with rear tower and a clear Landing Pad. See games/block-topia/AGENTS.md. -->
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HODL Wars Lores | Block Topia</title>
+  <meta name="description" content="Explore the crater trails, listening posts and stranded crews of the HODL Wars Lores moon map.">
+  <link rel="canonical" href="https://cryptomoonboys.com/games/block-topia/hodl-wars-lores/">
+  <link rel="icon" href="/favicon.png">
+  <link rel="stylesheet" href="./game.css">
+  <script type="module" src="./game.js?v=10"></script>
+</head>
+<body>
+  <main id="game">
+    <header>
+      <div><a href="../">Block Topia</a><h1>HODL Wars Lores</h1></div>
+      <div class="controls" aria-label="Map controls">
+        <button id="out" aria-label="Zoom out">−</button>
+        <button id="in" aria-label="Zoom in">+</button>
+        <button id="home">Recenter</button>
+        <button id="info" aria-expanded="false" aria-controls="guide">Info</button>
+        <button id="full" hidden>Fullscreen</button>
+      </div>
+    </header>
+    <canvas id="moon" tabindex="0" aria-label="Moon exploration map" aria-describedby="instructions">Use a browser with canvas support to explore the moon.</canvas>
+    <p id="instructions" class="sr-only">Click or tap to walk or inspect a character or building. Arrow keys or WASD move. Drag to pan, scroll to zoom.</p>
+    <section id="guide" class="panel" hidden>
+      <h2>Moon controls</h2>
+      <p>Click or tap to walk. Select a rover, station, or building to inspect it. Drag to pan, scroll or use + and − to zoom. Arrow keys and WASD move your explorer.</p>
+      <div id="station-list" aria-label="Moon stations"></div>
+    </section>
+    <section id="details" class="panel" aria-labelledby="detail-title" hidden>
+      <button id="close" aria-label="Close details">×</button>
+      <h2 id="detail-title"></h2>
+      <p id="detail-copy"></p>
+    </section>
+    <footer><output id="location">Landing Pad</output><output id="progress">0 / 6 logs recovered</output></footer>
+  </main>
+</body>
+</html>

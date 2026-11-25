@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "speaker": 0,
+    "text": "Southwest Park has a connected path but no planned place to sit."
+  },
+  {
+    "speaker": 0,
+    "text": "East Common has room for a market loop, but needs new walkable tiles."
+  },
+  {
+    "speaker": 1,
+    "text": "Use the west lots to keep the east lamp. Check saved lots and path."
+  },
+  {
+    "speaker": 1,
+    "text": "East Common needs a migration because v5 restores whole saved maps."
+  },
+  {
+    "speaker": 0,
+    "text": "I reused a bench and planter. Each hides if its lot or path changes."
+  },
+  {
+    "speaker": 0,
+    "text": "Atlas bounds, rendered art, the walking route and saved edits checked."
+  },
+  {
+    "speaker": 0,
+    "text": "Chromium could not start here, so screen-size checks remain open."
+  },
+  {
+    "speaker": 0,
+    "text": "Promote the South Point planter from the VPS preview onto main."
+  },
+  {
+    "speaker": 0,
+    "text": "Or use a bench to mark the approach to West Meadow."
+  },
+  {
+    "speaker": 1,
+    "text": "South Point's path is west of the lot. Check both tiles for edits."
+  },
+  {
+    "speaker": 1,
+    "text": "Keep the VPS guard. The runner uses it to spot occupied lots."
+  },
+  {
+    "speaker": 1,
+    "text": "West Meadow could use a trail link. That needs separate map work."
+  },
+  {
+    "speaker": 0,
+    "text": "Use the preview's flower frame and leave the South Point trail open."
+  },
+  {
+    "speaker": 0,
+    "text": "Only the grass lot pixels changed. Both saved edits hide the planter."
+  },
+  {
+    "speaker": 0,
+    "text": "The pathfinder still takes all four original trail steps."
+  }
+]

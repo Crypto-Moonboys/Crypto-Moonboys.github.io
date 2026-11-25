@@ -1,3 +1,4 @@
+import { readBattleHistory, validBattleHistoryDay } from '../player-action-plan/battle-history.js';
 import { createReadOnlyActionPlanDb } from '../player-action-plan/read-only-db.js';
 import {
   ACTION_PLAN_SCHEMA_VERSION, actionPlanSnapshotToken, isImmediateAction,
@@ -72,8 +73,8 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
     || containsForbiddenSelector(value))) {
     return errorResponse(options, 'Owner and pet selectors are derived from verified identity', 400);
   }
-  if (body.view != null && !['summary', 'tasks', 'all', 'actionable', 'history'].includes(String(body.view))) {
-    return errorResponse(options, 'view must be summary, tasks, all, actionable, or history', 400);
+  if (body.view != null && !['summary', 'tasks', 'all', 'actionable', 'history', 'battle-history'].includes(String(body.view))) {
+    return errorResponse(options, 'view must be summary, tasks, all, actionable, history, or battle-history', 400);
   }
   if (body.limit != null && (!Number.isInteger(Number(body.limit)) || Number(body.limit) < 1 || Number(body.limit) > 100)) {
     return errorResponse(options, 'limit must be an integer from 1 to 100', 400);
@@ -110,9 +111,15 @@ export async function handlePlayerActionPlanRoute(request, env, options = {}) {
   if (ownerLimit) return withPrivateHeaders(ownerLimit);
 
   const now = options.now ? new Date(options.now) : new Date();
+  if (body.view === 'battle-history') {
+    if (!validBattleHistoryDay(body.day, now)) return errorResponse(options, 'Invalid UTC history day', 400);
+    const history = await readBattleHistory(readDb, ownerId, body.day, now);
+    return withPrivateHeaders(options.json({ ok: true, battle_history: history }));
+  }
   let projection;
   try {
-    projection = await buildPlayerActionPlanSources(readDb, ownerId, { now });
+    projection = await buildPlayerActionPlanSources(readDb, ownerId, { now, clanOperations: env.CLAN_OPERATIONS_ENABLED === 'true',
+      pfpRoll: env.CLAN_OPERATIONS_ENABLED === 'true' && env.CLAN_PFP_ROLL_ENABLED === 'true' });
   } catch (error) {
     options.logApiFailure?.('player_action_plan_projection_failed', {
       error_code: error?.message || 'projection_failed',

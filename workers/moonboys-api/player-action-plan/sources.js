@@ -1,5 +1,5 @@
 import {
-  actionPlanTask, cost, isoWeek, nextIsoWeek, nextUtcDay, reward,
+  actionPlanTask, cost, isoOrNull, isoWeek, nextIsoWeek, nextUtcDay, reward,
   sourceStatus, utcDay,
 } from './schema.js';
 import { getPetJourneyWeek, getPetJourneyWeekBounds, getPetOwnershipPeriod } from '../pets/ownership-period.js';
@@ -15,6 +15,8 @@ import { getPetWeeklyBoss } from '../pets/player-expansion.js';
 import { getPetDailyBounties } from '../pets/economy-expansion.js';
 import { petRankedSpaceCteSql } from '../pets/space-order.js';
 import { CANONICAL_FACTION_READ_SQL, canonicalFactionProjection } from '../shared/faction-projection.js';
+import { BATTLE_SIGNAL_WINDOWS_SQL, classifyBattleSignal } from './battle-history.js';
+import { CLAN_PFP_DAILY_LIMIT } from '../shared/clan-pfp-roll.js';
 import { projectSavedMoonpetClaims } from './moonpet-saved-claims.js';
 
 export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
@@ -25,8 +27,10 @@ export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['faction.daily-missions', 'faction', 'faction_member', 'utc_day', 'client_mirror', '/community.html#tasks-quests-and-xp'],
   ['faction.seasonal-mission', 'faction', 'faction_member', 'faction_season', 'client_mirror', '/community.html#tasks-quests-and-xp'],
   ['faction.weekly-war', 'faction', 'faction_member', 'faction_week', 'server_projection', '/community.html#live-battle-chamber'],
-  ['battle.wtf-windows', 'battle', 'account', 'event_window', 'schedule_preview', '/community.html#tasks-quests-and-xp'],
+  ['battle.wtf-windows', 'battle', 'account', 'event_window', 'server_projection', '/community.html#battle-wtf-signal'],
   ['battle.missed-opportunities', 'battle', 'account', 'history', 'server_projection', '/community.html#tasks-quests-and-xp'],
+  ['battle.clan-operations', 'battle', 'faction_member', 'utc_day', 'server_receipt', '/community.html#clan-operation'],
+  ['battle.pfp-roll', 'battle', 'faction_member', 'utc_day', 'server_receipt', '/community.html#clan-pfp-roll'],
   ['arcade.daily-opportunity', 'arcade', 'account', 'utc_day', 'server_projection', '/games/'],
   ['arcade.roguelite-objectives', 'arcade', 'account', 'source_defined', 'client_mirror', '/games/'],
   ['moonpet.adoption-incubation', 'moonpet', 'pet', 'pet_age', 'server_projection', '/moonpet-game.html'],
@@ -49,6 +53,7 @@ export const ACTION_PLAN_SOURCE_REGISTRY = Object.freeze([
   ['moonpet.evolution', 'moonpet', 'pet', 'permanent', 'server_receipt', '/moonpet-game.html'],
   ['wiki.accepted-missions', 'wiki', 'account', 'utc_day', 'server_receipt', '/community.html'],
   ['championship.verified-clout', 'championship', 'account', 'utc_competition', 'server_receipt', '/community.html'],
+  ['games.block-topia-rpg', 'external_game', 'account', 'utc_day', 'server_receipt', '/games/block-topia/'],
   ['games.dead-run', 'external_game', 'account', 'source_defined', 'server_projection', '/games/'],
   ['games.nbg-london', 'external_game', 'account', 'source_defined', 'schedule_preview', '/games/'],
 ].map(([key, group, ownerScope, period, evidence, path]) => Object.freeze({ key, group, ownerScope, period, evidence, path })));
@@ -126,6 +131,8 @@ const SOURCE_TABLES = Object.freeze({
   'faction.daily-missions': 'player_daily_mission_state',
   'battle.wtf-windows': 'daily_wtf_events',
   'battle.missed-opportunities': 'daily_missed_perks',
+  'battle.clan-operations': 'clan_operation_awards',
+  'battle.pfp-roll': 'clan_pfp_rolls',
   'arcade.daily-opportunity': 'daily_opportunity_state',
   'arcade.roguelite-objectives': 'arcade_progression_events',
   'moonpet.adoption-incubation': 'telegram_pet_instances',
@@ -148,6 +155,7 @@ const SOURCE_TABLES = Object.freeze({
   'moonpet.evolution': 'telegram_pet_evolutions_by_pet',
   'wiki.accepted-missions': 'wiki_mission_completions',
   'championship.verified-clout': 'championship_clout_daily',
+  'games.block-topia-rpg': 'blocktopia_progression_events',
   'games.dead-run': 'dead_run_sessions',
   'games.nbg-london': 'nbg_london_records',
 });
@@ -491,12 +499,7 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   }));
 
   const wtfRows = sourceStatuses['battle.wtf-windows'].state === 'migration_pending' ? [] : await query(db,
-    `SELECT e.event_id,e.starts_at,e.ends_at,p.status AS player_status,
-       p.checked_in_at,p.completed_at,p.missed_at,p.reward_status
-       FROM daily_wtf_events e
-       LEFT JOIN daily_wtf_player_events p ON p.event_id=e.event_id
-         AND p.telegram_id=? AND p.utc_day=e.utc_day
-       WHERE e.utc_day=? ORDER BY e.starts_at ASC LIMIT 12`,
+    BATTLE_SIGNAL_WINDOWS_SQL,
     [ownerId, day], [], failures, ['battle.wtf-windows']);
   if (sourceStatuses['battle.wtf-windows'].state !== 'migration_pending') {
     sourceStatuses['battle.wtf-windows'] = sourceStatus(wtfRows.length ? 'live' : 'preview', { adapter: wtfRows.length ? 'persisted_windows' : 'schedule_preview_only' });
@@ -507,35 +510,25 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       blocking: 'persisted_window_unavailable',
     }));
   } else for (const row of wtfRows) {
-    const starts = Date.parse(row.starts_at), ends = Date.parse(row.ends_at);
-    const clockValid = Number.isFinite(starts) && Number.isFinite(ends) && ends > starts;
-    const playerState = String(row.player_status || 'not_checked_in');
-    const completed = Boolean(row.completed_at) || playerState === 'completed';
-    const missed = Boolean(row.missed_at) || playerState === 'missed';
-    const checkedIn = Boolean(row.checked_in_at) || ['checked_in','in_progress','participating'].includes(playerState);
-    // A persisted 'upcoming' player row is a valid not-checked-in state.
-    const knownState = ['upcoming','not_checked_in','completed','missed',
-      'checked_in','in_progress','participating'].includes(playerState);
-    const status = !clockValid ? 'sync_unavailable' : completed ? 'complete'
-      : missed || now.getTime() >= ends ? 'expired'
-        : checkedIn ? 'in_progress'
-          : !knownState ? 'sync_unavailable'
-            : now.getTime() >= starts ? 'active' : 'waiting';
+    const signal = classifyBattleSignal(row, now);
+    const completed = signal.status === 'completed';
+    const status = {
+      completed: 'complete', missed: 'expired', closed: 'expired', scheduled: 'waiting',
+      checked_in: 'active', open: 'active', unconfirmed: 'sync_unavailable',
+    }[signal.status];
     tasks.push(task(now, {
       source_key: 'battle.wtf-windows',
       task_id: `battle.wtf-windows:${day}:${await opaqueRef(`${row.event_id}:${row.starts_at}`)}`,
-      title: completed ? 'WTF window completed' : checkedIn ? 'WTF window check-in saved' : 'WTF timed event window',
-      description: completed ? 'The Worker confirms a completed player event.'
-        : checkedIn ? 'A saved check-in is in progress; completion has not yet been confirmed.'
-          : 'A scheduled event is not proof of participation.',
-      why: 'Complete a qualifying action within this persisted UTC window.',
-      status, source_health: clockValid ? 'live' : 'unavailable', priority: status === 'active' ? 190 : 540,
+      title: completed ? `${row.title} completed` : row.title,
+      description: completed ? 'Your completion was saved.'
+        : signal.status === 'checked_in' ? 'Check-in saved. Finish the qualifying action before the signal closes.'
+          : 'Open Battle Chamber for the active signal and its qualifying action.',
+      why: 'A verified completion contributes 5 Grinder Points, up to 30 per UTC day.',
+      status, source_health: status === 'sync_unavailable' ? 'unavailable' : 'live', priority: status === 'active' ? 160 : 540,
       period: { kind: 'event_window', key: day, origin_timezone: 'UTC' },
-      available_at: clockValid ? row.starts_at : null, expires_at: clockValid ? row.ends_at : null,
-      blocking_reason_code: !clockValid ? 'invalid_event_window'
-        : !knownState ? 'wtf_player_status_unknown' : null,
-      evidence: { kind: 'server_projection', verified_completion: false,
-        accepted_at: completed ? row.completed_at : null },
+      available_at: signal.starts_at, expires_at: signal.ends_at,
+      blocking_reason_code: status === 'sync_unavailable' ? 'invalid_event_window' : null,
+      evidence: { kind: 'server_projection', verified_completion: completed, accepted_at: signal.completed_at },
     }));
   }
   const missedRows = sourceStatuses['battle.missed-opportunities'].state === 'migration_pending' ? [] : await query(db,
@@ -543,10 +536,50 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
   if (sourceStatuses['battle.missed-opportunities'].state !== 'migration_pending') {
     sourceStatuses['battle.missed-opportunities'] = sourceStatus(number(missedRows[0]?.total) ? 'live' : 'live_empty', { adapter: 'persisted_owner_history' });
   }
-  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), number(missedRows[0]?.total) ? 'active' : 'waiting', 'live', {
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get('battle.missed-opportunities'), 'waiting', 'live', {
     title: number(missedRows[0]?.total) ? 'Review missed battle opportunities' : 'No recorded missed battle opportunities', priority: 650,
     progress: { current: number(missedRows[0]?.total), target: null, unit: 'records' },
   }));
+
+  const dailyBattleActivities = [
+    { key: 'battle.clan-operations', enabled: options.clanOperations, target: 3, unit: 'tiers', verb: 'banked',
+      title: 'Bank a Clan Operations tier', finished: 'All Clan Operations tiers banked',
+      why: 'Each bank pays 10,000 Clan Renown and contributes 10 Grinder Points, up to three banks per UTC day.',
+      sql: `SELECT COUNT(*) AS total, SUM(renown) AS earned, MAX(awarded_at) AS last
+        FROM clan_operation_awards WHERE telegram_id=? AND utc_day=?`, currency: 'Clan Renown' },
+    { key: 'battle.pfp-roll', enabled: options.pfpRoll, target: CLAN_PFP_DAILY_LIMIT, unit: 'rolls', verb: 'used',
+      title: 'Play Daily PFP Roll', finished: 'Daily PFP rolls used',
+      why: 'Matching traits earn Community XP. You can see the outcome in Battle Chamber before rolling again.',
+      sql: `SELECT COUNT(*) AS total, SUM(json_extract(result_json,'$.xp')) AS earned, MAX(created_at) AS last
+        FROM clan_pfp_rolls WHERE telegram_id=? AND utc_day=?`, currency: 'Community XP' },
+  ];
+  for (const activity of dailyBattleActivities) {
+    const { key, enabled, title, why, target, unit } = activity;
+    if (!enabled || !factionHealthy || !faction || sourceStatuses[key].state === 'migration_pending') {
+      if (sourceStatuses[key].state !== 'migration_pending') {
+        sourceStatuses[key] = sourceStatus(enabled && factionHealthy ? 'live_empty' : 'unavailable',
+          { adapter: 'owner_battle_receipts' });
+      }
+      tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), 'blocked', sourceStatuses[key].state, {
+        title, why, periodKey: day,
+        blocking: !enabled ? 'activity_closed' : !factionHealthy ? 'faction_sync_unavailable'
+          : !faction ? 'join_faction' : 'receipt_store_unavailable',
+      }));
+      continue;
+    }
+    const [row] = await query(db, activity.sql, [ownerId, day], [], failures, [key]);
+    const current = row ? number(row.total) : null;
+    const finished = current !== null && current >= target;
+    const acceptedAt = isoOrNull(row?.last);
+    tasks.push(genericTask(now, SOURCE_BY_KEY.get(key), current === null ? 'sync_unavailable'
+      : finished ? 'complete' : 'active', 'live', {
+      title: finished ? activity.finished : title, why, priority: unit === 'tiers' ? 195 : 215,
+      description: current === null ? 'Receipt progress is unavailable.'
+        : `${current} of ${target} ${unit} ${activity.verb} today. ${number(row.earned).toLocaleString('en-GB')} ${activity.currency} earned.`,
+      periodKey: day, expiresAt: nextUtcDay(now), progress: { current, target, unit },
+      evidence: { verified_completion: finished && Boolean(acceptedAt), accepted_at: acceptedAt },
+    }));
+  }
 
   // The game's historical "7/7" award uses eight distinct flags (0xFF).
   // Read saved, unclaimed awards from earlier days, not today's record alone.
@@ -1187,6 +1220,25 @@ export async function buildPlayerActionPlanSources(db, ownerId, options = {}) {
       : 'new_run',
     progress: { current: number(deadVerifiedRows[0]?.score), target: null, unit: 'verified_score' },
   }));
+  const rpgKey = 'games.block-topia-rpg';
+  const [rpg] = sourceStatuses[rpgKey].state === 'migration_pending' ? [] : await query(db,
+    `SELECT COUNT(*) AS wins, SUM(xp_change) AS xp, MAX(created_at) AS last
+      FROM blocktopia_progression_events WHERE telegram_id=? AND action='mini_game_win'
+        AND xp_change>0 AND created_at>=? AND created_at<?`,
+    [ownerId, day, nextUtcDay(now).slice(0, 10)], [], failures, [rpgKey]);
+  const rpgWins = rpg ? number(rpg.wins) : null;
+  const rpgComplete = rpgWins >= 3 && Boolean(isoOrNull(rpg?.last));
+  tasks.push(genericTask(now, SOURCE_BY_KEY.get(rpgKey), rpgComplete ? 'complete'
+    : rpgWins ? 'active' : 'waiting', sourceStatuses[rpgKey].state, {
+    title: rpgComplete ? 'Block Topia RPG daily points cap reached' : 'Play Block Topia RPG',
+    why: 'Eligible accepted mini-game wins contribute 10 Grinder Points each, up to 30 per UTC day.',
+    description: rpgWins === null ? 'Saved wins are unavailable.'
+      : `${rpgWins} eligible wins today. ${number(rpg.xp)} Block Topia XP earned. Access is checked in the game.`,
+    progress: { current: rpgWins, target: 3, unit: 'wins' },
+    periodKey: day, expiresAt: nextUtcDay(now), priority: 310,
+    evidence: { verified_completion: rpgComplete, accepted_at: rpg?.last },
+  }));
+
   const nbgRows = sourceStatuses['games.nbg-london'].state === 'migration_pending' ? [] : await query(db,
     'SELECT fastest_ms,best_xp FROM nbg_london_records WHERE telegram_id=? LIMIT 1', [ownerId], [], failures, ['games.nbg-london']);
   sourceStatuses['games.nbg-london'] = sourceStatuses['games.nbg-london'].state === 'migration_pending'

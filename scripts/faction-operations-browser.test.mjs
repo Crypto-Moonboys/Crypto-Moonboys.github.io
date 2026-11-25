@@ -2113,20 +2113,23 @@ test('Daily PFP Roll keeps one mobile canvas and downloads the saved winning por
   }
 });
 
-test('Waterfront hides playing leaders and uses sprite details, double-click and a sourced reply bubble', { timeout: 30_000 }, async () => {
+test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens details and shows a sourced reply bubble', { timeout: 30_000 }, async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ||
       (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
     headless: true,
   });
   try {
-    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, hasTouch: true, reducedMotion: 'reduce' });
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2, hasTouch: true, reducedMotion: 'reduce' });
     page.setDefaultTimeout(4_000);
     const requestBodies = [];
     const loreBodies = [];
     const errors = [];
     const entryActions = [];
     const gameplayAssets = [];
+    const detailArtRequests = [];
+    let releaseDetailArt;
+    const holdDetailArt = new Promise(resolve => { releaseDetailArt = resolve; });
     let joinedFaction;
     let occupied;
     let seatLost;
@@ -2138,6 +2141,8 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     const longReply = 'The Nomad Bears are one of the two market factions. ' + 'Their public wiki account explains how their travelling crews protect routes, trade information, and respond when the other market faction gains ground throughout the city.';
     let releaseFirstReply;
     const holdReply = new Promise(resolve => { releaseFirstReply = resolve; });
+    let releaseAvatarReply;
+    const holdAvatarReply = new Promise(resolve => { releaseAvatarReply = resolve; });
     await page.clock.install();
     await page.route('https://waterfront.test/**', async route => {
       const url = new URL(route.request().url());
@@ -2163,6 +2168,10 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
         } });
       }
       if (/\/(?:harbor-art|map|leader-dialog)\.js$/.test(url.pathname)) gameplayAssets.push(url.pathname);
+      if (/\/atlases\/(?:roamers-[\w-]+|bots-detail|factions-detail)\.webp$/.test(url.pathname)) {
+        detailArtRequests.push(url.pathname);
+        await holdDetailArt;
+      }
       if (url.pathname === '/clan-operations/state') return route.fulfill({ json: {
         leaders: {
           chat_enabled: true,
@@ -2178,6 +2187,7 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
       if (url.pathname === '/clan-operations/leader-lore') {
         loreBodies.push(route.request().postDataJSON());
         if (loreBodies.length === 1) await holdReply;
+        if (loreBodies.length === 3) await holdAvatarReply;
         return route.fulfill({ json: {
           ok: true, reply: longReply,
           sources: [{ title: 'Crypto Moonboys', path: '/wiki/crypto-moonboys.html' }],
@@ -2210,45 +2220,382 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     assert.equal(await page.getByRole('button', { name: 'Enter Waterfront' }).isVisible(), false);
     occupied = false;
     await page.getByRole('button', { name: 'Check again' }).click();
+    await page.evaluate(original => {
+      const edited = [...original];
+      edited[14] = edited[14].slice(0, 19) + 'p' + edited[14].slice(20);
+      localStorage.setItem('block-topia.waterfront.v5', JSON.stringify(edited));
+    }, waterfrontDistrict.rows);
     await page.getByRole('button', { name: 'Enter Waterfront' }).click();
     await page.locator('#map').waitFor();
-    assert.equal(await page.locator('#player-faction').textContent(), 'Your faction · The Nomad Bears');
+    assert.equal(await page.locator('#player-faction').textContent(), 'Your representative · Nine Toes Joe');
+    await page.waitForFunction(() => factionHits.length > 0 && waterfrontFactionAtlas.image &&
+      waterfrontDetailedFactions.requested && waterfrontDetailedBots.requested);
+    assert.equal(await page.evaluate(() => !waterfrontDetailedFactions.image && !waterfrontDetailedBots.image), true,
+      'the compact harbor paint and NPC hit targets work while detailed downloads are pending');
+    assert.ok(detailArtRequests.filter(file => file.includes('/roamers-')).length < 3,
+      'the opening camera does not request every roamer group');
+    const offlineDialogue = await page.evaluate(() => {
+      const make = () => window.createWaterfrontFactionConversations();
+      const nativeFetch = window.fetch;
+      const random = Math.random;
+      let requests = 0;
+      window.fetch = () => { requests++; throw new Error('Autonomous dialogue must be offline'); };
+      try {
+        const leaders = [{ index: 0, x: 0, y: 0 }, { index: 1, x: 8, y: 0 }];
+        const roamers = [{ id: 'roamer:police-bike', x: 0, y: 0 }, { id: 'roamer:boombox', x: 8, y: 0 }];
+        Math.random = () => 0;
+        const dialogue = make();
+        const streetStart = dialogue.street.tick(roamers, 0)[0];
+        const leaderLines = [0, 4500, 9000, 13500].map(now => dialogue.tick(leaders, now)[0].text);
+        const crewLines = [0, 12, 24].map(now => dialogue.crewSpeech(now).text);
+        return { requests, street: streetStart.text, leaderLines, crewLines };
+      } finally { window.fetch = nativeFetch; Math.random = random; }
+    });
+    assert.equal(offlineDialogue.requests, 0);
+    assert.match(offlineDialogue.street, /\?$/);
+    assert.equal(new Set(offlineDialogue.leaderLines).size, 4);
+    assert.equal(new Set(offlineDialogue.crewLines).size, 3);
+    const pendingEncounterCast = await page.evaluate(() => {
+      const render = document.createElement('canvas').getContext('2d');
+      let cast;
+      window.drawWaterfront(render, rows, player, district, 0, 0, [], null, {
+        holds: () => false,
+        tick: () => [],
+        street: {
+          holds: () => false,
+          tick: actors => {
+            cast = actors.map(({ id }) => id);
+            return [];
+          },
+        },
+      });
+      return cast;
+    });
+    assert.ok(pendingEncounterCast.some(id => id.startsWith('leader:')));
+    assert.ok(pendingEncounterCast.every(id => !id.startsWith('roamer:')),
+      'roamers with pending art cannot stop or start conversations with visible NPCs');
+    await page.evaluate(() => {
+      function afterPaint() {
+        if (!waterfrontDetailedFactions.image || !waterfrontDetailedBots.image) return;
+        mapSurface.removeEventListener('waterfront:map-painted', afterPaint);
+        window.testDetailedArtPainted = true;
+      }
+      mapSurface.addEventListener('waterfront:map-painted', afterPaint);
+    });
+    releaseDetailArt();
+    await page.waitForFunction(() => window.testDetailedArtPainted);
+    const camera = await page.evaluate(() => {
+      const view = document.querySelector('#map-view');
+      const scroll = document.querySelector('.map-scroll');
+      const map = document.querySelector('#map');
+      const context = view.getContext('2d');
+      const frame = scroll.getBoundingClientRect();
+      const x = frame.left + scroll.clientWidth / 2;
+      const y = frame.top + scroll.clientHeight / 2;
+      const worldAtCenter = () => {
+        const { left, top, width, height } = map.getBoundingClientRect();
+        return { x: (x - left) * mapWidth / width, y: (y - top) * mapHeight / height };
+      };
+      const anchor = worldAtCenter();
+      const initialZoom = map.clientWidth / mapWidth;
+      const initialBacking = view.width;
+      zoomMap(20, x, y);
+      const after = worldAtCenter();
+      const camera = {
+        initialZoom, maxZoom: map.clientWidth / mapWidth,
+        backingWidth: view.width, backingHeight: view.height,
+        viewportWidth: scroll.clientWidth, viewportHeight: scroll.clientHeight,
+        stableBacking: view.width === initialBacking,
+        drawingScale: context.getTransform().a, nearestNeighbor: !context.imageSmoothingEnabled,
+        anchorError: Math.hypot(after.x - anchor.x, after.y - anchor.y),
+      };
+      zoomMap(0, x, y);
+      camera.overviewFits = map.clientWidth <= scroll.clientWidth && map.clientHeight <= scroll.clientHeight;
+      zoomMap(initialZoom, x, y);
+      return camera;
+    });
+    assert.ok(camera.initialZoom < 1.25);
+    assert.equal(camera.maxZoom, 3);
+    assert.equal(camera.backingWidth, camera.viewportWidth * 2);
+    assert.equal(camera.backingHeight, camera.viewportHeight * 2);
+    assert.equal(camera.stableBacking, true);
+    assert.equal(camera.drawingScale, 6);
+    assert.equal(camera.nearestNeighbor, true);
+    assert.ok(camera.anchorError < 1, 'zoom keeps the world point under the pointer');
+    assert.equal(camera.overviewFits, true);
+
+    const island = await page.evaluate(() => {
+      const regions = new Set();
+      const key = (x, y) => Math.floor(x / 8) + ',' + Math.floor(y / 8);
+      let land = 0, walkableLand = 0;
+      const harborChanges = [];
+      let islandTerrainOnly = true;
+      for (const [y, row] of district.rows.entries()) for (const [x, tile] of [...row].entries()) {
+        if (tile !== '~') land++;
+        if (walkable(tile)) { walkableLand++; regions.add(key(x, y)); }
+        if (x < district.harborWidth && y < district.harborHeight) {
+          const previous = district.originalRows[y][x];
+          if (tile !== previous) harborChanges.push({ x, y, tile, previous });
+        } else if (!'~pmtf'.includes(tile)) islandTerrainOnly = false;
+      }
+      const frontier = [spawn];
+      const reachable = new Set([spawn.y * columns + spawn.x]);
+      for (const point of frontier) for (const [dx, dy] of Object.values(directions)) {
+        const x = point.x + dx, y = point.y + dy;
+        const cell = y * columns + x;
+        if (walkable(rows[y]?.[x]) && !reachable.has(cell)) {
+          reachable.add(cell);
+          frontier.push({ x, y });
+        }
+      }
+      const loop = natureRoute(rows, district);
+      return {
+        width: columns, height: initial.length, land, islandTerrainOnly, harborChanges,
+        allLandReachable: reachable.size === walkableLand,
+        restoredEdit: rows[14][19], spawn,
+        bridgePatrolled: Array.from({ length: 8 }, (_, i) => 48 + i).every(x =>
+          loop.some(point => point.x === x && point.y === 19)),
+        allRegionsVisited: new Set(loop.map(({x, y}) => key(x, y))).size === regions.size,
+        loopWalkable: loop.every(({x,y}, i) => {
+          const next = loop[(i + 1) % loop.length];
+          return walkable(rows[y][x]) && Math.abs(x - next.x) + Math.abs(y - next.y) === 1;
+        }),
+      };
+    });
+    const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
+    const { harborChanges, ...layout } = island;
+    assert.deepEqual(layout, {
+      width: 84, height: 60, land: previousLand * 2 + 8, islandTerrainOnly: true,
+      allLandReachable: true, bridgePatrolled: true, allRegionsVisited: true, loopWalkable: true,
+      restoredEdit: 'p', spawn: waterfrontDistrict.spawn,
+    });
+    assert.ok(harborChanges.length > 0 && harborChanges.every(({ x, y, tile, previous }) =>
+      ('.~'.includes(previous) && 'pd'.includes(tile) && ((y === 19 && x >= 47 && x <= 55) || (y === 24 && x >= 45) || (x === 36 && y >= 29)))));
+    const waterArt = await page.evaluate(() => {
+      function sample(x, y, time) {
+        const size = district.tileSize;
+        const context = document.createElement('canvas').getContext('2d');
+        context.canvas.width = context.canvas.height = size;
+        context.translate(-x * size, -y * size);
+        const colors = new Set();
+        const fill = context.fillRect.bind(context);
+        context.fillRect = (...args) => {
+          colors.add(context.fillStyle);
+          fill(...args);
+        };
+        window.drawWaterfront(context, district.rows, player, district, time, 0, [], null, null,
+          { left: Math.min(x, district.rows[0].length), top: y,
+            right: Math.min(x + 1, district.rows[0].length), bottom: y + 1 });
+        return { colors: [...colors], pixels: Array.from(context.getImageData(0, 0, size, size).data) };
+      }
+      const openWater = sample(62, 0, 0);
+      const harborWater = sample(6, 0, 0);
+      const beyondMap = sample(district.rows[0].length + 6, 0, 0);
+      const later = sample(62, 0, 1);
+      const coast = sample(64, 22, 0);
+      return {
+        beyondMapMatchesWater: beyondMap.pixels.every((value, i) => value === harborWater.pixels[i]),
+        matchesHarborWater: openWater.pixels.every((value, i) => value === harborWater.pixels[i]),
+        waterStaysStatic: openWater.pixels.every((value, i) => value === later.pixels[i]),
+        newCoastKeepsWater: coast.colors.some(color => color instanceof CanvasPattern),
+        cachedTexture: openWater.colors[0] === coast.colors[0],
+        newCoastHasSeawall: coast.colors.includes('#6c667b'),
+        harborHasSeawall: sample(4, 1, 0).colors.includes('#6c667b'),
+      };
+    });
+    assert.deepEqual(waterArt, {
+      beyondMapMatchesWater: true, matchesHarborWater: true, waterStaysStatic: true, newCoastKeepsWater: true, cachedTexture: true,
+      newCoastHasSeawall: false, harborHasSeawall: true,
+    });
     await page.waitForFunction(() => document.querySelector('#map-leader-controls').hidden === false);
     await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 6));
+    await page.waitForFunction(() =>
+      [...Object.values(waterfrontSprites), ...Object.values(waterfrontTerrain), ...waterfrontTrees,
+        ...Object.values(waterfrontDetails), waterfrontFactionAtlas, waterfrontBotAtlas, waterfrontCargoAtlas]
+        .every(sprite => sprite.image));
+    await page.waitForFunction(() => waterfrontDetailedFactions.image?.complete && waterfrontDetailedBots.image?.complete);
+    const detailedFrames = await page.evaluate(() => {
+      const cell = characterDetailCell;
+      return [waterfrontDetailedFactions, waterfrontDetailedBots].map(({ image }, index) => {
+        const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+        context.canvas.width = cell;
+        context.canvas.height = cell;
+        let populated = 0;
+        for (let model = 0; model < (index === 0 ? 9 : 8); model++) {
+          for (let facing = 0; facing < 4; facing++) for (let frame = 0; frame < 4; frame++) {
+            context.clearRect(0, 0, cell, cell);
+            context.drawImage(image, (model % 3 * 4 + frame) * cell,
+              (Math.floor(model / 3) * 4 + facing) * cell, cell, cell, 0, 0, cell, cell);
+            const data = context.getImageData(0, 0, cell, cell).data;
+            if (data.some((value, channel) => channel % 4 === 3 && value > 128)) populated++;
+          }
+        }
+        return [cell, populated];
+      });
+    });
+    assert.deepEqual(detailedFrames, [[192, 144], [192, 128]]);
+    await page.waitForFunction(() => waterfrontRoamers.every(({ atlas }) => atlas.image?.complete));
+    const roamerRequests = detailArtRequests.filter(file => file.includes('/roamers-'));
+    assert.equal(roamerRequests.length, 3, 'the overview loads all three roamer atlases once');
+    assert.equal(new Set(roamerRequests).size, 3);
+    const roaming = await page.evaluate(() => {
+      const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+      const cell = roamingAtlasCell;
+      context.canvas.width = context.canvas.height = cell;
+      const route = natureRoute(rows, district);
+      let frames = 0;
+      for (const { atlas, model } of waterfrontRoamers) {
+        for (let facing = 0; facing < 4; facing++) for (let frame = 0; frame < 4; frame++) {
+          context.clearRect(0, 0, cell, cell);
+          context.drawImage(atlas.image, (model % 3 * 4 + frame) * cell,
+            (Math.floor(model / 3) * 4 + facing) * cell, cell, cell, 0, 0, cell, cell);
+          const pixels = context.getImageData(0, 0, cell, cell).data;
+          if (pixels.some((value, channel) => channel % 4 === 3 && value > 128)) frames++;
+        }
+      }
+      const sample = (time, held = false, visible = null) => {
+        const hits = [];
+        const frames = [];
+        const render = document.createElement('canvas').getContext('2d');
+        const drawImage = render.drawImage.bind(render);
+        const atlases = new Set(waterfrontRoamers.map(({ atlas }) => atlas.image));
+        render.drawImage = (image, ...args) => {
+          if (atlases.has(image)) frames.push(args[0] / cell % 4);
+          drawImage(image, ...args);
+        };
+        window.drawWaterfront(render, rows, player, district, time, 0, [], null, null, visible, {
+          hit: actor => { if (actor.id.startsWith('roamer:')) hits.push(actor); },
+          held: id => held && id.startsWith('roamer:'),
+          time: (_, clock) => held ? 0 : clock,
+        });
+        return { hits, frames };
+      };
+      const idle = sample(null);
+      const walking = sample(20);
+      const held = sample(20, true);
+      const harbor = sample(null, false, { left: 0, top: 0, right: district.harborWidth, bottom: district.harborHeight });
+      const onPath = walking.hits.every(({ x, y }) => {
+        const tileX = Math.floor(x / district.tileSize);
+        const tileY = Math.floor(y / district.tileSize);
+        return district.tiles[rows[tileY][tileX]].walkable;
+      });
+      return {
+        actors: idle.hits.map(({ id }) => id),
+        profiles: idle.hits.map(({ profile }) => profile),
+        frames,
+        harborActors: harbor.hits.length,
+        routeRegions: new Set(route.map(({ x, y }) => Math.floor(x / 8) + ',' + Math.floor(y / 8))).size,
+        onPath,
+        advances: walking.hits.every(actor => {
+          const before = idle.hits.find(({ id }) => id === actor.id);
+          return actor.x !== before.x || actor.y !== before.y;
+        }),
+        idleFrames: idle.frames.every(frame => frame === 0),
+        heldFrames: held.frames.every(frame => frame === 0),
+        walkFrames: walking.frames.some(frame => frame > 0),
+      };
+    });
+    assert.equal(roaming.actors.length, 26);
+    assert.equal(new Set(roaming.actors).size, 26);
+    assert.ok(roaming.actors.includes('roamer:nomad-bears-block-mech'));
+    assert.ok(!roaming.actors.includes('roamer:nomad-bears-mech'));
+    assert.equal(new Set(roaming.profiles.map(({ wiki }) => wiki)).size, 26);
+    for (const { name, wiki } of roaming.profiles) {
+      const pageHtml = await readFile(path.join(ROOT, wiki), 'utf8');
+      assert.ok(pageHtml.includes(`<h1 class="page-title">${name}</h1>`), wiki);
+    }
+    assert.equal(roaming.frames, 26 * 16);
+    assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors.length, 'cast spans both map areas');
+    assert.ok(roaming.routeRegions > 50 && roaming.onPath && roaming.advances, 'cast roams the full connected island loop');
+    assert.ok(roaming.idleFrames && roaming.heldFrames && roaming.walkFrames);
+    const harborLife = await page.evaluate(() => {
+      const display = document.createElement('canvas');
+      const context = display.getContext('2d');
+      const drawImage = context.drawImage.bind(context);
+      let sprites = 0;
+      let assertDetailedSampling = true;
+      const botSizes = new Set();
+      const factionSizes = new Set();
+      const detailedSourceSizes = new Set();
+      context.drawImage = (image, ...args) => {
+        if (image === waterfrontDetailedBots.image) { sprites++; botSizes.add(args[7]); }
+        if (image === waterfrontDetailedFactions.image) factionSizes.add(args[7]);
+        if (image === waterfrontDetailedBots.image || image === waterfrontDetailedFactions.image) {
+          detailedSourceSizes.add(args[2]);
+          assertDetailedSampling &&= context.imageSmoothingEnabled;
+        }
+        drawImage(image, ...args);
+      };
+      const crewLines = [];
+      context.fillText = text => crewLines.push(text);
+      const { crewSpeech } = window.createWaterfrontFactionConversations();
+      const crew = { tick: () => [], holds: () => false, crewSpeech };
+      const extent = { left: 0, top: 0, right: district.harborWidth, bottom: district.harborHeight };
+      let maxRobots = 0;
+      for (let time = 1; time <= 20; time++) {
+        sprites = 0;
+        window.drawWaterfront(context, rows, player, district, time, 0, [], null, crew, extent);
+        maxRobots = Math.max(sprites, maxRobots);
+      }
+      const delivered = harborFreight.bots.some(bot => bot.carrying || bot.point !== district.spawn && bot.started > 1);
+      const crewSpoke = crewLines.join(' ').includes(crewSpeech(0).text);
+      crewLines.length = 0;
+      window.drawWaterfront(context, rows, player, district, null, null, [], null, crew, extent);
+      const staticCrewSpoke = crewLines.join(' ').includes(crewSpeech(null).text);
+      return { maxRobots, delivered, crewSpoke, staticCrewSpoke,
+        botSizes: [...botSizes], factionSizes: [...factionSizes],
+        detailedSourceSizes: [...detailedSourceSizes], assertDetailedSampling };
+    });
+    assert.deepEqual(harborLife.detailedSourceSizes, [192], 'NPC drawing uses the detailed source frames');
+    assert.equal(harborLife.assertDetailedSampling, true);
+    assert.deepEqual(harborLife.botSizes, [32], 'robots retain their size on the map');
+    assert.deepEqual(harborLife.factionSizes, [34], 'leaders and the player use the same larger frame');
+    assert.ok(harborLife.maxRobots > 11, 'building residents join the crew, freight and patrol robots');
+    assert.equal(harborLife.delivered, true, 'freight robots run their original delivery routes');
+    assert.equal(harborLife.crewSpoke, true, 'the build crew’s local dialogue is rendered near spawn');
+    assert.equal(harborLife.staticCrewSpoke, true, 'reduced-motion users retain a static crew speech bubble');
     const position = await page.evaluate(() => {
       const hit = factionHits.find(item => item.index === 1);
       const map = document.querySelector('#map');
       const scroll = document.querySelector('.map-scroll');
       const rect = map.getBoundingClientRect();
       scroll.scrollLeft = hit.x * rect.width / mapWidth - scroll.clientWidth / 2;
-      scroll.scrollTop = (hit.y - 8) * rect.height / mapHeight - scroll.clientHeight / 2;
+      scroll.scrollTop = (hit.y - 26) * rect.height / mapHeight - scroll.clientHeight / 2;
       const shifted = map.getBoundingClientRect();
-      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 8) * rect.height / mapHeight };
+      return { x: shifted.left + hit.x * rect.width / mapWidth, y: shifted.top + (hit.y - 26) * rect.height / mapHeight };
     });
+    const details = page.getByRole('region', { name: 'Nine Toes Joe', exact: true });
+    await page.mouse.move(position.x, position.y);
+    await page.waitForFunction(() => inspection.held('leader:1'));
+    assert.equal(await details.isVisible(), false, 'hover pauses without opening details');
+    const remaining = await page.evaluate(() => npcPauses.get('leader:1').until - performance.now());
+    assert.ok(remaining > 29_000 && remaining <= 30_000);
     await page.mouse.click(position.x, position.y);
-    const details = page.getByRole('region', { name: 'The Nomad Bears', exact: true });
     await details.waitFor();
-    assert.equal(await details.getByRole('link', { name: 'Faction page' }).getAttribute('href'), '/battle-chamber/factions/nomad-bears.html');
+    assert.equal(await details.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
+    assert.match(await details.locator('[data-role]').innerText(), /Bears scout/);
     assert.equal(await page.getByRole('dialog').count(), 0);
-    await page.mouse.dblclick(position.x, position.y);
-    const composer = page.getByRole('dialog', { name: 'Ask The Nomad Bears' });
+    await details.getByRole('button', { name: 'Ask a question' }).click();
+    const composer = page.getByRole('dialog', { name: 'Ask Nine Toes Joe' });
     await composer.getByLabel('Question').fill('Who are the Nomad Bears?');
+    assert.equal(await composer.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
     await composer.getByRole('button', { name: 'Send' }).click();
     await composer.waitFor({ state: 'hidden' });
     const bubble = page.locator('.leader-map-bubble');
-    await bubble.getByText('Checking the wiki…').waitFor();
+    await bubble.getByText('Thinking…').waitFor();
+    assert.equal(await bubble.getByRole('link', { name: 'Nine Toes Joe' }).getAttribute('href'), '/wiki/nine-toes-joe.html');
     releaseFirstReply();
     await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
     assert.match(await bubble.locator('[data-speech]').innerText(), /…$/u);
     await bubble.getByRole('button', { name: 'More info' }).click();
-    const full = page.getByRole('dialog', { name: 'The Nomad Bears · Reply' });
+    const full = page.getByRole('dialog', { name: 'Nine Toes Joe · Reply' });
     await full.getByText(longReply, { exact: true }).waitFor();
     assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
     await full.getByRole('button', { name: 'Close full reply' }).click();
     await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
 
-    await details.getByRole('button', { name: 'Rival slowdowns' }).click();
-    const slowdown = page.getByRole('dialog', { name: 'The Nomad Bears', exact: true });
+    await details.getByRole('button', { name: 'Leader slowdowns' }).click();
+    const slowdown = page.getByRole('dialog', { name: 'Nine Toes Joe', exact: true });
     await slowdown.getByRole('button', { name: /defend first\? · 10 min/ }).click();
     await slowdown.getByRole('status').filter({ hasText: 'Keep the supply lanes open.' }).waitFor();
     assert.equal(requestBodies.length, 1);
@@ -2258,17 +2605,151 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     await page.waitForFunction(() => factionHits.find(hit => hit.index === 1)?.paused);
     await slowdown.getByRole('button', { name: 'Close leader dialog' }).click();
     await page.touchscreen.tap(position.x, position.y);
+    await details.waitFor({ state: 'hidden' });
+    assert.equal(await page.evaluate(() => tappedNpc), 'leader:1');
     await page.touchscreen.tap(position.x, position.y);
+    await details.getByRole('button', { name: 'Ask a question' }).click();
     await composer.getByLabel('Question').fill('Who are their rivals?');
     await composer.getByRole('button', { name: 'Send' }).click();
     await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
     assert.deepEqual(loreBodies[1], {
       telegram_auth: { id: '123' }, npc: target, question: 'Who are their rivals?', previous: ['Who are the Nomad Bears?'],
+      recent_turns: [{ question: 'Who are the Nomad Bears?', reply: longReply }],
     });
     assert.equal(requestBodies.length, 1, 'lore chat does not issue a slowdown');
     await page.clock.fastForward(65_000);
     await page.waitForFunction(() => factionHits.length === 9 && factionHits.some(hit => hit.index === 6));
     assert.ok(entryActions.includes('renew'), 'an active map renews its seat');
+    assert.equal(await page.evaluate(() => inspection.held('leader:1')), false, 'inspection expires automatically');
+
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+    const roamer = await page.evaluate(() => {
+      const surface = document.querySelector('#map');
+      const scroller = document.querySelector('.map-scroll');
+      const { width, height } = surface.getBoundingClientRect();
+      const candidates = [];
+      const render = document.createElement('canvas').getContext('2d');
+      window.drawWaterfront(render, rows, player, district, null, 0, [], null, null, null, {
+        ...inspection,
+        hit: actor => { if (actor.profile) candidates.push(actor); },
+      });
+      for (const hit of candidates) {
+        const hitY = hit.y - hit.spriteSize / 2;
+        scroller.scrollLeft = hit.x * width / mapWidth - scroller.clientWidth / 2;
+        scroller.scrollTop = hitY * height / mapHeight - scroller.clientHeight / 2;
+        paintMap();
+        if (npcAt(hit.x, hitY)?.id !== hit.id) continue;
+        const rect = surface.getBoundingClientRect();
+        const x = rect.left + hit.x * width / mapWidth;
+        const y = rect.top + hitY * height / mapHeight;
+        if (surface.contains(document.elementFromPoint(x, y))) return { x, y, ...hit.profile };
+      }
+    });
+    assert.ok(roamer, 'a profiled roamer is visible and selectable');
+    await page.touchscreen.tap(roamer.x, roamer.y);
+    const roamerDetails = page.getByRole('region', { name: roamer.name, exact: true });
+    await roamerDetails.waitFor();
+    assert.equal(await roamerDetails.getByRole('link', { name: 'Character wiki' }).getAttribute('href'), roamer.wiki);
+    assert.equal(await roamerDetails.getByRole('button').count(), 1, 'the only button closes the panel');
+    assert.equal(await roamerDetails.locator('[data-leader-status]').isVisible(), false);
+    await roamerDetails.getByRole('button', { name: 'Close character details' }).click();
+    await roamerDetails.waitFor({ state: 'hidden' });
+    const robot = await page.evaluate(() => {
+      const hit = npcHits.find(item => item.id === 'crew:0');
+      const canvas = document.querySelector('#map');
+      const scroller = document.querySelector('.map-scroll');
+      const { width, height } = canvas.getBoundingClientRect();
+      scroller.scrollLeft = hit.x * width / mapWidth - scroller.clientWidth / 2;
+      scroller.scrollTop = (hit.y - 20) * height / mapHeight - scroller.clientHeight / 2;
+      const rect = canvas.getBoundingClientRect();
+      return { x: rect.left + hit.x * width / mapWidth, y: rect.top + (hit.y - 20) * height / mapHeight };
+    });
+    await page.mouse.move(robot.x, robot.y);
+    await page.waitForFunction(() => inspection.held('crew:0'));
+    await page.mouse.click(robot.x, robot.y);
+    await details.waitFor({ state: 'hidden' });
+    assert.equal(await page.getByRole('dialog').count(), 0, 'a robot without a profile leaves the details blank');
+    await page.getByRole('button', { name: 'Info', exact: true }).click();
+    const avatarChecks = await page.evaluate(() => {
+      const original = window.drawWaterfront;
+      const checks = [];
+      window.drawWaterfront = (ctx, rows, player, district, time, discussion, states, selected, encounters, visible, inspection) => {
+        let participants;
+        const hits = original(ctx, rows, player, district, 0, discussion, [], selected, {
+          holds: () => false,
+          tick: actors => { participants = actors; return []; },
+        }, visible, inspection);
+        checks.push({ selected, skin: player.faction, walkers: hits.map(hit => hit.index),
+          participants: participants.map(actor => actor.index) });
+        return hits;
+      };
+      try {
+        const picker = document.querySelector('#waterfront-avatar');
+        for (const option of picker.options) {
+          picker.value = option.value;
+          picker.dispatchEvent(new Event('change'));
+        }
+        picker.value = '';
+        picker.dispatchEvent(new Event('change'));
+      } finally {
+        window.drawWaterfront = original;
+      }
+      return checks;
+    });
+    assert.equal(avatarChecks.length, 11);
+    for (const { selected, skin, walkers, participants } of avatarChecks) {
+      assert.equal(skin, selected);
+      assert.deepEqual(walkers, Array.from({ length: 9 }, (_, index) => index).filter(index => index !== selected));
+      assert.deepEqual(participants.sort((a, b) => a - b), Array.from({ length: 9 }, (_, index) => index));
+    }
+    await page.locator('#waterfront-avatar').selectOption({ label: 'Nine Toes Joe' });
+    await page.waitForFunction(() => factionHits.length === 8 && !factionHits.some(hit => hit.index === 1));
+    await page.evaluate(() => {
+      const map = document.querySelector('#map');
+      const scroll = document.querySelector('.map-scroll');
+      const rect = map.getBoundingClientRect();
+      scroll.scrollLeft = (player.x * tileSize + 16) * rect.width / mapWidth - scroll.clientWidth / 2;
+      scroll.scrollTop = (player.y * tileSize + 22) * rect.height / mapHeight - scroll.clientHeight / 2;
+    });
+    await page.locator('#map-leader-faction').selectOption(target);
+    await page.getByRole('button', { name: 'Show details' }).click();
+    await details.getByRole('button', { name: 'Ask a question' }).click();
+    await composer.getByLabel('Question').fill('What are you working on?');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await bubble.getByText('Thinking…').waitFor();
+    const anchorOffset = await bubble.evaluate(element => {
+      const map = document.querySelector('#map').getBoundingClientRect();
+      const avatarX = map.left + (player.x * tileSize + 16) * map.width / mapWidth;
+      const bounds = element.getBoundingClientRect();
+      return Math.abs(bounds.left + bounds.width / 2 - avatarX);
+    });
+    assert.ok(anchorOffset < 2, 'the reply is centered above the player sprite');
+    releaseAvatarReply();
+    await bubble.getByText(/The Nomad Bears are one of the two market factions/).waitFor();
+    assert.equal(loreBodies[2].npc, target);
+    await bubble.getByRole('button', { name: 'More info' }).click();
+    await full.getByText(longReply, { exact: true }).waitFor();
+    assert.equal(await full.getByRole('link', { name: 'Crypto Moonboys' }).getAttribute('href'), '/wiki/crypto-moonboys.html');
+    await full.getByRole('button', { name: 'Close full reply' }).click();
+
+    await bubble.getByRole('button', { name: 'Dismiss reply' }).click();
+    await page.getByText('Map editor', { exact: true }).click();
+    await page.getByRole('button', { name: 'Edit tiles' }).click();
+    const editedTile = await page.evaluate(() => {
+      const y = spawn.y + 2;
+      const x = [...initial[y]].findIndex((tile, index) =>
+        Math.abs(index - spawn.x) <= 6 && tile !== 'p' && tile !== '~');
+      const canvas = document.querySelector('#map');
+      const rect = canvas.getBoundingClientRect();
+      canvas.dispatchEvent(new MouseEvent('click', {
+        clientX: rect.left + (x + 0.5) * rect.width / columns,
+        clientY: rect.top + (y + 0.5) * rect.height / initial.length,
+      }));
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      return { x, y, tile: saved?.[y]?.[x], width: saved?.[y]?.length };
+    });
+    assert.equal(editedTile.tile, 'p');
+    assert.equal(editedTile.width, 84);
 
     seatLost = true;
     await page.clock.fastForward(21_000);
@@ -2276,6 +2757,13 @@ test('Waterfront hides playing leaders and uses sprite details, double-click and
     assert.equal(await page.locator('#map').isVisible(), false);
     assert.equal(await page.locator('.leader-map-bubble').isVisible(), false);
     assert.ok(entryActions.includes('leave'));
+
+    seatLost = false;
+    await page.addInitScript(() => { window.testOwner = '123'; });
+    await page.reload();
+    await page.getByRole('button', { name: 'Enter Waterfront' }).click();
+    await page.locator('#map').waitFor();
+    assert.equal(await page.evaluate(({ x, y }) => rows[y][x], editedTile), 'p');
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

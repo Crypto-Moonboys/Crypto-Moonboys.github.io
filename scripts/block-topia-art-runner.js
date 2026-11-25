@@ -100,13 +100,17 @@ async function waitForSheet(jobId) {
 
 const preview = `<!doctype html>
 <html lang="en">
+<head>
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina walk preview</title>
 <style>
 body{background:#121c2b;color:#e6efff;font:1rem system-ui;margin:2rem}
 canvas{background:#22334a;image-rendering:pixelated;max-width:100%}
 </style>
+</head>
+<body class="page-standalone-tool">
 <h1>Lumina</h1>
 <p>Top-down south-facing walk cycle · Block Topia founder preview</p>
 <canvas id="sprite" width="256" height="256" aria-label="Lumina walking in place"></canvas>
@@ -145,6 +149,7 @@ sheet.onerror = () => { status.textContent = "Could not load the sprite sheet.";
 play.onclick = toggle;
 sheet.src = "walk-south.png";
 </script>
+</body>
 </html>
 `;
 

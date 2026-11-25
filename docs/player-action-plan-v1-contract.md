@@ -71,6 +71,10 @@ The API must be **read-only**: `SELECT` statements only and no game state bootst
 - Bound results and DB statement count. PR 2 must budget worst case for 0 / 1 / 3 pets, archived originals, outstanding claims and independent time windows; validate D1 read-only behavior and response times before rollout.
 - Public faction standings may reuse public cache separately from the private plan; loading nine faction visitors must not cause full MoonPet state fetches.
 
+## Battle Chamber history
+
+The signed action-plan endpoint accepts `view: "battle-history"` and a single UTC `day` in `YYYY-MM-DD` format. It returns retained Telegram group sends, the signed owner’s saved signal status, settled signal bank XP and recorded missed XP values. Group sends are evidence of a post to the community. Check-ins and elapsed windows do not count as completed. A closed window without owner evidence remains unconfirmed for reward settlement. The read never creates or changes receipts.
+
 ## E. Acceptance fixtures PR 2+
 | Scenario | Required result |
 |---|---|

@@ -1,18 +1,9 @@
+import { LEADERS } from '/js/waterfront-faction-identities.mjs?v=2';
 import {
   clanLeaderQuestionError, clanLeaderSourceLinks, getClanLeaderBoard, mountClanLeaderDialog, sendClanLeaderQuestion,
-} from '/js/clan-leader-dialog.js?lore=3';
+} from '/js/clan-leader-dialog.js?lore=5';
 
-const names = new Map([
-  ['all-city-bulls', 'All City Bulls'],
-  ['nomad-bears', 'The Nomad Bears'],
-  ['hard-fork-rockers', 'Hard Fork Rockers'],
-  ['rugpull-miners', 'Rugpull Miners'],
-  ['crypto-moongirls', 'Crypto Moongirls'],
-  ['blockchain-furies', 'The Blockchain Furies'],
-  ['graffpunks', 'GraffPunks'],
-  ['crypto-stoned-boys', 'Crypto Stinedboys'],
-  ['blockstars', 'The Blockstars'],
-]);
+const names = new Map(Object.entries(LEADERS).map(([id, profile]) => [id, profile.character]));
 const keys = Array.from(names.keys());
 const pick = document.querySelector('#map-leader-faction');
 const controls = document.querySelector('#map-leader-controls');
@@ -29,12 +20,12 @@ details.className = 'leader-map-details';
 details.setAttribute('aria-labelledby', 'leader-map-name');
 details.hidden = true;
 details.innerHTML = `
-  <button type="button" data-close aria-label="Close leader details">×</button>
+  <button type="button" data-close aria-label="Close character details">×</button>
   <h2 id="leader-map-name"></h2>
-  <p>Faction leader <span data-activity></span></p>
-  <a data-faction-page>Faction page</a>
+  <p data-leader-status><span data-role></span> <span data-activity></span></p>
+  <a data-character-page>Character wiki</a>
   <button type="button" data-ask>Ask a question</button>
-  <button type="button" data-slow>Rival slowdowns</button>`;
+  <button type="button" data-slow>Leader slowdowns</button>`;
 
 const questionBox = document.createElement('dialog');
 questionBox.className = 'clan-leader-dialog';
@@ -42,8 +33,9 @@ questionBox.setAttribute('aria-labelledby', 'leader-question-title');
 questionBox.innerHTML = `
   <h2 id="leader-question-title"></h2>
   <form>
+    <p><a data-character-page>Character wiki</a></p>
     <label>Question <textarea rows="3" maxlength="600" required></textarea></label>
-    <p>10 free questions per UTC day. Each Clan Operation tier banked today earns one more.</p>
+    <p>10 chat questions total across all faction leaders per UTC day, plus one free slowdown.</p>
     <button type="submit">Send</button>
     <button type="button" data-cancel>Cancel</button>
   </form>`;
@@ -53,6 +45,7 @@ const bubble = document.createElement('div');
 bubble.className = 'leader-map-bubble';
 bubble.hidden = true;
 bubble.innerHTML = `
+  <a data-character-page></a>
   <span data-speech></span>
   <button type="button" data-more aria-label="More info">ⓘ</button>
   <button type="button" data-dismiss aria-label="Dismiss reply">×</button>`;
@@ -62,7 +55,9 @@ replyBox.className = 'clan-leader-dialog';
 replyBox.setAttribute('aria-labelledby', 'leader-reply-title');
 replyBox.innerHTML = `
   <form method="dialog"><button type="submit" aria-label="Close full reply">Close</button></form>
-  <h2 id="leader-reply-title"></h2><div data-full-reply></div>`;
+  <h2 id="leader-reply-title"></h2>
+  <p><a data-character-page>Character wiki</a></p>
+  <div data-full-reply></div>`;
 
 const announcement = document.createElement('p');
 announcement.className = 'leader-map-announcement';
@@ -74,7 +69,6 @@ let board;
 let selected;
 let asking;
 let reply;
-let pendingSelection;
 let sequence = 0;
 let returnTimer;
 
@@ -86,12 +80,31 @@ function showDetails(key) {
   selected = key;
   const presence = lookup(key)?.presence;
   details.querySelector('h2').textContent = names.get(key);
+  details.querySelector('[data-leader-status]').hidden = false;
+  details.querySelector('[data-role]').textContent = LEADERS[key].callSign;
   const playing = presence?.playing_until * 1000 > Date.now();
   const paused = presence?.paused_until * 1000 > Date.now();
   details.querySelector('[data-activity]').textContent = playing ? '· Playing a game' : paused ? '· Paused' : '· In Waterfront';
-  details.querySelector('[data-faction-page]').href = '/battle-chamber/factions/' + key + '.html';
+  const characterPage = details.querySelector('[data-character-page]');
+  characterPage.href = LEADERS[key].bio;
+  characterPage.hidden = false;
   details.querySelector('[data-ask]').hidden = !board?.chat_enabled || playing;
   details.querySelector('[data-slow]').hidden = !board?.controls;
+  details.hidden = false;
+}
+
+function showRoamerDetails({ name, wiki, role }) {
+  selected = null;
+  details.querySelector('h2').textContent = name;
+  const characterPage = details.querySelector('[data-character-page]');
+  characterPage.hidden = !wiki;
+  if (wiki) characterPage.href = wiki;
+  else characterPage.removeAttribute('href');
+  details.querySelector('[data-leader-status]').hidden = !role;
+  details.querySelector('[data-role]').textContent = role ?? '';
+  details.querySelector('[data-activity]').textContent = '';
+  details.querySelector('[data-ask]').hidden = true;
+  details.querySelector('[data-slow]').hidden = true;
   details.hidden = false;
 }
 
@@ -99,6 +112,7 @@ function openQuestion(key) {
   if (!board?.chat_enabled || lookup(key)?.presence?.playing_until * 1000 > Date.now()) return;
   asking = key;
   questionBox.querySelector('h2').textContent = 'Ask ' + names.get(key);
+  questionBox.querySelector('[data-character-page]').href = LEADERS[key].bio;
   input.value = '';
   if (!questionBox.open) questionBox.showModal();
   input.focus();
@@ -106,13 +120,16 @@ function openQuestion(key) {
 
 function positionBubble() {
   if (!reply) return;
-  const hit = factionHits.find(actor => keys[actor.index] === reply.key);
+  const index = keys.indexOf(reply.key);
+  const hit = index === selectedAvatar
+    ? { x: player.x * tileSize + 16, y: player.y * tileSize + 22 }
+    : factionHits.find(actor => actor.index === index);
   if (!hit) { bubble.hidden = true; return; }
   const gameBounds = map.getBoundingClientRect();
   const frame = mapScroller.getBoundingClientRect();
   const parent = mapViewport.getBoundingClientRect();
   const x = gameBounds.left + hit.x * gameBounds.width / mapWidth;
-  const y = gameBounds.top + (hit.y - 20) * gameBounds.height / mapHeight;
+  const y = gameBounds.top + (hit.y - factionSpriteSize) * gameBounds.height / mapHeight;
   bubble.hidden = x < frame.left || x > frame.right || y < frame.top || y > frame.bottom;
   if (bubble.hidden) return;
   const half = bubble.offsetWidth / 2;
@@ -120,21 +137,47 @@ function positionBubble() {
   bubble.style.top = Math.round(Math.max(bubble.offsetHeight + 5, y - parent.top - 8)) + 'px';
 }
 
-function showSpeech(key, text, sources = [], error) {
-  reply = { key, text, sources, error };
+function showSpeech(key, text, sources = [], suggestions) {
+  reply = { key, text, sources, suggestions };
   const clipped = text.length > 145;
   const cut = text.slice(0, 140);
   const short = clipped ? (cut.replace(/\s+\S*$/u, '') || cut) + '…' : text;
+  const profileLink = bubble.querySelector('[data-character-page]');
+  profileLink.href = LEADERS[key].bio;
+  profileLink.textContent = names.get(key);
   bubble.querySelector('[data-speech]').textContent = short;
-  bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || error === 'lore_task_required');
+  bubble.querySelector('[data-more]').hidden = !(clipped || sources.length || suggestions);
   announcement.textContent = names.get(key) + ': ' + text;
   positionBubble();
 }
 
 function clearSelection() {
-  clearTimeout(pendingSelection);
   selected = null;
   details.hidden = true;
+}
+
+const presenceNotices = document.querySelector('#leader-presence-notices');
+const lastPlaying = new Map();
+const activeNotices = new Map();
+
+function updatePresenceNotices(now) {
+  if (!window.waterfrontAccess.canPlay()) return;
+  for (const [index, key] of keys.entries()) {
+    if (!lookup(key)?.presence) continue;
+    const playing = leaderStates[index].playingUntil > now;
+    const previous = lastPlaying.get(key);
+    lastPlaying.set(key, playing);
+    if (previous === undefined || previous === playing) continue;
+    activeNotices.get(key)?.remove();
+    const notice = document.createElement('p');
+    notice.textContent = names.get(key) + (playing ? ' has left the room.' : ' is back in the game.');
+    presenceNotices.append(notice);
+    activeNotices.set(key, notice);
+    setTimeout(() => {
+      notice.remove();
+      if (activeNotices.get(key) === notice) activeNotices.delete(key);
+    }, 6000);
+  }
 }
 
 async function refresh() {
@@ -154,8 +197,10 @@ async function refresh() {
     });
     clearTimeout(returnTimer);
     const now = Date.now();
+    updatePresenceNotices(now);
     const ends = leaderStates.flatMap(state => [state.playingUntil, state.pausedUntil]).filter(time => time > now);
     if (ends.length) returnTimer = setTimeout(() => {
+      updatePresenceNotices(Date.now());
       if (selected) showDetails(selected);
       paintMap();
     }, Math.min(...ends) - now + 30);
@@ -166,16 +211,8 @@ async function refresh() {
   }
 }
 
-map.addEventListener('waterfront:leader-select', ({ detail: { index, ask } }) => {
-  clearTimeout(pendingSelection);
-  const key = keys[index];
-  if (ask && board?.chat_enabled) {
-    showDetails(key);
-    openQuestion(key);
-  } else {
-    pendingSelection = setTimeout(() => showDetails(key), 365);
-  }
-});
+map.addEventListener('waterfront:leader-select', ({ detail: { index } }) => showDetails(keys[index]));
+map.addEventListener('waterfront:roamer-select', ({ detail }) => showRoamerDetails(detail));
 map.addEventListener('waterfront:leader-clear', clearSelection);
 map.addEventListener('waterfront:map-painted', positionBubble);
 mapScroller.addEventListener('scroll', positionBubble, { passive: true });
@@ -204,8 +241,8 @@ questionBox.querySelector('form').addEventListener('submit', async event => {
   if (result.ok) histories.set(historyKey, [...previous, { question, reply: result.reply }].slice(-2));
   if (ticket !== sequence) return;
   mapViewport.removeAttribute('data-leader-question-pending');
-  if (result.ok) showSpeech(key, result.reply, result.sources);
-  else showSpeech(key, clanLeaderQuestionError(result.error), [], result.error);
+  if (result.ok) showSpeech(key, result.reply, result.sources, result.search_suggestions);
+  else showSpeech(key, clanLeaderQuestionError(result.error));
 });
 bubble.querySelector('[data-dismiss]').addEventListener('click', () => {
   sequence++;
@@ -216,17 +253,12 @@ bubble.querySelector('[data-dismiss]').addEventListener('click', () => {
 bubble.querySelector('[data-more]').addEventListener('click', () => {
   if (!reply) return;
   replyBox.querySelector('h2').textContent = names.get(reply.key) + ' · Reply';
+  replyBox.querySelector('[data-character-page]').href = LEADERS[reply.key].bio;
   const full = replyBox.querySelector('[data-full-reply]');
   const text = document.createElement('p');
   text.textContent = reply.text;
   full.replaceChildren(text);
-  if (reply.sources.length) full.append(clanLeaderSourceLinks(reply.sources));
-  if (reply.error === 'lore_task_required') {
-    const link = document.createElement('a');
-    link.href = '/community.html#clan-operation-title';
-    link.textContent = 'Open Clan Operations';
-    full.append(link);
-  }
+  if (reply.sources.length || reply.suggestions) full.append(clanLeaderSourceLinks(reply.sources, reply.suggestions));
   replyBox.showModal();
 });
 
@@ -234,6 +266,10 @@ window.addEventListener('waterfront:access', () => {
   if (window.waterfrontAccess.canPlay()) {
     refresh();
   } else {
+    clearTimeout(returnTimer);
+    lastPlaying.clear();
+    activeNotices.clear();
+    presenceNotices.replaceChildren();
     sequence++;
     mapViewport.removeAttribute('data-leader-question-pending');
     histories.clear();

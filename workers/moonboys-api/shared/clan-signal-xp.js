@@ -2,7 +2,7 @@ import { awardCommunityXp } from '../community-xp-awards.js';
 import { WTF_DAILY_SCHEDULE } from './daily-wtf-schedule.js';
 
 export const CLAN_SIGNAL_XP = 100;
-const action = 'clan_daily_wtf_bank';
+export const CLAN_SIGNAL_XP_ACTION = 'clan_daily_wtf_bank';
 
 export function clanSignalXpStart(env) {
   const start = env.CLAN_SIGNAL_XP_FROM;
@@ -39,12 +39,12 @@ export async function settleClanSignalXp(db, start, now) {
       WHERE receipt.telegram_id=eligible.telegram_id AND receipt.action=? AND receipt.claim_key=eligible.claim_key
     )
     ORDER BY earned_at, telegram_id LIMIT 25
-  `).bind(schedule, start, now.toISOString(), action).all();
+  `).bind(schedule, start, now.toISOString(), CLAN_SIGNAL_XP_ACTION).all();
   if (!result.success) throw new Error('clan_signal_xp_source_unavailable');
   let failed = false;
   for (const bank of result.results) {
     try {
-      await awardCommunityXp(db, bank.telegram_id, CLAN_SIGNAL_XP, action, bank.claim_key, { now: bank.earned_at });
+      await awardCommunityXp(db, bank.telegram_id, CLAN_SIGNAL_XP, CLAN_SIGNAL_XP_ACTION, bank.claim_key, { now: bank.earned_at });
     } catch {
       failed = true;
     }

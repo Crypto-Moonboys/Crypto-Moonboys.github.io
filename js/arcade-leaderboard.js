@@ -32,6 +32,7 @@ const RAW_TABS = [
 const META_TABS = [
   { key: 'daily',    label: '📆 Daily',    icon: '📆' },
   { key: 'weekly',   label: '🗓️ Weekly',   icon: '🗓️' },
+  { key: 'monthly',  label: 'Monthly', icon: '🗓️' },
   { key: 'seasonal', label: '🏆 Seasonal', icon: '🏆' },
 ];
 const DEFAULT_MODE = 'raw';
@@ -411,12 +412,21 @@ async function switchTab(tab) {
   await loadLeaderboard();
 }
 
-async function switchMode(mode) {
+export async function showGameLeaderboard(game) {
+  if (isFetching || !RAW_TABS.some(({ key }) => key === game)) return;
+  if (currentMode === 'raw') {
+    await switchTab(game);
+    return;
+  }
+  await switchMode('raw', game);
+}
+
+async function switchMode(mode, rawTab = 'global') {
   if (isFetching) return;
   const nextMode = mode === 'meta' ? 'meta' : DEFAULT_MODE;
   if (nextMode === currentMode) return;
   currentMode = nextMode;
-  currentTab = currentMode === 'meta' ? 'daily' : 'global';
+  currentTab = currentMode === 'meta' ? 'daily' : rawTab;
   currentData = [];
   renderModeToggle();
   renderTabs();

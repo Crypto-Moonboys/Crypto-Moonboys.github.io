@@ -2,9 +2,19 @@
 
 Lumina’s Waterfront is Block Topia’s walkable island district. Build a dense, lived-in cyberpunk harbor inspired by Hong Kong at night. Anchor the city in docks, steep rooflines, narrow streets, neon storefronts, parks and graffiti. Keep the current visual language of deep blue shadows, amber windows, teal waterfront light and selective magenta accents. Use original art and the supplied faction designs.
 
+## Purpose and audience
+
+This district gives verified faction players a place to explore. Public test builds let the community follow construction before it reaches the live game. From spawn, a first-time visitor should be able to use Lumina’s blue lantern to get their bearings, then follow the street to the docks and seawall mural. Give every new destination a reason to visit and a readable route from the existing network.
+
+For a single VPS sprite-library placement, identify the player benefit first. A planter can mark a junction without hiding a doorway. A bench can create a rest stop without occupying the footpath. Keep the lot outside the original harbor core and preserve existing paths, shoreline and saved player edits. A new route or mechanic needs a separate design and review.
+
+The [founder issue](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/issues/1921#luminas-waterfront--living-district-brief) holds the expanded district goals. The build crew’s authored map briefings rotate by UTC weekday. Recorded builder and reviewer turns are published separately when they are available.
+
 ## Districts and landmarks
 
-These are design targets for future PRs. Check `workers/moonboys-api/blocktopia/waterfront-district.js` and the current renderer before choosing lots. Coordinates below are inclusive, zero-based world coordinates. The current grid is 56 by 34 with 32 map pixels per tile.
+Read the [restored harbor baseline](README.md#preserve-the-restored-harbor) before selecting lots or editing renderer code. The original harbor is the existing build. The nature extension is for paths, trees and flowers. Building ideas below are future design proposals that require separate approval.
+
+These are design targets for future PRs. Check `workers/moonboys-api/blocktopia/waterfront-district.js` and the current renderer before choosing lots. Coordinates below are inclusive, zero-based world coordinates. The original harbor grid is 56 × 34. The full walkable district uses a 112 × 85 world grid with 32 map pixels per tile.
 
 | Area | Build direction |
 | --- | --- |
@@ -20,7 +30,7 @@ These are design targets for future PRs. Check `workers/moonboys-api/blocktopia/
 
 - Treat streets and paths as a connected network. Check access from spawn to each new public destination with the existing pathfinder. Use existing tile IDs and save migration conventions. Never make ordinary water walkable to solve a route.
 - Start with one or two tiles of frontage for small buildings and use larger footprints only for landmarks. Model the actual footprint before adding the sprite. Place the visible front door over its reachable landing, keep the draw origin at the building base and respect depth sorting.
-- Compare doors, benches and windows against the current 18-pixel player and 20-pixel faction NPC render sizes. Inspect normal zoom and close-up. Keep path access clear of foliage, signs, cargo and door overlays.
+- Compare doors, benches and windows against the current 34-pixel faction/player and 32-pixel robot draw sizes. Inspect normal zoom and close-up. Keep path access clear of foliage, signs, cargo and door overlays.
 - Keep the player under player control. Let the nine faction pedestrians roam connected routes with correct facing and readable nearby labels. Cargo bots keep their delivery role. Graffiti bots work along the mural. Crew bots present actual build discussions.
 - Preserve player skins and the faction names already mapped from the portrait filenames. All City Bulls and Nomad Bears are the main surface factions. Treat sightings and district flavor as local presence. Changes to faction affiliations, territory ownership or canon need explicit direction.
 
@@ -61,6 +71,8 @@ The VPS runs the [Block Topia build queue](../../../scripts/block-topia-build-qu
 
 The worker reads the district, renderer, city brief and [sprite library](SPRITE-LIBRARY.md) from the integration base. Local Ollama proposes one registered flower or furniture sprite per round. The runner validates the sprite and coordinates, checks the modified renderer's JavaScript syntax, and places the prop on open ground beside a street or footpath outside the original harbor core. The renderer hides it if a saved map edit changes the lot or adjoining route. The production workflow leaves map geometry and routes intact.
 
-Each candidate gets a preview PR and a Codex review request. Review findings feed the next attempt. A clean review of the tested commit, continued issue approval and an unchanged base allow the worker to merge into `block-topia/waterfront-production-integration`. The branch starts from `main` when first created. The owner handles any merge to `main` and deployment. Production preview PRs still need a visual browser check.
+Each candidate gets a preview PR and a Codex review request. Review findings feed the next attempt. A clean review of the tested commit, continued issue approval and an unchanged base allow the worker to merge into `block-topia/waterfront-production-integration`. The branch starts from `main` when first created. Before advancing a production preview, compare its base and proposed diff with current `main` and the restored harbor baseline. If the integration base is older, carry the scoped proposal onto the current production map for review. Keep the separate founder-preview map on its own branch. The owner handles any merge to `main` and deployment. Production preview PRs still need a visual browser check.
+
+If a Waterfront production PR targeting `main` develops a merge conflict, continue the repair cycle. Inspect the latest `main` and reapply only the intended change, preserving intervening edits. Update the existing PR when possible. Rerun the affected route, saved-layout and browser checks, then request Codex review for the new head commit. Repeat if the base moves again or review finds a problem. A review on the old head does not clear the repaired patch. Merge only after GitHub reports a clean merge, Codex clears the current head and GK authorises the production merge. Report a blocker if the intended change cannot be reapplied without changing scope.
 
 From the VPS, the `mooncity` user can inspect the schedule with `systemctl --user list-timers block-topia-build.timer` and recent runs with `journalctl --user -u block-topia-build.service -n 50 --no-pager`.

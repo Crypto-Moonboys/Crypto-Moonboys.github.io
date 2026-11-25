@@ -11,6 +11,19 @@ const QUESTIONS = [
   { id: 'defences', title: 'Which part of the city would you defend first?', answer: 'The routes our crews use to move supplies. The whole district depends on keeping those lanes open.', minutes: 10 },
   { id: 'alliance', title: 'What would make your faction strike a deal with a rival?', answer: 'A deal needs terms both crews can verify. Bring a plan for the docks and we’ll talk through who does what.', minutes: 20 },
 ];
+const TALK_ALIASES = {
+  territory: /^(?:(?:what (?:is|s) (?:your (?:faction|crew|clan)|your team) working on (?:today|right now))|what are you working on today|what is your (?:crew|faction|clan) doing today|what are your plans for today)$/,
+  defences: /^(?:(?:which|what) part of (?:the )?city would you (?:defend|protect) first|what would you defend first|which district would you protect first|where would you defend first)$/,
+  alliance: /^(?:what would make your (?:faction|crew|clan) (?:strike|make) a deal with a rival|would you make a deal with a rival|what would it take to ally with a rival|what would make you ally with a rival|would you form an alliance with a rival)$/,
+};
+
+export function matchClanLeaderSlowdownQuestion(text) {
+  const normalize = value => value.toLowerCase().replace(/[’']/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+  // Match the entire intent so a lore or fiction request containing a keyword cannot spend the daily talk.
+  const question = normalize(text).replace(/^(?:hello|hey|hi|yo) /, '').replace(/^(?:please |can you tell me )/, '').replace(/ please$/, '');
+  return QUESTIONS.find(entry => question === normalize(entry.title) || TALK_ALIASES[entry.id].test(question));
+}
+
 const PAID = [
   { id: 'hour', title: 'Pause for 1 hour', minutes: 60, recovery: 3600, xp: 100, gems: 5 },
   { id: 'day', title: 'Pause for 24 hours', minutes: 1440, recovery: 21600, xp: 1200, gems: 50 },
@@ -189,7 +202,7 @@ export async function slowClanLeader(db, owner, faction, body, at) {
     }
     return receipt(prior);
   }
-  if (target === faction) return { error: 'rival_required', status: 403 };
+  if (paid && target === faction) return { error: 'rival_required', status: 403 };
 
   const time = utcSecond(at);
   const ends = time + (question ?? paid).minutes * 60;

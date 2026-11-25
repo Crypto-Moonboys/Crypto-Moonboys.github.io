@@ -135,7 +135,19 @@
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
   var btnReset = makeCtrlBtn('overlay-btn-reset', 'Reset game',        '↺', 'Reset');
   btnReset.setAttribute('data-fullscreen-action', 'reset');
-  var btnRadio = makeCtrlBtn('overlay-btn-radio', 'Play GraffPUNKS Radio', '📻', 'Radio');
+  // GraffPUNKS Radio on/off for every arcade game. Uses the site icon pack's
+  // speaker art: sound-on while the radio plays, muted speaker when it is off.
+  var RADIO_ICON_ON = '/art/icons/soundonspeakerone.png';
+  var RADIO_ICON_OFF = '/art/icons/mutespeakerone.png';
+  var btnRadio = makeCtrlBtn('overlay-btn-radio', 'Play GraffPUNKS Radio', '', 'Radio');
+  var btnRadioIcon = document.createElement('img');
+  btnRadioIcon.className = 'overlay-radio-icon';
+  btnRadioIcon.alt = '';
+  btnRadioIcon.width = btnRadioIcon.height = 18;
+  btnRadioIcon.decoding = 'async';
+  btnRadioIcon.src = RADIO_ICON_OFF;
+  btnRadio.querySelector('.btn-icon').appendChild(btnRadioIcon);
+  btnRadio.setAttribute('aria-pressed', 'false');
   btnRadio.disabled = true;
   var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
@@ -171,7 +183,7 @@
   ctrlBar.appendChild(panelStatus);
   ctrlBar.appendChild(btnInfo);
   ctrlBar.appendChild(btnData);
-  if (isMemeSwarm) ctrlBar.appendChild(btnRadio);
+  ctrlBar.appendChild(btnRadio);
   ctrlBar.appendChild(btnModifiers);
   ctrlBar.appendChild(btnFaction);
   ctrlBar.appendChild(btnFS);
@@ -1658,34 +1670,30 @@
     }));
   });
 
-  if (isMemeSwarm) {
-    var observedRadio = null;
-    var radioMountObserver = null;
-    var radioStateObserver = new MutationObserver(syncRadioControl);
-    function syncRadioControl() {
-      var control = document.getElementById('arcade-radio-toggle');
-      btnRadio.disabled = !control;
-      if (!control) return;
-      if (radioMountObserver) radioMountObserver.disconnect();
-      if (control !== observedRadio) {
-        observedRadio = control;
-        radioStateObserver.disconnect();
-        radioStateObserver.observe(control, {attributes:true, attributeFilter:['aria-pressed']});
-      }
-      var on = control.getAttribute('aria-pressed') === 'true';
-      btnRadio.setAttribute('aria-pressed', String(on));
-      btnRadio.setAttribute('aria-label', (on ? 'Stop' : 'Play') + ' GraffPUNKS Radio');
-      btnRadio.title = btnRadio.getAttribute('aria-label');
-    }
-    btnRadio.addEventListener('click', function () {
-      var control = document.getElementById('arcade-radio-toggle');
-      if (control) control.click();
-      syncRadioControl();
-    });
-    radioMountObserver = new MutationObserver(syncRadioControl);
-    radioMountObserver.observe(document.body, {childList:true, subtree:true});
-    syncRadioControl();
+  // The radio module starts the stream when Start is pressed and keeps one
+  // shared controller per page (game-shell.js mounts the same module).
+  var arcadeRadio = null;
+  function syncRadioControl() {
+    var on = !!(arcadeRadio && arcadeRadio.isOn());
+    btnRadio.disabled = !arcadeRadio;
+    btnRadio.setAttribute('aria-pressed', String(on));
+    btnRadio.setAttribute('aria-label', (on ? 'Stop' : 'Play') + ' GraffPUNKS Radio');
+    btnRadio.title = btnRadio.getAttribute('aria-label');
+    btnRadioIcon.src = on ? RADIO_ICON_ON : RADIO_ICON_OFF;
   }
+  btnRadio.addEventListener('click', function () {
+    if (!arcadeRadio) return;
+    arcadeRadio.toggle();
+    syncRadioControl();
+  });
+  document.addEventListener('arcade-radio-change', syncRadioControl);
+  import('/js/arcade/core/radio.js?v=radio-autostart-20261124').then(function (mod) {
+    arcadeRadio = mod.getArcadeRadio();
+    mod.mountArcadeRadio();
+    syncRadioControl();
+  }).catch(function (err) {
+    console.warn('[game-fullscreen] radio unavailable:', err);
+  });
 
   btnMute.addEventListener('click', function () {
     var audio = getArcadeAudio();

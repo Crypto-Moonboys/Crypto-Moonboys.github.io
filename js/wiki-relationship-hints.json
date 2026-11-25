@@ -28,6 +28,13 @@
           "title": "The Forty culture register",
           "description": "Forty cultures; the nine Battle Chamber options remain separate."
         }
+      ],
+      "characters": [
+        {
+          "url": "/wiki/eddie-stax.html",
+          "title": "Eddie Stax",
+          "description": "Eddie Stax is a GraffPUNKS muralist who keeps the Ninth Berth’s walls open to overlooked stories, disputed credits and public corrections."
+        }
       ]
     }
   },
@@ -43,6 +50,13 @@
           "url": "/wiki/first-witness-forty-paths.html#approved-forty-register",
           "title": "The Forty culture register",
           "description": "Forty cultures; the nine Battle Chamber options remain separate."
+        }
+      ],
+      "characters": [
+        {
+          "url": "/wiki/zarah8.html",
+          "title": "ZARAH8",
+          "description": "ZARAH8 keeps Block Topia’s services working at the Ninth Berth and fights to make room for the people its forms leave out."
         }
       ]
     }
@@ -163,6 +177,105 @@
           "url": "/wiki/bone-idol-ink.html",
           "title": "Bone Idol Ink Ritualists context",
           "description": "Existing owner and the distinct fictional culture; creator rights stay separate."
+        }
+      ]
+    }
+  },
+  "/wiki/the-crypto-stoned-boys.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/chada-boi.html",
+          "title": "Chada Boi",
+          "description": "Chada Boi collects discarded sounds for the Crypto Stoned Boys. His recording of two bells becomes evidence at the Ninth Berth."
+        }
+      ]
+    }
+  },
+  "/wiki/the-hard-fork-rockers.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/nobby.html",
+          "title": "Nobby",
+          "description": "Nobby is the Hard Fork Rocker who helps keep the Ninth Berth running and asks who pays for a better way of doing things."
+        }
+      ]
+    }
+  },
+  "/wiki/the-rugpull-miners.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/jimmy-rugpull.html",
+          "title": "Jimmy Rugpull",
+          "description": "Jimmy Rugpull represents the Rugpull Miners on the Waterfront, where he tries to make sure a failed deal still leaves workers paid."
+        }
+      ]
+    }
+  },
+  "/wiki/the-blockchain-furies.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/danny-rankz.html",
+          "title": "Danny Rankz",
+          "description": "Danny Rankz of the Blockchain Furies hears the Ninth Berth’s claims and follows the evidence from unpaid wages to a failing gauge."
+        }
+      ]
+    }
+  },
+  "/wiki/the-blockstars.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/teddy-boi-jones.html",
+          "title": "Teddy Boi Jones",
+          "description": "Teddy Boi Jones is a Blockstars broadcaster who puts voices from the Ninth Berth on air and argues for the people behind the show."
+        }
+      ]
+    }
+  },
+  "/wiki/the-allcity-bulls.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/jack-the-bull.html",
+          "title": "Jack the Bull",
+          "description": "Jack the Bull brings the All City Bulls’ competitive drive to the Ninth Berth, where a timed spectacle becomes a real relief run."
+        }
+      ]
+    }
+  },
+  "/wiki/the-nomad-bears.html": {
+    "relationship_hints": {
+      "characters": [
+        {
+          "url": "/wiki/nine-toes-joe.html",
+          "title": "Nine Toes Joe",
+          "description": "Nine Toes Joe is a Nomad Bears guide who keeps an independent way home open for the crews of Lumina’s Waterfront."
+        }
+      ]
+    }
+  },
+  "/wiki/block-topia.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/the-ninth-berth.html",
+          "title": "The Ninth Berth",
+          "description": "The Ninth Berth is a working dock on Lumina’s Waterfront. Meet nine faction representatives whose lives cross on the night of the double tide."
+        }
+      ]
+    }
+  },
+  "/wiki/crypto-moonboys.html": {
+    "relationship_hints": {
+      "lore": [
+        {
+          "url": "/wiki/the-ninth-berth.html",
+          "title": "The Ninth Berth",
+          "description": "The Ninth Berth is a working dock on Lumina’s Waterfront. Meet nine faction representatives whose lives cross on the night of the double tide."
         }
       ]
     }

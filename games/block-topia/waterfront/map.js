@@ -1,3 +1,4 @@
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the top-down camera, zoom behavior, and original harbor framing.
 "use strict";
 const district = window.waterfrontDistrict;
 const { rows: initial, spawn, tiles, tileSize } = district;
@@ -5,23 +6,43 @@ const columns = initial[0].length;
 const mapWidth = columns * tileSize;
 const mapHeight = initial.length * tileSize;
 const directions = { up: [0,-1], left: [-1,0], down: [0,1], right: [1,0] };
-const storageKey = "block-topia.waterfront.v5";
-const doorstepStorageKey = "block-topia.waterfront.v3";
-const previousStorageKey = "block-topia.waterfront.v2";
-const legacyStorageKey = "block-topia.waterfront.v1";
+const storageKey = "block-topia.waterfront.v9";
 const viewport = document.querySelector(".viewport");
 const mapScroll = document.querySelector(".map-scroll");
-const canvas = document.querySelector("#map");
-const ctx = canvas.getContext("2d");
+const mapSurface = document.querySelector("#map");
+const mapView = document.querySelector("#map-view");
+const ctx = mapView.getContext("2d");
 const edit = document.querySelector("#edit");
 const select = document.querySelector("#tile");
 const status = document.querySelector("#status");
+const kaijuWarning = document.querySelector("#kaiju-warning");
 const locationLabel = document.querySelector("#location");
 let rows = [...initial];
 let player = { ...spawn };
 const playerFaction = document.querySelector("#player-faction");
 const factionIds = ["all-city-bulls", "nomad-bears", "hard-fork-rockers", "rugpull-miners",
   "crypto-moongirls", "blockchain-furies", "graffpunks", "crypto-stoned-boys", "blockstars"];
+const avatar = document.querySelector("#waterfront-avatar");
+waterfrontCharacterNames.forEach((name, index) => avatar.add(new Option(name, String(index))));
+let selectedAvatar = null;
+let avatarIdleSince = performance.now();
+let idleRouteIndex = null;
+function resetIdleWalk() {
+  avatarIdleSince = performance.now();
+  idleRouteIndex = null;
+}
+viewport.addEventListener("pointerdown", resetIdleWalk, { passive: true });
+viewport.addEventListener("keydown", resetIdleWalk);
+let browserStorage;
+try { browserStorage = window.localStorage; } catch { /* Private browsing can disable storage. */ }
+const factionConversations = window.createWaterfrontFactionConversations(browserStorage);
+avatar.addEventListener("change", () => {
+  if (!window.waterfrontAccess.canPlay()) return;
+  selectedAvatar = avatar.value === "" ? null : Number(avatar.value);
+  resetIdleWalk();
+  mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
+  draw();
+});
 let editing = false;
 let walkTimer;
 
@@ -29,85 +50,56 @@ function walkable(tile) {
   return Boolean(tiles[tile]?.walkable);
 }
 
-function validLayout(candidate, baseline, startX, startY = spawn.y) {
-  return Array.isArray(candidate) && candidate.length === baseline.length &&
-    candidate.every((row, y) => typeof row === "string" && row.length === baseline[y].length &&
-      [...row].every(tile => Object.hasOwn(tiles, tile))) &&
-    walkable(candidate[startY][startX]);
-}
-
-function restoreLayout() {
-  const saved = JSON.parse(localStorage.getItem(storageKey));
-  if (validLayout(saved, initial, spawn.x)) return saved;
-
-  const { x: offsetX, y: offsetY } = district.harborOffset;
-  const harborX = spawn.x - offsetX;
-  const harborY = spawn.y - offsetY;
-  const previousHarbor = JSON.parse(localStorage.getItem("block-topia.waterfront.v4"));
-  if (validLayout(previousHarbor, district.harborRows, harborX, harborY)) {
-    return applyEdits(previousHarbor, district.harborRows, offsetX);
-  }
-  const doorstep = JSON.parse(localStorage.getItem(doorstepStorageKey));
-  if (validLayout(doorstep, district.previousDoorstepRows, harborX, harborY)) {
-    return applyEdits(doorstep, district.previousDoorstepRows, offsetX);
-  }
-  const wide = JSON.parse(localStorage.getItem(previousStorageKey));
-  if (validLayout(wide, district.previousWideRows, harborX, harborY)) {
-    return applyEdits(wide, district.previousWideRows, offsetX);
-  }
-  const { rows: previous, columnOffset } = district.previousLayout;
-  const legacy = JSON.parse(localStorage.getItem(legacyStorageKey));
-  if (!validLayout(legacy, previous, harborX - columnOffset, harborY)) return [...initial];
-  return applyEdits(legacy, previous, offsetX + columnOffset);
-}
-
-function applyEdits(legacy, previous, columnOffset) {
-
-  // Carry over player edits while keeping the new street connections in untouched tiles.
-  return initial.map((row, y) => [...row].map((tile, x) => {
-    const oldX = x - columnOffset;
-    const oldY = y - district.harborOffset.y;
-    const edited = legacy[oldY]?.[oldX];
-    return edited !== undefined && edited !== previous[oldY]?.[oldX] ? edited : tile;
-  }).join(""));
-}
-
-try {
-  rows = restoreLayout();
-} catch {
-  status.textContent = "The saved layout could not be loaded.";
-}
+rows = window.restoreWaterfrontLayout(browserStorage, district);
 
 for (const [tile, { name }] of Object.entries(tiles)) {
   select.add(new Option(name, tile));
 }
-select.value = "r";
+select.value = "p";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let sceneTime = null;
 let discussionElapsed = 0;
 let publishedDiscussion = "";
-async function loadBuildDiscussion() {
-  try {
-    const response = await fetch("build-discussion.json", { cache: "no-cache" });
-    if (!response.ok) return;
-    const turns = await response.json();
-    if (!Array.isArray(turns) || !turns.every(turn => turn &&
-      (turn.speaker === 0 || turn.speaker === 1) && typeof turn.text === "string")) return;
-    const current = JSON.stringify(turns);
-    if (current === publishedDiscussion) return;
-    publishedDiscussion = current;
-    window.waterfrontBuildDiscussion = turns;
-    discussionElapsed = 0;
-    previousDiscussionFrame = null;
-    const panel = document.querySelector("#build-discussion");
-    panel.hidden = !turns.length;
-    panel.querySelector("ol").replaceChildren(...turns.map(turn => {
+let recordedDiscussion = [];
+let discussionRequest = 0;
+
+function updateBuildDiscussion(now = new Date()) {
+  const briefing = window.waterfrontCrewBriefing(now.getUTCDay());
+  const turns = [...briefing.turns, ...recordedDiscussion];
+  const current = JSON.stringify(turns);
+  if (current === publishedDiscussion) return;
+  publishedDiscussion = current;
+  window.waterfrontBuildDiscussion = turns;
+
+  const panel = document.querySelector("#build-discussion");
+  panel.hidden = false;
+  panel.querySelector("#crew-briefing-topic").textContent = briefing.title;
+  for (const [id, entries, roles] of [
+    ["crew-briefing-lines", briefing.turns, ["Crew planner", "Site checker"]],
+    ["recorded-build-lines", recordedDiscussion, ["Builder", "Reviewer"]],
+  ]) {
+    panel.querySelector("#" + id).replaceChildren(...entries.map(turn => {
       const entry = document.createElement("li");
-      entry.textContent = (turn.speaker === 0 ? "Builder" : "Reviewer") + " — " + turn.text;
+      entry.textContent = roles[turn.speaker] + " — " + turn.text;
       return entry;
     }));
-    paintMap();
+  }
+  panel.querySelector("#recorded-build-discussion").hidden = !recordedDiscussion.length;
+  paintMap();
+}
+
+async function loadBuildDiscussion() {
+  const request = ++discussionRequest;
+  updateBuildDiscussion();
+  try {
+    const response = await fetch("build-discussion.json", { cache: "no-cache" });
+    if (!response.ok || request !== discussionRequest) return;
+    const turns = await response.json();
+    if (request !== discussionRequest || !Array.isArray(turns) || !turns.every(turn => turn &&
+      (turn.speaker === 0 || turn.speaker === 1) && typeof turn.text === "string")) return;
+    recordedDiscussion = turns;
+    updateBuildDiscussion();
   } catch {
     // A temporary fetch failure leaves the last published discussion available.
   }
@@ -116,13 +108,96 @@ let previousDiscussionFrame = null;
 
 let factionHits = [];
 let leaderStates = [];
-let previousLeaderTap;
+const npcPauseSeconds = 30;
+const npcPauses = new Map();
+let npcHits = [];
+let hoverPoint;
+let hoveredNpc;
+let tappedNpc;
+let inspectionTimer;
+let compactArtReady = false;
+let streamDetailArt = false;
+const inspection = {
+  hit(actor) { npcHits.push(actor); },
+  held(id) { return (npcPauses.get(id)?.until ?? 0) > performance.now(); },
+  time(id, time) {
+    const pause = npcPauses.get(id);
+    if (time === null || !pause) return time;
+    return Math.max(0, time - pause.previous - Math.min(npcPauseSeconds, Math.max(0, time - pause.scene)));
+  },
+};
+
+function pauseNpc(id) {
+  if (inspection.held(id)) return;
+  const previous = npcPauses.has(id) ? npcPauses.get(id).previous + npcPauseSeconds : 0;
+  const until = performance.now() + npcPauseSeconds * 1000;
+  npcPauses.set(id, { until, scene: sceneTime ?? performance.now() / 1000, previous });
+  requestMapPaint();
+  scheduleInspectionPaint();
+}
+
+function scheduleInspectionPaint() {
+  clearTimeout(inspectionTimer);
+  const now = performance.now();
+  const next = Math.min(...[...npcPauses.values()].map(pause => pause.until).filter(until => until > now));
+  if (Number.isFinite(next)) inspectionTimer = setTimeout(() => {
+    paintMap();
+    scheduleInspectionPaint();
+  }, next - now + 5);
+}
+
+function npcAt(x, y) {
+  return npcHits.findLast(actor => actor.bounds
+    ? x >= actor.bounds.left && x <= actor.bounds.right && y >= actor.bounds.top && y <= actor.bounds.bottom
+    : Math.abs(actor.x - x) <= actor.spriteSize / 2 &&
+    y >= actor.y - actor.spriteSize && y <= actor.y + 3);
+}
+
+function updateHover() {
+  if (!hoverPoint || mousePan || editing) return;
+  const rect = mapSurface.getBoundingClientRect();
+  const hit = npcAt((hoverPoint.x - rect.left) * mapWidth / rect.width,
+    (hoverPoint.y - rect.top) * mapHeight / rect.height);
+  mapSurface.classList.toggle("is-npc", Boolean(hit));
+  if (hit?.id === hoveredNpc) return;
+  hoveredNpc = hit?.id;
+  if (hit && hit.pausable !== false) pauseNpc(hit.id);
+}
 function paintMap() {
   if (!window.waterfrontAccess.canPlay()) return;
-  const faction = factionIds.indexOf(window.waterfrontAccess.faction());
-  factionHits = window.drawWaterfront(ctx, rows, { ...player, faction }, district, sceneTime,
-    reducedMotion.matches ? null : discussionElapsed, leaderStates) ?? [];
-  canvas.dispatchEvent(new Event('waterfront:map-painted'));
+  const width = mapScroll.clientWidth;
+  const height = mapScroll.clientHeight;
+  if (!width || !height || !mapSurface.clientWidth || !mapSurface.clientHeight) return;
+  // Render the visible window, not a magnified bitmap of the entire island.
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 4096 / Math.max(width, height),
+    Math.sqrt(8_000_000 / (width * height)));
+  const pixelWidth = Math.round(width * pixelRatio);
+  const pixelHeight = Math.round(height * pixelRatio);
+  if (mapView.width !== pixelWidth || mapView.height !== pixelHeight) {
+    mapView.width = pixelWidth;
+    mapView.height = pixelHeight;
+  }
+  const scaleX = pixelWidth / width;
+  const scaleY = pixelHeight / height;
+  ctx.resetTransform();
+  ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+  ctx.setTransform(mapSurface.clientWidth / mapWidth * scaleX, 0, 0,
+    mapSurface.clientHeight / mapHeight * scaleY,
+    -mapScroll.scrollLeft * scaleX, -mapScroll.scrollTop * scaleY);
+  ctx.imageSmoothingEnabled = false;
+
+  npcHits = [];
+  factionHits = window.drawWaterfront(ctx, rows, { ...player, faction: selectedAvatar }, district, sceneTime,
+    reducedMotion.matches ? null : discussionElapsed, leaderStates, selectedAvatar,
+    editing || document.hidden ? null : factionConversations, visibleTiles(), inspection,
+    streamDetailArt ? requestMapPaint : null) ?? [];
+  kaijuWarning.hidden = !window.harborKaijuActive(rows);
+  if (compactArtReady && !streamDetailArt) {
+    streamDetailArt = true;
+    requestMapPaint();
+  }
+  updateHover();
+  mapSurface.dispatchEvent(new Event('waterfront:map-painted'));
   if (editing) {
     ctx.strokeStyle = "#fce5a2";
     ctx.lineWidth = 2;
@@ -196,7 +271,9 @@ function save() {
 function setEditing(enabled) {
   clearTimeout(walkTimer);
   editing = enabled;
-  canvas.dataset.editing = String(editing);
+  clearHover();
+  tappedNpc = null;
+  mapSurface.dataset.editing = String(editing);
   edit.setAttribute("aria-pressed", String(editing));
   status.textContent = editing ? "Select a square to place a tile." : "Tile editing is off.";
   draw();
@@ -205,37 +282,48 @@ edit.addEventListener("click", () => setEditing(!editing));
 document.querySelector("#editor").addEventListener("toggle", event => {
   if (!event.currentTarget.open && editing) setEditing(false);
 });
-canvas.addEventListener("click", event => {
+mapSurface.addEventListener("click", event => {
   if (!window.waterfrontAccess.canPlay() || performance.now() < ignoreTapUntil) return;
-  const rect = canvas.getBoundingClientRect();
+  const rect = mapSurface.getBoundingClientRect();
   const mapX = (event.clientX - rect.left) * mapWidth / rect.width;
   const mapY = (event.clientY - rect.top) * mapHeight / rect.height;
   const x = Math.floor(mapX / tileSize);
   const y = Math.floor(mapY / tileSize);
   if (x < 0 || x >= columns || y < 0 || y >= initial.length) return;
   if (!editing) {
-    const time = performance.now();
-    const nearFirstTap = previousLeaderTap && time - previousLeaderTap.time <= 360 &&
-      Math.hypot(event.clientX - previousLeaderTap.x, event.clientY - previousLeaderTap.y) <= 16;
-    const leader = (nearFirstTap && factionHits.find(hit => hit.index === previousLeaderTap.index)) ||
-      factionHits.findLast(hit =>
-      Math.abs(hit.x - mapX) <= 11 && mapY >= hit.y - 20 && mapY <= hit.y + 2);
-    if (leader) {
-      const ask = Boolean(nearFirstTap && previousLeaderTap.index === leader.index);
-      previousLeaderTap = ask ? null : { index: leader.index, time, x: event.clientX, y: event.clientY };
-      canvas.dispatchEvent(new CustomEvent('waterfront:leader-select', { detail: { index: leader.index, ask } }));
+    const hit = npcAt(mapX, mapY);
+    if (hit) {
+      const touch = event.pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents;
+      const open = !touch || (tappedNpc === hit.id && inspection.held(hit.id));
+      if (hit.pausable !== false) pauseNpc(hit.id);
+      tappedNpc = touch ? hit.id : null;
+      if (hit.profile) {
+        mapSurface.dispatchEvent(new CustomEvent("waterfront:roamer-select", { detail: hit.profile }));
+      } else if (open && hit.index !== undefined) {
+        mapSurface.dispatchEvent(new CustomEvent("waterfront:leader-select", { detail: { index: hit.index } }));
+      } else mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
       return;
     }
-    previousLeaderTap = null;
-    canvas.dispatchEvent(new Event('waterfront:leader-clear'));
+    tappedNpc = null;
+    mapSurface.dispatchEvent(new Event("waterfront:leader-clear"));
     walkTo(x, y);
     return;
   }
-  if (x === spawn.x && y === spawn.y && !walkable(select.value)) {
+  const tile = select.value;
+  if (!Object.hasOwn(tiles, tile)) {
+    status.textContent = "Choose a terrain tile first.";
+    return;
+  }
+  if ((x >= district.harborWidth || y >= district.harborHeight) && !"~pmtf".includes(tile)) {
+    status.textContent = "Choose water, a trail, meadow, trees or flowers for the island.";
+    return;
+  }
+  if (x === spawn.x && y === spawn.y && !walkable(tile)) {
     status.textContent = "Keep the starting square walkable.";
     return;
   }
-  rows[y] = rows[y].slice(0, x) + select.value + rows[y].slice(x+1);
+  rows[y] = rows[y].slice(0, x) + tile + rows[y].slice(x+1);
+  resetIdleWalk();
   if (!walkable(rows[player.y][player.x])) player = { ...spawn };
   save();
   draw();
@@ -253,44 +341,103 @@ document.querySelector("#reset").addEventListener("click", () => {
   clearTimeout(walkTimer);
   rows = [...initial];
   player = { ...spawn };
+  resetIdleWalk();
   save();
   draw();
 });
-let renderScale = 0;
 const compactMap = window.matchMedia("(max-width: 739px)").matches;
-let zoom = compactMap ? 1.35 : 1.85;
+const maxZoom = 3;
+let zoom = compactMap ? 1.1 : 1.6;
 let pinch = null;
 let mapTouchActive = false;
 let ignoreTapUntil = 0;
 
-function applyZoomSize() {
-  const cover = Math.max(mapScroll.clientWidth, mapScroll.clientHeight * mapWidth / mapHeight);
-  const displayWidth = Math.ceil(cover * zoom);
-  canvas.style.width = displayWidth + "px";
-  canvas.style.minWidth = "0";
-  // Match the height to the rounded width so even the last row covers the viewport.
-  canvas.style.height = Math.max(mapScroll.clientHeight, Math.ceil(displayWidth * mapHeight / mapWidth)) + "px";
-  // Keep the overview cheap and retain source sprite detail at close range.
-  const nextScale = displayWidth * window.devicePixelRatio > mapWidth ? 2 : 1;
-  if (renderScale !== nextScale) {
-    renderScale = nextScale;
-    canvas.width = mapWidth * renderScale;
-    canvas.height = mapHeight * renderScale;
-    ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-    ctx.imageSmoothingEnabled = false;
-    paintMap();
-  }
+function minimumZoom() {
+  // Keep the map filling the viewport while either axis can still be panned.
+  return Math.min(1, Math.max(0.45, mapScroll.clientWidth / mapWidth, mapScroll.clientHeight / mapHeight));
 }
 
+function applyZoomSize() {
+  const width = mapScroll.clientWidth;
+  const height = mapScroll.clientHeight;
+  if (!width || !height) return;
+  zoom = Math.max(minimumZoom(), Math.min(maxZoom, zoom));
+  mapSurface.style.width = Math.round(mapWidth * zoom) + "px";
+  mapSurface.style.height = Math.round(mapHeight * zoom) + "px";
+  mapView.style.width = mapScroll.clientWidth + "px";
+  mapView.style.height = mapScroll.clientHeight + "px";
+  paintMap();
+}
+
+function visibleTiles() {
+  const tileWidth = mapSurface.clientWidth / columns;
+  const tileHeight = mapSurface.clientHeight / initial.length;
+  return {
+    left: Math.max(0, Math.floor(mapScroll.scrollLeft / tileWidth) - 2),
+    top: Math.max(0, Math.floor(mapScroll.scrollTop / tileHeight) - 2),
+    right: Math.min(columns, Math.ceil((mapScroll.scrollLeft + mapScroll.clientWidth) / tileWidth) + 2),
+    bottom: Math.min(initial.length, Math.ceil((mapScroll.scrollTop + mapScroll.clientHeight) / tileHeight) + 2),
+  };
+}
+
+let scrollPaint;
+function requestMapPaint() {
+  if (scrollPaint) return;
+  scrollPaint = requestAnimationFrame(() => {
+    scrollPaint = null;
+    paintMap();
+  });
+}
+let kaijuKeyTimer;
+function triggerKaiju(landfall) {
+  if (!window.waterfrontAccess.canPlay() || editing || viewport.querySelector("dialog[open]")) return;
+  const location = landfall ? window.summonHarborLandfall(rows) : window.summonHarborKaiju(rows);
+  if (!location) return;
+  centerWaterEncounter(location);
+}
+
+function centerWaterEncounter(location) {
+  mapScroll.scrollLeft = location.x * mapSurface.clientWidth / columns - mapScroll.clientWidth / 2;
+  mapScroll.scrollTop = location.y * mapSurface.clientHeight / initial.length - mapScroll.clientHeight / 2;
+  requestMapPaint();
+}
+
+window.addEventListener("keydown", event => {
+  const key = event.key.toLowerCase();
+  if ((key !== "k" && key !== "l") || event.defaultPrevented || event.repeat || event.isComposing ||
+      event.ctrlKey || event.altKey || event.metaKey || editing || !window.waterfrontAccess.canPlay() ||
+      viewport.querySelector("dialog[open]") ||
+      event.target instanceof Element && (event.target.isContentEditable ||
+        event.target.closest("input, textarea, select, [role='textbox']"))) return;
+  event.preventDefault();
+  if (key === "l") {
+    const location = window.summonHarborNessie(rows, performance.now() / 1000);
+    if (location) centerWaterEncounter(location);
+    return;
+  }
+  if (kaijuKeyTimer !== undefined) {
+    clearTimeout(kaijuKeyTimer);
+    kaijuKeyTimer = undefined;
+    triggerKaiju(true);
+  } else {
+    kaijuKeyTimer = setTimeout(() => {
+      kaijuKeyTimer = undefined;
+      triggerKaiju(false);
+    }, 300);
+  }
+});
+mapScroll.addEventListener("scroll", requestMapPaint, { passive: true });
+
 function zoomMap(scale, fromX, fromY, toX = fromX, toY = fromY) {
-  const before = canvas.getBoundingClientRect();
+  const before = mapSurface.getBoundingClientRect();
   const mapX = (fromX - before.left) / before.width;
   const mapY = (fromY - before.top) / before.height;
-  zoom = Math.max(1, Math.min(5, scale));
+  zoom = scale;
   applyZoomSize();
-  const after = canvas.getBoundingClientRect();
+  const after = mapSurface.getBoundingClientRect();
   mapScroll.scrollLeft += after.left + mapX * after.width - toX;
   mapScroll.scrollTop += after.top + mapY * after.height - toY;
+  paintMap();
 }
 
 const infoButton = document.querySelector("#map-info");
@@ -373,30 +520,43 @@ for (const name of ["touchend", "touchcancel"]) {
 }
 
 let mousePan = null;
-canvas.addEventListener("pointerdown", event => {
+mapSurface.addEventListener("pointerdown", event => {
   if (!window.waterfrontAccess.canPlay() || event.pointerType !== "mouse" || event.button !== 0 || editing) return;
   mousePan = {
     id: event.pointerId, x: event.clientX, y: event.clientY,
     left: mapScroll.scrollLeft, top: mapScroll.scrollTop, active: false
   };
-  canvas.setPointerCapture(event.pointerId);
+  mapSurface.setPointerCapture(event.pointerId);
 });
-canvas.addEventListener("pointermove", event => {
-  if (!mousePan || mousePan.id !== event.pointerId) return;
+function clearHover() {
+  hoverPoint = null;
+  hoveredNpc = null;
+  mapSurface.classList.remove("is-npc");
+}
+mapSurface.addEventListener("pointerleave", clearHover);
+mapSurface.addEventListener("pointermove", event => {
+  if (!mousePan || mousePan.id !== event.pointerId) {
+    if (event.pointerType === "mouse" && window.waterfrontAccess.canPlay() && !editing) {
+      hoverPoint = { x: event.clientX, y: event.clientY };
+      updateHover();
+    }
+    return;
+  }
   const dx = event.clientX - mousePan.x;
   const dy = event.clientY - mousePan.y;
   if (!mousePan.active && Math.hypot(dx, dy) < 6) return;
   mousePan.active = true;
-  canvas.classList.add("is-panning");
+  clearHover();
+  mapSurface.classList.add("is-panning");
   mapScroll.scrollLeft = mousePan.left - dx;
   mapScroll.scrollTop = mousePan.top - dy;
 });
 for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) {
-  canvas.addEventListener(name, event => {
+  mapSurface.addEventListener(name, event => {
     if (mousePan?.id !== event.pointerId) return;
     if (mousePan.active) ignoreTapUntil = performance.now() + 150;
     mousePan = null;
-    canvas.classList.remove("is-panning");
+    mapSurface.classList.remove("is-panning");
   });
 }
 
@@ -405,13 +565,13 @@ document.addEventListener("fullscreenchange", applyZoomSize);
 let centered = false;
 window.addEventListener("waterfront:access", () => {
   if (window.waterfrontAccess.canPlay()) {
-    const name = waterfrontFactions[factionIds.indexOf(window.waterfrontAccess.faction())];
-    playerFaction.textContent = "Your faction · " + name;
+    const name = waterfrontCharacterNames[factionIds.indexOf(window.waterfrontAccess.faction())];
+    playerFaction.textContent = "Your representative · " + name;
     applyZoomSize();
     if (!centered) {
-      const spawnCenter = (spawn.x + 0.5) * canvas.clientWidth / columns;
+      const spawnCenter = (spawn.x + 0.5) * mapSurface.clientWidth / columns;
       mapScroll.scrollLeft = Math.max(0, spawnCenter - mapScroll.clientWidth / 2);
-      const waterfrontCenter = (spawn.y - 1) * canvas.clientHeight / initial.length;
+      const waterfrontCenter = (spawn.y - 1) * mapSurface.clientHeight / initial.length;
       mapScroll.scrollTop = Math.max(0, waterfrontCenter - mapScroll.clientHeight / 2);
       centered = true;
     }
@@ -419,10 +579,21 @@ window.addEventListener("waterfront:access", () => {
     loadBuildDiscussion();
   } else {
     clearTimeout(walkTimer);
+    clearTimeout(kaijuKeyTimer);
+    kaijuKeyTimer = undefined;
+    selectedAvatar = null;
+    avatar.value = "";
+    clearHover();
+    tappedNpc = null;
+    npcPauses.clear();
+    clearTimeout(inspectionTimer);
   }
   syncAnimation();
 });
-window.loadWaterfrontSprites().then(paintMap);
+window.loadWaterfrontSprites().then(() => {
+  compactArtReady = true;
+  requestMapPaint();
+});
 
 let frameId;
 function animateHarbor(now) {
@@ -445,6 +616,23 @@ function syncAnimation() {
   }
   frameId = requestAnimationFrame(animateHarbor);
 }
+setInterval(() => {
+  if (selectedAvatar === null || !window.waterfrontAccess.canPlay() || document.hidden || editing ||
+      reducedMotion.matches || performance.now() - avatarIdleSince < 25_000 ||
+      player.frame || factionConversations.holds(selectedAvatar) || !infoPanel.hidden ||
+      viewport.querySelector("dialog[open], .leader-map-details:not([hidden])") ||
+      viewport.hasAttribute("data-leader-question-pending")) return;
+  const route = natureRoute(rows, district);
+  if (idleRouteIndex === null) {
+    const distance = point => Math.abs(player.x - point.x) + Math.abs(player.y - point.y);
+    idleRouteIndex = route.reduce((nearest, point, index) =>
+      distance(point) < distance(route[nearest]) ? index : nearest, 0);
+  }
+  const next = route[idleRouteIndex];
+  if (next.x === player.x && next.y === player.y) idleRouteIndex = (idleRouteIndex + 1) % route.length;
+  const target = route[idleRouteIndex];
+  walkTo(target.x, target.y);
+}, 1_800);
 document.addEventListener("visibilitychange", syncAnimation);
 reducedMotion.addEventListener("change", syncAnimation);
 syncAnimation();

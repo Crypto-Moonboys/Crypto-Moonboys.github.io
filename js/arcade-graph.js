@@ -18,23 +18,29 @@ const C = {
 };
 
 // ── Node definitions (default / overview state) ───────────────────────────
+// IDs match the authoritative leaderboard Worker and its breakdown keys.
+export const ARCADE_MAP_GAMES = [
+  { id: 'snake',                label: '🐍 Snake',                color: C.cyan },
+  { id: 'blocktopia',           label: '🧱 BlockTopia',           color: C.purple },
+  { id: 'meme-swarm-3008',      label: '👾 Meme Swarm 3008',      color: C.green },
+  { id: 'chain-maze',           label: '🟡 Chain Maze',           color: C.gold },
+  { id: 'forkfield',            label: '🌑 Forkfield',            color: C.muted },
+  { id: 'bullrun-brick-smash',  label: '🧱 Bullrun Brick Smash',   color: '#ff6b35' },
+  { id: 'block-topia-dropzone', label: '🟦 Block Topia Dropzone', color: '#a78bfa' },
+  { id: 'kaiju',                label: 'K Kaiju',                 color: '#e8e8a3' },
+  { id: 'dead-run-native', label: 'Dead Run', color: C.green, href: '/games/dead-run/' },
+  { id: 'nbg-london-native', label: 'NBG London', color: C.cyan, href: '/games/nbg-london/#nbg-record-board' },
+  { id: 'blocktopia-rpg', label: 'Block Topia RPG', color: C.purple, href: '/games/block-topia/' },
+  { id: 'moonpet-native', label: 'MoonPet', color: C.pink, href: '/crypto-moonboy-pets-leaderboard.html' },
+  { id: 'waterfront-native', label: 'Waterfront', color: C.gold, href: '/games/block-topia/waterfront/' },
+];
+
 function makeOverviewNodes(cx, cy, r) {
-  // IDs match the authoritative leaderboard Worker and its breakdown keys.
-  const games = [
-    { id: 'snake',                label: '🐍 Snake',                color: C.cyan },
-    { id: 'blocktopia',           label: '🧱 BlockTopia',           color: C.purple },
-    { id: 'meme-swarm-3008',      label: '👾 Meme Swarm 3008',      color: C.green },
-    { id: 'chain-maze',           label: '🟡 Chain Maze',           color: C.gold },
-    { id: 'forkfield',            label: '🌑 Forkfield',            color: C.muted },
-    { id: 'bullrun-brick-smash',  label: '🧱 Bullrun Brick Smash',   color: '#ff6b35' },
-    { id: 'block-topia-dropzone', label: '🟦 Block Topia Dropzone', color: '#a78bfa' },
-    { id: 'kaiju',                label: 'K Kaiju',                 color: '#e8e8a3' },
-  ];
   const out = [
     { id: 'global', label: '🏆 Arcade', color: C.gold, radius: 26, x: cx, y: cy, fixed: true },
   ];
-  games.forEach((g, i) => {
-    const angle = -Math.PI / 2 + (2 * Math.PI * i) / games.length;
+  ARCADE_MAP_GAMES.forEach((g, i) => {
+    const angle = -Math.PI / 2 + (2 * Math.PI * i) / ARCADE_MAP_GAMES.length;
     out.push({
       id: g.id, label: g.label, color: g.color, radius: 16,
       x: cx + r * Math.cos(angle),
@@ -45,19 +51,11 @@ function makeOverviewNodes(cx, cy, r) {
   return out;
 }
 
-const OVERVIEW_EDGES = [
-  { source: 'global', target: 'snake' },
-  { source: 'global', target: 'blocktopia' },
-  { source: 'global', target: 'meme-swarm-3008' },
-  { source: 'global', target: 'chain-maze' },
-  { source: 'global', target: 'forkfield' },
-  { source: 'global', target: 'bullrun-brick-smash' },
-  { source: 'global', target: 'block-topia-dropzone' },
-  { source: 'global', target: 'kaiju' },
-];
+const OVERVIEW_EDGES = ARCADE_MAP_GAMES.map(({ id }) => ({ source: 'global', target: id }));
 
 // ── State ─────────────────────────────────────────────────────────────────
 let canvas, ctx;
+let onGameSelect;
 let nodes = [];
 let edges = [];
 let hoveredNode = null;
@@ -70,7 +68,8 @@ let graphMode = 'raw';
 let metaState = null;
 
 // ── Init ──────────────────────────────────────────────────────────────────
-export function initGraph(canvasId) {
+export function initGraph(canvasId, selectGame) {
+  onGameSelect = selectGame;
   canvas = document.getElementById(canvasId);
   if (!canvas) return;
   ctx = canvas.getContext('2d');
@@ -466,6 +465,8 @@ function onCanvasClick(e) {
   const { x, y } = canvasXY(e);
   const hit = getNodeAt(x, y);
   selectedNode = hit || null;
+  const game = ARCADE_MAP_GAMES.find(({ id }) => id === hit?.id);
+  if (game) onGameSelect?.(game);
 }
 
 function onTouch(e) {

@@ -1,11 +1,13 @@
 <!doctype html>
+<!-- GK-approved baseline: top-down Waterfront with shared overhead miner placement. See games/block-topia/AGENTS.md. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumina’s Waterfront | Block Topia</title>
 <link rel="stylesheet" href="../styles.css">
-<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=2">
+<link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=3">
 <style>
 :root{color-scheme:dark;background:#13131c;color:#f5edf5;font:1rem system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0}
@@ -17,9 +19,27 @@ a{color:#91efe3}
 .map-controls{position:absolute;z-index:1;top:.65rem;right:.65rem;display:flex;gap:.35rem}
 .map-controls button{background:#13131cef}
 .map-controls button[hidden]{display:none}
-canvas{display:block;width:100%;min-width:740px;height:auto;image-rendering:pixelated;cursor:pointer}
-canvas[data-editing=true]{cursor:crosshair}
-canvas.is-panning{cursor:grabbing}
+#leader-presence-notices{position:absolute;z-index:3;top:3.75rem;right:.65rem;width:min(21rem,calc(100% - 1.3rem));display:grid;gap:.35rem;pointer-events:none}
+#leader-presence-notices p{margin:0;padding:.55rem .75rem;background:#13131cfa;color:#eaf5f2;border:1px solid #658782;border-radius:.25rem;font-size:.875rem}
+#map{cursor:pointer}
+#map-view{position:absolute;top:0;left:0;pointer-events:none;display:block}
+#map[data-editing=true]{cursor:crosshair}
+#map.is-npc{cursor:help}
+#map.is-panning{cursor:grabbing}
+#kaiju-warning{position:absolute;top:.6rem;left:.65rem;z-index:2;width:clamp(7rem,20vw,12rem);aspect-ratio:1;pointer-events:none;background:url("assets/atlases/kaiju-attack-warning.webp") 100% 0 / 400% 200% no-repeat}
+#kaiju-warning[hidden]{display:none}
+@media (prefers-reduced-motion:no-preference){#kaiju-warning:not([hidden]){animation:kaiju-warning-pulse 1s step-end infinite}}
+@media (max-width:440px){#kaiju-warning{top:3.75rem}}
+@keyframes kaiju-warning-pulse{
+  0%,100%{background-position:0 0}
+  12.5%{background-position:33.3333% 0}
+  25%{background-position:66.6667% 0}
+  37.5%{background-position:100% 0}
+  50%{background-position:0 100%}
+  62.5%{background-position:33.3333% 100%}
+  75%{background-position:66.6667% 100%}
+  87.5%{background-position:100% 100%}
+}
 #location{position:absolute;inset:auto auto .55rem .65rem;margin:0;padding:.35rem .65rem;background:#101a20ed;color:#e4f5e7;border:1px solid #668680;pointer-events:none;font-size:.85rem}
 .tools{position:absolute;z-index:2;top:3.75rem;right:.65rem;width:min(25rem,calc(100% - 1.3rem));max-height:calc(100% - 4.4rem);overflow:auto;overscroll-behavior:contain;padding:1rem;background:#13131cf5;border:1px solid #658782;border-radius:.25rem}
 .tools .movement{margin-block:.8rem}
@@ -33,7 +53,7 @@ fieldset p{max-width:42rem;margin:.4rem 0}
 fieldset button{margin:.2rem .15rem .2rem 0}
 </style>
 </head>
-<body>
+<body class="page-standalone-tool">
 <main>
 <section id="bt-gate" aria-labelledby="waterfront-entry-title">
 <div class="bt-gate__fog" aria-hidden="true"></div>
@@ -51,28 +71,42 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </section>
 <div class="viewport" id="waterfront-game" hidden inert>
 <div class="map-scroll">
-<canvas id="map" width="896" height="384" role="img" aria-describedby="movement-help" aria-label="Nighttime waterfront map with docks, a lighthouse, warehouses, graffiti walls and record shops"></canvas>
+<div id="map" role="img" aria-describedby="movement-help" aria-label="Waterfront harbor and island trails through tree groves and wildflower meadows"></div>
 </div>
+<canvas id="map-view" aria-hidden="true"></canvas>
+<div id="kaiju-warning" role="status" aria-label="Kaiju attack" hidden></div>
 <div class="map-controls" role="group" aria-label="Map view">
 <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
 <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
 <button id="map-info" type="button" aria-controls="map-tools" aria-expanded="false">Info</button>
 <button id="map-fullscreen" type="button" hidden>Fullscreen</button>
 </div>
+<div id="leader-presence-notices" role="status" aria-live="polite" aria-atomic="false"></div>
 <p id="location"></p>
 <div id="map-tools" class="tools" role="region" aria-label="Map information" hidden>
 <a href="../">← Block Topia</a>
 <section class="movement" aria-label="Explore the harbor">
-<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Select a faction leader for details, or double-click or double-tap to ask a question.</p>
+<p id="movement-help">Click or tap to walk. Drag or swipe to pan. Scroll or pinch to zoom. Hover over an NPC or tap once to pause it for 30 seconds. Click or tap again for character details when available.</p>
+<p><a href="/wiki/waterfront-roamers.html">Meet the Waterfront roamers</a></p>
 </section>
 <p id="player-faction"></p>
+<label for="waterfront-avatar">Explore as a faction leader</label>
+<select id="waterfront-avatar"><option value="">Your explorer</option></select>
 <button id="waterfront-leave" type="button">Leave Waterfront</button>
 <div id="map-leader-controls" hidden>
 <label for="map-leader-faction">Faction leader</label>
 <select id="map-leader-faction"></select>
 <button id="map-leader-talk" type="button">Show details</button>
 </div>
-<details id="build-discussion" hidden><summary>Build discussion</summary><ol></ol></details>
+<details id="build-discussion" hidden>
+<summary>Build crew conversations</summary>
+<p>Daily crew briefing · <strong id="crew-briefing-topic"></strong></p>
+<ol id="crew-briefing-lines"></ol>
+<div id="recorded-build-discussion" hidden>
+<p>Recorded build discussion</p>
+<ol id="recorded-build-lines"></ol>
+</div>
+</details>
 <details id="editor">
 <summary>Map editor</summary>
 <fieldset aria-label="Edit your map">
@@ -90,6 +124,6 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 </main>
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" type="module" src="entry.js?v=2"></script>
+<script data-cfasync="false" type="module" src="entry.js?v=53-regolith"></script>
 </body>
 </html>

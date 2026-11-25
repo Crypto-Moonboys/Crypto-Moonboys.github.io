@@ -788,6 +788,11 @@
     }
     open.addEventListener('click', function () { setOpen(drawer.hidden); });
     close.addEventListener('click', function () { setOpen(false); });
+    function openLinkedRecords() {
+      if (window.location?.hash === '#nbg-record-board' && drawer.hidden) setOpen(true);
+    }
+    window.addEventListener('hashchange', openLinkedRecords);
+    openLinkedRecords();
     // Capture Escape before the fullscreen-only shell redirects to /games/.
     document.addEventListener('keydown', function (event) {
       if (!drawer.hidden && event.key === 'Escape') {

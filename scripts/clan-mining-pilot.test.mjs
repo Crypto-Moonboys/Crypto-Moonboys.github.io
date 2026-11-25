@@ -1,3 +1,4 @@
+import { LEADERS } from '../js/waterfront-faction-identities.mjs';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -2000,12 +2001,19 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   const { sql, settings, request } = fixture(t);
   sql.exec(`${newerMigration('130_clan_leader_lore')}
     CREATE TABLE telegram_users (telegram_id TEXT PRIMARY KEY);
-    ${newerMigration('019_daily_wtf_timed_events')}`);
+    ${newerMigration('019_daily_wtf_timed_events')}
+    DROP TABLE blocktopia_progression;
+    ${newerMigration('010_blocktopia_progression_repair')}
+    ${newerMigration('129_clan_leader_presence')}
+    INSERT INTO blocktopia_progression (telegram_id, faction) VALUES ('999', 'graffpunks');`);
+  settings.leaderStart = '2026-11-20';
   const site = 'https://cryptomoonboys.com';
   const canonPath = '/about/latest-canon-and-brand-vision.md';
   const wikiPath = '/wiki/bitcoin-kid-army.html';
   const graffpunksPath = '/wiki/graffpunks.html';
   const overviewPath = '/wiki/crypto-moonboys.html';
+  const providerOverview = 'Who are your Crypto Moonboys?';
+  const detailedCommand = 'Who commands the Bitcoin Kid Army and how does the chain of command work?';
   const editorial = '/brand-canon/story-bibles/gk-master-canon.md';
   const index = [{ title: 'Bitcoin Kid Army', url: wikiPath, tags: ['Alfie', 'command'] },
     { title: 'Editorial Only', url: editorial }, { title: 'Offsite', url: '//elsewhere.invalid/pub.html' }];
@@ -2046,13 +2054,9 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
       assert.deepEqual(Object.keys(prompt).sort(), ['earlierQuestions', 'publicReferences', 'question']);
       const { question, publicReferences: sources } = prompt;
       let answer;
-      if (question === 'who are the crypto moonboys?') {
+      if (question === providerOverview) {
         assert.match(sources[0].excerpt, /characters in a shared fantasy world/i);
         answer = { reply: 'The Crypto Moonboys are characters in a shared fantasy world.', sources: [1] };
-      } else if (question === 'Who are you?' || question === 'Introduce yourself') {
-        assert.equal(sources.length, 1);
-        assert.match(sources[0].excerpt, /fictional Year 3008 counterpart carries the Paint Path/);
-        answer = { reply: 'I represent GraffPUNKS. We carry the Paint Path through the Street Kingdoms.', sources: [1] };
       } else if (question.includes(publishedMd) || question.includes(artifactPage)) {
         assert.match(sources[0].excerpt, /waterfront/i);
         answer = { reply: 'This source describes the waterfront.', sources: [1] };
@@ -2079,7 +2083,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     return new Response(null, { status: 404 });
   });
   const question = (overrides = {}, options = {}) => request({
-    id: '999', loreAction: { npc: 'graffpunks', question: 'Who commands the Bitcoin Kid Army?', ...overrides }, ...options,
+    id: '999', loreAction: { npc: 'graffpunks', question: detailedCommand, ...overrides }, ...options,
   });
   assert.equal((await question({}, { signed: false })).status, 401);
   assert.equal((await question({ npc: 'not-a-faction' })).status, 400);
@@ -2088,59 +2092,88 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.equal(reply.status, 200);
   assert.match(reply.data.reply, /Alfie Blaze/);
   assert.deepEqual(new Set(reply.data.sources.map(item => item.path)), new Set([wikiPath, canonPath]));
-  assert.match(prompts[0][0].content, /graffpunks/);
+  assert.match(prompts[0][0].content, /Eddie Stax, the GraffPUNKS wall keeper/);
   assert.ok(!visits.includes(editorial));
   fakeResponse = { reply: 'This links to the private material right here.', sources: [99] };
   assert.deepEqual((await question({ npc: 'nomad-bears' })).data.sources, []);
-  assert.match(prompts[1][0].content, /nomad-bears/);
+  assert.match(prompts[1][0].content, /Nine Toes Joe, the Bears scout/);
   fakeResponse = { reply: 'Open gk-master-canon now.', sources: [1] };
   assert.deepEqual((await question()).data.sources, []);
   fakeResponse = undefined;
-  sql.exec("UPDATE clan_leader_lore_usage SET questions = 9 WHERE telegram_id = '999'");
-  const competing = await Promise.all([question(), question()]);
+  for (const npc of CANONICAL_FACTION_KEYS.slice(0, 8)) {
+    assert.equal((await question({ npc, question: 'Hello' })).status, 200);
+  }
+  const competing = await Promise.all([question(), question({ npc: 'nomad-bears' })]);
   assert.deepEqual(competing.map(result => result.status).sort(), [200, 429]);
-  assert.equal(prompts.length, 4, 'only one call reserved the final account question');
-  assert.equal((await question()).data.error, 'lore_task_required');
-  bankReceipt(sql, '998', 'nomad-bears', '2026-11-20T10:00:00.000Z');
-  bankReceipt(sql, '999', 'graffpunks', '2026-11-19T10:00:00.000Z');
-  assert.equal((await question()).data.error, 'lore_task_required', 'other players and past banks give no credits');
+  assert.equal(prompts.length, 4, 'only one model call reserved the final shared chat question');
+  assert.equal((await question({ npc: 'blockstars', question: 'Who are you?' })).data.error, 'lore_daily_limit');
   bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:00:00.000Z');
-  const bonus = await Promise.all([question(), question()]);
-  assert.deepEqual(bonus.map(result => result.status).sort(), [200, 429], 'one verified bank unlocks one question');
-  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:01:00.000Z', 2);
-  bankReceipt(sql, '999', 'graffpunks', '2026-11-20T10:02:00.000Z', 3);
-  assert.equal((await question()).status, 200);
-  assert.equal((await question()).status, 200);
-  assert.equal((await question()).data.error, 'lore_daily_limit');
-  sql.exec(`INSERT INTO clan_leader_lore_usage VALUES ('2026-11-20', '1', 187)`);
-  settings.loreSiteLimit = '200';
-  assert.equal((await question({}, { id: '998' })).data.error, 'lore_site_limit', 'the shared daily budget is also enforced');
+  assert.equal((await question()).data.error, 'lore_daily_limit', 'operation tiers cannot extend chat quota');
+  const slowdown = await question({ question: 'What is your faction working on today?' });
+  assert.equal(slowdown.data.paused_until, settings.time.getTime() / 1000 + 300, 'free slowdown works on your own leader after chat is used: ' + JSON.stringify(slowdown.data));
+  assert.match((await question({ npc: 'nomad-bears', question: 'Which part of the city would you defend first?' })).data.reply,
+    /free slowdown is used/);
+  assert.equal((await request({ id: '999', leaderAction: {
+    target: 'nomad-bears', option: 'territory', request_id: '00000000-0000-4000-8000-000000000011',
+  } })).data.error, 'daily_question_used', 'the slowdown button shares the same daily use as chat');
+  settings.loreSiteLimit = '1';
+  assert.equal((await question({ question: 'Hello' }, { id: '998' })).status, 200);
+  assert.equal((await question({}, { id: '998' })).status, 200, 'local chats leave the model budget available');
+  assert.equal((await question({}, { id: '998' })).data.error, 'lore_site_limit');
+  assert.equal((await question({ question: 'Hello' }, { id: '998' })).status, 200, 'local chat works after model budget is spent');
   settings.loreSiteLimit = undefined;
-  assert.equal((await question({}, { id: '998' })).status, 200, 'there is no default shared question pool');
+  assert.equal((await question({}, { id: '998' })).status, 200, 'Hermes has no default site limit');
   settings.time = new Date('2026-11-21T00:00Z');
   assert.equal((await question()).status, 200, 'daily budget resets at midnight UTC');
+  assert.ok((await question({ npc: 'nomad-bears', question: 'Which part of the city would you defend first?' })).data.paused_until,
+    'the slowdown also resets at midnight UTC');
   const overview = await question({
-    npc: 'blockstars', question: 'who are the crypto moonboys?',
-    previous: ['Who commands the Bitcoin Kid Army?'],
+    npc: 'blockstars', question: providerOverview,
+    previous: [detailedCommand],
   });
   assert.equal(overview.status, 200);
   assert.match(overview.data.reply, /characters in a shared fantasy world/);
   assert.deepEqual(overview.data.sources.map(item => item.path), [overviewPath]);
   const freshChat = await question({ npc: 'blockstars', question: 'who are the crypto moonboys?' });
   assert.deepEqual(freshChat.data.sources.map(item => item.path), [overviewPath]);
+  const callsBeforeIntroduction = prompts.length;
+  const visitsBeforeIntroduction = visits.length;
+  const usage = sql.prepare('SELECT questions FROM clan_leader_lore_usage WHERE utc_day = ? AND telegram_id = ?');
+  const questionsBeforeIntroduction = usage.get('2026-11-21', '999').questions;
   for (const intro of ['Who are you?', 'Introduce yourself']) {
     const response = await question({ npc: 'graffpunks', question: intro });
     assert.equal(response.status, 200);
-    assert.match(response.data.reply, /Paint Path/);
-    assert.deepEqual(response.data.sources.map(source => source.path), [graffpunksPath]);
+    assert.match(response.data.reply, /Eddie Stax, the GraffPUNKS wall keeper.*paint murals/);
+    assert.deepEqual(response.data.sources.map(source => source.path), ['/wiki/eddie-stax.html', graffpunksPath, '/battle-chamber/factions/graffpunks.html']);
   }
+  assert.equal(prompts.length, callsBeforeIntroduction, 'local introductions skip the provider');
+  assert.equal(visits.length, visitsBeforeIntroduction, 'local introductions skip source fetches');
+  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction + 2, 'local introductions spend the shared chat quota');
+  // The exact overview matches locally while the preceding variant exercises the provider.
+  assert.match(freshChat.data.reply, /Year 3008/);
+  const callsBeforeCanon = prompts.length;
+  for (const [prompt, path, evidence] of [
+    ['Who commands the Bitcoin Kid Army?', wikiPath, /Alfie Blaze.*GKniftyHEADS/],
+    ['Tell me about the Nomad Bares.', '/wiki/the-nomad-bears.html', /wanderers, artists and couriers/],
+    ['What is the difference between HODL Warriors and HODL X Warriors?', '/wiki/hodl-x-warriors.html', /united GK underworld army/],
+    ['How does the Final Fork end?', '/wiki/hodl-wars.html', /unresolved/],
+  ]) {
+    const response = await question({ question: prompt });
+    assert.equal(response.status, 200);
+    assert.match(response.data.reply, evidence);
+    assert.deepEqual(response.data.sources.map(source => source.path), [path]);
+  }
+  assert.equal(prompts.length, callsBeforeCanon, 'local canon answers skip the provider');
+  assert.equal(visits.length, visitsBeforeIntroduction, 'local canon answers skip source fetches');
+  assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction + 6, 'local canon answers spend the shared chat quota');
   const identities = new Set();
   for (const [index, npc] of CANONICAL_FACTION_KEYS.entries()) {
     const response = await question({ npc, question: 'What does ' + site + publishedMd + ' say?' }, { id: String(400 + index) });
     assert.equal(response.status, 200);
     assert.deepEqual(response.data.sources.map(source => source.path), [publishedMd]);
     const system = prompts.at(-1)[0].content;
-    assert.ok(system.includes('(' + npc + ')'));
+    const { character, callSign } = LEADERS[npc];
+    assert.ok(system.startsWith(`You are ${character}, the ${callSign}`));
     assert.match(system, /Voice: .+ Guiding values:/);
     identities.add(system.match(/Guiding values: (.+?) Treat these values/)[1]);
   }
@@ -2149,7 +2182,7 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
   assert.deepEqual(unlisted.data.sources.map(source => source.path), [artifactPage]);
   assert.ok(!visits.includes(editorial));
   hermesStatus = 307;
-  assert.equal((await question()).status, 503, 'gateway redirects are not followed');
+  assert.equal((await question({}, { id: '998' })).status, 503, 'gateway redirects are not followed');
   settings.hermesUrl = hermesUrl.replace('https:', 'http:');
   assert.equal((await question()).status, 404, 'inference is disabled without HTTPS');
   settings.hermesUrl = hermesUrl;
@@ -2238,4 +2271,66 @@ test('Waterfront admission admits only verified members into nine exclusive, exp
   assert.equal(response.status, 200);
   assert.equal((await response.json()).faction_id, 'nomad-bears');
   assert.match(response.headers.get('Cache-Control'), /private.*no-store/);
+});
+
+test('Gemini lore routes confident site lookups locally and refunds unsuccessful upstream replies', async t => {
+  const { answerClanLeaderLore } = await import('../workers/moonboys-api/shared/clan-leader-lore.js?gemini-grounding-test');
+  const { db, sql } = fixture(t);
+  sql.exec(newerMigration('130_clan_leader_lore'));
+  const env = {
+    DB: db, CLAN_LEADER_LORE_ENABLED: 'true', CLAN_LEADER_LORE_PROVIDER: 'gemini',
+    CLAN_LEADER_GEMINI_KEY: 'test+key=fixture', CLAN_LEADER_GATEWAY_TOKEN: 'test-gateway',
+    CLAN_LEADER_GEMINI_GATEWAY: 'https://gateway.ai.cloudflare.com/v1/' + '1'.repeat(32) + '/test',
+  };
+  const now = new Date('2026-11-24T00:00:00Z');
+  const usage = () => sql.prepare("SELECT questions FROM clan_leader_lore_usage WHERE telegram_id = '101'").get()?.questions ?? 0;
+  const ask = (question, recent_turns) => answerClanLeaderLore(env, '101', { npc: 'graffpunks', question, recent_turns }, now);
+  let calls = 0;
+  let response = 'failed';
+  const uri = 'https://example.org/reference';
+  const excerpt = 'Posh Bear works around the Waterfront as an assessor of recycled parts, workshop fixtures and recovered signs.';
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    const target = new URL(url);
+    if (target.hostname === 'gateway.ai.cloudflare.com') {
+      calls++;
+      assert.deepEqual([...target.searchParams], [['key', 'test+key=fixture']]);
+      assert.equal(init.headers['x-goog-api-key'], undefined);
+      assert.equal(init.headers['cf-aig-authorization'], 'Bearer test-gateway');
+      assert.equal(init.headers['cf-aig-collect-log'], 'false');
+      const request = JSON.parse(init.body);
+      assert.deepEqual(request.tools, [{ googleSearch: {} }]);
+      const prompt = JSON.parse(request.contents[0].parts[0].text);
+      assert.match(prompt.question, /computer|Steve Davis/);
+      if (response === 'failed') return new Response(null, { status: 400 });
+      const reply = prompt.question.includes('Steve Davis') ? 'Steve Davis is a six-time world snooker champion.' : 'Check the monitor connection first.';
+      return Response.json({ candidates: [{
+        finishReason: 'STOP', content: { parts: [{ text: response === 'invalid' ? 'bad JSON' :
+          JSON.stringify({ mode: 'chat', reply, sources: [] }) }] },
+        groundingMetadata: {
+          groundingChunks: [{ web: { title: 'Reference', uri } }, { web: { title: 'Ignore', uri: 'javascript:alert(1)' } }],
+          groundingSupports: [{ groundingChunkIndices: [0, 1] }],
+          searchEntryPoint: { renderedContent: '<p>Search suggestions</p>' },
+        },
+      }] });
+    }
+    if (target.pathname === '/js/wiki-index.json') return Response.json([{ url: '/wiki/posh-bear.html', title: 'Posh Bear' }]);
+    if (target.pathname === '/sitemap.xml') return new Response('');
+    if (target.pathname === '/js/leader-lore-sources.json') return Response.json([]);
+    if (target.pathname === '/wiki/posh-bear.html') return new Response('<main><p>' + excerpt + '</p></main>');
+    return new Response(null, { status: 404 });
+  });
+  assert.equal((await ask('Who is Posh Bear?')).reply, excerpt);
+  assert.equal(calls, 0);
+  assert.equal(usage(), 1);
+  await assert.rejects(ask('How can I fix a computer with a blank screen?'), /lore_gemini_unavailable/);
+  assert.equal(usage(), 1, 'a failed provider call preserves the earlier local charge');
+  response = 'success';
+  const answer = await ask('Who is Steve Davis?');
+  assert.match(answer.reply, /six-time world snooker champion/);
+  assert.deepEqual(answer.sources, [{ url: uri, title: 'Reference' }]);
+  assert.equal(answer.search_suggestions, '<p>Search suggestions</p>');
+  assert.equal(usage(), 2);
+  response = 'invalid';
+  await ask('How does a computer boot?');
+  assert.equal(usage(), 2, 'invalid replies refund exactly one question');
 });

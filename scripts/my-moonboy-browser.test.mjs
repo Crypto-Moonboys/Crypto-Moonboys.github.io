@@ -4,6 +4,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { ACTION_PLAN_SOURCE_REGISTRY } from '../workers/moonboys-api/player-action-plan/sources.js';
 
 const ROOT = process.cwd();
 const SITE = 'https://cryptomoonboys.com';
@@ -127,6 +128,16 @@ async function setup(viewport, initiallyLinked, apiPrefix = '', identityOptions 
       }
       if (url.pathname === apiPrefix + '/player/action-plan') {
         const body = request.postDataJSON();
+        if (body.view === 'battle-history') {
+          const prefix = body.telegram_auth.id === '111' ? 'Alpha' : 'Beta';
+          return route.fulfill({status:200,headers:{'access-control-allow-origin':SITE,'content-type':'application/json'},
+            body:JSON.stringify({ok:true,battle_history:{
+              utc_day:body.day,
+              signals:[{title:prefix + ' signal on ' + body.day,status:'completed',sent_at:body.day + 'T10:50:00Z'}],
+              missed:[{title:prefix + ' missed reward',xp:25}],
+              available:{signals:true,delivery:true,missed:true,bank_rewards:true},
+            }})});
+        }
         requests.push({url:request.url(),method:request.method(),body});
         if (delayOwner === body.telegram_auth.id) await new Promise(resolve => setTimeout(resolve, 250));
         const current = currentPlan(body.telegram_auth.id, body.cursor);
@@ -1359,7 +1370,9 @@ test('My Moonboy signed checklist includes all registered sources and remaining 
   try {
     await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
     await f.page.locator('#mm-checklist .mm-checklist-source').first().waitFor({state:'attached'});
-    assert.equal(await f.page.locator('#mm-checklist .mm-checklist-source').count(), 33);
+    const sourceKeys = await f.page.locator('#mm-checklist .mm-checklist-source')
+      .evaluateAll(rows => rows.map(row => row.dataset.mmChecklistKey).sort());
+    assert.deepEqual(sourceKeys, ACTION_PLAN_SOURCE_REGISTRY.map(({key}) => 'source:' + key).sort());
     assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:saved-status"] .mm-checklist-gaps li').count(), 3);
     assert.equal(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"] .mm-checklist-gaps li').count(), 6);
     assert.match(await f.page.locator('#mm-checklist [data-mm-checklist-key="gap:wiki-engagement"]').textContent(),
@@ -1490,5 +1503,25 @@ test('missed XP refresh is owner scoped, recomputed per signed reconciliation an
     assert.doesNotMatch(await f.page.locator('#my-moonboy').textContent(),
       /57 potential XP missed/u,'private XP must purge on identity switch');
     assert.equal(f.errors.length, 0, f.errors.join('\n'));
+  } finally { await f.browser.close(); }
+});
+
+test('My Moonboy shows dated signal evidence and clears history synchronously when the owner changes', async () => {
+  const f = await setup({width:390,height:850}, true);
+  try {
+    await f.page.goto(SITE + '/my-moonboy.html', {waitUntil:'domcontentloaded'});
+    await f.page.getByText(/Alpha signal on/u).waitFor();
+    assert.match(await f.page.locator('#mm-battle-signals').innerText(), /✓\s+Completed.*Posted to the Telegram group/su);
+    assert.match(await f.page.locator('#mm-battle-missed').innerText(), /25 potential XP/u);
+    await f.page.locator('#mm-battle-day').fill('2026-10-16');
+    await f.page.getByText('Alpha signal on 2026-10-16').waitFor();
+    const cleared = await f.page.evaluate(() => {
+      window.__mmTest.id = '222';
+      window.dispatchEvent(new CustomEvent('moonboys:identity-change'));
+      return document.getElementById('mm-battle-signals').childElementCount === 0;
+    });
+    assert.equal(cleared, true);
+    await f.page.getByText(/Beta signal on/u).waitFor();
+    assert.doesNotMatch(await f.page.locator('#mm-battle-missed').innerText(), /Alpha/u);
   } finally { await f.browser.close(); }
 });

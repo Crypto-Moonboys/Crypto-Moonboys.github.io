@@ -256,6 +256,16 @@
       border-radius: 8px;
     }
 
+    .unified-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 12px 0; }
+    .unified-controls label { display: grid; gap: 4px; }
+    .unified-controls select { padding: 6px; background: #151a2a; color: inherit; border: 1px solid #57627a; border-radius: 5px; }
+    .unified-controls [hidden] { display: none; }
+    .unified-results { overflow-x: auto; }
+    .unified-results table { width: 100%; border-collapse: collapse; text-align: left; }
+    .unified-results :is(td, th) { padding: 8px; border-bottom: 1px solid #303849; }
+    .unified-results summary { cursor: pointer; }
+    .unified-results details ul { margin: 6px 0; padding-left: 18px; }
+    .unified-pagination { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
     .lb-graph-section { margin: 0; }
     .lb-graph-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .lb-graph-heading::after { content: ""; flex: 1; height: 2px; }
@@ -278,6 +288,16 @@
 
     .lb-legend-item { display: flex; align-items: center; gap: 6px; }
     .lb-legend-dot { width: 10px; height: 10px; flex-shrink: 0; }
+    #lb-game-directory { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    #lb-game-directory :is(a, button) {
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      padding: 5px 9px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
     #lb-graph-reset { position: absolute; top: 10px; right: 10px; }
     #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
     .lb-presence-btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -327,7 +347,7 @@
           <span class="swarmsy-kicker wiki-alive-kicker">ARCADE LEADERBOARD / SCORE RANKING / XP SYNC</span>
           <h1 id="leaderboard-title" class="swarmsy-title wiki-living-title">ARCADE<br><span>LEADERBOARD</span></h1>
           <p class="swarmsy-lead">
-            Rank verified competitive scores in the eight-game shared Arcade leaderboard below. MoonPet, Dead Run, NBG London and the wider Block Topia game have separate progression or ranking sources — all are linked below, never silently combined.
+            Compete for Grinder Points across games, factions and verified community activity. Original scoreboards and progression records are linked below.
           </p>
           <div class="swarmsy-action-grid swarmsy-action-grid--compact" aria-label="Leaderboard actions">
             <a class="swarmsy-action-card swarmsy-action-card--gold" href="/games/"><strong>Play Arcade</strong><span>Start runs across the active arcade roster.</span></a>
@@ -339,10 +359,53 @@
       </section>
 
       <div class="lb-page">
+        <section id="unified-leaderboard" class="lb-toolbar-card" aria-labelledby="unified-title">
+          <h2 id="unified-title">Unified rankings</h2>
+          <div class="unified-controls">
+            <label>View
+              <select name="scope">
+                <option value="global">Global · Hardest Grinder</option>
+                <option value="factions">Factions</option>
+                <option value="games">Games</option>
+                <option value="clan-players">Clan Players</option>
+                <option value="no-clan">No Clan</option>
+              </select>
+            </label>
+            <label data-category-control hidden>Category <select name="category"></select></label>
+            <label>Period
+              <select name="period">
+                <option value="daily">Daily</option>
+                <option value="weekly" selected>Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="seasonal">Seasonal</option>
+              </select>
+            </label>
+            <label>Standings
+              <select name="window">
+                <option value="current">Current</option>
+                <option value="closed">Last finalized</option>
+              </select>
+            </label>
+          </div>
+          <p data-unified-status role="status">Loading verified standings…</p>
+          <div class="unified-results" data-unified-results></div>
+          <div class="unified-pagination">
+            <button type="button" data-unified-prev disabled>Previous</button>
+            <span data-unified-page>Page 1</span>
+            <button type="button" data-unified-next disabled>Next</button>
+          </div>
+          <details>
+            <summary>How Grinder Points work</summary>
+            <p><a href="/how-to-play.html#grinder-points">See point rates and caps</a> · <a href="/how-to-play.html#leaderboard-rules">Read ranking and bonus rules</a> · <a href="/how-to-play.html#battle-chamber-rewards">See how Battle Chamber rewards sync</a></p>
+            <p>Points come from eligible game and Battle Chamber receipts, Daily WTF Signals, MoonPet activity, verified wiki missions and Tag Run. Per-source daily caps limit repeat activity. Clan views use the faction recorded on the receipt or weekly crew roster. Faction totals also include NPC rounds and existing weekly clan boosts.</p>
+            <p>Places 1, 2 and 3 earn 30, 20 and 10 points respectively in a finalized chart. Bonuses carry into the next matching period. Global counts up to 60 bonus points across individual charts, and Factions keeps its own bonuses. Grinder Points are separate from XP balances and native game prizes.</p>
+          </details>
+        </section>
+
         <section class="lb-games-coverage" aria-labelledby="lb-coverage-title">
-          <h2 id="lb-coverage-title">Which Moonboys games are covered?</h2>
+          <h2 id="lb-coverage-title">Original scoreboards</h2>
           <p><strong>The eight active Arcade games in this shared ranking:</strong> Snake, Block Topia Quest Maze, Meme Swarm 3008, Chain Maze, Forkfield, Bullrun Brick Smash, Block Topia Dropzone and Kaiju. Select an individual tab for that title. Global aggregates the supported shared Arcade source only.</p>
-          <p><strong>Other playable games — separate sources:</strong> these do not automatically appear in the eight-game shared ranking. Their game XP, Pet XP, verified records and prizes cannot be combined into a public Arcade score without a verified server adapter.</p>
+          <p><strong>Other playable games — separate sources:</strong> these do not automatically appear in the eight-game shared ranking. The unified board uses eligible receipts to award Grinder Points. Each game keeps its own native score and prize rules.</p>
           <nav class="lb-other-game-links" aria-label="Other games and independent progress">
             <a href="/moonpet-game.html">MoonPet — pet progression and saved rewards</a>
             <a href="/games/dead-run/">Dead Run — GPS game and verified sessions</a>
@@ -383,6 +446,7 @@
             <canvas id="arcade-graph-canvas" aria-label="Interactive arcade score graph. Click a leaderboard row to see a player's breakdown."></canvas>
             <button id="lb-graph-reset" aria-label="Reset graph to overview">Reset</button>
           </div>
+          <div id="lb-game-directory" class="lb-graph-legend" aria-label="Game score sources"></div>
           <div class="lb-graph-legend" aria-label="Graph legend">
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>Global / Player</span>
             <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#2ec5ff"></span>Snake</span>
@@ -411,12 +475,36 @@
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script type="module">
-import { initLeaderboard } from '/js/arcade-leaderboard.js';
-import { initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';
+import { initUnifiedLeaderboard } from '/js/unified-leaderboard.js';
+import { initLeaderboard, showGameLeaderboard } from '/js/arcade-leaderboard.js';
+import { ARCADE_MAP_GAMES, initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
 import { ArcadeRetentionEngine } from '/js/arcade-retention-engine.js';
 
-initGraph('arcade-graph-canvas');
+function openGameScores(game) {
+  if (game.href) {
+    window.location.assign(game.href);
+    return;
+  }
+  showGameLeaderboard(game.id).then(() => {
+    document.getElementById('lb-tab-bar').scrollIntoView({ block: 'nearest' });
+  });
+}
+
+const gameDirectory = document.getElementById('lb-game-directory');
+for (const game of ARCADE_MAP_GAMES) {
+  const control = document.createElement(game.href ? 'a' : 'button');
+  control.textContent = game.href ? game.label + ' ↗' : game.label;
+  if (game.href) {
+    control.href = game.href;
+  } else {
+    control.type = 'button';
+    control.addEventListener('click', () => openGameScores(game));
+  }
+  gameDirectory.append(control);
+}
+initGraph('arcade-graph-canvas', openGameScores);
+initUnifiedLeaderboard(document.getElementById('unified-leaderboard'));
 document.body.dataset.lbMode = 'raw';
 
 function updateMetaGraph() {

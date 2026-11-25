@@ -391,6 +391,19 @@ body.page-my-moonboy #content {
 .mm-stats > div:nth-child(-n+2) strong { color: var(--mm-accent); }
 #mm-faction { margin-top: 12px; }
 
+.mm-battle-date { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.mm-battle-date input {
+  background: var(--mm-panel, #111923);
+  color: inherit;
+  color-scheme: dark;
+  border: 1px solid var(--mm-line);
+  padding: .4rem .65rem;
+  font: inherit;
+}
+.mm-battle-list { display: grid; gap: .65rem; padding-inline-start: 1.35rem; }
+.mm-battle-list:empty { display: none; }
+.mm-battle-list li > span { display: block; color: var(--mm-muted); overflow-wrap: anywhere; }
+
 .mm-units {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr));

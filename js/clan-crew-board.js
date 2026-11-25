@@ -1,5 +1,5 @@
 import { CLAN_REWARD_NAMES } from './clan-period-display.js';
-import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=3';
+import { mountClanLeaderDialog } from './clan-leader-dialog.js?lore=5';
 
 const board = document.querySelector('[data-clan-crew-progress]');
 const cards = board?.querySelector('[data-clan-crew-cards]');
@@ -205,12 +205,14 @@ if (cards && api && profiles && factionOrder?.length) {
       return cell;
     }
 
-    const { rank, level, selected, options } = leader.perk;
+    const { rank, level, selected, options, source } = leader.perk;
     const details = document.createElement('details');
     const summary = document.createElement('summary');
     summary.textContent = `Lv ${level} · ${options.find(option => option.id === selected).name}`;
     const previous = document.createElement('p');
-    previous.textContent = `Last week #${rank}. The leader selected one perk for this week.`;
+    previous.textContent = source === 'unified'
+      ? `Last week #${rank} on the unified Factions leaderboard. That rank sets this week’s boost level.`
+      : `Last week #${rank}. The leader selected one perk for this week.`;
     const choices = document.createElement('ul');
     for (const option of options) {
       const line = document.createElement('li');

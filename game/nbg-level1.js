@@ -104,10 +104,38 @@
   var COIN_TIERS = { small: { size: 16, xp: 100 }, medium: { size: 32, xp: 250 }, large: { size: 40, xp: 500 }, xl: { size: 50, xp: 1000 } };
   var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
+  // Behind layer — distant dark rooftop silhouettes, scrolls slower than main buildings.
+  // PNGs are 1632x408; content starts at row 140 (34%), so crop top 34%.
+  var BEHIND_PARALLAX = 0.10;
+  var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
+  var BEHIND_SRC_CROP_START = 0.05;   // skip transparent top 5% only
+  var BEHIND_HEIGHT = 110;            // rendered height for the silhouette strip
+  var BEHIND_Y = 163 - BEHIND_HEIGHT; // back row — slightly lower than mid
+
+  // Mid layer — detailed dark building silhouettes between behind and main buildings.
+  // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
+  var MID_PARALLAX = 0.16;
+  var MID_TILE_WIDTH = 640;
+  var MID_SRC_CROP_START = 0.05;
+  var MID_HEIGHT = 120;
+  var MID_Y = 174 - MID_HEIGHT;      // mid row — above back row, below front
+
   var SKYLINE_PARALLAX = 0.22;
-  var SKYLINE_Y = 40;
-  var SKYLINE_WIDTH = 480;
-  var SKYLINE_HEIGHT = 160;
+  // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
+  // We crop the source and anchor the rendered buildings so their feet sit at y=200,
+  // matching the old river-level baseline. SKYLINE_WIDTH preserves the 4:1 source ratio.
+  var SKYLINE_SRC_CROP_START = 0.10;  // skip transparent top 10% — show full rooftops
+  var SKYLINE_WIDTH = 640;            // rendered width per panel (4:1 ratio)
+  var SKYLINE_HEIGHT = 160;           // rendered height: show full buildings top to feet
+  var SKYLINE_Y = 192 - SKYLINE_HEIGHT; // raised 3%
+  // Bridge layer — tiled in front of skyline, parallax slightly faster.
+  // Bridge PNG is 1632x408; actual bridge structure starts at ~75% down (row 305).
+  // We render only the bottom 25% of source, sitting just above the street.
+  var BRIDGE_PARALLAX = 0.45;
+  var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
+  var BRIDGE_SRC_CROP_START = 0.748;  // skip top 75% (transparent sky)
+  var BRIDGE_TILE_HEIGHT = 56;        // rendered height for the bridge structure
+  var BRIDGE_Y = 192 - BRIDGE_TILE_HEIGHT + 4; // raised 3%
   var STREET_BAND_HEIGHT = 28;
   var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
@@ -342,7 +370,10 @@
   function buildRuntimeAssetMap(manifest) {
     var layerKeyMap = {
       sky: 'sky',
+      'london-behind': 'behind',
+      'london-mid': 'mid',
       'london-skyline': 'skyline',
+      'london-bridge': 'bridge',
       'graffiti-wall': 'wall',
       street: 'street'
     };
@@ -355,6 +386,14 @@
       if (Array.isArray(layers[index]) && key === 'skyline') {
         layers[index].forEach(function (layer, layerIndex) {
           assets['skyline' + (layerIndex + 1)] = resolveAssetPath(layer);
+        });
+      } else if (Array.isArray(layers[index]) && key === 'behind') {
+        layers[index].forEach(function (layer, layerIndex) {
+          assets['behind' + (layerIndex + 1)] = resolveAssetPath(layer);
+        });
+      } else if (Array.isArray(layers[index]) && key === 'mid') {
+        layers[index].forEach(function (layer, layerIndex) {
+          assets['mid' + (layerIndex + 1)] = resolveAssetPath(layer);
         });
       } else if (layers[index]) {
         assets[key] = resolveAssetPath(layers[index]);
@@ -1604,9 +1643,64 @@
       }
     }
 
+    function drawBehindLayer() {
+      var behindImages = [];
+      for (var bi = 1; images['behind' + bi]; bi += 1) { behindImages.push(images['behind' + bi]); }
+      if (!behindImages.length) return;
+
+      var sequenceWidth = BEHIND_TILE_WIDTH * behindImages.length;
+      var offset = -cameraX * BEHIND_PARALLAX;
+      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
+      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
+        for (var i = 0; i < behindImages.length; i += 1) {
+          var img = behindImages[i];
+          var srcW = img.naturalWidth;
+          var srcH = img.naturalHeight;
+          var srcY = Math.round(srcH * BEHIND_SRC_CROP_START);
+          var srcCropH = srcH - srcY;
+          ctx.drawImage(
+            img,
+            0, srcY, srcW, srcCropH,
+            Math.round(x + i * BEHIND_TILE_WIDTH),
+            BEHIND_Y,
+            BEHIND_TILE_WIDTH,
+            BEHIND_HEIGHT
+          );
+        }
+      }
+    }
+
+    function drawMidLayer() {
+      var midImages = [];
+      for (var mi = 1; images['mid' + mi]; mi += 1) { midImages.push(images['mid' + mi]); }
+      if (!midImages.length) return;
+
+      var sequenceWidth = MID_TILE_WIDTH * midImages.length;
+      var offset = -cameraX * MID_PARALLAX;
+      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
+      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
+        for (var i = 0; i < midImages.length; i += 1) {
+          var img = midImages[i];
+          var srcW = img.naturalWidth;
+          var srcH = img.naturalHeight;
+          var srcY = Math.round(srcH * MID_SRC_CROP_START);
+          var srcCropH = srcH - srcY;
+          ctx.drawImage(
+            img,
+            0, srcY, srcW, srcCropH,
+            Math.round(x + i * MID_TILE_WIDTH),
+            MID_Y,
+            MID_TILE_WIDTH,
+            MID_HEIGHT
+          );
+        }
+      }
+    }
+
     function drawSkylineLayer() {
-      var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
-      if (skylineImages.some(function (image) { return !image; })) {
+      var skylineImages = [];
+      for (var si = 1; images['skyline' + si]; si += 1) { skylineImages.push(images['skyline' + si]); }
+      if (!skylineImages.length) {
         ctx.fillStyle = '#18203a';
         ctx.fillRect(0, SKYLINE_Y, WIDTH, SKYLINE_HEIGHT);
         return;
@@ -1617,14 +1711,41 @@
       var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
       for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
         for (var i = 0; i < skylineImages.length; i += 1) {
+          var img = skylineImages[i];
+          var srcW = img.naturalWidth;
+          var srcH = img.naturalHeight;
+          var srcY = Math.round(srcH * SKYLINE_SRC_CROP_START);
+          var srcCropH = srcH - srcY;
           ctx.drawImage(
-            skylineImages[i],
+            img,
+            0, srcY, srcW, srcCropH,
             Math.round(x + i * SKYLINE_WIDTH),
             SKYLINE_Y,
             SKYLINE_WIDTH,
             SKYLINE_HEIGHT
           );
         }
+      }
+    }
+
+    function drawBridgeLayer() {
+      var img = images.bridge;
+      if (!img) return;
+      // Crop top 75% of source (transparent sky), render only the bridge girder structure.
+      var srcW = img.naturalWidth;
+      var srcH = img.naturalHeight;
+      var srcY = Math.round(srcH * BRIDGE_SRC_CROP_START);
+      var srcCropH = srcH - srcY;
+
+      var offset = -cameraX * BRIDGE_PARALLAX;
+      var start = Math.floor(offset % BRIDGE_TILE_WIDTH) - BRIDGE_TILE_WIDTH;
+      for (var x = start; x < WIDTH + BRIDGE_TILE_WIDTH; x += BRIDGE_TILE_WIDTH) {
+        ctx.drawImage(
+          img,
+          0, srcY, srcW, srcCropH,
+          Math.round(x), BRIDGE_Y,
+          BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT
+        );
       }
     }
 
@@ -1679,8 +1800,11 @@
 
     function drawWorld() {
       drawSkyWallpaper();
+      drawBehindLayer();
+      drawMidLayer();
       drawSkylineLayer();
-      drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
+      drawBridgeLayer();
+      drawImageLayer(images.wall, 0.58, 158, 88, '#2d2033');
       drawStreetLayer();
       // Looking below shifts the road upward; extend the painted roadbed
       // beneath its existing 28px street strip instead of exposing blue clear.

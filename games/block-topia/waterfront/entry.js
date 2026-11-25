@@ -1,3 +1,5 @@
+import { LEADERS } from '/js/waterfront-faction-identities.mjs?v=2';
+
 const identity = window.MOONBOYS_IDENTITY;
 const gate = document.querySelector('#bt-gate');
 const game = document.querySelector('#waterfront-game');
@@ -85,13 +87,37 @@ function script(url) {
 }
 
 function bootMap(district) {
-  window.waterfrontDistrict = district;
   if (!mapStartup) {
     mapStartup = (async () => {
-      if (!window.drawWaterfront) await script('harbor-art.js?v=35');
-      if (!window.waterfrontMapLoaded) await script('map.js?v=1');
+      const [
+        { extendWaterfront, restoreIslandLayout, islandPatrol, islandSeed },
+        { createFactionConversations },
+        { createStreetEncounters },
+        { createNpcDialogue, createCrewSpeech },
+      ] = await Promise.all([
+        import('./nature-island.mjs?v=4'),
+        import('./faction-conversations.mjs?v=5'),
+        import('./street-encounters.mjs?v=3'),
+        import('./npc-dialogue.mjs?v=1'),
+      ]);
+      window.waterfrontDistrict = extendWaterfront(district);
+      window.restoreWaterfrontLayout = restoreIslandLayout;
+      window.waterfrontIslandPatrol = islandPatrol;
+      window.waterfrontIslandSeed = islandSeed;
+      window.createWaterfrontFactionConversations ??= storage => {
+        const dialogue = createNpcDialogue(storage);
+        return {
+          ...createFactionConversations(storage, dialogue),
+          street: createStreetEncounters(Math.random, dialogue),
+          crewSpeech: createCrewSpeech(dialogue),
+        };
+      };
+      window.waterfrontCharacterNames = Object.values(LEADERS).map(leader => leader.character);
+      if (!window.drawWaterfront) await script('harbor-art.js?v=78-regolith');
+      if (!window.waterfrontCrewBriefing) await script('crew-briefing.js?v=1');
+      if (!window.waterfrontMapLoaded) await script('map.js?v=22-compact-island');
       if (!window.waterfrontMapLoaded) throw new Error('map_load_failed');
-      await import('./leader-dialog.js?lore=4');
+      await import('./leader-dialog.js?lore=15');
     })().catch(error => {
       mapStartup = null;
       throw error;

@@ -32,6 +32,7 @@ import { SELECTED_RUN_PET_SQL, requireRunMutationResults, recoverDeletedPetRunSt
 import { clampPetCareValue, applyPetCareDecay, readPetInstanceWithAtomicCareDecay } from './pets/care-decay.js';
 import { petSpaceOrderSql, petRankedSpaceCteSql } from './pets/space-order.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
+import { parseUnifiedQuery, readUnifiedLeaderboard, settleUnifiedLeaderboard } from './shared/unified-leaderboard.js';
 import { COMMUNITY_SEASON_DAYS, rollCommunitySeason, selectCommunitySeason, communitySeasonSql, communityReceiptTimestampSql } from './community-season-authority.js';
 import { awardCommunityXp, hasDailyCommunityClaim } from './community-xp-awards.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
@@ -9657,22 +9658,26 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
   const weeklyStanding = factionLogData.weekly_standing ? `#${factionLogData.weekly_standing}` : '—';
   const wtfSignalLine = nextWtf
     ? `${nextWtf.title} (${String(nextWtf.starts_at).slice(11, 16)}-${String(nextWtf.ends_at).slice(11, 16)} UTC)`
-    : 'No live window right now. Next signal loads soon.';
+    : 'No remaining signal window confirmed for this UTC day.';
   const message =
-    `<b>Battle Chamber Daily Digest</b>\nGM, the Battle Chamber has reset. Your faction has new work.\n\n` +
+    `<b>Battle Chamber Daily Digest</b>\nYour daily Battle Chamber update.\n\n` +
     `<b>Faction:</b> ${escapeHtml(factionLabel)}\n\n` +
     `<b>Today’s faction daily missions</b>\n${missionLines}\n\n` +
     `<b>WTF timed signal</b>\n${escapeHtml(wtfSignalLine)}\nCheck in when the signal opens.\n\n` +
     `<b>Missed perks update</b>\n` +
-    `You have ${missedTotal} missed opportunities in your Battle Chamber history. The city kept moving while you were away.\n` +
+    `${missedTotal} opportunities recorded. Open My Moonboy for dates and potential rewards.\n` +
     `Yesterday missed: ${yesterdayMissed}\n` +
     `${missedLine}\n\n` +
-    `<b>Faction daily log</b>\n` +
+    `<b>Legacy faction Clout</b>\n` +
     `Daily contribution: ${factionLogData.daily_contribution}\n` +
     `Weekly contribution: ${factionLogData.weekly_contribution}\n` +
     `Momentum: ${escapeHtml(factionLogData.momentum)}\n` +
-    `Weekly standing: ${escapeHtml(weeklyStanding)}\n` +
-    `Next best action: ${escapeHtml(nextBestAction)}`;
+    `Weekly Clout rank: ${escapeHtml(weeklyStanding)}\n` +
+    `Next best action: ${escapeHtml(nextBestAction)}` +
+    (clanOperationsEnabled(env)
+      ? `\n\n<b>Clan Operations:</b> Bank up to three tiers for Renown, collectibles and Grinder Points.` +
+        (env.CLAN_PFP_ROLL_ENABLED === 'true' ? ' Daily PFP Roll awards Community XP on matching traits.' : '')
+      : '');
 
   const sendResult = await sendBaseWorkerMoonboyMessage(env, telegramId, message, {
     reply_markup: {
@@ -9680,6 +9685,10 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
         [
           { text: '⚔️ Open Battle Chamber', url: `${SITE_URL}/community.html` },
           { text: '🕹️ Play Arcade', url: `${SITE_URL}/games/index.html` },
+        ],
+        [
+          { text: 'My signal checklist', url: `${SITE_URL}/my-moonboy.html#mm-battle-history` },
+          { text: 'Unified Rankings', url: `${SITE_URL}/games/leaderboard.html#unified-leaderboard` },
         ],
         [
           { text: '🏛️ View Faction Chamber', url: buildFactionChamberLink(factionId) },
@@ -9874,8 +9883,8 @@ function getTelegramGroupConfig(env) {
 function describeWtfRequiredAction(requiredAction) {
   if (requiredAction === 'complete_faction_or_battle_action') return 'Complete a faction mission or Battle Chamber proof while the signal is live.';
   if (requiredAction === 'score_target_any_game') return 'Post an accepted arcade score while the burst is live.';
-  if (requiredAction === 'choose_and_complete_chaos_path') return 'Choose a roguelite chaos path and complete the objective.';
-  return 'Open an accepted arcade run while the signal is live.';
+  if (requiredAction === 'choose_and_complete_chaos_path') return 'Complete the Chaos Path objective or submit a qualifying Arcade run while the signal is live.';
+  return 'Submit an accepted Arcade run while the signal is live.';
 }
 
 function formatUtcHm(iso) {
@@ -9895,26 +9904,25 @@ function buildWtfPreEventGroupAnnouncement(eventRow, clanPilot, signalXpFrom) {
     '',
     `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
     '',
-    bankBonus
-      ? 'Complete the timed objective to unlock roguelite options.'
-      : 'Complete the timed objective to unlock roguelite options. Signal bonus XP is a preview only.',
+    'Check in and finish the objective during the window. Verified completion earns 5 Grinder Points (up to 30 per UTC day) and unlocks roguelite options. The objective’s XP display is a preview.',
     ...(clanPilot ? [
       '',
       `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
       'Bank completed tiers for Clan Renown and collectibles. Your clan’s operation is open all UTC day.',
       ...(bankBonus
-        ? [`Bank a Clan Operation tier during the live window for ${CLAN_SIGNAL_XP} Community XP once per player.`]
+        ? [`Your first eligible Clan Operation bank in this window earns ${CLAN_SIGNAL_XP} Community XP after settlement.`]
         : []),
     ] : []),
     '',
-    `Battle Chamber: ${SITE_URL}/community.html`,
+    `My signal checklist: ${SITE_URL}/my-moonboy.html#mm-battle-history`,
+    `Battle Chamber: ${SITE_URL}/community.html#battle-wtf-signal`,
     `Arcade: ${SITE_URL}/games/`,
     '',
     'Fun community gameplay/status event only — not a market signal.',
   ].join('\n');
 }
 
-function buildDailyGroupSummaryMessage(utcDay, clanPilot, signalXpFrom) {
+function buildDailyGroupSummaryMessage(utcDay, clanPilot, signalXpFrom, pfpRollEnabled) {
   const bankBonus = clanPilot && signalXpFrom && signalXpFrom.slice(0, 10) <= utcDay;
   const windows = getWtfDailySchedule(utcDay)
     .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
@@ -9924,18 +9932,16 @@ function buildDailyGroupSummaryMessage(utcDay, clanPilot, signalXpFrom) {
     '',
     `Six Daily WTF signals open today at ${windows} UTC.`,
     '',
-    'Current focus: Battle Chamber proof, faction clout, accepted arcade runs, and missed opportunity history.',
-    '',
-    'Daily faction missions are live. Faction chambers have mission boards, and missed history does not reset. The city keeps moving while you are away.',
-    '',
-    'Check the site for current tasks, timed quests, and roguelite options.',
+    'Finish and verify a signal for 5 Grinder Points, up to 30 per UTC day. Check saved completions and missed rewards in My Moonboy.',
     ...(clanPilot ? [
-      `Play your daily Clan Operation: ${clanOperationPlayUrl()}`,
-      bankBonus
-        ? `Bank tiers for Clan Renown and collectibles. During live signal windows, eligible banks earn ${CLAN_SIGNAL_XP} Community XP once per player per window.`
-        : 'Bank completed tiers for Clan Renown and collectibles. Signal bonus XP is a preview only.',
+      'Each bank earns 10,000 Clan Renown, a collectible and 10 Grinder Points, up to three banks per UTC day.',
+      ...(bankBonus ? [`The first eligible bank in a live signal window earns ${CLAN_SIGNAL_XP} Community XP after settlement.`] : []),
+      `Play your Clan Operation: ${clanOperationPlayUrl()}`,
+      ...(pfpRollEnabled ? [`Daily PFP Roll: up to five tries for Community XP. ${SITE_URL}/community.html#clan-pfp-roll`] : []),
     ] : []),
     '',
+    `My signal checklist: ${SITE_URL}/my-moonboy.html#mm-battle-history`,
+    `Unified Rankings and weekly faction boosts: ${SITE_URL}/games/leaderboard.html#unified-leaderboard`,
     `Battle Chamber: ${SITE_URL}/community.html`,
     `Arcade: ${SITE_URL}/games/`,
     `Faction Chambers: ${SITE_URL}/battle-chamber/factions/index.html`,
@@ -9998,7 +10004,7 @@ function getDailyGroupSummaryCandidates(nowMs, options = {}) {
     event_id: null,
     announcement_type: 'daily_summary',
     scheduled_for: new Date(scheduledMs).toISOString(),
-    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot, options.signalXpFrom),
+    message: buildDailyGroupSummaryMessage(utcDay, options.clanPilot, options.signalXpFrom, options.pfpRollEnabled),
     metadata: {
       wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
       coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
@@ -12023,6 +12029,7 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
   const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, {
     clanPilot: clanOperationsEnabled(env),
     signalXpFrom: clanSignalXpStart(env),
+    pfpRollEnabled: env.CLAN_PFP_ROLL_ENABLED === 'true',
     force,
     announcementKey: options.announcement_key || options.announcementKey || null,
     eventId: options.event_id || options.eventId || null,
@@ -12147,6 +12154,24 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    if (path === '/leaderboard/unified' && request.method === 'GET') {
+      const options = parseUnifiedQuery(url.searchParams);
+      if (!options) return err('invalid_leaderboard_filters', 400);
+      const limited = await enforcePublicRateLimit(request, env, path, null, corsHeaders, { ipLimit: 90 });
+      if (limited) return limited;
+      try {
+        const board = await readUnifiedLeaderboard(env.DB, options);
+        return new Response(JSON.stringify(board), { headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Cache-Control': options.window === 'closed' ? 'public, max-age=60' : 'public, max-age=30',
+        } });
+      } catch (error) {
+        logApiFailure('unified_leaderboard_read_failed', { message: error?.message });
+        return err('unified_leaderboard_unavailable', 503);
+      }
     }
 
     // ── GET /health ────────────────────────────────────────────────────────
@@ -15609,6 +15634,16 @@ export default {
       }
     }
 
+    if (shouldRunTimedEvents) {
+      try {
+        await settleUnifiedLeaderboard(env.DB, new Date(Number(event?.scheduledTime) || Date.now()));
+        scheduledResults.push({ task: 'unified_leaderboard', ok: true, error: null });
+      } catch (error) {
+        logApiFailure('unified_leaderboard_scheduled_failed', { message: error?.message });
+        scheduledResults.push({ task: 'unified_leaderboard', ok: false, error: error?.message || 'unknown_error' });
+      }
+    }
+
     if (shouldRunDigest) {
       const summary = await runTelegramDailyDigest(env, {
         trigger: 'scheduled_cron',
@@ -17445,19 +17480,20 @@ async function cmdGkHelp(tok, chatId, chatType = 'private') {
     `/gklink — Link/refresh Telegram sync (required for Block Topia)\n` +
     `/gkstatus — XP and faction stats\n` +
     `/gkseason — Current season info\n` +
-    `/gkleaderboard — Leaderboard\n` +
+    `/gkleaderboard — Community XP leaderboard\n` +
     `/gkquests — Active missions\n` +
     `/pet — Open Moonpet OS for daily care. Missed care after hatching can reduce future Pet XP awards by 10–25%.\n` +
     `• Pet care, progression, jobs, economy, runs, bosses, alerts and leaderboards run inside Moonpet OS. Arena and Kaiju unlock only after you complete a Season pet and your active Moonpet has hatched; locked players see future panels and stale-state cleanup only.\n` +
     `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
-    `/solve — Submit quest answers\n` +
+    `/solve — Quest answers are handled manually\n` +
     `/gkhelp — Help\n\n` +
     `<b>How sync + progression works</b>\n` +
     `• /gklink creates a signed website link and also refreshes expired sync.\n` +
     `• Linked accounts store XP/progression server-side; unsynced play is local-only.\n` +
-    `• Arcade ranking uses score only. Accepted scores can convert into Block Topia XP.\n` +
+    `• Arcade charts rank game scores. Eligible activity also earns Grinder Points on <a href="${SITE_URL}/games/leaderboard.html#unified-leaderboard">Unified Rankings</a>.\n` +
+    `• See current tasks, signal completions and missed rewards in <a href="${SITE_URL}/my-moonboy.html">My Moonboy</a>.\n` +
     `• XP is used for Block Topia entry, survival, and mini-game costs.\n` +
     `• Mini-game wins can reward XP + gems. Gems are upgrade currency, not entry.\n` +
     `• If sync fails/expired, run /gklink again and use the newest signed link.\n\n` +
@@ -20220,14 +20256,20 @@ function formatWikiMissionLines(wikiMissions, limit = 3) {
   });
 }
 
-function formatDailyWtfLine(loop) {
+function formatDailyWtfLine(loop, nowMs = Date.now()) {
   const status = loop.source_status?.daily_wtf_status;
   const sourceCopy = formatSourceStatusForTelegram(status);
-  const event = Array.isArray(loop.daily_wtf_status?.events) ? loop.daily_wtf_status.events[0] : null;
-  if (!event) return `Daily WTF: ${sourceCopy}`;
-  const label = event.title || event.event_id || 'scheduled event';
-  const eventStatus = event.player_status || event.status || 'scheduled';
-  return `Daily WTF: ${sourceCopy} - ${escapeHtml(label)} (${escapeHtml(eventStatus)})`;
+  if (!['live', 'preview'].includes(status?.state)) return `Daily WTF: ${sourceCopy}`;
+  const events = Array.isArray(loop.daily_wtf_status?.events) ? loop.daily_wtf_status.events : [];
+  const active = events.find(event => Date.parse(event.starts_at) <= nowMs && nowMs < Date.parse(event.ends_at));
+  const event = active || events.find(event => Date.parse(event.starts_at) > nowMs);
+  if (!event) return `Daily WTF: ${sourceCopy} · No remaining window today.`;
+  const label = event.title || 'Daily WTF Signal';
+  const time = `${formatUtcHm(event.starts_at)}–${formatUtcHm(event.ends_at)} UTC`;
+  const progress = status.state !== 'live' ? 'preview schedule'
+    : !active ? 'upcoming'
+      : event.completed_at ? 'completed' : event.checked_in_at ? 'checked in · finish the objective' : 'open now';
+  return `Daily WTF: ${escapeHtml(label)} (${time}, ${progress})`;
 }
 
 function formatMissedOpportunityLine(loop) {
@@ -20284,6 +20326,7 @@ function formatDailyLoopReadout(loop) {
     `Daily missions: ${escapeHtml(formatMissionSummary(loop.daily_missions))} (${missionStatus})`,
     formatDailyWtfLine(loop),
     formatMissedOpportunityLine(loop),
+    `Signal checklist: ${SITE_URL}/my-moonboy.html#mm-battle-history`,
     formatNextBestAction(loop),
     formatDailyLoopSourceSummary(loop, [
       'daily_missions',
@@ -20303,6 +20346,8 @@ async function cmdGkStatus(env, tok, chatId, telegramId, fromUser) {
     `SAM: ${escapeHtml(loop.sam_status?.message || 'SAM status unavailable')}\n` +
     `Faction: ${escapeHtml(getLoopFactionLabel(loop))}\n` +
     `${formatBattleActivityLine(loop)}\n` +
+    `${formatDailyWtfLine(loop)}\n` +
+    `Signal checklist: ${SITE_URL}/my-moonboy.html#mm-battle-history\n` +
     `${formatDigestLine(loop)}\n` +
     `${formatLoopResetLine(loop)}\n` +
     `${formatDailyLoopSourceSummary(loop, [
@@ -20343,10 +20388,11 @@ async function cmdGkLeaderboard(db, tok, chatId) {
       'Community XP is unavailable. Please retry /gkleaderboard.');
     return;
   }
+  const rankings = `\n\nGrinder Points and Factions: ${SITE_URL}/games/leaderboard.html#unified-leaderboard`;
   const seasonLabel = board.season ? `Community season: ${escapeHtml(board.season.name || String(board.season.id))}` : 'All-time Community XP';
   if (!board.rows.length) {
     await sendTelegramMessage(tok, chatId,
-      `📊 <b>${seasonLabel}</b>\n\nNo Community XP recorded for this period yet.`);
+      `📊 <b>${seasonLabel}</b>\n\nNo Community XP recorded for this period yet.${rankings}`);
     return;
   }
   const lines = board.rows.map((r, i) => {
@@ -20354,7 +20400,7 @@ async function cmdGkLeaderboard(db, tok, chatId) {
     return `${i + 1}. ${name} — ${r.xp || 0} Community XP`;
   }).join('\n');
   await sendTelegramMessage(tok, chatId,
-    `🏆 <b>Leaderboard — ${seasonLabel}</b>\n\n${lines}`);
+    `🏆 <b>Community XP leaderboard — ${seasonLabel}</b>\n\n${lines}${rankings}`);
 }
 
 async function cmdGkQuests(env, tok, chatId, telegramId, fromUser) {
@@ -20478,7 +20524,7 @@ async function cmdDaily(env, tok, chatId, telegramId, fromUser) {
 
   if (award.duplicate) {
     await sendTelegramMessage(tok, chatId,
-      `You already claimed your daily XP today (UTC: ${escapeHtml(today)}).\nCome back tomorrow!\n\n` +
+      `You already claimed your daily Community XP today (UTC: ${escapeHtml(today)}).\nCome back tomorrow!\n\n` +
       formatDailyLoopReadout(loop)
     );
     return;
@@ -20493,7 +20539,7 @@ async function cmdDaily(env, tok, chatId, telegramId, fromUser) {
   });
 
   await sendTelegramMessage(tok, chatId,
-    `Daily XP claimed! +${award.xp_awarded} XP\n\n` +
+    `Daily XP claimed! +${award.xp_awarded} Community XP\n\n` +
     formatDailyLoopReadout(loop)
   );
 }
