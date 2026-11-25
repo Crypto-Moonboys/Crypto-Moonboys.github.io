@@ -1652,7 +1652,7 @@
     // The 480x270 uploaded clouds.jpg fills the game viewport exactly, but
     // its left and right edges are not seamless. Alternating mirrored tiles
     // makes both joins match without stretching or changing the source art.
-    function drawSkyWallpaper() {
+    function drawSkyWallpaper(time) {
       var image = images.sky;
       if (!image) {
         ctx.fillStyle = '#171730';
@@ -1660,10 +1660,14 @@
         return;
       }
       var tileW = WIDTH;
-      var offset = -cameraX * 0.08;
+      // Constant slow drift (independent of player movement), on top of the
+      // existing cameraX parallax, so the sky wallpaper keeps repeating
+      // across the screen instead of sitting as one static painting.
+      var driftSpeed = 2.5; // px/sec — half the cloud overlay's speed (farther layer)
+      var offset = -((time || 0) / 1000) * driftSpeed - cameraX * 0.08;
       var firstTile = Math.floor(-offset / tileW) - 1;
       for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
-        var x = Math.round(offset + tile * tileW);
+        var x = offset + tile * tileW;
         if (tile % 2 !== 0) {
           ctx.save();
           ctx.translate(x + tileW, 0);
@@ -2441,7 +2445,7 @@
       // up/down) never drags them out of frame and exposes a gap above.
       // They stay pinned to the canvas regardless of the player's vertical
       // camera offset; only their horizontal scroll still tracks cameraX.
-      drawSkyWallpaper();
+      drawSkyWallpaper(time);
       drawCloudsOverlay(time);
       ctx.save();
       ctx.translate(0, Math.round(cameraY));
