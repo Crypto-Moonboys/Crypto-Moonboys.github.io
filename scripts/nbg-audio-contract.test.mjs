@@ -177,9 +177,14 @@ function fakeAudioEnvironment(manifest, options = {}) {
 
   return {
     document: Object.assign(document, {
-      dispatchGesture(type) {
+      dispatchGesture(type, action) {
         gestureActive = true;
-        try { document.dispatchEvent(new FakeCustomEvent(type)); } finally { gestureActive = false; }
+        try {
+          document.dispatchEvent(new FakeCustomEvent(type));
+          action?.();
+        } finally {
+          gestureActive = false;
+        }
       }
     }),
     window, stored, sources, contexts, musicElements, requests, fetch, releaseAssets
@@ -258,12 +263,18 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
 
   vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
   assert.equal(env.contexts.length, 0, 'AudioContext must not be created on page load');
+  assert.equal(env.window.NBGAudio.isMuted(), true, 'sounds default to off');
+  env.document.dispatchGesture('pointerdown');
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
+  assert.equal(env.contexts.length, 0, 'starting a run does not enable sound');
+  assert.equal(env.window.NBGAudio.getState().musicPlaying, false);
+  env.window.dispatchEvent(new FakeCustomEvent('nbg-level-reset'));
   await flushPromises();
   assert.equal(env.window.NBGAudio.getState().encodedAssets, expectedAssetCount);
   assert.equal(env.window.NBGAudio.getState().maxVoices, 12);
 
-  env.document.dispatchGesture('pointerdown');
-  assert.equal(env.musicElements.length, 1, 'music player is constructed synchronously in pointer gesture');
+  env.document.dispatchGesture('pointerdown', () => env.window.NBGAudio.setMuted(false));
+  assert.equal(env.musicElements.length, 1, 'music player is constructed synchronously when sound is enabled');
   assert.equal(env.musicElements[0].firstPlayInGesture, true, 'iOS first play runs in user gesture');
   assert.equal(env.contexts[0].mediaNodes.length, 1, 'one media source node is connected');
   assert.equal(env.contexts[0].mediaNodes[0].destination, env.contexts[0].gains[1], 'music routes into Web Audio music gain');
@@ -401,7 +412,7 @@ test('NBG music and effects mute independently with balanced default levels', as
   assert.equal(elements.get('nbg-music-mute').attrs['aria-pressed'], 'false');
   assert.equal(elements.get('nbg-sfx-mute').attrs['aria-pressed'], 'false');
 
-  env.document.dispatchGesture('pointerdown');
+  env.document.dispatchGesture('pointerdown', () => env.window.NBGAudio.setMuted(false));
   await flushPromises();
   env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
   await flushPromises();
@@ -491,7 +502,7 @@ test('enemy identities use bounded persistent proximity loops with complete life
 
   vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
   await flushPromises();
-  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  env.window.NBGAudio.setMuted(false);
   await flushPromises();
 
   const dispatchFrame = (enemies) => {
@@ -654,7 +665,7 @@ test('reset cancels effects still waiting for asset preload and decode', async (
 
   vm.runInContext(source, context, { filename: 'game/nbg-audio.js' });
   await flushPromises();
-  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  env.window.NBGAudio.setMuted(false);
   await flushPromises();
   env.window.dispatchEvent(new FakeCustomEvent('nbg-level-started'));
   env.window.dispatchEvent(new FakeCustomEvent('nbg-audio-cue', {
@@ -686,7 +697,7 @@ test('runtime hooks are presentation-only and record sounds follow NBG server au
     readFile(path.join(root, 'game', 'nbg-level1.js'), 'utf8'),
     readFile(managerPath, 'utf8'),
     readFile(path.join(root, 'game', 'nbg-london-leaderboards.js'), 'utf8'),
-    readFile(path.join(root, 'games', 'nbg-london', 'index.html'), 'utf8'),
+    readFile(path.join(root, 'games', 'nbg-london-run', 'index.html'), 'utf8'),
     readFile(path.join(root, 'workers', 'leaderboard', 'nbg-london-replay.js'), 'utf8')
   ]);
 
@@ -732,7 +743,7 @@ test('enemy identity preload refreshes only the manifest and keeps audio cacheab
   assert.equal(env.window.NBGAudio.getState().enemyAssetsLoaded, expectedEnemyIdentities.length);
   assert.deepEqual([...env.window.NBGAudio.getState().failedAssets], []);
 
-  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  env.window.NBGAudio.setMuted(false);
   await flushPromises();
   env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
     detail: { listener: { x: 100, y: 100 }, enemies: [
@@ -769,7 +780,7 @@ test('enemy loop retries a transient per-file failure without redownloading the 
   assert.equal(state.enemyAssetsLoaded, 16);
   assert.equal(state.failedAssets.some(([id]) => id === 'graffbot_walk'), true);
 
-  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  env.window.NBGAudio.setMuted(false);
   await flushPromises();
   const frame = new FakeCustomEvent('nbg-enemy-audio-frame', {
     detail: { listener: { x: 100, y: 100 }, enemies: [
@@ -813,7 +824,7 @@ test('Graffbot movement begins while unrelated audio downloads remain stalled', 
   await flushPromises(10);
   assert.equal(env.window.NBGAudio.getState().encodedAssets, expectedAssetCount - 1,
     'unrelated coin file remains stalled');
-  env.document.dispatchEvent(new FakeCustomEvent('pointerdown'));
+  env.window.NBGAudio.setMuted(false);
   await flushPromises();
   env.window.dispatchEvent(new FakeCustomEvent('nbg-enemy-audio-frame', {
     detail: { listener: { x: 100, y: 100 }, enemies: [

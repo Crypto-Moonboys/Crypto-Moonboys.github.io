@@ -1,39 +1,21 @@
 /**
- * radio.js — GraffPUNKS Radio for the Arcade.
- *
- * Behaviour:
- *  - The radio starts automatically when the player presses Start in any
- *    arcade game (#startBtn on the page or ▶ Start in the fullscreen toolbar).
- *  - The player can switch it off with the radio toggle under the game card or
- *    the speaker button in the fullscreen toolbar. That choice is remembered,
- *    so Start no longer turns it back on until the player switches it on again.
- *  - Muting the game (master Mute) also silences the radio, and Start does not
- *    auto-start it while the game is muted.
- *  - A failed connection only shows the radio as off; it is never recorded as
- *    the player's choice.
- *
- * Usage (called automatically by game-shell.js after mountGame, and imported
- * by game-fullscreen.js so non-shell arcade pages get the same behaviour):
- *   import { mountArcadeRadio } from '/js/arcade/core/radio.js';
- *   mountArcadeRadio();
- *
- * Safe to import under different URLs and to call multiple times: one shared
- * controller lives on window.__ARCADE_RADIO__ and only one stream is created.
+ * GraffPUNKS Radio and the in-page Arcade audio controls.
+ * The shared controller keeps one stream per page, including fullscreen.
+ * Radio Off is respected until the player leaves the game page.
  */
 
 // The relay keeps Radiojar's HTTP node redirects out of mobile media players.
 export const ARCADE_RADIO_URL = 'https://api.cryptomoonboys.com/radio/stream';
 export const ARCADE_RADIO_STORAGE_KEY = 'arcade_radio_on';
-export const ARCADE_RADIO_USER_OFF_KEY = 'arcade_radio_user_off';
 export const ARCADE_RADIO_ICON_ON = '/art/icons/soundonspeakerone.png';
 export const ARCADE_RADIO_ICON_OFF = '/art/icons/mutespeakerone.png';
 const RADIO_URL       = ARCADE_RADIO_URL;
 const STORAGE_KEY     = ARCADE_RADIO_STORAGE_KEY;
-const USER_OFF_KEY    = ARCADE_RADIO_USER_OFF_KEY;
 const PANEL_ID        = 'arcade-radio-panel';
 const LABEL_ON        = 'GraffPUNKS Radio  ·  ON';
 const LABEL_OFF       = 'GraffPUNKS Radio  ·  OFF';
-const START_SELECTOR  = '#startBtn, #overlay-btn-start';
+const START_SELECTOR  = '#startBtn, #overlay-btn-start, #game-over-play-again, [data-arcade-radio-start]';
+const INTERACTIVE_SELECTOR = 'button, input, textarea, select, a[href], summary, [contenteditable], [role="button"]';
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -42,10 +24,11 @@ function _injectStyles() {
   var style = document.createElement('style');
   style.id = 'arcade-radio-styles';
   style.textContent = [
-    '#' + PANEL_ID + '{margin-top:12px;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-family:inherit}',
-    '#arcade-radio-toggle{display:flex;align-items:center;gap:8px;background:none;border:1px solid var(--color-border,#444);border-radius:10px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:.8rem;color:var(--color-text-muted,#aaa);transition:background .15s,border-color .15s,color .15s;line-height:1.3;flex-shrink:0}',
-    '#arcade-radio-toggle:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);color:#fff}',
-    '#arcade-radio-toggle.radio-on{border-color:#7dff72;color:#7dff72;background:rgba(125,255,114,.07)}',
+    '#' + PANEL_ID + '{margin-top:12px;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:inherit}',
+    '[data-arcade-audio-controls] #' + PANEL_ID + '{margin:0;padding:0;border:0;background:none}',
+    '#arcade-radio-toggle,#arcade-sound-toggle{display:flex;align-items:center;gap:8px;background:none;border:1px solid var(--color-border,#444);border-radius:10px;padding:5px 10px;min-height:36px;cursor:pointer;font-family:inherit;font-size:.8rem;color:var(--color-text-muted,#eee);transition:background .15s,border-color .15s,color .15s;line-height:1.3;flex-shrink:0}',
+    '#arcade-radio-toggle:hover,#arcade-sound-toggle:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);color:#fff}',
+    '#arcade-radio-toggle.radio-on,#arcade-sound-toggle[aria-pressed="true"]{border-color:#7dff72;color:#7dff72;background:rgba(125,255,114,.07)}',
     '#arcade-radio-toggle.radio-on:hover{background:rgba(125,255,114,.13)}',
     '#arcade-radio-icon{width:18px;height:18px;display:block;flex-shrink:0;object-fit:contain}',
     '#arcade-radio-indicator{width:8px;height:8px;border-radius:50%;background:var(--color-text-muted,#555);flex-shrink:0;transition:background .2s,box-shadow .2s}',
@@ -59,36 +42,45 @@ function _injectStyles() {
 
 // ── State helpers ──────────────────────────────────────────────────────────────
 
-function _userTurnedOff() {
-  try {
-    return localStorage.getItem(USER_OFF_KEY) === 'true';
-  } catch (_) {
-    return false;
-  }
-}
-
 function _saveUserChoice(on) {
   try {
-    localStorage.setItem(USER_OFF_KEY, on ? 'false' : 'true');
-    // Kept for older readers (e.g. the MoonPet radio preference sync).
+    // Kept for older readers of the arcade radio setting.
     localStorage.setItem(STORAGE_KEY, on ? 'true' : 'false');
   } catch (_) {}
 }
 
-function _gameMuted() {
-  try {
-    var audio = window.ArcadeAudio;
-    if (audio && typeof audio.isMuted === 'function') return !!audio.isMuted();
-  } catch (_) {}
-  return !!window._arcadeMuted;
-}
+function _mountSoundToggle(panel) {
+  if (typeof window._arcadeMuted === 'undefined') window._arcadeMuted = true;
+  var button = document.createElement('button');
+  button.id = 'arcade-sound-toggle';
+  button.type = 'button';
+  var icon = document.createElement('span');
+  icon.setAttribute('aria-hidden', 'true');
+  var label = document.createElement('span');
+  button.append(icon, label);
 
-// Pages with their own soundtrack (e.g. NBG London) set
-// data-arcade-radio-autostart="false" on #startBtn: the radio button still
-// works there, Start just does not layer the stream over the game's music.
-function _pageOptedOut() {
-  var start = typeof document !== 'undefined' && document.getElementById('startBtn');
-  return !!(start && start.dataset && start.dataset.arcadeRadioAutostart === 'false');
+  function sync() {
+    var muted = window.ArcadeAudio?.isMuted?.() ?? window._arcadeMuted;
+    icon.textContent = muted ? '🔇' : '🔊';
+    label.textContent = muted ? 'Sound Off' : 'Sound On';
+    button.setAttribute('aria-pressed', String(!muted));
+    button.setAttribute('aria-label', muted ? 'Turn on game sound' : 'Turn off game sound');
+    button.title = button.getAttribute('aria-label');
+  }
+
+  button.addEventListener('click', function () {
+    var muted = button.getAttribute('aria-pressed') === 'true';
+    if (typeof window.ArcadeAudio?.setMuted === 'function') {
+      window.ArcadeAudio.setMuted(muted);
+    } else {
+      window._arcadeMuted = muted;
+      document.dispatchEvent(new CustomEvent('arcade-mute-change', { detail: { muted: muted } }));
+    }
+    sync();
+  });
+  document.addEventListener('arcade-mute-change', sync);
+  panel.appendChild(button);
+  sync();
 }
 
 // ── Shared controller ─────────────────────────────────────────────────────────
@@ -101,12 +93,10 @@ function _createController() {
   var indicator = null;
   var icon = null;
   var label = null;
-  var listeners = [];
+  var playGeneration = 0;
+  var turnedOffByPlayer = false;
 
   function _notify() {
-    listeners.forEach(function (fn) {
-      try { fn(isOn); } catch (_) {}
-    });
     try {
       document.dispatchEvent(new CustomEvent('arcade-radio-change', { detail: { on: isOn } }));
     } catch (_) {}
@@ -129,30 +119,31 @@ function _createController() {
     audio.src = RADIO_URL;
     // Keep volume reasonable on first play; player can adjust via OS controls.
     audio.volume = 0.5;
-    // Stop stream on page unload to avoid background audio leaks.
+    audio.addEventListener('error', function () {
+      if (isOn && audio.error) _setPlaying(false);
+    });
     window.addEventListener('pagehide', function () {
-      try { audio.pause(); audio.src = ''; } catch (_) {}
-    }, { once: true });
+      _setPlaying(false);
+    });
     return audio;
   }
 
   function _setPlaying(on) {
     isOn = Boolean(on);
-    var stream = _ensureAudio();
+    var generation = ++playGeneration;
     if (isOn) {
-      var attempt = null;
-      try { attempt = stream.play(); } catch (_) { attempt = Promise.reject(); }
+      var stream = _ensureAudio();
+      if (!stream.hasAttribute('src')) stream.src = RADIO_URL;
+      var attempt;
+      try { attempt = stream.play(); } catch (error) { attempt = Promise.reject(error); }
       Promise.resolve(attempt).catch(function () {
-        // Blocked or offline — show it as off so the UI stays honest, but do
-        // not record this as the player's choice.
-        if (!isOn) return;
-        isOn = false;
-        try { stream.pause(); } catch (_) {}
-        _render();
-        _notify();
+        // Ignore a rejection from a cancelled or superseded connection.
+        if (generation === playGeneration) _setPlaying(false);
       });
-    } else {
-      try { stream.pause(); } catch (_) {}
+    } else if (audio) {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
     }
     _render();
     _notify();
@@ -189,6 +180,7 @@ function _createController() {
     toggle.appendChild(icon);
     toggle.appendChild(label);
     panel.appendChild(toggle);
+    _mountSoundToggle(panel);
 
     toggle.addEventListener('click', function () {
       controller.toggle();
@@ -200,7 +192,10 @@ function _createController() {
       document.getElementById('cm-modifier-panel') ||
       document.querySelector('.game-card');
 
-    if (anchor && anchor.parentNode) {
+    var host = document.querySelector('[data-arcade-audio-controls]');
+    if (host) {
+      host.appendChild(panel);
+    } else if (anchor && anchor.parentNode) {
       anchor.parentNode.insertBefore(panel, anchor.nextSibling);
     } else {
       var main = document.querySelector('main') || document.body;
@@ -219,23 +214,17 @@ function _createController() {
     toggle: function () {
       mount();
       var next = !isOn;
+      turnedOffByPlayer = !next;
       _saveUserChoice(next);
       _setPlaying(next);
       return next;
     },
     /** Player pressed Start in a game. */
     startForGame: function () {
-      if (isOn || _userTurnedOff() || _gameMuted() || _pageOptedOut()) return false;
+      if (isOn || turnedOffByPlayer) return false;
       mount();
       _setPlaying(true);
       return true;
-    },
-    /** Silence without recording a player choice (e.g. master mute). */
-    stop: function () {
-      if (isOn) _setPlaying(false);
-    },
-    onChange: function (fn) {
-      if (typeof fn === 'function') listeners.push(fn);
     },
   };
   return controller;
@@ -261,8 +250,18 @@ function _installGlobalHooks(controller) {
     if (!start || start.disabled) return;
     controller.startForGame();
   }, true);
-  document.addEventListener('arcade-mute-change', function (event) {
-    if (event && event.detail && event.detail.muted) controller.stop();
+  // Standalone games expose their Start control here. Leave native Enter
+  // activation alone when focus is already on a control.
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' || event.repeat || event.defaultPrevented ||
+        event.metaKey || event.ctrlKey || event.altKey ||
+        event.target?.closest(INTERACTIVE_SELECTOR)) return;
+    var start = Array.from(document.querySelectorAll('[data-arcade-enter-start]')).find(function (button) {
+      return !button.disabled && !button.closest('[inert]') && button.getClientRects().length;
+    });
+    if (!start) return;
+    event.preventDefault();
+    start.click();
   });
 }
 
@@ -289,4 +288,8 @@ export function mountArcadeRadio() {
 
 export function getArcadeRadio() {
   return _controller();
+}
+
+if (typeof document !== 'undefined' && document.querySelector('[data-arcade-audio-controls]')) {
+  mountArcadeRadio();
 }

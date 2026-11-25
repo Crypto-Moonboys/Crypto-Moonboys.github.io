@@ -1300,6 +1300,7 @@ class TitleScene extends Phaser.Scene {
         errEl.style.display = 'block';
         return;
       }
+      window.__ARCADE_RADIO__?.startForGame();
       errEl.style.display = 'none';
       overlay.style.display = 'none';
 

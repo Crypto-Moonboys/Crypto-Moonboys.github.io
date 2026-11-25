@@ -20,8 +20,8 @@ try {
   for(const {viewport,routePath} of cases){
     const context=await browser.newContext({viewport,isMobile:viewport.width<1000,hasTouch:true});
     await context.addInitScript(()=>{
-      localStorage.setItem('arcade_radio_on','false');window.__mediaStarts=0;window.__upgradesChosen=[];window.addEventListener('invaders-upgrade-selected',event=>window.__upgradesChosen.push(event.detail.id));
-      HTMLMediaElement.prototype.play=function(){window.__mediaStarts++;if(window.__failNextMedia){window.__failNextMedia=false;return Promise.reject(new Error('fixture radio failure'));}return Promise.resolve();};
+      localStorage.setItem('arcade_radio_user_off','true');window.__radioStarts=0;window.__upgradesChosen=[];window.addEventListener('invaders-upgrade-selected',event=>window.__upgradesChosen.push(event.detail.id));
+      HTMLMediaElement.prototype.play=function(){if(this.src.endsWith('/radio/stream'))window.__radioStarts++;if(window.__failNextMedia){window.__failNextMedia=false;return Promise.reject(new Error('fixture radio failure'));}return Promise.resolve();};
       HTMLMediaElement.prototype.pause=function(){};
     });
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -41,7 +41,24 @@ try {
     await page.waitForFunction(()=>window.__memeGame&&window.__choices);
     await page.locator('#overlay-btn-radio:enabled').waitFor({state:'visible'});
     const radio=page.locator('#overlay-btn-radio');
-    await radio.tap();assert.equal(await radio.getAttribute('aria-pressed'),'true');
+    const start = page.locator('#overlay-btn-start');
+    const sound = page.locator('#overlay-btn-mute');
+    assert.equal(await radio.getAttribute('aria-pressed'), 'false', 'page load leaves radio off');
+    assert.equal(await sound.getAttribute('aria-pressed'), 'false', 'game audio defaults to off');
+    if (viewport.width >= 1000) {
+      await start.focus();
+      await page.keyboard.press('NumpadEnter');
+    } else {
+      await start.tap();
+    }
+    assert.equal(await radio.getAttribute('aria-pressed'), 'true', 'starting the game starts radio');
+    assert.equal(await sound.getAttribute('aria-pressed'), 'false', 'Start leaves game audio off');
+    assert.equal(await page.evaluate(() => window.__radioStarts), 1, 'one stream per start');
+    await sound.tap();
+    assert.equal(await sound.getAttribute('aria-pressed'), 'true');
+    await sound.press('Enter');
+    assert.equal(await sound.getAttribute('aria-pressed'), 'false', 'Enter toggles focused sound control');
+    assert.equal(await radio.getAttribute('aria-pressed'), 'true', 'game sound has no effect on radio');
     await radio.tap();assert.equal(await radio.getAttribute('aria-pressed'),'false');
     await page.evaluate(()=>window.__failNextMedia=true);await radio.tap();
     await page.waitForFunction(()=>document.getElementById('overlay-btn-radio').getAttribute('aria-pressed')==='false');
@@ -53,8 +70,13 @@ try {
     const toolbar=await page.locator('#overlay-ctrl-bar').boundingBox(),pad=await page.locator('.overlay-touch-pad').boundingBox();
     assert.ok(rect.y>=toolbar.y+toolbar.height-1&&rect.y+rect.height<=pad.y+1,'canvas does not overlap toolbar or touch controls');
     assert.ok(Math.abs(rect.width/rect.height-540/660)<0.02,'canvas keeps its aspect ratio');
-    await page.locator('#overlay-btn-start').tap();
+    await start.tap();
+    assert.equal(await radio.getAttribute('aria-pressed'), 'false', 'another Start respects Radio Off on this page');
     await page.evaluate(()=>window.__choices.showUpgrade());
+    await sound.press('Enter');
+    assert.equal(await page.evaluate(()=>window.__choices.snapshot().upgradePhase),'picking',
+      'using the sound toggle with Enter does not pick a game upgrade');
+    await sound.press('Enter');
     const buttons=page.locator('.overlay-touch-pad .touch-lr-row .touch-btn');
     await buttons.nth(2).tap();
     assert.equal(await page.evaluate(()=>window.__choices.snapshot().choiceCursor),1);

@@ -99,6 +99,7 @@
 
   var overlay = document.createElement('div');
   overlay.id = 'game-overlay';
+  overlay.tabIndex = -1;
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', 'Game — fullscreen mode');
@@ -149,7 +150,7 @@
   btnRadio.querySelector('.btn-icon').appendChild(btnRadioIcon);
   btnRadio.setAttribute('aria-pressed', 'false');
   btnRadio.disabled = true;
-  var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
+  var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Turn on game sound', '🔇', 'Sound Off');
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
   var fullscreenPrompt = document.createElement('div');
   fullscreenPrompt.id = 'overlay-fullscreen-prompt';
@@ -184,13 +185,13 @@
   ctrlBar.appendChild(btnInfo);
   ctrlBar.appendChild(btnData);
   ctrlBar.appendChild(btnRadio);
+  ctrlBar.appendChild(btnMute);
   ctrlBar.appendChild(btnModifiers);
   ctrlBar.appendChild(btnFaction);
   ctrlBar.appendChild(btnFS);
   ctrlBar.appendChild(btnStart);
   ctrlBar.appendChild(btnPause);
   ctrlBar.appendChild(btnReset);
-  ctrlBar.appendChild(btnMute);
   ctrlBar.appendChild(btnExit);
 
   // Overlay body (side panels + stage)
@@ -358,7 +359,7 @@
   var KEY_PULSE_MS = 80;
 
   // Safe initialization of global mute flag.
-  if (typeof window._arcadeMuted === 'undefined') window._arcadeMuted = false;
+  if (typeof window._arcadeMuted === 'undefined') window._arcadeMuted = true;
 
   function getArcadeAudio() {
     return window.ArcadeAudio || null;
@@ -374,17 +375,11 @@
     var muted = getMutedState();
     var icon = btnMute.querySelector('.btn-icon');
     var lbl  = btnMute.querySelector('.btn-label');
-    if (muted) {
-      if (icon) icon.textContent = '🔇';
-      if (lbl)  lbl.textContent  = ' Unmute';
-      btnMute.setAttribute('aria-label', 'Unmute');
-      btnMute.setAttribute('title', 'Unmute');
-    } else {
-      if (icon) icon.textContent = '🔊';
-      if (lbl)  lbl.textContent  = ' Mute';
-      btnMute.setAttribute('aria-label', 'Mute');
-      btnMute.setAttribute('title', 'Mute');
-    }
+    icon.textContent = muted ? '🔇' : '🔊';
+    lbl.textContent = muted ? ' Sound Off' : ' Sound On';
+    btnMute.setAttribute('aria-pressed', String(!muted));
+    btnMute.setAttribute('aria-label', muted ? 'Turn on game sound' : 'Turn off game sound');
+    btnMute.title = btnMute.getAttribute('aria-label');
   }
 
   var origParent      = null;
@@ -1357,6 +1352,7 @@
     var gameStartBtn = document.getElementById('startBtn');
     if (!gameStartBtn || gameStartBtn.disabled) return;
     gameStartBtn.click();
+    if (document.activeElement === btnStart) overlay.focus({ preventScroll: true });
     _gameStarted = true;
     _isPaused = false;
     syncPauseBtn();
@@ -1441,8 +1437,8 @@
     syncFSBtn();
     syncMuteBtn();
 
-    // Move focus to exit button for keyboard users.
-    btnExit.focus();
+    // Enter activates the first available play action.
+    (hideStartControl || btnStart.disabled ? overlay : btnStart).focus({ preventScroll: true });
 
     // Attempt browser Fullscreen API; silently ignore if denied (iOS Safari, etc.).
     requestOverlayFullscreen('blocked');
@@ -1603,6 +1599,15 @@
     triggerGameStart();
   });
 
+  // Keep these native button actions out of the game's keyboard input.
+  [btnStart, btnRadio, btnMute].forEach(function (button) {
+    button.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.repeat) event.preventDefault();
+      event.stopPropagation();
+    });
+  });
+
   btnFS.addEventListener('click', function () {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(function () {});
@@ -1687,7 +1692,7 @@
     syncRadioControl();
   });
   document.addEventListener('arcade-radio-change', syncRadioControl);
-  import('/js/arcade/core/radio.js?v=radio-autostart-20261124').then(function (mod) {
+  import('/js/arcade/core/radio.js?v=arcade-audio-20261125').then(function (mod) {
     arcadeRadio = mod.getArcadeRadio();
     mod.mountArcadeRadio();
     syncRadioControl();
@@ -1756,29 +1761,21 @@
       }
       return;
     }
-    if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
-      // Native keyboard activation of the London Scores and Zoom controls must
-      // never trigger an Arcade run start behind the active interface.
-      var recordsDrawer = document.getElementById('nbg-record-drawer');
-      if ((recordsDrawer && !recordsDrawer.hidden) ||
-          (e.target && e.target.closest &&
-           e.target.closest('#nbg-record-drawer, #nbg-open-records, #nbg-zoom-control'))) return;
-      // Only fire if the currently focused element is NOT a game control input
-      // (e.g. text input fields) to avoid double-firing.
-      var focused = document.activeElement;
-      var tag = focused ? focused.tagName : '';
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      // Trigger the overlay START button if the game has not yet been started
-      // in this overlay session.  Using _gameStarted (set when btnStart is clicked)
-      // instead of window.running because game modules use function-scoped `running`
-      // variables (not window.running), so window.running is always undefined/falsy.
-      // Without this guard, every Space keypress would re-trigger startBtn and
-      // rebuild the invader formation (or reset any other game mid-play).
-      var gameStartBtn = document.getElementById('startBtn');
-      if (gameStartBtn && !_gameStarted) {
-        e.preventDefault();
-        triggerGameStart();
-      }
+    if (e.defaultPrevented || e.repeat || e.metaKey || e.ctrlKey || e.altKey ||
+        (e.key !== 'Enter' && e.key !== ' ')) return;
+    if (e.target && e.target.closest &&
+        e.target.closest('button, input, textarea, select, a[href], summary, [contenteditable], [role="button"]')) return;
+
+    if (!isOpen && e.key === 'Enter' && !startBtn.disabled) {
+      e.preventDefault();
+      startBtn.click();
+      return;
+    }
+    // Leave keyboard activation to focused controls and the game's own dialogs.
+    if (isOpen && !hideStartControl && !_gameStarted && !btnStart.disabled &&
+        !_activePanel && !gameOverModal.classList.contains('active')) {
+      e.preventDefault();
+      triggerGameStart();
     }
   });
 

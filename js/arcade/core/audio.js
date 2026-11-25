@@ -119,7 +119,7 @@ const SOUND_LIBRARY = {
 // Keep a defensive default here so module-driven game pages remain safe even if
 // game-fullscreen.js has not been evaluated yet.
 if (typeof window !== 'undefined' && typeof window._arcadeMuted === 'undefined') {
-  window._arcadeMuted = false;
+  window._arcadeMuted = true;
 }
 
 let audioCtx = null;
@@ -280,7 +280,12 @@ export function setMuted(muted, options) {
   const opts = options || {};
   const nextMuted = !!muted;
   window._arcadeMuted = nextMuted;
-  if (nextMuted) stopAllSounds();
+  if (nextMuted) {
+    stopAllSounds();
+  } else if (opts.emitEvent !== false) {
+    const context = getAudioContext();
+    if (context?.state === 'suspended') context.resume().catch(function () {});
+  }
   if (opts.emitEvent !== false) {
     document.dispatchEvent(new CustomEvent('arcade-mute-change', {
       detail: { muted: nextMuted },

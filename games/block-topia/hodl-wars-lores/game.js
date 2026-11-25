@@ -1,3 +1,4 @@
+import { getArcadeRadio } from "/js/arcade/core/radio.js?v=arcade-audio-20261125";
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep the tilted projection, high-detail miner rendering, and ground registration.
 import { tile, width, height, spawn, stations, directions, noise, onMoon, route, walkable, miningSites } from './lunar-world.mjs?v=6';
 
@@ -358,7 +359,10 @@ canvas.addEventListener('pointermove',e => {
 });
 function endPointer(e) {
   if (!pointers.delete(e.pointerId)) return;
-  if (!panning && e.type === 'pointerup') selectAt(e.offsetX,e.offsetY);
+  if (!panning && e.type === 'pointerup') {
+    getArcadeRadio().startForGame();
+    selectAt(e.offsetX,e.offsetY);
+  }
   if (!pointers.size) panning = false;
 }
 for (const event of ['pointerup','pointercancel','lostpointercapture']) canvas.addEventListener(event,endPointer);
@@ -370,8 +374,13 @@ canvas.addEventListener('wheel',e => {
 },{passive:false});
 const keyDirections = {ArrowUp:3,w:3,ArrowDown:0,s:0,ArrowLeft:1,a:1,ArrowRight:2,d:2};
 canvas.addEventListener('keydown',e => {
+  if (e.key === 'Enter' && !e.repeat) {
+    getArcadeRadio().startForGame();
+    return;
+  }
   if (!Object.hasOwn(keyDirections,e.key)) return;
   e.preventDefault();
+  getArcadeRadio().startForGame();
   const [dx,dy] = directions[keyDirections[e.key]];
   visit(player.x+dx,player.y+dy);
 });
