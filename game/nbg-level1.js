@@ -104,6 +104,14 @@
   var COIN_TIERS = { small: { size: 16, xp: 100 }, medium: { size: 32, xp: 250 }, large: { size: 40, xp: 500 }, xl: { size: 50, xp: 1000 } };
   var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
+  // Behind layer — distant dark rooftop silhouettes, scrolls slower than main buildings.
+  // PNGs are 1632x408; content starts at row 140 (34%), so crop top 34%.
+  var BEHIND_PARALLAX = 0.10;
+  var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
+  var BEHIND_SRC_CROP_START = 0.343;  // skip transparent top 34%
+  var BEHIND_HEIGHT = 86;             // rendered height for the silhouette strip
+  var BEHIND_Y = 200 - BEHIND_HEIGHT; // align feet with building baseline at y=200
+
   var SKYLINE_PARALLAX = 0.22;
   // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
   // We crop the source and anchor the rendered buildings so their feet sit at y=200,
@@ -354,6 +362,7 @@
   function buildRuntimeAssetMap(manifest) {
     var layerKeyMap = {
       sky: 'sky',
+      'london-behind': 'behind',
       'london-skyline': 'skyline',
       'london-bridge': 'bridge',
       'graffiti-wall': 'wall',
@@ -368,6 +377,10 @@
       if (Array.isArray(layers[index]) && key === 'skyline') {
         layers[index].forEach(function (layer, layerIndex) {
           assets['skyline' + (layerIndex + 1)] = resolveAssetPath(layer);
+        });
+      } else if (Array.isArray(layers[index]) && key === 'behind') {
+        layers[index].forEach(function (layer, layerIndex) {
+          assets['behind' + (layerIndex + 1)] = resolveAssetPath(layer);
         });
       } else if (layers[index]) {
         assets[key] = resolveAssetPath(layers[index]);
@@ -1617,6 +1630,33 @@
       }
     }
 
+    function drawBehindLayer() {
+      var behindImages = [];
+      for (var bi = 1; images['behind' + bi]; bi += 1) { behindImages.push(images['behind' + bi]); }
+      if (!behindImages.length) return;
+
+      var sequenceWidth = BEHIND_TILE_WIDTH * behindImages.length;
+      var offset = -cameraX * BEHIND_PARALLAX;
+      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
+      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
+        for (var i = 0; i < behindImages.length; i += 1) {
+          var img = behindImages[i];
+          var srcW = img.naturalWidth;
+          var srcH = img.naturalHeight;
+          var srcY = Math.round(srcH * BEHIND_SRC_CROP_START);
+          var srcCropH = srcH - srcY;
+          ctx.drawImage(
+            img,
+            0, srcY, srcW, srcCropH,
+            Math.round(x + i * BEHIND_TILE_WIDTH),
+            BEHIND_Y,
+            BEHIND_TILE_WIDTH,
+            BEHIND_HEIGHT
+          );
+        }
+      }
+    }
+
     function drawSkylineLayer() {
       var skylineImages = [];
       for (var si = 1; images['skyline' + si]; si += 1) { skylineImages.push(images['skyline' + si]); }
@@ -1720,6 +1760,7 @@
 
     function drawWorld() {
       drawSkyWallpaper();
+      drawBehindLayer();
       drawSkylineLayer();
       drawBridgeLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');

@@ -14,6 +14,7 @@
     "width": 22000,
     "layerNames": [
       "sky",
+      "london-behind",
       "london-skyline",
       "london-bridge",
       "graffiti-wall",
@@ -21,6 +22,10 @@
     ],
     "layers": [
       "world/clouds.jpg",
+      [
+        "world/LONDON BEHIND1.png",
+        "world/LONDON BEHIND2.png"
+      ],
       [
         "world/LONDON BACKGROUND1.png",
         "world/LONDON BACKGROUND2.png",
