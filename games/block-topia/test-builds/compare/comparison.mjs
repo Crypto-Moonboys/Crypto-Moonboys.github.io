@@ -1,5 +1,5 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep map-specific landmark art, fixture anchors, and rear tower placement.
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=13';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=14';
 import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=5';
 
 const byId = id => document.getElementById(id);
@@ -9,19 +9,20 @@ const status = byId('status');
 const controls = status.textContent;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const mode = document.body.dataset.map;
+const showBuildings = mode !== 'survival';
 const base = '/games/block-topia/waterfront/assets/atlases/';
 const atlas = file => {
   const image = new Image();
   image.src = base + file;
   return image;
 };
-const buildings = atlas('hk-night.png');
-const isIso = mode === 'node-city' || mode === 'survival';
-const fortress = isIso ? loadZcashFortress() : null;
-const waxBee = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
-  ? './hodl-wars-lores/assets/wax-bee.webp?view=moon-grid' : './assets/miners/wax-bee-iso.webp');
-const tower = mode === 'waterfront' ? null : loadZcashFortress(mode === 'moon'
-  ? './hodl-wars-lores/assets/bitcoin-cash-tower.webp' : './assets/miners/bitcoin-cash-tower-iso.webp');
+const buildings = showBuildings ? atlas('hk-night.png') : null;
+const fortress = mode === 'node-city' ? loadZcashFortress() : null;
+const showLandmarks = mode === 'node-city' || mode === 'moon';
+const waxBee = showLandmarks ? loadZcashFortress(mode === 'moon'
+  ? './hodl-wars-lores/assets/wax-bee.webp?view=moon-grid' : './assets/miners/wax-bee-iso.webp') : null;
+const tower = showLandmarks ? loadZcashFortress(mode === 'moon'
+  ? './hodl-wars-lores/assets/bitcoin-cash-tower.webp' : './assets/miners/bitcoin-cash-tower-iso.webp') : null;
 const people = atlas('factions-detail.webp');
 const viewport = {width:0,height:0};
 const camera = {x:0,y:0,zoom:1};
@@ -63,13 +64,10 @@ try {
   Object.assign(viewport,widthOfView());
   const scene = await createScene(mode, canvas, viewport);
   const occupied = new Set([scene.start.join(',')]);
-  const items = fixtures.map(item => ({
+  const items = fixtures.filter(item => showBuildings || !item.rect).map(item => ({
     ...item, ...spot(scene.walkable, scene.start.map((value,i) => value+item.offset[i]), occupied),
   }));
-  if (mode === 'survival') {
-    const { loadSurvivalMiners, survivalZcashTower } = await import('./survival/miners.mjs?v=4');
-    items.push({name:'Zcash Mining Tower', fortress, ...survivalZcashTower}, ...loadSurvivalMiners());
-  } else if (fortress) {
+  if (fortress) {
     items.push({
       name: 'Zcash Mining Fortress', fortress,
       ...spot(scene.walkable, [scene.start[0]-1, scene.start[1]-5], occupied),
@@ -80,8 +78,7 @@ try {
     ...spot(scene.walkable, [scene.start[0]+4, scene.start[1]+3], occupied),
   });
   if (tower) {
-    const location = mode === 'survival' ? {x:1,y:4}
-      : spot(scene.walkable, mode === 'moon' ? [24,14] : [18,20], occupied);
+    const location = spot(scene.walkable, mode === 'moon' ? [24,14] : [18,20], occupied);
     items.push({name:'Bitcoin Cash Mining Tower', fortress:tower, scale:towerScale, ...location});
   }
   const blocked = new Set(items.filter(item => item.rect || item.fortress).map(item => `${item.x},${item.y}`));
@@ -161,8 +158,7 @@ try {
         w = fortressSize.width * scale;
         top = y - fortressSize.anchorY * scale;
         bottom = top + fortressSize.height * scale;
-        const drawMiner = object.drawMiner ?? drawZcashFortress;
-        drawMiner(surface, object.fortress, x, y, scale, time);
+        drawZcashFortress(surface, object.fortress, x, y, scale, time);
       } else if (object.rect) {
         const [sx,sy,sw,sh] = object.rect;
         w = object.width;
