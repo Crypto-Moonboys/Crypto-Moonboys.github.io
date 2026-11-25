@@ -110,7 +110,7 @@
   var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
   var BEHIND_SRC_CROP_START = 0.05;   // skip transparent top 5% only
   var BEHIND_HEIGHT = 110;            // rendered height for the silhouette strip
-  var BEHIND_Y = 187 - BEHIND_HEIGHT; // back row — slightly lower than mid
+  var BEHIND_Y = 197 - BEHIND_HEIGHT; // back row — slightly lower than mid
 
   // Mid layer — detailed dark building silhouettes between behind and main buildings.
   // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
@@ -118,7 +118,7 @@
   var MID_TILE_WIDTH = 640;
   var MID_SRC_CROP_START = 0.05;
   var MID_HEIGHT = 120;
-  var MID_Y = 176 - MID_HEIGHT;      // mid row — above back row, below front
+  var MID_Y = 182 - MID_HEIGHT;      // mid row — above back row, below front
 
   var SKYLINE_PARALLAX = 0.22;
   // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
