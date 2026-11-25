@@ -108,26 +108,26 @@
   // PNGs are 1632x408; content starts at row 140 (34%), so crop top 34%.
   var BEHIND_PARALLAX = 0.10;
   var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
-  var BEHIND_SRC_CROP_START = 0.343;  // skip transparent top 34%
-  var BEHIND_HEIGHT = 86;             // rendered height for the silhouette strip
-  var BEHIND_Y = 200 - BEHIND_HEIGHT; // align feet with building baseline at y=200
+  var BEHIND_SRC_CROP_START = 0.20;   // skip transparent top 20%
+  var BEHIND_HEIGHT = 110;            // rendered height for the silhouette strip
+  var BEHIND_Y = 160 - BEHIND_HEIGHT; // float high — furthest back sits highest
 
   // Mid layer — detailed dark building silhouettes between behind and main buildings.
   // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
   var MID_PARALLAX = 0.16;
   var MID_TILE_WIDTH = 640;
-  var MID_SRC_CROP_START = 0.282;
-  var MID_HEIGHT = 100;
-  var MID_Y = 200 - MID_HEIGHT;
+  var MID_SRC_CROP_START = 0.20;
+  var MID_HEIGHT = 120;
+  var MID_Y = 180 - MID_HEIGHT;      // mid sits higher than front, lower than behind
 
   var SKYLINE_PARALLAX = 0.22;
   // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
   // We crop the source and anchor the rendered buildings so their feet sit at y=200,
   // matching the old river-level baseline. SKYLINE_WIDTH preserves the 4:1 source ratio.
-  var SKYLINE_SRC_CROP_START = 0.449; // 45% transparent sky at top — skip it
+  var SKYLINE_SRC_CROP_START = 0.30;  // skip transparent top 30% — show full rooftops
   var SKYLINE_WIDTH = 640;            // rendered width per panel (4:1 ratio)
-  var SKYLINE_HEIGHT = 112;           // rendered height: 55% of 203 ≈ 112px of content
-  var SKYLINE_Y = 200 - SKYLINE_HEIGHT; // anchor building feet at y=200 → Y=88
+  var SKYLINE_HEIGHT = 140;           // rendered height: show full buildings top to feet
+  var SKYLINE_Y = 200 - SKYLINE_HEIGHT; // anchor building feet at y=200 → Y=60
   // Bridge layer — tiled in front of skyline, parallax slightly faster.
   // Bridge PNG is 1632x408; actual bridge structure starts at ~75% down (row 305).
   // We render only the bottom 25% of source, sitting just above the street.
