@@ -2,6 +2,7 @@
   "game": "NBG London Graffiti Run",
   "level": "London Level 1",
   "runtime": "/game/demo-launch.html",
+  "cloudsOverlay": "world/clouds-overlay.png",
   "player": {
     "animationManifest": "player/nbg-runner-animation-manifest.json",
     "hitbox": {

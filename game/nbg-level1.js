@@ -416,6 +416,8 @@
       }
     });
 
+    if (manifest.cloudsOverlay) assets.cloudsOverlay = resolveAssetPath(manifest.cloudsOverlay);
+
     if (manifest.objects) {
       if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
       if (manifest.objects.mysteryBox) assets.mysteryBox = resolveAssetPath(manifest.objects.mysteryBox);
@@ -1674,6 +1676,33 @@
       }
     }
 
+    // A second, semi-transparent cloud layer drawn over the sky wallpaper.
+    // Driven purely by elapsed time (not cameraX), so it keeps drifting even
+    // while the player is standing idle. Same alternating-mirror tiling
+    // trick as drawSkyWallpaper makes the seam invisible without needing to
+    // hand-edit the source art for a perfect loop.
+    function drawCloudsOverlay(time) {
+      var image = images.cloudsOverlay;
+      if (!image) return;
+      var tileW = WIDTH;
+      var tileH = image.naturalHeight || 175;
+      var driftSpeed = 10; // px/sec — constant, independent of player movement
+      var offset = -((time || 0) / 1000) * driftSpeed - cameraX * 0.03;
+      var firstTile = Math.floor(-offset / tileW) - 1;
+      for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
+        var x = Math.round(offset + tile * tileW);
+        if (tile % 2 !== 0) {
+          ctx.save();
+          ctx.translate(x + tileW, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, 0, 0, tileW, tileH);
+          ctx.restore();
+        } else {
+          ctx.drawImage(image, x, 0, tileW, tileH);
+        }
+      }
+    }
+
     function drawStreetLayer() {
       if (!images.street) {
         ctx.fillStyle = '#303238';
@@ -1955,6 +1984,7 @@
 
     function drawWorld(time) {
       drawSkyWallpaper();
+      drawCloudsOverlay(time);
       drawBehindLayer();
       drawMidLayer();
       drawSkylineLayer();
