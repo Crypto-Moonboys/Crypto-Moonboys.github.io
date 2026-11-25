@@ -383,7 +383,7 @@
     return assetPath.indexOf('assets/') === 0 ? '/game/' + assetPath : ASSET_ROOT + assetPath;
   }
 
-  function buildRuntimeAssetMap(manifest) {
+  function buildRuntimeAssetMap(manifest, classicScenery) {
     var layerKeyMap = {
       sky: 'sky',
       'london-behind': 'behind',
@@ -394,8 +394,18 @@
       street: 'street'
     };
     var assets = {};
-    var layerNames = (manifest.world && manifest.world.layerNames) || [];
-    var layers = (manifest.world && manifest.world.layers) || [];
+    // Historical scenery from 06f660e (before the bridge/skyline replacement).
+    // Keep the current manifest's gameplay assets and course version for both games.
+    var world = classicScenery ? {
+      layerNames: ['sky', 'london-skyline', 'graffiti-wall', 'street'],
+      layers: ['world/nbg-classic/clouds.jpg',
+        ['world/nbg-classic/LONDON BACKGROUND1.png',
+          'world/nbg-classic/LONDON BACKGROUND2.png',
+          'world/nbg-classic/LONDON BACKGROUND3.png'],
+        'art-production/wall-one.png', 'world/street-tiles.svg']
+    } : manifest.world;
+    var layerNames = (world && world.layerNames) || [];
+    var layers = (world && world.layers) || [];
 
     layerNames.forEach(function (name, index) {
       var key = layerKeyMap[name] || name;
@@ -416,7 +426,7 @@
       }
     });
 
-    if (manifest.cloudsOverlay) assets.cloudsOverlay = resolveAssetPath(manifest.cloudsOverlay);
+    if (!classicScenery && manifest.cloudsOverlay) assets.cloudsOverlay = resolveAssetPath(manifest.cloudsOverlay);
 
     if (manifest.objects) {
       if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
@@ -430,7 +440,7 @@
       if (manifest.objects.finishFlag) assets.finish = resolveAssetPath(manifest.objects.finishFlag);
     }
 
-    if (manifest.trains) {
+    if (!classicScenery && manifest.trains) {
       if (manifest.trains.trainWuf) assets.trainWuf = resolveAssetPath(manifest.trains.trainWuf);
       if (manifest.trains.trainAlcor) assets.trainAlcor = resolveAssetPath(manifest.trains.trainAlcor);
       if (manifest.trains.trainNbg) assets.trainNbg = resolveAssetPath(manifest.trains.trainNbg);
@@ -520,6 +530,7 @@
   function createRuntime(canvas, hud) {
     // Only the Getting Up launch page opts out of competitive integration.
     var unranked = !!(canvas.dataset && canvas.dataset.nbgMode === 'unranked');
+    var classicScenery = !unranked && !!(canvas.dataset && canvas.dataset.nbgScenery === 'classic');
     // Backing resolution is not world resolution: 960x540 output covers the
     // exact same 480x270 logical scene at exactly the same on-screen size.
     // Avoid CSS/nearest-neighbour enlargement of the former 480px bitmap.
@@ -2099,13 +2110,83 @@
       });
     }
 
+    // Restore the exact pre-bridge scale, layer order, and parallax.
+    function drawClassicImageLayer(image, parallax, y, h, fallbackColor) {
+      var offset = -cameraX * parallax;
+      if (!image) {
+        ctx.fillStyle = fallbackColor;
+        ctx.fillRect(0, y, WIDTH, h);
+        return;
+      }
+      var naturalWidth = image.naturalWidth || WIDTH;
+      var naturalHeight = image.naturalHeight || h;
+      var tileW = Math.max(WIDTH, Math.round(naturalWidth * (h / naturalHeight)));
+      var start = Math.floor(offset % tileW) - tileW;
+      for (var x = start; x < WIDTH + tileW; x += tileW) {
+        ctx.drawImage(image, x, y, tileW, h);
+      }
+    }
+
+    function drawClassicSkyWallpaper() {
+      var image = images.sky;
+      if (!image) {
+        ctx.fillStyle = '#171730';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        return;
+      }
+      var tileW = WIDTH;
+      var offset = -cameraX * 0.08;
+      var firstTile = Math.floor(-offset / tileW) - 1;
+      for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
+        var x = Math.round(offset + tile * tileW);
+        if (tile % 2 !== 0) {
+          ctx.save();
+          ctx.translate(x + tileW, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, 0, 0, tileW, HEIGHT);
+          ctx.restore();
+        } else {
+          ctx.drawImage(image, x, 0, tileW, HEIGHT);
+        }
+      }
+    }
+
+    function drawClassicSkylineLayer() {
+      var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
+      if (skylineImages.some(function (image) { return !image; })) {
+        ctx.fillStyle = '#18203a';
+        ctx.fillRect(0, 40, WIDTH, 160);
+        return;
+      }
+
+      var sequenceWidth = 640 * skylineImages.length;
+      var offset = -cameraX * 0.22;
+      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
+      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
+        for (var i = 0; i < skylineImages.length; i += 1) {
+          ctx.drawImage(
+            skylineImages[i],
+            Math.round(x + i * 640),
+            40,
+            640,
+            160
+          );
+        }
+      }
+    }
+
     function drawWorld(time) {
-      drawBehindLayer();
-      drawMidLayer();
-      drawSkylineLayer();
-      drawBridgeLayer();
-      drawTrains(time);
-      drawImageLayer(images.wall, 0.58, 158, 88, '#2d2033');
+      if (classicScenery) {
+        drawClassicSkylineLayer();
+        drawClassicImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
+      } else {
+        drawBehindLayer();
+        drawMidLayer();
+        drawSkylineLayer();
+        drawBridgeLayer();
+        drawTrains(time);
+        drawImageLayer(images.wall, 0.58, 158, 88, '#2d2033');
+      }
       drawStreetLayer();
       // Looking below shifts the road upward; extend the painted roadbed
       // beneath its existing 28px street strip instead of exposing blue clear.
@@ -2548,16 +2629,21 @@
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
-      ctx.fillStyle = '#080d94';
+      ctx.fillStyle = classicScenery ? '#0078fb' : '#080d94';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
       // Sky + clouds are drawn here, before the cameraY translate below, so
       // a jump (which shifts the whole world vertically to simulate looking
       // up/down) never drags them out of frame and exposes a gap above.
       // They stay pinned to the canvas regardless of the player's vertical
       // camera offset; only their horizontal scroll still tracks cameraX.
-      drawSkyWallpaper(time);
-      drawCloudsOverlay(time);
-      drawAirship();
+      if (classicScenery) {
+        // Retain the later sky-pinning fix so jumping never exposes a gap.
+        drawClassicSkyWallpaper();
+      } else {
+        drawSkyWallpaper(time);
+        drawCloudsOverlay(time);
+        drawAirship();
+      }
       ctx.save();
       ctx.translate(0, Math.round(cameraY));
       drawWorld(time);
@@ -2784,7 +2870,7 @@
       exposeTestState();
       if (initPromise) return initPromise;
       initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
-        var assets = buildRuntimeAssetMap(assetManifest);
+        var assets = buildRuntimeAssetMap(assetManifest, classicScenery);
         var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
 
@@ -2842,6 +2928,7 @@
       }).then(function () {
         // Optional scenery must never prevent the runner from starting.
         // Keep the approved source asset separate from the cached off-state.
+        if (classicScenery) return finishInit();
         loadImage(ASSET_ROOT + 'world/TWIYGR-spritesheet.png').then(function (result) {
           if (!result.image || result.image.naturalWidth !== 1024 ||
               result.image.naturalHeight !== 1024) return;
