@@ -432,6 +432,13 @@
       if (manifest.trains.trainWaxcash) assets.trainWaxcash = resolveAssetPath(manifest.trains.trainWaxcash);
       if (manifest.trains.trainGetsulaid) assets.trainGetsulaid = resolveAssetPath(manifest.trains.trainGetsulaid);
       if (manifest.trains.trainTrustme) assets.trainTrustme = resolveAssetPath(manifest.trains.trainTrustme);
+      if (manifest.trains.trainWaxpmoon) assets.trainWaxpmoon = resolveAssetPath(manifest.trains.trainWaxpmoon);
+      if (manifest.trains.trainJaerfdc) assets.trainJaerfdc = resolveAssetPath(manifest.trains.trainJaerfdc);
+      if (manifest.trains.trainLsw) assets.trainLsw = resolveAssetPath(manifest.trains.trainLsw);
+      if (manifest.trains.trainAichunks) assets.trainAichunks = resolveAssetPath(manifest.trains.trainAichunks);
+      if (manifest.trains.trainNfthive) assets.trainNfthive = resolveAssetPath(manifest.trains.trainNfthive);
+      if (manifest.trains.trainCharliebuster) assets.trainCharliebuster = resolveAssetPath(manifest.trains.trainCharliebuster);
+      if (manifest.trains.trainHodlwars) assets.trainHodlwars = resolveAssetPath(manifest.trains.trainHodlwars);
     }
 
     if (manifest.enemies) {
@@ -1772,14 +1779,19 @@
     }
 
     function drawTrains(time) {
-      // Three joined sets of three cars, spaced out in time along the bridge:
+      // Four joined sets of cars, spaced out in time along the bridge:
       //   Set 1 (NBG / WUF / ALCOR)        — leads, enters at the 10s reveal
       //   Set 2 ($WAXP / $PXJ-KING / $WPIXAL) — 20s behind set 1
       //   Set 3 ($WAXCASH / GETS U LAID / $TRUST ME) — 30s behind set 2
+      //   Set 4 (£WAXP TO THE MOON / JAER FDC / $LSW / AI-CHUNKS /
+      //          NFT HIVE / CHARLIE BUSTER / HODL WARS) — 15s behind set 3
       var convoy = [
         images.trainNbg, images.trainWuf, images.trainAlcor,
         images.trainSwaxp, images.trainPxjking, images.trainWpixal,
-        images.trainWaxcash, images.trainGetsulaid, images.trainTrustme
+        images.trainWaxcash, images.trainGetsulaid, images.trainTrustme,
+        images.trainWaxpmoon, images.trainJaerfdc, images.trainLsw,
+        images.trainAichunks, images.trainNfthive, images.trainCharliebuster,
+        images.trainHodlwars
       ];
       if (!convoy[0] && !convoy[1] && !convoy[2]) return;
       // Don't show trains for first 10 seconds
@@ -1790,15 +1802,18 @@
       // Lead-car time gaps (converted to px of track) between the sets.
       var gap2 = 20 * TRAIN_SPEED;        // set 2 starts 20s after set 1
       var gap3 = (20 + 30) * TRAIN_SPEED; // set 3 starts 30s after set 2
+      var gap4 = gap3 + 15 * TRAIN_SPEED; // set 4 starts 15s after set 3 (7 joined cars)
 
       // Track offset (px) of each car's left edge from the loop origin.
       var offsets = [
         0, carW, 2 * carW,
         gap2, gap2 + carW, gap2 + 2 * carW,
-        gap3, gap3 + carW, gap3 + 2 * carW
+        gap3, gap3 + carW, gap3 + 2 * carW,
+        gap4, gap4 + carW, gap4 + 2 * carW, gap4 + 3 * carW,
+        gap4 + 4 * carW, gap4 + 5 * carW, gap4 + 6 * carW
       ];
       // Full loop length: last car + a trailing 20s gap before set 1 repeats.
-      var loopLen = gap3 + 2 * carW + carW + (20 * TRAIN_SPEED);
+      var loopLen = gap4 + 6 * carW + carW + (20 * TRAIN_SPEED);
 
       // Time-based scroll — always moves regardless of player state.
       // Count from the 10s reveal so cars roll in from the right edge.
