@@ -1,19 +1,23 @@
 {
   "issue": 1930,
-  "round": 51,
+  "round": 52,
   "research": "research incomplete",
   "review": {
-    "keyFindings": [
-      {
-        "type": "Navigation Risk",
-        "description": "The route [3,15,4,27,16,28,17,40,52,41,64,53,42,76,88,75,77,87,89,78,90] contains a potential loop or dead-end. The route starts and ends at different points but may revisit certain areas like row 17 which appears twice.",
-        "suggestion": "Review the route to ensure it is navigable without loops."
-      },
-      {
-        "type": "Visual Risk",
-        "description": "Row 10 contains an incomplete representation of a dock or house, indicated by '_'. This could lead to visual confusion for players.",
-        "suggestion": "Ensure all elements in the grid are fully represented."
-      }
-    ]
+    "keyFindings": {
+      "visualRisks": [
+        {
+          "description": "Waterfront district contains unexpected characters",
+          "details": "The district data includes '~' and '_' which do not match the expected visual elements like water, road, or ground.",
+          "suggestion": "Replace '~' and '_' with appropriate tile types such as 'water', 'ground', etc."
+        }
+      ],
+      "navigationRisks": [
+        {
+          "description": "Route path contains invalid indices",
+          "details": "The route [3,15,4,27,16,28,17,40,52,41,64,53,42,76,88,75,77,87,89,78,90] includes indices that exceed the maximum row length (12).",
+          "suggestion": "Check and correct any route path indices to ensure they are within valid range."
+        }
+      ]
+    }
   }
 }
