@@ -1690,7 +1690,10 @@
       var offset = -((time || 0) / 1000) * driftSpeed - cameraX * 0.03;
       var firstTile = Math.floor(-offset / tileW) - 1;
       for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
-        var x = Math.round(offset + tile * tileW);
+        // Sub-pixel x (no Math.round): at this slow a drift speed, snapping
+        // to whole pixels only moves the layer once every several frames,
+        // which reads as a jerky stutter instead of a smooth glide.
+        var x = offset + tile * tileW;
         if (tile % 2 !== 0) {
           ctx.save();
           ctx.translate(x + tileW, 0);
