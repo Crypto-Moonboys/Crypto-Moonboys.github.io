@@ -1,4 +1,5 @@
 import { fortressSize } from '../../../zcash-fortress.mjs?v=5';
+import { createMinerMechanics } from './miner-motion.mjs?v=1';
 
 // Reserve blocked tiles or open ground away from the existing road network.
 export const survivalMinerLots = [
@@ -27,28 +28,33 @@ export function loadSurvivalMiners() {
   return survivalMinerLots.map(({ file, ...lot }) => {
     const fortress = new Image();
     fortress.src = new URL(`./miners/${file}.webp?v=2-neon`, import.meta.url).href;
-    return { ...lot, fortress, drawMiner: drawSurvivalMiner };
+    const mechanics = createMinerMechanics(file);
+    const phase = (lot.x + lot.y * 2) * .47;
+    return { ...lot, fortress, drawMiner: (ctx, image, x, y, scale, time) =>
+      drawSurvivalMiner(ctx, image, x, y, scale, time, mechanics, phase) };
   });
 }
 
-// Each atlas stacks full-detail artwork above a transparent light layer.
-// Twelve sampled phases pulse the lights while the rock footprint stays still.
-export function drawSurvivalMiner(ctx, image, x, y, scale, time) {
+// The foundation and structure stay registered to the lot while the parts move.
+function drawSurvivalMiner(ctx, image, x, y, scale, time, mechanics, phase) {
   const { width, height, anchorY } = fortressSize;
   const sw = image.naturalWidth;
   const sh = image.naturalHeight / 2;
-  const dw = width * scale;
-  const dh = height * scale;
-  const left = x - dw / 2;
-  const top = y - anchorY * scale;
-
   ctx.save();
+  ctx.translate(x - width * scale / 2, y - anchorY * scale);
+  ctx.scale(width * scale / sw, height * scale / sh);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(image, 0, 0, sw, sh, left, top, dw, dh);
+
+  ctx.save();
+  if (time !== null) mechanics.clipStatic(ctx, sw, sh);
+  ctx.drawImage(image, 0, 0, sw, sh, 0, 0, sw, sh);
   const tick = time === null ? 0 : Math.floor(time * 12 + x / 80);
   const pulse = .5 - .5 * Math.cos(tick * Math.PI / 6);
-  ctx.globalAlpha *= .12 + .88 * pulse;
-  ctx.drawImage(image, 0, sh, sw, sh, left, top, dw, dh);
+  ctx.globalAlpha *= .12 + .65 * pulse;
+  ctx.drawImage(image, 0, sh, sw, sh, 0, 0, sw, sh);
+  ctx.restore();
+
+  if (time !== null) mechanics.draw(ctx, image, time, phase);
   ctx.restore();
 }
