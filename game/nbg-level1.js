@@ -110,7 +110,7 @@
   var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
   var BEHIND_SRC_CROP_START = 0.05;   // skip transparent top 5% only
   var BEHIND_HEIGHT = 110;            // rendered height for the silhouette strip
-  var BEHIND_Y = 171 - BEHIND_HEIGHT; // back row — slightly lower than mid
+  var BEHIND_Y = 163 - BEHIND_HEIGHT; // back row — slightly lower than mid
 
   // Mid layer — detailed dark building silhouettes between behind and main buildings.
   // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
@@ -118,7 +118,7 @@
   var MID_TILE_WIDTH = 640;
   var MID_SRC_CROP_START = 0.05;
   var MID_HEIGHT = 120;
-  var MID_Y = 182 - MID_HEIGHT;      // mid row — above back row, below front
+  var MID_Y = 174 - MID_HEIGHT;      // mid row — above back row, below front
 
   var SKYLINE_PARALLAX = 0.22;
   // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
@@ -127,7 +127,7 @@
   var SKYLINE_SRC_CROP_START = 0.10;  // skip transparent top 10% — show full rooftops
   var SKYLINE_WIDTH = 640;            // rendered width per panel (4:1 ratio)
   var SKYLINE_HEIGHT = 160;           // rendered height: show full buildings top to feet
-  var SKYLINE_Y = 200 - SKYLINE_HEIGHT; // anchor building feet at y=200 → Y=60
+  var SKYLINE_Y = 192 - SKYLINE_HEIGHT; // raised 3%
   // Bridge layer — tiled in front of skyline, parallax slightly faster.
   // Bridge PNG is 1632x408; actual bridge structure starts at ~75% down (row 305).
   // We render only the bottom 25% of source, sitting just above the street.
@@ -135,7 +135,7 @@
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
   var BRIDGE_SRC_CROP_START = 0.748;  // skip top 75% (transparent sky)
   var BRIDGE_TILE_HEIGHT = 56;        // rendered height for the bridge structure
-  var BRIDGE_Y = 200 - BRIDGE_TILE_HEIGHT + 4; // bridge sits at building base, shadow casts down
+  var BRIDGE_Y = 192 - BRIDGE_TILE_HEIGHT + 4; // raised 3%
   var STREET_BAND_HEIGHT = 28;
   var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
