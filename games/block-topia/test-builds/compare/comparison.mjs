@@ -67,7 +67,7 @@ try {
     ...item, ...spot(scene.walkable, scene.start.map((value,i) => value+item.offset[i]), occupied),
   }));
   if (mode === 'survival') {
-    const { loadSurvivalMiners, survivalZcashTower } = await import('./survival/miners.mjs?v=2');
+    const { loadSurvivalMiners, survivalZcashTower } = await import('./survival/miners.mjs?v=3');
     items.push({name:'Zcash Mining Tower', fortress, ...survivalZcashTower}, ...loadSurvivalMiners());
   } else if (fortress) {
     items.push({

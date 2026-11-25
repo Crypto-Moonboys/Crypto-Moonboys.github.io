@@ -26,7 +26,7 @@ export const survivalZcashTower = { x: 1, y: 9, scale: 1.35 };
 export function loadSurvivalMiners() {
   return survivalMinerLots.map(({ file, ...lot }) => {
     const fortress = new Image();
-    fortress.src = new URL(`./miners/${file}.webp?v=1`, import.meta.url).href;
+    fortress.src = new URL(`./miners/${file}.webp?v=2-neon`, import.meta.url).href;
     return { ...lot, fortress, drawMiner: drawSurvivalMiner };
   });
 }
