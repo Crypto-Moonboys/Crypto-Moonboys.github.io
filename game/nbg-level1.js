@@ -1895,9 +1895,9 @@
     // Original 4x4 sheet, each 256px cell has a 253x96 occupied rectangle.
     var AIRSHIP_START_MS = 50000;
     var AIRSHIP_SPEED = 8;
-    var AIRSHIP_WIDTH = 160;
+    var AIRSHIP_WIDTH = 80;
     var AIRSHIP_HEIGHT = AIRSHIP_WIDTH * 96 / 253;
-    var AIRSHIP_Y = 8;
+    var AIRSHIP_Y = 2;
     var AIRSHIP_GAP_MS = 20000;
     var AIRSHIP_FRAME_MS = 120;
     var AIRSHIP_SIGN_ON_MS = 1600;
