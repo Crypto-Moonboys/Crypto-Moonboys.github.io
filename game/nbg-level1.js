@@ -110,7 +110,7 @@
   var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
   var BEHIND_SRC_CROP_START = 0.05;   // skip transparent top 5% only
   var BEHIND_HEIGHT = 110;            // rendered height for the silhouette strip
-  var BEHIND_Y = 158 - BEHIND_HEIGHT; // back row — slightly lower than mid
+  var BEHIND_Y = 171 - BEHIND_HEIGHT; // back row — slightly lower than mid
 
   // Mid layer — detailed dark building silhouettes between behind and main buildings.
   // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
