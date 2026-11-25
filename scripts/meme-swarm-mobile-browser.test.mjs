@@ -74,7 +74,7 @@ try {
     assert.equal(await radio.getAttribute('aria-pressed'), 'false', 'another Start respects Radio Off on this page');
     await page.evaluate(()=>window.__choices.showUpgrade());
     await sound.press('Enter');
-    assert.equal(await page.evaluate(()=>window.__choices.snapshot().upgradePhase),true,
+    assert.equal(await page.evaluate(()=>window.__choices.snapshot().upgradePhase),'picking',
       'using the sound toggle with Enter does not pick a game upgrade');
     await sound.press('Enter');
     const buttons=page.locator('.overlay-touch-pad .touch-lr-row .touch-btn');
