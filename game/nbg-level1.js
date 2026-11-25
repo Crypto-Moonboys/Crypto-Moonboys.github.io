@@ -133,7 +133,7 @@
   // We render only the bottom 25% of source, sitting just above the street.
   // Trains running on the bridge — always animate independently of camera
   var TRAIN_SPEED = 126;         // pixels per second (world units)
-  var TRAIN_HEIGHT = 65;         // rendered height on screen
+  var TRAIN_HEIGHT = 78;         // rendered height on screen
   var TRAIN_ASPECT = 3.5;        // width:height ratio of the car images
   var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
@@ -1769,7 +1769,7 @@
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
       // Trains sit just above the bridge girder top
-      var trainY = BRIDGE_Y - TRAIN_HEIGHT + 4;
+      var trainY = BRIDGE_Y - TRAIN_HEIGHT + 16;
 
       // Time-based position independent of camera — always moving
       var t = (time / 1000) * TRAIN_SPEED;
