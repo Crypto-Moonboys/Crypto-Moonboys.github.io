@@ -1765,8 +1765,8 @@
     }
 
     function drawTrains(time) {
-      // Order front-to-back: ALCOR (leads) → WUF (middle) → NBG COIN (tail)
-      var trainImages = [images.trainAlcor, images.trainWuf, images.trainNbg];
+      // Order front-to-back: NBG COIN (leads) → WUF (middle) → ALCOR (tail)
+      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor];
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
