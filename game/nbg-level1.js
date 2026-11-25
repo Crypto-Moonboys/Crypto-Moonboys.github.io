@@ -536,6 +536,7 @@
     var backflipActive = false;
     var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
+    var airshipDarkSheet = null;
     var balloonFrames = {};
     var playerAnimations = {};
     var assetStatus = {};
@@ -1875,6 +1876,72 @@
         BRIDGE_Y, BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT, BRIDGE_SRC_CROP_START, false);
     }
 
+    // Decorative airship: use the run clock (not page age or camera position).
+    // Original 4x4 sheet, each 256px cell has a 253x96 occupied rectangle.
+    var AIRSHIP_START_MS = 50000;
+    var AIRSHIP_SPEED = 8;
+    var AIRSHIP_WIDTH = 160;
+    var AIRSHIP_HEIGHT = AIRSHIP_WIDTH * 96 / 253;
+    var AIRSHIP_Y = 8;
+    var AIRSHIP_GAP_MS = 20000;
+    var AIRSHIP_FRAME_MS = 120;
+    var AIRSHIP_SIGN_ON_MS = 1600;
+    var AIRSHIP_SIGN_OFF_MS = 800;
+
+    // The supplied frames all have lit lettering. Cache an off-state copy
+    // with only the pink sign pixels dimmed, retaining the hull and lamps.
+    function prepareAirshipDarkSheet(image) {
+      if (!image || image.naturalWidth !== 1024 || image.naturalHeight !== 1024) return null;
+      var surface = document.createElement('canvas');
+      surface.width = surface.height = 1024;
+      var brush = surface.getContext('2d', { willReadFrequently: true });
+      brush.drawImage(image, 0, 0);
+      var pixels = brush.getImageData(0, 0, 1024, 1024);
+      var rgba = pixels.data;
+      for (var frame = 0; frame < 16; frame++) {
+        var ox = frame % 4 * 256;
+        var oy = Math.floor(frame / 4) * 256;
+        for (var x = 24; x < 204; x++) {
+          // The slanted sign band follows the original hull's lettering.
+          var top = Math.floor(104 + (x - 24) * 0.20);
+          var bottom = top + 15;
+          for (var y = top; y <= bottom; y++) {
+            var i = ((oy + y) * 1024 + ox + x) * 4;
+            var r = rgba[i], g = rgba[i + 1], b = rgba[i + 2];
+            if (!rgba[i + 3] || r < 40 || r < g * 1.45 || b < g * 1.2 || b < r * 0.65) continue;
+            rgba[i] = Math.round(r * 0.045);
+            rgba[i + 1] = Math.round(g * 0.08);
+            rgba[i + 2] = Math.round(b * 0.12);
+          }
+        }
+      }
+      brush.putImageData(pixels, 0, 0);
+      return surface;
+    }
+
+    function airshipFlight(elapsedMs) {
+      if (elapsedMs < AIRSHIP_START_MS) return null;
+      var travelMs = (WIDTH + AIRSHIP_WIDTH) / AIRSHIP_SPEED * 1000;
+      var phase = (elapsedMs - AIRSHIP_START_MS) % (travelMs + AIRSHIP_GAP_MS);
+      if (phase >= travelMs) return null;
+      return {
+        x: WIDTH - phase * AIRSHIP_SPEED / 1000,
+        frame: Math.floor(phase / AIRSHIP_FRAME_MS) % 16,
+        signOn: phase % (AIRSHIP_SIGN_ON_MS + AIRSHIP_SIGN_OFF_MS) < AIRSHIP_SIGN_ON_MS
+      };
+    }
+
+    function drawAirship() {
+      var image = images.airship;
+      if (!image || image.naturalWidth !== 1024 || image.naturalHeight !== 1024) return;
+      var flight = airshipFlight(runElapsedMs);
+      if (!flight) return;
+      var source = flight.signOn || !airshipDarkSheet ? image : airshipDarkSheet;
+      ctx.drawImage(source, flight.frame % 4 * 256 + 1,
+        Math.floor(flight.frame / 4) * 256 + 87, 253, 96,
+        flight.x, AIRSHIP_Y, AIRSHIP_WIDTH, AIRSHIP_HEIGHT);
+    }
+
     function drawTrains(time) {
       // Six joined sets of cars, spaced out in time along the bridge:
       //   Set 1 (NBG / WUF / ALCOR)        — leads, enters at the 10s reveal
@@ -2486,6 +2553,7 @@
       // camera offset; only their horizontal scroll still tracks cameraX.
       drawSkyWallpaper(time);
       drawCloudsOverlay(time);
+      drawAirship();
       ctx.save();
       ctx.translate(0, Math.round(cameraY));
       drawWorld(time);
@@ -2767,7 +2835,23 @@
             };
           });
         })));
-      }).then(finishInit);
+      }).then(function () {
+        // Optional scenery must never prevent the runner from starting.
+        // Keep the approved source asset separate from the cached off-state.
+        loadImage(ASSET_ROOT + 'world/TWIYGR-spritesheet.png').then(function (result) {
+          if (!result.image || result.image.naturalWidth !== 1024 ||
+              result.image.naturalHeight !== 1024) return;
+          try {
+            airshipDarkSheet = prepareAirshipDarkSheet(result.image);
+            images.airship = result.image;
+          } catch (error) {
+            console.warn('NBG decorative airship unavailable', error);
+          }
+        }).catch(function (error) {
+          console.warn('NBG decorative airship unavailable', error);
+        });
+        return finishInit();
+      });
       return initPromise;
     }
 
