@@ -1,4 +1,4 @@
-// GK-approved baseline (games/block-topia/AGENTS.md). Keep the four comparison camera setups and Survival tower headroom.
+// GK-approved baseline (games/block-topia/AGENTS.md). Keep the four comparison camera setups.
 const block = '/games/block-topia/';
 const compact = () => matchMedia('(max-width: 739px)').matches;
 const fromTopDown = (x,y) => ({x:(x+.5)*32, y:(y+.5)*32});
@@ -39,7 +39,7 @@ export async function createScene(mode, canvas, viewport) {
   }
 
   if (mode === 'survival') {
-    const survival = await import('./survival-terrain.mjs?v=2');
+    const survival = await import('./survival-terrain.mjs?v=3');
     return {
       start:[10,10], bounds:{left:-640,right:640,top:-112,bottom:640},
       project:survival.projectSurvival,

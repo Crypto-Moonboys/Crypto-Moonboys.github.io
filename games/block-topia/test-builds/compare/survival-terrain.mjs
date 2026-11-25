@@ -5,6 +5,9 @@ import { createLunarTerrain } from './node-city/lunar-terrain.mjs?v=2';
 const GRID_SIZE = 20;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
+// Reopen the blocked pads of the former buildings as plain lunar terrain.
+const clearedLots = [[3,2], [7,2], [1,18], [6,13], [16,3], [19,8], [16,11], [9,14], [1,9], [1,4]];
+
 export function projectSurvival(x, y) {
   return { x: (x-y)*32, y: (x+y)*16+16 };
 }
@@ -36,6 +39,7 @@ function createTiles() {
   forceRoad(tiles, GRID_SIZE - 2, GRID_SIZE - 2);
   forceRoad(tiles, GRID_SIZE - 3, GRID_SIZE - 2);
   forceRoad(tiles, GRID_SIZE - 2, GRID_SIZE - 3);
+  for (const [x, y] of clearedLots) tiles[getTileId(x, y)].terrain = 'grass';
   return tiles;
 }
 
