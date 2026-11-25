@@ -1779,9 +1779,9 @@
       var carW = TRAIN_WIDTH + TRAIN_GAP;
       var totalW = carW * 6;
 
-      // Time-based offset — always moves regardless of player state
-      // Add half a loop so trains are already visible on screen from the start
-      var t = (time / 1000) * TRAIN_SPEED + totalW * 0.5;
+      // Time-based offset — always moves regardless of player state.
+      // Count from the 10s reveal so cars roll in from the right edge.
+      var t = ((time - 10000) / 1000) * TRAIN_SPEED;
       // Offset within one loop, never jumps — tile two sets to cover screen
       var offset = t % totalW;
 
@@ -1792,7 +1792,7 @@
         // Front of this set (ALCOR car) starts at right edge minus offset
         var setX = WIDTH + totalW - offset - set * totalW;
 
-        for (var i = 0; i < 3; i += 1) {
+        for (var i = 0; i < 6; i += 1) {
           var img = trainImages[i];
           if (!img) continue;
 
