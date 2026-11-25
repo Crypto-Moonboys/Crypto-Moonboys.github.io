@@ -1,7 +1,7 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep map-specific landmark art, fixture anchors, and rear tower placement.
 import { createScene, findRoute, neighbors } from './scenes.mjs?v=14';
 import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=5';
-import { loadSurvivalMiners } from './survival/miners.mjs?v=3';
+import { loadSurvivalMiners } from './survival/miners.mjs?v=4';
 
 const byId = id => document.getElementById(id);
 const canvas = byId('view');
@@ -85,7 +85,7 @@ try {
   if (mode === 'survival') {
     const survivalMiners = loadSurvivalMiners();
     // Only show the zcash-miner (the new animated building)
-    const zcashMiner = survivalMiners.find(m => m.file === 'zcash-miner' || m.name === 'Zcash Mining Fortress');
+    const zcashMiner = survivalMiners.find(m => m.name === 'Zcash Mining Fortress');
     if (zcashMiner) items.push(zcashMiner);
   }
   const blocked = new Set(items.filter(item => item.rect || item.fortress || item.drawMiner).map(item => `${item.x},${item.y}`));
