@@ -1633,6 +1633,158 @@
       hud.state.textContent = complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
+    // Cached render-only joins: source images, original crop and tile dimensions
+    // remain untouched. A two-tile sky pattern avoids fractional drawImage edges.
+    var backgroundPatterns = new WeakMap();
+    var backgroundJoins = new WeakMap();
+
+    function paintBackgroundTile(target, image, x, y, w, h, cropStart, mirrored) {
+      if (mirrored) {
+        target.save();
+        target.translate(x + w, y);
+        target.scale(-1, 1);
+        x = 0;
+        y = 0;
+      }
+      if (cropStart) {
+        var sourceY = Math.round(image.naturalHeight * cropStart);
+        target.drawImage(image, 0, sourceY, image.naturalWidth,
+          image.naturalHeight - sourceY, x, y, w, h);
+      } else {
+        target.drawImage(image, x, y, w, h);
+      }
+      if (mirrored) target.restore();
+    }
+
+    function backgroundSurface(w, h) {
+      var surface = document.createElement('canvas');
+      surface.width = w;
+      surface.height = h;
+      var brush = surface.getContext('2d');
+      brush.imageSmoothingEnabled = true;
+      brush.imageSmoothingQuality = 'high';
+      return { canvas: surface, brush: brush };
+    }
+
+    function mirroredBackgroundPattern(image) {
+      var pattern = backgroundPatterns.get(image);
+      if (!pattern) {
+        var w = image.naturalWidth;
+        var h = image.naturalHeight;
+        var pair = backgroundSurface(w * 2, h);
+        paintBackgroundTile(pair.brush, image, 0, 0, w, h, 0, false);
+        paintBackgroundTile(pair.brush, image, w, 0, w, h, 0, true);
+        pattern = ctx.createPattern(pair.canvas, 'repeat-x');
+        if (pattern) backgroundPatterns.set(image, pattern);
+      }
+      return pattern;
+    }
+
+    // Different paintings cannot be made edge-identical just by flipping.
+    // Reflect the adjacent edges across a narrow join, then blend only that
+    // strip at backing resolution. Premultiplied addition preserves alpha
+    // on transparent rooftop PNGs, without darkening or double-drawing them.
+    function backgroundJoin(left, right, leftMirrored, w, h, cropStart, half) {
+      var byRight = backgroundJoins.get(left);
+      if (!byRight) {
+        byRight = new WeakMap();
+        backgroundJoins.set(left, byRight);
+      }
+      var variants = byRight.get(right);
+      if (!variants) {
+        variants = new Map();
+        byRight.set(right, variants);
+      }
+      var key = [leftMirrored, w, h, cropStart, half].join(':');
+      if (variants.has(key)) return variants.get(key);
+
+      var pixelW = half * 2 * RENDER_SCALE;
+      var pixelH = h * RENDER_SCALE;
+      var leftStrip = backgroundSurface(pixelW, pixelH);
+      var rightStrip = backgroundSurface(pixelW, pixelH);
+      [leftStrip, rightStrip].forEach(function (strip, index) {
+        var brush = strip.brush;
+        brush.save();
+        brush.scale(RENDER_SCALE, RENDER_SCALE);
+        var image = index === 0 ? left : right;
+        // Both halves sample the same source edge, in opposite directions.
+        paintBackgroundTile(brush, image, half - w, 0, w, h, cropStart, leftMirrored);
+        paintBackgroundTile(brush, image, half, 0, w, h, cropStart, !leftMirrored);
+        brush.restore();
+
+        var fade = brush.createLinearGradient(0, 0, pixelW, 0);
+        fade.addColorStop(0, index === 0 ? '#fff' : 'rgba(255,255,255,0)');
+        fade.addColorStop(1, index === 0 ? 'rgba(255,255,255,0)' : '#fff');
+        brush.globalCompositeOperation = 'destination-in';
+        brush.fillStyle = fade;
+        brush.fillRect(0, 0, pixelW, pixelH);
+      });
+      leftStrip.brush.globalCompositeOperation = 'lighter';
+      leftStrip.brush.drawImage(rightStrip.canvas, 0, 0);
+      leftStrip.brush.globalCompositeOperation = 'source-over';
+      variants.set(key, leftStrip.canvas);
+      return leftStrip.canvas;
+    }
+
+    // Absolute tile indices keep mirror parity stable across wrap, including
+    // negative offsets and odd-length panel lists. Keep the original phase
+    // (joins start at the viewport edge), dimensions and scroll calculations.
+    function drawRepeatingBackground(panels, offset, y, w, h, cropStart, smooth) {
+      if (!panels.length) return;
+      if (smooth && panels.length === 1 && !cropStart) {
+        var image = panels[0];
+        var pattern = mirroredBackgroundPattern(image);
+        if (pattern) {
+          // Continuous native-resolution pattern: no per-tile fractional gap
+          // and no logical-pixel rounding of the slow-moving clouds.
+          var phase = offset % (w * 2);
+          var sx = w / image.naturalWidth;
+          var sy = h / image.naturalHeight;
+          ctx.save();
+          ctx.translate(phase, y);
+          ctx.scale(sx, sy);
+          ctx.fillStyle = pattern;
+          ctx.fillRect(-phase / sx, 0, WIDTH / sx, image.naturalHeight);
+          ctx.restore();
+          return;
+        }
+      }
+
+      // The non-sky layers already used whole logical-pixel positions.
+      if (!smooth) offset = Math.floor(offset);
+      var count = panels.length;
+      var half = Math.min(8, Math.floor(w / 4));
+      function panelAt(tile) {
+        return panels[((tile % count) + count) % count];
+      }
+      var firstTile = Math.floor(-offset / w) - 1;
+      for (var tile = firstTile; offset + tile * w < WIDTH + half; tile++) {
+        var x = offset + tile * w;
+        var current = panelAt(tile);
+        var previous = panelAt(tile - 1);
+        var next = panelAt(tile + 1);
+        var mirrored = tile % 2 !== 0;
+        var leftBlend = half && previous !== current;
+        var rightBlend = half && current !== next;
+
+        if (x + w > 0 && x < WIDTH) {
+          if (leftBlend || rightBlend) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(x + (leftBlend ? half : 0), y,
+              w - (leftBlend ? half : 0) - (rightBlend ? half : 0), h);
+            ctx.clip();
+          }
+          paintBackgroundTile(ctx, current, x, y, w, h, cropStart, mirrored);
+          if (leftBlend || rightBlend) ctx.restore();
+        }
+        if (leftBlend && x + half > 0 && x - half < WIDTH) {
+          var join = backgroundJoin(previous, current, !mirrored, w, h, cropStart, half);
+          ctx.drawImage(join, x - half, y, half * 2, h);
+        }
+      }
+    }
+
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
       var offset = -cameraX * parallax;
       if (!image) {
@@ -1643,15 +1795,9 @@
       var naturalWidth = image.naturalWidth || WIDTH;
       var naturalHeight = image.naturalHeight || h;
       var tileW = Math.max(WIDTH, Math.round(naturalWidth * (h / naturalHeight)));
-      var start = Math.floor(offset % tileW) - tileW;
-      for (var x = start; x < WIDTH + tileW; x += tileW) {
-        ctx.drawImage(image, x, y, tileW, h);
-      }
+      drawRepeatingBackground([image], offset, y, tileW, h, 0, false);
     }
 
-    // The 480x270 uploaded clouds.jpg fills the game viewport exactly, but
-    // its left and right edges are not seamless. Alternating mirrored tiles
-    // makes both joins match without stretching or changing the source art.
     function drawSkyWallpaper(time) {
       var image = images.sky;
       if (!image) {
@@ -1660,54 +1806,20 @@
         return;
       }
       var tileW = WIDTH;
-      // Constant slow drift (independent of player movement), on top of the
-      // existing cameraX parallax, so the sky wallpaper keeps repeating
-      // across the screen instead of sitting as one static painting.
-      var driftSpeed = 2.5; // px/sec — half the cloud overlay's speed (farther layer)
+      // Retain the independent slow drift and existing camera parallax.
+      var driftSpeed = 2.5;
       var offset = -((time || 0) / 1000) * driftSpeed - cameraX * 0.08;
-      var firstTile = Math.floor(-offset / tileW) - 1;
-      for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
-        var x = offset + tile * tileW;
-        if (tile % 2 !== 0) {
-          ctx.save();
-          ctx.translate(x + tileW, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(image, 0, 0, tileW, HEIGHT);
-          ctx.restore();
-        } else {
-          ctx.drawImage(image, x, 0, tileW, HEIGHT);
-        }
-      }
+      drawRepeatingBackground([image], offset, 0, tileW, HEIGHT, 0, true);
     }
 
-    // A second, semi-transparent cloud layer drawn over the sky wallpaper.
-    // Driven purely by elapsed time (not cameraX), so it keeps drifting even
-    // while the player is standing idle. Same alternating-mirror tiling
-    // trick as drawSkyWallpaper makes the seam invisible without needing to
-    // hand-edit the source art for a perfect loop.
     function drawCloudsOverlay(time) {
       var image = images.cloudsOverlay;
       if (!image) return;
       var tileW = WIDTH;
       var tileH = image.naturalHeight || 175;
-      var driftSpeed = 5; // px/sec — constant, independent of player movement (50% slower)
+      var driftSpeed = 5;
       var offset = -((time || 0) / 1000) * driftSpeed - cameraX * 0.03;
-      var firstTile = Math.floor(-offset / tileW) - 1;
-      for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
-        // Sub-pixel x (no Math.round): at this slow a drift speed, snapping
-        // to whole pixels only moves the layer once every several frames,
-        // which reads as a jerky stutter instead of a smooth glide.
-        var x = offset + tile * tileW;
-        if (tile % 2 !== 0) {
-          ctx.save();
-          ctx.translate(x + tileW, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(image, 0, 0, tileW, tileH);
-          ctx.restore();
-        } else {
-          ctx.drawImage(image, x, 0, tileW, tileH);
-        }
-      }
+      drawRepeatingBackground([image], offset, 0, tileW, tileH, 0, true);
     }
 
     function drawStreetLayer() {
@@ -1733,55 +1845,15 @@
     function drawBehindLayer() {
       var behindImages = [];
       for (var bi = 1; images['behind' + bi]; bi += 1) { behindImages.push(images['behind' + bi]); }
-      if (!behindImages.length) return;
-
-      var sequenceWidth = BEHIND_TILE_WIDTH * behindImages.length;
-      var offset = -cameraX * BEHIND_PARALLAX;
-      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
-      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
-        for (var i = 0; i < behindImages.length; i += 1) {
-          var img = behindImages[i];
-          var srcW = img.naturalWidth;
-          var srcH = img.naturalHeight;
-          var srcY = Math.round(srcH * BEHIND_SRC_CROP_START);
-          var srcCropH = srcH - srcY;
-          ctx.drawImage(
-            img,
-            0, srcY, srcW, srcCropH,
-            Math.round(x + i * BEHIND_TILE_WIDTH),
-            BEHIND_Y,
-            BEHIND_TILE_WIDTH,
-            BEHIND_HEIGHT
-          );
-        }
-      }
+      drawRepeatingBackground(behindImages, -cameraX * BEHIND_PARALLAX,
+        BEHIND_Y, BEHIND_TILE_WIDTH, BEHIND_HEIGHT, BEHIND_SRC_CROP_START, false);
     }
 
     function drawMidLayer() {
       var midImages = [];
       for (var mi = 1; images['mid' + mi]; mi += 1) { midImages.push(images['mid' + mi]); }
-      if (!midImages.length) return;
-
-      var sequenceWidth = MID_TILE_WIDTH * midImages.length;
-      var offset = -cameraX * MID_PARALLAX;
-      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
-      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
-        for (var i = 0; i < midImages.length; i += 1) {
-          var img = midImages[i];
-          var srcW = img.naturalWidth;
-          var srcH = img.naturalHeight;
-          var srcY = Math.round(srcH * MID_SRC_CROP_START);
-          var srcCropH = srcH - srcY;
-          ctx.drawImage(
-            img,
-            0, srcY, srcW, srcCropH,
-            Math.round(x + i * MID_TILE_WIDTH),
-            MID_Y,
-            MID_TILE_WIDTH,
-            MID_HEIGHT
-          );
-        }
-      }
+      drawRepeatingBackground(midImages, -cameraX * MID_PARALLAX,
+        MID_Y, MID_TILE_WIDTH, MID_HEIGHT, MID_SRC_CROP_START, false);
     }
 
     function drawSkylineLayer() {
@@ -1792,48 +1864,15 @@
         ctx.fillRect(0, SKYLINE_Y, WIDTH, SKYLINE_HEIGHT);
         return;
       }
-
-      var sequenceWidth = SKYLINE_WIDTH * skylineImages.length;
-      var offset = -cameraX * SKYLINE_PARALLAX;
-      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
-      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
-        for (var i = 0; i < skylineImages.length; i += 1) {
-          var img = skylineImages[i];
-          var srcW = img.naturalWidth;
-          var srcH = img.naturalHeight;
-          var srcY = Math.round(srcH * SKYLINE_SRC_CROP_START);
-          var srcCropH = srcH - srcY;
-          ctx.drawImage(
-            img,
-            0, srcY, srcW, srcCropH,
-            Math.round(x + i * SKYLINE_WIDTH),
-            SKYLINE_Y,
-            SKYLINE_WIDTH,
-            SKYLINE_HEIGHT
-          );
-        }
-      }
+      drawRepeatingBackground(skylineImages, -cameraX * SKYLINE_PARALLAX,
+        SKYLINE_Y, SKYLINE_WIDTH, SKYLINE_HEIGHT, SKYLINE_SRC_CROP_START, false);
     }
 
     function drawBridgeLayer() {
       var img = images.bridge;
       if (!img) return;
-      // Crop top 75% of source (transparent sky), render only the bridge girder structure.
-      var srcW = img.naturalWidth;
-      var srcH = img.naturalHeight;
-      var srcY = Math.round(srcH * BRIDGE_SRC_CROP_START);
-      var srcCropH = srcH - srcY;
-
-      var offset = -cameraX * BRIDGE_PARALLAX;
-      var start = Math.floor(offset % BRIDGE_TILE_WIDTH) - BRIDGE_TILE_WIDTH;
-      for (var x = start; x < WIDTH + BRIDGE_TILE_WIDTH; x += BRIDGE_TILE_WIDTH) {
-        ctx.drawImage(
-          img,
-          0, srcY, srcW, srcCropH,
-          Math.round(x), BRIDGE_Y,
-          BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT
-        );
-      }
+      drawRepeatingBackground([img], -cameraX * BRIDGE_PARALLAX,
+        BRIDGE_Y, BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT, BRIDGE_SRC_CROP_START, false);
     }
 
     function drawTrains(time) {
