@@ -364,7 +364,8 @@
   }
 
   function loadJson(src) {
-    return fetch(src).then(function (response) {
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261125b';
+    return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
     });
