@@ -12,7 +12,7 @@ canvas{max-width:100%;image-rendering:pixelated;border:1px solid #39515d}
 <canvas id="map" width="384" height="384" aria-label="Top-down waterfront map"></canvas>
 <p>Roads and docks connect the lighthouse and its future building plots.</p>
 <script>
-const { district, colors } = {"district":{"name":"Lumina’s Waterfront","rows":["~~~rr~~~~~~~","~~~rdr~~~~~~","...rr.......","...hrdr~~~..","...hrr......","....r_......","...rrr..~~..","....rrrr....","...._.dr....",".....rr.....","............","............"],"route":[3,15,4,27,16,28,17,40,52,41,64,53,42,76,88,75,77,89,90,102,91,114,103,113]},"colors":{"water":"#00bfff","road":"#8b4513","ground":"#d7bd8f","dock":"#696969","house":"#ff69b4","lighthouse":"#ffdead"}};
+const { district, colors } = {"district":{"name":"Lumina’s Waterfront","rows":["~~~rr~~~~~~~","~~~rdr~~~~~~","...rr.......","...hrdr~~~..","...hrr......","....r_......","...rrr..~~..","....rrrrrr..","...._.dr....",".....rr.....","............","............"],"route":[3,15,4,27,16,28,17,40,52,41,64,53,42,76,88,75,77,89,90,102,91,114,103,92,113,93]},"colors":{"water":"#00bfff","road":"#ff6347","ground":"#c0c0c0","dock":"#87cefa","house":"#ff7f50","lighthouse":"#ff1493"}};
 const canvas = document.querySelector("#map");
 const ctx = canvas.getContext("2d");
 document.querySelector("#title").textContent = district.name;
