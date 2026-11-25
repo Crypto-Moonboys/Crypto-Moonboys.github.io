@@ -105,17 +105,21 @@
   var COURSE_SECTIONS = 18;
   var INVULN_TIME = 1050;
   var SKYLINE_PARALLAX = 0.22;
-  var SKYLINE_Y = 40;
-  var SKYLINE_WIDTH = 640;
-  var SKYLINE_HEIGHT = 160;
+  // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
+  // We crop the source and anchor the rendered buildings so their feet sit at y=200,
+  // matching the old river-level baseline. SKYLINE_WIDTH preserves the 4:1 source ratio.
+  var SKYLINE_SRC_CROP_START = 0.449; // 45% transparent sky at top — skip it
+  var SKYLINE_WIDTH = 640;            // rendered width per panel (4:1 ratio)
+  var SKYLINE_HEIGHT = 112;           // rendered height: 55% of 203 ≈ 112px of content
+  var SKYLINE_Y = 200 - SKYLINE_HEIGHT; // anchor building feet at y=200 → Y=88
   // Bridge layer — tiled in front of skyline, parallax slightly faster.
-  // The bridge PNG is 1632x408 (4:1) with ~60% whitespace above the bridge structure.
-  // We render only the bottom 50% of the source image (the actual bridge) so it
-  // sits flush above the street without a large blank gap.
+  // Bridge PNG is 1632x408; actual bridge structure starts at ~75% down (row 305).
+  // We render only the bottom 25% of source, sitting just above the street.
   var BRIDGE_PARALLAX = 0.45;
-  var BRIDGE_TILE_WIDTH = 640;   // rendered width per tile (4:1 ratio preserved)
-  var BRIDGE_TILE_HEIGHT = 80;   // rendered height (half of 160, bottom of image)
-  var BRIDGE_Y = HEIGHT - STREET_BAND_HEIGHT - BRIDGE_TILE_HEIGHT + 8; // just above street
+  var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
+  var BRIDGE_SRC_CROP_START = 0.748;  // skip top 75% (transparent sky)
+  var BRIDGE_TILE_HEIGHT = 56;        // rendered height for the bridge structure
+  var BRIDGE_Y = 200 - BRIDGE_TILE_HEIGHT + 4; // bridge sits at building base, shadow casts down
   var STREET_BAND_HEIGHT = 28;
   var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
@@ -1626,8 +1630,14 @@
       var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
       for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
         for (var i = 0; i < skylineImages.length; i += 1) {
+          var img = skylineImages[i];
+          var srcW = img.naturalWidth;
+          var srcH = img.naturalHeight;
+          var srcY = Math.round(srcH * SKYLINE_SRC_CROP_START);
+          var srcCropH = srcH - srcY;
           ctx.drawImage(
-            skylineImages[i],
+            img,
+            0, srcY, srcW, srcCropH,
             Math.round(x + i * SKYLINE_WIDTH),
             SKYLINE_Y,
             SKYLINE_WIDTH,
@@ -1640,21 +1650,20 @@
     function drawBridgeLayer() {
       var img = images.bridge;
       if (!img) return;
-      // Draw only the bottom half of the source image (actual bridge structure,
-      // excluding the large white/sky region above it).
+      // Crop top 75% of source (transparent sky), render only the bridge girder structure.
       var srcW = img.naturalWidth;
       var srcH = img.naturalHeight;
-      var srcY = Math.floor(srcH * 0.5); // start halfway down the source
-      var srcCropH = srcH - srcY;         // bottom 50% of source pixels
+      var srcY = Math.round(srcH * BRIDGE_SRC_CROP_START);
+      var srcCropH = srcH - srcY;
 
       var offset = -cameraX * BRIDGE_PARALLAX;
       var start = Math.floor(offset % BRIDGE_TILE_WIDTH) - BRIDGE_TILE_WIDTH;
       for (var x = start; x < WIDTH + BRIDGE_TILE_WIDTH; x += BRIDGE_TILE_WIDTH) {
         ctx.drawImage(
           img,
-          0, srcY, srcW, srcCropH,          // source: full width, bottom half
-          Math.round(x), BRIDGE_Y,           // destination position
-          BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT  // destination size
+          0, srcY, srcW, srcCropH,
+          Math.round(x), BRIDGE_Y,
+          BRIDGE_TILE_WIDTH, BRIDGE_TILE_HEIGHT
         );
       }
     }
