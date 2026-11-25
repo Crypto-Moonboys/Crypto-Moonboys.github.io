@@ -39,7 +39,7 @@ export async function createScene(mode, canvas, viewport) {
   }
 
   if (mode === 'survival') {
-    const survival = await import('./survival-terrain.mjs');
+    const survival = await import('./survival-terrain.mjs?v=2');
     return {
       start:[10,10], bounds:{left:-640,right:640,top:-112,bottom:640},
       project:survival.projectSurvival,
@@ -48,7 +48,7 @@ export async function createScene(mode, canvas, viewport) {
       initial:() => Math.max(.35, Math.min(1.25, viewport.width*.84/1280, viewport.height*.84/752)),
       zoomRange:() => [.35, 3],
       background:survival.drawBackground,
-      ground:survival.drawTiles,
+      ground:survival.createSurvivalGround(),
       centered:true,
     };
   }

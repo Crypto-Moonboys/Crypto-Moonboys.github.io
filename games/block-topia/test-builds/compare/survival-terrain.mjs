@@ -1,5 +1,7 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep the 20 × 20 Survival Grid and its 2:1 tile projection.
 // Terrain snapshot from Block Topia survival main.js at 05ab717.
+import { createLunarTerrain } from './node-city/lunar-terrain.mjs?v=2';
+
 const GRID_SIZE = 20;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
@@ -64,7 +66,7 @@ function getTerrainColor(tile) {
   return `rgb(${shade - 8}, ${shade + 16}, ${shade - 4})`;
 }
 
-function drawDiamond(ctx, tile, time) {
+function drawDiamond(ctx, tile, time, textured) {
   const { x: sx, y: centerY } = projectSurvival(tile.x, tile.y);
   const sy = centerY - TILE_HEIGHT / 2;
   const tw = TILE_WIDTH;
@@ -76,6 +78,16 @@ function drawDiamond(ctx, tile, time) {
   ctx.lineTo(sx, sy + th);
   ctx.lineTo(sx - tw / 2, sy + th / 2);
   ctx.closePath();
+  if (textured) {
+    if (tile.terrain !== 'grass') {
+      ctx.fillStyle = tile.terrain === 'road' ? 'rgba(113, 140, 155, .14)' : 'rgba(12, 16, 22, .48)';
+      ctx.fill();
+    }
+    ctx.strokeStyle = tile.terrain === 'road' ? 'rgba(169, 204, 222, .36)' : 'rgba(14, 18, 24, .22)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    return;
+  }
   ctx.fillStyle = getTerrainColor(tile);
   ctx.fill();
 
@@ -94,10 +106,23 @@ function drawDiamond(ctx, tile, time) {
   ctx.stroke();
 }
 
-function drawTiles(ctx, time) {
+export function createSurvivalGround() {
+  const floor = createLunarTerrain(GRID_SIZE, GRID_SIZE, 4);
+  return (ctx, time) => drawTiles(ctx, time, floor);
+}
+
+function drawTiles(ctx, time, floor) {
+  if (floor?.width) {
+    ctx.save();
+    ctx.transform(TILE_WIDTH / 2, TILE_HEIGHT / 2, -TILE_WIDTH / 2, TILE_HEIGHT / 2, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(floor, 0, 0, GRID_SIZE, GRID_SIZE);
+    ctx.restore();
+  }
   for (let y = 0; y < GRID_SIZE; y += 1) {
     for (let x = 0; x < GRID_SIZE; x += 1) {
-      drawDiamond(ctx, tiles[getTileId(x, y)], time);
+      drawDiamond(ctx, tiles[getTileId(x, y)], time, Boolean(floor?.width));
     }
   }
 }

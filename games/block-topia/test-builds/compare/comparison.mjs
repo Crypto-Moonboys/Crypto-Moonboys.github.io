@@ -1,5 +1,5 @@
 // GK-approved baseline (games/block-topia/AGENTS.md). Keep map-specific landmark art, fixture anchors, and rear tower placement.
-import { createScene, findRoute, neighbors } from './scenes.mjs?v=12';
+import { createScene, findRoute, neighbors } from './scenes.mjs?v=13';
 import { drawZcashFortress, fortressSize, loadZcashFortress, towerScale } from '../../zcash-fortress.mjs?v=5';
 
 const byId = id => document.getElementById(id);

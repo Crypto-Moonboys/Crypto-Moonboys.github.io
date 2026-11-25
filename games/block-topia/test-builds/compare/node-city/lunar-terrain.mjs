@@ -1,10 +1,9 @@
 const atlasColumns = 4;
 const atlasRows = 3;
-const patchTiles = 6;
 
 // Build once in ground coordinates so adjacent patches share exact pixel edges.
 // The renderer then projects the composed surface with the existing camera.
-export function createLunarTerrain(width, height) {
+export function createLunarTerrain(width, height, patchTiles = 6) {
   const floor = document.createElement('canvas');
   floor.width = floor.height = 0;
   const atlas = new Image();
