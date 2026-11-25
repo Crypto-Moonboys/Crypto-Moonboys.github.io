@@ -21,8 +21,7 @@ body {
 body {
   display: grid;
   place-items: center;
-  background:
-    linear-gradient(180deg, #101020 0%, #201431 44%, #0d1016 100%);
+  background: #080d94;
   color: var(--ink);
   font-family: "Trebuchet MS", Arial, sans-serif;
 }
