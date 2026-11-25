@@ -262,5 +262,29 @@
 <script src="/game/nbg-audio.js?v=two-audio-controls-20261125"></script>
 <script src="/game/nbg-level1.js?v=run20261125i"></script>
 <script src="/game/nbg-london-leaderboards.js?v=run20261125"></script>
+<script type="module">
+const modifierHost = document.getElementById('content');
+let modifierTimeout;
+function showModifierUnavailable() {
+  if (!modifierHost || document.getElementById('cm-modifier-panel')) return;
+  const panel = document.createElement('div');
+  panel.id = 'cm-modifier-panel';
+  panel.setAttribute('role', 'status');
+  panel.textContent = 'Modifier cards unavailable. Refresh the page to retry. Ranked London runs do not apply modifiers.';
+  modifierHost.appendChild(panel);
+}
+modifierTimeout = setTimeout(showModifierUnavailable, 8000);
+import('/js/arcade/systems/cross-game-modifier-ui.js?v=nbg-modifier-drawer-20261125')
+  .then(function (ui) {
+    clearTimeout(modifierTimeout);
+    if (!document.getElementById('cm-modifier-panel')) {
+      ui.mountModifierPanel(modifierHost, { readOnly: true });
+    }
+  })
+  .catch(function () {
+    clearTimeout(modifierTimeout);
+    showModifierUnavailable();
+  });
+</script>
 </body>
 </html>
