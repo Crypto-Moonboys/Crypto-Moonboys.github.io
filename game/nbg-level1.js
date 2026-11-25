@@ -112,6 +112,14 @@
   var BEHIND_HEIGHT = 86;             // rendered height for the silhouette strip
   var BEHIND_Y = 200 - BEHIND_HEIGHT; // align feet with building baseline at y=200
 
+  // Mid layer — detailed dark building silhouettes between behind and main buildings.
+  // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
+  var MID_PARALLAX = 0.16;
+  var MID_TILE_WIDTH = 640;
+  var MID_SRC_CROP_START = 0.282;
+  var MID_HEIGHT = 100;
+  var MID_Y = 200 - MID_HEIGHT;
+
   var SKYLINE_PARALLAX = 0.22;
   // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
   // We crop the source and anchor the rendered buildings so their feet sit at y=200,
@@ -381,6 +389,10 @@
       } else if (Array.isArray(layers[index]) && key === 'behind') {
         layers[index].forEach(function (layer, layerIndex) {
           assets['behind' + (layerIndex + 1)] = resolveAssetPath(layer);
+        });
+      } else if (Array.isArray(layers[index]) && key === 'mid') {
+        layers[index].forEach(function (layer, layerIndex) {
+          assets['mid' + (layerIndex + 1)] = resolveAssetPath(layer);
         });
       } else if (layers[index]) {
         assets[key] = resolveAssetPath(layers[index]);
@@ -1657,6 +1669,33 @@
       }
     }
 
+    function drawMidLayer() {
+      var midImages = [];
+      for (var mi = 1; images['mid' + mi]; mi += 1) { midImages.push(images['mid' + mi]); }
+      if (!midImages.length) return;
+
+      var sequenceWidth = MID_TILE_WIDTH * midImages.length;
+      var offset = -cameraX * MID_PARALLAX;
+      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
+      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
+        for (var i = 0; i < midImages.length; i += 1) {
+          var img = midImages[i];
+          var srcW = img.naturalWidth;
+          var srcH = img.naturalHeight;
+          var srcY = Math.round(srcH * MID_SRC_CROP_START);
+          var srcCropH = srcH - srcY;
+          ctx.drawImage(
+            img,
+            0, srcY, srcW, srcCropH,
+            Math.round(x + i * MID_TILE_WIDTH),
+            MID_Y,
+            MID_TILE_WIDTH,
+            MID_HEIGHT
+          );
+        }
+      }
+    }
+
     function drawSkylineLayer() {
       var skylineImages = [];
       for (var si = 1; images['skyline' + si]; si += 1) { skylineImages.push(images['skyline' + si]); }
@@ -1761,6 +1800,7 @@
     function drawWorld() {
       drawSkyWallpaper();
       drawBehindLayer();
+      drawMidLayer();
       drawSkylineLayer();
       drawBridgeLayer();
       drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');

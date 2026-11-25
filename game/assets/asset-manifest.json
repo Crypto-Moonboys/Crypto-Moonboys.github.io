@@ -15,6 +15,7 @@
     "layerNames": [
       "sky",
       "london-behind",
+      "london-mid",
       "london-skyline",
       "london-bridge",
       "graffiti-wall",
@@ -25,6 +26,10 @@
       [
         "world/LONDON BEHIND1.png",
         "world/LONDON BEHIND2.png"
+      ],
+      [
+        "world/LONDON BEHIND3.png",
+        "world/LONDON BEHIND4.png"
       ],
       [
         "world/LONDON BACKGROUND1.png",
