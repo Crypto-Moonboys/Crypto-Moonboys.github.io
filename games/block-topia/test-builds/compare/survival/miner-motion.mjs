@@ -72,6 +72,21 @@ const rigs = {
     fans: [[126, 623, 21, 28, .15], [180, 621, 22, 29, .15], [237, 614, 22, 29, .15]],
     dish: [111, 279, 113, 98], jaw: [318, 395, 152, 149],
   },
+  'zcash-miner': {
+    // Large cooling fans on building face (3 main + 2 side)
+    fans: [
+      [90, 577, 17, 19, 0], [245, 592, 17, 19, 0], [360, 577, 16, 18, 0],
+      [44, 545, 12, 14, 0], [414, 545, 12, 14, 0],
+    ],
+    // Satellite dish – upper right
+    dish: [413, 331, 81, 75],
+    // Devil face jaw – the golden demon mask mouth
+    jaw: [152, 414, 173, 128],
+    // Steam rising from left and right vents
+    steam: [[88, 241, 35, 76], [372, 284, 32, 76]],
+    // Top glowing spires / coin
+    topGlow: [214, 127, 152, 90],
+  },
 };
 
 function drawFan(ctx, image, [x, y, rx, ry, tilt = 0], angle) {
@@ -152,14 +167,43 @@ function createPatch(rect, motion) {
   };
 }
 
+// Draw rising steam puff from a vent region using canvas drawing (no image patch needed).
+function drawSteam(ctx, [x, y, w, h], time, phase) {
+  const puffs = 4;
+  ctx.save();
+  for (let i = 0; i < puffs; i++) {
+    const t = ((time * 0.6 + phase + i / puffs) % 1);
+    const rise = t * h * 1.4;
+    const fade = t < 0.2 ? t / 0.2 : t > 0.7 ? 1 - (t - 0.7) / 0.3 : 1;
+    const r = (w * 0.35) * (0.5 + t * 0.8);
+    const cx = x + w * 0.5 + Math.sin(t * Math.PI * 3 + phase + i) * w * 0.25;
+    const cy = y + h - rise;
+    ctx.globalAlpha = fade * 0.28;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = '#cdd8dc';
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Draw top-glow pulse over the spire/coin region using the sprite's glow overlay frame.
+function drawTopGlow(ctx, image, [x, y, w, h], time, phase, sw, sh) {
+  const pulse = 0.5 - 0.5 * Math.cos((time * 2.1 + phase) * Math.PI);
+  ctx.save();
+  ctx.globalAlpha = 0.18 + 0.55 * pulse;
+  // Sample same region from the glow (bottom) half of the sprite sheet
+  ctx.drawImage(image, x, sh + y, w, h, x, y, w, h);
+  ctx.restore();
+}
+
 export function createMinerMechanics(file) {
-  const { fans = [], dish, jaw, wings = [], antenna, pistons = [] } = rigs[file];
-  const patches = [
-    createPatch(dish, motions.dish),
-    createPatch(jaw, motions.jaw),
-    ...wings.map(rect => createPatch(rect, motions.wing)),
-    ...pistons.map(rect => createPatch(rect, motions.piston)),
-  ];
+  const { fans = [], dish, jaw, wings = [], antenna, pistons = [], steam = [], topGlow } = rigs[file];
+  const patches = [];
+  if (dish) patches.push(createPatch(dish, motions.dish));
+  if (jaw) patches.push(createPatch(jaw, motions.jaw));
+  patches.push(...wings.map(rect => createPatch(rect, motions.wing)));
+  patches.push(...pistons.map(rect => createPatch(rect, motions.piston)));
   if (antenna) patches.push(createPatch(antenna, motions.antenna));
   return {
     clipStatic(ctx, width, height) {
@@ -175,6 +219,14 @@ export function createMinerMechanics(file) {
         const speed = 5.6 + (index % 3) * .53;
         drawFan(ctx, image, fan, (time * speed + phase + index) * (index % 2 ? -1 : 1));
       });
+      // Steam puffs drawn over static frame (zcash-miner and future miners)
+      steam.forEach((vent, index) => drawSteam(ctx, vent, time, phase + index * 0.61));
+      // Top glow pulse using the sprite's glow overlay half
+      if (topGlow) {
+        const sw = image.naturalWidth;
+        const sh = image.naturalHeight / 2;
+        drawTopGlow(ctx, image, topGlow, time, phase, sw, sh);
+      }
     },
   };
 }

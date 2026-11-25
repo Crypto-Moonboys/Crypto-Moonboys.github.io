@@ -1,5 +1,5 @@
 import { fortressSize } from '../../../zcash-fortress.mjs?v=5';
-import { createMinerMechanics } from './miner-motion.mjs?v=1';
+import { createMinerMechanics } from './miner-motion.mjs?v=2';
 
 // Reserve blocked tiles or open ground away from the existing road network.
 export const survivalMinerLots = [
@@ -20,6 +20,7 @@ export const survivalMinerLots = [
   { name: 'WAX Server Depot', file: 'wax-server-depot', x: 8, y: 18, scale: .9 },
   { name: 'Bitcoin Signal Tower', file: 'bitcoin-signal-tower', x: 17, y: 1, scale: 1.38 },
   { name: 'Zcash Vault', file: 'zcash-vault', x: 6, y: 6, scale: .88 },
+  { name: 'Zcash Mining Fortress', file: 'zcash-miner', x: 10, y: 7, scale: 1.15 },
 ];
 
 export const survivalZcashTower = { x: 1, y: 9, scale: 1.35 };
