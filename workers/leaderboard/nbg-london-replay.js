@@ -124,6 +124,18 @@ function levelData(courseVersion = 1) {
     if ([3,7,11,15].includes(i))
       checkpoints.push({ x:x+965,y:FLOOR-48,w:30,h:48 });
   }
+  if (courseVersion >= 9) {
+    let mysteryIndex = 0;
+    for (const box of boxes) {
+      if (box.kind !== 'mystery') continue;
+      const index = mysteryIndex++;
+      box.mode = ['touch', 'solid', 'reveal'][index % 3];
+      if (box.mode === 'reveal') {
+        box.revealX = box.x - 70 - ((Math.imul(index + 1, 2654435761) >>> 0) % 150);
+        box.visible = false;
+      }
+    }
+  }
   return { platforms, crates, boxes, speedBoxes, secrets, coins, enemies, hazards, checkpoints };
 }
 
@@ -156,7 +168,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   // An omitted property is the only legacy v1 signal. Explicit null,
   // undefined, strings and unknown revisions must never downgrade a replay.
   const hasCourseVersion = Object.prototype.hasOwnProperty.call(replay, 'course_version');
-  if (hasCourseVersion && ![2,3,4,5,6,7,8].includes(replay.course_version))
+  if (hasCourseVersion && ![2,3,4,5,6,7,8,9].includes(replay.course_version))
     return { valid:false };
   const courseVersion = hasCourseVersion ? replay.course_version : 1;
   // v8 changes movement only; v1-v7 keep their exact historical simulation.
@@ -166,7 +178,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
   const boostMaxSpeed = courseVersion >= 8 ? 3.8 : SPEED_BOOST_MAX_SPEED;
   const midairSideSpeed = courseVersion >= 8 ? 3.2 : 5.4;
   const level = levelData(courseVersion);
-  const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates];
+  const solidRewardBoxes=level.boxes.filter(box=>box.mode==='solid');
+  const solids=[{x:0,y:FLOOR,w:WORLD,h:60},...level.platforms,...level.crates,...solidRewardBoxes];
   const p = { x:64, y:FLOOR-34, w:24, h:STAND_HEIGHT, vx:0, vy:0, facing:1,
     grounded:true, crouching:false, health:3, invuln:0 };
   let jumps=0, sprayTimer=0, speedBoostUntil=0, combo=0, comboExpires=0, checkpointX=72;
@@ -195,7 +208,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const feet = p.y + p.h;
     if (!wanted) {
       const upright = {x:p.x,y:feet-STAND_HEIGHT,w:p.w,h:STAND_HEIGHT};
-      if (level.platforms.concat(level.crates).some(solid => overlap(upright,solid)))
+      if (level.platforms.concat(level.crates,solidRewardBoxes).some(solid => overlap(upright,solid)))
         return;
     }
     p.h = wanted ? CROUCH_HEIGHT : STAND_HEIGHT;
@@ -346,7 +359,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     const margin=courseVersion>=7 ? (priorSprayFrame && !thirdJumpChangesSprite ? 70 : 24) : 0;
     p.x=clamp(p.x+p.vx*step,12+margin,WORLD-p.w-12-margin);
     maximumX=Math.max(maximumX,p.x);
-    for (const box of level.crates) {
+    for (const box of level.crates.concat(solidRewardBoxes)) {
       if (Math.abs(box.x-p.x)>60 || !overlap(p,box)) continue;
       if (p.vx>0 && beforeX+p.w<=box.x+1) {p.x=box.x-p.w;p.vx=0;}
       else if (p.vx<0 && beforeX>=box.x+box.w-1) {p.x=box.x+box.w;p.vx=0;}
@@ -360,6 +373,7 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     for(const tile of solids) {
       if(Math.abs(tile.x-p.x)>250 && tile.w<1000) continue;
       if(previousY+p.h<=tile.y+1 && p.vy>=0 && overlap(p,tile)) {
+        if(tile.mode==='solid') tile.landed=true;
         p.y=tile.y-p.h;p.vy=0;p.grounded=true;jumps=0;
       }
     }
@@ -397,7 +411,8 @@ export async function verifyNbgLondonReplay({ runId, replay, startedAtMs, now, d
     }
     // Same reward PRNG consumption/order as updateRewardBoxes in the game.
     for(const box of level.boxes) {
-      if(box.opened || !overlap(p,box)) continue;
+      if(box.mode==='reveal' && p.x>=box.revealX) box.visible=true;
+      if(box.opened || box.visible===false || (box.mode==='solid' ? !box.landed : !overlap(p,box))) continue;
       box.opened=true;
       const pick=Math.min(3,Math.floor(nextRunRandom()*4));
       if(pick===3){
