@@ -1,37 +1,46 @@
 {
   "issue": 1930,
-  "round": 43,
+  "round": 44,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Waterfront district has an uneven distribution of roads and houses, which might confuse players.",
-          "rows": [
+          "description": "Potential water overflow",
+          "riskLevel": "High",
+          "location": [
             3,
-            5,
-            6
-          ]
+            15
+          ],
+          "reason": "Water color (#007fff) extends beyond expected boundaries."
         },
         {
-          "description": "The route includes a sudden jump from row 4 to row 27, which could be disorienting for the player.",
-          "start": 4,
-          "end": 27
+          "description": "House placement issue",
+          "riskLevel": "Medium",
+          "location": [
+            4,
+            27
+          ],
+          "reason": "House (#ffa07a) is placed in a way that may cause visual confusion or blockage of roads."
         }
       ],
       "navigationRisks": [
         {
-          "description": "There are multiple gaps in the road network that might lead to dead ends or inaccessible areas.",
-          "rows": [
-            3,
-            5,
-            6
-          ]
+          "description": "Unclear path for route",
+          "riskLevel": "Medium",
+          "location": [
+            52,
+            64
+          ],
+          "reason": "The path from (52) to (64) is unclear and may not be navigable."
         },
         {
-          "description": "The route's sudden change from row 4 to row 27 could cause navigation issues for players who rely on a linear path.",
-          "start": 4,
-          "end": 27
+          "description": "Route ends abruptly",
+          "riskLevel": "Low",
+          "location": [
+            89
+          ],
+          "reason": "The route ends at position 89 without a clear destination or continuation."
         }
       ]
     }
