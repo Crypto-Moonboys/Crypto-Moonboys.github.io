@@ -373,7 +373,7 @@ test('audio manager unlocks only from interaction and separates bounded music/SF
 });
 
 
-test('NBG music and effects mute independently with balanced default levels', async () => {
+test('NBG has only the shared radio and game-sound buttons; internal audio channels still work', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   const source = await readFile(managerPath, 'utf8');
   const env = fakeAudioEnvironment(manifest);
@@ -387,6 +387,8 @@ test('NBG music and effects mute independently with balanced default levels', as
   const master = { id: 'overlay-btn-mute' };
   elements.set('overlay-ctrl-bar', bar);
   elements.set('overlay-btn-mute', master);
+  elements.set('overlay-btn-radio', { id: 'overlay-btn-radio' });
+  env.stored.set('nbg-audio-settings-v1', JSON.stringify({ musicMuted: true, sfxMuted: true, musicLevel: 0.70, sfxLevel: 0.45 }));
   env.document.getElementById = id => elements.get(id) || null;
   env.document.createElement = tag => {
     assert.equal(tag, 'button');
@@ -408,9 +410,10 @@ test('NBG music and effects mute independently with balanced default levels', as
   const api = env.window.NBGAudio;
   assert.equal(api.getState().musicLevel, 0.70);
   assert.equal(api.getState().sfxLevel, 0.45);
-  assert.equal(elements.size, 4, 'Two NBG-only mute buttons are installed in toolbar');
-  assert.equal(elements.get('nbg-music-mute').attrs['aria-pressed'], 'false');
-  assert.equal(elements.get('nbg-sfx-mute').attrs['aria-pressed'], 'false');
+  assert.deepEqual([...elements.keys()], ['overlay-ctrl-bar', 'overlay-btn-mute', 'overlay-btn-radio'],
+    'only the shared radio and game sound buttons remain');
+  assert.equal(api.getState().musicMuted, false, 'retired saved music mute must not hide sound');
+  assert.equal(api.getState().sfxMuted, false, 'retired saved effects mute must not hide sound');
 
   env.document.dispatchGesture('pointerdown', () => env.window.NBGAudio.setMuted(false));
   await flushPromises();
@@ -422,13 +425,12 @@ test('NBG music and effects mute independently with balanced default levels', as
   assert.equal(env.musicElements[0].paused, false);
   const musicSrc = env.musicElements[0].src;
 
-  elements.get('nbg-music-mute').click();
+  api.setMusicMuted(true);
   assert.equal(api.getState().musicMuted, true);
   assert.equal(api.getState().sfxMuted, false);
   assert.equal(graph.gains[1].gain.value, 0);
   assert.equal(graph.gains[2].gain.value, 0.45);
   assert.equal(env.musicElements[0].paused, true);
-  assert.equal(elements.get('nbg-music-mute').attrs['aria-pressed'], 'true');
   env.document.hidden = true;
   env.document.dispatchEvent(new FakeCustomEvent('visibilitychange'));
   await flushPromises();
@@ -445,13 +447,13 @@ test('NBG music and effects mute independently with balanced default levels', as
   api.playEffect('ui_confirm');
   await flushPromises();
   assert.equal(env.sources.length, effectBefore + 1, 'effects stay enabled when music is muted');
-  elements.get('nbg-music-mute').click();
+  api.setMusicMuted(false);
   await flushPromises();
   assert.equal(env.musicElements[0].src, musicSrc, 'unmute resumes the same track');
   assert.equal(env.musicElements[0].paused, false);
   assert.equal(graph.gains[1].gain.value, 0.70);
 
-  elements.get('nbg-sfx-mute').click();
+  api.setSfxMuted(true);
   assert.equal(api.getState().musicMuted, false);
   assert.equal(api.getState().sfxMuted, true);
   assert.equal(graph.gains[2].gain.value, 0);
@@ -462,13 +464,12 @@ test('NBG music and effects mute independently with balanced default levels', as
   api.playEffect('ui_confirm');
   await flushPromises();
   assert.equal(env.sources.length, afterEffectsMute, 'muted effects cannot start new voices');
-  assert.equal(elements.get('nbg-sfx-mute').attrs['aria-pressed'], 'true');
 
   api.setMuted(true);
   assert.equal(graph.gains[0].gain.value, 0, 'master mute still overrides both channels');
   api.setMuted(false);
   assert.equal(graph.gains[2].gain.value, 0, 'master unmute does not change effects-only mute');
-  elements.get('nbg-sfx-mute').click();
+  api.setSfxMuted(false);
   assert.equal(graph.gains[2].gain.value, 0.45);
   const saved = JSON.parse(env.stored.get('nbg-audio-settings-v1'));
   assert.equal(saved.musicMuted, false);
