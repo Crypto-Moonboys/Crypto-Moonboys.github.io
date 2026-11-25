@@ -66,10 +66,15 @@ try {
   const items = fixtures.map(item => ({
     ...item, ...spot(scene.walkable, scene.start.map((value,i) => value+item.offset[i]), occupied),
   }));
-  if (fortress) items.push({
-    name: 'Zcash Mining Fortress', fortress,
-    ...spot(scene.walkable, [scene.start[0]-1, scene.start[1]-5], occupied),
-  });
+  if (mode === 'survival') {
+    const { loadSurvivalMiners, survivalZcashTower } = await import('./survival/miners.mjs?v=2');
+    items.push({name:'Zcash Mining Tower', fortress, ...survivalZcashTower}, ...loadSurvivalMiners());
+  } else if (fortress) {
+    items.push({
+      name: 'Zcash Mining Fortress', fortress,
+      ...spot(scene.walkable, [scene.start[0]-1, scene.start[1]-5], occupied),
+    });
+  }
   if (waxBee) items.push({
     name: 'WAX Bee Node', fortress: waxBee,
     ...spot(scene.walkable, [scene.start[0]+4, scene.start[1]+3], occupied),
@@ -156,7 +161,8 @@ try {
         w = fortressSize.width * scale;
         top = y - fortressSize.anchorY * scale;
         bottom = top + fortressSize.height * scale;
-        drawZcashFortress(surface, object.fortress, x, y, scale, time);
+        const drawMiner = object.drawMiner ?? drawZcashFortress;
+        drawMiner(surface, object.fortress, x, y, scale, time);
       } else if (object.rect) {
         const [sx,sy,sw,sh] = object.rect;
         w = object.width;
