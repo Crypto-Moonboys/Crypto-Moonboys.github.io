@@ -137,8 +137,8 @@
   var TRAIN_ASPECT = 3.5;        // width:height ratio of the car images
   var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
-  var TRAIN_SPACING = 900;       // gap between trains in the loop
-  var TRAIN_LOOP = TRAIN_SPACING * 3; // total loop length (3 trains)
+  var TRAIN_GAP = 2;             // px gap between joined cars
+  var TRAIN_LOOP = (TRAIN_WIDTH + TRAIN_GAP) * 3; // total loop length (3 cars joined)
 
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
@@ -1765,14 +1765,17 @@
     }
 
     function drawTrains(time) {
-      var trainImages = [images.trainWuf, images.trainAlcor, images.trainNbg];
+      // Order: NBG COIN → WUF → ALCOR (joined bumper to bumper)
+      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor];
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
-      // Trains sit just above the bridge girder top
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
+      var carW = TRAIN_WIDTH + TRAIN_GAP;
 
-      // Time-based position independent of camera — always moving
+      // Time-based offset — always moves regardless of player state
       var t = (time / 1000) * TRAIN_SPEED;
+      // Base position of the front of the first car, looping seamlessly
+      var baseX = WIDTH - (t % TRAIN_LOOP);
 
       var sparks = [];
 
@@ -1780,19 +1783,15 @@
         var img = trainImages[i];
         if (!img) continue;
 
-        // Each train starts at a different offset in the loop
-        var rawX = (t + i * TRAIN_SPACING) % TRAIN_LOOP;
-        // Scroll from right to left: start off right edge, exit left edge
-        var screenX = WIDTH - rawX;
+        var screenX = Math.round(baseX - i * carW);
 
-        // Only draw if on screen
+        // Skip if fully off screen
         if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
 
-        ctx.drawImage(img, Math.round(screenX), trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+        ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
 
-        // Collect spark positions at wheel contact points (bottom of train)
+        // Wheel spark positions — bottom of each car
         var wheelY = trainY + TRAIN_HEIGHT - 2;
-        // Two wheels per car: ~15% and ~85% along the width
         sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
         sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
       }
@@ -1800,17 +1799,14 @@
       // Draw sparks
       for (var s = 0; s < sparks.length; s += 1) {
         var sp = sparks[s];
-        // Flicker: only show sparks ~60% of frames
         if (Math.random() > 0.6) continue;
-
         var numParticles = 4 + Math.floor(Math.random() * 4);
         for (var p = 0; p < numParticles; p += 1) {
-          var angle = Math.PI + (Math.random() - 0.5) * Math.PI * 0.8; // spray downward/sideways
+          var angle = Math.PI + (Math.random() - 0.5) * Math.PI * 0.8;
           var dist = 2 + Math.random() * 6;
           var px = sp.x + Math.cos(angle) * dist;
           var py = sp.y + Math.sin(angle) * dist;
           var size = 0.5 + Math.random() * 1.5;
-          // Orange/yellow spark colour
           var colours = ['#ffe066', '#ffaa00', '#ff6600', '#ffffff'];
           ctx.fillStyle = colours[Math.floor(Math.random() * colours.length)];
           ctx.globalAlpha = 0.7 + Math.random() * 0.3;
