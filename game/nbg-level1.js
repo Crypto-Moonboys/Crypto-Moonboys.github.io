@@ -1765,35 +1765,41 @@
     }
 
     function drawTrains(time) {
-      // Order: NBG COIN → WUF → ALCOR (joined bumper to bumper)
-      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor];
+      // Order front-to-back: ALCOR (leads) → WUF (middle) → NBG COIN (tail)
+      var trainImages = [images.trainAlcor, images.trainWuf, images.trainNbg];
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
       var carW = TRAIN_WIDTH + TRAIN_GAP;
+      var totalW = carW * 3;
 
       // Time-based offset — always moves regardless of player state
       var t = (time / 1000) * TRAIN_SPEED;
-      // Base position of the front of the first car, looping seamlessly
-      var baseX = WIDTH - (t % TRAIN_LOOP);
+      // Offset within one loop, never jumps — tile two sets to cover screen
+      var offset = t % totalW;
 
       var sparks = [];
 
-      for (var i = 0; i < 3; i += 1) {
-        var img = trainImages[i];
-        if (!img) continue;
+      // Draw two full sets so the wrap is always off-screen
+      for (var set = 0; set < 2; set += 1) {
+        // Front of this set (ALCOR car) starts at right edge minus offset
+        var setX = WIDTH + totalW - offset - set * totalW;
 
-        var screenX = Math.round(baseX - i * carW);
+        for (var i = 0; i < 3; i += 1) {
+          var img = trainImages[i];
+          if (!img) continue;
 
-        // Skip if fully off screen
-        if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
+          var screenX = Math.round(setX - i * carW);
 
-        ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+          if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
 
-        // Wheel spark positions — bottom of each car
-        var wheelY = trainY + TRAIN_HEIGHT - 2;
-        sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
-        sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
+          ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+
+          // Wheel spark positions — bottom of each car
+          var wheelY = trainY + TRAIN_HEIGHT - 2;
+          sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
+          sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
+        }
       }
 
       // Draw sparks
