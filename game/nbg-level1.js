@@ -134,7 +134,7 @@
   // Trains running on the bridge — always animate independently of camera
   var TRAIN_SPEED = 126;         // pixels per second (world units)
   var TRAIN_HEIGHT = 78;         // rendered height on screen
-  var TRAIN_ASPECT = 3.5;        // width:height ratio of the car images
+  var TRAIN_ASPECT = 3.0;        // width:height ratio of the car images (matches 750x250/1050x350 art)
   var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
   var TRAIN_GAP = 2;             // px gap between joined cars
@@ -1850,7 +1850,7 @@
       var gap3 = (20 + 30) * TRAIN_SPEED; // set 3 starts 30s after set 2
       var gap4 = gap3 + 15 * TRAIN_SPEED; // set 4 starts 15s after set 3 (7 joined cars)
       var gap5 = gap4 + 30 * TRAIN_SPEED; // set 5 starts 30s after set 4 (8 joined cars)
-      var gap6 = gap5 + 16 * TRAIN_SPEED; // set 6 starts 16s after set 5 (3 joined cars)
+      var gap6 = gap5 + 8 * carW + 16 * TRAIN_SPEED; // set 6 starts 16s after set 5 FULLY clears (set 5 has 8 cars)
       var gap7 = gap6 + 18 * TRAIN_SPEED; // set 7 starts 18s after set 6 (7 joined cars)
 
       // Track offset (px) of each car's left edge from the loop origin.
