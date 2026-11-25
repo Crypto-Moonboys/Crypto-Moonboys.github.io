@@ -14,9 +14,10 @@ sprite.src = '../waterfront/assets/atlases/factions.png';
 const detailedSprite = new Image();
 detailedSprite.src = '../waterfront/assets/atlases/factions-detail.webp';
 const detailCell = 192;
+// Moon foundation stone palette (see games/block-topia/AGENTS.md): #585858, shadows #242424, highlights #8E8E8E.
 const miningBuildings = miningSites.map(site => {
   const image = new Image();
-  image.src = './assets/' + site.file + (site.file === 'wax-bee.webp' ? '?view=moon-grid&v=2-detail' : '?v=2-detail');
+  image.src = './assets/' + site.file + (site.file === 'wax-bee.webp' ? '?view=moon-grid&v=3-regolith' : '?v=3-regolith');
   return { scale: .625, ...site, image };
 });
 const fortressFrame = { width: 224, height: 280, columns: 4, count: 12, fps: 12 };
