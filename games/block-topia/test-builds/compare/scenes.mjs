@@ -5,7 +5,7 @@ const fromTopDown = (x,y) => ({x:(x+.5)*32, y:(y+.5)*32});
 
 export async function createScene(mode, canvas, viewport) {
   if (mode === 'node-city') {
-    const { createIsoRenderer } = await import('./classic-renderer.mjs?v=2');
+    const { createIsoRenderer, LUNAR_MAX_ZOOM } = await import('./classic-renderer.mjs?v=3');
     const floor = new Image();
     floor.src = new URL('./node-city/lunar-floor.webp?v=1', import.meta.url).href;
     const renderer = createIsoRenderer(canvas, { floor });
@@ -16,7 +16,10 @@ export async function createScene(mode, canvas, viewport) {
     };
     const start = [25,26];
     function reset() {
-      state.camera = {x:(start[0]-start[1])*32, y:(start[0]+start[1])*16-135, zoom:1, panX:0, panY:0};
+      const zoom = 1.25;
+      // Keep the start tile at the same screen position when opening closer.
+      const y = (start[0] + start[1] + 1) * 16 - 151 / zoom;
+      state.camera = {x:(start[0]-start[1])*32, y, zoom, panX:0, panY:0};
     }
     reset();
     return {
@@ -29,7 +32,7 @@ export async function createScene(mode, canvas, viewport) {
         return tile?.valid ? [tile.col,tile.row] : null;
       },
       pan(dx,dy) { state.camera.panX += dx/state.camera.zoom; state.camera.panY += dy/state.camera.zoom; },
-      zoom(factor) { state.camera.zoom = Math.max(.7, Math.min(1.4, state.camera.zoom*factor)); },
+      zoom(factor) { state.camera.zoom = Math.max(.7, Math.min(LUNAR_MAX_ZOOM, state.camera.zoom*factor)); },
     };
   }
 
