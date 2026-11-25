@@ -371,6 +371,7 @@
     var layerKeyMap = {
       sky: 'sky',
       'london-behind': 'behind',
+      'london-mid': 'mid',
       'london-skyline': 'skyline',
       'london-bridge': 'bridge',
       'graffiti-wall': 'wall',
