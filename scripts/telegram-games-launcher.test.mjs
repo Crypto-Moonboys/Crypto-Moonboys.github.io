@@ -114,7 +114,7 @@ const launcherDestinations = [
   ['MOONBOY HOME', '/my-moonboy.html'],
   ['Moonpet OS', '/moonpet-game.html?v=20261029-members-only-v1'],
   ['DEAD RUN', `/games/dead-run/?v=${deadRunRelease}`],
-  ['ALLCITY RUNNER', '/games/nbg-london/'],
+  ['ALLCITY RUNNER', '/games/nbg-london-run/'],
   ['FULL ARCADE', `/games/?v=${gameDestinationRelease}`],
   ['BATTLE CHAMBER', `/community.html?v=${gameDestinationRelease}`],
 ];
@@ -152,7 +152,7 @@ for (const url of deadRunAssetUrls) {
 assert.match(html, /window\.Telegram\s*&&\s*window\.Telegram\.WebApp/, 'Games launcher must read Telegram.WebApp safely');
 assert.doesNotMatch(html, /<p>\s*<small>\/games\/telegram\//i,
   'Games launcher must not display its own Mini App URL at the bottom');
-assert.match(html, /href="\/games\/nbg-london\/"[^>]*>ALLCITY RUNNER<\/a>/,
+assert.match(html, /href="\/games\/nbg-london-run\/"[^>]*>ALLCITY RUNNER<\/a>/,
   'Games launcher must link directly to ALLCITY RUNNER');
 assert.match(html, /href="\/my-moonboy\.html"[^>]*>MOONBOY HOME<\/a>/,
   'Games launcher must link directly to MOONBOY HOME');
@@ -205,7 +205,7 @@ class FakeElement {
   }
 }
 
-async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false, groupMember = true, membershipUnavailable = false, telegramPlatform = 'android', fullscreenSupported = true, fullscreenThrows = false, alreadyFullscreen = false } = {}) {
+async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '', existingSessionId = '', rejectLogin = false, loginFailureStatus = 503, loginFailureCode = '', lostCookie = false, stalled = false, holdLogout = false, groupMember = true, membershipUnavailable = false, telegramPlatform = 'android', fullscreenSupported = true, fullscreenThrows = false, alreadyFullscreen = false, screenWidth = 1440, screenHeight = 900 } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -246,6 +246,7 @@ async function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', 
   };
   const window = {
     document,
+    screen: { width: screenWidth, height: screenHeight },
     Telegram: {
       WebApp: {
         initData,
@@ -716,6 +717,34 @@ for (const loginFailureCode of ['mini_app_auth_expired', 'mini_app_auth_replayed
   const ios = await runLauncher({ telegramPlatform: 'ios' });
   assert.ok(!ios.calls.includes('requestFullscreen'), 'iOS presentation stays unchanged');
   assert.ok(!ios.body.classList.contains('is-desktop-telegram'), 'iOS keeps full-width layout');
+}
+
+{
+  for (const telegramPlatform of ['web', 'weba', 'webk']) {
+    const large = await runLauncher({ telegramPlatform });
+    assert.ok(large.body.classList.contains('is-large-web-telegram'));
+    assert.ok(large.body.classList.contains('is-desktop-telegram'), 'large Web uses existing safe-area padding');
+    assert.equal(large.calls.filter(x => x === 'requestFullscreen').length, 1);
+    assert.ok(large.calls.indexOf('expand') < large.calls.indexOf('requestFullscreen'));
+    assert.ok(large.calls.includes('isVersionAtLeast:8.0'));
+    large.viewportHandlers[0]({ isStateStable: true });
+    large.links[0].dispatch('click');
+    assert.equal(large.assigned.length, 1, 'fullscreen request must not block verified navigation');
+  }
+  for (const options of [
+    { screenWidth: 800 }, { screenHeight: 500 },
+    { fullscreenSupported: false }, { alreadyFullscreen: true }
+  ]) {
+    const web = await runLauncher({ telegramPlatform: 'web', ...options });
+    assert.ok(!web.calls.includes('requestFullscreen'));
+    assert.ok(web.calls.includes('expand'), 'normal expanded panel remains available');
+  }
+  const rejected = await runLauncher({ telegramPlatform: 'webk', fullscreenThrows: true });
+  rejected.timers.find(timer => timer.ms === 1200).handler();
+  rejected.links[0].dispatch('click');
+  assert.equal(rejected.assigned.length, 1, 'unsupported fullscreen cannot block game navigation');
+  const ordinary = await runLauncher({ telegramPlatform: 'unknown', initData: '' });
+  assert.ok(!ordinary.calls.includes('requestFullscreen'), 'ordinary browser is not Telegram Web');
 }
 
 console.log('telegram-games-launcher.test.mjs passed');
