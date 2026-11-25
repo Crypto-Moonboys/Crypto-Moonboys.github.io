@@ -51,7 +51,10 @@
     "trainNbg": "world/train-nbg.png",
     "trainSwaxp": "world/train-swaxp.png",
     "trainWpixal": "world/train-wpixal.png",
-    "trainPxjking": "world/train-pxjking.png"
+    "trainPxjking": "world/train-pxjking.png",
+    "trainWaxcash": "world/train-waxcash.png",
+    "trainGetsulaid": "world/train-getsulaid.png",
+    "trainTrustme": "world/train-trustme.png"
   },
   "objects": {
     "xpCoin": "objects/2300-spritesheet.png",

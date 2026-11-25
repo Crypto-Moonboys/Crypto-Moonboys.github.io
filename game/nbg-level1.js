@@ -429,6 +429,9 @@
       if (manifest.trains.trainSwaxp) assets.trainSwaxp = resolveAssetPath(manifest.trains.trainSwaxp);
       if (manifest.trains.trainWpixal) assets.trainWpixal = resolveAssetPath(manifest.trains.trainWpixal);
       if (manifest.trains.trainPxjking) assets.trainPxjking = resolveAssetPath(manifest.trains.trainPxjking);
+      if (manifest.trains.trainWaxcash) assets.trainWaxcash = resolveAssetPath(manifest.trains.trainWaxcash);
+      if (manifest.trains.trainGetsulaid) assets.trainGetsulaid = resolveAssetPath(manifest.trains.trainGetsulaid);
+      if (manifest.trains.trainTrustme) assets.trainTrustme = resolveAssetPath(manifest.trains.trainTrustme);
     }
 
     if (manifest.enemies) {
@@ -1769,34 +1772,57 @@
     }
 
     function drawTrains(time) {
-      // Front-to-back, travelling right to left.
-      var trains = [
-        [images.trainSwaxp, images.trainPxjking, images.trainWpixal],
-        [images.trainNbg, images.trainWuf, images.trainAlcor]
+      // Three joined sets of three cars, spaced out in time along the bridge:
+      //   Set 1 (NBG / WUF / ALCOR)        — leads, enters at the 10s reveal
+      //   Set 2 ($WAXP / $PXJ-KING / $WPIXAL) — 20s behind set 1
+      //   Set 3 ($WAXCASH / GETS U LAID / $TRUST ME) — 30s behind set 2
+      var convoy = [
+        images.trainNbg, images.trainWuf, images.trainAlcor,
+        images.trainSwaxp, images.trainPxjking, images.trainWpixal,
+        images.trainWaxcash, images.trainGetsulaid, images.trainTrustme
       ];
+      if (!convoy[0] && !convoy[1] && !convoy[2]) return;
+      // Don't show trains for first 10 seconds
       if (time < 10000) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
       var carW = TRAIN_WIDTH + TRAIN_GAP;
-      var trainW = carW * 2 + TRAIN_WIDTH;
-      var travelMs = (WIDTH + trainW) / TRAIN_SPEED * 1000;
-      var intervalMs = travelMs + TRAIN_CLEAR_MS;
-      var elapsed = time - 10000;
-      var phase = elapsed % intervalMs;
-      if (phase >= travelMs) return;
+      // Lead-car time gaps (converted to px of track) between the sets.
+      var gap2 = 20 * TRAIN_SPEED;        // set 2 starts 20s after set 1
+      var gap3 = (20 + 30) * TRAIN_SPEED; // set 3 starts 30s after set 2
 
-      var trainImages = trains[Math.floor(elapsed / intervalMs) % trains.length];
-      var frontX = WIDTH - phase / 1000 * TRAIN_SPEED;
+      // Track offset (px) of each car's left edge from the loop origin.
+      var offsets = [
+        0, carW, 2 * carW,
+        gap2, gap2 + carW, gap2 + 2 * carW,
+        gap3, gap3 + carW, gap3 + 2 * carW
+      ];
+      // Full loop length: last car + a trailing 20s gap before set 1 repeats.
+      var loopLen = gap3 + 2 * carW + carW + (20 * TRAIN_SPEED);
+
+      // Time-based scroll — always moves regardless of player state.
+      // Count from the 10s reveal so cars roll in from the right edge.
+      var raw = (((time - 10000) / 1000) * TRAIN_SPEED) % loopLen;
+
       var sparks = [];
-      for (var i = 0; i < trainImages.length; i += 1) {
-        var img = trainImages[i];
+      for (var k = 0; k < convoy.length; k += 1) {
+        var img = convoy[k];
         if (!img) continue;
-        var screenX = Math.round(frontX + i * carW);
-        if (screenX + TRAIN_WIDTH <= 0 || screenX >= WIDTH) continue;
-        ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
-        var wheelY = trainY + TRAIN_HEIGHT - 2;
-        sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
-        sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
+
+        // Base position, then tile by loopLen so the on-screen copy is covered.
+        var basePos = WIDTH + offsets[k] - raw;
+        for (var c = -1; c <= 1; c += 1) {
+          var screenX = Math.round(basePos + c * loopLen);
+
+          if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
+
+          ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+
+          // Wheel spark positions — bottom of each car
+          var wheelY = trainY + TRAIN_HEIGHT - 2;
+          sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
+          sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
+        }
       }
 
       // Draw sparks
