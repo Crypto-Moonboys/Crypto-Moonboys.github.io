@@ -1769,7 +1769,7 @@
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
       // Trains sit just above the bridge girder top
-      var trainY = BRIDGE_Y - TRAIN_HEIGHT + 16;
+      var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
 
       // Time-based position independent of camera — always moving
       var t = (time / 1000) * TRAIN_SPEED;
