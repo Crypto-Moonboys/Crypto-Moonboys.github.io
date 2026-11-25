@@ -1,5 +1,5 @@
 import { fortressSize } from '../../../zcash-fortress.mjs?v=5';
-import { createMinerMechanics } from './miner-motion.mjs?v=3';
+import { createMinerMechanics } from './miner-motion.mjs?v=4';
 
 // Reserve blocked tiles or open ground away from the existing road network.
 export const survivalMinerLots = [
