@@ -456,7 +456,7 @@
       if (manifest.trains.trainKek) assets.trainKek = resolveAssetPath(manifest.trains.trainKek);
       if (manifest.trains.trainTrash) assets.trainTrash = resolveAssetPath(manifest.trains.trainTrash);
       if (manifest.trains.trainBuzz) assets.trainBuzz = resolveAssetPath(manifest.trains.trainBuzz);
-      if (manifest.trains.trainBoneidolink2) assets.trainBoneidolink2 = resolveAssetPath(manifest.trains.trainBoneidolink2);
+      if (manifest.trains.trainDeliciousagainpeter) assets.trainDeliciousagainpeter = resolveAssetPath(manifest.trains.trainDeliciousagainpeter);
     }
 
     if (manifest.enemies) {
@@ -1824,7 +1824,7 @@
       //          SARAH PFLY / JODIE ZOOM / SAVANNAH) — 30s behind set 4
       //   Set 6 (JUST 4U LDN / $TLM / BONE IDOL INK) — 16s behind set 5
       //   Set 7 (FOR DA CITY / $PUNK / $WAXGOD / $KEK / $TRASH / $BUZZ /
-      //          BONE IDOL INK) — 18s behind set 6
+      //          DELICIOUS AGAIN PETER) — 18s behind set 6
       var convoy = [
         images.trainNbg, images.trainWuf, images.trainAlcor,
         images.trainSwaxp, images.trainPxjking, images.trainWpixal,
@@ -1838,7 +1838,7 @@
         images.trainJust4uldn, images.trainTlm, images.trainBoneidolink,
         images.trainFordacity, images.trainPunk, images.trainWaxgod,
         images.trainKek, images.trainTrash, images.trainBuzz,
-        images.trainBoneidolink2
+        images.trainDeliciousagainpeter
       ];
       if (!convoy[0] && !convoy[1] && !convoy[2]) return;
       // Don't show trains for first 10 seconds
