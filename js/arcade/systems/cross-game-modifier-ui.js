@@ -78,7 +78,7 @@ function _injectStyles() {
  * @param {Element} [container] - optional explicit parent element
  * @returns {{ unmount: function }|null}
  */
-export function mountModifierPanel(container) {
+export function mountModifierPanel(container, options = {}) {
   if (typeof document === 'undefined') return null;
 
   // Avoid double-mount
@@ -98,10 +98,11 @@ export function mountModifierPanel(container) {
   }
 
   let _collapsed = false;
+  const readOnly = options.readOnly === true;
 
   function render() {
     const unlocked = getUnlockedModifiers();
-    const activeId = getActiveModifier();
+    const activeId = readOnly ? null : getActiveModifier();
     const activeDef = activeId ? getModifierDef(activeId) : null;
 
     var html = '';
@@ -116,7 +117,9 @@ export function mountModifierPanel(container) {
     html += '<div class="cm-mod-body" id="cm-mod-body"' + (_collapsed ? ' hidden' : '') + '>';
 
     // Active modifier banner
-    if (activeDef) {
+    if (readOnly) {
+      html += '<div class="cm-mod-none" role="status">Arcade modifier cards are view-only in NBG London. Ranked runs do not apply modifier effects.</div>';
+    } else if (activeDef) {
       var aColor = RARITY_COLORS[activeDef.rarity] || '#fff';
       html += '<div class="cm-mod-active-banner">';
       html += '<div class="cm-mod-active-info">';
@@ -139,7 +142,7 @@ export function mountModifierPanel(container) {
       html += '<button class="cm-mod-item' + (isSelected ? ' cm-mod-selected' : '') + '"';
       html += ' data-mod-id="' + _esc(mod.id) + '"';
       html += ' title="' + _esc(mod.description) + '"';
-      if (!isUnlocked) html += ' disabled';
+      if (readOnly || !isUnlocked) html += ' disabled';
       html += '>';
       html += '<span class="cm-mod-item-name" style="color:' + color + '">' + _esc(mod.label) + '</span>';
       html += '<span class="cm-mod-item-rarity" style="color:' + color + '">' + _esc(mod.rarity) + '</span>';
