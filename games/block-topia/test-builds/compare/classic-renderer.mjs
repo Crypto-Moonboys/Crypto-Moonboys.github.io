@@ -12,6 +12,7 @@ const NPC_FRAME_COUNT = 20;
 
 const ZOOM_MIN = 0.7;
 const ZOOM_MAX = 1.4;
+export const LUNAR_MAX_ZOOM = 2;
 const CAMERA_BASELINE_Y = 140;
 const HOVER_PULSE_PERIOD_MS = 260;
 const TILE_PICK_TOLERANCE = 1.001;
@@ -320,9 +321,15 @@ export function createIsoRenderer(canvas, { floor } = {}) {
     mapKey: '',
   };
 
+  let viewWidth;
+  let viewHeight;
+  let pixelRatio = 1;
   function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    viewWidth = floor ? canvas.clientWidth || window.innerWidth : window.innerWidth;
+    viewHeight = floor ? canvas.clientHeight || window.innerHeight : window.innerHeight;
+    pixelRatio = floor ? Math.min(2, window.devicePixelRatio || 1) : 1;
+    canvas.width = Math.round(viewWidth * pixelRatio);
+    canvas.height = Math.round(viewHeight * pixelRatio);
     layerState.baseGrid.dirty = true;
   }
 
@@ -341,14 +348,14 @@ export function createIsoRenderer(canvas, { floor } = {}) {
       state.camera = { x: 0, y: 0, zoom: 1, zoomIndex: 1, panX: 0, panY: 0 };
     }
     const camera = state.camera;
-    const zoom = clamp(camera.zoom ?? 1, ZOOM_MIN, ZOOM_MAX);
+    const zoom = clamp(camera.zoom ?? 1, ZOOM_MIN, floor ? LUNAR_MAX_ZOOM : ZOOM_MAX);
     const rawPanX = Number.isFinite(camera.panX) ? camera.panX : 0;
     const rawPanY = Number.isFinite(camera.panY) ? camera.panY : 0;
     const worldBounds = getWorldBounds(state);
-    const viewportLeft = -((canvas.width / 2) / zoom);
-    const viewportRight = ((canvas.width / 2) / zoom);
+    const viewportLeft = -((viewWidth / 2) / zoom);
+    const viewportRight = ((viewWidth / 2) / zoom);
     const viewportTop = -(CAMERA_BASELINE_Y / zoom);
-    const viewportBottom = ((canvas.height - CAMERA_BASELINE_Y) / zoom);
+    const viewportBottom = ((viewHeight - CAMERA_BASELINE_Y) / zoom);
     const viewportWidth = viewportRight - viewportLeft;
     const viewportHeight = viewportBottom - viewportTop;
 
@@ -386,7 +393,7 @@ export function createIsoRenderer(canvas, { floor } = {}) {
       zoom,
       originX: -camera.x + panX,
       originY: -camera.y + panY,
-      translateX: canvas.width / 2,
+      translateX: viewWidth / 2,
       translateY: CAMERA_BASELINE_Y,
     };
   }
@@ -1280,9 +1287,10 @@ export function createIsoRenderer(canvas, { floor } = {}) {
     const frame = getCameraFrame(state);
     const { zoom, originX, originY, translateX, translateY } = frame;
 
-    ctx.fillStyle = '#080a13';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.save();
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.fillStyle = '#080a13';
+    ctx.fillRect(0, 0, viewWidth, viewHeight);
     ctx.translate(translateX, translateY);
     ctx.scale(zoom, zoom);
 
