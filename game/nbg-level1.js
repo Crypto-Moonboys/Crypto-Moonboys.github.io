@@ -1772,6 +1772,8 @@
       // Order front-to-back: NBG COIN (leads) → WUF (middle) → ALCOR (tail)
       var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor, images.trainSwaxp, images.trainPxjking, images.trainWpixal];
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
+      // Don't show trains for first 10 seconds
+      if (time < 10000) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
       var carW = TRAIN_WIDTH + TRAIN_GAP;
