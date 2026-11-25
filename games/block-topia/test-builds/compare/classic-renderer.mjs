@@ -1300,7 +1300,7 @@ export function createIsoRenderer(canvas, { floor } = {}) {
     ctx.transform(HALF_TILE_W, HALF_TILE_H, -HALF_TILE_W, HALF_TILE_H, originX, originY);
     ctx.fillStyle = '#50515b';
     ctx.fillRect(0, 0, state.map.width, state.map.height);
-    if (floor.naturalWidth) {
+    if (floor.width) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(floor, 0, 0, state.map.width, state.map.height);

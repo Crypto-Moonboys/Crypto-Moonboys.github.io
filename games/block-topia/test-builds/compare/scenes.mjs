@@ -5,12 +5,14 @@ const fromTopDown = (x,y) => ({x:(x+.5)*32, y:(y+.5)*32});
 
 export async function createScene(mode, canvas, viewport) {
   if (mode === 'node-city') {
-    const { createIsoRenderer, LUNAR_MAX_ZOOM } = await import('./classic-renderer.mjs?v=3');
-    const floor = new Image();
-    floor.src = new URL('./node-city/lunar-floor.webp?v=1', import.meta.url).href;
-    const renderer = createIsoRenderer(canvas, { floor });
+    const [{ createIsoRenderer, LUNAR_MAX_ZOOM }, { createLunarTerrain }] = await Promise.all([
+      import('./classic-renderer.mjs?v=4'),
+      import('./node-city/lunar-terrain.mjs?v=1'),
+    ]);
+    const map = {width:48,height:48};
+    const renderer = createIsoRenderer(canvas, { floor: createLunarTerrain(map.width, map.height) });
     const state = {
-      map: {width:48,height:48},
+      map,
       player: {x:25,y:26},
       camera: {x:0,y:0,zoom:1,panX:0,panY:0},
     };
