@@ -993,7 +993,7 @@ for (const afterReset of [false, true]) {
     await page.locator('#overlay-btn-reset').click();
     await page.waitForFunction(() => !window.NBGLevel1State.running);
   }
-  for (const key of ['Enter', 'Space']) {
+  for (const key of ['Enter', 'NumpadEnter', 'Space']) {
     await page.evaluate(() => window.NBGLevel1Runtime.setCameraZoom(1.25));
     await page.locator('#nbg-zoom-control').focus();
     await page.keyboard.press(key);
@@ -1003,8 +1003,14 @@ for (const afterReset of [false, true]) {
       elapsed:window.NBGLevel1State.runElapsedMs,
       x:window.NBGLevel1State.player.x,
       pending:window.NBGLevel1State.pendingJumpPresses
-    })), {zoom:1.5,running:false,elapsed:0,x:64,pending:0},
+    })), {zoom:key === 'Space' ? 1.5 : 1.25,running:false,elapsed:0,x:64,pending:0},
     key + ' on Zoom must preserve the ready run before and after Reset');
+  }
+  await page.evaluate(() => document.activeElement?.blur());
+  for (const key of ['Enter', 'NumpadEnter']) {
+    await page.keyboard.press(key);
+    assert.equal(await page.evaluate(() => window.NBGLevel1State.running), false,
+      key + ' must not start a ready London run');
   }
 }
 await page.evaluate(() => {
@@ -3719,10 +3725,15 @@ assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
 assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
   'closing scores must not navigate away from the game');
 await scoreToggle.focus();
-await page.keyboard.press('Enter');
+for (const key of ['Enter', 'NumpadEnter']) {
+  await page.keyboard.press(key);
+  assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
+    key + ' must not open Scores');
+}
+await page.keyboard.press('Space');
 await page.locator('#nbg-record-drawer').waitFor({ state: 'visible', timeout: 3000 });
 assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
-  'Enter on the Scores button must not trigger a game shell navigation or start');
+  'Space on Scores must still open the drawer without navigation');
 await page.locator('#nbg-close-records').focus();
 await page.keyboard.press('Space');
 assert.equal(await scoreToggle.getAttribute('aria-expanded'), 'false',
