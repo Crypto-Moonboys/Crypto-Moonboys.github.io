@@ -63,26 +63,14 @@
   }
 
   function productionAccessGateEnabled() {
-    var cfg = window.MOONBOYS_API;
-    var loc = window.location;
-    if (loc && /^(cryptomoonboys\.com|www\.cryptomoonboys\.com|crypto-moonboys\.github\.io)$/i.test(loc.hostname || ''))
-      return true;
-    if (cfg && cfg.CONTEXT && typeof cfg.CONTEXT.isProduction === 'boolean')
-      return cfg.CONTEXT.isProduction;
-    // A failed config script must not silently turn the live game into a guest
-    // preview. Only recognisable local URLs can opt out without configuration.
-    return !!(loc && loc.protocol !== 'file:' &&
-      !/^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?|.*\.local)$/i.test(loc.hostname || ''));
+    // Access gate disabled — game is open to all
+    return false;
   }
 
   function showAccessGate(message, reason) {
+    // Access gate disabled — game is open to all
     accessState.reason = reason || 'blocked';
-    if (accessGateMessage) accessGateMessage.textContent = message;
-    if (accessGate) accessGate.hidden = false;
-    var login = document.getElementById('nbg-access-login');
-    var group = document.getElementById('nbg-access-group');
-    if (login) login.hidden = reason === 'group_required';
-    if (group) group.hidden = reason === 'login_required';
+    if (accessGate) accessGate.hidden = true;
   }
 
   function hideAccessGate() {
