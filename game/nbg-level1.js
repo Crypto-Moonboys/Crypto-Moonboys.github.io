@@ -28,7 +28,7 @@
   var DOUBLE_JUMP_VELOCITY = -12.8;
   var TRIPLE_JUMP_VELOCITY = -12.8;
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
-  var COURSE_LAYOUT_VERSION = 8; // Slower reference-video-paced movement. Worker must accept v8 before Pages deploy.
+  var COURSE_LAYOUT_VERSION = 9; // Mystery-box activation modes; deploy Worker first.
   var DOUBLE_JUMP_SIDE_SPEED = 3.2;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
@@ -621,7 +621,7 @@
       var feet = player.y + player.h;
       if (!wanted) {
         var upright = { x: player.x, y: feet - STAND_HEIGHT, w: player.w, h: STAND_HEIGHT };
-        if (platforms.concat(crates).some(function (solid) { return rectsOverlap(upright, solid); }))
+        if (platforms.concat(crates, solidRewardBoxes).some(function (solid) { return rectsOverlap(upright, solid); }))
           return;
       }
       player.h = wanted ? CROUCH_HEIGHT : STAND_HEIGHT;
@@ -808,6 +808,19 @@
         courseCheckpoints.push({ x: startX + 965, y: FLOOR_Y - 48, w: 30, h: 48, active: false });
       }
     }
+
+    // Assign only mystery boxes, retaining star and speed box behaviour.
+    var mysteryIndex = 0;
+    rewardBoxes.forEach(function (box) {
+      if (box.type !== 'mystery') return;
+      var index = mysteryIndex++;
+      box.mode = ['touch', 'solid', 'reveal'][index % 3];
+      if (box.mode === 'reveal') {
+        box.revealX = box.x - 70 - ((Math.imul(index + 1, 2654435761) >>> 0) % 150);
+        box.visible = false;
+      }
+    });
+    var solidRewardBoxes = rewardBoxes.filter(function (box) { return box.mode === 'solid'; });
 
     var initialEnemies = enemies.map(function (enemy) {
       return Object.assign({}, enemy);
@@ -1016,13 +1029,14 @@
       var wasGrounded = player.grounded;
       var landingVelocity = player.vy;
       var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
-      var solids = [floor].concat(platforms, crates);
+      var solids = [floor].concat(platforms, crates, solidRewardBoxes);
       player.grounded = false;
 
       for (var i = 0; i < solids.length; i += 1) {
         var tile = solids[i];
         var wasAbove = previousY + player.h <= tile.y + 1;
         if (rectsOverlap(player, tile) && player.vy >= 0 && wasAbove) {
+          if (tile.mode === 'solid') tile.landed = true;
           player.y = tile.y - player.h;
           player.vy = 0;
           player.grounded = true;
@@ -1115,8 +1129,9 @@
       var visualMarginX = getPlayerVisualMarginX();
       player.x = clamp(player.x, 12 + visualMarginX, WORLD_WIDTH - player.w - 12 - visualMarginX);
       // Crates block movement from the sides but can also be jumped onto.
-      for (var crateIndex = 0; crateIndex < crates.length; crateIndex += 1) {
-        var crate = crates[crateIndex];
+      var sideSolids = crates.concat(solidRewardBoxes);
+      for (var crateIndex = 0; crateIndex < sideSolids.length; crateIndex += 1) {
+        var crate = sideSolids[crateIndex];
         if (!rectsOverlap(player, crate)) continue;
         if (player.vx > 0 && previousX + player.w <= crate.x + 1) {
           player.x = crate.x - player.w;
@@ -1209,7 +1224,9 @@
     function updateRewardBoxes(time) {
       for (var i = 0; i < rewardBoxes.length; i += 1) {
         var box = rewardBoxes[i];
-        if (box.opened || !rectsOverlap(player, box)) continue;
+        if (box.mode === 'reveal' && player.x >= box.revealX) box.visible = true;
+        if (box.opened || box.visible === false ||
+            (box.mode === 'solid' ? !box.landed : !rectsOverlap(player, box))) continue;
         box.opened = true;
         // Rewards are rolled on every actual collection, never preselected by position.
         var pool = box.type === 'star' ?
@@ -2239,12 +2256,13 @@
 
       for (var boxIndex = 0; boxIndex < rewardBoxes.length; boxIndex += 1) {
         var box = rewardBoxes[boxIndex];
+        if (box.visible === false) continue;
         var boxX = Math.round(box.x - cameraX);
         if (boxX + box.w < 0 || boxX > WIDTH) continue;
         var boxY = box.y + FOREGROUND_VISUAL_OFFSET_Y;
         var boxImage = box.type === 'star' ? images.starBox : images.mysteryBox;
         ctx.save();
-        if (box.opened) ctx.globalAlpha = 0.32;
+        if (box.opened && box.mode !== 'solid') ctx.globalAlpha = 0.32;
         if (boxImage) {
           ctx.drawImage(boxImage, boxX, boxY, box.w, box.h);
         } else {
@@ -2625,7 +2643,7 @@
         coin.float = 0;
       });
       secretCoins.forEach(function (coin) { coin.taken = false; });
-      rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; });
+      rewardBoxes.forEach(function (box) { box.opened = false; box.reward = null; box.landed = false; if (box.mode === 'reveal') box.visible = false; });
       speedBoxes.forEach(function (box) { box.collected = false; });
       // Remove extra walkers created by landed parachutes before restoring patrols.
       enemies.length = 0;

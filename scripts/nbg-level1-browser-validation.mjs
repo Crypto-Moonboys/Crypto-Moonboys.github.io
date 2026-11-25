@@ -863,7 +863,7 @@ const hdProof = await page.evaluate(() => {
     expectedPlayerCssWidth: playingArt.renderWidth * state.cameraZoom * rect.width / 480,
     wallCssHeight,
     expectedWallCssHeight: 88 * state.cameraZoom * rect.height / 270,
-    courseVersion: state.recordedReplay?.course_version || 8,
+    courseVersion: state.recordedReplay?.course_version || 9,
     playerHitbox: [state.player.w, state.player.h],
     running: state.running
   };
@@ -1185,8 +1185,8 @@ const sprayReleaseReplay = await page.evaluate(() => {
   };
 });
 await page.keyboard.up('ArrowDown');
-assert.equal(sprayReleaseReplay.replay?.course_version, 8,
-  'browser must encode spray-to-crouch under course version 8');
+assert.equal(sprayReleaseReplay.replay?.course_version, 9,
+  'browser must encode spray-to-crouch under course version 9');
 const capturedMasks = [...Buffer.from(sprayReleaseReplay.replay.frames, 'base64')]
   .filter((_, index) => index % 5 === 4);
 const firstSpray = capturedMasks.findIndex(mask => (mask & 8) !== 0);
@@ -2488,7 +2488,7 @@ for (const mode of ['keyboard', 'touch']) {
       mode + ' successive boosts must be visually spaced instead of compressed');
     assert.equal(flight.replay?.version, 1,
       mode + ' should expose an encoded version-one input replay');
-    assert.equal(flight.replay?.course_version, 8,
+    assert.equal(flight.replay?.course_version, 9,
       mode + ' must encode the slower reference-paced course');
     const bytes = Buffer.from(flight.replay.frames, 'base64');
     assert.equal(bytes.length % 5, 0, 'input replay frames must remain five bytes each');
