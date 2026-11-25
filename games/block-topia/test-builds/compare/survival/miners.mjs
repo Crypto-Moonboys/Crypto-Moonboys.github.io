@@ -1,6 +1,6 @@
 import { fortressSize } from '../../../zcash-fortress.mjs?v=5';
 
-// Use established blocked lots so the surrounding Survival routes stay open.
+// Reserve blocked tiles or open ground away from the existing road network.
 export const survivalMinerLots = [
   { name: 'DigiByte Industrial Tower', file: 'digibyte-tower', x: 3, y: 2, scale: 1.46 },
   { name: 'Bitcoin Cyber-Bull Tower', file: 'bitcoin-cyber-bull', x: 7, y: 2, scale: 1.38 },
@@ -9,6 +9,16 @@ export const survivalMinerLots = [
   { name: 'Zcash Lunar Fortress', file: 'zcash-fortress', x: 16, y: 3, scale: 1.12 },
   { name: 'WAX Hornet Node', file: 'wax-hornet', x: 19, y: 8, scale: 1.04 },
   { name: 'Bitcoin Cash Bull Fortress', file: 'bitcoin-cash-bull', x: 16, y: 11, scale: 1.08 },
+  { name: 'DigiByte Communications Spire', file: 'digibyte-spire', x: 1, y: 12, scale: 1.35 },
+  { name: 'WAX Wasp Relay', file: 'wax-wasp-relay', x: 4, y: 18, scale: .91 },
+  { name: 'Bitcoin Refinery', file: 'bitcoin-refinery', x: 9, y: 14, scale: .9 },
+  { name: 'Bitcoin Cash Freight Terminal', file: 'bitcoin-cash-freight', x: 19, y: 12, scale: .9 },
+  { name: 'Zcash Foundry', file: 'zcash-foundry', x: 17, y: 16, scale: .94 },
+  { name: 'DigiByte Fabrication Plant', file: 'digibyte-fabrication', x: 14, y: 18, scale: .94 },
+  { name: 'Bitcoin Cash Reactor', file: 'bitcoin-cash-reactor', x: 11, y: 2, scale: 1.34 },
+  { name: 'WAX Server Depot', file: 'wax-server-depot', x: 8, y: 18, scale: .9 },
+  { name: 'Bitcoin Signal Tower', file: 'bitcoin-signal-tower', x: 17, y: 1, scale: 1.38 },
+  { name: 'Zcash Vault', file: 'zcash-vault', x: 6, y: 6, scale: .88 },
 ];
 
 export const survivalZcashTower = { x: 1, y: 9, scale: 1.35 };
