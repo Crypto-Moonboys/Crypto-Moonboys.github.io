@@ -86,8 +86,8 @@
     try {
       var stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
       if (stored && typeof stored === 'object') {
-        if (typeof stored.musicMuted === 'boolean') next.musicMuted = stored.musicMuted;
-        if (typeof stored.sfxMuted === 'boolean') next.sfxMuted = stored.sfxMuted;
+        // The single game-sound switch replaces the two per-channel switches.
+        // Do not restore old hidden channel mutes; retain saved volume levels.
         // Migrate only untouched old default levels. Respect user-selected values.
         var oldMusic = clampLevel(stored.musicLevel, 0.42);
         var oldEffects = clampLevel(stored.sfxLevel, 0.78);
@@ -656,7 +656,6 @@
     } else if (!settings.muted && musicWanted && !document.hidden) {
       resumeContext().then(startMusicSource);
     }
-    syncIndependentMuteButtons();
     return settings.musicMuted;
   }
 
@@ -668,46 +667,7 @@
       stopVoices();
       stopEnemyLoops(false, true);
     }
-    syncIndependentMuteButtons();
     return settings.sfxMuted;
-  }
-
-  function syncIndependentMuteButtons() {
-    if (typeof document.getElementById !== 'function') return;
-    var musicButton = document.getElementById('nbg-music-mute');
-    var effectsButton = document.getElementById('nbg-sfx-mute');
-    [musicButton, effectsButton].forEach(function (button, index) {
-      if (!button) return;
-      var muted = index === 0 ? settings.musicMuted : settings.sfxMuted;
-      var label = index === 0 ? 'Music' : 'Effects';
-      button.setAttribute('aria-pressed', String(muted));
-      button.setAttribute('aria-label', muted ? 'Unmute ' + label.toLowerCase() : 'Mute ' + label.toLowerCase());
-      button.setAttribute('title', muted ? 'Unmute ' + label : 'Mute ' + label);
-      var name = button.querySelector('.btn-label');
-      if (name) name.textContent = ' ' + (muted ? label + ' OFF' : label + ' ON');
-      var icon = button.querySelector('.btn-icon');
-      if (icon) icon.textContent = index === 0 ? (muted ? '♪̸' : '♫') : (muted ? 'FX×' : 'FX');
-    });
-  }
-
-  function installIndependentMuteButtons() {
-    if (typeof document.getElementById !== 'function' || !document.createElement) return;
-    var bar = document.getElementById('overlay-ctrl-bar');
-    var master = document.getElementById('overlay-btn-mute');
-    if (!bar || !master) return;
-    function make(id, name, onclick) {
-      if (document.getElementById(id)) return;
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.id = id;
-      button.className = 'interactive nbg-audio-toggle';
-      button.innerHTML = '<span class="btn-icon" aria-hidden="true"></span><span class="btn-label"></span>';
-      button.addEventListener('click', onclick);
-      bar.insertBefore(button, master);
-    }
-    make('nbg-music-mute', 'Music', function () { setMusicMuted(!settings.musicMuted); });
-    make('nbg-sfx-mute', 'Effects', function () { setSfxMuted(!settings.sfxMuted); });
-    syncIndependentMuteButtons();
   }
 
   function isMuted() {
@@ -897,7 +857,6 @@
   };
   window.NBGAudio = api;
   window.ArcadeAudio = api;
-  installIndependentMuteButtons();
   // game-fullscreen.js loads first, so refresh its button after restoring storage.
   document.dispatchEvent(new CustomEvent('arcade-mute-change', {
     detail: { muted: settings.muted }
