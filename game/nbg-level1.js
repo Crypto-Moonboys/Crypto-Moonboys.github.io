@@ -1686,7 +1686,7 @@
       if (!image) return;
       var tileW = WIDTH;
       var tileH = image.naturalHeight || 175;
-      var driftSpeed = 10; // px/sec — constant, independent of player movement
+      var driftSpeed = 5; // px/sec — constant, independent of player movement (50% slower)
       var offset = -((time || 0) / 1000) * driftSpeed - cameraX * 0.03;
       var firstTile = Math.floor(-offset / tileW) - 1;
       for (var tile = firstTile; offset + tile * tileW < WIDTH + tileW; tile++) {
@@ -1983,8 +1983,6 @@
     }
 
     function drawWorld(time) {
-      drawSkyWallpaper();
-      drawCloudsOverlay(time);
       drawBehindLayer();
       drawMidLayer();
       drawSkylineLayer();
@@ -2433,8 +2431,15 @@
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
-      ctx.fillStyle = '#0078fb';
+      ctx.fillStyle = '#080d94';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      // Sky + clouds are drawn here, before the cameraY translate below, so
+      // a jump (which shifts the whole world vertically to simulate looking
+      // up/down) never drags them out of frame and exposes a gap above.
+      // They stay pinned to the canvas regardless of the player's vertical
+      // camera offset; only their horizontal scroll still tracks cameraX.
+      drawSkyWallpaper();
+      drawCloudsOverlay(time);
       ctx.save();
       ctx.translate(0, Math.round(cameraY));
       drawWorld(time);
