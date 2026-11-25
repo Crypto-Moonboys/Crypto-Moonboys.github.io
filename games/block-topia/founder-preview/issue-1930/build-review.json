@@ -3,31 +3,16 @@
   "round": 36,
   "research": "research incomplete",
   "review": {
+    "coordinateConvention": "Zero-based (x, y), from the upper-left of the 12 × 12 district.",
+    "verifiedChecks": [
+      "Both buildable plots, at (5, 4) and (5, 5), border connected road tiles immediately to their west.",
+      "The lighthouse at (3, 3) borders a connected road tile immediately to its east.",
+      "All 17 road and dock cells are reachable. The route array lists the validator’s breadth-first visit order as flat tile indices (y × 12 + x). It does not describe movement.",
+      "The validated district and its palette produce the same canvas draw calls as the committed preview."
+    ],
     "keyFindings": {
-      "visualRisks": [
-        {
-          "type": "Isolation",
-          "description": "The house at row 5, column 6 is isolated and not connected to any road or dock. This could make it difficult for players to access the house.",
-          "suggestion": "Connect the house to a road or dock."
-        },
-        {
-          "type": "Accessibility",
-          "description": "The lighthouse at row 1, column 2 is not easily accessible from the main roads. Players might find it hard to reach this landmark.",
-          "suggestion": "Place the lighthouse closer to a major road for better accessibility."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "type": "Dead End",
-          "description": "There are several dead ends in the district, such as at row 8, column 10 and row 9, column 12. Players might get stuck or confused.",
-          "suggestion": "Ensure there is a clear path from one part of the district to another."
-        },
-        {
-          "type": "Loop",
-          "description": "The route includes a loop starting at row 3, column 15 and ending at row 9, column 40. This could confuse players who might get stuck in an endless loop.",
-          "suggestion": "Remove or modify the loop to create a more linear path."
-        }
-      ]
+      "visualRisks": [],
+      "navigationRisks": []
     }
   }
 }
