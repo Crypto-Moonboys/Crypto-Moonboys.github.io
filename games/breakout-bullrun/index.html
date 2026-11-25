@@ -63,5 +63,6 @@ import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 function mountManualFallback(){import('/js/arcade/games/breakout-bullrun/bootstrap.js').then(function(mod){import('/js/arcade/core/game-shell.js').then(function(shell){import('/js/arcade/systems/cross-game-modifier-ui.js').then(function(ui){shell.mountGame({root:document.querySelector('.game-card'),bootstrap:mod.bootstrapBreakoutBullrun,requireCompetitiveGate:true,gameId:'bullrun-brick-smash'}).then(function(game){if(!game||game.gateBlocked)return;ui.mountModifierPanel();mountFactionHud();});});});});}
 autoMountGame().then(function(game){if(game&&game.gateBlocked)return;if(!game)mountManualFallback();else mountFactionHud();}).catch(function(){mountManualFallback();});
 </script>
+<script data-cfasync="false" src="/js/telegram-game-fullscreen.js?v=20261125-all-games"></script>
 </body>
 </html>

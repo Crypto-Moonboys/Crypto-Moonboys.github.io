@@ -89,6 +89,11 @@
         Number(window.screen.height) >= 600;
       if (isDesktopTelegram || isLargeWebTelegram) document.body.classList.add('is-desktop-telegram');
       if (isLargeWebTelegram) document.body.classList.add('is-large-web-telegram');
+      // Presentation hint only. Never used as identity or membership evidence.
+      try {
+        if (isLargeWebTelegram) window.sessionStorage.setItem('moonboys.telegram.largeWeb', '1');
+        else window.sessionStorage.removeItem('moonboys.telegram.largeWeb');
+      } catch (_) {}
       var viewportStable = false;
       var navigationEnabled = false;
       var navigationStarted = false;
