@@ -67,6 +67,30 @@ function _injectStyles() {
   document.head.appendChild(style);
 }
 
+// Explicit adapter support, not just broad genre tags. Include legacy routes.
+const SUPPORTED_BY_ROUTE = Object.freeze({
+  'meme-swarm-3008': ['score_surge','shielded_start','slow_chaos','boss_hunter','magnet_luck','recovery_pulse','golden_chance'],
+  'invaders-3008': ['score_surge','shielded_start','slow_chaos','boss_hunter','magnet_luck','recovery_pulse','golden_chance'],
+  'chain-maze': ['score_surge','slow_chaos','golden_chance'],
+  'pac-chain': ['score_surge','slow_chaos','golden_chance'],
+  'forkfield': ['score_surge','shielded_start','slow_chaos','golden_chance'],
+  'asteroid-fork': ['score_surge','shielded_start','slow_chaos','golden_chance'],
+  'bullrun-brick-smash': ['score_surge','shielded_start','slow_chaos','boss_hunter','magnet_luck','recovery_pulse'],
+  'breakout-bullrun': ['score_surge','shielded_start','slow_chaos','boss_hunter','magnet_luck','recovery_pulse'],
+  'block-topia-dropzone': ['score_surge','shielded_start','slow_chaos','golden_chance'],
+  'tetris-block-topia': ['score_surge','shielded_start','slow_chaos','golden_chance'],
+  'snake-run': ['score_surge','shielded_start','slow_chaos'],
+  'block-topia-quest-maze': [],
+  'kaiju-sticker-battle': [],
+  'nbg-london': [],
+  'nbg-london-run': [],
+});
+
+export function supportedModifierIds(pathname) {
+  const match = /^\/games\/([^/]+)(?:\/index\.html|\/)?$/.exec(String(pathname || ''));
+  return (match && SUPPORTED_BY_ROUTE[match[1]] || []).slice();
+}
+
 // ── Panel mount ──────────────────────────────────────────────────────────────
 
 /**
@@ -98,11 +122,14 @@ export function mountModifierPanel(container, options = {}) {
   }
 
   let _collapsed = false;
-  const readOnly = options.readOnly === true;
+  const supported = new Set(supportedModifierIds(window.location.pathname));
+  const readOnly = options.readOnly === true || supported.size === 0;
+  const isLondon = /^\/games\/nbg-london(?:-run)?(?:\/|$)/.test(window.location.pathname);
 
   function render() {
-    const unlocked = getUnlockedModifiers();
-    const activeId = readOnly ? null : getActiveModifier();
+    const unlocked = readOnly ? [] : getUnlockedModifiers();
+    const savedId = readOnly ? null : getActiveModifier();
+    const activeId = savedId && supported.has(savedId) && unlocked.includes(savedId) ? savedId : null;
     const activeDef = activeId ? getModifierDef(activeId) : null;
 
     var html = '';
@@ -118,7 +145,7 @@ export function mountModifierPanel(container, options = {}) {
 
     // Active modifier banner
     if (readOnly) {
-      html += '<div class="cm-mod-none" role="status">Arcade modifier cards are view-only in NBG London. Ranked runs do not apply modifier effects.</div>';
+      html += '<div class="cm-mod-none" role="status">' + (isLondon ? 'Arcade modifier cards are view-only in NBG London. Ranked runs do not apply modifier effects.' : 'Modifier cards are view-only in this game. Gameplay effects are not supported here.') + '</div>';
     } else if (activeDef) {
       var aColor = RARITY_COLORS[activeDef.rarity] || '#fff';
       html += '<div class="cm-mod-active-banner">';
@@ -137,15 +164,17 @@ export function mountModifierPanel(container, options = {}) {
     for (var i = 0; i < MODIFIER_DEFS.length; i++) {
       var mod = MODIFIER_DEFS[i];
       var isUnlocked = unlocked.indexOf(mod.id) !== -1;
+      var isSupported = !readOnly && supported.has(mod.id);
       var isSelected = mod.id === activeId;
       var color = RARITY_COLORS[mod.rarity] || '#fff';
       html += '<button class="cm-mod-item' + (isSelected ? ' cm-mod-selected' : '') + '"';
       html += ' data-mod-id="' + _esc(mod.id) + '"';
       html += ' title="' + _esc(mod.description) + '"';
-      if (readOnly || !isUnlocked) html += ' disabled';
+      if (!isSupported || !isUnlocked) html += ' disabled';
       html += '>';
       html += '<span class="cm-mod-item-name" style="color:' + color + '">' + _esc(mod.label) + '</span>';
       html += '<span class="cm-mod-item-rarity" style="color:' + color + '">' + _esc(mod.rarity) + '</span>';
+      if (!isSupported || !isUnlocked) html += '<span class="cm-mod-item-rarity">' + (!isSupported ? 'Not supported here' : 'Locked') + '</span>';
       html += '</button>';
     }
     html += '</div>';
@@ -179,6 +208,7 @@ export function mountModifierPanel(container, options = {}) {
     modBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.dataset.modId;
+        if (readOnly || !supported.has(id) || !getUnlockedModifiers().includes(id)) return;
         if (id === activeId) {
           clearActiveModifier();
         } else {

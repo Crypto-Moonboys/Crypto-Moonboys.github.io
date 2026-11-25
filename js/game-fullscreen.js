@@ -296,6 +296,7 @@
   var _goExit    = null;
   var cachedFactionPanel = null;
   var modifierPanelHost = null;
+  var modifierPanelTimer = null;
 
   function sanitizeOverlayExitHref(href) {
     var value = String(href || '').trim();
@@ -481,6 +482,8 @@
     if (!isOpen) return;
     var pageModPanel = document.getElementById('cm-modifier-panel');
     if (!pageModPanel || !modifierPanelHost) return;
+    clearTimeout(modifierPanelTimer);
+    modifierPanelTimer = null;
     if (pageModPanel.parentNode !== modifierPanelHost) {
       if (!modPanelOrigParent && pageModPanel.parentNode) {
         modPanelOrigParent = pageModPanel.parentNode;
@@ -1012,6 +1015,12 @@
     modifierPanelHost.id = 'overlay-modifier-panel-host';
     modifierPanelHost.appendChild(el('div', 'panel-note', 'Loading modifier cards\u2026'));
     sideModifiers.appendChild(modifierPanelHost);
+    clearTimeout(modifierPanelTimer);
+    var host = modifierPanelHost;
+    modifierPanelTimer = setTimeout(function () {
+      if (modifierPanelHost !== host || document.getElementById('cm-modifier-panel')) return;
+      host.textContent = 'Modifier cards unavailable. Return to the game or refresh to retry.';
+    }, 8000);
     moveModifierPanelIntoOverlayDrawer();
   }
 
@@ -1528,6 +1537,8 @@
     cachedPageModPanel  = null;
     modPanelOrigParent  = null;
     modPanelOrigNextSib = null;
+    clearTimeout(modifierPanelTimer);
+    modifierPanelTimer = null;
     modifierPanelHost   = null;
 
     overlay.classList.remove('active');
