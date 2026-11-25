@@ -133,7 +133,7 @@
   // We render only the bottom 25% of source, sitting just above the street.
   // Trains running on the bridge — always animate independently of camera
   var TRAIN_SPEED = 180;         // pixels per second (world units)
-  var TRAIN_HEIGHT = 36;         // rendered height on screen
+  var TRAIN_HEIGHT = 54;         // rendered height on screen
   var TRAIN_ASPECT = 3.5;        // width:height ratio of the car images
   var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
