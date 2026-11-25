@@ -108,7 +108,7 @@
   // PNGs are 1632x408; content starts at row 140 (34%), so crop top 34%.
   var BEHIND_PARALLAX = 0.10;
   var BEHIND_TILE_WIDTH = 640;        // 4:1 ratio preserved
-  var BEHIND_SRC_CROP_START = 0.20;   // skip transparent top 20%
+  var BEHIND_SRC_CROP_START = 0.05;   // skip transparent top 5% only
   var BEHIND_HEIGHT = 110;            // rendered height for the silhouette strip
   var BEHIND_Y = 130 - BEHIND_HEIGHT; // float high — furthest back sits highest
 
@@ -116,7 +116,7 @@
   // PNGs are 1632x408; content starts at row 115 (28%), crop top 28%.
   var MID_PARALLAX = 0.16;
   var MID_TILE_WIDTH = 640;
-  var MID_SRC_CROP_START = 0.20;
+  var MID_SRC_CROP_START = 0.05;
   var MID_HEIGHT = 120;
   var MID_Y = 155 - MID_HEIGHT;      // mid sits higher than front, lower than behind
 
@@ -124,9 +124,9 @@
   // Building PNGs are 1632x408 but content only occupies bottom 55% (rows 183-407).
   // We crop the source and anchor the rendered buildings so their feet sit at y=200,
   // matching the old river-level baseline. SKYLINE_WIDTH preserves the 4:1 source ratio.
-  var SKYLINE_SRC_CROP_START = 0.30;  // skip transparent top 30% — show full rooftops
+  var SKYLINE_SRC_CROP_START = 0.10;  // skip transparent top 10% — show full rooftops
   var SKYLINE_WIDTH = 640;            // rendered width per panel (4:1 ratio)
-  var SKYLINE_HEIGHT = 140;           // rendered height: show full buildings top to feet
+  var SKYLINE_HEIGHT = 160;           // rendered height: show full buildings top to feet
   var SKYLINE_Y = 200 - SKYLINE_HEIGHT; // anchor building feet at y=200 → Y=60
   // Bridge layer — tiled in front of skyline, parallax slightly faster.
   // Bridge PNG is 1632x408; actual bridge structure starts at ~75% down (row 305).
