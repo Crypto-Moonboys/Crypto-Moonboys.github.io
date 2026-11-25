@@ -138,7 +138,7 @@
   var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
   var TRAIN_GAP = 2;             // px gap between joined cars
-  var TRAIN_LOOP = (TRAIN_WIDTH + TRAIN_GAP) * 6; // total loop length (6 cars joined)
+  var TRAIN_CLEAR_MS = 20000;   // empty bridge between three-car trains
 
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
@@ -1769,44 +1769,34 @@
     }
 
     function drawTrains(time) {
-      // Order front-to-back: NBG COIN (leads) → WUF (middle) → ALCOR (tail)
-      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor, images.trainSwaxp, images.trainPxjking, images.trainWpixal];
-      if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
-      // Don't show trains for first 10 seconds
+      // Front-to-back, travelling right to left.
+      var trains = [
+        [images.trainSwaxp, images.trainPxjking, images.trainWpixal],
+        [images.trainNbg, images.trainWuf, images.trainAlcor]
+      ];
       if (time < 10000) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
       var carW = TRAIN_WIDTH + TRAIN_GAP;
-      var totalW = carW * 6;
+      var trainW = carW * 2 + TRAIN_WIDTH;
+      var travelMs = (WIDTH + trainW) / TRAIN_SPEED * 1000;
+      var intervalMs = travelMs + TRAIN_CLEAR_MS;
+      var elapsed = time - 10000;
+      var phase = elapsed % intervalMs;
+      if (phase >= travelMs) return;
 
-      // Time-based offset — always moves regardless of player state.
-      // Count from the 10s reveal so cars roll in from the right edge.
-      var t = ((time - 10000) / 1000) * TRAIN_SPEED;
-      // Offset within one loop, never jumps — tile two sets to cover screen
-      var offset = t % totalW;
-
+      var trainImages = trains[Math.floor(elapsed / intervalMs) % trains.length];
+      var frontX = WIDTH - phase / 1000 * TRAIN_SPEED;
       var sparks = [];
-
-      // Draw two full sets so the wrap is always off-screen
-      for (var set = 0; set < 2; set += 1) {
-        // Front of this set (ALCOR car) starts at right edge minus offset
-        var setX = WIDTH + totalW - offset - set * totalW;
-
-        for (var i = 0; i < 6; i += 1) {
-          var img = trainImages[i];
-          if (!img) continue;
-
-          var screenX = Math.round(setX - i * carW);
-
-          if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
-
-          ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
-
-          // Wheel spark positions — bottom of each car
-          var wheelY = trainY + TRAIN_HEIGHT - 2;
-          sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
-          sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
-        }
+      for (var i = 0; i < trainImages.length; i += 1) {
+        var img = trainImages[i];
+        if (!img) continue;
+        var screenX = Math.round(frontX + i * carW);
+        if (screenX + TRAIN_WIDTH <= 0 || screenX >= WIDTH) continue;
+        ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+        var wheelY = trainY + TRAIN_HEIGHT - 2;
+        sparks.push({ x: screenX + TRAIN_WIDTH * 0.15, y: wheelY });
+        sparks.push({ x: screenX + TRAIN_WIDTH * 0.85, y: wheelY });
       }
 
       // Draw sparks
