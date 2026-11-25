@@ -450,6 +450,13 @@
       if (manifest.trains.trainJust4uldn) assets.trainJust4uldn = resolveAssetPath(manifest.trains.trainJust4uldn);
       if (manifest.trains.trainTlm) assets.trainTlm = resolveAssetPath(manifest.trains.trainTlm);
       if (manifest.trains.trainBoneidolink) assets.trainBoneidolink = resolveAssetPath(manifest.trains.trainBoneidolink);
+      if (manifest.trains.trainFordacity) assets.trainFordacity = resolveAssetPath(manifest.trains.trainFordacity);
+      if (manifest.trains.trainPunk) assets.trainPunk = resolveAssetPath(manifest.trains.trainPunk);
+      if (manifest.trains.trainWaxgod) assets.trainWaxgod = resolveAssetPath(manifest.trains.trainWaxgod);
+      if (manifest.trains.trainKek) assets.trainKek = resolveAssetPath(manifest.trains.trainKek);
+      if (manifest.trains.trainTrash) assets.trainTrash = resolveAssetPath(manifest.trains.trainTrash);
+      if (manifest.trains.trainBuzz) assets.trainBuzz = resolveAssetPath(manifest.trains.trainBuzz);
+      if (manifest.trains.trainBoneidolink2) assets.trainBoneidolink2 = resolveAssetPath(manifest.trains.trainBoneidolink2);
     }
 
     if (manifest.enemies) {
@@ -1799,6 +1806,8 @@
       //   Set 5 (#CRONX / JACKS BACK / ATOMICHUB / RICKY-C / AFLIE BLAZE /
       //          SARAH PFLY / JODIE ZOOM / SAVANNAH) — 30s behind set 4
       //   Set 6 (JUST 4U LDN / $TLM / BONE IDOL INK) — 16s behind set 5
+      //   Set 7 (FOR DA CITY / $PUNK / $WAXGOD / $KEK / $TRASH / $BUZZ /
+      //          BONE IDOL INK) — 18s behind set 6
       var convoy = [
         images.trainNbg, images.trainWuf, images.trainAlcor,
         images.trainSwaxp, images.trainPxjking, images.trainWpixal,
@@ -1809,7 +1818,10 @@
         images.trainCronx, images.trainJacksback, images.trainAtomichub,
         images.trainRickyc, images.trainAflieblaze, images.trainSarahpfly,
         images.trainJodiezoom, images.trainSavannah,
-        images.trainJust4uldn, images.trainTlm, images.trainBoneidolink
+        images.trainJust4uldn, images.trainTlm, images.trainBoneidolink,
+        images.trainFordacity, images.trainPunk, images.trainWaxgod,
+        images.trainKek, images.trainTrash, images.trainBuzz,
+        images.trainBoneidolink2
       ];
       if (!convoy[0] && !convoy[1] && !convoy[2]) return;
       // Don't show trains for first 10 seconds
@@ -1823,6 +1835,7 @@
       var gap4 = gap3 + 15 * TRAIN_SPEED; // set 4 starts 15s after set 3 (7 joined cars)
       var gap5 = gap4 + 30 * TRAIN_SPEED; // set 5 starts 30s after set 4 (8 joined cars)
       var gap6 = gap5 + 16 * TRAIN_SPEED; // set 6 starts 16s after set 5 (3 joined cars)
+      var gap7 = gap6 + 18 * TRAIN_SPEED; // set 7 starts 18s after set 6 (7 joined cars)
 
       // Track offset (px) of each car's left edge from the loop origin.
       var offsets = [
@@ -1833,10 +1846,12 @@
         gap4 + 4 * carW, gap4 + 5 * carW, gap4 + 6 * carW,
         gap5, gap5 + carW, gap5 + 2 * carW, gap5 + 3 * carW,
         gap5 + 4 * carW, gap5 + 5 * carW, gap5 + 6 * carW, gap5 + 7 * carW,
-        gap6, gap6 + carW, gap6 + 2 * carW
+        gap6, gap6 + carW, gap6 + 2 * carW,
+        gap7, gap7 + carW, gap7 + 2 * carW, gap7 + 3 * carW,
+        gap7 + 4 * carW, gap7 + 5 * carW, gap7 + 6 * carW
       ];
       // Full loop length: last car + a trailing 20s gap before set 1 repeats.
-      var loopLen = gap6 + 2 * carW + carW + (20 * TRAIN_SPEED);
+      var loopLen = gap7 + 6 * carW + carW + (20 * TRAIN_SPEED);
 
       // Time-based scroll — always moves regardless of player state.
       // Count from the 10s reveal so cars roll in from the right edge.
