@@ -3667,6 +3667,16 @@ assert.ok(guestRecords.account.includes('Guest') && guestRecords.hud === 'GUEST'
 // Actual fullscreen UX regression: records must be inside the overlay and
 // reachable via keyboard/pointer, not merely present behind an opaque modal.
 await page.waitForSelector('#game-overlay.active', { state: 'visible', timeout: 5000 });
+// London exposes the shared modifier catalogue without claiming ranked effects.
+await page.locator('#overlay-btn-modifiers').click();
+const londonModifierPanel = page.locator('#overlay-modifier-panel-host #cm-modifier-panel');
+await londonModifierPanel.waitFor({ state: 'visible', timeout: 10000 });
+assert.equal(await londonModifierPanel.locator('.cm-mod-item').count(), 8,
+  'London modifier catalogue must replace the loading placeholder');
+assert.equal(await londonModifierPanel.locator('.cm-mod-item:disabled').count(), 8,
+  'unsupported ranked London modifier effects must remain disabled');
+assert.match(await londonModifierPanel.textContent(), /view-only in NBG London/);
+await page.locator('#overlay-btn-modifiers').click();
 const scoreToggle = page.locator('#nbg-open-records');
 await scoreToggle.waitFor({ state: 'visible', timeout: 5000 });
 assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
