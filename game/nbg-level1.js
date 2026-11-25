@@ -518,6 +518,8 @@
   }
 
   function createRuntime(canvas, hud) {
+    // Only the Getting Up launch page opts out of competitive integration.
+    var unranked = !!(canvas.dataset && canvas.dataset.nbgMode === 'unranked');
     // Backing resolution is not world resolution: 960x540 output covers the
     // exact same 480x270 logical scene at exactly the same on-screen size.
     // Avoid CSS/nearest-neighbour enlargement of the former 480px bitmap.
@@ -573,11 +575,13 @@
     // Browser bests are session-only; authenticated all-time records live in D1.
     // Clear old guest/device-local bests from earlier game versions.
     var bestXp = 0;
-    try {
-      window.localStorage.removeItem('nbg-london-best-run-ms');
-      window.localStorage.removeItem('nbg-london-best-xp');
-    } catch (error) {
-      // Storage may be blocked; no local competitive record is retained.
+    if (!unranked) {
+      try {
+        window.localStorage.removeItem('nbg-london-best-run-ms');
+        window.localStorage.removeItem('nbg-london-best-xp');
+      } catch (error) {
+        // Storage may be blocked; no local competitive record is retained.
+      }
     }
     var sprayTimer = 0;
     var speedBoostUntil = 0;
@@ -1593,7 +1597,7 @@
         }
         window.dispatchEvent(new CustomEvent('nbg-level-complete', {
           detail: {
-            level: 'NBG London Graffiti Run - Level 1',
+            level: unranked ? 'Getting Up - Level 1' : 'NBG London Graffiti Run - Level 1',
             xp: xp,
             coins: coins.filter(function (coin) { return coin.taken; }).length,
             secretCoins: secretCoins.filter(function (coin) { return coin.taken; }).length,
@@ -1601,9 +1605,9 @@
             speedrunBonusXp: speedrunBonusXp,
             bestTimeMs: Math.round(bestTimeMs),
             bestXp: bestXp,
-            leaderboardReady: true,
+            leaderboardReady: !unranked,
             replayInterrupted: replayInterrupted,
-            replay: encodedRunReplay()
+            replay: unranked ? null : encodedRunReplay()
           }
         }));
       }
@@ -2587,7 +2591,7 @@
         if (speedBoostUntil > 0 && previousRunElapsedMs < speedBoostUntil && runElapsedMs >= speedBoostUntil) {
           dispatchAudioCue('speed_boost_end');
         }
-        recordReplayTick(frameElapsedMs, dt);
+        if (!unranked) recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
         if (gameOver) {
           cameraY = 0; // Terminal frame is always normally framed.
@@ -2696,7 +2700,7 @@
     }
 
     function resetRun() {
-      if (complete && window.NBGLondonFinishPending?.()) return window.NBGLevel1State;
+      if (!unranked && complete && window.NBGLondonFinishPending?.()) return window.NBGLevel1State;
       runSequence += 1;
       pendingRunStartPromise = null;
       pendingRunOwner = null;
@@ -2905,6 +2909,8 @@
         cancelQueuedStartIfOwnerChanged();
         if (pendingRunStartPromise) return pendingRunStartPromise;
       }
+      // Getting Up has no ranked controller, access check, or run-session creation.
+      if (unranked) return startSimulation();
       // Production NBG is a Telegram-group-gated game. The page/art can load
       // publicly, but physics must fail closed until the access controller has
       // verified both Telegram login and current group membership server-side.

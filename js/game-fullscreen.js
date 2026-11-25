@@ -17,6 +17,7 @@
 
   var startBtn = document.getElementById('startBtn');
   var startDataset = startBtn && startBtn.dataset;
+  var gettingUp = !!(startDataset && startDataset.overlayGameMode === 'getting-up');
   var gameCard = document.querySelector('.game-card');
   var autoStartOnOpen = startDataset && startDataset.overlayAutostart === 'true';
   var fullscreenOnlyMode = startDataset && startDataset.overlayFullscreenOnly === 'true';
@@ -87,6 +88,9 @@
   };
 
   function detectMeta() {
+    if (gettingUp && document.getElementById('game')) {
+      return Object.assign({}, GAME_META.game, { label: 'Getting Up' });
+    }
     var ids = Object.keys(GAME_META);
     for (var i = 0; i < ids.length; i++) {
       if (ids[i] === 'game' && !/\/games\/nbg-london\//.test(window.location.pathname)) continue;
@@ -183,7 +187,7 @@
   ctrlBar.appendChild(fullscreenPrompt);
   ctrlBar.appendChild(panelStatus);
   ctrlBar.appendChild(btnInfo);
-  ctrlBar.appendChild(btnData);
+  if (!gettingUp) ctrlBar.appendChild(btnData);
   ctrlBar.appendChild(btnRadio);
   ctrlBar.appendChild(btnMute);
   ctrlBar.appendChild(btnModifiers);
@@ -433,6 +437,7 @@
     modifiers: { button: btnModifiers, panel: sideModifiers, label: 'Arcade Modifiers' },
     faction: { button: btnFaction, panel: sideFaction, label: 'Faction / Clan' }
   };
+  if (gettingUp) delete OVERLAY_PANEL_CONFIG.data;
   Object.keys(OVERLAY_PANEL_CONFIG).forEach(function (panelKey) {
     var config = OVERLAY_PANEL_CONFIG[panelKey];
     config.button.setAttribute('aria-controls', config.panel.id);
@@ -860,7 +865,7 @@
     actions.appendChild(jump);
     // Only NBG London implements render-only looking below; other runners
     // preserve their original touch layout and controls.
-    if (window.location.pathname === '/games/nbg-london/') {
+    if (gettingUp || window.location.pathname === '/games/nbg-london/') {
       bindHold(look, 'ArrowDown');
       actions.appendChild(look);
     }
@@ -1292,7 +1297,7 @@
     }
     // NBG London remains playable in the overlay even when browsers deny
     // native fullscreen. Never tell its players gameplay is blocked.
-    var nbgWindowed = window.location && window.location.pathname === '/games/nbg-london/';
+    var nbgWindowed = gettingUp || (window.location && window.location.pathname === '/games/nbg-london/');
     fullscreenPromptText.textContent = nbgWindowed
       ? (mode === 'blocked'
         ? 'Browser fullscreen unavailable. You can keep playing here, or select Enter Fullscreen to retry.'
@@ -1310,7 +1315,7 @@
     }
     overlay.requestFullscreen()
       .then(function () {
-        if (/\/games\/nbg-london\//.test(window.location.pathname) &&
+        if ((gettingUp || /\/games\/nbg-london\//.test(window.location.pathname)) &&
             screen.orientation && typeof screen.orientation.lock === 'function') {
           screen.orientation.lock('landscape').catch(function () {});
         }
@@ -1393,7 +1398,7 @@
 
     // Build side panels and touch controls
     buildLeftPanel(meta);
-    buildRightPanel();
+    if (!gettingUp) buildRightPanel();
     buildModifiersPanel();
     buildFactionPanel();
     moveModifierPanelIntoOverlayDrawer();
@@ -1437,8 +1442,10 @@
     scheduleOverlayResizeSync('open');
 
     // Start live score updater.
-    scoreInterval = setInterval(updateScores, 500);
-    updateScores();
+    if (!gettingUp) {
+      scoreInterval = setInterval(updateScores, 500);
+      updateScores();
+    }
 
     // Reset pause tracking when opening.
     _isPaused = false;
@@ -1730,13 +1737,15 @@
     window.__arcadeMuteSyncBound = true;
   }
   syncMuteBtn();
-  ensureInlineProjectionHud();
-  ensureInlineSyncNote();
-  // Update inline sync notes immediately using the authoritative linked/sync state.
-  // This must run before bindSubmissionStatus() so the notes reflect the correct
-  // state even if bus registration is deferred to DOMContentLoaded.
-  updateSyncSurfaceState(getLinkedSyncState(), {});
-  bindSubmissionStatus();
+  if (!gettingUp) {
+    ensureInlineProjectionHud();
+    ensureInlineSyncNote();
+    // Update inline sync notes immediately using the authoritative linked/sync state.
+    // This must run before bindSubmissionStatus() so the notes reflect the correct
+    // state even if bus registration is deferred to DOMContentLoaded.
+    updateSyncSurfaceState(getLinkedSyncState(), {});
+    bindSubmissionStatus();
+  }
 
   // Esc key closes the overlay, or — when the overlay is not open — dismisses the
   // topmost visible micro notification so players can clear blocking notices.

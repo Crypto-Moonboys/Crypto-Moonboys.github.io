@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Up | Crypto Moonboys Arcade</title>
+  <meta name="description" content="Run, tag, collect XP and clear the London wall in Getting Up.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://cryptomoonboys.com/games/getting-up/">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css?v=20260903-runner-upper-buttons">
+  <link rel="stylesheet" href="/game/game.css">
+  <style>
+    body.page-standalone-tool {
+      display: block;
+      place-items: initial;
+    }
+
+    .game-card {
+      position: relative;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--color-border,#333);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .game-card .nbg-shell {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    .game-card .nbg-game-stage {
+      max-height: calc(100vh - 220px);
+      min-height: 300px;
+    }
+
+    #game-overlay .game-card .nbg-game-stage {
+      max-height: none;
+      min-height: 0;
+    }
+
+  </style>
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="page-standalone-tool">
+<header id="site-header" role="banner">
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Getting Up</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki..." aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">Search</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav>
+</header>
+<div id="layout"><div id="main-wrapper">
+<main id="content" role="main">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep" aria-hidden="true">›</span><a href="/wiki/crypto-moonboys.html">Crypto Moonboys lore hub</a><span class="sep">&gt;</span><a href="/games/">Arcade</a><span class="sep">&gt;</span><span aria-current="page">Getting Up</span></nav>
+  <div class="category-header"><span class="cat-big-icon" aria-hidden="true">NBG</span><div><h1 class="page-title">Getting Up</h1><p style="color:var(--color-text-muted)">Run, tag, collect XP, and clear the London wall before the bots box you in. Unranked play; in-game XP is session-only.</p></div></div>
+  <div class="page-title-line" aria-hidden="true"></div>
+  <div class="game-card">
+    <div class="nbg-shell" role="region" aria-label="Getting Up Level 1">
+      <button id="startBtn" type="button" hidden data-overlay-fullscreen-only="true" data-overlay-hide-start="true" data-overlay-game-mode="getting-up" aria-hidden="true">Open fullscreen</button>
+
+      <section id="game-stage" class="nbg-game-stage is-active" aria-label="Playable Level 1">
+        <canvas id="game" data-nbg-mode="unranked" width="960" height="540" aria-label="Getting Up canvas"></canvas>
+        <div class="hud-strip" aria-hidden="false">
+          <span id="hud-xp">XP 0</span>
+          <span id="hud-coins">COINS 0/12</span>
+          <span id="hud-health">HEALTH 3</span>
+          <span id="hud-state">READY</span>
+          <span id="getting-up-mode">UNRANKED</span>
+        </div>
+        <div class="touch-controls" role="group" aria-label="Touch controls">
+          <div class="touch-controls__move">
+            <button class="touch-button" type="button" data-control="left" aria-label="Move left">&lt;</button>
+            <button class="touch-button" type="button" data-control="right" aria-label="Move right">&gt;</button>
+          </div>
+          <div class="touch-controls__action">
+            <button class="touch-button touch-button--small" type="button" data-control="spray" aria-label="Spray">S</button>
+            <button class="touch-button" type="button" data-control="jump" aria-label="Jump">JUMP</button>
+            <button class="touch-button touch-button--small" type="button" data-control="look" aria-label="Crouch and look below">↓</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki</p></div></footer>
+</div></div>
+<button id="back-to-top" aria-label="Back to top">Up</button>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js?v=getting-up-20261125"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
+<script src="/game/nbg-audio.js?v=two-audio-controls-20261125"></script>
+<script src="/game/nbg-level1.js?v=getting-up-20261125"></script>
+<script type="module">
+const modifierHost = document.getElementById('content');
+let modifierTimeout;
+function showModifierUnavailable() {
+  if (!modifierHost || document.getElementById('cm-modifier-panel')) return;
+  const panel = document.createElement('div');
+  panel.id = 'cm-modifier-panel';
+  panel.setAttribute('role', 'status');
+  panel.textContent = 'Modifier cards unavailable. Refresh the page to retry. Getting Up runs do not apply modifiers.';
+  modifierHost.appendChild(panel);
+}
+modifierTimeout = setTimeout(showModifierUnavailable, 8000);
+import('/js/arcade/systems/cross-game-modifier-ui.js?v=nbg-modifier-drawer-20261125')
+  .then(function (ui) {
+    clearTimeout(modifierTimeout);
+    if (!document.getElementById('cm-modifier-panel')) {
+      ui.mountModifierPanel(modifierHost, { readOnly: true });
+    }
+  })
+  .catch(function () {
+    clearTimeout(modifierTimeout);
+    showModifierUnavailable();
+  });
+</script>
+<script data-cfasync="false" src="/js/telegram-game-fullscreen.js?v=20261125-all-games"></script>
+</body>
+</html>
