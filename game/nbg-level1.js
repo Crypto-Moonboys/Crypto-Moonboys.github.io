@@ -138,7 +138,7 @@
   var TRAIN_WIDTH = Math.round(TRAIN_HEIGHT * TRAIN_ASPECT);
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
   var TRAIN_GAP = 2;             // px gap between joined cars
-  var TRAIN_LOOP = (TRAIN_WIDTH + TRAIN_GAP) * 3; // total loop length (3 cars joined)
+  var TRAIN_LOOP = (TRAIN_WIDTH + TRAIN_GAP) * 6; // total loop length (6 cars joined)
 
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
@@ -425,6 +425,9 @@
       if (manifest.trains.trainWuf) assets.trainWuf = resolveAssetPath(manifest.trains.trainWuf);
       if (manifest.trains.trainAlcor) assets.trainAlcor = resolveAssetPath(manifest.trains.trainAlcor);
       if (manifest.trains.trainNbg) assets.trainNbg = resolveAssetPath(manifest.trains.trainNbg);
+      if (manifest.trains.trainSwaxp) assets.trainSwaxp = resolveAssetPath(manifest.trains.trainSwaxp);
+      if (manifest.trains.trainWpixal) assets.trainWpixal = resolveAssetPath(manifest.trains.trainWpixal);
+      if (manifest.trains.trainPxjking) assets.trainPxjking = resolveAssetPath(manifest.trains.trainPxjking);
     }
 
     if (manifest.enemies) {
@@ -1766,12 +1769,12 @@
 
     function drawTrains(time) {
       // Order front-to-back: NBG COIN (leads) → WUF (middle) → ALCOR (tail)
-      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor];
+      var trainImages = [images.trainNbg, images.trainWuf, images.trainAlcor, images.trainSwaxp, images.trainWpixal, images.trainPxjking];
       if (!trainImages[0] && !trainImages[1] && !trainImages[2]) return;
 
       var trainY = BRIDGE_Y - TRAIN_HEIGHT + 10;
       var carW = TRAIN_WIDTH + TRAIN_GAP;
-      var totalW = carW * 3;
+      var totalW = carW * 6;
 
       // Time-based offset — always moves regardless of player state
       var t = (time / 1000) * TRAIN_SPEED;
