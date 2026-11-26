@@ -1,27 +1,31 @@
 {
   "issue": 1930,
-  "round": 115,
+  "round": 116,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Water and road colors are very similar, which may cause confusion.",
-          "details": "The water color (#143950) is almost indistinguishable from the road color (#667b8a). This could lead to players missing important elements like docks or houses."
+          "description": "Waterfront area is not visible",
+          "riskLevel": "High",
+          "recommendation": "Increase the visibility of the waterfront by adding more 'water' tiles or adjusting the layout."
         },
         {
-          "description": "Some areas lack visual cues, making navigation difficult.",
-          "details": "The central area of the district (rows 5-10) has no distinguishing features, which might confuse players trying to follow routes."
+          "description": "House and dock placement may be confusing",
+          "riskLevel": "Medium",
+          "recommendation": "Ensure that houses and docks are clearly distinguishable from other elements on the map. Consider using different colors for better differentiation."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route path is not clearly defined in the grid.",
-          "details": "The route provided [15,27,16,28,17,40,52,41,64,42,76,54,43,88,77,55,100,89,101,90,113,91,114,103,115,104,105,93,117,106,94] does not follow a clear path and may lead to dead ends or confusion."
+          "description": "Route starts abruptly near the edge of the map",
+          "riskLevel": "Medium",
+          "recommendation": "Ensure that the route does not start or end too close to the edges, as this can make navigation difficult for players."
         },
         {
-          "description": "Some cells are not navigable.",
-          "details": "Cells with 'h' (water) and '.' (ground) do not allow movement, which could disrupt the player's progress if they are part of the intended route."
+          "description": "Long stretches without landmarks",
+          "riskLevel": "Low",
+          "recommendation": "Add more landmarks or visual cues along the route to help guide players through the district."
         }
       ]
     }
