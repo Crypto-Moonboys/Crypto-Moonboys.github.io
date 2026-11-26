@@ -389,7 +389,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-cronx-webp';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-third-spin-coins-v2';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -1217,16 +1217,16 @@
         if (!gameOver) resetToCheckpoint();
       }
 
-      if (player.invuln > 0) {
-        backflipActive = false;
-        thirdSpinActive = false;
-        setPlayerAnimation('hurt');
-      } else if (thirdSpinActive) {
+      if (thirdSpinActive) {
         setPlayerAnimation(thirdSpinPhase === 0 ? 'thirdSpinBurst1' : 'thirdSpinBurst2');
       } else if (sprayTimer > 0) {
-        // Attacks keep their existing hold-frame behavior outside the third-spin burst.
+        // Preserve ranked replay parity: spray remains above hurt outside the
+        // Volcanic-only sequence, matching the Worker visual-margin rules.
         backflipActive = false;
         setPlayerAnimation('spray');
+      } else if (player.invuln > 0) {
+        backflipActive = false;
+        setPlayerAnimation('hurt');
       } else if (backflipActive && !player.grounded) {
         setPlayerAnimation('backflip');
       } else if (!player.grounded) {
