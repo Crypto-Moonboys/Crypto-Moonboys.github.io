@@ -389,7 +389,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-volcanic-death-grounding-v3';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-lower-ground-death-v4';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
