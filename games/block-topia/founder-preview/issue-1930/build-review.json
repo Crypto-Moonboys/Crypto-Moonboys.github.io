@@ -1,51 +1,19 @@
 {
   "issue": 1930,
-  "round": 97,
+  "round": 98,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "type": "Obstruction",
-          "description": "The route path from position 15 to 27 is obstructed by water, which could be confusing for players navigating the district.",
-          "affectedPath": [
-            15,
-            27
-          ]
-        },
-        {
-          "type": "Isolation",
-          "description": "There are isolated areas of dock and house that may not be easily accessible or visible from certain viewpoints in the district.",
-          "affectedAreas": [
-            "dock",
-            "house"
-          ]
-        }
-      ],
-      "navigationRisks": [
-        {
-          "type": "Obstacle",
-          "description": "The route path includes a road (indicated by 'r') that may not be navigable, potentially causing player frustration or confusion.",
-          "affectedPath": [
-            16,
-            28
-          ]
-        },
-        {
-          "type": "Loop",
-          "description": "There appears to be a loop in the route from position 90 back to 93, which could lead to players getting stuck or lost if they follow this path repeatedly.",
-          "affectedPath": [
-            90,
-            91,
-            103,
-            104,
-            115,
-            105,
-            113,
-            93
-          ]
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Navigation Risk",
+        "description": "The route [15,27,16,28,17,40,52,41,64,53,42,76,88,75,77,100,87,89,90,91,103,115,104,114,105,113,93,94] contains a potential navigation issue. The route crosses over itself at positions 16 and 17, which could confuse players.",
+        "suggestion": "Review the route to ensure it does not cross over itself or create loops that might be confusing."
+      },
+      {
+        "type": "Visual Risk",
+        "description": "The lighthouse is represented by 'l' characters in the district data. However, there are no defined colors for 'l' in the provided color scheme. This could lead to visual confusion.",
+        "suggestion": "Add a specific color for the lighthouse ('l') in the color scheme."
+      }
+    ]
   }
 }
