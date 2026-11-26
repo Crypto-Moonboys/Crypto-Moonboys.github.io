@@ -445,6 +445,18 @@
       "columns": 3,
       "frameMs": 65,
       "preserveSourceAlpha": true
+    },
+    "airDeathFall": {
+      "spriteSheet": "/games/getting-up/Volcanic-PUNK-airborne-fatal-fall-6-frame.webp",
+      "sourceFrameWidth": 512,
+      "sourceFrameHeight": 512,
+      "renderWidth": 104,
+      "renderHeight": 96,
+      "renderOffsetY": 8,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 95,
+      "preserveSourceAlpha": true
     }
   }
 }
