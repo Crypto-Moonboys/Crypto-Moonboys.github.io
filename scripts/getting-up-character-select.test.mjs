@@ -50,7 +50,7 @@ assert.match(runtime, /playerCharacterId === 'volcanic-punk' &&\s*\n\s*!isOnVolc
 assert.match(runtime, /VOLCANIC_DEATH_MIN_WALL_WIDTH/);
 assert.match(runtime, /getVolcanicDeathSurfaces/);
 assert.match(runtime, /isOnVolcanicDeathSurface/);
-assert.doesNotMatch(runtime, /var solids = \[floor\]\.concat\(platforms, crates, solidRewardBoxes\)/);
+assert.match(runtime, /function updateDeathFall\(dt\)[\s\S]{0,1200}var solids = getVolcanicDeathSurfaces\(\)/);
 assert.match(runtime, /frameOffsetY/);
 assert.match(runtime, /beginDeathFall/);
 assert.match(runtime, /playerAnimations\.airDeathFall \? 'airDeathFall' : 'fall'/);
