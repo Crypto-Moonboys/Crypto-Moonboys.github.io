@@ -159,7 +159,7 @@
 <body class="page-standalone-tool">
 <header id="site-header" role="banner">
   <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
-    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO-runtime.webp" width="25" height="25" decoding="async" alt="" aria-hidden="true">
     <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span>
   </a>
   <div id="header-search" role="search">
@@ -253,11 +253,12 @@
 <button id="back-to-top" aria-label="Back to top">Up</button>
 <script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js?v=arcade-audio-20261125"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
 <script src="/game/nbg-audio.js?v=two-audio-controls-20261125"></script>
-<script src="/game/nbg-level1.js?v=classic-scenery-20261126-runtime-webp-v1"></script>
-<script src="/game/nbg-london-leaderboards.js?v=fixed-camera-20261125"></script>
+<script src="/game/nbg-level1.js?v=classic-scenery-20261126-air-destruction-ranked-runtime-v12"></script>
+<script src="/game/nbg-london-leaderboards.js?v=ranked-runtime-v11"></script>
 <script type="module">
 const modifierHost = document.getElementById('content');
 let modifierTimeout;
+let modifierStarted = false;
 function showModifierUnavailable() {
   if (!modifierHost || document.getElementById('cm-modifier-panel')) return;
   const panel = document.createElement('div');
@@ -266,18 +267,25 @@ function showModifierUnavailable() {
   panel.textContent = 'Modifier cards unavailable. Refresh the page to retry. Ranked London runs do not apply modifiers.';
   modifierHost.appendChild(panel);
 }
-modifierTimeout = setTimeout(showModifierUnavailable, 8000);
-import('/js/arcade/systems/cross-game-modifier-ui.js?v=nbg-modifier-drawer-20261125')
-  .then(function (ui) {
-    clearTimeout(modifierTimeout);
-    if (!document.getElementById('cm-modifier-panel')) {
-      ui.mountModifierPanel(modifierHost, { readOnly: true });
-    }
-  })
-  .catch(function () {
-    clearTimeout(modifierTimeout);
-    showModifierUnavailable();
-  });
+function loadModifierPanel() {
+  if (modifierStarted) return;
+  modifierStarted = true;
+  modifierTimeout = setTimeout(showModifierUnavailable, 8000);
+  import('/js/arcade/systems/cross-game-modifier-ui.js?v=nbg-modifier-drawer-20261125')
+    .then(function (ui) {
+      clearTimeout(modifierTimeout);
+      if (!document.getElementById('cm-modifier-panel')) {
+        ui.mountModifierPanel(modifierHost, { readOnly: true });
+      }
+    })
+    .catch(function () {
+      clearTimeout(modifierTimeout);
+      showModifierUnavailable();
+    });
+}
+if (window.NBGLevel1State?.assetsLoaded) loadModifierPanel();
+else window.addEventListener('nbg-level-assets-ready', loadModifierPanel, { once: true });
+setTimeout(loadModifierPanel, 12000);
 </script>
 <script data-cfasync="false" src="/js/telegram-game-fullscreen.js?v=20261125-all-games"></script>
 </body>
