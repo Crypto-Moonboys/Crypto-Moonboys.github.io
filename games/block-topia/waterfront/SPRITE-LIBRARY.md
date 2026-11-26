@@ -12,6 +12,8 @@ The production atlases are in [assets/atlases](assets/atlases). Use the existing
 | [street-detail.png](assets/atlases/street-detail.png) | `flowers-0`, `flowers-1`, `flowers-2`, `flowers-3`, `flowers-4`, `flowers-5`, `flowers-6`, `flowers-7`, `flowers-8`, `flowers-9`, `flowers-10`, `flowers-11`, `furniture-0`, `furniture-1`, `furniture-2`, `furniture-3`, `furniture-4`, `furniture-5`, `furniture-6`, `furniture-7`, `furniture-8`, `furniture-9`, `furniture-10`, `furniture-11`, `grass` |
 | [terrain.png](assets/atlases/terrain.png) | `curb-corner`, `curb-straight`, `footpath-pavers` |
 
+The compact loader prefers lossless WebP for the building and tree atlases. These derivatives match the source PNGs pixel for pixel, including transparency, and reuse the same frame rectangles. If either WebP fails to load, that group retries its source PNG once. [Buildings WebP](assets/atlases/hk-night.webp) · [Trees WebP](assets/atlases/trees.webp)
+
 ## Detailed character atlases
 
 [Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) use the original animation sheets, packed into 192 × 192 WebP frames. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The harbor paints with compact sprites first. The detailed frames load at low priority and replace the compact sprites when decoded. The renderer uses filtered scaling for detailed frames.

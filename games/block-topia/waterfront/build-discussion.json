@@ -58,5 +58,37 @@
   {
     "speaker": 0,
     "text": "The pathfinder still takes all four original trail steps."
+  },
+  {
+    "speaker": 0,
+    "text": "Convert the two largest startup atlases to lossless WebP."
+  },
+  {
+    "speaker": 0,
+    "text": "A West Meadow bench is possible, but the park PR is still open."
+  },
+  {
+    "speaker": 1,
+    "text": "Test each PNG fallback. Both map views share the atlas loader."
+  },
+  {
+    "speaker": 1,
+    "text": "Version both views. The park PR also edits the main cache tags."
+  },
+  {
+    "speaker": 0,
+    "text": "Keep the PNG masters and use the same frame crops for both formats."
+  },
+  {
+    "speaker": 0,
+    "text": "Two startup downloads drop by 167,532 bytes, with the same pixels."
+  },
+  {
+    "speaker": 0,
+    "text": "Six map renders match. A failed WebP retries its PNG once."
+  },
+  {
+    "speaker": 0,
+    "text": "Missing assets still fall back to the procedural map."
   }
 ]

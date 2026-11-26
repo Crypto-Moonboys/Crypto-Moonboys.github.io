@@ -593,8 +593,17 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
       }
       resolve();
     };
-    atlas.onerror = resolve;
-    atlas.src = new URL(group + ".png", waterfrontAtlasBase).href;
+    const png = new URL(group + ".png", waterfrontAtlasBase).href;
+    if (group === "hk-night" || group === "trees") {
+      atlas.onerror = () => {
+        atlas.onerror = resolve;
+        atlas.src = png;
+      };
+      atlas.src = new URL(group + ".webp", waterfrontAtlasBase).href;
+    } else {
+      atlas.onerror = resolve;
+      atlas.src = png;
+    }
   }));
   return Promise.all(loadAtlases);
 };
