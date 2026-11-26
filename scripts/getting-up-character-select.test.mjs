@@ -9,7 +9,8 @@ const selector = fs.readFileSync('games/getting-up/character-select.js', 'utf8')
 assert.equal(manifest.characterId, 'volcanic-punk');
 for (const state of ['idle','runRight','runLeft','crouchRight','crouchLeft','jumpRight','jumpLeft',
   'backflipRight','backflipLeft','fallRight','fallLeft','sprayRight','sprayLeft','hurt','victory',
-  'deathRight','deathLeft','rubbleRight','rubbleLeft','volcano','coinVolcano']) {
+  'deathRight','deathLeft','rubbleRight','rubbleLeft','volcano','coinVolcano',
+  'thirdSpinBurst1','thirdSpinBurst2']) {
   assert.ok(manifest.animations[state], 'missing volcanic state: ' + state);
   const asset = manifest.animations[state].spriteSheet.replace(/^\//, '');
   assert.ok(fs.existsSync(asset), 'missing volcanic asset: ' + asset);
@@ -28,4 +29,12 @@ assert.match(selector, /setChooserVisible\(false\)/);
 assert.match(fs.readFileSync('games/getting-up/character-select.css', 'utf8'), /\.fighter-select\[hidden\]/);
 assert.match(runtime, /deathAnimationActive/);
 assert.match(runtime, /directionalName/);
+assert.match(runtime, /playerCharacterId === 'volcanic-punk'/);
+assert.match(runtime, /setPlayerAnimation\('thirdSpinBurst1'\)/);
+assert.match(runtime, /setPlayerAnimation\('thirdSpinBurst2'\)/);
+assert.match(runtime, /spawnThirdSpinCoins/);
+assert.match(runtime, /updateBurstCoins/);
+assert.match(runtime, /drawBurstCoins/);
+assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
+assert.match(runtime, /coin\.settled = true/);
 console.log('[PASS] Getting Up selectable character contract');
