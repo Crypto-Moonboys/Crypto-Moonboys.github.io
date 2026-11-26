@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import { handleSwarmsyWebChat } from '../workers/moonboys-api/routes/swarmsy-web-chat.js';
+import { publishBrainFeed } from './publish-brain-feed.mjs';
 
 const origin = 'https://cryptomoonboys.com';
 const cors = { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' };
@@ -244,7 +248,8 @@ test('answers an exact NFT supply question from the verified snapshot without re
     return new Response(tampered ? record.replace('gkniftyheads', 'xxxxxxxxxxxx') : record);
   });
   const message = 'How many issued and live copies does GKniftyHEADS template 773225 have';
-  const send = (question = message) => handleSwarmsyWebChat(request(chat({ message: question })), env(), cors);
+  const send = (question = message, template_context) =>
+    handleSwarmsyWebChat(request(chat({ message: question, template_context })), env(), cors);
   const unsigned = await handleSwarmsyWebChat(request(chat({ message, telegram_auth: {} })), env(), cors);
   assert.equal(unsigned.status, 401);
   assert.equal(fetched.mock.callCount(), 0);
@@ -253,13 +258,78 @@ test('answers an exact NFT supply question from the verified snapshot without re
     reply: 'The published supply for GKniftyHEADS template 773225 is **20 issued and 20 live** (checked 2026-11-26 UTC).',
     sources: [{ title, url: origin + path }],
     canon: 'found',
+    template_context: { collection: 'gkniftyheads', id: '773225' },
   });
+  const subject = { collection: 'gkniftyheads', id: '773225' };
+  assert.match((await (await send('How many were minted?', subject)).json()).reply, /20 issued/);
+  assert.match((await (await send('What’s the supply for template 773225?')).json()).reply, /20 issued and 20 live/);
   live = 0;
   assert.match((await (await send()).json()).reply, /20 issued and 0 live/);
+  assert.match((await (await send('And how many are still live?', subject)).json()).reply, /0 live/);
   status = 'unavailable';
-  assert.equal((await (await send()).json()).canon, 'unavailable');
+  assert.match((await (await send()).json()).reply, /no verified value for live/);
+  assert.equal((await (await send('How many are left?', subject)).json()).canon, 'unavailable');
   assert.match((await (await send('What is the issued supply for GKniftyHEADS template #773225?')).json()).reply, /20 issued/);
   assert.equal((await (await send(message.replace('773225', '111111'))).json()).canon, 'unavailable');
   tampered = true;
   assert.equal((await (await send()).json()).canon, 'unavailable');
+});
+
+test('finds a template among 6,000 records by reading only its verified shard', async context => {
+  const dir = await mkdtemp(join(tmpdir(), 'sparky-template-test-'));
+  context.after(() => rm(dir, { recursive: true, force: true }));
+  const path = 'data/new-collection/template-metadata-cache.json';
+  const rarityPath = 'data/new-collection/template-rarity.json';
+  await mkdir(join(dir, 'data/new-collection'), { recursive: true });
+  const templates = Array.from({ length: 6000 }, (_, i) => ({
+    template_id: 800000 + i, title: 'NFT ' + i, schema_name: 'street-art',
+    max_supply: 0, unrelated_data: 'x'.repeat(360),
+  }));
+  const raw = JSON.stringify({ collection: 'new-collection', templates });
+  assert.ok(Buffer.byteLength(raw) > 2_000_000);
+  await writeFile(join(dir, path), raw);
+  await writeFile(join(dir, rarityPath), JSON.stringify({
+    collection: 'new-collection',
+    ranked_templates: [{ template_id: 805999, band: 'Legendary', rarity_trait: 'Rare', variation_trait: 'Silver' }],
+  }));
+  const catalog = await publishBrainFeed(dir);
+  assert.equal(catalog.records.length, 33);
+  const shard = catalog.records.find(record => record.path === '/data/sparky-nft/new-collection/15.json');
+  assert.ok(shard);
+  const entry = await readFile(join(dir, 'brain-feed', 'records', shard.sha256 + '.json'));
+  const read = context.mock.method(globalThis, 'fetch', async url => {
+    if (url === origin + '/brain-feed/index.json') return Response.json(catalog);
+    assert.equal(url, origin + '/brain-feed/records/' + shard.sha256 + '.json');
+    return new Response(entry);
+  });
+  const response = await handleSwarmsyWebChat(request(chat({
+    message: 'What is the name, mint cap, rarity and traits for new collection template 805999?',
+  })), env(), cors);
+  const data = await response.json();
+  assert.equal(data.canon, 'found');
+  assert.match(data.reply, /NFT 5999/);
+  assert.match(data.reply, /uncapped/);
+  assert.match(data.reply, /Published rarity: \*\*Legendary\*\*/);
+  assert.match(data.reply, /Schema: \*\*street-art\*\*/);
+  assert.match(data.reply, /Rarity trait: \*\*Rare\*\*/);
+  assert.match(data.reply, /Variation: \*\*Silver\*\*/);
+  const metadataSource = { title: 'new-collection template metadata', url: origin + '/' + path };
+  const raritySource = { title: 'new-collection template rarity', url: origin + '/' + rarityPath };
+  assert.deepEqual(data.sources, [metadataSource, raritySource]);
+  assert.equal(read.mock.callCount(), 2);
+  const followUp = await handleSwarmsyWebChat(request(chat({
+    message: 'What are its traits?', template_context: data.template_context,
+  })), env(), cors);
+  assert.match((await followUp.json()).reply, /Silver/);
+  const variation = await handleSwarmsyWebChat(request(chat({
+    message: 'What is its variation?', template_context: data.template_context,
+  })), env(), cors);
+  const variationReply = await variation.json();
+  assert.match(variationReply.reply, /Variation: \*\*Silver\*\*/);
+  assert.doesNotMatch(variationReply.reply, /Schema:/);
+  assert.deepEqual(variationReply.sources, [raritySource]);
+  const missing = await handleSwarmsyWebChat(request(chat({
+    message: 'What is the variation for new collection template 805967?',
+  })), env(), cors);
+  assert.equal((await missing.json()).canon, 'unavailable');
 });

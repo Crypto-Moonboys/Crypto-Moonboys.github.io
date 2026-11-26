@@ -24,6 +24,7 @@
 
   let owner = null;
   let conversationId = null;
+  let templateContext = null;
   let active = null;
   let authProbe = 0;
 
@@ -31,6 +32,7 @@
     active?.abort();
     active = null;
     conversationId = owner ? crypto.randomUUID() : null;
+    templateContext = null;
     log.replaceChildren();
     input.value = '';
     canon.checked = false;
@@ -190,7 +192,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(50_000)]),
-        body: JSON.stringify({ message, conversation_id: id, public_canon: publicCanon, telegram_auth: auth }),
+        body: JSON.stringify({
+          message, conversation_id: id, public_canon: publicCanon, telegram_auth: auth,
+          template_context: templateContext,
+        }),
       });
       const result = await response.json();
       if (!current()) return;
@@ -201,6 +206,7 @@
       }
       if (!response.ok || typeof result?.reply !== 'string') throw new Error(result?.error);
       appendTurn('assistant', result.reply, Array.isArray(result.sources) ? result.sources : []);
+      templateContext = result.template_context ?? null;
       input.value = '';
       starters.hidden = true;
       status.textContent = result.canon === 'unavailable' ? 'No verified public canon sources found for this question.' : '';
