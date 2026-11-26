@@ -389,7 +389,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-lower-ground-death-v4';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-air-death-fall-v5';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -743,7 +743,7 @@
       player.grounded = false;
       player.vy = 0.8;
       player.vx *= 0.22;
-      setPlayerAnimation('fall');
+      setPlayerAnimation(playerAnimations.airDeathFall ? 'airDeathFall' : 'fall');
       dispatchAudioCue('volcanic_death_fall');
     }
 
@@ -781,8 +781,11 @@
       player.x = clamp(player.x + player.vx * step, 12, WORLD_WIDTH - player.w - 12);
       player.vy += GRAVITY * step;
       player.y += player.vy * step;
-      setPlayerAnimation('fall');
-      advancePlayerAnimation(dt, true);
+      var airDeathAnimation = playerAnimations.airDeathFall ? 'airDeathFall' : 'fall';
+      setPlayerAnimation(airDeathAnimation);
+      // The dedicated fatal-fall sheet is one-shot. Its sixth frame holds
+      // for however long remains before collision; the normal fall fallback loops.
+      advancePlayerAnimation(dt, airDeathAnimation !== 'airDeathFall');
 
       var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
       var solids = [floor].concat(platforms, crates, solidRewardBoxes);
