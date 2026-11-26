@@ -97,7 +97,7 @@ test('uses opaque, account-bound sessions and never shares Telegram credentials 
   const sessions = [];
   const upstream = context.mock.method(globalThis, 'fetch', async (url, options) => {
     assert.equal(url, 'https://swarmsy.cryptomoonboys.com/api/sparky-web/chat');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.headers.Authorization, `Bearer ${token}`);
     const payload = JSON.parse(options.body);
     assert.deepEqual(Object.keys(payload).sort(), ['message', 'searchCanon', 'session', 'sources']);
@@ -119,6 +119,17 @@ test('uses opaque, account-bound sessions and never shares Telegram credentials 
   assert.equal(upstream.mock.callCount(), 4);
   assert.equal(sessions[0], sessions[1]);
   assert.equal(new Set(sessions).size, 3);
+});
+
+test('does not follow upstream redirects with the bridge token', async context => {
+  const upstream = context.mock.method(globalThis, 'fetch', async (_url, options) => {
+    assert.equal(options.redirect, 'manual');
+    return Response.redirect('https://example.com/redirected', 307);
+  });
+  const response = await handleSwarmsyWebChat(request(chat()), env(), cors);
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { error: 'chat_unavailable' });
+  assert.equal(upstream.mock.callCount(), 1);
 });
 
 test('deeper lookup sends published wiki excerpts and rejects private, redirect and noindex sources', async context => {
