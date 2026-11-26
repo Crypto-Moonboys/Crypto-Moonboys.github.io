@@ -1,51 +1,37 @@
 {
   "issue": 1930,
-  "round": 119,
+  "round": 120,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Water and road overlap",
-          "riskLevel": "High",
-          "location": [
+          "description": "Water edges abruptly without a smooth transition.",
+          "rows": [
             3,
-            27,
-            39
+            4,
+            5
           ],
-          "suggestion": "Ensure water and road tiles do not overlap to avoid confusion."
+          "columns": [
+            9,
+            10
+          ]
         },
         {
-          "description": "House placed on water",
-          "riskLevel": "Medium",
-          "location": [
-            10,
-            88
-          ],
-          "suggestion": "Verify that houses are only placed on ground tiles."
+          "description": "House and dock placement may be confusing due to similar colors.",
+          "houseColor": "#aa5149",
+          "dockColor": "#98734e"
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route loop or dead-end",
-          "riskLevel": "High",
-          "routeSegment": [
-            90,
-            114,
-            102,
-            91
-          ],
-          "suggestion": "Check for loops in the route to ensure a clear path."
+          "description": "The route path includes a sudden jump from row 64 to 76, which might be jarring for players.",
+          "startRow": 64,
+          "endRow": 76
         },
         {
-          "description": "Unexpected route direction changes",
-          "riskLevel": "Medium",
-          "location": [
-            52,
-            64,
-            76
-          ],
-          "suggestion": "Review the route's direction transitions to ensure they are logical and user-friendly."
+          "description": "There are no visual cues indicating the end of the route or the start of a new section.",
+          "suggestion": "Add markers or landmarks at significant points in the route."
         }
       ]
     }
