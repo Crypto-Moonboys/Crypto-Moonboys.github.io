@@ -48,11 +48,11 @@
   ],
   "colors": {
     "water": "#007fff",
-    "road": "#d3d3d3",
-    "ground": "#964b00",
-    "dock": "#8a2be2",
-    "house": "#ffa500",
-    "lighthouse": "#ffd700"
+    "road": "#ffa500",
+    "ground": "#d2b48c",
+    "dock": "#87cefa",
+    "house": "#ff69b4",
+    "lighthouse": "#f0e68c"
   },
   "layoutSource": "model-edits"
 }
