@@ -1,31 +1,67 @@
 {
   "issue": 1930,
-  "round": 125,
+  "round": 126,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Water and road overlap at row 3, column 27",
-          "riskLevel": "Medium",
-          "suggestion": "Adjust the layout to ensure water does not overlap with roads."
+          "type": "Obstruction",
+          "description": "The route path crosses over several houses, which could obstruct the view or create a visual clutter.",
+          "affectedCells": [
+            16,
+            40,
+            52,
+            76,
+            92,
+            103,
+            104
+          ]
         },
         {
-          "description": "House and dock are too close in row 10, columns 94-106",
-          "riskLevel": "Low",
-          "suggestion": "Increase spacing between houses and docks for better aesthetics."
+          "type": "Color Contrast",
+          "description": "The color of the road (#667b8a) and ground (#283e35) are very similar, which might make it hard to distinguish between them.",
+          "affectedAreas": [
+            "ground",
+            "road"
+          ]
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route path crosses water at row 8, column 76",
-          "riskLevel": "High",
-          "suggestion": "Ensure the route does not cross over water to avoid navigation issues."
+          "type": "Route Complexity",
+          "description": "The route is quite complex with many turns and backtracking, which could be confusing for players trying to follow it.",
+          "affectedCells": [
+            15,
+            27,
+            16,
+            40,
+            52,
+            64,
+            41,
+            88,
+            77,
+            55,
+            100,
+            93,
+            117,
+            101,
+            111,
+            113,
+            123
+          ]
         },
         {
-          "description": "Multiple turns in a small area from row 103 to 105",
-          "riskLevel": "Medium",
-          "suggestion": "Smooth out the path to reduce complexity and potential user confusion."
+          "type": "Dead Ends",
+          "description": "There are potential dead ends in the route that could trap players or make navigation difficult.",
+          "affectedCells": [
+            94,
+            54,
+            89,
+            76,
+            106,
+            114
+          ]
         }
       ]
     }
