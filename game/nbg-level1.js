@@ -2897,7 +2897,9 @@
       if (initPromise) return initPromise;
       initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
         var assets = buildRuntimeAssetMap(assetManifest, classicScenery);
-        var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        var defaultPlayerManifest = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        var playerManifestPath = unranked && canvas.dataset && canvas.dataset.nbgPlayerManifest ?
+          canvas.dataset.nbgPlayerManifest : defaultPlayerManifest;
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
 
         return loadJson(playerManifestPath).then(function (manifest) {
@@ -2940,9 +2942,9 @@
               columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
-              image: key === 'spray' && result.image ?
+              image: key === 'spray' && result.image && !animation.preserveSourceAlpha ?
                 prepareFinalSpraySheet(result.image) :
-                key.indexOf('crouch') === 0 && result.image ?
+                key.indexOf('crouch') === 0 && result.image && !animation.preserveSourceAlpha ?
                   prepareCrouchSheet(result.image, animation) : result.image
             };
             assetStatus['player.' + key] = {
