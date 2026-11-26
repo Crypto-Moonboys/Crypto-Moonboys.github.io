@@ -1,31 +1,53 @@
 {
   "issue": 1930,
-  "round": 117,
+  "round": 118,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "row": 3,
-          "column": 6,
-          "description": "Potential road visibility issue. The 'r' character, representing a road, is partially obscured by the 'd' character."
+          "description": "Water and road overlap",
+          "riskLevel": "High",
+          "locations": [
+            3,
+            4
+          ]
         },
         {
-          "row": 4,
-          "column": 5,
-          "description": "Similar to previous risk, with another partial road ('r') obscured by 'h'."
+          "description": "House is too close to the water edge",
+          "riskLevel": "Medium",
+          "locations": [
+            6,
+            7
+          ]
         }
       ],
       "navigationRisks": [
         {
-          "index": 12,
-          "description": "The route path from 64 to 43 has a sudden change in direction and might be confusing for players."
-        },
-        {
-          "index": 20,
-          "description": "The route path from 90 to 115 is quite long without any landmarks or changes, which could make navigation difficult."
+          "description": "Route loop or dead end",
+          "riskLevel": "High",
+          "locations": [
+            102,
+            91,
+            114,
+            103,
+            115,
+            104,
+            105
+          ]
         }
       ]
-    }
+    },
+    "referenceTextIssues": [
+      {
+        "description": "Syntax error in research code",
+        "lineNumber": 2,
+        "position": [
+          6,
+          7
+        ],
+        "riskLevel": "Critical"
+      }
+    ]
   }
 }
