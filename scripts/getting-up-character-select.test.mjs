@@ -20,6 +20,8 @@ for (const state of ['idle','runRight','runLeft','crouchRight','crouchLeft','jum
   assert.equal(manifest.animations[state].frames, 6);
 }
 assert.deepEqual(manifest.deathSequence, ['death','rubble','volcano','coinVolcano']);
+for (const state of ['death','deathRight','deathLeft','coinVolcano']) assert.equal(manifest.animations[state].renderOffsetY, 12);
+for (const state of ['rubble','rubbleRight','rubbleLeft','volcano']) assert.equal(manifest.animations[state].renderOffsetY, 14);
 assert.match(page, /id="fighter-select"/);
 assert.match(page, /character-select\.js/);
 assert.match(selector, /volcanic-punk-player-animation-manifest\.json/);
@@ -38,8 +40,8 @@ assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-volcanic-death-grounding-v3/);
-assert.match(runtime, /v=20261126-volcanic-death-grounding-v3/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-lower-ground-death-v4/);
+assert.match(runtime, /v=20261126-lower-ground-death-v4/);
 assert.match(runtime, /playerCharacterId === 'volcanic-punk' && wasAirborne/);
 assert.match(runtime, /beginDeathFall/);
 assert.match(runtime, /updateDeathFall/);
