@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const source = read('js/join-page-defer.js');
 function fixture({ hash = '', observer = true, gallery = false } = {}) {
-  const requests = [], scripts = [], observed = new Set(), listeners = {};
+  const requests = [], scripts = [], styles = [], observed = new Set(), listeners = {};
   const image = name => ({ dataset: { sectionSrc: '/img/' + name + '.jpg' },
     set src(value) { requests.push(value); } });
   const upper = image('upper'), lower = image('lower');
@@ -14,7 +14,8 @@ function fixture({ hash = '', observer = true, gallery = false } = {}) {
     contains: target => target === upper || target === lower,
     querySelectorAll: () => [upper, lower] };
   const button = {};
-  const builder = { dataset: { builderModule: '/js/avatar-builder-test.js' },
+  const builder = { dataset: { builderModule: '/js/avatar-builder-test.js',
+    builderStyle: '/css/avatar-builder-test.css' },
     contains: target => target === button };
   const section = { contains: target => target === lower };
   let notify, options;
@@ -30,11 +31,14 @@ function fixture({ hash = '', observer = true, gallery = false } = {}) {
     querySelectorAll: selector => selector === '[data-section-images]'
       ? (gallery ? [group] : []) : [upper, lower],
     getElementById: id => ({ 'build-moonboy': builder, history: section })[id],
-    createElement: () => ({}), head: { append: script => scripts.push(script) },
+    createElement: tagName => ({ tagName }), head: { append: resource => {
+      if (resource.rel === 'stylesheet') styles.push(resource);
+      else scripts.push(resource);
+    } },
     addEventListener: (type, fn) => { listeners[type] = fn; }
   };
   vm.runInNewContext(source, { window, document, IntersectionObserver: IO });
-  return { requests, scripts, upper, lower, group, builder, button, listeners, observed, options,
+  return { requests, scripts, styles, upper, lower, group, builder, button, listeners, observed, options,
     enter: target => notify([{ target, isIntersecting: true }]),
     outside: target => notify([{ target, isIntersecting: false }]) };
 }
@@ -63,6 +67,8 @@ test('builder module loads once on approach and never during initial page setup'
   f.enter(f.builder);
   f.enter(f.builder);
   assert.equal(f.scripts.length, 1);
+  assert.equal(f.styles.length, 1);
+  assert.equal(f.styles[0].href, '/css/avatar-builder-test.css');
   assert.equal(f.scripts[0].type, 'module');
   assert.equal(f.scripts[0].src, '/js/avatar-builder-test.js');
 });
@@ -113,6 +119,8 @@ test('page keeps eager hero, stable image ratios, no-JS artwork and click-only v
   assert.match(active, /<img\b[^>]*src="\/img\/homepage\/Crypto%20Moonboys%20WAXP%20Neon%20Cityscape222\.jpg"[^>]*loading="eager"/);
   assert.doesNotMatch(active, /<script\b[^>]*\ssrc="\/js\/avatar-builder-test\.js"/);
   assert.match(active, /data-builder-module="\/js\/avatar-builder-test\.js"/);
+  assert.match(active, /data-builder-style="\/css\/avatar-builder-test\.css"/);
+  assert.doesNotMatch(active, /<link\b[^>]*href="\/css\/avatar-builder-test\.css"/);
   assert.match(active, /href="\/moonboy-builder\.html"/);
   assert.doesNotMatch(active, /<(?:iframe|source)\b[^>]*\ssrc="/);
   assert.doesNotMatch(active, /<video\b[^>]*\sposter="/);

@@ -60,15 +60,26 @@ host.innerHTML = `
 
 if (loreLink) host.querySelector('.selection-panel').appendChild(loreLink);
 
-const state = { manifest: null, traitsById: null, traitsByCategory: null, selected: {}, activeCategory: 'background', page: 0 };
+const state = {
+  manifest: null,
+  traitsById: null,
+  traitsByCategory: null,
+  loadedCategories: new Set(),
+  selected: {},
+  activeCategory: 'background',
+  page: 0,
+};
 let nextPreset = null;
 let layerRenderGeneration = 0;
+let categoryRenderGeneration = 0;
 let exportInProgress = false;
 let backgroundLoadGeneration = 0;
 let activeBackgroundRenderer = null;
 let activeBackgroundKey = null;
 let lastWorkingBackgroundId = null;
 let builderIntersecting = true;
+const categoryLoadPromises = new Map();
+const layerImages = new Map();
 
 const elements = {
   avatarFrame: host.querySelector('#avatar-frame'),
@@ -163,6 +174,62 @@ function renderCategories() {
     </button>`).join('');
 }
 
+async function ensureCategoryLoaded(categoryId) {
+  if (state.loadedCategories.has(categoryId)) return;
+  if (categoryLoadPromises.has(categoryId)) return categoryLoadPromises.get(categoryId);
+  const request = (async () => {
+    const base = state.manifest.categoryManifestBase || '/data/avatar-builder-categories/';
+    const response = await fetch(`${base}${encodeURIComponent(categoryId)}.json`, { cache: 'force-cache' });
+    if (!response.ok) throw new Error(`Trait category request failed (${response.status})`);
+    const payload = await response.json();
+    if (payload.version !== state.manifest.version || payload.category !== categoryId ||
+        !Array.isArray(payload.traits)) {
+      throw new Error(`Trait category response is invalid: ${categoryId}`);
+    }
+    if (payload.traits.some((trait) => trait.category !== categoryId)) {
+      throw new Error(`Trait category contains a mismatched trait: ${categoryId}`);
+    }
+
+    for (const trait of state.traitsByCategory.get(categoryId) || []) {
+      state.traitsById.delete(trait.id);
+    }
+    for (const trait of payload.traits) state.traitsById.set(trait.id, trait);
+    state.traitsByCategory.set(categoryId, payload.traits);
+    state.loadedCategories.add(categoryId);
+  })().catch((error) => {
+    categoryLoadPromises.delete(categoryId);
+    throw error;
+  });
+  categoryLoadPromises.set(categoryId, request);
+  return request;
+}
+
+async function activateCategory(categoryId) {
+  const generation = ++categoryRenderGeneration;
+  state.activeCategory = categoryId;
+  state.page = 0;
+  renderCategories();
+  if (!state.loadedCategories.has(categoryId)) {
+    elements.trayTitle.textContent = 'Loading traits';
+    elements.trayCount.textContent = '';
+    elements.trayStatus.hidden = false;
+    elements.trayStatus.textContent = 'Loading traits\u2026';
+    elements.traitGrid.innerHTML = '';
+    elements.pagination.innerHTML = '';
+  }
+  try {
+    await ensureCategoryLoaded(categoryId);
+    if (generation !== categoryRenderGeneration || state.activeCategory !== categoryId) return;
+    renderTray();
+  } catch (error) {
+    if (generation !== categoryRenderGeneration || state.activeCategory !== categoryId) return;
+    elements.trayStatus.hidden = false;
+    elements.trayStatus.textContent = 'These traits could not load. Select the category to retry.';
+    announce(`${categoryId} traits could not be loaded.`);
+    console.error(error);
+  }
+}
+
 function clearAnimatedCanvas() {
   const context = elements.animatedCanvas.getContext('2d');
   context?.clearRect(0, 0, elements.animatedCanvas.width, elements.animatedCanvas.height);
@@ -218,13 +285,32 @@ async function activateAnimatedBackground(trait) {
   lastWorkingBackgroundId = trait.id;
 }
 
+function detachLayerImage(categoryId) {
+  const image = layerImages.get(categoryId);
+  if (!image) return;
+  image.onload = null;
+  image.onerror = null;
+  image.remove();
+  image.removeAttribute('src');
+  image.dataset.traitId = '';
+  image.dataset.loadState = 'idle';
+}
+
+function insertLayerImage(categoryId, image) {
+  if (image.isConnected) return;
+  const categoryIndex = state.manifest.categoryOrder.indexOf(categoryId);
+  const nextLayer = state.manifest.categoryOrder.slice(categoryIndex + 1)
+    .map((id) => layerImages.get(id))
+    .find((candidate) => candidate?.isConnected);
+  elements.avatarStack.insertBefore(image, nextLayer || elements.homepageIntro || null);
+}
+
 function renderLayers() {
   const generation = ++layerRenderGeneration;
   let pending = 0;
   let failures = 0;
   elements.avatarFrame.dataset.renderGeneration = String(generation);
   elements.previewFallback.hidden = true;
-  elements.avatarStack.querySelectorAll('.avatar-layer').forEach((layer) => layer.remove());
   const backgroundTrait = state.traitsById.get(state.selected.background);
   pending += 1;
   activateAnimatedBackground(backgroundTrait).catch((error) => {
@@ -247,32 +333,54 @@ function renderLayers() {
   });
   state.manifest.categories.forEach((category) => {
     const trait = state.traitsById.get(state.selected[category.id]);
-    if (!trait) return;
-    if (isAnimatedBackground(trait)) return;
+    if (!trait || isAnimatedBackground(trait)) {
+      detachLayerImage(category.id);
+      return;
+    }
+    let image = layerImages.get(category.id);
+    if (!image) {
+      image = document.createElement('img');
+      image.className = 'avatar-layer';
+      image.alt = '';
+      image.width = 1000;
+      image.height = 1000;
+      image.decoding = 'async';
+      image.dataset.loadState = 'idle';
+      layerImages.set(category.id, image);
+    }
+    insertLayerImage(category.id, image);
+    const sameTrait = image.dataset.traitId === trait.id && image.getAttribute('src') === trait.layer;
+    if (sameTrait && image.dataset.loadState === 'loaded') {
+      image.hidden = false;
+      return;
+    }
+    const shouldSetSource = !sameTrait || image.dataset.loadState === 'error';
     pending += 1;
-    const image = document.createElement('img');
-    image.className = 'avatar-layer';
-    image.src = trait.layer;
-    image.alt = '';
-    image.width = 1000;
-    image.height = 1000;
-    image.decoding = 'async';
+    image.hidden = false;
+    image.dataset.traitId = trait.id;
+    image.dataset.loadState = 'loading';
+    let settled = false;
     const finish = () => {
-      if (generation !== layerRenderGeneration) return;
+      if (settled || generation !== layerRenderGeneration || image.dataset.traitId !== trait.id) return;
+      settled = true;
       pending -= 1;
       if (pending === 0) elements.avatarFrame.setAttribute('aria-busy', 'false');
     };
-    image.addEventListener('load', finish, { once: true });
-    image.addEventListener('error', () => {
+    image.onload = () => {
+      if (image.dataset.traitId === trait.id) image.dataset.loadState = 'loaded';
+      finish();
+    };
+    image.onerror = () => {
       if (generation !== layerRenderGeneration) return;
+      image.dataset.loadState = 'error';
       failures += 1;
       image.hidden = true;
       elements.previewFallback.hidden = false;
       elements.previewFallback.textContent = `${failures} avatar layer${failures === 1 ? '' : 's'} could not load.`;
       announce(`${trait.name} could not be loaded.`);
       finish();
-    }, { once: true });
-    elements.avatarStack.append(image);
+    };
+    if (shouldSetSource) image.src = trait.layer;
   });
   if (generation === layerRenderGeneration) {
     elements.avatarFrame.setAttribute('aria-busy', pending ? 'true' : 'false');
@@ -327,10 +435,7 @@ function renderAll() {
 elements.categoryTabs.addEventListener('click', (event) => {
   const button = event.target.closest('[data-category]');
   if (!button) return;
-  state.activeCategory = button.dataset.category;
-  state.page = 0;
-  renderCategories();
-  renderTray();
+  void activateCategory(button.dataset.category);
 });
 
 elements.traitGrid.addEventListener('click', (event) => {
@@ -381,10 +486,11 @@ elements.downloadPng.addEventListener('click', downloadAvatarPng);
 
 async function initialize() {
   try {
-    const response = await fetch('/data/avatar-builder-manifest.json', { cache: 'force-cache' });
+    const response = await fetch('/data/avatar-builder-web-manifest.json', { cache: 'force-cache' });
     if (!response.ok) throw new Error(`Manifest request failed (${response.status})`);
     state.manifest = await response.json();
     ({ traitsById: state.traitsById, traitsByCategory: state.traitsByCategory } = indexManifest(state.manifest));
+    state.loadedCategories = new Set(state.manifest.loadedCategories || []);
     nextPreset = createHomepagePresetCycle(state.manifest);
     state.activeCategory = state.manifest.categoryOrder[0];
     const initialStack = defaultStack(state.manifest);

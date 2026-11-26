@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promi
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { writeAvatarWebManifests } from './avatar-builder-web-manifests.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE_ROOT = path.join(ROOT, 'img', 'CRYPTO-MOONBOYS-OG-TRAITS');
@@ -229,6 +230,7 @@ async function build() {
 
   await mkdir(path.dirname(MANIFEST_PATH), { recursive: true });
   await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  await writeAvatarWebManifests(manifest);
   console.log(`Wrote ${path.relative(ROOT, MANIFEST_PATH)} with ${traits.length} traits.`);
 }
 
