@@ -1,24 +1,53 @@
 {
   "issue": 1930,
-  "round": 90,
+  "round": 91,
   "research": "research incomplete",
   "review": {
-    "keyFindings": [
-      {
-        "issue": "Waterfront Path Risk",
-        "description": "The path from the starting point (likely a house or road) to the end of the district seems to be interrupted by empty spaces, which might confuse players. The route should ideally have continuous roads.",
-        "suggestion": "Ensure that all points in the 'route' are connected with roads."
-      },
-      {
-        "issue": "Visual Consistency",
-        "description": "The color for the dock is '#98734e', which might not be visually distinct from the ground color '#283e35'. This could lead to visual confusion.",
-        "suggestion": "Consider changing the dock color to something more distinguishable."
-      },
-      {
-        "issue": "Navigation Risk",
-        "description": "The route includes a sudden change in direction or path, which might be difficult for players to follow. The route should have smoother transitions between points.",
-        "suggestion": "Smooth out the route to make it easier for players to navigate."
-      }
-    ]
+    "keyFindings": {
+      "visualRisks": [
+        {
+          "type": "Obstruction",
+          "description": "The path from row 15 to 27 is obstructed by water, which might confuse players.",
+          "affectedPath": [
+            15,
+            27
+          ]
+        },
+        {
+          "type": "Isolation",
+          "description": "There are isolated sections of the map that do not connect well with other parts, such as rows 89 to 103, which could lead to dead ends.",
+          "affectedArea": [
+            89,
+            90,
+            91,
+            92,
+            93,
+            94
+          ]
+        }
+      ],
+      "navigationRisks": [
+        {
+          "type": "Loop",
+          "description": "The route seems to have a loop from row 64 back to 53 and then again to 42. This could lead to player frustration if they get stuck in an infinite loop.",
+          "affectedPath": [
+            64,
+            53,
+            42
+          ]
+        },
+        {
+          "type": "Dead End",
+          "description": "The route ends abruptly at row 105 without a clear path forward or any exit point, which could frustrate players who are trying to progress.",
+          "affectedPath": [
+            93,
+            94,
+            103,
+            104,
+            105
+          ]
+        }
+      ]
+    }
   }
 }
