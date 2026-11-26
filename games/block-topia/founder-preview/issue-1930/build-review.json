@@ -1,31 +1,24 @@
 {
   "issue": 1930,
-  "round": 104,
+  "round": 105,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "row": 6,
-          "column": 7,
-          "description": "Potential road intersection not clearly visible, may cause confusion."
-        },
-        {
-          "row": 10,
-          "column": 5,
-          "description": "House and dock proximity could be visually misleading or confusing to players."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "pathIndex": 28,
-          "description": "A sudden change in direction (from row 64 to row 75) may confuse the player, as it's a large jump without clear visual cues."
-        },
-        {
-          "pathIndex": 39,
-          "description": "The path from row 105 to row 113 has multiple turns in quick succession, which might be difficult for players to follow."
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Navigation Risk",
+        "description": "The route path includes a sharp turn from position 90 to 91, which might be confusing for players.",
+        "suggestion": "Consider smoothing out the transition between positions 90 and 91."
+      },
+      {
+        "type": "Visual Risk",
+        "description": "There are no visual elements (like houses or docks) in the first row of the district, which could make it less engaging for players.",
+        "suggestion": "Add some visual elements to the first row to enhance player interaction and interest."
+      },
+      {
+        "type": "Navigation Risk",
+        "description": "The route path includes a long straight section from position 42 to 76, which might be monotonous for players.",
+        "suggestion": "Consider adding some turns or obstacles in the path to make it more engaging."
+      }
+    ]
   }
 }
