@@ -391,7 +391,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-ground-only-death-v6';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-collapse-lower-v7';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
