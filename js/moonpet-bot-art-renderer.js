@@ -108,7 +108,14 @@
     const generation = selectionGeneration;
     const request = state.loadRole(role).then((asset) => {
       if (generation !== selectionGeneration) return null;
-      if (asset) state.reason = `${state.resolvedBot} ${role} ready`;
+      if (asset) {
+        state.reason = `${state.resolvedBot} ${role} ready`;
+        if (typeof window.dispatchEvent === "function" && typeof window.CustomEvent === "function") {
+          window.dispatchEvent(new window.CustomEvent("moonpet:bot-art-role-ready", {
+            detail: Object.freeze({ role, identityKey: state.identityKey })
+          }));
+        }
+      }
       else state.reason = `${state.resolvedBot} ${role} failed to load`;
       return asset;
     }).catch((error) => {

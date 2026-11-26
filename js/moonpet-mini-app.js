@@ -4544,6 +4544,12 @@
     }
   }
 
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('moonpet:bot-art-role-ready', function () {
+      if (reducedMotion) drawWorld(performance.now());
+    });
+  }
+
   function hatchArtTransitionActive(time) {
     return hatchArtTransitionUntil > Number(time == null ? performance.now() : time);
   }
@@ -4747,6 +4753,9 @@
       var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg'
         && stateBeforeAction.pet && responseState.pet && stateBeforeAction.pet.pet_id === responseState.pet.pet_id
         && actionAnimationFamily(action, payload) === 'hatch';
+      if (isHatchReveal && window.MoonpetBotArtRenderer && typeof window.MoonpetBotArtRenderer.prepareRole === 'function') {
+        await window.MoonpetBotArtRenderer.prepareRole('egg_hatch');
+      }
       var hatchDuration = isHatchReveal ? hatchAnimationDuration() : 0;
       if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal, missionsFallback: requestPayload.state_mode === 'missions' })) return;
       if (isHatchReveal) {

@@ -193,11 +193,31 @@ test('renderer requests one secondary role on demand and keeps idle visible unti
   assert.equal(requests, 1);
 });
 
+test('renderer announces when demand-loaded art is ready for reduced-motion redraws', async () => {
+  const actionReady = deferred(), events = [];
+  const idle = { frames: [{ x: 0, y: 0, w: 32, h: 32, index: 0 }], image: {}, fps: 12 };
+  const dance = { frames: [{ x: 0, y: 0, w: 32, h: 32, index: 0 }], image: {}, fps: 12 };
+  class CustomEvent { constructor(type, options) { this.type = type; this.detail = options.detail; } }
+  const assetsByRole = { front_idle: idle };
+  const window = { CustomEvent, dispatchEvent: event => events.push(event), MoonpetBotArtLoader: { loadMoonpetBotArt: async () => ({
+    ready: true, resolvedBot: 'TEST', requestedEvolution: 'stage_1', resolvedEvolution: 'stage_1',
+    assetsByRole, roleMap: { idle: 'front_idle', dance: 'dance' }, display: {}, errors: [], pendingRoles: ['dance'],
+    loadRole: async role => { await actionReady.promise; assetsByRole[role] = dance; return dance; },
+  }) } };
+  vm.runInNewContext(rendererSource, { window, performance: { now: () => 0 } });
+  await window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: 'test' });
+  const pending = window.MoonpetBotArtRenderer.prepareRole('dance');
+  actionReady.resolve(); await pending;
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, 'moonpet:bot-art-role-ready');
+  assert.equal(events[0].detail.role, 'dance');
+});
+
 function hatchContext() {
-  const time = clock(), loads = [], selected = [], drawn = [], actions = [];
+  const time = clock(), loads = [], selected = [], drawn = [], actions = [], hatchRoles = [];
   const ctx = { window: { ...time.api, MoonpetBotArtLoader: { loadMoonpetBotArt() {
     const pending = deferred(); loads.push(pending); return pending.promise;
-  } } }, performance: { now: time.now }, console: { info() {} },
+  } }, MoonpetBotArtRenderer: { prepareRole(role) { hatchRoles.push(role); return Promise.resolve({ role }); } } }, performance: { now: time.now }, console: { info() {} },
   state: { pet: { pet_id: 'pet-a', xp: 12 }, lifecycle: { phase: 'street' } },
   hatchArtTransitionUntil: 0, hatchArtTransitionTimer: 0, hatchStageOnePreloadPromise: null, hatchArtTransitionGeneration: 0,
   animationUntil: Infinity, animationMode: 'hatch', actionSequence: 0, actionStartedAt: time.now(), reducedMotionAnimationTimer: 0,
@@ -219,7 +239,7 @@ function hatchContext() {
   const animation = clientSource.slice(clientSource.indexOf('  function actionAnimationFamily('), clientSource.indexOf('  function hatchArtTransitionActive('));
   const action = clientSource.slice(clientSource.indexOf('  async function runAction('), clientSource.indexOf('  function switchScreen('));
   vm.runInContext(animation + clientSource.slice(start, end) + action, ctx);
-  return { ...time, ctx, loads, selected, drawn, actions, acceptedHatch: async () => {
+  return { ...time, ctx, loads, selected, drawn, actions, hatchRoles, acceptedHatch: async () => {
     ctx.state = { ...ctx.state, lifecycle: { phase: 'egg' } };
     ctx.actionResponse = { result: { accepted: true }, state: { ...ctx.state, lifecycle: { phase: 'street' } } };
     await ctx.runAction('hatch', {});
@@ -330,6 +350,7 @@ test('the accepted Hatch handler binds the reveal to its final animation sequenc
   assert.equal(f.ctx.actionSequence, 2);
   assert.equal(f.ctx.animationUntil, Infinity);
   assert.equal(f.loads.length, 1);
+  assert.deepEqual(f.hatchRoles, ['egg_hatch']);
   await f.tick(3220); await f.tick(10000);
   assert.equal(f.ctx.hatchArtTransitionUntil, 0);
   assert.equal(f.ctx.animationUntil, 0); assert.equal(f.ctx.animationMode, 'idle');
@@ -337,6 +358,20 @@ test('the accepted Hatch handler binds the reveal to its final animation sequenc
   assert.equal(f.ctx.state.pet.xp, 12);
   assert.equal(f.actions.length, 1); assert.equal(f.actions[0].payload.action, 'hatch');
   assert.equal(f.timers.size, 0);
+});
+
+test('an accepted Hatch waits for its sheet before starting the reveal clock', async () => {
+  const f = hatchContext(), roleReady = deferred();
+  f.ctx.window.MoonpetBotArtRenderer.prepareRole = role => { f.hatchRoles.push(role); return roleReady.promise; };
+  const accepted = f.acceptedHatch();
+  await flush();
+  assert.deepEqual(f.hatchRoles, ['egg_hatch']);
+  assert.equal(f.ctx.hatchArtTransitionUntil, 0);
+  assert.equal(f.loads.length, 0);
+  roleReady.resolve({ role: 'egg_hatch' });
+  await accepted;
+  assert.ok(f.ctx.hatchArtTransitionUntil > f.now());
+  assert.equal(f.loads.length, 1);
 });
 
 for (const release of ['deadline', 'preload']) for (const [action, accepted, mode, duration] of [
