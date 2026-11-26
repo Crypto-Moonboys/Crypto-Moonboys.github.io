@@ -48,6 +48,18 @@ export async function handleSwarmsyWebChat(request, env, cors) {
   const respond = (payload, status = 200, extraHeaders = {}) =>
     Response.json(payload, { status, headers: { ...headers, ...extraHeaders } });
 
+  // Keep the public response generic. Log only the failing stage and status,
+  // with the Ray ID for correlation. Never log request content or credentials.
+  const unavailable = (stage, status) => {
+    console.warn(JSON.stringify({
+      event: 'swarmsy_chat_unavailable',
+      ray: request.headers.get('CF-Ray'),
+      stage,
+      ...(status === undefined ? {} : { upstream_status: status }),
+    }));
+    return respond({ error: 'chat_unavailable' }, 503);
+  };
+
   if (request.headers.has('Origin') && !cors['Access-Control-Allow-Origin']) {
     return respond({ error: 'origin_not_allowed' }, 403);
   }
@@ -74,29 +86,31 @@ export async function handleSwarmsyWebChat(request, env, cors) {
 
   const identity = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
   if (!identity.telegramId) {
-    if (identity.status === 503) return respond({ error: 'chat_unavailable' }, 503);
+    if (identity.status === 503) return unavailable('telegram_session_lookup');
     if (identity.status === 403) return respond({ error: 'access_denied' }, 403);
     return respond({ error: 'connect_telegram' }, 401);
   }
 
   const token = env.SWARMSY_WEB_TOKEN;
   const sessionKey = env.SWARMSY_WEB_SESSION_KEY;
-  if (!SECRET.test(token ?? '') || !SECRET.test(sessionKey ?? '') || token === sessionKey ||
-      !env.SWARMSY_USER_LIMIT || !env.SWARMSY_SITE_LIMIT) {
-    return respond({ error: 'chat_unavailable' }, 503);
-  }
+  if (!SECRET.test(token ?? '')) return unavailable('bridge_token_format');
+  if (!SECRET.test(sessionKey ?? '') || token === sessionKey) return unavailable('session_key_config');
+  if (!env.SWARMSY_USER_LIMIT || !env.SWARMSY_SITE_LIMIT) return unavailable('rate_limit_binding');
 
+  let stage = 'rate_limit';
   try {
     const userAllowance = await env.SWARMSY_USER_LIMIT.limit({ key: identity.telegramId });
     const permitted = userAllowance.success && (await env.SWARMSY_SITE_LIMIT.limit({ key: 'swarmsy-web' })).success;
     if (!permitted) return respond({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
 
+    stage = 'prepare_request';
     const searchCanon = body.public_canon === true || CANON_REQUEST.test(message);
     const [session, sources] = await Promise.all([
       upstreamSession(sessionKey, identity.telegramId, conversationId),
       searchCanon ? findPublicSwarmsySources(message).catch(() => []) : [],
     ]);
 
+    stage = 'upstream_fetch';
     const response = await fetch(UPSTREAM, {
       method: 'POST',
       redirect: 'error',
@@ -107,16 +121,17 @@ export async function handleSwarmsyWebChat(request, env, cors) {
     if (!response.ok) {
       await response.body?.cancel();
       if (response.status === 429) return respond({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
-      return respond({ error: 'chat_unavailable' }, 503);
+      return unavailable('upstream_http', response.status);
     }
+    stage = 'upstream_response';
     const payload = await readJson(response, 48_000);
-    if (typeof payload?.reply !== 'string' || !payload.reply.trim()) return respond({ error: 'chat_unavailable' }, 503);
+    if (typeof payload?.reply !== 'string' || !payload.reply.trim()) return unavailable(stage);
     return respond({
       reply: payload.reply,
       sources: sources.map(({ title, url }) => ({ title, url })),
       canon: searchCanon ? (sources.length ? 'found' : 'unavailable') : 'off',
     });
   } catch {
-    return respond({ error: 'chat_unavailable' }, 503);
+    return unavailable(stage);
   }
 }
