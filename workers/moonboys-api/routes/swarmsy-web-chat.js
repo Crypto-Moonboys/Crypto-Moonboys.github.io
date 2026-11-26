@@ -1,3 +1,4 @@
+import { readBoundedJson } from '../shared/read-bounded-json.mjs';
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { verifyTelegramAuth } from '../telegram-group-membership.js';
 import { findPublishedTemplateSupply, findPublicSwarmsySources } from '../shared/clan-leader-lore.js';
@@ -9,30 +10,6 @@ const SECRET = /^[A-Za-z0-9_-]{43,128}$/;
 const CANON_REQUEST = /\b(?:canon(?:ical)?|lore|wiki|backstory|nfts?|collection|template|mint|ninth berth|bitcoin kid army|hodl(?: x)? warriors|all city bulls|nomad bears|gk\s*nifty\s*heads)\b/i;
 const FACT_LOOKUP = /^(?:who|what|where|when|which|how many|tell me about|explain)\b/i;
 const encoder = new TextEncoder();
-
-async function readJson(message, limit) {
-  if (!message.body || Number(message.headers.get('Content-Length')) > limit) {
-    await message.body?.cancel();
-    return null;
-  }
-  const reader = message.body.getReader();
-  const decoder = new TextDecoder();
-  let size = 0;
-  let text = '';
-  try {
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) return JSON.parse(text + decoder.decode());
-      size += value.byteLength;
-      if (size > limit) return null;
-      text += decoder.decode(value, { stream: true });
-    }
-  } catch {
-    return null;
-  } finally {
-    await reader.cancel().catch(() => {});
-  }
-}
 
 async function upstreamSession(secret, telegramId, conversationId) {
   const key = await crypto.subtle.importKey(
@@ -77,7 +54,7 @@ export async function handleSwarmsyWebChat(request, env, cors) {
     return respond({ error: 'invalid_request' }, 415);
   }
 
-  const body = await readJson(request, 16_384);
+  const body = await readBoundedJson(request, 16_384);
   const message = typeof body?.message === 'string' ? body.message.trim() : '';
   const conversationId = body?.conversation_id;
   if (!message || message.length > MAX_MESSAGE ||
@@ -130,7 +107,7 @@ export async function handleSwarmsyWebChat(request, env, cors) {
       return unavailable('upstream_http', response.status);
     }
     stage = 'upstream_response';
-    const payload = await readJson(response, 48_000);
+    const payload = await readBoundedJson(response, 48_000);
     if (typeof payload?.reply !== 'string' || !payload.reply.trim()) return unavailable(stage);
     return respond({
       reply: payload.reply,

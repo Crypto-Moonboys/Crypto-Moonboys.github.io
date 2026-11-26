@@ -139,3 +139,6 @@ simple = { limit = 6, period = 60 }
 name = "SWARMSY_SITE_LIMIT"
 namespace_id = "26112602"
 simple = { limit = 40, period = 60 }
+
+[ai]
+binding = "SWARMSY_SEARCH_AI"

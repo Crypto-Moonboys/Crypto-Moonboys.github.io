@@ -223,3 +223,18 @@ the live district layout. Each browser document renews its 75-second seat
 every 20 seconds, releases it when leaving where possible, and locks the
 map when it loses the seat. The database allows one seat per faction and
 one per account. Unrenewed seats expire on their own.
+
+### Public SWARMSY Wiki Search
+
+`POST /swarmsy/wiki-search` accepts a short question without Telegram authentication.
+It uses the published Brain feed for official Wiki references. The
+`SWARMSY_SEARCH_AI` Workers AI binding uses the `moonboys-lore` AI Gateway and
+OpenAI web search for the answer and inline web citations. The provider needs
+stored OpenAI credentials or funded AI Gateway Unified Billing. The existing
+article search stays usable when the provider is unavailable.
+
+Anonymous requests have separate keys in the existing Worker rate limit bindings.
+A separate D1 counter caps model calls at 100 per UTC day using the existing
+`clan_leader_lore_usage` table from migration 130. No visitor identity or query
+text is written to that table. AI Gateway logging and cache reuse are disabled
+for this endpoint.
