@@ -332,7 +332,15 @@
       "frames": 6,
       "columns": 3,
       "frameMs": 125,
-      "preserveSourceAlpha": true
+      "preserveSourceAlpha": true,
+      "frameOffsetY": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        4
+      ]
     },
     "deathRight": {
       "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5.png",
@@ -345,7 +353,15 @@
       "columns": 3,
       "frameMs": 125,
       "preserveSourceAlpha": true,
-      "nativeFacing": 1
+      "nativeFacing": 1,
+      "frameOffsetY": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        4
+      ]
     },
     "deathLeft": {
       "spriteSheet": "/games/getting-up/Left-facing volcanic death sprite sheet-4.png",
@@ -358,7 +374,15 @@
       "columns": 3,
       "frameMs": 125,
       "preserveSourceAlpha": true,
-      "nativeFacing": -1
+      "nativeFacing": -1,
+      "frameOffsetY": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        4
+      ]
     },
     "rubble": {
       "spriteSheet": "/games/getting-up/Volcanic collapse into smoking rubble.png",
@@ -370,7 +394,15 @@
       "frames": 6,
       "columns": 3,
       "frameMs": 130,
-      "preserveSourceAlpha": true
+      "preserveSourceAlpha": true,
+      "frameOffsetY": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
     },
     "rubbleRight": {
       "spriteSheet": "/games/getting-up/Volcanic collapse into smoking rubble.png",
@@ -383,7 +415,15 @@
       "columns": 3,
       "frameMs": 130,
       "preserveSourceAlpha": true,
-      "nativeFacing": 1
+      "nativeFacing": 1,
+      "frameOffsetY": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
     },
     "rubbleLeft": {
       "spriteSheet": "/games/getting-up/Six-stage left-facing lava collapse sprite sheet-5.png",
@@ -396,7 +436,15 @@
       "columns": 3,
       "frameMs": 130,
       "preserveSourceAlpha": true,
-      "nativeFacing": -1
+      "nativeFacing": -1,
+      "frameOffsetY": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
     },
     "volcano": {
       "spriteSheet": "/games/getting-up/Rubble to miniature angry volcano-1.png",
