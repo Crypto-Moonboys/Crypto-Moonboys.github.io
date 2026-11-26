@@ -389,7 +389,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-third-spin-coins-v2';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-volcanic-death-grounding-v3';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -589,6 +589,9 @@
     var completionAnimationActive = false;
     var deathAnimationActive = false;
     var deathAnimationPhase = 0;
+    var deathFallActive = false;
+    var deathLandingAdjusted = false;
+    var deathLandingHazardType = '';
     var deathSequence = [];
     var complete = false;
     var lastTime = 0;
@@ -722,9 +725,88 @@
     }
 
     function beginDeathAnimation() {
+      deathFallActive = false;
+      player.vx = 0;
+      player.vy = 0;
+      player.grounded = true;
       deathAnimationPhase = 0;
       deathAnimationActive = deathSequence.length > 0 && !!playerAnimations[deathSequence[0]];
       if (deathAnimationActive) setPlayerAnimation(deathSequence[0]);
+    }
+
+    function beginDeathFall() {
+      deathAnimationActive = false;
+      deathAnimationPhase = 0;
+      deathFallActive = true;
+      deathLandingAdjusted = false;
+      deathLandingHazardType = '';
+      player.grounded = false;
+      player.vy = 0.8;
+      player.vx *= 0.22;
+      setPlayerAnimation('fall');
+      dispatchAudioCue('volcanic_death_fall');
+    }
+
+    function deathLandingHazardAt(x, surfaceY) {
+      for (var i = 0; i < hazards.length; i += 1) {
+        var hazard = hazards[i];
+        // Ground hazards are aligned to the supporting surface by their base.
+        if (Math.abs(hazard.y + hazard.h - surfaceY) > 3) continue;
+        if (x < hazard.x + hazard.w + 2 && x + player.w > hazard.x - 2) return hazard;
+      }
+      return null;
+    }
+
+    function findSafeDeathLandingX(surface, proposedX) {
+      var minimumX = surface.x + 2;
+      var maximumX = surface.x + surface.w - player.w - 2;
+      var x = clamp(proposedX, minimumX, maximumX);
+      for (var attempt = 0; attempt < 10; attempt += 1) {
+        var hazard = deathLandingHazardAt(x, surface.y);
+        if (!hazard) return x;
+        deathLandingAdjusted = true;
+        deathLandingHazardType = hazard.type || 'hazard';
+        var left = clamp(hazard.x - player.w - 4, minimumX, maximumX);
+        var right = clamp(hazard.x + hazard.w + 4, minimumX, maximumX);
+        x = Math.abs(proposedX - left) <= Math.abs(proposedX - right) ? left : right;
+      }
+      return x;
+    }
+
+    function updateDeathFall(dt) {
+      if (!deathFallActive) return;
+      var step = dt / TARGET_FRAME_MS;
+      var previousY = player.y;
+      player.vx *= Math.pow(0.92, step);
+      player.x = clamp(player.x + player.vx * step, 12, WORLD_WIDTH - player.w - 12);
+      player.vy += GRAVITY * step;
+      player.y += player.vy * step;
+      setPlayerAnimation('fall');
+      advancePlayerAnimation(dt, true);
+
+      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
+      var solids = [floor].concat(platforms, crates, solidRewardBoxes);
+      var landingSurface = null;
+      for (var i = 0; i < solids.length; i += 1) {
+        var solid = solids[i];
+        var crossedTop = previousY + player.h <= solid.y + 1 &&
+          player.y + player.h >= solid.y && player.vy >= 0;
+        var horizontalOverlap = player.x < solid.x + solid.w &&
+          player.x + player.w > solid.x;
+        if (!crossedTop || !horizontalOverlap) continue;
+        if (!landingSurface || solid.y < landingSurface.y) landingSurface = solid;
+      }
+
+      if (!landingSurface && player.y > HEIGHT + 160) landingSurface = floor;
+      if (!landingSurface) return;
+      player.x = findSafeDeathLandingX(landingSurface, player.x);
+      player.y = landingSurface.y - player.h;
+      player.grounded = true;
+      beginDeathAnimation();
+      dispatchAudioCue('volcanic_death_landed', {
+        avoidedHazard: deathLandingAdjusted,
+        hazardType: deathLandingHazardType
+      });
     }
 
     function advanceDeathAnimation(dt) {
@@ -1495,6 +1577,7 @@
 
     function damagePlayer(type, hazardX) {
       if (player.invuln > 0 || gameOver) return;
+      var wasAirborne = !player.grounded;
       player.health -= 1;
       player.vx = hazardX > player.x ? -5.5 : 5.5;
       player.vy = -6.2;
@@ -1513,7 +1596,10 @@
         gameOver = true;
         running = false;
         speedBoostUntil = 0;
-        beginDeathAnimation();
+        if (playerCharacterId === 'volcanic-punk' && wasAirborne)
+          beginDeathFall();
+        else
+          beginDeathAnimation();
         clearInput();
         window.dispatchEvent(new CustomEvent('nbg-game-over', {
           detail: { timeMs: Math.round(runElapsedMs), xp: xp, enemy: type }
@@ -2741,7 +2827,7 @@
     function drawOverlay() {
       if (!complete && !gameOver) return;
       if (gameOver) {
-        if (deathAnimationActive) {
+        if (deathFallActive || deathAnimationActive) {
           ctx.save();
           ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
           ctx.fillRect(86, 5, WIDTH - 172, 34);
@@ -2913,10 +2999,14 @@
         if (!unranked) recordReplayTick(frameElapsedMs, dt);
         updatePlayer(dt);
         if (gameOver) {
-          cameraY = 0; // Terminal frame is always normally framed.
+          if (deathFallActive) {
+            updateCamera();
+            updateCameraY();
+          }
           updateHud();
           render(time);
-          if (deathAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
+          if (deathFallActive || deathAnimationActive)
+            requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
           return;
         }
         updateCoins(runElapsedMs);
@@ -2932,6 +3022,10 @@
         updateCameraY();
         if (running) dispatchEnemyAudioFrame();
         if (!running) cameraY = 0; // Completion must not freeze a held-down look.
+      } else if (deathFallActive) {
+        updateDeathFall(dt);
+        updateCamera();
+        updateCameraY();
       } else if (deathAnimationActive) {
         advanceDeathAnimation(dt);
       } else if (completionAnimationActive) {
@@ -2939,7 +3033,7 @@
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive || deathAnimationActive)
+      if (running || completionAnimationActive || deathFallActive || deathAnimationActive)
         requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
     }
 
@@ -2950,6 +3044,9 @@
         get backflipActive() { return backflipActive; },
         get thirdSpinActive() { return thirdSpinActive; },
         get thirdSpinPhase() { return thirdSpinPhase; },
+        get deathFallActive() { return deathFallActive; },
+        get deathLandingAdjusted() { return deathLandingAdjusted; },
+        get deathLandingHazardType() { return deathLandingHazardType; },
         get playerCharacterId() { return playerCharacterId; },
         get burstCoins() { return burstCoins; },
         get pendingJumpPresses() { return pendingJumpPresses; },
@@ -3041,6 +3138,9 @@
       completionAnimationActive = false;
       deathAnimationActive = false;
       deathAnimationPhase = 0;
+      deathFallActive = false;
+      deathLandingAdjusted = false;
+      deathLandingHazardType = '';
       complete = false;
       lastTime = 0;
       cameraX = 0;
