@@ -151,6 +151,16 @@
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
   var TRAIN_GAP = 2;             // px gap between joined cars
   var TRAIN_CLEAR_MS = 20000;   // empty bridge between three-car trains
+  // Burnt CRONX replacement: 3072px transparent 2x2 sheet, four looping fire frames.
+  var CRONX_FIRE_COLUMNS = 2;
+  var CRONX_FIRE_ROWS = 2;
+  var CRONX_FIRE_FRAMES = 4;
+  var CRONX_FIRE_FRAME_MS = 150;
+  var CRONX_FIRE_RENDER_HEIGHT = TRAIN_HEIGHT * 2;
+  var CRONX_FIRE_SOURCE_HEIGHT_RATIO = 0.76;
+  // Generated row two sits 43 source pixels higher after the 2048px resize.
+  // Register those frames back to the shared wheel/rail baseline.
+  var CRONX_FIRE_BASELINE_OFFSETS = [0, 0, 8.5, 8.5];
 
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
@@ -370,7 +380,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261125b';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-cronx-webp';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -564,6 +574,9 @@
     var pendingInitialInput = null;
     var initialInputReplay = null;
     var completionAnimationActive = false;
+    var deathAnimationActive = false;
+    var deathAnimationPhase = 0;
+    var deathSequence = [];
     var complete = false;
     var lastTime = 0;
     var cameraX = 0;
@@ -624,6 +637,7 @@
       facing: 1,
       grounded: true,
       anim: 'idle',
+      animBase: 'idle',
       frame: 0,
       frameTime: 0,
       health: 3,
@@ -661,12 +675,15 @@
     }
 
     function setPlayerAnimation(name) {
-      var next = resolveAnimationName(name);
+      var baseName = resolveAnimationName(name);
+      var directionalName = baseName + (player.facing < 0 ? 'Left' : 'Right');
+      var next = playerAnimations[directionalName] ? directionalName : baseName;
       if (player.anim !== next) {
         player.anim = next;
         player.frame = 0;
         player.frameTime = 0;
       }
+      player.animBase = baseName;
     }
 
     function advancePlayerAnimation(dt, loop) {
@@ -689,6 +706,24 @@
       // A non-looping animation is complete only after its final frame has
       // remained visible for a full frame interval.
       return false;
+    }
+
+    function beginDeathAnimation() {
+      deathAnimationPhase = 0;
+      deathAnimationActive = deathSequence.length > 0 && !!playerAnimations[deathSequence[0]];
+      if (deathAnimationActive) setPlayerAnimation(deathSequence[0]);
+    }
+
+    function advanceDeathAnimation(dt) {
+      if (!deathAnimationActive || !deathSequence.length) return;
+      var finalPhase = deathAnimationPhase >= deathSequence.length - 1;
+      if (finalPhase) {
+        advancePlayerAnimation(dt, true);
+        return;
+      }
+      if (!advancePlayerAnimation(dt, false)) return;
+      deathAnimationPhase += 1;
+      setPlayerAnimation(deathSequence[deathAnimationPhase]);
     }
 
     var platforms = [
@@ -1187,8 +1222,8 @@
       // Spray holds its final painted frame for the attack window. Backflip
       // is also one-shot, but returns to normal airborne art after frame 15.
       var animationFinished = advancePlayerAnimation(dt,
-        player.anim !== 'spray' && player.anim !== 'backflip');
-      if (player.anim === 'backflip' && animationFinished) {
+        player.animBase !== 'spray' && player.animBase !== 'backflip');
+      if (player.animBase === 'backflip' && animationFinished) {
         backflipActive = false;
         setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
       }
@@ -1340,6 +1375,7 @@
         gameOver = true;
         running = false;
         speedBoostUntil = 0;
+        beginDeathAnimation();
         clearInput();
         window.dispatchEvent(new CustomEvent('nbg-game-over', {
           detail: { timeMs: Math.round(runElapsedMs), xp: xp, enemy: type }
@@ -2030,7 +2066,23 @@
 
           if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
 
-          ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+          if (img === images.trainCronx) {
+            // Each 1536px cell contains the same wrecked car; only fire/smoke changes.
+            // Crop unused transparent space below the train, preserve convoy width,
+            // and bottom-anchor the body to the same bridge rail as every other car.
+            var cronxFrame = Math.floor(time / CRONX_FIRE_FRAME_MS) % CRONX_FIRE_FRAMES;
+            var cronxSourceW = img.naturalWidth / CRONX_FIRE_COLUMNS;
+            var cronxSourceH = img.naturalHeight / CRONX_FIRE_ROWS;
+            var cronxSourceX = cronxFrame % CRONX_FIRE_COLUMNS * cronxSourceW;
+            var cronxSourceY = Math.floor(cronxFrame / CRONX_FIRE_COLUMNS) * cronxSourceH;
+            var cronxCropH = Math.round(cronxSourceH * CRONX_FIRE_SOURCE_HEIGHT_RATIO);
+            ctx.drawImage(img, cronxSourceX, cronxSourceY, cronxSourceW, cronxCropH,
+              screenX, trainY + TRAIN_HEIGHT - CRONX_FIRE_RENDER_HEIGHT +
+                CRONX_FIRE_BASELINE_OFFSETS[cronxFrame],
+              TRAIN_WIDTH, CRONX_FIRE_RENDER_HEIGHT);
+          } else {
+            ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+          }
 
           // Wheel spark positions — bottom of each car
           var wheelY = trainY + TRAIN_HEIGHT - 2;
@@ -2520,6 +2572,17 @@
     function drawOverlay() {
       if (!complete && !gameOver) return;
       if (gameOver) {
+        if (deathAnimationActive) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+          ctx.fillRect(86, 5, WIDTH - 172, 34);
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#ffb21a';
+          ctx.font = '900 13px Courier New';
+          ctx.fillText('GAME OVER  •  PRESS RESET', WIDTH / 2, 27);
+          ctx.restore();
+          return;
+        }
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.84)';
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -2683,6 +2746,7 @@
           cameraY = 0; // Terminal frame is always normally framed.
           updateHud();
           render(time);
+          if (deathAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
           return;
         }
         updateCoins(runElapsedMs);
@@ -2697,12 +2761,15 @@
         updateCameraY();
         if (running) dispatchEnemyAudioFrame();
         if (!running) cameraY = 0; // Completion must not freeze a held-down look.
+      } else if (deathAnimationActive) {
+        advanceDeathAnimation(dt);
       } else if (completionAnimationActive) {
         completionAnimationActive = !advancePlayerAnimation(dt, false);
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
+      if (running || completionAnimationActive || deathAnimationActive)
+        requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
     }
 
     function exposeTestState() {
@@ -2760,6 +2827,9 @@
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
         get playerAnimations() { return playerAnimations; },
+        get deathAnimationActive() { return deathAnimationActive; },
+        get deathAnimationPhase() { return deathAnimationPhase; },
+        get deathSequence() { return deathSequence.slice(); },
         get objectImages() { return images; },
         get playerCombatRect() { return getPlayerCombatRect(); },
         enemyCombatRect: function (enemy) { return getEnemyCombatRect(enemy); },
@@ -2794,6 +2864,8 @@
       gameOver = false;
       waitingForFirstInput = true;
       completionAnimationActive = false;
+      deathAnimationActive = false;
+      deathAnimationPhase = 0;
       complete = false;
       lastTime = 0;
       cameraX = 0;
@@ -2835,6 +2907,7 @@
       player.vy = 0;
       player.facing = 1;
       player.grounded = true;
+      player.animBase = 'idle';
       jumpsUsed = 0;
       backflipActive = false;
       player.health = 3;
@@ -2871,7 +2944,9 @@
       if (initPromise) return initPromise;
       initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
         var assets = buildRuntimeAssetMap(assetManifest, classicScenery);
-        var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        var defaultPlayerManifest = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        var playerManifestPath = unranked && canvas.dataset && canvas.dataset.nbgPlayerManifest ?
+          canvas.dataset.nbgPlayerManifest : defaultPlayerManifest;
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
 
         return loadJson(playerManifestPath).then(function (manifest) {
@@ -2881,6 +2956,8 @@
           };
         });
       }).then(function (runtimeAssets) {
+        deathSequence = Array.isArray(runtimeAssets.manifest.deathSequence) ?
+          runtimeAssets.manifest.deathSequence.slice() : [];
         var animations = runtimeAssets.manifest.animations || {};
         var animationKeys = Object.keys(animations);
         requiredAssets = Object.keys(runtimeAssets.assets).concat(animationKeys.map(function (key) {
@@ -2914,9 +2991,9 @@
               columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
-              image: key === 'spray' && result.image ?
+              image: key === 'spray' && result.image && !animation.preserveSourceAlpha ?
                 prepareFinalSpraySheet(result.image) :
-                key.indexOf('crouch') === 0 && result.image ?
+                key.indexOf('crouch') === 0 && result.image && !animation.preserveSourceAlpha ?
                   prepareCrouchSheet(result.image, animation) : result.image
             };
             assetStatus['player.' + key] = {
