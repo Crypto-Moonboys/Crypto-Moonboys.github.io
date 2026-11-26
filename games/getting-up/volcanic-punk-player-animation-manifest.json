@@ -19,7 +19,7 @@
   ],
   "animations": {
     "idle": {
-      "spriteSheet": "/games/getting-up/Volcanic rock fire idle animation sheet.png",
+      "spriteSheet": "/games/getting-up/Volcanic rock fire idle animation sheet-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -31,7 +31,7 @@
       "preserveSourceAlpha": true
     },
     "idleRight": {
-      "spriteSheet": "/games/getting-up/Six-frame volcanic idle sprite sheet-1.png",
+      "spriteSheet": "/games/getting-up/Six-frame volcanic idle sprite sheet-1-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -44,7 +44,7 @@
       "nativeFacing": 1
     },
     "idleLeft": {
-      "spriteSheet": "/games/getting-up/Volcanic Flame Warrior Idle Animation Sheet-2.png",
+      "spriteSheet": "/games/getting-up/Volcanic Flame Warrior Idle Animation Sheet-2-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -57,7 +57,7 @@
       "nativeFacing": -1
     },
     "run": {
-      "spriteSheet": "/games/getting-up/Volcanic Walker Six-Frame Sprite Sheet-1.png",
+      "spriteSheet": "/games/getting-up/Volcanic Walker Six-Frame Sprite Sheet-1-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -69,7 +69,7 @@
       "preserveSourceAlpha": true
     },
     "runRight": {
-      "spriteSheet": "/games/getting-up/Volcanic Walker Six-Frame Sprite Sheet-1.png",
+      "spriteSheet": "/games/getting-up/Volcanic Walker Six-Frame Sprite Sheet-1-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -82,7 +82,7 @@
       "nativeFacing": 1
     },
     "runLeft": {
-      "spriteSheet": "/games/getting-up/Left-facing volcanic punk walk cycle-1.png",
+      "spriteSheet": "/games/getting-up/Left-facing volcanic punk walk cycle-1-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -95,7 +95,7 @@
       "nativeFacing": -1
     },
     "crouchRight": {
-      "spriteSheet": "/games/getting-up/Volcanic Punk Right-Facing Sneak Cycle-4.png",
+      "spriteSheet": "/games/getting-up/Volcanic Punk Right-Facing Sneak Cycle-4-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -108,7 +108,7 @@
       "nativeFacing": 1
     },
     "crouchLeft": {
-      "spriteSheet": "/games/getting-up/Volcanic $PUNK low-crouch animation sheet-3.png",
+      "spriteSheet": "/games/getting-up/Volcanic $PUNK low-crouch animation sheet-3-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -121,7 +121,7 @@
       "nativeFacing": -1
     },
     "jump": {
-      "spriteSheet": "/games/getting-up/Six-frame volcanic jump sprite sheet-2.png",
+      "spriteSheet": "/games/getting-up/Six-frame volcanic jump sprite sheet-2-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -133,7 +133,7 @@
       "preserveSourceAlpha": true
     },
     "jumpRight": {
-      "spriteSheet": "/games/getting-up/Six-frame volcanic jump sprite sheet-2.png",
+      "spriteSheet": "/games/getting-up/Six-frame volcanic jump sprite sheet-2-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -146,7 +146,7 @@
       "nativeFacing": 1
     },
     "jumpLeft": {
-      "spriteSheet": "/games/getting-up/Left-facing volcanic jump sprite sheet-2.png",
+      "spriteSheet": "/games/getting-up/Left-facing volcanic jump sprite sheet-2-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -159,7 +159,7 @@
       "nativeFacing": -1
     },
     "backflip": {
-      "spriteSheet": "/games/getting-up/Volcanic $PUNK backflip sprite sheet-7.png",
+      "spriteSheet": "/games/getting-up/Volcanic $PUNK backflip sprite sheet-7-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -171,7 +171,7 @@
       "preserveSourceAlpha": true
     },
     "backflipRight": {
-      "spriteSheet": "/games/getting-up/Volcanic $PUNK backflip sprite sheet-7.png",
+      "spriteSheet": "/games/getting-up/Volcanic $PUNK backflip sprite sheet-7-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -184,7 +184,7 @@
       "nativeFacing": 1
     },
     "backflipLeft": {
-      "spriteSheet": "/games/getting-up/Left-facing volcanic $PUNK backflip sequence-8.png",
+      "spriteSheet": "/games/getting-up/Left-facing volcanic $PUNK backflip sequence-8-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -197,7 +197,7 @@
       "nativeFacing": -1
     },
     "fall": {
-      "spriteSheet": "/games/getting-up/Right-facing volcanic fall sprite sheet-6.png",
+      "spriteSheet": "/games/getting-up/Right-facing volcanic fall sprite sheet-6-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -209,7 +209,7 @@
       "preserveSourceAlpha": true
     },
     "fallRight": {
-      "spriteSheet": "/games/getting-up/Right-facing volcanic fall sprite sheet-6.png",
+      "spriteSheet": "/games/getting-up/Right-facing volcanic fall sprite sheet-6-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -222,7 +222,7 @@
       "nativeFacing": 1
     },
     "fallLeft": {
-      "spriteSheet": "/games/getting-up/Left-Facing Volcanic Fall Sprite Sheet-5.png",
+      "spriteSheet": "/games/getting-up/Left-Facing Volcanic Fall Sprite Sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -235,7 +235,7 @@
       "nativeFacing": -1
     },
     "spray": {
-      "spriteSheet": "/games/getting-up/Six-Frame Lava Attack Sprite Sheet-4.png",
+      "spriteSheet": "/games/getting-up/Six-Frame Lava Attack Sprite Sheet-4-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -247,7 +247,7 @@
       "preserveSourceAlpha": true
     },
     "sprayRight": {
-      "spriteSheet": "/games/getting-up/Six-Frame Lava Attack Sprite Sheet-4.png",
+      "spriteSheet": "/games/getting-up/Six-Frame Lava Attack Sprite Sheet-4-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -260,7 +260,7 @@
       "nativeFacing": 1
     },
     "sprayLeft": {
-      "spriteSheet": "/games/getting-up/Left-facing six-stage lava attack sprite sheet-3.png",
+      "spriteSheet": "/games/getting-up/Left-facing six-stage lava attack sprite sheet-3-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -273,7 +273,7 @@
       "nativeFacing": -1
     },
     "hurt": {
-      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5.png",
+      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -285,7 +285,7 @@
       "preserveSourceAlpha": true
     },
     "hurtRight": {
-      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5.png",
+      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -298,7 +298,7 @@
       "nativeFacing": 1
     },
     "hurtLeft": {
-      "spriteSheet": "/games/getting-up/Left-facing volcanic death sprite sheet-4.png",
+      "spriteSheet": "/games/getting-up/Left-facing volcanic death sprite sheet-4-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -311,7 +311,7 @@
       "nativeFacing": -1
     },
     "victory": {
-      "spriteSheet": "/games/getting-up/Volcanic rock fire idle animation sheet.png",
+      "spriteSheet": "/games/getting-up/Volcanic rock fire idle animation sheet-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -323,7 +323,7 @@
       "preserveSourceAlpha": true
     },
     "death": {
-      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5.png",
+      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -343,7 +343,7 @@
       ]
     },
     "deathRight": {
-      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5.png",
+      "spriteSheet": "/games/getting-up/Volcanic Character Defeat Sprite Sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -364,7 +364,7 @@
       ]
     },
     "deathLeft": {
-      "spriteSheet": "/games/getting-up/Left-facing volcanic death sprite sheet-4.png",
+      "spriteSheet": "/games/getting-up/Left-facing volcanic death sprite sheet-4-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -385,7 +385,7 @@
       ]
     },
     "rubble": {
-      "spriteSheet": "/games/getting-up/Volcanic collapse into smoking rubble.png",
+      "spriteSheet": "/games/getting-up/Volcanic collapse into smoking rubble-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 104,
@@ -405,7 +405,7 @@
       ]
     },
     "rubbleRight": {
-      "spriteSheet": "/games/getting-up/Volcanic collapse into smoking rubble.png",
+      "spriteSheet": "/games/getting-up/Volcanic collapse into smoking rubble-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 104,
@@ -426,7 +426,7 @@
       ]
     },
     "rubbleLeft": {
-      "spriteSheet": "/games/getting-up/Six-stage left-facing lava collapse sprite sheet-5.png",
+      "spriteSheet": "/games/getting-up/Six-stage left-facing lava collapse sprite sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 104,
@@ -447,7 +447,7 @@
       ]
     },
     "volcano": {
-      "spriteSheet": "/games/getting-up/Rubble to miniature angry volcano-1.png",
+      "spriteSheet": "/games/getting-up/Rubble to miniature angry volcano-1-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 104,
@@ -459,7 +459,7 @@
       "preserveSourceAlpha": true
     },
     "coinVolcano": {
-      "spriteSheet": "/games/getting-up/Angry Mini Volcano Coin Eruption Loop-2.png",
+      "spriteSheet": "/games/getting-up/Angry Mini Volcano Coin Eruption Loop-2-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 112,
@@ -471,7 +471,7 @@
       "preserveSourceAlpha": true
     },
     "thirdSpinBurst1": {
-      "spriteSheet": "/games/getting-up/volcanic-punk-third-jump-360-lava-small-coins-transparent-no-white-final.png",
+      "spriteSheet": "/games/getting-up/volcanic-punk-third-jump-360-lava-small-coins-transparent-no-white-final-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 196,
@@ -483,7 +483,7 @@
       "preserveSourceAlpha": true
     },
     "thirdSpinBurst2": {
-      "spriteSheet": "/games/getting-up/Volcanic hero's spinning lava blast.png",
+      "spriteSheet": "/games/getting-up/Volcanic hero's spinning lava blast-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 196,

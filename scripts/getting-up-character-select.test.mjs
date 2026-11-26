@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const manifest = JSON.parse(fs.readFileSync('games/getting-up/volcanic-punk-player-animation-manifest.json', 'utf8'));
+const birdManifest = JSON.parse(fs.readFileSync('games/getting-up/graffpunks-player-animation-manifest.json', 'utf8'));
+const assetManifest = JSON.parse(fs.readFileSync('game/assets/asset-manifest.json', 'utf8'));
 const page = fs.readFileSync('games/getting-up/index.html', 'utf8');
 const runtime = fs.readFileSync('game/nbg-level1.js', 'utf8');
 const selector = fs.readFileSync('games/getting-up/character-select.js', 'utf8');
@@ -19,6 +21,37 @@ for (const state of ['idle','runRight','runLeft','crouchRight','crouchLeft','jum
   assert.equal(manifest.animations[state].columns, 3);
   assert.equal(manifest.animations[state].frames, 6);
 }
+
+function collectRasterRefs(value, base, output = new Map()) {
+  if (typeof value === 'string' && /\.(?:png|jpe?g|webp)$/i.test(value)) {
+    const runtimePath = value.startsWith('/') ? value.slice(1) : base + '/' + value;
+    output.set(runtimePath, value);
+  } else if (Array.isArray(value)) {
+    value.forEach(item => collectRasterRefs(item, base, output));
+  } else if (value && typeof value === 'object') {
+    Object.values(value).forEach(item => collectRasterRefs(item, base, output));
+  }
+  return output;
+}
+
+const runtimeRasterRefs = collectRasterRefs(assetManifest, 'game/assets');
+collectRasterRefs(birdManifest, 'games/getting-up', runtimeRasterRefs);
+collectRasterRefs(manifest, 'games/getting-up', runtimeRasterRefs);
+assert.ok(runtimeRasterRefs.size >= 100, 'Getting Up runtime image audit must cover the full game manifest');
+for (const runtimePath of runtimeRasterRefs.keys()) {
+  assert.match(runtimePath, /\.webp$/i, 'runtime raster must use WebP: ' + runtimePath);
+  assert.ok(fs.existsSync(runtimePath), 'runtime WebP must exist: ' + runtimePath);
+  if (!/-runtime\.webp$/i.test(runtimePath)) continue;
+  const sourceStem = runtimePath.replace(/-runtime\.webp$/i, '');
+  const masterPath = ['.png', '.jpg', '.jpeg']
+    .map(extension => sourceStem + extension)
+    .find(candidate => fs.existsSync(candidate));
+  assert.ok(masterPath, 'runtime WebP must retain its PNG/JPG master: ' + runtimePath);
+  assert.ok(fs.statSync(runtimePath).size < fs.statSync(masterPath).size,
+    'runtime WebP must be smaller than its retained master: ' + runtimePath);
+}
+assert.match(runtime, /world\/TWIYGR-spritesheet-runtime\.webp/);
+assert.ok(fs.existsSync('game/assets/world/TWIYGR-spritesheet-runtime.webp'));
 assert.deepEqual(manifest.deathSequence, ['death','rubble','volcano','coinVolcano']);
 for (const state of ['death','deathRight','deathLeft','coinVolcano']) assert.equal(manifest.animations[state].renderOffsetY, 12);
 for (const state of ['rubble','rubbleRight','rubbleLeft','volcano']) assert.equal(manifest.animations[state].renderOffsetY, 14);
@@ -44,8 +77,8 @@ assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-collapse-lower-v8/);
-assert.match(runtime, /v=20261126-collapse-lower-v8/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-runtime-webp-collapse-lower-v9/);
+assert.match(runtime, /v=20261126-runtime-webp-collapse-lower-v9/);
 assert.match(runtime, /playerCharacterId === 'volcanic-punk' &&\s*\n\s*!isOnVolcanicDeathSurface\(\)/);
 assert.match(runtime, /VOLCANIC_DEATH_MIN_WALL_WIDTH/);
 assert.match(runtime, /getVolcanicDeathSurfaces/);

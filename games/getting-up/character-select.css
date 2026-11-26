@@ -72,10 +72,10 @@
   filter: drop-shadow(0 5px 9px rgba(0,0,0,.45));
 }
 .fighter-card--bird .fighter-card__portrait {
-  background-image: url('/games/getting-up/Six-Frame GraffPunks Idle Sprite Sheet.png');
+  background-image: url('/games/getting-up/Six-Frame GraffPunks Idle Sprite Sheet-runtime.webp');
 }
 .fighter-card--punk .fighter-card__portrait {
-  background-image: url('/games/getting-up/Volcanic rock fire idle animation sheet.png');
+  background-image: url('/games/getting-up/Volcanic rock fire idle animation sheet-runtime.webp');
 }
 .fighter-card strong,
 .fighter-card span {

@@ -11,7 +11,7 @@ const output = path.resolve(process.env.NBG_BALLOON_OUTPUT || 'output/nbg-balloo
 await fs.mkdir(output, { recursive: true });
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml',
-  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
 const server = http.createServer(async (req, res) => {
   const relative = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/^\/+/, '');
   let file = path.resolve(root, relative);

@@ -11,7 +11,7 @@
   },
   "animations": {
     "idle": {
-      "spriteSheet": "/games/getting-up/Six-Frame GraffPunks Idle Sprite Sheet.png",
+      "spriteSheet": "/games/getting-up/Six-Frame GraffPunks Idle Sprite Sheet-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -22,7 +22,7 @@
       "frameMs": 145
     },
     "run": {
-      "spriteSheet": "/games/getting-up/GraffPunks Bird Runner Sprite Sheet-2.png",
+      "spriteSheet": "/games/getting-up/GraffPunks Bird Runner Sprite Sheet-2-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -33,7 +33,7 @@
       "frameMs": 110
     },
     "crouchLeft": {
-      "spriteSheet": "/games/getting-up/GraffPunks crouching stealth-walk sprite sheet-3.png",
+      "spriteSheet": "/games/getting-up/GraffPunks crouching stealth-walk sprite sheet-3-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -46,7 +46,7 @@
       "preserveSourceAlpha": true
     },
     "crouchRight": {
-      "spriteSheet": "/games/getting-up/GraffPunks crouching stealth-walk sprite sheet-3.png",
+      "spriteSheet": "/games/getting-up/GraffPunks crouching stealth-walk sprite sheet-3-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -59,7 +59,7 @@
       "preserveSourceAlpha": true
     },
     "jump": {
-      "spriteSheet": "/games/getting-up/GraffPunks Bird Jump Cycle Sprite Sheet-4.png",
+      "spriteSheet": "/games/getting-up/GraffPunks Bird Jump Cycle Sprite Sheet-4-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -70,7 +70,7 @@
       "frameMs": 110
     },
     "backflip": {
-      "spriteSheet": "/games/getting-up/GraffPunks bird backflip animation sheet-6.png",
+      "spriteSheet": "/games/getting-up/GraffPunks bird backflip animation sheet-6-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -81,7 +81,7 @@
       "frameMs": 70
     },
     "fall": {
-      "spriteSheet": "/games/getting-up/GraffPunks Bird Falling Animation Sprite Sheet-1.png",
+      "spriteSheet": "/games/getting-up/GraffPunks Bird Falling Animation Sprite Sheet-1-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -92,7 +92,7 @@
       "frameMs": 110
     },
     "spray": {
-      "spriteSheet": "/games/getting-up/GraffPunks spray-paint attack sprite sheet-7.png",
+      "spriteSheet": "/games/getting-up/GraffPunks spray-paint attack sprite sheet-7-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -104,7 +104,7 @@
       "preserveSourceAlpha": true
     },
     "hurt": {
-      "spriteSheet": "/games/getting-up/GraffPunks bird hurt reaction sprite sheet-5.png",
+      "spriteSheet": "/games/getting-up/GraffPunks bird hurt reaction sprite sheet-5-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
@@ -115,7 +115,7 @@
       "frameMs": 100
     },
     "victory": {
-      "spriteSheet": "/games/getting-up/GraffPunks victory celebration sprite sheet-8.png",
+      "spriteSheet": "/games/getting-up/GraffPunks victory celebration sprite sheet-8-runtime.webp",
       "sourceFrameWidth": 512,
       "sourceFrameHeight": 512,
       "renderWidth": 92,
