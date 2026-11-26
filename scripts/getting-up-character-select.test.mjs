@@ -12,7 +12,7 @@ assert.equal(manifest.characterId, 'volcanic-punk');
 for (const state of ['idle','runRight','runLeft','crouchRight','crouchLeft','jumpRight','jumpLeft',
   'backflipRight','backflipLeft','fallRight','fallLeft','sprayRight','sprayLeft','hurt','victory',
   'deathRight','deathLeft','rubbleRight','rubbleLeft','volcano','coinVolcano',
-  'thirdSpinBurst1','thirdSpinBurst2','airDeathFall']) {
+  'thirdSpinBurst1','thirdSpinBurst2','airDeathFall','airDeathExplode']) {
   assert.ok(manifest.animations[state], 'missing volcanic state: ' + state);
   const asset = manifest.animations[state].spriteSheet.replace(/^\//, '');
   assert.ok(fs.existsSync(asset), 'missing volcanic asset: ' + asset);
@@ -77,8 +77,8 @@ assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-staged-trains-v10/);
-assert.match(runtime, /v=20261126-staged-trains-v10/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-air-destruction-v11/);
+assert.match(runtime, /v=20261126-air-destruction-v11/);
 assert.match(runtime, /DEFERRED_TRAIN_ASSET_GROUPS/);
 assert.match(runtime, /deferredAssetGroups = unranked \?/);
 assert.match(runtime, /image\.fetchPriority = 'low'/);
@@ -112,7 +112,15 @@ assert.match(runtime, /function updateDeathFall\(dt\)[\s\S]{0,1200}var solids = 
 assert.match(runtime, /frameOffsetY/);
 assert.match(runtime, /beginDeathFall/);
 assert.match(runtime, /playerAnimations\.airDeathFall \? 'airDeathFall' : 'fall'/);
-assert.match(runtime, /airDeathAnimation !== 'airDeathFall'/);
+assert.match(runtime, /AIR_DEATH_FALL_MIN_FRAME_MS/);
+assert.match(runtime, /calculateAirDeathFallFrameMs/);
+assert.match(runtime, /estimateAirDeathFallMs/);
+assert.match(runtime, /beginAirDeathExplosion/);
+assert.match(runtime, /finishAirDeathExplosion/);
+assert.match(runtime, /deathFallPhase === 'fall'/);
+assert.match(runtime, /deathFallPhase === 'explode'/);
+assert.match(runtime, /advancePlayerAnimation\(dt, false,[\s\S]{0,100}deathFallFrameMs/);
+assert.match(runtime, /setPlayerAnimation\('airDeathExplode'\)/);
 assert.match(runtime, /updateDeathFall/);
 assert.match(runtime, /findSafeDeathLandingX/);
 assert.match(runtime, /deathLandingHazardAt/);
