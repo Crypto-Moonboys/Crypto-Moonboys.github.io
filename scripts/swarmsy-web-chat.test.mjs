@@ -309,4 +309,8 @@ test('finds a template among 6,000 records by reading only its verified shard', 
   assert.match(data.reply, /Silver/);
   assert.deepEqual(data.sources, [{ title: 'new-collection template metadata', url: origin + '/' + path }]);
   assert.equal(read.mock.callCount(), 2);
+  const followUp = await handleSwarmsyWebChat(request(chat({
+    message: 'What are its traits?', template_context: data.template_context,
+  })), env(), cors);
+  assert.match((await followUp.json()).reply, /Silver/);
 });

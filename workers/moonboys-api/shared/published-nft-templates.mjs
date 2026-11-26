@@ -20,7 +20,11 @@ const COLLECTION_NAMES = {
   hodlmoonboys: 'HODL Moonboys',
   noballgamess: 'No Ball Games',
 };
-const FOLLOW_UP = /^(?:and\s+)?(?:how many(?:(?: were| are| have been| can be| were ever| are still) (?:issued|minted|live|left|listed|remaining|in circulation)| (?:remain|are for sale|are still around))|(?:what is|what's|what about|and) (?:its |the )?(?:issued|minted|live|remaining|listed|max(?:imum)?) supply|(?:what is|what's|what about) (?:its |the )?(?:supply|name|rarity|traits|schema|mint cap|price)|how rare is it|how much is it worth)[?!.]*$/;
+const FOLLOW_UP = [
+  /^how many (?:(?:were|are|have been|can be|were ever|are still) (?:issued|minted|live|left|listed|remaining|in circulation)|remain|are for sale|are still around)$/,
+  /^(?:what is|what's|what are|what about) (?:its |the )?(?:(?:issued|minted|live|remaining|listed|max(?:imum)?) supply|supply|name|rarity|traits|schema|mint cap|price)$/,
+  /^how (?:rare is it|much is it worth)$/,
+];
 
 export function templateBucket(id) {
   return Number(id) % BUCKETS;
@@ -87,7 +91,8 @@ function mentionCollection(question, collections) {
 function templateIntent(message, context) {
   const question = plainQuery(message);
   const ids = [...new Set(Array.from(question.matchAll(/\btemplate(?:\s+id)?\s*[:#=]?\s*([1-9]\d{0,14})\b/g), match => match[1]))];
-  const followUp = !ids.length && FOLLOW_UP.test(question);
+  const shortQuestion = question.replace(/^and\s+/, '').replace(/[?!.]+$/, '').trimEnd();
+  const followUp = !ids.length && FOLLOW_UP.some(pattern => pattern.test(shortQuestion));
   const fields = Object.entries({ ...SUPPLY, ...INFO }).filter(([, pattern]) => pattern.test(question)).map(([field]) => field);
   if (fields.length > 1 && fields.includes('name') && !/\b(?:name|title|tell me about|show me|details|info(?:rmation)?)\b/.test(question)) {
     fields.splice(fields.indexOf('name'), 1);
