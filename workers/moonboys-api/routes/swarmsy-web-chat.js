@@ -113,7 +113,7 @@ export async function handleSwarmsyWebChat(request, env, cors) {
     stage = 'upstream_fetch';
     const response = await fetch(UPSTREAM, {
       method: 'POST',
-      redirect: 'error',
+      redirect: 'manual',
       signal: AbortSignal.timeout(35_000),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ message, session, searchCanon, sources }),
