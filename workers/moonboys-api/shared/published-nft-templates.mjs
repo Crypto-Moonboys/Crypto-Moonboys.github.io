@@ -12,9 +12,14 @@ const SUPPLY = {
 const INFO = {
   name: /\b(?:name|title|what is|what's|tell me about|show me|details|info(?:rmation)?)\b/,
   rarity: /\b(?:rare|rarity|rank(?:ing)?)\b/,
-  traits: /\b(?:traits?|attributes?|variation|schema)\b/,
+  traits: /\b(?:traits?|attributes?)\b/,
   price: /\b(?:price|floor|worth|value|cost)\b/,
 };
+const TRAITS = [
+  { field: 'schema', label: 'Schema', pattern: /\bschema\b/ },
+  { field: 'rarity trait', label: 'Rarity trait', pattern: /\brarity traits?\b/ },
+  { field: 'variation', label: 'Variation', pattern: /\bvariations?\b/ },
+];
 const COLLECTION_NAMES = {
   gkniftyheads: 'GKniftyHEADS',
   hodlmoonboys: 'HODL Moonboys',
@@ -22,7 +27,7 @@ const COLLECTION_NAMES = {
 };
 const FOLLOW_UP = [
   /^how many (?:(?:were|are|have been|can be|were ever|are still) (?:issued|minted|live|left|listed|remaining|in circulation)|remain|are for sale|are still around)$/,
-  /^(?:what is|what's|what are|what about) (?:its |the )?(?:(?:issued|minted|live|remaining|listed|max(?:imum)?) supply|supply|name|rarity|traits|schema|mint cap|price)$/,
+  /^(?:what is|what's|what are|what about) (?:its |the )?(?:(?:issued|minted|live|remaining|listed|max(?:imum)?) supply|supply|name|rarity|rarity traits?|traits|attributes|schema|variations?|mint cap|price)$/,
   /^how (?:rare is it|much is it worth)$/,
 ];
 
@@ -93,7 +98,12 @@ function templateIntent(message, context) {
   const ids = [...new Set(Array.from(question.matchAll(/\btemplate(?:\s+id)?\s*[:#=]?\s*([1-9]\d{0,14})\b/g), match => match[1]))];
   const shortQuestion = question.replace(/^and\s+/, '').replace(/[?!.]+$/, '').trimEnd();
   const followUp = !ids.length && FOLLOW_UP.some(pattern => pattern.test(shortQuestion));
-  const fields = Object.entries({ ...SUPPLY, ...INFO }).filter(([, pattern]) => pattern.test(question)).map(([field]) => field);
+  const generalQuestion = question.replace(/\brarity traits?\b/g, '');
+  const fields = Object.entries({ ...SUPPLY, ...INFO }).filter(([, pattern]) => pattern.test(generalQuestion)).map(([field]) => field);
+  const allTraits = fields.indexOf('traits');
+  const traits = TRAITS.filter(trait => allTraits !== -1 || trait.pattern.test(question)).map(({ field }) => field);
+  if (allTraits === -1) fields.push(...traits);
+  else fields.splice(allTraits, 1, ...traits);
   if (fields.length > 1 && fields.includes('name') && !/\b(?:name|title|tell me about|show me|details|info(?:rmation)?)\b/.test(question)) {
     fields.splice(fields.indexOf('name'), 1);
   }
@@ -149,35 +159,31 @@ function describeTemplate(records, fields, collection, id, site) {
   const lines = [];
   const sources = new Map();
   const missing = [];
-  function take(field, candidates = records) {
-    const record = candidates.find(({ row }) => row[field] !== undefined);
-    if (record) sources.set(record.route, { title: `${title} ${record.dataset === 'live-template-supply' ? 'template supply' : record.dataset === 'template-rarity' ? 'template rarity' : 'template metadata'}`, url: site + record.route });
-    return record;
-  }
   const supplies = records.filter(({ dataset }) => dataset === 'live-template-supply');
   const counts = [];
   const dates = new Set();
   for (const field of fields) {
+    const traitIndex = TRAITS.findIndex(trait => trait.field === field);
+    const readValue = row => traitIndex === -1 ? row[field] : row.traits?.[traitIndex];
     let candidates = records;
     if (field === 'live' || field === 'listed') candidates = supplies;
-    if (field === 'traits') candidates = records.filter(({ row }) => row.traits?.some(Boolean));
     if (field === 'rarity') candidates = [...records.filter(row => row.dataset === 'template-rarity'), ...records];
-    const record = take(field, candidates);
+    const record = candidates.find(({ row }) => readValue(row) != null);
     if (!record) {
       missing.push(field);
       continue;
     }
-    const value = record.row[field];
+    const sourceName = record.dataset === 'live-template-supply' ? 'template supply'
+      : record.dataset === 'template-rarity' ? 'template rarity' : 'template metadata';
+    sources.set(record.route, { title: `${title} ${sourceName}`, url: site + record.route });
+    const value = readValue(record.row);
     if (field === 'issued' || field === 'live' || field === 'listed') {
       counts.push(`${value} ${field}`);
       dates.add(record.row.checked);
     } else if (field === 'maximum') {
       lines.push(value === 0 ? 'Maximum supply: **uncapped**.' : `Maximum supply: **${value}**.`);
-    } else if (field === 'traits') {
-      const [schema, rarity, variation] = value;
-      if (schema) lines.push(`Schema: **${schema}**.`);
-      if (rarity) lines.push(`Rarity trait: **${rarity}**.`);
-      if (variation) lines.push(`Variation: **${variation}**.`);
+    } else if (traitIndex !== -1) {
+      lines.push(`${TRAITS[traitIndex].label}: **${value}**.`);
     } else if (field === 'rarity') {
       lines.push(`Published rarity: **${value}**${record.row.rank ? ` (rank ${record.row.rank})` : ''}.`);
     } else {

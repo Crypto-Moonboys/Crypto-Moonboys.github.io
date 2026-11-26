@@ -279,17 +279,21 @@ test('finds a template among 6,000 records by reading only its verified shard', 
   const dir = await mkdtemp(join(tmpdir(), 'sparky-template-test-'));
   context.after(() => rm(dir, { recursive: true, force: true }));
   const path = 'data/new-collection/template-metadata-cache.json';
+  const rarityPath = 'data/new-collection/template-rarity.json';
   await mkdir(join(dir, 'data/new-collection'), { recursive: true });
   const templates = Array.from({ length: 6000 }, (_, i) => ({
     template_id: 800000 + i, title: 'NFT ' + i, schema_name: 'street-art',
-    immutable_data: { rarity: 'Legendary', variation: 'Silver' }, max_supply: 0,
-    unrelated_data: 'x'.repeat(360),
+    max_supply: 0, unrelated_data: 'x'.repeat(360),
   }));
   const raw = JSON.stringify({ collection: 'new-collection', templates });
   assert.ok(Buffer.byteLength(raw) > 2_000_000);
   await writeFile(join(dir, path), raw);
+  await writeFile(join(dir, rarityPath), JSON.stringify({
+    collection: 'new-collection',
+    ranked_templates: [{ template_id: 805999, band: 'Legendary', rarity_trait: 'Rare', variation_trait: 'Silver' }],
+  }));
   const catalog = await publishBrainFeed(dir);
-  assert.equal(catalog.records.length, 32);
+  assert.equal(catalog.records.length, 33);
   const shard = catalog.records.find(record => record.path === '/data/sparky-nft/new-collection/15.json');
   assert.ok(shard);
   const entry = await readFile(join(dir, 'brain-feed', 'records', shard.sha256 + '.json'));
@@ -305,12 +309,27 @@ test('finds a template among 6,000 records by reading only its verified shard', 
   assert.equal(data.canon, 'found');
   assert.match(data.reply, /NFT 5999/);
   assert.match(data.reply, /uncapped/);
-  assert.match(data.reply, /Legendary/);
-  assert.match(data.reply, /Silver/);
-  assert.deepEqual(data.sources, [{ title: 'new-collection template metadata', url: origin + '/' + path }]);
+  assert.match(data.reply, /Published rarity: \*\*Legendary\*\*/);
+  assert.match(data.reply, /Schema: \*\*street-art\*\*/);
+  assert.match(data.reply, /Rarity trait: \*\*Rare\*\*/);
+  assert.match(data.reply, /Variation: \*\*Silver\*\*/);
+  const metadataSource = { title: 'new-collection template metadata', url: origin + '/' + path };
+  const raritySource = { title: 'new-collection template rarity', url: origin + '/' + rarityPath };
+  assert.deepEqual(data.sources, [metadataSource, raritySource]);
   assert.equal(read.mock.callCount(), 2);
   const followUp = await handleSwarmsyWebChat(request(chat({
     message: 'What are its traits?', template_context: data.template_context,
   })), env(), cors);
   assert.match((await followUp.json()).reply, /Silver/);
+  const variation = await handleSwarmsyWebChat(request(chat({
+    message: 'What is its variation?', template_context: data.template_context,
+  })), env(), cors);
+  const variationReply = await variation.json();
+  assert.match(variationReply.reply, /Variation: \*\*Silver\*\*/);
+  assert.doesNotMatch(variationReply.reply, /Schema:/);
+  assert.deepEqual(variationReply.sources, [raritySource]);
+  const missing = await handleSwarmsyWebChat(request(chat({
+    message: 'What is the variation for new collection template 805967?',
+  })), env(), cors);
+  assert.equal((await missing.json()).canon, 'unavailable');
 });
