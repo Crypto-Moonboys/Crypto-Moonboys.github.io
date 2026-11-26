@@ -354,6 +354,12 @@ try {
   const homepageThumbnailRequests = homepageDesktop.requestedUrls.filter((requestUrl) => requestUrl.includes('/img/avatar-builder/thumbnails/'));
   assert(homepageLayerRequests.length > 0 && homepageLayerRequests.length <= 9, `Homepage initial load must request only default full-size layers: ${homepageLayerRequests.length}`);
   assert(homepageThumbnailRequests.length <= PAGE_SIZE, `Homepage initial load must request at most one visible page of lazy thumbnails: ${homepageThumbnailRequests.length}`);
+  assert(homepageDesktop.requestedUrls.some((requestUrl) => requestUrl.endsWith('/data/avatar-builder-web-manifest.json')),
+    'Homepage builder must request the reduced web bootstrap manifest');
+  assert(!homepageDesktop.requestedUrls.some((requestUrl) => requestUrl.endsWith('/data/avatar-builder-manifest.json')),
+    'Homepage builder must not request the full server/Telegram catalogue');
+  assert(!homepageDesktop.requestedUrls.some((requestUrl) => requestUrl.includes('/data/avatar-builder-categories/')),
+    'Homepage initial load must not request category chunks already covered by the bootstrap');
   assert(!homepageDesktop.requestedUrls.some((requestUrl) => requestUrl.includes('/img/CRYPTO-MOONBOYS-OG-TRAITS/')), 'Homepage must not request original 4000x4000 trait sources');
 
   const nextHomepagePreset = createHomepagePresetCycle(manifest);
@@ -738,8 +744,11 @@ try {
   assert(landscapePreview.height >= 373, 'Landscape avatar must fill available viewport height');
   assert(landscapeControls.x >= landscapePreview.x + landscapePreview.width, 'Landscape controls must sit beside avatar');
   await assertCategoryRow(landscape, '844x390');
+  await landscape.locator('.avatar-layer').nth(1).evaluate((image) => { image.__builderIdentityProbe = true; });
   await landscape.locator('[data-category="hat"]').click();
   await landscape.locator('.pagination').waitFor({ state: 'visible' });
+  assert(landscape.requestedUrls.some((url) => url.endsWith('/data/avatar-builder-categories/hat.json')),
+    'Opening Hat must lazily request only the Hat catalogue');
   assert.equal((await landscape.locator('.page-label').textContent()).trim(), '1 / 10', 'Landscape Hat tray must expose pagination');
   await landscape.locator('[data-page="next"]').click();
   const pageTwoTrait = landscape.locator('.trait-button').first();
@@ -747,6 +756,8 @@ try {
   assert(hatTraits.findIndex((trait) => trait.id === pageTwoTraitId) >= 24, 'Landscape page two must expose a Hat beyond index 24');
   await pageTwoTrait.click();
   await landscape.locator('#avatar-frame[aria-busy="false"]').waitFor();
+  assert.equal(await landscape.locator('.avatar-layer').nth(1).evaluate((image) => image.__builderIdentityProbe), true,
+    'Changing one trait must preserve unchanged layer DOM and decoded image state');
   assert.equal(await landscape.locator(`[data-trait="${pageTwoTraitId}"]`).getAttribute('aria-pressed'), 'true', 'Landscape must allow selecting a Hat beyond page one');
   await landscape.close();
 

@@ -4,10 +4,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { clearOptionalStack, defaultStack, isCompleteValidStack, randomStack } from '../js/avatar-builder-core.mjs';
+import { AVATAR_PRESETS } from '../js/avatar-builder-homepage-presets.mjs';
 import { positiveModulo } from '../js/avatar-backgrounds/renderer-utils.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-manifest.json'), 'utf8'));
+const webManifestPath = path.join(ROOT, 'data', 'avatar-builder-web-manifest.json');
+const webManifest = JSON.parse(await readFile(webManifestPath, 'utf8'));
 const expectedCategories = ['background', 'body', 'tattoos', 'clothes', 'chains', 'face', 'hat', 'left-arm', 'right-arm'];
 
 assert.equal(positiveModulo(-.25, 1), .75, 'Animated positions must wrap negative unit values back into view');
@@ -37,6 +40,46 @@ assert.equal(manifest.counts.source, imageTraits.length, 'Source count must matc
 assert.equal(manifest.counts.layers, imageTraits.length, 'Layer count must match image traits');
 assert.equal(manifest.counts.thumbnails, manifest.traits.length, 'Thumbnail count must match manifest traits');
 assert.deepEqual(manifest.categories.filter((category) => category.required).map((category) => category.id), ['background', 'body']);
+assert((await stat(webManifestPath)).size < 50 * 1024,
+  'Web bootstrap manifest must stay below 50 KiB');
+assert((await stat(webManifestPath)).size < (await stat(path.join(ROOT, 'data', 'avatar-builder-manifest.json'))).size * .2,
+  'Web bootstrap must remove at least 80 percent of the full catalogue transfer');
+assert.deepEqual(webManifest.categoryOrder, expectedCategories);
+assert.deepEqual(webManifest.loadedCategories, ['background']);
+assert(webManifest.counts.layers < manifest.counts.layers,
+  'Web builder must reuse decoded-pixel-identical layer URLs');
+assert(webManifest.counts.thumbnails < manifest.counts.thumbnails,
+  'Web builder must reuse decoded-pixel-identical thumbnail URLs');
+assert.equal(webManifest.traits.filter((trait) => trait.category === 'background').length,
+  manifest.categories.find((category) => category.id === 'background').count,
+  'The initially visible background tray must be complete in the bootstrap');
+
+const chunkTraits = [];
+for (const category of manifest.categories) {
+  const chunk = JSON.parse(await readFile(path.join(ROOT, 'data', 'avatar-builder-categories',
+    `${category.id}.json`), 'utf8'));
+  assert.equal(chunk.version, manifest.version);
+  assert.equal(chunk.category, category.id);
+  assert.equal(chunk.traits.length, category.count);
+  assert(chunk.traits.every((trait) => trait.category === category.id));
+  assert(chunk.traits.every((trait) => !('layerBytes' in trait) && !('thumbnailBytes' in trait)),
+    `${category.id} web traits must omit build-only byte metadata`);
+  chunkTraits.push(...chunk.traits);
+}
+assert.deepEqual(chunkTraits.map((trait) => trait.id).sort(), manifest.traits.map((trait) => trait.id).sort(),
+  'Lazy category manifests must cover the exact authoritative trait catalogue');
+for (const trait of chunkTraits) {
+  if (trait.layer) await stat(path.join(ROOT, trait.layer.replace(/^\//, '')));
+  await stat(path.join(ROOT, trait.thumbnail.replace(/^\//, '')));
+}
+assert(webManifest.traits.every((trait) => !('layerBytes' in trait) && !('thumbnailBytes' in trait)),
+  'Web bootstrap traits must omit build-only byte metadata');
+const webTraitIds = new Set(webManifest.traits.map((trait) => trait.id));
+for (const { stack } of AVATAR_PRESETS) {
+  for (const traitId of Object.values(stack).filter(Boolean)) {
+    assert(webTraitIds.has(traitId), `Curated preset trait must be available before lazy category loading: ${traitId}`);
+  }
+}
 
 const ids = new Set();
 for (const trait of manifest.traits) {
@@ -94,6 +137,17 @@ for (const relativePath of ['moonboy-builder.html', 'avatar-builder-test.html', 
 }
 
 const builderCss = await readFile(path.join(ROOT, 'css', 'avatar-builder-test.css'), 'utf8');
+const builderRuntime = await readFile(path.join(ROOT, 'js', 'avatar-builder-test.js'), 'utf8');
+assert.match(builderRuntime, /fetch\('\/data\/avatar-builder-web-manifest\.json'/,
+  'Web builder must use the reduced bootstrap catalogue');
+assert.doesNotMatch(builderRuntime, /fetch\('\/data\/avatar-builder-manifest\.json'/,
+  'Web builder must not fetch the full Worker catalogue');
+assert.match(builderRuntime, /avatar-builder-categories/,
+  'Web builder must lazy-load complete categories');
+assert.match(builderRuntime, /const layerImages = new Map\(\)/,
+  'Web builder must retain unchanged decoded layer elements');
+assert.doesNotMatch(builderRuntime, /querySelectorAll\('\.avatar-layer'\).*remove/,
+  'A trait change must not destroy every visible layer');
 assert(!builderCss.includes('@scope'), 'Builder CSS must not depend on unsupported @scope blocks');
 for (const selector of [
   '.avatar-builder-host .builder-shell',

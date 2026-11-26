@@ -14,6 +14,12 @@
       delete element.dataset.sectionSrc;
     } else if (element === builder && !builder.dataset.builderStarted) {
       builder.dataset.builderStarted = 'true';
+      if (builder.dataset.builderStyle) {
+        const style = document.createElement('link');
+        style.rel = 'stylesheet';
+        style.href = builder.dataset.builderStyle;
+        document.head.append(style);
+      }
       const script = document.createElement('script');
       script.type = 'module';
       script.src = builder.dataset.builderModule;
