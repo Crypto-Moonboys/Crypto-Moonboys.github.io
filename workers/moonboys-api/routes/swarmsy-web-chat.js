@@ -105,7 +105,7 @@ export async function handleSwarmsyWebChat(request, env, cors) {
     if (!permitted) return respond({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
 
     stage = 'prepare_request';
-    const supply = await findPublishedTemplateSupply(message);
+    const supply = await findPublishedTemplateSupply(message, body.template_context);
     if (supply) return respond(supply);
 
     const requestedCanon = body.public_canon === true || CANON_REQUEST.test(message);
