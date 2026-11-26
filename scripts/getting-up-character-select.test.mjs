@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const manifest = JSON.parse(fs.readFileSync('games/getting-up/volcanic-punk-player-animation-manifest.json', 'utf8'));
+const page = fs.readFileSync('games/getting-up/index.html', 'utf8');
+const runtime = fs.readFileSync('game/nbg-level1.js', 'utf8');
+const selector = fs.readFileSync('games/getting-up/character-select.js', 'utf8');
+
+assert.equal(manifest.characterId, 'volcanic-punk');
+for (const state of ['idle','runRight','runLeft','crouchRight','crouchLeft','jumpRight','jumpLeft',
+  'backflipRight','backflipLeft','fallRight','fallLeft','sprayRight','sprayLeft','hurt','victory',
+  'deathRight','deathLeft','rubbleRight','rubbleLeft','volcano','coinVolcano']) {
+  assert.ok(manifest.animations[state], 'missing volcanic state: ' + state);
+  const asset = manifest.animations[state].spriteSheet.replace(/^\//, '');
+  assert.ok(fs.existsSync(asset), 'missing volcanic asset: ' + asset);
+  assert.equal(manifest.animations[state].sourceFrameWidth, 512);
+  assert.equal(manifest.animations[state].sourceFrameHeight, 512);
+  assert.equal(manifest.animations[state].columns, 3);
+  assert.equal(manifest.animations[state].frames, 6);
+}
+assert.deepEqual(manifest.deathSequence, ['death','rubble','volcano','coinVolcano']);
+assert.match(page, /id="fighter-select"/);
+assert.match(page, /character-select\.js/);
+assert.match(selector, /volcanic-punk-player-animation-manifest\.json/);
+assert.match(runtime, /deathAnimationActive/);
+assert.match(runtime, /directionalName/);
+console.log('[PASS] Getting Up selectable character contract');

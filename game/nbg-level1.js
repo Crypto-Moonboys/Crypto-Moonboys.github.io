@@ -574,6 +574,9 @@
     var pendingInitialInput = null;
     var initialInputReplay = null;
     var completionAnimationActive = false;
+    var deathAnimationActive = false;
+    var deathAnimationPhase = 0;
+    var deathSequence = [];
     var complete = false;
     var lastTime = 0;
     var cameraX = 0;
@@ -634,6 +637,7 @@
       facing: 1,
       grounded: true,
       anim: 'idle',
+      animBase: 'idle',
       frame: 0,
       frameTime: 0,
       health: 3,
@@ -671,12 +675,15 @@
     }
 
     function setPlayerAnimation(name) {
-      var next = resolveAnimationName(name);
+      var baseName = resolveAnimationName(name);
+      var directionalName = baseName + (player.facing < 0 ? 'Left' : 'Right');
+      var next = playerAnimations[directionalName] ? directionalName : baseName;
       if (player.anim !== next) {
         player.anim = next;
         player.frame = 0;
         player.frameTime = 0;
       }
+      player.animBase = baseName;
     }
 
     function advancePlayerAnimation(dt, loop) {
@@ -699,6 +706,24 @@
       // A non-looping animation is complete only after its final frame has
       // remained visible for a full frame interval.
       return false;
+    }
+
+    function beginDeathAnimation() {
+      deathAnimationPhase = 0;
+      deathAnimationActive = deathSequence.length > 0 && !!playerAnimations[deathSequence[0]];
+      if (deathAnimationActive) setPlayerAnimation(deathSequence[0]);
+    }
+
+    function advanceDeathAnimation(dt) {
+      if (!deathAnimationActive || !deathSequence.length) return;
+      var finalPhase = deathAnimationPhase >= deathSequence.length - 1;
+      if (finalPhase) {
+        advancePlayerAnimation(dt, true);
+        return;
+      }
+      if (!advancePlayerAnimation(dt, false)) return;
+      deathAnimationPhase += 1;
+      setPlayerAnimation(deathSequence[deathAnimationPhase]);
     }
 
     var platforms = [
@@ -1197,8 +1222,8 @@
       // Spray holds its final painted frame for the attack window. Backflip
       // is also one-shot, but returns to normal airborne art after frame 15.
       var animationFinished = advancePlayerAnimation(dt,
-        player.anim !== 'spray' && player.anim !== 'backflip');
-      if (player.anim === 'backflip' && animationFinished) {
+        player.animBase !== 'spray' && player.animBase !== 'backflip');
+      if (player.animBase === 'backflip' && animationFinished) {
         backflipActive = false;
         setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
       }
@@ -1350,6 +1375,7 @@
         gameOver = true;
         running = false;
         speedBoostUntil = 0;
+        beginDeathAnimation();
         clearInput();
         window.dispatchEvent(new CustomEvent('nbg-game-over', {
           detail: { timeMs: Math.round(runElapsedMs), xp: xp, enemy: type }
@@ -2546,6 +2572,17 @@
     function drawOverlay() {
       if (!complete && !gameOver) return;
       if (gameOver) {
+        if (deathAnimationActive) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+          ctx.fillRect(86, 5, WIDTH - 172, 34);
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#ffb21a';
+          ctx.font = '900 13px Courier New';
+          ctx.fillText('GAME OVER  •  PRESS RESET', WIDTH / 2, 27);
+          ctx.restore();
+          return;
+        }
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.84)';
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -2709,6 +2746,7 @@
           cameraY = 0; // Terminal frame is always normally framed.
           updateHud();
           render(time);
+          if (deathAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
           return;
         }
         updateCoins(runElapsedMs);
@@ -2723,12 +2761,15 @@
         updateCameraY();
         if (running) dispatchEnemyAudioFrame();
         if (!running) cameraY = 0; // Completion must not freeze a held-down look.
+      } else if (deathAnimationActive) {
+        advanceDeathAnimation(dt);
       } else if (completionAnimationActive) {
         completionAnimationActive = !advancePlayerAnimation(dt, false);
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive) requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
+      if (running || completionAnimationActive || deathAnimationActive)
+        requestAnimationFrame(function (nextTime) { tick(nextTime, sequence); });
     }
 
     function exposeTestState() {
@@ -2786,6 +2827,9 @@
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
         get playerAnimations() { return playerAnimations; },
+        get deathAnimationActive() { return deathAnimationActive; },
+        get deathAnimationPhase() { return deathAnimationPhase; },
+        get deathSequence() { return deathSequence.slice(); },
         get objectImages() { return images; },
         get playerCombatRect() { return getPlayerCombatRect(); },
         enemyCombatRect: function (enemy) { return getEnemyCombatRect(enemy); },
@@ -2820,6 +2864,8 @@
       gameOver = false;
       waitingForFirstInput = true;
       completionAnimationActive = false;
+      deathAnimationActive = false;
+      deathAnimationPhase = 0;
       complete = false;
       lastTime = 0;
       cameraX = 0;
@@ -2861,6 +2907,7 @@
       player.vy = 0;
       player.facing = 1;
       player.grounded = true;
+      player.animBase = 'idle';
       jumpsUsed = 0;
       backflipActive = false;
       player.health = 3;
@@ -2909,6 +2956,8 @@
           };
         });
       }).then(function (runtimeAssets) {
+        deathSequence = Array.isArray(runtimeAssets.manifest.deathSequence) ?
+          runtimeAssets.manifest.deathSequence.slice() : [];
         var animations = runtimeAssets.manifest.animations || {};
         var animationKeys = Object.keys(animations);
         requiredAssets = Object.keys(runtimeAssets.assets).concat(animationKeys.map(function (key) {

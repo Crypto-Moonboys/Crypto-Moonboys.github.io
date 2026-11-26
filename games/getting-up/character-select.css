@@ -1,0 +1,108 @@
+.fighter-select {
+  display: grid;
+  gap: .7rem;
+  margin: 0 0 1rem;
+  padding: .85rem;
+  border: 1px solid rgba(255, 133, 48, .35);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(8, 10, 18, .96), rgba(43, 14, 5, .92));
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .34);
+}
+.fighter-select__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.fighter-select__heading h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.fighter-select__heading p {
+  margin: 0;
+  color: var(--color-text-muted, #aeb2c0);
+  font-size: .88rem;
+}
+.fighter-select__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem;
+}
+.fighter-card {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: center;
+  gap: .7rem;
+  min-height: 82px;
+  padding: .5rem;
+  color: #fff;
+  text-align: left;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 11px;
+  background: rgba(255,255,255,.045);
+  cursor: pointer;
+}
+.fighter-card:hover,
+.fighter-card:focus-visible {
+  border-color: #ff7a1a;
+  background: rgba(255, 104, 16, .11);
+}
+.fighter-card.is-selected {
+  border-color: #ffb21a;
+  box-shadow: inset 0 0 0 1px rgba(255,178,26,.5), 0 0 22px rgba(255,89,0,.18);
+  background: rgba(255, 92, 0, .13);
+}
+.fighter-card:disabled {
+  cursor: default;
+  opacity: .68;
+}
+.fighter-card__portrait {
+  width: 68px;
+  height: 68px;
+  overflow: hidden;
+  border-radius: 9px;
+  background-repeat: no-repeat;
+  background-size: 300% 200%;
+  background-position: 0 0;
+  filter: drop-shadow(0 5px 9px rgba(0,0,0,.45));
+}
+.fighter-card--bird .fighter-card__portrait {
+  background-image: url('/games/getting-up/Six-Frame GraffPunks Idle Sprite Sheet.png');
+}
+.fighter-card--punk .fighter-card__portrait {
+  background-image: url('/games/getting-up/Volcanic rock fire idle animation sheet.png');
+}
+.fighter-card strong,
+.fighter-card span {
+  display: block;
+}
+.fighter-card strong {
+  font-size: .98rem;
+}
+.fighter-card span {
+  margin-top: .18rem;
+  color: #bbc0ca;
+  font-size: .8rem;
+}
+.fighter-select[data-locked="true"]::after {
+  content: 'Character locked during this run';
+  color: #ffb21a;
+  font-size: .78rem;
+  letter-spacing: .04em;
+}
+body[data-getting-up-character="punk"] .hud-strip {
+  box-shadow: inset 0 -2px 0 rgba(255, 82, 0, .62);
+}
+@media (max-width: 640px) {
+  .fighter-select__heading {
+    display: block;
+  }
+  .fighter-select__heading p {
+    margin-top: .25rem;
+  }
+  .fighter-select__grid {
+    grid-template-columns: 1fr;
+  }
+}
