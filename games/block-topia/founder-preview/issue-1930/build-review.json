@@ -1,31 +1,77 @@
 {
   "issue": 1930,
-  "round": 86,
+  "round": 87,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
           "type": "Obstructed Views",
-          "description": "The route includes several segments where the player might have obstructed views, such as between coordinates 53 and 64. Players may feel disoriented if they cannot see important elements in the environment.",
-          "suggestion": "Ensure that key landmarks or houses are visible from critical points on the route."
+          "description": "The route includes several segments that are obstructed by water or ground, which might confuse players.",
+          "affectedSegments": [
+            27,
+            40,
+            53,
+            64,
+            88,
+            91,
+            103,
+            114
+          ]
         },
         {
           "type": "Color Contrast Issues",
-          "description": "The color for 'dock' (#8a2be2) might not provide enough contrast against the background, especially in areas with water (#007fff). This could make docks harder to distinguish.",
-          "suggestion": "Adjust the dock color to have better visibility."
+          "description": "The color of the dock (#87cefa) is very similar to the water (#007fff), which might make it hard for players to distinguish between them.",
+          "affectedElements": [
+            "docks"
+          ]
         }
       ],
       "navigationRisks": [
         {
-          "type": "Route Complexity",
-          "description": "The route involves a lot of turns and changes in direction, which can be confusing for players. The route includes 24 steps with many twists.",
-          "suggestion": "Simplify the route to make it easier to follow."
+          "type": "Non-Linear Path",
+          "description": "The route has a non-linear path with many turns, which could be challenging for some players to follow.",
+          "affectedPath": [
+            15,
+            27,
+            16,
+            28,
+            17,
+            40,
+            52,
+            41,
+            64,
+            53,
+            42,
+            76,
+            88,
+            75,
+            77,
+            100,
+            87,
+            89,
+            90,
+            102,
+            91,
+            114,
+            103,
+            92,
+            113,
+            115,
+            104,
+            93,
+            105,
+            94
+          ]
         },
         {
-          "type": "Potential Dead Ends",
-          "description": "The route ends abruptly at coordinate 115 without any clear exit or continuation path, which could frustrate players who expect a clear end point.",
-          "suggestion": "Ensure that the route has a clear endpoint with an option to return to the start or explore other areas."
+          "type": "Potential Loops",
+          "description": "The route includes a potential loop from segment 87 to 90 and then back to 89, which might confuse players.",
+          "affectedLoop": [
+            87,
+            89,
+            90
+          ]
         }
       ]
     }
