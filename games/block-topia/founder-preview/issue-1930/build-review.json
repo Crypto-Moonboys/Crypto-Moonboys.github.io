@@ -1,42 +1,43 @@
 {
   "issue": 1930,
-  "round": 100,
+  "round": 101,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "issue": "Potential road blockage",
-          "description": "The path from row 15 to 27 seems to be blocked by water or dock, which could cause navigation issues.",
-          "location": [
+          "type": "Obstruction",
+          "description": "The path from row 15 to 27 is obstructed by water, which could be confusing for players navigating the district.",
+          "affectedPath": [
             15,
             27
           ]
         },
         {
-          "issue": "House and road proximity",
-          "description": "There are houses (represented by 'h') very close to the roads ('r'), which might create visual clutter and confusion for players.",
-          "location": [
-            "...hrdr~....",
-            "...hrr......"
+          "type": "Color Contrast",
+          "description": "The ground color (#964b00) and dock color (#87cefa) have a low contrast, which might make it hard for players to distinguish between them.",
+          "affectedElements": [
+            "ground",
+            "dock"
           ]
         }
       ],
       "navigationRisks": [
         {
-          "issue": "Unexpected path",
-          "description": "The path from row 105 to 93 is not clear, as the direction changes abruptly without a proper transition.",
-          "location": [
-            105,
-            93
+          "type": "Obstacle",
+          "description": "There are multiple rows with 'r' characters that could be interpreted as obstacles, potentially leading to dead ends or incorrect paths for players.",
+          "affectedRows": [
+            3,
+            4,
+            5
           ]
         },
         {
-          "issue": "Missing road segments",
-          "description": "There are gaps in the road network between rows 42 and 76, which could lead to navigation errors.",
-          "location": [
-            "....r..rrdr.",
-            "...drr...."
+          "type": "Path Continuity",
+          "description": "The path from row 100 to 93 is interrupted by water and ground elements, which might disrupt the player's flow through the district.",
+          "affectedPath": [
+            100,
+            93
           ]
         }
       ]
