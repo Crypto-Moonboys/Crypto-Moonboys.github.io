@@ -29,6 +29,7 @@ const mimeTypes = new Map([
   ['.json', 'application/json; charset=utf-8'],
   ['.mp3', 'audio/mpeg'],
   ['.png', 'image/png'],
+  ['.webp', 'image/webp'],
   ['.svg', 'image/svg+xml; charset=utf-8']
 ]);
 
@@ -237,9 +238,9 @@ const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimat
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
 const expectedSkylineLayers = [
-  'world/LONDON BACKGROUND1.png',
-  'world/LONDON BACKGROUND2.png',
-  'world/LONDON BACKGROUND3.png'
+  'world/LONDON BACKGROUND1-runtime.webp',
+  'world/LONDON BACKGROUND2-runtime.webp',
+  'world/LONDON BACKGROUND3-runtime.webp'
 ];
 
 assert.equal(
@@ -256,7 +257,7 @@ assert.deepEqual(
 assert.deepEqual(
   assetManifest.world.layers[1],
   expectedSkylineLayers,
-  'asset-manifest.json must reference the three direct skyline PNG panels'
+  'asset-manifest.json must reference the three direct skyline runtime panels'
 );
 assert.equal(
   JSON.stringify(assetManifest).includes('london-skyline-stitched.svg'),
@@ -265,8 +266,9 @@ assert.equal(
 );
 for (const skylineLayer of expectedSkylineLayers) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', skylineLayer);
-  assert.equal(fs.existsSync(assetPath), true, `skyline PNG panel must exist: ${skylineLayer}`);
-  const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
+  assert.equal(fs.existsSync(assetPath), true, `skyline runtime panel must exist: ${skylineLayer}`);
+  const sourceMasterPath = assetPath.replace(/-runtime\.webp$/, '.png');
+  const pngHeader = fs.readFileSync(sourceMasterPath).subarray(16, 24);
   assert.equal(pngHeader.readUInt32BE(0), 480, `skyline PNG panel width must remain 480px: ${skylineLayer}`);
   assert.equal(pngHeader.readUInt32BE(4), 160, `skyline PNG panel height must remain 160px: ${skylineLayer}`);
 }
@@ -318,7 +320,7 @@ assert.deepEqual(cloudDimension, { width: 480, height: 270 },
 // The user-supplied flying pig is a 5-column x 4-row (20-frame) 700x560
 // sheet. The pigeon remains the same 28x22 collision/score entity; only its
 // animation is presented at twice the former on-screen size (56x44).
-assert.equal(assetManifest.enemies.pigeon, 'enemies/PIGFLY-iji.png',
+assert.equal(assetManifest.enemies.pigeon, 'enemies/PIGFLY-iji-runtime.webp',
   'flying pig must replace only the former pigeon art path');
 const flyingPigFile = path.resolve(process.cwd(), 'game/assets/enemies/PIGFLY-iji.png');
 const flyingPigHeader = fs.readFileSync(flyingPigFile).subarray(16, 24);
@@ -1399,9 +1401,9 @@ assert.deepEqual(
     key, new URL(state.assetStatus[key]?.src || '', url).pathname
   ])),
   {
-    bot: '/game/assets/enemies/bb8-walk.png',
-    botKick: '/game/assets/enemies/bb8-kick.png',
-    botHurt: '/game/assets/enemies/bb8-hurt.png'
+    bot: '/game/assets/enemies/bb8-walk-runtime.webp',
+    botKick: '/game/assets/enemies/bb8-kick-runtime.webp',
+    botHurt: '/game/assets/enemies/bb8-hurt-runtime.webp'
   },
   'all three uploaded BB8 animation sheets must be required runtime assets'
 );
@@ -1415,7 +1417,7 @@ assert.ok(
 );
 assert.equal(
   new URL(state.assetStatus.coin.src, url).pathname,
-  '/game/assets/objects/2300-spritesheet.png',
+  '/game/assets/objects/2300-spritesheet-runtime.webp',
   'regular XP coins must load the uploaded WAX CASH sprite sheet'
 );
 assert.ok(
@@ -1433,9 +1435,9 @@ assert.deepEqual(
   Object.fromEntries(['rat','ratBladeFlurry','ratViperPounce'].map(key =>
     [key, new URL(state.assetStatus[key]?.src || '', url).pathname])),
   {
-    rat: '/game/assets/enemies/BRATTY1-walk.png',
-    ratBladeFlurry: '/game/assets/enemies/BRATTY1-asm_dagger_blade_flurry.png',
-    ratViperPounce: '/game/assets/enemies/BRATTY1-asm_dagger_viper_pounce.png'
+    rat: '/game/assets/enemies/BRATTY1-walk-runtime.webp',
+    ratBladeFlurry: '/game/assets/enemies/BRATTY1-asm_dagger_blade_flurry-runtime.webp',
+    ratViperPounce: '/game/assets/enemies/BRATTY1-asm_dagger_viper_pounce-runtime.webp'
   },
   'all three BRATTY sprite sheets must load in Level 1'
 );
@@ -1445,7 +1447,7 @@ assert.equal(state.enemyCount, 58, 'course must retain all section enemies plus 
 
 assert.equal(
   new URL(state.assetStatus.pigeon?.src || '', url).pathname,
-  '/game/assets/enemies/PIGFLY-iji.png',
+  '/game/assets/enemies/PIGFLY-iji-runtime.webp',
   'loaded flying enemy must display the approved flying pig sheet'
 );
 assert.equal(state.platformCount, 76, 'speedrun must provide 76 playable jump platforms');
@@ -1534,10 +1536,10 @@ assert.deepEqual(await page.evaluate(() => {
   balloonWalk: [512,512],
   balloonRelease: [512,512],
   paths: {
-    speedBox: '/game/assets/objects/SPEEDBOX.png',
-    botFire: '/game/assets/objects/Pixel%20Flame%20Jet%20Burst-spritesheet.png',
-    balloonWalk: '/game/assets/objects/bber-walk-v2.png',
-    balloonRelease: '/game/assets/objects/bber-sdgd-v1.png'
+    speedBox: '/game/assets/objects/SPEEDBOX-runtime.webp',
+    botFire: '/game/assets/objects/Pixel%20Flame%20Jet%20Burst-spritesheet-runtime.webp',
+    balloonWalk: '/game/assets/objects/bber-walk-v2-runtime.webp',
+    balloonRelease: '/game/assets/objects/bber-sdgd-v1-runtime.webp'
   }
 }, 'PR4 assets must load independently with their audited native dimensions');
 
@@ -2447,11 +2449,11 @@ assert.deepEqual(blockState.materials, ['brick', 'rock'], 'platforms use only un
 assert.equal(blockState.initialClosed, true, 'all random reward boxes start unopened');
 assert.deepEqual(Object.fromEntries(Object.entries(blockState.assets).map(([key, value]) =>
   [key, new URL(value, url).pathname])), {
-  mysteryBox: '/game/assets/objects/RANDOMBOX.png',
-  starBox: '/game/assets/objects/STARBOX.png',
-  floorCrate: '/game/assets/objects/CRATE1.png',
-  floatingBrick: '/game/assets/objects/BRICK1.png',
-  floatingRock: '/game/assets/objects/ROCK1.png'
+  mysteryBox: '/game/assets/objects/RANDOMBOX-runtime.webp',
+  starBox: '/game/assets/objects/STARBOX-runtime.webp',
+  floorCrate: '/game/assets/objects/CRATE1-runtime.webp',
+  floatingBrick: '/game/assets/objects/BRICK1-runtime.webp',
+  floatingRock: '/game/assets/objects/ROCK1-runtime.webp'
 }, 'runtime must load the five exact uploaded object images');
 assert.ok(
   runtimeSource.includes('var solids = [floor].concat(platforms, crates)') &&
@@ -2559,9 +2561,9 @@ const parachuteAssets = await page.evaluate(() =>
   ])));
 assert.deepEqual(Object.fromEntries(Object.entries(parachuteAssets).map(([key, value]) =>
   [key, new URL(value, url).pathname])), {
-  parachuteRatA: '/game/assets/enemies/bX4VuQWSc3xcqQaY7FQFP3-spritesheet.png',
-  parachuteRatB: '/game/assets/enemies/dds-dss.png',
-  parachuteRatC: '/game/assets/enemies/fgg-ggf.png'
+  parachuteRatA: '/game/assets/enemies/bX4VuQWSc3xcqQaY7FQFP3-spritesheet-runtime.webp',
+  parachuteRatB: '/game/assets/enemies/dds-dss-runtime.webp',
+  parachuteRatC: '/game/assets/enemies/fgg-ggf-runtime.webp'
 }, 'all three parachute rat sprite sheets must load');
 assert.ok(
   runtimeSource.includes('function updateParachuteRats(time, dt)') &&
@@ -2703,9 +2705,9 @@ const turquoiseSources = await page.evaluate(() =>
     [key, window.NBGLevel1State.assetStatus[key]?.src])));
 assert.deepEqual(Object.fromEntries(Object.entries(turquoiseSources).map(([key,value]) =>
   [key, new URL(value, url).pathname])), {
-  turquoiseRatWalk: '/game/assets/enemies/ggdf-walk.png',
-  turquoiseRatKick: '/game/assets/enemies/ggdf-kick.png',
-  turquoiseRatPunch: '/game/assets/enemies/ggdf-punch.png'
+  turquoiseRatWalk: '/game/assets/enemies/ggdf-walk-runtime.webp',
+  turquoiseRatKick: '/game/assets/enemies/ggdf-kick-runtime.webp',
+  turquoiseRatPunch: '/game/assets/enemies/ggdf-punch-runtime.webp'
 }, 'all three exclusive turquoise-rat animations must load');
 assert.ok(
   runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat'") &&
@@ -2720,8 +2722,8 @@ const brownAssets = await page.evaluate(() =>
     [key, window.NBGLevel1State.assetStatus[key]?.src])));
 assert.deepEqual(Object.fromEntries(Object.entries(brownAssets).map(([key,value]) =>
   [key, new URL(value, url).pathname])), {
-  brownRatWalk: '/game/assets/enemies/dfgdf-walk.png',
-  brownRatPunch: '/game/assets/enemies/dfgdf-punch_fast_with_lightning_bolts.png'
+  brownRatWalk: '/game/assets/enemies/dfgdf-walk-runtime.webp',
+  brownRatPunch: '/game/assets/enemies/dfgdf-punch_fast_with_lightning_bolts-runtime.webp'
 }, 'the two brown rat sheets must load');
 assert.ok(
   runtimeSource.includes("type: rat.variant === 'parachuteRatC' ? 'turquoiseRat' : 'brownRat'") &&
@@ -2742,7 +2744,7 @@ await page.keyboard.down('KeyD');
 await page.waitForFunction(() => window.NBGLevel1State.running, null, { timeout: 2500 });
 await page.keyboard.up('KeyD');
 for (const variant of [
-  { type: 'brownRat', image: 'dfgdf-punch_fast_with_lightning_bolts.png' },
+  { type: 'brownRat', image: 'dfgdf-punch_fast_with_lightning_bolts-runtime.webp' },
   { type: 'turquoiseRat', image: 'ggdf-' }
 ]) {
   await page.evaluate(({ type }) => {
@@ -2784,7 +2786,7 @@ for (const variant of [
     return rat && rat.attackUntil > state.runElapsedMs &&
       window.__nbgAttackDrawSources.some(src =>
         image === 'ggdf-' ?
-          (src.includes('/ggdf-kick.png') || src.includes('/ggdf-punch.png')) :
+          (src.includes('/ggdf-kick-runtime.webp') || src.includes('/ggdf-punch-runtime.webp')) :
           src.includes(image));
   }, variant, { timeout: 4000 });
   const evidence = await page.evaluate(({ type }) => {
@@ -2797,8 +2799,8 @@ for (const variant of [
     variant.type + ' must render its attack pose while the attack timer is active');
   if (variant.type === 'brownRat') {
     const brownDraws = await page.evaluate(() => window.__nbgBrownDraws);
-    const walk = brownDraws.find(draw => draw.src.includes('/dfgdf-walk.png'));
-    const punch = brownDraws.find(draw => draw.src.includes('/dfgdf-punch_fast_with_lightning_bolts.png'));
+    const walk = brownDraws.find(draw => draw.src.includes('/dfgdf-walk-runtime.webp'));
+    const punch = brownDraws.find(draw => draw.src.includes('/dfgdf-punch_fast_with_lightning_bolts-runtime.webp'));
     assert.ok(walk && punch, 'both enlarged brown poses must actually render');
     assert.ok(walk.w >= 75 && walk.h >= 90,
       'brown walking artwork must be significantly larger than the original 50x60');
@@ -2855,7 +2857,7 @@ const platformDraw = await page.evaluate(async () => {
   context.drawImage = function (image, ...args) {
     const source = String((image && (image.__nbgSpraySource || image.src)) || '');
     if (source.includes('/player/animations/idle.png') ||
-        source.includes('/objects/BRICK1.png')) {
+        source.includes('/objects/BRICK1-runtime.webp')) {
       draws.push({ source, y: args[5], width: args[6], height: args[7] });
     }
     return original.call(this, image, ...args);
@@ -2863,7 +2865,7 @@ const platformDraw = await page.evaluate(async () => {
   await new Promise(resolve => setTimeout(resolve, 90));
   context.drawImage = original;
   const idle = draws.find(draw => draw.source.includes('/player/animations/idle.png'));
-  const brick = draws.find(draw => draw.source.includes('/objects/BRICK1.png'));
+  const brick = draws.find(draw => draw.source.includes('/objects/BRICK1-runtime.webp'));
   return {
     grounded: player.grounded,
     physicsFeet: player.y + player.h,

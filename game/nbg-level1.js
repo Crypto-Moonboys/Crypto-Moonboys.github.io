@@ -391,7 +391,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-collapse-lower-v8';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-runtime-webp-collapse-lower-v9';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -3311,7 +3311,7 @@
         // Optional scenery must never prevent the runner from starting.
         // Keep the approved source asset separate from the cached off-state.
         if (classicScenery) return finishInit();
-        loadImage(ASSET_ROOT + 'world/TWIYGR-spritesheet.png').then(function (result) {
+        loadImage(ASSET_ROOT + 'world/TWIYGR-spritesheet-runtime.webp').then(function (result) {
           if (!result.image || result.image.naturalWidth !== 1024 ||
               result.image.naturalHeight !== 1024) return;
           try {
