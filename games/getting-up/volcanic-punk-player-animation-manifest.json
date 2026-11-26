@@ -337,9 +337,9 @@
         0,
         0,
         0,
-        4,
-        4,
-        4
+        6,
+        6,
+        6
       ]
     },
     "deathRight": {
@@ -358,9 +358,9 @@
         0,
         0,
         0,
-        4,
-        4,
-        4
+        6,
+        6,
+        6
       ]
     },
     "deathLeft": {
@@ -379,9 +379,9 @@
         0,
         0,
         0,
-        4,
-        4,
-        4
+        6,
+        6,
+        6
       ]
     },
     "rubble": {
@@ -396,12 +396,12 @@
       "frameMs": 130,
       "preserveSourceAlpha": true,
       "frameOffsetY": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        6,
+        6,
+        6,
+        6,
+        6,
+        6
       ]
     },
     "rubbleRight": {
@@ -417,12 +417,12 @@
       "preserveSourceAlpha": true,
       "nativeFacing": 1,
       "frameOffsetY": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        6,
+        6,
+        6,
+        6,
+        6,
+        6
       ]
     },
     "rubbleLeft": {
@@ -438,12 +438,12 @@
       "preserveSourceAlpha": true,
       "nativeFacing": -1,
       "frameOffsetY": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        6,
+        6,
+        6,
+        6,
+        6,
+        6
       ]
     },
     "volcano": {
