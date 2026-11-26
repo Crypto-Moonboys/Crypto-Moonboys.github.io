@@ -77,8 +77,33 @@ assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-runtime-webp-collapse-lower-v9/);
-assert.match(runtime, /v=20261126-runtime-webp-collapse-lower-v9/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-staged-trains-v10/);
+assert.match(runtime, /v=20261126-staged-trains-v10/);
+assert.match(runtime, /DEFERRED_TRAIN_ASSET_GROUPS/);
+assert.match(runtime, /deferredAssetGroups = unranked \?/);
+assert.match(runtime, /image\.fetchPriority = 'low'/);
+assert.match(runtime, /requestIdleCallback/);
+assert.match(runtime, /startDeferredAssetLoad\(\)/);
+assert.match(runtime, /nbg-deferred-assets-ready/);
+assert.match(runtime, /get deferredAssetsComplete\(\)/);
+assert.match(runtime, /startDeferredAssetLoad\(1\)/);
+assert.match(runtime, /function startSimulation\(\) \{[\s\S]{0,300}startDeferredAssetLoad\(\)/);
+assert.match(runtime, /if \(classicScenery\) return finishInit\(\)/,
+  'ranked classic London must retain its authoritative eager startup path');
+const deferredTrainBlock = runtime.match(/var DEFERRED_TRAIN_ASSET_GROUPS = \[([\s\S]*?)\n  \];/)?.[1];
+assert.ok(deferredTrainBlock, 'deferred train groups must be declared');
+const deferredTrainKeys = [...deferredTrainBlock.matchAll(/'([^']+)'/g)].map(match => match[1]);
+const manifestTrainKeys = Object.keys(assetManifest.trains);
+assert.deepEqual([...deferredTrainKeys].sort(), [...manifestTrainKeys].sort(),
+  'every train must be staged exactly once');
+assert.equal(new Set(deferredTrainKeys).size, deferredTrainKeys.length,
+  'deferred train groups must not request the same image twice');
+const deferredTrainBytes = Object.values(assetManifest.trains).reduce((total, asset) => {
+  const runtimePath = asset.startsWith('/') ? asset.slice(1) : 'game/assets/' + asset;
+  return total + fs.statSync(runtimePath).size;
+}, 0);
+assert.ok(deferredTrainBytes > 3 * 1024 * 1024,
+  'staged startup must remove more than 3 MiB from the critical image gate');
 assert.match(runtime, /playerCharacterId === 'volcanic-punk' &&\s*\n\s*!isOnVolcanicDeathSurface\(\)/);
 assert.match(runtime, /VOLCANIC_DEATH_MIN_WALL_WIDTH/);
 assert.match(runtime, /getVolcanicDeathSurfaces/);
