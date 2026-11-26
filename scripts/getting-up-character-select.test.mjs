@@ -37,4 +37,7 @@ assert.match(runtime, /updateBurstCoins/);
 assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
+assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-third-spin-coins-v2/);
+assert.match(runtime, /v=20261126-third-spin-coins-v2/);
 console.log('[PASS] Getting Up selectable character contract');
