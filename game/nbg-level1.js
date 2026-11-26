@@ -151,6 +151,16 @@
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
   var TRAIN_GAP = 2;             // px gap between joined cars
   var TRAIN_CLEAR_MS = 20000;   // empty bridge between three-car trains
+  // Burnt CRONX replacement: 3072px transparent 2x2 sheet, four looping fire frames.
+  var CRONX_FIRE_COLUMNS = 2;
+  var CRONX_FIRE_ROWS = 2;
+  var CRONX_FIRE_FRAMES = 4;
+  var CRONX_FIRE_FRAME_MS = 150;
+  var CRONX_FIRE_RENDER_HEIGHT = TRAIN_HEIGHT * 2;
+  var CRONX_FIRE_SOURCE_HEIGHT_RATIO = 0.76;
+  // Generated row two sits 43 source pixels higher after the 2048px resize.
+  // Register those frames back to the shared wheel/rail baseline.
+  var CRONX_FIRE_BASELINE_OFFSETS = [0, 0, 8.5, 8.5];
 
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
@@ -370,7 +380,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261125b';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-cronx-webp';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -2030,7 +2040,23 @@
 
           if (screenX + TRAIN_WIDTH < -20 || screenX > WIDTH + 20) continue;
 
-          ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+          if (img === images.trainCronx) {
+            // Each 1536px cell contains the same wrecked car; only fire/smoke changes.
+            // Crop unused transparent space below the train, preserve convoy width,
+            // and bottom-anchor the body to the same bridge rail as every other car.
+            var cronxFrame = Math.floor(time / CRONX_FIRE_FRAME_MS) % CRONX_FIRE_FRAMES;
+            var cronxSourceW = img.naturalWidth / CRONX_FIRE_COLUMNS;
+            var cronxSourceH = img.naturalHeight / CRONX_FIRE_ROWS;
+            var cronxSourceX = cronxFrame % CRONX_FIRE_COLUMNS * cronxSourceW;
+            var cronxSourceY = Math.floor(cronxFrame / CRONX_FIRE_COLUMNS) * cronxSourceH;
+            var cronxCropH = Math.round(cronxSourceH * CRONX_FIRE_SOURCE_HEIGHT_RATIO);
+            ctx.drawImage(img, cronxSourceX, cronxSourceY, cronxSourceW, cronxCropH,
+              screenX, trainY + TRAIN_HEIGHT - CRONX_FIRE_RENDER_HEIGHT +
+                CRONX_FIRE_BASELINE_OFFSETS[cronxFrame],
+              TRAIN_WIDTH, CRONX_FIRE_RENDER_HEIGHT);
+          } else {
+            ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
+          }
 
           // Wheel spark positions — bottom of each car
           var wheelY = trainY + TRAIN_HEIGHT - 2;
