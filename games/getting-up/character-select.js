@@ -17,17 +17,20 @@
     }
   };
 
-  function readChoice() {
+  function readSelection() {
     var requested = new URLSearchParams(window.location.search).get('fighter');
-    if (CHARACTERS[requested]) return requested;
+    if (CHARACTERS[requested]) return { id: requested, committed: true };
     try {
       var saved = localStorage.getItem(STORAGE_KEY);
-      if (CHARACTERS[saved]) return saved;
+      if (CHARACTERS[saved]) return { id: saved, committed: true };
     } catch (_) {}
-    return 'bird';
+    return { id: 'bird', committed: false };
   }
 
-  var selectedId = readChoice();
+  var initialSelection = readSelection();
+  var selectedId = initialSelection.id;
+  var selectionCommitted = initialSelection.committed;
+  var diedSinceSelection = false;
   var selected = CHARACTERS[selectedId];
   var canvas = document.getElementById('game');
   if (canvas) {
@@ -45,6 +48,19 @@
     attackButton.setAttribute('aria-label', selected.id === 'punk' ? 'Fire lava' : 'Spray paint');
   }
 
+  function setChooserVisible(visible) {
+    var chooser = document.getElementById('fighter-select');
+    if (!chooser) return;
+    chooser.hidden = !visible;
+    chooser.setAttribute('aria-hidden', String(!visible));
+  }
+
+  function commitCurrentSelection() {
+    selectionCommitted = true;
+    try { localStorage.setItem(STORAGE_KEY, selectedId); } catch (_) {}
+    setChooserVisible(false);
+  }
+
   function syncButtons(locked) {
     document.querySelectorAll('[data-fighter]').forEach(function (button) {
       var active = button.dataset.fighter === selectedId;
@@ -59,7 +75,11 @@
   document.querySelectorAll('[data-fighter]').forEach(function (button) {
     button.addEventListener('click', function () {
       var nextId = button.dataset.fighter;
-      if (!CHARACTERS[nextId] || nextId === selectedId) return;
+      if (!CHARACTERS[nextId]) return;
+      if (nextId === selectedId) {
+        commitCurrentSelection();
+        return;
+      }
       try { localStorage.setItem(STORAGE_KEY, nextId); } catch (_) {}
       var url = new URL(window.location.href);
       url.searchParams.set('fighter', nextId);
@@ -67,9 +87,25 @@
     });
   });
 
-  window.addEventListener('nbg-level-started', function () { syncButtons(true); });
-  window.addEventListener('nbg-level-reset', function () { syncButtons(false); });
+  window.addEventListener('nbg-level-started', function () {
+    commitCurrentSelection();
+    syncButtons(true);
+  });
+  window.addEventListener('nbg-game-over', function () {
+    diedSinceSelection = true;
+  });
+  window.addEventListener('nbg-level-reset', function () {
+    syncButtons(false);
+    if (diedSinceSelection) {
+      diedSinceSelection = false;
+      selectionCommitted = false;
+      setChooserVisible(true);
+    } else {
+      setChooserVisible(!selectionCommitted);
+    }
+  });
   syncButtons(false);
+  setChooserVisible(!selectionCommitted);
 
   window.GettingUpCharacters = {
     selected: selected,
