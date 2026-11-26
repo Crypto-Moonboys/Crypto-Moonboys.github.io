@@ -216,6 +216,42 @@ async function readBrainLore(source, brain) {
   return record.body;
 }
 
+export async function findPublishedTemplateSupply(question) {
+  const match = question.match(/^(?:how many (issued and live|live and issued|issued|live) copies does|what is the (issued and live|live and issued|issued|live) supply (?:for|of))\s+([a-z0-9.]{1,12})\s+template(?:\s+id)?\s*#?(\d+)\b(?:\s+have)?[?.!]?$/i);
+  if (!match) return null;
+  const [, copies, supply, name, id] = match;
+  const requested = (copies ?? supply).toLowerCase();
+  const unavailable = {
+    reply: `I couldn’t verify the requested supply for ${name} template ${id} in the published records.`,
+    sources: [],
+    canon: 'unavailable',
+  };
+  const collection = name.toLowerCase();
+  const brain = await getBrainCatalog().catch(() => null);
+  const source = brain?.get(`/data/${collection}/live-template-supply.json`);
+  if (source?.kind !== 'nft') return unavailable;
+
+  const record = await readBrainLore(source, brain).then(JSON.parse).catch(() => null);
+  if (record?.collection !== collection || !Array.isArray(record.supplies)) return unavailable;
+  const rows = record.supplies.filter(row => String(row?.template_id) === id);
+  if (rows.length !== 1) return unavailable;
+  const row = rows[0];
+  const counts = [];
+  for (const label of ['issued', 'live']) {
+    if (!requested.includes(label)) continue;
+    const count = row[label + '_supply'];
+    if (!Number.isSafeInteger(count) || count < 0 || (label === 'live' && row.live_supply_status !== 'ok')) return unavailable;
+    counts.push(`${count} ${label}`);
+  }
+  const checked = Date.parse(row.last_checked_at);
+  const asOf = Number.isFinite(checked) ? ` (checked ${new Date(checked).toISOString().slice(0, 10)} UTC)` : '';
+  return {
+    reply: `The published supply for ${name} template ${id} is **${counts.join(' and ')}**${asOf}.`,
+    sources: [{ title: `${name} template supply`, url: SITE + source.path }],
+    canon: 'found',
+  };
+}
+
 export async function findPublicSwarmsySources(question, { exactSubject = false } = {}) {
   const brain = await getBrainCatalog();
   const currentCanon = canon[0];

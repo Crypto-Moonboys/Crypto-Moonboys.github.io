@@ -1,6 +1,6 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { verifyTelegramAuth } from '../telegram-group-membership.js';
-import { findPublicSwarmsySources } from '../shared/clan-leader-lore.js';
+import { findPublishedTemplateSupply, findPublicSwarmsySources } from '../shared/clan-leader-lore.js';
 
 const UPSTREAM = 'https://swarmsy.cryptomoonboys.com/api/sparky-web/chat';
 const MAX_MESSAGE = 2000;
@@ -105,6 +105,9 @@ export async function handleSwarmsyWebChat(request, env, cors) {
     if (!permitted) return respond({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
 
     stage = 'prepare_request';
+    const supply = await findPublishedTemplateSupply(message);
+    if (supply) return respond(supply);
+
     const requestedCanon = body.public_canon === true || CANON_REQUEST.test(message);
     const [session, sources] = await Promise.all([
       upstreamSession(sessionKey, identity.telegramId, conversationId),
