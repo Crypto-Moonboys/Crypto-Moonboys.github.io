@@ -6,7 +6,8 @@
     initialized: false, enabled: false, ready: false, reason: "not initialized", errors: [],
     identityKey: "", requestedBot: null, resolvedBot: null, fallbackUsed: false,
     requestedEvolution: "stage_1", resolvedEvolution: "stage_1", evolutionFallbackUsed: false, manifest: null,
-    assetsByRole: {}, roleMap: {}, display: {}, pendingRoles: [], lastRender: null
+    assetsByRole: {}, roleMap: {}, display: {}, pendingRoles: [], loadRole: null,
+    requestedRoleLoads: new Map(), lastRender: null
   };
 
   function enabled() { return window[FEATURE_FLAG] !== false; }
@@ -37,6 +38,8 @@
     state.assetsByRole = {};
     state.roleMap = {};
     state.pendingRoles = [];
+    state.loadRole = null;
+    state.requestedRoleLoads = new Map();
     state.lastRender = null;
     state.identityKey = identityKey;
     if (!enabled()) return snapshot();
@@ -59,6 +62,7 @@
       state.roleMap = result.roleMap || {};
       state.display = result.display || {};
       state.pendingRoles = result.pendingRoles || [];
+      state.loadRole = typeof result.loadRole === "function" ? result.loadRole : null;
       state.errors = result.errors || [];
       state.reason = result.ready ? `${result.resolvedBot} ${state.resolvedEvolution} idle ready` : `${result.resolvedBot} idle failed to load`;
       if (result.preload && typeof result.preload.then === "function") {
@@ -97,10 +101,39 @@
     return frames[index % frames.length];
   }
 
+  function prepareRole(role) {
+    if (state.assetsByRole[role]) return Promise.resolve(state.assetsByRole[role]);
+    if (!role || !state.loadRole) return Promise.resolve(null);
+    if (state.requestedRoleLoads.has(role)) return state.requestedRoleLoads.get(role);
+    const generation = selectionGeneration;
+    const request = state.loadRole(role).then((asset) => {
+      if (generation !== selectionGeneration) return null;
+      if (asset) {
+        state.reason = `${state.resolvedBot} ${role} ready`;
+        if (typeof window.dispatchEvent === "function" && typeof window.CustomEvent === "function") {
+          window.dispatchEvent(new window.CustomEvent("moonpet:bot-art-role-ready", {
+            detail: Object.freeze({ role, identityKey: state.identityKey })
+          }));
+        }
+      }
+      else state.reason = `${state.resolvedBot} ${role} failed to load`;
+      return asset;
+    }).catch((error) => {
+      if (generation === selectionGeneration) {
+        state.errors = [error.message, ...state.errors];
+        state.reason = `${state.resolvedBot} ${role} failed to load`;
+      }
+      return null;
+    });
+    state.requestedRoleLoads.set(role, request);
+    return request;
+  }
+
   function renderMoonpetBot(ctx, animationMode, x, y, scale = 1, time, options = {}) {
     if (!enabled() || !state.ready) return false;
     const requestedRole = roleForAnimationMode(animationMode, options.active !== false, options);
     const idleRole = state.roleMap.idle || "front_idle";
+    if (!state.assetsByRole[requestedRole] && requestedRole !== idleRole) void prepareRole(requestedRole);
     const role = state.assetsByRole[requestedRole] ? requestedRole : idleRole;
     const asset = state.assetsByRole[role];
     const frame = asset && frameForTime(asset, time, options);
@@ -133,6 +166,6 @@
   window.MOONPET_USE_BOT_ART = window.MOONPET_USE_BOT_ART !== false;
   window.MoonpetBotArtRenderer = {
     FEATURE_FLAG, selectMoonpetBot, initMoonpetBotArtRenderer: selectMoonpetBot,
-    getMoonpetBotArtRendererState: snapshot, renderMoonpetBot, roleForAnimationMode
+    getMoonpetBotArtRendererState: snapshot, renderMoonpetBot, roleForAnimationMode, prepareRole
   };
 })();

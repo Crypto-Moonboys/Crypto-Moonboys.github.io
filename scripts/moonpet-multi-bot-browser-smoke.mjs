@@ -7,7 +7,7 @@ import { chromium } from "playwright";
 
 const ROOT = process.cwd();
 const OUTPUT = path.join(ROOT, ".tmp", "moonpet-multi-bot-browser-smoke");
-const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".jpg": "image/jpeg" };
+const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg" };
 const MODES = ["idle", "feed", "play", "clean", "sleep", "train", "travel", "work", "equip", "evolve", "trade", "celebrate", "interact", "blocked", "battle", "fight", "dance", "victory"];
 const FULL_PACK_ROLE_COUNT = MODES.length;
 const EGG_PACK_ROLE_COUNT = 10;
@@ -36,7 +36,12 @@ function serveStatic() {
   });
 }
 
-async function waitForPack(page, expectedBot) {
+async function waitForPack(page, expectedBot, expectedRoleCount = FULL_PACK_ROLE_COUNT) {
+  await page.evaluate(async () => {
+    const renderer = window.MoonpetBotArtRenderer;
+    const state = renderer.getMoonpetBotArtRendererState();
+    await Promise.all(state.pendingRoles.map((role) => renderer.prepareRole(role)));
+  });
   await page.waitForFunction(({ bot, expectedRoleCount }) => {
     const state = window.MoonpetBotArtRenderer?.getMoonpetBotArtRendererState();
     return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === expectedRoleCount;
@@ -48,10 +53,7 @@ async function selectAndWaitForPack(page, identity, expectedBot) {
   while (Date.now() < deadline) {
     await page.evaluate((nextIdentity) => window.MoonpetBotArtRenderer.selectMoonpetBot(nextIdentity), identity);
     try {
-      await page.waitForFunction(({ bot, expectedRoleCount }) => {
-        const state = window.MoonpetBotArtRenderer?.getMoonpetBotArtRendererState();
-        return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === expectedRoleCount;
-      }, { bot: expectedBot, expectedRoleCount: FULL_PACK_ROLE_COUNT }, { timeout: 3000 });
+      await waitForPack(page, expectedBot);
       return await page.evaluate(() => window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState());
     } catch {
       await page.waitForTimeout(250);
@@ -155,7 +157,11 @@ try {
   assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 516.5), "every dock button must fit above the dock's bottom padding");
 
   await fs.mkdir(OUTPUT, { recursive: true });
-  await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 }, "F1 EDDY");
+  const coldSelection = await page.evaluate((identity) => window.MoonpetBotArtRenderer.selectMoonpetBot(identity),
+    { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 });
+  assert.equal(coldSelection.loadedRoles.length, 1, "cold selection must fetch only idle art");
+  assert.equal(coldSelection.pendingRoles.length, FULL_PACK_ROLE_COUNT - 1, "secondary art must stay pending until requested");
+  await waitForPack(page, "F1 EDDY");
   await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
   const liveComposition = await page.evaluate(() => {
     const canvas = document.getElementById("moonpet-canvas");
@@ -204,10 +210,7 @@ try {
 
   for (const [speciesId, botName] of BOTS) {
     await page.evaluate((identity) => window.MoonpetBotArtRenderer.selectMoonpetBot(identity), { speciesId, speciesName: botName, evolutionStage: 0 });
-    await page.waitForFunction((expectedRoleCount) => {
-      const selected = window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState();
-      return selected.ready && selected.resolvedBot === "EGGYONE" && selected.loadedRoles.length === expectedRoleCount;
-    }, EGG_PACK_ROLE_COUNT, { timeout: 20000 });
+    await waitForPack(page, "EGGYONE", EGG_PACK_ROLE_COUNT);
     const stageZero = await page.evaluate(() => window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState());
     assert.equal(stageZero.requestedEvolution, "stage_0", `${botName} must request Stage 0`);
     assert.equal(stageZero.resolvedEvolution, "stage_0", `${botName} must resolve to Stage 0`);

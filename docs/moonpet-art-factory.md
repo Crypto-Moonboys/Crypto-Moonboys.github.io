@@ -19,6 +19,14 @@ The runtime uses:
 - `data/moonpet-rare-background-registry.json`
 - `data/moonpet-item-art-registry.json`
 
+PNG sheets remain the editable masters. Production manifests point at
+pixel-identical lossless WebP derivatives built by
+`npm run moonpet:runtime-images`. The loader fetches only the selected pet's
+idle sheet at startup; each secondary action sheet loads on its first use and
+is then reused for the rest of the session. Run `npm run moonpet:art:check`
+after changing any wired Moonpet image or manifest and report both the source
+and runtime payload totals in the PR.
+
 Retired isometric, side-scroller, wearable-anchor, procedural-animal, sandbox and preview stacks have been removed. They must not be reintroduced into the live game.
 
 Equipment remains gameplay state only; items are independent art objects. Bot appearance changes only through complete evolution character packs.

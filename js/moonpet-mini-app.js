@@ -2156,7 +2156,7 @@
       companionWingsImage = new Image();
       companionWingsImage.decoding = 'async';
       companionWingsImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-      companionWingsImage.src = '/img/BOTTY%20WINGS-waveone-v1.png';
+      companionWingsImage.src = '/img/BOTTY%20WINGS-waveone-v1.webp';
     }
     if (!companionWingsImage.complete || companionWingsImage.naturalWidth !== 1280 || companionWingsImage.naturalHeight !== 1280) return;
     // Fixed union of all 25 frame alpha bounds; keep the flutter centred behind
@@ -2166,7 +2166,7 @@
     ctx.drawImage(companionWingsImage,(frame%5)*256+6,Math.floor(frame/5)*256+38,250,176,
       BOT_RENDER_CENTER_X-120,26,240,240*176/250);
     ctx.restore();
-    backgroundArtState.wings = {source:'/img/BOTTY%20WINGS-waveone-v1.png',frame:frame};
+    backgroundArtState.wings = {source:'/img/BOTTY%20WINGS-waveone-v1.webp',frame:frame};
   }
   // TEST-EXPORT: companionWings:end
 
@@ -4544,6 +4544,12 @@
     }
   }
 
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('moonpet:bot-art-role-ready', function () {
+      if (reducedMotion) drawWorld(performance.now());
+    });
+  }
+
   function hatchArtTransitionActive(time) {
     return hatchArtTransitionUntil > Number(time == null ? performance.now() : time);
   }
@@ -4747,6 +4753,9 @@
       var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg'
         && stateBeforeAction.pet && responseState.pet && stateBeforeAction.pet.pet_id === responseState.pet.pet_id
         && actionAnimationFamily(action, payload) === 'hatch';
+      if (isHatchReveal && window.MoonpetBotArtRenderer && typeof window.MoonpetBotArtRenderer.prepareRole === 'function') {
+        await window.MoonpetBotArtRenderer.prepareRole('egg_hatch');
+      }
       var hatchDuration = isHatchReveal ? hatchAnimationDuration() : 0;
       if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal, missionsFallback: requestPayload.state_mode === 'missions' })) return;
       if (isHatchReveal) {
@@ -5472,8 +5481,8 @@
   }
 
   var HOME_MATT_URLS = Object.freeze({
-    concrete:'/img/neonmatt.png', checkerboard:'/img/goldmatt.png', steel:'/img/camomatt.png',
-    default:'/img/blacknsilvermatt.png'
+    concrete:'/img/neonmatt.webp', checkerboard:'/img/goldmatt.webp', steel:'/img/camomatt.webp',
+    default:'/img/blacknsilvermatt.webp'
   });
   var homeMattImages = {};
   function drawHomeFloor(floor, withShadow, selected) {
@@ -5503,7 +5512,7 @@
       radioDiscoImage = new Image();
       radioDiscoImage.decoding = 'async';
       radioDiscoImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-      radioDiscoImage.src = '/img/ball-disco.png';
+      radioDiscoImage.src = '/img/ball-disco.webp';
     }
     if (!radioDiscoImage.complete || radioDiscoImage.naturalWidth !== 1280 || radioDiscoImage.naturalHeight !== 1280) return;
     var frame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
@@ -5513,7 +5522,7 @@
     ctx.drawImage(radioDiscoImage, (frame % 5) * 256 + 38, Math.floor(frame / 5) * 256 + 12,
       180, 215, 44, 0, width, height);
     ctx.restore();
-    backgroundArtState.disco = { source:'/img/ball-disco.png', frame:frame };
+    backgroundArtState.disco = { source:'/img/ball-disco.webp', frame:frame };
   }
 
   var musicStereoImage = null;
@@ -5522,7 +5531,7 @@
       musicStereoImage = new Image();
       musicStereoImage.decoding = 'async';
       musicStereoImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-      musicStereoImage.src = '/img/bass-yeo.png';
+      musicStereoImage.src = '/img/bass-yeo.webp';
     }
     if (!musicStereoImage.complete || musicStereoImage.naturalWidth !== 1280 || musicStereoImage.naturalHeight !== 1280) return;
     var frame = reducedMotion ? 0 : Math.floor(Math.max(0, Number(time) || 0) / 125) % 25;
@@ -5532,7 +5541,7 @@
     ctx.drawImage(musicStereoImage, (frame % 5) * 256 + 22, Math.floor(frame / 5) * 256 + 14,
       211, 226, 296 - width, 215 - height, width, height);
     ctx.restore();
-    backgroundArtState.stereo = { source:'/img/bass-yeo.png', frame:frame };
+    backgroundArtState.stereo = { source:'/img/bass-yeo.webp', frame:frame };
   }
 
   var homeLavaLampImage = null;
@@ -5547,7 +5556,7 @@
         homeFishTankImage = new Image();
         homeFishTankImage.decoding = 'async';
         homeFishTankImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-        homeFishTankImage.src = '/img/tank-fishyfish.png';
+        homeFishTankImage.src = '/img/tank-fishyfish.webp';
       }
       if (homeFishTankImage.complete && homeFishTankImage.naturalWidth === 1280 && homeFishTankImage.naturalHeight === 1280) {
         // 25 row-major frames; the union of their alpha bounds is 76x223.
@@ -5559,26 +5568,26 @@
           Math.floor(tankFrame / 5) * 256 + 17, 76, 223,
           6, 164 - tankHeight, tankWidth, tankHeight);
         ctx.restore();
-        backgroundArtState.tank = {source:'/img/tank-fishyfish.png',frame:tankFrame};
+        backgroundArtState.tank = {source:'/img/tank-fishyfish.webp',frame:tankFrame};
       }
     } else if (furniture === 'record_deck') {
       if(!homeLavaLampImage) {
         homeLavaLampImage=new Image();homeLavaLampImage.decoding='async';
         homeLavaLampImage.onload=function(){if(reducedMotion)drawWorld(performance.now());};
-        homeLavaLampImage.src='/img/lamp-larvalampy.png';
+        homeLavaLampImage.src='/img/lamp-larvalampy.webp';
       }
       if(homeLavaLampImage.complete&&homeLavaLampImage.naturalWidth===1280&&homeLavaLampImage.naturalHeight===1024) {
         var lampFrame=reducedMotion?0:Math.floor(Math.max(0,Number(time)||0)/125)%20;
         ctx.save();ctx.imageSmoothingEnabled=true;
         ctx.drawImage(homeLavaLampImage,(lampFrame%5)*256+93,Math.floor(lampFrame/5)*256+14,70,226,282,27,35,113);
-        ctx.restore();backgroundArtState.lamp={source:'/img/lamp-larvalampy.png',frame:lampFrame};
+        ctx.restore();backgroundArtState.lamp={source:'/img/lamp-larvalampy.webp',frame:lampFrame};
       }
     } else if (furniture === 'plant_pot') {
       if (!homePlantImage) {
         homePlantImage = new Image();
         homePlantImage.decoding = 'async';
         homePlantImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-        homePlantImage.src = '/img/pot-pot.png';
+        homePlantImage.src = '/img/pot-pot.webp';
       }
       if (homePlantImage.complete && homePlantImage.naturalWidth === 1280 && homePlantImage.naturalHeight === 1280) {
         // 25 row-major 256px frames. A fixed crop encloses every frame's alpha
@@ -5670,7 +5679,7 @@
       frogGuardianImage = new Image();
       frogGuardianImage.decoding = 'async';
       frogGuardianImage.onload = function () { if (reducedMotion) drawWorld(performance.now()); };
-      frogGuardianImage.src = '/img/pepe-pepeb0y.png';
+      frogGuardianImage.src = '/img/pepe-pepeb0y.webp';
     }
     if (!frogGuardianImage.complete || frogGuardianImage.naturalWidth !== 1280 || frogGuardianImage.naturalHeight !== 1280) return;
     // Crop the union of all 25 transparent frame bounds. Their visible bottom
@@ -5681,7 +5690,7 @@
     ctx.drawImage(frogGuardianImage,(frame%5)*256+31,Math.floor(frame/5)*256+68,171,156,
       32,220-height,width,height);
     ctx.restore();
-    backgroundArtState.guardian = {source:'/img/pepe-pepeb0y.png',frame:frame};
+    backgroundArtState.guardian = {source:'/img/pepe-pepeb0y.webp',frame:frame};
   }
   // TEST-EXPORT: frogGuardian:end
 

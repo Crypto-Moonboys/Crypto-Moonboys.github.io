@@ -121,17 +121,18 @@ test('a stalled idle PNG detaches its handlers and permits an uncached retry', a
 });
 
 for (const [path, phase] of [['/test/front_dance.json', 'fetch'], ['/test/front_dance.json', 'body'], ['/test/front_dance.png', 'image']]) {
-  test(`action art: stalled ${phase} preserves idle and settles background preload`, async () => {
+  test(`action art: stalled ${phase} preserves idle and permits an uncached retry`, async () => {
     const fault = { path, phase }, f = artContext(fault, true);
     const pack = await f.load(); await flush();
     assert.equal(pack.ready, true);
     assert.ok(pack.assetsByRole.front_idle);
-    await f.tick(15000); await pack.preload;
+    const actionLoad = pack.loadRole('front_dance'); await flush();
+    await f.tick(15000); await actionLoad;
     assert.equal(pack.assetsByRole.front_dance, undefined);
     assert.match(pack.errors.join('\n'), /front_dance.*timed out/);
     assert.equal(f.timers.size, 0);
     fault.enabled = false;
-    const recovered = await f.load(); await recovered.preload;
+    const recovered = await f.load(); await recovered.loadRole('front_dance');
     assert.ok(recovered.assetsByRole.front_idle); assert.ok(recovered.assetsByRole.front_dance);
     assert.equal(f.requests.filter(r => r.path === '/test/manifest.json').length, 2);
   });
@@ -156,17 +157,67 @@ for (const phase of ['fetch', 'body']) {
 test('healthy art clears deadlines and reuses its loaded pack', async () => {
   const f = artContext(null, true), pack = await f.load(); await pack.preload;
   assert.equal(pack.ready, true); assert.equal(f.timers.size, 0);
+  assert.equal(pack.assetsByRole.front_dance, undefined);
+  await pack.loadRole('front_dance');
+  assert.ok(pack.assetsByRole.front_dance);
   const count = f.requests.length;
   const cached = await f.load(); await cached.preload;
   assert.equal(f.requests.length, count);
   assert.equal(cached.assetsByRole.front_idle, pack.assetsByRole.front_idle);
+  assert.equal(cached.assetsByRole.front_dance, pack.assetsByRole.front_dance);
+});
+
+test('renderer requests one secondary role on demand and keeps idle visible until it arrives', async () => {
+  const idle = { frames: [{ x: 0, y: 0, w: 32, h: 32, index: 0 }], image: { id: 'idle' }, fps: 12 };
+  const dance = { frames: [{ x: 32, y: 0, w: 32, h: 32, index: 0 }], image: { id: 'dance' }, fps: 12 };
+  const assetsByRole = { front_idle: idle };
+  const actionReady = deferred();
+  let requests = 0;
+  const window = { MoonpetBotArtLoader: { loadMoonpetBotArt: async () => ({
+    ready: true, requestedBot: 'TEST', resolvedBot: 'TEST', requestedEvolution: 'stage_1',
+    resolvedEvolution: 'stage_1', assetsByRole, errors: [], pendingRoles: ['front_dance'],
+    roleMap: { idle: 'front_idle', dance: 'front_dance' }, display: {}, preload: Promise.resolve(),
+    loadRole: async role => { requests += 1; await actionReady.promise; assetsByRole[role] = dance; return dance; },
+  }) } };
+  vm.runInNewContext(rendererSource, { window, performance: { now: () => 0 } });
+  const renderer = window.MoonpetBotArtRenderer;
+  await renderer.selectMoonpetBot({ speciesId: 'test' });
+  const drawn = [];
+  const canvas = { save() {}, restore() {}, drawImage(image) { drawn.push(image.id); } };
+  assert.equal(renderer.renderMoonpetBot(canvas, 'dance', 0, 0, 1, 0), true);
+  assert.equal(drawn.at(-1), 'idle');
+  actionReady.resolve();
+  await flush();
+  assert.equal(renderer.renderMoonpetBot(canvas, 'dance', 0, 0, 1, 0), true);
+  assert.equal(drawn.at(-1), 'dance');
+  assert.equal(requests, 1);
+});
+
+test('renderer announces when demand-loaded art is ready for reduced-motion redraws', async () => {
+  const actionReady = deferred(), events = [];
+  const idle = { frames: [{ x: 0, y: 0, w: 32, h: 32, index: 0 }], image: {}, fps: 12 };
+  const dance = { frames: [{ x: 0, y: 0, w: 32, h: 32, index: 0 }], image: {}, fps: 12 };
+  class CustomEvent { constructor(type, options) { this.type = type; this.detail = options.detail; } }
+  const assetsByRole = { front_idle: idle };
+  const window = { CustomEvent, dispatchEvent: event => events.push(event), MoonpetBotArtLoader: { loadMoonpetBotArt: async () => ({
+    ready: true, resolvedBot: 'TEST', requestedEvolution: 'stage_1', resolvedEvolution: 'stage_1',
+    assetsByRole, roleMap: { idle: 'front_idle', dance: 'dance' }, display: {}, errors: [], pendingRoles: ['dance'],
+    loadRole: async role => { await actionReady.promise; assetsByRole[role] = dance; return dance; },
+  }) } };
+  vm.runInNewContext(rendererSource, { window, performance: { now: () => 0 } });
+  await window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: 'test' });
+  const pending = window.MoonpetBotArtRenderer.prepareRole('dance');
+  actionReady.resolve(); await pending;
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, 'moonpet:bot-art-role-ready');
+  assert.equal(events[0].detail.role, 'dance');
 });
 
 function hatchContext() {
-  const time = clock(), loads = [], selected = [], drawn = [], actions = [];
+  const time = clock(), loads = [], selected = [], drawn = [], actions = [], hatchRoles = [];
   const ctx = { window: { ...time.api, MoonpetBotArtLoader: { loadMoonpetBotArt() {
     const pending = deferred(); loads.push(pending); return pending.promise;
-  } } }, performance: { now: time.now }, console: { info() {} },
+  } }, MoonpetBotArtRenderer: { prepareRole(role) { hatchRoles.push(role); return Promise.resolve({ role }); } } }, performance: { now: time.now }, console: { info() {} },
   state: { pet: { pet_id: 'pet-a', xp: 12 }, lifecycle: { phase: 'street' } },
   hatchArtTransitionUntil: 0, hatchArtTransitionTimer: 0, hatchStageOnePreloadPromise: null, hatchArtTransitionGeneration: 0,
   animationUntil: Infinity, animationMode: 'hatch', actionSequence: 0, actionStartedAt: time.now(), reducedMotionAnimationTimer: 0,
@@ -188,7 +239,7 @@ function hatchContext() {
   const animation = clientSource.slice(clientSource.indexOf('  function actionAnimationFamily('), clientSource.indexOf('  function hatchArtTransitionActive('));
   const action = clientSource.slice(clientSource.indexOf('  async function runAction('), clientSource.indexOf('  function switchScreen('));
   vm.runInContext(animation + clientSource.slice(start, end) + action, ctx);
-  return { ...time, ctx, loads, selected, drawn, actions, acceptedHatch: async () => {
+  return { ...time, ctx, loads, selected, drawn, actions, hatchRoles, acceptedHatch: async () => {
     ctx.state = { ...ctx.state, lifecycle: { phase: 'egg' } };
     ctx.actionResponse = { result: { accepted: true }, state: { ...ctx.state, lifecycle: { phase: 'street' } } };
     await ctx.runAction('hatch', {});
@@ -299,6 +350,7 @@ test('the accepted Hatch handler binds the reveal to its final animation sequenc
   assert.equal(f.ctx.actionSequence, 2);
   assert.equal(f.ctx.animationUntil, Infinity);
   assert.equal(f.loads.length, 1);
+  assert.deepEqual(f.hatchRoles, ['egg_hatch']);
   await f.tick(3220); await f.tick(10000);
   assert.equal(f.ctx.hatchArtTransitionUntil, 0);
   assert.equal(f.ctx.animationUntil, 0); assert.equal(f.ctx.animationMode, 'idle');
@@ -306,6 +358,20 @@ test('the accepted Hatch handler binds the reveal to its final animation sequenc
   assert.equal(f.ctx.state.pet.xp, 12);
   assert.equal(f.actions.length, 1); assert.equal(f.actions[0].payload.action, 'hatch');
   assert.equal(f.timers.size, 0);
+});
+
+test('an accepted Hatch waits for its sheet before starting the reveal clock', async () => {
+  const f = hatchContext(), roleReady = deferred();
+  f.ctx.window.MoonpetBotArtRenderer.prepareRole = role => { f.hatchRoles.push(role); return roleReady.promise; };
+  const accepted = f.acceptedHatch();
+  await flush();
+  assert.deepEqual(f.hatchRoles, ['egg_hatch']);
+  assert.equal(f.ctx.hatchArtTransitionUntil, 0);
+  assert.equal(f.loads.length, 0);
+  roleReady.resolve({ role: 'egg_hatch' });
+  await accepted;
+  assert.ok(f.ctx.hatchArtTransitionUntil > f.now());
+  assert.equal(f.loads.length, 1);
 });
 
 for (const release of ['deadline', 'preload']) for (const [action, accepted, mode, duration] of [

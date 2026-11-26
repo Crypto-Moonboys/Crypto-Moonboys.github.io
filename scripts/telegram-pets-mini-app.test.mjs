@@ -1606,9 +1606,9 @@ assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates m
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261118-progressive-unlocks-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261006-live-refresh-v5/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-audit-recovery-v2/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-progressive-unlocks-v2/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261126-runtime-webp-v1/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261126-runtime-webp-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261126-runtime-webp-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1915,7 +1915,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 4, 'Membership is verified before the three read-only state attempts');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261118-progressive-unlocks-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261126-runtime-webp-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*ensureActiveScreenVisible\(\);\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must redirect hidden sections and preserve only drafts that were not explicitly discarded');
@@ -2444,7 +2444,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20261002-audit-recovery-v2/);
+assert.match(html, /20261126-runtime-webp-v1/);
 assert.match(worker, /20261029-members-only-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

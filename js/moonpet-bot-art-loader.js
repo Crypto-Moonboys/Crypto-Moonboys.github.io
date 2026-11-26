@@ -203,14 +203,35 @@
       const idleEntry = idleAsset && await loadAsset(idleAsset, manifest, errors);
       if (idleEntry) assetsByRole[idleEntry.role] = idleEntry.asset;
       const remaining = assets.filter((asset) => asset.role !== idleRole);
-      const preload = Promise.all(remaining.map((asset) => loadAsset(asset, manifest, errors))).then((loaded) => {
-        for (const entry of loaded) if (entry) assetsByRole[entry.role] = entry.asset;
-        if (errors.length && packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
-        return { assetsByRole, errors };
-      });
+      const rolePromises = new Map();
+      const loadRole = (role) => {
+        if (assetsByRole[role]) return Promise.resolve(assetsByRole[role]);
+        if (rolePromises.has(role)) return rolePromises.get(role);
+        const requested = assets.find((asset) => asset.role === role);
+        if (!requested) return Promise.resolve(null);
+        const rolePromise = loadAsset(requested, manifest, errors).then((entry) => {
+          if (entry) {
+            assetsByRole[entry.role] = entry.asset;
+            return entry.asset;
+          }
+          rolePromises.delete(role);
+          if (packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
+          return null;
+        }).catch((error) => {
+          rolePromises.delete(role);
+          if (packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
+          throw error;
+        });
+        rolePromises.set(role, rolePromise);
+        return rolePromise;
+      };
+      // Compatibility handle for callers that wait for initial art readiness.
+      // Secondary sheets now load only when their role is first requested.
+      const preload = Promise.resolve({ assetsByRole, errors });
       if (!assetsByRole[idleRole] && packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
       return {
         ready: Boolean(assetsByRole[idleRole]), manifest, assetsByRole, errors, preload,
+        loadRole,
         roleMap: manifest.runtime_role_map || {}, display: config.display || {},
         botKey, pendingRoles: remaining.map((asset) => asset.role)
       };
