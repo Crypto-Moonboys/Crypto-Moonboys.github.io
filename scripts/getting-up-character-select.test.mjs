@@ -22,6 +22,10 @@ assert.deepEqual(manifest.deathSequence, ['death','rubble','volcano','coinVolcan
 assert.match(page, /id="fighter-select"/);
 assert.match(page, /character-select\.js/);
 assert.match(selector, /volcanic-punk-player-animation-manifest\.json/);
+assert.match(selector, /nbg-game-over/);
+assert.match(selector, /diedSinceSelection/);
+assert.match(selector, /setChooserVisible\(false\)/);
+assert.match(fs.readFileSync('games/getting-up/character-select.css', 'utf8'), /\.fighter-select\[hidden\]/);
 assert.match(runtime, /deathAnimationActive/);
 assert.match(runtime, /directionalName/);
 console.log('[PASS] Getting Up selectable character contract');
