@@ -52,6 +52,9 @@
   // Volcanic $PUNK's third jump plays two large one-shot blast sheets, then
   // releases lightweight world coins with independent arcade physics.
   var THIRD_SPIN_COIN_COUNT = 32;
+  // The visible ring occupies about 78% of each 196x196 blast frame. Using a
+  // circle-to-rectangle test keeps the corners outside the artwork harmless.
+  var THIRD_SPIN_BLAST_RADIUS_RATIO = 0.39;
   var BURST_COIN_SIZE = 7;
   var BURST_COIN_XP = 25;
   var BURST_COIN_GRAVITY = 0.34;
@@ -413,7 +416,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-air-destruction-v11';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-third-spin-hit-v12';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -1357,6 +1360,36 @@
       return { x: enemy.x - 8, y: enemy.y + bob - 12, w: 44, h: 54 };
     }
 
+    function circleOverlapsRect(circle, rect) {
+      var nearestX = clamp(circle.x, rect.x, rect.x + rect.w);
+      var nearestY = clamp(circle.y, rect.y, rect.y + rect.h);
+      var dx = circle.x - nearestX;
+      var dy = circle.y - nearestY;
+      return dx * dx + dy * dy <= circle.r * circle.r;
+    }
+
+    function getThirdSpinBlastCircle() {
+      var animation = getAnimation(player.anim);
+      var frameMeta = getAnimationFrameMetadata(animation);
+      var localFrame = player.frame % frameMeta.count;
+      var frameOffsetY = animation && Array.isArray(animation.frameOffsetY) ?
+        Number(animation.frameOffsetY[localFrame] || 0) : 0;
+      var visualFootY = player.y + player.h + PLAYER_VISUAL_OFFSET_Y;
+      var drawY = visualFootY - frameMeta.renderHeight +
+        frameMeta.renderOffsetY + frameOffsetY;
+      return {
+        x: player.x + player.w / 2,
+        y: drawY + frameMeta.renderHeight / 2,
+        r: Math.min(frameMeta.renderWidth, frameMeta.renderHeight) *
+          THIRD_SPIN_BLAST_RADIUS_RATIO
+      };
+    }
+
+    function playerThirdSpinHits(target) {
+      if (!thirdSpinActive || gameOver) return false;
+      return circleOverlapsRect(getThirdSpinBlastCircle(), getEnemyCombatRect(target));
+    }
+
     function getSprayAttackRect() {
       return {
         x: player.facing > 0 ? player.x + player.w - 4 : player.x - SPRAY_ENEMY_RANGE + 4,
@@ -1776,10 +1809,12 @@
         rat.x += (rat.vx + Math.sin(rat.age / 380 + rat.swayPhase) * 0.24) * step;
         rat.x = clamp(rat.x, 0, WORLD_WIDTH - rat.w);
         rat.y += (PARACHUTE_GLIDE_SPEED + Math.sin(rat.age / 470 + rat.swayPhase) * 0.11) * step;
-        if (playerSprayHits(rat) || playerStomps(rat)) {
-          var stomped = !playerSprayHits(rat);
+        var thirdSpinHit = playerThirdSpinHits(rat);
+        var sprayHit = !thirdSpinHit && playerSprayHits(rat);
+        var stomped = !thirdSpinHit && !sprayHit && playerStomps(rat);
+        if (thirdSpinHit || sprayHit || stomped) {
           if (stomped) player.vy = ENEMY_STOMP_BOUNCE;
-          defeatEnemy(rat, time, stomped ? 'stomp' : 'spray');
+          defeatEnemy(rat, time, thirdSpinHit ? 'third-spin-blast' : (stomped ? 'stomp' : 'spray'));
           parachuteRats.splice(i, 1);
           continue;
         }
@@ -1830,10 +1865,12 @@
           if (enemy.spawnedByParachute) enemies.splice(i, 1);
           continue;
         }
-        if (playerSprayHits(enemy) || playerStomps(enemy)) {
-          var stomped = !playerSprayHits(enemy);
+        var thirdSpinHit = playerThirdSpinHits(enemy);
+        var sprayHit = !thirdSpinHit && playerSprayHits(enemy);
+        var stomped = !thirdSpinHit && !sprayHit && playerStomps(enemy);
+        if (thirdSpinHit || sprayHit || stomped) {
           if (stomped) player.vy = ENEMY_STOMP_BOUNCE;
-          defeatEnemy(enemy, time, stomped ? 'stomp' : 'spray');
+          defeatEnemy(enemy, time, thirdSpinHit ? 'third-spin-blast' : (stomped ? 'stomp' : 'spray'));
           if (enemy.spawnedByParachute) enemies.splice(i, 1);
           continue;
         }
@@ -3179,6 +3216,7 @@
         get backflipActive() { return backflipActive; },
         get thirdSpinActive() { return thirdSpinActive; },
         get thirdSpinPhase() { return thirdSpinPhase; },
+        get thirdSpinBlastCircle() { return thirdSpinActive ? getThirdSpinBlastCircle() : null; },
         get deathFallActive() { return deathFallActive; },
         get deathFallPhase() { return deathFallPhase; },
         get deathFallFrameMs() { return deathFallFrameMs; },
