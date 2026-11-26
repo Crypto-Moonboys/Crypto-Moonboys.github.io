@@ -214,3 +214,52 @@ test('uses the current published Brain snapshot on each request, including NFT s
   }
   assert.equal(new Set(urls.filter(url => url.includes('/brain-feed/records/'))).size, 2);
 });
+
+test('answers an exact NFT supply question from the verified snapshot without relying on the model', async context => {
+  const path = '/data/gkniftyheads/live-template-supply.json';
+  const title = 'GKniftyHEADS template supply';
+  const kind = 'nft';
+  const checkedAt = '2026-11-26T12:45:07.298Z';
+  let live = 20;
+  let status = 'ok';
+  let tampered = false;
+  let record;
+  let sha256;
+  const fetched = context.mock.method(globalThis, 'fetch', async url => {
+    if (url === origin + '/brain-feed/index.json') {
+      record = JSON.stringify({ path, title, kind, body: JSON.stringify({
+        collection: 'gkniftyheads',
+        supplies: [
+          { template_id: 999999, issued_supply: 91, live_supply: 88, live_supply_status: 'ok' },
+          { template_id: 773225, issued_supply: 20, live_supply: live, live_supply_status: status, last_checked_at: checkedAt },
+        ],
+      }) });
+      sha256 = createHash('sha256').update(record).digest('hex');
+      return Response.json({
+        schema_version: 1, revision: sha256.slice(0, 40),
+        records: [{ path, title, description: '', kind, sha256, bytes: Buffer.byteLength(record) }],
+      });
+    }
+    assert.equal(url, origin + '/brain-feed/records/' + sha256 + '.json');
+    return new Response(tampered ? record.replace('gkniftyheads', 'xxxxxxxxxxxx') : record);
+  });
+  const message = 'How many issued and live copies does GKniftyHEADS template 773225 have';
+  const send = (question = message) => handleSwarmsyWebChat(request(chat({ message: question })), env(), cors);
+  const unsigned = await handleSwarmsyWebChat(request(chat({ message, telegram_auth: {} })), env(), cors);
+  assert.equal(unsigned.status, 401);
+  assert.equal(fetched.mock.callCount(), 0);
+
+  assert.deepEqual(await (await send()).json(), {
+    reply: 'The published supply for GKniftyHEADS template 773225 is **20 issued and 20 live** (checked 2026-11-26 UTC).',
+    sources: [{ title, url: origin + path }],
+    canon: 'found',
+  });
+  live = 0;
+  assert.match((await (await send()).json()).reply, /20 issued and 0 live/);
+  status = 'unavailable';
+  assert.equal((await (await send()).json()).canon, 'unavailable');
+  assert.match((await (await send('What is the issued supply for GKniftyHEADS template #773225?')).json()).reply, /20 issued/);
+  assert.equal((await (await send(message.replace('773225', '111111'))).json()).canon, 'unavailable');
+  tampered = true;
+  assert.equal((await (await send()).json()).canon, 'unavailable');
+});
