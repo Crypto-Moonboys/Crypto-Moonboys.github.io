@@ -25,7 +25,7 @@ It never contains message text, WAX details, bot tokens or credentials.
 1. A confirmed Telegram `file_id` is preferred. Reuse sends a JSON
    `sendPhoto` request and performs no manifest/layer fetch, Images transform,
    or JPEG upload.
-2. Otherwise a bounded 640×640 JPEG (maximum 500,000 bytes) may be reused.
+2. Otherwise a bounded 512×512 JPEG (maximum 250,000 bytes) may be reused.
 3. On a full miss, PR1 composes from the nine homepage builder layers. The JPEG
    is cached, and a successful Telegram response stores its confirmed
    `file_id`.

@@ -14,7 +14,8 @@ Parent issue: #1726.
   compositable full-size still layer. Never substitute animated thumbnails
   for full 1,000 × 1,000 builder layers.
 - The homepage builder uses 1,000 × 1,000 aligned WebP layers. PR1 uses the
-  same files and stacking order, scaling every layer uniformly to 640 × 640.
+  same files and stacking order. Production now flattens those masters to a
+  Telegram-only 512 × 512 derivative; the website remains 1000 × 1000.
 
 ## Files and behaviour
 
@@ -32,8 +33,8 @@ Parent issue: #1726.
   rejected. Each of nine WebP layer inputs must be no more than 850 KB;
   compositing is performed in source order using the Cloudflare **Images
   binding** `.input().transform().draw().output()` pipeline. It returns a
-  flattened 640px JPEG with bounded retries at 76/62/48 quality and a **hard
-  final byte limit of 500,000 bytes**. Oversize or failed inputs throw.
+  flattened 512px JPEG with bounded retries at 72/60/48 quality and a **hard
+  final byte limit of 250,000 bytes**. Oversize or failed inputs throw.
 
 The module performs **no Telegram sends, no D1 writes, no signing and no
 wallet calls**. This PR does not add `[images] binding = "IMAGES"` to

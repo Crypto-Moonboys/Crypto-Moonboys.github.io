@@ -10,8 +10,12 @@ export const PORTRAIT_LAYER_ORDER = Object.freeze([
 export const PORTRAIT_MANIFEST_URL =
   'https://cryptomoonboys.com/data/avatar-builder-manifest.json';
 export const PORTRAIT_ASSET_ORIGIN = 'https://cryptomoonboys.com';
-export const PORTRAIT_SIZE = 640;
-export const PORTRAIT_MAX_BYTES = 500_000;
+// Telegram displays these inside a chat card rather than as full-screen
+// builder exports. Keep the 1000px source layers untouched, but flatten a
+// smaller delivery-only derivative to cut Images output, cache and upload
+// bytes without changing the website builder.
+export const PORTRAIT_SIZE = 512;
+export const PORTRAIT_MAX_BYTES = 250_000;
 const MAX_MANIFEST_BYTES = 600_000;
 const MAX_LAYER_BYTES = 850_000;
 const MAX_TRAITS = 2_000;
@@ -206,8 +210,8 @@ export async function composeTelegramMoonboy({
   // homepage layers are already the same 1000x1000 size, so composite the
   // eight overlays first, then resize the completed square once: nine total
   // operations instead of resizing every input separately (seventeen).
-  // Retry at progressively smaller JPEG quality only if output > 500 KB.
-  for (const quality of [76, 62, 48]) {
+  // Retry at progressively smaller JPEG quality only if output > 250 KB.
+  for (const quality of [72, 60, 48]) {
     let transform = images.input(blobStream(layers[0]));
     for (let i = 1; i < layers.length; i++) {
       transform = transform.draw(
@@ -237,5 +241,5 @@ export async function composeTelegramMoonboy({
       });
     }
   }
-  fail('output_exceeds_500kb');
+  fail('output_exceeds_250kb');
 }

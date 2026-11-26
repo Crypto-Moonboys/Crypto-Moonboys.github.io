@@ -15,7 +15,7 @@ existing **TAG RUN-owned outbound text-only paths** through it:
 
 Each composed Moonboy draws **one real static WebP asset from every homepage
 builder category**, bottom-to-top, using PR1. PR2 sends the resulting bounded
-640px JPEG and original caption where safe. Existing media messages are not
+512px JPEG and original caption where safe. Existing media messages are not
 intercepted or replaced.
 
 ## Explicit inventory of remaining bot send paths

@@ -32,8 +32,8 @@ function fakeImages() {
       assert.equal(typeof stream?.getReader, 'function');
       return {
         transform({ width, height }) {
-          assert.equal(width, 640);
-          assert.equal(height, 640);
+          assert.equal(width, 512);
+          assert.equal(height, 512);
           return this;
         },
         draw(other, opts) {
@@ -125,14 +125,14 @@ test('legacy TAG RUN kinds retain PR3 opt-in behavior without the new list', () 
   }), true);
 });
 
-test('v2 portraits do not reuse v1 media cache entries or Telegram file_ids', async () => {
-  assert.equal(MOONBOY_MEDIA_CACHE_VERSION, 'v2');
+test('v3 portraits do not reuse 640px v2 media cache entries or Telegram file_ids', async () => {
+  assert.equal(MOONBOY_MEDIA_CACHE_VERSION, 'v3');
   const cache = fakeCache();
   const seed = 'tag-command:123:gender-migration:0';
-  const stale = new Request('https://cryptomoonboys.com/__telegram_moonboy_cache__/v1/telegram-file/' +
+  const stale = new Request('https://cryptomoonboys.com/__telegram_moonboy_cache__/v2/telegram-file/' +
     encodeURIComponent(seed));
   cache.rows.set(stale.url, new Response(JSON.stringify({
-    version: 'v1', file_id: 'telegram-file-id-1234567890'
+    version: 'v2', file_id: 'telegram-file-id-1234567890'
   }), { headers: { 'content-type': 'application/json' } }));
   assert.equal((await readMoonboyMediaCache(cache, seed)).hit, false);
 });
@@ -176,7 +176,7 @@ test('cached JPEG is reused without another Images composition', async () => {
   const cache = fakeCache();
   const seed = moonboyTelegramMessageSeed('daily-digest', privateChat, '2026-11-11');
   assert.equal(await cacheMoonboyPortrait(cache, seed, {
-    bytes: new Uint8Array(128), mimeType: 'image/jpeg', width: 640, height: 640
+    bytes: new Uint8Array(128), mimeType: 'image/jpeg', width: 512, height: 512
   }), true);
   const telegram = telegramHarness();
   const result = await sendControlledMoonboyTelegram({

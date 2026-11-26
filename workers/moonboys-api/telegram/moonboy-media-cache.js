@@ -2,9 +2,11 @@
 // Telegram file_ids. Uses the Workers Cache API only; no KV/D1 migration or
 // billable binding is introduced. Cache absence/failure is always non-fatal.
 import { TELEGRAM_PHOTO_MAX_BYTES } from './moonboy-photo-transport.js';
+import { PORTRAIT_SIZE } from './moonboy-portrait.js';
 
-// New cache namespace: old pre-gender portraits and file_ids are ineligible.
-const CACHE_VERSION = 'v2';
+// New cache namespace: old 640px portraits and their Telegram file_ids are
+// ineligible, so every logical image migrates to the smaller 512px derivative.
+const CACHE_VERSION = 'v3';
 const CACHE_ORIGIN = 'https://cryptomoonboys.com/__telegram_moonboy_cache__/';
 const FILE_ID = /^[A-Za-z0-9_-]{20,256}$/;
 const SEED = /^[A-Za-z0-9_.:|/-]{1,200}$/;
@@ -50,7 +52,7 @@ export async function readMoonboyMediaCache(cacheImpl, seed) {
       if (bytes.byteLength > 0 && bytes.byteLength <= TELEGRAM_PHOTO_MAX_BYTES) {
         return {
           hit: true, source: 'jpeg', portrait: {
-            bytes, mimeType: 'image/jpeg', width: 640, height: 640
+            bytes, mimeType: 'image/jpeg', width: PORTRAIT_SIZE, height: PORTRAIT_SIZE
           }
         };
       }
@@ -65,8 +67,8 @@ export async function cacheMoonboyPortrait(cacheImpl, seed, portrait) {
   const cache = resolveMoonboyMediaCache(cacheImpl);
   const request = cacheRequest('jpeg', seed);
   if (!cache || !request || portrait?.mimeType !== 'image/jpeg' ||
-      !(portrait.bytes instanceof Uint8Array) || portrait.width !== 640 ||
-      portrait.height !== 640 || portrait.bytes.byteLength === 0 ||
+      !(portrait.bytes instanceof Uint8Array) || portrait.width !== PORTRAIT_SIZE ||
+      portrait.height !== PORTRAIT_SIZE || portrait.bytes.byteLength === 0 ||
       portrait.bytes.byteLength > TELEGRAM_PHOTO_MAX_BYTES) return false;
   try {
     await cache.put(request, new Response(portrait.bytes, {

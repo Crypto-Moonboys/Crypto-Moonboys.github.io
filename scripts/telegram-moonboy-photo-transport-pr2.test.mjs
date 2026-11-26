@@ -11,7 +11,7 @@ const chatId = '-1001234567890';
 const topic = 9876;
 const photo = () => ({
   mimeType: 'image/jpeg', bytes: new Uint8Array([0xff, 0xd8, 0xff, 0xd9]),
-  width: 640, height: 640
+  width: 512, height: 512
 });
 const ok = (id, photoId) => new Response(JSON.stringify({
   ok: true, result: { message_id: id, ...(photoId ? { photo: [{ file_id: photoId }] } : {}) }

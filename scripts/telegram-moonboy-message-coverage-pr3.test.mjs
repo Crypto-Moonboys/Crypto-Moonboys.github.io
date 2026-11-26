@@ -29,8 +29,8 @@ function fakeImages() {
       assert.equal(typeof stream?.getReader, 'function');
       return {
         transform({ width, height }) {
-          assert.equal(width, 640);
-          assert.equal(height, 640);
+          assert.equal(width, 512);
+          assert.equal(height, 512);
           return this;
         },
         draw(other, opts) {

@@ -2,10 +2,11 @@
 // Never retry a photo after a transport error: Telegram may have delivered it.
 // No Worker config, Images binding, DB writes, or live feature flags here.
 import { telegramMessageLength } from './faction-emoji.js';
+import { PORTRAIT_MAX_BYTES, PORTRAIT_SIZE } from './moonboy-portrait.js';
 
 export const TELEGRAM_PHOTO_CAPTION_LIMIT = 1024;
 export const TELEGRAM_TEXT_LIMIT = 4096;
-export const TELEGRAM_PHOTO_MAX_BYTES = 500_000;
+export const TELEGRAM_PHOTO_MAX_BYTES = PORTRAIT_MAX_BYTES;
 const CHAT_ID = /^-?[0-9]{1,20}$/;
 const TELEGRAM_FILE_ID = /^[A-Za-z0-9_-]{20,256}$/;
 const THREAD_ID = /^[1-9][0-9]{0,12}$/;
@@ -82,7 +83,7 @@ function validatePhoto(photo) {
       !(photo.bytes instanceof Uint8Array) ||
       photo.bytes.byteLength === 0 ||
       photo.bytes.byteLength > TELEGRAM_PHOTO_MAX_BYTES ||
-      photo.width !== 640 || photo.height !== 640) {
+      photo.width !== PORTRAIT_SIZE || photo.height !== PORTRAIT_SIZE) {
     fail('invalid_photo');
   }
   return photo.bytes;

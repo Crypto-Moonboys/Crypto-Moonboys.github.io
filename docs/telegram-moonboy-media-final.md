@@ -1,5 +1,17 @@
 # Telegram Moonboy artwork — final code coverage and release gate
 
+**Production update — 26 November 2026:** Cloudflare Images still composes from
+the unchanged 1000×1000 Moonboy Builder WebP masters, but Telegram-only output
+is now a 512×512 JPEG capped at 250 KB. The v3 media cache deliberately rejects
+old 640px JPEGs and file IDs so new posts use the smaller derivative. Website
+builder display and full-resolution PNG export are unchanged.
+
+A local audit of 20 deterministic combinations using the real repository
+layers measured the former 640px/quality-76 JPEGs at 61,548 bytes on average
+and the new 512px/quality-72 JPEGs at 40,867 bytes on average: **33.6% fewer
+delivery bytes**. The largest new sample was 61,209 bytes, well below the new
+250 KB fail-closed ceiling.
+
 Parent: #1726. Foundation: #1728. Transport: #1729. TAG RUN integration:
 #1730. Cache and durable broad-send integration: #1732.
 
