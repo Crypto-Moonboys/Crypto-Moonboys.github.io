@@ -113,6 +113,7 @@ assert.match(runtime, /frameOffsetY/);
 assert.match(runtime, /beginDeathFall/);
 assert.match(runtime, /playerAnimations\.airDeathFall \? 'airDeathFall' : 'fall'/);
 assert.match(runtime, /AIR_DEATH_FALL_MIN_FRAME_MS/);
+assert.match(runtime, /AIR_DEATH_FALL_TIME_SHARE/);
 assert.match(runtime, /calculateAirDeathFallFrameMs/);
 assert.match(runtime, /estimateAirDeathFallMs/);
 assert.match(runtime, /beginAirDeathExplosion/);
