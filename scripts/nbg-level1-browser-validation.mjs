@@ -220,16 +220,16 @@ async function holdRunnerRight(page, durationMs = 0) {
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 120 },
-  crouchLeft: { spriteSheet: 'player/animations/NBG Runner Final-crouchr.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: -1 },
-  crouchRight: { spriteSheet: 'player/animations/NBG Runner Final-sneaking_left.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, frames: 20, frameStart: 5, columns: 5, frameMs: 82, nativeFacing: 1 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
-  backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/NBG Runner Final-spray.png', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 120 },
+  crouchLeft: { spriteSheet: 'player/animations/NBG Runner Final-crouchr-prepared-runtime.webp', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, columns: 5, frames: 20, frameMs: 82, nativeFacing: -1, preserveSourceAlpha: true },
+  crouchRight: { spriteSheet: 'player/animations/NBG Runner Final-sneaking_left-prepared-runtime.webp', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 72, renderHeight: 86, renderOffsetY: 16, columns: 5, frames: 20, frameMs: 82, nativeFacing: 1, preserveSourceAlpha: true },
+  jump: { spriteSheet: 'player/animations/jump-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 145 },
+  backflip: { spriteSheet: 'player/animations/NBG Runner Final-backflip-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 16, columns: 4, frameMs: 42 },
+  fall: { spriteSheet: 'player/animations/fall-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/NBG Runner Final-spray-prepared-runtime.webp', sourceFrameWidth: 256, sourceFrameHeight: 256, renderWidth: 164, renderHeight: 164, renderOffsetY: 45, frames: 25, columns: 5, frameMs: 8, preserveSourceAlpha: true },
+  hurt: { spriteSheet: 'player/animations/hurt-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory-runtime.webp', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 145 }
 };
 const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
   `player.${key}`,
@@ -1375,6 +1375,7 @@ let state = await page.evaluate(() => ({
       frames: animation.frames,
       columns: animation.columns,
       frameMs: animation.frameMs,
+      preserveSourceAlpha: animation.preserveSourceAlpha,
       // Serialize crouch metadata before leaving page.evaluate. Later
       // comparisons cannot recover fields omitted from this snapshot.
       frameStart: animation.frameStart,
@@ -1489,7 +1490,8 @@ assert.deepEqual(
       columns: animation.columns,
       frameMs: animation.frameMs,
       ...(animation.frameStart ? { frameStart: animation.frameStart } : {}),
-      ...(key.startsWith('crouch') ? { nativeFacing: animation.nativeFacing } : {})
+      ...(key.startsWith('crouch') ? { nativeFacing: animation.nativeFacing } : {}),
+      ...(animation.preserveSourceAlpha ? { preserveSourceAlpha: true } : {})
     }
   ])),
   expectedAnimations,
@@ -2856,7 +2858,7 @@ const platformDraw = await page.evaluate(async () => {
   const draws = [];
   context.drawImage = function (image, ...args) {
     const source = String((image && (image.__nbgSpraySource || image.src)) || '');
-    if (source.includes('/player/animations/idle.png') ||
+    if (source.includes('/player/animations/idle-runtime.webp') ||
         source.includes('/objects/BRICK1-runtime.webp')) {
       draws.push({ source, y: args[5], width: args[6], height: args[7] });
     }
@@ -2864,7 +2866,7 @@ const platformDraw = await page.evaluate(async () => {
   };
   await new Promise(resolve => setTimeout(resolve, 90));
   context.drawImage = original;
-  const idle = draws.find(draw => draw.source.includes('/player/animations/idle.png'));
+  const idle = draws.find(draw => draw.source.includes('/player/animations/idle-runtime.webp'));
   const brick = draws.find(draw => draw.source.includes('/objects/BRICK1-runtime.webp'));
   return {
     grounded: player.grounded,
@@ -3183,7 +3185,7 @@ const sprayBaseline = await page.evaluate(() => {
   window.__finalSprayOriginalDraw = ctx.drawImage;
   window.__finalSprayFrames = [];
   ctx.drawImage = function (image, ...args) {
-    if (image && (image.__nbgSpraySource || image.src || '').includes('NBG%20Runner%20Final-spray.png')) {
+    if (image && (image.__nbgSpraySource || image.src || '').includes('NBG%20Runner%20Final-spray-prepared-runtime.webp')) {
       window.__finalSprayFrames.push({ sourceX: args[0],
         sourceY: args[1], width: args[6], height: args[7] });
     }
@@ -3193,7 +3195,12 @@ const sprayBaseline = await page.evaluate(() => {
   window.__sprayDefeatListener = (event) => window.__sprayDefeats.push(event.detail);
   window.addEventListener('nbg-enemy-defeated', window.__sprayDefeatListener);
   const sprayImage = state.playerAnimations.spray.image;
-  const painted = sprayImage.getContext('2d').getImageData(0, 0, 1, 1).data;
+  const probe = document.createElement('canvas');
+  probe.width = 1;
+  probe.height = 1;
+  const probeContext = probe.getContext('2d');
+  probeContext.drawImage(sprayImage, 0, 0);
+  const painted = probeContext.getImageData(0, 0, 1, 1).data;
   if (painted[3] !== 0) throw new Error('final spray sheet white page border must be transparent');
   return { xp: state.xp, health: player.health };
 });

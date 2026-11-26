@@ -37,7 +37,8 @@ test('every original walking, parachute, and available attack pose is backed by 
     required
   );
   for (const key of required) assert.match(assets.enemies[key], /\.(?:png|webp)$/, key);
-  assert.ok(animations.spray.spriteSheet.endsWith('.png'));
+  assert.ok(animations.spray.spriteSheet.endsWith('-prepared-runtime.webp'));
+  assert.equal(animations.spray.preserveSourceAlpha, true);
   assert.equal(catalog.poses.graffitiBotFire.columns, 4);
   assert.equal(catalog.poses.balloonRelease.frames, 16);
 });

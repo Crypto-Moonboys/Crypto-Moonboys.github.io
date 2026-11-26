@@ -18,6 +18,21 @@ Level 1 browser game prototype.
 
 Open `game/play.html` through GitHub Pages.
 
+## Runtime performance
+
+- PNG/JPG masters remain the edit sources. The ranked runtime uses generated WebP derivatives.
+- The three historical skyline masters are decoded-pixel-identical; the runtime downloads and decodes one lossless WebP and reuses it in all three skyline slots.
+- Player spray and crouch matte cleanup is prebuilt into transparent runtime WebPs. The two unused crouch-sheet source rows are not shipped.
+- Oversized rat-attack cells use 256px runtime cells, while normal rats, parachutes and coins use 128px cells and bots use 160px cells. Every runtime cell remains at least as large as its maximum physical-canvas draw.
+- Leaderboard and read-only modifier requests wait for the game asset-ready event so they do not compete with the playable startup path.
+
+Regenerate and verify with:
+
+```sh
+node scripts/build-nbg-london-runtime-assets.mjs
+npm run test:nbg-london-performance
+```
+
 ## Next development
 
 - Import final PNG sprite assets

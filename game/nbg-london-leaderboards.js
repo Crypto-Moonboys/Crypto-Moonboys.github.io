@@ -40,6 +40,8 @@
   var accessPromise = null;
   var accessVersion = 0;
   var ACCESS_CACHE_MS = 60000;
+  var initialLoadsStarted = false;
+  var initialLoadsFallback = null;
 
   function formatTime(ms) {
     if (!Number.isFinite(Number(ms))) return '—';
@@ -766,6 +768,27 @@
     }, true);
   }
 
+  function loadInitialBoards() {
+    if (initialLoadsStarted) return;
+    initialLoadsStarted = true;
+    if (initialLoadsFallback) clearTimeout(initialLoadsFallback);
+    loadLeaders();
+    loadPersonal();
+    loadPrizeStandings();
+  }
+
+  function scheduleInitialBoards() {
+    if (window.NBGLevel1State && window.NBGLevel1State.assetsLoaded) {
+      loadInitialBoards();
+      return;
+    }
+    window.addEventListener('nbg-level-assets-ready', loadInitialBoards, { once: true });
+    // Leaderboards remain available even if a broken game asset prevents the
+    // ready event; normally the asset event wins and clears this fallback.
+    if (typeof window.setTimeout === 'function')
+      initialLoadsFallback = window.setTimeout(loadInitialBoards, 12000);
+  }
+
   function init() {
     installFullscreenRecordsDrawer();
     status = document.getElementById('nbg-record-status');
@@ -862,9 +885,7 @@
     window.addEventListener('nbg-game-over', function () {
       setStatus('Game over. Finish a complete run to submit replay-verified leaderboard XP.');
     });
-    loadLeaders();
-    loadPersonal();
-    loadPrizeStandings();
+    scheduleInitialBoards();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

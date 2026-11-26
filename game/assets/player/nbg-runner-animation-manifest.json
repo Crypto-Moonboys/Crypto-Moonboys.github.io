@@ -2,7 +2,7 @@
   "character": "NBG Runner",
   "animations": {
     "idle": {
-      "spriteSheet": "player/animations/idle.png",
+      "spriteSheet": "player/animations/idle-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
@@ -13,7 +13,7 @@
       "frameMs": 145
     },
     "run": {
-      "spriteSheet": "player/animations/run.png",
+      "spriteSheet": "player/animations/run-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
@@ -24,7 +24,7 @@
       "frameMs": 120
     },
     "crouchLeft": {
-      "spriteSheet": "player/animations/NBG Runner Final-crouchr.png",
+      "spriteSheet": "player/animations/NBG Runner Final-crouchr-prepared-runtime.webp",
       "sourceFrameWidth": 256,
       "sourceFrameHeight": 256,
       "renderWidth": 72,
@@ -32,12 +32,12 @@
       "renderOffsetY": 16,
       "columns": 5,
       "frames": 20,
-      "frameStart": 5,
       "frameMs": 82,
-      "nativeFacing": -1
+      "nativeFacing": -1,
+      "preserveSourceAlpha": true
     },
     "crouchRight": {
-      "spriteSheet": "player/animations/NBG Runner Final-sneaking_left.png",
+      "spriteSheet": "player/animations/NBG Runner Final-sneaking_left-prepared-runtime.webp",
       "sourceFrameWidth": 256,
       "sourceFrameHeight": 256,
       "renderWidth": 72,
@@ -45,12 +45,12 @@
       "renderOffsetY": 16,
       "columns": 5,
       "frames": 20,
-      "frameStart": 5,
       "frameMs": 82,
-      "nativeFacing": 1
+      "nativeFacing": 1,
+      "preserveSourceAlpha": true
     },
     "jump": {
-      "spriteSheet": "player/animations/jump.png",
+      "spriteSheet": "player/animations/jump-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
@@ -61,7 +61,7 @@
       "frameMs": 145
     },
     "backflip": {
-      "spriteSheet": "player/animations/NBG Runner Final-backflip.png",
+      "spriteSheet": "player/animations/NBG Runner Final-backflip-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
@@ -72,7 +72,7 @@
       "frameMs": 42
     },
     "fall": {
-      "spriteSheet": "player/animations/fall.png",
+      "spriteSheet": "player/animations/fall-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
@@ -83,7 +83,7 @@
       "frameMs": 145
     },
     "spray": {
-      "spriteSheet": "player/NBG Runner Final-spray.png",
+      "spriteSheet": "player/NBG Runner Final-spray-prepared-runtime.webp",
       "sourceFrameWidth": 256,
       "sourceFrameHeight": 256,
       "renderWidth": 164,
@@ -91,10 +91,11 @@
       "renderOffsetY": 45,
       "frames": 25,
       "columns": 5,
-      "frameMs": 8
+      "frameMs": 8,
+      "preserveSourceAlpha": true
     },
     "hurt": {
-      "spriteSheet": "player/animations/hurt.png",
+      "spriteSheet": "player/animations/hurt-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
@@ -105,7 +106,7 @@
       "frameMs": 120
     },
     "victory": {
-      "spriteSheet": "player/animations/victory.png",
+      "spriteSheet": "player/animations/victory-runtime.webp",
       "sourceFrameWidth": 128,
       "sourceFrameHeight": 128,
       "renderWidth": 72,
