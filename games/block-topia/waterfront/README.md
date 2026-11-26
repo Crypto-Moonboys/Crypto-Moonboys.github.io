@@ -1,3 +1,5 @@
+**AGENT CHECK REQUIRED — Before changing this game or its assets, audit every wired runtime image and loading path. Confirm that master PNG/JPG files are preserved, smaller transparent WebP derivatives are used at runtime without lost dimensions or sharpness, non-critical art is staged or lazy-loaded where safe, duplicate or unused requests are removed, and gameplay and animation speed are not harmed. Report exactly what already passes, what still needs doing, the affected files and size/performance impact, and any test or visual check that could not be completed. Never assume optimization is finished.**
+
 # Lumina’s Waterfront
 
 The entry is `/games/block-topia/waterfront/`. A verified Telegram player with a faction can reserve their faction’s one seat, for up to nine concurrent players. The browser renews the 75-second lease while the game is open. Leaving releases the seat. The signed Worker response supplies the original harbor. The browser extends it east and south into an 84 × 60 map. The nature island uses one quarter of the former extension’s land budget. The original harbor and all three crossings still connect to the compact island.
