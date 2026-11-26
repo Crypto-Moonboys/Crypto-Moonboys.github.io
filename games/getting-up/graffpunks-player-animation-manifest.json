@@ -42,7 +42,8 @@
       "frames": 6,
       "columns": 3,
       "frameMs": 100,
-      "nativeFacing": 1
+      "nativeFacing": 1,
+      "preserveSourceAlpha": true
     },
     "crouchRight": {
       "spriteSheet": "/games/getting-up/GraffPunks crouching stealth-walk sprite sheet-3.png",
@@ -54,7 +55,8 @@
       "frames": 6,
       "columns": 3,
       "frameMs": 100,
-      "nativeFacing": 1
+      "nativeFacing": 1,
+      "preserveSourceAlpha": true
     },
     "jump": {
       "spriteSheet": "/games/getting-up/GraffPunks Bird Jump Cycle Sprite Sheet-4.png",
@@ -98,7 +100,8 @@
       "renderOffsetY": 8,
       "frames": 6,
       "columns": 3,
-      "frameMs": 38
+      "frameMs": 38,
+      "preserveSourceAlpha": true
     },
     "hurt": {
       "spriteSheet": "/games/getting-up/GraffPunks bird hurt reaction sprite sheet-5.png",
