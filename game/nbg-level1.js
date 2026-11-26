@@ -227,8 +227,10 @@
     }));
   }
 
+  var imageLoadCache = new Map();
   function loadImage(src, options) {
-    return new Promise(function (resolve) {
+    if (imageLoadCache.has(src)) return imageLoadCache.get(src);
+    var request = new Promise(function (resolve) {
       var image = new Image();
       image.decoding = 'async';
       if (options && options.lowPriority) image.fetchPriority = 'low';
@@ -236,6 +238,8 @@
       image.onerror = function () { resolve({ image: null, src: src }); };
       image.src = src;
     });
+    imageLoadCache.set(src, request);
+    return request;
   }
 
   // The approved final spray export contains a flat green matte and white
@@ -416,7 +420,8 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-third-spin-hit-v12';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') +
+      'v=20261126-air-destruction-ranked-runtime-v12';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -444,11 +449,11 @@
     // Keep the current manifest's gameplay assets and course version for both games.
     var world = classicScenery ? {
       layerNames: ['sky', 'london-skyline', 'graffiti-wall', 'street'],
-      layers: ['world/nbg-classic/clouds.jpg',
-        ['world/nbg-classic/LONDON BACKGROUND1.png',
-          'world/nbg-classic/LONDON BACKGROUND2.png',
-          'world/nbg-classic/LONDON BACKGROUND3.png'],
-        'art-production/wall-one.png', 'world/street-tiles.svg']
+      layers: ['world/nbg-classic/clouds-runtime.webp',
+        ['world/nbg-classic/LONDON BACKGROUND1-runtime.webp',
+          'world/nbg-classic/LONDON BACKGROUND1-runtime.webp',
+          'world/nbg-classic/LONDON BACKGROUND1-runtime.webp'],
+        'art-production/wall-one-runtime.webp', 'world/street-tiles.svg']
     } : manifest.world;
     var layerNames = (world && world.layerNames) || [];
     var layers = (world && world.layers) || [];
@@ -599,6 +604,7 @@
     var burstCoins = [];
     var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
+    var classicSkylineImages = null;
     var airshipDarkSheet = null;
     var balloonFrames = {};
     var playerAnimations = {};
@@ -611,6 +617,7 @@
     var deferredQueuedGroupCount = 0;
     var deferredCompletionQueued = false;
     var assetsLoaded = false;
+    var lastHudValues = { xp: null, coins: null, health: null, state: '' };
     var gameVisible = false;
     var waitingForFirstInput = false;
     var running = false;
@@ -1111,6 +1118,7 @@
     var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false };
     var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 };
     var xp = 0;
+    var collectedCoinCount = 0;
 
     function resetToCheckpoint() {
       player.x = checkpointX;
@@ -1620,6 +1628,7 @@
           w: hitSize, h: hitSize };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
+          collectedCoinCount += 1;
           comboCount = time < comboExpiresAt ? Math.min(MAX_COIN_COMBO, comboCount + 1) : 1;
           comboExpiresAt = time + COIN_COMBO_WINDOW_MS;
           var earnedXp = coin.xp * comboCount;
@@ -2009,9 +2018,8 @@
     }
 
     function updateLevel() {
-      var allCheckpoints = [checkpoint].concat(courseCheckpoints);
-      for (var i = 0; i < allCheckpoints.length; i += 1) {
-        var marker = allCheckpoints[i];
+      for (var i = -1; i < courseCheckpoints.length; i += 1) {
+        var marker = i < 0 ? checkpoint : courseCheckpoints[i];
         if (!marker.active && rectsOverlap(player, marker)) {
           marker.active = true;
           checkpointX = Math.max(checkpointX, marker.x);
@@ -2029,7 +2037,7 @@
         setPlayerAnimation('victory');
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
-          xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
+          xp += 500 + collectedCoinCount * 25;
           speedrunBonusXp = Math.max(0, Math.ceil((SPEEDRUN_PAR_MS - runElapsedMs) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
           xp += speedrunBonusXp;
           if (xp > bestXp) bestXp = xp;
@@ -2039,7 +2047,7 @@
           detail: {
             level: unranked ? 'Getting Up - Level 1' : 'NBG London Graffiti Run - Level 1',
             xp: xp,
-            coins: coins.filter(function (coin) { return coin.taken; }).length,
+            coins: collectedCoinCount,
             secretCoins: secretCoins.filter(function (coin) { return coin.taken; }).length,
             timeMs: Math.round(runElapsedMs),
             speedrunBonusXp: speedrunBonusXp,
@@ -2071,11 +2079,33 @@
     }
 
     function updateHud() {
-      var collected = coins.filter(function (coin) { return coin.taken; }).length;
-      hud.xp.textContent = 'XP ' + xp;
-      hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
-      hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' : running ? ((checkpoint.active || courseCheckpoints.some(function (marker) { return marker.active; })) ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      var checkpointActive = checkpoint.active;
+      if (!checkpointActive) {
+        for (var markerIndex = 0; markerIndex < courseCheckpoints.length; markerIndex += 1) {
+          if (courseCheckpoints[markerIndex].active) {
+            checkpointActive = true;
+            break;
+          }
+        }
+      }
+      if (lastHudValues.xp !== xp) {
+        hud.xp.textContent = 'XP ' + xp;
+        lastHudValues.xp = xp;
+      }
+      if (lastHudValues.coins !== collectedCoinCount) {
+        hud.coins.textContent = 'COINS ' + collectedCoinCount + '/' + coins.length;
+        lastHudValues.coins = collectedCoinCount;
+      }
+      if (lastHudValues.health !== player.health) {
+        hud.health.textContent = 'HEALTH ' + player.health;
+        lastHudValues.health = player.health;
+      }
+      var stateText = complete ? 'LEVEL COMPLETE' : gameOver ? 'GAME OVER' :
+        running ? (checkpointActive ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
+      if (lastHudValues.state !== stateText) {
+        hud.state.textContent = stateText;
+        lastHudValues.state = stateText;
+      }
     }
 
     // Cached render-only joins: source images, original crop and tile dimensions
@@ -2597,8 +2627,9 @@
     }
 
     function drawClassicSkylineLayer() {
-      var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
-      if (skylineImages.some(function (image) { return !image; })) {
+      var skylineImages = classicSkylineImages ||
+        [images.skyline1, images.skyline2, images.skyline3];
+      if (!skylineImages[0] || !skylineImages[1] || !skylineImages[2]) {
         ctx.fillStyle = '#18203a';
         ctx.fillRect(0, 40, WIDTH, 160);
         return;
@@ -2946,15 +2977,18 @@
 
       var checkX = Math.round(checkpoint.x - cameraX);
       var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y;
-      if (images.checkpoint) ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h);
-      if (checkpoint.active) {
+      var checkpointVisible = checkX + checkpoint.w >= 0 && checkX <= WIDTH;
+      if (checkpointVisible && images.checkpoint)
+        ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h);
+      if (checkpointVisible && checkpoint.active) {
         ctx.fillStyle = '#7cff82';
         ctx.fillRect(checkX + 12, checkpointY + 8, 10, 8);
       }
 
-      if (images.finish) {
-        ctx.drawImage(images.finish, Math.round(finish.x - cameraX), finish.y + FOREGROUND_VISUAL_OFFSET_Y, finish.w, finish.h);
-      }
+      var finishX = Math.round(finish.x - cameraX);
+      if (images.finish && finishX + finish.w >= 0 && finishX <= WIDTH)
+        ctx.drawImage(images.finish, finishX,
+          finish.y + FOREGROUND_VISUAL_OFFSET_Y, finish.w, finish.h);
     }
 
     function drawPlayer() {
@@ -3368,6 +3402,8 @@
 
     function finishInit() {
       assertRequiredAssetsLoaded();
+      if (classicScenery)
+        classicSkylineImages = [images.skyline1, images.skyline2, images.skyline3];
       assetsLoaded = true;
       gameVisible = true;
       waitingForFirstInput = true;
@@ -3379,6 +3415,9 @@
       cameraY = 0;
       updateHud();
       render(performance.now());
+      window.dispatchEvent(new CustomEvent('nbg-level-assets-ready', {
+        detail: { level: 'london-level-1', ranked: !unranked }
+      }));
       return window.NBGLevel1State;
     }
 
@@ -3420,6 +3459,7 @@
       comboCount = 0;
       comboExpiresAt = 0;
       xp = 0;
+      collectedCoinCount = 0;
       secretNotificationUntil = 0;
       secretNotificationText = '';
       rewardNotificationText = '';
@@ -3543,6 +3583,7 @@
               columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
+              preserveSourceAlpha: !!animation.preserveSourceAlpha,
               image: key === 'spray' && result.image && !animation.preserveSourceAlpha ?
                 prepareFinalSpraySheet(result.image) :
                 key.indexOf('crouch') === 0 && result.image && !animation.preserveSourceAlpha ?

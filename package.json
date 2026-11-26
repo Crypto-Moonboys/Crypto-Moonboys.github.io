@@ -35,6 +35,7 @@
     "test:invaders-ship": "npm run invaders:ship:hydrate && node scripts/invaders-player-ship-asset.test.mjs",
     "test:wiki-structure": "node wiki/validators/wiki-structure-check.js",
     "test:nbg-level1": "node scripts/nbg-level1-browser-validation.mjs --serve",
+    "test:nbg-london-performance": "node scripts/nbg-london-runtime-performance.test.mjs",
     "avatar:assets": "node scripts/build-avatar-assets.mjs",
     "test:avatar-builder": "node scripts/avatar-builder-homepage-presets.test.mjs && node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs",
     "moonpet:art:check": "node scripts/moonpet-art-architecture.test.mjs",
