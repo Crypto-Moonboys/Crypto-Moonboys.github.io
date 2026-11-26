@@ -45,7 +45,7 @@ assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
 assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-ground-only-death-v6/);
-assert.match(runtime, /v=20261126-air-death-fall-v5/);
+assert.match(runtime, /v=20261126-ground-only-death-v6/);
 assert.match(runtime, /playerCharacterId === 'volcanic-punk' &&\s*\n\s*!isOnVolcanicDeathSurface\(\)/);
 assert.match(runtime, /VOLCANIC_DEATH_MIN_WALL_WIDTH/);
 assert.match(runtime, /getVolcanicDeathSurfaces/);
