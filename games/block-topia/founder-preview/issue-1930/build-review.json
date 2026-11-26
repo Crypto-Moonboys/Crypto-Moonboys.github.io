@@ -1,33 +1,19 @@
 {
   "issue": 1930,
-  "round": 88,
+  "round": 89,
   "research": "research incomplete",
   "review": {
-    "keyFindings": {
-      "visualRisks": [
-        {
-          "type": "Obstructed View",
-          "description": "The route includes many turns and blocks, which may obstruct the view of the player. For example, at row 15, the path goes from column 27 to 16, then to 40, creating a complex navigation pattern.",
-          "suggestion": "Simplify the route where possible to ensure clear views."
-        },
-        {
-          "type": "Color Contrast Issues",
-          "description": "The color for 'dock' (#98734e) and 'ground' (#283e35) are very similar, which might cause visual confusion.",
-          "suggestion": "Consider changing the dock color to a more distinct shade."
-        }
-      ],
-      "navigationRisks": [
-        {
-          "type": "Complex Path",
-          "description": "The route involves many turns and backtracking (e.g., from 17 to 40, then to 52), which could be confusing for players.",
-          "suggestion": "Optimize the path to reduce unnecessary turns."
-        },
-        {
-          "type": "Potential Dead Ends",
-          "description": "The route includes several dead ends (e.g., from 17 to 40, then to 52), which might frustrate players who cannot find a way out.",
-          "suggestion": "Ensure there are clear paths that lead back to the main area."
-        }
-      ]
-    }
+    "keyFindings": [
+      {
+        "type": "Navigation Risk",
+        "description": "The route includes a path that may be confusing or difficult to follow, as it involves many turns and steps without clear visual cues.",
+        "details": "The route [15,27,16,28,17,40,52,41,64,53,42,76,88,75,77,100,87,89,90,102,91,114,103,113,115,104,105,93,94] involves a series of steps that may not be intuitive for players to follow. The path changes direction frequently without clear visual indicators."
+      },
+      {
+        "type": "Visual Risk",
+        "description": "The district layout has areas that might appear similar or confusing due to the use of similar colors.",
+        "details": "The 'road' color (#667b8a) and 'ground' color (#283e35) are very close in hue, which could make it difficult for players to distinguish between them. Additionally, the 'dock' color (#98734e) is quite similar to the 'house' color (#aa5149), potentially leading to confusion."
+      }
+    ]
   }
 }
