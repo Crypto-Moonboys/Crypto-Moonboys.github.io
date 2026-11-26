@@ -36,7 +36,7 @@
     {
       "role": "egg_idle",
       "autosprite_animation_name": "EGGONE",
-      "png_path": "/img/moonpets/eggyone/egg_idle.png",
+      "png_path": "/img/moonpets/eggyone/egg_idle.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_idle.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -62,7 +62,7 @@
     {
       "role": "egg_wobble",
       "autosprite_animation_name": "EGGTWO",
-      "png_path": "/img/moonpets/eggyone/egg_wobble.png",
+      "png_path": "/img/moonpets/eggyone/egg_wobble.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_wobble.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -88,7 +88,7 @@
     {
       "role": "egg_sleep",
       "autosprite_animation_name": "EGGTHREE",
-      "png_path": "/img/moonpets/eggyone/egg_sleep.png",
+      "png_path": "/img/moonpets/eggyone/egg_sleep.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_sleep.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -114,7 +114,7 @@
     {
       "role": "egg_react",
       "autosprite_animation_name": "EGGFOUR",
-      "png_path": "/img/moonpets/eggyone/egg_react.png",
+      "png_path": "/img/moonpets/eggyone/egg_react.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_react.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -140,7 +140,7 @@
     {
       "role": "egg_care",
       "autosprite_animation_name": "EGGFIVE",
-      "png_path": "/img/moonpets/eggyone/egg_care.png",
+      "png_path": "/img/moonpets/eggyone/egg_care.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_care.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -166,7 +166,7 @@
     {
       "role": "egg_breakout",
       "autosprite_animation_name": "EGGSIX",
-      "png_path": "/img/moonpets/eggyone/egg_breakout.png",
+      "png_path": "/img/moonpets/eggyone/egg_breakout.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_breakout.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -192,7 +192,7 @@
     {
       "role": "egg_hatch",
       "autosprite_animation_name": "EGGSEVEN",
-      "png_path": "/img/moonpets/eggyone/egg_hatch.png",
+      "png_path": "/img/moonpets/eggyone/egg_hatch.webp",
       "atlas_path": "/img/moonpets/eggyone/egg_hatch.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -217,7 +217,7 @@
     },
     {
       "role": "front_dance",
-      "png_path": "/img/moonpets/eggyone/front_dance.png",
+      "png_path": "/img/moonpets/eggyone/front_dance.webp",
       "atlas_path": "/img/moonpets/eggyone/front_dance.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -246,7 +246,7 @@
     },
     {
       "role": "front_victory",
-      "png_path": "/img/moonpets/eggyone/front_victory.png",
+      "png_path": "/img/moonpets/eggyone/front_victory.webp",
       "atlas_path": "/img/moonpets/eggyone/front_victory.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -275,7 +275,7 @@
     },
     {
       "role": "front_fight",
-      "png_path": "/img/moonpets/eggyone/front_fight.png",
+      "png_path": "/img/moonpets/eggyone/front_fight.webp",
       "atlas_path": "/img/moonpets/eggyone/front_fight.json",
       "frame_count": 25,
       "frame_dimensions": {

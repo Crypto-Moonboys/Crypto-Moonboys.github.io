@@ -121,17 +121,18 @@ test('a stalled idle PNG detaches its handlers and permits an uncached retry', a
 });
 
 for (const [path, phase] of [['/test/front_dance.json', 'fetch'], ['/test/front_dance.json', 'body'], ['/test/front_dance.png', 'image']]) {
-  test(`action art: stalled ${phase} preserves idle and settles background preload`, async () => {
+  test(`action art: stalled ${phase} preserves idle and permits an uncached retry`, async () => {
     const fault = { path, phase }, f = artContext(fault, true);
     const pack = await f.load(); await flush();
     assert.equal(pack.ready, true);
     assert.ok(pack.assetsByRole.front_idle);
-    await f.tick(15000); await pack.preload;
+    const actionLoad = pack.loadRole('front_dance'); await flush();
+    await f.tick(15000); await actionLoad;
     assert.equal(pack.assetsByRole.front_dance, undefined);
     assert.match(pack.errors.join('\n'), /front_dance.*timed out/);
     assert.equal(f.timers.size, 0);
     fault.enabled = false;
-    const recovered = await f.load(); await recovered.preload;
+    const recovered = await f.load(); await recovered.loadRole('front_dance');
     assert.ok(recovered.assetsByRole.front_idle); assert.ok(recovered.assetsByRole.front_dance);
     assert.equal(f.requests.filter(r => r.path === '/test/manifest.json').length, 2);
   });
@@ -156,10 +157,40 @@ for (const phase of ['fetch', 'body']) {
 test('healthy art clears deadlines and reuses its loaded pack', async () => {
   const f = artContext(null, true), pack = await f.load(); await pack.preload;
   assert.equal(pack.ready, true); assert.equal(f.timers.size, 0);
+  assert.equal(pack.assetsByRole.front_dance, undefined);
+  await pack.loadRole('front_dance');
+  assert.ok(pack.assetsByRole.front_dance);
   const count = f.requests.length;
   const cached = await f.load(); await cached.preload;
   assert.equal(f.requests.length, count);
   assert.equal(cached.assetsByRole.front_idle, pack.assetsByRole.front_idle);
+  assert.equal(cached.assetsByRole.front_dance, pack.assetsByRole.front_dance);
+});
+
+test('renderer requests one secondary role on demand and keeps idle visible until it arrives', async () => {
+  const idle = { frames: [{ x: 0, y: 0, w: 32, h: 32, index: 0 }], image: { id: 'idle' }, fps: 12 };
+  const dance = { frames: [{ x: 32, y: 0, w: 32, h: 32, index: 0 }], image: { id: 'dance' }, fps: 12 };
+  const assetsByRole = { front_idle: idle };
+  const actionReady = deferred();
+  let requests = 0;
+  const window = { MoonpetBotArtLoader: { loadMoonpetBotArt: async () => ({
+    ready: true, requestedBot: 'TEST', resolvedBot: 'TEST', requestedEvolution: 'stage_1',
+    resolvedEvolution: 'stage_1', assetsByRole, errors: [], pendingRoles: ['front_dance'],
+    roleMap: { idle: 'front_idle', dance: 'front_dance' }, display: {}, preload: Promise.resolve(),
+    loadRole: async role => { requests += 1; await actionReady.promise; assetsByRole[role] = dance; return dance; },
+  }) } };
+  vm.runInNewContext(rendererSource, { window, performance: { now: () => 0 } });
+  const renderer = window.MoonpetBotArtRenderer;
+  await renderer.selectMoonpetBot({ speciesId: 'test' });
+  const drawn = [];
+  const canvas = { save() {}, restore() {}, drawImage(image) { drawn.push(image.id); } };
+  assert.equal(renderer.renderMoonpetBot(canvas, 'dance', 0, 0, 1, 0), true);
+  assert.equal(drawn.at(-1), 'idle');
+  actionReady.resolve();
+  await flush();
+  assert.equal(renderer.renderMoonpetBot(canvas, 'dance', 0, 0, 1, 0), true);
+  assert.equal(drawn.at(-1), 'dance');
+  assert.equal(requests, 1);
 });
 
 function hatchContext() {

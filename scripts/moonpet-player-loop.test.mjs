@@ -395,7 +395,7 @@ assert.match(client, /roadmap\.finalForm[\s\S]*FINAL EVOLUTION COMPLETE/,
   'final-form dashboard must replace next-evolution instructions with lifetime play');
 assert.match(client, /roadmap\.finalForm \? 'FINAL EVOLUTION' : 'NEXT EVOLUTION'/,
   'final-form dashboard must label the completed final evolution truthfully');
-assert.ok(html.includes('/js/moonpet-mini-app.js?v=20261118-progressive-unlocks-v2'));
+assert.ok(html.includes('/js/moonpet-mini-app.js?v=20261126-runtime-webp-v1'));
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
@@ -778,12 +778,16 @@ for (const failedPath of ['/data/moonpet-bot-art-registry.json', artRegistry.egg
   vm.runInContext(read('js/moonpet-bot-art-loader.js') + read('js/moonpet-bot-art-renderer.js'), artContext);
   const art = artContext.window.MoonpetBotArtRenderer;
   await art.selectMoonpetBot({ evolutionStage: 0 });
-  // Wait for the finite asset-preload jobs, including a fault after idle loaded.
-  await new Promise(resolve => setImmediate(resolve));
+  const initial = art.getMoonpetBotArtRendererState();
+  if (initial.ready) {
+    const initialPack = await artContext.window.MoonpetBotArtLoader.loadMoonpetBotArt({ evolutionStage: 0 });
+    await initialPack.loadRole(actionArt.role);
+  }
   assert.ok(failedRequests > 0, failedPath);
   offline = false;
   const repaired = await art.selectMoonpetBot({ evolutionStage: 0 });
-  await new Promise(resolve => setImmediate(resolve));
+  const repairedPack = await artContext.window.MoonpetBotArtLoader.loadMoonpetBotArt({ evolutionStage: 0 });
+  await repairedPack.loadRole(actionArt.role);
   assert.equal(repaired.ready, true, 'art recovers without reloading the game: ' + failedPath);
   assert.equal(repaired.errors.length, 0, failedPath);
   assert.ok(repaired.assetsByRole[actionArt.role], 'failed secondary animation can be retried after idle became ready');

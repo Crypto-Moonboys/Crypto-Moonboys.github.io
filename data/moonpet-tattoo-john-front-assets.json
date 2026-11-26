@@ -39,7 +39,7 @@
   "assets": [
     {
       "role": "front_idle",
-      "png_path": "/img/moonpets/tattoo-john/front_idle.png",
+      "png_path": "/img/moonpets/tattoo-john/front_idle.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_idle.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -66,7 +66,7 @@
     },
     {
       "role": "front_feed",
-      "png_path": "/img/moonpets/tattoo-john/front_feed.png",
+      "png_path": "/img/moonpets/tattoo-john/front_feed.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_feed.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -93,7 +93,7 @@
     },
     {
       "role": "front_play",
-      "png_path": "/img/moonpets/tattoo-john/front_play.png",
+      "png_path": "/img/moonpets/tattoo-john/front_play.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_play.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -120,7 +120,7 @@
     },
     {
       "role": "front_clean",
-      "png_path": "/img/moonpets/tattoo-john/front_clean.png",
+      "png_path": "/img/moonpets/tattoo-john/front_clean.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_clean.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -147,7 +147,7 @@
     },
     {
       "role": "front_sleep",
-      "png_path": "/img/moonpets/tattoo-john/front_sleep.png",
+      "png_path": "/img/moonpets/tattoo-john/front_sleep.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_sleep.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -174,7 +174,7 @@
     },
     {
       "role": "front_train",
-      "png_path": "/img/moonpets/tattoo-john/front_train.png",
+      "png_path": "/img/moonpets/tattoo-john/front_train.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_train.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -201,7 +201,7 @@
     },
     {
       "role": "front_travel",
-      "png_path": "/img/moonpets/tattoo-john/front_travel.png",
+      "png_path": "/img/moonpets/tattoo-john/front_travel.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_travel.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -228,7 +228,7 @@
     },
     {
       "role": "front_work",
-      "png_path": "/img/moonpets/tattoo-john/front_work.png",
+      "png_path": "/img/moonpets/tattoo-john/front_work.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_work.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -255,7 +255,7 @@
     },
     {
       "role": "front_equip",
-      "png_path": "/img/moonpets/tattoo-john/front_equip.png",
+      "png_path": "/img/moonpets/tattoo-john/front_equip.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_equip.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -282,7 +282,7 @@
     },
     {
       "role": "front_evolve",
-      "png_path": "/img/moonpets/tattoo-john/front_evolve.png",
+      "png_path": "/img/moonpets/tattoo-john/front_evolve.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_evolve.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -309,7 +309,7 @@
     },
     {
       "role": "front_trade",
-      "png_path": "/img/moonpets/tattoo-john/front_trade.png",
+      "png_path": "/img/moonpets/tattoo-john/front_trade.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_trade.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -336,7 +336,7 @@
     },
     {
       "role": "front_celebrate",
-      "png_path": "/img/moonpets/tattoo-john/front_celebrate.png",
+      "png_path": "/img/moonpets/tattoo-john/front_celebrate.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_celebrate.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -363,7 +363,7 @@
     },
     {
       "role": "front_interact",
-      "png_path": "/img/moonpets/tattoo-john/front_interact.png",
+      "png_path": "/img/moonpets/tattoo-john/front_interact.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_interact.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -390,7 +390,7 @@
     },
     {
       "role": "front_blocked",
-      "png_path": "/img/moonpets/tattoo-john/front_blocked.png",
+      "png_path": "/img/moonpets/tattoo-john/front_blocked.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_blocked.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -417,7 +417,7 @@
     },
     {
       "role": "front_battle",
-      "png_path": "/img/moonpets/tattoo-john/front_battle.png",
+      "png_path": "/img/moonpets/tattoo-john/front_battle.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_battle.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -444,7 +444,7 @@
     },
     {
       "role": "front_dance",
-      "png_path": "/img/moonpets/tattoo-john/front_dance.png",
+      "png_path": "/img/moonpets/tattoo-john/front_dance.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_dance.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -473,7 +473,7 @@
     },
     {
       "role": "front_victory",
-      "png_path": "/img/moonpets/tattoo-john/front_victory.png",
+      "png_path": "/img/moonpets/tattoo-john/front_victory.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_victory.json",
       "frame_count": 25,
       "frame_dimensions": {
@@ -502,7 +502,7 @@
     },
     {
       "role": "front_fight",
-      "png_path": "/img/moonpets/tattoo-john/front_fight.png",
+      "png_path": "/img/moonpets/tattoo-john/front_fight.webp",
       "atlas_path": "/img/moonpets/tattoo-john/front_fight.json",
       "frame_count": 25,
       "frame_dimensions": {

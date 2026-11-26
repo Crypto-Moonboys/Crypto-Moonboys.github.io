@@ -130,7 +130,9 @@ vm.runInNewContext(readText("js/moonpet-bot-art-loader.js"), runtimeLoaderContex
 const runtimePack = await runtimeLoaderContext.window.MoonpetBotArtLoader.loadMoonpetBotArt({ speciesId: "test_species", evolutionStage: 1 });
 await runtimePack.preload;
 assert.ok(runtimePack.assetsByRole.front_idle, "runtime loader must keep approved idle assets");
-assert.ok(runtimePack.assetsByRole.front_victory, "runtime loader must keep approved front-action assets");
+assert.equal(runtimePack.assetsByRole.front_victory, undefined, "secondary art must stay idle until its role is requested");
+await runtimePack.loadRole("front_victory");
+assert.ok(runtimePack.assetsByRole.front_victory, "runtime loader must load approved front-action assets on demand");
 assert.equal(runtimePack.assetsByRole.front_dance, undefined, "runtime loader must not load pending front-action assets");
 
 const eggManifest = readJson("data/moonpet-eggyone-stage0-assets.json");
@@ -145,6 +147,11 @@ const streetReady = botRegistry.shared_stages.stage_1.status === "complete";
 
 for (const [botName, bot] of Object.entries(botRegistry.bots)) {
   const baseManifest = readJson(bot.manifest_path);
+  for (const asset of baseManifest.assets) {
+    assert.match(asset.png_path, /\.webp$/, `${botName} runtime sheets must use WebP derivatives`);
+    assert.ok(fs.existsSync(path.join(root, asset.png_path.replace(/^\//, ''))), `${botName} runtime WebP must exist`);
+    assert.ok(fs.existsSync(path.join(root, asset.png_path.replace(/^\//, '').replace(/\.webp$/, '.png'))), `${botName} PNG master must remain`);
+  }
   assert.deepEqual(new Set(baseManifest.assets.map((asset) => asset.role)), new Set(installedActions), `${botName} must retain every installed action`);
   const speciesId = bot.canonical_species_ids[0];
   assert.equal(resolveBot(botRegistry, { speciesId, evolutionStage: 0 }).resolvedBot, "EGGYONE", `${botName} Stage 0 must share EGGYONE`);
@@ -162,7 +169,11 @@ if (streetReady) {
   const streetManifest = readJson(botRegistry.shared_stages.stage_1.manifest_path);
   assert.equal(streetManifest.character_name, "WTFBOI");
   assert.equal(streetManifest.assets.length, installedActions.length);
+  assert.ok(streetManifest.assets.every((asset) => asset.png_path.endsWith('.webp')));
 }
+
+assert.ok(eggManifest.assets.every((asset) => asset.png_path.endsWith('.webp')),
+  'EGGYONE runtime sheets must use WebP derivatives');
 
 const resolverContext = { window: {}, fetch() { throw new Error("not used"); } };
 vm.runInNewContext(readText("js/moonpet-art-resolver.js"), resolverContext);

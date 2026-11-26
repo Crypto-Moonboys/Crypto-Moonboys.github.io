@@ -50,7 +50,7 @@ for (const role of frontActionRoles) {
 assert.equal(manifest.runtime_role_map.fight, "front_fight");
 
 const frontFight = manifest.assets.find((asset) => asset.role === "front_fight");
-assert.equal(frontFight.png_path, "/img/moonpets/eggyone/front_fight.png");
+assert.equal(frontFight.png_path, "/img/moonpets/eggyone/front_fight.webp");
 assert.equal(frontFight.atlas_path, "/img/moonpets/eggyone/front_fight.json");
 assert.equal(frontFight.provenance, "local_user_supplied_exact_committed_png");
 assert.equal(frontFight.user_supplied.source_blob_sha, stage0.LOCAL_FRONT_FIGHT_SOURCE.blob_sha);
@@ -60,7 +60,7 @@ assert.equal(frontFight.review_status, "approved_visual_review");
 
 const blob = spawnSync("git", ["hash-object", "img/moonpets/eggyone/front_fight.png"], { cwd: root, encoding: "utf8" });
 assert.equal(blob.status, 0, blob.stderr || "git hash-object must succeed");
-assert.equal(blob.stdout.trim(), stage0.LOCAL_FRONT_FIGHT_SOURCE.blob_sha, "front_fight runtime PNG must match approved source blob");
+assert.equal(blob.stdout.trim(), stage0.LOCAL_FRONT_FIGHT_SOURCE.blob_sha, "front_fight PNG master must match approved source blob");
 
 const atlas = JSON.parse(fs.readFileSync(path.join(root, frontFight.atlas_path.replace(/^\//, "")), "utf8"));
 const metadata = await sharp(path.join(root, frontFight.png_path.replace(/^\//, ""))).metadata();
