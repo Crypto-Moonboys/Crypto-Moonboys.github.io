@@ -158,6 +158,9 @@
   var CRONX_FIRE_FRAME_MS = 150;
   var CRONX_FIRE_RENDER_HEIGHT = TRAIN_HEIGHT * 2;
   var CRONX_FIRE_SOURCE_HEIGHT_RATIO = 0.76;
+  // Generated row two sits 43 source pixels higher after the 2048px resize.
+  // Register those frames back to the shared wheel/rail baseline.
+  var CRONX_FIRE_BASELINE_OFFSETS = [0, 0, 8.5, 8.5];
 
   var BRIDGE_PARALLAX = 0.45;
   var BRIDGE_TILE_WIDTH = 640;        // rendered width per tile (4:1 ratio preserved)
@@ -2048,7 +2051,8 @@
             var cronxSourceY = Math.floor(cronxFrame / CRONX_FIRE_COLUMNS) * cronxSourceH;
             var cronxCropH = Math.round(cronxSourceH * CRONX_FIRE_SOURCE_HEIGHT_RATIO);
             ctx.drawImage(img, cronxSourceX, cronxSourceY, cronxSourceW, cronxCropH,
-              screenX, trainY + TRAIN_HEIGHT - CRONX_FIRE_RENDER_HEIGHT,
+              screenX, trainY + TRAIN_HEIGHT - CRONX_FIRE_RENDER_HEIGHT +
+                CRONX_FIRE_BASELINE_OFFSETS[cronxFrame],
               TRAIN_WIDTH, CRONX_FIRE_RENDER_HEIGHT);
           } else {
             ctx.drawImage(img, screenX, trainY, TRAIN_WIDTH, TRAIN_HEIGHT);
