@@ -48,7 +48,7 @@
   // the six-frame airborne destruction sheet before the character vanishes.
   var AIR_DEATH_FALL_MIN_FRAME_MS = 8;
   var AIR_DEATH_FALL_MAX_FRAME_MS = 180;
-  var AIR_DEATH_SEQUENCE_BUFFER_MS = 35;
+  var AIR_DEATH_FALL_TIME_SHARE = 0.55;
   // Volcanic $PUNK's third jump plays two large one-shot blast sheets, then
   // releases lightweight world coins with independent arcade physics.
   var THIRD_SPIN_COIN_COUNT = 32;
@@ -815,9 +815,9 @@
       var surface = getAirDeathSurfaceBelow(player.x, player.y + player.h);
       var availableMs = estimateAirDeathFallMs(surface.y);
       var fallFrames = getAnimationFrameMetadata(fallAnimation).count;
-      var explosionFrames = getAnimationFrameMetadata(explosionAnimation).count;
-      var explosionMs = explosionFrames * explosionAnimation.frameMs;
-      return clamp((availableMs - explosionMs - AIR_DEATH_SEQUENCE_BUFFER_MS) / fallFrames,
+      // Spend 55% of the estimated drop on the fall pose. The breakup starts
+      // earlier on short drops and later on high drops, while always remaining visible.
+      return clamp((availableMs * AIR_DEATH_FALL_TIME_SHARE) / fallFrames,
         AIR_DEATH_FALL_MIN_FRAME_MS, AIR_DEATH_FALL_MAX_FRAME_MS);
     }
 
