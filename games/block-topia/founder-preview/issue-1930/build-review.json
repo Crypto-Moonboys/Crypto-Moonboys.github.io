@@ -1,38 +1,27 @@
 {
   "issue": 1930,
-  "round": 114,
+  "round": 115,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
           "description": "Water and road colors are very similar, which may cause confusion.",
-          "affectedElements": [
-            "water",
-            "road"
-          ],
-          "suggestion": "Consider using more distinct colors for water and roads."
+          "details": "The water color (#143950) is almost indistinguishable from the road color (#667b8a). This could lead to players missing important elements like docks or houses."
         },
         {
-          "description": "The lighthouse is not easily distinguishable against the ground color.",
-          "affectedElement": "lighthouse",
-          "suggestion": "Increase contrast between lighthouse and ground elements."
+          "description": "Some areas lack visual cues, making navigation difficult.",
+          "details": "The central area of the district (rows 5-10) has no distinguishing features, which might confuse players trying to follow routes."
         }
       ],
       "navigationRisks": [
         {
-          "description": "There are multiple instances where the route path crosses or overlaps, which could be confusing for players.",
-          "affectedElements": [
-            "route"
-          ],
-          "suggestion": "Ensure that the route does not overlap with itself or other important elements."
+          "description": "Route path is not clearly defined in the grid.",
+          "details": "The route provided [15,27,16,28,17,40,52,41,64,42,76,54,43,88,77,55,100,89,101,90,113,91,114,103,115,104,105,93,117,106,94] does not follow a clear path and may lead to dead ends or confusion."
         },
         {
-          "description": "The route path includes some diagonal movements that might be difficult to follow on a grid-based layout.",
-          "affectedElements": [
-            "route"
-          ],
-          "suggestion": "Simplify the route where possible, especially in areas with complex layouts."
+          "description": "Some cells are not navigable.",
+          "details": "Cells with 'h' (water) and '.' (ground) do not allow movement, which could disrupt the player's progress if they are part of the intended route."
         }
       ]
     }
