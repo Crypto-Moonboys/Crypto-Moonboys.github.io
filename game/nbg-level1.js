@@ -3180,6 +3180,8 @@
         get thirdSpinActive() { return thirdSpinActive; },
         get thirdSpinPhase() { return thirdSpinPhase; },
         get deathFallActive() { return deathFallActive; },
+        get deathFallPhase() { return deathFallPhase; },
+        get deathFallFrameMs() { return deathFallFrameMs; },
         get deathLandingAdjusted() { return deathLandingAdjusted; },
         get deathLandingHazardType() { return deathLandingHazardType; },
         get playerCharacterId() { return playerCharacterId; },
