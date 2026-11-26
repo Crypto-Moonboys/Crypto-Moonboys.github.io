@@ -421,6 +421,30 @@
       "columns": 3,
       "frameMs": 105,
       "preserveSourceAlpha": true
+    },
+    "thirdSpinBurst1": {
+      "spriteSheet": "/games/getting-up/volcanic-punk-third-jump-360-lava-small-coins-transparent-no-white-final.png",
+      "sourceFrameWidth": 512,
+      "sourceFrameHeight": 512,
+      "renderWidth": 196,
+      "renderHeight": 196,
+      "renderOffsetY": 52,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 65,
+      "preserveSourceAlpha": true
+    },
+    "thirdSpinBurst2": {
+      "spriteSheet": "/games/getting-up/Volcanic hero's spinning lava blast.png",
+      "sourceFrameWidth": 512,
+      "sourceFrameHeight": 512,
+      "renderWidth": 196,
+      "renderHeight": 196,
+      "renderOffsetY": 52,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 65,
+      "preserveSourceAlpha": true
     }
   }
 }
