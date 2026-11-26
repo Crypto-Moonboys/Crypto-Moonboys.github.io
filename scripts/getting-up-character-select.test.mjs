@@ -23,9 +23,9 @@ assert.deepEqual(manifest.deathSequence, ['death','rubble','volcano','coinVolcan
 for (const state of ['death','deathRight','deathLeft','coinVolcano']) assert.equal(manifest.animations[state].renderOffsetY, 12);
 for (const state of ['rubble','rubbleRight','rubbleLeft','volcano']) assert.equal(manifest.animations[state].renderOffsetY, 14);
 for (const state of ['death','deathRight','deathLeft'])
-  assert.deepEqual(manifest.animations[state].frameOffsetY, [0,0,0,4,4,4]);
+  assert.deepEqual(manifest.animations[state].frameOffsetY, [0,0,0,6,6,6]);
 for (const state of ['rubble','rubbleRight','rubbleLeft'])
-  assert.deepEqual(manifest.animations[state].frameOffsetY, [4,4,4,4,4,4]);
+  assert.deepEqual(manifest.animations[state].frameOffsetY, [6,6,6,6,6,6]);
 assert.match(page, /id="fighter-select"/);
 assert.match(page, /character-select\.js/);
 assert.match(selector, /volcanic-punk-player-animation-manifest\.json/);
@@ -44,8 +44,8 @@ assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-ground-only-death-v6/);
-assert.match(runtime, /v=20261126-ground-only-death-v6/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-collapse-lower-v7/);
+assert.match(runtime, /v=20261126-collapse-lower-v7/);
 assert.match(runtime, /playerCharacterId === 'volcanic-punk' &&\s*\n\s*!isOnVolcanicDeathSurface\(\)/);
 assert.match(runtime, /VOLCANIC_DEATH_MIN_WALL_WIDTH/);
 assert.match(runtime, /getVolcanicDeathSurfaces/);
