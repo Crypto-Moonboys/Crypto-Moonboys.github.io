@@ -42,6 +42,15 @@
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
   var COURSE_LAYOUT_VERSION = 9; // Mystery-box activation modes; deploy Worker first.
   var DOUBLE_JUMP_SIDE_SPEED = 3.2;
+  // Volcanic $PUNK's third jump plays two large one-shot blast sheets, then
+  // releases lightweight world coins with independent arcade physics.
+  var THIRD_SPIN_COIN_COUNT = 32;
+  var BURST_COIN_SIZE = 7;
+  var BURST_COIN_XP = 25;
+  var BURST_COIN_GRAVITY = 0.34;
+  var BURST_COIN_BOUNCE = 0.48;
+  var BURST_COIN_MAX_BOUNCES = 4;
+  var BURST_COIN_LIMIT = 96;
   // Pig sheet is 700x560: five columns by four rows, 140px per frame.
   // Display is twice the former 28x22 pigeon sprite; patrol coordinates stay 28x22 while combat follows the visible frame.
   var FLYING_PIG_COLUMNS = 5;
@@ -557,6 +566,10 @@
     var jumpsUsed = 0;
     // Visual-only one-shot state; jump physics and replay inputs remain authoritative and unchanged.
     var backflipActive = false;
+    var playerCharacterId = '';
+    var thirdSpinActive = false;
+    var thirdSpinPhase = 0;
+    var burstCoins = [];
     var touch = { left: false, right: false, jump: false, spray: false, look: false };
     var images = {};
     var airshipDarkSheet = null;
@@ -1051,12 +1064,21 @@
           player.facing = left ? -1 : 1;
         }
         jumpsUsed = 3;
-        backflipActive = true;
-        setPlayerAnimation('backflip');
-        dispatchAudioCue('jump_3_backflip');
+        if (playerCharacterId === 'volcanic-punk' &&
+            playerAnimations.thirdSpinBurst1 && playerAnimations.thirdSpinBurst2) {
+          backflipActive = false;
+          thirdSpinActive = true;
+          thirdSpinPhase = 0;
+          setPlayerAnimation('thirdSpinBurst1');
+          dispatchAudioCue('jump_3_lava_burst');
+        } else {
+          backflipActive = true;
+          setPlayerAnimation('backflip');
+          dispatchAudioCue('jump_3_backflip');
+        }
       }
 
-      if (spray && sprayTimer <= 0) {
+      if (spray && sprayTimer <= 0 && !thirdSpinActive) {
         sprayTimer = 230;
         dispatchAudioCue('spray_attack');
       }
@@ -1195,14 +1217,16 @@
         if (!gameOver) resetToCheckpoint();
       }
 
-      if (sprayTimer > 0) {
-        // Preserve the existing attack-animation priority. An explicit attack
-        // interrupts the visual flip and must not restart later in the jump.
+      if (player.invuln > 0) {
+        backflipActive = false;
+        thirdSpinActive = false;
+        setPlayerAnimation('hurt');
+      } else if (thirdSpinActive) {
+        setPlayerAnimation(thirdSpinPhase === 0 ? 'thirdSpinBurst1' : 'thirdSpinBurst2');
+      } else if (sprayTimer > 0) {
+        // Attacks keep their existing hold-frame behavior outside the third-spin burst.
         backflipActive = false;
         setPlayerAnimation('spray');
-      } else if (player.invuln > 0) {
-        backflipActive = false;
-        setPlayerAnimation('hurt');
       } else if (backflipActive && !player.grounded) {
         setPlayerAnimation('backflip');
       } else if (!player.grounded) {
@@ -1219,13 +1243,125 @@
         setPlayerAnimation('idle');
       }
 
-      // Spray holds its final painted frame for the attack window. Backflip
-      // is also one-shot, but returns to normal airborne art after frame 15.
+      // The two volcanic sheets are strict one-shots: sheet 1 must finish
+      // before sheet 2 begins, and physical coins spawn only after sheet 2.
+      var thirdSpinFrame = player.animBase === 'thirdSpinBurst1' ||
+        player.animBase === 'thirdSpinBurst2';
       var animationFinished = advancePlayerAnimation(dt,
-        player.animBase !== 'spray' && player.animBase !== 'backflip');
-      if (player.animBase === 'backflip' && animationFinished) {
+        player.animBase !== 'spray' && player.animBase !== 'backflip' && !thirdSpinFrame);
+      if (thirdSpinFrame && animationFinished) {
+        if (thirdSpinPhase === 0) {
+          thirdSpinPhase = 1;
+          setPlayerAnimation('thirdSpinBurst2');
+        } else {
+          thirdSpinActive = false;
+          spawnThirdSpinCoins();
+          setPlayerAnimation(player.grounded ? 'idle' : (player.vy > 0 ? 'fall' : 'jump'));
+        }
+      } else if (player.animBase === 'backflip' && animationFinished) {
         backflipActive = false;
         setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
+      }
+    }
+
+    function spawnThirdSpinCoins() {
+      // Keep the most recent shower only when repeated triple-jumps would exceed the cap.
+      burstCoins = burstCoins.filter(function (coin) { return !coin.taken; });
+      if (burstCoins.length + THIRD_SPIN_COIN_COUNT > BURST_COIN_LIMIT)
+        burstCoins.splice(0, burstCoins.length + THIRD_SPIN_COIN_COUNT - BURST_COIN_LIMIT);
+      var originX = player.x + player.w / 2;
+      var originY = player.y + player.h * 0.42;
+      for (var i = 0; i < THIRD_SPIN_COIN_COUNT; i += 1) {
+        var spread = (i / THIRD_SPIN_COIN_COUNT - 0.5) * 2;
+        var jitter = nextRunRandom() - 0.5;
+        burstCoins.push({
+          x: originX + jitter * 18,
+          y: originY + (nextRunRandom() - 0.5) * 12,
+          vx: spread * (3.4 + nextRunRandom() * 2.2) + jitter * 1.2,
+          vy: -3.1 - nextRunRandom() * 5.2 + Math.abs(spread) * 1.4,
+          size: BURST_COIN_SIZE,
+          r: BURST_COIN_SIZE / 2,
+          xp: BURST_COIN_XP,
+          rotation: nextRunRandom() * Math.PI * 2,
+          spin: (nextRunRandom() < 0.5 ? -1 : 1) * (0.18 + nextRunRandom() * 0.28),
+          spinPhase: nextRunRandom() * Math.PI * 2,
+          bounces: 0,
+          rolling: false,
+          settled: false,
+          taken: false
+        });
+      }
+      dispatchAudioCue('volcanic_coin_shower', { count: THIRD_SPIN_COIN_COUNT });
+    }
+
+    function collectBurstCoin(coin, time) {
+      if (coin.taken) return;
+      var hitSize = coin.size + 5;
+      if (!rectsOverlap(player, { x: coin.x - hitSize / 2, y: coin.y - hitSize / 2,
+          w: hitSize, h: hitSize })) return;
+      coin.taken = true;
+      xp += coin.xp;
+      window.dispatchEvent(new CustomEvent('nbg-xp-collected', {
+        detail: { xp: xp, coin: coin, earnedXp: coin.xp, multiplier: 1,
+          burstCoin: true, collectedAt: time }
+      }));
+    }
+
+    function updateBurstCoins(time, dt) {
+      var step = dt / TARGET_FRAME_MS;
+      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
+      var solids = [floor].concat(platforms, crates, solidRewardBoxes);
+      for (var i = 0; i < burstCoins.length; i += 1) {
+        var coin = burstCoins[i];
+        if (coin.taken) continue;
+        var previousY = coin.y;
+        coin.vy += BURST_COIN_GRAVITY * step;
+        coin.x += coin.vx * step;
+        coin.y += coin.vy * step;
+        coin.rotation += (coin.rolling ? coin.vx * 0.24 : coin.spin) * step;
+        coin.spinPhase += Math.abs(coin.spin) * 2.4 * step;
+
+        if (coin.x < coin.r) {
+          coin.x = coin.r;
+          coin.vx = Math.abs(coin.vx) * 0.58;
+        } else if (coin.x > WORLD_WIDTH - coin.r) {
+          coin.x = WORLD_WIDTH - coin.r;
+          coin.vx = -Math.abs(coin.vx) * 0.58;
+        }
+
+        var landed = null;
+        for (var solidIndex = 0; solidIndex < solids.length; solidIndex += 1) {
+          var solid = solids[solidIndex];
+          if (coin.x + coin.r <= solid.x || coin.x - coin.r >= solid.x + solid.w) continue;
+          if (coin.vy < 0 || previousY + coin.r > solid.y + 1 || coin.y + coin.r < solid.y) continue;
+          landed = solid;
+          break;
+        }
+        if (landed) {
+          coin.y = landed.y - coin.r;
+          if (!coin.rolling && coin.bounces < BURST_COIN_MAX_BOUNCES && Math.abs(coin.vy) > 1.15) {
+            coin.vy = -Math.abs(coin.vy) * BURST_COIN_BOUNCE;
+            coin.vx *= 0.84;
+            coin.spin *= 0.88;
+            coin.bounces += 1;
+          } else {
+            coin.vy = 0;
+            coin.rolling = true;
+            coin.vx *= Math.pow(0.965, step);
+            coin.spin *= Math.pow(0.90, step);
+            if (Math.abs(coin.vx) < 0.045) {
+              coin.vx = 0;
+              coin.spin = 0;
+              coin.settled = true;
+            }
+          }
+        } else if (coin.rolling) {
+          // A rolling coin that reaches a ledge becomes airborne again.
+          coin.rolling = false;
+          coin.settled = false;
+        }
+        if (coin.y > HEIGHT + 160) coin.taken = true;
+        collectBurstCoin(coin, time);
       }
     }
 
@@ -1366,6 +1502,8 @@
       comboCount = 0;
       comboExpiresAt = 0;
       backflipActive = false;
+      thirdSpinActive = false;
+      thirdSpinPhase = 0;
       setPlayerAnimation('hurt');
       window.dispatchEvent(new CustomEvent('nbg-player-hit', {
         detail: { health: player.health, enemy: type }
@@ -2280,6 +2418,37 @@
       drawHazards();
     }
 
+    function drawBurstCoins(time) {
+      for (var i = 0; i < burstCoins.length; i += 1) {
+        var coin = burstCoins[i];
+        if (coin.taken) continue;
+        var x = coin.x - cameraX;
+        if (x < -coin.size || x > WIDTH + coin.size) continue;
+        var y = coin.y + FOREGROUND_VISUAL_OFFSET_Y;
+        var edgeScale = coin.settled ? 0.20 : Math.max(0.18, Math.abs(Math.cos(coin.spinPhase)));
+        ctx.save();
+        ctx.translate(Math.round(x), Math.round(y));
+        ctx.rotate(coin.rotation);
+        ctx.scale(1, edgeScale);
+        if (images.coin) {
+          var columns = 5;
+          var rows = 5;
+          var frame = Math.floor((time / 70 + i * 3)) % (columns * rows);
+          var sourceWidth = images.coin.naturalWidth / columns;
+          var sourceHeight = images.coin.naturalHeight / rows;
+          ctx.drawImage(images.coin, frame % columns * sourceWidth,
+            Math.floor(frame / columns) * sourceHeight, sourceWidth, sourceHeight,
+            -coin.size / 2, -coin.size / 2, coin.size, coin.size);
+        } else {
+          ctx.fillStyle = '#ffd447';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, coin.r, coin.r, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
     function drawCoins(time) {
       for (var i = 0; i < coins.length; i += 1) {
         var coin = coins[i];
@@ -2711,6 +2880,7 @@
       ctx.translate(0, Math.round(cameraY));
       drawWorld(time);
       drawCoins(time);
+      drawBurstCoins(time);
       drawSecretCoins(time);
       drawObjects();
       // Attack start/end timestamps use runElapsedMs in updateEnemies();
@@ -2750,6 +2920,7 @@
           return;
         }
         updateCoins(runElapsedMs);
+        updateBurstCoins(runElapsedMs, dt);
         updateSpeedBoxes(runElapsedMs);
         updateSecretCoins(runElapsedMs);
         updateRewardBoxes(runElapsedMs);
@@ -2777,6 +2948,10 @@
         get player() { return player; },
         get jumpsUsed() { return jumpsUsed; },
         get backflipActive() { return backflipActive; },
+        get thirdSpinActive() { return thirdSpinActive; },
+        get thirdSpinPhase() { return thirdSpinPhase; },
+        get playerCharacterId() { return playerCharacterId; },
+        get burstCoins() { return burstCoins; },
         get pendingJumpPresses() { return pendingJumpPresses; },
         get nextJumpBoostAtMs() { return nextJumpBoostAtMs; },
         get recordedReplay() { return encodedRunReplay(); },
@@ -2910,6 +3085,9 @@
       player.animBase = 'idle';
       jumpsUsed = 0;
       backflipActive = false;
+      thirdSpinActive = false;
+      thirdSpinPhase = 0;
+      burstCoins = [];
       player.health = 3;
       player.invuln = 0;
       setPlayerAnimation('idle');
@@ -2956,6 +3134,7 @@
           };
         });
       }).then(function (runtimeAssets) {
+        playerCharacterId = runtimeAssets.manifest.characterId || '';
         deathSequence = Array.isArray(runtimeAssets.manifest.deathSequence) ?
           runtimeAssets.manifest.deathSequence.slice() : [];
         var animations = runtimeAssets.manifest.animations || {};
