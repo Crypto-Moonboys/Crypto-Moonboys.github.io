@@ -177,12 +177,32 @@ function bestSources(catalog, question, previous) {
   return selected;
 }
 
-async function readPublic(path, maxBytes) {
+// The website chat may cite wiki articles and the current published canon.
+export async function findPublicSwarmsySources(question) {
+  const currentCanon = canon[0];
+  const catalog = (await getCatalog()).filter(({ path }) =>
+    /^\/wiki\/[a-z0-9-]+\.html$/.test(path) || path === currentCanon.path);
+  const ranked = bestSources(catalog, question, []);
+  const matchedCanon = ranked.find(({ path }) => path === currentCanon.path);
+  const selected = matchedCanon
+    ? [matchedCanon, ...ranked.filter(source => source !== matchedCanon)].slice(0, 3)
+    : ranked.slice(0, 3);
+  const results = await Promise.allSettled(selected.map(async source => {
+    const body = await readPublic(source.path, 350_000, { rejectNoindex: true });
+    const excerpt = loreExcerpt(source, publishedLoreText(source.path, body), question).slice(0, 1800);
+    if (!excerpt) return null;
+    return { title: source.title.slice(0, 160), url: SITE + source.path, excerpt };
+  }));
+  return results.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : []);
+}
+
+async function readPublic(path, maxBytes, { rejectNoindex = false } = {}) {
   const response = await fetch(SITE + path, {
     redirect: 'manual', signal: AbortSignal.timeout(4000),
     cf: { cacheEverything: true, cacheTtl: 300 },
   });
-  if (!response.ok || !response.body || Number(response.headers.get('content-length')) > maxBytes) {
+  if (!response.ok || !response.body || Number(response.headers.get('content-length')) > maxBytes ||
+      (rejectNoindex && /\b(?:noindex|none)\b/i.test(response.headers.get('x-robots-tag') ?? ''))) {
     await response.body?.cancel();
     throw new Error('lore_source_unavailable');
   }

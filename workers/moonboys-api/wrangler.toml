@@ -127,3 +127,15 @@ migrations_dir = "migrations"
 #   https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat.
 #   The token is never exposed in HTTP responses or Worker source code.
 #   If the secret is absent the route returns 503 { success:false, error:"npc_bridge_not_configured" }.
+
+# Dedicated SPARKY webpage limits, applied per Cloudflare location.
+# Set SWARMSY_WEB_TOKEN and SWARMSY_WEB_SESSION_KEY as separate Worker secrets.
+[[ratelimits]]
+name = "SWARMSY_USER_LIMIT"
+namespace_id = "26112601"
+simple = { limit = 6, period = 60 }
+
+[[ratelimits]]
+name = "SWARMSY_SITE_LIMIT"
+namespace_id = "26112602"
+simple = { limit = 40, period = 60 }

@@ -44,12 +44,13 @@ Telegram website login uses verified OIDC identity and revocable sessions to res
 
 This README is the top-level repository guide for current product/brand truth and the public website’s relationship with the optional SWARMSY PC application. Fiction follows GK’s explicit approved decisions and the separate canon policy/index above; a product rule must not erase the fictional cast.
 
-### Public AI versus the SWARMSY PC application (current delivery)
+### Website chat, Creator Studio and SWARMSY PC
 
-- **Use AI on the website:** [SPARKY Creator Studio](https://cryptomoonboys.com/ai-user.html) offers a copyable SPARKY campaign starter and a public Markdown brief for the visitor's chosen browser AI. Copy the starter into your chosen AI; the website does not host the SWARMSY model, run a live SPARKY chatbot, proxy private workspace messages or require Telegram login for this experience. AI features and access depend on the service and account the visitor chooses.
+- **Use AI on the website:** [SPARKY Creator Studio](https://cryptomoonboys.com/ai-user.html) offers a copyable SPARKY campaign starter and a public Markdown brief for the visitor's chosen browser AI. Copy the starter into your chosen AI; the portable Studio works without signing in with Telegram. AI features and access depend on the service and account the visitor chooses.
+- **Chat with SPARKY on the website:** [SWARMSY](https://cryptomoonboys.com/swarmsy.html) uses the dedicated faction SWARMSY service after Telegram sign-in. The web chat supports manual SPARKY drafts and planning, with published canon lookup and links. Availability depends on that service and its configured model.
 - **Use SWARMSY on a PC:** [SWARMSY-Ai](https://github.com/Crypto-Moonboys/SWARMSY-Ai) is a separate **beta desktop/local application** built on an AnythingLLM fork, with the SPARKY project guide, local-model support and optional configured model-provider APIs. Users must install/run it themselves; API providers may charge. Source code and build workflows do not imply that an installer or hosted service is currently available.
 - **Keep project continuity manually:** the public campaign brief asks the chosen AI to organise editable project files when its tools allow; the user brings those files back in a later chat. The previous browser memory editor has been removed from the public page. A compatible SWARMSY PC build can still import/export the separate `sparky-creator-memory` v1 format. There is **no automatic account sync** between browser AI sessions and private SWARMSY workspaces.
-- **Retired website chatbot:** `/sparky.html` redirects to `/ai-user.html`. The old Telegram-gated browser SPARKY chat is retired. **The legacy Cloudflare Worker `/public/npc-chat` route has not yet been disabled;** its secure retirement requires a separate dependency review and Worker deployment. Telegram login, the WIKICOMSBOT and game systems remain separate.
+- **Retired website chatbot:** `/sparky.html` redirects to `/ai-user.html`. The old chat used the legacy NPC bridge. **The legacy Cloudflare Worker `/public/npc-chat` route has not yet been disabled;** its secure retirement requires a separate dependency review and Worker deployment. Telegram login, the WIKICOMSBOT and game systems remain separate.
 - **Navigation rule:** links inviting a visitor to **start creating with AI now** must open `/ai-user.html`. Links describing, installing or building the **optional PC app** must open `/swarmsy.html` or its GitHub repository. No page may describe the PC app as free hosted 24/7 AI or a public website chat.
 
 
@@ -279,7 +280,7 @@ Do not use mockups that imply a live product, partnership, licence or retail ava
 
 ## What SWARMSY Is
 
-SWARMSY is not a new language model, public website chat or generic chatbot skin.
+SWARMSY is a creator workflow built on AnythingLLM, with a Telegram-gated website chat and a separate PC workspace.
 
 It is an optional **PC beta** creator operating layer built on AnythingLLM. Its features work only when an appropriate local installation and selected models or provider APIs are configured. The website's public SPARKY Creator Studio provides a portable brief for browser AI.
 

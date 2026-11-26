@@ -1,0 +1,165 @@
+import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
+import { test } from 'node:test';
+import { handleSwarmsyWebChat } from '../workers/moonboys-api/routes/swarmsy-web-chat.js';
+
+const origin = 'https://cryptomoonboys.com';
+const cors = { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' };
+const conversation = '01234567-0123-4123-8123-012345678901';
+const nextConversation = '11234567-0123-4123-8123-012345678901';
+const botToken = '123:test-token';
+const token = 'T'.repeat(64);
+
+function signedTelegram(id) {
+  const auth_date = String(Math.floor(Date.now() / 1000));
+  const key = createHash('sha256').update(botToken).digest();
+  const hash = createHmac('sha256', key).update(`auth_date=${auth_date}\nid=${id}`).digest('hex');
+  return { id, auth_date, hash };
+}
+
+function env(overrides = {}) {
+  const allowance = { limit: async () => ({ success: true }) };
+  return {
+    TELEGRAM_BOT_TOKEN: botToken,
+    SWARMSY_WEB_TOKEN: token,
+    SWARMSY_WEB_SESSION_KEY: 'K'.repeat(64),
+    SWARMSY_USER_LIMIT: allowance,
+    SWARMSY_SITE_LIMIT: allowance,
+    ...overrides,
+  };
+}
+
+function request(body, method = 'POST', requestOrigin = origin) {
+  return new Request('https://api.cryptomoonboys.com/swarmsy/chat', {
+    method,
+    headers: { Origin: requestOrigin, 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
+function chat(overrides = {}) {
+  return {
+    telegram_auth: signedTelegram('123'),
+    conversation_id: conversation,
+    message: 'Plan a campaign.',
+    ...overrides,
+  };
+}
+
+test('only verified Telegram users reach the dedicated SPARKY server', async context => {
+  const upstream = context.mock.method(globalThis, 'fetch', async () => Response.json({ reply: 'Ready' }));
+  const unsigned = await handleSwarmsyWebChat(request(chat({ telegram_auth: { id: '123' } })), env(), cors);
+  assert.equal(unsigned.status, 401);
+  const forged = await handleSwarmsyWebChat(request(chat({
+    telegram_auth: { ...signedTelegram('123'), id: '999' },
+  })), env(), cors);
+  assert.equal(forged.status, 401);
+  assert.equal(upstream.mock.callCount(), 0);
+  const notConfigured = await handleSwarmsyWebChat(request(chat()), env({ SWARMSY_WEB_SESSION_KEY: token }), cors);
+  assert.equal(notConfigured.status, 503);
+  const rateLimited = await handleSwarmsyWebChat(request(chat()), env({
+    SWARMSY_USER_LIMIT: { limit: async () => ({ success: false }) },
+  }), cors);
+  assert.equal(rateLimited.status, 429);
+  assert.equal(upstream.mock.callCount(), 0);
+});
+
+test('allows expected CORS preflight and rejects other origins and oversized bodies', async () => {
+  const preflight = await handleSwarmsyWebChat(request(undefined, 'OPTIONS'), env(), cors);
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), origin);
+  const foreign = await handleSwarmsyWebChat(request(chat(), 'POST', 'https://other.example'), env(), {});
+  assert.equal(foreign.status, 403);
+  const large = await handleSwarmsyWebChat(request(chat({ extra: 'x'.repeat(17_000) })), env(), cors);
+  assert.equal(large.status, 400);
+});
+
+test('website sign-in maps the verified ID and denies revoked or blocked sessions', async context => {
+  const upstream = context.mock.method(globalThis, 'fetch', async () => Response.json({ reply: 'Ready' }));
+  const websiteAuth = { id: '123', hash: 's1_' + 'A'.repeat(43) };
+  function db(row) {
+    return { prepare: () => ({ bind: () => ({ first: async () => row }) }) };
+  }
+  const valid = await handleSwarmsyWebChat(request(chat({ telegram_auth: websiteAuth })), env({
+    DB: db({ telegram_id: '123' }),
+  }), cors);
+  assert.equal(valid.status, 200);
+  const revoked = await handleSwarmsyWebChat(request(chat({ telegram_auth: websiteAuth })), env({ DB: db(null) }), cors);
+  assert.equal(revoked.status, 401);
+  const blocked = await handleSwarmsyWebChat(request(chat({ telegram_auth: websiteAuth })), env({
+    DB: db({ telegram_id: '123', is_blocked: 1 }),
+  }), cors);
+  assert.equal(blocked.status, 403);
+  assert.equal(upstream.mock.callCount(), 1);
+});
+
+test('uses opaque, account-bound sessions and never shares Telegram credentials or upstream extras', async context => {
+  const sessions = [];
+  const upstream = context.mock.method(globalThis, 'fetch', async (url, options) => {
+    assert.equal(url, 'https://swarmsy.cryptomoonboys.com/api/sparky-web/chat');
+    assert.equal(options.redirect, 'error');
+    assert.equal(options.headers.Authorization, `Bearer ${token}`);
+    const payload = JSON.parse(options.body);
+    assert.deepEqual(Object.keys(payload).sort(), ['message', 'searchCanon', 'session', 'sources']);
+    assert.equal(payload.searchCanon, false);
+    assert.deepEqual(payload.sources, []);
+    assert.match(payload.session, /^[0-9a-f]{64}$/);
+    sessions.push(payload.session);
+    return Response.json({ reply: 'Ready', sources: ['https://brain.cryptomoonboys.com/api/context'], token });
+  });
+  for (const body of [
+    chat({ workspace: 'admin' }), chat(), chat({ telegram_auth: signedTelegram('999') }),
+    chat({ conversation_id: nextConversation }),
+  ]) {
+    const response = await handleSwarmsyWebChat(request(body), env(), cors);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { reply: 'Ready', sources: [], canon: 'off' });
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  }
+  assert.equal(upstream.mock.callCount(), 4);
+  assert.equal(sessions[0], sessions[1]);
+  assert.equal(new Set(sessions).size, 3);
+});
+
+test('deeper lookup sends published wiki excerpts and rejects private, redirect and noindex sources', async context => {
+  const title = 'The Ninth Berth';
+  const wiki = '/wiki/the-ninth-berth.html';
+  const noindex = '/wiki/the-ninth-berth-hidden.html';
+  const redirect = '/wiki/the-ninth-berth-redirect.html';
+  const privatePath = '/admin/the-ninth-berth.html';
+  const text = 'The Ninth Berth is in the Waterfront. The old gate is listed in the public record.';
+  const contacts = [];
+  context.mock.method(globalThis, 'fetch', async (url, options) => {
+    const { origin: host, pathname } = new URL(url);
+    contacts.push(url);
+    if (host !== origin) {
+      const payload = JSON.parse(options.body);
+      assert.equal(payload.searchCanon, true);
+      assert.deepEqual(payload.sources, [{ title, url: origin + wiki, excerpt: text }]);
+      return Response.json({ reply: 'It is in the Waterfront.' });
+    }
+    if (pathname === '/js/wiki-index.json') {
+      return Response.json([
+        { title, url: wiki }, { title, url: noindex }, { title, url: redirect }, { title, url: privatePath },
+      ]);
+    }
+    if (pathname === '/sitemap.xml') return new Response('<urlset></urlset>');
+    if (pathname === '/js/leader-lore-sources.json') return Response.json([wiki, noindex, redirect, privatePath]);
+    if (pathname === wiki) return new Response(`<html><main><p>${text}</p></main></html>`);
+    if (pathname === noindex) return new Response(`<html><main><p>${text}</p></main></html>`, {
+      headers: { 'X-Robots-Tag': 'noindex' },
+    });
+    if (pathname === redirect) return Response.redirect('https://brain.cryptomoonboys.com/');
+    throw new Error('unexpected request: ' + url);
+  });
+  const response = await handleSwarmsyWebChat(request(chat({ message: 'Where is the Ninth Berth?' })), env(), cors);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    reply: 'It is in the Waterfront.',
+    canon: 'found',
+    sources: [{ title, url: origin + wiki }],
+  });
+  assert.ok(contacts.includes(origin + noindex));
+  assert.ok(contacts.includes(origin + redirect));
+  assert.ok(contacts.every(url => !url.includes('brain.cryptomoonboys.com') && !url.includes(privatePath)));
+});

@@ -1,3 +1,4 @@
+import { handleSwarmsyWebChat } from './routes/swarmsy-web-chat.js';
 import { runCareShadowTick } from './pets/care-shadow.js';
 import baseWorker from './worker.js';
 import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
@@ -363,6 +364,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/$/, '');
+    if (path === '/swarmsy/chat') return handleSwarmsyWebChat(request, env, corsHeadersFor(request, env));
     // MoonPet uses JSON POSTs across the website/API origins. A rejected
     // preflight or a response lacking CORS makes Telegram WebView report only
     // "Failed to fetch", hiding the real HTTP error from the player.
