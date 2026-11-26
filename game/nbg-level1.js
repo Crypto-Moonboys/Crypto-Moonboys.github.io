@@ -2916,9 +2916,9 @@
               columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
-              image: key === 'spray' && result.image ?
+              image: key === 'spray' && result.image && !animation.preserveSourceAlpha ?
                 prepareFinalSpraySheet(result.image) :
-                key.indexOf('crouch') === 0 && result.image ?
+                key.indexOf('crouch') === 0 && result.image && !animation.preserveSourceAlpha ?
                   prepareCrouchSheet(result.image, animation) : result.image
             };
             assetStatus['player.' + key] = {
