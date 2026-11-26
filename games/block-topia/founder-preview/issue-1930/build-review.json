@@ -1,37 +1,31 @@
 {
   "issue": 1930,
-  "round": 124,
+  "round": 125,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "type": "Obstructed Path",
-          "description": "The path from row 15 to row 27 is obstructed by water, which could be a navigational risk.",
-          "location": [
-            15,
-            27
-          ]
+          "description": "Water and road overlap at row 3, column 27",
+          "riskLevel": "Medium",
+          "suggestion": "Adjust the layout to ensure water does not overlap with roads."
         },
         {
-          "type": "Dead End",
-          "description": "Row 89 and beyond appear to have no further routes, indicating potential dead ends that might confuse players.",
-          "location": [
-            89,
-            115
-          ]
+          "description": "House and dock are too close in row 10, columns 94-106",
+          "riskLevel": "Low",
+          "suggestion": "Increase spacing between houses and docks for better aesthetics."
         }
       ],
       "navigationRisks": [
         {
-          "type": "Circular Path",
-          "description": "The route seems to loop back on itself without clear exit points, which could lead to player frustration or getting stuck in a loop.",
-          "location": [
-            43,
-            89,
-            105,
-            93
-          ]
+          "description": "Route path crosses water at row 8, column 76",
+          "riskLevel": "High",
+          "suggestion": "Ensure the route does not cross over water to avoid navigation issues."
+        },
+        {
+          "description": "Multiple turns in a small area from row 103 to 105",
+          "riskLevel": "Medium",
+          "suggestion": "Smooth out the path to reduce complexity and potential user confusion."
         }
       ]
     }
