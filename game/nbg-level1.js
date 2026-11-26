@@ -44,6 +44,11 @@
   var DOUBLE_JUMP_SIDE_SPEED = 3.2;
   // Flat volcanic death art needs a broad supporting surface, never a prop.
   var VOLCANIC_DEATH_MIN_WALL_WIDTH = 96;
+  // The fatal-fall pose adapts to the available height, reserving time for
+  // the six-frame airborne destruction sheet before the character vanishes.
+  var AIR_DEATH_FALL_MIN_FRAME_MS = 8;
+  var AIR_DEATH_FALL_MAX_FRAME_MS = 180;
+  var AIR_DEATH_SEQUENCE_BUFFER_MS = 35;
   // Volcanic $PUNK's third jump plays two large one-shot blast sheets, then
   // releases lightweight world coins with independent arcade physics.
   var THIRD_SPIN_COIN_COUNT = 32;
@@ -408,7 +413,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-staged-trains-v10';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-air-destruction-v11';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -615,6 +620,8 @@
     var deathAnimationActive = false;
     var deathAnimationPhase = 0;
     var deathFallActive = false;
+    var deathFallPhase = '';
+    var deathFallFrameMs = 95;
     var deathLandingAdjusted = false;
     var deathLandingHazardType = '';
     var deathSequence = [];
@@ -727,10 +734,10 @@
       player.animBase = baseName;
     }
 
-    function advancePlayerAnimation(dt, loop) {
+    function advancePlayerAnimation(dt, loop, frameMsOverride) {
       var animation = getAnimation(player.anim);
       var frameCount = getAnimationFrameMetadata(animation).count;
-      var frameMs = animation ? animation.frameMs : 145;
+      var frameMs = frameMsOverride || (animation ? animation.frameMs : 145);
       if (frameCount <= 1) return true;
 
       player.frameTime += dt;
@@ -751,6 +758,7 @@
 
     function beginDeathAnimation() {
       deathFallActive = false;
+      deathFallPhase = '';
       player.vx = 0;
       player.vy = 0;
       player.grounded = true;
@@ -775,17 +783,72 @@
       });
     }
 
+    function getAirDeathSurfaceBelow(x, feetY) {
+      var surfaces = getVolcanicDeathSurfaces();
+      var nearest = surfaces[0];
+      for (var i = 0; i < surfaces.length; i += 1) {
+        var surface = surfaces[i];
+        var overlaps = x < surface.x + surface.w && x + player.w > surface.x;
+        if (!overlaps || surface.y < feetY - 1) continue;
+        if (!nearest || surface.y < nearest.y) nearest = surface;
+      }
+      return nearest || surfaces[0];
+    }
+
+    function estimateAirDeathFallMs(surfaceY) {
+      var distance = Math.max(0, surfaceY - (player.y + player.h));
+      var simulatedY = 0;
+      var simulatedVelocity = 0.8;
+      var frames = 0;
+      while (simulatedY < distance && frames < 300) {
+        simulatedVelocity += GRAVITY;
+        simulatedY += simulatedVelocity;
+        frames += 1;
+      }
+      return Math.max(TARGET_FRAME_MS, frames * TARGET_FRAME_MS);
+    }
+
+    function calculateAirDeathFallFrameMs() {
+      var fallAnimation = playerAnimations.airDeathFall;
+      var explosionAnimation = playerAnimations.airDeathExplode;
+      if (!fallAnimation || !explosionAnimation) return fallAnimation ? fallAnimation.frameMs : 95;
+      var surface = getAirDeathSurfaceBelow(player.x, player.y + player.h);
+      var availableMs = estimateAirDeathFallMs(surface.y);
+      var fallFrames = getAnimationFrameMetadata(fallAnimation).count;
+      var explosionFrames = getAnimationFrameMetadata(explosionAnimation).count;
+      var explosionMs = explosionFrames * explosionAnimation.frameMs;
+      return clamp((availableMs - explosionMs - AIR_DEATH_SEQUENCE_BUFFER_MS) / fallFrames,
+        AIR_DEATH_FALL_MIN_FRAME_MS, AIR_DEATH_FALL_MAX_FRAME_MS);
+    }
+
+    function beginAirDeathExplosion() {
+      deathFallPhase = 'explode';
+      player.vx *= 0.18;
+      setPlayerAnimation('airDeathExplode');
+      dispatchAudioCue('volcanic_air_death_explode');
+    }
+
+    function finishAirDeathExplosion() {
+      deathFallActive = false;
+      deathFallPhase = 'gone';
+      player.vx = 0;
+      player.vy = 0;
+      dispatchAudioCue('volcanic_air_death_gone');
+    }
+
     function beginDeathFall() {
       deathAnimationActive = false;
       deathAnimationPhase = 0;
       deathFallActive = true;
+      deathFallPhase = 'fall';
       deathLandingAdjusted = false;
       deathLandingHazardType = '';
       player.grounded = false;
       player.vy = 0.8;
       player.vx *= 0.22;
+      deathFallFrameMs = calculateAirDeathFallFrameMs();
       setPlayerAnimation(playerAnimations.airDeathFall ? 'airDeathFall' : 'fall');
-      dispatchAudioCue('volcanic_death_fall');
+      dispatchAudioCue('volcanic_death_fall', { frameMs: deathFallFrameMs });
     }
 
     function deathLandingHazardAt(x, surfaceY) {
@@ -816,17 +879,31 @@
 
     function updateDeathFall(dt) {
       if (!deathFallActive) return;
+
+      var fallAnimationName = playerAnimations.airDeathFall ? 'airDeathFall' : 'fall';
+      var animationName = deathFallPhase === 'explode' && playerAnimations.airDeathExplode ?
+        'airDeathExplode' : fallAnimationName;
+      setPlayerAnimation(animationName);
+
+      var finished = advancePlayerAnimation(dt, false,
+        deathFallPhase === 'fall' ? deathFallFrameMs : null);
+      if (deathFallPhase === 'fall' && finished && playerAnimations.airDeathExplode) {
+        beginAirDeathExplosion();
+      } else if (deathFallPhase === 'explode' && finished) {
+        finishAirDeathExplosion();
+        return;
+      }
+
+      // Once the explosion reaches a surface it stays anchored there while
+      // the remaining breakup frames finish and the transparent sixth frame holds.
+      if (deathFallPhase === 'explode' && player.grounded) return;
+
       var step = dt / TARGET_FRAME_MS;
       var previousY = player.y;
       player.vx *= Math.pow(0.92, step);
       player.x = clamp(player.x + player.vx * step, 12, WORLD_WIDTH - player.w - 12);
       player.vy += GRAVITY * step;
       player.y += player.vy * step;
-      var airDeathAnimation = playerAnimations.airDeathFall ? 'airDeathFall' : 'fall';
-      setPlayerAnimation(airDeathAnimation);
-      // The dedicated fatal-fall sheet is one-shot. Its sixth frame holds
-      // for however long remains before collision; the normal fall fallback loops.
-      advancePlayerAnimation(dt, airDeathAnimation !== 'airDeathFall');
 
       var solids = getVolcanicDeathSurfaces();
       var floor = solids[0];
@@ -845,11 +922,21 @@
       if (!landingSurface) return;
       player.x = findSafeDeathLandingX(landingSurface, player.x);
       player.y = landingSurface.y - player.h;
+      player.vx = 0;
+      player.vy = 0;
       player.grounded = true;
-      beginDeathAnimation();
+
+      if (deathFallPhase === 'fall' && playerAnimations.airDeathExplode) {
+        // Very short drops can reach the surface before the adaptive fall sheet
+        // has naturally finished. Complete it immediately, then play destruction.
+        beginAirDeathExplosion();
+      } else if (deathFallPhase !== 'explode') {
+        beginDeathAnimation();
+      }
       dispatchAudioCue('volcanic_death_landed', {
         avoidedHazard: deathLandingAdjusted,
-        hazardType: deathLandingHazardType
+        hazardType: deathLandingHazardType,
+        phase: deathFallPhase
       });
     }
 
@@ -3267,6 +3354,8 @@
       deathAnimationActive = false;
       deathAnimationPhase = 0;
       deathFallActive = false;
+      deathFallPhase = '';
+      deathFallFrameMs = 95;
       deathLandingAdjusted = false;
       deathLandingHazardType = '';
       complete = false;
