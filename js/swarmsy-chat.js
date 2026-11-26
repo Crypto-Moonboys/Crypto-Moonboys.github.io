@@ -16,7 +16,7 @@
   const send = find('send');
   const status = find('status');
   const gate = window.MOONBOYS_IDENTITY;
-  const safeSource = /^https:\/\/cryptomoonboys\.com\/(?:wiki\/[a-z0-9-]+\.html|about\/latest-canon-and-brand-vision\.md)$/;
+  const safeSource = /^https:\/\/cryptomoonboys\.com\/(?:[a-z0-9][\w.~-]*\/)*[a-z0-9][\w.~-]*\.(?:html|md|json|csv)$/i;
   if (!gate) {
     status.textContent = 'Telegram sign-in is temporarily unavailable.';
     return;
