@@ -1,27 +1,49 @@
 {
   "issue": 1930,
-  "round": 96,
+  "round": 97,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Potential confusion at the dock area",
-          "details": "The dock is marked in a different color (#98734e) compared to the ground, which might cause visual confusion. The contrast between these colors could be improved for better clarity."
+          "type": "Obstruction",
+          "description": "The route path from position 15 to 27 is obstructed by water, which could be confusing for players navigating the district.",
+          "affectedPath": [
+            15,
+            27
+          ]
         },
         {
-          "description": "House placement may seem inconsistent",
-          "details": "Some houses are placed closer together than others, which might make the layout appear less organized or intentional. This could be adjusted to ensure a more uniform distribution of buildings."
+          "type": "Isolation",
+          "description": "There are isolated areas of dock and house that may not be easily accessible or visible from certain viewpoints in the district.",
+          "affectedAreas": [
+            "dock",
+            "house"
+          ]
         }
       ],
       "navigationRisks": [
         {
-          "description": "Potential navigation issues near the water's edge",
-          "details": "The route path (15,27,16,28...) seems to approach the water's edge closely. Users might find it difficult to navigate through this area due to the limited space and potential obstacles."
+          "type": "Obstacle",
+          "description": "The route path includes a road (indicated by 'r') that may not be navigable, potentially causing player frustration or confusion.",
+          "affectedPath": [
+            16,
+            28
+          ]
         },
         {
-          "description": "Route may be too complex for some users",
-          "details": "The route involves a series of small steps (15,27,16,28...), which could be confusing or difficult to follow. Simplifying the path might improve user experience."
+          "type": "Loop",
+          "description": "There appears to be a loop in the route from position 90 back to 93, which could lead to players getting stuck or lost if they follow this path repeatedly.",
+          "affectedPath": [
+            90,
+            91,
+            103,
+            104,
+            115,
+            105,
+            113,
+            93
+          ]
         }
       ]
     }
