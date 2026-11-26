@@ -23,7 +23,7 @@
       "street"
     ],
     "layers": [
-      "world/clouds-runtime.webp",
+      "world/clouds-bgsky2-runtime.webp",
       [
         "world/LONDON BEHIND1-runtime.webp",
         "world/LONDON BEHIND2-runtime.webp"
