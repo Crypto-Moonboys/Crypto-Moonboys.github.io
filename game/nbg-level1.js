@@ -42,6 +42,8 @@
   var JUMP_TAP_SPACING_MS = 115; // Make successive queued boosts visibly distinct.
   var COURSE_LAYOUT_VERSION = 9; // Mystery-box activation modes; deploy Worker first.
   var DOUBLE_JUMP_SIDE_SPEED = 3.2;
+  // Flat volcanic death art needs a broad supporting surface, never a prop.
+  var VOLCANIC_DEATH_MIN_WALL_WIDTH = 96;
   // Volcanic $PUNK's third jump plays two large one-shot blast sheets, then
   // releases lightweight world coins with independent arcade physics.
   var THIRD_SPIN_COIN_COUNT = 32;
@@ -389,7 +391,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-air-death-fall-v5';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-ground-only-death-v6';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -734,6 +736,22 @@
       if (deathAnimationActive) setPlayerAnimation(deathSequence[0]);
     }
 
+    function getVolcanicDeathSurfaces() {
+      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60, deathSurface: 'ground' };
+      return [floor].concat(platforms.filter(function (platform) {
+        return platform.w >= VOLCANIC_DEATH_MIN_WALL_WIDTH;
+      }));
+    }
+
+    function isOnVolcanicDeathSurface() {
+      var feetY = player.y + player.h;
+      return getVolcanicDeathSurfaces().some(function (surface) {
+        return Math.abs(feetY - surface.y) <= 2 &&
+          player.x < surface.x + surface.w &&
+          player.x + player.w > surface.x;
+      });
+    }
+
     function beginDeathFall() {
       deathAnimationActive = false;
       deathAnimationPhase = 0;
@@ -787,8 +805,8 @@
       // for however long remains before collision; the normal fall fallback loops.
       advancePlayerAnimation(dt, airDeathAnimation !== 'airDeathFall');
 
-      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
-      var solids = [floor].concat(platforms, crates, solidRewardBoxes);
+      var solids = getVolcanicDeathSurfaces();
+      var floor = solids[0];
       var landingSurface = null;
       for (var i = 0; i < solids.length; i += 1) {
         var solid = solids[i];
@@ -1580,7 +1598,8 @@
 
     function damagePlayer(type, hazardX) {
       if (player.invuln > 0 || gameOver) return;
-      var wasAirborne = !player.grounded;
+      var needsVolcanicDeathFall = playerCharacterId === 'volcanic-punk' &&
+        !isOnVolcanicDeathSurface();
       player.health -= 1;
       player.vx = hazardX > player.x ? -5.5 : 5.5;
       player.vy = -6.2;
@@ -1599,7 +1618,7 @@
         gameOver = true;
         running = false;
         speedBoostUntil = 0;
-        if (playerCharacterId === 'volcanic-punk' && wasAirborne)
+        if (needsVolcanicDeathFall)
           beginDeathFall();
         else
           beginDeathAnimation();
@@ -2794,7 +2813,10 @@
     function drawPlayer() {
       var animation = getAnimation(player.anim);
       var frameMeta = getAnimationFrameMetadata(animation);
-      var frame = player.frame % frameMeta.count + (animation && animation.frameStart || 0);
+      var localFrame = player.frame % frameMeta.count;
+      var frame = localFrame + (animation && animation.frameStart || 0);
+      var frameOffsetY = animation && Array.isArray(animation.frameOffsetY) ?
+        Number(animation.frameOffsetY[localFrame] || 0) : 0;
       var col = frame % frameMeta.columns;
       var row = Math.floor(frame / frameMeta.columns);
       var x = Math.round(player.x - cameraX);
@@ -2803,7 +2825,7 @@
       var drawHeight = frameMeta.renderHeight;
       var drawX = x - Math.round((drawWidth - player.w) / 2);
       var visualFootY = y + player.h + PLAYER_VISUAL_OFFSET_Y;
-      var drawY = Math.round(visualFootY - drawHeight + frameMeta.renderOffsetY);
+      var drawY = Math.round(visualFootY - drawHeight + frameMeta.renderOffsetY + frameOffsetY);
       var sourceX = col * frameMeta.sourceWidth;
       var sourceY = row * frameMeta.sourceHeight;
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
@@ -3267,6 +3289,7 @@
               renderWidth: animation.renderWidth,
               renderHeight: animation.renderHeight,
               renderOffsetY: animation.renderOffsetY,
+              frameOffsetY: Array.isArray(animation.frameOffsetY) ? animation.frameOffsetY.slice() : null,
               frameStart: animation.frameStart || 0,
               nativeFacing: animation.nativeFacing || 1,
               frames: animation.frames,
