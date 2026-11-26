@@ -1,41 +1,56 @@
 {
   "issue": 1930,
-  "round": 108,
+  "round": 109,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "type": "Obstruction",
-          "description": "The path from row 15 to 27 is obstructed by the 'h' character, which could be a house or another obstacle.",
-          "location": [
-            15,
-            27
+          "type": "Obstructed Path",
+          "description": "The path from row 15 to row 106 is obstructed by water and ground tiles, which could make navigation difficult.",
+          "affectedRows": [
+            27,
+            40,
+            52,
+            64,
+            76,
+            88,
+            93,
+            104,
+            105
           ]
         },
         {
-          "type": "Unclear Navigation",
-          "description": "There are multiple turns and changes in direction that might confuse players. For example, from row 40 to 41, the path suddenly shifts left without clear indication.",
-          "location": [
-            40,
-            41
-          ]
+          "type": "Isolated House",
+          "description": "The house at row 94 is isolated and not connected to the main path, which might confuse players.",
+          "affectedRow": 94
         }
       ],
       "navigationRisks": [
         {
-          "type": "Potential Dead End",
-          "description": "The route seems to have a potential dead end at row 93. The player might get stuck if they follow the path without an exit.",
-          "location": [
-            93
+          "type": "Unexpected Obstacles",
+          "description": "There are unexpected obstacles like docks and houses that could block the route, leading to navigation issues.",
+          "affectedRows": [
+            16,
+            17,
+            54,
+            89,
+            90,
+            91,
+            103,
+            115
           ]
         },
         {
-          "type": "Inconsistent Path Width",
-          "description": "There are inconsistencies in the width of the paths, which could lead to navigation errors. For example, from row 40 to 52, the path narrows and then widens again.",
-          "location": [
-            40,
-            52
+          "type": "Inconsistent Path",
+          "description": "The path from row 100 to row 113 is inconsistent with the rest of the district layout, which could be confusing.",
+          "affectedRows": [
+            100,
+            89,
+            90,
+            91,
+            103,
+            115
           ]
         }
       ]
