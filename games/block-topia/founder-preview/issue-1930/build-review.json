@@ -1,112 +1,38 @@
 {
   "issue": 1930,
-  "round": 113,
+  "round": 114,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "type": "Obstruction",
-          "description": "The route path crosses over docks and houses, which may obstruct the visual flow of navigation.",
-          "affectedCells": [
-            52,
-            64,
-            76,
-            89,
-            100,
-            113
-          ]
+          "description": "Water and road colors are very similar, which may cause confusion.",
+          "affectedElements": [
+            "water",
+            "road"
+          ],
+          "suggestion": "Consider using more distinct colors for water and roads."
         },
         {
-          "type": "Color Contrast",
-          "description": "The color contrast between water and ground is low, which might make it hard for users to distinguish these areas.",
-          "affectedAreas": [
-            {
-              "row": 2,
-              "col": [
-                27,
-                28
-              ]
-            },
-            {
-              "row": 3,
-              "col": [
-                16,
-                17
-              ]
-            },
-            {
-              "row": 4,
-              "col": [
-                40,
-                41
-              ]
-            },
-            {
-              "row": 5,
-              "col": [
-                52,
-                54
-              ]
-            },
-            {
-              "row": 9,
-              "col": [
-                90,
-                93
-              ]
-            }
-          ]
+          "description": "The lighthouse is not easily distinguishable against the ground color.",
+          "affectedElement": "lighthouse",
+          "suggestion": "Increase contrast between lighthouse and ground elements."
         }
       ],
       "navigationRisks": [
         {
-          "type": "Route Complexity",
-          "description": "The route has multiple turns and backtracks, which might confuse users.",
-          "affectedCells": [
-            15,
-            27,
-            16,
-            28,
-            17,
-            40,
-            52,
-            41,
-            64,
-            42,
-            76,
-            54,
-            43,
-            88,
-            77,
-            55,
-            100,
-            89,
-            101,
-            90,
-            113,
-            91,
-            114,
-            103,
-            115,
-            104,
-            105,
-            93,
-            106,
-            94
-          ]
+          "description": "There are multiple instances where the route path crosses or overlaps, which could be confusing for players.",
+          "affectedElements": [
+            "route"
+          ],
+          "suggestion": "Ensure that the route does not overlap with itself or other important elements."
         },
         {
-          "type": "Dead Ends",
-          "description": "There are several dead ends in the route where it abruptly stops without a clear continuation.",
-          "affectedCells": [
-            88,
-            77,
-            55,
-            101,
-            113,
-            94
-          ]
+          "description": "The route path includes some diagonal movements that might be difficult to follow on a grid-based layout.",
+          "affectedElements": [
+            "route"
+          ],
+          "suggestion": "Simplify the route where possible, especially in areas with complex layouts."
         }
       ]
     }
