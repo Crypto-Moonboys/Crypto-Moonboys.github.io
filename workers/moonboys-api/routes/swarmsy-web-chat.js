@@ -6,7 +6,8 @@ const UPSTREAM = 'https://swarmsy.cryptomoonboys.com/api/sparky-web/chat';
 const MAX_MESSAGE = 2000;
 const CONVERSATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const SECRET = /^[A-Za-z0-9_-]{43,128}$/;
-const CANON_REQUEST = /\b(?:canon(?:ical)?|lore|wiki|backstory|ninth berth|bitcoin kid army|hodl(?: x)? warriors|all city bulls|nomad bears|gk\s*nifty\s*heads)\b/i;
+const CANON_REQUEST = /\b(?:canon(?:ical)?|lore|wiki|backstory|nfts?|collection|template|mint|ninth berth|bitcoin kid army|hodl(?: x)? warriors|all city bulls|nomad bears|gk\s*nifty\s*heads)\b/i;
+const FACT_LOOKUP = /^(?:who|what|where|when|which|how many|tell me about|explain)\b/i;
 const encoder = new TextEncoder();
 
 async function readJson(message, limit) {
@@ -104,11 +105,13 @@ export async function handleSwarmsyWebChat(request, env, cors) {
     if (!permitted) return respond({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
 
     stage = 'prepare_request';
-    const searchCanon = body.public_canon === true || CANON_REQUEST.test(message);
+    const requestedCanon = body.public_canon === true || CANON_REQUEST.test(message);
     const [session, sources] = await Promise.all([
       upstreamSession(sessionKey, identity.telegramId, conversationId),
-      searchCanon ? findPublicSwarmsySources(message).catch(() => []) : [],
+      (requestedCanon || FACT_LOOKUP.test(message))
+        ? findPublicSwarmsySources(message, { exactSubject: !requestedCanon }).catch(() => []) : [],
     ]);
+    const searchCanon = requestedCanon || sources.length > 0;
 
     stage = 'upstream_fetch';
     const response = await fetch(UPSTREAM, {

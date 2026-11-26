@@ -110,6 +110,7 @@ test('the actual Pages builder excludes all ending records and retains public co
     // scanning public disclosure. Keep the fixture's module dependency and
     // minimal real-page sitemap in sync with that publishing contract.
     for (const p of ['scripts/prepare-pages-artifact.mjs', 'scripts/public-canon-disclosure.mjs',
+      'scripts/publish-brain-feed.mjs', 'workers/moonboys-api/shared/published-lore-text.mjs',
       'scripts/wiki-html-structure.mjs', 'scripts/publish-direct-wiki-links.mjs',
       'scripts/publish-wiki-search-index.mjs', 'scripts/seo-publish-canonicals.mjs']) write(p, read(p));
     for (const p of EDITORIAL_ONLY_PATHS) write(p, read(p));

@@ -58,3 +58,18 @@ jobs:
         uses: actions/deploy-pages@v5
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Notify the Brand Brain after the site is live
+        if: success()
+        continue-on-error: true
+        env:
+          BRAIN_CANON_DISPATCH_TOKEN: ${{ secrets.BRAIN_CANON_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$BRAIN_CANON_DISPATCH_TOKEN" ]; then exit 0; fi
+          curl --silent --show-error --fail --max-time 15 \
+            --request POST \
+            --header "Authorization: Bearer $BRAIN_CANON_DISPATCH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Content-Type: application/json" \
+            --data '{"event_type":"moonboys-pages-published"}' \
+            https://api.github.com/repos/HODLKONG64/the-brain/dispatches

@@ -6,6 +6,7 @@ import { ensurePublishedCanonicals } from './seo-publish-canonicals.mjs';
 
 import { publishDirectWikiLinks, publishWikiRelatedData } from './publish-direct-wiki-links.mjs';
 import { publishWikiSearchIndex } from './publish-wiki-search-index.mjs';
+import { publishBrainFeed } from './publish-brain-feed.mjs';
 
 const artifactDir = process.argv[2] || 'public-site';
 const repoRoot = path.resolve('.');
@@ -192,6 +193,8 @@ async function main() {
   await publishWikiSearchIndex(resolvedArtifactDir);
   await publishDashboardSummary(resolvedArtifactDir);
   await publishLeaderLoreSources(resolvedArtifactDir);
+  const brain = await publishBrainFeed(resolvedArtifactDir);
+  console.log(`Brain feed: ${brain.records.length} published records for ${brain.revision}.`);
   await verifyPublicDisclosure(resolvedArtifactDir);
   console.log(`Prepared GitHub Pages artifact: ${path.relative(repoRoot, resolvedArtifactDir)}`);
 }

@@ -149,6 +149,7 @@ test('deeper lookup sends published wiki excerpts and rejects private, redirect 
       assert.deepEqual(payload.sources, [{ title, url: origin + wiki, excerpt: text }]);
       return Response.json({ reply: 'It is in the Waterfront.' });
     }
+    if (pathname === '/brain-feed/index.json') return new Response(null, { status: 404 });
     if (pathname === '/js/wiki-index.json') {
       return Response.json([
         { title, url: wiki }, { title, url: noindex }, { title, url: redirect }, { title, url: privatePath },
@@ -173,4 +174,39 @@ test('deeper lookup sends published wiki excerpts and rejects private, redirect 
   assert.ok(contacts.includes(origin + noindex));
   assert.ok(contacts.includes(origin + redirect));
   assert.ok(contacts.every(url => !url.includes('brain.cryptomoonboys.com') && !url.includes(privatePath)));
+});
+
+test('uses the current published Brain snapshot on each request, including NFT sources', async context => {
+  const route = '/data/gkniftyheads/live-template-supply.json';
+  const urls = [];
+  let update = 1;
+  context.mock.method(globalThis, 'fetch', async (url, options) => {
+    urls.push(url);
+    const title = 'Ninth Berth NFT template supply';
+    const kind = 'nft';
+    const body = `The Ninth Berth NFT template has ${update} published copies in the current collection.`;
+    const record = JSON.stringify({ path: route, title, kind, body }) + '\n';
+    const sha256 = createHash('sha256').update(record).digest('hex');
+    if (url.endsWith('/brain-feed/index.json')) {
+      assert.equal(options.cache, 'no-store');
+      return Response.json({
+        schema_version: 1, revision: String(update).repeat(40),
+        records: [{ path: route, title, description: body, kind, sha256, bytes: Buffer.byteLength(record) }],
+      });
+    }
+    if (url.endsWith('/brain-feed/records/' + sha256 + '.json')) return new Response(record);
+    assert.equal(url, 'https://swarmsy.cryptomoonboys.com/api/sparky-web/chat');
+    const sent = JSON.parse(options.body);
+    assert.deepEqual(sent.sources, [{ title, url: origin + route, excerpt: body }]);
+    return Response.json({ reply: body });
+  });
+  for (update of [1, 2]) {
+    const result = await handleSwarmsyWebChat(request(chat({ message: 'How many Ninth Berth NFTs are in the template?' })), env(), cors);
+    assert.equal(result.status, 200);
+    const value = await result.json();
+    assert.equal(value.canon, 'found');
+    assert.match(value.reply, new RegExp(`has ${update} published copies`));
+    assert.deepEqual(value.sources, [{ title: 'Ninth Berth NFT template supply', url: origin + route }]);
+  }
+  assert.equal(new Set(urls.filter(url => url.includes('/brain-feed/records/'))).size, 2);
 });
