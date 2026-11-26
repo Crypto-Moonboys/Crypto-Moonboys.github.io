@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Use the AI Creator Studio with your chosen browser AI, or run the optional SWARMSY PC beta with SPARKY and your own AI model.">
+  <meta name="description" content="Chat with SPARKY through SWARMSY, build a creator campaign, or look up published Crypto Moonboys canon.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="SWARMSY | Creator Workspace">
-  <meta property="og:description" content="Use the AI Creator Studio with your chosen browser AI, or run the optional SWARMSY PC beta with SPARKY and your own AI model.">
+  <meta property="og:description" content="Chat with SPARKY through SWARMSY, build a creator campaign, or look up published Crypto Moonboys canon.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/swarmsy.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -15,10 +15,11 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/css/page-hero-art.css">
+  <link rel="stylesheet" href="/css/swarmsy-chat.css">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SWARMSY | Creator Workspace">
-<meta name="twitter:description" content="Use the AI Creator Studio with your chosen browser AI, or run the optional SWARMSY PC beta with SPARKY and your own AI model.">
+<meta name="twitter:description" content="Chat with SPARKY through SWARMSY, build a creator campaign, or look up published Crypto Moonboys canon.">
 <meta name="twitter:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
 </head>
 <body class="page-swarmsy page-standard-shell">
@@ -30,7 +31,8 @@
     <section class="swarmsy-hero" aria-labelledby="swarmsy-title">
       <div class="swarmsy-hero-inner">
         <h1 id="swarmsy-title" class="swarmsy-title">SWARMSY</h1>
-        <p class="swarmsy-lead">Plan projects and build worlds with SPARKY. Start with your preferred browser AI or run the optional SWARMSY PC beta.</p>
+        <p class="swarmsy-lead">Plan projects, build worlds and explore Crypto Moonboys canon with SPARKY.</p>
+        <a class="swarmsy-chat-jump" href="#sparky-chat">Open SPARKY chat <span aria-hidden="true">↓</span></a>
         <div class="swarmsy-action-grid" role="navigation" aria-label="SWARMSY actions">
           <a href="/ai-user.html" class="swarmsy-action-card swarmsy-action-card--gold">
             <strong>Open AI Creator Studio</strong>
@@ -51,9 +53,43 @@
         </div>
         <details class="swarmsy-more-info">
           <summary aria-label="More info about browser and PC workspaces"><span aria-hidden="true">i</span></summary>
-          <p>The Studio works with your chosen browser AI and needs no SWARMSY install. The PC beta runs separately. To move work between them, share the project files you choose.</p>
+          <p>The Studio works with your chosen browser AI and needs no SWARMSY install. The optional SWARMSY PC beta runs separately. To move work between them, share the project files you choose.</p>
         </details>
       </div>
+    </section>
+
+    <section id="sparky-chat" class="swarmsy-chat" data-swarmsy-chat aria-labelledby="sparky-chat-title">
+      <header class="swarmsy-chat-header">
+        <div>
+          <h2 id="sparky-chat-title">SPARKY chat</h2>
+          <p>Build a campaign, develop a character or dig into published Moonboys canon.</p>
+        </div>
+        <button class="swarmsy-chat-secondary" type="button" data-chat-reset hidden>New chat</button>
+      </header>
+
+      <div class="swarmsy-chat-signin" data-chat-signin hidden>
+        <p>Sign in with Telegram to start a conversation.</p>
+        <button class="swarmsy-chat-primary" type="button" data-chat-login>Sign in with Telegram</button>
+      </div>
+
+      <div data-chat-workspace hidden>
+        <div class="swarmsy-chat-log" data-chat-log role="log" aria-label="Conversation" aria-relevant="additions"></div>
+        <div class="swarmsy-chat-starters" data-chat-starters role="group" aria-label="Start a project">
+          <button class="swarmsy-chat-secondary" type="button" data-starter="Plan today’s local empire build.">Plan a campaign</button>
+          <button class="swarmsy-chat-secondary" type="button" data-starter="I have a Moonboy/PFP to build.">Build a Moonboy</button>
+          <button class="swarmsy-chat-secondary" type="button" data-starter="Who does the Bitcoin Kid Army answer to in current canon?" data-canon>Explore the lore</button>
+        </div>
+        <form class="swarmsy-chat-form" data-chat-form>
+          <label for="swarmsy-chat-message">Message SPARKY</label>
+          <div class="swarmsy-chat-compose">
+            <textarea id="swarmsy-chat-message" name="message" data-chat-message rows="2" maxlength="2000" required placeholder="What are you building?"></textarea>
+            <button class="swarmsy-chat-primary" type="submit" data-chat-send>Send</button>
+          </div>
+          <label class="swarmsy-chat-checkbox"><input type="checkbox" data-chat-canon> Search deeper in public canon</label>
+        </form>
+      </div>
+      <p class="swarmsy-chat-status" data-chat-status role="status">Checking Telegram sign-in…</p>
+      <noscript><p>Enable JavaScript to sign in and chat with SPARKY.</p></noscript>
     </section>
 
     <section class="swarmsy-section" aria-labelledby="swarmsy-worlds">
@@ -95,6 +131,7 @@
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/swarmsy-chat.js" defer></script>
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
 <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
 <script data-cfasync="false" src="/js/site-shell.js"></script>

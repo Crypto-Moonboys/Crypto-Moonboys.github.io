@@ -42,7 +42,7 @@ function authCheckString(fields) {
     .join('\n');
 }
 
-async function verifyTelegramAuth(fields, botToken) {
+export async function verifyTelegramAuth(fields, botToken) {
   if (!fields || !botToken || !fields.hash) return false;
   const supplied = String(fields.hash).toLowerCase();
   if (!/^[a-f0-9]{64}$/.test(supplied)) return false;
