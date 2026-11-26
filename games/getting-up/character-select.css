@@ -1,3 +1,6 @@
+.fighter-select[hidden] {
+  display: none !important;
+}
 .fighter-select {
   display: grid;
   gap: .7rem;
