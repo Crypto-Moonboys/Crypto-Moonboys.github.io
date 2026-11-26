@@ -1,6 +1,6 @@
 {
   "issue": 1930,
-  "round": 118,
+  "round": 119,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
@@ -8,46 +8,46 @@
         {
           "description": "Water and road overlap",
           "riskLevel": "High",
-          "locations": [
+          "location": [
             3,
-            4
-          ]
+            27,
+            39
+          ],
+          "suggestion": "Ensure water and road tiles do not overlap to avoid confusion."
         },
         {
-          "description": "House is too close to the water edge",
+          "description": "House placed on water",
           "riskLevel": "Medium",
-          "locations": [
-            6,
-            7
-          ]
+          "location": [
+            10,
+            88
+          ],
+          "suggestion": "Verify that houses are only placed on ground tiles."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route loop or dead end",
+          "description": "Route loop or dead-end",
           "riskLevel": "High",
-          "locations": [
-            102,
-            91,
+          "routeSegment": [
+            90,
             114,
-            103,
-            115,
-            104,
-            105
-          ]
+            102,
+            91
+          ],
+          "suggestion": "Check for loops in the route to ensure a clear path."
+        },
+        {
+          "description": "Unexpected route direction changes",
+          "riskLevel": "Medium",
+          "location": [
+            52,
+            64,
+            76
+          ],
+          "suggestion": "Review the route's direction transitions to ensure they are logical and user-friendly."
         }
       ]
-    },
-    "referenceTextIssues": [
-      {
-        "description": "Syntax error in research code",
-        "lineNumber": 2,
-        "position": [
-          6,
-          7
-        ],
-        "riskLevel": "Critical"
-      }
-    ]
+    }
   }
 }
