@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="24" viewBox="0 0 80 24">
+<!-- TEMP ART: bounce pad / spring placeholder. -->
+<rect x="2" y="16" width="76" height="8" fill="#2b2f3a"/>
+<path d="M10 16 L18 9 L26 16 L34 9 L42 16 L50 9 L58 16 L66 9 L72 16" stroke="#c8ccd6" stroke-width="3" fill="none"/>
+<rect x="4" y="1" width="72" height="8" rx="3" fill="#ff2fd0" stroke="#fff" stroke-width="2"/>
+<text x="40" y="8" font-family="monospace" font-size="7" font-weight="bold" fill="#fff" text-anchor="middle">BOUNCE TEMP</text>
+</svg>

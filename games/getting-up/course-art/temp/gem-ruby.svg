@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<!-- TEMP ART: ruby gem placeholder. Replace with final pixel art (same filename). -->
+<polygon points="32,4 56,22 32,60 8,22" fill="#e0123f" stroke="#ffffff" stroke-width="3"/>
+<polygon points="8,22 56,22 32,60" fill="#9b0a2a"/>
+<polygon points="20,22 32,4 44,22" fill="#ff6b8a"/>
+<polygon points="14,22 22,12 26,22" fill="#ffffff" opacity=".6"/>
+<text x="32" y="38" font-family="monospace" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">TEMP</text>
+</svg>

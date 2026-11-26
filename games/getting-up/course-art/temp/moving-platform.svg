@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="16" viewBox="0 0 64 16">
+<!-- TEMP ART: moving platform placeholder. -->
+<rect width="64" height="16" rx="3" fill="#2e8f9e" stroke="#bff6ff" stroke-width="2"/>
+<polygon points="6,8 12,4 12,12" fill="#bff6ff"/><polygon points="58,8 52,4 52,12" fill="#bff6ff"/>
+<text x="32" y="11" font-family="monospace" font-size="7" font-weight="bold" fill="#e9fdff" text-anchor="middle">TEMP</text>
+</svg>

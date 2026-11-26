@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="16" viewBox="0 0 48 16">
+<!-- TEMP ART: crumbling platform placeholder. -->
+<rect width="48" height="16" fill="#a8743e"/>
+<path d="M6 0 L10 7 L7 16 M20 0 L17 6 L22 11 L19 16 M33 0 L36 8 L31 16 M42 0 L40 9 L44 16" stroke="#3a2410" stroke-width="2" fill="none"/>
+<rect width="48" height="3" fill="#e0b070"/>
+<text x="24" y="12" font-family="monospace" font-size="6" font-weight="bold" fill="#3a2410" text-anchor="middle">TEMP</text>
+</svg>

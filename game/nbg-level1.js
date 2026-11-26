@@ -582,6 +582,11 @@
     // Only the Getting Up launch page opts out of competitive integration.
     var unranked = !!(canvas.dataset && canvas.dataset.nbgMode === 'unranked');
     var classicScenery = !unranked && !!(canvas.dataset && canvas.dataset.nbgScenery === 'classic');
+    // Optional course extension (Getting Up only). Ranked NBG London never
+    // reads it, so its Worker-replayed course layout stays byte-identical.
+    var courseId = unranked && canvas.dataset && canvas.dataset.nbgCourse || '';
+    var courseExt = null;
+    var courseApi = null;
     // Backing resolution is not world resolution: 960x540 output covers the
     // exact same 480x270 logical scene at exactly the same on-screen size.
     // Avoid CSS/nearest-neighbour enlargement of the former 480px bitmap.
@@ -711,7 +716,7 @@
       var feet = player.y + player.h;
       if (!wanted) {
         var upright = { x: player.x, y: feet - STAND_HEIGHT, w: player.w, h: STAND_HEIGHT };
-        if (platforms.concat(crates, solidRewardBoxes).some(function (solid) { return rectsOverlap(upright, solid); }))
+        if (platforms.concat(crates, solidRewardBoxes, getCourseSideSolids()).some(function (solid) { return rectsOverlap(upright, solid); }))
           return;
       }
       player.h = wanted ? CROUCH_HEIGHT : STAND_HEIGHT;
@@ -778,8 +783,10 @@
     }
 
     function getVolcanicDeathSurfaces() {
-      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60, deathSurface: 'ground' };
-      return [floor].concat(platforms.filter(function (platform) {
+      var floors = getFloorSolids().map(function (floor) {
+        return Object.assign({}, floor, { deathSurface: 'ground' });
+      });
+      return floors.concat(platforms.filter(function (platform) {
         return platform.w >= VOLCANIC_DEATH_MIN_WALL_WIDTH;
       }));
     }
@@ -962,6 +969,19 @@
       setPlayerAnimation(deathSequence[deathAnimationPhase]);
     }
 
+    function getFloorSolids() {
+      return courseExt && courseExt.floorSolids ? courseExt.floorSolids() :
+        [{ x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 }];
+    }
+
+    function getCourseSolids() {
+      return courseExt && courseExt.solids ? courseExt.solids() : [];
+    }
+
+    function getCourseSideSolids() {
+      return courseExt && courseExt.sideSolids ? courseExt.sideSolids() : [];
+    }
+
     var platforms = [
       { x: 360, y: 178, w: 150, h: 16 },
       { x: 720, y: 154, w: 132, h: 16 },
@@ -1098,10 +1118,32 @@
       }
     }
 
+    var courseLayout = null;
+    if (courseId && window.NBGCourses && typeof window.NBGCourses[courseId] === 'function') {
+      courseExt = window.NBGCourses[courseId]({
+        FLOOR_Y: FLOOR_Y, WORLD_WIDTH: WORLD_WIDTH, WIDTH: WIDTH, HEIGHT: HEIGHT,
+        COIN_TIERS: COIN_TIERS, STAND_HEIGHT: STAND_HEIGHT, CROUCH_HEIGHT: CROUCH_HEIGHT,
+        STREET_Y: STREET_Y, FOREGROUND_VISUAL_OFFSET_Y: FOREGROUND_VISUAL_OFFSET_Y,
+        PLAYER_VISUAL_OFFSET_Y: PLAYER_VISUAL_OFFSET_Y,
+        CAMERA_LOOK_DOWN_MAX_Y: CAMERA_LOOK_DOWN_MAX_Y, SPEEDRUN_PAR_MS: SPEEDRUN_PAR_MS
+      });
+      courseLayout = courseExt && courseExt.layout || null;
+      if (courseLayout) {
+        [[platforms, 'platforms'], [crates, 'crates'], [rewardBoxes, 'rewardBoxes'],
+          [speedBoxes, 'speedBoxes'], [secretCoins, 'secretCoins'], [coins, 'coins'],
+          [enemies, 'enemies'], [hazards, 'hazards'], [courseCheckpoints, 'checkpoints']
+        ].forEach(function (pair) {
+          if (!Array.isArray(courseLayout[pair[1]])) return;
+          pair[0].length = 0;
+          Array.prototype.push.apply(pair[0], courseLayout[pair[1]]);
+        });
+      }
+    }
+
     // Assign only mystery boxes, retaining star and speed box behaviour.
     var mysteryIndex = 0;
     rewardBoxes.forEach(function (box) {
-      if (box.type !== 'mystery') return;
+      if (box.type !== 'mystery' || box.mode) return;
       var index = mysteryIndex++;
       box.mode = ['touch', 'solid', 'reveal'][index % 3];
       if (box.mode === 'reveal') {
@@ -1117,8 +1159,42 @@
 
     var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false };
     var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 };
+    if (courseLayout && courseLayout.checkpoint) Object.assign(checkpoint, courseLayout.checkpoint);
+    if (courseLayout && courseLayout.finish) Object.assign(finish, courseLayout.finish);
     var xp = 0;
     var collectedCoinCount = 0;
+
+    // Narrow surface handed to the optional course extension.
+    if (courseExt) {
+      courseApi = {
+        get player() { return player; },
+        get cameraX() { return cameraX; },
+        get cameraY() { return cameraY; },
+        get images() { return images; },
+        get running() { return running; },
+        get gameOver() { return gameOver; },
+        get complete() { return complete; },
+        get runElapsedMs() { return runElapsedMs; },
+        get displayElapsedMs() { return getDisplayElapsedMs(); },
+        get sprayActive() { return sprayTimer > 0 && !gameOver; },
+        get lookDown() { return !!(keys.ArrowDown || touch.look); },
+        get xp() { return xp; },
+        sprayRect: function () { return getSprayAttackRect(); },
+        rectsOverlap: rectsOverlap,
+        addXp: function (amount, detail) {
+          xp += amount;
+          window.dispatchEvent(new CustomEvent('nbg-xp-collected', {
+            detail: Object.assign({ xp: xp, earnedXp: amount }, detail || {})
+          }));
+        },
+        damage: function (type, x) { damagePlayer(type, x); },
+        notify: function (text, ms) {
+          secretNotificationText = text;
+          secretNotificationUntil = runElapsedMs + (ms || 2000);
+        },
+        cue: function (id, detail) { dispatchAudioCue(id, detail); }
+      };
+    }
 
     function resetToCheckpoint() {
       player.x = checkpointX;
@@ -1315,18 +1391,35 @@
     function resolveVerticalCollision(previousY) {
       var wasGrounded = player.grounded;
       var landingVelocity = player.vy;
-      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
-      var solids = [floor].concat(platforms, crates, solidRewardBoxes);
+      var solids = getFloorSolids().concat(platforms, crates, solidRewardBoxes, getCourseSolids());
       player.grounded = false;
+      player.groundTile = null;
 
       for (var i = 0; i < solids.length; i += 1) {
         var tile = solids[i];
         var wasAbove = previousY + player.h <= tile.y + 1;
+        // Course blocks flagged solidBottom also stop upward movement.
+        if (tile.solidBottom && player.vy < 0 && rectsOverlap(player, tile) &&
+            previousY >= tile.y + tile.h - 1) {
+          player.y = tile.y + tile.h;
+          player.vy = 0;
+          continue;
+        }
         if (rectsOverlap(player, tile) && player.vy >= 0 && wasAbove) {
           if (tile.mode === 'solid') tile.landed = true;
           player.y = tile.y - player.h;
+          if (tile.bounce) {
+            // Course bounce pads launch and leave jumps 2 and 3 available.
+            player.vy = -tile.bounce;
+            jumpsUsed = 1;
+            backflipActive = false;
+            tile.lastBounceAt = runElapsedMs;
+            dispatchAudioCue('jump_2');
+            continue;
+          }
           player.vy = 0;
           player.grounded = true;
+          player.groundTile = tile;
           jumpsUsed = 0;
           backflipActive = false;
         }
@@ -1446,7 +1539,7 @@
       var visualMarginX = getPlayerVisualMarginX();
       player.x = clamp(player.x, 12 + visualMarginX, WORLD_WIDTH - player.w - 12 - visualMarginX);
       // Crates block movement from the sides but can also be jumped onto.
-      var sideSolids = crates.concat(solidRewardBoxes);
+      var sideSolids = crates.concat(solidRewardBoxes, getCourseSideSolids());
       for (var crateIndex = 0; crateIndex < sideSolids.length; crateIndex += 1) {
         var crate = sideSolids[crateIndex];
         if (!rectsOverlap(player, crate)) continue;
@@ -1563,8 +1656,7 @@
 
     function updateBurstCoins(time, dt) {
       var step = dt / TARGET_FRAME_MS;
-      var floor = { x: 0, y: FLOOR_Y, w: WORLD_WIDTH, h: 60 };
-      var solids = [floor].concat(platforms, crates, solidRewardBoxes);
+      var solids = getFloorSolids().concat(platforms, crates, solidRewardBoxes, getCourseSolids());
       for (var i = 0; i < burstCoins.length; i += 1) {
         var coin = burstCoins[i];
         if (coin.taken) continue;
@@ -1698,7 +1790,7 @@
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
           xp += coin.xp;
-          secretNotificationText = 'SECRET FOUND +500 XP';
+          secretNotificationText = coin.label || ('SECRET FOUND +' + coin.xp + ' XP');
           secretNotificationUntil = time + 2000;
           window.dispatchEvent(new CustomEvent('nbg-xp-collected', { detail: { xp: xp, coin: coin } }));
           window.dispatchEvent(new CustomEvent('nbg-secret-found', { detail: { xp: xp, coin: coin } }));
@@ -2038,10 +2130,11 @@
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
           xp += 500 + collectedCoinCount * 25;
-          speedrunBonusXp = Math.max(0, Math.ceil((SPEEDRUN_PAR_MS - runElapsedMs) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
+          speedrunBonusXp = Math.max(0, Math.ceil((getParMs() - getDisplayElapsedMs()) / 1000)) * SPEEDRUN_TIME_BONUS_PER_SECOND;
           xp += speedrunBonusXp;
           if (xp > bestXp) bestXp = xp;
-          if (bestTimeMs === null || runElapsedMs < bestTimeMs) bestTimeMs = runElapsedMs;
+          if (bestTimeMs === null || getDisplayElapsedMs() < bestTimeMs) bestTimeMs = getDisplayElapsedMs();
+          if (courseExt && courseExt.onFinish) courseExt.onFinish(courseApi);
         }
         window.dispatchEvent(new CustomEvent('nbg-level-complete', {
           detail: {
@@ -2055,7 +2148,8 @@
             bestXp: bestXp,
             leaderboardReady: !unranked,
             replayInterrupted: replayInterrupted,
-            replay: unranked ? null : encodedRunReplay()
+            replay: unranked ? null : encodedRunReplay(),
+            course: courseExt && courseExt.summary ? courseExt.summary() : null
           }
         }));
       }
@@ -2072,6 +2166,7 @@
       var groundedY = FLOOR_Y - player.h;
       var jumpLift = Math.max(0, groundedY - player.y);
       var targetCameraY = Math.min(CAMERA_JUMP_MAX_Y, jumpLift * CAMERA_JUMP_FOLLOW);
+      if (courseExt && courseExt.cameraTargetY) targetCameraY = courseExt.cameraTargetY(targetCameraY, courseApi);
       // Hold Down to inspect the ground below a higher platform. This only
       // translates rendered scenery and does not affect hitboxes or XP.
       if (keys.ArrowDown || touch.look) targetCameraY -= CAMERA_LOOK_DOWN_MAX_Y;
@@ -2554,6 +2649,15 @@
       return minutes + ':' + remainder + '.' + Math.floor(ms / 100) % 10;
     }
 
+    function getDisplayElapsedMs() {
+      var bonus = courseExt && courseExt.timeBonusMs ? courseExt.timeBonusMs() : 0;
+      return Math.max(0, runElapsedMs - bonus);
+    }
+
+    function getParMs() {
+      return courseExt && courseExt.parMs ? courseExt.parMs : SPEEDRUN_PAR_MS;
+    }
+
     function drawHazards() {
       hazards.forEach(function (hazard) {
         var x = Math.round(hazard.x - cameraX);
@@ -2668,6 +2772,7 @@
       // beneath its existing 28px street strip instead of exposing blue clear.
       ctx.fillStyle = '#303238';
       ctx.fillRect(0, STREET_Y + STREET_BAND_HEIGHT, WIDTH, CAMERA_LOOK_DOWN_MAX_Y + 2);
+      if (courseExt && courseExt.drawGround) courseExt.drawGround(ctx, courseApi, time);
 
       // A whole platform uses brick OR rock, never an alternating mixture.
       for (var i = 0; i < platforms.length; i += 1) {
@@ -2702,6 +2807,7 @@
         }
       }
       drawHazards();
+      if (courseExt && courseExt.drawWorld) courseExt.drawWorld(ctx, courseApi, time);
     }
 
     function drawBurstCoins(time) {
@@ -3084,7 +3190,8 @@
     function drawSpeedrunHud(time) {
       // Readable at the game's native 480px resolution and when scaled fullscreen.
       var panelX = WIDTH - SPEEDRUN_HUD_WIDTH - 4;
-      var timerText = formatRunTime(runElapsedMs) + '/3:00';
+      var timerText = formatRunTime(getDisplayElapsedMs()) + '/' +
+        formatRunTime(getParMs()).replace(/\.\d$/, '');
       var extra = [];
       if (time < speedBoostUntil) extra.push('BOOST ' + ((speedBoostUntil - time) / 1000).toFixed(1) + 's');
       if (comboCount > 1 && time < comboExpiresAt) extra.push('COMBO x' + comboCount);
@@ -3175,6 +3282,7 @@
       drawBurstCoins(time);
       drawSecretCoins(time);
       drawObjects();
+      if (courseExt && courseExt.drawObjects) courseExt.drawObjects(ctx, courseApi, runElapsedMs);
       // Attack start/end timestamps use runElapsedMs in updateEnemies();
       // RAF performance.now() is a different clock and hid attack poses.
       drawGraffbotFires(runElapsedMs);
@@ -3182,6 +3290,7 @@
       drawParachuteRats(time);
       drawPlayer();
       ctx.restore();
+      if (courseExt && courseExt.drawHud) courseExt.drawHud(ctx, courseApi, runElapsedMs);
       drawSpeedrunHud(runElapsedMs);
       drawSecretNotification(runElapsedMs);
       drawRewardNotification(runElapsedMs);
@@ -3223,6 +3332,7 @@
         updateEnemies(runElapsedMs, dt);
         updateParachuteRats(runElapsedMs, dt);
         updateHazards();
+        if (courseExt && courseExt.update) courseExt.update(runElapsedMs, dt, courseApi);
         updateLevel();
         updateCamera();
         updateCameraY();
@@ -3304,6 +3414,8 @@
         get visibleWorldWidth() { return WIDTH / cameraZoom; },
         get checkpoint() { return checkpoint; },
         get finish() { return finish; },
+        get courseId() { return courseExt ? courseId : ''; },
+        get course() { return courseExt; },
         get worldWidth() { return WORLD_WIDTH; },
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
@@ -3503,6 +3615,7 @@
       initialEnemies.forEach(function (enemy) { enemies.push(Object.assign({}, enemy)); });
       checkpoint.active = false;
       courseCheckpoints.forEach(function (marker) { marker.active = false; });
+      if (courseExt && courseExt.reset) courseExt.reset(courseApi);
       gameVisible = true;
       updateCamera();
       updateCameraY();
