@@ -285,7 +285,57 @@ async function getCatalog() {
   return entries;
 }
 
+// Keep each template's ID and counts together. Pretty-printed JSON lines
+// cannot be ranked individually because short fields lose their row context.
+function nftJsonExcerpt(text, question) {
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    return '';
+  }
+  const wanted = terms(question);
+  const requestedId = question.match(/\btemplate(?:[ _-]id)?\s*(?:[:#=]\s*)?(\d+)\b/i)?.[1]
+    ?? wanted.find(word => /^\d{5,}$/.test(word));
+  const rows = Array.isArray(json) ? json
+    : json && typeof json === 'object'
+      ? [json, ...Object.values(json).filter(Array.isArray).flat()]
+      : [];
+  const ranked = [];
+  for (const row of rows) {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) continue;
+    const id = row.template_id;
+    if (requestedId && String(id) !== requestedId) continue;
+
+    const nested = [row.immutable_data, row.data].filter(value =>
+      value && typeof value === 'object' && !Array.isArray(value));
+    const identity = ['template_id', 'collection_name', 'title', 'name', 'issued_supply', 'live_supply',
+      'max_supply', 'listed_supply', 'live_supply_status', 'last_checked_at'];
+    const payload = new Map();
+    for (const fields of [row, ...nested]) {
+      for (const [key, value] of Object.entries(fields)) {
+        if (payload.has(key) || !['string', 'number', 'boolean'].includes(typeof value) ||
+            /^https?:\/\//i.test(String(value))) continue;
+        const field = key + ': ' + String(value).replace(/\s+/g, ' ').trim().slice(0, 260);
+        if (!EDITORIAL_REFERENCE.test(field) && !UNPUBLISHED_OUTCOME.test(field)) payload.set(key, field);
+      }
+    }
+    const keyOrder = [...identity.filter(key => payload.has(key)), ...[...payload.keys()].filter(key => !identity.includes(key))];
+    const words = new Set(normal([...payload.values()].join(' ')).split(' '));
+    const score = wanted.filter(word => words.has(word)).length;
+    let passage = '';
+    for (const key of keyOrder) {
+      const field = payload.get(key);
+      const next = passage ? passage + '; ' + field : field;
+      if (next.length <= 590) passage = next;
+    }
+    if (passage && (score || requestedId || row === json)) ranked.push({ passage, score });
+  }
+  return ranked.sort((a, b) => b.score - a.score).slice(0, 3).map(row => row.passage).join('\n');
+}
+
 export function loreExcerpt(source, text, question) {
+  if (/^\/data\/.*\.json$/i.test(source.path)) return nftJsonExcerpt(text, question);
   const wanted = terms(question);
   const paragraphs = text.split(/\n+/).map(line => line.replace(/\s+/g, ' ').trim()).filter(line =>
     line.length >= 30 && !EDITORIAL_REFERENCE.test(line) && !UNPUBLISHED_OUTCOME.test(line));

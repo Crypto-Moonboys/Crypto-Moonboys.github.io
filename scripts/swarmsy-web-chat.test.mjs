@@ -184,7 +184,11 @@ test('uses the current published Brain snapshot on each request, including NFT s
     urls.push(url);
     const title = 'Ninth Berth NFT template supply';
     const kind = 'nft';
-    const body = `The Ninth Berth NFT template has ${update} published copies in the current collection.`;
+    const body = JSON.stringify({ supplies: [
+      { template_id: 999999, live_supply: 88, source_url: 'https://example.com/nft' },
+      { template_id: 773225, issued_supply: 20, live_supply: update },
+    ] }, null, 2);
+    const expected = `template_id: 773225; issued_supply: 20; live_supply: ${update}`;
     const record = JSON.stringify({ path: route, title, kind, body }) + '\n';
     const sha256 = createHash('sha256').update(record).digest('hex');
     if (url.endsWith('/brain-feed/index.json')) {
@@ -197,15 +201,15 @@ test('uses the current published Brain snapshot on each request, including NFT s
     if (url.endsWith('/brain-feed/records/' + sha256 + '.json')) return new Response(record);
     assert.equal(url, 'https://swarmsy.cryptomoonboys.com/api/sparky-web/chat');
     const sent = JSON.parse(options.body);
-    assert.deepEqual(sent.sources, [{ title, url: origin + route, excerpt: body }]);
-    return Response.json({ reply: body });
+    assert.deepEqual(sent.sources, [{ title, url: origin + route, excerpt: expected }]);
+    return Response.json({ reply: expected });
   });
   for (update of [1, 2]) {
-    const result = await handleSwarmsyWebChat(request(chat({ message: 'How many Ninth Berth NFTs are in the template?' })), env(), cors);
+    const result = await handleSwarmsyWebChat(request(chat({ message: 'How many copies are in template 773225? https://cryptomoonboys.com/data/gkniftyheads/live-template-supply.json' })), env(), cors);
     assert.equal(result.status, 200);
     const value = await result.json();
     assert.equal(value.canon, 'found');
-    assert.match(value.reply, new RegExp(`has ${update} published copies`));
+    assert.equal(value.reply, `template_id: 773225; issued_supply: 20; live_supply: ${update}`);
     assert.deepEqual(value.sources, [{ title: 'Ninth Berth NFT template supply', url: origin + route }]);
   }
   assert.equal(new Set(urls.filter(url => url.includes('/brain-feed/records/'))).size, 2);
