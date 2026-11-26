@@ -1,44 +1,29 @@
 {
   "issue": 1930,
-  "round": 101,
+  "round": 102,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "type": "Obstruction",
-          "description": "The path from row 15 to 27 is obstructed by water, which could be confusing for players navigating the district.",
-          "affectedPath": [
-            15,
-            27
-          ]
+          "row": 3,
+          "column": 5,
+          "description": "Potential road visibility issue. The 'r' character, representing a road, is partially hidden by the '.' character."
         },
         {
-          "type": "Color Contrast",
-          "description": "The ground color (#964b00) and dock color (#87cefa) have a low contrast, which might make it hard for players to distinguish between them.",
-          "affectedElements": [
-            "ground",
-            "dock"
-          ]
+          "row": 4,
+          "column": 6,
+          "description": "Similar to row 3, there's another partial road visibility issue where an 'h' might be obscuring part of a road."
         }
       ],
       "navigationRisks": [
         {
-          "type": "Obstacle",
-          "description": "There are multiple rows with 'r' characters that could be interpreted as obstacles, potentially leading to dead ends or incorrect paths for players.",
-          "affectedRows": [
-            3,
-            4,
-            5
-          ]
+          "index": 10,
+          "description": "The path from position 94 to 106 is too close together, making it difficult for players to navigate without accidentally skipping steps."
         },
         {
-          "type": "Path Continuity",
-          "description": "The path from row 100 to 93 is interrupted by water and ground elements, which might disrupt the player's flow through the district.",
-          "affectedPath": [
-            100,
-            93
-          ]
+          "index": 23,
+          "description": "There's a sudden jump in the route from position 94 to 106, which could confuse players and make navigation challenging."
         }
       ]
     }
