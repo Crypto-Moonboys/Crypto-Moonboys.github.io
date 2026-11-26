@@ -162,6 +162,21 @@
   var TRAIN_Y = 0;               // set dynamically relative to BRIDGE_Y
   var TRAIN_GAP = 2;             // px gap between joined cars
   var TRAIN_CLEAR_MS = 20000;   // empty bridge between three-car trains
+  // Getting Up does not reveal a train until 10 seconds into a run. Keep the
+  // seven convoys out of the startup gate, then fetch them in visual order in
+  // small low-priority batches. Ranked London keeps its existing eager path.
+  var DEFERRED_TRAIN_ASSET_GROUPS = [
+    ['trainNbg', 'trainWuf', 'trainAlcor'],
+    ['trainSwaxp', 'trainPxjking', 'trainWpixal'],
+    ['trainWaxcash', 'trainGetsulaid', 'trainTrustme'],
+    ['trainWaxpmoon', 'trainJaerfdc', 'trainLsw', 'trainAichunks',
+      'trainNfthive', 'trainCharliebuster', 'trainHodlwars'],
+    ['trainCronx', 'trainJacksback', 'trainAtomichub', 'trainRickyc',
+      'trainAflieblaze', 'trainSarahpfly', 'trainJodiezoom', 'trainSavannah'],
+    ['trainJust4uldn', 'trainTlm', 'trainBoneidolink'],
+    ['trainFordacity', 'trainPunk', 'trainWaxgod', 'trainKek', 'trainTrash',
+      'trainBuzz', 'trainDeliciousagainpeter']
+  ];
   // Burnt CRONX replacement: 3072px transparent 2x2 sheet, four looping fire frames.
   var CRONX_FIRE_COLUMNS = 2;
   var CRONX_FIRE_ROWS = 2;
@@ -204,9 +219,11 @@
     }));
   }
 
-  function loadImage(src) {
+  function loadImage(src, options) {
     return new Promise(function (resolve) {
       var image = new Image();
+      image.decoding = 'async';
+      if (options && options.lowPriority) image.fetchPriority = 'low';
       image.onload = function () { resolve({ image: image, src: src }); };
       image.onerror = function () { resolve({ image: null, src: src }); };
       image.src = src;
@@ -391,7 +408,7 @@
   }
 
   function loadJson(src) {
-    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-runtime-webp-collapse-lower-v9';
+    var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=20261126-staged-trains-v10';
     return fetch(bust).then(function (response) {
       if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
@@ -579,6 +596,12 @@
     var playerAnimations = {};
     var assetStatus = {};
     var requiredAssets = [];
+    var deferredAssets = [];
+    var deferredAssetGroups = [];
+    var deferredAssetsComplete = false;
+    var deferredAssetPromise = null;
+    var deferredQueuedGroupCount = 0;
+    var deferredCompletionQueued = false;
     var assetsLoaded = false;
     var gameVisible = false;
     var waitingForFirstInput = false;
@@ -3123,6 +3146,8 @@
         get worldWidth() { return WORLD_WIDTH; },
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
+        get deferredAssets() { return deferredAssets.slice(); },
+        get deferredAssetsComplete() { return deferredAssetsComplete; },
         get playerAnimations() { return playerAnimations; },
         get deathAnimationActive() { return deathAnimationActive; },
         get deathAnimationPhase() { return deathAnimationPhase; },
@@ -3134,6 +3159,84 @@
         ratAttackRect: function (enemy) { return getRatAttackRect(enemy); },
         graffbotFireRect: function (enemy) { return getGraffbotFireRect(enemy, runElapsedMs); }
       };
+    }
+
+    function storeRuntimeImage(key, result, deferred) {
+      images[key] = key === 'botFire' && result.image ?
+        prepareMatteSpriteSheet(result.image, 18) : result.image;
+      if (BALLOON_ANIMATIONS[key] && result.image)
+        balloonFrames[key] = measureBalloonFrames(result.image, BALLOON_ANIMATIONS[key]);
+      assetStatus[key] = {
+        src: result.src,
+        loaded: !!result.image,
+        deferred: !!deferred
+      };
+    }
+
+    function loadRuntimeImage(key, src, deferred) {
+      return loadImage(src, { lowPriority: deferred }).then(function (result) {
+        storeRuntimeImage(key, result, deferred);
+        return result;
+      });
+    }
+
+    function scheduleIdleAssetGroup(task) {
+      return new Promise(function (resolve) {
+        function run() {
+          Promise.resolve().then(task).then(resolve, resolve);
+        }
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(run, { timeout: 1500 });
+        } else {
+          window.setTimeout(run, 0);
+        }
+      });
+    }
+
+    function startDeferredAssetLoad(groupLimit) {
+      if (!deferredAssetGroups.length) {
+        deferredAssetsComplete = true;
+        deferredAssetPromise = deferredAssetPromise || Promise.resolve([]);
+        return deferredAssetPromise;
+      }
+
+      deferredAssetPromise = deferredAssetPromise || Promise.resolve([]);
+      var targetGroupCount = typeof groupLimit === 'number' ?
+        Math.min(deferredAssetGroups.length, groupLimit) : deferredAssetGroups.length;
+      while (deferredQueuedGroupCount < targetGroupCount) {
+        (function (groupIndex) {
+          var group = deferredAssetGroups[groupIndex];
+          deferredAssetPromise = deferredAssetPromise.then(function (loadedGroups) {
+            return scheduleIdleAssetGroup(function () {
+              // Decode one train at a time so large later convoys do not create
+              // a single main-thread image decode spike during active play.
+              return group.reduce(function (chain, asset) {
+                return chain.then(function () {
+                  return loadRuntimeImage(asset.key, asset.src, true);
+                });
+              }, Promise.resolve());
+            }).then(function () {
+              loadedGroups.push(groupIndex);
+              window.dispatchEvent(new CustomEvent('nbg-deferred-asset-group-ready', {
+                detail: { group: groupIndex + 1, groups: deferredAssetGroups.length }
+              }));
+              return loadedGroups;
+            });
+          });
+        }(deferredQueuedGroupCount));
+        deferredQueuedGroupCount += 1;
+      }
+      if (targetGroupCount === deferredAssetGroups.length && !deferredCompletionQueued) {
+        deferredCompletionQueued = true;
+        deferredAssetPromise = deferredAssetPromise.then(function (loadedGroups) {
+          deferredAssetsComplete = true;
+          window.dispatchEvent(new CustomEvent('nbg-deferred-assets-ready', {
+            detail: { assets: deferredAssets.slice(), groups: loadedGroups.length }
+          }));
+          return loadedGroups;
+        });
+      }
+      return deferredAssetPromise;
     }
 
     function finishInit() {
@@ -3264,21 +3367,36 @@
           runtimeAssets.manifest.deathSequence.slice() : [];
         var animations = runtimeAssets.manifest.animations || {};
         var animationKeys = Object.keys(animations);
-        requiredAssets = Object.keys(runtimeAssets.assets).concat(animationKeys.map(function (key) {
+        var runtimeAssetKeys = Object.keys(runtimeAssets.assets);
+        var deferredKeyLookup = {};
+        deferredAssetGroups = unranked ? DEFERRED_TRAIN_ASSET_GROUPS.map(function (group) {
+          return group.filter(function (key) {
+            return Object.prototype.hasOwnProperty.call(runtimeAssets.assets, key);
+          }).map(function (key) {
+            deferredKeyLookup[key] = true;
+            return { key: key, src: runtimeAssets.assets[key] };
+          });
+        }).filter(function (group) { return group.length > 0; }) : [];
+        deferredAssets = deferredAssetGroups.reduce(function (keys, group) {
+          return keys.concat(group.map(function (asset) { return asset.key; }));
+        }, []);
+        deferredAssetsComplete = deferredAssets.length === 0;
+        deferredAssets.forEach(function (key) {
+          assetStatus[key] = {
+            src: runtimeAssets.assets[key],
+            loaded: false,
+            deferred: true
+          };
+        });
+        var criticalAssetKeys = runtimeAssetKeys.filter(function (key) {
+          return !deferredKeyLookup[key];
+        });
+        requiredAssets = criticalAssetKeys.concat(animationKeys.map(function (key) {
           return 'player.' + key;
         }));
 
-        return Promise.all(Object.keys(runtimeAssets.assets).map(function (key) {
-          return loadImage(runtimeAssets.assets[key]).then(function (result) {
-            images[key] = key === 'botFire' && result.image ?
-              prepareMatteSpriteSheet(result.image, 18) : result.image;
-            if (BALLOON_ANIMATIONS[key] && result.image)
-              balloonFrames[key] = measureBalloonFrames(result.image, BALLOON_ANIMATIONS[key]);
-            assetStatus[key] = {
-              src: result.src,
-              loaded: !!result.image
-            };
-          });
+        return Promise.all(criticalAssetKeys.map(function (key) {
+          return loadRuntimeImage(key, runtimeAssets.assets[key], false);
         }).concat(animationKeys.map(function (key) {
           var animation = animations[key] || {};
           var src = resolveAssetPath(animation.spriteSheet || '');
@@ -3323,12 +3441,21 @@
         }).catch(function (error) {
           console.warn('NBG decorative airship unavailable', error);
         });
-        return finishInit();
+        var state = finishInit();
+        // First paint is complete before decorative trains begin downloading.
+        // Missing/late train images are already skipped safely by drawTrains.
+        // Warm only the 0.26 MiB lead convoy while the user is choosing a
+        // fighter. The remaining 31 trains wait until the run actually starts.
+        startDeferredAssetLoad(1);
+        return state;
       });
       return initPromise;
     }
 
     function startSimulation() {
+      // Later convoys do not enter for another 20+ seconds. Queue them only
+      // after real input, in visual order and one decoded image at a time.
+      startDeferredAssetLoad();
       // A Jump press is already in pendingJumpPresses (keyboard and touch).
       // Replaying the same press as an initial control would create a second
       // Jump on the following tick without a second user action.
