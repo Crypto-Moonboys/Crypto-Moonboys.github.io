@@ -1,27 +1,27 @@
 {
   "issue": 1930,
-  "round": 106,
+  "round": 107,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Water and road colors are similar, which might cause confusion.",
-          "details": "The water color (#143950) is very close to the road color (#667b8a). This similarity could lead to players mistaking roads for water or vice versa."
+          "description": "Water and road colors are very similar (#143950 and #667b8a), which may cause visual confusion.",
+          "riskLevel": "High"
         },
         {
-          "description": "House and dock colors are similar, which might cause confusion.",
-          "details": "The house color (#aa5149) is close to the dock color (#98734e). This similarity could lead to players mistaking docks for houses or vice versa."
+          "description": "The dock color (#98734e) is close to the ground color (#283e35), potentially leading to misinterpretation of elements in the district.",
+          "riskLevel": "Medium"
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route path includes a sudden vertical drop.",
-          "details": "The route path has a significant vertical change between points 105 and 106, which might be disorienting for players navigating the district."
+          "description": "Route path includes a sudden change from row 17 to row 40, which might be confusing for players navigating through the district.",
+          "riskLevel": "High"
         },
         {
-          "description": "Some parts of the route are not visible in the grid view.",
-          "details": "Points like 76, 88, and 94 are far from the starting point (15) and may require a zoomed-out view to see them. This could make navigation challenging for players."
+          "description": "The route does not have any clear landmarks or visual cues between certain points (e.g., between rows 52 and 64), making navigation difficult.",
+          "riskLevel": "Medium"
         }
       ]
     }
