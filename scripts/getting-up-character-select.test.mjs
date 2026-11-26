@@ -119,6 +119,7 @@ assert.match(runtime, /estimateAirDeathFallMs/);
 assert.match(runtime, /beginAirDeathExplosion/);
 assert.match(runtime, /finishAirDeathExplosion/);
 assert.match(runtime, /deathFallPhase === 'fall'/);
+assert.match(runtime, /get deathFallFrameMs\(\)/);
 assert.match(runtime, /deathFallPhase === 'explode'/);
 assert.match(runtime, /advancePlayerAnimation\(dt, false,[\s\S]{0,100}deathFallFrameMs/);
 assert.match(runtime, /setPlayerAnimation\('airDeathExplode'\)/);
