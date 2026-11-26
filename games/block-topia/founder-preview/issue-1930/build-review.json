@@ -1,31 +1,29 @@
 {
   "issue": 1930,
-  "round": 116,
+  "round": 117,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Waterfront area is not visible",
-          "riskLevel": "High",
-          "recommendation": "Increase the visibility of the waterfront by adding more 'water' tiles or adjusting the layout."
+          "row": 3,
+          "column": 6,
+          "description": "Potential road visibility issue. The 'r' character, representing a road, is partially obscured by the 'd' character."
         },
         {
-          "description": "House and dock placement may be confusing",
-          "riskLevel": "Medium",
-          "recommendation": "Ensure that houses and docks are clearly distinguishable from other elements on the map. Consider using different colors for better differentiation."
+          "row": 4,
+          "column": 5,
+          "description": "Similar to previous risk, with another partial road ('r') obscured by 'h'."
         }
       ],
       "navigationRisks": [
         {
-          "description": "Route starts abruptly near the edge of the map",
-          "riskLevel": "Medium",
-          "recommendation": "Ensure that the route does not start or end too close to the edges, as this can make navigation difficult for players."
+          "index": 12,
+          "description": "The route path from 64 to 43 has a sudden change in direction and might be confusing for players."
         },
         {
-          "description": "Long stretches without landmarks",
-          "riskLevel": "Low",
-          "recommendation": "Add more landmarks or visual cues along the route to help guide players through the district."
+          "index": 20,
+          "description": "The route path from 90 to 115 is quite long without any landmarks or changes, which could make navigation difficult."
         }
       ]
     }
