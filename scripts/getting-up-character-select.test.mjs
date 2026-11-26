@@ -10,7 +10,7 @@ assert.equal(manifest.characterId, 'volcanic-punk');
 for (const state of ['idle','runRight','runLeft','crouchRight','crouchLeft','jumpRight','jumpLeft',
   'backflipRight','backflipLeft','fallRight','fallLeft','sprayRight','sprayLeft','hurt','victory',
   'deathRight','deathLeft','rubbleRight','rubbleLeft','volcano','coinVolcano',
-  'thirdSpinBurst1','thirdSpinBurst2']) {
+  'thirdSpinBurst1','thirdSpinBurst2','airDeathFall']) {
   assert.ok(manifest.animations[state], 'missing volcanic state: ' + state);
   const asset = manifest.animations[state].spriteSheet.replace(/^\//, '');
   assert.ok(fs.existsSync(asset), 'missing volcanic asset: ' + asset);
@@ -40,10 +40,12 @@ assert.match(runtime, /drawBurstCoins/);
 assert.match(runtime, /BURST_COIN_MAX_BOUNCES/);
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-lower-ground-death-v4/);
-assert.match(runtime, /v=20261126-lower-ground-death-v4/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261126-air-death-fall-v5/);
+assert.match(runtime, /v=20261126-air-death-fall-v5/);
 assert.match(runtime, /playerCharacterId === 'volcanic-punk' && wasAirborne/);
 assert.match(runtime, /beginDeathFall/);
+assert.match(runtime, /playerAnimations\.airDeathFall \? 'airDeathFall' : 'fall'/);
+assert.match(runtime, /airDeathAnimation !== 'airDeathFall'/);
 assert.match(runtime, /updateDeathFall/);
 assert.match(runtime, /findSafeDeathLandingX/);
 assert.match(runtime, /deathLandingHazardAt/);
