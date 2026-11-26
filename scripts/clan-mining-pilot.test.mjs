@@ -2164,7 +2164,10 @@ test('leader lore uses public wiki and current canon evidence, verifies citation
     assert.deepEqual(response.data.sources.map(source => source.path), [path]);
   }
   assert.equal(prompts.length, callsBeforeCanon, 'local canon answers skip the provider');
-  assert.equal(visits.length, visitsBeforeIntroduction, 'local canon answers skip source fetches');
+  assert.deepEqual(
+    visits.slice(visitsBeforeIntroduction), Array(4).fill('/brain-feed/index.json'),
+    'local canon fallback checks only whether a current public snapshot is available',
+  );
   assert.equal(usage.get('2026-11-21', '999').questions, questionsBeforeIntroduction + 6, 'local canon answers spend the shared chat quota');
   const identities = new Set();
   for (const [index, npc] of CANONICAL_FACTION_KEYS.entries()) {

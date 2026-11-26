@@ -7,7 +7,8 @@ import { publishedLoreText } from '../workers/moonboys-api/shared/published-lore
 const markdown = /^\/(?:about\/|guides\/|brand-canon\/story-bibles\/)[a-z0-9][\w./-]*\.md$/i;
 const nftData = /^\/data\/(?:nft-collections\/[a-z0-9][\w-]*\/[a-z0-9][\w-]*|(?:hodlmoonboys|gkniftyheads|noballgamess)\/(?:collection|templates?|template-[a-z-]+|live-template-supply))\.(?:json|csv)$/i;
 const publicCanonIndex = '/moonboy-canon-index.json';
-const hidden = /(?:^|\/)(?:[._][^/]*|admin|auth|account|api|og-templates|snapshots|swarmsy-ai|tests?)(?:\/|\.|$)|^\/wiki\/components\//i;
+const waterfrontBrief = '/games/block-topia/waterfront/CITY-BRIEF.md';
+const hidden = /(?:^|\/)(?:[._][^/]*|admin|auth|account|api|og-templates|snapshots|swarmsy-ai|test-builds|tests?)(?:\/|\.|$)|^\/wiki\/components\//i;
 const safePath = /^\/(?:[a-z0-9][\w.~-]*\/)*[a-z0-9][\w.~-]*\.(?:html|md|json|csv)$/i;
 const maxRecordBytes = 2_000_000;
 
@@ -25,7 +26,7 @@ export async function publishBrainFeed(root, sourceCommit = process.env.GITHUB_S
   const candidates = entries.filter(entry => entry.isFile()).map(entry =>
     '/' + path.relative(root, path.join(entry.parentPath, entry.name)).split(path.sep).join('/')
   ).filter(route => safePath.test(route) && !hidden.test(route) && !isEditorialOnlyPath(route) &&
-    (route.endsWith('.html') || route === publicCanonIndex || markdown.test(route) || nftData.test(route))).sort();
+    (route.endsWith('.html') || route === publicCanonIndex || route === waterfrontBrief || markdown.test(route) || nftData.test(route))).sort();
 
   const searchIndex = JSON.parse(await readFile(path.join(root, 'js', 'wiki-index.json'), 'utf8').catch(error => {
     if (error.code === 'ENOENT') return '[]';
@@ -61,7 +62,7 @@ export async function publishBrainFeed(root, sourceCommit = process.env.GITHUB_S
     await writeFile(path.join(directory, sha256 + '.json'), payload);
     records.push({ path: route, title, description, kind, sha256, bytes });
   }
-  if (!records.length) throw new Error('Refusing to publish an empty Brain feed.');
+  if (!records.length || records.length > 3500) throw new Error('Brain feed record count is outside the Worker read budget.');
   const revision = /^[a-f0-9]{40}$/.test(sourceCommit ?? '') ? sourceCommit : digest(JSON.stringify(records));
   const manifest = { schema_version: 1, revision, records };
   const index = JSON.stringify(manifest) + '\n';
