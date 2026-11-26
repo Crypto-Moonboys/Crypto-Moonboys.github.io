@@ -2871,7 +2871,9 @@
       if (initPromise) return initPromise;
       initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
         var assets = buildRuntimeAssetMap(assetManifest, classicScenery);
-        var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        var defaultPlayerManifest = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        var playerManifestPath = unranked && canvas.dataset && canvas.dataset.nbgPlayerManifest ?
+          canvas.dataset.nbgPlayerManifest : defaultPlayerManifest;
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
 
         return loadJson(playerManifestPath).then(function (manifest) {
