@@ -84,7 +84,7 @@ test('stable seed picks exactly one static, real builder image in original z-ord
   const same = await chooseTelegramMoonboyTraits(original, seed, webcrypto);
   assert.deepEqual(first, same);
   assert.ok(Object.isFrozen(first.layers));
-  assert.equal(first.size, 640);
+  assert.equal(first.size, 512);
   assert.deepEqual(first.layers.map(l => l.category), PORTRAIT_LAYER_ORDER);
   for (const layer of first.layers) {
     assert.ok(original.traits.some(t => t.id === layer.id &&
@@ -256,24 +256,24 @@ test('composer scales all nine layers and draws them in homepage order', async (
   assert.equal(overlays.length + transforms.length, 9,
     'Cloudflare Images pipeline must stay below the ten-transform maximum');
   assert.deepEqual(fake.calls.filter(x => x[0] === 'output').map(x => x[1]),
-    [{ format: 'image/jpeg', quality: 76 }]);
+    [{ format: 'image/jpeg', quality: 72 }]);
   assert.equal(requests.every(x => x.init.redirect === 'manual'), true);
 });
 
 test('oversized JPEG triggers lower-quality retry; final result is always bounded', async () => {
-  const one = fakeImages({ outputSizes: [600_000, 125_000] });
+  const one = fakeImages({ outputSizes: [300_000, 125_000] });
   const result = await composeTelegramMoonboy({
     images: one.images, manifest: original, seed, cryptoImpl: webcrypto,
     fetchImpl: fakeFetch([])
   });
   assert.equal(result.byteSize, 125_000);
   assert.deepEqual(one.calls.filter(x => x[0] === 'output').map(x => x[1].quality),
-    [76, 62]);
-  const two = fakeImages({ outputSizes: [600_000] });
+    [72, 60]);
+  const two = fakeImages({ outputSizes: [300_000] });
   await assert.rejects(composeTelegramMoonboy({
     images: two.images, manifest: original, seed, cryptoImpl: webcrypto,
     fetchImpl: fakeFetch([])
-  }), /telegram_moonboy_output_exceeds_500kb/);
+  }), /telegram_moonboy_output_exceeds_250kb/);
   assert.equal(two.calls.filter(x => x[0] === 'output').length, 3);
 });
 
