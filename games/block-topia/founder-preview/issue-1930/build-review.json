@@ -1,56 +1,45 @@
 {
   "issue": 1930,
-  "round": 109,
+  "round": 110,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
           "type": "Obstructed Path",
-          "description": "The path from row 15 to row 106 is obstructed by water and ground tiles, which could make navigation difficult.",
-          "affectedRows": [
-            27,
-            40,
-            52,
-            64,
-            76,
-            88,
-            93,
-            104,
-            105
+          "description": "The path from row 15 to 27 is obstructed by water, which could be confusing for players navigating the district.",
+          "affectedPaths": [
+            15,
+            27
           ]
         },
         {
-          "type": "Isolated House",
-          "description": "The house at row 94 is isolated and not connected to the main path, which might confuse players.",
-          "affectedRow": 94
+          "type": "Unclear Navigation",
+          "description": "There are multiple instances where the player might get lost due to unclear paths or sudden changes in terrain. For example, between row 40 and 52, there is a significant change which could be disorienting.",
+          "affectedPaths": [
+            40,
+            52
+          ]
         }
       ],
       "navigationRisks": [
         {
           "type": "Unexpected Obstacles",
-          "description": "There are unexpected obstacles like docks and houses that could block the route, leading to navigation issues.",
-          "affectedRows": [
-            16,
-            17,
-            54,
-            89,
-            90,
-            91,
-            103,
-            115
+          "description": "There are unexpected obstacles like the dock at row 93 and house at row 94 which might not be immediately visible to players, leading to potential navigation issues.",
+          "affectedAreas": [
+            93,
+            94
           ]
         },
         {
-          "type": "Inconsistent Path",
-          "description": "The path from row 100 to row 113 is inconsistent with the rest of the district layout, which could be confusing.",
+          "type": "Inconsistent Terrain",
+          "description": "The terrain changes abruptly between rows, such as from ground to water and back to road. This inconsistency could confuse players trying to follow the path.",
           "affectedRows": [
-            100,
-            89,
-            90,
-            91,
-            103,
-            115
+            "...rr.......",
+            "...hrdrr....",
+            "...hrhrd....",
+            "....r_......",
+            "....rd_.~~.."
           ]
         }
       ]
