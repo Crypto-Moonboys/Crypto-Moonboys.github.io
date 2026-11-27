@@ -73,7 +73,7 @@ test('lava lamp uses exactly twenty stable frames and reduced motion',()=>{
  const client=fs.readFileSync('js/moonpet-mini-app.js','utf8'),source=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EXPORT: homeScene:end')[0];
  const calls=[],runtime=vm.createContext({ctx:{save(){},restore(){},drawImage(image,...args){calls.push({src:image.src,args});}},Image:function(){this.complete=true;this.naturalWidth=1280;this.naturalHeight=1024;},backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,reducedMotion:false});
  vm.runInContext(source,runtime);runtime.drawHomeFurniture('record_deck',0);const first=calls.at(-1);
- assert.equal(first.src,'/img/lamp-larvalampy.png');assert.deepEqual(first.args,[93,14,70,226,282,27,35,113]);
+ assert.equal(first.src,'/img/lamp-larvalampy.webp');assert.deepEqual(first.args,[93,14,70,226,282,27,35,113]);
  runtime.drawHomeFurniture('record_deck',2375);assert.deepEqual(calls.at(-1).args.slice(0,4),[1117,782,70,226]);
  runtime.drawHomeFurniture('record_deck',2500);assert.deepEqual(calls.at(-1),first);
  runtime.reducedMotion=true;runtime.drawHomeFurniture('record_deck',125);assert.deepEqual(calls.at(-1),first);

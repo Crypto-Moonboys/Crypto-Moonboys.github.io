@@ -4,7 +4,7 @@ import http from 'node:http';
 import path from 'node:path';
 import {chromium} from 'playwright';
 import {fixture,hooks,currentSeason} from './moonpet-audit-regression-fixture.mjs';
-const root=process.cwd(),mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
+const root=process.cwd(),mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png', '.webp':'image/webp','.jpg':'image/jpeg','.json':'application/json'};
 const server=http.createServer(async(req,res)=>{try{const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(!file.startsWith(root+path.sep))throw Error('path');res.setHeader('Content-Type',mime[path.extname(file)]||'application/octet-stream');res.end(await fs.readFile(file));}catch{res.writeHead(404).end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{})});
@@ -38,7 +38,7 @@ try{
   displayLevel=2;panel=await restart();const balance=f.sql.prepare('SELECT moon_gold,pet_xp,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
   const before=await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL());const mutations=actions.filter(a=>a.action!=='guidance_ack').length;
   await panel.getByRole('button',{name:'Turn wings on',exact:true}).click();
-  await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().wings?.source==='/img/BOTTY%20WINGS-waveone-v1.png');
+  await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().wings?.source==='/img/BOTTY%20WINGS-waveone-v1.webp');
   assert.equal(await panel.locator('[data-local-wings]').getAttribute('aria-pressed'),'true');
   assert.notEqual(await page.locator('#moonpet-canvas').evaluate(c=>c.toDataURL()),before,'wings change the actual room canvas');
   await page.locator('.viewport').screenshot({path:path.join(evidence,'wings-'+viewport.width+'.png')});

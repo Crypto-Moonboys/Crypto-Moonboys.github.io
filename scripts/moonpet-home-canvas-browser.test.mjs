@@ -9,7 +9,7 @@ const root = process.cwd();
 const before = process.env.HOUSE_EVIDENCE_PHASE === 'before';
 const evidence = path.join(root, 'output/moonpet-home-e1', before ? 'before' : 'after');
 await fs.mkdir(evidence, { recursive: true });
-const mime = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css', '.json':'application/json', '.png':'image/png', '.jpg':'image/jpeg' };
+const mime = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css', '.json':'application/json', '.png':'image/png', '.webp':'image/webp', '.jpg':'image/jpeg' };
 const server = http.createServer(async (req, res) => {
   try {
     const file = path.resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));
@@ -76,7 +76,7 @@ try {
     async function ready() {
       await page.waitForFunction(() => window.MoonpetBetaAppearance?.isBotArtReady());
       await page.locator('#boot-layer.is-hidden').waitFor({state:'attached'});
-      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().guardian?.source==='/img/pepe-pepeb0y.png');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().guardian?.source==='/img/pepe-pepeb0y.webp');
     }
     await page.goto(origin+'/moonpet-game.html');await ready();
     async function settings(){
@@ -96,7 +96,7 @@ try {
         const response=page.waitForResponse(r=>r.url().endsWith('/action')&&r.request().postDataJSON()?.slot_key==='room');
         await target.click();assert.equal((await (await response).json()).result.accepted,true);
       }
-      await page.waitForFunction(key=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.guardian?.source==='/img/pepe-pepeb0y.png';},key);
+      await page.waitForFunction(key=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.guardian?.source==='/img/pepe-pepeb0y.webp';},key);
     }
     const balance=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
     const initialLegacy=f.sql.prepare('SELECT * FROM telegram_pet_house_layouts WHERE pet_id=? ORDER BY slot_key').all(young);
@@ -144,9 +144,9 @@ try {
       if(!await floor.isDisabled()){
         const response=page.waitForResponse(r=>r.url().endsWith('/action')&&r.request().postDataJSON()?.slot_key==='floor');await floor.click();assert.equal((await (await response).json()).result.accepted,true);
       }
-      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().matt==='/img/camomatt.png');
+      await page.waitForFunction(()=>window.MoonpetBetaAppearance.getBackgroundArtState().matt==='/img/camomatt.webp');
       await page.reload();await ready();
-      await page.waitForFunction(key=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.home.items.length===1&&art.home.items[0].key==='neon_lamp'&&art.mode===key+'_background'&&art.matt==='/img/camomatt.png';},room);
+      await page.waitForFunction(key=>{const art=window.MoonpetBetaAppearance.getBackgroundArtState();return art.home?.active_room===key&&art.home.items.length===1&&art.home.items[0].key==='neon_lamp'&&art.mode===key+'_background'&&art.matt==='/img/camomatt.webp';},room);
       assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().tank),null);
       assert.equal(await page.evaluate(()=>window.MoonpetBetaAppearance.getBackgroundArtState().lamp),null);
     }

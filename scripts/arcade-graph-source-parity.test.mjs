@@ -31,7 +31,7 @@ const overview = make.overview();
 const overviewIds = overview.nodes.map(n => n.id);
 const nativeDestinations = {
   'dead-run-native': '/games/dead-run/',
-  'nbg-london-native': '/games/nbg-london/#nbg-record-board',
+  'nbg-london-native': '/games/nbg-london-run/#nbg-record-board',
   'blocktopia-rpg': '/games/block-topia/',
   'moonpet-native': '/crypto-moonboy-pets-leaderboard.html',
   'waterfront-native': '/games/block-topia/waterfront/',

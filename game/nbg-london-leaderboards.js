@@ -65,14 +65,19 @@
   }
 
   function productionAccessGateEnabled() {
-    // Access gate disabled — game is open to all
-    return false;
+    var stage = document.getElementById('game-stage');
+    return stage?.getAttribute('data-nbg-access-gate') === 'telegram-group';
   }
 
   function showAccessGate(message, reason) {
-    // Access gate disabled — game is open to all
     accessState.reason = reason || 'blocked';
-    if (accessGate) accessGate.hidden = true;
+    if (!productionAccessGateEnabled()) return hideAccessGate();
+    if (accessGateMessage) accessGateMessage.textContent = message;
+    if (accessGate) accessGate.hidden = false;
+    var login = document.getElementById('nbg-access-login');
+    var group = document.getElementById('nbg-access-group');
+    if (login) login.hidden = reason === 'group_required';
+    if (group) group.hidden = reason === 'login_required';
   }
 
   function hideAccessGate() {
@@ -86,11 +91,10 @@
   }
 
   async function verifyGameAccess(force) {
-    // Local developer/browser validation stays playable. Production Pages and
-    // the live custom domain must use server-confirmed Telegram membership.
+    // Public play is open. A stage marked for group play needs verified membership.
     if (!productionAccessGateEnabled()) {
       hideAccessGate();
-      return { allow: true, source: 'non-production' };
+      return { allow: true, source: 'public-play' };
     }
 
     var gate = window.MOONBOYS_IDENTITY;
@@ -561,18 +565,17 @@
     var gate = window.MOONBOYS_IDENTITY;
     var id = String(gate && gate.getTelegramId ? gate.getTelegramId() || '' : '');
 
-    // Preserve the original synchronous local/dev start path. Making every
-    // local start await an already-allowed Promise creates a fake pending run;
+    // Keep public starts synchronous. Awaiting an already-allowed Promise creates a pending run;
     // identity bootstrap events can then clear a pre-init jump before physics.
     if (!productionAccessGateEnabled()) {
       if (!id || !gate || !gate.isTelegramLinked || !gate.isTelegramLinked() ||
           uncertainOwner(id) || !serverStartQueues.has(id)) {
-        return { allow: true, source: 'non-production' };
+        return { allow: true, source: 'public-play' };
       }
       var localPreparation = beginRankedRun();
       preparedStartGeneration = generation;
       return Promise.resolve(localPreparation).then(function () {
-        return { allow: true, source: 'non-production' };
+        return { allow: true, source: 'public-play' };
       });
     }
 

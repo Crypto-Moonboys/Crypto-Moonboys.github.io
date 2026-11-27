@@ -29,7 +29,7 @@ export const ARCADE_MAP_GAMES = [
   { id: 'block-topia-dropzone', label: '🟦 Block Topia Dropzone', color: '#a78bfa' },
   { id: 'kaiju',                label: 'K Kaiju',                 color: '#e8e8a3' },
   { id: 'dead-run-native', label: 'Dead Run', color: C.green, href: '/games/dead-run/' },
-  { id: 'nbg-london-native', label: 'NBG London', color: C.cyan, href: '/games/nbg-london/#nbg-record-board' },
+  { id: 'nbg-london-native', label: 'NBG London', color: C.cyan, href: '/games/nbg-london-run/#nbg-record-board' },
   { id: 'blocktopia-rpg', label: 'Block Topia RPG', color: C.purple, href: '/games/block-topia/' },
   { id: 'moonpet-native', label: 'MoonPet', color: C.pink, href: '/crypto-moonboy-pets-leaderboard.html' },
   { id: 'waterfront-native', label: 'Waterfront', color: C.gold, href: '/games/block-topia/waterfront/' },

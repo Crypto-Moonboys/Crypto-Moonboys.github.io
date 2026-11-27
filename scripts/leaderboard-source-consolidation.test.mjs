@@ -24,7 +24,7 @@ const keys = [...tabs.matchAll(/key: '([^']+)'/gu)].map(x => x[1]);
 assert.equal(keys.length, 9, 'global + exactly eight source-authoritative individual boards');
 for (const game of ['snake','blocktopia','meme-swarm-3008','chain-maze','forkfield',
   'bullrun-brick-smash','block-topia-dropzone','kaiju']) assert.ok(keys.includes(game));
-for (const link of ['/moonpet-game.html','/games/dead-run/','/games/nbg-london/',
+for (const link of ['/moonpet-game.html','/games/dead-run/','/games/nbg-london-run/',
   '/games/block-topia/','/games/','/my-moonboy.html'])
   assert.ok(leaderboard.includes('href="' + link + '"'), link + ' missing separate source link');
 assert.match(leaderboard, /Global aggregates the supported shared Arcade source only/u);

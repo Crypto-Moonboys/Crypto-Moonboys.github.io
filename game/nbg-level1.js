@@ -3790,9 +3790,7 @@
       }
       // Getting Up has no ranked controller, access check, or run-session creation.
       if (unranked) return startSimulation();
-      // Production NBG is a Telegram-group-gated game. The page/art can load
-      // publicly, but physics must fail closed until the access controller has
-      // verified both Telegram login and current group membership server-side.
+      // An explicitly gated stage waits for verified membership before starting physics.
       var stage = document.getElementById('game-stage');
       var accessGateRequired = stage &&
         stage.getAttribute('data-nbg-access-gate') === 'telegram-group';

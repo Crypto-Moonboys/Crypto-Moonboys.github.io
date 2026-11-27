@@ -18,6 +18,7 @@
   var startBtn = document.getElementById('startBtn');
   var startDataset = startBtn && startBtn.dataset;
   var gettingUp = !!(startDataset && startDataset.overlayGameMode === 'getting-up');
+  var nbgLondon = /^\/games\/nbg-london-run(?:\/index\.html|\/)?$/.test(window.location.pathname);
   var gameCard = document.querySelector('.game-card');
   var autoStartOnOpen = startDataset && startDataset.overlayAutostart === 'true';
   var fullscreenOnlyMode = startDataset && startDataset.overlayFullscreenOnly === 'true';
@@ -93,7 +94,7 @@
     }
     var ids = Object.keys(GAME_META);
     for (var i = 0; i < ids.length; i++) {
-      if (ids[i] === 'game' && !/\/games\/nbg-london\//.test(window.location.pathname)) continue;
+      if (ids[i] === 'game' && !nbgLondon) continue;
       if (document.getElementById(ids[i])) return GAME_META[ids[i]];
     }
     return { label: '🎮 Game', color: '#fff', touchScheme: null, controls: [], tips: [] };
@@ -865,7 +866,7 @@
     actions.appendChild(jump);
     // Only NBG London implements render-only looking below; other runners
     // preserve their original touch layout and controls.
-    if (gettingUp || window.location.pathname === '/games/nbg-london/') {
+    if (gettingUp || nbgLondon) {
       bindHold(look, 'ArrowDown');
       actions.appendChild(look);
     }
@@ -1297,7 +1298,7 @@
     }
     // NBG London remains playable in the overlay even when browsers deny
     // native fullscreen. Never tell its players gameplay is blocked.
-    var nbgWindowed = gettingUp || (window.location && window.location.pathname === '/games/nbg-london/');
+    var nbgWindowed = gettingUp || nbgLondon;
     fullscreenPromptText.textContent = nbgWindowed
       ? (mode === 'blocked'
         ? 'Browser fullscreen unavailable. You can keep playing here, or select Enter Fullscreen to retry.'
@@ -1315,7 +1316,7 @@
     }
     overlay.requestFullscreen()
       .then(function () {
-        if ((gettingUp || /\/games\/nbg-london\//.test(window.location.pathname)) &&
+        if ((gettingUp || nbgLondon) &&
             screen.orientation && typeof screen.orientation.lock === 'function') {
           screen.orientation.lock('landscape').catch(function () {});
         }

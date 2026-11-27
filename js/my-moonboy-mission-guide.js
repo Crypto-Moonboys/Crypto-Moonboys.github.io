@@ -22,7 +22,7 @@
   })[character]);
   const STATUS_DONE = new Set(['claimed', 'complete']);
   const canonicalLink = source => source.key.startsWith('moonpet.') ? '/moonpet-game.html'
-    : source.key.startsWith('games.nbg-') ? '/games/nbg-london/'
+    : source.key.startsWith('games.nbg-') ? '/games/nbg-london-run/'
     : source.key === 'games.dead-run' ? '/games/dead-run/'
     : source.key.startsWith('games.') || source.key.startsWith('arcade.') ? '/games/'
     : source.key.startsWith('onboarding.telegram') ? '/gkniftyheads-incubator.html'

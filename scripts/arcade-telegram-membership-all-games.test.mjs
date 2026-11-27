@@ -30,9 +30,9 @@ assert.match(identity, /TELEGRAM MEMBERS ONLY/,
 assert.match(identity, /https:\/\/t\.me\/gkniftyheads/,
   'shared Arcade gate must link to the GKniftyHEADS group');
 
-const nbg = read('games/nbg-london/index.html');
-assert.match(nbg, /data-nbg-access-gate="telegram-group"/,
-  'NBG London must retain its production Telegram group gate');
+const nbg = read('games/nbg-london-run/index.html');
+assert.doesNotMatch(nbg, /data-nbg-access-gate="telegram-group"/,
+  'NBG London offers public practice on its canonical route');
 assert.match(read('game/nbg-london-leaderboards.js'), /\/telegram\/group-membership/,
   'NBG London must verify membership through the shared server endpoint');
 
@@ -102,4 +102,4 @@ assert.match(launcher, /moonpet-game\.html\?v=20261029-members-only-v1/,
 assert.match(launcher, /dead-run\/\?v=20261029-members-only-v1/,
   'Telegram launcher must open the membership-gated Dead Run release');
 
-console.log('All live games require Telegram login + GKniftyHEADS membership.');
+console.log('Competitive Arcade membership gates and NBG London public practice verified.');

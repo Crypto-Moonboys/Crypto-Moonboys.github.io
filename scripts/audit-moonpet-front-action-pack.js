@@ -11,7 +11,6 @@ const CHARACTER_REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite
 const BOT_REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-bot-art-registry.json");
 const GENERATION_REPORT_PATH = path.join(REPO_ROOT, "data", "moonpet-front-action-generation.json");
 const AUDIT_PATH = path.join(REPO_ROOT, "data", "moonpet-front-action-audit.json");
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -36,11 +35,13 @@ function frameRect(frame) {
   return { x: Number(source.x), y: Number(source.y), w: Number(source.w || source.width), h: Number(source.h || source.height) };
 }
 
-async function inspectPng(filePath) {
-  const bytes = fs.readFileSync(filePath);
-  if (!bytes.subarray(0, 8).equals(PNG_SIGNATURE)) throw new Error("invalid PNG signature");
-  const image = sharp(bytes);
+async function inspectSprite(filePath) {
+  const image = sharp(filePath);
   const metadata = await image.metadata();
+  const extension = path.extname(filePath).slice(1).toLowerCase();
+  if (!["png", "webp"].includes(extension) || metadata.format !== extension) {
+    throw new Error("sprite encoding must match its PNG or WebP extension");
+  }
   const raw = await image.ensureAlpha().raw().toBuffer();
   let transparent = 0;
   for (let index = 3; index < raw.length; index += 4) if (raw[index] < 250) transparent += 1;
@@ -104,7 +105,7 @@ async function audit(options = {}) {
         else spritesheetOwners.set(spritesheetId, owner);
       }
       if (asset.autosprite?.character_id !== expectedCharacterId) failures.push(`${owner}: AutoSprite character ID mismatch`);
-      if (!String(asset.png_path || "").startsWith(expectedFolder)) failures.push(`${owner}: PNG path uses the wrong character folder`);
+      if (!String(asset.png_path || "").startsWith(expectedFolder)) failures.push(`${owner}: sprite path uses the wrong character folder`);
       if (!String(asset.atlas_path || "").startsWith(expectedFolder)) failures.push(`${owner}: atlas path uses the wrong character folder`);
       if (Number(asset.frame_count) !== 25) failures.push(`${owner}: expected 25 manifest frames`);
       if (asset.loop !== contract.loop || asset.one_shot !== contract.one_shot || asset.playback_mode !== contract.playback_mode) {
@@ -114,14 +115,14 @@ async function audit(options = {}) {
 
       const pngPath = repoPath(asset.png_path);
       const atlasPath = repoPath(asset.atlas_path);
-      if (!fs.existsSync(pngPath)) failures.push(`${owner}: PNG is missing`);
+      if (!fs.existsSync(pngPath)) failures.push(`${owner}: sprite is missing`);
       if (!fs.existsSync(atlasPath)) failures.push(`${owner}: atlas is missing`);
       if (!fs.existsSync(pngPath) || !fs.existsSync(atlasPath)) continue;
 
       try {
-        const image = await inspectPng(pngPath);
-        if (!image.has_alpha) failures.push(`${owner}: PNG has no alpha channel`);
-        if (image.transparent_ratio < 0.1) failures.push(`${owner}: PNG lacks transparent background spacing`);
+        const image = await inspectSprite(pngPath);
+        if (!image.has_alpha) failures.push(`${owner}: sprite has no alpha channel`);
+        if (image.transparent_ratio < 0.1) failures.push(`${owner}: sprite lacks transparent background spacing`);
         const atlas = readJson(atlasPath);
         const frames = atlasFrames(atlas);
         if (frames.length !== Number(asset.frame_count)) failures.push(`${owner}: atlas frame count does not match manifest`);
@@ -132,7 +133,7 @@ async function audit(options = {}) {
             break;
           }
           if (rect.x < 0 || rect.y < 0 || rect.x + rect.w > image.width || rect.y + rect.h > image.height) {
-            failures.push(`${owner}: atlas frame ${index} is outside PNG bounds`);
+            failures.push(`${owner}: atlas frame ${index} is outside sprite bounds`);
             break;
           }
         }
@@ -235,4 +236,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { audit, inspectPng, atlasFrames, frameRect };
+module.exports = { audit, inspectPng: inspectSprite, atlasFrames, frameRect };
