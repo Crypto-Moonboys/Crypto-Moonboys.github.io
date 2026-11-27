@@ -3,6 +3,8 @@ const ID = /^[1-9]\d{0,15}$/;
 const SHA = /^[a-f0-9]{40}$/;
 const PR = /^https:\/\/github\.com\/Crypto-Moonboys\/Crypto-Moonboys\.github\.io\/pull\/[1-9]\d*$/;
 const SECRET = /^[A-Za-z0-9_-]{32,256}$/;
+const WIKI_PATH = /^\/wiki\/[A-Za-z0-9][A-Za-z0-9_-]{0,119}\.html$/;
+const WIKI_PREFIX = 'wiki-link:';
 const ART = new Set(['moonboy-builder.html', 'js/avatar-builder-core.mjs', 'js/avatar-builder-test.js', 'css/avatar-builder-test.css']);
 const POLL_STATES = "'look_requested','approved','tracking'";
 const STATUS = new Set(['queued', 'running', 'pr_opened_waiting_review', 'blocked_needs_human_permission', 'failed_with_reason', 'merged', 'merge_ready', 'merge_blocked']);
@@ -90,7 +92,7 @@ export async function handleSupportUpdate(update, env, checkMember) {
   let next, feedback = row?.feedback || '';
   if (command.action === 'look' && state === 'submitted') next = 'look_requested';
   if (command.action === 'decline' && ['submitted', 'look_requested', 'reviewed'].includes(state)) next = 'declined';
-  if (command.action === 'review' && state === 'reviewed' && text(command.value, 1200)) {
+  if (command.action === 'review' && state === 'reviewed' && !row.intake_key.startsWith(WIKI_PREFIX) && text(command.value, 1200)) {
     next = 'look_requested';
     feedback = text(redact(text(command.value, 4096)), 1200);
   }
@@ -127,14 +129,48 @@ export async function handleSupportUpdate(update, env, checkMember) {
   return true;
 }
 
-async function authorized(request, secret) {
-  const candidate = request.headers.get('X-Doctor-Support-Token');
+async function matchSecret(candidate, secret) {
   if (!candidate || !SECRET.test(candidate)) return false;
   const encoder = new TextEncoder();
   const [left, right] = await Promise.all([secret, candidate].map(value => crypto.subtle.digest('SHA-256', encoder.encode(value))));
   if (typeof crypto.subtle.timingSafeEqual === 'function') return crypto.subtle.timingSafeEqual(left, right);
   const a = new Uint8Array(left), b = new Uint8Array(right);
   return a.reduce((difference, byte, i) => difference | (byte ^ b[i]), 0) === 0;
+}
+
+async function intakeWikiLink(body, env) {
+  const { page, old, new: target, base_sha: base } = body;
+  const normalized = path => path.toLowerCase().replaceAll('_', '-');
+  if (typeof page !== 'string' || !WIKI_PATH.test('/' + page)
+      || typeof old !== 'string' || !WIKI_PATH.test(old)
+      || typeof target !== 'string' || !WIKI_PATH.test(target)
+      || old === target || normalized(old) !== normalized(target)
+      || typeof base !== 'string' || !SHA.test(base)) {
+    return json({ error: 'invalid_scope' }, 400);
+  }
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify([page, old, target])));
+  const key = WIKI_PREFIX + Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('');
+  const fix = `Replace Wiki link ${old} with ${target}.`;
+  const db = env.DB;
+  const result = await db.prepare(`INSERT INTO support_cases
+    (intake_key, reporter_id, report, state, review, fix, paths, base_sha, reporter_notice, created_at)
+    SELECT ?, ?, ?, 'reviewed', ?, ?, ?, ?, 0, ?
+    WHERE EXISTS (SELECT 1 FROM support_cases WHERE intake_key = ?)
+      OR (SELECT COUNT(*) FROM support_cases WHERE intake_key LIKE 'wiki-link:%'
+          AND state IN ('reviewed', 'approved', 'tracking')) < 5
+    ON CONFLICT(intake_key) DO UPDATE SET
+      fix = excluded.fix, base_sha = excluded.base_sha,
+      revision = revision + CASE WHEN fix = '' THEN 1 ELSE 0 END,
+      owner_notice = CASE WHEN fix = '' THEN 1 ELSE owner_notice END,
+      doctor_status = '', doctor_reason = '', pr_url = '', merge_head_sha = ''
+    WHERE state = 'reviewed' AND base_sha <> excluded.base_sha`)
+    .bind(key, env.SUPPORT_OWNER_TELEGRAM_ID, fix,
+      `The Brain found a Wiki link on /${page} with no matching tracked page. The proposed link matches a single published Wiki path.`,
+      fix, JSON.stringify([page]), base, Math.floor(Date.now() / 1000), key).run();
+  if (result.meta.changes === 0 && !await db.prepare('SELECT id FROM support_cases WHERE intake_key = ?').bind(key).first()) {
+    return json({ error: 'wiki_queue_full' }, 429);
+  }
+  return json({ ok: true });
 }
 
 async function deliver(env, row) {
@@ -176,7 +212,13 @@ async function deliver(env, row) {
 export async function handleSupportRequest(request, env) {
   if (new URL(request.url).pathname !== ROUTE) return null;
   if (!config(env)) return json({ error: 'support_unavailable' }, 503);
-  if (!await authorized(request, env.SUPPORT_BRAIN_TOKEN)) return json({ error: 'unauthorized' }, 401);
+  const wikiToken = request.headers.get('X-Brain-Wiki-Scan-Token');
+  const scanner = wikiToken !== null && SECRET.test(env.BRAIN_WIKI_SCAN_TOKEN || '')
+    && await matchSecret(wikiToken, env.BRAIN_WIKI_SCAN_TOKEN);
+  if (!scanner && !await matchSecret(request.headers.get('X-Doctor-Support-Token'), env.SUPPORT_BRAIN_TOKEN)) {
+    return json({ error: 'unauthorized' }, 401);
+  }
+  if (scanner && request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
   const db = env.DB;
   if (request.method === 'GET') {
     const [work, notices] = await Promise.all([
@@ -184,7 +226,8 @@ export async function handleSupportRequest(request, env) {
         CASE WHEN state = 'look_requested' THEN report ELSE '' END AS report,
         CASE WHEN state = 'look_requested' THEN feedback ELSE '' END AS feedback,
         CASE WHEN state = 'look_requested' THEN review ELSE '' END AS review,
-        fix, paths, base_sha, doctor_status, pr_url, merge_head_sha
+        fix, paths, base_sha, doctor_status, pr_url, merge_head_sha,
+        intake_key LIKE 'wiki-link:%' AS wiki_scan
         FROM support_cases WHERE state IN (${POLL_STATES}) ORDER BY polled_at, id LIMIT 12`).all(),
       db.prepare('SELECT id, revision FROM support_cases WHERE owner_notice = 1 OR reporter_notice = 1 ORDER BY polled_at, id LIMIT 12').all()
     ]);
@@ -197,6 +240,8 @@ export async function handleSupportRequest(request, env) {
     if (raw.length > 12_000) return json({ error: 'body_too_large' }, 413);
     body = JSON.parse(raw);
   } catch { return json({ error: 'invalid_body' }, 400); }
+  if (scanner) return body?.action === 'wiki_link'
+    ? intakeWikiLink(body, env) : json({ error: 'unauthorized' }, 401);
   if (!ID.test(String(body?.id)) || !ID.test(String(body?.revision))) return json({ error: 'invalid_case' }, 400);
   const row = await find(db, body.id);
   if (!row || row.revision !== Number(body.revision)) return json({ error: 'stale_case' }, 409);

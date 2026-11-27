@@ -74,6 +74,35 @@ test('webhook authentication, membership and duplicate delivery protect intake',
   assert.deepEqual(snapshot.notices, [{ id: 1, revision: 1 }]);
 });
 
+test('the Brain scanner can only stage deduplicated Wiki link fixes for the owner', async t => {
+  const { env, row, update, bridge } = setup(t);
+  env.BRAIN_WIKI_SCAN_TOKEN = 'C'.repeat(64);
+  const submit = (body, method = 'POST') => worker.fetch(new Request(`${origin}/internal/doctor-support`, {
+    method, headers: { 'X-Brain-Wiki-Scan-Token': env.BRAIN_WIKI_SCAN_TOKEN },
+    body: method === 'POST' ? JSON.stringify(body) : undefined,
+  }), env, {});
+  const finding = { action: 'wiki_link', page: 'wiki/index.html', old: '/wiki/Old_Name.html',
+    new: '/wiki/old-name.html', base_sha: sha };
+  assert.equal((await submit({}, 'GET')).status, 405);
+  assert.equal((await submit({ action: 'status', id: 1, revision: 1 })).status, 401);
+  assert.equal((await submit({ ...finding, page: 'games/index.html' })).status, 400);
+  assert.equal((await submit({ ...finding, new: '/wiki/unrelated.html' })).status, 400);
+  assert.equal((await submit(finding)).status, 200);
+  assert.equal((await submit({ ...finding, base_sha: '2'.repeat(40) })).status, 200);
+  assert.equal(row().id, 1);
+  assert.equal(row().base_sha, '2'.repeat(40));
+  assert.equal(row().state, 'reviewed');
+  assert.equal(row().reporter_notice, 0);
+  await update(player, 'FIX #1 1');
+  assert.equal(row().state, 'reviewed');
+  await update(owner, 'FIX #1 1');
+  assert.equal(row().state, 'approved');
+  assert.equal((await (await bridge()).json()).cases[0].wiki_scan, 1);
+  assert.equal((await submit(finding)).status, 200);
+  assert.equal(row().state, 'approved');
+  assert.equal(row().base_sha, '2'.repeat(40));
+});
+
 test('LOOK, revised findings, FIX, PR and verified resolution are separate transitions', async t => {
   const { row, update, move, result } = setup(t);
   await update(player, '/report Dead Run text clips on touchscreen.');
