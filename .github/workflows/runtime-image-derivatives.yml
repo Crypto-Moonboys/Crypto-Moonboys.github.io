@@ -22,6 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -102,3 +103,16 @@ jobs:
           git commit -m "chore: refresh runtime image derivatives"
           git pull --rebase --autostash origin "$GITHUB_REF_NAME"
           git push origin "HEAD:$GITHUB_REF_NAME"
+
+      - name: Dispatch required policy check for generated head
+        if: ${{ success() }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet "$GITHUB_SHA" HEAD; then
+            echo "No generated commit; the original push already owns its policy run."
+            exit 0
+          fi
+          gh workflow run runtime-image-policy.yml --ref "$GITHUB_REF_NAME"
+          echo "Dispatched Runtime Image Policy for generated head $(git rev-parse HEAD)."

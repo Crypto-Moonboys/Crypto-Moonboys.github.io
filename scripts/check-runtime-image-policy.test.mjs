@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { isRuntimeImagePolicyRelevant, runtimeImagePolicyViolations } from './check-runtime-image-policy.mjs';
+import { isRuntimeImagePolicyRelevant, parseGitNameStatus, runtimeImagePolicyViolations } from './check-runtime-image-policy.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -42,6 +42,17 @@ test('runs for raster and pipeline changes but exits quickly for unrelated work'
   assert.equal(isRuntimeImagePolicyRelevant(['.github/workflows/runtime-image-policy.yml']), true);
 });
 
+test('parses Unicode names, deletions and renames without Git quoting bypasses', () => {
+  const changes = parseGitNameStatus(Buffer.from('A\0café.png\0D\0gone-master.png\0R100\0old.webp\0new-runtime.webp\0'));
+  assert.deepEqual(changes, [
+    { status: 'A', path: 'café.png' },
+    { status: 'D', path: 'gone-master.png' },
+    { status: 'D', path: 'old.webp' },
+    { status: 'A', path: 'new-runtime.webp' },
+  ]);
+  assert.equal(isRuntimeImagePolicyRelevant(changes.map(change => change.path)), true);
+});
+
 test('keeps one stable read-only required check on every pull request', async () => {
   const policyWorkflow = await readFile(path.join(repositoryRoot, '.github/workflows/runtime-image-policy.yml'), 'utf8');
   const generatorWorkflow = await readFile(path.join(repositoryRoot, '.github/workflows/runtime-image-derivatives.yml'), 'utf8');
@@ -54,4 +65,6 @@ test('keeps one stable read-only required check on every pull request', async ()
   assert.match(policyWorkflow, /^    name: Runtime Image Policy$/mu);
   assert.doesNotMatch(policyWorkflow, /contents: write|pull_request_target|\$\{\{\s*secrets\./u);
   assert.doesNotMatch(generatorWorkflow, /\[skip ci\]/iu);
+  assert.match(generatorWorkflow, /^  actions: write$/mu);
+  assert.match(generatorWorkflow, /gh workflow run runtime-image-policy\.yml --ref "\$GITHUB_REF_NAME"/u);
 });

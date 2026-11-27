@@ -44,15 +44,31 @@ export function runtimeImagePolicyViolations(paths, manifest) {
   return violations;
 }
 
-function changedPaths(base, head, root = REPOSITORY_ROOT) {
+export function parseGitNameStatus(output) {
+  const fields = Buffer.isBuffer(output) ? output.toString('utf8').split('\0') : String(output).split('\0');
+  const changes = [];
+  let index = 0;
+  while (index < fields.length && fields[index]) {
+    const status = fields[index++];
+    if (/^[RC]/u.test(status)) {
+      const oldPath = fields[index++];
+      const newPath = fields[index++];
+      if (oldPath) changes.push({ status: 'D', path: oldPath });
+      if (newPath) changes.push({ status: 'A', path: newPath });
+    } else {
+      const changedPath = fields[index++];
+      if (changedPath) changes.push({ status: status[0], path: changedPath });
+    }
+  }
+  return changes;
+}
+
+function changedFiles(base, head, root = REPOSITORY_ROOT) {
   if (!head) throw new Error('A head commit SHA is required');
   const args = !base || /^0+$/u.test(base)
-    ? ['show', '--pretty=', '--name-only', '--diff-filter=AMCR', head]
-    : ['diff', '--name-only', '--diff-filter=AMCR', base, head];
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8' })
-    .split(/\r?\n/u)
-    .map(value => value.trim())
-    .filter(Boolean);
+    ? ['show', '--pretty=', '--name-status', '--diff-filter=ADMCR', '-z', head]
+    : ['diff', '--name-status', '--diff-filter=ADMCR', '-z', base, head];
+  return parseGitNameStatus(execFileSync('git', args, { cwd: root }));
 }
 
 async function runCli(args) {
@@ -60,7 +76,8 @@ async function runCli(args) {
   const offset = scopeOnly ? 1 : 0;
   const base = args[offset];
   const head = args[offset + 1];
-  const paths = changedPaths(base, head);
+  const changes = changedFiles(base, head);
+  const paths = changes.map(change => change.path);
   const relevant = isRuntimeImagePolicyRelevant(paths);
   if (scopeOnly) {
     console.log(`relevant=${relevant}`);
@@ -71,7 +88,8 @@ async function runCli(args) {
     return;
   }
   const manifest = JSON.parse(await readFile(path.join(REPOSITORY_ROOT, 'data/runtime-image-manifest.json'), 'utf8'));
-  const violations = runtimeImagePolicyViolations(paths, manifest);
+  const survivingPaths = changes.filter(change => change.status !== 'D').map(change => change.path);
+  const violations = runtimeImagePolicyViolations(survivingPaths, manifest);
   if (violations.length) {
     throw new Error(`Runtime image policy violations:\n- ${violations.join('\n- ')}\nUpload the high-quality source as *-master and let the branch workflow generate the declared *-runtime.webp.`);
   }
