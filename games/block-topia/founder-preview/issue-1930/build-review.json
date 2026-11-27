@@ -1,40 +1,29 @@
 {
   "issue": 1930,
-  "round": 159,
+  "round": 160,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "type": "Obstruction",
-          "description": "The path between coordinates 88 and 77 is obstructed by water, which could be a navigational challenge.",
-          "affectedCoordinates": [
-            88,
-            77
-          ]
+          "row": 3,
+          "column": 6,
+          "description": "Potential road visibility issue. The 'r' character is surrounded by ground characters, making it hard to distinguish the road."
         },
         {
-          "type": "Isolation",
-          "description": "House at coordinate 43 is isolated from the main road network, potentially limiting access and movement.",
-          "affectedCoordinate": 43
+          "row": 10,
+          "column": 9,
+          "description": "House and dock proximity risk. The house and dock are too close, which might cause visual confusion for players navigating through this area."
         }
       ],
       "navigationRisks": [
         {
-          "type": "Dead End",
-          "description": "The path between coordinates 106 and 94 leads to a dead end without any exit or alternative route, which could be confusing for players.",
-          "affectedCoordinates": [
-            106,
-            94
-          ]
+          "pathIndex": 27,
+          "description": "Path loop or dead-end risk. The path from row 15 to row 28 seems to form a potential loop, which could confuse the player."
         },
         {
-          "type": "Loop",
-          "description": "There appears to be a loop in the path between coordinates 52 and 41, which might cause navigation issues or player frustration.",
-          "affectedCoordinates": [
-            52,
-            41
-          ]
+          "pathIndex": 40,
+          "description": "Sudden change in direction. There is an abrupt change in the path direction at this point, which might be disorienting for players."
         }
       ]
     }
