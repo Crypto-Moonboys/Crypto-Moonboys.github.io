@@ -1,43 +1,35 @@
 {
   "issue": 1930,
-  "round": 130,
+  "round": 131,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "type": "Obstructed Path",
-          "description": "The path from row 15 to row 27 is obstructed by the 'd' character, which could be a dock or ground, potentially blocking the route.",
-          "location": [
-            15,
-            27
-          ]
+          "row": 3,
+          "column": 5,
+          "description": "Potential road intersection issue. The path crosses without a clear intersection or turning point."
         },
         {
-          "type": "Unclear Navigation",
-          "description": "The path from row 64 to row 76 has multiple turns and may confuse players due to the complexity of the layout.",
-          "location": [
-            64,
-            76
-          ]
+          "row": 9,
+          "column": 10,
+          "description": "House near water risk. House at position (8,2) is too close to the water boundary."
         }
       ],
       "navigationRisks": [
         {
-          "type": "Potential Loop",
-          "description": "The route seems to have a potential loop starting from row 103 and going back to row 92. This could lead to players getting stuck in an infinite loop.",
-          "location": [
-            103,
-            92
-          ]
+          "position": [
+            5,
+            40
+          ],
+          "description": "Potential navigation loop or dead-end. The path seems to loop back on itself after position 41."
         },
         {
-          "type": "Inconsistent Path",
-          "description": "The path from row 88 to row 77 has a sudden change in direction which might be confusing for players who are following the route.",
-          "location": [
-            88,
-            77
-          ]
+          "position": [
+            9,
+            88
+          ],
+          "description": "Long distance travel risk. Travel from (8,2) to (13,5) is a long straight line without any turns or landmarks."
         }
       ]
     }
