@@ -9,15 +9,15 @@ const cors = { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' };
 const question = 'Who are the GKniftyHEADS?';
 const source = { title: 'GKniftyHEADS Wiki', path: '/wiki/gkniftyheads.html', kind: 'page',
   body: 'The GKniftyHEADS are the underworld good guys in Crypto Moonboys canon.' };
-const record = JSON.stringify(source);
-const sha256 = createHash('sha256').update(record).digest('hex');
 
 function request(body, method = 'POST') {
   return new Request(api, { method, headers: { Origin: origin, 'Content-Type': 'application/json',
     'CF-Connecting-IP': '192.0.2.1' }, body: body ? JSON.stringify(body) : undefined });
 }
 
-function wikiFeed(context, failure) {
+function wikiFeed(context, failure, document = source) {
+  const record = JSON.stringify(document);
+  const sha256 = createHash('sha256').update(record).digest('hex');
   context.mock.method(globalThis, 'fetch', async (url, options) => {
     if (url === origin + '/brain-feed/index.json') {
       assert.equal(options.cache, 'no-store');
@@ -30,7 +30,7 @@ function wikiFeed(context, failure) {
       });
       return Response.json({
       schema_version: 1, revision: '1'.repeat(40), records: [{
-        path: source.path, title: source.title, kind: source.kind, description: source.body, sha256, bytes: Buffer.byteLength(record),
+        path: document.path, title: document.title, kind: document.kind, description: document.body, sha256, bytes: Buffer.byteLength(record),
       }],
       });
     }
@@ -116,6 +116,27 @@ test('standalone greetings go to Workers AI within the same daily budget', async
   assert.equal((await limited.json()).error, 'daily_limit');
   assert.equal(fetch.mock.callCount(), 0);
   assert.equal(run.mock.callCount(), 1);
+});
+
+test('broad Moonboys questions send the official overview to Workers AI', async context => {
+  const overview = {
+    title: 'Crypto Moonboys — The Story, Realms and Timeline',
+    path: '/wiki/crypto-moonboys.html',
+    kind: 'page',
+    body: 'The Crypto Moonboys Wiki introduces the project and chronicles its fictional world.',
+  };
+  wikiFeed(context, null, overview);
+  const run = context.mock.fn(async (_model, body) => {
+    const input = JSON.parse(body.messages[1].content);
+    assert.equal(input.publicWiki[0].excerpt, overview.body);
+    return { response: 'The Wiki introduces the Crypto Moonboys project and its fictional world.' };
+  });
+  for (const question of ['who are the moonboys?', 'What is Crypto Moonboys?']) {
+    const res = await handleSwarmsyWikiSearch(request({ question }), environment({ run }), cors);
+    assert.equal(res.status, 200);
+    assert.deepEqual((await res.json()).wiki_sources, [{ title: overview.title, url: origin + overview.path }]);
+  }
+  assert.equal(run.mock.callCount(), 2);
 });
 
 test('unmatched visitor questions get AI guidance within the existing budget', async context => {
