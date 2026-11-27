@@ -375,6 +375,21 @@ Content must clearly identify whether it is historical fact, sourced guidance, j
 
 Authority must come from useful, maintained content with named responsibility, sources, dates, jurisdiction, revision history, correction routes and specialist review where appropriate.
 
+### SAM Wiki drafts and owner approval
+
+[HAY-MUM](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) submits eligible Wiki proposals to the `moonboys-api` Worker. The Worker stores drafts and revision-specific decisions in D1. The [Brain](https://github.com/HODLKONG64/the-brain) prepares website PRs and requests Codex review. The site staging script preserves existing article prose, updates canon ownership and revisions where applicable, and rebuilds the affected discovery files for search and publishing.
+
+| Private `@WIKICOMSBOT` action | Result |
+| --- | --- |
+| **Edit** | Sends instructions to the Brain, which updates the same PR and requests fresh Codex review. |
+| **Merge** | Approves the exact reviewed commit. GitHub required checks and any requested Cloudflare validation must pass. Canon-owned prose also requires the `canon-prose-change-approved` PR label. |
+| **Leave** | Pauses the draft and keeps its PR open. |
+| **Close** | Closes the draft and its linked PR. |
+
+An unchanged target can be refreshed when website `main` advances. The new commit needs a fresh Codex review and owner approval. New routes require publication registration. First Witness and specialist NFT pages follow their dedicated review paths.
+
+Activation requires [D1 migration 135](workers/moonboys-api/migrations/135_sam_wiki_drafts.sql), the approved Worker release, the matching `SAM_WIKI_DRAFT_TOKEN` in the Worker and HAY-MUM Actions, and the Brain editorial timer. Enable `SAM_WIKI_DRAFTS_ENABLED` once the timer and credentials are configured. See the [SAM rollout and Telegram runbook](docs/telegram-support-cases.md#sam-wiki-drafts) and [Worker release guide](workers/moonboys-api/README.md).
+
 ## 1/1 Ownership, Royalties and Community Canon
 
 The public ownership rule is:
