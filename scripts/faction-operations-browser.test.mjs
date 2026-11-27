@@ -2236,6 +2236,8 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     const atlasPaths = await page.evaluate(() => [...new Set(waterfrontRoamers.map(({ atlas }) =>
       new URL(atlas.file, waterfrontAtlasBase).pathname))].sort());
     assert.equal(atlasPaths.length, 9, 'three resident and six guest atlases');
+    assert.ok(requestedRoamers().filter(file => !file.includes('/roamers-guest-')).length < 3,
+      'the opening view defers offscreen resident atlas groups');
     assert.ok(requestedRoamers().length < atlasPaths.length,
       'the opening camera does not request every roamer group');
     const offlineDialogue = await page.evaluate(() => {
@@ -2365,7 +2367,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       const loop = natureRoute(rows, district);
       return {
         width: columns, height: initial.length, land, islandTerrainOnly, harborChanges,
-        allLandReachable: reachable.size === walkableLand,
+        walkableRegions: regions.size, allLandReachable: reachable.size === walkableLand,
         restoredEdit: rows[14][19], spawn,
         bridgePatrolled: Array.from({ length: 8 }, (_, i) => 48 + i).every(x =>
           loop.some(point => point.x === x && point.y === 19)),
@@ -2377,7 +2379,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       };
     });
     const previousLand = waterfrontDistrict.rows.join('').replaceAll('~', '').length;
-    const { harborChanges, ...layout } = island;
+    const { harborChanges, walkableRegions, ...layout } = island;
     assert.deepEqual(layout, {
       width: 84, height: 60, land: previousLand * 2 + 8, islandTerrainOnly: true,
       allLandReachable: true, bridgePatrolled: true, allRegionsVisited: true, loopWalkable: true,
@@ -2522,13 +2524,8 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     }
     assert.equal(roaming.frames, 50 * 16);
     assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors.length, 'cast spans both map areas');
-    assert.equal(roaming.routeRegions, await page.evaluate(() => {
-      const regions = new Set();
-      rows.forEach((row, y) => [...row].forEach((tile, x) => {
-        if (walkable(tile)) regions.add(Math.floor(x / 8) + ',' + Math.floor(y / 8));
-      }));
-      return regions.size;
-    }), 'the patrol visits every walkable region of the compact island');
+    assert.equal(roaming.routeRegions, walkableRegions,
+      'the patrol visits every walkable region of the compact island');
     assert.ok(roaming.onPath, 'walking actors stay on accessible terrain');
     assert.ok(roaming.advances, 'each roamer advances');
     assert.ok(roaming.idleFrames && roaming.heldFrames && roaming.walkFrames);

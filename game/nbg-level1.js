@@ -3317,6 +3317,8 @@
           if (deathFallActive) {
             updateCamera();
             updateCameraY();
+          } else {
+            cameraY = 0;
           }
           updateHud();
           render(time);

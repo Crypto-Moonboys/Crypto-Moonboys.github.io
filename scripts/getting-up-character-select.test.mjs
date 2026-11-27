@@ -43,7 +43,7 @@ for (const runtimePath of runtimeRasterRefs.keys()) {
   assert.ok(fs.existsSync(runtimePath), 'runtime WebP must exist: ' + runtimePath);
   if (!/-runtime\.webp$/i.test(runtimePath)) continue;
   const sourceStem = runtimePath.replace(/-runtime\.webp$/i, '');
-  const masterPath = ['.png', '.jpg', '.jpeg']
+  const masterPath = ['-master.png', '-master.jpg', '-master.jpeg', '.png', '.jpg', '.jpeg']
     .map(extension => sourceStem + extension)
     .find(candidate => fs.existsSync(candidate));
   assert.ok(masterPath, 'runtime WebP must retain its PNG/JPG master: ' + runtimePath);

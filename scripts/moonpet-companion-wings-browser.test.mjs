@@ -24,7 +24,16 @@ try{
    if(url.pathname.includes('/telegram-pets/app/')){
     const body=route.request().postDataJSON();let result;
     if(url.pathname.endsWith('/action')){actions.push(body);result=await f.act(body);}
-    const state=body.mode==='core'?await hooks.buildPetMiniAppCoreState(f.db,f.owner):body.mode==='live'?await hooks.buildPetMiniAppLiveState(f.db,f.owner):await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token',{mode:body.state_mode||body.mode});
+    let state;
+    try {
+      state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(f.db, f.owner)
+        : body.mode === 'live' ? await hooks.buildPetMiniAppLiveState(f.db, f.owner)
+        : await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', {mode: body.state_mode || body.mode});
+    } catch (error) {
+      // A pet switch can invalidate an in-flight read, as on the real state endpoint.
+      if (error.message !== 'pet_state_source_changed') throw error;
+      return route.fulfill({status: 503, json: {error: 'mini_app_state_failed'}});
+    }
     if(state.pet)state.pet.level=displayLevel; // Representative authoritative HUD levels; no production writes.
     return route.fulfill({status:result?.accepted===false?409:200,json:{state,result}});
    }
@@ -56,6 +65,6 @@ try{
   assert.deepEqual(f.sql.prepare('SELECT moon_gold,pet_xp,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),balance);
   assert.deepEqual(errors,[]);assert.equal(await page.locator('canvas').count(),1);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1));
-  console.log('Companion wings passed at '+viewport.width+'x'+viewport.height);await context.close();f.sql.close();
+  console.log('Companion wings passed at '+viewport.width+'x'+viewport.height);await page.unrouteAll({behavior:'wait'});await context.close();f.sql.close();
  }
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
