@@ -2,6 +2,8 @@ import { readBoundedJson } from '../shared/read-bounded-json.mjs';
 import { matchSecret, say, telegram } from './support-cases.js';
 
 const ID = /^[1-9]\d{0,15}$/;
+const DELIVERY_TEST = 'delivery_test';
+const TEST_ID = /^[1-9]\d{0,19}-[1-9]\d{0,8}$/;
 const SHA = /^[a-f0-9]{40}$/;
 const SECRET = /^[A-Za-z0-9_-]{32,256}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -25,7 +27,9 @@ function actions(row) {
 
 async function deliver(row, env) {
   const payload = JSON.parse(row.payload);
-  const message = [
+  const message = row.state === DELIVERY_TEST
+    ? `SAM Wiki delivery test · GitHub Actions run ${payload.run_id}\n\nThe private Telegram handoff is working. No action is needed.`
+    : [
     `SAM Wiki draft #${row.id} · ${row.state.replaceAll('_', ' ')}`,
     limited(payload.title, 180),
     limited(payload.description, 320),
@@ -99,6 +103,14 @@ export async function handleSamWikiRequest(request, env) {
   const bridge = !intake && await matchSecret(request.headers.get('X-Doctor-Support-Token'), env.SUPPORT_BRAIN_TOKEN);
   if (!intake && !bridge) return response({ error: 'unauthorized' }, 401);
   const db = env.DB;
+  if (intake && request.method === 'GET') {
+    const id = new URL(request.url).searchParams.get('delivery_test');
+    if (!id) return response({ error: 'method_not_allowed' }, 405);
+    if (!TEST_ID.test(id)) return response({ error: 'invalid_delivery_test' }, 400);
+    const test = await db.prepare('SELECT owner_notice FROM sam_wiki_drafts WHERE intake_key = ? AND state = ?')
+      .bind(`delivery-test:${id}`, DELIVERY_TEST).first();
+    return test ? response({ ok: true, delivered: test.owner_notice === 0 }) : response({ error: 'test_not_found' }, 404);
+  }
   if (bridge && request.method === 'GET') {
     const [cases, notices] = await Promise.all([
       db.prepare(`SELECT * FROM sam_wiki_drafts WHERE state IN (${ACTIVE}) ORDER BY polled_at,id LIMIT 5`).all(),
@@ -109,13 +121,29 @@ export async function handleSamWikiRequest(request, env) {
   if (request.method !== 'POST') return response({ error: 'method_not_allowed' }, 405);
   const body = await readBoundedJson(request, 45_000);
   if (intake) {
+    if (body && Object.hasOwn(body, DELIVERY_TEST)) {
+      const id = body.delivery_test;
+      if (typeof id !== 'string' || !TEST_ID.test(id) || Object.keys(body).length !== 1) {
+        return response({ error: 'invalid_delivery_test' }, 400);
+      }
+      const key = `delivery-test:${id}`;
+      const result = await db.prepare(`INSERT OR IGNORE INTO sam_wiki_drafts
+        (intake_key, payload, base_sha, state, owner_notice)
+        SELECT ?, ?, '', ?, 1 WHERE (SELECT COUNT(*) FROM sam_wiki_drafts
+          WHERE state = ? AND owner_notice = 1) < 3`)
+        .bind(key, JSON.stringify({ run_id: id }), DELIVERY_TEST, DELIVERY_TEST).run();
+      if (!result.meta.changes && !await db.prepare('SELECT id FROM sam_wiki_drafts WHERE intake_key = ?').bind(key).first()) {
+        return response({ error: 'delivery_test_queue_full' }, 429);
+      }
+      return response({ ok: true });
+    }
     if (!validDraft(body)) return response({ error: 'invalid_draft' }, 400);
     const payload = JSON.stringify(body.payload);
     const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body.base_sha + payload));
     const key = [...new Uint8Array(hash)].map(x => x.toString(16).padStart(2, '0')).join('');
     const result = await db.prepare(`INSERT OR IGNORE INTO sam_wiki_drafts (intake_key,payload,base_sha)
       SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM sam_wiki_drafts
-        WHERE state NOT IN ('merged','closed')) < 20`).bind(key, payload, body.base_sha).run();
+        WHERE state NOT IN ('merged','closed',?)) < 20`).bind(key, payload, body.base_sha, DELIVERY_TEST).run();
     if (!result.meta.changes && !await db.prepare('SELECT id FROM sam_wiki_drafts WHERE intake_key = ?').bind(key).first()) {
       return response({ error: 'sam_queue_full' }, 429);
     }
