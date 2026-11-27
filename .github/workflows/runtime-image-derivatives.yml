@@ -99,6 +99,6 @@ jobs:
             echo "Runtime image derivatives are already current."
             exit 0
           fi
-          git commit -m "chore: refresh runtime image derivatives [skip ci]"
+          git commit -m "chore: refresh runtime image derivatives"
           git pull --rebase --autostash origin "$GITHUB_REF_NAME"
           git push origin "HEAD:$GITHUB_REF_NAME"

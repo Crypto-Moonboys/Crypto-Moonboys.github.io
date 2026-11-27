@@ -12,6 +12,12 @@ Upload and preserve the largest clean master available. The website and games mu
 
 The automatic default preserves the source dimensions. Sprite sheets, atlases, pixel art, UI, icons and logos default to lossless WebP. Other art defaults to high-quality lossy WebP with lossless alpha.
 
+## Non-negotiable repository rule
+
+Every pull request receives the required **Runtime Image Policy** check. Any newly added or modified PNG, JPG, JPEG or WebP must be either a registered `*-master` source or its declared `*-runtime.webp` output. Legacy raster names, unregistered masters, hand-made runtime files, stale derivatives, missing lock state and failed quality checks make the PR fail.
+
+The `main` branch ruleset must require a pull request and the **Runtime Image Policy** check with no human/admin bypass. Human direct commits to `main` are therefore rejected before they land. The check also runs after `main` pushes as evidence and defence in depth. Automated operational actors may receive only the minimum explicit bypass needed for their existing non-image jobs; they do not bypass the runtime image check on pull requests.
+
 The browser cannot safely determine the required source resolution from CSS or canvas display size. Close zoom, high-density screens and sprite frame geometry make that guess unsafe. When the runtime copy should be smaller than the master, declare the required dimensions in [runtime-image-manifest.json](../data/runtime-image-manifest.json):
 
 ```json
@@ -53,6 +59,6 @@ The builder prints the source size, runtime size, saving, dimensions and measure
 
 ## Automatic workflow boundary
 
-The narrowly scoped workflow runs only for repository-owner pushes to non-production branches that change a `*-master` image, the runtime manifest or the pipeline itself. It does not run the broad CI suites, merge a PR, publish Pages or deploy a Worker. GitHub Actions receives no image-service keys or application secrets.
+The narrowly scoped generator runs only for repository-owner pushes to non-production branches that change a `*-master` image, the runtime manifest or the pipeline itself. The separate read-only policy check runs on every PR but exits before dependency installation when no raster or pipeline file changed. Neither workflow runs the broad CI suites, merges a PR, publishes Pages or deploys a Worker. GitHub Actions receives no image-service keys or application secrets.
 
 If a conversion is not materially smaller, fails its quality floor or cannot preserve sprite geometry, the job stops and reports the exact asset. The master remains untouched.

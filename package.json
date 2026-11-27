@@ -39,6 +39,7 @@
     "images:runtime": "node scripts/build-runtime-images.mjs",
     "images:runtime:check": "node scripts/build-runtime-images.mjs --check",
     "test:runtime-images": "node --test scripts/build-runtime-images.test.mjs",
+    "test:runtime-image-policy": "node --test scripts/check-runtime-image-policy.test.mjs",
     "avatar:assets": "node scripts/build-avatar-assets.mjs",
     "test:avatar-builder": "node scripts/avatar-builder-homepage-presets.test.mjs && node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs",
     "moonpet:art:check": "node scripts/moonpet-art-architecture.test.mjs && node scripts/build-moonpet-runtime-images.mjs --check",
