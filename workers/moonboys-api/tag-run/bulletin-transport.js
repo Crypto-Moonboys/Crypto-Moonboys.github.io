@@ -12,7 +12,10 @@ async function request(token, method, payload, fetchImpl) {
       fetchImpl('https://api.telegram.org/bot' + token + '/' + method, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    }), fetchImpl);
+    }), fetchImpl, {
+      leadingStatements: method === 'sendMessage' &&
+        payload.text.startsWith('TAG RUN | CHAT • EARN • WIN\n')
+    });
     const body = await response.json();
     return response.ok && body?.ok === true &&
       Number.isSafeInteger(body.result?.message_id) && body.result.message_id > 0

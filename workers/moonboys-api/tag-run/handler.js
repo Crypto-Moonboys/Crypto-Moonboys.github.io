@@ -149,7 +149,9 @@ export async function postTagRunGroupBulletin(env, options = {}) {
   const message = [
     'TAG RUN | CHAT • EARN • WIN',
     '',
-    'Make your mark. Earn Street Cred. Climb the ranks. Win WAX token rewards.',
+    'Make your mark.',
+    'Earn Street Cred. Climb the ranks.',
+    'Win WAX token rewards.',
     '',
     'HOW IT WORKS',
     '10 points per qualifying message.',

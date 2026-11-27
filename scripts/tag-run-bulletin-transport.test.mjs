@@ -112,3 +112,34 @@ test('live-style token uses bold headings and pack icons for both bulletin posts
     '<b>Clan update</b>\n\nA &amp; B\nThird statement\nFourth statement\nFifth statement\nLast statement');
   assert(delivered.every(post => post.message_thread_id === 23456 && post.parse_mode === 'HTML'));
 });
+
+
+test('TAG RUN intro gets four distinct GKMoonboys icons before the rules', async () => {
+  const delivered = [];
+  const intro = 'TAG RUN | CHAT • EARN • WIN\n\nMake your mark.\nEarn Street Cred. Climb the ranks.\nWin WAX token rewards.';
+  const full = intro + '\n\nHOW IT WORKS\n10 points per qualifying message.\n\nJOIN THE ACTION\n/tipbot — Full rules, rewards & commands';
+  const result = await sendTagRunBulletin({
+    ...env, TELEGRAM_BOT_TOKEN: '123456:test_token_for_bulletins',
+  }, full, async (url, options) => {
+    const method = url.split('/').at(-1);
+    const body = JSON.parse(options.body);
+    if (method === 'getStickerSet') return Response.json({ ok: true, result: {
+      sticker_type: 'custom_emoji', stickers: ['⚽', '💋', '🫁', '💉', '💊', '💣', '🗡', '🧱', '🐻']
+        .map((emoji, index) => ({ emoji, custom_emoji_id: String(index + 1) })),
+    } });
+    delivered.push(body);
+    return ack();
+  });
+  assert.equal(result.status, 'sent');
+  const message = delivered[1].text;
+  const icon = /<tg-emoji emoji-id="(\d+)">[^<]+<\/tg-emoji> /gu;
+  const ids = [...message.matchAll(icon)].map(match => match[1]);
+  assert.equal(ids.length, 4);
+  assert.equal(new Set(ids).size, 4);
+  assert.deepEqual(message.split('\n').map(line => [...line.matchAll(icon)].length),
+    [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]);
+  assert.equal(message.replace(icon, ''), '<b>TAG RUN | CHAT • EARN • WIN</b>' +
+    full.slice('TAG RUN | CHAT • EARN • WIN'.length).replaceAll('&', '&amp;'));
+  assert.equal(delivered[1].parse_mode, 'HTML');
+  assert.equal(delivered[1].message_thread_id, 23456);
+});
