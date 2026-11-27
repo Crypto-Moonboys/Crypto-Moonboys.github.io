@@ -100,6 +100,27 @@ test('anonymous search sends only the question and published Wiki references to 
   });
 });
 
+test('standalone greetings go to Workers AI within the same daily budget', async context => {
+  const fetch = context.mock.method(globalThis, 'fetch', async () => { throw new Error('Unexpected Wiki lookup'); });
+  const greeting = 'Hello, SWARMSY!';
+  const text = 'Hey! Ask me anything about the Crypto Moonboys Wiki.';
+  const run = context.mock.fn(async (model, body) => {
+    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct-fast');
+    assert.match(body.messages[0].content, /Reply to the greeting/);
+    assert.deepEqual(JSON.parse(body.messages[1].content), { question: greeting, publicWiki: [] });
+    return { response: text };
+  });
+  const res = await handleSwarmsyWikiSearch(request({ question: greeting }), environment({ run }), cors);
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { answer: text, wiki_sources: [] });
+
+  const limited = await handleSwarmsyWikiSearch(request({ question: 'hello' }), environment({ available: false, run }), cors);
+  assert.equal(limited.status, 429);
+  assert.equal((await limited.json()).error, 'daily_limit');
+  assert.equal(fetch.mock.callCount(), 0);
+  assert.equal(run.mock.callCount(), 1);
+});
+
 test('validates public requests and preserves Wiki discovery if the AI budget or provider fails', async context => {
   wikiFeed(context);
   const run = () => { throw new Error('provider unavailable'); };
