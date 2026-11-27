@@ -343,3 +343,36 @@ test('rejects animated masters instead of silently discarding frames and timing'
   );
   await assert.rejects(access(path.join(root, 'animation-runtime.webp')), { code: 'ENOENT' });
 });
+
+test('detects APNG animation even when Sharp metadata omits its frame count', async () => {
+  const root = await fixtureRoot();
+  const source = path.join(root, 'animated-png-master.png');
+  const twoFrameApng = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACGFjVEwAAAACAAAAAPONk3AAAAAaZmNUTAAAAAAAAAACAAAAAgAAAAAAAAAAAFAD6AAAVfSRWwAAABBJREFUeNpj+M/AAEQMEAoAH+4D/WNeu1sAAAAaZmNUTAAAAAEAAAACAAAAAgAAAAAAAAAAAKAD6AAAhrMr0gAAABNmZEFUAAAAAnjaY2Bg+A9GYAoAF/YD/QgD1OgAAAAASUVORK5CYII=',
+    'base64',
+  );
+  await writeFile(source, twoFrameApng);
+  const sourceMetadata = await sharp(source).metadata();
+  assert.equal(sourceMetadata.format, 'png');
+  assert.equal(sourceMetadata.pages, undefined);
+
+  await assert.rejects(
+    registerRuntimeImages({ root, manifestPath: 'manifest.json', paths: ['animated-png-master.png'] }),
+    /animated-png-master\.png is animated or multi-frame \(2 frames\)/u,
+  );
+  const unchangedManifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
+  assert.deepEqual(unchangedManifest.assets, []);
+
+  unchangedManifest.assets.push({
+    source: 'animated-png-master.png',
+    output: 'animated-png-runtime.webp',
+    mode: 'lossless',
+    minSavingsPercent: 0,
+  });
+  await writeFile(path.join(root, 'manifest.json'), `${JSON.stringify(unchangedManifest, null, 2)}\n`);
+  await assert.rejects(
+    buildRuntimeImages({ root, manifestPath: 'manifest.json', lockPath: 'lock.json' }),
+    /runtime derivatives must not discard frames or timing/u,
+  );
+  await assert.rejects(access(path.join(root, 'animated-png-runtime.webp')), { code: 'ENOENT' });
+});

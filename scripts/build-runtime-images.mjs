@@ -13,6 +13,7 @@ const MASTER_EXTENSION = /-master\.(?:png|jpe?g|webp)$/iu;
 const RUNTIME_EXTENSION = /-runtime\.webp$/u;
 const SPRITE_NAME = /(?:sprite|sheet|atlas|pixel|icon|logo|\bui\b)/iu;
 const RESIZE_KERNELS = new Set(['nearest', 'cubic', 'mitchell', 'lanczos2', 'lanczos3']);
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -147,10 +148,29 @@ async function loadManifest(root, manifestPath) {
   return { manifest, manifestFile, assets };
 }
 
+function pngAnimationFrames(buffer) {
+  if (buffer.length < PNG_SIGNATURE.length || !buffer.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) return null;
+  let offset = PNG_SIGNATURE.length;
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const dataOffset = offset + 8;
+    const nextOffset = dataOffset + length + 4;
+    if (nextOffset > buffer.length) return null;
+    const type = buffer.toString('ascii', offset + 4, dataOffset);
+    if (type === 'acTL') return length >= 4 ? buffer.readUInt32BE(dataOffset) : 1;
+    if (type === 'IDAT' || type === 'IEND') return null;
+    offset = nextOffset;
+  }
+  return null;
+}
+
 async function staticMasterMetadata(sourcePath, sourceLabel) {
-  const metadata = await sharp(sourcePath, { limitInputPixels: false }).metadata();
-  if ((metadata.pages ?? 1) > 1) {
-    throw new Error(`${sourceLabel} is animated or multi-frame (${metadata.pages} frames); runtime derivatives must not discard frames or timing`);
+  const sourceBuffer = await readFile(sourcePath);
+  const metadata = await sharp(sourceBuffer, { limitInputPixels: false }).metadata();
+  const pngFrameCount = pngAnimationFrames(sourceBuffer);
+  const frameCount = pngFrameCount ?? metadata.pages ?? 1;
+  if (frameCount > 1 || pngFrameCount != null) {
+    throw new Error(`${sourceLabel} is animated or multi-frame (${frameCount} frames); runtime derivatives must not discard frames or timing`);
   }
   return metadata;
 }
