@@ -185,3 +185,32 @@ test('automatic workflow is narrow, owner-only and cannot write production branc
   assert.match(workflow, /\*\*\/\*-master\.png/u);
   assert.match(workflow, /npm run images:runtime:check/u);
 });
+
+test('failed quality verification leaves an existing runtime file untouched', async () => {
+  const root = await fixtureRoot();
+  const source = path.join(root, 'protected-master.png');
+  const output = path.join(root, 'protected-runtime.webp');
+  const width = 480;
+  const height = 320;
+  const data = Buffer.alloc(width * height * 3);
+  for (let index = 0; index < data.length; index++) data[index] = (index * 37) % 256;
+  await sharp(data, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 0 }).toFile(source);
+  await sharp({ create: { width, height, channels: 3, background: '#124466' } }).webp({ lossless: true }).toFile(output);
+  const originalRuntime = await readFile(output);
+  const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
+  manifest.assets.push({
+    source: 'protected-master.png',
+    output: 'protected-runtime.webp',
+    mode: 'lossy',
+    quality: 10,
+    minPsnr: 90,
+    minSavingsPercent: 0,
+  });
+  await writeFile(path.join(root, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  await assert.rejects(
+    buildRuntimeImages({ root, manifestPath: 'manifest.json', lockPath: 'lock.json' }),
+    /PSNR .* is below 90/u,
+  );
+  assert.deepEqual(await readFile(output), originalRuntime);
+});
