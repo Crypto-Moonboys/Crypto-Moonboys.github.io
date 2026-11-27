@@ -271,3 +271,43 @@ test('rejects output directories that resolve outside the repository through sym
   );
   await assert.rejects(access(path.join(outside, 'escaped-runtime.webp')), { code: 'ENOENT' });
 });
+
+test('applies JPEG EXIF orientation before calculating runtime dimensions', async () => {
+  const root = await fixtureRoot();
+  const source = path.join(root, 'portrait-master.jpg');
+  const width = 160;
+  const height = 80;
+  const data = Buffer.alloc(width * height * 3);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const offset = (y * width + x) * 3;
+      data[offset] = x < width / 2 ? 240 : 20;
+      data[offset + 1] = y < height / 2 ? 180 : 35;
+      data[offset + 2] = (x + y) % 256;
+    }
+  }
+  await sharp(data, { raw: { width, height, channels: 3 } })
+    .jpeg({ quality: 100 })
+    .withMetadata({ orientation: 6 })
+    .toFile(source);
+  const sourceMetadata = await sharp(source).metadata();
+  assert.equal(sourceMetadata.orientation, 6);
+  const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
+  manifest.assets.push({
+    source: 'portrait-master.jpg',
+    output: 'portrait-runtime.webp',
+    mode: 'lossy',
+    quality: 86,
+    minPsnr: 30,
+    minSavingsPercent: 0,
+  });
+  await writeFile(path.join(root, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const built = await buildRuntimeImages({ root, manifestPath: 'manifest.json', lockPath: 'lock.json' });
+  assert.equal(built.results[0].width, 80);
+  assert.equal(built.results[0].height, 160);
+  const outputMetadata = await sharp(path.join(root, 'portrait-runtime.webp')).metadata();
+  assert.equal(outputMetadata.width, 80);
+  assert.equal(outputMetadata.height, 160);
+  assert.equal(outputMetadata.orientation, undefined);
+});

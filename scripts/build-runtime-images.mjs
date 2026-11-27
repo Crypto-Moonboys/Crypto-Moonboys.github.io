@@ -148,7 +148,11 @@ async function loadManifest(root, manifestPath) {
 }
 
 async function transformedMaster(asset) {
-  const sourceMetadata = await sharp(asset.sourcePath, { limitInputPixels: false }).metadata();
+  const orientedMaster = await sharp(asset.sourcePath, { limitInputPixels: false, sequentialRead: true })
+    .autoOrient()
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+  const sourceMetadata = await sharp(orientedMaster, { limitInputPixels: false }).metadata();
   if (!sourceMetadata.width || !sourceMetadata.height) throw new Error(`${asset.source} has no readable dimensions`);
   if (asset.sprite) {
     if (sourceMetadata.width % asset.sprite.columns || sourceMetadata.height % asset.sprite.rows) {
@@ -167,7 +171,7 @@ async function transformedMaster(asset) {
     }
   }
 
-  let pipeline = sharp(asset.sourcePath, { limitInputPixels: false, sequentialRead: true });
+  let pipeline = sharp(orientedMaster, { limitInputPixels: false, sequentialRead: true });
   if (targetWidth || targetHeight) {
     pipeline = pipeline.resize({
       width: targetWidth || undefined,
