@@ -47,6 +47,8 @@ test('keeps one stable read-only required check on every pull request', async ()
   const generatorWorkflow = await readFile(path.join(repositoryRoot, '.github/workflows/runtime-image-derivatives.yml'), 'utf8');
   assert.match(policyWorkflow, /^name: Runtime Image Policy$/mu);
   assert.match(policyWorkflow, /^  pull_request:\s*$/mu);
+  assert.match(policyWorkflow, /^  push:\s*\n\s+branches:\s*\n\s+- main\s*\n\s+- master$/mu);
+  assert.match(policyWorkflow, /^  workflow_dispatch:\s*$/mu);
   assert.doesNotMatch(policyWorkflow, /^\s+paths(?:-ignore)?:/mu);
   assert.match(policyWorkflow, /^  contents: read$/mu);
   assert.match(policyWorkflow, /^    name: Runtime Image Policy$/mu);
