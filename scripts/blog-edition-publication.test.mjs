@@ -9,7 +9,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = relative => fs.readFileSync(path.join(ROOT, relative), 'utf8');
 const json = relative => JSON.parse(read(relative));
 const manifest = json('js/blog-editions.json');
-const editions = [...new Map(manifest.editions.map(row => [row.url, row])).values()];
+const editions = manifest.editions.filter(row => !row.duplicate_of);
+const archiveCopies = manifest.editions.filter(row => row.duplicate_of);
 const library = '/wiki/graffpunks-reading-library.html';
 const routes = [...editions.map(row => row.url), library];
 const origin = 'https://cryptomoonboys.com';
@@ -23,14 +24,16 @@ test('all 94 supplied source identities have a destination, including the duplic
     }));
   assert.equal(manifest.editions.length, 94);
   assert.equal(editions.length, 93);
-  assert.equal(manifest.reading_pages, editions.length);
+  assert.equal(new Set(manifest.editions.map(row => row.url)).size, manifest.editions.length);
+  assert.equal(manifest.reading_pages, manifest.editions.length);
   assert.deepEqual(new Set(manifest.editions.map(row => row.source_file)), new Set(register.keys()));
   for (const row of manifest.editions) {
     assert.equal(row.source_sha256, register.get(row.source_file), row.source_file);
     assert.match(row.source_url, /^https:\/\//);
   }
   const source = filename => manifest.editions.find(row => row.source_file.toLowerCase() === filename);
-  assert.equal(source('w51.txt').url, source('w52.txt').url);
+  assert.notEqual(source('w51.txt').url, source('w52.txt').url);
+  assert.equal(source('w52.txt').duplicate_of, 'w51.txt');
   assert.equal(source('w51.txt').source_sha256, source('w52.txt').source_sha256);
   assert.notEqual(source('w66.txt').url, source('w80.txt').url);
   assert.notEqual(source('w66.txt').source_sha256, source('w80.txt').source_sha256);
@@ -61,14 +64,14 @@ test('reading editions publish accessible prose, source attribution and consiste
     assert.equal(article.description, unescape(description));
     assert.ok(html.includes('data-canon-source="' + row.source_file + '"') || row.duplicate_of);
     assert.ok(row.article_words >= 600, row.url + ' should remain a substantial reading');
-    assert.doesNotMatch(html, /<p class="lore-paragraph">(?:\d+ min read|Press enter or click to view image)/i);
+    assert.doesNotMatch(html, /<p class="lore-paragraph">(?:\d+ min read|Press enter or click to view image|Become a Medium member|Read full story|Discussion about this post|\d+ (?:Likes?|Restacks?))<\/p>/i);
   }
 });
 
 test('every reading is listed in its existing category and in the static no-JavaScript library', () => {
   const libraryHtml = read(library.slice(1));
   const categories = new Set();
-  for (const row of editions) {
+  for (const row of manifest.editions) {
     categories.add(row.category);
     assert.ok(libraryHtml.includes('href="' + row.url + '"'), 'library missing ' + row.url);
     const category = '/categories/' + row.category + '.html';
@@ -77,6 +80,22 @@ test('every reading is listed in its existing category and in the static no-Java
   }
   assert.equal(categories.size, 10);
   assert.deepEqual(new Set(manifest.categories), categories);
+});
+
+test('identical sources have a full archive reading without a duplicate search or sitemap result', () => {
+  const wikiIndex = json('js/wiki-index.json');
+  const sitemap = read('sitemap.xml');
+  for (const row of archiveCopies) {
+    const primary = manifest.editions.find(entry => entry.source_file === row.duplicate_of);
+    const html = read(row.url.slice(1));
+    const story = html => html.match(/<section class="blog-source-story"[^>]*>([\s\S]*?)<\/section>/)[1];
+    assert.match(html, /name="robots" content="noindex, follow"/);
+    assert.ok(html.includes('rel="canonical" href="' + origin + primary.url + '"'));
+    assert.ok(html.includes('data-canon-source="' + row.source_file + '"'));
+    assert.equal(story(html), story(read(primary.url.slice(1))));
+    assert.ok(!wikiIndex.some(entry => entry.url === row.url));
+    assert.ok(!sitemap.includes(origin + row.url));
+  }
 });
 
 test('search exposes its input, all category cards and then article results in document order', () => {
@@ -132,7 +151,7 @@ test('dashboard analysis reports include the expanded publication inventory', ()
 });
 
 test('reading links and native contents resolve to existing local pages and fragments', () => {
-  for (const route of routes) {
+  for (const route of [...routes, ...archiveCopies.map(row => row.url)]) {
     const html = read(route.slice(1));
     for (const [, target] of html.matchAll(/href="((?:\/wiki\/|\/categories\/|#)[^"]+)"/g)) {
       const url = new URL(unescape(target), origin + route);
@@ -147,14 +166,20 @@ test('reading links and native contents resolve to existing local pages and frag
 });
 
 async function renderDashboard(data) {
-  const container = { textContent: '', children: [], replaceChildren(...children) { this.children = children; } };
+  const container = {
+    textContent: '', children: [],
+    replaceChildren(...children) { this.children = children; },
+    setAttribute() {}, removeAttribute() {}, closest() { return null; },
+  };
   let start;
   const context = {
     console: { warn() {} },
+    window: { location: { hash: '' }, addEventListener() {} },
     fetch: async url => ({ ok: true, json: async () => url === '/js/blog-editions.json' ? data : null }),
     document: {
       readyState: 'loading',
       addEventListener(name, callback) { if (name === 'DOMContentLoaded') start = callback; },
+      getElementById() { return null; },
       querySelector(selector) { return selector === '#dash-blog-editions' ? container : null; },
       createElement() { return { textContent: '' }; },
     },
@@ -167,8 +192,8 @@ async function renderDashboard(data) {
 
 test('dashboard renders actual source/page/category coverage and handles missing data', async () => {
   const result = await renderDashboard(manifest);
-  assert.match(result.children[0].textContent, /94 source posts → 93 reading editions across 10 categories/);
-  assert.match(result.children[0].textContent, /1 exact duplicate/);
+  assert.match(result.children[0].textContent, /94 source posts → 94 reading editions across 10 categories/);
+  assert.match(result.children[0].textContent, /1 exact duplicate has its own archive page/);
   assert.equal((await renderDashboard(null)).textContent, 'Reading-library data is unavailable.');
   assert.ok(read('dashboard.html').includes('id="dash-blog-editions"'));
 });

@@ -5,6 +5,16 @@ blog file, suitable existing categories, SEO, graph/dashboard synchronisation,
 and category cards below the Search input and before the existing article list.
 The top navigation must not gain a Categories item.
 
+## Follow-up — 27 November 2026
+
+All 94 source filenames now have separate reading URLs. The byte-identical
+`w52.txt` has a [full archive reading copy](../../wiki/the-high-hats-the-digital-aristocrats-w52.html)
+linked from the library and Lore category. Search and the sitemap continue
+to use the primary `w51.txt` edition for that shared text. The
+[original W81 ZIP](../../source-archive/graffpunks/README.md) is retained in the
+repository outside the Pages artifact. A second cleanup removed residual
+Substack and Medium interface text from 16 reading editions.
+
 ## Source accounting and editorial scope
 
 - Uploaded `RAW CANNON.zip`: SHA-256

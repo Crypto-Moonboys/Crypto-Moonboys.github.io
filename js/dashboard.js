@@ -107,8 +107,9 @@
     const duplicates = data.editions.filter(entry => entry.duplicate_of).length;
     const paragraph = document.createElement('p');
     paragraph.textContent = data.editions.length + ' source posts → ' + pages.size +
-      ' reading editions across ' + categories.size + ' categories. ' + duplicates +
-      ' exact duplicate shares its reading destination.';
+      ' reading editions across ' + categories.size + ' categories. ' +
+      (duplicates === 1 ? '1 exact duplicate has its own archive page.' :
+        duplicates + ' exact duplicates have their own archive pages.');
     container.replaceChildren(paragraph);
   }
 

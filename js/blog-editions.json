@@ -2,7 +2,7 @@
   "schema_version": 1,
   "as_of": "2026-11-16",
   "source_files": 94,
-  "reading_pages": 93,
+  "reading_pages": 94,
   "exact_duplicates": 1,
   "categories": [
     "activism-counter-culture",
@@ -887,7 +887,7 @@
       "title": "The OG PIXEL SAINTS (Warriors of Light and Nostalgia)",
       "category": "lore",
       "url": "/wiki/the-og-pixel-saints-warriors-of-light.html",
-      "article_words": 1229,
+      "article_words": 1225,
       "reading_type": "Lore / source narrative",
       "related_pages": [
         "/wiki/the-og-pixel-saints.html"
@@ -1192,19 +1192,19 @@
       "source_sha256": "bda710f3eb9f6fd779dd9a388465ad82f3e339568c23bfb0a8a3ed8b9133a478",
       "source_words": 988,
       "source_url": "https://graffpunks.substack.com/p/the-high-hats-the-digital-aristocrats",
-      "title": "The High Hats (The Digital Aristocrats of the Grid)",
+      "title": "The High Hats (The Digital Aristocrats of the Grid) — w52 archive copy",
       "category": "lore",
-      "url": "/wiki/the-high-hats-the-digital-aristocrats.html",
+      "url": "/wiki/the-high-hats-the-digital-aristocrats-w52.html",
       "article_words": 1277,
       "reading_type": "Lore / source narrative",
       "related_pages": [
         "/wiki/the-high-hats.html"
       ],
-      "editorial_treatment": "Expanded long-form reading with subject-specific interpretation, locally attributed source-era narrative or proposal, current topic links, and publication-furniture/exact-repeat cleanup.",
+      "editorial_treatment": "Dedicated reading copy of the identical w52.txt source; search engines are directed to the primary w51.txt edition.",
       "duplicate_of": "w51.txt",
       "original_publication_date": "Nov 22, 2025",
       "index_category": "lore",
-      "description": "The High Hats carry class through catastrophe. Read the full account and its wider context."
+      "description": "Read the complete High Hats archive copy from w52.txt, the byte-identical second file in the W81 collection."
     },
     {
       "source_file": "w53.txt",
@@ -1360,7 +1360,7 @@
       "title": "The GKniftyHEADS (The Immortal Architects)",
       "category": "lore",
       "url": "/wiki/the-gkniftyheads-the-immortal-architects.html",
-      "article_words": 1245,
+      "article_words": 1242,
       "reading_type": "Lore / source narrative",
       "related_pages": [
         "/wiki/gkniftyheads.html"
@@ -1454,7 +1454,7 @@
       "title": "Phase One, Two and Three: The Street Manifesto",
       "category": "art-creativity",
       "url": "/wiki/yo-listen-up-this-is-just-phase-one.html",
-      "article_words": 3585,
+      "article_words": 3582,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/graffpunks.html",
@@ -1524,7 +1524,7 @@
       "title": "Legacy Over Hype: From London Graffiti to Shared Worlds",
       "category": "art-creativity",
       "url": "/wiki/40-year-old-graffiti-movement-launches.html",
-      "article_words": 10927,
+      "article_words": 10913,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/crypto-moonboys.html",
@@ -1554,7 +1554,7 @@
       "title": "The Hard Fork: Rise of the HODL Warriors",
       "category": "lore",
       "url": "/wiki/the-hard-fork-rise-of-the-hodl-warriors.html",
-      "article_words": 4535,
+      "article_words": 4532,
       "reading_type": "Lore / source narrative",
       "related_pages": [
         "/wiki/hard-fork-games.html",
@@ -1655,7 +1655,7 @@
       "title": "GK Nifty Heads: Art, Community and the Web3 Business Story",
       "category": "nfts-digital-art",
       "url": "/wiki/legacy-over-hype-gk-turned-the-waxp.html",
-      "article_words": 695,
+      "article_words": 693,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/gkniftyheads.html",
@@ -1694,7 +1694,7 @@
       "title": "STAKE: A Community-Powered Proposal",
       "category": "cryptocurrencies",
       "url": "/wiki/stake-is-a-community-powered-web3.html",
-      "article_words": 860,
+      "article_words": 858,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/staking.html",
@@ -1733,7 +1733,7 @@
       "title": "Collect, Create and Participate: The GK Invitation",
       "category": "nfts-digital-art",
       "url": "/wiki/collect-free-nft-crypto-coin-phigital.html",
-      "article_words": 2909,
+      "article_words": 2906,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/crypto-moonboys.html",
@@ -1779,7 +1779,7 @@
       "title": "Phase One, Two and Three: The Extended Medium Edition",
       "category": "art-creativity",
       "url": "/wiki/yo-listen-up-this-is-just-phase-one-medium-edition.html",
-      "article_words": 3612,
+      "article_words": 3608,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/graffpunks.html",
@@ -1871,7 +1871,7 @@
       "title": "Digital ID, CBDCs and the Argument for Control",
       "category": "activism-counter-culture",
       "url": "/wiki/the-case-for-digital-id-and-cbdcs-security-and-expansion.html",
-      "article_words": 903,
+      "article_words": 899,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/crypto-moonboys.html"
@@ -1909,7 +1909,7 @@
       "title": "The Chronicle of the Cipher Lord: A Satoshi Testament",
       "category": "lore",
       "url": "/wiki/the-chronicle-of-the-cipher-lord-a-satoshi-testament.html",
-      "article_words": 6810,
+      "article_words": 6806,
       "reading_type": "Lore / source narrative",
       "related_pages": [
         "/wiki/bitcoin.html",
@@ -1942,7 +1942,7 @@
       "title": "The GKniftyHEADS Manifesto: An Early Warning",
       "category": "art-creativity",
       "url": "/wiki/the-gkniftyheads-manifesto-this-is-your-early-warning.html",
-      "article_words": 3033,
+      "article_words": 3029,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/gkniftyheads.html",
@@ -1971,7 +1971,7 @@
       "title": "Street Artist BUSTER: Charlie Buster’s Project Portrait",
       "category": "community-people",
       "url": "/wiki/street-artist-buster-aka-charlie-buster.html",
-      "article_words": 643,
+      "article_words": 621,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/charlie-buster.html",
@@ -2010,7 +2010,7 @@
       "title": "Legacy Over Hype: The Block and the Kings",
       "category": "art-creativity",
       "url": "/wiki/legacy-over-hype-the-inevitable-rise-of-the-block-the-kings.html",
-      "article_words": 1394,
+      "article_words": 1390,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/graffiti-kings.html",
@@ -2030,7 +2030,7 @@
       "title": "The Blockchain Uprising: A GKniftyHEADS Manifesto",
       "category": "art-creativity",
       "url": "/wiki/gkniftyheads-present-world-war-3-the-blockchain-uprising-this-isnt-a-drill.html",
-      "article_words": 1581,
+      "article_words": 1576,
       "reading_type": "Essay / project publication",
       "related_pages": [
         "/wiki/hodl-wars.html",
@@ -2069,7 +2069,7 @@
       "title": "Jodie ZOOM 2000: The Games",
       "category": "lore",
       "url": "/wiki/journal-entry-jodie-zoom-2000-the-games.html",
-      "article_words": 2038,
+      "article_words": 2034,
       "reading_type": "Lore / source narrative",
       "related_pages": [
         "/wiki/jodie-zoom-2000.html",

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:6b856c21203b81b5f7139263a447dab5752c65bee75e184fb7cf8521c03d388e",
+  "source_tree_hash": "sha256:b7edc1f26a18663ba35cf8a0eb8ab31626c28d74174ad9714843ad1a8974fc9d",
   "hash_algorithm": "sha256",
-  "page_count": 612,
-  "manifest_entry_count": 612,
+  "page_count": 613,
+  "manifest_entry_count": 613,
   "absent_stub_authorization_source": {
     "path": "brand-canon/wiki-absent-stubs.json",
     "content_hash": "sha256:b8874d0ede0983258101755e0706517d067dd8d85aa8a081742c497bbac2b663"
@@ -89,11 +89,11 @@
     }
   ],
   "summary": {
-    "total_pages_audited": 612,
-    "total_manifest_entries": 612,
+    "total_pages_audited": 613,
+    "total_manifest_entries": 613,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 274,
+      "KEEP": 275,
       "REWRITE_FULL": 0,
       "RECONCILE": 2,
       "DEDUPE": 0,
@@ -107,7 +107,7 @@
     "automation_policy_counts": {
       "metadata-only": 262,
       "replace-sam-block": 0,
-      "canon-locked": 349,
+      "canon-locked": 350,
       "stub-allowed": 1
     },
     "pages_with_multiple_sam_blocks": 0,
@@ -330,7 +330,7 @@
       "title": "Legacy Over Hype: From London Graffiti to Shared Worlds",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 10598,
+      "current_word_count": 10585,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -339,10 +339,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a775fb239b3609a59c1ed761f0b6b6dfefeef7d22612c660eb39ea46bd5e1ace",
-      "article_content_hash": "sha256:f00e9131218f4fb5efa3081f394505294656bc1655abc40c9a29c4b6af8edd70",
-      "article_markup_hash": "sha256:62ca98be04f05e1145920138d3fc20bc5295648384382c46e8580643a8c818fa",
-      "git_blob_oid": "16d8a3107916d92eba8750a34f9f5dd07afa2b8a",
+      "content_hash": "sha256:f2bcb9666c13e1668dd15e3044d2bcc673c18151a2e2bb106c14884649a24682",
+      "article_content_hash": "sha256:c188d8007557169f726f89808a4a54900ebd45ce81f9e2c0047fcbd7b6de11ec",
+      "article_markup_hash": "sha256:8a96c18d10676ab0f16471eac6bc473010b09ea145bbcafd2030ca9c6b6f777b",
+      "git_blob_oid": "e3e865c27247c81bfe24fdc1f8942c2fd8b4bb06",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -358,11 +358,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -2187,7 +2187,7 @@
       "title": "Collect, Create and Participate: The GK Invitation",
       "page_exists": true,
       "page_type": "nft_specialist",
-      "current_word_count": 2713,
+      "current_word_count": 2710,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -2196,10 +2196,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9c150bbc2f500d9d704ebd66ea833fe19a29d2c53efbd05ed7a9c4b21045587e",
-      "article_content_hash": "sha256:898e55dc768f4373c4390db0dd98ab724a7fcf9119a108f3504ec82754d13024",
-      "article_markup_hash": "sha256:58cc692ba62b1c76669f69218ad1aa802b97d970474bc488e1c93e918dcfb682",
-      "git_blob_oid": "df5b4fff01d329def79378d202a71b79562bd739",
+      "content_hash": "sha256:0ac1e69213311a7dd48fd33545cfe68e94386d8f1eee14ae183e4e44b2c5bc59",
+      "article_content_hash": "sha256:7e6df289968002a1d28da90b94dad69a02d14e100457b817ac56ef48a3e3eee4",
+      "article_markup_hash": "sha256:3a1a83eb4faff0c57bbf3ea1d6eb180bf2fb01ad00522e9f3a2778b3c16fc400",
+      "git_blob_oid": "3532e65450e9f871fcc363829003a5909d4379cd",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": true,
@@ -2215,11 +2215,11 @@
         "Structured NFT/template metadata"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "NFT-focused page; route substantive maintenance to the NFT specialist workflow."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -10961,7 +10961,7 @@
       "title": "The Blockchain Uprising: A GKniftyHEADS Manifesto",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1547,
+      "current_word_count": 1542,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -10970,10 +10970,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:973ae3068dad5fecdcfd4d4c4a4afe1c1eddce40939f4e8aaec8cb9f61e2d026",
-      "article_content_hash": "sha256:a909c7183c46dba3f429850a0ad71ea004b4e228cf00f553e091d2d08ff6bafd",
-      "article_markup_hash": "sha256:9561ad4876a5777124c2a02ff899a7162c59aad1972afa2d970c2a1b40148192",
-      "git_blob_oid": "f6e237c5a31ffd9cf65d1740057f0992d4df50d2",
+      "content_hash": "sha256:1f09c3c4ef68a4e1631e14ac784eda6a3daee938382a6adec5bf82669b6c9776",
+      "article_content_hash": "sha256:1ffd5f42bd2c36cb7f2b640351527a3d023e48e7486c0f68e64b045ca8a16142",
+      "article_markup_hash": "sha256:4a772103fa469272830730e1b81bbb496491fa690c33399b852fd6a3b0e9e149",
+      "git_blob_oid": "e1ed78d433fa3f059c1159f5c191dc6d56838587",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -10991,10 +10991,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w21, w61, w68-w69, w74, w79, w85, w87, w90-w91; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -13507,7 +13507,7 @@
       "title": "Stories and Information",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1512,
+      "current_word_count": 1522,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -13516,10 +13516,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:580d102f58ca9ce2a425a4a219aab1978469825bdcc98a7edf92aee543c7c178",
-      "article_content_hash": "sha256:d36f4f800852627b28ed1f40b49811764eea8b2689c91c6fe092c99f71b9954b",
-      "article_markup_hash": "sha256:ad46286008962484a4bcdf666d01cd2c6c4f08e9c24d3d81dd35a805f59027da",
-      "git_blob_oid": "ca40dca0815272c820319ecd5b3062dc6d73bb7e",
+      "content_hash": "sha256:0a510081631ab40eec19e42085adc8c4bfb91b7c30ee4ffa39c1a27b410e9c69",
+      "article_content_hash": "sha256:e7261e1d18b784509abbb7f0317ba430c4cd3038a1fa1d5d5919a1c506698b69",
+      "article_markup_hash": "sha256:92c43e3c47c20dd21087a505a2bf894b4d0cf47b592db6d39c6aa59b7d08adfc",
+      "git_blob_oid": "253cbfbd05794ef3dba17ab64cb671628b7e1eb2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -13537,10 +13537,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w58, w68-w69, w74, w79-w81, w89, w92; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -14873,7 +14873,7 @@
       "title": "Jodie ZOOM 2000: The Games",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 2006,
+      "current_word_count": 2002,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -14882,10 +14882,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:c38a8e2dde2dd1ed9a2ab95ec01b9cafaa764a6b8b5249f93936772ac245d927",
-      "article_content_hash": "sha256:d91f2ec55ac9704d71b83ef98d27f1dbda921b7e35016688aab0aaaef84198f9",
-      "article_markup_hash": "sha256:66c5eb65c745d27d1015d4dd84a6b7325701f076539a8bc5fa7cfeb9f17957fa",
-      "git_blob_oid": "ae26fe2f02804b5f5e536db2308fe9e46d35a243",
+      "content_hash": "sha256:890076cdc1daba0ae3ce6c75d913f45ec692af8d997052f1e8559c10e12f2955",
+      "article_content_hash": "sha256:6aafc3c669e66f1814148f383d75f5247fda04ecc10338dac0e60d043b78deab",
+      "article_markup_hash": "sha256:5fbd2cbd642fd3688544fe02bead3a32a3c7f8a7e02665c2f1278bd518f25ecf",
+      "git_blob_oid": "ffa43bac866fb66753ea6ea6cb8f97053b70f6b7",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -14903,10 +14903,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15002,7 +15002,7 @@
       "title": "GK Nifty Heads: Art, Community and the Web3 Business Story",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 669,
+      "current_word_count": 667,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15011,10 +15011,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:71ef38afb0c562fd2d3b3c750caef3a0b1f74bc7a9cf052c13e2205381689b9d",
-      "article_content_hash": "sha256:acc96fa8c8e5daa4a606a8f500c75c47bdfad50d3fb7c58d077c0d3384837e7f",
-      "article_markup_hash": "sha256:60fc817ff5b6befc09d7f0bd4b38baf24a3e6ff14e986eea8fa4b5320ecc3cb6",
-      "git_blob_oid": "c89bb9e017ac4a6f6cbdd48bd436a0a7bcb12a12",
+      "content_hash": "sha256:04ff0b224e7ecc997e218c8c5aa3f564e9fef0cdd43fdff10c941ef3fa5dbaec",
+      "article_content_hash": "sha256:e7e309161cb41a9fb0f5d33e8d088f50194a38b9d74b682b1bd22c3382f64a96",
+      "article_markup_hash": "sha256:7aca439a36716082e83627bdb373039ce909e29ea44f3ccf6a426ece8d51ff42",
+      "git_blob_oid": "ce1fd2f92a6f35a89e303a0c1fed6635d5f58cd5",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15030,11 +15030,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -15043,7 +15043,7 @@
       "title": "Legacy Over Hype: The Block and the Kings",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 1356,
+      "current_word_count": 1352,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -15052,10 +15052,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:d42be413d639967b70f114b533479a027b950506e8097ada862c9283c9e07530",
-      "article_content_hash": "sha256:65e91f0e750d992ab310df089e43f86861c763bbc8ff0538a2f2379459d3f51b",
-      "article_markup_hash": "sha256:6cd259ba7b0a5cb99aaa4fae656424cdca00f270bae628cf82fe15daee731c7b",
-      "git_blob_oid": "42bbde62b7f05aea9eb26ad95fe6b6f5f7af32f1",
+      "content_hash": "sha256:225b20fb9ceef1ad8f393d5ce03e2fb0c9379ec3decd9e3c9d6dd731fe5161e7",
+      "article_content_hash": "sha256:f015c08fe689bf48b64cbfbed24798465b43e35c184fa6c1d136a0c683f7dc45",
+      "article_markup_hash": "sha256:9c0e787277b2370dceb8bcc6cb36186922cb75dc2b4713255cc1e9a7adaa1113",
+      "git_blob_oid": "9218d9dd97ecb0adc9ffe9258f547c23967260a0",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -15071,11 +15071,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -18798,7 +18798,7 @@
       "title": "STAKE: A Community-Powered Proposal",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 826,
+      "current_word_count": 824,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -18807,10 +18807,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:8c85e7c3ab55e746033b5d0073084e715cf9e1be3323b52b5a01f91e981463bb",
-      "article_content_hash": "sha256:05bb3c0afcd3e67618b2532e35b7e35ff1924b384e8e61aa8bbfaa2c0cc16622",
-      "article_markup_hash": "sha256:61fdf5d6770bfb9e9b95f08a192a17960541487b0102ffd17e8e3f93eccc90fa",
-      "git_blob_oid": "3f4f7a13cb6feaa26dadc479e2573c2c28c5c489",
+      "content_hash": "sha256:52a550322bc5b5593c8c54280729bff585db33ef8bb88244aa9237ccba04c637",
+      "article_content_hash": "sha256:57b04722f07fb71bb20627bebc85deb0dd1536ecae323610b47bfdbc15983f03",
+      "article_markup_hash": "sha256:228e7900f862a44fb457503a825ba69e302b5040a4f8f6e95e338a5fe3957e85",
+      "git_blob_oid": "f1779fd2c88c32d0116f065c342bad3e9418fd71",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -18826,11 +18826,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -19002,7 +19002,7 @@
       "title": "Street Artist BUSTER: Charlie Buster’s Project Portrait",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 632,
+      "current_word_count": 611,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -19011,10 +19011,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:ee8ea05a34bb0db22305868a607bce171812e5612c1f9ce8376fb393a7d46043",
-      "article_content_hash": "sha256:5c4d90a3c202805e6df35ee1e7e56b118f62218c486d7fcd1dcefbf7e52368e0",
-      "article_markup_hash": "sha256:7e062afc1c9f27e29b75d98ff800759c38d0957b444ff97b056d6abb942373d1",
-      "git_blob_oid": "3294893d06bdcd8a6d07eb5c46241e07e0c77a4e",
+      "content_hash": "sha256:122072a01cac321e27f1d8c93bd527288345d28b8b8efadf540a4f02fdb054fc",
+      "article_content_hash": "sha256:e2f7b8cb4c1853abcc4378ecb0471043c0dcb90dc8bf69637eefd193954f48b4",
+      "article_markup_hash": "sha256:5346a21e3e3904e7751a943c401fa424bb4f92d51bf81ba615cb6c3a8d82ac5c",
+      "git_blob_oid": "fd84889ccd091da9d131261aa68234463fa6bc98",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -19030,11 +19030,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -21991,7 +21991,7 @@
       "title": "Digital ID, CBDCs and the Argument for Control",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 895,
+      "current_word_count": 891,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -22000,10 +22000,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:3a0ded1cf30a8dd0c82c0a2d8be869726ad11519efd2c5084ee9446ee9682e76",
-      "article_content_hash": "sha256:28a0caeba15ab1c14538f86b58bd77a823cad3e503b7ed07a320c7599c11cab4",
-      "article_markup_hash": "sha256:ec832fd762390fb9b6461cabf926a9d84c4402c7fe7e3c6370f463607466476c",
-      "git_blob_oid": "e849e438696df015d6dcd3690bc60edf40d8f084",
+      "content_hash": "sha256:2f37ecb2ff1a9a87b755b3259f24907e745096d5dcaab315eeb830fb77607884",
+      "article_content_hash": "sha256:0f3fe3705ab3e4ea504b2f54180df3dc05e83ce1d89f096ceee7d1486ee671bd",
+      "article_markup_hash": "sha256:0a697ae0a87a95155d63b7c70f17e4f7780fd356eee1b68b1813c0da387c15fd",
+      "git_blob_oid": "dc01edb2d88a74af1462414ed5dd02d87dec5f85",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -22019,11 +22019,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -22121,7 +22121,7 @@
       "title": "The Chronicle of the Cipher Lord: A Satoshi Testament",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 6736,
+      "current_word_count": 6732,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -22130,10 +22130,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f6a950783a9ca035df5572c4296d25a08d0b3ec95abbd831aaba61d133726d8a",
-      "article_content_hash": "sha256:15ecedf7650661c652ca7ed049da35e83586374471168a0d55220bdc3463c1fa",
-      "article_markup_hash": "sha256:7acfa8fa0cca6ea00ff57e65d0b4bc75d9ed501eb10d8cbd619bb3592f95253c",
-      "git_blob_oid": "c3931b8cb14e8ff47f708921daa1760335b9eb92",
+      "content_hash": "sha256:b6e6c0554b6e17fca80817037d3a028b1a94806024bb61ea9e2b1ab5b5addf30",
+      "article_content_hash": "sha256:f32494a49aa78b4243b379b9c67720a375ab22c77137f29ea66c80c031611490",
+      "article_markup_hash": "sha256:c540e4fb6491a1d5d4d1589469178466472d724e528c61a226b69fa0a50a2b46",
+      "git_blob_oid": "2408e9985f10b87455dce9068e406ec68f76e029",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -22151,10 +22151,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -24131,7 +24131,7 @@
       "title": "The GKniftyHEADS Manifesto: An Early Warning",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 3004,
+      "current_word_count": 3000,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -24140,10 +24140,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b2b92d522eb2aec8429fb71c8223def52dc1ca99dfb3704ef63272c0ed148810",
-      "article_content_hash": "sha256:a53ad252f138d63655a7abf12478bcd889b02ae202092e3053ffd2841960e977",
-      "article_markup_hash": "sha256:3f03e1d59b57d6e29fadc09ff4d0c564b914a5c0f2df8dadd11574e9b6fdb7df",
-      "git_blob_oid": "6c44939c07c7e0cebad37832065dc44af6f77544",
+      "content_hash": "sha256:2b0bbd308d15ab92bf2f7269caea3f1b72e806c76f83c6a5325944f504f3b285",
+      "article_content_hash": "sha256:e0a9716769d387757a7b3446dee67439ee53ab8bf066b1ddf0d5308a5091cba4",
+      "article_markup_hash": "sha256:70bf30cf1ca26d7be031b5369dc67d3f0ad73cadf1b557b000c92a15e3b0da50",
+      "git_blob_oid": "8924e2b1bc22f56b8e752e90bf756af2280144c0",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -24161,10 +24161,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w21, w61, w68-w69, w74, w79, w85, w87, w90-w91; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -24173,7 +24173,7 @@
       "title": "The GKniftyHEADS (The Immortal Architects)",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1258,
+      "current_word_count": 1255,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -24182,10 +24182,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:b52081706e3c04eb5bdd43134276bf8a7a8b7bcb18521370c1da45ba2084ea39",
-      "article_content_hash": "sha256:771f3b158a977a5324741df5bb6a334d51e25c07ae59f2050f53784369d11aa0",
-      "article_markup_hash": "sha256:cce2cfa6ed196b09838b9bed9a35011a7bf5e6917a7b71ce0b82383f0cb9dd20",
-      "git_blob_oid": "5030f3c7c4c544c19a5f0dd44fb330b5372e04e2",
+      "content_hash": "sha256:c1a336fd161dab09beecd9695f8c55b6deb5149d65c777b9a4d93602d3aa86ff",
+      "article_content_hash": "sha256:c12a9fa5aeee4f2fd3a5abc2c07410650189820ca513501bb170e72a61ed194f",
+      "article_markup_hash": "sha256:762170d6cfc0075eedbaa06eb56d64565fd6e7ed2c56c040ff1f55d5cc1f852f",
+      "git_blob_oid": "26ebfc96b56c8b9fb21472817664a2710e87f55f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -24203,10 +24203,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (W2, W6, W8, w21, w61, w68-w69, w74, w79, w85, w87, w90-w91; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -24465,7 +24465,7 @@
       "title": "The Hard Fork: Rise of the HODL Warriors",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 4481,
+      "current_word_count": 4478,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -24483,10 +24483,10 @@
           "shared_token_count": 15
         }
       ],
-      "content_hash": "sha256:8afe24721bbcd053a605232e70036b9c93d7c615dd48a285afaf8dd074172279",
-      "article_content_hash": "sha256:79b6cef468802de4da7d8cf3708ff34ea05557663eeef59dfc755fd4e225772b",
-      "article_markup_hash": "sha256:f5cb95ec3cc7674b520934f4a33784f0d5bf5a1525d7f2ca24e3d8c873fc946b",
-      "git_blob_oid": "025d7a5c7d26184d5b423a254cee09bcd99e39c5",
+      "content_hash": "sha256:336454271ac311008cb2523c76fc0c737feb64994b62a90fed117c79f199b7a2",
+      "article_content_hash": "sha256:1ca8e6d8a201b5df28a995210e0fccdb8f9e03ba08d0adfcb536452941658cf7",
+      "article_markup_hash": "sha256:51462d8c176eed831e5e3ae4d6c8a0d765a6b2c25d00d38c1c605a78fef68fcb",
+      "git_blob_oid": "95f3d5e3871794acbc758f14a272e6180d489e24",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -24504,11 +24504,11 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "1 likely near-duplicate section pair(s) reported; no text was removed."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -24653,7 +24653,7 @@
       "title": "The High Hats (The Digital Aristocrats of the Grid)",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 1274,
+      "current_word_count": 1265,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -24662,10 +24662,52 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:4239ab3f6ca2e604ba8addc803b9b8f9afc3efeeca74c69cea91fa1d25339ead",
-      "article_content_hash": "sha256:363f31cb5d9d7effe5488c70e104b6febeb00c37e298bc6500400088be74032c",
-      "article_markup_hash": "sha256:cdf315009b8a655fa8c0613facd0f58a59692f45a52d0cfb08a0cffd7d3cd8bf",
-      "git_blob_oid": "1e16d4c30bd43acaf9003172c496d1f5e57e35dd",
+      "content_hash": "sha256:67276c0e7c4ee7052a3c19fcb933d4044a84837c0af6fb1f4eb59eb59046cdb1",
+      "article_content_hash": "sha256:6801e386445998ddf74283231440fab2773e36799688bc470ac7166d6e29b77a",
+      "article_markup_hash": "sha256:7b0c4e092f923cfaf7250eacc9837ae6b26034b3a64fd0ce870972b73391fcbf",
+      "git_blob_oid": "cf25b1f6f779066166fd89654db8ed121263acbe",
+      "wiki_stub_marker_scope": null,
+      "first_witness_page": false,
+      "nft_template_generated_page": false,
+      "likely_lore_page": true,
+      "rewrite_status": "KEEP",
+      "automation_policy": "canon-locked",
+      "rewrite_cluster": "Historical/archive pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NONE",
+      "recommended_action": "Preserve the completed canon revision; automated article prose is locked.",
+      "suggested_priority": "P4",
+      "likely_source_family": [
+        "about/latest-canon-and-brand-vision.md",
+        "about/w81-condensed-canon-digest.md",
+        "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
+      ],
+      "audit_notes": [
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+      ],
+      "content_owner": "canon",
+      "canon_revision": 2,
+      "canon_source_tier": "first-witness+w81"
+    },
+    {
+      "path": "wiki/the-high-hats-the-digital-aristocrats-w52.html",
+      "slug": "the-high-hats-the-digital-aristocrats-w52",
+      "title": "The High Hats (The Digital Aristocrats of the Grid) — w52 archive copy",
+      "page_exists": true,
+      "page_type": "historical_archive",
+      "current_word_count": 1271,
+      "manual_content_block_count": 0,
+      "sam_content_block_count": 0,
+      "canonical_content_block_count": 1,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
+      "duplicate_heading_count": 0,
+      "exact_duplicate_paragraph_count": 0,
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:61616a1f00c275d8c158368eafa39219c86bf6603356e69d20e450747e0a965f",
+      "article_content_hash": "sha256:39497cff171186501476f1ef906f645589b5c8edb17a0b1d729853d92d255b9f",
+      "article_markup_hash": "sha256:7a397abf3a90c6ed5061040a4b81f1388233451703e29435cd7cd18a06ab5293",
+      "git_blob_oid": "9304f43df8438090747830d8dbb16976adb4d858",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -25356,7 +25398,7 @@
       "title": "The OG PIXEL SAINTS (Warriors of Light and Nostalgia)",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 1224,
+      "current_word_count": 1220,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -25365,10 +25407,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:c1f5cb3000cddbffd65f6e043f68ff9158c01f4978aefcd4058ffe7a2251aa63",
-      "article_content_hash": "sha256:fde93d1fe99a782a472747d9e6cc693b0aa957e94511d3b9a2d388c91c602985",
-      "article_markup_hash": "sha256:22e039f06f812dbb7c79fd810279bd69e70696083158e2874642c9b02f67c318",
-      "git_blob_oid": "ebaf25d0751931dc92377e254d5b4550253e97a0",
+      "content_hash": "sha256:001dbee3a11eb62e92b22c53ff7ec8499526a66bdfa286a724a9a5628ca4e268",
+      "article_content_hash": "sha256:5d68adf4099a6f08094d2072b955187bd7df59db2cf69aa938cd38798f9b0260",
+      "article_markup_hash": "sha256:6286a9dc68f096d441f95cd11f0c9fcf48531dba5b950fc1c9386d2416eb156a",
+      "git_blob_oid": "3ae49316b5fbaae9fe15f90cb0bef911b76fe702",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -25386,10 +25428,10 @@
         "brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources)"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -27553,7 +27595,7 @@
       "title": "Phase One, Two and Three: The Street Manifesto",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 3499,
+      "current_word_count": 3496,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -27562,10 +27604,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:9a99e8b0470c1af74ef17e7b04f7fd7b46434889a80941e19be957eda58b4080",
-      "article_content_hash": "sha256:756cd0e0b6eda35a6b05d5dd332204583feabec1eaf820bf59badf4612b21493",
-      "article_markup_hash": "sha256:8b906993efa25158b591b92e191974093060855586d350cdb67c54b599d5cebb",
-      "git_blob_oid": "72c130a78c371789ed35377925fac17eb80f11a3",
+      "content_hash": "sha256:1ee9213ae93bbd4b438262667f0503a11c2473bdd4a974c3fd375fc573c11f20",
+      "article_content_hash": "sha256:a41ad1a0438456a4c2c5c3fab5e61b503d1e89484bb6497edc619b3ef525cbf1",
+      "article_markup_hash": "sha256:dadaea264cbd9a46e7e8a9ecbf70fd18a10a01b6262b50c067fc88c541010153",
+      "git_blob_oid": "d6d85200d68ae66407a365388e264f8380567f4f",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -27581,11 +27623,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
@@ -27594,7 +27636,7 @@
       "title": "Phase One, Two and Three: The Extended Medium Edition",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 3522,
+      "current_word_count": 3518,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 1,
@@ -27603,10 +27645,10 @@
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:f260b8b09d3cf01b80f3d93c30424487a421bdde084873cbef035a402a90dc62",
-      "article_content_hash": "sha256:8769d94e7adaab51a1425890dd6dc8c1c5e452931d04fc5ba88c4c9cfcfa7aa4",
-      "article_markup_hash": "sha256:6ccde30fc70b9f86f408b46597baa6005b67a368e778d2d12b3add95e3dea7ca",
-      "git_blob_oid": "601e6d74b6578c4746bea1d3705dd7968e917396",
+      "content_hash": "sha256:00e2214c59e77888ff52c2aece2bb6177c9d747532cb9571cd61f7332c99247d",
+      "article_content_hash": "sha256:324150317daef52cd1b048ceb8724886fc227bd1ccb6a4de3094389cfce1696f",
+      "article_markup_hash": "sha256:b038f9fedfdca622900c0c4cc898a6d84ae5d2153bd32487ee7a866a42ef986a",
+      "git_blob_oid": "ddad03af97501b3a044f2c7580919ef32b1dc2a5",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
@@ -27622,11 +27664,11 @@
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Canon revision 1 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
+        "Canon revision 2 reconciled against First Witness and W81; disputed traditions remain explicitly identified.",
         "No article-ownership or duplication issue detected by the deterministic audit."
       ],
       "content_owner": "canon",
-      "canon_revision": 1,
+      "canon_revision": 2,
       "canon_source_tier": "first-witness+w81"
     },
     {
