@@ -17,6 +17,7 @@ function setup(t) {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(schema);
   sqlite.exec(schema);
+  sqlite.exec(readFileSync(new URL('../workers/moonboys-api/migrations/134_support_merge_approval.sql', import.meta.url), 'utf8'));
   const result = [];
   const original = globalThis.fetch;
   globalThis.fetch = async (url, data) => {
@@ -41,7 +42,7 @@ function setup(t) {
   };
   const update = (actor, text, options = {}) => worker.fetch(new Request(`${origin}/telegram/webhook`, {
     method: 'POST', headers: options.unsigned ? {} : { 'X-Telegram-Bot-Api-Secret-Token': env.TELEGRAM_WEBHOOK_SECRET },
-    body: JSON.stringify({ message: {
+    body: JSON.stringify(options.callback ? { callback_query: { id: "callback", data: text, from: { id: actor }, message: { chat: { id: actor, type: "private" } } } } : { message: {
       text, from: { id: actor }, chat: { id: options.group ? -999 : actor, type: options.group ? 'group' : 'private' },
       message_id: options.messageId ?? 123,
     } }),
@@ -99,6 +100,23 @@ test('LOOK, revised findings, FIX, PR and verified resolution are separate trans
   assert.equal((await move('status', { status: 'pr_opened_waiting_review', pr_url: 'https://other.example' })).status, 409);
   assert.equal((await move('status', { status: 'pr_opened_waiting_review', pr_url: sitePr })).status, 200);
   assert.equal(row().approved_revision, approved);
+  const ready = { status: 'merge_ready', pr_url: sitePr, merge_head_sha: sha };
+  assert.equal((await move('status', { ...ready, merge_head_sha: '' })).status, 409);
+  assert.equal((await move('status', ready)).status, 200);
+  await move('notify');
+  const approval = result.at(-1).reply_markup.inline_keyboard[0][0];
+  assert.equal(approval.text, 'Approve merge');
+  await update(player, approval.callback_data, { callback: true });
+  assert.equal(row().doctor_status, 'merge_ready');
+  await move('status', { ...ready, merge_head_sha: '2'.repeat(40) });
+  await update(owner, approval.callback_data, { callback: true });
+  assert.equal(row().doctor_status, 'merge_ready');
+  await update(owner, `support:merge:1:${row().revision}`, { callback: true, unsigned: true });
+  assert.equal(row().doctor_status, 'merge_ready');
+  await update(owner, `support:merge:1:${row().revision}`, { callback: true });
+  assert.equal(row().doctor_status, 'merge_approved');
+  assert.equal(row().merge_head_sha, '2'.repeat(40));
+  assert.equal((await move('status', ready)).status, 409);
   await update(owner, '/resolved 1');
   assert.equal(row().state, 'tracking');
   assert.equal((await move('status', { status: 'merged', pr_url: sitePr })).status, 200);

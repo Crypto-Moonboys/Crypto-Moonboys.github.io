@@ -5,7 +5,7 @@ const PR = /^https:\/\/github\.com\/Crypto-Moonboys\/Crypto-Moonboys\.github\.io
 const SECRET = /^[A-Za-z0-9_-]{32,256}$/;
 const ART = new Set(['moonboy-builder.html', 'js/avatar-builder-core.mjs', 'js/avatar-builder-test.js', 'css/avatar-builder-test.css']);
 const POLL_STATES = "'look_requested','approved','tracking'";
-const STATUS = new Set(['queued', 'running', 'pr_opened_waiting_review', 'blocked_needs_human_permission', 'failed_with_reason', 'merged']);
+const STATUS = new Set(['queued', 'running', 'pr_opened_waiting_review', 'blocked_needs_human_permission', 'failed_with_reason', 'merged', 'merge_ready', 'merge_blocked']);
 const config = env => env.SUPPORT_CASES_ENABLED === 'true' && ID.test(env.SUPPORT_OWNER_TELEGRAM_ID || '')
   && SECRET.test(env.SUPPORT_BRAIN_TOKEN || '') && env.DB && env.TELEGRAM_BOT_TOKEN;
 const find = (db, id) => db.prepare('SELECT * FROM support_cases WHERE id = ?').bind(id).first();
@@ -40,7 +40,7 @@ const button = (label, action, row) => ({ text: label, callback_data: `support:$
 function parseUpdate(update) {
   const callback = update.callback_query;
   if (typeof callback?.data === 'string' && callback.data.startsWith('support:')) {
-    const match = /^support:(look|decline|fix):(\d+):(\d+)$/.exec(callback.data);
+    const match = /^support:(look|decline|fix|merge):(\d+):(\d+)$/.exec(callback.data);
     return { action: match?.[1], id: match?.[2], revision: match?.[3], actor: callback.from, chat: callback.message?.chat, callback: callback.id };
   }
   const msg = update.message;
@@ -96,6 +96,20 @@ export async function handleSupportUpdate(update, env, checkMember) {
   }
   if (command.action === 'fix' && state === 'reviewed' && row.fix && SHA.test(row.base_sha)) next = 'approved';
   if (command.action === 'resolved' && state === 'merged') next = 'resolved';
+  if (command.action === 'merge' && state === 'tracking'
+      && row.doctor_status === 'merge_ready' && SHA.test(row.merge_head_sha)
+      && PR.test(row.pr_url) && revision === String(row.revision)) {
+    const approval = await db.prepare(`UPDATE support_cases SET doctor_status = 'merge_approved',
+      revision = revision + 1, owner_notice = 0, polled_at = 0
+      WHERE id = ? AND revision = ? AND state = 'tracking' AND doctor_status = 'merge_ready'`)
+      .bind(row.id, row.revision).run();
+    if (approval.meta.changes === 1) {
+      await telegram(env, 'answerCallbackQuery', {
+        callback_query_id: command.callback, text: 'Approved. The Brain will recheck the PR before merging.'
+      });
+      return true;
+    }
+  }
   let changed = false;
   if (next && revision === String(row.revision)) {
     const result = await db.prepare(`UPDATE support_cases
@@ -143,6 +157,10 @@ async function deliver(env, row) {
     if (row.doctor_status) message += `\nDoctor: ${row.doctor_status.replaceAll('_', ' ')}`;
     if (row.doctor_reason) message += `\n${row.doctor_reason}`;
     if (row.pr_url) message += `\n${row.pr_url}`;
+    if (row.state === 'tracking' && row.doctor_status === 'merge_ready' && SHA.test(row.merge_head_sha)) {
+      message += `\nReviewed commit: ${row.merge_head_sha.slice(0, 12)}`;
+      keyboard = [[button('Approve merge', 'merge', row)]];
+    }
     if (row.state === 'merged') message += `\nAfter the change is live and verified, send /resolved ${row.id}.`;
     await say(env, env.SUPPORT_OWNER_TELEGRAM_ID, message, keyboard);
     await db.prepare('UPDATE support_cases SET owner_notice = 0 WHERE id = ? AND revision = ?').bind(row.id, row.revision).run();
@@ -166,7 +184,7 @@ export async function handleSupportRequest(request, env) {
         CASE WHEN state = 'look_requested' THEN report ELSE '' END AS report,
         CASE WHEN state = 'look_requested' THEN feedback ELSE '' END AS feedback,
         CASE WHEN state = 'look_requested' THEN review ELSE '' END AS review,
-        fix, paths, base_sha
+        fix, paths, base_sha, doctor_status, pr_url, merge_head_sha
         FROM support_cases WHERE state IN (${POLL_STATES}) ORDER BY polled_at, id LIMIT 12`).all(),
       db.prepare('SELECT id, revision FROM support_cases WHERE owner_notice = 1 OR reporter_notice = 1 ORDER BY polled_at, id LIMIT 12').all()
     ]);
@@ -201,15 +219,20 @@ export async function handleSupportRequest(request, env) {
     return result.meta.changes === 1 ? json({ ok: true }) : json({ error: 'stale_case' }, 409);
   }
   if (body.action === 'status' && ['approved', 'tracking'].includes(row.state) && STATUS.has(body.status)
-      && (body.pr_url ? PR.test(body.pr_url) : !['merged', 'pr_opened_waiting_review'].includes(body.status))) {
+      && (body.pr_url ? PR.test(body.pr_url) : !['merged', 'pr_opened_waiting_review', 'merge_ready'].includes(body.status))
+      && (body.status !== 'merge_ready' || (row.state === 'tracking' && row.pr_url === body.pr_url && SHA.test(body.merge_head_sha || '')))) {
+    const mergeHead = body.status === 'merge_ready' ? body.merge_head_sha : '';
+    if (row.doctor_status === 'merge_approved' && !['merged', 'merge_blocked'].includes(body.status)) {
+      return json({ error: 'stale_case' }, 409);
+    }
     const reason = redact(text(body.reason, 300));
-    if (row.doctor_status === body.status && row.pr_url === (body.pr_url || '') && row.doctor_reason === reason) return json({ ok: true });
+    if (row.doctor_status === body.status && row.pr_url === (body.pr_url || '') && row.doctor_reason === reason && row.merge_head_sha === mergeHead) return json({ ok: true });
     const next = body.status === 'merged' ? 'merged'
       : ['blocked_needs_human_permission', 'failed_with_reason'].includes(body.status) ? 'reviewed' : 'tracking';
     // A blocked job needs a fresh investigation before any further approval.
-    const result = await db.prepare(`UPDATE support_cases SET state = ?, revision = revision + 1, doctor_status = ?, doctor_reason = ?, pr_url = ?,
+    const result = await db.prepare(`UPDATE support_cases SET state = ?, revision = revision + 1, doctor_status = ?, doctor_reason = ?, pr_url = ?, merge_head_sha = ?,
       owner_notice = 1, fix = CASE WHEN ? = 'reviewed' THEN '' ELSE fix END
-      WHERE id = ? AND revision = ? AND state = ?`).bind(next, body.status, reason, body.pr_url || '', next, row.id, row.revision, row.state).run();
+      WHERE id = ? AND revision = ? AND state = ?`).bind(next, body.status, reason, body.pr_url || '', mergeHead, next, row.id, row.revision, row.state).run();
     return result.meta.changes === 1 ? json({ ok: true }) : json({ error: 'stale_case' }, 409);
   }
   return json({ error: 'invalid_transition' }, 409);
