@@ -125,6 +125,12 @@ function terms(value) {
   return Array.from(new Set(normal(value).split(' ').filter(word => (word.length >= 2 || /^\d$/.test(word)) && !common.has(word)))).slice(0, 20);
 }
 
+// Keep the umbrella name out of general ranking while recognising overview questions.
+function isMoonboysOverviewQuestion(question) {
+  return /\b(?:crypto *)?moonboys?\b/.test(normal(question)) &&
+    terms(question).every(word => ['brand', 'cryptomoonboys', 'project', 'world'].includes(word));
+}
+
 function titleFromPath(path) {
   return path === '/' ? 'Crypto Moonboys home' : path.split('/').filter(Boolean).at(-1).replace(/\.(?:html|md)$/, '').replaceAll('-', ' ');
 }
@@ -233,9 +239,11 @@ export async function findPublicSwarmsySources(question, { exactSubject = false 
   const subject = normal(question).replace(/^(?:(?:what|who|where|when|which) (?:is|are|was|were)|tell me about|explain) (?:the )?/, '');
   const candidates = exactSubject ? catalog.filter(source => localTitle(source) === localSubject(subject)) : catalog;
   const ranked = bestSources(candidates, question, []);
-  const matchedCanon = ranked.find(({ path }) => path === currentCanon.path);
-  const selected = matchedCanon
-    ? [matchedCanon, ...ranked.filter(source => source !== matchedCanon)].slice(0, 3)
+  const overview = !exactSubject && isMoonboysOverviewQuestion(question)
+    ? candidates.find(({ path }) => path === MOONBOYS_OVERVIEW.path) : null;
+  const preferred = overview || ranked.find(({ path }) => path === currentCanon.path);
+  const selected = preferred
+    ? [preferred, ...ranked.filter(source => source !== preferred)].slice(0, 3)
     : ranked.slice(0, 3);
   const results = await Promise.allSettled(selected.map(async source => {
     const excerpt = loreExcerpt(source, await readBrainLore(source, brain), question).slice(0, 1800);
@@ -517,10 +525,7 @@ async function answerChat(env, npc, question, history, day, gemini, endpoint) {
     }];
   });
   const previous = recentTurns.map(turn => turn.question);
-  // The umbrella name is excluded from general ranking to keep specific lore
-  // queries focused. Route overview questions directly to the public wiki hub.
-  const overview = /\b(?:crypto *)?moonboys?\b/.test(normal(question)) &&
-    terms(question).every(word => ['brand', 'cryptomoonboys', 'project', 'world'].includes(word));
+  const overview = isMoonboysOverviewQuestion(question);
   const earlierQuestions = overview ? [] : previous;
   const combined = [question, ...earlierQuestions].join(' ');
   const ownSources = [characterSource(leader), ...factionSources(npc, leader)];
