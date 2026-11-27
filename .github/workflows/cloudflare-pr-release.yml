@@ -1,7 +1,12 @@
 name: Cloudflare PR validation and release
-run-name: "Cloudflare ${{ inputs.stage }} PR #${{ inputs.pr }} ${{ inputs.commit }}"
+run-name: "Cloudflare ${{ inputs.stage || (github.event.action == 'closed' && 'release' || 'validate') }} PR #${{ inputs.pr || github.event.pull_request.number }} ${{ inputs.commit || (github.event.action == 'closed' && github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha) }}"
 
 on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review, closed]
+    paths:
+      - 'workers/moonboys-api/**'
   workflow_dispatch:
     inputs:
       stage:
@@ -27,10 +32,19 @@ on:
 permissions:
   contents: read
 
+env:
+  CF_STAGE: ${{ inputs.stage || (github.event.action == 'closed' && 'release' || 'validate') }}
+  CF_TARGET: ${{ inputs.commit || (github.event.action == 'closed' && github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha) }}
+
 jobs:
   plan:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      ((github.event.action == 'closed' && github.event.pull_request.merged) ||
+      (github.event.action != 'closed' && !github.event.pull_request.draft)))
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 22
     permissions:
       contents: read
       pull-requests: read
@@ -45,9 +59,9 @@ jobs:
         name: Verify the PR, commit and release authorization
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ inputs.pr }}
-          TARGET_COMMIT: ${{ inputs.commit }}
-          STAGE: ${{ inputs.stage }}
+          PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
+          TARGET_COMMIT: ${{ env.CF_TARGET }}
+          STAGE: ${{ env.CF_STAGE }}
           VALIDATION_RUN: ${{ inputs.validation_run }}
         run: node scripts/cloudflare-pr-release.mjs plan
 
@@ -63,6 +77,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
       - run: npm ci --ignore-scripts
       - name: Read the D1 schema and migration names only
         env:
@@ -77,6 +92,10 @@ jobs:
           if-no-files-found: error
 
   validate:
+    # Hosted, credential-free runner. Never add shared caches or pass Cloudflare
+    # secrets to a step that checks out or runs the PR's code.
+    permissions:
+      contents: read
     needs: [plan, schema]
     if: >-
       !cancelled() && needs.plan.result == 'success' &&
@@ -86,11 +105,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.commit }}
+          ref: ${{ env.CF_TARGET }}
           persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
       - run: npm ci
       - if: needs.plan.outputs.migrations != ''
         uses: actions/download-artifact@v7
@@ -108,7 +128,10 @@ jobs:
 
   release:
     needs: [plan, validate]
-    if: inputs.stage == 'release' && needs.validate.result == 'success'
+    if: >-
+      (inputs.stage == 'release' || (github.event_name == 'pull_request_target' &&
+      github.event.action == 'closed' && github.event.pull_request.merged)) &&
+      needs.validate.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: cloudflare-production
@@ -123,12 +146,13 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
       - run: npm ci --ignore-scripts
       - name: Migrate, deploy and verify production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_RELEASE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          TARGET_COMMIT: ${{ inputs.commit }}
+          TARGET_COMMIT: ${{ env.CF_TARGET }}
           RELEASE_MIGRATIONS: ${{ needs.plan.outputs.migrations }}
-          APPLY_D1: ${{ inputs.apply_d1 }}
+          APPLY_D1: ${{ github.event_name == 'pull_request_target' || inputs.apply_d1 }}
         run: node scripts/cloudflare-pr-release.mjs release
