@@ -375,6 +375,12 @@ Content must clearly identify whether it is historical fact, sourced guidance, j
 
 Authority must come from useful, maintained content with named responsibility, sources, dates, jurisdiction, revision history, correction routes and specialist review where appropriate.
 
+### Public Wiki search, Telegram and the Brain feed
+
+[Ask SWARMSY](https://cryptomoonboys.com/search.html) opens a fullscreen chat from the search page. The regular search field and category browsing remain available. The public `POST /swarmsy/wiki-search` route on `moonboys-api` uses native Cloudflare Workers AI with published Wiki excerpts and links to its sources. The GKniftyHEADS Wiki bot, `@FCUKDABOT`, uses the same endpoint and answer budget through a Worker service binding. [SWARMSY-Ai owns the bot, its portraits and the daily welcome](https://github.com/Crypto-Moonboys/SWARMSY-Ai/blob/master/cloud-deployments/telegram-wiki-bot/README.md). The website's `@WIKICOMSBOT` handles private editorial approvals and support cases.
+
+On a successful Pages release, [the publishing workflow](.github/workflows/pages.yml) publishes the [public Brain manifest](https://cryptomoonboys.com/brain-feed/index.json) and hash-addressed records from that release. The snapshot covers public pages, approved public canon material and published NFT metadata. SWARMSY reads the live feed, so approved Wiki edits become available after Pages publishes them and the search retrieves the updated records. The workflow can notify [the Brain mirror](https://github.com/HODLKONG64/the-brain/blob/main/brain-sync/README.md) when `BRAIN_CANON_DISPATCH_TOKEN` is configured. The scheduled mirror can catch up independently. Private Brain evidence and SAM's R2 research memory have separate access and storage.
+
 ### SAM Wiki drafts and owner approval
 
 [HAY-MUM](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) submits eligible Wiki proposals to the `moonboys-api` Worker. The Worker stores drafts and revision-specific decisions in D1. The [Brain](https://github.com/HODLKONG64/the-brain) prepares website PRs and requests Codex review. The site staging script preserves existing article prose, updates canon ownership and revisions where applicable, and rebuilds the affected discovery files for search and publishing.
@@ -389,6 +395,10 @@ Authority must come from useful, maintained content with named responsibility, s
 An unchanged target can be refreshed when website `main` advances. The new commit needs a fresh Codex review and owner approval. New routes require publication registration. First Witness and specialist NFT pages follow their dedicated review paths.
 
 Activation requires [D1 migration 135](workers/moonboys-api/migrations/135_sam_wiki_drafts.sql), the approved Worker release, the matching `SAM_WIKI_DRAFT_TOKEN` in the Worker and HAY-MUM Actions, and the Brain editorial timer. Enable `SAM_WIKI_DRAFTS_ENABLED` once the timer and credentials are configured. See the [SAM rollout and Telegram runbook](docs/telegram-support-cases.md#sam-wiki-drafts) and [Worker release guide](workers/moonboys-api/README.md).
+
+### Cloudflare validation and release
+
+[The Cloudflare PR workflow](.github/workflows/cloudflare-pr-release.yml) validates the exact head of ready Worker PRs. After approval and merge, its production release checks the D1 ledger, applies reviewed migrations, deploys the Worker and checks live provenance. The Brain can request validation for a SAM Wiki PR when Codex or a maintainer flags it. See the [Worker runbook](workers/moonboys-api/README.md).
 
 ## 1/1 Ownership, Royalties and Community Canon
 
