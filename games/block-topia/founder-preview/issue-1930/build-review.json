@@ -1,27 +1,44 @@
 {
   "issue": 1930,
-  "round": 143,
+  "round": 144,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Waterfront Path Issues",
-          "details": "The path from the starting point to the end does not seem intuitive and may be confusing for players. There are several dead ends or abrupt changes in direction that could disorient users."
+          "description": "Waterfront district has a narrow road between houses that might be confusing for players.",
+          "location": [
+            3,
+            27,
+            39
+          ],
+          "severity": "medium"
         },
         {
-          "description": "House Placement",
-          "details": "There is a house placed directly next to the water, which might look odd as houses typically require some distance from water bodies for practical reasons like flooding and access. This could be visually jarring."
+          "description": "The lighthouse is not easily distinguishable from the ground due to similar color.",
+          "location": [
+            6,
+            54
+          ],
+          "severity": "high"
         }
       ],
       "navigationRisks": [
         {
-          "description": "Path Complexity",
-          "details": "The route provided has many turns and changes in direction, which might make navigation difficult for players. There are several points where the path seems to loop back or end abruptly without clear continuation."
+          "description": "Route path includes a sudden change in direction that could be disorienting for players.",
+          "location": [
+            17,
+            40,
+            52
+          ],
+          "severity": "medium"
         },
         {
-          "description": "Lighthouse Visibility",
-          "details": "The lighthouse is placed on a road that is not easily visible from water areas. This could lead to players missing out on important visual cues and might require additional instructions for finding it."
+          "description": "The route has an unexpected dead-end at position 89 which might confuse the player.",
+          "location": [
+            89
+          ],
+          "severity": "high"
         }
       ]
     }
