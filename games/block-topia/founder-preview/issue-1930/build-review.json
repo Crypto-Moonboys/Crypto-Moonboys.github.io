@@ -1,25 +1,29 @@
 {
   "issue": 1930,
-  "round": 141,
+  "round": 142,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
           "row": 3,
-          "column": 6,
-          "description": "Water and road overlap, creating a navigational risk."
+          "column": 9,
+          "description": "Potential road intersection or complex area that might confuse players."
         },
         {
           "row": 4,
-          "column": 5,
-          "description": "House and road overlap, potentially confusing the player."
+          "column": 10,
+          "description": "Another potential road intersection, possibly leading to a dead-end or loop."
         }
       ],
       "navigationRisks": [
         {
-          "pathIndex": 23,
-          "description": "The path from 106 to 94 seems to have a sudden change in direction or might be blocked by a house or dock, which could confuse players."
+          "index": 27,
+          "description": "The route starts abruptly without clear indication of the starting point on the map."
+        },
+        {
+          "index": 40,
+          "description": "A sharp turn in the route that might be difficult for players to follow visually."
         }
       ]
     }
