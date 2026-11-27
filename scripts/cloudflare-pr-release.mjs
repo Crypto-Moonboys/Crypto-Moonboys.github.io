@@ -56,7 +56,47 @@ function gh(endpoint, ...args) {
   return JSON.parse(run('gh', ['api', endpoint, ...args]));
 }
 
-function plan() {
+export function matchesValidationRun(run, number, head) {
+  return run.path?.split('@')[0] === workflow
+    && ['pull_request_target', 'workflow_dispatch'].includes(run.event)
+    && (run.event !== 'workflow_dispatch' || run.head_branch === 'main')
+    && run.display_title === `Cloudflare validate PR #${number} ${head}`;
+}
+
+async function requireSuccessfulValidation(pull, number, validationRun) {
+  const endpoint = 'repos/{owner}/{repo}/actions';
+  const valid = run => {
+    if (!matchesValidationRun(run, number, pull.head.sha) || run.conclusion !== 'success') return false;
+    const jobs = gh(`${endpoint}/runs/${run.id}/attempts/${run.run_attempt}/jobs?per_page=100`);
+    return jobs.jobs.some(job => job.name === 'validate' && job.conclusion === 'success');
+  };
+  if (validationRun) {
+    requireCheck(numericId.test(validationRun), 'Supply a successful validation run ID.');
+    requireCheck(valid(gh(endpoint + '/runs/' + validationRun)),
+      'The run must be a successful validation for this PR and its reviewed head.');
+    return;
+  }
+
+  requireCheck(process.env.GITHUB_EVENT_NAME === 'pull_request_target',
+    'Manual releases require a successful validation run ID.');
+  const runsEndpoint = endpoint + '/workflows/cloudflare-pr-release.yml/runs';
+  for (let attempt = 0; attempt <= 40; attempt += 1) {
+    const runs = [];
+    for (const event of ['pull_request_target', 'workflow_dispatch']) {
+      const query = new URLSearchParams({ event, per_page: '100', created: '>=' + pull.created_at });
+      const result = gh(runsEndpoint + '?' + query);
+      runs.push(...result.workflow_runs);
+    }
+    if (runs.some(valid)) return;
+    const matching = runs.filter(run => matchesValidationRun(run, number, pull.head.sha));
+    if (matching.length && matching.every(run => run.status === 'completed')) break;
+    if (attempt === 0) console.log('Waiting for successful validation of the reviewed PR head.');
+    if (attempt < 40) await new Promise(resolve => setTimeout(resolve, 30000));
+  }
+  throw new Error('No successful Cloudflare validation found for the merged PR head. Check the PR run.');
+}
+
+async function plan() {
   const { PR_NUMBER: number, STAGE: stage, VALIDATION_RUN: validationRun, GITHUB_OUTPUT: output } = process.env;
   const target = checkedCommit();
   requireCheck(process.env.GITHUB_REF === 'refs/heads/main', 'Dispatch the workflow from main.');
@@ -77,12 +117,7 @@ function plan() {
   } else {
     requireCheck(pull.merged && pull.merge_commit_sha === target && git('rev-parse', 'HEAD') === target,
       'Release requires the PR merge commit to be current main.');
-    requireCheck(numericId.test(validationRun ?? ''), 'Supply a successful validation run ID.');
-    const validation = gh('repos/{owner}/{repo}/actions/runs/' + validationRun);
-    requireCheck(validation.path.split('@')[0] === workflow && validation.head_branch === 'main'
-      && validation.event === 'workflow_dispatch' && validation.conclusion === 'success'
-      && validation.display_title === `Cloudflare validate PR #${number} ${pull.head.sha}`,
-    'The run must be a successful validation for this PR and its reviewed head.');
+    await requireSuccessfulValidation(pull, number, validationRun);
     for (const name of migrations) {
       const file = files.find(entry => entry.filename === migrationDir + name);
       requireCheck(git('hash-object', migrationDir + name) === file.sha,
@@ -155,18 +190,16 @@ async function release() {
   requireCurrentMain(commit);
   const approved = migrationInputs();
   const summary = process.env.GITHUB_STEP_SUMMARY;
-  if (approved.length) {
-    const inventory = readdirSync(migrationDir).filter(name => name.endsWith('.sql'));
-    const pending = pendingReleaseMigrations(inventory, ledger(), approved);
-    if (pending.length) {
-      requireCheck(process.env.APPLY_D1 === 'true', 'Approve the D1 migrations explicitly before releasing.');
-      requireCurrentMain(commit);
-      console.log(wrangler('d1', 'migrations', 'apply', 'wikicoms', '--remote'));
-      const applied = ledger();
-      requireCheck(approved.every(name => applied.includes(name)), 'D1 did not record all reviewed migrations.');
-    }
-    if (summary) appendFileSync(summary, `D1 ledger verified: ${approved.join(', ')}\n\n`);
+  const inventory = readdirSync(migrationDir).filter(name => name.endsWith('.sql'));
+  const pending = pendingReleaseMigrations(inventory, ledger(), approved);
+  if (pending.length) {
+    requireCheck(process.env.APPLY_D1 === 'true', 'Approve the D1 migrations explicitly before releasing.');
+    requireCurrentMain(commit);
+    console.log(wrangler('d1', 'migrations', 'apply', 'wikicoms', '--remote'));
+    const applied = ledger();
+    requireCheck(approved.every(name => applied.includes(name)), 'D1 did not record all reviewed migrations.');
   }
+  if (summary && approved.length) appendFileSync(summary, `D1 ledger verified: ${approved.join(', ')}\n\n`);
   requireCurrentMain(commit);
   deployWorker('moonboys-api', { keepVars: true });
   const origin = 'https://api.cryptomoonboys.com';
@@ -189,7 +222,7 @@ async function release() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const [mode, directory] = process.argv.slice(2);
-  if (mode === 'plan') plan();
+  if (mode === 'plan') await plan();
   else if (mode === 'schema') exportSchema(directory);
   else if (mode === 'local') validateLocal(directory);
   else if (mode === 'release') await release();

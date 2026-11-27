@@ -20,45 +20,43 @@ Cloudflare `TELEGRAM_WEBHOOK_SECRET` secret. Before deployment, complete
 The production wrapper verifies that this secret binding exists; a missing or
 unreadable binding blocks deployment. Never store its value in Wrangler variables.
 
-## Validate and release a PR with Cloudflare changes
+## Automatic Cloudflare validation and release
 
-When an API agent identifies a Worker or D1 dependency, include the PR number,
-the exact commit, any required migration filenames and the API behavior to
-check. Use **Cloudflare PR validation and release** from the `main` branch in
-GitHub Actions. An API agent with Actions dispatch access can request the
-same check with:
+A ready PR from a branch in this repo that changes `workers/moonboys-api/`
+automatically starts Cloudflare validation for its exact head SHA. The job
+builds the Worker and runs Worker/API tests. If the PR adds SQL, a separate
+trusted job reads the production schema and migration names. The test runner
+applies the SQL to disposable D1 without production rows or credentials.
+Add a focused API regression test for the fix to the PR.
 
-```sh
-gh workflow run cloudflare-pr-release.yml --ref main -f stage=validate -f pr="$pr_number" -f commit="$head_sha"
-```
+For these PRs, approving and merging to `main` also authorizes release of the
+reviewed Worker and any forward migrations in the PR. GitHub verifies the
+pre-merge run, validates merged code, checks the migration ledger and applies
+only approved pending migrations. It then publishes through the provenance
+wrapper and checks the live Worker health and commit.
 
-1. Select **validate** and enter the PR number and its current head SHA. The
-   job builds the Worker and runs the Worker/API suite. For migration PRs, a
-   separate job uses the existing `CLOUDFLARE_D1_READ_TOKEN` and
-   `CLOUDFLARE_ACCOUNT_ID` repository secrets to query only the
-   production schema and migration filenames. The test runner applies the
-   proposed SQL to disposable local D1 storage without Cloudflare credentials
-   or production rows. Include a focused test in the PR for the actual bug.
-2. After review and merge, select **release** and enter the PR number, the
-   current `main` merge SHA and the successful validation run ID. Enable
-   **apply_d1** only if the release approval includes the new migrations.
-   The workflow validates the merged commit again before the production job.
-3. Configure the `cloudflare-production` GitHub environment for `main`, with a
-   production reviewer, the `CLOUDFLARE_RELEASE_API_TOKEN` secret scoped to the
-   target account's Workers and D1 operations, and the
-   `CLOUDFLARE_ACCOUNT_ID` variable. Keep the read token separate. These
-   credentials are consumed by Actions, so the Doctor and Brain services need
-   no Cloudflare write token.
-4. The release checks the D1 ledger and stops if applying the PR's migrations
-   would also apply other pending files. It applies approved migrations,
-   deploys through the provenance wrapper, and verifies live health and the
-   deployed commit. If a Pages run was waiting on the Worker, rerun Pages
-   after the backend is verified and confirm the affected frontend is live.
+One-time GitHub setup:
 
-A release may be retried after a partial migration or deploy failure. The job
-checks for migrations already applied. If `main` has advanced, use the
-normal production release process for the new combined revision. A Worker
-rollback does not roll back a D1 schema change.
+- Keep the existing repository secrets `CLOUDFLARE_D1_READ_TOKEN` and
+  `CLOUDFLARE_ACCOUNT_ID` for migration validation.
+- Set up the `cloudflare-production` environment with a deployment branch
+  restriction for `main`, the `CLOUDFLARE_RELEASE_API_TOKEN` environment
+  secret scoped to the target account's Workers and D1, and the
+  `CLOUDFLARE_ACCOUNT_ID` environment variable. Required reviewers on this
+  environment add an extra release click. Keep sign-off in the PR approval
+  workflow for unattended release after the merge.
+
+The **Cloudflare PR validation and release** workflow also supports manual
+dispatch from `main` for recovery or API-agent requests outside the path
+filter. For manual release, supply the successful validation run ID and
+explicitly select **apply_d1** if the release includes pending migrations.
+For fork contributions, review the change and use a branch in this repo
+for the automated path.
+
+Release fails closed if a test fails, the merge is no longer current
+`main`, or applying this PR's migrations would apply unrelated pending
+files. A release may be retried after a partial failure. It checks for
+already applied migrations. A Worker rollback does not roll back D1.
 
 ## D1 migrations
 
