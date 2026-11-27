@@ -1,29 +1,36 @@
 {
   "issue": 1930,
-  "round": 157,
+  "round": 158,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
           "row": 3,
-          "column": 7,
-          "description": "Potential road visibility issue. The 'r' character is too close to the left edge, making it hard to distinguish from the ground."
+          "column": 5,
+          "description": "Dock and road overlap, may cause confusion."
         },
         {
           "row": 10,
-          "column": 8,
-          "description": "House and water proximity risk. The 'h' character in row 10, column 8 might be mistaken for a dock or part of the water due to its color similarity."
+          "column": 9,
+          "description": "House and road are too close, might not be visually distinct."
         }
       ],
       "navigationRisks": [
         {
-          "index": 35,
-          "description": "Route loop potential. The path from position 76 back to 42 may create a loop, causing confusion in navigation."
+          "path": [
+            42,
+            88
+          ],
+          "description": "Path from house to lighthouse is long and winding, may confuse players."
         },
         {
-          "index": 89,
-          "description": "Long straight road risk. The continuous 'r' characters from row 10 to row 15 might be visually overwhelming and could cause disorientation."
+          "path": [
+            105,
+            106,
+            94
+          ],
+          "description": "Backtracking in the path (from 106 to 94) might frustrate users."
         }
       ]
     }
