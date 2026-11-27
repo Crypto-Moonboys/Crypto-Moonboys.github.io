@@ -35,6 +35,11 @@ pre-merge run, validates merged code, checks the migration ledger and applies
 only approved pending migrations. It then publishes through the provenance
 wrapper and checks the live Worker health and commit.
 
+For Worker-only changes, the schema job is expected to show **Skipped**.
+Confirm that **release** ran and passed. The overall run can show success
+when a conditional job was skipped. Confirm the merge SHA against
+[production deployment metadata](https://api.cryptomoonboys.com/deployment-info).
+
 One-time GitHub setup:
 
 - Keep the existing repository secrets `CLOUDFLARE_D1_READ_TOKEN` and
