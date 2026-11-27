@@ -35,8 +35,8 @@ gh workflow run cloudflare-pr-release.yml --ref main -f stage=validate -f pr="$p
 1. Select **validate** and enter the PR number and its current head SHA. The
    job builds the Worker and runs the Worker/API suite. For migration PRs, a
    separate job uses the existing `CLOUDFLARE_D1_READ_TOKEN` and
-   `CLOUDFLARE_ACCOUNT_ID` repository secrets to export only the production
-   schema and read the migration filenames. The test runner applies the
+   `CLOUDFLARE_ACCOUNT_ID` repository secrets to query only the
+   production schema and migration filenames. The test runner applies the
    proposed SQL to disposable local D1 storage without Cloudflare credentials
    or production rows. Include a focused test in the PR for the actual bug.
 2. After review and merge, select **release** and enter the PR number, the

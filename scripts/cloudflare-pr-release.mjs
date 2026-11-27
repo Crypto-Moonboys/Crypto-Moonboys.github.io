@@ -94,18 +94,32 @@ function plan() {
   if (summary) appendFileSync(summary, `## Cloudflare ${stage}\n\nPR #${number} · \`${target}\`\n\nD1 migrations in this PR: ${migrations.join(', ') || 'none'}\n`);
 }
 
+function queryD1(sql) {
+  const payload = JSON.parse(wrangler('d1', 'execute', 'wikicoms', '--remote', '--command', sql, '--json'));
+  return normalizeD1StatementResult(payload).results;
+}
+
 function ledger() {
-  const payload = JSON.parse(wrangler('d1', 'execute', 'wikicoms', '--remote',
-    '--command', 'SELECT name FROM d1_migrations ORDER BY id', '--json'));
-  return normalizeD1StatementResult(payload).results.map(row => row.name);
+  return queryD1('SELECT name FROM d1_migrations ORDER BY id').map(row => row.name);
 }
 
 function exportSchema(directory) {
   requireCheck(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID,
     'Set the D1 read token and Cloudflare account ID for migration validation.');
   mkdirSync(directory, { recursive: true });
-  wrangler('d1', 'export', 'wikicoms', '--remote', '--no-data', '--output', path.join(directory, 'schema.sql'));
-  writeFileSync(path.join(directory, 'ledger.json'), JSON.stringify(ledger()));
+  const snapshot = queryD1(`SELECT 'schema' AS section, sql AS value,
+      CASE type WHEN 'table' THEN 0 WHEN 'view' THEN 1 WHEN 'index' THEN 2 ELSE 3 END AS rank,
+      rowid AS position
+    FROM sqlite_schema
+    WHERE sql IS NOT NULL AND name NOT GLOB '_cf_*' AND name NOT GLOB 'sqlite_*'
+    UNION ALL SELECT 'ledger', name, 4, id FROM d1_migrations
+    ORDER BY rank, position`);
+  const schema = snapshot.filter(row => row.section === 'schema').map(row => row.value);
+  const applied = snapshot.filter(row => row.section === 'ledger').map(row => row.value);
+  requireCheck(schema.length > 0 && [...schema, ...applied].every(value => typeof value === 'string'),
+    'Could not read the D1 schema and migration ledger.');
+  writeFileSync(path.join(directory, 'schema.sql'), schema.map(sql => sql + ';').join('\n'));
+  writeFileSync(path.join(directory, 'ledger.json'), JSON.stringify(applied));
 }
 
 function migrationInputs() {
