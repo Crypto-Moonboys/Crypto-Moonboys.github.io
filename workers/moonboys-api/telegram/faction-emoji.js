@@ -85,13 +85,15 @@ function findStatementLines(lines) {
 }
 
 // Sample without replacement so a message never repeats a pack emoji.
-export async function addMoonboysMessageEmoji(text, token, fetchImpl = fetch) {
+export async function addMoonboysMessageEmoji(text, token, fetchImpl = fetch, options = {}) {
   if (typeof text !== 'string' || !text.trim() || text.includes('<tg-emoji') ||
       !isTelegramBotToken(token)) return text;
   const message = text.replace(FACTION_LINE, (line, name) =>
     Object.hasOwn(FACTION_LABELS, name) ? `Faction: ${FACTION_LABELS[name]}` : line);
   const lines = message.split(/(\r?\n)/);
-  const statements = findStatementLines(lines);
+  const allStatements = findStatementLines(lines);
+  const statements = options.leadingStatements === true
+    ? allStatements.slice(0, MAX_MESSAGE_EMOJIS) : allStatements;
   if (!statements.length) return text;
   const entries = await getFactionEmojiPack(token, fetchImpl);
   if (!entries) return text;
@@ -112,12 +114,12 @@ export function formatMoonboysAnnouncement(text) {
   return escaped.replace(/^[^\r\n]+/, heading => `<b>${heading}</b>`);
 }
 
-export async function sendMoonboysPlainTelegramPost(token, payload, send, fetchImpl = fetch) {
+export async function sendMoonboysPlainTelegramPost(token, payload, send, fetchImpl = fetch, options = {}) {
   if (!isTelegramBotToken(token)) return send(payload);
   const field = typeof payload.caption === 'string' ? 'caption' : 'text';
   const limit = field === 'caption' ? 1024 : 4096;
   const html = formatMoonboysAnnouncement(payload[field]);
-  const branded = await addMoonboysMessageEmoji(html, token, fetchImpl);
+  const branded = await addMoonboysMessageEmoji(html, token, fetchImpl, options);
   const response = await send({
     ...payload, [field]: telegramMessageLength(branded, 'HTML') <= limit ? branded : html, parse_mode: 'HTML',
   });
