@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-27T03:24:07.882Z",
+  "repository_commit": "33b0d1ad172a9d3b577a379db287a519075ac9e7",
+  "pull_request": 2262,
+  "full_linux_run": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/45932768301",
+  "worker": {
+    "name": "moonboys-api",
+    "version_id": "1b9d784b-ba0b-4e55-b06c-40bee07c0462",
+    "deployment_id": "33259407-5877-49c4-b736-c4f6407dc1ae",
+    "deployment_created_on": "2026-11-27T03:21:45.075676Z",
+    "previous_version_id": "6311db4f-d7dc-47d2-ad6d-96d82518a597",
+    "traffic_percent": 100,
+    "prior_bindings_preserved": 68,
+    "support_intake_enabled": false
+  },
+  "d1": {
+    "database": "wikicoms",
+    "migration": "133_support_cases.sql",
+    "recorded_at": "2026-11-27T03:17:47Z",
+    "tables": [
+      "support_cases"
+    ],
+    "indexes": [
+      "support_cases_poll",
+      "support_cases_reporter_created"
+    ],
+    "columns": 19
+  },
+  "checks": [
+    {
+      "url": "https://api.cryptomoonboys.com/deployment-info",
+      "status": 200,
+      "commit": "33b0d1ad172a9d3b577a379db287a519075ac9e7",
+      "deployed_at": "2026-11-27T03:19:56.770Z"
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://moonboys-api.sercullen.workers.dev/deployment-info",
+      "status": 200,
+      "commit": "33b0d1ad172a9d3b577a379db287a519075ac9e7",
+      "deployed_at": "2026-11-27T03:19:56.770Z"
+    },
+    {
+      "url": "https://moonboys-api.sercullen.workers.dev/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/internal/doctor-support",
+      "status": 503,
+      "error": "support_unavailable"
+    },
+    {
+      "url": "https://api.cryptomoonboys.com/telegram/webhook",
+      "method": "POST",
+      "authenticated": false,
+      "status": 401,
+      "error": "telegram_webhook_unauthorized"
+    }
+  ],
+  "limitation": "Support intake remains disabled pending WSL bridge configuration and a signed Telegram smoke test. The focused support, webhook and Worker build checks passed. Full Linux reported existing NBG London route failures in the Wiki, Arcade and Worker/API domains.",
+  "expected_commits": {
+    "moonboys-api": "33b0d1ad172a9d3b577a379db287a519075ac9e7"
+  },
+  "workers": [
+    {
+      "service": "moonboys-api",
+      "commit": "33b0d1ad172a9d3b577a379db287a519075ac9e7",
+      "deployed_at": "2026-11-27T03:19:56.770Z",
+      "url": "https://api.cryptomoonboys.com/deployment-info"
+    }
+  ]
+}

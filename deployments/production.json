@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_reviewed_at": "2026-11-21T23:24:05.669Z",
-  "repository_main_commit_at_review": "565a0f9527264ca5fa808a250c78c4889d9b9626",
+  "last_reviewed_at": "2026-11-27T03:24:07.882Z",
+  "repository_main_commit_at_review": "33b0d1ad172a9d3b577a379db287a519075ac9e7",
   "surfaces": {
     "github-pages": {
       "readiness": "deployable",
@@ -20,14 +20,19 @@
     "workers/moonboys-api": {
       "readiness": "live-deployable",
       "deployment_status": "verified-live",
-      "deployed_commit": "565a0f9527264ca5fa808a250c78c4889d9b9626",
-      "deployed_at": "2026-11-21T23:22:19.548Z",
+      "deployed_commit": "33b0d1ad172a9d3b577a379db287a519075ac9e7",
+      "deployed_at": "2026-11-27T03:19:56.770Z",
       "verification_urls": [
         "https://moonboys-api.sercullen.workers.dev/deployment-info",
         "https://api.cryptomoonboys.com/deployment-info",
         "https://api.cryptomoonboys.com/health"
       ],
       "evidence": [
+        {
+          "type": "retained-worker-provenance",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/telegram-support-cases-2026-11-27.json",
+          "recorded_at": "2026-11-27T03:24:07.882Z"
+        },
         {
           "type": "retained-worker-provenance",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/daily-pfp-roll-2026-11-21.json",
@@ -44,7 +49,7 @@
           "recorded_at": "2026-08-31T22:34:40.251Z"
         }
       ],
-      "notes": "Daily PFP Roll is enabled. The public deployment, health and Clan Operations endpoints passed. The production smoke test did not use a signed Telegram account or award XP."
+      "notes": "The 2026-11-27 release preserved the existing Worker bindings. Both public provenance and health endpoints passed, and unsigned Telegram webhook requests were rejected. Support intake remains disabled pending the WSL bridge and a signed Telegram smoke test. Prior live-feature evidence is retained."
     },
     "workers/anti-cheat": {
       "readiness": "live-deployable",
@@ -219,6 +224,11 @@
       "evidence": [
         {
           "type": "cloudflare-d1-migration-ledger-and-schema",
+          "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/telegram-support-cases-2026-11-27.json",
+          "recorded_at": "2026-11-27T03:24:07.882Z"
+        },
+        {
+          "type": "cloudflare-d1-migration-ledger-and-schema",
           "url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/blob/main/deployments/evidence/daily-pfp-roll-2026-11-21.json",
           "recorded_at": "2026-11-21T23:24:05.669Z"
         },
@@ -228,7 +238,7 @@
           "recorded_at": "2026-10-16T13:15:41.328Z"
         }
       ],
-      "notes": "Owner-supplied 2026-10-16 Wrangler evidence: migration 100 applied, no pending migrations, four championship tables, D1 migrations ledger row, and PRAGMA foreign_key_check without reported violations. Full required-migration inventory has NOT been independently captured; status intentionally verification-pending. Two private SQL backups moved outside working tree; contents/restore not independently tested. Clout pilot remains disabled. Cloudflare D1 independently confirmed migration 128 and both PFP tables on 2026-11-21."
+      "notes": "Owner-supplied 2026-10-16 Wrangler evidence: migration 100 applied, no pending migrations, four championship tables, D1 migrations ledger row, and PRAGMA foreign_key_check without reported violations. Full required-migration inventory has NOT been independently captured; status intentionally verification-pending. Two private SQL backups moved outside working tree; contents/restore not independently tested. Clout pilot remains disabled. Cloudflare D1 independently confirmed migration 128 and both PFP tables on 2026-11-21. Cloudflare confirmed migration 133, the support_cases table and both indexes on 2026-11-27."
     }
   }
 }
