@@ -37,10 +37,16 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "relevant=true" >> "$GITHUB_OUTPUT"
-          else
-            node scripts/check-runtime-image-policy.mjs --scope "$BASE_SHA" "$HEAD_SHA" >> "$GITHUB_OUTPUT"
+            git fetch origin main --quiet
+            BASE_SHA="$(git merge-base origin/main "$HEAD_SHA")"
           fi
+          if [[ -z "$BASE_SHA" || -z "$HEAD_SHA" ]]; then
+            echo "Unable to resolve the complete policy diff." >&2
+            exit 1
+          fi
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          node scripts/check-runtime-image-policy.mjs --scope "$BASE_SHA" "$HEAD_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Explain unchanged image scope
         if: ${{ steps.scope.outputs.relevant != 'true' }}
@@ -60,8 +66,8 @@ jobs:
       - name: Enforce changed raster naming and registration
         if: ${{ steps.scope.outputs.relevant == 'true' }}
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BASE_SHA: ${{ steps.scope.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.scope.outputs.head_sha }}
         run: node scripts/check-runtime-image-policy.mjs "$BASE_SHA" "$HEAD_SHA"
 
       - name: Verify every declared runtime derivative

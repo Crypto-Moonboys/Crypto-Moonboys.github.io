@@ -61,6 +61,9 @@ test('keeps one stable read-only required check on every pull request', async ()
   assert.match(policyWorkflow, /^  push:\s*\n\s+branches:\s*\n\s+- main\s*\n\s+- master$/mu);
   assert.match(policyWorkflow, /^  workflow_dispatch:\s*$/mu);
   assert.doesNotMatch(policyWorkflow, /^\s+paths(?:-ignore)?:/mu);
+  assert.match(policyWorkflow, /BASE_SHA="\$\(git merge-base origin\/main "\$HEAD_SHA"\)"/u);
+  assert.match(policyWorkflow, /BASE_SHA: \$\{\{ steps\.scope\.outputs\.base_sha \}\}/u);
+  assert.match(policyWorkflow, /HEAD_SHA: \$\{\{ steps\.scope\.outputs\.head_sha \}\}/u);
   assert.match(policyWorkflow, /^  contents: read$/mu);
   assert.match(policyWorkflow, /^    name: Runtime Image Policy$/mu);
   assert.doesNotMatch(policyWorkflow, /contents: write|pull_request_target|\$\{\{\s*secrets\./u);
