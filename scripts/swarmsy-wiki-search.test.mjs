@@ -17,17 +17,45 @@ function request(body, method = 'POST') {
     'CF-Connecting-IP': '192.0.2.1' }, body: body ? JSON.stringify(body) : undefined });
 }
 
-function wikiFeed(context) {
-  context.mock.method(globalThis, 'fetch', async url => {
-    if (url === origin + '/brain-feed/index.json') return Response.json({
+function wikiFeed(context, failure) {
+  context.mock.method(globalThis, 'fetch', async (url, options) => {
+    if (url === origin + '/brain-feed/index.json') {
+      assert.equal(options.cache, 'no-store');
+      assert.equal(options.cf?.cacheTtl, undefined, 'Workers reject cacheTtl when cache is no-store');
+      if (failure === 'index') return new Response(null, { status: 502 });
+      if (failure === 'no-match') return Response.json({
+        schema_version: 1, revision: '1'.repeat(40), records: [{
+          path: '/wiki/unrelated.html', title: 'Unrelated', kind: 'page', description: '', sha256, bytes: 10,
+        }],
+      });
+      return Response.json({
       schema_version: 1, revision: '1'.repeat(40), records: [{
         path: source.path, title: source.title, kind: source.kind, description: source.body, sha256, bytes: Buffer.byteLength(record),
       }],
-    });
+      });
+    }
     assert.equal(url, origin + '/brain-feed/records/' + sha256 + '.json');
+    if (failure === 'record') return new Response(null, { status: 502 });
     return new Response(record);
   });
 }
+
+test('retrieval failures return 503 and a genuine no-match returns 200', async context => {
+  const run = context.mock.fn(async () => ({ response: 'Unexpected model call' }));
+  const env = environment({ run });
+  for (const failure of ['index', 'record', 'no-match']) {
+    await context.test(failure, async scenario => {
+      wikiFeed(scenario, failure);
+      const res = await handleSwarmsyWikiSearch(request({ question: failure === 'no-match' ? 'Zyzzyva?' : question }), env, cors);
+      assert.equal(res.status, failure === 'no-match' ? 200 : 503);
+      const data = await res.json();
+      assert.deepEqual(data.wiki_sources, []);
+      if (failure === 'no-match') assert.match(data.answer, /couldn’t find relevant material/);
+      else assert.equal(data.error, 'search_unavailable');
+    });
+  }
+  assert.equal(run.mock.callCount(), 0);
+});
 
 function environment({ allow = true, available = true, run } = {}) {
   const bucket = { limit: async ({ key }) => {
@@ -54,7 +82,7 @@ test('anonymous search sends only the question and published Wiki references to 
   let calls = 0;
   const env = environment({ run: async (model, body, options) => {
     calls += 1;
-    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct');
+    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct-fast');
     assert.equal(options, undefined);
     assert.equal(body.tools, undefined);
     const input = JSON.parse(body.messages[1].content);

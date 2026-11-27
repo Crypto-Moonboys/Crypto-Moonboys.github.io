@@ -242,13 +242,17 @@ export async function findPublicSwarmsySources(question, { exactSubject = false 
     if (!excerpt) return null;
     return { title: source.title.slice(0, 160), url: SITE + source.path, excerpt };
   }));
+  if (brain && results.length && results.every(result => result.status === 'rejected')) {
+    throw new Error('brain_records_unavailable');
+  }
   return results.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : []);
 }
 
 async function readPublic(path, maxBytes, { rejectNoindex = false, fresh = false, missingOk = false, immutable = false } = {}) {
   const response = await fetch(SITE + path, {
     redirect: 'manual', signal: AbortSignal.timeout(4000),
-    ...(fresh ? { cache: 'no-store', cf: { cacheTtl: 0 } } : {
+    // Workers reject combining cache: 'no-store' with cf.cacheTtl.
+    ...(fresh ? { cache: 'no-store' } : {
       cf: immutable ? { cacheEverything: true, cacheTtlByStatus: { '200': 86400, '300-599': -1 } }
         : { cacheEverything: true, cacheTtl: 300 },
     }),
