@@ -1,6 +1,34 @@
 [
   {
     "speaker": 0,
+    "text": "Put a short landmark guide in the existing Info panel."
+  },
+  {
+    "speaker": 0,
+    "text": "Or add a West Meadow bench by the southern street."
+  },
+  {
+    "speaker": 1,
+    "text": "The bench would mark the street without creating a garden route."
+  },
+  {
+    "speaker": 1,
+    "text": "The badge only shows your position. Add walking cues to the numbers."
+  },
+  {
+    "speaker": 1,
+    "text": "Use a collapsed section and identify the original layout."
+  },
+  {
+    "speaker": 0,
+    "text": "List five reachable approaches with cues and one-based coordinates."
+  },
+  {
+    "speaker": 0,
+    "text": "All five marked tiles are walkable from the original spawn."
+  },
+  {
+    "speaker": 0,
     "text": "Southwest Park has a connected path but no planned place to sit."
   },
   {
