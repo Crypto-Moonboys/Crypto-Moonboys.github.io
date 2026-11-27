@@ -5129,7 +5129,45 @@
           "reason": "Replace only the retired GitHub Pages host with the production canonical host."
         }
       ]
+    },
+    {
+      "id": "GK-20261127-BLOG-ARCHIVE-READING-CLEANUP",
+      "status": "implemented",
+      "sources": [
+        "GK direct instruction, 27 November 2026: each blog file needs a cleaned wiki copy and an archived original",
+        "w51.txt and w52.txt: byte-identical High Hats source texts",
+        "w88.txt: Medium recommendation and link previews alongside the original Charlie Buster profile"
+      ],
+      "old": "The High Hats reading says both source files share one edition. The Charlie Buster reading contains copied Medium previews.",
+      "new": "The High Hats reading links to the dedicated w52.txt copy. The Buster reading gives direct profile links and retains the original account of his work.",
+      "reason": "The reading pages retain their source content and provenance while removing blog interface copy and giving each original file an address.",
+      "affected_paths": [
+        "wiki/the-high-hats-the-digital-aristocrats.html",
+        "wiki/street-artist-buster-aka-charlie-buster.html"
+      ],
+      "paragraph_changes": [
+        {
+          "old_sha256": "sha256:f57d80cb02399288b3d9137238b6a3458bcdbb9bb0b1611e76808ea47d34292c",
+          "new_sha256": "sha256:5d4da82822b377e44fa41edb455d37ec3deaca17f4ba794a07cb1361a5368693",
+          "reason": "Update the final archive note to link to the second reading. The interpretation stays verbatim."
+        },
+        {
+          "old_sha256": "sha256:ae6db4bb3580b7ab20f2336dc7be5574db2ba544aa326b3825e5d6411f5af44a",
+          "new_sha256": "sha256:be4b309f588641f59330db1a37d9c9581dcbba19dbe22aa18a046ec7ee079e94",
+          "reason": "Replace the imported Medium preview with source-supported context and working profile links."
+        },
+        {
+          "old_sha256": "sha256:1519e035e097572eee2f91e8d4701c1f262bf7299ae267f96c0719ad8c692740",
+          "new_sha256": "sha256:be4b309f588641f59330db1a37d9c9581dcbba19dbe22aa18a046ec7ee079e94",
+          "reason": "Replace the imported Medium preview with source-supported context and working profile links."
+        },
+        {
+          "old_sha256": "sha256:4ac9b8ee8d5873668c507925eda83b756f60751a724581f111cb1a0d9019f572",
+          "new_sha256": "sha256:be4b309f588641f59330db1a37d9c9581dcbba19dbe22aa18a046ec7ee079e94",
+          "reason": "Replace the imported Medium preview with source-supported context and working profile links."
+        }
+      ]
     }
   ],
-  "updated": "2026-11-16"
+  "updated": "2026-11-27"
 }
