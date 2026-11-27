@@ -396,6 +396,8 @@ An unchanged target can be refreshed when website `main` advances. The new commi
 
 Activation requires [D1 migration 135](workers/moonboys-api/migrations/135_sam_wiki_drafts.sql), the approved Worker release, the matching `SAM_WIKI_DRAFT_TOKEN` in the Worker and HAY-MUM Actions, and the Brain editorial timer. Enable `SAM_WIKI_DRAFTS_ENABLED` once the timer and credentials are configured. See the [SAM rollout and Telegram runbook](docs/telegram-support-cases.md#sam-wiki-drafts) and [Worker release guide](workers/moonboys-api/README.md).
 
+On 27 November 2026, production `wikicoms` recorded migration 135, the `moonboys-api` build from [`e2a155ce`](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/commit/e2a155ce91b7cd926e468fe81f89b5d96afd3bbf) was deployed with SAM queue settings, and the Brain bridge completed its first authenticated poll. A real draft through Codex review and the Telegram approval flow remains to be verified.
+
 ### Cloudflare validation and release
 
 [The Cloudflare PR workflow](.github/workflows/cloudflare-pr-release.yml) validates the exact head of ready Worker PRs. After approval and merge, its production release checks the D1 ledger, applies reviewed migrations, deploys the Worker and checks live provenance. The Brain can request validation for a SAM Wiki PR when Codex or a maintainer flags it. See the [Worker runbook](workers/moonboys-api/README.md).
