@@ -1,0 +1,79 @@
+name: Runtime Image Policy
+
+# GK approved this narrow, required guard on 27 November 2026. It runs for
+# every PR so its stable check name can be required by the main-branch ruleset.
+# Unrelated changes exit before installing dependencies.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-image-policy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime-image-policy:
+    name: Runtime Image Policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out proposed tree
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Determine policy scope
+        id: scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            git fetch origin main --quiet
+            BASE_SHA="$(git merge-base origin/main "$HEAD_SHA")"
+          fi
+          if [[ -z "$BASE_SHA" || -z "$HEAD_SHA" ]]; then
+            echo "Unable to resolve the complete policy diff." >&2
+            exit 1
+          fi
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          node scripts/check-runtime-image-policy.mjs --scope "$BASE_SHA" "$HEAD_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Explain unchanged image scope
+        if: ${{ steps.scope.outputs.relevant != 'true' }}
+        run: echo "No raster or runtime-image pipeline files changed; policy passes."
+
+      - name: Set up Node.js
+        if: ${{ steps.scope.outputs.relevant == 'true' }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install image tooling
+        if: ${{ steps.scope.outputs.relevant == 'true' }}
+        run: npm ci
+
+      - name: Enforce changed raster naming and registration
+        if: ${{ steps.scope.outputs.relevant == 'true' }}
+        env:
+          BASE_SHA: ${{ steps.scope.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.scope.outputs.head_sha }}
+        run: node scripts/check-runtime-image-policy.mjs "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Verify every declared runtime derivative
+        if: ${{ steps.scope.outputs.relevant == 'true' }}
+        run: npm run images:runtime:check
+
+      - name: Test policy and image builder
+        if: ${{ steps.scope.outputs.relevant == 'true' }}
+        run: npm run test:runtime-images && npm run test:runtime-image-policy
