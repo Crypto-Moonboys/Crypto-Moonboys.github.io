@@ -311,3 +311,35 @@ test('applies JPEG EXIF orientation before calculating runtime dimensions', asyn
   assert.equal(outputMetadata.height, 160);
   assert.equal(outputMetadata.orientation, undefined);
 });
+
+test('rejects animated masters instead of silently discarding frames and timing', async () => {
+  const root = await fixtureRoot();
+  const source = path.join(root, 'animation-master.webp');
+  const firstFrame = await sharp({ create: { width: 48, height: 32, channels: 4, background: '#ff2244ff' } }).png().toBuffer();
+  const secondFrame = await sharp({ create: { width: 48, height: 32, channels: 4, background: '#2266ffff' } }).png().toBuffer();
+  await sharp([firstFrame, secondFrame], { join: { animated: true } })
+    .webp({ lossless: true, loop: 0, delay: [80, 160] })
+    .toFile(source);
+  const sourceMetadata = await sharp(source).metadata();
+  assert.equal(sourceMetadata.pages, 2);
+
+  await assert.rejects(
+    registerRuntimeImages({ root, manifestPath: 'manifest.json', paths: ['animation-master.webp'] }),
+    /animation-master\.webp is animated or multi-frame \(2 frames\)/u,
+  );
+  const unchangedManifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
+  assert.deepEqual(unchangedManifest.assets, []);
+
+  unchangedManifest.assets.push({
+    source: 'animation-master.webp',
+    output: 'animation-runtime.webp',
+    mode: 'lossless',
+    minSavingsPercent: 0,
+  });
+  await writeFile(path.join(root, 'manifest.json'), `${JSON.stringify(unchangedManifest, null, 2)}\n`);
+  await assert.rejects(
+    buildRuntimeImages({ root, manifestPath: 'manifest.json', lockPath: 'lock.json' }),
+    /runtime derivatives must not discard frames or timing/u,
+  );
+  await assert.rejects(access(path.join(root, 'animation-runtime.webp')), { code: 'ENOENT' });
+});

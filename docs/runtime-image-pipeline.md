@@ -32,7 +32,7 @@ The browser cannot safely determine the required source resolution from CSS or c
 }
 ```
 
-Both source and target dimensions must divide cleanly by the declared sprite grid. The pipeline rejects aspect-ratio changes, clipped paths, output names without `-runtime.webp`, changed alpha, stale derivatives and files that miss the configured saving or quality floor.
+Both source and target dimensions must divide cleanly by the declared sprite grid. The pipeline rejects aspect-ratio changes, clipped paths, output names without `-runtime.webp`, changed alpha, stale derivatives and files that miss the configured saving or quality floor. Animated or multi-frame masters are rejected instead of being silently flattened; keep animations on their dedicated animation workflow until frame timing and loop metadata can be preserved end to end.
 
 ## Commands
 

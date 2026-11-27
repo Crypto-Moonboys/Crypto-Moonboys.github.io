@@ -147,7 +147,16 @@ async function loadManifest(root, manifestPath) {
   return { manifest, manifestFile, assets };
 }
 
+async function staticMasterMetadata(sourcePath, sourceLabel) {
+  const metadata = await sharp(sourcePath, { limitInputPixels: false }).metadata();
+  if ((metadata.pages ?? 1) > 1) {
+    throw new Error(`${sourceLabel} is animated or multi-frame (${metadata.pages} frames); runtime derivatives must not discard frames or timing`);
+  }
+  return metadata;
+}
+
 async function transformedMaster(asset) {
+  await staticMasterMetadata(asset.sourcePath, asset.source);
   const orientedMaster = await sharp(asset.sourcePath, { limitInputPixels: false, sequentialRead: true })
     .autoOrient()
     .png({ compressionLevel: 9 })
@@ -399,7 +408,7 @@ export async function registerRuntimeImages({
     await assertResolvedInside(root, source.absolute, 'registered master');
     if (!MASTER_EXTENSION.test(source.relative)) throw new Error(`${source.relative} must end in -master.png, -master.jpg, -master.jpeg or -master.webp`);
     if (knownSources.has(source.relative)) continue;
-    const metadata = await sharp(source.absolute, { limitInputPixels: false }).metadata();
+    const metadata = await staticMasterMetadata(source.absolute, source.relative);
     const stem = source.relative.replace(/-master\.(?:png|jpe?g|webp)$/iu, '');
     const mode = SPRITE_NAME.test(path.basename(stem)) ? 'lossless' : 'lossy';
     const entry = {
