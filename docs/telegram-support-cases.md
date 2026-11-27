@@ -38,6 +38,8 @@ GitHub's required checks. **Leave** pauses the case. **Close** closes the linked
 PR. If website main advances, SAM refreshes the proposed PR when the target page
 is unchanged. The refreshed commit requires Codex and owner approval again. New
 routes require an entry in the owner-approved Wiki publication register.
+Changes to owned canon prose also use the website's existing GitHub approval
+label. First Witness and NFT specialist pages use their dedicated review paths.
 
 Apply migration `135_sam_wiki_drafts.sql` and deploy the reviewed Worker through
 the normal release process. Set `SAM_WIKI_DRAFTS_ENABLED=true` only after the

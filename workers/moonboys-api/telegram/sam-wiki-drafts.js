@@ -88,7 +88,7 @@ const progress = {
   queued: new Set(['reviewing', 'blocked']),
   editing: new Set(['reviewing', 'blocked']),
   reviewing: new Set(['ready', 'needs_changes', 'blocked']),
-  merging: new Set(['merged', 'merge_queued', 'blocked']),
+  merging: new Set(['merged', 'merge_queued', 'blocked', 'ready']),
   merge_queued: new Set(['merged', 'blocked']),
   closing: new Set(['closed', 'blocked']),
 };
@@ -156,9 +156,11 @@ export async function handleSamWikiRequest(request, env) {
   if ((pr !== 0 && !ID.test(String(pr))) || (review !== 0 && !ID.test(String(review))) ||
     (head !== '' && !SHA.test(head)) ||
     (body.state === 'reviewing' && (!pr || !head || !review)) ||
-    (row.state === 'reviewing' && (head !== row.head_sha || pr !== row.pr_number || review !== row.review_id))) {
+    (['reviewing', 'merging', 'merge_queued'].includes(row.state) && (head !== row.head_sha || pr !== row.pr_number || review !== row.review_id))
+    || (body.state === 'reviewing' && row.pr_number && pr !== row.pr_number)) {
     return response({ error: 'invalid_review' }, 400);
   }
+  if (row.state === 'merging' && body.state === 'ready' && !row.reviewed) return response({ error: 'invalid_review' }, 400);
   const result = await db.prepare(`UPDATE sam_wiki_drafts SET state = ?, pr_number = ?, head_sha = ?,
     review_id = ?, reviewed = ?, note = ?, owner_notice = 1, revision = revision + 1, polled_at = ?,
     payload = CASE WHEN ? = 'reviewing' AND pending_payload <> '' THEN pending_payload ELSE payload END,

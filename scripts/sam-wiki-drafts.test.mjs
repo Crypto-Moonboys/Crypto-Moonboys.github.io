@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import worker from '../workers/moonboys-api/deployment-entry.js';
+import { sha256Content } from './import-website-publish-payloads.mjs';
+import { readCanonRevision } from './generate-wiki-content-state.mjs';
 
 const origin = 'https://api.cryptomoonboys.com';
 const migration = readFileSync(new URL('../workers/moonboys-api/migrations/135_sam_wiki_drafts.sql', import.meta.url), 'utf8');
@@ -86,7 +92,30 @@ test('SAM drafts require a separate intake credential, current Codex review and 
   assert.equal((await move('status', { state: 'reviewing', head_sha: '5'.repeat(40), review_id: 890 })).status, 200);
   assert.equal((await move('status', { state: 'ready' })).status, 200);
   await telegram(`samwiki:merge:1:${row().revision}`);
+  assert.equal((await move('status', { state: 'merge_queued', pr_number: 111 })).status, 400);
   assert.equal((await move('status', { state: 'merge_queued' })).status, 200);
+  assert.equal((await move('status', { state: 'merged', review_id: 999 })).status, 400);
   assert.equal((await move('status', { state: 'merged' })).status, 200);
   assert.equal(row().state, 'merged');
+});
+
+
+test('SAM stages canon prose inside the existing ownership block and advances its revision', t => {
+  const cwd = mkdtempSync(join(tmpdir(), 'sam-wiki-stage-'));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const target = 'wiki/the-finance-guild.html';
+  const before = readFileSync(new URL(`../${target}`, import.meta.url), 'utf8');
+  mkdirSync(join(cwd, 'wiki'));
+  mkdirSync(join(cwd, 'brand-canon'));
+  writeFileSync(join(cwd, 'brand-canon/wiki-content-state.json'), JSON.stringify({ pages: [{ path: target }] }));
+  writeFileSync(join(cwd, target), before);
+  const draft = { ...payload, slug: 'the-finance-guild', category: 'Factions', expected_content_hash: sha256Content(before),
+    article_html: '<section><h2 id="sam-lore-test">Further lore</h2><p>A proposed passage.</p></section>' };
+  writeFileSync(join(cwd, 'draft.json'), JSON.stringify(draft));
+  execFileSync(process.execPath, [fileURLToPath(new URL('./stage-sam-wiki-draft.mjs', import.meta.url)), 'draft.json'], { cwd });
+  const after = readFileSync(join(cwd, target), 'utf8');
+  assert.equal(readCanonRevision(after).revision, readCanonRevision(before).revision + 1);
+  assert(after.indexOf('id="sam-lore-test"') < after.indexOf('<!-- CANONICAL_CONTENT:END -->'));
+  const normalizeRevision = value => value.replace(/data-canon-revision="\d+"/g, 'data-canon-revision="*"');
+  assert.equal(normalizeRevision(after.replace(`\n${draft.article_html}\n`, '')), normalizeRevision(before));
 });
