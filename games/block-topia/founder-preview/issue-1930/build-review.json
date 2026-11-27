@@ -1,36 +1,40 @@
 {
   "issue": 1930,
-  "round": 158,
+  "round": 159,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "row": 3,
-          "column": 5,
-          "description": "Dock and road overlap, may cause confusion."
+          "type": "Obstruction",
+          "description": "The path between coordinates 88 and 77 is obstructed by water, which could be a navigational challenge.",
+          "affectedCoordinates": [
+            88,
+            77
+          ]
         },
         {
-          "row": 10,
-          "column": 9,
-          "description": "House and road are too close, might not be visually distinct."
+          "type": "Isolation",
+          "description": "House at coordinate 43 is isolated from the main road network, potentially limiting access and movement.",
+          "affectedCoordinate": 43
         }
       ],
       "navigationRisks": [
         {
-          "path": [
-            42,
-            88
-          ],
-          "description": "Path from house to lighthouse is long and winding, may confuse players."
-        },
-        {
-          "path": [
-            105,
+          "type": "Dead End",
+          "description": "The path between coordinates 106 and 94 leads to a dead end without any exit or alternative route, which could be confusing for players.",
+          "affectedCoordinates": [
             106,
             94
-          ],
-          "description": "Backtracking in the path (from 106 to 94) might frustrate users."
+          ]
+        },
+        {
+          "type": "Loop",
+          "description": "There appears to be a loop in the path between coordinates 52 and 41, which might cause navigation issues or player frustration.",
+          "affectedCoordinates": [
+            52,
+            41
+          ]
         }
       ]
     }
