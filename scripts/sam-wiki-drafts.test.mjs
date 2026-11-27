@@ -77,6 +77,16 @@ test('SAM drafts require a separate intake credential, current Codex review and 
   assert.equal(row().state, 'left');
   await telegram(`samwiki:merge:1:${row().revision}`);
   assert.equal(row().state, 'merging');
+  const preRefresh = row().revision;
+  assert.equal((await move('refresh_base', { base_sha: '4'.repeat(40) })).status, 200);
+  assert.equal(row().state, 'queued');
+  assert.equal(row().reviewed, 0);
+  await telegram(`samwiki:merge:1:${preRefresh}`);
+  assert.equal(row().state, 'queued');
+  assert.equal((await move('status', { state: 'reviewing', head_sha: '5'.repeat(40), review_id: 890 })).status, 200);
+  assert.equal((await move('status', { state: 'ready' })).status, 200);
+  await telegram(`samwiki:merge:1:${row().revision}`);
+  assert.equal((await move('status', { state: 'merge_queued' })).status, 200);
   assert.equal((await move('status', { state: 'merged' })).status, 200);
   assert.equal(row().state, 'merged');
 });

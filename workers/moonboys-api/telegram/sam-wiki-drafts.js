@@ -132,6 +132,15 @@ export async function handleSamWikiRequest(request, env) {
     await db.prepare('UPDATE sam_wiki_drafts SET polled_at = ? WHERE id = ? AND revision = ?').bind(Date.now(), row.id, row.revision).run();
     return response({ ok: true });
   }
+  if (body.action === 'refresh_base' && ['queued', 'editing', 'reviewing', 'merging'].includes(row.state)
+      && SHA.test(body.base_sha || '') && body.base_sha !== row.base_sha) {
+    // Refreshing a branch invalidates both review and any pending merge approval.
+    const next = row.state === 'editing' ? 'editing' : 'queued';
+    const refreshed = await db.prepare(`UPDATE sam_wiki_drafts SET state = ?, base_sha = ?, revision = revision + 1,
+      reviewed = 0, owner_notice = 0, polled_at = ? WHERE id = ? AND revision = ? AND state = ?`)
+      .bind(next, body.base_sha, Date.now(), row.id, row.revision, row.state).run();
+    return refreshed.meta.changes === 1 ? response({ ok: true }) : response({ error: 'stale_draft' }, 409);
+  }
   if (body.action === 'prepare_edit' && row.state === 'editing' && !row.pending_payload
       && validDraft({ payload: body.payload, base_sha: row.base_sha })
       && body.payload.slug === JSON.parse(row.payload).slug) {

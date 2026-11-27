@@ -35,7 +35,9 @@ The owner receives the section excerpt, GitHub PR and reviewed revision in a
 private WikicomsBot chat. **Edit** asks for instructions and starts a new Codex
 review. **Merge** is available after Codex clears that revision and still needs
 GitHub's required checks. **Leave** pauses the case. **Close** closes the linked
-PR. New routes require an entry in the owner-approved Wiki publication register.
+PR. If website main advances, SAM refreshes the proposed PR when the target page
+is unchanged. The refreshed commit requires Codex and owner approval again. New
+routes require an entry in the owner-approved Wiki publication register.
 
 Apply migration `135_sam_wiki_drafts.sql` and deploy the reviewed Worker through
 the normal release process. Set `SAM_WIKI_DRAFTS_ENABLED=true` only after the
