@@ -48,31 +48,20 @@ function environment({ allow = true, available = true, run } = {}) {
   };
 }
 
-test('public search accepts an anonymous question and returns real web annotations alongside Wiki sources', async context => {
+test('anonymous search sends only the question and published Wiki references to Workers AI', async context => {
   wikiFeed(context);
-  const text = '🎨 The GKniftyHEADS have a Wiki entry. Here is more context.';
-  const end_index = Array.from(text.slice(0, text.indexOf(' Here'))).length;
+  const text = 'The GKniftyHEADS are the underworld good guys.';
   let calls = 0;
   const env = environment({ run: async (model, body, options) => {
     calls += 1;
-    assert.equal(model, 'openai/gpt-4o-mini');
-    assert.equal(body.tools[0].type, 'web_search');
-    assert.equal(body.tool_choice, 'required');
-    assert.equal(body.max_tool_calls, 1);
-    assert.equal(body.store, false);
-    assert.equal(options.gateway.collectLog, false);
-    const input = JSON.parse(body.input);
+    assert.equal(model, '@cf/meta/llama-3.1-8b-instruct');
+    assert.equal(options, undefined);
+    assert.equal(body.tools, undefined);
+    const input = JSON.parse(body.messages[1].content);
     assert.equal(input.question, question);
     assert.equal(input.publicWiki[0].excerpt, source.body);
-    assert.equal(Object.hasOwn(input, 'telegram_auth'), false);
-    return { status: 'completed', output: [{ type: 'web_search_call', status: 'completed' }, {
-      type: 'message', role: 'assistant', content: [{ type: 'output_text', text, annotations: [
-        { type: 'url_citation', url: 'https://example.com/story', title: 'External story', end_index },
-        { type: 'url_citation', url: 'javascript:alert(1)', title: 'Unsafe', end_index },
-        { type: 'url_citation', url: 'https://example.com/gk-master-canon.md', title: 'Editorial', end_index },
-        { type: 'url_citation', url: 'https://example.com/invalid-offset', title: 'Bad offset', end_index: 999 },
-      ] }],
-    }] };
+    assert.deepEqual(Object.keys(input), ['question', 'publicWiki']);
+    return { response: text };
   } });
   const res = await handleSwarmsyWikiSearch(request({ question }), env, cors);
   assert.equal(res.status, 200);
@@ -80,7 +69,6 @@ test('public search accepts an anonymous question and returns real web annotatio
   assert.equal(calls, 1);
   assert.deepEqual(await res.json(), { answer: text,
     wiki_sources: [{ title: source.title, url: origin + source.path }],
-    citations: [{ title: 'External story', url: 'https://example.com/story', end: text.indexOf(' Here') }],
   });
 });
 

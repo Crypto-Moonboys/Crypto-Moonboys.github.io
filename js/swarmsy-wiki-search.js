@@ -31,18 +31,7 @@
 
   function render(data) {
     const text = typeof data.answer === 'string' ? data.answer : '';
-    let cursor = 0;
-    for (const citation of Array.isArray(data.citations) ? data.citations : []) {
-      const end = citation?.end;
-      if (!Number.isSafeInteger(end) || end < cursor || end > text.length) continue;
-      const link = sourceLink(citation);
-      if (!link) continue;
-      reply.append(text.slice(cursor, end), ' ');
-      link.className = 'swarmsy-web-citation';
-      reply.append(link);
-      cursor = end;
-    }
-    reply.append(text.slice(cursor));
+    reply.textContent = text;
     for (const source of Array.isArray(data.wiki_sources) ? data.wiki_sources : []) {
       const link = sourceLink(source);
       if (!link || new URL(link.href).origin !== 'https://cryptomoonboys.com') continue;
@@ -60,7 +49,7 @@
     active = null;
     button.disabled = false;
     answer.hidden = true;
-    reply.replaceChildren();
+    reply.textContent = '';
     sourceList.replaceChildren();
     announce('');
   }
@@ -80,7 +69,7 @@
     const controller = new AbortController();
     active = controller;
     button.disabled = true;
-    announce('SWARMSY is checking the Wiki and the web…');
+    announce('SWARMSY is checking the Wiki…');
     try {
       const response = await fetch(base.replace(/\/$/, '') + '/swarmsy/wiki-search', {
         method: 'POST',
@@ -98,7 +87,7 @@
       } else if (!response.ok || typeof data.answer !== 'string') {
         announce('SWARMSY is unavailable. You can still browse the results below.');
       } else {
-        announce(data.citations?.length ? 'SWARMSY answer ready.' : 'Answer ready. No supporting web links were returned for this question.');
+        announce('SWARMSY answer ready.');
       }
     } catch {
       if (active === controller) announce('SWARMSY is unavailable. You can still browse the results below.');
