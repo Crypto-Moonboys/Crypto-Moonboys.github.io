@@ -1,0 +1,104 @@
+name: Runtime Image Derivatives
+
+# GK explicitly approved this narrow generator on 27 November 2026. It is not
+# a broad validation workflow and never runs on or writes directly to main.
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+    paths:
+      - "**/*-master.png"
+      - "**/*-master.jpg"
+      - "**/*-master.jpeg"
+      - "**/*-master.webp"
+      - "data/runtime-image-manifest.json"
+      - "scripts/build-runtime-images.mjs"
+      - "scripts/build-runtime-images.test.mjs"
+      - "docs/runtime-image-pipeline.md"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/runtime-image-derivatives.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: runtime-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-runtime-images:
+    if: ${{ github.actor == 'HODLKONG64' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install image tooling
+        run: npm ci
+
+      - name: Register newly uploaded convention masters
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          BASE_SHA="$BEFORE_SHA"
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git fetch origin main --quiet
+            BASE_SHA="$(git merge-base origin/main HEAD)"
+          fi
+          mapfile -d '' MASTERS < <(
+            git diff --name-only --diff-filter=AM -z "$BASE_SHA" "$GITHUB_SHA" -- \
+              ':(glob)**/*-master.png' \
+              ':(glob)**/*-master.jpg' \
+              ':(glob)**/*-master.jpeg' \
+              ':(glob)**/*-master.webp'
+          )
+          if (( ${#MASTERS[@]} )); then
+            node scripts/build-runtime-images.mjs --register "${MASTERS[@]}"
+          else
+            echo "No new conventionally named masters to register."
+          fi
+
+      - name: Build runtime WebP derivatives
+        shell: bash
+        run: |
+          npm run images:runtime | tee "$RUNNER_TEMP/runtime-image-report.txt"
+          npm run images:runtime:check
+          {
+            echo "## Runtime image report"
+            echo '```text'
+            cat "$RUNNER_TEMP/runtime-image-report.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test runtime image pipeline
+        run: npm run test:runtime-images
+
+      - name: Commit generated derivatives to the branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          while IFS= read -r generated; do
+            git add -- "$generated"
+          done < <(node scripts/build-runtime-images.mjs --list-generated)
+          if git diff --cached --quiet; then
+            echo "Runtime image derivatives are already current."
+            exit 0
+          fi
+          git commit -m "chore: refresh runtime image derivatives [skip ci]"
+          git pull --rebase --autostash origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"

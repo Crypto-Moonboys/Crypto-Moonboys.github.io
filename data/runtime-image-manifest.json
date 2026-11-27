@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "defaults": {
+    "lossyQuality": 86,
+    "minPsnr": 34,
+    "minSavingsPercent": 5,
+    "preserveAlpha": true,
+    "resizeKernel": "lanczos3"
+  },
+  "assets": []
+}
