@@ -43,12 +43,31 @@
 .swarmsy-wiki-input { display:flex; gap:.65rem; align-items:stretch; }
 .swarmsy-wiki-input input { min-width:0; flex:1; }
 .swarmsy-wiki-submit { justify-content:center; background:var(--color-accent,#f7c65c); color:#17111d; font-weight:700; }
+html:has(#swarmsy-wiki-chat[open]) { overflow:hidden; }
+.swarmsy-wiki-chat {
+  position:fixed; inset:0; width:100%; height:100%; height:100dvh; max-width:none; max-height:none;
+  box-sizing:border-box; margin:0; padding:0; border:0; background:#10101a; color:#fff;
+}
+.swarmsy-wiki-chat[open] { display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+.swarmsy-wiki-chat-header {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:1rem clamp(1rem,4vw,2rem); border-bottom:1px solid var(--color-border,#4b4b5b);
+}
+.swarmsy-wiki-chat-header h2 { margin:0; font-size:1.25rem; }
+.swarmsy-wiki-thread { overflow-y:auto; overscroll-behavior:contain; }
+.swarmsy-wiki-thread-inner, .swarmsy-wiki-composer { width:min(100%,52rem); margin-inline:auto; padding:1rem; }
+.swarmsy-wiki-question {
+  width:fit-content; max-width:85%; margin-inline-start:auto; padding:.75rem 1rem;
+  background:#262437; border-radius:.75rem .75rem 0 .75rem; white-space:pre-wrap; overflow-wrap:anywhere;
+}
 .swarmsy-wiki-status { margin-block:1rem; }
+.swarmsy-wiki-status:empty { margin:0; }
+.swarmsy-wiki-composer { padding-bottom:max(1rem,env(safe-area-inset-bottom)); }
 .swarmsy-wiki-answer { margin-block:1.25rem; padding:clamp(1rem,3vw,1.75rem); text-align:left; background:#11131f; border:1px solid var(--color-border,#4b4b5b); color:var(--color-text,#fff); }
-.swarmsy-wiki-answer h2, .swarmsy-wiki-answer h3 { margin-block:0 .65rem; }
+.swarmsy-wiki-answer h3, .swarmsy-wiki-answer h4 { margin-block:0 .65rem; }
 .swarmsy-wiki-answer a { color:var(--color-accent,#f7c65c); text-decoration:underline; overflow-wrap:anywhere; }
 #swarmsy-wiki-reply { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7; margin-block:0 1rem; }
-@media (max-width:480px) { .swarmsy-wiki-input { flex-direction:column; } }
+@media (max-width:480px) { .wiki-hero-search .swarmsy-wiki-input { flex-direction:column; } }
 </style>
 </head>
 <body class="page-search page-standard-shell">
@@ -68,23 +87,15 @@
           <p class="swarmsy-lead">
             Ask about stories, people, NFTs or games. SWARMSY answers using the published Wiki.
           </p>
-          <form id="swarmsy-wiki-search" action="/search.html" class="wiki-hero-search swarmsy-wiki-form" role="search" aria-label="SWARMSY Wiki search">
-            <label for="search-page-input" class="swarmsy-wiki-label">Ask a question or enter a search term</label>
+          <form action="/search.html" class="wiki-hero-search swarmsy-wiki-form" role="search" aria-label="Wiki search">
+            <label for="search-page-input">Search the Wiki</label>
             <div class="swarmsy-wiki-input">
               <input type="search" id="search-page-input" name="q" class="wiki-hero-search-input"
-                placeholder="Who are the GKniftyHEADS?" maxlength="600" required>
-              <button class="search-control swarmsy-wiki-submit" type="submit">Ask SWARMSY</button>
+                placeholder="Search stories, people, NFTs or games" maxlength="600">
+              <button id="swarmsy-wiki-open" class="search-control swarmsy-wiki-submit" type="button"
+                aria-haspopup="dialog" aria-controls="swarmsy-wiki-chat" hidden>Ask SWARMSY</button>
             </div>
           </form>
-          <p id="swarmsy-wiki-status" class="swarmsy-wiki-status" role="status" hidden></p>
-          <section id="swarmsy-wiki-answer" class="swarmsy-wiki-answer" aria-labelledby="swarmsy-wiki-answer-title" hidden>
-            <h2 id="swarmsy-wiki-answer-title">SWARMSY answer</h2>
-            <p id="swarmsy-wiki-reply"></p>
-            <section id="swarmsy-wiki-sources" aria-labelledby="swarmsy-wiki-sources-title" hidden>
-              <h3 id="swarmsy-wiki-sources-title">Wiki sources</h3>
-              <ul id="swarmsy-wiki-source-list"></ul>
-            </section>
-          </section>
           <div id="search-filters" class="search-controls" role="group" aria-label="Filter search results" hidden>
             <button class="search-control" type="button" data-search-filter="all" aria-pressed="true">All <span class="search-filter-count"></span></button>
             <button class="search-control" type="button" data-search-filter="games" aria-pressed="false">Games <span class="search-filter-count"></span></button>
@@ -230,6 +241,35 @@
       <button id="search-load-more" class="search-control" type="button" aria-controls="search-results-page" hidden>Load more</button>
     </main>
 
+<dialog id="swarmsy-wiki-chat" class="swarmsy-wiki-chat" aria-labelledby="swarmsy-wiki-chat-title">
+  <header class="swarmsy-wiki-chat-header">
+    <h2 id="swarmsy-wiki-chat-title">SWARMSY Wiki Chat</h2>
+    <button id="swarmsy-wiki-close" class="search-control" type="button">Close</button>
+  </header>
+  <div id="swarmsy-wiki-thread" class="swarmsy-wiki-thread" role="region" aria-label="Chat messages" tabindex="0">
+    <div class="swarmsy-wiki-thread-inner">
+      <p id="swarmsy-wiki-sent" class="swarmsy-wiki-question" hidden></p>
+      <section id="swarmsy-wiki-answer" class="swarmsy-wiki-answer" aria-labelledby="swarmsy-wiki-answer-title" hidden>
+        <h3 id="swarmsy-wiki-answer-title">SWARMSY answer</h3>
+        <p id="swarmsy-wiki-reply"></p>
+        <section id="swarmsy-wiki-sources" aria-labelledby="swarmsy-wiki-sources-title" hidden>
+          <h4 id="swarmsy-wiki-sources-title">Wiki sources</h4>
+          <ul id="swarmsy-wiki-source-list"></ul>
+        </section>
+      </section>
+      <p id="swarmsy-wiki-status" class="swarmsy-wiki-status" role="status"></p>
+    </div>
+  </div>
+  <form id="swarmsy-wiki-search" class="swarmsy-wiki-form swarmsy-wiki-composer">
+    <label for="swarmsy-wiki-question">Message SWARMSY</label>
+    <div class="swarmsy-wiki-input">
+      <input id="swarmsy-wiki-question" class="wiki-hero-search-input" type="text" minlength="2" maxlength="600"
+        placeholder="Ask about the Wiki" autocomplete="off" required autofocus>
+      <button class="search-control swarmsy-wiki-submit" type="submit">Send</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
 <!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
 <!-- so placeholder nodes are never injected into the boot sequence.    -->
@@ -249,7 +289,7 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 7. Page-specific scripts -->
-<script data-cfasync="false" src="/js/swarmsy-wiki-search.js" defer></script>
+<script data-cfasync="false" src="/js/swarmsy-wiki-search.js?v=fullscreen-chat" defer></script>
 
 <script data-cfasync="false" src="/js/wiki.js?v=compact-search-index" data-wiki-search-index="wiki-index.json"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
