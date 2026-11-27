@@ -4,9 +4,9 @@
 const harborMiningSites = [
   { id: "bitcoin-cash-tower", col: 42, row: 11, heightScale: 1.7, atlas: { file: "bitcoin-cash-tower-overhead.webp?v=2-detail" },
     profile: { name: "Bitcoin Cash Mining Tower", role: "Mining rigs online" } },
-  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead.webp?v=3-regolith" },
+  { id: "zcash-fortress", col: 16, row: 21, atlas: { file: "zcash-fortress-overhead-runtime.webp?v=1" },
     profile: { name: "Zcash Mining Fortress", role: "Cooling fans and reactors online" } },
-  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead.webp?v=3-regolith" },
+  { id: "wax-bee-node", col: 21, row: 22, atlas: { file: "wax-bee-overhead-runtime.webp?v=1" },
     profile: { name: "WAX Bee Node", role: "Honeycomb circuits online" } },
 ];
 const waterfrontAtlasBase = new URL("assets/atlases/", document.currentScript?.src || document.baseURI);
@@ -70,8 +70,8 @@ const waterfrontCharacterNames = window.waterfrontCharacterNames;
 const waterfrontBotAtlas = { file: "bot-frames" };
 // Three models across. Each model has four directions and four animation frames.
 const characterDetailCell = 192;
-const waterfrontDetailedFactions = { file: "factions-detail.webp" };
-const waterfrontDetailedBots = { file: "bots-detail.webp" };
+const waterfrontDetailedFactions = { file: "factions-detail-runtime.webp?v=1" };
+const waterfrontDetailedBots = { file: "bots-detail-runtime.webp?v=1" };
 const roamingAtlasCell = 112;
 // Order within each atlas matches SPRITE-LIBRARY.md.
 const waterfrontRoamers = [
@@ -219,6 +219,12 @@ const waterfrontAtlases = {
     "footpath-pavers": [58, 2, 20, 20]
   }
 };
+
+// Preserve the PNG atlases as editable masters. The lossless WebP copies have
+// identical dimensions and pixels, but cut the blocking compact-art transfer.
+const waterfrontRuntimeAtlases = Object.fromEntries(
+  Object.keys(waterfrontAtlases).map(group => [group, group + "-runtime.webp?v=1"])
+);
 
 const waterfrontDetails = Object.fromEntries(
   Object.keys(waterfrontAtlases["street-detail"]).map(file => [file, { file }])
@@ -594,7 +600,9 @@ window.loadWaterfrontSprites = function loadWaterfrontSprites() {
       resolve();
     };
     atlas.onerror = resolve;
-    atlas.src = new URL(group + ".png", waterfrontAtlasBase).href;
+    atlas.decoding = "async";
+    atlas.fetchPriority = group === "factions" ? "high" : "auto";
+    atlas.src = new URL(waterfrontRuntimeAtlases[group], waterfrontAtlasBase).href;
   }));
   return Promise.all(loadAtlases);
 };

@@ -2168,7 +2168,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         } });
       }
       if (/\/(?:harbor-art|map|leader-dialog)\.js$/.test(url.pathname)) gameplayAssets.push(url.pathname);
-      if (/\/atlases\/(?:roamers-[\w-]+|bots-detail|factions-detail)\.webp$/.test(url.pathname)) {
+      if (/\/atlases\/(?:roamers-[\w-]+|(?:bots-detail|factions-detail)(?:-runtime)?)\.webp$/.test(url.pathname)) {
         detailArtRequests.push(url.pathname);
         await holdDetailArt;
       }
