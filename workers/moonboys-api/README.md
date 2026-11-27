@@ -20,6 +20,46 @@ Cloudflare `TELEGRAM_WEBHOOK_SECRET` secret. Before deployment, complete
 The production wrapper verifies that this secret binding exists; a missing or
 unreadable binding blocks deployment. Never store its value in Wrangler variables.
 
+## Validate and release a PR with Cloudflare changes
+
+When an API agent identifies a Worker or D1 dependency, include the PR number,
+the exact commit, any required migration filenames and the API behavior to
+check. Use **Cloudflare PR validation and release** from the `main` branch in
+GitHub Actions. An API agent with Actions dispatch access can request the
+same check with:
+
+```sh
+gh workflow run cloudflare-pr-release.yml --ref main -f stage=validate -f pr="$pr_number" -f commit="$head_sha"
+```
+
+1. Select **validate** and enter the PR number and its current head SHA. The
+   job builds the Worker and runs the Worker/API suite. For migration PRs, a
+   separate job uses the existing `CLOUDFLARE_D1_READ_TOKEN` and
+   `CLOUDFLARE_ACCOUNT_ID` repository secrets to export only the production
+   schema and read the migration filenames. The test runner applies the
+   proposed SQL to disposable local D1 storage without Cloudflare credentials
+   or production rows. Include a focused test in the PR for the actual bug.
+2. After review and merge, select **release** and enter the PR number, the
+   current `main` merge SHA and the successful validation run ID. Enable
+   **apply_d1** only if the release approval includes the new migrations.
+   The workflow validates the merged commit again before the production job.
+3. Configure the `cloudflare-production` GitHub environment for `main`, with a
+   production reviewer, the `CLOUDFLARE_RELEASE_API_TOKEN` secret scoped to the
+   target account's Workers and D1 operations, and the
+   `CLOUDFLARE_ACCOUNT_ID` variable. Keep the read token separate. These
+   credentials are consumed by Actions, so the Doctor and Brain services need
+   no Cloudflare write token.
+4. The release checks the D1 ledger and stops if applying the PR's migrations
+   would also apply other pending files. It applies approved migrations,
+   deploys through the provenance wrapper, and verifies live health and the
+   deployed commit. If a Pages run was waiting on the Worker, rerun Pages
+   after the backend is verified and confirm the affected frontend is live.
+
+A release may be retried after a partial migration or deploy failure. The job
+checks for migrations already applied. If `main` has advanced, use the
+normal production release process for the new combined revision. A Worker
+rollback does not roll back a D1 schema change.
+
 ## D1 migrations
 
 Do not apply D1 migrations as part of an ordinary Worker deployment. Inspect the production migration state separately, apply only reviewed missing migrations, and retain evidence in `deployments/production.json`.
