@@ -23,3 +23,21 @@ The owner receives private findings and Doctor status updates, including the PR 
 To pause intake, clear `SUPPORT_CASES_ENABLED` and stop the Brain support timer. Leave the D1 case records in place. If a website Doctor job has already been approved, inspect its queue and PR separately. The primary Doctor supervisor and the Brain recovery timer are independent of this support flow.
 
 For Telegram merge approval on an existing installation, apply migration `134_support_merge_approval.sql`, deploy the matching Worker, and then update the Brain support bridge. An approval becomes stale if the reviewed commit changes. If GitHub blocks a merge, inspect the linked PR checks and rules.
+
+## SAM Wiki drafts
+
+HAY-MUM forwards validated editorial payloads through `/internal/sam-wiki-drafts`.
+Set a separate `SAM_WIKI_DRAFT_TOKEN` on the Worker and in HAY-MUM Actions.
+The intake credential can only submit drafts. The Brain service uses the existing
+support credential to deliver notices and track work.
+
+The owner receives the section excerpt, GitHub PR and reviewed revision in a
+private WikicomsBot chat. **Edit** asks for instructions and starts a new Codex
+review. **Merge** is available after Codex clears that revision and still needs
+GitHub's required checks. **Leave** pauses the case. **Close** closes the linked
+PR. New routes require an entry in the owner-approved Wiki publication register.
+
+Apply migration `135_sam_wiki_drafts.sql` and deploy the reviewed Worker through
+the normal release process. Set `SAM_WIKI_DRAFTS_ENABLED=true` only after the
+Brain's separate SAM editorial timer is configured. The support repair queue
+continues to use its original route.

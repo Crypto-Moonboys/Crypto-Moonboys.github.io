@@ -26,7 +26,7 @@ function redact(value) {
   return value.replace(/\b(?:sk-[\w-]{16,}|github_pat_[\w]+|gh[pousr]_[\w]+|\d{8,16}:[\w-]{25,}|Bearer\s+[\w.-]{16,})\b/gi, '[redacted]');
 }
 
-async function telegram(env, method, payload) {
+export async function telegram(env, method, payload) {
   const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload), signal: AbortSignal.timeout(10_000)
@@ -34,7 +34,7 @@ async function telegram(env, method, payload) {
   if (!response.ok || (await response.json()).ok !== true) throw new Error('support_telegram_delivery_failed');
 }
 
-const say = (env, chat_id, message, inline_keyboard) => telegram(env, 'sendMessage', {
+export const say = (env, chat_id, message, inline_keyboard) => telegram(env, 'sendMessage', {
   chat_id, text: message, ...(inline_keyboard ? { reply_markup: { inline_keyboard } } : {})
 });
 const button = (label, action, row) => ({ text: label, callback_data: `support:${action}:${row.id}:${row.revision}` });
@@ -129,7 +129,7 @@ export async function handleSupportUpdate(update, env, checkMember) {
   return true;
 }
 
-async function matchSecret(candidate, secret) {
+export async function matchSecret(candidate, secret) {
   if (!candidate || !SECRET.test(candidate)) return false;
   const encoder = new TextEncoder();
   const [left, right] = await Promise.all([secret, candidate].map(value => crypto.subtle.digest('SHA-256', encoder.encode(value))));
