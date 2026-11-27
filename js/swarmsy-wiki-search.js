@@ -2,9 +2,15 @@
   'use strict';
 
   const byId = id => document.getElementById(id);
+  const dialog = byId('swarmsy-wiki-chat');
   const form = byId('swarmsy-wiki-search');
-  if (!form) return;
-  const question = byId('search-page-input');
+  if (!form || typeof dialog?.showModal !== 'function') return;
+  const opener = byId('swarmsy-wiki-open');
+  const close = byId('swarmsy-wiki-close');
+  const search = byId('search-page-input');
+  const question = byId('swarmsy-wiki-question');
+  const sent = byId('swarmsy-wiki-sent');
+  const thread = byId('swarmsy-wiki-thread');
   const status = byId('swarmsy-wiki-status');
   const answer = byId('swarmsy-wiki-answer');
   const reply = byId('swarmsy-wiki-reply');
@@ -14,7 +20,6 @@
   let active;
 
   function announce(message) {
-    status.hidden = !message;
     status.textContent = message;
   }
 
@@ -48,22 +53,48 @@
     active?.abort();
     active = null;
     button.disabled = false;
+    sent.hidden = true;
+    sent.textContent = '';
     answer.hidden = true;
     reply.textContent = '';
     sourceList.replaceChildren();
     announce('');
   }
 
-  question.addEventListener('input', clearAnswer);
-  window.addEventListener('popstate', clearAnswer);
+  opener.addEventListener('click', () => {
+    if (dialog.open) return;
+    clearAnswer();
+    question.value = search.value.trim().slice(0, question.maxLength);
+    dialog.showModal();
+    if (question.value.length >= question.minLength) form.requestSubmit();
+  });
+  close.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    if (dialog.open) return;
+    clearAnswer();
+    opener.focus({ preventScroll: true });
+  });
+  opener.hidden = false;
+
   form.addEventListener('submit', async event => {
     event.preventDefault();
     const query = question.value.trim();
-    if (active || query.length < 2) return;
+    if (!dialog.open || active) return;
+    if (query.length < question.minLength) {
+      announce('Enter at least two characters.');
+      question.focus();
+      return;
+    }
     clearAnswer();
+    sent.textContent = query;
+    sent.hidden = false;
+    thread.scrollTop = 0;
+    question.value = '';
+    question.focus();
     const base = window.MOONBOYS_API?.getApiBase?.({ mode: 'read' });
+    const unavailable = 'SWARMSY is unavailable. Close the chat to browse the Wiki.';
     if (!base) {
-      announce('SWARMSY is unavailable. You can still browse the results below.');
+      announce(unavailable);
       return;
     }
     const controller = new AbortController();
@@ -79,18 +110,18 @@
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(35_000)]),
       });
       const data = await response.json();
-      if (active !== controller) return;
+      if (!dialog.open || active !== controller) return;
       render(data);
       if (response.status === 429) {
-        announce(data.error === 'daily_limit' ? 'SWARMSY reached its daily limit. Wiki search is still available below.'
-          : 'Too many requests. Try again in a minute, or browse the Wiki results below.');
+        announce(data.error === 'daily_limit' ? 'SWARMSY reached its daily limit. Close the chat to browse the Wiki.'
+          : 'Too many requests. Try again in a minute.');
       } else if (!response.ok || typeof data.answer !== 'string') {
-        announce('SWARMSY is unavailable. You can still browse the results below.');
+        announce(unavailable);
       } else {
         announce('SWARMSY answer ready.');
       }
     } catch {
-      if (active === controller) announce('SWARMSY is unavailable. You can still browse the results below.');
+      if (dialog.open && active === controller) announce(unavailable);
     } finally {
       if (active === controller) {
         active = null;
