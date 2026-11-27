@@ -6,7 +6,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 ## Audit contract
 
-- Scope: all 612 top-level `wiki/*.html` pages.
+- Scope: all 613 top-level `wiki/*.html` pages.
 - Absent-stub authorizations: 0. These are explicit repository declarations, not audited pages or links to pages that already exist.
 - Canon hierarchy: published First Witness convergence canon; latest canon/brand vision; W81 condensed digest; current dedicated bibles; Retired W81 archive provenance and migration ledger; existing wiki archive.
 - Tier 4 source gap: the modern dedicated character/faction/HODL WARS bibles referenced by the First Witness register are not separately identifiable in this checkout. Historical `wiki/bibles/*.json` SAM records remain lower-tier public archive inputs and ambiguous mappings stay review items.
@@ -21,9 +21,9 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Measure | Count |
 |---|---:|
-| Total pages audited | 612 |
+| Total pages audited | 613 |
 | Absent stub authorizations | 0 |
-| KEEP | 274 |
+| KEEP | 275 |
 | REWRITE_FULL | 0 |
 | RECONCILE | 2 |
 | DEDUPE | 0 |
@@ -45,7 +45,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 
 | Policy | Pages | Meaning |
 |---|---:|---|
-| canon-locked | 349 | Automated article-body writes are rejected. |
+| canon-locked | 350 | Automated article-body writes are rejected. |
 | metadata-only | 262 | Search, relationship, and metadata maintenance only; article prose is preserved. |
 | replace-sam-block | 0 | A single existing SAM block may be replaced, never appended. |
 | stub-allowed | 1 | A stub may be created only while no real canonical page exists. |
@@ -395,6 +395,7 @@ This is an ownership and rewrite-queue audit only. It does not replace, delete, 
 | [The Hard Fork: Rise of the HODL Warriors](../wiki/the-hard-fork-rise-of-the-hodl-warriors.html) (`the-hard-fork-rise-of-the-hodl-warriors`) | KEEP | MEDIUM | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The HARD FORK ROCKERS (Digital Revolutionaries)](../wiki/the-hard-fork-rockers-digital-revolutionaries.html) (`the-hard-fork-rockers-digital-revolutionaries`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The High Hats (The Digital Aristocrats of the Grid)](../wiki/the-high-hats-the-digital-aristocrats.html) (`the-high-hats-the-digital-aristocrats`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
+| [The High Hats (The Digital Aristocrats of the Grid) — w52 archive copy](../wiki/the-high-hats-the-digital-aristocrats-w52.html) (`the-high-hats-the-digital-aristocrats-w52`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The HODL WARRIORS (The Protocol of Collective Defense)](../wiki/the-hodl-warriors-the-protocol-of.html) (`the-hodl-warriors-the-protocol-of`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The INFORMATION MERCENARIES (The Digital Spies and Data Brokers)](../wiki/the-information-mercenaries-the-digital.html) (`the-information-mercenaries-the-digital`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
 | [The Master Codex: The Triple-Tier Protocol](../wiki/the-master-codex-the-triple-tier.html) (`the-master-codex-the-triple-tier`) | KEEP | NONE | NONE | Preserve the completed canon revision; automated article prose is locked. | P4 | Latest canon/brand vision; W81 digest; brand-canon/wiki-rewrites/w81-archive-retirement-20261004.md (unresolved archive bucket; historical W81 sources) |
