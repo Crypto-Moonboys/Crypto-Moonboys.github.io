@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -180,6 +180,7 @@ test('automatic workflow is narrow, owner-only and cannot write production branc
   assert.match(workflow, /^  workflow_dispatch:\s*$/mu);
   assert.match(workflow, /branches-ignore:\s*\n\s+- main\s*\n\s+- master/u);
   assert.match(workflow, /github\.actor == 'HODLKONG64'/u);
+  assert.match(workflow, /github\.ref_name != 'main' && github\.ref_name != 'master'/u);
   assert.match(workflow, /contents: write/u);
   assert.doesNotMatch(workflow, /pull_request_target|\$\{\{\s*secrets\./u);
   assert.match(workflow, /\*\*\/\*-master\.png/u);
@@ -213,4 +214,60 @@ test('failed quality verification leaves an existing runtime file untouched', as
     /PSNR .* is below 90/u,
   );
   assert.deepEqual(await readFile(output), originalRuntime);
+});
+
+test('accepts an omitted WebP alpha channel when an RGBA master is fully opaque', async () => {
+  const root = await fixtureRoot();
+  const width = 256;
+  const height = 256;
+  const data = Buffer.alloc(width * height * 4);
+  for (let offset = 0; offset < data.length; offset += 4) {
+    data[offset] = (offset * 3) % 256;
+    data[offset + 1] = (offset * 5) % 256;
+    data[offset + 2] = (offset * 7) % 256;
+    data[offset + 3] = 255;
+  }
+  const source = path.join(root, 'opaque-master.png');
+  const output = path.join(root, 'opaque-runtime.webp');
+  await sharp(data, { raw: { width, height, channels: 4 } }).png({ compressionLevel: 0 }).toFile(source);
+  const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
+  manifest.assets.push({
+    source: 'opaque-master.png',
+    output: 'opaque-runtime.webp',
+    mode: 'lossless',
+    minSavingsPercent: 0,
+    preserveAlpha: true,
+  });
+  await writeFile(path.join(root, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const built = await buildRuntimeImages({ root, manifestPath: 'manifest.json', lockPath: 'lock.json' });
+  assert.equal(built.results.length, 1);
+  const [sourcePixels, outputPixels] = await Promise.all([
+    sharp(source).flatten({ background: '#000000' }).raw().toBuffer(),
+    sharp(output).flatten({ background: '#000000' }).raw().toBuffer(),
+  ]);
+  assert.deepEqual(outputPixels, sourcePixels);
+});
+
+test('rejects output directories that resolve outside the repository through symlinks', async () => {
+  const root = await fixtureRoot();
+  const outside = await mkdtemp(path.join(os.tmpdir(), 'runtime-images-outside-'));
+  await symlink(outside, path.join(root, 'linked'), 'dir');
+  await sharp({ create: { width: 320, height: 180, channels: 3, background: '#551177' } })
+    .png({ compressionLevel: 0 })
+    .toFile(path.join(root, 'safe-master.png'));
+  const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
+  manifest.assets.push({
+    source: 'safe-master.png',
+    output: 'linked/escaped-runtime.webp',
+    mode: 'lossless',
+    minSavingsPercent: 0,
+  });
+  await writeFile(path.join(root, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  await assert.rejects(
+    buildRuntimeImages({ root, manifestPath: 'manifest.json', lockPath: 'lock.json' }),
+    /resolves outside the repository/u,
+  );
+  await assert.rejects(access(path.join(outside, 'escaped-runtime.webp')), { code: 'ENOENT' });
 });

@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   build-runtime-images:
-    if: ${{ github.actor == 'HODLKONG64' }}
+    if: ${{ github.actor == 'HODLKONG64' && github.ref_name != 'main' && github.ref_name != 'master' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

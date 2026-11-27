@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
@@ -47,6 +47,31 @@ function repositoryPath(root, candidate, label) {
   return { relative: portable.replace(/^\.\//u, ''), absolute };
 }
 
+async function assertResolvedInside(root, candidate, label) {
+  const resolvedRoot = await realpath(root);
+  let existing = candidate;
+  while (true) {
+    try {
+      const resolved = await realpath(existing);
+      if (resolved !== resolvedRoot && !resolved.startsWith(`${resolvedRoot}${path.sep}`)) {
+        throw new Error(`${label} resolves outside the repository: ${candidate}`);
+      }
+      return;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      try {
+        const entry = await lstat(existing);
+        if (entry.isSymbolicLink()) throw new Error(`${label} contains a broken symbolic link: ${existing}`);
+      } catch (lstatError) {
+        if (lstatError.code !== 'ENOENT') throw lstatError;
+      }
+      const parent = path.dirname(existing);
+      if (parent === existing) throw new Error(`${label} has no existing repository ancestor: ${candidate}`);
+      existing = parent;
+    }
+  }
+}
+
 function normalizedConfig(asset, defaults, index) {
   const label = `assets[${index}]`;
   const mode = asset.mode || 'lossy';
@@ -92,6 +117,7 @@ function normalizedConfig(asset, defaults, index) {
 
 async function loadManifest(root, manifestPath) {
   const manifestFile = repositoryPath(root, manifestPath, 'manifest path');
+  await assertResolvedInside(root, manifestFile.absolute, 'manifest path');
   const manifest = JSON.parse(await readFile(manifestFile.absolute, 'utf8'));
   if (manifest.version !== 1) throw new Error(`${manifestPath} must use version 1`);
   if (!manifest.defaults || typeof manifest.defaults !== 'object' || Array.isArray(manifest.defaults)) {
@@ -100,11 +126,15 @@ async function loadManifest(root, manifestPath) {
   if (!Array.isArray(manifest.assets)) throw new Error(`${manifestPath} must contain an assets array`);
   const sources = new Set();
   const outputs = new Set();
-  const assets = manifest.assets.map((asset, index) => {
+  const assets = await Promise.all(manifest.assets.map(async (asset, index) => {
     if (!asset || typeof asset !== 'object' || Array.isArray(asset)) throw new Error(`assets[${index}] must be an object`);
     const config = normalizedConfig(asset, manifest.defaults, index);
     const source = repositoryPath(root, config.source, `assets[${index}].source`);
     const output = repositoryPath(root, config.output, `assets[${index}].output`);
+    await Promise.all([
+      assertResolvedInside(root, source.absolute, `assets[${index}].source`),
+      assertResolvedInside(root, output.absolute, `assets[${index}].output`),
+    ]);
     if (!SOURCE_EXTENSION.test(source.relative)) throw new Error(`${source.relative} is not a supported raster master`);
     if (!RUNTIME_EXTENSION.test(output.relative)) throw new Error(`${output.relative} must end in -runtime.webp`);
     if (source.relative === output.relative) throw new Error(`${source.relative} cannot overwrite its master`);
@@ -112,8 +142,8 @@ async function loadManifest(root, manifestPath) {
     if (outputs.has(output.relative)) throw new Error(`Duplicate runtime output: ${output.relative}`);
     sources.add(source.relative);
     outputs.add(output.relative);
-    return { ...config, source: source.relative, output: output.relative, sourcePath: source.absolute, outputPath: output.absolute };
-  });
+    return { ...config, root, source: source.relative, output: output.relative, sourcePath: source.absolute, outputPath: output.absolute };
+  }));
   return { manifest, manifestFile, assets };
 }
 
@@ -187,12 +217,20 @@ async function verifyAsset(asset, expectedBuffer, expectedMetadata) {
     throw new Error(`${asset.output} dimensions changed: expected ${expectedMetadata.width}x${expectedMetadata.height}, got ${outputMetadata.width}x${outputMetadata.height}`);
   }
   if (asset.preserveAlpha && expectedMetadata.hasAlpha) {
-    if (!outputMetadata.hasAlpha) throw new Error(`${asset.output} lost transparency`);
-    const [expectedAlpha, outputAlpha] = await Promise.all([
-      sharp(expectedBuffer, { limitInputPixels: false }).ensureAlpha().extractChannel(3).raw().toBuffer(),
-      sharp(asset.outputPath, { limitInputPixels: false }).ensureAlpha().extractChannel(3).raw().toBuffer(),
-    ]);
-    if (!expectedAlpha.equals(outputAlpha)) throw new Error(`${asset.output} changed its alpha channel`);
+    const expectedAlpha = await sharp(expectedBuffer, { limitInputPixels: false }).ensureAlpha().extractChannel(3).raw().toBuffer();
+    let fullyOpaque = true;
+    for (const value of expectedAlpha) {
+      if (value !== 255) {
+        fullyOpaque = false;
+        break;
+      }
+    }
+    if (!outputMetadata.hasAlpha) {
+      if (!fullyOpaque) throw new Error(`${asset.output} lost transparency`);
+    } else {
+      const outputAlpha = await sharp(asset.outputPath, { limitInputPixels: false }).ensureAlpha().extractChannel(3).raw().toBuffer();
+      if (!expectedAlpha.equals(outputAlpha)) throw new Error(`${asset.output} changed its alpha channel`);
+    }
   }
 
   let measuredPsnr = null;
@@ -227,6 +265,7 @@ async function verifyAsset(asset, expectedBuffer, expectedMetadata) {
 
 async function encodeAsset(asset, expectedBuffer) {
   await mkdir(path.dirname(asset.outputPath), { recursive: true });
+  await assertResolvedInside(asset.root, path.dirname(asset.outputPath), `${asset.output} parent`);
   const temporary = `${asset.outputPath}.tmp-${process.pid}-${Date.now()}.webp`;
   try {
     const options = asset.mode === 'lossless'
@@ -256,6 +295,7 @@ function lockConfig(asset) {
 
 async function readLock(root, lockPath, required) {
   const lockFile = repositoryPath(root, lockPath, 'lock path');
+  await assertResolvedInside(root, lockFile.absolute, 'lock path');
   try {
     const lock = JSON.parse(await readFile(lockFile.absolute, 'utf8'));
     if (lock.version !== 1 || !lock.assets || typeof lock.assets !== 'object') throw new Error(`${lockPath} is invalid`);
@@ -352,6 +392,7 @@ export async function registerRuntimeImages({
   const additions = [];
   for (const candidate of paths) {
     const source = repositoryPath(root, candidate, 'registered master');
+    await assertResolvedInside(root, source.absolute, 'registered master');
     if (!MASTER_EXTENSION.test(source.relative)) throw new Error(`${source.relative} must end in -master.png, -master.jpg, -master.jpeg or -master.webp`);
     if (knownSources.has(source.relative)) continue;
     const metadata = await sharp(source.absolute, { limitInputPixels: false }).metadata();
