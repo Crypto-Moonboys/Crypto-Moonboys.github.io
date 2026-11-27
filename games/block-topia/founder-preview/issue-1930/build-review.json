@@ -1,38 +1,50 @@
 {
   "issue": 1930,
-  "round": 128,
+  "round": 129,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
       "visualRisks": [
         {
-          "description": "Water and road colors are very similar, which may cause confusion.",
-          "affectedElements": [
-            "water",
-            "road"
-          ],
-          "suggestion": "Increase the contrast between water and road colors."
+          "description": "Water and road overlap",
+          "riskLevel": "High",
+          "location": [
+            2,
+            3,
+            4
+          ]
         },
         {
-          "description": "The lighthouse is not easily distinguishable against the ground color.",
-          "affectedElement": "lighthouse",
-          "suggestion": "Change the lighthouse color to a more distinct hue."
+          "description": "House is too close to the water",
+          "riskLevel": "Medium",
+          "location": [
+            9,
+            10
+          ]
         }
       ],
       "navigationRisks": [
         {
-          "description": "The route path includes diagonal movements which might be difficult for some users to follow.",
-          "affectedElements": [
-            "route"
-          ],
-          "suggestion": "Simplify the route by reducing diagonal moves or providing clearer visual cues."
+          "description": "Route loop or dead end detected",
+          "riskLevel": "High",
+          "locations": [
+            [
+              64,
+              76
+            ],
+            [
+              88,
+              77
+            ]
+          ]
         },
         {
-          "description": "There are multiple sharp turns in the route, which could be disorienting.",
-          "affectedElements": [
-            "route"
-          ],
-          "suggestion": "Smooth out the route to avoid abrupt changes and provide more gradual transitions."
+          "description": "Unexpected route direction changes",
+          "riskLevel": "Medium",
+          "location": [
+            103,
+            104
+          ]
         }
       ]
     }
