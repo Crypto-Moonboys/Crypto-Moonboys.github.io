@@ -398,7 +398,13 @@ Activation requires [D1 migration 135](workers/moonboys-api/migrations/135_sam_w
 
 On 27 November 2026, production `wikicoms` recorded migration 135, the `moonboys-api` build from [`e2a155ce`](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/commit/e2a155ce91b7cd926e468fe81f89b5d96afd3bbf) was deployed with SAM queue settings, and the Brain bridge completed its first authenticated poll. A real draft through Codex review and the Telegram approval flow remains to be verified.
 
+### Website support approvals
+
+Community reports go to `@WIKICOMSBOT`. The Brain coordinates the private review and Doctor builds and tests the approved repair. Approving **Fix** starts the repair. The separate **Approve merge** button applies to the exact Codex-reviewed commit. For a merged case, verify the fix on the live site before sending `/resolved <case number>`.
+
 ### Cloudflare validation and release
+
+Set up `cloudflare-production` in this repository's GitHub Environments, with `main` as the sole deployment branch. Store the scoped Workers Scripts and D1 write token as the environment secret `CLOUDFLARE_RELEASE_API_TOKEN` and the Cloudflare account ID as the environment variable `CLOUDFLARE_ACCOUNT_ID`. D1 rehearsals use the separate repository secrets `CLOUDFLARE_D1_READ_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Keep approval at the PR for unattended releases after merge. A qualifying Worker or D1 PR is still needed to verify the automatic production path end to end.
 
 [The Cloudflare PR workflow](.github/workflows/cloudflare-pr-release.yml) validates the exact head of ready Worker PRs. After approval and merge, its production release checks the D1 ledger, applies reviewed migrations, deploys the Worker and checks live provenance. The Brain can request validation for a SAM Wiki PR when Codex or a maintainer flags it. See the [Worker runbook](workers/moonboys-api/README.md).
 
