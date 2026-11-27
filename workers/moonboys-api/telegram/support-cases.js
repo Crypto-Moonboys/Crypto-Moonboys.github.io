@@ -163,7 +163,7 @@ async function intakeWikiLink(body, env) {
       revision = revision + CASE WHEN fix = '' THEN 1 ELSE 0 END,
       owner_notice = CASE WHEN fix = '' THEN 1 ELSE owner_notice END,
       doctor_status = '', doctor_reason = '', pr_url = '', merge_head_sha = ''
-    WHERE state = 'reviewed' AND base_sha <> excluded.base_sha`)
+    WHERE state = 'reviewed' AND (fix = '' OR base_sha <> excluded.base_sha)`)
     .bind(key, env.SUPPORT_OWNER_TELEGRAM_ID, fix,
       `The Brain found a Wiki link on /${page} with no matching tracked page. The proposed link matches a single published Wiki path.`,
       fix, JSON.stringify([page]), base, Math.floor(Date.now() / 1000), key).run();

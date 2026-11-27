@@ -101,6 +101,22 @@ test('the Brain scanner can only stage deduplicated Wiki link fixes for the owne
   assert.equal((await submit(finding)).status, 200);
   assert.equal(row().state, 'approved');
   assert.equal(row().base_sha, '2'.repeat(40));
+
+  const sameRelease = { ...finding, base_sha: row().base_sha };
+  const firstApproval = row().approved_revision;
+  assert.equal((await bridge({ action: 'status', id: row().id, revision: row().revision,
+    status: 'failed_with_reason' })).status, 200);
+  assert.equal(row().fix, '');
+  const failedRevision = row().revision;
+  assert.equal((await submit(sameRelease)).status, 200);
+  assert.equal(row().revision, failedRevision + 1);
+  assert.equal(row().owner_notice, 1);
+  assert.equal(row().fix, 'Replace Wiki link /wiki/Old_Name.html with /wiki/old-name.html.');
+  await update(owner, `FIX #1 ${failedRevision}`);
+  assert.equal(row().state, 'reviewed');
+  await update(owner, `FIX #1 ${row().revision}`);
+  assert.ok(row().approved_revision > firstApproval);
+  assert.equal(row().state, 'approved');
 });
 
 test('LOOK, revised findings, FIX, PR and verified resolution are separate transitions', async t => {
