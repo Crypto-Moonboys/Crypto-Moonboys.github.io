@@ -45,3 +45,12 @@ Apply migration `135_sam_wiki_drafts.sql` and deploy the reviewed Worker through
 the normal release process. Set `SAM_WIKI_DRAFTS_ENABLED=true` only after the
 Brain's separate SAM editorial timer is configured. The support repair queue
 continues to use its original route.
+
+### Test private Telegram delivery
+
+After the Worker release, run **SAM Draft-Only Crawl** on HAY-MUM's `main`
+with **Send a private Telegram delivery test** checked. The real D1 queue and
+Brain timer deliver a single labelled message to the configured owner.
+The Actions job waits for Telegram to acknowledge the send. The test has no
+publication controls and does not create a Wiki PR or run the crawler.
+A timeout means delivery was unconfirmed during the four-minute wait.

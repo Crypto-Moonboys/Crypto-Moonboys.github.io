@@ -38,7 +38,7 @@ test('SAM drafts require a separate intake credential, current Codex review and 
       return { ...bind(), bind };
     } },
   };
-  const queue = (body, intake = false) => worker.fetch(new Request(origin + '/internal/sam-wiki-drafts', {
+  const queue = (body, intake = false, suffix = '') => worker.fetch(new Request(origin + '/internal/sam-wiki-drafts' + suffix, {
     method: body ? 'POST' : 'GET', body: body && JSON.stringify(body),
     headers: intake ? { 'X-SAM-Wiki-Draft-Token': env.SAM_WIKI_DRAFT_TOKEN }
       : { 'X-Doctor-Support-Token': env.SUPPORT_BRAIN_TOKEN },
@@ -97,6 +97,28 @@ test('SAM drafts require a separate intake credential, current Codex review and 
   assert.equal((await move('status', { state: 'merged', review_id: 999 })).status, 400);
   assert.equal((await move('status', { state: 'merged' })).status, 200);
   assert.equal(row().state, 'merged');
+  await move('notify');
+  const deliveryTest = { delivery_test: '987654-1' };
+  const status = () => queue(undefined, true, '?delivery_test=987654-1');
+  assert.equal((await status()).status, 404);
+  assert.equal((await queue({ ...deliveryTest, payload }, true)).status, 400);
+  assert.equal((await queue(deliveryTest, true)).status, 200);
+  assert.equal((await queue(deliveryTest, true)).status, 200);
+  assert.deepEqual(await (await status()).json(), { ok: true, delivered: false });
+  const poll = await (await queue()).json();
+  assert.deepEqual(poll.cases, []);
+  assert.equal(poll.notices.length, 1);
+  const notice = poll.notices[0];
+  assert.equal((await queue({ ...notice, action: 'status', state: 'ready', pr_number: 500 })).status, 409);
+  await telegram(`samwiki:merge:${notice.id}:${notice.revision}`);
+  const beforeTest = deliveries.length;
+  await queue({ ...notice, action: 'notify' });
+  await queue({ ...notice, action: 'notify' });
+  assert.equal(deliveries.length, beforeTest + 1);
+  assert.match(deliveries.at(-1).text, /SAM Wiki delivery test.*987654-1/);
+  assert.equal(deliveries.at(-1).chat_id, '100');
+  assert.equal(deliveries.at(-1).reply_markup, undefined);
+  assert.deepEqual(await (await status()).json(), { ok: true, delivered: true });
 });
 
 
