@@ -118,6 +118,25 @@ test('standalone greetings go to Workers AI within the same daily budget', async
   assert.equal(run.mock.callCount(), 1);
 });
 
+test('Telegram selects SPARKY’s community voice without changing the website prompt or Wiki sources', async context => {
+  wikiFeed(context);
+  const text = 'You’re in the right room. The GKniftyHEADS are the underground good guys.';
+  const run = context.mock.fn(async (_model, body) => ({ response: text }));
+  const env = environment({ run });
+  const telegram = await handleSwarmsyWikiSearch(request({ question, surface: 'sparky_telegram' }), env, cors);
+  const website = await handleSwarmsyWikiSearch(request({ question }), env, cors);
+  assert.equal(telegram.status, 200);
+  assert.deepEqual(await telegram.json(), await website.json());
+  const [, telegramInput] = run.mock.calls[0].arguments;
+  const [, websiteInput] = run.mock.calls[1].arguments;
+  assert.match(telegramInput.messages[0].content, /SPARKY, the community fixer in GKniftyHEADS/);
+  assert.match(websiteInput.messages[0].content, /SWARMSY, the Crypto Moonboys Wiki assistant/);
+  assert.deepEqual(telegramInput.messages[1], websiteInput.messages[1]);
+
+  await handleSwarmsyWikiSearch(request({ question: 'Yo SPARKY!', surface: 'sparky_telegram' }), env, cors);
+  assert.deepEqual(JSON.parse(run.mock.calls[2].arguments[1].messages[1].content).publicWiki, []);
+});
+
 test('broad Moonboys questions send the official overview to Workers AI', async context => {
   const overview = {
     title: 'Crypto Moonboys — The Story, Realms and Timeline',
