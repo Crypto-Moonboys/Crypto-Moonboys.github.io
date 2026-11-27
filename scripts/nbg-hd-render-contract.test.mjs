@@ -37,7 +37,7 @@ assert.match(runtime, /var visibleWorldWidth = WIDTH \/ cameraZoom;/);
 assert.match(runtime, /var x = Math\.round\(player\.x - cameraX\);/);
 assert.match(runtime, /var drawWidth = frameMeta\.renderWidth;/);
 assert.match(runtime, /var drawHeight = frameMeta\.renderHeight;/);
-assert.match(runtime, /drawImageLayer\(images\.wall, 0\.58, 158, 88, '#2d2033'\);/);
+assert.match(runtime, /drawClassicImageLayer\(images\.wall, 0\.58, 154, 88, '#2d2033'\);/);
 assert.equal(manifest.world.width, 22000);
 assert.equal(manifest.player.hitbox.width, 24);
 assert.equal(manifest.player.hitbox.height, 34);

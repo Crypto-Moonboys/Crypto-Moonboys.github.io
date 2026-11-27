@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import vm from 'node:vm';
+import sharp from 'sharp';
 import { chromium } from 'playwright';
 import { verifyNbgLondonReplay } from '../workers/leaderboard/nbg-london-replay.js';
 
@@ -124,17 +125,31 @@ async function verifyEnemyAudioProfile(browser, targetUrl, profile) {
   const expectedAssetCount = Object.keys(manifest.effects || {}).length +
     Object.keys(manifest.enemyIdentities || {}).length; // MP3 tracks are streamed on demand.
   const audioPage = await browser.newPage(profile.options);
+  await audioPage.route('https://fonts.googleapis.com/**', route => route.fulfill({contentType: 'text/css', body: ''}));
   const errors = [];
   const failedRequests = [];
   audioPage.on('pageerror', (error) => errors.push(error.message));
+  audioPage.on('response', response => {
+    if (response.status() >= 400 && new URL(response.url()).origin === new URL(targetUrl).origin) {
+      failedRequests.push(response.status() + ' ' + response.url());
+    }
+  });
   audioPage.on('requestfailed', (request) => {
-    if (request.resourceType() !== 'font') failedRequests.push(request.url());
+    // Chromium may cancel a streamed track when the test mutes or reloads the page.
+    const cancelledMusic = request.resourceType() === 'media'
+      && request.failure()?.errorText === 'net::ERR_ABORTED'
+      && request.url().startsWith(new URL('/game/assets/audio/nbg-dark-industrial/music/', targetUrl).href);
+    if (request.resourceType() !== 'font' && !cancelledMusic) failedRequests.push(request.url());
   });
   try {
     await audioPage.goto(targetUrl, { waitUntil: 'domcontentloaded' });
     await audioPage.waitForFunction((count) => window.NBGAudio?.getState().encodedAssets === count,
       expectedAssetCount, { timeout: 10000 });
-    await audioPage.locator('#game').click({ position: { x: 120, y: 120 } });
+    assert.equal(await audioPage.evaluate(() => window.NBGAudio.isMuted()), true, profile.label + ': sound starts off');
+    // Exercise enemy effects independently of the streamed soundtrack.
+    await audioPage.evaluate(() => window.NBGAudio.setMusicMuted(true));
+    await audioPage.getByRole('button', { name: 'Turn on game sound', exact: true }).click();
+    assert.equal(await audioPage.evaluate(() => window.NBGAudio.isMuted()), false, profile.label + ': sound enabled');
     await audioPage.waitForFunction(() => window.NBGAudio?.getState().contextState === 'running', null, {
       timeout: 5000
     });
@@ -237,11 +252,8 @@ const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimat
 ]));
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
-const expectedSkylineLayers = [
-  'world/LONDON BACKGROUND1-runtime.webp',
-  'world/LONDON BACKGROUND2-runtime.webp',
-  'world/LONDON BACKGROUND3-runtime.webp'
-];
+// The ranked classic route reuses the same approved skyline for its three panels.
+const expectedSkylineLayers = Array(3).fill('world/nbg-classic/LONDON BACKGROUND1-runtime.webp');
 
 assert.equal(
   fs.existsSync(path.resolve(process.cwd(), 'game/assets/sprite-manifest.json')),
@@ -251,26 +263,22 @@ assert.equal(
 
 assert.deepEqual(
   assetManifest.world.layerNames,
-  ['sky', 'london-skyline', 'graffiti-wall', 'street'],
+  ['sky', 'london-behind', 'london-mid', 'london-skyline', 'london-bridge', 'graffiti-wall', 'street'],
   'asset-manifest.json must define the canonical render layer names'
 );
 assert.deepEqual(
-  assetManifest.world.layers[1],
-  expectedSkylineLayers,
-  'asset-manifest.json must reference the three direct skyline runtime panels'
+  assetManifest.world.layers[assetManifest.world.layerNames.indexOf('london-skyline')],
+  Array.from({ length: 7 }, (_, i) => `world/LONDON BACKGROUND${i + 1}-runtime.webp`),
+  'the shared manifest retains all seven extended skyline panels'
 );
 assert.equal(
   JSON.stringify(assetManifest).includes('london-skyline-stitched.svg'),
   false,
   'asset-manifest.json must not depend on the stitched skyline SVG wrapper'
 );
-for (const skylineLayer of expectedSkylineLayers) {
-  const assetPath = path.resolve(process.cwd(), 'game/assets', skylineLayer);
-  assert.equal(fs.existsSync(assetPath), true, `skyline runtime panel must exist: ${skylineLayer}`);
-  const sourceMasterPath = assetPath.replace(/-runtime\.webp$/, '.png');
-  const pngHeader = fs.readFileSync(sourceMasterPath).subarray(16, 24);
-  assert.equal(pngHeader.readUInt32BE(0), 480, `skyline PNG panel width must remain 480px: ${skylineLayer}`);
-  assert.equal(pngHeader.readUInt32BE(4), 160, `skyline PNG panel height must remain 160px: ${skylineLayer}`);
+for (const skylineLayer of new Set(expectedSkylineLayers)) {
+  const { width, height } = await sharp(path.resolve('game/assets', skylineLayer)).metadata();
+  assert.deepEqual([width, height], [1632, 408], 'classic skyline retains its 4:1 source frame');
 }
 assert.deepEqual(
   playerAnimationManifest.animations,
@@ -284,38 +292,21 @@ assert.equal('spriteSheet' in assetManifest.player, false, 'asset-manifest.json 
 assert.equal('animationManifest' in assetManifest.player, true, 'asset-manifest.json must point to the player animation manifest');
 for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
-  assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
-  const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
+  assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation WebP must exist: ${animation.spriteSheet}`);
+  const { width, height, format } = await sharp(assetPath).metadata();
+  assert.equal(format, 'webp');
   const expectedRows = Math.ceil(((animation.frameStart || 0) + animation.frames) / animation.columns);
-  assert.equal(pngHeader.readUInt32BE(0),
+  assert.equal(width,
     animation.columns * animation.sourceFrameWidth,
-    `animation PNG width must match the committed sheet grid: ${animation.spriteSheet}`);
-  assert.equal(pngHeader.readUInt32BE(4),
+    `animation WebP width must match the committed sheet grid: ${animation.spriteSheet}`);
+  assert.equal(height,
     expectedRows * animation.sourceFrameHeight,
-    `animation PNG height must match the committed sheet grid: ${animation.spriteSheet}`);
+    `animation WebP height must match the committed sheet grid: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
-// The uploaded clouds.jpg is exactly one 480x270 game viewport. Its
-// opposite edges do not match, so ordinary same-direction repetition makes
-// the rectangular seam reported in the game screenshot.
-const cloudBytes = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/world/clouds.jpg'));
-let cloudDimension = null;
-for (let i = 2; i < cloudBytes.length - 9;) {
-  if (cloudBytes[i] !== 0xff) { i++; continue; }
-  const marker = cloudBytes[i + 1];
-  if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-    cloudDimension = { width: cloudBytes.readUInt16BE(i + 7),
-      height: cloudBytes.readUInt16BE(i + 5) };
-    break;
-  }
-  if (marker === 0xd8 || marker === 0xd9 || marker === 0x01) { i += 2; continue; }
-  const segmentLength = cloudBytes.readUInt16BE(i + 2);
-  if (segmentLength < 2) break;
-  i += 2 + segmentLength;
-}
-assert.deepEqual(cloudDimension, { width: 480, height: 270 },
-  'uploaded sky JPEG must retain native 480x270 full-viewport dimensions');
+const sky = await sharp(path.resolve('game/assets/world/nbg-classic/clouds-runtime.webp')).metadata();
+assert.deepEqual([sky.width, sky.height], [480, 270], 'classic sky retains its full-viewport dimensions');
 
 // The user-supplied flying pig is a 5-column x 4-row (20-frame) 700x560
 // sheet. The pigeon remains the same 28x22 collision/score entity; only its
@@ -331,20 +322,20 @@ assert.equal(flyingPigHeader.readUInt32BE(4), 560,
 
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 assert.ok(
-  ['var COURSE_LAYOUT_VERSION = 8', 'var RUN_ACCEL = 0.42',
+  ['var COURSE_LAYOUT_VERSION = 9', 'var RUN_ACCEL = 0.42',
     'var MAX_SPEED = 2.4', 'var CROUCH_MAX_SPEED = 1.25',
     'var SPEED_BOOST_MAX_SPEED = 3.8', 'var DOUBLE_JUMP_SIDE_SPEED = 3.2']
     .every(value => runtimeSource.includes(value)),
-  'v8 must slow horizontal running, crouching, speed boxes and jump steering together'
+  'v9 retains the approved horizontal running, crouching, speed boxes and jump steering together'
 );
-assert.ok(runtimeSource.includes('function drawSkyWallpaper()') &&
+assert.ok(runtimeSource.includes('function drawClassicSkyWallpaper()') &&
   runtimeSource.includes('var tileW = WIDTH') &&
   runtimeSource.includes('var offset = -cameraX * 0.08') &&
   runtimeSource.includes('if (tile % 2 !== 0)') &&
   runtimeSource.includes('ctx.scale(-1, 1)') &&
   runtimeSource.includes('ctx.drawImage(image, 0, 0, tileW, HEIGHT)') &&
   runtimeSource.includes('ctx.drawImage(image, x, 0, tileW, HEIGHT)') &&
-  runtimeSource.includes('drawSkyWallpaper();') &&
+  runtimeSource.includes('drawClassicSkyWallpaper();') &&
   !runtimeSource.includes("drawImageLayer(images.sky, 0.08"),
   'sky wallpaper must use original viewport-sized tiles, alternate mirrored copies, and retain parallax');
 
@@ -464,7 +455,8 @@ assert.equal(
     runtimeSource.includes('var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y') &&
     runtimeSource.includes('ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h)') &&
     runtimeSource.includes('ctx.fillRect(checkX + 12, checkpointY + 8, 10, 8)') &&
-    runtimeSource.includes('ctx.drawImage(images.finish, Math.round(finish.x - cameraX), finish.y + FOREGROUND_VISUAL_OFFSET_Y, finish.w, finish.h)'),
+    runtimeSource.includes('var finishX = Math.round(finish.x - cameraX)') &&
+    /ctx\.drawImage\(images\.finish, finishX,\s*finish\.y \+ FOREGROUND_VISUAL_OFFSET_Y, finish\.w, finish\.h\)/.test(runtimeSource),
   true,
   'standalone Level 1 foreground gameplay visuals must draw through FOREGROUND_VISUAL_OFFSET_Y'
 );
@@ -481,9 +473,9 @@ assert.equal(
     runtimeSource.includes("{ type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }") &&
     runtimeSource.includes('var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false }') &&
     runtimeSource.includes('var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 }') &&
-    runtimeSource.includes('var SKYLINE_Y = 40') &&
+    runtimeSource.includes('ctx.fillRect(0, 40, WIDTH, 160)') &&
     runtimeSource.includes('ctx.drawImage(images.street, 0, sourceY, naturalWidth, sourceH, x, STREET_Y, tileW, STREET_BAND_HEIGHT)') &&
-    runtimeSource.includes('drawImageLayer(images.wall, 0.58, 154, 88,') &&
+    runtimeSource.includes('drawClassicImageLayer(images.wall, 0.58, 154, 88,') &&
     runtimeSource.includes('SKYLINE_Y,') &&
     !/FLOOR_Y\s*[+\-]=|STREET_Y\s*[+\-]=|SKYLINE_Y\s*[+\-]=/.test(runtimeSource),
   true,
@@ -752,6 +744,7 @@ browser = await chromium.launch(launchOptions);
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors = [];
 const failedRequests = [];
+await page.route('https://fonts.googleapis.com/**', route => route.fulfill({contentType: 'text/css', body: ''}));
 
 page.on('pageerror', (error) => errors.push(error.message));
 page.on('console', (message) => {
@@ -853,7 +846,6 @@ const hdProof = await page.evaluate(async () => {
     expectedPlayerCssWidth: playingArt.renderWidth * state.cameraZoom * rect.width / 480,
     wallCssHeight,
     expectedWallCssHeight: 88 * state.cameraZoom * rect.height / 270,
-    courseVersion: state.recordedReplay?.course_version || 9,
     playerHitbox: [state.player.w, state.player.h],
     running: state.running
   };
@@ -975,9 +967,11 @@ assert.equal(lookingBelow.xp, beforeLook.xp, 'camera look must not award XP');
 // collision box. Down without a direction cannot trigger left/right poses.
 const crouchOnly = await page.evaluate(() => {
   const s = window.NBGLevel1State;
+  const probe = document.createElement('canvas').getContext('2d');
+  probe.drawImage(s.playerAnimations.crouchRight.image, 0, 0);
   return { anim:s.player.anim, crouching:s.player.crouching,
     y:s.player.y, h:s.player.h, combat:s.playerCombatRect,
-    matteAlpha:s.playerAnimations.crouchRight.image.getContext('2d').getImageData(0,0,1,1).data[3] };
+    matteAlpha:probe.getImageData(0,0,1,1).data[3] };
 });
 assert.equal(crouchOnly.anim, 'crouchRight', 'Down alone uses the current right-facing crouch sheet');
 assert.equal(crouchOnly.crouching, true, 'Down must enter crouch stance');
@@ -1028,17 +1022,20 @@ await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50 && window.N
   null, { timeout: 3000 });
 await page.evaluate(() => window.NBGLevel1Runtime.setTouchControl('look', false));
 await page.waitForFunction(() => window.NBGLevel1State.cameraY > -15, null, { timeout: 3000 });
+// A fatal fall while looking down must render the final frame at normal height.
+await page.keyboard.down('ArrowDown');
+await page.waitForFunction(() => window.NBGLevel1State.cameraY < -50);
+await page.evaluate(() => Object.assign(window.NBGLevel1State.player, { health: 1, invuln: 0, y: 380 }));
+await page.waitForFunction(() => window.NBGLevel1State.gameOver);
+assert.equal(await page.evaluate(() => window.NBGLevel1State.cameraY), 0);
+await page.keyboard.up('ArrowDown');
 await page.evaluate(() => window.NBGLevel1Runtime.reset());
-// Both terminal branches must restore normal camera framing even if the
-// player holds Down when completion/game-over stops the animation loop.
-assert.match(runtimeSource, /if \(gameOver\)\s*\{\s*cameraY = 0;/,
-  'fatal-hit terminal render must reset a held-down camera');
 assert.match(runtimeSource, /if \(!running\) cameraY = 0;/,
   'completed run must reset a held-down camera');
 
 // Capture the actual browser-produced replay, not a hand-built approximation.
 // The browser starts spray in handleInput(), subtracts dt afterward, and then
-// permits Down to crouch at the exact animation-expiry frame. Worker course v8
+// permits Down to crouch at the exact animation-expiry frame. Worker course v9
 // must reconstruct the same feet, collision height and world-boundary clamp.
 await page.keyboard.down('KeyX');
 await page.waitForFunction(() => window.NBGLevel1State?.running &&
@@ -1552,7 +1549,8 @@ assert.ok(
   runtimeSource.includes('var GRAFFBOT_FIRE_MOUTH_OFFSET_Y = -17') &&
   runtimeSource.includes('GRAFFBOT_FIRE_RENDER_SIZE / 2 + GRAFFBOT_FIRE_MOUTH_OFFSET_Y') &&
   runtimeSource.includes('var SPEEDRUN_HUD_WIDTH = 104') &&
-  runtimeSource.includes("var timerText = formatRunTime(runElapsedMs) + '/3:00'") &&
+  runtimeSource.includes("var timerText = formatRunTime(getDisplayElapsedMs()) + '/' +") &&
+  runtimeSource.includes("formatRunTime(getParMs())") &&
   runtimeSource.includes("ctx.fillText('TIME', panelX + 4, 11)") &&
   runtimeSource.includes("var SPEEDRUN_HUD_HEIGHT = 21") &&
   gameCssSource.includes('flex: 0 1 50%') &&
@@ -2458,7 +2456,7 @@ assert.deepEqual(Object.fromEntries(Object.entries(blockState.assets).map(([key,
   floatingRock: '/game/assets/objects/ROCK1-runtime.webp'
 }, 'runtime must load the five exact uploaded object images');
 assert.ok(
-  runtimeSource.includes('var solids = [floor].concat(platforms, crates)') &&
+  runtimeSource.includes('var solids = getFloorSolids().concat(platforms, crates, solidRewardBoxes, getCourseSolids())') &&
   runtimeSource.includes('player.x = crate.x - player.w') &&
   runtimeSource.includes('player.x = crate.x + crate.w') &&
   runtimeSource.includes('var roll = Math.min(pool.length - 1, Math.floor(nextRunRandom() * pool.length))') &&
@@ -2845,7 +2843,8 @@ const platformDraw = await page.evaluate(async () => {
   const state = window.NBGLevel1State;
   const platform = state.platforms[0];
   const player = state.player;
-  player.x = platform.x + 50;
+  // Land clear of the parachute rat that spawns over the left half of this platform.
+  player.x = platform.x + platform.w - player.w - 4;
   player.y = platform.y - player.h;
   player.vx = 0;
   player.vy = 0;
@@ -3145,7 +3144,7 @@ assert.equal(await page.evaluate(() => window.NBGLevel1State.xp), afterDefeat.xp
 // 230ms attack window at 30/40/60 Hz rather than wrapping away from the
 // final spray artwork. This simulates the real frame-time accumulation and
 // validates both controlled one-shot runtime branches with a source-level guard.
-assert.ok(runtimeSource.includes("player.anim !== 'spray' && player.anim !== 'backflip'"),
+assert.ok(runtimeSource.includes("player.animBase !== 'spray' && player.animBase !== 'backflip' && !thirdSpinFrame"),
   'spray and backflip must use controlled non-looping progression while ordinary poses loop');
 for (const frameDt of [1000 / 60, 25, 33]) {
   let frame = 0, remainder = 0, hasRenderedLast = false;
