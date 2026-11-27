@@ -86,7 +86,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-link-token-security.test.mjs'],
     ['node', 'scripts/telegram-webhook-auth.test.mjs'],
     ['node', 'scripts/telegram-webhook-deployment.test.mjs'],
-    ['node', '--test', 'scripts/telegram-support-cases.test.mjs'],
+    ['node', '--test', 'scripts/telegram-support-cases.test.mjs', 'scripts/sam-wiki-drafts.test.mjs'],
     ['node', 'scripts/admin-grant-telegram-auth-security.test.mjs'],
     ['node', 'scripts/telegram-daily-digest-and-missed-perks.test.mjs'],
     ['node', 'scripts/telegram-daily-loop-commands.test.mjs'],

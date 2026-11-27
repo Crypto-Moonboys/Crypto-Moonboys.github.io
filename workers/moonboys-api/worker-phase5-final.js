@@ -11,6 +11,7 @@ import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
 import { checkTelegramGroupMember, handleTelegramGroupMembership } from './telegram-group-membership.js';
 import { handleTelegramConnectivity } from './telegram-connectivity.js';
+import { handleSamWikiRequest, handleSamWikiUpdate } from './telegram/sam-wiki-drafts.js';
 import { handleSupportRequest, handleSupportUpdate } from './telegram/support-cases.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
@@ -366,6 +367,13 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/$/, '');
+    if (url.pathname === '/internal/sam-wiki-drafts') {
+      try {
+        return await handleSamWikiRequest(request, env);
+      } catch {
+        return jsonError(request, 'sam_wiki_unavailable', 503);
+      }
+    }
     if (url.pathname === '/internal/doctor-support') {
       try {
         return await handleSupportRequest(request, env);
@@ -426,6 +434,14 @@ export default {
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
     const isMiniAppPetAction = path === '/telegram-pets/app/action' && request.method === 'POST';
     const body = (isPetAction || isMiniAppPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
+
+    if (isTelegramWebhook && body) {
+      try {
+        if (await handleSamWikiUpdate(body, env)) return Response.json({ ok: true });
+      } catch {
+        return jsonError(request, 'sam_wiki_unavailable', 503);
+      }
+    }
 
     if (isTelegramWebhook && body && env.SUPPORT_CASES_ENABLED === 'true') {
       try {
