@@ -17,14 +17,14 @@ const atlas = file => {
   image.src = base + file;
   return image;
 };
-const buildings = showBuildings ? atlas('hk-night.png') : null;
+const buildings = showBuildings ? atlas('hk-night-runtime.webp?v=1') : null;
 const fortress = mode === 'node-city' ? loadZcashFortress() : null;
 const showLandmarks = mode === 'node-city' || mode === 'moon';
 const waxBee = showLandmarks ? loadZcashFortress(mode === 'moon'
   ? './hodl-wars-lores/assets/wax-bee.webp?view=moon-grid' : './assets/miners/wax-bee-iso.webp') : null;
 const tower = showLandmarks ? loadZcashFortress(mode === 'moon'
   ? './hodl-wars-lores/assets/bitcoin-cash-tower.webp' : './assets/miners/bitcoin-cash-tower-iso.webp') : null;
-const people = atlas('factions-detail.webp');
+const people = atlas('factions-detail-runtime.webp?v=1');
 const viewport = {width:0,height:0};
 const camera = {x:0,y:0,zoom:1};
 let lastFrame = 0;

@@ -11,9 +11,9 @@ terrain.width = width * tile;
 terrain.height = height * tile;
 const soil = terrain.getContext('2d');
 const sprite = new Image();
-sprite.src = '../waterfront/assets/atlases/factions.png';
+sprite.src = '../waterfront/assets/atlases/factions-runtime.webp?v=1';
 const detailedSprite = new Image();
-detailedSprite.src = '../waterfront/assets/atlases/factions-detail.webp';
+detailedSprite.src = '../waterfront/assets/atlases/factions-detail-runtime.webp?v=1';
 const detailCell = 192;
 // Moon foundation stone palette (see games/block-topia/AGENTS.md): #585858, shadows #242424, highlights #8E8E8E.
 const miningBuildings = miningSites.map(site => {

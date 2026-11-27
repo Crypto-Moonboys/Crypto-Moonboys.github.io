@@ -2,19 +2,19 @@
 
 The production atlases are in [assets/atlases](assets/atlases). Use the existing atlas loader and the frame rectangles in [harbor-art.js](harbor-art.js) as the source of truth. These are the sprites already available to any agent with repository access.
 
-| Atlas | Registered sprite IDs |
-| --- | --- |
-| [cargo.png](assets/atlases/cargo.png) | `cargo-frames` |
-| [factions.png](assets/atlases/factions.png) | `faction-frames` |
-| [bots.png](assets/atlases/bots.png) | `bot-frames` |
-| [hk-night.png](assets/atlases/hk-night.png) | `afterblock-club`, `apartments`, `block-exchange`, `cold-vault`, `graffiti-wall`, `hash-house`, `lighthouse`, `lucky-block-casino`, `neon-ledger-casino`, `record-shop`, `warehouse`, `workshop` |
-| [trees.png](assets/atlases/trees.png) | `tree-banyan`, `tree-camphor`, `tree-casuarina`, `tree-frangipani`, `tree-mangrove`, `tree-ornamental`, `tree-palm`, `tree-paperbark` |
-| [street-detail.png](assets/atlases/street-detail.png) | `flowers-0`, `flowers-1`, `flowers-2`, `flowers-3`, `flowers-4`, `flowers-5`, `flowers-6`, `flowers-7`, `flowers-8`, `flowers-9`, `flowers-10`, `flowers-11`, `furniture-0`, `furniture-1`, `furniture-2`, `furniture-3`, `furniture-4`, `furniture-5`, `furniture-6`, `furniture-7`, `furniture-8`, `furniture-9`, `furniture-10`, `furniture-11`, `grass` |
-| [terrain.png](assets/atlases/terrain.png) | `curb-corner`, `curb-straight`, `footpath-pavers` |
+| Master | Runtime derivative | Frames |
+| --- | --- | --- |
+| [cargo.png](assets/atlases/cargo.png) | `cargo-runtime.webp` | `cargo-frames` |
+| [factions.png](assets/atlases/factions.png) | `factions-runtime.webp` | `faction-frames` |
+| [bots.png](assets/atlases/bots.png) | `bots-runtime.webp` | `bot-frames` |
+| [hk-night.png](assets/atlases/hk-night.png) | `hk-night-runtime.webp` | `afterblock-club`, `apartments`, `block-exchange`, `cold-vault`, `graffiti-wall`, `hash-house`, `lighthouse`, `lucky-block-casino`, `neon-ledger-casino`, `record-shop`, `warehouse`, `workshop` |
+| [trees.png](assets/atlases/trees.png) | `trees-runtime.webp` | `tree-banyan`, `tree-camphor`, `tree-casuarina`, `tree-frangipani`, `tree-mangrove`, `tree-ornamental`, `tree-palm`, `tree-paperbark` |
+| [street-detail.png](assets/atlases/street-detail.png) | `street-detail-runtime.webp` | `flowers-0`, `flowers-1`, `flowers-2`, `flowers-3`, `flowers-4`, `flowers-5`, `flowers-6`, `flowers-7`, `flowers-8`, `flowers-9`, `flowers-10`, `flowers-11`, `furniture-0`, `furniture-1`, `furniture-2`, `furniture-3`, `furniture-4`, `furniture-5`, `furniture-6`, `furniture-7`, `furniture-8`, `furniture-9`, `furniture-10`, `furniture-11`, `grass` |
+| [terrain.png](assets/atlases/terrain.png) | `terrain-runtime.webp` | `curb-corner`, `curb-straight`, `footpath-pavers` |
 
 ## Detailed character atlases
 
-[Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) use the original animation sheets, packed into 192 × 192 WebP frames. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The harbor paints with compact sprites first. The detailed frames load at low priority and replace the compact sprites when decoded. The renderer uses filtered scaling for detailed frames.
+[Faction characters](assets/atlases/factions-detail.webp) and [harbor robots](assets/atlases/bots-detail.webp) remain the preserved high-detail masters, packed into 192 × 192 WebP frames. Waterfront loads `factions-detail-runtime.webp` and `bots-detail-runtime.webp`, with the same 2304 × 2304 transparent canvas and frame order. Each model has four direction rows and four animation columns. The model blocks are packed three across in the same order as the smaller faction and robot atlases. The harbor paints with compact sprites first. The detailed frames load at low priority and replace the compact sprites when decoded. The renderer uses filtered scaling for detailed frames. The original Zcash and WAX overhead sheets are also preserved beside their same-dimension `*-runtime.webp` copies; the Bitcoin Cash tower and every other already-efficient WebP stay wired to the original file.
 
 ## Island roamers
 
