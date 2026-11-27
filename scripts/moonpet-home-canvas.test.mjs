@@ -9,7 +9,7 @@ const scene=client.split('// TEST-EXPORT: homeScene:start')[1].split('// TEST-EX
 function painter() {
   const calls=[], stack=[];
   const ctx={globalAlpha:1,drawImage:(image,...args)=>calls.push({source:image.src,args}),save(){stack.push(this.globalAlpha);},restore(){this.globalAlpha=stack.pop();}};
-  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=1280;Object.defineProperty(this,'naturalHeight',{get(){return this.src==='/img/lamp-larvalampy.png'?1024:1280;}});},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
+  const runtime=vm.createContext({ctx,Image:function(){this.complete=true;this.naturalWidth=1280;Object.defineProperty(this,'naturalHeight',{get(){return this.src==='/img/lamp-larvalampy.webp'?1024:1280;}});},reducedMotion:false,backgroundArtState:{},BOT_RENDER_BASELINE_Y:219,BOT_RENDER_CENTER_X:160,
     drawPixelRect:(x,y,w,h,color)=>calls.push({x,y,w,h,color,alpha:ctx.globalAlpha}),
     drawCompanionFloor:()=>calls.push({originalFloor:true})});
   vm.runInContext(scene,runtime);
@@ -52,7 +52,7 @@ test('transparent full-canvas mat choices and furniture remain distinct',()=>{
       assert.ok(calls.filter(c=>!c.originalFloor&&!c.source).every(c=>c.x>=0 && c.y>=0 && c.x+c.w<=320 && c.y+c.h<=220));
       if(fn==='drawHomeFurniture') assert.ok(calls.filter(c=>!c.source).every(c=>c.x>252),'pixel furniture stays outside original companion bounds');
       if(fn==='drawHomeFurniture'&&option==='plant_pot') {
-        assert.equal(calls[0].source,'/img/pot-pot.png');
+        assert.equal(calls[0].source,'/img/pot-pot.webp');
         assert.deepEqual(calls[0].args,[66,92,125,145,222,172-74*145/125,74,74*145/125],'plant frame retains the right-side visible footprint');
       }
       outputs.push(JSON.stringify(calls));
@@ -60,7 +60,7 @@ test('transparent full-canvas mat choices and furniture remain distinct',()=>{
     assert.equal(new Set(outputs).size,3,'saved mats and furniture distinguish all existing choices');
   }
   calls.length=0;runtime.drawHomeFloor('concrete',true,false);
-  assert.equal(calls[0].source,'/img/blacknsilvermatt.png');
+  assert.equal(calls[0].source,'/img/blacknsilvermatt.webp');
   assert.deepEqual(calls[0].args,[0,0,320,220]);
   assert.doesNotMatch(scene,/fetch\(|post\(|requestAnimationFrame|setTimeout|setInterval|createElement/,'static layers do not add requests, loops or a second canvas');
 });
@@ -80,7 +80,7 @@ test('plant sheet advances, wraps and freezes for reduced motion without shiftin
 test('stereo sprite advances, wraps and respects reduced motion',()=>{
   const {runtime,calls}=painter();
   runtime.drawMusicStereo(0);const first=calls.at(-1);
-  assert.equal(first.source,'/img/bass-yeo.png');
+  assert.equal(first.source,'/img/bass-yeo.webp');
   assert.deepEqual(first.args.slice(0,4),[22,14,211,226]);
   runtime.drawMusicStereo(125);assert.deepEqual(calls.at(-1).args.slice(0,4),[278,14,211,226]);
   assert.deepEqual(calls.at(-1).args.slice(4),first.args.slice(4));
@@ -91,7 +91,7 @@ test('stereo sprite advances, wraps and respects reduced motion',()=>{
 test('fish tank replaces the saved sleep mat with stable left-side sprite frames',()=>{
   const {runtime,calls}=painter();
   runtime.drawHomeFurniture('sleep_mat',0);const first=calls.at(-1);
-  assert.equal(first.source,'/img/tank-fishyfish.png');
+  assert.equal(first.source,'/img/tank-fishyfish.webp');
   assert.deepEqual(first.args,[90,17,76,223,6,164-44*223/76,44,44*223/76]);
   assert.ok(first.args[4]+first.args[6]<90,'tank stays left of pet bounds');
   assert.ok(first.args[5]>20,'tank stays below HUD');
@@ -104,7 +104,7 @@ test('fish tank replaces the saved sleep mat with stable left-side sprite frames
 test('disco ball uses fixed transparent frame bounds and upper-left placement',()=>{
   const {runtime,calls}=painter();
   runtime.drawRadioDiscoBall(0);const first=calls.at(-1);
-  assert.equal(first.source,'/img/ball-disco.png');
+  assert.equal(first.source,'/img/ball-disco.webp');
   assert.deepEqual(first.args,[38,12,180,215,44,0,64,64*215/180]);
   runtime.drawRadioDiscoBall(125);assert.deepEqual(calls.at(-1).args.slice(0,4),[294,12,180,215]);
   assert.deepEqual(calls.at(-1).args.slice(4),first.args.slice(4));

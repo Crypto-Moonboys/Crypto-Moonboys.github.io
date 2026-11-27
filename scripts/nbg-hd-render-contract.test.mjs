@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
 const runtime = readFileSync('game/nbg-level1.js', 'utf8');
-const route = readFileSync('games/nbg-london/index.html', 'utf8');
+const route = readFileSync('games/nbg-london-run/index.html', 'utf8');
 const css = readFileSync('game/game.css', 'utf8');
 const manifest = JSON.parse(readFileSync('game/assets/asset-manifest.json', 'utf8'));
 const animation = JSON.parse(readFileSync('game/assets/player/nbg-runner-animation-manifest.json', 'utf8'));
@@ -13,7 +13,7 @@ const animation = JSON.parse(readFileSync('game/assets/player/nbg-runner-animati
 assert.match(runtime, /var WIDTH = 480;/);
 assert.match(runtime, /var HEIGHT = 270;/);
 assert.match(runtime, /var RENDER_SCALE = 2;/);
-assert.match(route, /<canvas id="game" width="960" height="540"/);
+assert.match(route, /<canvas\b(?=[^>]*\bid="game")(?=[^>]*\bwidth="960")(?=[^>]*\bheight="540")[^>]*>/);
 assert.match(runtime, /canvas\.width !== WIDTH \* RENDER_SCALE/);
 assert.match(runtime, /canvas\.height !== HEIGHT \* RENDER_SCALE/);
 assert.match(runtime, /ctx\.setTransform\(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0\)/);
@@ -30,18 +30,19 @@ assert.match(runtime, /var WORLD_WIDTH = 22000;/);
 assert.match(runtime, /var FLOOR_Y = 214;/);
 assert.match(runtime, /var MAX_SPEED = 2\.4;/);
 assert.match(runtime, /var RUN_ACCEL = 0\.42;/);
-assert.match(runtime, /var COURSE_LAYOUT_VERSION = 8;/);
-assert.match(runtime, /var CAMERA_ZOOM_DEFAULT = 1\.25;/);
-assert.match(runtime, /var CAMERA_ZOOM_LEVELS = \[1, 1\.25, 1\.5\];/);
+assert.match(runtime, /var COURSE_LAYOUT_VERSION = 9;/);
+assert.match(runtime, /var cameraZoom = 1;/);
+assert.doesNotMatch(route, /nbg-zoom-control/);
 assert.match(runtime, /var visibleWorldWidth = WIDTH \/ cameraZoom;/);
 assert.match(runtime, /var x = Math\.round\(player\.x - cameraX\);/);
 assert.match(runtime, /var drawWidth = frameMeta\.renderWidth;/);
 assert.match(runtime, /var drawHeight = frameMeta\.renderHeight;/);
-assert.match(runtime, /drawImageLayer\(images\.wall, 0\.58, 154, 88, '#2d2033'\);/);
+assert.match(runtime, /drawImageLayer\(images\.wall, 0\.58, 158, 88, '#2d2033'\);/);
 assert.equal(manifest.world.width, 22000);
 assert.equal(manifest.player.hitbox.width, 24);
 assert.equal(manifest.player.hitbox.height, 34);
-assert.ok(manifest.world.layers[2], 'canonical wall texture must still be supplied');
+assert.ok(manifest.world.layers[manifest.world.layerNames.indexOf('graffiti-wall')],
+  'canonical wall texture must still be supplied');
 assert.ok(animation.animations.run.renderWidth > 0 &&
   animation.animations.run.renderHeight > 0,
   'sprite display sizes are still independent of their source frame pixels');
@@ -105,4 +106,4 @@ for (const frameSize of [8,16]) {
   assert.equal(output[sample],180,'full-colour pixels must not be recoloured');
 }
 
-console.log('[PASS] NBG HD rendering: 960x540 output, unchanged v8 geometry, metadata-ready crouch art');
+console.log('[PASS] NBG HD rendering: 960x540 output, fixed v9 camera and geometry, metadata-ready crouch art');

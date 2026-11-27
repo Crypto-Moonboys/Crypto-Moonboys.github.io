@@ -29,7 +29,7 @@ test('toggle persists independently per pet and restores after a fresh page runt
 });
 test('twenty-five transparent wing frames loop at fixed bounds, with reduced motion and level/hatch hiding',()=>{
  const f=runtime();f.ctx.toggleCompanionWings();f.ctx.drawCompanionWings(0);
- const first=f.calls.find(call=>call.args);assert.equal(first.source,'/img/BOTTY%20WINGS-waveone-v1.png');
+ const first=f.calls.find(call=>call.args);assert.equal(first.source,'/img/BOTTY%20WINGS-waveone-v1.webp');
  assert.deepEqual(first.args,[6,38,250,176,40,26,240,240*176/250]);
  f.ctx.drawCompanionWings(125);assert.equal(f.ctx.backgroundArtState.wings.frame,1);
  f.ctx.drawCompanionWings(3125);assert.equal(f.ctx.backgroundArtState.wings.frame,0);

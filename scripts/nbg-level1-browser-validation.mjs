@@ -9,7 +9,7 @@ import { verifyNbgLondonReplay } from '../workers/leaderboard/nbg-london-replay.
 const shouldServe = process.argv.includes('--serve');
 const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
 const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
-const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london/`;
+const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london-run/`;
 const legacyUrl = new URL('/game/demo-launch.html', url).toString();
 const browserExecutableCandidates = [
   process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
@@ -362,7 +362,7 @@ assert.ok(runtimeSource.includes('var FLYING_PIG_COLUMNS = 5') &&
 const gameCssSource = fs.readFileSync(path.resolve(process.cwd(), 'game/game.css'), 'utf8');
 const fullscreenShellSource = fs.readFileSync(path.resolve(process.cwd(), 'js/game-fullscreen.js'), 'utf8');
 const fullscreenCssSource = fs.readFileSync(path.resolve(process.cwd(), 'css/game-fullscreen.css'), 'utf8');
-const arcadeRouteSource = fs.readFileSync(path.resolve(process.cwd(), 'games/nbg-london/index.html'), 'utf8');
+const arcadeRouteSource = fs.readFileSync(path.resolve(process.cwd(), 'games/nbg-london-run/index.html'), 'utf8');
 const arcadeIndexSource = fs.readFileSync(path.resolve(process.cwd(), 'games/index.html'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
 const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
@@ -540,7 +540,7 @@ assert.equal(
     fullscreenShellSource.includes("function buildRunner()") &&
     fullscreenShellSource.includes("overlay-runner-game") &&
     fullscreenShellSource.includes("screen.orientation.lock('landscape')") &&
-    fullscreenShellSource.includes("ids[i] === 'game' && !/\\/games\\/nbg-london\\//.test(window.location.pathname)"),
+    fullscreenShellSource.includes("ids[i] === 'game' && !nbgLondon"),
   true,
   'fullscreen shell must give NBG London runner its own touch controls and landscape lock attempt without stealing generic #game canvases'
 );
@@ -583,7 +583,7 @@ assert.equal(
   'NBG route must show a clear portrait rotation prompt for phone users'
 );
 assert.equal(
-  arcadeIndexSource.includes('href="/games/nbg-london/"') &&
+  arcadeIndexSource.includes('href="/games/nbg-london-run/"') &&
     arcadeIndexSource.includes('NBG London Graffiti Run'),
   true,
   'Arcade catalog must link to the NBG London fullscreen route'
@@ -685,8 +685,8 @@ assert.equal(
   'render pipeline layer names must come from asset-manifest.json and expand array-backed layer panels'
 );
 assert.equal(
-  demoLaunchSource.includes("window.location.replace('/games/nbg-london/')") &&
-    demoLaunchSource.includes('url=/games/nbg-london/'),
+  demoLaunchSource.includes("window.location.replace('/games/nbg-london-run/')") &&
+    demoLaunchSource.includes('url=/games/nbg-london-run/'),
   true,
   'legacy demo launcher must redirect to the fullscreen NBG London route'
 );
@@ -768,8 +768,8 @@ page.on('requestfailed', (request) => {
 });
 
 await page.goto(legacyUrl, { waitUntil: 'networkidle' });
-await page.waitForURL('**/games/nbg-london/', { timeout: 3000 });
-assert.equal(new URL(page.url()).pathname, '/games/nbg-london/', 'legacy demo launch URL must redirect to fullscreen arcade route');
+await page.waitForURL('**/games/nbg-london-run/', { timeout: 3000 });
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london-run/', 'legacy demo launch URL must redirect to fullscreen arcade route');
 
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForSelector('#game', { state: 'visible', timeout: 5000 });
@@ -795,7 +795,7 @@ let startVisibility = await page.evaluate(() => ({
     running: window.NBGLevel1State.running
   }
 }));
-assert.equal(startVisibility.route, '/games/nbg-london/', 'validation must exercise the fullscreen NBG London route');
+assert.equal(startVisibility.route, '/games/nbg-london-run/', 'validation must exercise the fullscreen NBG London route');
 assert.equal(startVisibility.titleScreenCount, 0, 'fullscreen route must not render the NBG title screen');
 assert.deepEqual(startVisibility.visibleStartButtons, [], 'fullscreen route must not show a START button');
 assert.equal(startVisibility.canvasVisible, true, 'canvas must be visible immediately');
@@ -3595,7 +3595,7 @@ assert.deepEqual(await page.evaluate(() => ({
 await page.keyboard.press('Escape');
 assert.equal(await page.locator('#nbg-record-drawer').isVisible(), false,
   'Escape should close scores rather than exit fullscreen game');
-assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london-run/',
   'closing scores must not navigate away from the game');
 await scoreToggle.focus();
 for (const key of ['Enter', 'NumpadEnter']) {
@@ -3605,7 +3605,7 @@ for (const key of ['Enter', 'NumpadEnter']) {
 }
 await page.keyboard.press('Space');
 await page.locator('#nbg-record-drawer').waitFor({ state: 'visible', timeout: 3000 });
-assert.equal(new URL(page.url()).pathname, '/games/nbg-london/',
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london-run/',
   'Space on Scores must still open the drawer without navigation');
 await page.locator('#nbg-close-records').focus();
 await page.keyboard.press('Space');

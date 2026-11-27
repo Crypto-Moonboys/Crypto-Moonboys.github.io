@@ -99,7 +99,7 @@ const telegramGamesSection = games.slice(games.indexOf('<section id="telegram-ga
 assert.ok(telegramGamesSection.includes('/wiki/crypto-moonboy-pets.html'), 'Games hub must keep the Pets card');
 assert.ok(telegramGamesSection.includes('/games/dead-run/'), 'Games hub must keep the Dead Run card');
 assert.ok(telegramGamesSection.includes('/community.html'), 'Games hub must keep the Battle Chamber card');
-assert.ok(telegramGamesSection.includes('/games/nbg-london/'), 'Games hub must keep the NBG London card');
+assert.ok(telegramGamesSection.includes('/games/nbg-london-run/'), 'Games hub must keep the NBG London card');
 
 assert.ok(petSurfaceScript.includes('<strong>Care Loadout</strong>'), 'pet summary must distinguish care equipment');
 assert.ok(petSurfaceScript.includes('<strong>Battle Loadout</strong>'), 'pet summary must distinguish arena equipment');

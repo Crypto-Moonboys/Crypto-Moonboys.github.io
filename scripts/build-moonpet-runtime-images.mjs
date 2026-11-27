@@ -1,6 +1,6 @@
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -56,7 +56,7 @@ async function runtimeSources() {
   return { sources: [...sources].sort(), manifests };
 }
 
-async function verifyPair(sourcePath, outputPath) {
+export async function verifyPair(sourcePath, outputPath) {
   const [sourceMeta, outputMeta, sourceStat, outputStat] = await Promise.all([
     sharp(sourcePath).metadata(),
     sharp(outputPath).metadata(),
@@ -86,24 +86,26 @@ async function verifyPair(sourcePath, outputPath) {
   return { sourceBytes: sourceStat.size, outputBytes: outputStat.size };
 }
 
-const { sources, manifests } = await runtimeSources();
-let sourceBytes = 0;
-let outputBytes = 0;
-for (const relativeSource of sources) {
-  const sourcePath = path.join(ROOT, relativeSource);
-  const outputPath = sourcePath.replace(/\.png$/i, '.webp');
+if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
+  const { sources, manifests } = await runtimeSources();
+  let sourceBytes = 0;
+  let outputBytes = 0;
+  for (const relativeSource of sources) {
+    const sourcePath = path.join(ROOT, relativeSource);
+    const outputPath = sourcePath.replace(/\.png$/i, '.webp');
+    if (!CHECK_ONLY) {
+      await sharp(sourcePath).webp({ lossless: true, quality: 100, alphaQuality: 100 }).toFile(outputPath);
+    }
+    const result = await verifyPair(sourcePath, outputPath);
+    sourceBytes += result.sourceBytes;
+    outputBytes += result.outputBytes;
+  }
   if (!CHECK_ONLY) {
-    await sharp(sourcePath).webp({ lossless: true, quality: 100, alphaQuality: 100 }).toFile(outputPath);
+    for (const { manifest, manifestPath, changed } of manifests) {
+      if (changed) await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+    }
   }
-  const result = await verifyPair(sourcePath, outputPath);
-  sourceBytes += result.sourceBytes;
-  outputBytes += result.outputBytes;
-}
-if (!CHECK_ONLY) {
-  for (const { manifest, manifestPath, changed } of manifests) {
-    if (changed) await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
-  }
-}
 
-console.log(`Moonpet runtime images ${CHECK_ONLY ? 'verified' : 'built'}: ${sources.length} transparent WebPs, ` +
-  `${sourceBytes} -> ${outputBytes} bytes (${((sourceBytes - outputBytes) * 100 / sourceBytes).toFixed(1)}% smaller).`);
+  console.log(`Moonpet runtime images ${CHECK_ONLY ? 'verified' : 'built'}: ${sources.length} transparent WebPs, ` +
+    `${sourceBytes} -> ${outputBytes} bytes (${((sourceBytes - outputBytes) * 100 / sourceBytes).toFixed(1)}% smaller).`);
+}

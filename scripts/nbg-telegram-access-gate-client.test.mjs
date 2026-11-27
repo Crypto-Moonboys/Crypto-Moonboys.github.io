@@ -103,8 +103,15 @@ async function flush() {
 }
 await flush();
 
-assert.equal(elements.get('nbg-access-gate').hidden,false,
-  'production guest must see the access gate');
+assert.equal(elements.get('nbg-access-gate').hidden, true, 'the public route admits guests');
+assert.equal((await window.NBGLondonBeforeQueuedRun()).allow, true);
+await emit('nbg-level-started');
+assert.equal(calls.some(call => call.pathname.endsWith('/run/start')), false,
+  'guest play does not create a ranked session');
+
+elements.set('game-stage', { getAttribute: name => name === 'data-nbg-access-gate' ? 'telegram-group' : null });
+await emit('moonboys:identity-change');
+assert.equal(elements.get('nbg-access-gate').hidden, false, 'an explicitly gated stage prompts guests');
 assert.match(elements.get('nbg-access-gate-message').textContent,/Log in with Telegram/);
 assert.equal(elements.get('nbg-access-group').hidden,true,
   'login is the first required action for an anonymous visitor');
@@ -219,8 +226,8 @@ assert.equal(elements.get('nbg-access-login').hidden, false);
 assert.match(elements.get('nbg-access-gate-message').textContent, /Log in with Telegram again/);
 
 const level = readFileSync('game/nbg-level1.js','utf8');
-const page = readFileSync('games/nbg-london/index.html','utf8');
-assert.match(page,/data-nbg-access-gate="telegram-group"/);
+const page = readFileSync('games/nbg-london-run/index.html','utf8');
+assert.doesNotMatch(page,/data-nbg-access-gate="telegram-group"/);
 assert.match(page,/id="nbg-access-gate"/);
 assert.match(page,/https:\/\/t\.me\/gkniftyheads/);
 assert.match(level,/accessGateRequired/);
@@ -230,7 +237,7 @@ assert.match(level,/pendingJumpPresses = 0/);
 assert.match(level,/typeof beforePlay !== 'function'/,
   'missing access controller must also fail closed');
 
-console.log('[PASS] NBG production access: guest blocked, linked non-member blocked, current group member allowed');
+console.log('[PASS] NBG public practice and opted-in Telegram group access');
 
 // Execute the real game start function with only its simulation dependencies
 // stubbed. These checks assert running/input state, rather than source text.
@@ -244,7 +251,7 @@ function startHarness(controller, required = true) {
     MOONBOYS_IDENTITY: { getTelegramId: () => '444', isTelegramLinked: () => true },
   };
   return vm.runInNewContext(`
-    var running = false, assetsLoaded = true, complete = false, gameOver = false;
+    var unranked = false, running = false, assetsLoaded = true, complete = false, gameOver = false;
     var runSequence = 0, pendingRunStartPromise = null, pendingRunOwner = null;
     var pendingJumpPresses = 1, pendingInitialInput = {control:'jump'};
     var initialInputReplay = null, waitingForFirstInput = true, starts = 0;

@@ -48,7 +48,8 @@ async function validateLocalEggyoneFrontFightAsset({ repoRoot, asset, manifestCh
   const expected = LOCAL_EGGYONE_FRONT_FIGHT;
   const failures = [];
   if (asset.role !== expected.role) failures.push("role must be front_fight");
-  if (asset.png_path !== expected.runtime_png_path) failures.push("png_path must use canonical runtime front_fight path");
+  const webpPath = expected.runtime_png_path.replace(/\.png$/, ".webp");
+  if (asset.png_path !== expected.runtime_png_path && asset.png_path !== webpPath) failures.push("png_path must use canonical runtime front_fight path");
   if (asset.atlas_path !== expected.runtime_atlas_path) failures.push("atlas_path must use canonical runtime front_fight atlas path");
   if (asset.provenance !== expected.provenance) failures.push("provenance must mark approved local committed PNG source");
   if (asset.autosprite?.source !== expected.autosprite_source) failures.push("autosprite.source must be local_user_supplied");
@@ -73,6 +74,10 @@ async function validateLocalEggyoneFrontFightAsset({ repoRoot, asset, manifestCh
   if (runtimeBlobSha !== expected.source_blob_sha) failures.push(`runtime blob mismatch: expected ${expected.source_blob_sha}, found ${runtimeBlobSha}`);
   if (!sourceBytes.equals(runtimeBytes)) failures.push("runtime front_fight PNG must be byte-identical to approved source PNG");
 
+  if (asset.png_path === webpPath) {
+    const { verifyPair } = await import("./build-moonpet-runtime-images.mjs");
+    await verifyPair(runtimePngPath, repoPath(repoRoot, webpPath));
+  }
   const image = sharp(runtimeBytes);
   const metadata = await image.metadata();
   const atlas = JSON.parse(fs.readFileSync(runtimeAtlasPath, "utf8"));

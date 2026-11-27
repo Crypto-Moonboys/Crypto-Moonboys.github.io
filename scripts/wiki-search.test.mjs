@@ -589,7 +589,7 @@ const graffpunksStopwordOnly = {
     ['Forkfield', '/games/forkfield/'],
     ['Bullrun Brick Smash', '/games/bullrun-brick-smash/'],
     ['Chain Maze', '/games/chain-maze/'],
-    ['NBG London Graffiti Run', '/games/nbg-london/'],
+    ['NBG London Graffiti Run', '/games/nbg-london-run/'],
     ['moongrils', '/wiki/the-crypto-moongirls.html', 'Moongirls'],
     ['swarmsi', '/swarmsy.html', 'SWARMSY'],
     ['Graffiti Kigns', '/wiki/graffiti-kings.html', 'Graffiti Kings'],

@@ -2232,7 +2232,11 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       waterfrontDetailedFactions.requested && waterfrontDetailedBots.requested);
     assert.equal(await page.evaluate(() => !waterfrontDetailedFactions.image && !waterfrontDetailedBots.image), true,
       'the compact harbor paint and NPC hit targets work while detailed downloads are pending');
-    assert.ok(detailArtRequests.filter(file => file.includes('/roamers-')).length < 3,
+    const requestedRoamers = () => detailArtRequests.filter(file => file.includes('/roamers-'));
+    const atlasPaths = await page.evaluate(() => [...new Set(waterfrontRoamers.map(({ atlas }) =>
+      new URL(atlas.file, waterfrontAtlasBase).pathname))].sort());
+    assert.equal(atlasPaths.length, 9, 'three resident and six guest atlases');
+    assert.ok(requestedRoamers().length < atlasPaths.length,
       'the opening camera does not request every roamer group');
     const offlineDialogue = await page.evaluate(() => {
       const make = () => window.createWaterfrontFactionConversations();
@@ -2310,7 +2314,16 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         anchorError: Math.hypot(after.x - anchor.x, after.y - anchor.y),
       };
       zoomMap(0, x, y);
-      camera.overviewFits = map.clientWidth <= scroll.clientWidth && map.clientHeight <= scroll.clientHeight;
+      camera.zoomedOutFillsView = map.clientWidth >= scroll.clientWidth && map.clientHeight >= scroll.clientHeight;
+      camera.zoomedOut = map.clientWidth / mapWidth;
+      const origin = [scroll.scrollLeft, scroll.scrollTop];
+      for (let top = 0; top < map.clientHeight; top += scroll.clientHeight) {
+        for (let left = 0; left < map.clientWidth; left += scroll.clientWidth) {
+          scroll.scrollTo(left, top);
+          paintMap();
+        }
+      }
+      scroll.scrollTo(...origin);
       zoomMap(initialZoom, x, y);
       return camera;
     });
@@ -2322,7 +2335,8 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     assert.equal(camera.drawingScale, 6);
     assert.equal(camera.nearestNeighbor, true);
     assert.ok(camera.anchorError < 1, 'zoom keeps the world point under the pointer');
-    assert.equal(camera.overviewFits, true);
+    assert.equal(camera.zoomedOutFillsView, true);
+    assert.ok(camera.zoomedOut < camera.initialZoom && camera.zoomedOut >= 0.45);
 
     const island = await page.evaluate(() => {
       const regions = new Set();
@@ -2390,7 +2404,8 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       }
       const openWater = sample(62, 0, 0);
       const harborWater = sample(6, 0, 0);
-      const beyondMap = sample(district.rows[0].length + 6, 0, 0);
+      // Match the harbor sample's phase in the repeating eight-tile water texture.
+      const beyondMap = sample(Math.ceil(district.rows[0].length / 8) * 8 + 6, 0, 0);
       const later = sample(62, 0, 1);
       const coast = sample(64, 22, 0);
       return {
@@ -2435,9 +2450,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
     });
     assert.deepEqual(detailedFrames, [[192, 144], [192, 128]]);
     await page.waitForFunction(() => waterfrontRoamers.every(({ atlas }) => atlas.image?.complete));
-    const roamerRequests = detailArtRequests.filter(file => file.includes('/roamers-'));
-    assert.equal(roamerRequests.length, 3, 'the overview loads all three roamer atlases once');
-    assert.equal(new Set(roamerRequests).size, 3);
+    assert.deepEqual(requestedRoamers().sort(), atlasPaths, 'panning across the map loads each resident and guest atlas once');
     const roaming = await page.evaluate(() => {
       const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
       const cell = roamingAtlasCell;
@@ -2495,18 +2508,29 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
         walkFrames: walking.frames.some(frame => frame > 0),
       };
     });
-    assert.equal(roaming.actors.length, 26);
-    assert.equal(new Set(roaming.actors).size, 26);
+    assert.equal(roaming.actors.length, 50);
+    assert.equal(new Set(roaming.actors).size, 50);
     assert.ok(roaming.actors.includes('roamer:nomad-bears-block-mech'));
     assert.ok(!roaming.actors.includes('roamer:nomad-bears-mech'));
-    assert.equal(new Set(roaming.profiles.map(({ wiki }) => wiki)).size, 26);
-    for (const { name, wiki } of roaming.profiles) {
+    const residentProfiles = roaming.profiles.filter(profile => profile.wiki);
+    assert.equal(new Set(residentProfiles.map(({ wiki }) => wiki)).size, 26);
+    const guestProfiles = roaming.profiles.filter(profile => !profile.wiki);
+    assert.equal(new Set(guestProfiles.map(({ name }) => name)).size, 24);
+    for (const { name, wiki } of residentProfiles) {
       const pageHtml = await readFile(path.join(ROOT, wiki), 'utf8');
       assert.ok(pageHtml.includes(`<h1 class="page-title">${name}</h1>`), wiki);
     }
-    assert.equal(roaming.frames, 26 * 16);
+    assert.equal(roaming.frames, 50 * 16);
     assert.ok(roaming.harborActors > 0 && roaming.harborActors < roaming.actors.length, 'cast spans both map areas');
-    assert.ok(roaming.routeRegions > 50 && roaming.onPath && roaming.advances, 'cast roams the full connected island loop');
+    assert.equal(roaming.routeRegions, await page.evaluate(() => {
+      const regions = new Set();
+      rows.forEach((row, y) => [...row].forEach((tile, x) => {
+        if (walkable(tile)) regions.add(Math.floor(x / 8) + ',' + Math.floor(y / 8));
+      }));
+      return regions.size;
+    }), 'the patrol visits every walkable region of the compact island');
+    assert.ok(roaming.onPath, 'walking actors stay on accessible terrain');
+    assert.ok(roaming.advances, 'each roamer advances');
     assert.ok(roaming.idleFrames && roaming.heldFrames && roaming.walkFrames);
     const harborLife = await page.evaluate(() => {
       const display = document.createElement('canvas');
@@ -2631,7 +2655,7 @@ test('Waterfront hides playing leaders and pauses NPCs on hover and tap, opens d
       const render = document.createElement('canvas').getContext('2d');
       window.drawWaterfront(render, rows, player, district, null, 0, [], null, null, null, {
         ...inspection,
-        hit: actor => { if (actor.profile) candidates.push(actor); },
+        hit: actor => { if (actor.id.startsWith('roamer:') && actor.profile?.wiki) candidates.push(actor); },
       });
       for (const hit of candidates) {
         const hitY = hit.y - hit.spriteSize / 2;
