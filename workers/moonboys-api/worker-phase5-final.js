@@ -9,8 +9,9 @@ import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.
 import { syncCloutPilotForVerifiedOwner } from './championship/clout-pilot.js';
 import { verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { DEAD_RUN_MAX_SESSION_SECONDS } from './routes/dead-run-core.js';
-import { handleTelegramGroupMembership } from './telegram-group-membership.js';
+import { checkTelegramGroupMember, handleTelegramGroupMembership } from './telegram-group-membership.js';
 import { handleTelegramConnectivity } from './telegram-connectivity.js';
+import { handleSupportRequest, handleSupportUpdate } from './telegram/support-cases.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
 import { phase5CronTasks } from './scheduled/phase5-cron-plan.js';
@@ -365,6 +366,13 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/$/, '');
+    if (url.pathname === '/internal/doctor-support') {
+      try {
+        return await handleSupportRequest(request, env);
+      } catch {
+        return jsonError(request, 'support_unavailable', 503);
+      }
+    }
     if (path === '/swarmsy/wiki-search') return handleSwarmsyWikiSearch(request, env, corsHeadersFor(request, env));
     if (path === '/swarmsy/chat') return handleSwarmsyWebChat(request, env, corsHeadersFor(request, env));
     // MoonPet uses JSON POSTs across the website/API origins. A rejected
@@ -418,6 +426,18 @@ export default {
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
     const isMiniAppPetAction = path === '/telegram-pets/app/action' && request.method === 'POST';
     const body = (isPetAction || isMiniAppPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
+
+    if (isTelegramWebhook && body && env.SUPPORT_CASES_ENABLED === 'true') {
+      try {
+        const handled = await handleSupportUpdate(body, env, async id => {
+          const membership = await checkTelegramGroupMember(env, id);
+          return { ok: membership.ok && membership.member === true, status: membership.ok ? 403 : 503 };
+        });
+        if (handled) return Response.json({ ok: true });
+      } catch {
+        return jsonError(request, 'support_unavailable', 503);
+      }
+    }
 
     if (isPetAction && body) {
       const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim().toLowerCase()];
