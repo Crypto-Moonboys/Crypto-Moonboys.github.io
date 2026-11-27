@@ -129,6 +129,7 @@ jobs:
   release:
     needs: [plan, validate]
     if: >-
+      !cancelled() && needs.plan.result == 'success' &&
       (inputs.stage == 'release' || (github.event_name == 'pull_request_target' &&
       github.event.action == 'closed' && github.event.pull_request.merged)) &&
       needs.validate.result == 'success'
