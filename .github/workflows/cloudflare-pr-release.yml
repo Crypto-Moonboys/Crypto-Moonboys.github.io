@@ -1,0 +1,134 @@
+name: Cloudflare PR validation and release
+run-name: "Cloudflare ${{ inputs.stage }} PR #${{ inputs.pr }} ${{ inputs.commit }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        type: choice
+        options: [validate, release]
+        required: true
+      pr:
+        description: Website pull request number
+        type: string
+        required: true
+      commit:
+        description: Full PR head SHA to validate, or current main merge SHA to release
+        type: string
+        required: true
+      validation_run:
+        description: Successful validate run ID for the reviewed PR head (release only)
+        type: string
+      apply_d1:
+        description: Approve applying the new D1 migrations in this PR (release only)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    outputs:
+      migrations: ${{ steps.plan.outputs.migrations }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - id: plan
+        name: Verify the PR, commit and release authorization
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+          TARGET_COMMIT: ${{ inputs.commit }}
+          STAGE: ${{ inputs.stage }}
+          VALIDATION_RUN: ${{ inputs.validation_run }}
+        run: node scripts/cloudflare-pr-release.mjs plan
+
+  schema:
+    needs: plan
+    if: needs.plan.outputs.migrations != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - name: Read the D1 schema and migration names only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-pr-release.mjs schema "$RUNNER_TEMP/d1-schema"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cloudflare-d1-schema
+          path: ${{ runner.temp }}/d1-schema
+          retention-days: 1
+          if-no-files-found: error
+
+  validate:
+    needs: [plan, schema]
+    if: >-
+      !cancelled() && needs.plan.result == 'success' &&
+      (needs.schema.result == 'success' || needs.schema.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+      - if: needs.plan.outputs.migrations != ''
+        uses: actions/download-artifact@v7
+        with:
+          name: cloudflare-d1-schema
+          path: ${{ runner.temp }}/d1-schema
+      - if: needs.plan.outputs.migrations != ''
+        name: Apply the proposed D1 migrations to a disposable local database
+        env:
+          RELEASE_MIGRATIONS: ${{ needs.plan.outputs.migrations }}
+        run: node scripts/cloudflare-pr-release.mjs local "$RUNNER_TEMP/d1-schema"
+      - run: node --test scripts/cloudflare-pr-release.test.mjs
+      - run: npm run worker:build-check
+      - run: npm run ci:worker-api
+
+  release:
+    needs: [plan, validate]
+    if: inputs.stage == 'release' && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: cloudflare-production
+    concurrency:
+      group: moonboys-api-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - name: Migrate, deploy and verify production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_RELEASE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          TARGET_COMMIT: ${{ inputs.commit }}
+          RELEASE_MIGRATIONS: ${{ needs.plan.outputs.migrations }}
+          APPLY_D1: ${{ inputs.apply_d1 }}
+        run: node scripts/cloudflare-pr-release.mjs release

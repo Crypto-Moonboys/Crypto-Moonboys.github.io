@@ -19,12 +19,13 @@ export const SUPPORTED_WORKERS = Object.freeze({
   'anti-cheat': 'workers/anti-cheat',
 });
 
-export function buildWranglerDeployArgs(service, commitSha) {
+export function buildWranglerDeployArgs(service, commitSha, { keepVars = false } = {}) {
   if (!SUPPORTED_WORKERS[service]) throw new Error(`Unsupported Worker: ${service}`);
   if (!SHA_RE.test(String(commitSha || ''))) throw new Error('Deployment commit must be a 40-character Git SHA');
   return [
     'wrangler',
     'deploy',
+    ...(keepVars ? ['--keep-vars'] : []),
     '--tag',
     String(commitSha).toLowerCase(),
     '--message',
@@ -63,7 +64,7 @@ export function buildWindowsCmdInvocation(executable, args, options = {}) {
 
 export function buildWranglerProcessInvocation(service, commitSha, options = {}) {
   const platform = options.platform || process.platform;
-  const deployArgs = buildWranglerDeployArgs(service, commitSha);
+  const deployArgs = buildWranglerDeployArgs(service, commitSha, options);
 
   if (platform === 'win32') {
     return buildWindowsCmdInvocation('npx', deployArgs, options);
@@ -162,7 +163,7 @@ function assertDeployableCheckout() {
   return head;
 }
 
-export function deployWorker(service) {
+export function deployWorker(service, options = {}) {
   const workerPath = SUPPORTED_WORKERS[service];
   if (!workerPath) {
     throw new Error(`Usage: node scripts/deploy-worker-with-provenance.mjs <${Object.keys(SUPPORTED_WORKERS).join('|')}>`);
@@ -185,7 +186,7 @@ export function deployWorker(service) {
       windowsVerbatimArguments: secretList.windowsVerbatimArguments,
     }));
   }
-  const invocation = buildWranglerProcessInvocation(service, commitSha);
+  const invocation = buildWranglerProcessInvocation(service, commitSha, options);
 
   console.log(`[worker-deploy] service=${service}`);
   console.log(`[worker-deploy] commit=${commitSha}`);
