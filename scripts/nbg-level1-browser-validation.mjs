@@ -745,6 +745,11 @@ const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors = [];
 const failedRequests = [];
 await page.route('https://fonts.googleapis.com/**', route => route.fulfill({contentType: 'text/css', body: ''}));
+// Starting a run also starts GK Radio. Keep its external stream local to this gameplay check.
+const radioFixture = fs.readFileSync('game/assets/audio/nbg-dark-industrial/music/Rolling In Dark (6).mp3');
+await page.route('https://api.cryptomoonboys.com/radio/stream', route =>
+  route.fulfill({contentType: 'audio/mpeg', body: radioFixture}));
+
 
 page.on('pageerror', (error) => errors.push(error.message));
 page.on('console', (message) => {
