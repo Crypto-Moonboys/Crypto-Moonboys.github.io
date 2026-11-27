@@ -1,6 +1,6 @@
 {
   "issue": 1930,
-  "round": 162,
+  "round": 163,
   "research": "research incomplete",
   "review": {
     "keyFindings": {
@@ -8,22 +8,22 @@
         {
           "row": 3,
           "column": 5,
-          "description": "Water and road overlap, creating a navigational risk."
+          "description": "Potential road visibility issue. The 'r' character, representing a road, is partially obscured by the 'h' character in the previous row."
         },
         {
           "row": 4,
           "column": 6,
-          "description": "House is too close to the water, potentially causing visual clutter or confusion."
+          "description": "Similar to above, an 'h' character may obscure part of a road or dock."
         }
       ],
       "navigationRisks": [
         {
-          "pathIndex": 10,
-          "description": "The path from position 53 to 42 has a sudden change in direction that could be confusing for players."
+          "index": 10,
+          "description": "The path from position 53 to 42 has a sharp turn which might be confusing for players. The route changes direction abruptly without any visual cues."
         },
         {
-          "pathIndex": 19,
-          "description": "The path from position 87 to 67 is long and straight, which might make it difficult for players to follow."
+          "index": 19,
+          "description": "The transition between positions 87 and 67 is quite steep, with the player moving down multiple rows in one step. This could lead to disorientation or difficulty in following the path."
         }
       ]
     }
