@@ -400,7 +400,7 @@ function webSources(grounding) {
   }).slice(0, 4);
 }
 
-async function reserveQuestion(db, owner, utcDay, limit) {
+export async function reserveQuestion(db, owner, utcDay, limit) {
   return db.prepare(`
     INSERT INTO clan_leader_lore_usage (utc_day, telegram_id, questions)
     VALUES (?1, ?2, 1)
