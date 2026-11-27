@@ -12,6 +12,7 @@ The path-to-check mapping is maintained in [the protected areas compliance check
 
 - `.github/workflows/pages.yml` still publishes merged `main` to GitHub Pages (or may be run manually). It **must** retain the NBG course-to-Worker compatibility check before publishing. A failed gate means the new client is not live. Deploy a version-compatible leaderboard Worker first, then rerun Pages.
 - `.github/workflows/update-site-feeds.yml` and `.github/workflows/verified-graph-refresh.yml` keep their intended scheduled content/data refreshes. They are operations, not a check required for every PR. They can be reviewed separately if GK wants to discontinue refreshes.
+- `.github/workflows/runtime-image-derivatives.yml` is the GK-approved narrow image generator. It runs only for repository-owner pushes to non-production branches and only when a convention master, runtime manifest or pipeline file changes. It may commit declared runtime WebPs and lock state back to that branch. It is not permission to run broad CI, write `main`, merge, publish or deploy.
 - Other validation, proof, browser and Moonpet-health workflows are **manual dispatch only**. Moonpet health monitoring will **not run periodically** under this policy; operators must review production health manually until a separately approved monitor is reintroduced.
 
 ## Agents: no drift, fast changes
