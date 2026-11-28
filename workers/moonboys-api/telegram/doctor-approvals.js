@@ -108,6 +108,9 @@ export async function handleDoctorApprovalRequest(request, env) {
     } else if (!exact(body, row) || row.state === 'invalidated') {
       // Never revive a rejected or already merged job. Only a new commit can satisfy a further-fix request.
       if (row.state === 'rejected' || row.state === 'merged') return json({ error: 'terminal_decision' }, 409);
+      if (row.state === 'fix_requested' && row.head_sha === body.head_sha) {
+        return json({ error: 'new_repair_head_required' }, 409);
+      }
       await db.prepare("UPDATE doctor_merge_approvals SET head_sha=?,base_sha=?,state='ready',revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=?")
         .bind(body.head_sha, body.base_sha, now, row.id, row.revision).run();
     }
