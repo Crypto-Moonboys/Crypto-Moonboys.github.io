@@ -77,6 +77,7 @@ test("production placement sends bounded candidates and allows the local model t
 test("production repairs discard rejected placements and refresh an advanced main base", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
   assert.match(source, /context\.base !== latest\.object\.sha/);
+  assert.match(source, /if \(pr\.merged\) return \{ url: pr\.html_url \};/);
   assert.match(source, /Main advanced after publication\. Rebuild on a new attempt branch\./);
   assert.match(source, /\["production-placement\.json", "publication\.json"\]/);
   assert.match(source, /for \(let retry = 0; retry < 3; retry\+\+\)/);
