@@ -70,6 +70,22 @@ try {
 
     // Test the reusable personal MoonPet widgets in an isolated temporary mount,
     // not on public Battle Chamber or reference-guide pages.
+    const profile = page.locator('[data-crypto-pets-summary]');
+    const missions = page.locator('[data-crypto-pets-missions]');
+    const warning = '.pets-personal-sync-warning';
+    const waitForPersonalOutage = () => Promise.all([
+      profile.locator(warning).waitFor({ state: 'attached' }),
+      missions.locator(warning).waitFor({ state: 'attached' }),
+    ]);
+    // Both requests must finish before the next focus event can start a refresh.
+    // Cached text alone can survive a failed request, so also check the warnings.
+    const waitForPersonalRecovery = () => page.waitForFunction((warningSelector) => {
+      const profile = document.querySelector('[data-crypto-pets-summary]');
+      const missions = document.querySelector('[data-crypto-pets-missions]');
+      return profile?.textContent.includes('BITTY') && !profile.querySelector(warningSelector) &&
+        missions?.textContent.includes('Feed your Moonpet') && !missions.querySelector(warningSelector);
+    }, warning);
+
     personalOffline=true;
     await page.evaluate(() => {
       const host = document.createElement('div');
@@ -77,33 +93,24 @@ try {
       document.querySelector('main').appendChild(host);
       window.dispatchEvent(new Event('focus'));
     });
-    await page.waitForSelector('[data-crypto-pets-summary] .pets-personal-sync-warning', { state: 'attached' });
-    assert.ok(!(await page.locator('[data-crypto-pets-summary]').textContent()).includes('No Crypto Moonboy Pet yet'), 'profile outage must not look like an unadopted account');
+    await waitForPersonalOutage();
+    assert.ok(!(await profile.textContent()).includes('No Crypto Moonboy Pet yet'), 'profile outage must not look like an unadopted account');
     personalOffline=false;
-    await page.locator('[data-crypto-pets-summary] [data-crypto-pets-personal-retry]').evaluate(button => button.click());
-    await page.waitForFunction(()=>document.querySelector('[data-crypto-pets-summary]')?.textContent.includes('BITTY'));
+    await profile.locator('[data-crypto-pets-personal-retry]').evaluate(button => button.click());
+    await waitForPersonalRecovery();
     personalOffline=true;
     await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
-    await page.waitForSelector('[data-crypto-pets-summary] .pets-personal-sync-warning', { state: 'attached' });
-    assert.ok((await page.locator('[data-crypto-pets-summary]').textContent()).includes('BITTY'), 'failed profile refresh must preserve the last successful pet');
+    await waitForPersonalOutage();
+    assert.ok((await profile.textContent()).includes('BITTY'), 'failed profile refresh must preserve the last successful pet');
 
-    await page.waitForSelector('[data-crypto-pets-missions] .pets-personal-sync-warning');
-    assert.ok(!(await page.locator('[data-crypto-pets-missions]').textContent()).includes('No pet missions available'), 'mission outage must not look like an empty checklist');
+    assert.ok(!(await missions.textContent()).includes('No pet missions available'), 'mission outage must not look like an empty checklist');
     personalOffline=false;
-    await page.locator('[data-crypto-pets-missions] [data-crypto-pets-personal-retry]').click();
-    // Failed refreshes intentionally retain the last successful checklist.
-    // Checking only the text races the in-flight retry: stale text already
-    // satisfies the assertion before the warning is removed and the pending
-    // refresh settles, so the next focus event can be ignored.
-    await page.waitForFunction(() => {
-      const missions = document.querySelector('[data-crypto-pets-missions]');
-      return missions?.textContent.includes('Feed your Moonpet') &&
-        !missions.querySelector('.pets-personal-sync-warning');
-    });
+    await missions.locator('[data-crypto-pets-personal-retry]').click();
+    await waitForPersonalRecovery();
     personalOffline=true;
     await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
-    await page.waitForSelector('[data-crypto-pets-missions] .pets-personal-sync-warning');
-    assert.ok((await page.locator('[data-crypto-pets-missions]').textContent()).includes('Feed your Moonpet'), 'failed mission refresh must preserve the last successful checklist');
+    await waitForPersonalOutage();
+    assert.ok((await missions.textContent()).includes('Feed your Moonpet'), 'failed mission refresh must preserve the last successful checklist');
     assert.deepEqual(errors,[]);
     console.log(`MoonPet ranking page and isolated personal-widget tests passed at ${width}px: live ranks, private-state retry and outage recovery`);
     await page.close();
