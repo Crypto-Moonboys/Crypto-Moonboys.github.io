@@ -1,11 +1,28 @@
 const assert = require("node:assert/strict");
 const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
+const vm = require("node:vm");
 const test = require("node:test");
+const { pathToFileURL } = require("node:url");
 
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
-const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
+const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacement, productionVisualCheck, selectOllamaModel, validateDistrict, waterfrontTemplate, zoneForLot } = require(runnerPath);
+
+async function liveWaterfrontDistrict(root) {
+  const districtSource = fs.readFileSync(path.join(__dirname, "..", "workers", "moonboys-api", "blocktopia", "waterfront-district.js"), "utf8");
+  const harbor = vm.runInNewContext(districtSource.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const { extendWaterfront } = await import(pathToFileURL(path.join(root, "nature-island.mjs")).href);
+  return extendWaterfront(harbor);
+}
+
+function liveAtlasAssets(root) {
+  const names = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp",
+    "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp", "bitcoin-cash-tower-overhead.webp",
+    "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"];
+  return Object.fromEntries(names.map(name => [name, fs.readFileSync(path.join(root, "assets", "atlases", name))]));
+}
 
 test("Waterfront queue has no Hermes research dependency", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
@@ -37,16 +54,26 @@ test("transient GitHub failures are eligible for a scheduled retry", () => {
   assert.match(source, /Integration advanced during a transient merge failure/);
 });
 
-test("production candidates preserve valid model choices and replace occupied guesses", () => {
-  const lots = [{ x: 10, y: 4 }, { x: 12, y: 8 }];
-  const sprites = ["flowers-0", "furniture-2"];
+test("planned production candidates preserve valid choices and replace invalid guesses", () => {
+  const plan = {
+    rules: { maxSameAssetPerZone: 1 },
+    assets: {
+      flowers: [{ id: "flowers-0", class: "flowers" }],
+      furniture: [{ id: "furniture-2", class: "furniture" }]
+    }
+  };
+  const ledger = { zones: { park: { assets: {} } } };
+  const lots = [
+    { x: 10, y: 4, zone: "park", allowedClasses: ["flowers"] },
+    { x: 12, y: 8, zone: "park", allowedClasses: ["furniture"] }
+  ];
   assert.deepEqual(
-    enforceProductionCandidate({ x: 12, y: 8, sprite: "furniture-2" }, lots, sprites, 0),
-    { x: 12, y: 8, sprite: "furniture-2" }
+    enforceProductionCandidate({ zone: "park", x: 12, y: 8, asset: "furniture-2", purpose: "rest", playerBenefit: "seat" }, lots, plan, ledger, 0),
+    { zone: "park", x: 12, y: 8, asset: "furniture-2", class: "furniture", purpose: "rest", playerBenefit: "seat" }
   );
   assert.deepEqual(
-    enforceProductionCandidate({ x: 99, y: 99, sprite: "missing-4" }, lots, sprites, 1),
-    { x: 12, y: 8, sprite: "furniture-2" }
+    enforceProductionCandidate({ x: 99, y: 99, asset: "missing-4" }, lots, plan, ledger, 1),
+    { zone: "park", x: 12, y: 8, asset: "furniture-2", class: "furniture", purpose: "", playerBenefit: "" }
   );
 });
 
@@ -97,17 +124,100 @@ test("the starter preview can be rendered without queue credentials", () => {
 });
 
 
-test("production placement sends bounded candidates and allows the local model to finish", () => {
+test("production planner receives full structured context without lossy prefix slices", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
-  assert.match(source, /candidateLots, sprites, reviewFeedback/);
-  assert.match(source, /numPredict: 160, timeoutMs: 900_000/);
+  const brief = fs.readFileSync(path.join(__dirname, "..", "games", "block-topia", "waterfront", "CITY-BRIEF.md"), "utf8");
+  const library = fs.readFileSync(path.join(__dirname, "..", "games", "block-topia", "waterfront", "SPRITE-LIBRARY.md"), "utf8");
+  assert.ok(markdownSections(brief).some(section => section.heading === "VPS build worker"));
+  assert.ok(markdownSections(library).some(section => section.heading === "Bot fish"));
+  assert.match(source, /cityBrief: markdownSections\(brief\)/);
+  assert.match(source, /spriteLibrary: markdownSections\(library\)/);
+  assert.match(source, /contextTokens: 16384/);
+  assert.match(source, /numPredict: 320/);
+  assert.doesNotMatch(source, /brief\.slice\(0, 4000\)/);
+  assert.doesNotMatch(source, /library\.slice\(0, 3000\)/);
   assert.match(source, /request\.setTimeout\(timeoutMs/);
-  assert.match(source, /response\.on\("aborted"/);
-  assert.match(source, /response\.on\("error", fail\)/);
-  assert.match(source, /!response\.complete/);
   assert.doesNotMatch(source, /fetch\("http:\/\/127\.0\.0\.1:11434/);
-  assert.match(source, /brief\.slice\(0, 4000\)/);
-  assert.match(source, /library\.slice\(0, 3000\)/);
+});
+
+test("zone plan enforces finite density, spacing, variety, and tree support", async () => {
+  const root = path.join(__dirname, "..", "games", "block-topia", "waterfront");
+  const plan = JSON.parse(fs.readFileSync(path.join(root, "BUILD-ZONES.json"), "utf8"));
+  const renderer = fs.readFileSync(path.join(root, "harbor-art.js"), "utf8");
+  const district = await liveWaterfrontDistrict(root);
+  const ledger = productionLedger(renderer, plan, district);
+  assert.ok(ledger.placements.some(item => item.x === 15 && item.y === 26 && item.asset === "furniture-5"));
+  assert.ok(ledger.placements.some(item => item.x === 15 && item.y === 27 && item.asset === "flowers-8"));
+  assert.equal(ledger.zones["east-shore"].complete, true);
+  assert.equal(ledger.zones["east-common"].complete, true);
+  assert.equal(zoneForLot(plan, 15, 22).id, "west-meadow");
+  const { candidates } = productionCandidates(district, renderer, plan);
+  assert.ok(candidates.length > 0);
+  assert.ok(candidates.every(candidate => !["east-shore", "east-common"].includes(candidate.zone)));
+  for (const candidate of candidates) {
+    assert.ok(ledger.placements.every(item =>
+      Math.max(Math.abs(candidate.x - item.x), Math.abs(candidate.y - item.y)) > plan.rules.minChebyshevSpacing));
+  }
+  const treeLot = candidates.find(candidate => candidate.allowedClasses.includes("tree"));
+  assert.ok(treeLot);
+  const selected = enforceProductionCandidate({ ...treeLot, asset: "tree-3" }, candidates, plan, ledger, 0);
+  assert.match(productionPlacement(renderer, district, selected), /tree\(x, y, 3, 0\.82\)/);
+});
+
+test("production performs rendered desktop and mobile Chromium validation", () => {
+  const source = fs.readFileSync(runnerPath, "utf8");
+  assert.match(source, /productionVisualCheck/);
+  assert.match(source, /baselineChecksum/);
+  assert.match(source, /candidate-desktop\.png/);
+  assert.match(source, /candidate-mobile\.png/);
+  assert.match(source, /\[1440, 1000\]/);
+  assert.match(source, /\[390, 844\]/);
+  assert.match(source, /The rendered Waterfront candidate is visually identical to its base/);
+  assert.match(source, /production-validation\.json/);
+  assert.match(source, /completed\.json/);
+  assert.match(source, /nature-island\.mjs/);
+  assert.match(source, /extendWaterfront\(harbor\)/);
+  assert.match(source, /waterfrontIslandPatrol=islandPatrol/);
+  assert.match(source, /waterfrontIslandSeed=islandSeed/);
+  assert.match(source, /function findRoute\(start,goal,canWalk\)/);
+  assert.match(source, /landmarkLoads>=3/);
+  assert.match(source, /Waterfront landmark artwork did not finish loading/);
+  for (const name of ["bitcoin-cash-tower-overhead.webp", "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"]) {
+    assert.match(source, new RegExp(name.replaceAll(".", "\\.")));
+  }
+  for (const name of ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"]) {
+    assert.match(source, new RegExp(`"${name}-runtime\\.webp"`));
+  }
+  assert.match(source, /if \(blockedClass\) allowedClasses = allowedClasses\.filter/);
+});
+
+test("available Chromium renders the real proposed Waterfront at both viewports", async t => {
+  const browser = process.env.BLOCK_TOPIA_CHROMIUM || "chromium";
+  if (spawnSync(browser, ["--version"], { encoding: "utf8" }).status !== 0) {
+    t.skip("Chromium is not installed in this test environment");
+    return;
+  }
+  const root = path.join(__dirname, "..", "games", "block-topia", "waterfront");
+  const plan = JSON.parse(fs.readFileSync(path.join(root, "BUILD-ZONES.json"), "utf8"));
+  const renderer = fs.readFileSync(path.join(root, "harbor-art.js"), "utf8");
+  const district = await liveWaterfrontDistrict(root);
+  const { candidates, ledger } = productionCandidates(district, renderer, plan);
+  const candidate = candidates.find(item => item.allowedClasses.includes("tree")) ?? candidates[0];
+  assert.ok(candidate);
+  const asset = candidate.allowedClasses.includes("tree") ? "tree-3"
+    : candidate.allowedClasses.includes("furniture") ? "furniture-2" : "flowers-2";
+  const proposal = enforceProductionCandidate({ ...candidate, asset }, candidates, plan, ledger, 0);
+  const updated = productionPlacement(renderer, district, proposal);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "waterfront-visual-"));
+  try {
+    const natureSource = fs.readFileSync(path.join(root, "nature-island.mjs"), "utf8");
+    const visual = await productionVisualCheck(dir, renderer, updated, district, proposal, liveAtlasAssets(root), natureSource);
+    assert.equal(visual.status, "passed");
+    assert.notEqual(visual.baselineChecksum, visual.desktopChecksum);
+    assert.equal(visual.screenshots.length, 2);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("production repairs discard rejected placements and refresh an advanced main base", () => {
@@ -115,7 +225,7 @@ test("production repairs discard rejected placements and refresh an advanced mai
   assert.match(source, /context\.base !== latest\.object\.sha/);
   assert.match(source, /if \(pr\.merged\) return \{ url: pr\.html_url \};/);
   assert.match(source, /Main advanced after publication\. Rebuild on a new attempt branch\./);
-  assert.match(source, /\["production-placement\.json", "publication\.json"\]/);
+  assert.match(source, /\["production-placement\.json", "publication\.json", "production-visual\.json"\]/);
   assert.match(source, /for \(let retry = 0; retry < 3; retry\+\+\)/);
   assert.match(source, /fs\.rm\(placementFile, \{ force: true \}\)/);
   assert.match(source, /proposal = null/);
