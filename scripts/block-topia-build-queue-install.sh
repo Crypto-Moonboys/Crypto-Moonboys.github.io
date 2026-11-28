@@ -18,7 +18,6 @@ test -x "$(command -v "${BLOCK_TOPIA_CHROMIUM:-chromium}")" || {
 install -d -m 700 "$runner_dir"
 mkdir -p "$units"
 install -m 600 "$scripts_dir/block-topia-build-queue.cjs" "$runner_dir/build-queue.cjs"
-install -m 600 "$scripts_dir/block-topia-research.sh" "$runner_dir/block-topia-research.sh"
 cat > "$units/block-topia-build.service" <<UNIT
 [Unit]
 Description=Build one approved Block Topia waterfront issue

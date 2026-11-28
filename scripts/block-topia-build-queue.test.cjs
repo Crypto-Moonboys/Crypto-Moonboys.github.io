@@ -7,6 +7,14 @@ const test = require("node:test");
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
 const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
 
+test("Waterfront queue has no Hermes research dependency", () => {
+  const source = fs.readFileSync(runnerPath, "utf8");
+  const installer = fs.readFileSync(path.join(__dirname, "block-topia-build-queue-install.sh"), "utf8");
+  assert.doesNotMatch(source, /block-topia-research|research\.notes|research\.json/);
+  assert.doesNotMatch(installer, /block-topia-research/);
+  assert.equal(fs.existsSync(path.join(__dirname, "block-topia-research.sh")), false);
+});
+
 test("Ollama selection uses an installed preferred model and supports an explicit override", () => {
   assert.equal(selectOllamaModel(["nomic-embed-text:latest", "qwen2.5:7b"], undefined), "qwen2.5:7b");
   assert.equal(selectOllamaModel(["llama3.2:latest", "qwen2.5:7b"], "llama3.2:latest"), "llama3.2:latest");
