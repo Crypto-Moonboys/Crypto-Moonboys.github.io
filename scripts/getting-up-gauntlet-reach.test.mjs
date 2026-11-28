@@ -234,6 +234,55 @@ for (const [name, from, to] of hops) {
   else console.log('ok  ', name.padEnd(22), `jumps=${result.n}`);
 }
 
+// NIGHT TRAIN easter egg: from the braking carriage (moving toward the start
+// at brakeSpeed), a triple jump must reach the hidden perch before the
+// carriage carries the runner off the left screen edge; stream gaps must be
+// crossable between carriages moving at streamSpeed.
+function trainJump(startX, carSpeed, target, plan) {
+  const p = { x: startX, y: NT.railY - H, vx: 0, vy: 0 };
+  let grounded = true, jumps = 0, last = -99;
+  for (let f = 0; f < 300; f += 1) {
+    if (plan.dir > 0) p.vx = Math.min(MAX, p.vx + ACCEL);
+    else if (plan.dir < 0) p.vx = Math.max(-MAX, p.vx - ACCEL);
+    else p.vx *= FRICTION;
+    if ((f === plan.j1 || f === plan.j2 || f === plan.j3) && f - last >= TAP) {
+      last = f;
+      if (grounded) { p.vy = J1; grounded = false; jumps = 1; }
+      else if (jumps === 1 || jumps === 2) { p.vy = J2; if (plan.dir) p.vx = SIDE * plan.dir; jumps += 1; }
+    }
+    p.x += p.vx;
+    if (grounded) p.x -= carSpeed;
+    const py = p.y;
+    p.vy += GRAVITY;
+    p.y += p.vy;
+    const tgt = target(f);
+    if (p.vy >= 0 && py + H <= tgt.y + 1 && p.y + H >= tgt.y && p.x < tgt.x + tgt.w && p.x + W > tgt.x) return f;
+    if (grounded) { p.y = NT.railY - H; p.vy = 0; }
+    if (p.y > 300) return -1;
+  }
+  return -1;
+}
+const NT = D.nightTrain;
+let perchPlans = 0;
+for (let startX = NT.lockCamX + 200; startX > NT.lockCamX - W; startX -= 4) {
+  for (const dir of [-1, 0, 1]) for (let j2 = 7; j2 < 40; j2 += 3) for (let j3 = j2 + 7; j3 < j2 + 40; j3 += 3) {
+    if (trainJump(startX, NT.brakeSpeed, () => NT.perch, { dir, j1: 0, j2, j3 }) >= 0) perchPlans += 1;
+  }
+}
+console.log('night train perch plans', perchPlans);
+assert.ok(perchPlans > 0, 'night-train perch unreachable');
+for (const [w, gapPx] of [[150, 250], [180, 230], [150, 200]]) {
+  // Runner at the right end of carriage A; carriage B starts gapPx to the right.
+  let ok = false;
+  for (let back = 0; back < w - 10 && !ok; back += 6) for (let j2 = -1; j2 < 40 && !ok; j2 += 3) {
+    const startX = 1000 + w - W - back;
+    const target = f => ({ x: 1000 + w + gapPx - NT.streamSpeed * f, y: NT.railY, w: 150 });
+    if (trainJump(startX, NT.streamSpeed, target, { dir: 1, j1: 0, j2, j3: -1 }) >= 0) ok = true;
+  }
+  assert.ok(ok, `night train gap ${gapPx} not crossable`);
+}
+console.log('night train stream gaps ok');
+
 // Layout sanity: checkpoints/finish on solid street, ground enemies off pits.
 function overGap(x0, x1) { return D.gaps.some(([gx, gw]) => x1 > gx && x0 < gx + gw); }
 for (const cp of [L.checkpoint, ...L.checkpoints, L.finish]) assert.ok(!overGap(cp.x - 30, cp.x + cp.w + 30), 'checkpoint/finish over pit at ' + cp.x);

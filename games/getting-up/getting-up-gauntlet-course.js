@@ -17,7 +17,9 @@
  *   routes (camera reveals them only after you land up there), visible
  *   course checkpoints and warning signs.
  *
- * Debug: add ?gu-debug=1 to the page URL. Keys 0-8 jump to zone starts,
+ * Hidden: NIGHT TRAIN easter egg (faint wall just before the flag — spray it).
+ *
+ * Debug: add ?gu-debug=1 to the page URL. Keys 0-8 jump to zone starts, 9 to the night-train wall,
  * G toggles invulnerability, H toggles hitbox outlines.
  */
 (function () {
@@ -580,7 +582,7 @@
     function ready(img) { return img && img.complete && img.naturalWidth > 0; }
     ['ruby', 'emerald', 'sapphire', 'diamond'].forEach(function (k) { loadArt('gem-' + k, TEMP + 'gem-' + k + '.svg'); });
     ['time-crystal', 'bounce-pad', 'laser-emitter', 'wall-block', 'crumble-platform',
-      'moving-platform', 'flame-vent', 'tag-spot'].forEach(function (k) { loadArt(k, TEMP + k + '.svg'); });
+      'moving-platform', 'flame-vent', 'tag-spot', 'night-train-tag'].forEach(function (k) { loadArt(k, TEMP + k + '.svg'); });
     ['bunny', 'skull', 'heart-skull', 'crown'].forEach(function (k) { loadArt('relic-' + k, ART + 'relic-' + k + '-runtime.webp'); });
     ['danger', 'keep-out'].forEach(function (k) { loadArt('sign-' + k, ART + 'sign-' + k + '-runtime.webp'); });
     tags.forEach(function (t) {
@@ -627,6 +629,7 @@
       crystals.forEach(function (c) { c.taken = false; });
       trailNames.forEach(function (n) { trails[n].done = false; });
       pads.forEach(function (p) { p.lastBounceAt = -9999; });
+      resetNight();
     }
 
     var lastApi = null;
@@ -634,6 +637,8 @@
       lastApi = api;
       var p = api.player;
       if (debugGod) p.invuln = Math.max(p.invuln, 200);
+      updateNight(t, dt, api);
+      if (api.gameOver) return;
 
       // Moving platforms carry a rider.
       for (var i = 0; i < movers.length; i += 1) {
@@ -746,10 +751,323 @@
       }
     }
 
+    // ------------------------------------------------------------------
+    // NIGHT TRAIN — hidden end-of-level easter egg.
+    // Spray the faint wall just before the flag -> ride the first carriage
+    // back toward the start. When the camera brakes, triple-jump onto the
+    // hidden perch before the carriage leaves the screen (= death). After
+    // 5s the perch vanishes; hop carriage to carriage, against the flow,
+    // to the flag. Touching anything but a carriage = instant death.
+    // ------------------------------------------------------------------
+    var NT = {
+      tag: { x: 21760, y: F - 70, w: 72, h: 46 },
+      railY: 80,              // carriage roof (world y)
+      lockCamX: 20200,        // camera stops here during the ride
+      perch: { x: 20255, y: -230, w: 72, h: 16, kind: 'nt-perch' },
+      rideSpeed: 3.2,         // px per 60fps frame, toward the start
+      brakeSpeed: 2.0,
+      departSpeed: 4.5,
+      streamSpeed: 2.0,
+      perchMs: 5000,
+      rideCars: 4,
+      xpBonus: 50000,
+      xpPerCar: 1000,
+      timeCutMs: 10000
+    };
+    var TRAIN_ART = ['trainNbg', 'trainWaxcash', 'trainAlcor', 'trainSwaxp', 'trainPxjking',
+      'trainWpixal', 'trainWuf', 'trainGetsulaid', 'trainTrustme', 'trainHodlwars',
+      'trainPunk', 'trainKek', 'trainCronx', 'trainWaxgod'];
+    // Stream pattern: [carriage width, gap after it, roof spikes].
+    // Carriages stay 180x60 so every roof and wheel line sits on one rail.
+    var STREAM = [
+      [180, 60, false], [180, 90, false], [180, 70, true], [180, 140, false],
+      [180, 50, false], [180, 200, false], [180, 110, true], [180, 80, false],
+      [180, 230, false], [180, 60, true], [180, 170, false], [180, 90, false],
+      [180, 250, false], [180, 120, true], [180, 70, false], [180, 190, false]
+    ];
+    var night = null;
+    function resetNight() {
+      night = { phase: '', cars: [], speed: 0, camLocked: false, startedAt: 0, perchAt: 0,
+        perchGone: false, carSeq: 0, pattern: 0, hops: {}, hopCount: 0, result: '', flashAt: -99999 };
+    }
+    resetNight();
+    function nightActive() { return night.phase === 'ride' || night.phase === 'perch' || night.phase === 'stream'; }
+
+    function makeCar(x, w, spikes) {
+      night.carSeq += 1;
+      return { x: x, y: NT.railY, w: w, h: 12, kind: 'train', id: night.carSeq, spikes: !!spikes,
+        art: TRAIN_ART[night.carSeq % TRAIN_ART.length] };
+    }
+
+    function startNightTrain(api, t) {
+      var p = api.player;
+      night.phase = 'ride';
+      night.startedAt = t;
+      night.flashAt = t;
+      night.speed = NT.rideSpeed;
+      var x = p.x - 40;
+      for (var i = 0; i < NT.rideCars; i += 1) {
+        night.cars.push(makeCar(x, 180, false));
+        x += 182;
+      }
+      p.y = NT.railY - p.h;
+      p.vx = 0;
+      p.vy = 0;
+      skyMode = false;
+      api.notify('ALL ABOARD THE NIGHT TRAIN', 2600);
+      api.cue('speed_boost_start');
+    }
+
+    function streamTailX() {
+      var last = null;
+      for (var i = 0; i < night.cars.length; i += 1) {
+        if (night.cars[i].stream && (!last || night.cars[i].x > last.x)) last = night.cars[i];
+      }
+      return last ? last.x + last.w + last.gapAfter : null;
+    }
+
+    function spawnStream(api) {
+      var limit = api.cameraX + VIEW_W + 420;
+      var tail = streamTailX();
+      if (tail === null) {
+        // First stream carriage arrives centred under the perch as it vanishes.
+        // + ~34 frames for the drop from the perch to the carriage roof.
+        var frames = NT.perchMs / (1000 / 60) + Math.sqrt(2 * (NT.railY - NT.perch.y) / 0.52);
+        var w0 = STREAM[0][0];
+        var first = makeCar(NT.perch.x + NT.perch.w / 2 - w0 / 2 + NT.streamSpeed * frames, w0, false);
+        first.stream = true;
+        first.gapAfter = STREAM[0][1];
+        night.cars.push(first);
+        night.pattern = 1;
+        tail = streamTailX();
+      }
+      while (tail < limit) {
+        var pat = STREAM[night.pattern % STREAM.length];
+        night.pattern += 1;
+        var car = makeCar(tail, pat[0], pat[2]);
+        car.stream = true;
+        car.gapAfter = pat[1];
+        night.cars.push(car);
+        tail = car.x + car.w + car.gapAfter;
+      }
+    }
+
+    function spikeRect(car) { return { x: car.x + car.w / 2 - 22, y: NT.railY - 14, w: 44, h: 14 }; }
+
+    function failNight(api, reason) {
+      night.result = 'failed';
+      night.phase = 'failed';
+      api.kill(reason);
+    }
+
+    function updateNight(t, dt, api) {
+      var p = api.player;
+      if (!night.phase) {
+        if (api.sprayActive && !api.complete && api.rectsOverlap(api.sprayRect(), NT.tag)) startNightTrain(api, t);
+        return;
+      }
+      if (!nightActive()) return;
+      var step = dt / (1000 / 60);
+
+      if (night.phase === 'ride' && !night.camLocked && p.x <= NT.lockCamX + 200) {
+        night.camLocked = true;
+        night.speed = NT.brakeSpeed;
+        api.cue('land_soft');
+      }
+      // Once the runner leaves the ride train for the perch, it pulls away.
+      var speed = night.phase === 'ride' ? night.speed : NT.departSpeed;
+      for (var i = 0; i < night.cars.length; i += 1) {
+        var car = night.cars[i];
+        var v = car.stream ? NT.streamSpeed : speed;
+        car.x -= v * step;
+        if (p.grounded && p.groundTile === car) p.x -= v * step;
+      }
+      night.cars = night.cars.filter(function (c) { return c.x + c.w > api.cameraX - 700; });
+
+      if (night.phase === 'perch' || night.phase === 'stream') spawnStream(api);
+      if (night.phase === 'perch' && !night.perchGone && t - night.perchAt >= NT.perchMs) {
+        night.perchGone = true;
+        night.phase = 'stream';
+      }
+
+      // Landing rules: only carriages (and the perch while it exists) are safe.
+      if (p.grounded && p.groundTile) {
+        var tile = p.groundTile;
+        if (tile === NT.perch) {
+          if (night.phase === 'ride') {
+            night.phase = 'perch';
+            night.perchAt = t;
+            skyMode = true;
+            api.addXp(5000, { nightTrain: 'perch' });
+            api.notify('PERCH FOUND +5000 · 5s', 2200);
+            spawnStream(api);
+          }
+        } else if (tile.kind === 'train') {
+          if (night.phase !== 'ride' && !night.hops[tile.id]) {
+            night.hops[tile.id] = true;
+            night.hopCount += 1;
+            if (night.phase === 'perch') { night.phase = 'stream'; night.perchGone = true; }
+          }
+        } else {
+          failNight(api, 'night-train-fall');
+          return;
+        }
+      }
+      if (p.y + p.h > F + 2) { failNight(api, 'night-train-fall'); return; }
+      if (night.phase === 'ride' && night.camLocked && p.x + p.w < NT.lockCamX) {
+        failNight(api, 'night-train-off-screen');
+        return;
+      }
+      if (night.phase === 'stream' && p.invuln <= 0) {
+        for (var s = 0; s < night.cars.length; s += 1) {
+          if (night.cars[s].spikes && api.rectsOverlap(p, spikeRect(night.cars[s]))) {
+            api.damage('spikes', night.cars[s].x + night.cars[s].w / 2);
+            break;
+          }
+        }
+      }
+    }
+
+    function forceFinish(api) {
+      if (night.phase !== 'stream') return false;
+      var p = api.player;
+      if (p.x + p.w < L.finish.x) return false;
+      night.phase = 'done';
+      night.result = 'done';
+      var bonus = NT.xpBonus + night.hopCount * NT.xpPerCar;
+      timeBonusMs += NT.timeCutMs;
+      api.addXp(bonus, { nightTrain: 'complete', carriages: night.hopCount });
+      api.notify('NIGHT TRAIN LEGEND +' + bonus + ' · -10s', 4000);
+      return true;
+    }
+
+    function nightSolids() {
+      var out = night.cars.slice();
+      if ((night.phase === 'ride' || night.phase === 'perch') && !night.perchGone) out.push(NT.perch);
+      return out;
+    }
+
+    function drawNightTag(ctx, api, time) {
+      var camX = api.cameraX;
+      if (!inView(NT.tag.x, NT.tag.w, camX)) return;
+      var x = Math.round(NT.tag.x - camX);
+      var y = NT.tag.y + OFFSET_Y;
+      if (night.phase) {
+        if (ready(art['night-train-tag'])) ctx.drawImage(art['night-train-tag'], x, y, NT.tag.w, NT.tag.h);
+        return;
+      }
+      // Barely-there ghost outline: the secret.
+      ctx.save();
+      ctx.globalAlpha = 0.1 + Math.max(0, Math.sin(time / 900)) * 0.08;
+      ctx.strokeStyle = '#ffffff';
+      ctx.setLineDash([3, 4]);
+      ctx.strokeRect(x + 0.5, y + 0.5, NT.tag.w - 1, NT.tag.h - 1);
+      ctx.restore();
+    }
+
+    function drawNight(ctx, api, t) {
+      if (!night.phase) return;
+      var camX = api.cameraX;
+      var i;
+      if (nightActive()) {
+        // Elevated rail under the carriages.
+        var railTop = NT.railY + OFFSET_Y + 43;
+        ctx.fillStyle = '#20202a';
+        ctx.fillRect(0, railTop, VIEW_W, 4);
+        ctx.fillStyle = '#3a3a48';
+        for (var px = -((camX * 1) % 60); px < VIEW_W; px += 60) ctx.fillRect(Math.round(px), railTop + 4, 4, 30);
+      }
+      for (i = 0; i < night.cars.length; i += 1) {
+        var car = night.cars[i];
+        if (!inView(car.x, car.w, camX)) continue;
+        var img = api.images[car.art];
+        var cx = Math.round(car.x - camX);
+        var ch = Math.round(car.w / 3);
+        // Train art roofs sit ~17.5% down the image; align roof with feet.
+        var cy = NT.railY + OFFSET_Y - Math.round(ch * 0.175);
+        if (img) ctx.drawImage(img, cx, cy, car.w, ch);
+        else {
+          ctx.fillStyle = '#3b4a7a';
+          ctx.fillRect(cx, cy + 4, car.w, ch - 8);
+          ctx.fillStyle = '#ffe45a';
+          ctx.font = 'bold 7px Courier New';
+          ctx.fillText('TEMP CARRIAGE', cx + 6, cy + 18);
+        }
+        if (car.spikes) {
+          var sr = spikeRect(car);
+          var sx = Math.round(sr.x - camX);
+          var sy = sr.y + OFFSET_Y;
+          ctx.fillStyle = '#d9dde8';
+          for (var k = 0; k < sr.w; k += 11) {
+            ctx.beginPath();
+            ctx.moveTo(sx + k, sy + sr.h);
+            ctx.lineTo(sx + k + 5.5, sy);
+            ctx.lineTo(sx + k + 11, sy + sr.h);
+            ctx.fill();
+          }
+        }
+      }
+      // The perch: visible only once you are up there (camera follows).
+      if ((night.phase === 'ride' || night.phase === 'perch') && !night.perchGone) {
+        var pr = NT.perch;
+        var prx = Math.round(pr.x - camX);
+        var pry = pr.y + OFFSET_Y;
+        var blink = night.phase === 'perch' && NT.perchMs - (t - night.perchAt) < 1500 && Math.floor(t / 90) % 2;
+        if (!blink) {
+          if (ready(art['moving-platform'])) ctx.drawImage(art['moving-platform'], prx, pry, pr.w, pr.h);
+          else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(prx, pry, pr.w, pr.h); }
+        }
+      }
+    }
+
+    function drawNightHud(ctx, api, t) {
+      if (!nightActive()) return;
+      // The flash on boarding.
+      var since = t - night.flashAt;
+      if (since < 350) {
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.7 * (1 - since / 350)).toFixed(3) + ')';
+        ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+      }
+      // Twinkle hint at the top edge above the hidden perch once the brakes bite.
+      if (night.phase === 'ride' && night.camLocked) {
+        var hx = NT.perch.x + NT.perch.w / 2 - api.cameraX;
+        var tw = 2 + Math.abs(Math.sin(t / 120)) * 2.5;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(Math.round(hx - tw), 4, Math.round(tw * 2), 1);
+        ctx.fillRect(Math.round(hx), Math.round(4 - tw), 1, Math.round(tw * 2));
+      }
+      ctx.save();
+      ctx.font = 'bold 7px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ff2fd0';
+      var label = night.phase === 'ride' ? (night.camLocked ? 'NIGHT TRAIN · JUMP!' : 'NIGHT TRAIN') :
+        'NIGHT TRAIN · CARRIAGES ' + night.hopCount;
+      ctx.fillText(label, VIEW_W / 2, 64);
+      if (night.phase === 'perch') {
+        var left = Math.max(0, Math.ceil((NT.perchMs - (t - night.perchAt)) / 1000));
+        ctx.font = 'bold 22px Courier New';
+        ctx.fillStyle = '#000';
+        ctx.fillText(String(left), VIEW_W / 2 + 1, 89);
+        ctx.fillStyle = '#ffe45a';
+        ctx.fillText(String(left), VIEW_W / 2, 88);
+      }
+      ctx.restore();
+    }
+
     function solids() {
+      if (nightActive()) {
+        var nightOut = nightSolids().concat(movers);
+        for (var n = 0; n < crumbles.length; n += 1) if (crumbles[n].state !== 'gone') nightOut.push(crumbles[n]);
+        return nightOut;
+      }
       var out = walls.concat(movers, pads);
       for (var i = 0; i < crumbles.length; i += 1) if (crumbles[i].state !== 'gone') out.push(crumbles[i]);
       return out;
+    }
+
+    function cameraTargetX(defaultX, api) {
+      if ((night.phase === 'ride' && night.camLocked) || night.phase === 'perch') return NT.lockCamX;
+      return defaultX;
     }
 
     function cameraTargetY(defaultTarget, api) {
@@ -836,9 +1154,10 @@
           ctx.strokeRect(tx + 0.5, ty + 0.5, tg.w - 1, tg.h - 1);
         }
       }
-      // Wall blocks.
+      drawNightTag(ctx, api, time);
+      // Wall blocks (lifted out of the world while the night train runs).
       var wimg = art['wall-block'];
-      for (i = 0; i < walls.length; i += 1) {
+      for (i = nightActive() ? walls.length : 0; i < walls.length; i += 1) {
         var w = walls[i];
         if (!inView(w.x, w.w, camX)) continue;
         var wx = Math.round(w.x - camX);
@@ -1018,6 +1337,7 @@
           ctx.fillRect(vx - 10, vy - v.h, 20, v.h);
         }
       }
+      drawNight(ctx, api, t);
       if (debugBoxes) drawDebugBoxes(ctx, api);
     }
 
@@ -1042,6 +1362,7 @@
 
     function drawHud(ctx, api, t) {
       var p = api.player;
+      drawNightHud(ctx, api, t);
       var feetScreenY = p.y + p.h + OFFSET_Y + api.cameraY;
       // Off-screen marker when the runner is above the view.
       if (feetScreenY - 30 < 0) {
@@ -1106,6 +1427,8 @@
         crystals: count(crystals, 'taken') + '/' + crystals.length,
         trails: trailNames.filter(function (n) { return trails[n].done; }).length + '/' + trailNames.length,
         skyRoutes: Object.keys(foundSkyZones).length + '/' + skyZoneNames.length,
+        nightTrain: night.result || (night.phase ? night.phase : 'not found'),
+        nightTrainCarriages: night.hopCount,
         timeBonusMs: timeBonusMs
       };
     }
@@ -1116,7 +1439,13 @@
         if (!lastApi) return;
         var p = lastApi.player;
         var m = /^Digit(\d)$/.exec(e.code);
-        if (m && zones[+m[1]]) {
+        if (m && m[1] === '9') {
+          p.x = NT.tag.x - 10;
+          p.y = F - p.h;
+          p.vx = 0;
+          p.vy = 0;
+          skyMode = false;
+        } else if (m && zones[+m[1]]) {
           p.x = zones[+m[1]].x;
           p.y = F - p.h;
           p.vx = 0;
@@ -1136,7 +1465,9 @@
       layout: L,
       floorSolids: function () { return floorSolids; },
       solids: solids,
-      sideSolids: function () { return walls; },
+      sideSolids: function () { return nightActive() ? [] : walls; },
+      cameraTargetX: cameraTargetX,
+      forceFinish: forceFinish,
       cameraTargetY: cameraTargetY,
       update: update,
       reset: reset,
@@ -1151,7 +1482,8 @@
         gaps: gaps, walls: walls, movers: movers, crumbles: crumbles, pads: pads,
         lasers: lasers, vents: vents, gems: gems, relics: relics, tags: tags,
         crystals: crystals, signs: signs, zones: zones, trails: trails,
-        skyZones: skyZoneNames, floorSolids: floorSolids
+        skyZones: skyZoneNames, floorSolids: floorSolids, nightTrain: NT,
+        night: function () { return night; }
       }
     };
   }

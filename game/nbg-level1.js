@@ -1188,6 +1188,12 @@
           }));
         },
         damage: function (type, x) { damagePlayer(type, x); },
+        kill: function (type) {
+          if (gameOver) return;
+          player.invuln = 0;
+          player.health = 1;
+          damagePlayer(type || 'course', player.x);
+        },
         notify: function (text, ms) {
           secretNotificationText = text;
           secretNotificationUntil = runElapsedMs + (ms || 2000);
@@ -2122,7 +2128,8 @@
         }
       }
 
-      if (!complete && rectsOverlap(player, finish)) {
+      var courseFinish = !complete && courseExt && courseExt.forceFinish && courseExt.forceFinish(courseApi);
+      if (!complete && (courseFinish || rectsOverlap(player, finish))) {
         complete = true;
         running = false;
         completionAnimationActive = true;
@@ -2160,6 +2167,9 @@
       var visibleWorldWidth = WIDTH / cameraZoom;
       cameraX = clamp(player.x - WIDTH * 0.42 / cameraZoom,
         0, WORLD_WIDTH - visibleWorldWidth);
+      if (courseExt && courseExt.cameraTargetX) {
+        cameraX = clamp(courseExt.cameraTargetX(cameraX, courseApi), 0, WORLD_WIDTH - visibleWorldWidth);
+      }
     }
 
     function updateCameraY() {
