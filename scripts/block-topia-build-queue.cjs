@@ -608,14 +608,42 @@ function markdownSections(text) {
   return sections;
 }
 
-function productionPlacements(renderer) {
+function mapEntries(renderer, name) {
+  const start = renderer.indexOf(`const ${name} = new Map([`);
+  if (start < 0) return [];
+  const end = renderer.indexOf("]);", start);
+  return [...renderer.slice(start, end).matchAll(/\["(\d+),(\d+)",\s*(?:\{\s*file:\s*"([^"]+)"|\[(\d+)|(?:(\d+)))/g)]
+    .map(match => ({ x: Number(match[1]), y: Number(match[2]), asset: match[3] ?? match[4] ?? match[5] }));
+}
+
+function productionPlacements(renderer, district = null) {
   const placements = [];
+  const seen = new Set();
+  const add = placement => {
+    const key = `${placement.x},${placement.y}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    placements.push({ ...placement, class: placement.asset.split("-")[0] });
+  };
   for (const match of renderer.matchAll(lotPattern)) {
     const block = renderer.slice(match.index, match.index + 260);
     const detail = block.match(/detail\("([^"]+)"/);
-    const tree = block.match(/tree\(x \+ 16, y, (\d+)/);
+    const tree = block.match(/tree\(x, y, (\d+)/);
     const asset = detail?.[1] ?? (tree ? `tree-${tree[1]}` : "unknown");
-    placements.push({ x: Number(match[1]), y: Number(match[2]), asset, class: asset.split("-")[0] });
+    add({ x: Number(match[1]), y: Number(match[2]), asset, source: "automated" });
+  }
+  if (!district) return placements;
+  const harbor = district.harborOffset ?? { x: 0, y: 0 };
+  for (const entry of mapEntries(renderer, "waterfrontGroves")) {
+    add({ x: entry.x + harbor.x, y: entry.y + harbor.y, asset: `tree-${entry.asset}`, source: "waterfrontGroves" });
+  }
+  for (const [name, prefix] of [["planterLots", "flowers"], ["furnitureLots", "furniture"]]) {
+    for (const entry of mapEntries(renderer, name)) {
+      add({ x: entry.x + harbor.x, y: entry.y + harbor.y, asset: `${prefix}-${entry.asset}`, source: name });
+    }
+  }
+  for (const entry of mapEntries(renderer, "southwestParkDetails")) {
+    add({ x: entry.x, y: entry.y, asset: entry.asset, source: "southwestParkDetails" });
   }
   return placements;
 }
@@ -628,11 +656,11 @@ function zoneForLot(plan, x, y) {
   return plan.zones.find(zone => inBounds(x, y, zone.bounds));
 }
 
-function productionLedger(renderer, plan) {
+function productionLedger(renderer, plan, district = null) {
   const zones = Object.fromEntries(plan.zones.map(zone => [zone.id, {
     count: 0, classes: {}, assets: {}, complete: false
   }]));
-  const placements = productionPlacements(renderer).map(placement => {
+  const placements = productionPlacements(renderer, district).map(placement => {
     const zone = zoneForLot(plan, placement.x, placement.y);
     if (zone) {
       const state = zones[zone.id];
@@ -652,7 +680,7 @@ function productionLedger(renderer, plan) {
 }
 
 function productionCandidates(district, renderer, plan) {
-  const ledger = productionLedger(renderer, plan);
+  const ledger = productionLedger(renderer, plan, district);
   const occupied = new Set(ledger.placements.map(({ x, y }) => `${x},${y}`));
   const blockedClass = ledger.recentClasses.length === plan.rules.maxConsecutiveClass
     && new Set(ledger.recentClasses).size === 1 ? ledger.recentClasses[0] : null;
@@ -673,7 +701,7 @@ function productionCandidates(district, renderer, plan) {
       if (besideBuildingOrDock) continue;
       const state = ledger.zones[zone.id];
       let allowedClasses = zone.allowedClasses.filter(name => (zone.targets[name] ?? 0) > (state.classes[name] ?? 0));
-      if (blockedClass && allowedClasses.length > 1) allowedClasses = allowedClasses.filter(name => name !== blockedClass);
+      if (blockedClass) allowedClasses = allowedClasses.filter(name => name !== blockedClass);
       if (walkable.length > 2) allowedClasses = allowedClasses.filter(name => name !== "tree");
       if (!allowedClasses.length) continue;
       candidates.push({ x, y, zone: zone.id, allowedClasses, priority: zone.priority });
@@ -718,7 +746,7 @@ function productionPlacement(renderer, district, proposal) {
   const neighbors = [[x, y - 1], [x - 1, y], [x + 1, y], [x, y + 1]];
   const neighbor = neighbors.find(([xx, yy]) => /^[rp]$/.test(district.rows[yy]?.[xx] ?? ""));
   if (!neighbor) throw new Error("Choose a lot immediately beside a street or footpath.");
-  if (productionPlacements(renderer).some(item => item.x === x && item.y === y)) {
+  if (productionPlacements(renderer, district).some(item => item.x === x && item.y === y)) {
     throw new Error("An automated asset already occupies that lot.");
   }
   const harbor = district.harborOffset;
@@ -728,7 +756,7 @@ function productionPlacement(renderer, district, proposal) {
   if (renderer.split(lotAnchor).length !== 2) throw new Error("The Waterfront renderer insertion point changed.");
   const [xx, yy] = neighbor;
   const draw = tree
-    ? `      queue(y + 28, () => tree(x + 16, y, ${tree[1]}, 0.82));`
+    ? `      queue(y + 28, () => tree(x, y, ${tree[1]}, 0.82));`
     : `      queue(y + 24, () => detail("${asset}", x + 16, y + 24, ${asset.startsWith("flowers-") ? 9 : 12}));`;
   const updated = renderer.replace(lotAnchor, [
     `    } else if (tile === "." && col === ${x} && row === ${y} && "${district.rows[yy][xx]}" === rows[${yy}]?.[${xx}]) {`,
@@ -740,7 +768,8 @@ function productionPlacement(renderer, district, proposal) {
 }
 
 function productionPreviewHtml(script, district, proposal) {
-  const atlas = proposal.class === "tree" ? "trees-runtime.webp?v=1" : "street-detail-runtime.webp?v=1";
+  const atlases = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp",
+    "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp"];
   return `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#081018;color:#fff}canvas{display:block;width:100%;height:auto;image-rendering:auto}
@@ -755,9 +784,8 @@ try{
  const canvas=document.querySelector("#map");
  canvas.width=rows[0].length*district.tileSize;
  canvas.height=rows.length*district.tileSize;
- const image=new Image();
- image.src="./assets/atlases/${atlas}";
- await image.decode();
+ const required=${JSON.stringify(["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp", "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp"])};
+ await Promise.all(required.map(async name=>{const image=new Image();image.src="./assets/atlases/"+name;await image.decode()}));
  await window.loadWaterfrontSprites();
  const ctx=canvas.getContext("2d",{willReadFrequently:true});
  const player={x:district.spawn.x,y:district.spawn.y,faction:null,facing:0,frame:0};
@@ -849,17 +877,23 @@ async function buildProduction(issue, dir, round, attempt, repair) {
       .map(filename => fs.rm(path.join(dir, filename), { force: true })));
   }
 
-  const [renderer, source, brief, library, planText, streetAtlas, treeAtlas] = await Promise.all([
+  const atlasNames = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp",
+    "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp"];
+  const [renderer, source, natureSource, brief, library, planText, atlasFiles] = await Promise.all([
     repositoryText(rendererPath, context.base),
     repositoryText("workers/moonboys-api/blocktopia/waterfront-district.js", context.base),
+    repositoryText(waterfrontRoot + "/nature-island.mjs", context.base),
     repositoryText(waterfrontRoot + "/CITY-BRIEF.md", context.base),
     repositoryText(waterfrontRoot + "/SPRITE-LIBRARY.md", context.base),
     repositoryText(zonePlanPath, context.base),
-    repositoryFile(waterfrontRoot + "/assets/atlases/street-detail-runtime.webp", context.base),
-    repositoryFile(waterfrontRoot + "/assets/atlases/trees-runtime.webp", context.base)
+    Promise.all(atlasNames.map(name => repositoryFile(waterfrontRoot + "/assets/atlases/" + name, context.base)))
   ]);
   const plan = JSON.parse(planText);
-  const district = vm.runInNewContext(source.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const harbor = vm.runInNewContext(source.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const natureFile = path.join(dir, "nature-island.mjs");
+  await fs.writeFile(natureFile, natureSource, { mode: 0o600 });
+  const { extendWaterfront } = await import(require("node:url").pathToFileURL(natureFile).href + "?base=" + context.base);
+  const district = extendWaterfront(harbor);
   const { candidates, ledger } = productionCandidates(district, renderer, plan);
   if (ledger.complete || !candidates.length) {
     return { complete: true, summary: { ledger, reason: ledger.complete ? "zone-targets-complete" : "no-uncrowded-candidate" } };
@@ -899,10 +933,8 @@ async function buildProduction(issue, dir, round, attempt, repair) {
       if (retry === 2) throw error;
     }
   }
-  const visual = await productionVisualCheck(dir, renderer, updated, district, selected, {
-    "street-detail-runtime.webp": streetAtlas,
-    "trees-runtime.webp": treeAtlas
-  });
+  const visual = await productionVisualCheck(dir, renderer, updated, district, selected,
+    Object.fromEntries(atlasNames.map((name, index) => [name, atlasFiles[index]])));
   await writeProgress(dir, "production-visual.json", visual);
   const validation = JSON.stringify({
     issue: issue.number, round, attempt, testedBase: context.base, generatedAt: new Date().toISOString(),
