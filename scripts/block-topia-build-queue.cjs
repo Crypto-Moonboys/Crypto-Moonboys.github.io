@@ -602,6 +602,13 @@ async function buildProduction(issue, dir, round, attempt, repair) {
       return null;
     });
     if (published) {
+      const branch = `block-topia/issue-${issue.number}-production-round-${round}-attempt-${attempt}`;
+      const query = `/pulls?state=all&head=${encodeURIComponent("Crypto-Moonboys:" + branch)}&base=${encodeURIComponent(productionTarget)}`;
+      const existing = (await github(query))[0];
+      if (existing) {
+        const pr = await github(`/pulls/${existing.number}`);
+        if (pr.merged) return { url: pr.html_url };
+      }
       return { feedback: "Main advanced after publication. Rebuild on a new attempt branch." };
     }
   }
