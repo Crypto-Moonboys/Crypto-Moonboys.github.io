@@ -438,7 +438,7 @@ async function publishRound(issue, round, attempt, dir, files, production = null
     head: branch, base: target, draft: false,
     title: `Block Topia ${production ? "production " : ""}waterfront #${number}, round ${round}`,
     body: production
-      ? `Part of #${number}. Adds an existing Waterfront sprite to a validated ground lot on the live production map. This targets main and requires a clean current-head Codex review, unchanged approval and a clean merge. Please check placement and visual fit.`
+      ? `Part of #${number}. Advances the next incomplete Waterfront zone with an allow-listed asset. The exact head passed deterministic spacing, variety, route, syntax, desktop Chromium and mobile Chromium checks; see \`${validationPath}\` in this PR. This targets main and requires a clean current-head Codex review, unchanged approval and a clean merge. Please check placement, purpose, scale, sightlines and visual fit.`
       : `Part of #${number}. This integration-only round passed local route and Chromium rendering checks.`
   });
   await checkApproval(issue, iterationLabel);
@@ -939,6 +939,10 @@ async function runQueue() {
       const iterative = issue.labels?.some(label => label.name === iterationLabel);
       const production = iterative && String(issue.body ?? "").includes("<!-- waterfront-production -->");
       const issueDir = path.join(stateDir, production ? `${issue.number}-production` : String(issue.number));
+      if (production && await fs.stat(path.join(issueDir, "completed.json")).catch(error => {
+        if (error.code !== "ENOENT") throw error;
+        return null;
+      })) continue;
       let dir = issueDir;
       let previous = null;
       let round = 0;
@@ -980,7 +984,11 @@ async function runQueue() {
             if (layoutExists) throw error;
             outcome = { feedback: error.message };
           }
-          if (outcome.feedback) {
+          if (outcome.complete) {
+            await writeProgress(dir, "done.json", { complete: true, summary: outcome.summary });
+            await writeProgress(issueDir, "completed.json", { issue: issue.number, round, ...outcome.summary });
+            console.log(`Issue #${issue.number}: Waterfront production targets complete.`);
+          } else if (outcome.feedback) {
             await writeProgress(dir, "repair.json", {
               attempt: progress.attempt + 1,
               feedback: outcome.feedback,
@@ -1019,4 +1027,4 @@ if (require.main === module) {
     : runQueue();
   command.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate, isTransientGithubFailure };
+module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacements, productionPlacement, zoneForLot };
