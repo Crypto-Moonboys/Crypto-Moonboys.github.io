@@ -5,13 +5,26 @@ const path = require("node:path");
 const test = require("node:test");
 
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
-const { applyDistrictEdits, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
+const { applyDistrictEdits, enforceProductionCandidate, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
 
 test("Ollama selection uses an installed preferred model and supports an explicit override", () => {
   assert.equal(selectOllamaModel(["nomic-embed-text:latest", "qwen2.5:7b"], undefined), "qwen2.5:7b");
   assert.equal(selectOllamaModel(["llama3.2:latest", "qwen2.5:7b"], "llama3.2:latest"), "llama3.2:latest");
   assert.throws(() => selectOllamaModel(["nomic-embed-text:latest"], undefined), /No chat-capable/);
   assert.throws(() => selectOllamaModel(["qwen2.5:7b"], "missing:latest"), /is not installed/);
+});
+
+test("production candidates preserve valid model choices and replace occupied guesses", () => {
+  const lots = [{ x: 10, y: 4 }, { x: 12, y: 8 }];
+  const sprites = ["flowers-0", "furniture-2"];
+  assert.deepEqual(
+    enforceProductionCandidate({ x: 12, y: 8, sprite: "furniture-2" }, lots, sprites, 0),
+    { x: 12, y: 8, sprite: "furniture-2" }
+  );
+  assert.deepEqual(
+    enforceProductionCandidate({ x: 99, y: 99, sprite: "missing-4" }, lots, sprites, 1),
+    { x: 12, y: 8, sprite: "furniture-2" }
+  );
 });
 
 test("starter has a connected dock, street, lighthouse, and two buildable plots", () => {
