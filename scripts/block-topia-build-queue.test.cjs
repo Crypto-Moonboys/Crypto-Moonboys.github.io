@@ -186,7 +186,10 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /unhandledrejection/);
   assert.match(source, /--headless=new/);
   assert.match(source, /--disable-dev-shm-usage/);
+  assert.match(source, /DBUS_SESSION_BUS_ADDRESS/);
+  assert.match(source, /"disabled:"/);
   assert.match(source, /const rendered = dom\.stdout/);
+  assert.match(source, /rmSync\(screenshot, \{ force: true \}\)/);
   assert.match(source, /statSync\(screenshot\)\.size >= 1024/);
   for (const name of ["bitcoin-cash-tower-overhead.webp", "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"]) {
     assert.match(source, new RegExp(name.replaceAll(".", "\\.")));
