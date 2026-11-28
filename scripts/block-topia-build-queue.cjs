@@ -59,6 +59,22 @@ async function github(route, body, method = body ? "POST" : "GET") {
 
 let discoveredOllamaModel;
 
+function selectOllamaModel(installed, configured) {
+  if (configured) {
+    if (!installed.includes(configured)) {
+      throw new Error(`Configured Ollama model ${configured} is not installed. Installed models: ${installed.join(", ") || "none"}.`);
+    }
+    return configured;
+  }
+  const preferred = ["qwen2.5:7b-64k", "qwen2.5:7b", "qwen2.5-coder:7b"];
+  const selected = preferred.find(name => installed.includes(name))
+    ?? installed.find(name => /qwen|llama|mistral|gemma|phi/i.test(name) && !/embed/i.test(name));
+  if (!selected) {
+    throw new Error(`No chat-capable Ollama model is installed. Installed models: ${installed.join(", ") || "none"}.`);
+  }
+  return selected;
+}
+
 async function resolveOllamaModel() {
   if (discoveredOllamaModel) return discoveredOllamaModel;
 
@@ -70,21 +86,7 @@ async function resolveOllamaModel() {
   const installed = (await response.json()).models
     ?.map(model => model.name)
     .filter(name => typeof name === "string" && name.length) ?? [];
-  const configured = process.env.BLOCK_TOPIA_OLLAMA_MODEL?.trim();
-  if (configured) {
-    if (!installed.includes(configured)) {
-      throw new Error(`Configured Ollama model ${configured} is not installed. Installed models: ${installed.join(", ") || "none"}.`);
-    }
-    discoveredOllamaModel = configured;
-    return discoveredOllamaModel;
-  }
-
-  const preferred = ["qwen2.5:7b-64k", "qwen2.5:7b", "qwen2.5-coder:7b"];
-  discoveredOllamaModel = preferred.find(name => installed.includes(name))
-    ?? installed.find(name => /qwen|llama|mistral|gemma|phi/i.test(name) && !/embed/i.test(name));
-  if (!discoveredOllamaModel) {
-    throw new Error(`No chat-capable Ollama model is installed. Installed models: ${installed.join(", ") || "none"}.`);
-  }
+  discoveredOllamaModel = selectOllamaModel(installed, process.env.BLOCK_TOPIA_OLLAMA_MODEL?.trim());
   return discoveredOllamaModel;
 }
 
@@ -665,4 +667,4 @@ if (require.main === module) {
     : runQueue();
   command.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck };
+module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel };
