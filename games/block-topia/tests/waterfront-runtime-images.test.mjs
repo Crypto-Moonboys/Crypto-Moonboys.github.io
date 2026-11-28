@@ -65,10 +65,10 @@ test('Waterfront and its shared views wire runtime derivatives, while masters re
   ]);
   for (const name of detailed) assert.match(harbor, new RegExp(name + '-runtime\\.webp'));
   assert.match(harbor, /group \+ "-runtime\.webp\?v=1"/);
-  assert.match(entry, /harbor-art\.js\?v=79-runtime-images/);
+  assert.match(entry, /harbor-art\.js\?v=80-park-path-end/);
   assert.match(moon, /factions-runtime\.webp\?v=1/);
   assert.match(moon, /factions-detail-runtime\.webp\?v=1/);
   assert.match(comparison, /hk-night-runtime\.webp\?v=1/);
   assert.match(comparison, /factions-detail-runtime\.webp\?v=1/);
-  assert.match(scenes, /harbor-art\.js\?v=79-runtime-images/);
+  assert.match(scenes, /harbor-art\.js\?v=80-park-path-end/);
 });

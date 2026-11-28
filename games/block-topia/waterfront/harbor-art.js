@@ -1120,6 +1120,8 @@ window.drawWaterfront = function drawWaterfront(ctx, rows, player, district, tim
       queue(y + 24, () => detail("furniture-" + furniture, x + 16, y + 24, furniture < 4 ? 7 : 9));
     } else if (tile === "." && col === 37 && row === 26 && "p" === rows[26]?.[36]) {
       queue(y + 24, () => detail("flowers-2", x + 16, y + 24, 9));
+    } else if (tile === "." && col === 16 && row === 28 && "p" === rows[27]?.[16]) {
+      queue(y + 17, () => detail("flowers-6", x + 16, y + 17, 10));
     } else if (Object.hasOwn(waterfrontSprites, tile)) {
       const bounds = buildingBounds(tile, col, row);
       const left = bounds?.left ?? x + 3;
