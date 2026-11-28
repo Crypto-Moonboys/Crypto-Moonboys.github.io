@@ -4,6 +4,7 @@ const path = require("node:path");
 const os = require("node:os");
 const vm = require("node:vm");
 const { spawnSync } = require("node:child_process");
+const { pathToFileURL } = require("node:url");
 
 const repo = "Crypto-Moonboys/Crypto-Moonboys.github.io";
 const approval = "block-topia-approved";
@@ -609,11 +610,12 @@ function markdownSections(text) {
 }
 
 function mapEntries(renderer, name) {
-  const start = renderer.indexOf(`const ${name} = new Map([`);
-  if (start < 0) return [];
-  const end = renderer.indexOf("]);", start);
-  return [...renderer.slice(start, end).matchAll(/\["(\d+),(\d+)",\s*(?:\{\s*file:\s*"([^"]+)"|\[(\d+)|(?:(\d+)))/g)]
-    .map(match => ({ x: Number(match[1]), y: Number(match[2]), asset: match[3] ?? match[4] ?? match[5] }));
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = renderer.match(new RegExp(`const\\s+${escaped}\\s*=\\s*new Map\\((\\[[\\s\\S]*?\\])\\);`));
+  if (!match) throw new Error(`Missing Waterfront placement map ${name}.`);
+  const entries = vm.runInNewContext(match[1], {}, { timeout: 1000 });
+  if (!Array.isArray(entries)) throw new Error(`Invalid Waterfront placement map ${name}.`);
+  return entries;
 }
 
 function productionPlacements(renderer, district = null) {
@@ -623,27 +625,32 @@ function productionPlacements(renderer, district = null) {
     const key = `${placement.x},${placement.y}`;
     if (seen.has(key)) return;
     seen.add(key);
-    placements.push({ ...placement, class: placement.asset.split("-")[0] });
+    placements.push(placement);
   };
+  if (district?.harborOffset) {
+    const { x: harborX, y: harborY } = district.harborOffset;
+    for (const [location, variants] of mapEntries(renderer, "waterfrontGroves")) {
+      const [x, y] = location.split(",").map(Number);
+      const variant = Number(variants?.[0] ?? 0);
+      add({ x: x + harborX, y: y + harborY, asset: `tree-${variant}`, class: "tree", source: "waterfrontGroves" });
+    }
+    for (const [name, prefix] of [["planterLots", "flowers"], ["furnitureLots", "furniture"]]) {
+      for (const [location, variant] of mapEntries(renderer, name)) {
+        const [x, y] = location.split(",").map(Number);
+        add({ x: x + harborX, y: y + harborY, asset: `${prefix}-${variant}`, class: prefix, source: name });
+      }
+    }
+  }
+  for (const [location, detail] of mapEntries(renderer, "southwestParkDetails")) {
+    const [x, y] = location.split(",").map(Number);
+    add({ x, y, asset: detail.file, class: detail.file.split("-")[0], source: "southwestParkDetails" });
+  }
   for (const match of renderer.matchAll(lotPattern)) {
     const block = renderer.slice(match.index, match.index + 260);
     const detail = block.match(/detail\("([^"]+)"/);
     const tree = block.match(/tree\(x, y, (\d+)/);
     const asset = detail?.[1] ?? (tree ? `tree-${tree[1]}` : "unknown");
-    add({ x: Number(match[1]), y: Number(match[2]), asset, source: "automated" });
-  }
-  if (!district) return placements;
-  const harbor = district.harborOffset ?? { x: 0, y: 0 };
-  for (const entry of mapEntries(renderer, "waterfrontGroves")) {
-    add({ x: entry.x + harbor.x, y: entry.y + harbor.y, asset: `tree-${entry.asset}`, source: "waterfrontGroves" });
-  }
-  for (const [name, prefix] of [["planterLots", "flowers"], ["furnitureLots", "furniture"]]) {
-    for (const entry of mapEntries(renderer, name)) {
-      add({ x: entry.x + harbor.x, y: entry.y + harbor.y, asset: `${prefix}-${entry.asset}`, source: name });
-    }
-  }
-  for (const entry of mapEntries(renderer, "southwestParkDetails")) {
-    add({ x: entry.x, y: entry.y, asset: entry.asset, source: "southwestParkDetails" });
+    add({ x: Number(match[1]), y: Number(match[2]), asset, class: asset.split("-")[0], source: "automated" });
   }
   return placements;
 }
@@ -747,7 +754,7 @@ function productionPlacement(renderer, district, proposal) {
   const neighbor = neighbors.find(([xx, yy]) => /^[rp]$/.test(district.rows[yy]?.[xx] ?? ""));
   if (!neighbor) throw new Error("Choose a lot immediately beside a street or footpath.");
   if (productionPlacements(renderer, district).some(item => item.x === x && item.y === y)) {
-    throw new Error("An automated asset already occupies that lot.");
+    throw new Error("A Waterfront asset already occupies that lot.");
   }
   const harbor = district.harborOffset;
   if (harbor && district.harborRows[y - harbor.y]?.[x - harbor.x] !== undefined) {
@@ -768,8 +775,7 @@ function productionPlacement(renderer, district, proposal) {
 }
 
 function productionPreviewHtml(script, district, proposal) {
-  const atlases = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp",
-    "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp"];
+  const atlases = ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"];
   return `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#081018;color:#fff}canvas{display:block;width:100%;height:auto;image-rendering:auto}
@@ -784,8 +790,11 @@ try{
  const canvas=document.querySelector("#map");
  canvas.width=rows[0].length*district.tileSize;
  canvas.height=rows.length*district.tileSize;
- const required=${JSON.stringify(["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp", "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp"])};
- await Promise.all(required.map(async name=>{const image=new Image();image.src="./assets/atlases/"+name;await image.decode()}));
+ await Promise.all(${JSON.stringify(atlases)}.map(async name=>{
+   const image=new Image();
+   image.src="./assets/atlases/"+name+"-runtime.webp";
+   await image.decode();
+ }));
  await window.loadWaterfrontSprites();
  const ctx=canvas.getContext("2d",{willReadFrequently:true});
  const player={x:district.spawn.x,y:district.spawn.y,faction:null,facing:0,frame:0};
@@ -877,22 +886,21 @@ async function buildProduction(issue, dir, round, attempt, repair) {
       .map(filename => fs.rm(path.join(dir, filename), { force: true })));
   }
 
-  const atlasNames = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp",
-    "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp"];
-  const [renderer, source, natureSource, brief, library, planText, atlasFiles] = await Promise.all([
+  const atlasNames = ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"];
+  const [renderer, source, natureSource, brief, library, planText, ...atlasBuffers] = await Promise.all([
     repositoryText(rendererPath, context.base),
     repositoryText("workers/moonboys-api/blocktopia/waterfront-district.js", context.base),
     repositoryText(waterfrontRoot + "/nature-island.mjs", context.base),
     repositoryText(waterfrontRoot + "/CITY-BRIEF.md", context.base),
     repositoryText(waterfrontRoot + "/SPRITE-LIBRARY.md", context.base),
     repositoryText(zonePlanPath, context.base),
-    Promise.all(atlasNames.map(name => repositoryFile(waterfrontRoot + "/assets/atlases/" + name, context.base)))
+    ...atlasNames.map(name => repositoryFile(`${waterfrontRoot}/assets/atlases/${name}-runtime.webp`, context.base))
   ]);
   const plan = JSON.parse(planText);
   const harbor = vm.runInNewContext(source.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
   const natureFile = path.join(dir, "nature-island.mjs");
   await fs.writeFile(natureFile, natureSource, { mode: 0o600 });
-  const { extendWaterfront } = await import(require("node:url").pathToFileURL(natureFile).href + "?base=" + context.base);
+  const { extendWaterfront } = await import(pathToFileURL(natureFile).href + `?base=${context.base}`);
   const district = extendWaterfront(harbor);
   const { candidates, ledger } = productionCandidates(district, renderer, plan);
   if (ledger.complete || !candidates.length) {
@@ -934,7 +942,7 @@ async function buildProduction(issue, dir, round, attempt, repair) {
     }
   }
   const visual = await productionVisualCheck(dir, renderer, updated, district, selected,
-    Object.fromEntries(atlasNames.map((name, index) => [name, atlasFiles[index]])));
+    Object.fromEntries(atlasNames.map((name, index) => [`${name}-runtime.webp`, atlasBuffers[index]])));
   await writeProgress(dir, "production-visual.json", visual);
   const validation = JSON.stringify({
     issue: issue.number, round, attempt, testedBase: context.base, generatedAt: new Date().toISOString(),
