@@ -1,12 +1,13 @@
 const assert = require("node:assert/strict");
 const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const vm = require("node:vm");
 const test = require("node:test");
 
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
-const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacement, selectOllamaModel, validateDistrict, waterfrontTemplate, zoneForLot } = require(runnerPath);
+const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacement, productionVisualCheck, selectOllamaModel, validateDistrict, waterfrontTemplate, zoneForLot } = require(runnerPath);
 
 test("Waterfront queue has no Hermes research dependency", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
@@ -158,6 +159,38 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /The rendered Waterfront candidate is visually identical to its base/);
   assert.match(source, /production-validation\.json/);
   assert.match(source, /completed\.json/);
+});
+
+test("available Chromium renders the real proposed Waterfront at both viewports", async t => {
+  const browser = process.env.BLOCK_TOPIA_CHROMIUM || "chromium";
+  if (spawnSync(browser, ["--version"], { encoding: "utf8" }).status !== 0) {
+    t.skip("Chromium is not installed in this test environment");
+    return;
+  }
+  const root = path.join(__dirname, "..", "games", "block-topia", "waterfront");
+  const plan = JSON.parse(fs.readFileSync(path.join(root, "BUILD-ZONES.json"), "utf8"));
+  const renderer = fs.readFileSync(path.join(root, "harbor-art.js"), "utf8");
+  const districtSource = fs.readFileSync(path.join(__dirname, "..", "workers", "moonboys-api", "blocktopia", "waterfront-district.js"), "utf8");
+  const district = vm.runInNewContext(districtSource.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const { candidates, ledger } = productionCandidates(district, renderer, plan);
+  const candidate = candidates.find(item => item.allowedClasses.includes("tree")) ?? candidates[0];
+  assert.ok(candidate);
+  const asset = candidate.allowedClasses.includes("tree") ? "tree-3"
+    : candidate.allowedClasses.includes("furniture") ? "furniture-2" : "flowers-2";
+  const proposal = enforceProductionCandidate({ ...candidate, asset }, candidates, plan, ledger, 0);
+  const updated = productionPlacement(renderer, district, proposal);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "waterfront-visual-"));
+  try {
+    const visual = await productionVisualCheck(dir, renderer, updated, district, proposal, {
+      "street-detail-runtime.webp": fs.readFileSync(path.join(root, "assets", "atlases", "street-detail-runtime.webp")),
+      "trees-runtime.webp": fs.readFileSync(path.join(root, "assets", "atlases", "trees-runtime.webp"))
+    });
+    assert.equal(visual.status, "passed");
+    assert.notEqual(visual.baselineChecksum, visual.desktopChecksum);
+    assert.equal(visual.screenshots.length, 2);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("production repairs discard rejected placements and refresh an advanced main base", () => {
