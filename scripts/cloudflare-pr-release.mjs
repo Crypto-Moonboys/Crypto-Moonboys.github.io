@@ -11,6 +11,14 @@ const migrationName = /^\d{3,}_[a-z0-9_]+\.sql$/;
 const sha = /^[a-f0-9]{40}$/;
 const numericId = /^[1-9]\d*$/;
 const workflow = '.github/workflows/cloudflare-pr-release.yml';
+// Only these verified non-runtime paths may differ during a manual recovery.
+const recoveryExclusions = [
+  workflow,
+  'scripts/cloudflare-pr-release.mjs',
+  'scripts/cloudflare-pr-release.test.mjs',
+  'scripts/block-topia-build-queue.cjs',
+  'scripts/block-topia-build-queue.test.cjs',
+];
 
 function run(bin, args) {
   return execFileSync(bin, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).trim();
@@ -54,6 +62,17 @@ function checkedCommit() {
 
 function gh(endpoint, ...args) {
   return JSON.parse(run('gh', ['api', endpoint, ...args]));
+}
+
+export function requireRecoveryTree(merge, target, cwd = process.cwd()) {
+  requireCheck(sha.test(merge) && sha.test(target), 'Recovery requires full Git commit SHAs.');
+  try {
+    execFileSync('git', ['diff', '--quiet', '--no-ext-diff', '--no-textconv', '--no-renames', merge, target,
+      '--', '.', ...recoveryExclusions.map(file => ':(top,literal,exclude)' + file)], { cwd, stdio: 'ignore' });
+  } catch (error) {
+    if (error.status !== 1) throw error;
+    throw new Error('Current main changes files outside the recovery allowlist. Review and release those changes separately.');
+  }
 }
 
 export function matchesValidationRun(run, number, head) {
@@ -115,8 +134,20 @@ async function plan() {
   if (stage === 'validate') {
     requireCheck(pull.head.sha === target, 'The PR head changed. Request validation for the latest SHA.');
   } else {
-    requireCheck(pull.merged && pull.merge_commit_sha === target && git('rev-parse', 'HEAD') === target,
-      'Release requires the PR merge commit to be current main.');
+    const merge = pull.merge_commit_sha;
+    requireCheck(pull.merged && sha.test(merge ?? '') && git('rev-parse', 'HEAD') === target,
+      'Release requires a merged PR and a checkout at the requested main commit.');
+    if (merge !== target) {
+      requireCheck(process.env.GITHUB_EVENT_NAME === 'workflow_dispatch',
+        'Automatic release requires the PR merge commit to be current main.');
+      const comparison = gh(`repos/{owner}/{repo}/compare/${merge}...${target}?per_page=1`);
+      requireCheck(comparison.status === 'ahead' && comparison.merge_base_commit?.sha === merge,
+        'Recovery main must descend from the reviewed PR merge.');
+      git('fetch', '--no-tags', '--depth=1', 'origin', merge);
+      requireRecoveryTree(merge, target);
+      if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+        `Manual recovery at \`${target}\` for reviewed merge \`${merge}\`. The Worker release files match.\n\n`);
+    }
     await requireSuccessfulValidation(pull, number, validationRun);
     for (const name of migrations) {
       const file = files.find(entry => entry.filename === migrationDir + name);
