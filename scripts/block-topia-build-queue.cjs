@@ -781,10 +781,35 @@ function productionPreviewHtml(script, district, proposal) {
 html,body{margin:0;background:#081018;color:#fff}canvas{display:block;width:100%;height:auto;image-rendering:auto}
 </style></head><body><canvas id="map"></canvas>
 <script>window.waterfrontCharacterNames=[];</script>
+<script>
+const previewDirections=[[0,-1],[-1,0],[0,1],[1,0]];
+function findRoute(start,goal,canWalk){
+ const queue=[{...start,previous:null}];
+ const seen=new Set([start.x+","+start.y]);
+ for(const step of queue){
+   if(step.x===goal.x&&step.y===goal.y){
+     const route=[];
+     for(let node=step;node.previous;node=node.previous)route.push(node);
+     return route.reverse();
+   }
+   for(const [dx,dy] of previewDirections){
+     const x=step.x+dx,y=step.y+dy,key=x+","+y;
+     if(!seen.has(key)&&canWalk(x,y)){
+       seen.add(key);
+       queue.push({x,y,previous:step});
+     }
+   }
+ }
+ return null;
+}
+</script>
 <script src="./${script}"></script>
 <script>
 (async()=>{
 try{
+ const {islandPatrol,islandSeed}=await import("./nature-island.mjs");
+ window.waterfrontIslandPatrol=islandPatrol;
+ window.waterfrontIslandSeed=islandSeed;
  const district=${JSON.stringify(district)};
  const rows=district.rows;
  const canvas=document.querySelector("#map");
@@ -828,10 +853,16 @@ function chromiumPreview(file, profile, screenshot, width, height) {
   return match[1];
 }
 
-async function productionVisualCheck(dir, before, after, district, proposal, assets) {
+async function productionVisualCheck(dir, before, after, district, proposal, assets, natureSource) {
+  if (!natureSource?.includes("export function islandPatrol") || !natureSource.includes("export function islandSeed")) {
+    throw new Error("Missing Waterfront nature-island helpers for the production preview.");
+  }
   const assetDir = path.join(dir, "assets", "atlases");
   await fs.mkdir(assetDir, { recursive: true, mode: 0o700 });
-  await Promise.all(Object.entries(assets).map(([name, bytes]) => fs.writeFile(path.join(assetDir, name), bytes, { mode: 0o600 })));
+  await Promise.all([
+    fs.writeFile(path.join(dir, "nature-island.mjs"), natureSource, { mode: 0o600 }),
+    ...Object.entries(assets).map(([name, bytes]) => fs.writeFile(path.join(assetDir, name), bytes, { mode: 0o600 }))
+  ]);
   const baselineScript = path.join(dir, "baseline-harbor-art.js");
   const candidateScript = path.join(dir, "candidate-harbor-art.js");
   const baselineHtml = path.join(dir, "baseline-preview.html");
@@ -942,7 +973,7 @@ async function buildProduction(issue, dir, round, attempt, repair) {
     }
   }
   const visual = await productionVisualCheck(dir, renderer, updated, district, selected,
-    Object.fromEntries(atlasNames.map((name, index) => [`${name}-runtime.webp`, atlasBuffers[index]])));
+    Object.fromEntries(atlasNames.map((name, index) => [`${name}-runtime.webp`, atlasBuffers[index]])), natureSource);
   await writeProgress(dir, "production-visual.json", visual);
   const validation = JSON.stringify({
     issue: issue.number, round, attempt, testedBase: context.base, generatedAt: new Date().toISOString(),
