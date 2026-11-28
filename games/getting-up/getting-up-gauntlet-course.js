@@ -930,6 +930,7 @@
         for (var s = 0; s < night.cars.length; s += 1) {
           if (night.cars[s].spikes && api.rectsOverlap(p, spikeRect(night.cars[s]))) {
             api.damage('spikes', night.cars[s].x + night.cars[s].w / 2);
+            if (api.gameOver) { night.phase = 'failed'; night.result = 'failed'; }
             break;
           }
         }
@@ -937,7 +938,8 @@
     }
 
     function forceFinish(api) {
-      if (night.phase !== 'stream') return false;
+      // A fatal hit on the same frame (e.g. roof spikes) must never also count as a finish.
+      if (night.phase !== 'stream' || api.gameOver) return false;
       var p = api.player;
       if (p.x + p.w < L.finish.x) return false;
       night.phase = 'done';
