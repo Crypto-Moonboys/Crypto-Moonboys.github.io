@@ -13,6 +13,7 @@ import { checkTelegramGroupMember, handleTelegramGroupMembership } from './teleg
 import { handleTelegramConnectivity } from './telegram-connectivity.js';
 import { handleSamWikiRequest, handleSamWikiUpdate } from './telegram/sam-wiki-drafts.js';
 import { handleSupportRequest, handleSupportUpdate } from './telegram/support-cases.js';
+import { handleDoctorApprovalRequest, handleDoctorApprovalUpdate } from './telegram/doctor-approvals.js';
 import { isTagRunCommand, isSharedLegacyProfile, handleTagRunCommand, recordTagRunMessage, deliverTagRunRankAnnouncements, draftTagRunWeeklyRewards, postTagRunGroupBulletin } from './tag-run/handler.js';
 import { saveYesterdayParticipation } from './tag-run/v2-service.js';
 import { phase5CronTasks } from './scheduled/phase5-cron-plan.js';
@@ -374,6 +375,10 @@ export default {
         return jsonError(request, 'sam_wiki_unavailable', 503);
       }
     }
+    if (url.pathname === '/internal/doctor-approvals') {
+      try { return await handleDoctorApprovalRequest(request, env); }
+      catch { return jsonError(request, 'doctor_approvals_unavailable', 503); }
+    }
     if (url.pathname === '/internal/doctor-support') {
       try {
         return await handleSupportRequest(request, env);
@@ -437,6 +442,7 @@ export default {
 
     if (isTelegramWebhook && body) {
       try {
+        if (await handleDoctorApprovalUpdate(body, env)) return Response.json({ ok: true });
         if (await handleSamWikiUpdate(body, env)) return Response.json({ ok: true });
       } catch {
         return jsonError(request, 'sam_wiki_unavailable', 503);
