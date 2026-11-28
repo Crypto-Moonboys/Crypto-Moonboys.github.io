@@ -596,6 +596,15 @@ async function buildProduction(issue, dir, round, attempt, repair) {
       if (error.code !== "ENOENT") throw error;
       return null;
     });
+  if (context && context.base !== latest.object.sha) {
+    const published = await fs.stat(path.join(dir, "publication.json")).catch(error => {
+      if (error.code !== "ENOENT") throw error;
+      return null;
+    });
+    if (published) {
+      return { feedback: "Main advanced after publication. Rebuild on a new attempt branch." };
+    }
+  }
   if (!context || context.base !== latest.object.sha) {
     context = { branch: productionTarget, base: latest.object.sha };
     await writeProgress(dir, "production-base.json", context);
