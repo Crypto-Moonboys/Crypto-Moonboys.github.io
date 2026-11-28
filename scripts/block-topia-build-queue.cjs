@@ -42,20 +42,47 @@ const editFormat = {
   }
 };
 
+const retryableGithubMethods = new Set(["GET", "PUT"]);
+
+function isTransientGithubFailure(status) {
+  return status === 429 || (status >= 500 && status <= 599);
+}
+
 async function github(route, body, method = body ? "POST" : "GET") {
-  const response = await fetch(`https://api.github.com/repos/${repo}${route}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${process.env.GH_TOKEN}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json"
-    },
-    body: body ? JSON.stringify(body) : undefined,
-    redirect: "error",
-    signal: AbortSignal.timeout(30_000)
-  });
-  if (!response.ok) throw new Error(`GitHub returned ${response.status} for ${route}.`);
-  return response.json();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    let response;
+    try {
+      response = await fetch(`https://api.github.com/repos/${repo}${route}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${process.env.GH_TOKEN}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json"
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        redirect: "error",
+        signal: AbortSignal.timeout(30_000)
+      });
+    } catch (error) {
+      const transient = ["TimeoutError", "AbortError", "TypeError"].includes(error.name);
+      if (transient && retryableGithubMethods.has(method) && attempt < 3) {
+        await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
+        continue;
+      }
+      if (transient) error.githubTransient = true;
+      throw error;
+    }
+    if (response.ok) return response.json();
+    const transient = isTransientGithubFailure(response.status);
+    if (transient && retryableGithubMethods.has(method) && attempt < 3) {
+      await response.text().catch(() => {});
+      await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
+      continue;
+    }
+    const error = new Error(`GitHub returned ${response.status} for ${route}.`);
+    error.githubTransient = transient;
+    throw error;
+  }
 }
 
 function ollamaRequest(pathname, body, timeoutMs) {
@@ -438,9 +465,16 @@ async function publishRound(issue, round, attempt, dir, files, production = null
   if ((await matchingRefs(target))?.object.sha !== publication.base) {
     return { feedback: "Integration advanced before merge. Rebuild and retest the round against its new base." };
   }
-  const merged = await github(`/pulls/${pr.number}/merge`, {
-    sha: publication.head, merge_method: production ? "squash" : "merge"
-  }, "PUT");
+  let merged;
+  try {
+    merged = await github(`/pulls/${pr.number}/merge`, {
+      sha: publication.head, merge_method: production ? "squash" : "merge"
+    }, "PUT");
+  } catch (error) {
+    const current = await github(`/pulls/${pr.number}`);
+    if (current.merged) return { url: current.html_url };
+    throw error;
+  }
   if (!merged.merged) throw new Error("GitHub did not merge the tested integration round.");
   return { url: pr.html_url };
 }
@@ -767,9 +801,13 @@ async function runQueue() {
           }
         }
       } catch (error) {
-        console.error(`Issue #${issue.number}: ${error.message}`);
-        await writeProgress(dir, "last-error.json", { message: error.message, at: new Date().toISOString() });
-        process.exitCode = 1;
+        if (error.githubTransient) {
+          console.error(`Issue #${issue.number}: ${error.message} Retrying on the next scheduled run.`);
+        } else {
+          console.error(`Issue #${issue.number}: ${error.message}`);
+          await writeProgress(dir, "last-error.json", { message: error.message, at: new Date().toISOString() });
+          process.exitCode = 1;
+        }
       }
       return;
     }
@@ -786,4 +824,4 @@ if (require.main === module) {
     : runQueue();
   command.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate };
+module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate, isTransientGithubFailure };
