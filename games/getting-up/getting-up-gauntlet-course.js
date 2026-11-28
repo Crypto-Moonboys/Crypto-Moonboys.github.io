@@ -1056,6 +1056,17 @@
       for (var i = 0; i < A.dense.length; i += 1) if (x >= A.dense[i][0] && x < A.dense[i][1]) return true;
       return false;
     }
+    // Does the world span [x0, x1] touch a safe-drop zone (optionally widened
+    // on the right, where carriages arrive from)?
+    function aTouchesDense(x0, x1, leadIn) {
+      for (var i = 0; i < A.dense.length; i += 1) {
+        if (x1 > A.dense[i][0] && x0 < A.dense[i][1] + (leadIn || 0)) return true;
+      }
+      return false;
+    }
+    var COUPLE_GAP = 12;          // max gap while coupled under a safe-drop zone
+    var COUPLE_SPEED = 4;         // extra px/frame a trailing carriage uses to close up
+    var COUPLE_LEAD_IN = 420;     // start coupling this far before the zone
     // Deterministic per-run carriage pattern (seeded by carriage number).
     function aRand(n) {
       var s = (n * 2654435761 + 0x9e3779b9) >>> 0;
@@ -1332,8 +1343,32 @@
         var car = makeCar(tail, CAR_W, spec.spikes);
         car.stream = true;
         car.gapAfter = nextCarSpec(tail + CAR_W).gap;
+        // Spawn already coupled when the gap would sit in (or lead into) a safe-drop zone.
+        if (aTouchesDense(car.x + car.w, car.x + car.w + car.gapAfter, COUPLE_LEAD_IN)) {
+          car.gapAfter = Math.min(car.gapAfter, COUPLE_GAP);
+        }
         night.cars.push(car);
         tail = car.x + car.w + car.gapAfter;
+      }
+    }
+
+    // Safe-drop zones are fixed in the world but the carriages drift, so
+    // coverage is kept from the carriages' current positions: any gap that
+    // is in (or about to reach) a zone is closed by the trailing carriage
+    // catching up, and roof spikes fold down while a carriage is in a zone.
+    function coupleUnderSafeZones(p, step) {
+      var cars = night.cars.filter(function (c) { return c.stream; }).sort(function (a, b) { return a.x - b.x; });
+      for (var i = 0; i < cars.length; i += 1) {
+        var car = cars[i];
+        car.spikesFolded = aTouchesDense(car.x, car.x + car.w, 0);
+        if (i === 0) continue;
+        var lead = cars[i - 1];
+        var gapStart = lead.x + lead.w;
+        var gap = car.x - gapStart;
+        if (gap <= COUPLE_GAP || !aTouchesDense(gapStart, car.x, COUPLE_LEAD_IN)) continue;
+        var close = Math.min(gap - COUPLE_GAP, COUPLE_SPEED * step);
+        car.x -= close;
+        if (p.grounded && p.groundTile === car) p.x -= close;
       }
     }
 
@@ -1396,6 +1431,7 @@
         if (p.grounded && p.groundTile === car) p.x -= v * step;
       }
       night.cars = night.cars.filter(function (c) { return c.x + c.w > api.cameraX - 700; });
+      coupleUnderSafeZones(p, step);
 
       if (night.phase === 'perch' || night.phase === 'stream') spawnStream(api);
       if (night.phase === 'perch' && !night.perchGone && t - night.perchAt >= NT.perchMs) {
@@ -1437,7 +1473,7 @@
       }
       if (night.phase === 'stream' && p.invuln <= 0) {
         for (var s = 0; s < night.cars.length; s += 1) {
-          if (night.cars[s].spikes && api.rectsOverlap(p, spikeRect(night.cars[s]))) {
+          if (night.cars[s].spikes && !night.cars[s].spikesFolded && api.rectsOverlap(p, spikeRect(night.cars[s]))) {
             api.damage('spikes', night.cars[s].x + night.cars[s].w / 2);
             if (api.gameOver) { night.phase = 'failed'; night.result = 'failed'; }
             break;
@@ -1484,7 +1520,7 @@
           ctx.font = 'bold 7px Courier New';
           ctx.fillText('TEMP CARRIAGE', cx + 6, CAR_SCREEN_Y + 30);
         }
-        if (car.spikes) {
+        if (car.spikes && !car.spikesFolded) {
           var sr = spikeRect(car);
           var sx = Math.round(sr.x - camX);
           var sy = sr.y + OFFSET_Y;
