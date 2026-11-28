@@ -182,6 +182,8 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /function findRoute\(start,goal,canWalk\)/);
   assert.match(source, /landmarkLoads>=3/);
   assert.match(source, /Waterfront landmark artwork did not finish loading/);
+  assert.match(source, /recordPreviewError/);
+  assert.match(source, /unhandledrejection/);
   for (const name of ["bitcoin-cash-tower-overhead.webp", "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"]) {
     assert.match(source, new RegExp(name.replaceAll(".", "\\.")));
   }

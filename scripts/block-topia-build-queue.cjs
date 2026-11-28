@@ -786,7 +786,14 @@ function productionPreviewHtml(script, district, proposal) {
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#081018;color:#fff}canvas{display:block;width:100%;height:auto;image-rendering:auto}
 </style></head><body><canvas id="map"></canvas>
-<script>window.waterfrontCharacterNames=[];</script>
+<script>
+window.waterfrontCharacterNames=[];
+const recordPreviewError=error=>{
+ document.body.dataset.previewError=String(error?.message||error||"Unknown preview error");
+};
+window.addEventListener("error",event=>recordPreviewError(event.error||event.message));
+window.addEventListener("unhandledrejection",event=>recordPreviewError(event.reason));
+</script>
 <script>
 const previewDirections=[[0,-1],[-1,0],[0,1],[1,0]];
 function findRoute(start,goal,canWalk){
