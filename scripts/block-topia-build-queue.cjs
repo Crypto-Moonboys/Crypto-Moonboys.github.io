@@ -60,6 +60,12 @@ async function github(route, body, method = body ? "POST" : "GET") {
 
 function ollamaRequest(pathname, body, timeoutMs) {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const fail = error => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
     const payload = body === undefined ? null : JSON.stringify(body);
     const request = http.request({
       hostname: "127.0.0.1",
@@ -79,16 +85,25 @@ function ollamaRequest(pathname, body, timeoutMs) {
           request.destroy(new Error("Ollama response exceeded two megabytes."));
         }
       });
-      response.on("end", () => resolve({
-        ok: response.statusCode >= 200 && response.statusCode < 300,
-        status: response.statusCode,
-        text
-      }));
+      response.on("error", fail);
+      response.on("aborted", () => fail(new Error("Ollama response was aborted.")));
+      response.on("close", () => {
+        if (!response.complete) fail(new Error("Ollama response closed before completion."));
+      });
+      response.on("end", () => {
+        if (settled) return;
+        settled = true;
+        resolve({
+          ok: response.statusCode >= 200 && response.statusCode < 300,
+          status: response.statusCode,
+          text
+        });
+      });
     });
     request.setTimeout(timeoutMs, () => {
       request.destroy(new DOMException("The operation was aborted due to timeout", "TimeoutError"));
     });
-    request.on("error", reject);
+    request.on("error", fail);
     request.end(payload ?? undefined);
   });
 }
