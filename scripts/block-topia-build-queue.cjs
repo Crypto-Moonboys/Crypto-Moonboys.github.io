@@ -42,7 +42,7 @@ const editFormat = {
   }
 };
 
-const retryableGithubMethods = new Set(["GET", "PUT"]);
+const retryableGithubMethods = new Set(["GET"]);
 
 function isTransientGithubFailure(status) {
   return status === 429 || (status >= 500 && status <= 599);
@@ -465,18 +465,24 @@ async function publishRound(issue, round, attempt, dir, files, production = null
   if ((await matchingRefs(target))?.object.sha !== publication.base) {
     return { feedback: "Integration advanced before merge. Rebuild and retest the round against its new base." };
   }
-  let merged;
-  try {
-    merged = await github(`/pulls/${pr.number}/merge`, {
-      sha: publication.head, merge_method: production ? "squash" : "merge"
-    }, "PUT");
-  } catch (error) {
-    const current = await github(`/pulls/${pr.number}`);
-    if (current.merged) return { url: current.html_url };
-    throw error;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const merged = await github(`/pulls/${pr.number}/merge`, {
+        sha: publication.head, merge_method: production ? "squash" : "merge"
+      }, "PUT");
+      if (!merged.merged) throw new Error("GitHub did not merge the tested integration round.");
+      return { url: pr.html_url };
+    } catch (error) {
+      const current = await github(`/pulls/${pr.number}`);
+      if (current.merged) return { url: current.html_url };
+      if (!error.githubTransient || attempt === 3) throw error;
+      await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
+      await checkApproval(issue, iterationLabel);
+      if ((await matchingRefs(target))?.object.sha !== publication.base) {
+        return { feedback: "Integration advanced during a transient merge failure. Rebuild and retest the round." };
+      }
+    }
   }
-  if (!merged.merged) throw new Error("GitHub did not merge the tested integration round.");
-  return { url: pr.html_url };
 }
 
 async function checkApproval(issue, requiredLabel) {
