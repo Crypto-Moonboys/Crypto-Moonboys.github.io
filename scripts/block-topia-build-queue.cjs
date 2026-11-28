@@ -108,7 +108,7 @@ async function model(role, instruction, context, format = "json") {
     signal: AbortSignal.timeout(240_000)
   });
   if (!response.ok) {
-    const detail = (await response.text()).slice(0, 300).replaceAll(/\\s+/g, " ");
+    const detail = (await response.text()).slice(0, 300).replaceAll(/\s+/g, " ");
     throw new Error(`Ollama returned ${response.status} for ${role} using ${modelName}: ${detail || "no response body"}.`);
   }
   return JSON.parse((await response.json()).message.content);
