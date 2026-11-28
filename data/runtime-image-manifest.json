@@ -7,5 +7,76 @@
     "preserveAlpha": true,
     "resizeKernel": "lanczos3"
   },
-  "assets": []
+  "assets": [
+    {
+      "source": "games/getting-up/getting-up-ground-hazards-atlas-master.png",
+      "output": "games/getting-up/getting-up-ground-hazards-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    },
+    {
+      "source": "games/getting-up/getting-up-ground-zone-props-a-atlas-master.png",
+      "output": "games/getting-up/getting-up-ground-zone-props-a-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    },
+    {
+      "source": "games/getting-up/getting-up-hidden-sky-routes-atlas-master.png",
+      "output": "games/getting-up/getting-up-hidden-sky-routes-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    },
+    {
+      "source": "games/getting-up/getting-up-ground-enemies-atlas-master.png",
+      "output": "games/getting-up/getting-up-ground-enemies-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    },
+    {
+      "source": "games/getting-up/getting-up-ground-transitions-atlas-master.png",
+      "output": "games/getting-up/getting-up-ground-transitions-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    },
+    {
+      "source": "games/getting-up/getting-up-ground-zone-props-b-atlas-master.png",
+      "output": "games/getting-up/getting-up-ground-zone-props-b-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    },
+    {
+      "source": "games/getting-up/getting-up-ground-pickups-atlas-master.png",
+      "output": "games/getting-up/getting-up-ground-pickups-atlas-runtime.webp",
+      "mode": "lossless",
+      "width": 1024,
+      "height": 1024,
+      "preserveAlpha": true,
+      "minSavingsPercent": 5,
+      "resizeKernel": "nearest"
+    }
+  ]
 }
