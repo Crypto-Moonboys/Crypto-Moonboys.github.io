@@ -19,6 +19,8 @@
  *
  * Hidden: NIGHT TRAIN easter egg (faint wall just before the flag — spray it).
  * Shortcut: tap 1 + 9 together to start on the night-train perch (5s drop).
+ * LEVEL 1A: the night-train carriage run, x ~300 -> the finish flag, with its own
+ *   obstacles (gantries, signal lasers, drones) and sky structures to hidden riches.
  *
  * Debug: add ?gu-debug=1 to the page URL. Keys 0-8 jump to zone starts, 9 to the night-train wall,
  * G toggles invulnerability, H toggles hitbox outlines.
@@ -583,7 +585,7 @@
     function ready(img) { return img && img.complete && img.naturalWidth > 0; }
     ['ruby', 'emerald', 'sapphire', 'diamond'].forEach(function (k) { loadArt('gem-' + k, TEMP + 'gem-' + k + '.svg'); });
     ['time-crystal', 'bounce-pad', 'laser-emitter', 'wall-block', 'crumble-platform',
-      'moving-platform', 'flame-vent', 'tag-spot', 'night-train-tag'].forEach(function (k) { loadArt(k, TEMP + k + '.svg'); });
+      'moving-platform', 'flame-vent', 'tag-spot', 'night-train-tag', 'sky-girder', 'drone'].forEach(function (k) { loadArt(k, TEMP + k + '.svg'); });
     ['bunny', 'skull', 'heart-skull', 'crown'].forEach(function (k) { loadArt('relic-' + k, ART + 'relic-' + k + '-runtime.webp'); });
     ['danger', 'keep-out'].forEach(function (k) { loadArt('sign-' + k, ART + 'sign-' + k + '-runtime.webp'); });
     tags.forEach(function (t) {
@@ -631,6 +633,7 @@
       trailNames.forEach(function (n) { trails[n].done = false; });
       pads.forEach(function (p) { p.lastBounceAt = -9999; });
       resetNight();
+      aReset();
     }
 
     var lastApi = null;
@@ -747,7 +750,8 @@
         }
       }
 
-      for (var z = zones.length - 1; z >= 0; z -= 1) {
+      // Level 1A sets its own section name while the night train runs.
+      for (var z = zones.length - 1; z >= 0 && !nightActive(); z -= 1) {
         if (p.x >= zones[z].x) { currentZone = zones[z].name; break; }
       }
     }
@@ -770,13 +774,14 @@
     var NT = {
       tag: { x: 21760, y: F - 70, w: 72, h: 46 },
       railY: RAIL_Y,          // carriage roof (world y)
-      lockCamX: 20200,        // camera stops here during the ride
-      perch: { x: 20255, y: RAIL_Y - 310, w: 72, h: 16, kind: 'nt-perch' },
+      rideStartX: 1500,       // spraying the wall warps the ride train here (Level 1A start)
+      lockCamX: 200,          // camera stops here during the ride
+      perch: { x: 255, y: RAIL_Y - 310, w: 72, h: 16, kind: 'nt-perch' },
       playerScale: 0.55,      // the runner is "out on the bridge", so drawn smaller
       rideSpeed: 3.2,         // px per 60fps frame, toward the start
       brakeSpeed: 2.0,
       departSpeed: 4.5,
-      streamSpeed: 2.0,
+      streamSpeed: 0.9,       // Level 1A carriages drift toward the start
       perchMs: 5000,
       rideCars: 4,
       xpBonus: 50000,
@@ -786,14 +791,6 @@
     var TRAIN_ART = ['trainNbg', 'trainWaxcash', 'trainAlcor', 'trainSwaxp', 'trainPxjking',
       'trainWpixal', 'trainWuf', 'trainGetsulaid', 'trainTrustme', 'trainHodlwars',
       'trainPunk', 'trainKek', 'trainCronx', 'trainWaxgod'];
-    // Stream pattern: [carriage width, gap after it, roof spikes].
-    // Carriages match the scenery convoy cars so every roof sits on the bridge line.
-    var STREAM = [
-      [CAR_W, 60, false], [CAR_W, 90, false], [CAR_W, 70, true], [CAR_W, 140, false],
-      [CAR_W, 50, false], [CAR_W, 200, false], [CAR_W, 110, true], [CAR_W, 80, false],
-      [CAR_W, 230, false], [CAR_W, 60, true], [CAR_W, 170, false], [CAR_W, 90, false],
-      [CAR_W, 250, false], [CAR_W, 120, true], [CAR_W, 70, false], [CAR_W, 190, false]
-    ];
     var night = null;
     function resetNight() {
       night = { phase: '', cars: [], speed: 0, camLocked: false, startedAt: 0, perchAt: 0,
@@ -801,6 +798,481 @@
     }
     resetNight();
     function nightActive() { return night.phase === 'ride' || night.phase === 'perch' || night.phase === 'stream'; }
+
+    // ==================================================================
+    // LEVEL 1A — the night-train run. After the perch drop the runner hops
+    // carriages (flowing toward the start) the whole length of the street,
+    // x ~300 -> the finish flag. Everything below is active only while the
+    // night train runs: fixed-world obstacles (low gantry beams, signal
+    // lasers, drones), floating sky structures that climb off-screen to
+    // hidden riches, and dense carriage runs under every sky structure so
+    // a deliberate drop lands back on a train.
+    // ==================================================================
+    var A = {
+      sections: [], platforms: [], walls: [], movers: [], crumbles: [], pads: [],
+      beams: [], sigLasers: [], drones: [], coins: [], gems: [], crystals: [], dense: []
+    };
+    var A_GEM_XP = { ruby: 2000, emerald: 3500, sapphire: 4500, diamond: 10000 };
+    var A_COIN = { small: { size: 16, xp: 100 }, medium: { size: 32, xp: 250 }, mega: { size: 56, xp: 2500 } };
+    var R = RAIL_Y; // carriage roof line (world y)
+
+    function aSection(x0, x1, name, gapMin, gapMax, spikes) {
+      A.sections.push({ x0: x0, x1: x1, name: name, gapMin: gapMin, gapMax: gapMax, spikes: spikes, seen: false });
+    }
+    function aDense(x0, x1) { A.dense.push([x0, x1]); }
+    function aPlat(x, y, w) { var p = { x: x, y: y, w: w, h: 16, kind: 'a-plat' }; A.platforms.push(p); return p; }
+    function aWall(x, y, w, h) { var b = { x: x, y: y, w: w, h: h, solidBottom: true, kind: 'a-wall' }; A.walls.push(b); return b; }
+    function aMover(x, y, w, axis, range, period, phase) {
+      var m = { x: x, y: y, w: w, h: 16, bx: x, by: y, axis: axis, range: range, period: period, phase: phase || 0, kind: 'a-mover' };
+      A.movers.push(m); return m;
+    }
+    function aCrumble(x, y, w) {
+      var c = { x: x, y: y, w: w || 56, h: 16, state: 'solid', at: 0, delay: 420, respawn: 2400, kind: 'a-crumble' };
+      A.crumbles.push(c); return c;
+    }
+    function aPad(x, surfaceY, w, bounce) {
+      var p = { x: x, y: surfaceY - 8, w: w || 44, h: 8, bounce: bounce || 17, kind: 'a-pad' };
+      A.pads.push(p); return p;
+    }
+    // Low gantry: bottom edge 26px above the roof. Standing = hit, crouch = clear, or jump it.
+    function aBeam(x, w) { A.beams.push({ x: x, y: R - 58, w: w || 18, h: 32 }); }
+    function aSig(x, period, on, phase) {
+      A.sigLasers.push({ x: x, y0: R - 170, y1: R + 30, period: period || 2400, on: on || 1000, phase: phase || 0 });
+    }
+    function aDrone(x, y, rx, ry, period, phase) {
+      A.drones.push({ bx: x, by: y, rx: rx, ry: ry, period: period, phase: phase || 0, x: x, y: y, w: 22, h: 14 });
+    }
+    function aCoin(x, y, tier) {
+      var t = A_COIN[tier || 'small'];
+      A.coins.push({ x: Math.round(x), y: Math.round(y), size: t.size, xp: t.xp, tier: tier || 'small', taken: false });
+    }
+    function aRow(x, y, n, dx, tier) { for (var i = 0; i < n; i += 1) aCoin(x + i * dx, y, tier); }
+    function aArc(x0, x1, yBase, height, n, tier) {
+      for (var i = 0; i < n; i += 1) {
+        var k = n === 1 ? 0.5 : i / (n - 1);
+        aCoin(x0 + (x1 - x0) * k, yBase - Math.sin(k * Math.PI) * height, tier);
+      }
+    }
+    function aGem(x, y, kind) { A.gems.push({ x: x, y: y, kind: kind, xp: A_GEM_XP[kind], taken: false }); }
+    function aCrystal(x, y) { A.crystals.push({ x: x, y: y, ms: 3000, taken: false }); }
+    var ROOF_COIN_Y = R - 22;
+
+    // --- 1 · WARM-UP (300–2000) -------------------------------------
+    aSection(300, 2000, 'LEVEL 1A', 30, 90, 0);
+    aRow(420, ROOF_COIN_Y, 6, 30, 'small');
+    aArc(700, 980, R - 30, 60, 7, 'small');
+    aRow(1150, ROOF_COIN_Y, 6, 30, 'small');
+    aBeam(1800);
+    aRow(1860, ROOF_COIN_Y, 4, 28, 'medium');
+
+    // --- 2 · SIGNAL BOX (2000–3800) ----------------------------------
+    aSection(2000, 3800, 'SIGNAL BOX', 50, 130, 0.1);
+    aSig(2300, 2400, 1000, 0);
+    aBeam(2600);
+    aSig(2900, 2400, 1000, 800);
+    aBeam(3300);
+    aSig(3500, 2400, 1000, 1600);
+    aRow(2100, ROOF_COIN_Y, 5, 30, 'small');
+    aArc(3050, 3260, R - 30, 70, 6, 'small');
+    // Signal tower: floating walls climbing off-screen.
+    aDense(2350, 2980);
+    aWall(2450, R - 90, 40, 24);
+    aWall(2540, R - 170, 40, 24);
+    aWall(2630, R - 250, 40, 24);
+    aPlat(2720, R - 320, 180);
+    aCoin(2470, R - 114, 'small');
+    aCoin(2560, R - 194, 'small');
+    aCoin(2650, R - 274, 'medium');
+    aRow(2740, R - 346, 5, 32, 'small');
+    aGem(2880, R - 350, 'sapphire');
+    aCrystal(2810, R - 380);
+
+    // --- 3 · PIGEON UNDERPASS (3800–5600) ----------------------------
+    // Climbs into the street level's PIGEON HIGHWAY sky route above.
+    aSection(3800, 5600, 'PIGEON UNDERPASS', 60, 150, 0.15);
+    aDense(3600, 5700);
+    aPlat(3650, R - 78, 60);
+    aPlat(3740, R - 148, 60);
+    aCoin(3680, R - 104, 'small');
+    aCoin(3770, R - 174, 'medium');
+    aBeam(4200);
+    aDrone(4600, R - 60, 90, 24, 3000, 0);
+    aBeam(5000);
+    aDrone(5200, R - 70, 70, 30, 2600, 1.4);
+    aDrone(5450, R - 50, 80, 20, 2200, 2.6);
+    aRow(4300, ROOF_COIN_Y, 6, 30, 'small');
+    aRow(5050, ROOF_COIN_Y, 4, 30, 'medium');
+    aGem(4320, R - 440, 'emerald');
+    aCoin(4380, R - 440, 'mega');
+
+    // --- 4 · BEAM ALLEY (5600–7400) ----------------------------------
+    aSection(5600, 7400, 'BEAM ALLEY', 50, 140, 0.25);
+    [5800, 6050, 6300, 6600, 6850, 7150].forEach(function (bx) { aBeam(bx); });
+    aRow(5850, ROOF_COIN_Y + 10, 6, 30, 'small');
+    aRow(6350, ROOF_COIN_Y + 10, 6, 30, 'small');
+    aRow(6900, ROOF_COIN_Y + 10, 6, 30, 'small');
+    aDense(6400, 6800);
+    aMover(6500, R - 150, 64, 'x', 70, 3200, 0);
+    aPlat(6720, R - 250, 90);
+    aGem(6765, R - 285, 'ruby');
+    aCoin(6560, R - 190, 'mega');
+
+    // --- 5 · CRUMBLE CLOUDS (7400–9000) ------------------------------
+    aSection(7400, 9000, 'CRUMBLE CLOUDS', 60, 160, 0.1);
+    aDense(7550, 8850);
+    [[7600, -70], [7700, -140], [7800, -210], [7900, -280], [8000, -350], [8100, -420]].forEach(function (c) {
+      aCrumble(c[0], R + c[1]);
+      aCoin(c[0] + 28, R + c[1] - 24, 'small');
+    });
+    aPlat(8200, R - 480, 200);
+    aGem(8300, R - 520, 'diamond');
+    aCoin(8240, R - 510, 'mega');
+    aCoin(8360, R - 510, 'mega');
+    aCrystal(8300, R - 580);
+    [[8450, -410], [8550, -340], [8650, -270], [8750, -200]].forEach(function (c) { aCrumble(c[0], R + c[1]); });
+    aRow(8460, R - 440, 4, 100, 'medium');
+
+    // --- 6 · DRONE STORM (9000–10800) --------------------------------
+    aSection(9000, 10800, 'DRONE STORM', 90, 200, 0.15);
+    aDrone(9150, R - 50, 80, 30, 2400, 0);
+    aDrone(9350, R - 80, 60, 40, 2000, 1);
+    aBeam(9400);
+    aDrone(9600, R - 40, 100, 20, 2800, 2);
+    aDrone(9900, R - 70, 70, 35, 2200, 0.5);
+    aDrone(10100, R - 50, 90, 25, 2600, 1.8);
+    aBeam(10300);
+    aDrone(10400, R - 90, 60, 30, 2000, 2.9);
+    aDrone(10600, R - 45, 80, 20, 2400, 0.9);
+    aRow(9200, ROOF_COIN_Y, 5, 30, 'small');
+    aRow(10150, ROOF_COIN_Y, 5, 30, 'small');
+    // Hidden lift above the storm.
+    aDense(9650, 10080);
+    aPlat(9660, R - 60, 60);
+    aMover(9760, R - 140, 64, 'y', 80, 4000, 0);
+    aPlat(9860, R - 300, 120);
+    aWall(10020, R - 380, 40, 24);
+    aGem(9920, R - 336, 'emerald');
+    aCrystal(10040, R - 410);
+    aRow(9875, R - 326, 3, 30, 'medium');
+
+    // --- 7 · TWIN TOWERS (10800–12600) -------------------------------
+    aSection(10800, 12600, 'TWIN TOWERS', 60, 170, 0.2);
+    aDense(10950, 11800);
+    aPlat(11000, R - 40, 80);
+    aPad(11020, R - 40, 40, 17);
+    aWall(11120, R - 430, 60, 300);       // tower 1 (top R-430)
+    aMover(11250, R - 470, 64, 'x', 50, 3000, 0);
+    aWall(11420, R - 510, 60, 330);       // tower 2 (top R-510)
+    aRow(11126, R - 454, 2, 24, 'medium');
+    aGem(11150, R - 480, 'ruby');
+    aGem(11450, R - 560, 'sapphire');
+    aCoin(11430, R - 535, 'mega');
+    aCrystal(11470, R - 600);
+    aBeam(11000 + 640);
+    aBeam(12000);
+    aRow(12050, ROOF_COIN_Y, 6, 30, 'small');
+
+    // --- 8 · LASER GRID (12600–14400) --------------------------------
+    aSection(12600, 14400, 'LASER GRID', 70, 170, 0.15);
+    for (var gi = 0; gi < 8; gi += 1) aSig(12750 + gi * 200, 2000, 900, (gi % 2) * 1000);
+    aBeam(12850);
+    aBeam(13950);
+    aRow(12800, ROOF_COIN_Y, 4, 40, 'medium');
+    aRow(13600, ROOF_COIN_Y, 4, 40, 'medium');
+    aDense(13250, 13650);
+    aPlat(13300, R - 120, 70);
+    aPlat(13420, R - 210, 70);
+    aPlat(13540, R - 300, 90);
+    aGem(13585, R - 340, 'emerald');
+
+    // --- 9 · STRATO LIFT (14400–16200) -------------------------------
+    aSection(14400, 16200, 'STRATO LIFT', 80, 190, 0.2);
+    aDense(14550, 15500);
+    aPlat(14600, R - 40, 90);
+    aPad(14625, R - 40, 40, 17);
+    aPlat(14760, R - 330, 90);
+    aPad(14785, R - 330, 40, 18);
+    aPlat(14960, R - 660, 300);
+    aGem(15050, R - 700, 'diamond');
+    aCoin(15000, R - 690, 'mega');
+    aCoin(15110, R - 690, 'mega');
+    aCoin(15200, R - 690, 'mega');
+    aCrystal(15240, R - 740);
+    aRow(14980, R - 560, 8, 34, 'small');
+    aDrone(15700, R - 60, 80, 25, 2400, 0);
+    aBeam(15900);
+    aRow(15650, ROOF_COIN_Y, 5, 30, 'small');
+
+    // --- 10 · SPIKE EXPRESS (16200–18000) ----------------------------
+    aSection(16200, 18000, 'SPIKE EXPRESS', 60, 150, 0.5);
+    aBeam(16500);
+    aBeam(16900);
+    aDrone(17100, R - 60, 90, 25, 2600, 0.7);
+    aBeam(17400);
+    aDrone(17600, R - 50, 70, 30, 2200, 2.1);
+    aBeam(17800);
+    aRow(16550, ROOF_COIN_Y, 5, 30, 'small');
+    aRow(17450, ROOF_COIN_Y, 5, 30, 'small');
+    aDense(16950, 17350);
+    aMover(17000, R - 120, 64, 'y', 60, 3000, 0);
+    aPlat(17120, R - 260, 100);
+    aGem(17170, R - 296, 'ruby');
+
+    // --- 11 · GAP SPRINT (18000–19800) -------------------------------
+    aSection(18000, 19800, 'GAP SPRINT', 150, 260, 0.1);
+    aArc(18200, 18500, R - 30, 90, 7, 'small');
+    aArc(18800, 19100, R - 30, 90, 7, 'small');
+    aArc(19350, 19650, R - 30, 90, 7, 'medium');
+    aCrystal(18950, R - 150);
+
+    // --- 12 · FINAL APPROACH (19800–21900) ---------------------------
+    aSection(19800, 21900, 'FINAL APPROACH', 90, 220, 0.25);
+    aSig(19950, 2200, 1000, 0);
+    aBeam(20100);
+    aDrone(20350, R - 60, 80, 25, 2400, 1.2);
+    aBeam(20600);
+    aSig(20900, 2200, 1000, 1100);
+    aDrone(21050, R - 70, 70, 30, 2000, 0.3);
+    aRow(20150, ROOF_COIN_Y, 5, 30, 'small');
+    aRow(20650, ROOF_COIN_Y, 5, 30, 'small');
+    // Final climb onto the street level's ALL CITY ROOF and above.
+    aDense(21150, 21900);
+    aPlat(21250, R - 90, 60);
+    aWall(21560, R - 300, 40, 24);
+    aWall(21650, R - 380, 40, 24);
+    aPlat(21720, R - 450, 120);
+    aGem(21780, R - 490, 'diamond');
+    aCoin(21740, R - 480, 'mega');
+    aCrystal(21670, R - 410);
+
+    function aSectionAt(x) {
+      if (x < A.sections[0].x0) return A.sections[0];
+      for (var i = 0; i < A.sections.length; i += 1) {
+        if (x >= A.sections[i].x0 && x < A.sections[i].x1) return A.sections[i];
+      }
+      return A.sections[A.sections.length - 1];
+    }
+    function aIsDense(x) {
+      for (var i = 0; i < A.dense.length; i += 1) if (x >= A.dense[i][0] && x < A.dense[i][1]) return true;
+      return false;
+    }
+    // Does the world span [x0, x1] touch a safe-drop zone (optionally widened
+    // on the right, where carriages arrive from)?
+    function aTouchesDense(x0, x1, leadIn) {
+      for (var i = 0; i < A.dense.length; i += 1) {
+        if (x1 > A.dense[i][0] && x0 < A.dense[i][1] + (leadIn || 0)) return true;
+      }
+      return false;
+    }
+    var COUPLE_GAP = 12;          // max gap while coupled under a safe-drop zone
+    var COUPLE_SPEED = 4;         // extra px/frame a trailing carriage uses to close up
+    var COUPLE_LEAD_IN = 420;     // start coupling this far before the zone
+    // Deterministic per-run carriage pattern (seeded by carriage number).
+    function aRand(n) {
+      var s = (n * 2654435761 + 0x9e3779b9) >>> 0;
+      s ^= s >>> 15; s = Math.imul(s, 0x85ebca6b) >>> 0; s ^= s >>> 13;
+      return (s >>> 0) / 4294967296;
+    }
+    function aDronePos(d, t) {
+      var a = t / d.period * TAU + d.phase;
+      d.x = d.bx + Math.sin(a) * d.rx - d.w / 2;
+      d.y = d.by + Math.cos(a * 2) * d.ry - d.h / 2;
+    }
+    function aMovePlatforms(list, t, p) {
+      for (var i = 0; i < list.length; i += 1) {
+        var m = list[i];
+        var ox = m.x, oy = m.y;
+        var off = Math.sin(t / m.period * TAU + m.phase) * m.range;
+        m.x = m.bx + (m.axis === 'x' ? off : 0);
+        m.y = m.by + (m.axis === 'y' ? off : 0);
+        if (p && p.grounded && p.groundTile === m) { p.x += m.x - ox; p.y += m.y - oy; }
+      }
+    }
+    function aCrumbleStep(list, t, p, api) {
+      for (var c = 0; c < list.length; c += 1) {
+        var cr = list[c];
+        if (cr.state === 'solid' && p.grounded && p.groundTile === cr) { cr.state = 'shaking'; cr.at = t; api.cue('land_soft'); }
+        else if (cr.state === 'shaking' && t - cr.at >= cr.delay) { cr.state = 'gone'; cr.at = t; }
+        else if (cr.state === 'gone' && t - cr.at >= cr.respawn && !api.rectsOverlap(p, cr)) cr.state = 'solid';
+      }
+    }
+    function aReset() {
+      A.coins.forEach(function (c) { c.taken = false; });
+      A.gems.forEach(function (g) { g.taken = false; });
+      A.crystals.forEach(function (c) { c.taken = false; });
+      A.crumbles.forEach(function (c) { c.state = 'solid'; c.at = 0; });
+      A.sections.forEach(function (s) { s.seen = false; });
+      aMovePlatforms(A.movers, 0, null);
+    }
+    aMovePlatforms(A.movers, 0, null);
+    A.drones.forEach(function (d) { aDronePos(d, 0); });
+
+    function aSolids() {
+      var out = A.platforms.concat(A.walls, A.movers, A.pads);
+      for (var i = 0; i < A.crumbles.length; i += 1) if (A.crumbles[i].state !== 'gone') out.push(A.crumbles[i]);
+      return out;
+    }
+
+    function aUpdate(t, api) {
+      var p = api.player;
+      aMovePlatforms(A.movers, t, p);
+      aCrumbleStep(A.crumbles, t, p, api);
+      A.drones.forEach(function (d) { aDronePos(d, t); });
+      var sec = aSectionAt(p.x);
+      currentZone = '1A · ' + sec.name;
+      if (!sec.seen && night.phase === 'stream') {
+        sec.seen = true;
+        api.notify('LEVEL 1A · ' + sec.name, 1600);
+      }
+      // Pickups.
+      for (var i = 0; i < A.coins.length; i += 1) {
+        var c = A.coins[i];
+        if (c.taken) continue;
+        var r = c.size * 0.4;
+        if (api.rectsOverlap(p, { x: c.x - r, y: c.y - r, w: r * 2, h: r * 2 })) {
+          c.taken = true;
+          api.addXp(c.xp, { level1A: 'coin' });
+          api.cue('coin_collect');
+        }
+      }
+      A.gems.forEach(function (g) {
+        if (g.taken || !api.rectsOverlap(p, pickupRect(g, 10))) return;
+        g.taken = true;
+        api.addXp(g.xp, { level1A: 'gem', gem: g.kind });
+        api.notify('1A ' + g.kind.toUpperCase() + ' +' + g.xp, 2200);
+      });
+      A.crystals.forEach(function (cy) {
+        if (cy.taken || !api.rectsOverlap(p, pickupRect(cy, 9))) return;
+        cy.taken = true;
+        timeBonusMs += cy.ms;
+        api.notify('TIME -' + (cy.ms / 1000).toFixed(1) + 's', 2000);
+        api.cue('speed_boost_start');
+      });
+      // Obstacles (only once the carriage run proper is under way).
+      if (night.phase !== 'stream' || p.invuln > 0 || api.gameOver) return;
+      for (var b = 0; b < A.beams.length; b += 1) {
+        if (api.rectsOverlap(p, A.beams[b])) { api.damage('gantry', A.beams[b].x); return; }
+      }
+      for (var s = 0; s < A.sigLasers.length; s += 1) {
+        var l = A.sigLasers[s];
+        if (cycleOn(l, t) && api.rectsOverlap(p, { x: l.x + 12, y: l.y0, w: 8, h: l.y1 - l.y0 })) {
+          api.damage('signal-laser', l.x); return;
+        }
+      }
+      for (var d = 0; d < A.drones.length; d += 1) {
+        if (api.rectsOverlap(p, A.drones[d])) { api.damage('drone', A.drones[d].x); return; }
+      }
+    }
+
+    function aDraw(ctx, api, t) {
+      var camX = api.cameraX;
+      var i, x, y;
+      var girder = art['sky-girder'];
+      for (i = 0; i < A.platforms.length; i += 1) {
+        var p = A.platforms[i];
+        if (!inView(p.x, p.w, camX)) continue;
+        x = Math.round(p.x - camX); y = p.y + OFFSET_Y;
+        if (ready(girder)) drawTiled(ctx, girder, x, y, p.w, p.h, 48);
+        else { ctx.fillStyle = '#7a86a8'; ctx.fillRect(x, y, p.w, p.h); }
+      }
+      var wimg = art['wall-block'];
+      for (i = 0; i < A.walls.length; i += 1) {
+        var w = A.walls[i];
+        if (!inView(w.x, w.w, camX)) continue;
+        x = Math.round(w.x - camX); y = w.y + OFFSET_Y;
+        if (ready(wimg)) {
+          for (var by = 0; by < w.h; by += 32) for (var bx = 0; bx < w.w; bx += 32) {
+            var bw = Math.min(32, w.w - bx), bh = Math.min(32, w.h - by);
+            ctx.drawImage(wimg, 0, 0, wimg.naturalWidth * bw / 32, wimg.naturalHeight * bh / 32, x + bx, y + by, bw, bh);
+          }
+        } else { ctx.fillStyle = '#4a3a5c'; ctx.fillRect(x, y, w.w, w.h); }
+      }
+      var mimg = art['moving-platform'];
+      for (i = 0; i < A.movers.length; i += 1) {
+        var m = A.movers[i];
+        if (!inView(m.x, m.w, camX)) continue;
+        x = Math.round(m.x - camX); y = Math.round(m.y + OFFSET_Y);
+        if (ready(mimg)) ctx.drawImage(mimg, x, y, m.w, m.h); else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(x, y, m.w, m.h); }
+      }
+      var cimg = art['crumble-platform'];
+      for (i = 0; i < A.crumbles.length; i += 1) {
+        var cr = A.crumbles[i];
+        if (cr.state === 'gone' || !inView(cr.x, cr.w, camX)) continue;
+        x = Math.round(cr.x - camX) + (cr.state === 'shaking' ? Math.round(Math.sin(t / 18) * 2) : 0);
+        y = cr.y + OFFSET_Y;
+        if (ready(cimg)) ctx.drawImage(cimg, x, y, cr.w, cr.h); else { ctx.fillStyle = '#a8743e'; ctx.fillRect(x, y, cr.w, cr.h); }
+      }
+      var pimg = art['bounce-pad'];
+      for (i = 0; i < A.pads.length; i += 1) {
+        var pd = A.pads[i];
+        if (!inView(pd.x, pd.w, camX)) continue;
+        var squash = t - (pd.lastBounceAt || -9999) < 160 ? 4 : 0;
+        x = Math.round(pd.x - camX); y = pd.y + OFFSET_Y - 4 + squash;
+        if (ready(pimg)) ctx.drawImage(pimg, x, y, pd.w, 12 - squash); else { ctx.fillStyle = '#ff2fd0'; ctx.fillRect(x, y, pd.w, 12 - squash); }
+      }
+      // Low gantry beams with hangers running up off-screen.
+      for (i = 0; i < A.beams.length; i += 1) {
+        var bm = A.beams[i];
+        if (!inView(bm.x - 30, bm.w + 60, camX)) continue;
+        x = Math.round(bm.x - camX); y = bm.y + OFFSET_Y;
+        ctx.fillStyle = '#3b3f4c';
+        ctx.fillRect(x - 26, y - 900, 3, 900);
+        ctx.fillRect(x + bm.w + 23, y - 900, 3, 900);
+        ctx.fillRect(x - 28, y, bm.w + 56, 8);
+        ctx.fillStyle = '#ffd400';
+        for (var sx = 0; sx < bm.w + 56; sx += 10) ctx.fillRect(x - 28 + sx, y + 8, 5, 4);
+        ctx.fillStyle = '#5a6070';
+        ctx.fillRect(x, y + 8, bm.w, bm.h - 8);
+      }
+      // Signal lasers.
+      var limg = art['laser-emitter'];
+      for (i = 0; i < A.sigLasers.length; i += 1) {
+        var sl = A.sigLasers[i];
+        if (!inView(sl.x, 32, camX)) continue;
+        x = Math.round(sl.x - camX);
+        var y0 = sl.y0 + OFFSET_Y, y1 = sl.y1 + OFFSET_Y;
+        if (cycleOn(sl, t)) {
+          ctx.fillStyle = 'rgba(60,255,140,0.3)'; ctx.fillRect(x + 9, y0, 14, y1 - y0);
+          ctx.fillStyle = '#3cff8c'; ctx.fillRect(x + 13, y0, 6, y1 - y0);
+          ctx.fillStyle = '#e0ffe9'; ctx.fillRect(x + 15, y0, 2, y1 - y0);
+        } else if (cycleWarn(sl, t)) {
+          ctx.fillStyle = Math.floor(t / 70) % 2 ? 'rgba(60,255,140,0.55)' : 'rgba(60,255,140,0.15)';
+          ctx.fillRect(x + 15, y0, 2, y1 - y0);
+        }
+        if (ready(limg)) ctx.drawImage(limg, x, y0 - 20, 32, 20); else { ctx.fillStyle = '#1d1f29'; ctx.fillRect(x, y0 - 20, 32, 20); }
+      }
+      // Drones.
+      var dimg = art['drone'];
+      for (i = 0; i < A.drones.length; i += 1) {
+        var dr = A.drones[i];
+        if (!inView(dr.x, dr.w, camX)) continue;
+        x = Math.round(dr.x - camX); y = Math.round(dr.y + OFFSET_Y);
+        if (ready(dimg)) ctx.drawImage(dimg, x - 5, y - 6, dr.w + 10, dr.h + 10);
+        else { ctx.fillStyle = '#ff3b3b'; ctx.fillRect(x, y, dr.w, dr.h); }
+      }
+      // Coins (engine coin sheet), gems, crystals.
+      var coinImg = api.images.coin;
+      for (i = 0; i < A.coins.length; i += 1) {
+        var c = A.coins[i];
+        if (c.taken || !inView(c.x - c.size / 2, c.size, camX)) continue;
+        x = Math.round(c.x - camX - c.size / 2); y = Math.round(c.y + OFFSET_Y - c.size / 2);
+        if (coinImg) {
+          var frame = Math.floor((t + c.x * 7) / 85) % 25;
+          var sw = coinImg.naturalWidth / 5, sh = coinImg.naturalHeight / 5;
+          ctx.drawImage(coinImg, frame % 5 * sw, Math.floor(frame / 5) * sh, sw, sh, x, y, c.size, c.size);
+        } else { ctx.fillStyle = '#ffd447'; ctx.fillRect(x, y, c.size, c.size); }
+      }
+      for (i = 0; i < A.gems.length; i += 1) {
+        var g = A.gems[i];
+        if (g.taken || !inView(g.x, 20, camX)) continue;
+        drawPickup(ctx, art['gem-' + g.kind], g.x - camX, g.y + OFFSET_Y, 22 * (1 + Math.sin(t / 150 + i) * 0.08), t, '#ff3060');
+      }
+      for (i = 0; i < A.crystals.length; i += 1) {
+        var cy = A.crystals[i];
+        if (cy.taken || !inView(cy.x, 20, camX)) continue;
+        drawPickup(ctx, art['time-crystal'], cy.x - camX, cy.y + OFFSET_Y, 20, t, '#3cf2ff');
+      }
+    }
 
     function makeCar(x, w, spikes) {
       night.carSeq += 1;
@@ -814,7 +1286,10 @@
       night.startedAt = t;
       night.flashAt = t;
       night.speed = NT.rideSpeed;
-      var x = p.x - 40;
+      aReset();
+      // Warp: the ride starts back at the beginning of the street (Level 1A).
+      p.x = NT.rideStartX + 40;
+      var x = NT.rideStartX;
       for (var i = 0; i < NT.rideCars; i += 1) {
         night.cars.push(makeCar(x, CAR_W, false));
         x += CAR_W + CAR_GAP;
@@ -823,7 +1298,9 @@
       p.vx = 0;
       p.vy = 0;
       skyMode = false;
-      api.notify('ALL ABOARD THE NIGHT TRAIN', 2600);
+      p.grounded = false;
+      p.groundTile = null;
+      api.notify('LEVEL 1A · ALL ABOARD THE NIGHT TRAIN', 2600);
       api.cue('speed_boost_start');
     }
 
@@ -835,6 +1312,19 @@
       return last ? last.x + last.w + last.gapAfter : null;
     }
 
+    // Carriage gaps come from the Level 1A section the carriage will be in
+    // when the runner meets it (~220px left of where it spawns). Under sky
+    // structures the carriages run nearly joined so a deliberate drop lands.
+    function nextCarSpec(spawnX) {
+      var meet = spawnX - 220;
+      var sec = aSectionAt(meet);
+      if (aIsDense(meet)) return { gap: CAR_GAP + Math.round(aRand(night.carSeq) * 22), spikes: false };
+      return {
+        gap: Math.round(sec.gapMin + aRand(night.carSeq) * (sec.gapMax - sec.gapMin)),
+        spikes: aRand(night.carSeq + 7777) < sec.spikes
+      };
+    }
+
     function spawnStream(api) {
       var limit = api.cameraX + VIEW_W + 420;
       var tail = streamTailX();
@@ -842,22 +1332,43 @@
         // First stream carriage arrives centred under the perch as it vanishes.
         // + ~34 frames for the drop from the perch to the carriage roof.
         var frames = NT.perchMs / (1000 / 60) + Math.sqrt(2 * (NT.railY - NT.perch.y) / 0.52);
-        var w0 = STREAM[0][0];
-        var first = makeCar(NT.perch.x + NT.perch.w / 2 - w0 / 2 + NT.streamSpeed * frames, w0, false);
+        var first = makeCar(NT.perch.x + NT.perch.w / 2 - CAR_W / 2 + NT.streamSpeed * frames, CAR_W, false);
         first.stream = true;
-        first.gapAfter = STREAM[0][1];
+        first.gapAfter = nextCarSpec(first.x + CAR_W).gap;
         night.cars.push(first);
-        night.pattern = 1;
         tail = streamTailX();
       }
       while (tail < limit) {
-        var pat = STREAM[night.pattern % STREAM.length];
-        night.pattern += 1;
-        var car = makeCar(tail, pat[0], pat[2]);
+        var spec = nextCarSpec(tail);
+        var car = makeCar(tail, CAR_W, spec.spikes);
         car.stream = true;
-        car.gapAfter = pat[1];
+        car.gapAfter = nextCarSpec(tail + CAR_W).gap;
+        // Spawn already coupled when the gap would sit in (or lead into) a safe-drop zone.
+        if (aTouchesDense(car.x + car.w, car.x + car.w + car.gapAfter, COUPLE_LEAD_IN)) {
+          car.gapAfter = Math.min(car.gapAfter, COUPLE_GAP);
+        }
         night.cars.push(car);
         tail = car.x + car.w + car.gapAfter;
+      }
+    }
+
+    // Safe-drop zones are fixed in the world but the carriages drift, so
+    // coverage is kept from the carriages' current positions: any gap that
+    // is in (or about to reach) a zone is closed by the trailing carriage
+    // catching up, and roof spikes fold down while a carriage is in a zone.
+    function coupleUnderSafeZones(p, step) {
+      var cars = night.cars.filter(function (c) { return c.stream; }).sort(function (a, b) { return a.x - b.x; });
+      for (var i = 0; i < cars.length; i += 1) {
+        var car = cars[i];
+        car.spikesFolded = aTouchesDense(car.x, car.x + car.w, 0);
+        if (i === 0) continue;
+        var lead = cars[i - 1];
+        var gapStart = lead.x + lead.w;
+        var gap = car.x - gapStart;
+        if (gap <= COUPLE_GAP || !aTouchesDense(gapStart, car.x, COUPLE_LEAD_IN)) continue;
+        var close = Math.min(gap - COUPLE_GAP, COUPLE_SPEED * step);
+        car.x -= close;
+        if (p.grounded && p.groundTile === car) p.x -= close;
       }
     }
 
@@ -875,6 +1386,7 @@
     function startAtPerch(api, t) {
       var p = api.player;
       resetNight();
+      aReset();
       night.phase = 'perch';
       night.camLocked = true;
       night.startedAt = t;
@@ -889,7 +1401,7 @@
       p.groundTile = null;
       skyMode = true;
       spawnStream(api);
-      api.notify('NIGHT TRAIN SHORTCUT · DROP IN 5s', 2200);
+      api.notify('LEVEL 1A SHORTCUT · DROP IN 5s', 2200);
     }
 
     function updateNight(t, dt, api) {
@@ -919,6 +1431,7 @@
         if (p.grounded && p.groundTile === car) p.x -= v * step;
       }
       night.cars = night.cars.filter(function (c) { return c.x + c.w > api.cameraX - 700; });
+      coupleUnderSafeZones(p, step);
 
       if (night.phase === 'perch' || night.phase === 'stream') spawnStream(api);
       if (night.phase === 'perch' && !night.perchGone && t - night.perchAt >= NT.perchMs) {
@@ -944,19 +1457,23 @@
             night.hopCount += 1;
             if (night.phase === 'perch') { night.phase = 'stream'; night.perchGone = true; }
           }
-        } else {
+        } else if (tile.y > NT.railY + 2) {
+          // Anything below the carriage roofs (street, crates, low ledges) = death.
+          // Sky structures above the track are safe.
           failNight(api, 'night-train-fall');
           return;
         }
       }
       if (p.y + p.h > F + 2) { failNight(api, 'night-train-fall'); return; }
+      aUpdate(t, api);
+      if (api.gameOver) { night.phase = 'failed'; night.result = 'failed'; return; }
       if (night.phase === 'ride' && night.camLocked && p.x + p.w < NT.lockCamX) {
         failNight(api, 'night-train-off-screen');
         return;
       }
       if (night.phase === 'stream' && p.invuln <= 0) {
         for (var s = 0; s < night.cars.length; s += 1) {
-          if (night.cars[s].spikes && api.rectsOverlap(p, spikeRect(night.cars[s]))) {
+          if (night.cars[s].spikes && !night.cars[s].spikesFolded && api.rectsOverlap(p, spikeRect(night.cars[s]))) {
             api.damage('spikes', night.cars[s].x + night.cars[s].w / 2);
             if (api.gameOver) { night.phase = 'failed'; night.result = 'failed'; }
             break;
@@ -1003,7 +1520,7 @@
           ctx.font = 'bold 7px Courier New';
           ctx.fillText('TEMP CARRIAGE', cx + 6, CAR_SCREEN_Y + 30);
         }
-        if (car.spikes) {
+        if (car.spikes && !car.spikesFolded) {
           var sr = spikeRect(car);
           var sx = Math.round(sr.x - camX);
           var sy = sr.y + OFFSET_Y;
@@ -1055,6 +1572,7 @@
       if (!night.phase) return;
       var camX = api.cameraX;
       var i;
+      aDraw(ctx, api, t);
       // The perch: visible only once you are up there (camera follows).
       if ((night.phase === 'ride' || night.phase === 'perch') && !night.perchGone) {
         var pr = NT.perch;
@@ -1088,8 +1606,8 @@
       ctx.font = 'bold 7px Courier New';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#ff2fd0';
-      var label = night.phase === 'ride' ? (night.camLocked ? 'NIGHT TRAIN · JUMP!' : 'NIGHT TRAIN') :
-        'NIGHT TRAIN · CARRIAGES ' + night.hopCount;
+      var label = night.phase === 'ride' ? (night.camLocked ? 'LEVEL 1A · JUMP!' : 'LEVEL 1A · NIGHT TRAIN') :
+        'LEVEL 1A · CARRIAGES ' + night.hopCount + ' · GEMS ' + count(A.gems, 'taken') + '/' + A.gems.length;
       ctx.fillText(label, VIEW_W / 2, 64);
       if (night.phase === 'perch') {
         var left = Math.max(0, Math.ceil((NT.perchMs - (t - night.perchAt)) / 1000));
@@ -1104,7 +1622,7 @@
 
     function solids() {
       if (nightActive()) {
-        var nightOut = nightSolids().concat(movers);
+        var nightOut = nightSolids().concat(aSolids(), movers);
         for (var n = 0; n < crumbles.length; n += 1) if (crumbles[n].state !== 'gone') nightOut.push(crumbles[n]);
         return nightOut;
       }
@@ -1477,6 +1995,8 @@
         skyRoutes: Object.keys(foundSkyZones).length + '/' + skyZoneNames.length,
         nightTrain: night.result || (night.phase ? night.phase : 'not found'),
         nightTrainCarriages: night.hopCount,
+        level1AGems: count(A.gems, 'taken') + '/' + A.gems.length,
+        level1ACoins: count(A.coins, 'taken') + '/' + A.coins.length,
         timeBonusMs: timeBonusMs
       };
     }
@@ -1530,7 +2050,7 @@
       layout: L,
       floorSolids: function () { return floorSolids; },
       solids: solids,
-      sideSolids: function () { return nightActive() ? [] : walls; },
+      sideSolids: function () { return nightActive() ? A.walls : walls; },
       cameraTargetX: cameraTargetX,
       drawBridgeTrack: drawBridgeTrack,
       playerScale: playerScale,
@@ -1549,7 +2069,7 @@
         gaps: gaps, walls: walls, movers: movers, crumbles: crumbles, pads: pads,
         lasers: lasers, vents: vents, gems: gems, relics: relics, tags: tags,
         crystals: crystals, signs: signs, zones: zones, trails: trails,
-        skyZones: skyZoneNames, floorSolids: floorSolids, nightTrain: NT,
+        skyZones: skyZoneNames, floorSolids: floorSolids, nightTrain: NT, level1A: A,
         night: function () { return night; }
       }
     };
