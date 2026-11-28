@@ -5,13 +5,28 @@ const path = require("node:path");
 const test = require("node:test");
 
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
-const { applyDistrictEdits, enforceProductionCandidate, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
+const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
 
 test("Ollama selection uses an installed preferred model and supports an explicit override", () => {
   assert.equal(selectOllamaModel(["nomic-embed-text:latest", "qwen2.5:7b"], undefined), "qwen2.5:7b");
   assert.equal(selectOllamaModel(["llama3.2:latest", "qwen2.5:7b"], "llama3.2:latest"), "llama3.2:latest");
   assert.throws(() => selectOllamaModel(["nomic-embed-text:latest"], undefined), /No chat-capable/);
   assert.throws(() => selectOllamaModel(["qwen2.5:7b"], "missing:latest"), /is not installed/);
+});
+
+test("transient GitHub failures are eligible for a scheduled retry", () => {
+  assert.equal(isTransientGithubFailure(429), true);
+  assert.equal(isTransientGithubFailure(500), true);
+  assert.equal(isTransientGithubFailure(503), true);
+  assert.equal(isTransientGithubFailure(404), false);
+  assert.equal(isTransientGithubFailure(422), false);
+
+  const source = fs.readFileSync(runnerPath, "utf8");
+  assert.match(source, /retryableGithubMethods = new Set\(\["GET"\]\)/);
+  assert.match(source, /Retrying on the next scheduled run/);
+  assert.match(source, /if \(current\.merged\) return \{ url: current\.html_url \};/);
+  assert.match(source, /await checkApproval\(issue, iterationLabel\);/);
+  assert.match(source, /Integration advanced during a transient merge failure/);
 });
 
 test("production candidates preserve valid model choices and replace occupied guesses", () => {
