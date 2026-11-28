@@ -1,5 +1,90 @@
 {
   "version": 1,
   "generatedBy": "scripts/build-runtime-images.mjs",
-  "assets": {}
+  "assets": {
+    "games/getting-up/getting-up-ground-hazards-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-ground-hazards-atlas-master.png",
+      "sourceSha256": "e7d3b27c40f64ceccbbb612ac292abbfc56d9449a1f644faa91b48ba00f43a32",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "6661a91777088a2b74c1a005e32293d99d6a8b2f427a9fb7ff6309df2dc37519",
+      "sourceBytes": 1804623,
+      "outputBytes": 857572,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 52.48,
+      "psnr": null
+    },
+    "games/getting-up/getting-up-ground-zone-props-a-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-ground-zone-props-a-atlas-master.png",
+      "sourceSha256": "e84d2caf49b1a4d991b04228d70c63c61bc7da3920f559b032eb4b8cd0328af0",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "c65eb0cec346abfe694cf05e4404b2175abb93ff782be27fa7bb72da90d6a0da",
+      "sourceBytes": 2058478,
+      "outputBytes": 1055828,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 48.71,
+      "psnr": null
+    },
+    "games/getting-up/getting-up-hidden-sky-routes-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-hidden-sky-routes-atlas-master.png",
+      "sourceSha256": "0a8144c2efb94087080d6f69b2795d396433a9dd1427c99548b6153d3cdb17cf",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "f63dc5b9d85596fe20de1580e0e23b261880d65d2f2d1227b4fcf45c2aef5656",
+      "sourceBytes": 2213527,
+      "outputBytes": 1114548,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 49.65,
+      "psnr": null
+    },
+    "games/getting-up/getting-up-ground-enemies-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-ground-enemies-atlas-master.png",
+      "sourceSha256": "441fed73c95e3488fdade80bc20e7db8af1b60fa72d6fae804e4c2cbd021c20e",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "26283acbff0df31093cd0ab536ad2079462ea89fd8324fadd3dfe1301c521c22",
+      "sourceBytes": 1686124,
+      "outputBytes": 860666,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 48.96,
+      "psnr": null
+    },
+    "games/getting-up/getting-up-ground-transitions-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-ground-transitions-atlas-master.png",
+      "sourceSha256": "a337c200eae30730f5656e9e3c5400317aaed9d1ad86db13f9cacef0c5205df2",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "6a6249ce5a342c8a10f13dfb68b54ecfd786c66fe3364a39d3dd05c6819a413e",
+      "sourceBytes": 2195753,
+      "outputBytes": 1135104,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 48.3,
+      "psnr": null
+    },
+    "games/getting-up/getting-up-ground-zone-props-b-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-ground-zone-props-b-atlas-master.png",
+      "sourceSha256": "e4717fc470ef3ccab3f9eb44e257ab83b4f707a6b3b138594f42856063b0a64d",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "648c486ff5271d28330ff86284525e7b9206ba5aeb7daae1d1bf065309a4c7b1",
+      "sourceBytes": 2236753,
+      "outputBytes": 1110176,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 50.37,
+      "psnr": null
+    },
+    "games/getting-up/getting-up-ground-pickups-atlas-runtime.webp": {
+      "source": "games/getting-up/getting-up-ground-pickups-atlas-master.png",
+      "sourceSha256": "dfb7219a3d74ef01ee28289a6d52d5bc8b06e30e4e3a6a592e5458e275c035e9",
+      "configSha256": "6b98888753dc431f2360f6c97894c32936c99b0f5b7fadc2b48bc148367b6d1a",
+      "outputSha256": "61ac0b6a820aa3392003c93fa8a353b239db3ce78b473ccef84ebcdd2e745898",
+      "sourceBytes": 1917695,
+      "outputBytes": 1053474,
+      "width": 1024,
+      "height": 1024,
+      "savingsPercent": 45.07,
+      "psnr": null
+    }
+  }
 }
