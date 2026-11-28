@@ -77,6 +77,7 @@ test("production placement sends bounded candidates and allows the local model t
 test("production repairs discard rejected placements and refresh an advanced main base", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
   assert.match(source, /context\.base !== latest\.object\.sha/);
+  assert.match(source, /Main advanced after publication\. Rebuild on a new attempt branch\./);
   assert.match(source, /\["production-placement\.json", "publication\.json"\]/);
   assert.match(source, /for \(let retry = 0; retry < 3; retry\+\+\)/);
   assert.match(source, /fs\.rm\(placementFile, \{ force: true \}\)/);
@@ -86,7 +87,7 @@ test("production repairs discard rejected placements and refresh an advanced mai
 test("production rounds target main and use a linear-history squash merge", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
   assert.match(source, /const productionTarget = "main";/);
-  assert.match(source, /return \{ branch: productionTarget, base: base\.object\.sha \};/);
+  assert.match(source, /context = \{ branch: productionTarget, base: latest\.object\.sha \};/);
   assert.match(source, /merge_method: production \? "squash" : "merge"/);
   assert.doesNotMatch(source, /waterfront-production-integration/);
 });
