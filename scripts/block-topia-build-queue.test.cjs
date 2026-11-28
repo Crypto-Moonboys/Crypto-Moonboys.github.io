@@ -22,9 +22,11 @@ test("transient GitHub failures are eligible for a scheduled retry", () => {
   assert.equal(isTransientGithubFailure(422), false);
 
   const source = fs.readFileSync(runnerPath, "utf8");
-  assert.match(source, /retryableGithubMethods = new Set\(\["GET", "PUT"\]\)/);
+  assert.match(source, /retryableGithubMethods = new Set\(\["GET"\]\)/);
   assert.match(source, /Retrying on the next scheduled run/);
   assert.match(source, /if \(current\.merged\) return \{ url: current\.html_url \};/);
+  assert.match(source, /await checkApproval\(issue, iterationLabel\);/);
+  assert.match(source, /Integration advanced during a transient merge failure/);
 });
 
 test("production candidates preserve valid model choices and replace occupied guesses", () => {
