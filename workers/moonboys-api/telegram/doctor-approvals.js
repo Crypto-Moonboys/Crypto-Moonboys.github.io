@@ -97,6 +97,8 @@ export async function handleDoctorApprovalRequest(request, env) {
   }
   if (!KEY.test(body.job_key || '') || !Number.isSafeInteger(body.pr_number) || body.pr_number < 1
       || !SHA.test(body.head_sha || '') || !SHA.test(body.base_sha || '')) return json({ error: 'invalid_identity' }, 400);
+  if (body.action === 'merged' && body.merge_sha !== undefined
+      && (typeof body.merge_sha !== 'string' || !SHA.test(body.merge_sha))) return json({ error: 'invalid_merge_sha' }, 400);
   const db = env.DB;
   let row = await get(db, body.job_key);
   if (row && !identity(body, row)) return json({ error: 'identity_changed' }, 409);
@@ -122,12 +124,22 @@ export async function handleDoctorApprovalRequest(request, env) {
   if (body.action === 'invalidate' && ['ready','approved'].includes(row.state)) {
     await db.prepare("UPDATE doctor_merge_approvals SET state='invalidated',revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state IN ('ready','approved')")
       .bind(now, row.id, row.revision).run();
-  } else if (body.action === 'merged' && row.state === 'approved') {
-    await db.prepare("UPDATE doctor_merge_approvals SET state='merged',revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='approved'")
-      .bind(now, row.id, row.revision).run();
+  } else if (body.action === 'merged') {
+    if (row.state === 'approved') {
+      await db.prepare("UPDATE doctor_merge_approvals SET state='merged',merge_sha=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='approved'")
+        .bind(body.merge_sha ?? null, now, row.id, row.revision).run();
+    }
+    if (body.merge_sha) {
+      await db.prepare("UPDATE doctor_merge_approvals SET merge_sha=?,updated_at=? WHERE id=? AND head_sha=? AND base_sha=? AND state='merged' AND merge_sha IS NULL")
+        .bind(body.merge_sha, now, row.id, body.head_sha, body.base_sha).run();
+      row = await get(db, body.job_key);
+      if (!exact(body, row)) return json({ state: 'missing' });
+      if (row.state === 'merged' && row.merge_sha !== body.merge_sha) return json({ error: 'merge_sha_changed' }, 409);
+    }
   } else if (!['invalidate','merged'].includes(body.action)) return json({ error: 'invalid_action' }, 400);
   row = await get(db, body.job_key);
-  return json(state(row));
+  if (!exact(body, row)) return json({ state: 'missing' });
+  return json(body.action === 'merged' ? { ...state(row), merge_sha: row.merge_sha } : state(row));
 }
 
 export async function handleDoctorApprovalUpdate(update, env) {
@@ -144,9 +156,9 @@ export async function handleDoctorApprovalUpdate(update, env) {
     const row = await byId(env.DB, id);
     if (row?.state === 'ready' && String(row.revision) === revision) {
       const next = { approve: 'approved', fix: 'fix_requested', reject: 'rejected' }[action];
-      const result = await env.DB.prepare("UPDATE doctor_merge_approvals SET state=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready'")
-        .bind(next, Date.now(), row.id, row.revision).run();
-      accepted = result.meta.changes === 1;
+      const result = await env.DB.prepare("UPDATE doctor_merge_approvals SET state=?,decision_actor=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready' RETURNING id")
+        .bind(next, actor, Date.now(), row.id, row.revision).first();
+      accepted = result?.id === row.id;
     }
   }
   await telegram(env, 'answerCallbackQuery', { callback_query_id: cb.id,
