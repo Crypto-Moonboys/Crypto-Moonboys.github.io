@@ -701,13 +701,13 @@
     loadArt('atlas-pickups', '/games/getting-up/03-collectibles-and-checkpoints.png');
     loadArt('atlas-night', '/games/getting-up/04-night-train-transitions.png');
     loadArt('atlas-vfx', '/games/getting-up/05-shared-vfx-atlas.png');
-    loadArt('ground-hazards', '/games/getting-up/Gritty Ground Hazards Sprite Atlas-5.png');
-    loadArt('ground-pickups', '/games/getting-up/Neon Street Pickups, Crates, and Respawns-4.png');
-    loadArt('ground-zones-a', '/games/getting-up/Gritty neon ground zone props atlas-1.png');
-    loadArt('ground-zones-b', '/games/getting-up/Neon Ground Zone Props Atlas-3.png');
-    loadArt('ground-enemies', '/games/getting-up/Neon Graffiti Enemy Sprite Atlas-2.png');
-    loadArt('hidden-routes', '/games/getting-up/Hidden Sky Route Discovery Atlas-7.png');
-    loadArt('ground-transitions', '/games/getting-up/Neon Graffiti Transition Sprite Atlas-6.png');
+    loadArt('ground-hazards', '/games/getting-up/getting-up-ground-hazards-atlas-runtime.webp');
+    loadArt('ground-pickups', '/games/getting-up/getting-up-ground-pickups-atlas-runtime.webp');
+    loadArt('ground-zones-a', '/games/getting-up/getting-up-ground-zone-props-a-atlas-runtime.webp');
+    loadArt('ground-zones-b', '/games/getting-up/getting-up-ground-zone-props-b-atlas-runtime.webp');
+    loadArt('ground-enemies', '/games/getting-up/getting-up-ground-enemies-atlas-runtime.webp');
+    loadArt('hidden-routes', '/games/getting-up/getting-up-hidden-sky-routes-atlas-runtime.webp');
+    loadArt('ground-transitions', '/games/getting-up/getting-up-ground-transitions-atlas-runtime.webp');
     ['ruby', 'emerald', 'sapphire', 'diamond'].forEach(function (k) { loadArt('gem-' + k, TEMP + 'gem-' + k + '.svg'); });
     ['time-crystal', 'bounce-pad', 'laser-emitter', 'wall-block', 'crumble-platform',
       'moving-platform', 'flame-vent', 'tag-spot', 'night-train-tag', 'sky-girder', 'drone'].forEach(function (k) { loadArt(k, TEMP + k + '.svg'); });
