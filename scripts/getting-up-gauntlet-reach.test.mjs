@@ -47,7 +47,8 @@ function crateAt(x) { const s = L.crates.find(c => c.x === x); assert.ok(s, 'no 
 function staticSolids() {
   return [...D.floorSolids, ...L.platforms, ...D.walls, ...D.crumbles, ...L.crates, ...D.pads];
 }
-const STATIC = staticSolids();
+let STATIC = staticSolids();
+let MOVERS = D.movers;
 
 function simulate(from, to, plan, t0) {
   // from: surface we stand on (or pad), plan: {x0, j2, j3, release}
@@ -58,7 +59,7 @@ function simulate(from, to, plan, t0) {
   if (isPad) { p.vy = -from.bounce; grounded = false; jumps = 1; }
   for (; frame < 280; frame += 1) {
     const t = t0 + frame * (1000 / 60);
-    const solids = STATIC.concat(D.movers.map(m => moverAt(m, t)));
+    const solids = STATIC.concat(MOVERS.map(m => moverAt(m, t)));
     const right = plan.release === null || frame < plan.release;
     if (right) p.vx = Math.min(MAX, p.vx + ACCEL); else p.vx *= FRICTION;
     const press = (!isPad && frame === 0) || frame === plan.j2 || frame === plan.j3;
@@ -278,7 +279,7 @@ for (let startX = NT.lockCamX + 200; startX > NT.lockCamX - W; startX -= 8) {
 }
 assert.equal(doublePlans, 0, 'night-train perch must need a triple jump');
 assert.ok(perchPlans > 0, 'night-train perch unreachable');
-for (const [w, gapPx] of [[150, 250], [180, 230], [150, 200]]) {
+for (const [w, gapPx] of [[234, 260], [234, 230], [234, 150]]) {
   // Runner at the right end of carriage A; carriage B starts gapPx to the right.
   let ok = false;
   for (let back = 0; back < w - 10 && !ok; back += 6) for (let j2 = -1; j2 < 40 && !ok; j2 += 3) {
@@ -289,6 +290,48 @@ for (const [w, gapPx] of [[150, 250], [180, 230], [150, 200]]) {
   assert.ok(ok, `night train gap ${gapPx} not crossable`);
 }
 console.log('night train stream gaps ok');
+
+// LEVEL 1A sky structures: hops from the carriage roofs (a roof strip at the
+// rail line) up through every structure, with ground walls disabled as in-game.
+const A1 = D.level1A;
+const ROOF = { x: 0, y: NT.railY, w: 22000, h: 12, roof: true };
+STATIC = [ROOF, ...A1.platforms, ...A1.walls, ...A1.crumbles, ...A1.pads, ...L.platforms];
+MOVERS = A1.movers;
+const ap = (x, y) => { const s = A1.platforms.find(p => p.x === x && (y === undefined || p.y === y)) || L.platforms.find(p => p.x === x && p.y === y); assert.ok(s, 'no 1A platform ' + x); return s; };
+const aw = x => { const s = A1.walls.find(w => w.x === x); assert.ok(s, 'no 1A wall ' + x); return s; };
+const am = x => { const s = A1.movers.find(m => m.bx === x); assert.ok(s, 'no 1A mover ' + x); return s; };
+const ac = x => { const s = A1.crumbles.find(c => c.x === x); assert.ok(s, 'no 1A crumble ' + x); return s; };
+const apad = x => { const s = A1.pads.find(p => p.x === x); assert.ok(s, 'no 1A pad ' + x); return s; };
+const roofAt = x => Object.assign({}, ROOF, { x: x - 300, w: 300 });
+const R1 = NT.railY;
+const hops1A = [
+  ['1A signal 1', roofAt(2450), aw(2450)], ['1A signal 2', aw(2450), aw(2540)], ['1A signal 3', aw(2540), aw(2630)],
+  ['1A signal top', aw(2630), ap(2720)],
+  ['1A underpass 1', roofAt(3650), ap(3650)], ['1A underpass 2', ap(3650), ap(3740)], ['1A -> pigeon hwy', ap(3740), ap(3820, -170)],
+  ['1A beam alley lift', roofAt(6500), am(6500)], ['1A beam alley top', am(6500), ap(6720)],
+  ['1A clouds 1', roofAt(7600), ac(7600)], ['1A clouds 2', ac(7600), ac(7700)], ['1A clouds 3', ac(7700), ac(7800)],
+  ['1A clouds 4', ac(7800), ac(7900)], ['1A clouds 5', ac(7900), ac(8000)], ['1A clouds 6', ac(8000), ac(8100)],
+  ['1A clouds top', ac(8100), ap(8200)],
+  ['1A storm 1', roofAt(9660), ap(9660)], ['1A storm lift', ap(9660), am(9760)], ['1A storm 2', am(9760), ap(9860)],
+  ['1A storm top', ap(9860), aw(10020)],
+  ['1A towers pad', roofAt(11000), ap(11000)], ['1A tower 1', apad(11020), aw(11120)], ['1A towers bridge', aw(11120), am(11250)],
+  ['1A tower 2', am(11250), aw(11420)],
+  ['1A grid 1', roofAt(13300), ap(13300)], ['1A grid 2', ap(13300), ap(13420)], ['1A grid 3', ap(13420), ap(13540)],
+  ['1A strato 1', roofAt(14600), ap(14600)], ['1A strato pad 1', apad(14625), ap(14760)], ['1A strato pad 2', apad(14785), ap(14960)],
+  ['1A spike lift', roofAt(17000), am(17000)], ['1A spike top', am(17000), ap(17120)],
+  ['1A final 1', roofAt(21250), ap(21250)], ['1A -> all city roof', ap(21250), ap(21400, -110)],
+  ['1A final 2', ap(21400, -110), aw(21560)], ['1A final 3', aw(21560), aw(21650)], ['1A final vault', aw(21650), ap(21720)]
+];
+let fail1A = 0;
+for (const [name, from, to] of hops1A) {
+  const r = canHop(from, to);
+  if (!r) { fail1A += 1; console.log('FAIL', name); } else console.log('ok  ', name.padEnd(22), `jumps=${r.n}`);
+}
+assert.equal(fail1A, 0, 'unreachable Level 1A hops');
+// Low gantries must be clearable standing-crouched (bottom edge above a crouched head).
+for (const b of A1.beams) assert.ok(b.y + b.h <= NT.railY - 22 && b.y + b.h > NT.railY - 34, 'gantry at ' + b.x + ' must hit standing, clear crouching');
+STATIC = staticSolids();
+MOVERS = D.movers;
 
 // Layout sanity: checkpoints/finish on solid street, ground enemies off pits.
 function overGap(x0, x1) { return D.gaps.some(([gx, gw]) => x1 > gx && x0 < gx + gw); }
