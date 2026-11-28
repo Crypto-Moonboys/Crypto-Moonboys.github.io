@@ -1027,4 +1027,4 @@ if (require.main === module) {
     : runQueue();
   command.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacements, productionPlacement, zoneForLot };
+module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacements, productionPlacement, productionVisualCheck, zoneForLot };
