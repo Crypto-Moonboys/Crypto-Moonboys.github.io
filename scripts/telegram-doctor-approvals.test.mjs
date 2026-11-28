@@ -8,6 +8,7 @@ test('Doctor Telegram approval is private, exact-head, revision-bound and fail c
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(readFileSync(new URL('../workers/moonboys-api/migrations/137_doctor_telegram_approvals.sql', import.meta.url), 'utf8'));
   sqlite.exec(readFileSync(new URL('../workers/moonboys-api/migrations/138_doctor_approval_audit.sql', import.meta.url), 'utf8'));
+  sqlite.exec(readFileSync(new URL('../workers/moonboys-api/migrations/139_doctor_auto_release.sql', import.meta.url), 'utf8'));
   const original = globalThis.fetch, messages = [];
   globalThis.fetch = async (url, data) => {
     assert.match(String(url), /^https:\/\/api\.telegram\.org\/botfake\//);
@@ -104,6 +105,21 @@ test('Doctor Telegram approval is private, exact-head, revision-bound and fail c
     assert.equal(evidence[0].action, legacy ? 'merge_evidence' : 'merged');
     assert.equal(evidence[0].merge_sha, mergeSha);
   }
+  const autoJob = { ...job, job_key: '7'.repeat(64), repo: 'crypto-moonboys/crypto-moonboys.github.io', allow_auto: true };
+  await call({ ...autoJob, action: 'ready' });
+  await call({ action: 'flush' });
+  const auto = messages.filter(m => m.reply_markup).at(-1).reply_markup.inline_keyboard.flat().find(button => button.text === 'Auto');
+  assert.ok(auto);
+  await click(auto.callback_data, 200);
+  assert.equal(await state('read', autoJob), 'ready');
+  await click(auto.callback_data);
+  assert.equal((await (await call({ ...autoJob, action: 'read' })).json()).decision_mode, 'auto');
+  assert.equal(audit().at(-1).decision_mode, 'auto');
+  const changedAutoHead = { ...autoJob, head_sha: 'f'.repeat(40) };
+  await call({ ...changedAutoHead, action: 'ready' });
+  await click(auto.callback_data);
+  assert.equal(await state('read', changedAutoHead), 'ready');
+
   const event = { action: 'event', repo: job.repo, pr_number: 123, head_sha: job.head_sha, event_key: '9'.repeat(64), event: 'validation_passed' };
   await call(event); await call(event); await call({ action: 'flush' }); await call({ action: 'flush' });
   assert.equal(messages.filter(m => m.text?.includes('Isolated tests passed')).length, 1);
