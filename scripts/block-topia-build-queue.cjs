@@ -581,8 +581,12 @@ const lotPattern = /^    } else if \(tile === "\." && col === (\d+) && row === (
 
 async function repositoryFile(filename, ref) {
   const file = await github(`/contents/${filename}?ref=${encodeURIComponent(ref)}`);
-  if (file.encoding !== "base64" || !file.content) throw new Error("Missing Waterfront source: " + filename);
-  return Buffer.from(file.content, "base64");
+  if (file.encoding === "base64" && file.content) return Buffer.from(file.content, "base64");
+  if (file.sha) {
+    const blob = await github(`/git/blobs/${file.sha}`);
+    if (blob.encoding === "base64" && blob.content) return Buffer.from(blob.content, "base64");
+  }
+  throw new Error("Missing Waterfront source: " + filename);
 }
 
 async function repositoryText(filename, ref) {
@@ -775,7 +779,9 @@ function productionPlacement(renderer, district, proposal) {
 }
 
 function productionPreviewHtml(script, district, proposal) {
-  const atlases = ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"];
+  const requiredArtwork = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp",
+    "hk-night-runtime.webp", "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp",
+    "bitcoin-cash-tower-overhead.webp", "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"];
   return `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#081018;color:#fff}canvas{display:block;width:100%;height:auto;image-rendering:auto}
@@ -815,14 +821,24 @@ try{
  const canvas=document.querySelector("#map");
  canvas.width=rows[0].length*district.tileSize;
  canvas.height=rows.length*district.tileSize;
- await Promise.all(${JSON.stringify(atlases)}.map(async name=>{
+ await Promise.all(${JSON.stringify(requiredArtwork)}.map(async name=>{
    const image=new Image();
-   image.src="./assets/atlases/"+name+"-runtime.webp";
+   image.src="./assets/atlases/"+name;
    await image.decode();
  }));
  await window.loadWaterfrontSprites();
  const ctx=canvas.getContext("2d",{willReadFrequently:true});
  const player={x:district.spawn.x,y:district.spawn.y,faction:null,facing:0,frame:0};
+ let landmarkLoads=0;
+ let resolveLandmarks,rejectLandmarks;
+ const landmarksReady=new Promise((resolve,reject)=>{resolveLandmarks=resolve;rejectLandmarks=reject});
+ const landmarkTimeout=setTimeout(()=>rejectLandmarks(new Error("Waterfront landmark artwork did not finish loading.")),5000);
+ window.drawWaterfront(ctx,rows,player,district,null,null,[],null,null,null,null,()=>{
+   landmarkLoads++;
+   if(landmarkLoads>=3){clearTimeout(landmarkTimeout);resolveLandmarks()}
+ });
+ await landmarksReady;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
  window.drawWaterfront(ctx,rows,player,district,null,null,[],null,null,null,null,()=>{});
  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
  let hash=2166136261;
@@ -917,15 +933,17 @@ async function buildProduction(issue, dir, round, attempt, repair) {
       .map(filename => fs.rm(path.join(dir, filename), { force: true })));
   }
 
-  const atlasNames = ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"];
-  const [renderer, source, natureSource, brief, library, planText, ...atlasBuffers] = await Promise.all([
+  const previewAssetNames = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp",
+    "hk-night-runtime.webp", "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp",
+    "bitcoin-cash-tower-overhead.webp", "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"];
+  const [renderer, source, natureSource, brief, library, planText, ...assetBuffers] = await Promise.all([
     repositoryText(rendererPath, context.base),
     repositoryText("workers/moonboys-api/blocktopia/waterfront-district.js", context.base),
     repositoryText(waterfrontRoot + "/nature-island.mjs", context.base),
     repositoryText(waterfrontRoot + "/CITY-BRIEF.md", context.base),
     repositoryText(waterfrontRoot + "/SPRITE-LIBRARY.md", context.base),
     repositoryText(zonePlanPath, context.base),
-    ...atlasNames.map(name => repositoryFile(`${waterfrontRoot}/assets/atlases/${name}-runtime.webp`, context.base))
+    ...previewAssetNames.map(name => repositoryFile(`${waterfrontRoot}/assets/atlases/${name}`, context.base))
   ]);
   const plan = JSON.parse(planText);
   const harbor = vm.runInNewContext(source.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
@@ -973,7 +991,7 @@ async function buildProduction(issue, dir, round, attempt, repair) {
     }
   }
   const visual = await productionVisualCheck(dir, renderer, updated, district, selected,
-    Object.fromEntries(atlasNames.map((name, index) => [`${name}-runtime.webp`, atlasBuffers[index]])), natureSource);
+    Object.fromEntries(previewAssetNames.map((name, index) => [name, assetBuffers[index]])), natureSource);
   await writeProgress(dir, "production-visual.json", visual);
   const validation = JSON.stringify({
     issue: issue.number, round, attempt, testedBase: context.base, generatedAt: new Date().toISOString(),
