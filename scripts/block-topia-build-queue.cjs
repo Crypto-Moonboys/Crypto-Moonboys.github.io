@@ -828,11 +828,14 @@ try{
  const canvas=document.querySelector("#map");
  canvas.width=rows[0].length*district.tileSize;
  canvas.height=rows.length*district.tileSize;
- await Promise.all(${JSON.stringify(requiredArtwork)}.map(async name=>{
+ await Promise.all(${JSON.stringify(requiredArtwork)}.map(name=>new Promise((resolve,reject)=>{
    const image=new Image();
+   image.hidden=true;
+   image.onload=resolve;
+   image.onerror=()=>reject(new Error("Waterfront preview artwork failed to load: "+name));
    image.src="./assets/atlases/"+name;
-   await image.decode();
- }));
+   document.body.append(image);
+ })));
  await window.loadWaterfrontSprites();
  const ctx=canvas.getContext("2d",{willReadFrequently:true});
  const player={x:district.spawn.x,y:district.spawn.y,faction:null,facing:0,frame:0};
