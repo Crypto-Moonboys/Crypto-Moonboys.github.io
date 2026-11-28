@@ -589,10 +589,20 @@ function productionPlacement(renderer, district, proposal) {
 }
 
 async function buildProduction(issue, dir, round, attempt, repair) {
-  const context = await checkpoint(dir, "production-base.json", async () => {
-    const base = await github("/git/ref/heads/" + productionTarget);
-    return { branch: productionTarget, base: base.object.sha };
-  });
+  const latest = await github("/git/ref/heads/" + productionTarget);
+  let context = await fs.readFile(path.join(dir, "production-base.json"), "utf8")
+    .then(JSON.parse)
+    .catch(error => {
+      if (error.code !== "ENOENT") throw error;
+      return null;
+    });
+  if (!context || context.base !== latest.object.sha) {
+    context = { branch: productionTarget, base: latest.object.sha };
+    await writeProgress(dir, "production-base.json", context);
+    await Promise.all(["production-placement.json", "publication.json"]
+      .map(filename => fs.rm(path.join(dir, filename), { force: true })));
+  }
+
   const [renderer, source, brief, library] = await Promise.all([
     repositoryText(rendererPath, context.base),
     repositoryText("workers/moonboys-api/blocktopia/waterfront-district.js", context.base),
@@ -615,12 +625,33 @@ async function buildProduction(issue, dir, round, attempt, repair) {
   }
   const sprites = [...new Set([...renderer.matchAll(/"((?:flowers|furniture)-\d{1,2})": \[/g)].map(match => match[1]))];
   if (!candidateLots.length || !sprites.length) throw new Error("No eligible production placement candidates remain.");
-  const proposal = await checkpoint(dir, "production-placement.json", () => model("Waterfront layout planner",
-    'Choose exactly one candidate lot and one registered sprite. Return {"x": integer, "y": integer, "sprite": string}. Use only values supplied in candidateLots and sprites.',
-    { issue: String(issue.body ?? "").slice(0, 2000), brief: brief.slice(0, 4000), library: library.slice(0, 3000),
-      candidateLots, sprites, reviewFeedback: repair.feedback || "" },
-    "json", { numPredict: 160, timeoutMs: 900_000 }));
-  const updated = productionPlacement(renderer, district, proposal);
+
+  const placementFile = path.join(dir, "production-placement.json");
+  let proposal = await fs.readFile(placementFile, "utf8").then(JSON.parse).catch(error => {
+    if (error.code !== "ENOENT") throw error;
+    return null;
+  });
+  let updated;
+  let placementFeedback = repair.feedback || "";
+  for (let retry = 0; retry < 3; retry++) {
+    if (!proposal) {
+      proposal = await model("Waterfront layout planner",
+        'Choose exactly one candidate lot and one registered sprite. Return {"x": integer, "y": integer, "sprite": string}. Use only values supplied in candidateLots and sprites.',
+        { issue: String(issue.body ?? "").slice(0, 2000), brief: brief.slice(0, 4000), library: library.slice(0, 3000),
+          candidateLots, sprites, reviewFeedback: placementFeedback },
+        "json", { numPredict: 160, timeoutMs: 900_000 });
+    }
+    try {
+      updated = productionPlacement(renderer, district, proposal);
+      await writeProgress(dir, "production-placement.json", proposal);
+      break;
+    } catch (error) {
+      await fs.rm(placementFile, { force: true });
+      proposal = null;
+      placementFeedback = error.message;
+      if (retry === 2) throw error;
+    }
+  }
   return publishRound(issue, round, attempt, dir, { [rendererPath]: updated }, context);
 }
 
