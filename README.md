@@ -400,7 +400,7 @@ On 27 November 2026, production `wikicoms` recorded migration 135, the `moonboys
 
 ### Website support approvals
 
-Community reports go to `@WIKICOMSBOT`. The Brain coordinates the private review and Doctor builds and tests the approved repair. Approving **Fix** starts the repair. The separate **Approve merge** button applies to the exact Codex-reviewed commit. For a merged case, verify the fix on the live site before sending `/resolved <case number>`.
+Community reports go to `@WIKICOMSBOT`. Brain coordinates the private review and **Fix** queues the repair for Doctor. After validation and exact-commit Codex review, the owner can choose **Approve merge**, **Request further fix**, or **Reject** in the private chat. [Website PR #2320](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/pull/2320) added the shared approval service and D1 migration 137. A changed PR head or validated base requires fresh review and approval. For a merged website case, verify the fix on the live site before sending `/resolved <case number>`. See the [Doctor rollout handoff](https://github.com/HODLKONG64/THEY-CALL-ME-THE-DADDY/issues/113).
 
 ### Cloudflare validation and release
 
