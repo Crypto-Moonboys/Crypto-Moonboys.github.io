@@ -759,11 +759,19 @@
     // 5s the perch vanishes; hop carriage to carriage, against the flow,
     // to the flag. Touching anything but a carriage = instant death.
     // ------------------------------------------------------------------
+    // Carriages run on the existing bridge track (same size and line as the
+    // scenery convoy, which is hidden while the night train runs).
+    var CAR_W = env.TRAIN_WIDTH || 234;
+    var CAR_H = env.TRAIN_HEIGHT || 78;
+    var CAR_GAP = env.TRAIN_GAP === undefined ? 2 : env.TRAIN_GAP;
+    var CAR_SCREEN_Y = env.TRAIN_SCREEN_Y === undefined ? 72 : env.TRAIN_SCREEN_Y;
+    var RAIL_Y = Math.round(CAR_SCREEN_Y + CAR_H * 0.175 - OFFSET_Y); // roof line (world y)
     var NT = {
       tag: { x: 21760, y: F - 70, w: 72, h: 46 },
-      railY: 80,              // carriage roof (world y)
+      railY: RAIL_Y,          // carriage roof (world y)
       lockCamX: 20200,        // camera stops here during the ride
-      perch: { x: 20255, y: -230, w: 72, h: 16, kind: 'nt-perch' },
+      perch: { x: 20255, y: RAIL_Y - 310, w: 72, h: 16, kind: 'nt-perch' },
+      playerScale: 0.55,      // the runner is "out on the bridge", so drawn smaller
       rideSpeed: 3.2,         // px per 60fps frame, toward the start
       brakeSpeed: 2.0,
       departSpeed: 4.5,
@@ -778,12 +786,12 @@
       'trainWpixal', 'trainWuf', 'trainGetsulaid', 'trainTrustme', 'trainHodlwars',
       'trainPunk', 'trainKek', 'trainCronx', 'trainWaxgod'];
     // Stream pattern: [carriage width, gap after it, roof spikes].
-    // Carriages stay 180x60 so every roof and wheel line sits on one rail.
+    // Carriages match the scenery convoy cars so every roof sits on the bridge line.
     var STREAM = [
-      [180, 60, false], [180, 90, false], [180, 70, true], [180, 140, false],
-      [180, 50, false], [180, 200, false], [180, 110, true], [180, 80, false],
-      [180, 230, false], [180, 60, true], [180, 170, false], [180, 90, false],
-      [180, 250, false], [180, 120, true], [180, 70, false], [180, 190, false]
+      [CAR_W, 60, false], [CAR_W, 90, false], [CAR_W, 70, true], [CAR_W, 140, false],
+      [CAR_W, 50, false], [CAR_W, 200, false], [CAR_W, 110, true], [CAR_W, 80, false],
+      [CAR_W, 230, false], [CAR_W, 60, true], [CAR_W, 170, false], [CAR_W, 90, false],
+      [CAR_W, 250, false], [CAR_W, 120, true], [CAR_W, 70, false], [CAR_W, 190, false]
     ];
     var night = null;
     function resetNight() {
@@ -807,8 +815,8 @@
       night.speed = NT.rideSpeed;
       var x = p.x - 40;
       for (var i = 0; i < NT.rideCars; i += 1) {
-        night.cars.push(makeCar(x, 180, false));
-        x += 182;
+        night.cars.push(makeCar(x, CAR_W, false));
+        x += CAR_W + CAR_GAP;
       }
       p.y = NT.railY - p.h;
       p.vx = 0;
@@ -947,6 +955,54 @@
       return out;
     }
 
+    // Draw the night-train carriages in the bridge-track layer instead of the
+    // scenery convoy. Returning true tells the engine to skip its convoy.
+    function drawBridgeTrack(ctx, api, t) {
+      if (!night.phase) return false;
+      var camX = api.cameraX;
+      for (var i = 0; i < night.cars.length; i += 1) {
+        var car = night.cars[i];
+        if (!inView(car.x, car.w, camX)) continue;
+        var img = api.images[car.art];
+        var cx = Math.round(car.x - camX);
+        if (img) ctx.drawImage(img, cx, CAR_SCREEN_Y, car.w, CAR_H);
+        else {
+          ctx.fillStyle = '#3b4a7a';
+          ctx.fillRect(cx, CAR_SCREEN_Y + 12, car.w, CAR_H - 20);
+          ctx.fillStyle = '#ffe45a';
+          ctx.font = 'bold 7px Courier New';
+          ctx.fillText('TEMP CARRIAGE', cx + 6, CAR_SCREEN_Y + 30);
+        }
+        if (car.spikes) {
+          var sr = spikeRect(car);
+          var sx = Math.round(sr.x - camX);
+          var sy = sr.y + OFFSET_Y;
+          ctx.fillStyle = '#d9dde8';
+          for (var k = 0; k < sr.w; k += 11) {
+            ctx.beginPath();
+            ctx.moveTo(sx + k, sy + sr.h);
+            ctx.lineTo(sx + k + 5.5, sy);
+            ctx.lineTo(sx + k + 11, sy + sr.h);
+            ctx.fill();
+          }
+        }
+      }
+      return true;
+    }
+
+    var scaleNow = 1;
+    var scaleClock = 0;
+    function playerScale(api) {
+      var target = (nightActive() || night.phase === 'done') ? NT.playerScale : 1;
+      var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      var dtMs = scaleClock ? Math.min(100, now - scaleClock) : 0;
+      scaleClock = now;
+      var k = Math.min(1, dtMs / 220);
+      scaleNow += (target - scaleNow) * k;
+      if (Math.abs(scaleNow - target) < 0.01) scaleNow = target;
+      return scaleNow;
+    }
+
     function drawNightTag(ctx, api, time) {
       var camX = api.cameraX;
       if (!inView(NT.tag.x, NT.tag.w, camX)) return;
@@ -969,44 +1025,6 @@
       if (!night.phase) return;
       var camX = api.cameraX;
       var i;
-      if (nightActive()) {
-        // Elevated rail under the carriages.
-        var railTop = NT.railY + OFFSET_Y + 43;
-        ctx.fillStyle = '#20202a';
-        ctx.fillRect(0, railTop, VIEW_W, 4);
-        ctx.fillStyle = '#3a3a48';
-        for (var px = -((camX * 1) % 60); px < VIEW_W; px += 60) ctx.fillRect(Math.round(px), railTop + 4, 4, 30);
-      }
-      for (i = 0; i < night.cars.length; i += 1) {
-        var car = night.cars[i];
-        if (!inView(car.x, car.w, camX)) continue;
-        var img = api.images[car.art];
-        var cx = Math.round(car.x - camX);
-        var ch = Math.round(car.w / 3);
-        // Train art roofs sit ~17.5% down the image; align roof with feet.
-        var cy = NT.railY + OFFSET_Y - Math.round(ch * 0.175);
-        if (img) ctx.drawImage(img, cx, cy, car.w, ch);
-        else {
-          ctx.fillStyle = '#3b4a7a';
-          ctx.fillRect(cx, cy + 4, car.w, ch - 8);
-          ctx.fillStyle = '#ffe45a';
-          ctx.font = 'bold 7px Courier New';
-          ctx.fillText('TEMP CARRIAGE', cx + 6, cy + 18);
-        }
-        if (car.spikes) {
-          var sr = spikeRect(car);
-          var sx = Math.round(sr.x - camX);
-          var sy = sr.y + OFFSET_Y;
-          ctx.fillStyle = '#d9dde8';
-          for (var k = 0; k < sr.w; k += 11) {
-            ctx.beginPath();
-            ctx.moveTo(sx + k, sy + sr.h);
-            ctx.lineTo(sx + k + 5.5, sy);
-            ctx.lineTo(sx + k + 11, sy + sr.h);
-            ctx.fill();
-          }
-        }
-      }
       // The perch: visible only once you are up there (camera follows).
       if ((night.phase === 'ride' || night.phase === 'perch') && !night.perchGone) {
         var pr = NT.perch;
@@ -1227,9 +1245,9 @@
           ctx.fillRect(vx + 4, vy - 4, 24, 4);
         }
       }
-      // Lasers.
+      // Lasers (street-level; hidden while the night train owns the bridge view).
       var limg = art['laser-emitter'];
-      for (i = 0; i < lasers.length; i += 1) {
+      for (i = nightActive() ? lasers.length : 0; i < lasers.length; i += 1) {
         var l = lasers[i];
         if (!inView(l.x, 32, camX)) continue;
         var lx = Math.round(l.x - camX);
@@ -1467,6 +1485,8 @@
       solids: solids,
       sideSolids: function () { return nightActive() ? [] : walls; },
       cameraTargetX: cameraTargetX,
+      drawBridgeTrack: drawBridgeTrack,
+      playerScale: playerScale,
       forceFinish: forceFinish,
       cameraTargetY: cameraTargetY,
       update: update,

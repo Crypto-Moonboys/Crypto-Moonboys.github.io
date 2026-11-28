@@ -85,7 +85,7 @@ assert.match(runtime, /playerThirdSpinHits\(enemy\)/);
 assert.equal((runtime.match(/third-spin-blast/g) || []).length, 2, 'both airborne and landed enemies use the blast defeat reason');
 assert.match(runtime, /coin\.settled = true/);
 assert.match(runtime, /if \(thirdSpinActive\)[\s\S]{0,500}else if \(sprayTimer > 0\)[\s\S]{0,500}else if \(player\.invuln > 0\)/);
-assert.match(page, /nbg-level1\.js\?v=getting-up-20261128-night-train-v15/);
+assert.match(page, /nbg-level1\.js\?v=getting-up-20261128-night-train-v16/);
 // The Gauntlet course must load before the shared runtime and only on this unranked page.
 assert.match(page, /data-nbg-mode="unranked" data-nbg-course="getting-up-gauntlet"/);
 assert.ok(page.indexOf('getting-up-gauntlet-course.js') < page.indexOf('/game/nbg-level1.js'), 'course script loads first');

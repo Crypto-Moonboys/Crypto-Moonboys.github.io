@@ -270,6 +270,13 @@ for (let startX = NT.lockCamX + 200; startX > NT.lockCamX - W; startX -= 4) {
   }
 }
 console.log('night train perch plans', perchPlans);
+let doublePlans = 0;
+for (let startX = NT.lockCamX + 200; startX > NT.lockCamX - W; startX -= 8) {
+  for (const dir of [-1, 0, 1]) for (let j2 = 7; j2 < 40; j2 += 3) {
+    if (trainJump(startX, NT.brakeSpeed, () => NT.perch, { dir, j1: 0, j2, j3: -1 }) >= 0) doublePlans += 1;
+  }
+}
+assert.equal(doublePlans, 0, 'night-train perch must need a triple jump');
 assert.ok(perchPlans > 0, 'night-train perch unreachable');
 for (const [w, gapPx] of [[150, 250], [180, 230], [150, 200]]) {
   // Runner at the right end of carriage A; carriage B starts gapPx to the right.
