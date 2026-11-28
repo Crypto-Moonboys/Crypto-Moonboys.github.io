@@ -18,7 +18,7 @@ on:
         type: string
         required: true
       commit:
-        description: Full PR head SHA to validate, or current main merge SHA to release
+        description: Full PR head SHA to validate, or exact current main SHA to release or recover
         type: string
         required: true
       validation_run:
