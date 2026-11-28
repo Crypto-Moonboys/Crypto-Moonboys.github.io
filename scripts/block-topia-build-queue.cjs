@@ -788,6 +788,16 @@ html,body{margin:0;background:#081018;color:#fff}canvas{display:block;width:100%
 </style></head><body><canvas id="map"></canvas>
 <script>
 window.waterfrontCharacterNames=[];
+Image.prototype.decode=function previewDecode(){
+ const image=this;
+ if(image.complete){
+   return image.naturalWidth>0 ? Promise.resolve() : Promise.reject(new Error("Waterfront preview image failed to load: "+image.src));
+ }
+ return new Promise((resolve,reject)=>{
+   image.addEventListener("load",resolve,{once:true});
+   image.addEventListener("error",()=>reject(new Error("Waterfront preview image failed to load: "+image.src)),{once:true});
+ });
+};
 const recordPreviewError=error=>{
  document.body.dataset.previewError=String(error?.message||error||"Unknown preview error");
 };
