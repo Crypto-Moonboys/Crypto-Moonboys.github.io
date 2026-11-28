@@ -40,8 +40,11 @@ const byId = (db, id) => db.prepare('SELECT * FROM doctor_merge_approvals WHERE 
 const url = (repo, pr) => 'https://github.com/' + repo + '/pull/' + pr;
 const identity = (body, row) => row && row.repo === body.repo && row.pr_number === body.pr_number;
 const exact = (body, row) => identity(body, row) && row.head_sha === body.head_sha && row.base_sha === body.base_sha;
+const autoOffered = row => row.auto_offer_revision === row.revision;
+const autoApproved = row => (row.state === 'approved' && row.auto_decision_revision === row.revision)
+  || (row.state === 'merged' && row.auto_decision_revision === row.revision - 1);
 const state = row => ({ state: row.state, head_sha: row.head_sha, base_sha: row.base_sha, revision: row.revision,
-  ...(row.decision_mode === 'auto' ? { decision_mode: 'auto' } : {}) });
+  ...(autoApproved(row) ? { decision_mode: 'auto' } : {}) });
 
 async function notify(env, row) {
   if (!row.notice) return;
@@ -50,13 +53,13 @@ async function notify(env, row) {
     invalidated: 'Approval invalidated; fresh checks required', merged: 'Merge confirmed' };
   const message = 'DOCTOR · ' + labels[row.state] + '\n' + row.repo + ' #' + row.pr_number
     + '\n' + url(row.repo, row.pr_number) + '\nCommit: ' + row.head_sha
-    + (row.state === 'ready' && row.auto_allowed === 1
+    + (row.state === 'ready' && autoOffered(row)
       ? '\nAuto also authorizes a checked revert if Codex finds a regression after deployment.' : '');
   const keyboard = row.state === 'ready' ? [
     [{ text: 'Approve merge', callback_data: 'doctor:approve:' + row.id + ':' + row.revision }],
     [{ text: 'Request further fix', callback_data: 'doctor:fix:' + row.id + ':' + row.revision },
      { text: 'Reject', callback_data: 'doctor:reject:' + row.id + ':' + row.revision }],
-    ...(row.auto_allowed === 1 ? [[{ text: 'Auto', callback_data: 'doctor:auto:' + row.id + ':' + row.revision }]] : [])
+    ...(autoOffered(row) ? [[{ text: 'Auto', callback_data: 'doctor:auto:' + row.id + ':' + row.revision }]] : [])
   ] : undefined;
   await say(env, env.SUPPORT_OWNER_TELEGRAM_ID, message, keyboard);
   await env.DB.prepare('UPDATE doctor_merge_approvals SET notice = 0 WHERE id = ? AND revision = ?')
@@ -111,21 +114,21 @@ export async function handleDoctorApprovalRequest(request, env) {
   if (row && !identity(body, row)) return json({ error: 'identity_changed' }, 409);
   if (body.action === 'read') return json(exact(body, row) ? state(row) : { state: 'missing' });
   if (body.action === 'ready') {
-    const allowAuto = Number(body.allow_auto === true && body.repo === 'crypto-moonboys/crypto-moonboys.github.io');
+    const allowAuto = body.allow_auto === true && body.repo === 'crypto-moonboys/crypto-moonboys.github.io';
     if (!row) {
-      await db.prepare("INSERT OR IGNORE INTO doctor_merge_approvals(job_key,repo,pr_number,head_sha,base_sha,state,updated_at,auto_allowed) VALUES(?,?,?,?,?,'ready',?,?)")
-        .bind(body.job_key, body.repo, body.pr_number, body.head_sha, body.base_sha, now, allowAuto).run();
+      await db.prepare("INSERT OR IGNORE INTO doctor_merge_approvals(job_key,repo,pr_number,head_sha,base_sha,state,updated_at,auto_offer_revision) VALUES(?,?,?,?,?,'ready',?,?)")
+        .bind(body.job_key, body.repo, body.pr_number, body.head_sha, body.base_sha, now, allowAuto ? 1 : null).run();
     } else if (!exact(body, row) || row.state === 'invalidated') {
       // Never revive a rejected or already merged job. Only a new commit can satisfy a further-fix request.
       if (row.state === 'rejected' || row.state === 'merged') return json({ error: 'terminal_decision' }, 409);
       if (row.state === 'fix_requested' && row.head_sha === body.head_sha) {
         return json({ error: 'new_repair_head_required' }, 409);
       }
-      await db.prepare("UPDATE doctor_merge_approvals SET head_sha=?,base_sha=?,state='ready',decision_mode='manual',auto_allowed=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=?")
-        .bind(body.head_sha, body.base_sha, allowAuto, now, row.id, row.revision).run();
-    } else if (row.state === 'ready' && row.auto_allowed !== allowAuto) {
-      await db.prepare("UPDATE doctor_merge_approvals SET auto_allowed=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready'")
-        .bind(allowAuto, now, row.id, row.revision).run();
+      await db.prepare("UPDATE doctor_merge_approvals SET head_sha=?,base_sha=?,state='ready',auto_offer_revision=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=?")
+        .bind(body.head_sha, body.base_sha, allowAuto ? row.revision + 1 : null, now, row.id, row.revision).run();
+    } else if (row.state === 'ready' && autoOffered(row) !== allowAuto) {
+      await db.prepare("UPDATE doctor_merge_approvals SET auto_offer_revision=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready'")
+        .bind(allowAuto ? row.revision + 1 : null, now, row.id, row.revision).run();
     }
     row = await get(db, body.job_key);
     if (!exact(body, row)) return json({ error: 'stale_job' }, 409);
@@ -165,10 +168,10 @@ export async function handleDoctorApprovalUpdate(update, env) {
   if (match && privateOwner) {
     const [, action, id, revision] = match;
     const row = await byId(env.DB, id);
-    if (row?.state === 'ready' && String(row.revision) === revision && (action !== 'auto' || row.auto_allowed === 1)) {
+    if (row?.state === 'ready' && String(row.revision) === revision && (action !== 'auto' || autoOffered(row))) {
       const next = { approve: 'approved', auto: 'approved', fix: 'fix_requested', reject: 'rejected' }[action];
-      const result = await env.DB.prepare("UPDATE doctor_merge_approvals SET state=?,decision_mode=?,decision_actor=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready' RETURNING id")
-        .bind(next, action === 'auto' ? 'auto' : 'manual', actor, Date.now(), row.id, row.revision).first();
+      const result = await env.DB.prepare("UPDATE doctor_merge_approvals SET state=?,auto_decision_revision=?,decision_actor=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready' RETURNING id")
+        .bind(next, action === 'auto' ? row.revision + 1 : null, actor, Date.now(), row.id, row.revision).first();
       accepted = result?.id === row.id;
     }
   }

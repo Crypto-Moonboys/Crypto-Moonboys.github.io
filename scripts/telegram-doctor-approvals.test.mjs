@@ -115,6 +115,16 @@ test('Doctor Telegram approval is private, exact-head, revision-bound and fail c
   await click(auto.callback_data);
   assert.equal((await (await call({ ...autoJob, action: 'read' })).json()).decision_mode, 'auto');
   assert.equal(audit().at(-1).decision_mode, 'auto');
+  // Simulate a pre-migration Worker readying and manually approving another head.
+  const legacyAutoHead = { ...autoJob, head_sha: '3'.repeat(40) };
+  sqlite.prepare("UPDATE doctor_merge_approvals SET head_sha=?,state='ready',revision=revision+1,notice=1 WHERE job_key=?")
+    .run(legacyAutoHead.head_sha, autoJob.job_key);
+  await call({ action: 'flush' });
+  assert.ok(messages.filter(m => m.reply_markup).at(-1).reply_markup.inline_keyboard.flat().every(button => button.text !== 'Auto'));
+  sqlite.prepare("UPDATE doctor_merge_approvals SET state='approved',decision_actor=?,revision=revision+1 WHERE job_key=?")
+    .run('100', autoJob.job_key);
+  assert.equal((await (await call({ ...legacyAutoHead, action: 'read' })).json()).decision_mode, undefined);
+  assert.equal(audit().at(-1).decision_mode, 'manual');
   const changedAutoHead = { ...autoJob, head_sha: 'f'.repeat(40) };
   await call({ ...changedAutoHead, action: 'ready' });
   await click(auto.callback_data);
