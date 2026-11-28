@@ -860,7 +860,10 @@ function chromiumPreview(file, profile, screenshot, width, height) {
   const match = dom.stdout?.match(/data-preview-checksum="([0-9a-f]+)"/);
   if (dom.error || dom.status !== 0 || !dom.stdout?.includes('data-preview-ready="true"') || !match
       || dom.stdout.includes("data-preview-error=")) {
-    throw new Error("Chromium did not render the proposed Waterfront production preview.");
+    const encoded = dom.stdout?.match(/data-preview-error="([^"]+)"/)?.[1] ?? "";
+    const previewError = encoded.replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
+    const processError = dom.error?.message || dom.stderr?.trim().split("\n").at(-1) || `exit ${dom.status}`;
+    throw new Error(`Chromium did not render the proposed Waterfront production preview: ${previewError || processError}.`);
   }
   const shot = spawnSync(browser, [...common, `--screenshot=${screenshot}`, require("node:url").pathToFileURL(file).href], {
     env: withoutPublishCredentials(), encoding: "utf8", timeout: 45_000, maxBuffer: 1024 * 1024
