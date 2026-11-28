@@ -861,30 +861,31 @@ function chromiumPreview(file, profile, screenshot, width, height) {
   const browser = process.env.BLOCK_TOPIA_CHROMIUM || "chromium";
   const common = ["--headless=new", "--disable-dev-shm-usage", "--no-first-run", "--allow-file-access-from-files",
     `--user-data-dir=${profile}`, `--window-size=${width},${height}`, "--virtual-time-budget=12000"];
+  const browserEnv = { ...withoutPublishCredentials(),
+    DBUS_SESSION_BUS_ADDRESS: process.env.DBUS_SESSION_BUS_ADDRESS || "disabled:" };
   const dom = spawnSync(browser, [...common, "--dump-dom", require("node:url").pathToFileURL(file).href], {
-    env: withoutPublishCredentials(), encoding: "utf8", timeout: 45_000, maxBuffer: 2 * 1024 * 1024
+    env: browserEnv, encoding: "utf8", timeout: 45_000, maxBuffer: 2 * 1024 * 1024
   });
   const match = dom.stdout?.match(/data-preview-checksum="([0-9a-f]+)"/);
   const rendered = dom.stdout?.includes('data-preview-ready="true"') && match
     && !dom.stdout.includes("data-preview-error=");
-  // Full Chrome can emit D-Bus startup errors and return non-zero on a minimal
-  // Linux service account after it has still rendered and dumped a valid DOM.
-  // The page-owned ready marker, checksum and error marker are the validation
-  // boundary; never accept a browser launch error or an incomplete/error DOM.
-  if (dom.error || !rendered) {
+  if (dom.error || dom.signal || dom.status !== 0 || !rendered) {
     const encoded = dom.stdout?.match(/data-preview-error="([^"]+)"/)?.[1] ?? "";
     const previewError = encoded.replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
     const processError = dom.error?.message || `exit ${dom.status}; ready=${Boolean(dom.stdout?.includes('data-preview-ready="true"'))}; checksum=${Boolean(match)}; ${dom.stderr?.trim().split("\n").at(-1) || "no browser error output"}`;
     throw new Error(`Chromium did not render the proposed Waterfront production preview: ${previewError || processError}.`);
   }
+  require("node:fs").rmSync(screenshot, { force: true });
   const shot = spawnSync(browser, [...common, `--screenshot=${screenshot}`, require("node:url").pathToFileURL(file).href], {
-    env: withoutPublishCredentials(), encoding: "utf8", timeout: 45_000, maxBuffer: 1024 * 1024
+    env: browserEnv, encoding: "utf8", timeout: 45_000, maxBuffer: 1024 * 1024
   });
   const captured = (() => {
     try { return require("node:fs").statSync(screenshot).size >= 1024; }
     catch { return false; }
   })();
-  if (shot.error || !captured) throw new Error(`Chromium did not capture the Waterfront production screenshot: ${shot.error?.message || `exit ${shot.status}`}.`);
+  if (shot.error || shot.signal || shot.status !== 0 || !captured) {
+    throw new Error(`Chromium did not capture the Waterfront production screenshot: ${shot.error?.message || `exit ${shot.status}; signal=${shot.signal || "none"}`}.`);
+  }
   return match[1];
 }
 
