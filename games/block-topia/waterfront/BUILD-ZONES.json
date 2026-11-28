@@ -1,0 +1,432 @@
+{
+  "version": 1,
+  "source": "CITY-BRIEF.md",
+  "rules": {
+    "minChebyshevSpacing": 2,
+    "maxSameAssetPerZone": 1,
+    "maxConsecutiveClass": 2,
+    "spawnClearance": 3,
+    "intersectionClearanceForTrees": 2,
+    "protectedTiles": "All non-ground tiles, the restored harbor core, building entrances, crossings and saved-layout guards.",
+    "completion": "Stop when every zone reaches maxPlacements or no candidate can satisfy its remaining class targets."
+  },
+  "zones": [
+    {
+      "id": "west-meadow",
+      "name": "West Meadow",
+      "bounds": [
+        11,
+        20,
+        22,
+        23
+      ],
+      "priority": 1,
+      "maxPlacements": 5,
+      "purpose": "Walkable garden link between the older streets and southern route.",
+      "targets": {
+        "tree": 2,
+        "flowers": 2,
+        "furniture": 1
+      },
+      "allowedClasses": [
+        "tree",
+        "flowers",
+        "furniture"
+      ]
+    },
+    {
+      "id": "southwest-park",
+      "name": "Southwest Park",
+      "bounds": [
+        12,
+        25,
+        23,
+        28
+      ],
+      "priority": 2,
+      "maxPlacements": 6,
+      "purpose": "Accessible neighborhood park with rest points, planted edges and clear sightlines.",
+      "targets": {
+        "tree": 2,
+        "flowers": 2,
+        "furniture": 2
+      },
+      "allowedClasses": [
+        "tree",
+        "flowers",
+        "furniture"
+      ]
+    },
+    {
+      "id": "south-point",
+      "name": "South Point",
+      "bounds": [
+        25,
+        25,
+        40,
+        29
+      ],
+      "priority": 3,
+      "maxPlacements": 5,
+      "purpose": "Open shoreline lookout and promenade without blocking the water edge.",
+      "targets": {
+        "tree": 1,
+        "flowers": 1,
+        "furniture": 3
+      },
+      "allowedClasses": [
+        "tree",
+        "flowers",
+        "furniture"
+      ]
+    },
+    {
+      "id": "east-common",
+      "name": "East Common",
+      "bounds": [
+        38,
+        15,
+        43,
+        22
+      ],
+      "priority": 4,
+      "maxPlacements": 3,
+      "purpose": "Outdoor market edge with a clear walking loop and places to pause.",
+      "targets": {
+        "tree": 0,
+        "flowers": 1,
+        "furniture": 2
+      },
+      "allowedClasses": [
+        "flowers",
+        "furniture"
+      ]
+    },
+    {
+      "id": "east-shore",
+      "name": "East Shore",
+      "bounds": [
+        45,
+        11,
+        47,
+        26
+      ],
+      "priority": 5,
+      "maxPlacements": 3,
+      "purpose": "Narrow shoreline service strip with sparse lit landings and dockside props.",
+      "targets": {
+        "tree": 0,
+        "flowers": 1,
+        "furniture": 2
+      },
+      "allowedClasses": [
+        "flowers",
+        "furniture"
+      ]
+    }
+  ],
+  "assets": {
+    "flowers": [
+      {
+        "id": "flowers-0",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-1",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-2",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-3",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-4",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-5",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-6",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-7",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-8",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-9",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-10",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "flowers-11",
+        "class": "flowers",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      }
+    ],
+    "furniture": [
+      {
+        "id": "furniture-0",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-1",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-2",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-3",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-4",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-5",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-6",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-7",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "low"
+      },
+      {
+        "id": "furniture-8",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      },
+      {
+        "id": "furniture-9",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      },
+      {
+        "id": "furniture-10",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      },
+      {
+        "id": "furniture-11",
+        "class": "furniture",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      }
+    ],
+    "tree": [
+      {
+        "id": "tree-0",
+        "class": "tree",
+        "name": "banyan",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "large"
+      },
+      {
+        "id": "tree-1",
+        "class": "tree",
+        "name": "camphor",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "large"
+      },
+      {
+        "id": "tree-2",
+        "class": "tree",
+        "name": "palm",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      },
+      {
+        "id": "tree-3",
+        "class": "tree",
+        "name": "ornamental",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "medium"
+      },
+      {
+        "id": "tree-4",
+        "class": "tree",
+        "name": "casuarina",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      },
+      {
+        "id": "tree-5",
+        "class": "tree",
+        "name": "frangipani",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "medium"
+      },
+      {
+        "id": "tree-6",
+        "class": "tree",
+        "name": "mangrove",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "medium"
+      },
+      {
+        "id": "tree-7",
+        "class": "tree",
+        "name": "paperbark",
+        "footprint": [
+          1,
+          1
+        ],
+        "heightClass": "tall"
+      }
+    ]
+  }
+}

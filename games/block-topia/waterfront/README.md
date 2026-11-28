@@ -113,3 +113,21 @@ The six building sprites are AutoSprite originals. Their transparent game PNGs a
 ### Production PR conflicts
 
 Follow the [production conflict-recovery rule](CITY-BRIEF.md) if an open Waterfront PR can no longer merge into `main`. Reapply the scoped change on current `main`, rerun the affected checks, and get Codex clearance on the updated head before an authorised merge.
+
+## Autonomous production guardrails
+
+Waterfront production is driven by issue #1930 and [BUILD-ZONES.json](BUILD-ZONES.json). The zone plan turns the broad city brief into finite targets for West Meadow, Southwest Park, South Point, East Common and East Shore. Existing automated placements are counted before a new proposal is considered.
+
+The queue rejects occupied, crowded, repeated, protected, spawn-adjacent and doorway-adjacent candidates. It enforces per-zone asset mixes and maximum counts, and it stops after the approved targets are complete. Local Ollama only chooses among bounded candidates and allow-listed assets; it cannot write arbitrary repository files. Hermes is not installed or invoked by this workflow.
+
+Before opening a production PR, the worker builds a local candidate renderer using the exact current `main` base. Headless Chromium renders both the baseline and candidate with real runtime atlases at desktop and mobile viewport sizes. An unchanged canvas, failed atlas, browser error or empty screenshot rejects the attempt. The exact result is recorded in `production-validation.json`; screenshots remain in the worker’s private state directory.
+
+To expand the automatic builder beyond existing flowers, furniture and trees, add a named action type with:
+
+1. an allow-listed file and schema;
+2. deterministic footprint, route, scale, saved-layout and collision validation;
+3. desktop and mobile rendering coverage;
+4. focused tests;
+5. an updated zone target and explicit GK approval.
+
+Do not give the local model general repository write access.
