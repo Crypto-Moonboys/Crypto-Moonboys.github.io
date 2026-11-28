@@ -2866,7 +2866,7 @@
       for (var i = 0; i < coins.length; i += 1) {
         var coin = coins[i];
         if (courseExt && courseExt.drawCoin &&
-            courseExt.drawCoin(ctx, courseApi, coin, time)) continue;
+            courseExt.drawCoin(ctx, courseApi, coin, runElapsedMs)) continue;
         if (coin.taken) continue;
         var coinSize = coin.size || 16;
         var x = Math.round(coin.x - cameraX - coinSize / 2);
@@ -2894,7 +2894,7 @@
       for (var i = 0; i < secretCoins.length; i += 1) {
         var coin = secretCoins[i];
         if (courseExt && courseExt.drawSecretCoin &&
-            courseExt.drawSecretCoin(ctx, courseApi, coin, time)) continue;
+            courseExt.drawSecretCoin(ctx, courseApi, coin, runElapsedMs)) continue;
         if (coin.taken) continue;
         var x = Math.round(coin.x - cameraX);
         var y = Math.round(coin.y + FOREGROUND_VISUAL_OFFSET_Y);

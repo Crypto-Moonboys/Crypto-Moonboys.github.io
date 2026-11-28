@@ -930,7 +930,15 @@
       var x = enemy.x - api.cameraX - (w - enemy.w) / 2;
       if (x + w < -60 || x > VIEW_W + 60) return true;
       var y = enemy.y + (enemy.bob || 0) + OFFSET_Y + enemy.h - h;
-      var facing = enemy.attackFacing || enemy.fireFacing || enemy.balloonFacing || (enemy.vx < 0 ? -1 : 1);
+      var facing = enemy.vx < 0 ? -1 : 1;
+      if ((enemy.type === 'rat' || enemy.type === 'turquoiseRat' || enemy.type === 'brownRat') &&
+          enemy.attackUntil > t) {
+        facing = enemy.attackFacing || facing;
+      } else if (enemy.type === 'bot' && enemy.fireUntil > t) {
+        facing = enemy.fireFacing || facing;
+      } else if (enemy.type === 'balloon' && enemy.balloonState === 'release') {
+        facing = enemy.balloonFacing || facing;
+      }
       var alpha = enemy.defeated ? Math.max(0, 1 - (t - enemy.defeatedAt) / 520) : 1;
       if (!enemy.defeated && t < 420 && ready(art['ground-transitions'])) {
         drawGridCell(ctx, art['ground-transitions'], 15,
