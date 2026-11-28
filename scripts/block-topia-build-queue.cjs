@@ -347,7 +347,7 @@ async function publishRound(issue, round, attempt, dir, files, production = null
     head: branch, base: target, draft: false,
     title: `Block Topia ${production ? "production " : ""}waterfront #${number}, round ${round}`,
     body: production
-      ? `Part of #${number}. Adds an existing Waterfront sprite to a validated ground lot. Preview integration only. Please check placement and visual fit.`
+      ? `Part of #${number}. Adds an existing Waterfront sprite to a validated ground lot on the live production map. This targets main and requires a clean current-head Codex review, unchanged approval and a clean merge. Please check placement and visual fit.`
       : `Part of #${number}. This integration-only round passed local route and Chromium rendering checks.`
   });
   await checkApproval(issue, iterationLabel);
@@ -358,7 +358,7 @@ async function publishRound(issue, round, attempt, dir, files, production = null
     return { feedback: "Integration advanced before merge. Rebuild and retest the round against its new base." };
   }
   const merged = await github(`/pulls/${pr.number}/merge`, {
-    sha: publication.head, merge_method: "merge"
+    sha: publication.head, merge_method: production ? "squash" : "merge"
   }, "PUT");
   if (!merged.merged) throw new Error("GitHub did not merge the tested integration round.");
   return { url: pr.html_url };
@@ -467,7 +467,7 @@ async function* rotateIssues(issues, cursor) {
 }
 
 
-const productionBranch = "block-topia/waterfront-production-integration";
+const productionTarget = "main";
 const waterfrontRoot = "games/block-topia/waterfront";
 const rendererPath = waterfrontRoot + "/harbor-art.js";
 const lotAnchor = "    } else if (Object.hasOwn(waterfrontSprites, tile)) {";
@@ -509,10 +509,8 @@ function productionPlacement(renderer, district, proposal) {
 
 async function buildProduction(issue, dir, round, attempt, repair) {
   const context = await checkpoint(dir, "production-base.json", async () => {
-    const refs = await github("/git/matching-refs/heads/" + productionBranch);
-    const ref = refs.find(entry => entry.ref === "refs/heads/" + productionBranch);
-    const base = ref ?? await github("/git/ref/heads/main");
-    return { branch: productionBranch, base: base.object.sha };
+    const base = await github("/git/ref/heads/" + productionTarget);
+    return { branch: productionTarget, base: base.object.sha };
   });
   const [renderer, source, brief, library] = await Promise.all([
     repositoryText(rendererPath, context.base),
