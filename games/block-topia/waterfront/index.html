@@ -5,8 +5,6 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Reload the deployed Waterfront every 20 minutes so newly merged map rounds appear without a manual refresh. -->
-<meta http-equiv="refresh" content="1200">
 <title>Lumina’s Waterfront | Block Topia</title>
 <link rel="stylesheet" href="../styles.css">
 <link rel="stylesheet" href="/css/clan-leader-dialog.css?lore=3">
@@ -140,5 +138,15 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <script data-cfasync="false" type="module" src="entry.js?v=54-runtime-images"></script>
 <script type="module" src="/js/arcade/core/radio.js?v=arcade-audio-20261125"></script>
+<script>
+window.waterfrontReloadSafe = true;
+window.setTimeout(function refreshWaterfrontWhenSafe() {
+  if (window.waterfrontReloadSafe !== false) {
+    window.location.reload();
+    return;
+  }
+  window.setTimeout(refreshWaterfrontWhenSafe, 60_000);
+}, 20 * 60_000);
+</script>
 </body>
 </html>
