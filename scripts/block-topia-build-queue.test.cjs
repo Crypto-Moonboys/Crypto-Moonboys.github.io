@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 
@@ -50,4 +51,18 @@ test("the starter preview can be rendered without queue credentials", () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Lumina’s Waterfront/);
   assert.match(result.stdout, /<canvas id="map"/);
+});
+
+
+test("production rounds target main and use a linear-history squash merge", () => {
+  const source = fs.readFileSync(runnerPath, "utf8");
+  assert.match(source, /const productionTarget = "main";/);
+  assert.match(source, /return \{ branch: productionTarget, base: base\.object\.sha \};/);
+  assert.match(source, /merge_method: production \? "squash" : "merge"/);
+  assert.doesNotMatch(source, /waterfront-production-integration/);
+});
+
+test("the live Waterfront reloads after twenty minutes", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "games", "block-topia", "waterfront", "index.html"), "utf8");
+  assert.match(html, /<meta http-equiv="refresh" content="1200">/);
 });
