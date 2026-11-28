@@ -588,6 +588,19 @@ function productionPlacement(renderer, district, proposal) {
   return updated;
 }
 
+
+function enforceProductionCandidate(proposal, candidateLots, sprites, seed) {
+  if (!candidateLots.length || !sprites.length) {
+    throw new Error("No eligible production placement candidates remain.");
+  }
+  const proposedLot = candidateLots.find(({ x, y }) => proposal?.x === x && proposal?.y === y);
+  const lot = proposedLot ?? candidateLots[Math.abs(seed) % candidateLots.length];
+  const sprite = sprites.includes(proposal?.sprite)
+    ? proposal.sprite
+    : sprites[Math.abs(seed) % sprites.length];
+  return { x: lot.x, y: lot.y, sprite };
+}
+
 async function buildProduction(issue, dir, round, attempt, repair) {
   const latest = await github("/git/ref/heads/" + productionTarget);
   let context = await fs.readFile(path.join(dir, "production-base.json"), "utf8")
@@ -658,6 +671,7 @@ async function buildProduction(issue, dir, round, attempt, repair) {
         "json", { numPredict: 160, timeoutMs: 900_000 });
     }
     try {
+      proposal = enforceProductionCandidate(proposal, candidateLots, sprites, round + attempt + retry);
       updated = productionPlacement(renderer, district, proposal);
       await writeProgress(dir, "production-placement.json", proposal);
       break;
@@ -772,4 +786,4 @@ if (require.main === module) {
     : runQueue();
   command.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel };
+module.exports = { validateDistrict, applyDistrictEdits, waterfrontTemplate, render, browserCheck, selectOllamaModel, enforceProductionCandidate };
