@@ -52,6 +52,13 @@ test('Doctor Telegram approval is private, exact-head, revision-bound and fail c
   const fresh = messages.filter(m => m.reply_markup).at(-1).reply_markup.inline_keyboard;
   await click(fresh[1][0].callback_data);
   assert.equal(await state('ready', next), 'fix_requested');
+  const movedBase = { ...next, base_sha: 'f'.repeat(40) };
+  assert.equal((await call({ ...movedBase, action: 'ready' })).status, 409);
+  assert.equal(await state('read', next), 'fix_requested');
+  assert.equal(await state('read', movedBase), 'missing');
+  await call({ action: 'flush' });
+  await click(fresh[0][0].callback_data);
+  assert.equal(await state('read', next), 'fix_requested');
   const third = { ...next, head_sha: 'd'.repeat(40) };
   assert.equal(await state('ready', third), 'ready');
   await call({ action: 'flush' });
