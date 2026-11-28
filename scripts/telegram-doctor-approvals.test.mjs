@@ -46,6 +46,7 @@ test('Doctor Telegram approval is private, exact-head, revision-bound and fail c
   assert.equal(await state('read'), 'ready');
   await Promise.all([click(approve), click(approve)]);
   assert.equal(await state('read'), 'approved');
+  assert.equal(messages.filter(m => m.text === 'Decision recorded for this commit.').length, 1);
   const [decision] = audit();
   assert.equal(audit().length, 1);
   assert.equal(decision.actor_telegram_id, '100');

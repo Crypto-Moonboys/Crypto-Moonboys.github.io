@@ -156,9 +156,9 @@ export async function handleDoctorApprovalUpdate(update, env) {
     const row = await byId(env.DB, id);
     if (row?.state === 'ready' && String(row.revision) === revision) {
       const next = { approve: 'approved', fix: 'fix_requested', reject: 'rejected' }[action];
-      const result = await env.DB.prepare("UPDATE doctor_merge_approvals SET state=?,decision_actor=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready'")
-        .bind(next, actor, Date.now(), row.id, row.revision).run();
-      accepted = result.meta.changes === 1;
+      const result = await env.DB.prepare("UPDATE doctor_merge_approvals SET state=?,decision_actor=?,revision=revision+1,notice=1,updated_at=? WHERE id=? AND revision=? AND state='ready' RETURNING id")
+        .bind(next, actor, Date.now(), row.id, row.revision).first();
+      accepted = result?.id === row.id;
     }
   }
   await telegram(env, 'answerCallbackQuery', { callback_query_id: cb.id,
