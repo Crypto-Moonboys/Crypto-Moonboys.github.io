@@ -766,7 +766,10 @@
       { a: 'ground-zones-b', c:12, x:17830, b: F, w: 122, h: 106 },
       { a: 'ground-zones-b', c:13, x:19020, b: F, w: 34,  h: 122 },
       { a: 'ground-zones-b', c:14, x:20020, b: F, w: 68,  h: 124 },
-      { a: 'ground-zones-b', c:15, x:21680, b: F, w: 176, h: 198 }
+      { a: 'ground-zones-b', c:15, x:21680, b: F, w: 176, h: 198 },
+      { a: 'ground-pickups', c:14, x: 3650, b: F, w: 46, h: 34 },
+      { a: 'ground-pickups', c:14, x:13280, b: F, w: 52, h: 38 },
+      { a: 'ground-pickups', c:14, x:18720, b: F, w: 44, h: 32 }
     ];
 
     function drawPhase2Props(ctx, api) {
@@ -800,8 +803,17 @@
       if (skyAge >= 0 && skyAge < 950 && ready(art['hidden-routes'])) {
         var skyProgress = skyAge / 950;
         var ss = 78 + skyProgress * 44;
+        var skyAlpha = 1 - skyProgress;
+        drawGridCell(ctx, art['hidden-routes'], 13,
+          VIEW_W / 2 - ss * 0.72, VIEW_H / 2 - ss * 0.72, ss * 1.44, ss * 1.44, false, skyAlpha * 0.55);
+        drawGridCell(ctx, art['hidden-routes'], 12,
+          VIEW_W / 2 - ss * 0.62, VIEW_H / 2 - ss * 0.62, ss * 1.24, ss * 1.24, false, skyAlpha * 0.75);
         drawGridCell(ctx, art['hidden-routes'], 8 + skyDiscoveryIndex % 4,
-          VIEW_W / 2 - ss / 2, VIEW_H / 2 - ss / 2, ss, ss, false, 1 - skyProgress);
+          VIEW_W / 2 - ss / 2, VIEW_H / 2 - ss / 2, ss, ss, false, skyAlpha);
+        drawGridCell(ctx, art['hidden-routes'], 14,
+          VIEW_W / 2 - ss * 0.62, VIEW_H / 2 + ss * 0.34, ss * 1.24, ss * 0.48, false, skyAlpha);
+        drawGridCell(ctx, art['hidden-routes'], 15,
+          VIEW_W / 2 - ss * 0.70, VIEW_H / 2 - ss * 0.30, ss * 1.40, ss * 1.10, false, skyAlpha * 0.7);
       }
       if (api.complete && ready(art['ground-transitions'])) {
         var pulse = 1 + Math.sin(t / 90) * 0.08;
@@ -864,6 +876,19 @@
       return true;
     }
 
+    function drawCourseCoin(ctx, api, coin, t) {
+      if (coin.tier !== 'mega' || !ready(art['ground-pickups'])) return false;
+      if (coin.taken && t - (coin.takenAt || 0) >= 520) return true;
+      var age = coin.taken ? t - (coin.takenAt || t) : -1;
+      var cell = coin.taken ? 4 : 3;
+      var size = coin.taken ? 86 : 66 + Math.sin((t + coin.x) / 140) * 4;
+      drawGridCell(ctx, art['ground-pickups'], cell,
+        coin.x - api.cameraX - size / 2,
+        coin.y + OFFSET_Y - size / 2,
+        size, size, false, coin.taken ? Math.max(0, 1 - age / 520) : 1);
+      return true;
+    }
+
     function drawCourseFinish(ctx, api, finish, t) {
       if (!ready(art['ground-transitions'])) return false;
       var approaching = Math.abs(api.player.x - finish.x) < 420;
@@ -883,7 +908,8 @@
       var w = 36;
       var h = 42;
       if (enemy.type === 'rat') {
-        cell = enemy.defeated ? 3 : (enemy.attackUntil > t ? 1 : 0);
+        var ratDefeatAge = enemy.defeated ? t - (enemy.defeatedAt || t) : -1;
+        cell = enemy.defeated ? (ratDefeatAge < 180 ? 2 : 3) : (enemy.attackUntil > t ? 1 : 0);
       } else if (enemy.type === 'turquoiseRat') {
         cell = enemy.defeated ? 5 : 4;
       } else if (enemy.type === 'brownRat') {
@@ -906,6 +932,10 @@
       var y = enemy.y + (enemy.bob || 0) + OFFSET_Y + enemy.h - h;
       var facing = enemy.attackFacing || enemy.fireFacing || enemy.balloonFacing || (enemy.vx < 0 ? -1 : 1);
       var alpha = enemy.defeated ? Math.max(0, 1 - (t - enemy.defeatedAt) / 520) : 1;
+      if (!enemy.defeated && t < 420 && ready(art['ground-transitions'])) {
+        drawGridCell(ctx, art['ground-transitions'], 15,
+          x - w * 0.25, y + h * 0.15, w * 1.5, h * 1.05, facing < 0, 1 - t / 420);
+      }
       drawGridCell(ctx, img, cell, x, y, w, h, facing < 0, alpha);
       return true;
     }
@@ -2398,10 +2428,16 @@
       var respawnAge = t - respawnVfxAt;
       if (respawnAge >= 0 && respawnAge < 720) {
         var respawnSize = 74 + respawnAge / 18;
+        var respawnX = api.player.x - camX + api.player.w / 2 - respawnSize / 2;
+        var respawnY = api.player.y + OFFSET_Y + api.player.h - respawnSize;
+        drawGridCell(ctx, art['ground-transitions'], 13,
+          respawnX - 12, respawnY - 8, respawnSize + 24, respawnSize + 16, false,
+          Math.max(0, 0.65 - respawnAge / 900));
         drawGridCell(ctx, art['ground-pickups'], 15,
-          api.player.x - camX + api.player.w / 2 - respawnSize / 2,
-          api.player.y + OFFSET_Y + api.player.h - respawnSize,
-          respawnSize, respawnSize, false, 1 - respawnAge / 720);
+          respawnX, respawnY, respawnSize, respawnSize, false, 1 - respawnAge / 720);
+        drawGridCell(ctx, art['ground-transitions'], 14,
+          respawnX - 6, respawnY - 6, respawnSize + 12, respawnSize + 12, false,
+          1 - respawnAge / 720);
       }
       drawCourseVfx(ctx, api, t);
       drawNight(ctx, api, t);
@@ -2580,6 +2616,7 @@
       drawSpeedBox: drawCourseSpeedBox,
       drawRewardBox: drawCourseRewardBox,
       drawSecretCoin: drawCourseSecretCoin,
+      drawCoin: drawCourseCoin,
       drawFinish: drawCourseFinish,
       drawEnemy: drawCourseEnemy,
       onRespawn: onCourseRespawn,

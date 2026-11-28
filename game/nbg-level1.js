@@ -1729,6 +1729,7 @@
           w: hitSize, h: hitSize };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
+          coin.takenAt = time;
           collectedCoinCount += 1;
           comboCount = time < comboExpiresAt ? Math.min(MAX_COIN_COMBO, comboCount + 1) : 1;
           comboExpiresAt = time + COIN_COMBO_WINDOW_MS;
@@ -2864,6 +2865,8 @@
     function drawCoins(time) {
       for (var i = 0; i < coins.length; i += 1) {
         var coin = coins[i];
+        if (courseExt && courseExt.drawCoin &&
+            courseExt.drawCoin(ctx, courseApi, coin, time)) continue;
         if (coin.taken) continue;
         var coinSize = coin.size || 16;
         var x = Math.round(coin.x - cameraX - coinSize / 2);
