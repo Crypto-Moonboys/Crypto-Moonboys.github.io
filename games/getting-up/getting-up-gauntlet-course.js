@@ -583,6 +583,131 @@
       art[key] = img;
     }
     function ready(img) { return img && img.complete && img.naturalWidth > 0; }
+    // The generated sheets are presentation atlases rather than uniform grids.
+    // These measured row bounds/centres keep every source crop on one complete
+    // sprite instead of allowing adjacent art to bleed into a frame.
+    var ATLAS_LAYOUTS = {
+      structures: { w: 2172, h: 724, rows: [
+        { y: 0, h: 160, fw: 350, c: [190,550,915,1275,1635,1995] },
+        { y: 145, h: 190, fw: 350, c: [190,550,915,1275,1635,1995] },
+        { y: 315, h: 160, fw: 310, c: [175,460,745,1030,1315,1585,1840,2050] },
+        { y: 455, h: 165, fw: 350, c: [190,550,915,1275,1635,1995] },
+        { y: 590, h: 134, fw: 350, c: [190,550,915,1275,1635,1995] }
+      ] },
+      hazards: { w: 2172, h: 724, rows: [
+        { y: 0, h: 165, fw: 205, c: [130,347,564,781,997,1198,1403,1608,1834,2060] },
+        { y: 145, h: 190, fw: 310, c: [145,460,775,1090,1405,1720,2035] },
+        { y: 290, h: 200, fw: 320, c: [140,415,690,965,1240,1515,1790,2060] },
+        { y: 470, h: 175, fw: 345, c: [190,550,910,1270,1630,1990] },
+        { y: 620, h: 104, fw: 260, c: [135,405,675,945,1215,1485,1755,2025] }
+      ] },
+      pickups: { w: 1536, h: 1024, rows: [
+        { y: 0, h: 148, fw: 175, c: [245,425,605,775,950,1125,1295] },
+        { y: 146, h: 148, fw: 175, c: [225,415,605,775,960,1135,1330] },
+        { y: 292, h: 148, fw: 175, c: [225,415,605,775,960,1135,1330] },
+        { y: 438, h: 148, fw: 180, c: [175,350,525,700,875,1050,1225,1385] },
+        { y: 584, h: 148, fw: 190, c: [175,350,525,700,875,1050,1225,1385] },
+        { y: 730, h: 148, fw: 190, c: [165,350,535,735,930,1130,1330] },
+        { y: 876, h: 148, fw: 210, c: [185,410,640,850,1080,1325] }
+      ] },
+      night: { w: 2172, h: 724, rows: [
+        { y: 0, h: 125, fw: 350, c: [365,725,1085,1445,1805,2070] },
+        { y: 115, h: 145, fw: 270, c: [140,420,700,980,1260,1540,1820,2070] },
+        { y: 245, h: 150, fw: 310, c: [175,500,825,1150,1475,1800,2070] },
+        { y: 385, h: 135, fw: 270, c: [140,420,700,980,1260,1540,1820,2070] },
+        { y: 500, h: 130, fw: 320, c: [175,500,825,1150,1475,1800,2070] },
+        { y: 600, h: 124, fw: 270, c: [140,420,700,980,1260,1540,1820,2070] }
+      ] }
+    };
+    function atlasLayoutFor(img) {
+      if (img === art['atlas-structures']) return ATLAS_LAYOUTS.structures;
+      if (img === art['atlas-hazards']) return ATLAS_LAYOUTS.hazards;
+      if (img === art['atlas-pickups']) return ATLAS_LAYOUTS.pickups;
+      if (img === art['atlas-night']) return ATLAS_LAYOUTS.night;
+      return null;
+    }
+    function drawAtlasFrame(ctx, img, row, rows, frame, frames, x, y, w, h) {
+      if (!ready(img)) return false;
+      var layout = atlasLayoutFor(img);
+      var sx, sy, sw, sh;
+      if (layout && layout.rows[row]) {
+        var spec = layout.rows[row];
+        frame = ((frame % spec.c.length) + spec.c.length) % spec.c.length;
+        var scaleX = img.naturalWidth / layout.w;
+        var scaleY = img.naturalHeight / layout.h;
+        sw = Math.min(spec.fw, layout.w) * scaleX;
+        sh = Math.min(spec.h, layout.h - spec.y) * scaleY;
+        sx = Math.max(0, Math.min(layout.w - spec.fw, spec.c[frame] - spec.fw / 2)) * scaleX;
+        sy = spec.y * scaleY;
+      } else {
+        frame = ((frame % frames) + frames) % frames;
+        sw = img.naturalWidth / frames;
+        sh = img.naturalHeight / rows;
+        sx = frame * sw;
+        sy = row * sh;
+      }
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, sx, sy, sw, sh,
+        Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+      ctx.restore();
+      return true;
+    }
+    function atlasLoop(t, frames, frameMs) { return Math.floor(t / frameMs) % frames; }
+    function drawAtlasStrip(ctx, img, nx, ny, nw, nh, frame, frames, x, y, w, h) {
+      if (!ready(img)) return false;
+      frame = ((frame % frames) + frames) % frames;
+      var regionX = img.naturalWidth * nx;
+      var regionY = img.naturalHeight * ny;
+      var regionW = img.naturalWidth * nw;
+      var regionH = img.naturalHeight * nh;
+      var sw = regionW / frames;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, regionX + frame * sw, regionY, sw, regionH,
+        Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+      ctx.restore();
+      return true;
+    }
+    function drawGridCell(ctx, img, index, x, y, w, h, flipX, alpha) {
+      if (!ready(img)) return false;
+      var cols = 4;
+      var rows = 4;
+      var cellW = img.naturalWidth / cols;
+      var cellH = img.naturalHeight / rows;
+      var col = index % cols;
+      var row = Math.floor(index / cols);
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      if (alpha !== undefined) ctx.globalAlpha = alpha;
+      if (flipX) {
+        ctx.translate(Math.round(x + w), Math.round(y));
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, col * cellW, row * cellH, cellW, cellH,
+          0, 0, Math.round(w), Math.round(h));
+      } else {
+        ctx.drawImage(img, col * cellW, row * cellH, cellW, cellH,
+          Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+      }
+      ctx.restore();
+      return true;
+    }
+
+    function gemAtlasRow(kind) {
+      return kind === 'ruby' ? 0 : kind === 'emerald' ? 1 : kind === 'sapphire' ? 2 : 3;
+    }
+    loadArt('atlas-structures', '/games/getting-up/01-platforms-and-structures.png');
+    loadArt('atlas-hazards', '/games/getting-up/02-enemies-and-hazards.png');
+    loadArt('atlas-pickups', '/games/getting-up/03-collectibles-and-checkpoints.png');
+    loadArt('atlas-night', '/games/getting-up/04-night-train-transitions.png');
+    loadArt('atlas-vfx', '/games/getting-up/05-shared-vfx-atlas.png');
+    loadArt('ground-hazards', '/games/getting-up/Gritty Ground Hazards Sprite Atlas-5.png');
+    loadArt('ground-pickups', '/games/getting-up/Neon Street Pickups, Crates, and Respawns-4.png');
+    loadArt('ground-zones-a', '/games/getting-up/Gritty neon ground zone props atlas-1.png');
+    loadArt('ground-zones-b', '/games/getting-up/Neon Ground Zone Props Atlas-3.png');
+    loadArt('ground-enemies', '/games/getting-up/Neon Graffiti Enemy Sprite Atlas-2.png');
+    loadArt('hidden-routes', '/games/getting-up/Hidden Sky Route Discovery Atlas-7.png');
+    loadArt('ground-transitions', '/games/getting-up/Neon Graffiti Transition Sprite Atlas-6.png');
     ['ruby', 'emerald', 'sapphire', 'diamond'].forEach(function (k) { loadArt('gem-' + k, TEMP + 'gem-' + k + '.svg'); });
     ['time-crystal', 'bounce-pad', 'laser-emitter', 'wall-block', 'crumble-platform',
       'moving-platform', 'flame-vent', 'tag-spot', 'night-train-tag', 'sky-girder', 'drone'].forEach(function (k) { loadArt(k, TEMP + k + '.svg'); });
@@ -599,6 +724,222 @@
     var foundSkyZones = {};
     var timeBonusMs = 0;
     var currentZone = zones[0].name;
+    var courseVfx = [];
+    var zoneTransitionAt = -9999;
+    var zoneTransitionIndex = 0;
+    var skyDiscoveryAt = -9999;
+    var skyDiscoveryIndex = 0;
+    var respawnVfxAt = -9999;
+
+    // Decorative world art is deliberately scaled in world units, never by
+    // atlas-cell size. A bus is hundreds of pixels wide, a street lamp is
+    // tall and narrow, while rats and pickups remain character-sized.
+    var PHASE2_PROPS = [
+      { a: 'ground-zones-a', c: 0, x: 120,  b: F, w: 150, h: 112 },
+      { a: 'ground-zones-a', c: 1, x: 610,  b: F, w: 74,  h: 48 },
+      { a: 'ground-zones-a', c: 2, x: 1160, b: F, w: 112, h: 146 },
+      { a: 'ground-zones-a', c: 3, x: 1670, b: F, w: 28,  h: 112 },
+      { a: 'ground-zones-a', c: 4, x: 1990, b: F, w: 132, h: 46 },
+      { a: 'ground-zones-a', c: 5, x: 2730, b: F, w: 54,  h: 48 },
+      { a: 'ground-zones-a', c: 6, x: 3350, b: F, w: 58,  h: 108 },
+      { a: 'ground-zones-a', c: 7, x: 4050, b: F, w: 106, h: 150 },
+      { a: 'ground-zones-a', c: 8, x: 4400, b: F, w: 150, h: 132 },
+      { a: 'ground-zones-a', c: 9, x: 5050, b: F, w: 62,  h: 98 },
+      { a: 'ground-zones-a', c:10, x: 5740, b: F, w: 92,  h: 60 },
+      { a: 'ground-zones-a', c:11, x: 6350, b: F, w: 88,  h: 116 },
+      { a: 'ground-zones-a', c:12, x: 6740, b: F, w: 152, h: 104 },
+      { a: 'ground-zones-a', c:13, x: 7440, b: F, w: 78,  h: 84 },
+      { a: 'ground-zones-a', c:14, x: 8190, b: F, w: 58,  h: 124 },
+      { a: 'ground-zones-a', c:15, x: 8860, b: F, w: 62,  h: 80 },
+      { a: 'ground-zones-b', c: 0, x: 9140, b: F, w: 150, h: 120 },
+      { a: 'ground-zones-b', c: 1, x: 9820, b: F, w: 92,  h: 152 },
+      { a: 'ground-zones-b', c: 2, x:10450, b: F, w: 62,  h: 128 },
+      { a: 'ground-zones-b', c: 3, x:11200, b: F, w: 78,  h: 118 },
+      { a: 'ground-zones-b', c: 4, x:11560, b: F, w: 142, h: 58 },
+      { a: 'ground-zones-b', c: 5, x:12240, b: F, w: 88,  h: 126 },
+      { a: 'ground-zones-b', c: 6, x:13020, b: F, w: 100, h: 62 },
+      { a: 'ground-zones-b', c: 7, x:13800, b: F, w: 92,  h: 66 },
+      { a: 'ground-zones-b', c: 8, x:14180, b: F, w: 62,  h: 92 },
+      { a: 'ground-zones-b', c: 9, x:14920, b: F, w: 128, h: 52 },
+      { a: 'ground-zones-b', c:10, x:15860, b: F, w: 92,  h: 58 },
+      { a: 'ground-zones-b', c:11, x:16880, b: F, w: 230, h: 112 },
+      { a: 'ground-zones-b', c:12, x:17830, b: F, w: 122, h: 106 },
+      { a: 'ground-zones-b', c:13, x:19020, b: F, w: 34,  h: 122 },
+      { a: 'ground-zones-b', c:14, x:20020, b: F, w: 68,  h: 124 },
+      { a: 'ground-zones-b', c:15, x:21680, b: F, w: 176, h: 198 }
+    ];
+
+    function drawPhase2Props(ctx, api) {
+      var camX = api.cameraX;
+      for (var i = 0; i < PHASE2_PROPS.length; i += 1) {
+        var p = PHASE2_PROPS[i];
+        if (!inView(p.x, p.w, camX)) continue;
+        drawGridCell(ctx, art[p.a], p.c, p.x - camX, p.b + OFFSET_Y - p.h, p.w, p.h);
+      }
+      for (var j = 0; j < L.platforms.length; j += 1) {
+        var platform = L.platforms[j];
+        if (!platform.skyZone || !inView(platform.x, platform.w, camX)) continue;
+        var routeIndex = Math.max(0, skyZoneNames.indexOf(platform.skyZone)) % 8;
+        var routeHeight = Math.max(34, Math.min(58, platform.w * 0.32));
+        drawGridCell(ctx, art['hidden-routes'], routeIndex,
+          platform.x - camX, platform.y + OFFSET_Y + platform.h - routeHeight,
+          platform.w, routeHeight);
+      }
+    }
+
+    function drawPhase2Hud(ctx, api, t) {
+      var zoneAge = t - zoneTransitionAt;
+      if (zoneAge >= 0 && zoneAge < 900 && ready(art['ground-transitions'])) {
+        var zoneProgress = zoneAge / 900;
+        var zw = 126 + zoneProgress * 34;
+        var zh = 92 + zoneProgress * 22;
+        drawGridCell(ctx, art['ground-transitions'], zoneTransitionIndex,
+          VIEW_W / 2 - zw / 2, 56 - zh / 2, zw, zh, false, 1 - zoneProgress);
+      }
+      var skyAge = t - skyDiscoveryAt;
+      if (skyAge >= 0 && skyAge < 950 && ready(art['hidden-routes'])) {
+        var skyProgress = skyAge / 950;
+        var ss = 78 + skyProgress * 44;
+        drawGridCell(ctx, art['hidden-routes'], 8 + skyDiscoveryIndex % 4,
+          VIEW_W / 2 - ss / 2, VIEW_H / 2 - ss / 2, ss, ss, false, 1 - skyProgress);
+      }
+      if (api.complete && ready(art['ground-transitions'])) {
+        var pulse = 1 + Math.sin(t / 90) * 0.08;
+        drawGridCell(ctx, art['ground-transitions'], 12,
+          VIEW_W / 2 - 92 * pulse, VIEW_H / 2 - 64 * pulse,
+          184 * pulse, 128 * pulse, false, 0.9);
+      }
+    }
+
+    function drawCourseHazard(ctx, api, hazard) {
+      if (hazard.type !== 'spikes' || !ready(art['ground-hazards'])) return false;
+      var x = hazard.x - api.cameraX;
+      drawGridCell(ctx, art['ground-hazards'], 13,
+        x - 4, hazard.y + OFFSET_Y - 8, hazard.w + 8, hazard.h + 8);
+      return true;
+    }
+
+    function drawCourseCrate(ctx, api, crate, t) {
+      if (!ready(art['ground-pickups'])) return false;
+      var cell = 11 + Math.abs(Math.floor(crate.x / 100)) % 3;
+      var size = 36;
+      drawGridCell(ctx, art['ground-pickups'], cell,
+        crate.x - api.cameraX - (size - crate.w) / 2,
+        crate.y + OFFSET_Y + crate.h - size, size, size);
+      return true;
+    }
+
+    function drawCourseSpeedBox(ctx, api, box, t) {
+      if (!ready(art['ground-pickups'])) return false;
+      var cell = Math.floor(t / 140) % 2 ? 9 : 10;
+      var size = 40;
+      drawGridCell(ctx, art['ground-pickups'], cell,
+        box.x - api.cameraX - (size - box.w) / 2,
+        box.y + OFFSET_Y + box.h - size + Math.sin(t / 130) * 2, size, size);
+      return true;
+    }
+
+    function drawCourseRewardBox(ctx, api, box) {
+      if (!ready(art['ground-pickups'])) return false;
+      var cell = box.type === 'star' ? (box.opened ? 6 : 5) : (box.opened ? 8 : 7);
+      var size = 38;
+      drawGridCell(ctx, art['ground-pickups'], cell,
+        box.x - api.cameraX - (size - box.w) / 2,
+        box.y + OFFSET_Y + box.h - size, size, size, false,
+        box.opened && box.mode !== 'solid' ? 0.55 : 1);
+      return true;
+    }
+
+    function drawCourseSecretCoin(ctx, api, coin, t) {
+      if (!ready(art['ground-pickups'])) return false;
+      if (coin.taken && t - (coin.takenAt || 0) >= 420) return true;
+      var takenAge = coin.taken ? t - (coin.takenAt || t) : -1;
+      var cell = coin.taken ? 2 : (Math.floor((t + coin.x) / 180) % 2);
+      var size = coin.taken ? 40 : 28;
+      var alpha = coin.taken ? Math.max(0, 1 - takenAge / 420) : 1;
+      drawGridCell(ctx, art['ground-pickups'], cell,
+        coin.x - api.cameraX - size / 2,
+        coin.y + OFFSET_Y - size / 2 + Math.sin((t + coin.x) / 180) * 2,
+        size, size, false, alpha);
+      return true;
+    }
+
+    function drawCourseFinish(ctx, api, finish, t) {
+      if (!ready(art['ground-transitions'])) return false;
+      var approaching = Math.abs(api.player.x - finish.x) < 420;
+      var cell = api.complete ? 11 : approaching ? 10 : 9;
+      var w = api.complete ? 94 : 64;
+      var h = api.complete ? 94 : 98;
+      drawGridCell(ctx, art['ground-transitions'], cell,
+        finish.x - api.cameraX - (w - finish.w) / 2,
+        finish.y + OFFSET_Y + finish.h - h, w, h);
+      return true;
+    }
+
+    function drawCourseEnemy(ctx, api, enemy, t) {
+      var img = art['ground-enemies'];
+      if (!ready(img)) return false;
+      var cell = -1;
+      var w = 36;
+      var h = 42;
+      if (enemy.type === 'rat') {
+        cell = enemy.defeated ? 3 : (enemy.attackUntil > t ? 1 : 0);
+      } else if (enemy.type === 'turquoiseRat') {
+        cell = enemy.defeated ? 5 : 4;
+      } else if (enemy.type === 'brownRat') {
+        cell = enemy.defeated ? 7 : 6;
+      } else if (enemy.type === 'bot') {
+        cell = enemy.defeated ? 11 : (enemy.hurtUntil > t ? 10 : (enemy.fireUntil > t ? 9 : 8));
+        w = 48; h = 56;
+      } else if (enemy.type === 'pigeon') {
+        cell = enemy.defeated ? 13 : 12;
+        w = 44; h = 34;
+      } else if (enemy.type === 'balloon') {
+        cell = enemy.defeated ? 15 : 14;
+        w = 64; h = 88;
+      } else {
+        return false;
+      }
+      if (enemy.defeated && t - (enemy.defeatedAt || 0) >= 520) return true;
+      var x = enemy.x - api.cameraX - (w - enemy.w) / 2;
+      if (x + w < -60 || x > VIEW_W + 60) return true;
+      var y = enemy.y + (enemy.bob || 0) + OFFSET_Y + enemy.h - h;
+      var facing = enemy.attackFacing || enemy.fireFacing || enemy.balloonFacing || (enemy.vx < 0 ? -1 : 1);
+      var alpha = enemy.defeated ? Math.max(0, 1 - (t - enemy.defeatedAt) / 520) : 1;
+      drawGridCell(ctx, img, cell, x, y, w, h, facing < 0, alpha);
+      return true;
+    }
+
+    function onCourseRespawn(api, t) {
+      respawnVfxAt = t;
+    }
+    function spawnCourseVfx(kind, x, y, at, variant) {
+      courseVfx.push({ kind: kind, x: x, y: y, at: at, variant: variant || 0 });
+      if (courseVfx.length > 40) courseVfx.splice(0, courseVfx.length - 40);
+    }
+    function drawCourseVfx(ctx, api, t) {
+      var img = art['atlas-vfx'];
+      if (!ready(img)) return;
+      var camX = api.cameraX;
+      for (var i = courseVfx.length - 1; i >= 0; i -= 1) {
+        var fx = courseVfx[i];
+        var age = t - fx.at;
+        var life = fx.kind === 'spray' ? 500 : 420;
+        if (age >= life) { courseVfx.splice(i, 1); continue; }
+        var frame = Math.min(4, Math.floor(age / (life / 5)));
+        var x = fx.x - camX, y = fx.y + OFFSET_Y;
+        if (fx.kind === 'gem') {
+          var gx = 0.77 + Math.min(3, fx.variant) * 0.0575;
+          drawAtlasStrip(ctx, img, gx, 0.25, 0.0575, 0.25, 0, 1, x - 22, y - 22, 44, 44);
+        } else if (fx.kind === 'time') {
+          drawAtlasStrip(ctx, img, 0, 0.50, 0.25, 0.25, frame, 5, x - 24, y - 24, 48, 48);
+        } else if (fx.kind === 'spray') {
+          drawAtlasStrip(ctx, img, 0.25, 0.50, 0.27, 0.25, frame, 5, x - 34, y - 22, 68, 44);
+        } else if (fx.kind === 'trail') {
+          drawAtlasStrip(ctx, img, 0, 0.75, 0.27, 0.25, frame, 5, x - 30, y - 30, 60, 60);
+        }
+      }
+    }
 
     function placeMovers(t) {
       for (var i = 0; i < movers.length; i += 1) {
@@ -632,6 +973,12 @@
       crystals.forEach(function (c) { c.taken = false; });
       trailNames.forEach(function (n) { trails[n].done = false; });
       pads.forEach(function (p) { p.lastBounceAt = -9999; });
+      courseVfx = [];
+      zoneTransitionAt = -9999;
+      zoneTransitionIndex = 0;
+      skyDiscoveryAt = -9999;
+      skyDiscoveryIndex = 0;
+      respawnVfxAt = -9999;
       resetNight();
       aReset();
     }
@@ -678,6 +1025,8 @@
         skyMode = !!(tile && tile.y < 30);
         if (tile && tile.skyZone && !foundSkyZones[tile.skyZone]) {
           foundSkyZones[tile.skyZone] = true;
+          skyDiscoveryAt = t;
+          skyDiscoveryIndex = Math.max(0, skyZoneNames.indexOf(tile.skyZone));
           api.addXp(1000, { skyZone: tile.skyZone });
           api.notify('SKY ROUTE: ' + tile.skyZone + ' +1000', 2400);
         }
@@ -707,6 +1056,7 @@
       gems.forEach(function (g) {
         if (g.taken || !api.rectsOverlap(p, pickupRect(g, 9))) return;
         g.taken = true;
+        spawnCourseVfx('gem', g.x, g.y, t, gemAtlasRow(g.kind));
         api.addXp(g.xp, { gem: g.kind });
         api.notify(g.kind.toUpperCase() + ' +' + g.xp + ' XP', 2200);
       });
@@ -719,6 +1069,7 @@
       crystals.forEach(function (cy) {
         if (cy.taken || !api.rectsOverlap(p, pickupRect(cy, 9))) return;
         cy.taken = true;
+        spawnCourseVfx('time', cy.x, cy.y, t);
         timeBonusMs += cy.ms;
         api.notify('TIME -' + (cy.ms / 1000).toFixed(1) + 's', 2000);
         api.cue('speed_boost_start');
@@ -729,6 +1080,7 @@
           if (tg.done || !api.rectsOverlap(spray, tg)) return;
           tg.done = true;
           tg.doneAt = t;
+          spawnCourseVfx('spray', tg.x + tg.w / 2, tg.y + tg.h / 2, t);
           api.addXp(tg.xp, { tag: tg.art });
           api.notify('GOT UP! ' + tg.art.toUpperCase().replace(/-/g, ' ') + ' +' + tg.xp, 2400);
         });
@@ -744,6 +1096,8 @@
         }
         if (all) {
           tr.done = true;
+          var lastTrailCoin = tr.coins[tr.coins.length - 1];
+          spawnCourseVfx('trail', lastTrailCoin.x, lastTrailCoin.y, t);
           var bonus = tr.coins.length * TRAIL_BONUS_PER_COIN;
           api.addXp(bonus, { trail: trailNames[ti] });
           api.notify('TRAIL CLEAR +' + bonus, 1800);
@@ -751,8 +1105,16 @@
       }
 
       // Level 1A sets its own section name while the night train runs.
-      for (var z = zones.length - 1; z >= 0 && !nightActive(); z -= 1) {
-        if (p.x >= zones[z].x) { currentZone = zones[z].name; break; }
+      if (!nightActive()) {
+        var nextGroundZoneIndex = 0;
+        for (var z = zones.length - 1; z >= 0; z -= 1) {
+          if (p.x >= zones[z].x) { nextGroundZoneIndex = z; break; }
+        }
+        if (zones[nextGroundZoneIndex].name !== currentZone) {
+          currentZone = zones[nextGroundZoneIndex].name;
+          zoneTransitionAt = t;
+          zoneTransitionIndex = nextGroundZoneIndex;
+        }
       }
     }
 
@@ -794,7 +1156,8 @@
     var night = null;
     function resetNight() {
       night = { phase: '', cars: [], speed: 0, camLocked: false, startedAt: 0, perchAt: 0,
-        perchGone: false, carSeq: 0, pattern: 0, hops: {}, hopCount: 0, result: '', flashAt: -99999 };
+        perchGone: false, carSeq: 0, pattern: 0, hops: {}, hopCount: 0, result: '', flashAt: -99999,
+        doneAt: -99999 };
     }
     resetNight();
     function nightActive() { return night.phase === 'ride' || night.phase === 'perch' || night.phase === 'stream'; }
@@ -1138,12 +1501,14 @@
       A.gems.forEach(function (g) {
         if (g.taken || !api.rectsOverlap(p, pickupRect(g, 10))) return;
         g.taken = true;
+        spawnCourseVfx('gem', g.x, g.y, t, gemAtlasRow(g.kind));
         api.addXp(g.xp, { level1A: 'gem', gem: g.kind });
         api.notify('1A ' + g.kind.toUpperCase() + ' +' + g.xp, 2200);
       });
       A.crystals.forEach(function (cy) {
         if (cy.taken || !api.rectsOverlap(p, pickupRect(cy, 9))) return;
         cy.taken = true;
+        spawnCourseVfx('time', cy.x, cy.y, t);
         timeBonusMs += cy.ms;
         api.notify('TIME -' + (cy.ms / 1000).toFixed(1) + 's', 2000);
         api.cue('speed_boost_start');
@@ -1172,7 +1537,9 @@
         var p = A.platforms[i];
         if (!inView(p.x, p.w, camX)) continue;
         x = Math.round(p.x - camX); y = p.y + OFFSET_Y;
-        if (ready(girder)) drawTiled(ctx, girder, x, y, p.w, p.h, 48);
+        if (drawAtlasFrame(ctx, art['atlas-structures'], 0, 5, atlasLoop(t + p.x, 6, 420), 6,
+          x, y - 18, p.w, p.h + 28)) {}
+        else if (ready(girder)) drawTiled(ctx, girder, x, y, p.w, p.h, 48);
         else { ctx.fillStyle = '#7a86a8'; ctx.fillRect(x, y, p.w, p.h); }
       }
       var wimg = art['wall-block'];
@@ -1180,7 +1547,9 @@
         var w = A.walls[i];
         if (!inView(w.x, w.w, camX)) continue;
         x = Math.round(w.x - camX); y = w.y + OFFSET_Y;
-        if (ready(wimg)) {
+        if (drawAtlasFrame(ctx, art['atlas-structures'], 4, 5, Math.abs(Math.floor(w.x / 40)) % 6, 6,
+          x, y, w.w, w.h)) {}
+        else if (ready(wimg)) {
           for (var by = 0; by < w.h; by += 32) for (var bx = 0; bx < w.w; bx += 32) {
             var bw = Math.min(32, w.w - bx), bh = Math.min(32, w.h - by);
             ctx.drawImage(wimg, 0, 0, wimg.naturalWidth * bw / 32, wimg.naturalHeight * bh / 32, x + bx, y + by, bw, bh);
@@ -1192,7 +1561,10 @@
         var m = A.movers[i];
         if (!inView(m.x, m.w, camX)) continue;
         x = Math.round(m.x - camX); y = Math.round(m.y + OFFSET_Y);
-        if (ready(mimg)) ctx.drawImage(mimg, x, y, m.w, m.h); else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(x, y, m.w, m.h); }
+        if (drawAtlasFrame(ctx, art['atlas-structures'], 3, 5, atlasLoop(t + m.bx, 6, 130), 6,
+          x, y - 14, m.w, m.h + 24)) {}
+        else if (ready(mimg)) ctx.drawImage(mimg, x, y, m.w, m.h);
+        else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(x, y, m.w, m.h); }
       }
       var cimg = art['crumble-platform'];
       for (i = 0; i < A.crumbles.length; i += 1) {
@@ -1200,7 +1572,11 @@
         if (cr.state === 'gone' || !inView(cr.x, cr.w, camX)) continue;
         x = Math.round(cr.x - camX) + (cr.state === 'shaking' ? Math.round(Math.sin(t / 18) * 2) : 0);
         y = cr.y + OFFSET_Y;
-        if (ready(cimg)) ctx.drawImage(cimg, x, y, cr.w, cr.h); else { ctx.fillStyle = '#a8743e'; ctx.fillRect(x, y, cr.w, cr.h); }
+        var crFrame = cr.state === 'shaking' ? Math.min(4, 1 + Math.floor((t - cr.at) / 90)) : 0;
+        if (drawAtlasFrame(ctx, art['atlas-structures'], 2, 5, crFrame, 8,
+          x, y - 12, cr.w, cr.h + 22)) {}
+        else if (ready(cimg)) ctx.drawImage(cimg, x, y, cr.w, cr.h);
+        else { ctx.fillStyle = '#a8743e'; ctx.fillRect(x, y, cr.w, cr.h); }
       }
       var pimg = art['bounce-pad'];
       for (i = 0; i < A.pads.length; i += 1) {
@@ -1208,13 +1584,20 @@
         if (!inView(pd.x, pd.w, camX)) continue;
         var squash = t - (pd.lastBounceAt || -9999) < 160 ? 4 : 0;
         x = Math.round(pd.x - camX); y = pd.y + OFFSET_Y - 4 + squash;
-        if (ready(pimg)) ctx.drawImage(pimg, x, y, pd.w, 12 - squash); else { ctx.fillStyle = '#ff2fd0'; ctx.fillRect(x, y, pd.w, 12 - squash); }
+        var padAge = t - (pd.lastBounceAt || -9999);
+        var padFrame = padAge < 360 ? Math.min(5, Math.floor(padAge / 60)) : 0;
+        if (drawAtlasFrame(ctx, art['atlas-structures'], 1, 5, padFrame, 6,
+          x, y - 8, pd.w, 24 - squash)) {}
+        else if (ready(pimg)) ctx.drawImage(pimg, x, y, pd.w, 12 - squash);
+        else { ctx.fillStyle = '#ff2fd0'; ctx.fillRect(x, y, pd.w, 12 - squash); }
       }
       // Low gantry beams with hangers running up off-screen.
       for (i = 0; i < A.beams.length; i += 1) {
         var bm = A.beams[i];
         if (!inView(bm.x - 30, bm.w + 60, camX)) continue;
         x = Math.round(bm.x - camX); y = bm.y + OFFSET_Y;
+        if (drawAtlasFrame(ctx, art['atlas-hazards'], 3, 5, atlasLoop(t + bm.x, 4, 260), 6,
+          x - 34, y - 48, bm.w + 68, bm.h + 54)) continue;
         ctx.fillStyle = '#3b3f4c';
         ctx.fillRect(x - 26, y - 900, 3, 900);
         ctx.fillRect(x + bm.w + 23, y - 900, 3, 900);
@@ -1239,7 +1622,11 @@
           ctx.fillStyle = Math.floor(t / 70) % 2 ? 'rgba(60,255,140,0.55)' : 'rgba(60,255,140,0.15)';
           ctx.fillRect(x + 15, y0, 2, y1 - y0);
         }
-        if (ready(limg)) ctx.drawImage(limg, x, y0 - 20, 32, 20); else { ctx.fillStyle = '#1d1f29'; ctx.fillRect(x, y0 - 20, 32, 20); }
+        var laserFrame = cycleOn(sl, t) ? 5 : cycleWarn(sl, t) ? 3 : 0;
+        if (drawAtlasFrame(ctx, art['atlas-hazards'], 1, 5, laserFrame, 7,
+          x - 4, y0 - 28, 40, 30)) {}
+        else if (ready(limg)) ctx.drawImage(limg, x, y0 - 20, 32, 20);
+        else { ctx.fillStyle = '#1d1f29'; ctx.fillRect(x, y0 - 20, 32, 20); }
       }
       // Drones.
       var dimg = art['drone'];
@@ -1247,7 +1634,9 @@
         var dr = A.drones[i];
         if (!inView(dr.x, dr.w, camX)) continue;
         x = Math.round(dr.x - camX); y = Math.round(dr.y + OFFSET_Y);
-        if (ready(dimg)) ctx.drawImage(dimg, x - 5, y - 6, dr.w + 10, dr.h + 10);
+        if (drawAtlasFrame(ctx, art['atlas-hazards'], 0, 5, atlasLoop(t + dr.bx, 4, 105), 10,
+          x - 10, y - 11, dr.w + 20, dr.h + 22)) {}
+        else if (ready(dimg)) ctx.drawImage(dimg, x - 5, y - 6, dr.w + 10, dr.h + 10);
         else { ctx.fillStyle = '#ff3b3b'; ctx.fillRect(x, y, dr.w, dr.h); }
       }
       // Coins (engine coin sheet), gems, crystals.
@@ -1265,12 +1654,20 @@
       for (i = 0; i < A.gems.length; i += 1) {
         var g = A.gems[i];
         if (g.taken || !inView(g.x, 20, camX)) continue;
-        drawPickup(ctx, art['gem-' + g.kind], g.x - camX, g.y + OFFSET_Y, 22 * (1 + Math.sin(t / 150 + i) * 0.08), t, '#ff3060');
+        var agSize = 22 * (1 + Math.sin(t / 150 + i) * 0.08);
+        if (!drawAtlasFrame(ctx, art['atlas-pickups'], gemAtlasRow(g.kind), 7,
+          atlasLoop(t + i * 43, g.kind === 'diamond' ? 7 : 6, 120), g.kind === 'diamond' ? 8 : 7,
+          g.x - camX - agSize / 2, g.y + OFFSET_Y - agSize / 2, agSize, agSize)) {
+          drawPickup(ctx, art['gem-' + g.kind], g.x - camX, g.y + OFFSET_Y, agSize, t, '#ff3060');
+        }
       }
       for (i = 0; i < A.crystals.length; i += 1) {
         var cy = A.crystals[i];
         if (cy.taken || !inView(cy.x, 20, camX)) continue;
-        drawPickup(ctx, art['time-crystal'], cy.x - camX, cy.y + OFFSET_Y, 20, t, '#3cf2ff');
+        if (!drawAtlasFrame(ctx, art['atlas-pickups'], 4, 7, atlasLoop(t + i * 31, 5, 125), 8,
+          cy.x - camX - 12, cy.y + OFFSET_Y - 12, 24, 24)) {
+          drawPickup(ctx, art['time-crystal'], cy.x - camX, cy.y + OFFSET_Y, 20, t, '#3cf2ff');
+        }
       }
     }
 
@@ -1489,6 +1886,7 @@
       if (p.x + p.w < L.finish.x) return false;
       night.phase = 'done';
       night.result = 'done';
+      night.doneAt = api.runElapsedMs || 0;
       var bonus = NT.xpBonus + night.hopCount * NT.xpPerCar;
       timeBonusMs += NT.timeCutMs;
       api.addXp(bonus, { nightTrain: 'complete', carriages: night.hopCount });
@@ -1520,17 +1918,30 @@
           ctx.font = 'bold 7px Courier New';
           ctx.fillText('TEMP CARRIAGE', cx + 6, CAR_SCREEN_Y + 30);
         }
-        if (car.spikes && !car.spikesFolded) {
+        if (car.spikes) {
           var sr = spikeRect(car);
           var sx = Math.round(sr.x - camX);
           var sy = sr.y + OFFSET_Y;
-          ctx.fillStyle = '#d9dde8';
-          for (var k = 0; k < sr.w; k += 11) {
-            ctx.beginPath();
-            ctx.moveTo(sx + k, sy + sr.h);
-            ctx.lineTo(sx + k + 5.5, sy);
-            ctx.lineTo(sx + k + 11, sy + sr.h);
-            ctx.fill();
+          var spikeFrame = car.spikesFolded ? 7 : 4;
+          if (!drawAtlasFrame(ctx, art['atlas-hazards'], 4, 5, spikeFrame, 8,
+            sx - 10, sy - 10, sr.w + 20, sr.h + 20) && !car.spikesFolded) {
+            ctx.fillStyle = '#d9dde8';
+            for (var k = 0; k < sr.w; k += 11) {
+              ctx.beginPath();
+              ctx.moveTo(sx + k, sy + sr.h);
+              ctx.lineTo(sx + k + 5.5, sy);
+              ctx.lineTo(sx + k + 11, sy + sr.h);
+              ctx.fill();
+            }
+          }
+        }
+        if (i > 0 && car.stream) {
+          var lead = night.cars[i - 1];
+          var liveGap = car.x - (lead.x + lead.w);
+          if (liveGap >= -4 && liveGap <= 14) {
+            drawAtlasStrip(ctx, art['atlas-vfx'], 0.50, 0.50, 0.29, 0.25,
+              atlasLoop(t + i * 37, 5, 85), 5,
+              cx - 18, CAR_SCREEN_Y + CAR_H - 36, 44, 36);
           }
         }
       }
@@ -1556,10 +1967,15 @@
       var x = Math.round(NT.tag.x - camX);
       var y = NT.tag.y + OFFSET_Y;
       if (night.phase) {
-        if (ready(art['night-train-tag'])) ctx.drawImage(art['night-train-tag'], x, y, NT.tag.w, NT.tag.h);
+        var revealAge = Math.max(0, time - night.startedAt);
+        var revealFrame = Math.min(7, Math.floor(revealAge / 85));
+        if (!drawAtlasFrame(ctx, art['atlas-night'], 1, 6, revealFrame, 8,
+          x - 10, y - 8, NT.tag.w + 20, NT.tag.h + 16) &&
+          ready(art['night-train-tag'])) ctx.drawImage(art['night-train-tag'], x, y, NT.tag.w, NT.tag.h);
         return;
       }
-      // Barely-there ghost outline: the secret.
+      if (drawAtlasFrame(ctx, art['atlas-night'], 0, 6, atlasLoop(time, 4, 420), 6,
+        x - 10, y - 8, NT.tag.w + 20, NT.tag.h + 16)) return;
       ctx.save();
       ctx.globalAlpha = 0.1 + Math.max(0, Math.sin(time / 900)) * 0.08;
       ctx.strokeStyle = '#ffffff';
@@ -1580,19 +1996,33 @@
         var pry = pr.y + OFFSET_Y;
         var blink = night.phase === 'perch' && NT.perchMs - (t - night.perchAt) < 1500 && Math.floor(t / 90) % 2;
         if (!blink) {
-          if (ready(art['moving-platform'])) ctx.drawImage(art['moving-platform'], prx, pry, pr.w, pr.h);
-          else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(prx, pry, pr.w, pr.h); }
+          var perchFrame = night.phase === 'perch' ?
+            Math.min(6, Math.floor((t - night.perchAt) / Math.max(1, NT.perchMs / 7))) : 0;
+          if (!drawAtlasFrame(ctx, art['atlas-night'], 2, 6, perchFrame, 7,
+            prx - 12, pry - 30, pr.w + 24, pr.h + 36)) {
+            if (ready(art['moving-platform'])) ctx.drawImage(art['moving-platform'], prx, pry, pr.w, pr.h);
+            else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(prx, pry, pr.w, pr.h); }
+          }
         }
       }
     }
 
     function drawNightHud(ctx, api, t) {
-      if (!nightActive()) return;
-      // The flash on boarding.
+      if (!nightActive() && night.phase !== 'done') return;
       var since = t - night.flashAt;
-      if (since < 350) {
-        ctx.fillStyle = 'rgba(255,255,255,' + (0.7 * (1 - since / 350)).toFixed(3) + ')';
-        ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+      if (since < 520) {
+        var warpFrame = Math.min(7, Math.floor(since / 65));
+        if (!drawAtlasFrame(ctx, art['atlas-night'], 3, 6, warpFrame, 8,
+          VIEW_W / 2 - 150, VIEW_H / 2 - 72, 300, 144)) {
+          ctx.fillStyle = 'rgba(255,255,255,' + (0.7 * (1 - since / 520)).toFixed(3) + ')';
+          ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+        }
+      }
+      if (night.phase === 'done') {
+        var doneAge = Math.max(0, t - night.doneAt);
+        var doneFrame = Math.min(7, Math.floor(doneAge / 140));
+        drawAtlasFrame(ctx, art['atlas-night'], 5, 6, doneFrame, 8,
+          VIEW_W / 2 - 170, VIEW_H / 2 - 82, 340, 164);
       }
       // Twinkle hint at the top edge above the hidden perch once the brakes bite.
       if (night.phase === 'ride' && night.camLocked) {
@@ -1602,6 +2032,7 @@
         ctx.fillRect(Math.round(hx - tw), 4, Math.round(tw * 2), 1);
         ctx.fillRect(Math.round(hx), Math.round(4 - tw), 1, Math.round(tw * 2));
       }
+      if (night.phase === 'done') return;
       ctx.save();
       ctx.font = 'bold 7px Courier New';
       ctx.textAlign = 'center';
@@ -1656,6 +2087,24 @@
 
     function drawGround(ctx, api) {
       var camX = api.cameraX;
+      var zoneSurfaceCells = [4, 1, 2, 5, 0, 1, 2, 3, 4];
+      if (ready(art['ground-hazards'])) {
+        for (var fs = 0; fs < floorSolids.length; fs += 1) {
+          var solid = floorSolids[fs];
+          if (!inView(solid.x, solid.w, camX)) continue;
+          var zoneIndex = 0;
+          for (var zi = zones.length - 1; zi >= 0; zi -= 1) {
+            if (solid.x >= zones[zi].x) { zoneIndex = zi; break; }
+          }
+          var tileCell = zoneSurfaceCells[zoneIndex] || 0;
+          var start = Math.max(solid.x, camX - 140);
+          var end = Math.min(solid.x + solid.w, camX + VIEW_W + 140);
+          for (var wx = Math.floor(start / 128) * 128; wx < end; wx += 128) {
+            drawGridCell(ctx, art['ground-hazards'], tileCell,
+              wx - camX, STREET_Y - 10, 132, 42);
+          }
+        }
+      }
       for (var i = 0; i < gaps.length; i += 1) {
         var g = gaps[i];
         if (!inView(g[0], g[1], camX)) continue;
@@ -1666,13 +2115,15 @@
         grad.addColorStop(1, '#000000');
         ctx.fillStyle = grad;
         ctx.fillRect(x, top, g[1], VIEW_H - top + env.CAMERA_LOOK_DOWN_MAX_Y + 700);
-        // Hazard-striped kerb edges.
-        for (var s = 0; s < 2; s += 1) {
-          var ex = s === 0 ? x - 3 : x + g[1] - 1;
-          ctx.fillStyle = '#ffd400';
-          ctx.fillRect(ex, top - 2, 4, 26);
-          ctx.fillStyle = '#111111';
-          for (var yy = top; yy < top + 24; yy += 8) ctx.fillRect(ex, yy, 4, 4);
+        if (ready(art['ground-hazards'])) {
+          drawGridCell(ctx, art['ground-hazards'], 8, x - 34, top - 24, 54, 62);
+          drawGridCell(ctx, art['ground-hazards'], 9, x + g[1] - 20, top - 24, 54, 62, true);
+        } else {
+          for (var s = 0; s < 2; s += 1) {
+            var ex = s === 0 ? x - 3 : x + g[1] - 1;
+            ctx.fillStyle = '#ffd400';
+            ctx.fillRect(ex, top - 2, 4, 26);
+          }
         }
       }
     }
@@ -1681,6 +2132,7 @@
       var camX = api.cameraX;
       var t = api.runElapsedMs;
       var i;
+      drawPhase2Props(ctx, api);
       // Warning signs.
       for (i = 0; i < signs.length; i += 1) {
         var sg = signs[i];
@@ -1723,12 +2175,15 @@
       drawNightTag(ctx, api, time);
       // Wall blocks (lifted out of the world while the night train runs).
       var wimg = art['wall-block'];
+      var structureAtlas = art['atlas-structures'];
       for (i = nightActive() ? walls.length : 0; i < walls.length; i += 1) {
         var w = walls[i];
         if (!inView(w.x, w.w, camX)) continue;
         var wx = Math.round(w.x - camX);
         var wy = w.y + OFFSET_Y;
-        if (ready(wimg)) {
+        if (drawAtlasFrame(ctx, structureAtlas, 4, 5, Math.abs(Math.floor(w.x / 40)) % 6, 6,
+          wx, wy, w.w, w.h)) {}
+        else if (ready(wimg)) {
           for (var by = 0; by < w.h; by += 32) {
             var bh = Math.min(32, w.h - by);
             for (var bx = 0; bx < w.w; bx += 32) {
@@ -1742,8 +2197,11 @@
           ctx.fillRect(wx, wy, w.w, w.h);
         }
         if (w.crawl) {
-          ctx.fillStyle = 'rgba(0,0,0,0.45)';
-          ctx.fillRect(wx, wy + w.h, w.w, 26);
+          if (!drawGridCell(ctx, art['ground-hazards'], 15,
+            wx, wy + w.h - 42, w.w, 68)) {
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            ctx.fillRect(wx, wy + w.h, w.w, 26);
+          }
         }
       }
       // Moving platforms.
@@ -1753,7 +2211,9 @@
         if (!inView(m.x, m.w, camX)) continue;
         var mx = Math.round(m.x - camX);
         var my = Math.round(m.y + OFFSET_Y);
-        if (ready(mimg)) ctx.drawImage(mimg, mx, my, m.w, m.h);
+        if (drawAtlasFrame(ctx, structureAtlas, 3, 5, atlasLoop(t + m.bx, 6, 130), 6,
+          mx, my - 14, m.w, m.h + 24)) {}
+        else if (ready(mimg)) ctx.drawImage(mimg, mx, my, m.w, m.h);
         else { ctx.fillStyle = '#2e8f9e'; ctx.fillRect(mx, my, m.w, m.h); }
       }
       // Crumbling platforms.
@@ -1765,7 +2225,10 @@
         var cx = Math.round(cr.x - camX) + shake;
         var cy = cr.y + OFFSET_Y;
         if (cr.state === 'gone') continue;
-        if (ready(cimg)) ctx.drawImage(cimg, cx, cy, cr.w, cr.h);
+        var groundCrFrame = cr.state === 'shaking' ? Math.min(4, 1 + Math.floor((t - cr.at) / 90)) : 0;
+        if (drawAtlasFrame(ctx, structureAtlas, 2, 5, groundCrFrame, 8,
+          cx, cy - 12, cr.w, cr.h + 22)) {}
+        else if (ready(cimg)) ctx.drawImage(cimg, cx, cy, cr.w, cr.h);
         else { ctx.fillStyle = '#a8743e'; ctx.fillRect(cx, cy, cr.w, cr.h); }
       }
       // Bounce pads.
@@ -1776,8 +2239,17 @@
         var squash = t - (pd.lastBounceAt || -9999) < 160 ? 4 : 0;
         var px = Math.round(pd.x - camX);
         var py = pd.y + OFFSET_Y - 4 + squash;
-        if (ready(pimg)) ctx.drawImage(pimg, px, py, pd.w, 12 - squash);
+        var groundPadAge = t - (pd.lastBounceAt || -9999);
+        var groundPadFrame = groundPadAge < 360 ? Math.min(5, Math.floor(groundPadAge / 60)) : 0;
+        if (drawAtlasFrame(ctx, structureAtlas, 1, 5, groundPadFrame, 6,
+          px, py - 8, pd.w, 24 - squash)) {}
+        else if (ready(pimg)) ctx.drawImage(pimg, px, py, pd.w, 12 - squash);
         else { ctx.fillStyle = '#ff2fd0'; ctx.fillRect(px, py, pd.w, 12 - squash); }
+        if (groundPadAge >= 0 && groundPadAge < 420) {
+          drawAtlasStrip(ctx, art['atlas-vfx'], 0, 0, 0.23, 0.25,
+            Math.min(4, Math.floor(groundPadAge / 84)), 5,
+            px - pd.w * 0.35, py - 18, pd.w * 1.7, 34);
+        }
       }
       // Flame vent grates.
       var vimg = art['flame-vent'];
@@ -1786,7 +2258,12 @@
         if (!inView(v.x, 32, camX)) continue;
         var vx = Math.round(v.x - camX);
         var vy = v.baseY + OFFSET_Y - 8;
-        if (ready(vimg)) ctx.drawImage(vimg, vx, vy, 32, 12);
+        var ventLocal = (t + v.phase) % v.period;
+        var ventFrame = cycleOn(v, t) ? Math.min(6, 4 + Math.floor(ventLocal / 140) % 3) :
+          cycleWarn(v, t) ? 3 : 0;
+        if (drawAtlasFrame(ctx, art['atlas-hazards'], 2, 5, ventFrame, 8,
+          vx - 5, vy - 16, 42, 28)) {}
+        else if (ready(vimg)) ctx.drawImage(vimg, vx, vy, 32, 12);
         else { ctx.fillStyle = '#30262a'; ctx.fillRect(vx, vy, 32, 12); }
         if (cycleWarn(v, t) && Math.floor(t / 80) % 2 === 0) {
           ctx.fillStyle = 'rgba(255,140,30,0.8)';
@@ -1812,7 +2289,10 @@
           ctx.fillStyle = Math.floor(t / 70) % 2 ? 'rgba(255,60,60,0.55)' : 'rgba(255,60,60,0.15)';
           ctx.fillRect(lx + 15, ly0, 2, ly1 - ly0);
         }
-        if (ready(limg)) {
+        var streetLaserFrame = cycleOn(l, t) ? 5 : cycleWarn(l, t) ? 3 : 0;
+        if (drawAtlasFrame(ctx, art['atlas-hazards'], 1, 5, streetLaserFrame, 7,
+          lx - 4, ly0 - 28, 40, 30)) {
+        } else if (ready(limg)) {
           ctx.drawImage(limg, lx, ly0 - 20, 32, 20);
         } else {
           ctx.fillStyle = '#1d1f29';
@@ -1842,7 +2322,12 @@
         var g = gems[i];
         if (g.taken || !inView(g.x, 20, camX)) continue;
         var sparkle = 1 + Math.sin(time / 150 + i) * 0.08;
-        drawPickup(ctx, art['gem-' + g.kind], g.x - camX, g.y + OFFSET_Y, 20 * sparkle, time, '#ff3060');
+        var gemSize = 20 * sparkle;
+        if (!drawAtlasFrame(ctx, art['atlas-pickups'], gemAtlasRow(g.kind), 7,
+          atlasLoop(time + i * 43, g.kind === 'diamond' ? 7 : 6, 120), g.kind === 'diamond' ? 8 : 7,
+          g.x - camX - gemSize / 2, g.y + OFFSET_Y - gemSize / 2, gemSize, gemSize)) {
+          drawPickup(ctx, art['gem-' + g.kind], g.x - camX, g.y + OFFSET_Y, gemSize, time, '#ff3060');
+        }
       }
       for (i = 0; i < relics.length; i += 1) {
         var r = relics[i];
@@ -1866,7 +2351,10 @@
       for (i = 0; i < crystals.length; i += 1) {
         var cy = crystals[i];
         if (cy.taken || !inView(cy.x, 20, camX)) continue;
-        drawPickup(ctx, art['time-crystal'], cy.x - camX, cy.y + OFFSET_Y, 20, time, '#3cf2ff');
+        if (!drawAtlasFrame(ctx, art['atlas-pickups'], 4, 7, atlasLoop(time + i * 31, 5, 125), 8,
+          cy.x - camX - 12, cy.y + OFFSET_Y - 12, 24, 24)) {
+          drawPickup(ctx, art['time-crystal'], cy.x - camX, cy.y + OFFSET_Y, 20, time, '#3cf2ff');
+        }
       }
       // Course checkpoints (the engine only paints its primary checkpoint).
       var cpImg = api.images.checkpoint;
@@ -1875,9 +2363,13 @@
         if (!inView(cp.x, cp.w, camX)) continue;
         var cpx = Math.round(cp.x - camX);
         var cpy = cp.y + OFFSET_Y;
-        if (cpImg) ctx.drawImage(cpImg, cpx, cpy, cp.w, cp.h);
-        else { ctx.fillStyle = '#7cff82'; ctx.fillRect(cpx + 12, cpy, 6, cp.h); }
-        if (cp.active) { ctx.fillStyle = '#7cff82'; ctx.fillRect(cpx + 12, cpy + 8, 10, 8); }
+        var cpFrame = cp.active ? 3 + atlasLoop(time + cp.x, 4, 160) : atlasLoop(time + cp.x, 2, 420);
+        if (!drawAtlasFrame(ctx, art['atlas-pickups'], 5, 7, cpFrame, 7,
+          cpx - 8, cpy - 4, cp.w + 16, cp.h + 8)) {
+          if (cpImg) ctx.drawImage(cpImg, cpx, cpy, cp.w, cp.h);
+          else { ctx.fillStyle = '#7cff82'; ctx.fillRect(cpx + 12, cpy, 6, cp.h); }
+          if (cp.active) { ctx.fillStyle = '#7cff82'; ctx.fillRect(cpx + 12, cpy + 8, 10, 8); }
+        }
       }
       // Flame jets (reuse the graffbot fire sheet, rotated upward).
       var fire = api.images.botFire;
@@ -1903,6 +2395,15 @@
           ctx.fillRect(vx - 10, vy - v.h, 20, v.h);
         }
       }
+      var respawnAge = t - respawnVfxAt;
+      if (respawnAge >= 0 && respawnAge < 720) {
+        var respawnSize = 74 + respawnAge / 18;
+        drawGridCell(ctx, art['ground-pickups'], 15,
+          api.player.x - camX + api.player.w / 2 - respawnSize / 2,
+          api.player.y + OFFSET_Y + api.player.h - respawnSize,
+          respawnSize, respawnSize, false, 1 - respawnAge / 720);
+      }
+      drawCourseVfx(ctx, api, t);
       drawNight(ctx, api, t);
       if (debugBoxes) drawDebugBoxes(ctx, api);
     }
@@ -1935,6 +2436,16 @@
         var mx = Math.round(p.x + p.w / 2 - api.cameraX);
         var altitude = Math.max(0, Math.round(F - (p.y + p.h)));
         ctx.save();
+        if (drawAtlasFrame(ctx, art['atlas-pickups'], 6, 7, atlasLoop(t, 5, 130), 6,
+          mx - 14, 0, 28, 18)) {
+          ctx.font = 'bold 7px Courier New';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#000';
+          ctx.fillText(altitude + 'px', mx + 1, 22);
+          ctx.fillStyle = '#ffe45a';
+          ctx.fillText(altitude + 'px', mx, 21);
+          ctx.restore();
+        } else {
         ctx.fillStyle = '#ffe45a';
         ctx.beginPath();
         ctx.moveTo(mx, 3);
@@ -1949,6 +2460,7 @@
         ctx.fillStyle = '#ffe45a';
         ctx.fillText(altitude + 'px', mx, 21);
         ctx.restore();
+        }
       }
       // Collection panel (top-left).
       ctx.save();
@@ -1976,6 +2488,7 @@
           (skyMode ? ' SKY' : ''), 8, 41);
       }
       ctx.restore();
+      drawPhase2Hud(ctx, api, t);
     }
 
     function count(list, key) {
@@ -2062,6 +2575,14 @@
       drawWorld: drawWorld,
       drawObjects: drawObjects,
       drawHud: drawHud,
+      drawHazard: drawCourseHazard,
+      drawCrate: drawCourseCrate,
+      drawSpeedBox: drawCourseSpeedBox,
+      drawRewardBox: drawCourseRewardBox,
+      drawSecretCoin: drawCourseSecretCoin,
+      drawFinish: drawCourseFinish,
+      drawEnemy: drawCourseEnemy,
+      onRespawn: onCourseRespawn,
       summary: summary,
       timeBonusMs: function () { return timeBonusMs; },
       // Read-only access for tests / layout tooling.
