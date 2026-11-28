@@ -57,12 +57,44 @@ async function github(route, body, method = body ? "POST" : "GET") {
   return response.json();
 }
 
+let discoveredOllamaModel;
+
+async function resolveOllamaModel() {
+  if (discoveredOllamaModel) return discoveredOllamaModel;
+
+  const response = await fetch("http://127.0.0.1:11434/api/tags", {
+    signal: AbortSignal.timeout(30_000)
+  });
+  if (!response.ok) throw new Error(`Ollama model discovery returned ${response.status}.`);
+
+  const installed = (await response.json()).models
+    ?.map(model => model.name)
+    .filter(name => typeof name === "string" && name.length) ?? [];
+  const configured = process.env.BLOCK_TOPIA_OLLAMA_MODEL?.trim();
+  if (configured) {
+    if (!installed.includes(configured)) {
+      throw new Error(`Configured Ollama model ${configured} is not installed. Installed models: ${installed.join(", ") || "none"}.`);
+    }
+    discoveredOllamaModel = configured;
+    return discoveredOllamaModel;
+  }
+
+  const preferred = ["qwen2.5:7b-64k", "qwen2.5:7b", "qwen2.5-coder:7b"];
+  discoveredOllamaModel = preferred.find(name => installed.includes(name))
+    ?? installed.find(name => /qwen|llama|mistral|gemma|phi/i.test(name) && !/embed/i.test(name));
+  if (!discoveredOllamaModel) {
+    throw new Error(`No chat-capable Ollama model is installed. Installed models: ${installed.join(", ") || "none"}.`);
+  }
+  return discoveredOllamaModel;
+}
+
 async function model(role, instruction, context, format = "json") {
+  const modelName = await resolveOllamaModel();
   const response = await fetch("http://127.0.0.1:11434/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "qwen2.5:7b-64k",
+      model: modelName,
       stream: false,
       format,
       options: { num_ctx: 8192, num_predict: 1600, temperature: 0.2 },
@@ -73,7 +105,10 @@ async function model(role, instruction, context, format = "json") {
     }),
     signal: AbortSignal.timeout(240_000)
   });
-  if (!response.ok) throw new Error(`Ollama returned ${response.status} for ${role}.`);
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 300).replaceAll(/\\s+/g, " ");
+    throw new Error(`Ollama returned ${response.status} for ${role} using ${modelName}: ${detail || "no response body"}.`);
+  }
   return JSON.parse((await response.json()).message.content);
 }
 
