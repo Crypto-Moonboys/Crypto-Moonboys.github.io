@@ -18,8 +18,10 @@ async function liveWaterfrontDistrict(root) {
 }
 
 function liveAtlasAssets(root) {
-  return Object.fromEntries(["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"]
-    .map(name => [`${name}-runtime.webp`, fs.readFileSync(path.join(root, "assets", "atlases", `${name}-runtime.webp`))]));
+  const names = ["cargo-runtime.webp", "factions-runtime.webp", "bots-runtime.webp", "hk-night-runtime.webp",
+    "trees-runtime.webp", "street-detail-runtime.webp", "terrain-runtime.webp", "bitcoin-cash-tower-overhead.webp",
+    "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"];
+  return Object.fromEntries(names.map(name => [name, fs.readFileSync(path.join(root, "assets", "atlases", name))]));
 }
 
 test("Waterfront queue has no Hermes research dependency", () => {
@@ -178,8 +180,13 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /waterfrontIslandPatrol=islandPatrol/);
   assert.match(source, /waterfrontIslandSeed=islandSeed/);
   assert.match(source, /function findRoute\(start,goal,canWalk\)/);
+  assert.match(source, /landmarkLoads>=3/);
+  assert.match(source, /Waterfront landmark artwork did not finish loading/);
+  for (const name of ["bitcoin-cash-tower-overhead.webp", "zcash-fortress-overhead-runtime.webp", "wax-bee-overhead-runtime.webp"]) {
+    assert.match(source, new RegExp(name.replaceAll(".", "\\.")));
+  }
   for (const name of ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"]) {
-    assert.match(source, new RegExp(`"${name}"`));
+    assert.match(source, new RegExp(`"${name}-runtime\\.webp"`));
   }
   assert.match(source, /if \(blockedClass\) allowedClasses = allowedClasses\.filter/);
 });
