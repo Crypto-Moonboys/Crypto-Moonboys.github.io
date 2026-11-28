@@ -74,6 +74,15 @@ test("production placement sends bounded candidates and allows the local model t
   assert.match(source, /library\.slice\(0, 3000\)/);
 });
 
+test("production repairs discard rejected placements and refresh an advanced main base", () => {
+  const source = fs.readFileSync(runnerPath, "utf8");
+  assert.match(source, /context\.base !== latest\.object\.sha/);
+  assert.match(source, /\["production-placement\.json", "publication\.json"\]/);
+  assert.match(source, /for \(let retry = 0; retry < 3; retry\+\+\)/);
+  assert.match(source, /fs\.rm\(placementFile, \{ force: true \}\)/);
+  assert.match(source, /proposal = null/);
+});
+
 test("production rounds target main and use a linear-history squash merge", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
   assert.match(source, /const productionTarget = "main";/);
