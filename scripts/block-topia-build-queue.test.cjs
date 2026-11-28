@@ -5,7 +5,14 @@ const path = require("node:path");
 const test = require("node:test");
 
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
-const { applyDistrictEdits, validateDistrict, waterfrontTemplate } = require(runnerPath);
+const { applyDistrictEdits, selectOllamaModel, validateDistrict, waterfrontTemplate } = require(runnerPath);
+
+test("Ollama selection uses an installed preferred model and supports an explicit override", () => {
+  assert.equal(selectOllamaModel(["nomic-embed-text:latest", "qwen2.5:7b"], undefined), "qwen2.5:7b");
+  assert.equal(selectOllamaModel(["llama3.2:latest", "qwen2.5:7b"], "llama3.2:latest"), "llama3.2:latest");
+  assert.throws(() => selectOllamaModel(["nomic-embed-text:latest"], undefined), /No chat-capable/);
+  assert.throws(() => selectOllamaModel(["qwen2.5:7b"], "missing:latest"), /is not installed/);
+});
 
 test("starter has a connected dock, street, lighthouse, and two buildable plots", () => {
   const district = validateDistrict(waterfrontTemplate);
