@@ -18,6 +18,7 @@
  *   course checkpoints and warning signs.
  *
  * Hidden: NIGHT TRAIN easter egg (faint wall just before the flag — spray it).
+ * Shortcut: tap 1 + 9 together to start on the night-train perch (5s drop).
  *
  * Debug: add ?gu-debug=1 to the page URL. Keys 0-8 jump to zone starts, 9 to the night-train wall,
  * G toggles invulnerability, H toggles hitbox outlines.
@@ -868,8 +869,35 @@
       api.kill(reason);
     }
 
+    // Shortcut: tap 1 + 9 together -> straight onto the 5-second perch, then
+    // drop onto the carriage stream and play on to the flag.
+    var perchShortcutPending = false;
+    function startAtPerch(api, t) {
+      var p = api.player;
+      resetNight();
+      night.phase = 'perch';
+      night.camLocked = true;
+      night.startedAt = t;
+      night.perchAt = t;
+      night.flashAt = t;
+      p.x = NT.perch.x + NT.perch.w / 2 - p.w / 2;
+      p.y = NT.perch.y - p.h;
+      p.vx = 0;
+      p.vy = 0;
+      // Clear the stale street contact so the landing rules don't see it.
+      p.grounded = false;
+      p.groundTile = null;
+      skyMode = true;
+      spawnStream(api);
+      api.notify('NIGHT TRAIN SHORTCUT · DROP IN 5s', 2200);
+    }
+
     function updateNight(t, dt, api) {
       var p = api.player;
+      if (perchShortcutPending) {
+        perchShortcutPending = false;
+        if (!api.complete) { startAtPerch(api, t); return; }
+      }
       if (!night.phase) {
         if (api.sprayActive && !api.complete && api.rectsOverlap(api.sprayRect(), NT.tag)) startNightTrain(api, t);
         return;
@@ -1451,6 +1479,23 @@
         nightTrainCarriages: night.hopCount,
         timeBonusMs: timeBonusMs
       };
+    }
+
+    // 1 + 9 shortcut listener (pressed together or within 700ms, either order).
+    if (typeof window !== 'undefined') {
+      var comboDown = { one: -9999, nine: -9999 };
+      window.addEventListener('keydown', function (e) {
+        var tag = e.target && e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+        var now = Date.now();
+        if (e.code === 'Digit1' || e.code === 'Numpad1') comboDown.one = now;
+        else if (e.code === 'Digit9' || e.code === 'Numpad9') comboDown.nine = now;
+        else return;
+        if (Math.abs(comboDown.one - comboDown.nine) <= 700 && lastApi && lastApi.running && !lastApi.gameOver) {
+          comboDown.one = comboDown.nine = -9999;
+          perchShortcutPending = true;
+        }
+      });
     }
 
     // Debug teleport / god mode.
