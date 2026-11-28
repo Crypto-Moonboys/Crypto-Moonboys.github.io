@@ -61,6 +61,14 @@ test("the starter preview can be rendered without queue credentials", () => {
 });
 
 
+test("production placement sends bounded candidates and allows the local model to finish", () => {
+  const source = fs.readFileSync(runnerPath, "utf8");
+  assert.match(source, /candidateLots, sprites, reviewFeedback/);
+  assert.match(source, /numPredict: 160, timeoutMs: 900_000/);
+  assert.match(source, /brief\.slice\(0, 4000\)/);
+  assert.match(source, /library\.slice\(0, 3000\)/);
+});
+
 test("production rounds target main and use a linear-history squash merge", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
   assert.match(source, /const productionTarget = "main";/);
