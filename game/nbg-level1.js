@@ -1215,6 +1215,7 @@
       player.vy = 0;
       jumpsUsed = 0;
       player.invuln = INVULN_TIME;
+      if (courseExt && courseExt.onRespawn) courseExt.onRespawn(courseApi, runElapsedMs);
       backflipActive = false;
       setPlayerAnimation('hurt');
       sprayTimer = 0;
@@ -1728,6 +1729,7 @@
           w: hitSize, h: hitSize };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
+          coin.takenAt = time;
           collectedCoinCount += 1;
           comboCount = time < comboExpiresAt ? Math.min(MAX_COIN_COMBO, comboCount + 1) : 1;
           comboExpiresAt = time + COIN_COMBO_WINDOW_MS;
@@ -1797,6 +1799,7 @@
         var coinRect = { x: coin.x - coin.r, y: coin.y - coin.r, w: coin.r * 2, h: coin.r * 2 };
         if (rectsOverlap(player, coinRect)) {
           coin.taken = true;
+          coin.takenAt = time;
           xp += coin.xp;
           secretNotificationText = coin.label || ('SECRET FOUND +' + coin.xp + ' XP');
           secretNotificationUntil = time + 2000;
@@ -2677,6 +2680,8 @@
         var x = Math.round(hazard.x - cameraX);
         if (x + hazard.w < -30 || x > WIDTH + 30) return;
         var y = hazard.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (courseExt && courseExt.drawHazard &&
+            courseExt.drawHazard(ctx, courseApi, hazard, runElapsedMs)) return;
         ctx.save();
         if (hazard.type === 'barrier') {
           ctx.fillStyle = '#f96f33';
@@ -2813,6 +2818,8 @@
         var crateX = Math.round(crate.x - cameraX);
         if (crateX + crate.w < 0 || crateX > WIDTH) continue;
         var crateY = crate.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (courseExt && courseExt.drawCrate &&
+            courseExt.drawCrate(ctx, courseApi, crate, runElapsedMs)) continue;
         if (images.floorCrate) {
           ctx.drawImage(images.floorCrate, crateX, crateY, crate.w, crate.h);
         } else {
@@ -2858,6 +2865,8 @@
     function drawCoins(time) {
       for (var i = 0; i < coins.length; i += 1) {
         var coin = coins[i];
+        if (courseExt && courseExt.drawCoin &&
+            courseExt.drawCoin(ctx, courseApi, coin, runElapsedMs)) continue;
         if (coin.taken) continue;
         var coinSize = coin.size || 16;
         var x = Math.round(coin.x - cameraX - coinSize / 2);
@@ -2884,6 +2893,8 @@
     function drawSecretCoins(time) {
       for (var i = 0; i < secretCoins.length; i += 1) {
         var coin = secretCoins[i];
+        if (courseExt && courseExt.drawSecretCoin &&
+            courseExt.drawSecretCoin(ctx, courseApi, coin, runElapsedMs)) continue;
         if (coin.taken) continue;
         var x = Math.round(coin.x - cameraX);
         var y = Math.round(coin.y + FOREGROUND_VISUAL_OFFSET_Y);
@@ -2902,6 +2913,8 @@
     function drawEnemies(time) {
       for (var i = 0; i < enemies.length; i += 1) {
         var enemy = enemies[i];
+        if (courseExt && courseExt.drawEnemy &&
+            courseExt.drawEnemy(ctx, courseApi, enemy, time)) continue;
         if (enemy.defeated) continue;
         var botHurt = enemy.type === 'bot' && (enemy.hurtUntil || 0) > time;
         var botFireActive = enemy.type === 'bot' && (enemy.fireUntil || 0) > time;
@@ -3071,6 +3084,8 @@
         var speedX = Math.round(speedBox.x - cameraX);
         if (speedX + speedBox.w < 0 || speedX > WIDTH) continue;
         var speedY = speedBox.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (courseExt && courseExt.drawSpeedBox &&
+            courseExt.drawSpeedBox(ctx, courseApi, speedBox, runElapsedMs)) continue;
         if (images.speedBox) {
           ctx.drawImage(images.speedBox, speedX, speedY,
             SPEED_BOX_RENDER_SIZE, SPEED_BOX_RENDER_SIZE);
@@ -3083,6 +3098,8 @@
         var boxX = Math.round(box.x - cameraX);
         if (boxX + box.w < 0 || boxX > WIDTH) continue;
         var boxY = box.y + FOREGROUND_VISUAL_OFFSET_Y;
+        if (courseExt && courseExt.drawRewardBox &&
+            courseExt.drawRewardBox(ctx, courseApi, box, runElapsedMs)) continue;
         var boxImage = box.type === 'star' ? images.starBox : images.mysteryBox;
         ctx.save();
         if (box.opened && box.mode !== 'solid') ctx.globalAlpha = 0.32;
@@ -3106,7 +3123,9 @@
       }
 
       var finishX = Math.round(finish.x - cameraX);
-      if (images.finish && finishX + finish.w >= 0 && finishX <= WIDTH)
+      var customFinish = courseExt && courseExt.drawFinish &&
+        courseExt.drawFinish(ctx, courseApi, finish, runElapsedMs);
+      if (!customFinish && images.finish && finishX + finish.w >= 0 && finishX <= WIDTH)
         ctx.drawImage(images.finish, finishX,
           finish.y + FOREGROUND_VISUAL_OFFSET_Y, finish.w, finish.h);
     }
