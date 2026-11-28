@@ -1125,7 +1125,9 @@
         COIN_TIERS: COIN_TIERS, STAND_HEIGHT: STAND_HEIGHT, CROUCH_HEIGHT: CROUCH_HEIGHT,
         STREET_Y: STREET_Y, FOREGROUND_VISUAL_OFFSET_Y: FOREGROUND_VISUAL_OFFSET_Y,
         PLAYER_VISUAL_OFFSET_Y: PLAYER_VISUAL_OFFSET_Y,
-        CAMERA_LOOK_DOWN_MAX_Y: CAMERA_LOOK_DOWN_MAX_Y, SPEEDRUN_PAR_MS: SPEEDRUN_PAR_MS
+        CAMERA_LOOK_DOWN_MAX_Y: CAMERA_LOOK_DOWN_MAX_Y, SPEEDRUN_PAR_MS: SPEEDRUN_PAR_MS,
+        TRAIN_WIDTH: TRAIN_WIDTH, TRAIN_HEIGHT: TRAIN_HEIGHT, TRAIN_GAP: TRAIN_GAP,
+        TRAIN_SCREEN_Y: BRIDGE_Y - TRAIN_HEIGHT + 10
       });
       courseLayout = courseExt && courseExt.layout || null;
       if (courseLayout) {
@@ -1188,6 +1190,12 @@
           }));
         },
         damage: function (type, x) { damagePlayer(type, x); },
+        kill: function (type) {
+          if (gameOver) return;
+          player.invuln = 0;
+          player.health = 1;
+          damagePlayer(type || 'course', player.x);
+        },
         notify: function (text, ms) {
           secretNotificationText = text;
           secretNotificationUntil = runElapsedMs + (ms || 2000);
@@ -2122,7 +2130,8 @@
         }
       }
 
-      if (!complete && rectsOverlap(player, finish)) {
+      var courseFinish = !complete && courseExt && courseExt.forceFinish && courseExt.forceFinish(courseApi);
+      if (!complete && (courseFinish || rectsOverlap(player, finish))) {
         complete = true;
         running = false;
         completionAnimationActive = true;
@@ -2160,6 +2169,9 @@
       var visibleWorldWidth = WIDTH / cameraZoom;
       cameraX = clamp(player.x - WIDTH * 0.42 / cameraZoom,
         0, WORLD_WIDTH - visibleWorldWidth);
+      if (courseExt && courseExt.cameraTargetX) {
+        cameraX = clamp(courseExt.cameraTargetX(cameraX, courseApi), 0, WORLD_WIDTH - visibleWorldWidth);
+      }
     }
 
     function updateCameraY() {
@@ -2512,6 +2524,8 @@
     }
 
     function drawTrains(time) {
+      // A course extension may take over the bridge track (Getting Up night train).
+      if (courseExt && courseExt.drawBridgeTrack && courseExt.drawBridgeTrack(ctx, courseApi, time)) return;
       // Six joined sets of cars, spaced out in time along the bridge:
       //   Set 1 (NBG / WUF / ALCOR)        — leads, enters at the 10s reveal
       //   Set 2 ($WAXP / $PXJ-KING / $WPIXAL) — 20s behind set 1
@@ -3113,6 +3127,14 @@
       var drawX = x - Math.round((drawWidth - player.w) / 2);
       var visualFootY = y + player.h + PLAYER_VISUAL_OFFSET_Y;
       var drawY = Math.round(visualFootY - drawHeight + frameMeta.renderOffsetY + frameOffsetY);
+      var playerScale = courseExt && courseExt.playerScale ? courseExt.playerScale(courseApi) : 1;
+      if (playerScale !== 1) {
+        // Feet stay put; the sprite shrinks around them (distance on the bridge).
+        drawWidth = Math.round(frameMeta.renderWidth * playerScale);
+        drawHeight = Math.round(frameMeta.renderHeight * playerScale);
+        drawX = x - Math.round((drawWidth - player.w) / 2);
+        drawY = Math.round(visualFootY - drawHeight + (frameMeta.renderOffsetY + frameOffsetY) * playerScale);
+      }
       var sourceX = col * frameMeta.sourceWidth;
       var sourceY = row * frameMeta.sourceHeight;
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
