@@ -76,3 +76,15 @@ Each production candidate gets a PR targeting `main` and a Codex review request.
 If a Waterfront production PR targeting `main` develops a merge conflict, continue the repair cycle. Inspect the latest `main` and reapply only the intended change, preserving intervening edits. Update the existing PR when possible. Rerun the affected route, saved-layout and browser checks, then request Codex review for the new head commit. Repeat if the base moves again or review finds a problem. A review on the old head does not clear the repaired patch. Merge only after GitHub reports a clean merge, Codex clears the current head and GK authorises the production merge. Report a blocker if the intended change cannot be reapplied without changing scope.
 
 From the VPS, the `mooncity` user can inspect the schedule with `systemctl --user list-timers block-topia-build.timer` and recent runs with `journalctl --user -u block-topia-build.service -n 50 --no-pager`.
+
+## Planned production zones
+
+The autonomous production worker reads [BUILD-ZONES.json](BUILD-ZONES.json) as its machine-readable contract. That file defines zone bounds, priorities, asset-class targets, maximum placement counts, spacing, repetition limits, spawn clearance and the finite stopping rule. Update the JSON and this brief together when GK changes the city plan.
+
+The worker sends Ollama the complete issue mission, city brief and sprite library as structured Markdown sections. It does not use prefix slices and does not use Hermes. Ollama proposes a bounded zone, purpose, player benefit, coordinate and allow-listed asset; deterministic code remains responsible for applying the change.
+
+Production currently enables guarded existing-library flowers, furniture and single-tree placements. Broader buildings, paths, markets, lighting, animation, NPC behaviour, gameplay changes and new art require their own allow-listed action type, deterministic validator and tests before they may enter the automatic loop.
+
+Every production candidate is rendered twice from the current tested base: baseline and proposed renderer. Chromium must render a changed canvas at desktop and mobile viewport sizes, load the relevant real atlas and capture non-empty screenshots. The PR also updates `production-validation.json` with the exact base, proposal, zone ledger and render checksums. The local screenshots remain in the protected worker state directory.
+
+When every zone reaches its configured maximum or no uncrowded candidate can satisfy a remaining target, the worker writes `completed.json` and stops cleanly. It does not fill leftover ground simply because a coordinate exists.
