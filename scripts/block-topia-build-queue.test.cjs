@@ -175,6 +175,9 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /completed\.json/);
   assert.match(source, /nature-island\.mjs/);
   assert.match(source, /extendWaterfront\(harbor\)/);
+  assert.match(source, /waterfrontIslandPatrol=islandPatrol/);
+  assert.match(source, /waterfrontIslandSeed=islandSeed/);
+  assert.match(source, /function findRoute\(start,goal,canWalk\)/);
   for (const name of ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"]) {
     assert.match(source, new RegExp(`"${name}"`));
   }
@@ -200,7 +203,8 @@ test("available Chromium renders the real proposed Waterfront at both viewports"
   const updated = productionPlacement(renderer, district, proposal);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "waterfront-visual-"));
   try {
-    const visual = await productionVisualCheck(dir, renderer, updated, district, proposal, liveAtlasAssets(root));
+    const natureSource = fs.readFileSync(path.join(root, "nature-island.mjs"), "utf8");
+    const visual = await productionVisualCheck(dir, renderer, updated, district, proposal, liveAtlasAssets(root), natureSource);
     assert.equal(visual.status, "passed");
     assert.notEqual(visual.baselineChecksum, visual.desktopChecksum);
     assert.equal(visual.screenshots.length, 2);
