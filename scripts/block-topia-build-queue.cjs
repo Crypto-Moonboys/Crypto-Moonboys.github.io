@@ -325,23 +325,6 @@ function withoutPublishCredentials() {
   return env;
 }
 
-async function references(dir) {
-  const research = path.join(__dirname, "block-topia-research.sh");
-  const result = spawnSync("bash", [research], {
-    env: { ...withoutPublishCredentials(), XDG_STATE_HOME: dir },
-    encoding: "utf8",
-    timeout: 800_000
-  });
-  const report = result.stdout?.match(/Founder research reports: (.+)/)?.[1];
-  const notes = {};
-  if (report && path.dirname(report) === path.join(dir, "block-topia-art")) {
-    for (const role of ["planner", "artist", "developer", "playtester"]) {
-      notes[role] = (await fs.readFile(path.join(report, `${role}.txt`), "utf8").catch(() => "")).slice(-1800);
-    }
-  }
-  return { outcome: result.status === 0 ? "completed; citations require review" : "research incomplete", notes };
-}
-
 async function publish(number, files) {
   const branch = `block-topia/issue-${number}-waterfront`;
   const query = `/pulls?state=all&head=${encodeURIComponent("Crypto-Moonboys:" + branch)}&base=main`;
@@ -499,13 +482,11 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, repair
   const number = issue.number;
   const brief = { title: issue.title, body: String(issue.body || "").slice(0, 6000) };
   const base = validateDistrict(repair.rejectedDistrict ?? previous ?? waterfrontTemplate);
-  const researchDir = round ? path.dirname(path.dirname(dir)) : dir;
-  const research = await checkpoint(researchDir, "research.json", () => references(researchDir));
   const plan = await checkpoint(dir, "plan.json", () => model("planner",
     "Propose one useful improvement to the supplied waterfront map. Keep its street, dock, lighthouse and connected plots. Use key plan.",
-    { brief, map: base.rows, round, reviewFeedback, research: research.notes.planner }));
+    { brief, map: base.rows, round, reviewFeedback }));
   const art = await checkpoint(dir, "art.json", () => model("artist",
-    "Return six hexadecimal #RRGGBB colors with keys water, road, ground, dock, house, lighthouse. If repairing a palette, use the rejected colors and review feedback to correct visual findings.", { plan, reviewFeedback, rejectedPalette: repair.rejectedPalette, research: research.notes.artist }));
+    "Return six hexadecimal #RRGGBB colors with keys water, road, ground, dock, house, lighthouse. If repairing a palette, use the rejected colors and review feedback to correct visual findings.", { plan, reviewFeedback, rejectedPalette: repair.rejectedPalette }));
   const colors = Object.fromEntries(Object.entries(palette).map(([key, fallback]) =>
     [key, typeof art[key] === "string" && /^#[0-9a-f]{6}$/i.test(art[key]) ? art[key].toLowerCase() : fallback]));
   const district = await checkpoint(dir, "district.json", async () => {
@@ -514,7 +495,7 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, repair
       try {
         const proposal = await model("developer",
           'Edit up to six existing map cells. Coordinates are zero-based, x goes right and y goes down. Example: {"edits":[{"x":4,"y":6,"tile":"r"}]}. Use ~ water, . ground, r road, d dock, h lighthouse, _ buildable plot. Keep all roads and docks connected orthogonally and keep every lighthouse and plot next to a walkable cell. Return an empty edits array for a palette-only repair.',
-          { plan, map: base.rows, reviewFeedback, feedback, research: research.notes.developer }, editFormat);
+          { plan, map: base.rows, reviewFeedback, feedback }, editFormat);
         const verified = applyDistrictEdits(base, proposal);
         const comparison = repair.rejectedDistrict ?? previous;
         if (samePreview(verified, colors, repair.rejectedDistrict, repair.rejectedPalette)
@@ -535,7 +516,7 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, repair
   const verified = validateDistrict(district);
   const publishedDistrict = { ...verified, colors, layoutSource: district.layoutSource ?? "model" };
   const review = await checkpoint(dir, "qa.json", () => model("playtester",
-    "Review the supplied district data for visual and navigation risks. Use key findings. Do not claim you ran the browser.", { district: publishedDistrict, research: research.notes.playtester }));
+    "Review the supplied district data for visual and navigation risks. Use key findings. Do not claim you ran the browser.", { district: publishedDistrict }));
   const preview = render(verified, colors);
   const htmlFile = path.join(dir, "preview.html");
   await fs.writeFile(htmlFile, preview);
@@ -544,7 +525,7 @@ async function build(issue, dir, round = 0, previous = null, attempt = 1, repair
   const files = {
     "index.html": preview,
     "district.json": JSON.stringify(publishedDistrict, null, 2) + "\n",
-    "build-review.json": JSON.stringify({ issue: number, round, research: research.outcome, review }, null, 2) + "\n"
+    "build-review.json": JSON.stringify({ issue: number, round, review }, null, 2) + "\n"
   };
   if (round) {
     const outcome = await publishRound(issue, round, attempt, dir, files);
