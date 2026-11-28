@@ -5,9 +5,22 @@ const os = require("node:os");
 const path = require("node:path");
 const vm = require("node:vm");
 const test = require("node:test");
+const { pathToFileURL } = require("node:url");
 
 const runnerPath = path.join(__dirname, "block-topia-build-queue.cjs");
 const { applyDistrictEdits, enforceProductionCandidate, isTransientGithubFailure, markdownSections, productionCandidates, productionLedger, productionPlacement, productionVisualCheck, selectOllamaModel, validateDistrict, waterfrontTemplate, zoneForLot } = require(runnerPath);
+
+async function liveWaterfrontDistrict(root) {
+  const districtSource = fs.readFileSync(path.join(__dirname, "..", "workers", "moonboys-api", "blocktopia", "waterfront-district.js"), "utf8");
+  const harbor = vm.runInNewContext(districtSource.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const { extendWaterfront } = await import(pathToFileURL(path.join(root, "nature-island.mjs")).href);
+  return extendWaterfront(harbor);
+}
+
+function liveAtlasAssets(root) {
+  return Object.fromEntries(["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"]
+    .map(name => [`${name}-runtime.webp`, fs.readFileSync(path.join(root, "assets", "atlases", `${name}-runtime.webp`))]));
+}
 
 test("Waterfront queue has no Hermes research dependency", () => {
   const source = fs.readFileSync(runnerPath, "utf8");
@@ -125,13 +138,14 @@ test("production planner receives full structured context without lossy prefix s
   assert.doesNotMatch(source, /fetch\("http:\/\/127\.0\.0\.1:11434/);
 });
 
-test("zone plan enforces finite density, spacing, variety, and tree support", () => {
+test("zone plan enforces finite density, spacing, variety, and tree support", async () => {
   const root = path.join(__dirname, "..", "games", "block-topia", "waterfront");
   const plan = JSON.parse(fs.readFileSync(path.join(root, "BUILD-ZONES.json"), "utf8"));
   const renderer = fs.readFileSync(path.join(root, "harbor-art.js"), "utf8");
-  const districtSource = fs.readFileSync(path.join(__dirname, "..", "workers", "moonboys-api", "blocktopia", "waterfront-district.js"), "utf8");
-  const district = vm.runInNewContext(districtSource.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
-  const ledger = productionLedger(renderer, plan);
+  const district = await liveWaterfrontDistrict(root);
+  const ledger = productionLedger(renderer, plan, district);
+  assert.ok(ledger.placements.some(item => item.x === 15 && item.y === 26 && item.asset === "furniture-5"));
+  assert.ok(ledger.placements.some(item => item.x === 15 && item.y === 27 && item.asset === "flowers-8"));
   assert.equal(ledger.zones["east-shore"].complete, true);
   assert.equal(ledger.zones["east-common"].complete, true);
   assert.equal(zoneForLot(plan, 15, 22).id, "west-meadow");
@@ -145,7 +159,7 @@ test("zone plan enforces finite density, spacing, variety, and tree support", ()
   const treeLot = candidates.find(candidate => candidate.allowedClasses.includes("tree"));
   assert.ok(treeLot);
   const selected = enforceProductionCandidate({ ...treeLot, asset: "tree-3" }, candidates, plan, ledger, 0);
-  assert.match(productionPlacement(renderer, district, selected), /tree\(x \+ 16, y, 3, 0\.82\)/);
+  assert.match(productionPlacement(renderer, district, selected), /tree\(x, y, 3, 0\.82\)/);
 });
 
 test("production performs rendered desktop and mobile Chromium validation", () => {
@@ -159,6 +173,12 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /The rendered Waterfront candidate is visually identical to its base/);
   assert.match(source, /production-validation\.json/);
   assert.match(source, /completed\.json/);
+  assert.match(source, /nature-island\.mjs/);
+  assert.match(source, /extendWaterfront\(harbor\)/);
+  for (const name of ["cargo", "factions", "bots", "hk-night", "trees", "street-detail", "terrain"]) {
+    assert.match(source, new RegExp(`"${name}"`));
+  }
+  assert.match(source, /if \(blockedClass\) allowedClasses = allowedClasses\.filter/);
 });
 
 test("available Chromium renders the real proposed Waterfront at both viewports", async t => {
@@ -170,8 +190,7 @@ test("available Chromium renders the real proposed Waterfront at both viewports"
   const root = path.join(__dirname, "..", "games", "block-topia", "waterfront");
   const plan = JSON.parse(fs.readFileSync(path.join(root, "BUILD-ZONES.json"), "utf8"));
   const renderer = fs.readFileSync(path.join(root, "harbor-art.js"), "utf8");
-  const districtSource = fs.readFileSync(path.join(__dirname, "..", "workers", "moonboys-api", "blocktopia", "waterfront-district.js"), "utf8");
-  const district = vm.runInNewContext(districtSource.replace(/export default district;\s*$/, "district;"), {}, { timeout: 1000 });
+  const district = await liveWaterfrontDistrict(root);
   const { candidates, ledger } = productionCandidates(district, renderer, plan);
   const candidate = candidates.find(item => item.allowedClasses.includes("tree")) ?? candidates[0];
   assert.ok(candidate);
@@ -181,10 +200,7 @@ test("available Chromium renders the real proposed Waterfront at both viewports"
   const updated = productionPlacement(renderer, district, proposal);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "waterfront-visual-"));
   try {
-    const visual = await productionVisualCheck(dir, renderer, updated, district, proposal, {
-      "street-detail-runtime.webp": fs.readFileSync(path.join(root, "assets", "atlases", "street-detail-runtime.webp")),
-      "trees-runtime.webp": fs.readFileSync(path.join(root, "assets", "atlases", "trees-runtime.webp"))
-    });
+    const visual = await productionVisualCheck(dir, renderer, updated, district, proposal, liveAtlasAssets(root));
     assert.equal(visual.status, "passed");
     assert.notEqual(visual.baselineChecksum, visual.desktopChecksum);
     assert.equal(visual.screenshots.length, 2);
