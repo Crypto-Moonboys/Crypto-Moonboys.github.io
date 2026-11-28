@@ -182,6 +182,9 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /function findRoute\(start,goal,canWalk\)/);
   assert.match(source, /landmarkLoads>=3/);
   assert.match(source, /Waterfront landmark artwork did not finish loading/);
+  assert.match(source, /image\.onload=resolve/);
+  assert.match(source, /Waterfront preview artwork failed to load/);
+  assert.match(source, /document\.body\.append\(image\)/);
   assert.match(source, /recordPreviewError/);
   assert.match(source, /unhandledrejection/);
   assert.match(source, /--headless=new/);
