@@ -114,5 +114,33 @@
   {
     "speaker": 0,
     "text": "Saved edits to either tile hide it. The path stays reachable."
+  },
+  {
+    "speaker": 0,
+    "text": "Add a small bench at the west end of the street by West Meadow."
+  },
+  {
+    "speaker": 0,
+    "text": "Another option is a rest prop beside the East Shore crossing."
+  },
+  {
+    "speaker": 1,
+    "text": "The west lot is clear and reachable from the street to its south."
+  },
+  {
+    "speaker": 1,
+    "text": "The east crossing is busier. Keep the seat inside the west lot."
+  },
+  {
+    "speaker": 0,
+    "text": "Use the wooden bench frame and anchor it on the grass by the curb."
+  },
+  {
+    "speaker": 0,
+    "text": "Six renders changed only on the bench tile. The road stays open."
+  },
+  {
+    "speaker": 0,
+    "text": "Saved edits to either tile hide the bench. No extra atlas loads."
   }
 ]
