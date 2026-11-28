@@ -187,6 +187,9 @@ test("production performs rendered desktop and mobile Chromium validation", () =
   assert.match(source, /document\.body\.append\(image\)/);
   assert.match(source, /recordPreviewError/);
   assert.match(source, /unhandledrejection/);
+  assert.match(source, /Image\.prototype\.decode=function previewDecode/);
+  assert.match(source, /image\.naturalWidth>0/);
+  assert.match(source, /Waterfront preview image failed to load/);
   assert.match(source, /--headless=new/);
   assert.match(source, /--disable-dev-shm-usage/);
   assert.match(source, /DBUS_SESSION_BUS_ADDRESS/);
