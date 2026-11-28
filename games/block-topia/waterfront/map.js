@@ -262,8 +262,10 @@ function walkTo(x, y) {
 function save() {
   try {
     localStorage.setItem(storageKey, JSON.stringify(rows));
+    window.waterfrontReloadSafe = true;
     status.textContent = "Saved in this browser.";
   } catch {
+    window.waterfrontReloadSafe = false;
     status.textContent = "Browser storage is unavailable. Download the map to keep your edits.";
   }
 }
@@ -334,6 +336,7 @@ document.querySelector("#download").addEventListener("click", () => {
   link.href = url;
   link.download = "luminas-waterfront.json";
   link.click();
+  window.waterfrontReloadSafe = true;
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 document.querySelector("#reset").addEventListener("click", () => {
