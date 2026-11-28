@@ -62,7 +62,14 @@ test("production rounds target main and use a linear-history squash merge", () =
   assert.doesNotMatch(source, /waterfront-production-integration/);
 });
 
-test("the live Waterfront reloads after twenty minutes", () => {
-  const html = fs.readFileSync(path.join(__dirname, "..", "games", "block-topia", "waterfront", "index.html"), "utf8");
-  assert.match(html, /<meta http-equiv="refresh" content="1200">/);
+test("the live Waterfront reloads after twenty minutes without discarding unsaved edits", () => {
+  const root = path.join(__dirname, "..", "games", "block-topia", "waterfront");
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const map = fs.readFileSync(path.join(root, "map.js"), "utf8");
+  assert.match(html, /20 \* 60_000/);
+  assert.match(html, /waterfrontReloadSafe !== false/);
+  assert.match(html, /setTimeout\(refreshWaterfrontWhenSafe, 60_000\)/);
+  assert.doesNotMatch(html, /http-equiv="refresh"/);
+  assert.match(map, /waterfrontReloadSafe = false/);
+  assert.match(map, /waterfrontReloadSafe = true/);
 });
