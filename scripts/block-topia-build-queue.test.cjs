@@ -66,6 +66,9 @@ test("production placement sends bounded candidates and allows the local model t
   assert.match(source, /candidateLots, sprites, reviewFeedback/);
   assert.match(source, /numPredict: 160, timeoutMs: 900_000/);
   assert.match(source, /request\.setTimeout\(timeoutMs/);
+  assert.match(source, /response\.on\("aborted"/);
+  assert.match(source, /response\.on\("error", fail\)/);
+  assert.match(source, /!response\.complete/);
   assert.doesNotMatch(source, /fetch\("http:\/\/127\.0\.0\.1:11434/);
   assert.match(source, /brief\.slice\(0, 4000\)/);
   assert.match(source, /library\.slice\(0, 3000\)/);
