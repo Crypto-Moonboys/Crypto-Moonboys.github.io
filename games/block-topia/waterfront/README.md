@@ -106,7 +106,7 @@ Start in [Clan Operations routes](../../../workers/moonboys-api/routes/clan-oper
 
 Keep the night-time harbor palette, original graffiti, and consistent top-down building fronts. For generated art, use transparent PNGs at a consistent pixel scale, place files under `assets/`, and record their source or generation job in the PR. Keep generation credentials on the runner.
 
-For map changes, check all walkable tiles are reachable from spawn. Check click and tap placement after scrolling, collisions, and existing saved edits. The build runner stages founder previews on `block-topia/integration` and uses `block-topia/waterfront-production-integration` for production-map proposals. The [city brief](CITY-BRIEF.md) and [sprite library](SPRITE-LIBRARY.md) define the production work.
+For map changes, check all walkable tiles are reachable from spawn. Check click and tap placement after scrolling, collisions, and existing saved edits. The build runner stages founder previews on `block-topia/integration`. Issues carrying `<!-- waterfront-production -->` open production-map PRs directly against `main`; only the exact tested and current-head Codex-cleared commit can be squash-merged. The [city brief](CITY-BRIEF.md) and [sprite library](SPRITE-LIBRARY.md) define the production work.
 
 The six building sprites are AutoSprite originals. Their transparent game PNGs and source metadata are in `assets/night-harbor/`. The renderer keeps the base of each sprite inside its original tile footprint. Its fallback art is available while assets load or when an image fails.
 

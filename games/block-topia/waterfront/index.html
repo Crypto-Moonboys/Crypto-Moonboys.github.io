@@ -138,5 +138,15 @@ fieldset button{margin:.2rem .15rem .2rem 0}
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <script data-cfasync="false" type="module" src="entry.js?v=55-park-path-end"></script>
 <script type="module" src="/js/arcade/core/radio.js?v=arcade-audio-20261125"></script>
+<script>
+window.waterfrontReloadSafe = true;
+window.setTimeout(function refreshWaterfrontWhenSafe() {
+  if (window.waterfrontReloadSafe !== false) {
+    window.location.reload();
+    return;
+  }
+  window.setTimeout(refreshWaterfrontWhenSafe, 60_000);
+}, 20 * 60_000);
+</script>
 </body>
 </html>
