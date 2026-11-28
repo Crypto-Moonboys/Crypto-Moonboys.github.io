@@ -86,5 +86,33 @@
   {
     "speaker": 0,
     "text": "The pathfinder still takes all four original trail steps."
+  },
+  {
+    "speaker": 0,
+    "text": "Southwest Park's path ends in open grass. A planter could mark it."
+  },
+  {
+    "speaker": 0,
+    "text": "Another option is a planter by the East Common crossing approach."
+  },
+  {
+    "speaker": 1,
+    "text": "That path leads away from East Common. Wait for a market approach."
+  },
+  {
+    "speaker": 1,
+    "text": "Move the red planter toward the park curb. Guard the lot and path."
+  },
+  {
+    "speaker": 0,
+    "text": "Use the existing red flowers at the park path's end."
+  },
+  {
+    "speaker": 0,
+    "text": "Both views changed only inside the planter's grass tile."
+  },
+  {
+    "speaker": 0,
+    "text": "Saved edits to either tile hide it. The path stays reachable."
   }
 ]
